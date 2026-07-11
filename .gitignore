@@ -1,0 +1,31 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+.metadata
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Drift / codegen generado
+*.g.dart
+
+# Entornos / secretos (NUNCA subir claves de Supabase, RevenueCat, AdMob, LLM)
+.env
+.env.*
+lib/**/*.secrets.dart
+
+# Plataformas (se generan con `flutter create .`)
+# (si prefieres versionarlas, elimina estas líneas)
+ios/Pods/
+android/.gradle/
+android/local.properties
+
+# Misc
+*.log
+.DS_Store
