@@ -62,11 +62,22 @@ Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
 
 Definido en `lib/core/database/app_database.dart`. Todas las tablas usan el mixin `_SyncColumns` (`id` UUID, `createdAt`, `updatedAt`, `deletedAt`). Tablas: `Accounts`, `Categories` (jerárquica vía `parentId`), `Transactions` (income/expense/transfer; `source` distingue captura manual vs. IA para medir cupos), `Budgets`, `Goals`, `Debts`, `Recurrings`, `Tags`, `TransactionTags` (N:N). Los enums (`AccountType`, `EntryType`, `CategoryKind`, `TxSource`, `BudgetPeriod`, `DebtDirection`, `RecurFrequency`) se guardan como texto para tener paridad con Postgres. Al añadir o modificar una tabla, sube `schemaVersion` en `AppDatabase` y regenera con build_runner.
 
+## Diseño / UI (Pencil)
+
+Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Antes de diseñar, construir o revisar cualquier pantalla, carga los lineamientos — no los repita el usuario ni los deduzcas del código.**
+
+- **Fuente de verdad real:** `billetudo.pen` (Pencil). Las 18 variables de color (tema claro/oscuro), tipografía y componentes reutilizables viven ahí. **Nunca hardcodear un hex** — usar siempre la variable (`get_variables`).
+- **Reglas escritas:** `design-system/finance-app/MASTER.md` (reglas globales: paleta, tipografía, radios/espaciado, componentes, accesibilidad, tono de marca) + `design-system/finance-app/pages/<pantalla>.md` (overrides por pantalla).
+- **Orden de lectura:** `pages/<pantalla>.md` (si existe, sus reglas sobreescriben) → `MASTER.md` → si el `.md` y el `.pen` difieren, **manda `billetudo.pen`** y se corrige el `.md`.
+- **Flujo por feature:** primero se escribe/aprueba su `pages/<feature>.md`, luego se construye contra esa spec (subagente `pencil-designer`), luego se audita con `ui-ux-reviewer` antes de pasar a `flutter-dev`.
+- **Identidad:** color de marca violeta (`primary #6C5CE7`), fuente Plus Jakarta Sans, estética limpia/minimalista, soporte completo claro/oscuro. Tono positivo, nunca punitivo con el gasto.
+- El `get_guidelines` nativo de Pencil solo ofrece guías/estilos genéricos — **no** contiene este sistema de diseño. Los lineamientos del proyecto son los `.md` de arriba + las variables del `.pen`.
+
 ## Subagentes, skills y workflows del repo
 
 Definidos en `.claude/` para automatizar las convenciones de este documento:
 
-- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `compliance-reviewer` (reglas de Nivel 0/legales).
+- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `compliance-reviewer` (reglas de Nivel 0/legales), `pencil-designer` (construye/edita pantallas en `billetudo.pen` contra el sistema de diseno; carga MASTER.md + `pages/<feature>.md` antes de dibujar, usa componentes `reusable:true` y variables `$token`), `ui-ux-reviewer` (audita pantallas en `billetudo.pen`/Pencil: jerarquia, accesibilidad, consistencia con el sistema de disenio y tono de marca; anota el canvas y reporta).
 - **Skills**: `/feature-dev <descripcion>` (feature completa en una corrida), `/new-feature <nombre>`, `/drift-schema-change <descripcion>`, `/tier0-check [ruta]`.
 - **Workflows** (`.claude/workflows/`): `feature-dev` (el principal: triage automatico s/m/l → build → tests → review escalado → un unico resumen en `docs/dev-runs/<slug>.md`, sin commitear), `feature-scaffold` (solo boilerplate capa por capa) y `feature-review` (revision multi-dimension con verificacion adversarial; `feature-dev` lo reusa como review profundo en tamano L) — se invocan explicitamente, no por defecto.
 
