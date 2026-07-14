@@ -69,7 +69,14 @@ Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Ante
 - **Fuente de verdad real:** `billetudo.pen` (Pencil). Las 18 variables de color (tema claro/oscuro), tipografía y componentes reutilizables viven ahí. **Nunca hardcodear un hex** — usar siempre la variable (`get_variables`).
 - **Reglas escritas:** `design-system/finance-app/MASTER.md` (reglas globales: paleta, tipografía, radios/espaciado, componentes, accesibilidad, tono de marca) + `design-system/finance-app/pages/<pantalla>.md` (overrides por pantalla).
 - **Orden de lectura:** `pages/<pantalla>.md` (si existe, sus reglas sobreescriben) → `MASTER.md` → si el `.md` y el `.pen` difieren, **manda `billetudo.pen`** y se corrige el `.md`.
-- **Flujo por feature:** primero se escribe/aprueba su `pages/<feature>.md`, luego se construye contra esa spec (subagente `pencil-designer`), luego se audita con `ui-ux-reviewer` antes de pasar a `flutter-dev`.
+- **Flujo por feature (diseño primero, spec después):**
+  1. `pencil-designer` propone 2-3 variantes visuales de la pantalla directamente en `billetudo.pen`, **solo en tema claro**, contra `MASTER.md` (aún no existe `pages/<feature>.md` en este punto).
+  2. El usuario evalúa y elige una variante; las descartadas se borran del canvas de inmediato (no se dejan a medias).
+  3. Se documenta la decisión elegida en `design-system/finance-app/pages/<feature>.md` (spec por pantalla, overrides sobre `MASTER.md`).
+  4. Se refina el diseño base (tema claro) contra ese spec, auditado por `ui-ux-reviewer`, hasta que el usuario apruebe explícitamente que cumple todas las expectativas y estándares del sistema de diseño.
+  5. Solo con el tema claro 100% aprobado se crean las variantes de estado (error, vacío, carga, etc.), también en tema claro primero.
+  6. Al final, y solo al final, se genera el tema oscuro — componentizando antes lo repetido en vez de duplicar estructura.
+  7. Con todas las variantes y ambos temas cerrados, pasa a `flutter-dev` para implementar.
 - **Identidad:** color de marca violeta (`primary #6C5CE7`), fuente Plus Jakarta Sans, estética limpia/minimalista, soporte completo claro/oscuro. Tono positivo, nunca punitivo con el gasto.
 - El `get_guidelines` nativo de Pencil solo ofrece guías/estilos genéricos — **no** contiene este sistema de diseño. Los lineamientos del proyecto son los `.md` de arriba + las variables del `.pen`.
 

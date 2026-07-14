@@ -15,6 +15,7 @@ Como usuario quiero ver una gráfica de ingresos vs. gastos a lo largo del tiemp
 
 **Criterios de aceptación:**
 - Excluye transacciones `type = transfer` del cálculo (no son ni ingreso ni gasto real).
+- Excluye también transacciones con `debtId` asignado (prestar/cobrar un préstamo o abonar una deuda no es ingreso ni gasto real — ver `06-deudas.md`).
 - Periodo por defecto: últimos 6 o 12 meses, agregado por mes; el usuario puede acotar el rango.
 - Es parte del **set esencial gratis** (Nivel 0), sin límite de vistas ni de rango de fechas.
 

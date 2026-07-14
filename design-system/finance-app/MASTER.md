@@ -26,7 +26,7 @@
 | `primary-deep` | `#5648C8` | `#5B4BE0` | Extremo oscuro de degradados con `primary` (nunca usar `primary-light` detras de texto/iconos, ver Accesibilidad). |
 | `primary-light` | `#A78BFA` (fijo, sin tema) | — | Solo para detalles decorativos SIN texto/iconos encima (ej. mitad de un degradado decorativo sin contenido). |
 | `primary-soft` | `#EEECFB` | `#26243B` | Fondo tenue para iconos/chips relacionados a `primary` (ej. categoria "Vivienda"). |
-| `primary-on-soft` | `#6C5CE7` (= `primary` claro) | `#A78BFA` (= `primary-light`) | **Usar SIEMPRE en vez de `primary` cuando el texto/icono va SOBRE un fondo `primary-soft`** (ej. icono de `Category Row`, label de un chip/pill seleccionado, codigo de moneda seleccionado). Motivo: `primary` sobre `primary-soft` en modo oscuro da ~2.75:1, insuficiente incluso para texto grande/iconos (min. 3:1). Con `primary-on-soft` el contraste sube a ~5.5:1 en oscuro sin tocar `primary` ni `primary-soft` (que siguen usandose igual en cualquier otro contexto, ej. CTAs solidos, fondos tenues sin texto encima). En claro este token es identico a `primary` (~4.17:1 sobre `primary-soft`), asi que no cambia nada visualmente ahi — ese 4.17:1 pasa el umbral de 3:1 (icono/texto grande) pero NO el 4.5:1 de texto normal. Por eso, en textos de contenido chicos/normales (no decorativos) sobre `primary-soft`, subir el tamaño a ≥19px/700 (calificar como "texto grande") en vez de asumir que `primary-on-soft` alcanza. Excepcion valida solo cuando el texto es decorativo/redundante (ej. codigo de moneda "COP" dentro de un badge, cuando el nombre completo ya aparece al lado) — ahi el umbral de 3:1 aplica igual que a un icono. No copiar esa excepcion a texto que sea la unica fuente de esa informacion. |
+| `primary-on-soft` | `#6C5CE7` (= `primary` claro) | `#A78BFA` (= `primary-light`) | **Usar SIEMPRE en vez de `primary` cuando el texto/icono va SOBRE un fondo `primary-soft`** (ej. icono de `Category Row`, label de un chip/pill seleccionado, codigo de moneda seleccionado). Motivo: `primary` sobre `primary-soft` en modo oscuro da ~2.75:1, insuficiente incluso para texto grande/iconos (min. 3:1). Con `primary-on-soft` el contraste sube a ~5.5:1 en oscuro sin tocar `primary` ni `primary-soft` (que siguen usandose igual en cualquier otro contexto, ej. CTAs solidos, fondos tenues sin texto encima). En claro este token es identico a `primary` (~4.17:1 sobre `primary-soft`), asi que no cambia nada visualmente ahi — ese 4.17:1 pasa el umbral de 3:1 (icono/texto grande) pero NO el 4.5:1 de texto normal. Por eso, en textos de contenido chicos/normales (no decorativos) sobre `primary-soft`, subir el tamaño a ≥19px/700 (calificar como "texto grande") en vez de asumir que `primary-on-soft` alcanza. Excepcion valida solo cuando el texto es decorativo/redundante (ej. codigo de moneda "COP" dentro de un badge, cuando el nombre completo ya aparece al lado) — ahi el umbral de 3:1 aplica igual que a un icono. No copiar esa excepcion a texto que sea la unica fuente de esa informacion. **Tambien usar en vez de `primary` cuando el texto/icono va sobre `$surface`/`$background` planos** (no solo `primary-soft`) — hallazgo de Transacciones: `primary` crudo como texto sobre `$surface` da ~4.86:1 en claro (pasa raspando) pero cae a ~3.00:1 en oscuro (falla texto normal). Ejemplos: acciones "Todas"/"Ninguna" en headers de sheet, label activo de un `Segmented Control` cuando el color semantico es `primary` (ej. segmento "Transferencia"), montos/valores en `primary` puro. `primary-on-soft` sube esos casos a ~6:1 en oscuro sin cambiar nada en claro. |
 | `mint` | `#059669` | `#34D399` | Color de categoria (ej. Comida). Verificado a 3:1+ contra `mint-soft` en ambos temas. |
 | `mint-soft` | `#E6F7EF` | `#16321F` | Fondo tenue para `mint`. |
 | `sky` | `#2563EB` | `#4C9AFF` | Color de categoria (ej. Transporte). |
@@ -49,10 +49,13 @@
 | `text-secondary` | `#6B6980` | `#9A98B5` | Texto secundario/metadatos. |
 | `on-primary` | `#FFFFFF` (fijo) | — | Texto/iconos sobre superficies `primary`. Usar SIEMPRE solido, nunca traslucido (ver Accesibilidad). |
 | `income` | `#22C55E` | `#34D399` | Semantica: monto positivo/ingreso. Usado en Cuentas (deuda de tarjeta ya saldada, saldos positivos) ademas de Transacciones. |
+| `income-text` | `#166534` | `#34D399` (sin cambio) | **Usar en vez de `income` para texto de tamaño normal/mediano** (ej. `Amount Value` del formulario de Ingreso, 36-40px pero no calificando como "texto grande" por debajo de ~800 weight en algunos casos limite). Motivo: `income` (`#22C55E`) sobre `background` da solo ~2.07:1 en claro, muy por debajo de cualquier umbral WCAG. `income-text` calibrado a ~6.46:1 en claro; en oscuro `income` (`#34D399`) ya pasa por si solo asi que `income-text` reusa el mismo valor sin cambio. Mismo patron que `expense`/`expense-text`. |
+| `snackbar-action` | `#A78BFA` | `#5648C8` | **Texto de acción sobre el fondo invertido de `Snackbar`** (ej. "Deshacer"). Motivo: el primer intento uso `primary-light`, un hex fijo sin variante de tema (`#A78BFA` en ambos), que da buen contraste en claro (~6.23:1 sobre `$text-primary` claro) pero se rompe en oscuro (~1.5:1) porque `$text-primary` se invierte por tema y `primary-light` no. `snackbar-action` sí varia por tema: claro reusa el mismo `#A78BFA` (6.23:1), oscuro usa `#5648C8` (= `primary-deep` claro, 6.03:1 sobre `$text-primary` oscuro). Nunca reusar `primary-light` para texto — MASTER ya lo reserva solo para decoracion sin contenido encima. |
 | `expense` | `#DC2626` (fijo) | — | Semantica: alertas/montos negativos, deuda real (ej. tarjeta de credito en Cuentas). Deliberadamente NO se usa para "gasto" en tono neutral (ver Tono de marca abajo). |
 | `expense-soft` | `#FDE8E8` | `#3A1616` | Fondo tenue para `expense` (ej. badge "Sobrecupo" en Cuentas — verificar contraste caso a caso, en algunos pares no alcanza 4.5:1 con texto normal). |
 | `expense-text` | `#B91C1C` | `#F87171` | **Usar en vez de `expense` para texto/links destructivos de tamaño normal** (ej. "Eliminar cuenta" cuando se quiere un tratamiento discreto, no en negrita/tamaño grande). Motivo: `expense` (`#DC2626`, fijo) sobre `background` da ~4.38:1 en claro (falla el 4.5:1 de texto normal, solo pasa como "texto grande") y ~3.78:1 en oscuro (tampoco alcanza 4.5:1). `expense-text` esta calibrado por tema — mas oscuro en claro (~5.87:1), mas claro en oscuro (~6.6:1) — para que un link de eliminar chico/normal cumpla contraste en ambos temas sin depender de agrandar el texto. `expense` sigue siendo el rojo para botones solidos, badges e iconos grandes (ahi sigue pasando 3:1 sin problema); `expense-text` es solo para texto pequeno. |
 | `scrim` | `#00000066` (fijo) | — | Overlay semitransparente detras de bottom sheets/modales. |
+| `primary-on-soft-strong` | `#5648C8` (= `primary-deep` claro) | `#A78BFA` (= `primary-on-soft` oscuro, sin cambio ahi) | Excepcion de contraste para texto/icono **pequeno** (no texto grande) sobre `primary-soft` cuando `primary-on-soft` no alcanza 4.5:1 a ese tamano. Caso de uso: label del `Category Chip` seleccionado (13px/700 sobre `primary-soft`/`background`, `primary-on-soft` daba ~4.2-4.4:1; con este token sube a 6.04:1 en claro). Usar solo cuando subir el tamano a ≥19px/700 (la solucion general documentada para `primary-on-soft`) no es viable por el tamano del contenedor — no reemplazar `primary-on-soft` por defecto, es una excepcion puntual. |
 
 `mint`/`sky`/`peach` en modo claro fueron oscurecidos a proposito respecto a su primer intento (`#22C55E`/`#4C9AFF`/`#FF8A65`) — esos valores originales fallaban el contraste minimo de icono/grafico (3:1 WCAG) contra su propio `-soft`. Ver seccion Accesibilidad. Los 4 colores agregados en la ampliacion de la paleta decorativa (`coral`, `amber`, `teal`, `indigo`) se calibraron con la misma metodologia, verificando contraste ≥3:1 contra su propio `-soft` en ambos temas antes de fijar el hex final.
 
@@ -126,6 +129,14 @@ Header de subpantalla (no es un destino de tab): boton "atras" (o "x" para modal
 ### Button/Primary y Button/Secondary
 CTA principal (fill `$primary`) y secundario (outline, `$surface` + `$border`). Icono opcional a la izquierda (`enabled:false` para ocultarlo, ej. en `Button/Secondary` de "Cancelar").
 
+### Status Bar/Android y Status Bar/iOS
+Barra de estado simulada (hora + iconos de senal/wifi/bateria) que corona cada mockup de pantalla. Dos variantes intercambiables, mismo chrome externo (`height:62`, `padding:[16,24,0,24]`, `width` override a `fill_container` por instancia).
+
+- **Status Bar/Android**: hora alineada a la izquierda + iconos lucide `signal`/`wifi`/`battery-full` a la derecha (`$text-primary`, 16x16, gap 6). Variante por defecto en todas las instancias existentes.
+- **Status Bar/iOS**: hora centrada (spacer invisible de 60px a la izquierda balanceando el ancho del grupo de iconos de la derecha, texto con `textAlign:center` en un contenedor `fill_container`) + iconos lucide `signal-high` (barras, estilo Apple)/`wifi`/`battery-full`.
+- **Overrides tipicos:** ninguno mas alla de `width:"fill_container"` al instanciar dentro de una pantalla — el contenido (hora "9:41", iconos) es fijo por convencion de mockup.
+- Convertido a componente reusable (antes duplicado a mano en ~65 frames) — todas las instancias existentes usan `Status Bar/Android`; `Status Bar/iOS` queda disponible sin usar todavia, para cuando se quiera mostrar contexto iOS especificamente.
+
 ### Form Field
 Campo de formulario: label + caja de input (icono opcional + valor/placeholder) + texto de error opcional (`enabled:false` por defecto, fill `$expense`).
 
@@ -184,10 +195,11 @@ Fila de selector de moneda: Icon Wrap (codigo de 3 letras) + Label + Check (visi
 ### Regla tecnica de Pencil: overrides anidados en instancias
 Al hacer `descendants` sobre una instancia que a su vez contiene otra instancia anidada (ej. `Sheet Buttons Row` conteniendo un `Button/Primary`), un `descendants` anidado dos niveles (`descendants:{"hijoId":{descendants:{...}}}`) NO se aplica sobre nodos ya existentes. Usar en su lugar `Update("instancia/hijoId/nietoId", {...})` con el path explicito completo. Los overrides anidados en un solo nivel SOLO funcionan cuando van dentro de un reemplazo completo de `type` (ej. cambiar que componente referencia un slot), no para modificar props de un descendant ya instanciado.
 
-### Segmented Control
-Selector de 3 opciones tipo iOS (usado para Gasto/Ingreso/Transferencia en el formulario de transaccion). El segmento activo tiene fondo `$surface` y texto en su color semantico (`$expense`/`$income`/`$primary`); los inactivos son transparentes con texto `$text-secondary`.
+### Segmented Control (`hFu41`)
+Selector de 3 opciones tipo iOS (usado para Gasto/Ingreso/Transferencia en el formulario de transaccion). El segmento activo tiene fondo `$surface` y texto en su color semantico (`$text-primary` gasto neutral / `$income` ingreso / `$primary` transferencia — nunca `$expense` rojo, mismo criterio que `Transaction Row`); los inactivos son transparentes con texto `$text-secondary`.
 
 - Al reusar para otro contexto de 3 opciones, mantener el patron fondo-solido-en-activo — no introducir un cuarto tratamiento visual.
+- **Tap target:** el padding vertical interno de cada segmento se ajusto a `[14,8]` para que el area tocable real sea 44px de alto (antes el contenedor medía 44px pero el padding dejaba solo 36px tocables — hallazgo de `ui-ux-reviewer` en el formulario de Transacciones, corregido a nivel de componente).
 
 ### Account Card
 Fila de cuenta: icono + nombre + tipo de cuenta + saldo (rojo/`$expense` si es negativo, ej. deuda de tarjeta de credito; `$text-primary` si es positivo).
@@ -197,8 +209,11 @@ Fila de transaccion individual: icono de categoria + descripcion + "cuenta . fec
 
 - Distinto de `Category Row`: no tiene barra de progreso ni porcentaje, es una transaccion puntual no un agregado por categoria.
 
-### Category Chip
+### Category Chip (`mK8oI`)
 Chip pequeño reusado en dos contextos: selector de tipo de cuenta (Agregar Cuenta) y selector/gestion de categoria (Nueva Transaccion, Categorias). Icono en circulo + label debajo, estado seleccionado = fondo `-soft` + borde solido del color de la categoria; no seleccionado = fondo `$muted`, sin borde.
+
+- **Label:** 13px/700 (subido desde 11px/600 — es contenido primario, el nombre de la categoria, no metadata; MASTER reserva 11-12px solo para metadata).
+- **Contraste en seleccionado:** usar `$primary-on-soft-strong` en vez de `$primary-on-soft` para el label (a 13px, `primary-on-soft` sobre `primary-soft`/`background` no alcanza 4.5:1 — ver fila de la tabla de paleta arriba).
 
 ---
 

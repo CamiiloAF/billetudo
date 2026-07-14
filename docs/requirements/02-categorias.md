@@ -59,3 +59,44 @@ Como usuario nuevo quiero empezar con un set de categorías comunes en español 
 - No existen categorías "maestras" bloqueadas ni no editables — diferenciador explícito frente a Wallet.
 - Una transacción de tipo `transfer` no debería requerir categoría (las transferencias mueven dinero entre cuentas propias, no son gasto ni ingreso real) — validar en el formulario de transacciones.
 - El `kind` de la categoría debe ser coherente con el `type` de la transacción que la usa (una transacción `income` no debería poder elegir una categoría `expense` y viceversa).
+- Las categorías "💳 Deudas" (gasto) y "💳 Cobro de préstamos" (ingreso) del set semilla son **opcionales**, no requeridas: una transacción con `debtId` asignado se identifica y excluye de los totales de ingreso/gasto por el propio `debtId` (ver `06-deudas.md` y `08-graficas-informes.md`), no por su categoría. Sirven solo para que el usuario organice/filtre sus abonos si tiene varias deudas.
+
+## Apéndice: categorías semilla (onboarding, HU-06)
+
+Set semilla ofrecido en el onboarding (`12-onboarding.md` HU-03). Diferenciadores explícitos frente a Wallet: remesas como categoría de primera clase (relevancia LatAm), ingreso de freelance/negocio propio separado de salario, suscripciones como categoría propia, y vehículo consolidado (combustible + mantenimiento + seguro + impuestos) en una sola raíz en vez de fragmentado. Íconos/colores deben salir de las variables de `billetudo.pen`, nunca hardcodeados.
+
+### Gastos (`kind = expense`)
+
+| Categoría raíz | Subcategorías |
+|---|---|
+| Comida y bebida | Mercado, Restaurantes y domicilios, Café y snacks |
+| Transporte | Transporte público, Taxi/App |
+| Vehículo | Combustible, Mantenimiento y reparaciones, Seguro del vehículo, Impuestos y matrícula (SOAT, revisión, etc.), Parqueadero y peajes |
+| Vivienda | Arriendo/Hipoteca, Servicios públicos, Internet y telefonía, Mantenimiento del hogar |
+| Salud | Medicina y farmacia, Consultas médicas, Seguro médico |
+| Seguros | Seguro de vida, Seguro de hogar |
+| Suscripciones | Streaming, Software y apps, Membresías |
+| Compras personales | Ropa y calzado, Cuidado personal, Tecnología |
+| Ocio | Salidas y bares, Cine y eventos, Hobbies, Viajes |
+| Educación | Matrícula y pensión, Cursos y libros |
+| Familia y mascotas | Hijos, Mascotas |
+| Deudas | Pago tarjeta de crédito, Pago de préstamos, Intereses |
+| Comisiones y cargos bancarios | — |
+| Impuestos y trámites | — |
+| Remesas enviadas | — |
+| Regalos y donaciones | — |
+| Otros gastos | — |
+
+### Ingresos (`kind = income`)
+
+| Categoría raíz | Subcategorías |
+|---|---|
+| Salario | — |
+| Freelance / Independiente | — |
+| Negocio propio | — |
+| Remesas recibidas | — |
+| Inversiones y rendimientos | — |
+| Cobro de préstamos | — |
+| Reembolsos | — |
+| Regalos recibidos | — |
+| Otros ingresos | — |
