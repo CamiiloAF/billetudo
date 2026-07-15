@@ -17,7 +17,7 @@ Como usuario quiero crear una cuenta indicando nombre, tipo, moneda y saldo inic
 **Criterios de aceptación:**
 - Puedo elegir un `type`: efectivo, banco, tarjeta de crédito, ahorros, inversión, otro (`AccountType`).
 - El nombre es obligatorio (1-100 caracteres).
-- Elijo una moneda ISO-4217 (ej. COP, USD, MXN) al crear la cuenta; no cambia después sin flujo explícito de conversión (ver `10-multi-moneda.md`).
+- Elijo una moneda ISO-4217 (ej. COP, USD, MXN) al crear la cuenta; no cambia después sin flujo explícito de conversión (ver `11-multi-moneda.md`).
 - El saldo inicial se guarda en centavos (`initialBalanceMinor`), nunca como decimal.
 - Puedo asignar ícono y color para identificarla visualmente en listas y gráficas.
 - **Campos opcionales de identificación** (todos los tipos): `institution` (nombre de la entidad, ej. "Bancolombia", "Nu"; texto libre 0-100) y número de cuenta (ver HU-03).
@@ -70,7 +70,7 @@ Como usuario quiero seleccionar una o varias cuentas y ver sus transacciones en 
 - Puedo seleccionar entre 1 y N cuentas (incluida una opción "todas"). Con una sola cuenta seleccionada, es la vista de cuenta individual de siempre.
 - La lista muestra las transacciones de todas las cuentas seleccionadas ordenadas por fecha (más reciente primero), indicando a qué cuenta pertenece cada una.
 - Se muestra un **saldo combinado** = suma de los saldos de las cuentas seleccionadas.
-  - **Edge case multi-moneda:** si las cuentas seleccionadas tienen monedas distintas, no se suma un total único; se muestra un subtotal por moneda (la conversión se define en `10-multi-moneda.md`).
+  - **Edge case multi-moneda:** si las cuentas seleccionadas tienen monedas distintas, no se suma un total único; se muestra un subtotal por moneda (la conversión se define en `11-multi-moneda.md`).
 - **Edge case transferencias internas:** una transferencia entre dos cuentas ambas seleccionadas aparece una sola vez, marcada como movimiento interno, y **no** altera el saldo combinado (sale de una y entra a otra dentro del mismo grupo).
 - La selección de cuentas persiste entre sesiones para no tener que re-elegirla cada vez (comportamiento por defecto configurable).
 - Las cuentas archivadas no aparecen en el selector por defecto, pero sus transacciones históricas sí se incluyen si estaban en un grupo previamente guardado (coherente con HU-07).

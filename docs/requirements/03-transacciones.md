@@ -16,7 +16,7 @@ Como usuario quiero registrar un gasto indicando cuenta, categoría, monto, fech
 - Campos: `accountId` (obligatorio), `categoryId` (opcional, debe ser `kind = expense`), `amountMinor` (obligatorio, entero positivo en centavos), `currency`, `date` (obligatoria, default hoy), `note` (opcional).
 - `type = expense`, `source = manual` por defecto.
 - El saldo de la cuenta se refleja de inmediato tras guardar.
-- El monto se captura en la moneda de la cuenta seleccionada por defecto; ver `10-multi-moneda.md` si se registra en otra moneda.
+- El monto se captura en la moneda de la cuenta seleccionada por defecto; ver `11-multi-moneda.md` si se registra en otra moneda.
 
 **Teclado numérico anclado — regla de interacción (aplica a los 3 tipos, HU-01/02/03):**
 - El teclado numérico personalizado (con operadores básicos `+ − × ÷ =`) vive anclado a la parte inferior de la pantalla, nunca en medio del formulario — evita el esfuerzo de alcance del pulgar que tendría en otra posición.
@@ -37,7 +37,7 @@ Como usuario quiero mover dinero de una cuenta a otra (ej. de banco a efectivo),
 - `type = transfer`, requiere `accountId` (origen) y `transferAccountId` (destino), ambos obligatorios y distintos entre sí.
 - No requiere `categoryId` (una transferencia no es gasto ni ingreso real).
 - Afecta el saldo de ambas cuentas (resta en origen, suma en destino) pero **no** cuenta como gasto ni ingreso en gráficas de flujo/estructura de gasto.
-- Si origen y destino tienen monedas distintas, ver `10-multi-moneda.md` para la tasa aplicada.
+- Si origen y destino tienen monedas distintas, ver `11-multi-moneda.md` para la tasa aplicada.
 
 ### HU-04 — Editar transacción
 Como usuario quiero corregir cualquier campo de una transacción ya registrada, para arreglar errores de captura.
@@ -77,7 +77,7 @@ Como usuario quiero buscar transacciones por texto (nota/categoría) y filtrar p
 - Combinable con el resto de filtros de HU-06 (categoría, tipo, fechas, etiqueta) sin resetear la selección de cuentas al ajustar otro filtro.
 - Limpiar cuentas seleccionadas es una acción directa desde el chip (ej. icono "x" o "Todas" en el propio sheet), sin tener que deseleccionar una por una.
 - Una transferencia aparece en el resultado si la cuenta filtrada es origen **o** destino (`accountId` o `transferAccountId` coincide con alguna cuenta seleccionada) — auditar una cuenta debe mostrar todo lo que la movió, no solo la mitad del movimiento.
-- Si las cuentas seleccionadas tienen monedas distintas, no se muestra un total sumado del periodo (sumar monedas distintas como si fueran la misma unidad es incorrecto); se muestra el total desglosado por cuenta/moneda. Conversión a moneda base queda fuera de alcance de esta HU — ver `10-multi-moneda.md`.
+- Si las cuentas seleccionadas tienen monedas distintas, no se muestra un total sumado del periodo (sumar monedas distintas como si fueran la misma unidad es incorrecto); se muestra el total desglosado por cuenta/moneda. Conversión a moneda base queda fuera de alcance de esta HU — ver `11-multi-moneda.md`.
 
 **Filtro por fecha — navegación rápida por periodo (HU-06b):**
 - Acceso en máximo un toque desde el listado (chip/botón "Fecha" en la barra de filtros, igual que el resto de HU-06).
@@ -107,7 +107,7 @@ Como usuario quiero ver el detalle completo de una transacción (cuenta, categor
 ## Reglas de negocio y edge cases
 
 - `amountMinor` siempre entero positivo; el signo/dirección del efecto en el saldo lo determina `type`, nunca un monto negativo.
-- Una transacción `transfer` nunca debe aparecer en el desglose de "estructura de gasto" ni sumar al total de gastos del periodo — ver `08-graficas-informes.md`.
-- Lo mismo aplica a una transacción con `debtId` asignado: no cuenta en los totales de ingreso/gasto de gráficas/informes (ver `06-deudas.md`), aunque a diferencia de `transfer` sí puede llevar `categoryId` opcional para organización propia del usuario.
+- Una transacción `transfer` nunca debe aparecer en el desglose de "estructura de gasto" ni sumar al total de gastos del periodo — ver `09-graficas-informes.md`.
+- Lo mismo aplica a una transacción con `debtId` asignado: no cuenta en los totales de ingreso/gasto de gráficas/informes (ver `07-deudas.md`), aunque a diferencia de `transfer` sí puede llevar `categoryId` opcional para organización propia del usuario.
 - `source` se fija automáticamente por el flujo de entrada (en Fase 0 solo `manual` e `imported` existen realmente; los demás valores del enum quedan reservados para Fase 2/4).
 - Al eliminar una cuenta o categoría con transacciones asociadas, resolver primero según `01-cuentas.md` / `02-categorias.md` antes de permitir el borrado definitivo.

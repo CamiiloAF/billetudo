@@ -5,14 +5,14 @@ Requerimientos funcionales de la capa gratuita y completa de la app (Nivel 0 seg
 1. [Cuentas](01-cuentas.md)
 2. [Categorías](02-categorias.md)
 3. [Transacciones](03-transacciones.md)
-4. [Presupuestos](04-presupuestos.md)
-5. [Metas de ahorro](05-metas.md)
-6. [Deudas y préstamos](06-deudas.md)
-7. [Recurrentes](07-recurrentes.md)
-8. [Gráficas e informes esenciales](08-graficas-informes.md)
-9. [Import/Export CSV](09-import-export.md)
-10. [Multi-moneda](10-multi-moneda.md)
-11. [Auth + Sync](11-auth-sync.md)
+4. [Auth + Sync](04-auth-sync.md)
+5. [Presupuestos](05-presupuestos.md)
+6. [Metas de ahorro](06-metas.md)
+7. [Deudas y préstamos](07-deudas.md)
+8. [Recurrentes](08-recurrentes.md)
+9. [Gráficas e informes esenciales](09-graficas-informes.md)
+10. [Import/Export CSV](10-import-export.md)
+11. [Multi-moneda](11-multi-moneda.md)
 12. [Onboarding](12-onboarding.md)
 
-Ninguna de estas features puede quedar bloqueada tras anuncio o pago (regla de Nivel 0, `CLAUDE.md`). La única excepción documentada es dentro de **Gráficas e informes**: el set esencial es Nivel 0, pero las vistas avanzadas son Nivel 1/2 — ver el detalle en `08-graficas-informes.md`.
+Ninguna de estas features puede quedar bloqueada tras anuncio o pago (regla de Nivel 0, `CLAUDE.md`). La única excepción documentada es dentro de **Gráficas e informes**: el set esencial es Nivel 0, pero las vistas avanzadas son Nivel 1/2 — ver el detalle en `09-graficas-informes.md`.

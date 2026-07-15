@@ -37,7 +37,7 @@ Como usuario quiero ver un balance total consolidado aunque tenga cuentas en var
 
 **Criterios de aceptación:**
 - El usuario define una "moneda base" para reportes agregados (configuración de la app).
-- Las gráficas de balance/patrimonio (`08-graficas-informes.md` HU-02) convierten cada cuenta a la moneda base usando la tasa cacheada más reciente, indicando visualmente que es una cifra aproximada/convertida.
+- Las gráficas de balance/patrimonio (`09-graficas-informes.md` HU-02) convierten cada cuenta a la moneda base usando la tasa cacheada más reciente, indicando visualmente que es una cifra aproximada/convertida.
 - Las gráficas que no agregan entre monedas (ej. estructura de gasto de una sola cuenta) no requieren conversión.
 
 ### HU-05 — Elegir moneda de una cuenta al crearla

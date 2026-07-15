@@ -15,7 +15,7 @@ Como usuario quiero ver una gráfica de ingresos vs. gastos a lo largo del tiemp
 
 **Criterios de aceptación:**
 - Excluye transacciones `type = transfer` del cálculo (no son ni ingreso ni gasto real).
-- Excluye también transacciones con `debtId` asignado (prestar/cobrar un préstamo o abonar una deuda no es ingreso ni gasto real — ver `06-deudas.md`).
+- Excluye también transacciones con `debtId` asignado (prestar/cobrar un préstamo o abonar una deuda no es ingreso ni gasto real — ver `07-deudas.md`).
 - Periodo por defecto: últimos 6 o 12 meses, agregado por mes; el usuario puede acotar el rango.
 - Es parte del **set esencial gratis** (Nivel 0), sin límite de vistas ni de rango de fechas.
 
@@ -24,7 +24,7 @@ Como usuario quiero ver la evolución de mi saldo total (suma de todas las cuent
 
 **Criterios de aceptación:**
 - Suma los saldos de todas las cuentas no archivadas (u ofrece incluir archivadas como opción) en cada punto del tiempo, considerando `initialBalanceMinor` + transacciones acumuladas hasta esa fecha.
-- Multi-moneda: se normaliza a una moneda base para el gráfico agregado (ver `10-multi-moneda.md`); se indica claramente que es una conversión aproximada según tasa cacheada.
+- Multi-moneda: se normaliza a una moneda base para el gráfico agregado (ver `11-multi-moneda.md`); se indica claramente que es una conversión aproximada según tasa cacheada.
 - Es parte del **set esencial gratis** (Nivel 0).
 
 ### HU-03 — Ver estructura de gasto por categoría
@@ -39,7 +39,7 @@ Como usuario quiero ver un desglose (ej. gráfica de dona/barras) de en qué cat
 Como usuario quiero una vista resumen que combine el estado de mis presupuestos activos y mis metas, para revisar mi situación financiera en segundos.
 
 **Criterios de aceptación:**
-- Reutiliza los cálculos de `04-presupuestos.md` (HU-03) y `05-metas.md` (HU-04); esta feature solo los presenta agregados en un dashboard.
+- Reutiliza los cálculos de `05-presupuestos.md` (HU-03) y `06-metas.md` (HU-04); esta feature solo los presenta agregados en un dashboard.
 - Es parte del **set esencial gratis** (Nivel 0).
 
 ### HU-05 — Exportar una gráfica como imagen

@@ -59,7 +59,7 @@ Como usuario nuevo quiero empezar con un set de categorías comunes en español 
 - No existen categorías "maestras" bloqueadas ni no editables — diferenciador explícito frente a Wallet.
 - Una transacción de tipo `transfer` no debería requerir categoría (las transferencias mueven dinero entre cuentas propias, no son gasto ni ingreso real) — validar en el formulario de transacciones.
 - El `kind` de la categoría debe ser coherente con el `type` de la transacción que la usa (una transacción `income` no debería poder elegir una categoría `expense` y viceversa).
-- Las categorías "💳 Deudas" (gasto) y "💳 Cobro de préstamos" (ingreso) del set semilla son **opcionales**, no requeridas: una transacción con `debtId` asignado se identifica y excluye de los totales de ingreso/gasto por el propio `debtId` (ver `06-deudas.md` y `08-graficas-informes.md`), no por su categoría. Sirven solo para que el usuario organice/filtre sus abonos si tiene varias deudas.
+- Las categorías "💳 Deudas" (gasto) y "💳 Cobro de préstamos" (ingreso) del set semilla son **opcionales**, no requeridas: una transacción con `debtId` asignado se identifica y excluye de los totales de ingreso/gasto por el propio `debtId` (ver `07-deudas.md` y `09-graficas-informes.md`), no por su categoría. Sirven solo para que el usuario organice/filtre sus abonos si tiene varias deudas.
 
 ## Apéndice: categorías semilla (onboarding, HU-06)
 
