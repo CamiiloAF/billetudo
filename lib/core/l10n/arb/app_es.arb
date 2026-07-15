@@ -1,0 +1,29 @@
+{
+  "@@locale": "es",
+  "appTitle": "Billetudo",
+  "@appTitle": {
+    "description": "Nombre visible de la app."
+  },
+  "bootstrapReady": "Base técnica lista. Las pantallas llegan con cada feature.",
+  "@bootstrapReady": {
+    "description": "Placeholder de arranque, visible hasta que exista el shell real."
+  },
+  "commonSave": "Guardar",
+  "@commonSave": {},
+  "commonCancel": "Cancelar",
+  "@commonCancel": {},
+  "commonDelete": "Eliminar",
+  "@commonDelete": {},
+  "commonEdit": "Editar",
+  "@commonEdit": {},
+  "commonRetry": "Reintentar",
+  "@commonRetry": {},
+  "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
+  "@errorUnexpected": {
+    "description": "Mensaje genérico para UnexpectedFailure."
+  },
+  "errorDatabase": "No pudimos guardar los cambios. Intenta de nuevo.",
+  "@errorDatabase": {},
+  "errorSecureStorage": "No pudimos acceder al almacenamiento seguro del dispositivo.",
+  "@errorSecureStorage": {}
+}

@@ -1,5 +1,5 @@
-name: finance_app
-description: App de finanzas personales local-first (Flutter). Nombre placeholder — renómbralo.
+name: billetudo
+description: Billetudo — app de finanzas personales local-first (Flutter) para el mercado hispanohablante.
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -13,10 +13,29 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
   # --- Estado (decisión: bloc/cubit) ---
   flutter_bloc: ^8.1.6
   bloc: ^8.1.4
   equatable: ^2.0.5
+
+  # --- Inyección de dependencias (get_it + injectable codegen) ---
+  get_it: ^7.7.0
+  injectable: ^2.4.4
+
+  # --- Navegación ---
+  go_router: ^14.2.7
+
+  # --- Programación funcional (Either<Failure,T> en la capa domain) ---
+  fpdart: ^1.1.0
+
+  # --- Crash reporting (detrás de interfaz CrashReporter; DSN por dart-define) ---
+  sentry_flutter: ^8.9.0
+
+  # --- Almacenamiento seguro (número de cuenta cifrado, Keychain/Keystore) ---
+  flutter_secure_storage: ^10.3.1
 
   # --- Base de datos local (offline-first, fuente de verdad) ---
   drift: ^2.18.0
@@ -32,25 +51,37 @@ dependencies:
   # --- Gráficas ---
   fl_chart: ^0.68.0
 
+  # --- Tipografía (Plus Jakarta Sans, ver design-system MASTER.md) ---
+  # TODO(offline): empaquetar los .ttf en assets/fonts para uso 100% offline
+  # sin fetch en el primer arranque (google_fonts los usa si están presentes).
+  google_fonts: ^6.2.1
+
   # --- Monetización (rewarded ads + suscripciones) ---
   google_mobile_ads: ^5.1.0
-  purchases_flutter: ^6.29.0
+  purchases_flutter: ^10.4.1
 
   # --- Captura sin fricción ---
   speech_to_text: ^6.6.2
   google_mlkit_text_recognition: ^0.13.0
 
   # --- Utilidades ---
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
 
-  # Codegen de Drift
+  # Reglas propias del proyecto (ver docs/convenciones-de-codigo.md).
+  # `dart run custom_lint` las corre en CI; el IDE las muestra en vivo.
+  custom_lint: ^0.8.1
+  billetudo_lints:
+    path: tools/billetudo_lints
+
+  # Codegen de Drift + injectable
   drift_dev: ^2.18.0
   build_runner: ^2.4.11
+  injectable_generator: ^2.6.2
 
   # Testing (piramide: unit + cubit + mocks + e2e)
   bloc_test: ^9.1.7

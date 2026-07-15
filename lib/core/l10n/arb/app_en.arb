@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appTitle": "Billetudo",
+  "bootstrapReady": "Technical foundation ready. Screens arrive with each feature.",
+  "commonSave": "Save",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonRetry": "Retry",
+  "errorUnexpected": "Something went wrong. Please try again.",
+  "errorDatabase": "We couldn't save your changes. Please try again.",
+  "errorSecureStorage": "We couldn't access the device's secure storage."
+}
