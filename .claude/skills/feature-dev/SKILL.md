@@ -1,6 +1,6 @@
 ---
 name: feature-dev
-description: Entrega una feature completa de finance_app en una sola corrida multi-agente - triage automatico del esfuerzo, implementacion Clean Architecture, tests (unit/widget/Patrol) y review escalado al riesgo. Un solo artefacto de salida en docs/dev-runs/.
+description: Entrega una feature completa de billetudo en una sola corrida multi-agente - triage automatico del esfuerzo, implementacion Clean Architecture, tests (unit/widget/Patrol) y review escalado al riesgo. Un solo artefacto de salida en docs/dev-runs/.
 ---
 
 # feature-dev

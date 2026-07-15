@@ -1,6 +1,6 @@
 # Pagina: Categorias
 
-Sobreescribe/complementa `design-system/finance-app/MASTER.md`. Fuente real: `billetudo.pen`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
 **Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`.
 
@@ -80,7 +80,7 @@ Se exploraron y descartaron 2 variantes con catalogo ampliado (grilla+scroll sin
 
 ## Componentes reutilizables nuevos de esta feature
 
-Documentados en detalle (estructura + overrides) deben agregarse a `design-system/finance-app/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios), `Parent Category Row` (fila del selector de categoria padre).
+Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios), `Parent Category Row` (fila del selector de categoria padre).
 
 ## Tokens de accesibilidad — hallazgo nuevo de esta feature
 

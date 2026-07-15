@@ -1,6 +1,6 @@
 # Pagina: Cuentas
 
-Sobreescribe/complementa `design-system/finance-app/MASTER.md`. Fuente real: `billetudo.pen`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
 **Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`.
 
@@ -95,7 +95,7 @@ Decision: **long-press directo** sobre una fila (no un modo "Editar" separado; A
 
 ## Componentes reutilizables nuevos de esta feature
 
-Documentados en detalle (estructura + overrides) en `design-system/finance-app/MASTER.md`: `Credit Card Account Row`, `Info Row`, `Bottom Sheet Base`, `Balance Card Hero`, `Empty State`, `Sheet Buttons Row`, `Skeleton Row`, `Archived Account Row`, `Day Cell`, `Currency Row`.
+Documentados en detalle (estructura + overrides) en `design-system/billetudo/MASTER.md`: `Credit Card Account Row`, `Info Row`, `Bottom Sheet Base`, `Balance Card Hero`, `Empty State`, `Sheet Buttons Row`, `Skeleton Row`, `Archived Account Row`, `Day Cell`, `Currency Row`.
 
 ## Tokens de accesibilidad nuevos (documentados en `MASTER.md`)
 

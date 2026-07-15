@@ -1,6 +1,6 @@
 ---
 name: drift-schema-change
-description: Guia y ejecuta un cambio seguro al esquema Drift de finance_app (nueva tabla/columna, schemaVersion, migracion, regeneracion de codigo, recordatorio de Supabase/PowerSync).
+description: Guia y ejecuta un cambio seguro al esquema Drift de billetudo (nueva tabla/columna, schemaVersion, migracion, regeneracion de codigo, recordatorio de Supabase/PowerSync).
 ---
 
 # drift-schema-change

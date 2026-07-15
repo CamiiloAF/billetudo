@@ -1,6 +1,6 @@
 # Página: Transacciones
 
-Sobreescribe/complementa `design-system/finance-app/MASTER.md`. Fuente real: `billetudo.pen`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
 **Estado:** ✅ **FEATURE CERRADA — Las 8 HU de `docs/requirements/03-transacciones.md` tienen cobertura de diseño 100% en AMBOS temas (claro y oscuro), auditadas y corregidas.** Lista + 4 estados, Sheet de fecha, Formulario x3 tipos x2 estados, Detalle x3 tipos (con Nota y Etiquetas consistentes en los 3), Eliminar+Snackbar, y los 7 filtros/modales (cuenta, categoría con jerarquía raíz/subcategoría, tipo, etiqueta, rango personalizado, nueva etiqueta, aviso de impacto al editar) — todo construido, componentizado y reorganizado en el canvas al patrón de Cuentas (4 filas, sin banda decorativa, título "TRANSACCIONES"/"TRANSACCIONES — OSCURO").
 

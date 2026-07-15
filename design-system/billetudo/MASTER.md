@@ -260,7 +260,7 @@ Fase 1 (`docs/Plan_Monetizacion_y_Tecnico.md`, seccion Roadmap): registro manual
 
 ### Lote 1 — Cuentas, Transacciones y Categorias (completo)
 
-Detalle completo en `design-system/finance-app/pages/`. Resumen:
+Detalle completo en `design-system/billetudo/pages/`. Resumen:
 
 | Area | Pantallas | Estados | Doc |
 |------|-----------|---------|-----|

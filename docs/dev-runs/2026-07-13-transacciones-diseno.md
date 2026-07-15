@@ -1,6 +1,6 @@
 # Sesión de diseño — Transacciones (2026-07-13)
 
-Cierre de sesión: qué se hizo, decisiones tomadas, y qué falta para continuar. Fuente real del diseño sigue siendo `billetudo.pen`; este documento es un mapa de la sesión, no reemplaza `design-system/finance-app/pages/transacciones.md` (spec vigente) ni `docs/requirements/03-transacciones.md` (HUs).
+Cierre de sesión: qué se hizo, decisiones tomadas, y qué falta para continuar. Fuente real del diseño sigue siendo `billetudo.pen`; este documento es un mapa de la sesión, no reemplaza `design-system/billetudo/pages/transacciones.md` (spec vigente) ni `docs/requirements/03-transacciones.md` (HUs).
 
 ## 1. Requisitos refinados (`docs/requirements/03-transacciones.md`)
 
@@ -12,7 +12,7 @@ Cierre de sesión: qué se hizo, decisiones tomadas, y qué falta para continuar
 - Se exploraron 4 variantes (V1 chips-scroll+agrupado, V2 filtro-único+lista-continua, V3 chip-cuenta-protagonista+airy, V4 mezcla V1+V3).
 - **Ganadora: V4**, nodo `B3GGa`, renombrado a **"Movimientos - Final (Claro)"**. Variantes descartadas ya borradas del canvas.
 - Auditada por `ui-ux-reviewer` y corregida: contraste del Account Chip (label subido a 19px/700), chip de filtro por Etiqueta agregado (faltaba, lo exige HU-06).
-- Documentada en `design-system/finance-app/pages/transacciones.md`.
+- Documentada en `design-system/billetudo/pages/transacciones.md`.
 - **Pendiente:** estados vacío/carga/error (solo existe "con datos"); tema oscuro (se hace al final, cuando toda la feature esté aprobada en claro, no solo esta pantalla).
 
 ## 3. Formulario Nueva/Editar transacción — **EN EXPLORACIÓN, sin aprobación final**

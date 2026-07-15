@@ -1,6 +1,6 @@
 export const meta = {
   name: 'feature-scaffold',
-  description: 'Genera el boilerplate Clean Architecture (domain/data/presentation) para una nueva feature de finance_app, capa por capa, y verifica el resultado',
+  description: 'Genera el boilerplate Clean Architecture (domain/data/presentation) para una nueva feature de billetudo, capa por capa, y verifica el resultado',
   phases: [
     { title: 'Domain' },
     { title: 'Data' },

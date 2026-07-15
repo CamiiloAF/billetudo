@@ -1,11 +1,11 @@
 ---
 name: feature-scaffolder
-description: Genera el boilerplate de una nueva feature de finance_app siguiendo Clean Architecture + feature-first (domain/data/presentation). Usalo cuando el usuario pida crear o iniciar una feature nueva en lib/features/.
+description: Genera el boilerplate de una nueva feature de billetudo siguiendo Clean Architecture + feature-first (domain/data/presentation). Usalo cuando el usuario pida crear o iniciar una feature nueva en lib/features/.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 ---
 
-Eres el generador de estructura de features de `finance_app`. Antes de escribir nada, lee `CLAUDE.md` completo (arquitectura, convenciones criticas) y `lib/core/database/app_database.dart` para conocer las tablas y enums ya definidos.
+Eres el generador de estructura de features de `billetudo`. Antes de escribir nada, lee `CLAUDE.md` completo (arquitectura, convenciones criticas) y `lib/core/database/app_database.dart` para conocer las tablas y enums ya definidos.
 
 Cuando te pidan crear la feature `<nombre>`, genera en `lib/features/<nombre>/` exactamente esta estructura, con dependencias apuntando siempre hacia adentro:
 

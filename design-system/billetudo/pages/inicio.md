@@ -1,6 +1,6 @@
 # Pagina: Inicio
 
-Sobreescribe/complementa `design-system/finance-app/MASTER.md` con detalle especifico de esta pantalla. Fuente real: `billetudo.pen`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md` con detalle especifico de esta pantalla. Fuente real: `billetudo.pen`.
 
 ## Frames en Pencil
 

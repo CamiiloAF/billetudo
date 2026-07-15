@@ -1,6 +1,6 @@
 ---
 name: tier0-check
-description: Checklist de cumplimiento de negocio y legal de finance_app antes de cerrar una feature (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, borrado de cuenta, disclaimers de IA, tono positivo).
+description: Checklist de cumplimiento de negocio y legal de billetudo antes de cerrar una feature (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, borrado de cuenta, disclaimers de IA, tono positivo).
 ---
 
 # tier0-check

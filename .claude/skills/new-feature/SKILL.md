@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: Crea la estructura Clean Architecture (domain/data/presentation) para una nueva feature de finance_app en lib/features/<nombre>/, con archivos base listos para editar.
+description: Crea la estructura Clean Architecture (domain/data/presentation) para una nueva feature de billetudo en lib/features/<nombre>/, con archivos base listos para editar.
 ---
 
 # new-feature

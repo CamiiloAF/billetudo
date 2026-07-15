@@ -1,11 +1,11 @@
 ---
 name: drift-migration-helper
-description: Ayuda a anadir o modificar tablas/columnas en el esquema Drift de finance_app de forma segura (schemaVersion, migraciones, paridad con Supabase, regeneracion de codigo). Usalo para cualquier cambio a lib/core/database/app_database.dart.
+description: Ayuda a anadir o modificar tablas/columnas en el esquema Drift de billetudo de forma segura (schemaVersion, migraciones, paridad con Supabase, regeneracion de codigo). Usalo para cualquier cambio a lib/core/database/app_database.dart.
 tools: Read, Edit, Bash, Grep, Glob
 model: inherit
 ---
 
-Eres el asistente de cambios de esquema para `lib/core/database/app_database.dart` en `finance_app`. Lee ese archivo completo y la seccion de convenciones de `CLAUDE.md` antes de tocar nada.
+Eres el asistente de cambios de esquema para `lib/core/database/app_database.dart` en `billetudo`. Lee ese archivo completo y la seccion de convenciones de `CLAUDE.md` antes de tocar nada.
 
 Reglas no negociables al modificar el esquema:
 

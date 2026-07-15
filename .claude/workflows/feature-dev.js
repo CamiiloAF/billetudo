@@ -1,9 +1,9 @@
 export const meta = {
   name: 'feature-dev',
   description:
-    'Entrega una feature COMPLETA de finance_app en una sola corrida: triage automatico del tamano (s/m/l), implementacion Clean Architecture con el equipo de agentes, tests (unit/widget/Patrol via qa-automator), review escalado al riesgo con fix loop acotado, y UN solo artefacto de cierre (docs/dev-runs/<slug>.md). El contexto viaja en memoria entre agentes (structured output), no en archivos. Codigo queda SIN commitear. Args: "<descripcion o ruta a una nota>" o {source, size?: "auto"|"s"|"m"|"l"}.',
+    'Entrega una feature COMPLETA de billetudo en una sola corrida: triage automatico del tamano (s/m/l), implementacion Clean Architecture con el equipo de agentes, tests (unit/widget/Patrol via qa-automator), review escalado al riesgo con fix loop acotado, y UN solo artefacto de cierre (docs/dev-runs/<slug>.md). El contexto viaja en memoria entre agentes (structured output), no en archivos. Codigo queda SIN commitear. Args: "<descripcion o ruta a una nota>" o {source, size?: "auto"|"s"|"m"|"l"}.',
   whenToUse:
-    'Cuando el usuario pida implementar una feature o mejora de finance_app de punta a punta. Para solo scaffold usa feature-scaffold; para solo revisar usa feature-review.',
+    'Cuando el usuario pida implementar una feature o mejora de billetudo de punta a punta. Para solo scaffold usa feature-scaffold; para solo revisar usa feature-review.',
   phases: [
     { title: 'Plan', detail: 'Architect: triage de tamano, AC y change map — en memoria, sin archivos' },
     { title: 'Build', detail: 'flutter-dev: esquema Drift si aplica → domain+data → presentation' },
@@ -140,7 +140,7 @@ const REVIEW_SCHEMA = {
 phase('Plan')
 
 const plan = await agent(
-  `Haz el triage de esta peticion de feature para finance_app y devuelve el plan estructurado (NO escribas archivos).
+  `Haz el triage de esta peticion de feature para billetudo y devuelve el plan estructurado (NO escribas archivos).
 
 FUENTE: ${SOURCE}
 - Si es una ruta de archivo existente, leela completa; si no, trata el texto como la peticion.
@@ -186,7 +186,7 @@ const buildNotes = []
 
 async function build(label, mission) {
   const r = await agent(
-    `Eres flutter-dev implementando la corrida "${SLUG}" de finance_app. VAS A EDITAR CODIGO. Sigue tu playbook (.claude/agents/flutter-dev.md).
+    `Eres flutter-dev implementando la corrida "${SLUG}" de billetudo. VAS A EDITAR CODIGO. Sigue tu playbook (.claude/agents/flutter-dev.md).
 
 ${HARD_RULES}
 
@@ -229,7 +229,7 @@ if (SIZE === 's') {
 phase('Test')
 
 const qaPrompt = (note) =>
-  `Eres qa-automator cerrando la corrida "${SLUG}" de finance_app. Sigue tu playbook (.claude/agents/qa-automator.md).
+  `Eres qa-automator cerrando la corrida "${SLUG}" de billetudo. Sigue tu playbook (.claude/agents/qa-automator.md).
 
 ${HARD_RULES}
 
@@ -295,7 +295,7 @@ async function runReview(note) {
     () =>
       agent(
         `${scope}
-Corrida "${SLUG}" de finance_app. Archivos a revisar (leelos; usa git diff solo si el repo es git):
+Corrida "${SLUG}" de billetudo. Archivos a revisar (leelos; usa git diff solo si el repo es git):
 ${filesList}
 CRITERIOS DE ACEPTACION:
 ${acStr}
@@ -306,7 +306,7 @@ Devuelve (approved, blockers[{file,description}], observations[]).`,
     () =>
       plan.touchesTier0
         ? agent(
-            `Revisa SOLO reglas de negocio/legales de finance_app (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, sin banners/interstitials, disclaimers de IA, borrado de cuenta real, tono positivo) en estos archivos de la corrida "${SLUG}":
+            `Revisa SOLO reglas de negocio/legales de billetudo (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, sin banners/interstitials, disclaimers de IA, borrado de cuenta real, tono positivo) en estos archivos de la corrida "${SLUG}":
 ${filesList}
 Devuelve (approved, blockers[{file,description}], observations[]). Blockers solo para violaciones reales.`,
             { label: 'compliance', phase: 'Review', schema: REVIEW_SCHEMA, agentType: 'compliance-reviewer' },
@@ -346,7 +346,7 @@ phase('Close')
 
 const gaps = qa.acCoverage.filter((a) => a.status === 'gap')
 const close = await agent(
-  `Escribe el UNICO artefacto de la corrida "${SLUG}" de finance_app: ${SUMMARY_FILE} (crea la carpeta con mkdir -p docs/dev-runs). Español colombiano, conciso — es para que el humano revise y commitee. NO toques ningun otro archivo.
+  `Escribe el UNICO artefacto de la corrida "${SLUG}" de billetudo: ${SUMMARY_FILE} (crea la carpeta con mkdir -p docs/dev-runs). Español colombiano, conciso — es para que el humano revise y commitee. NO toques ningun otro archivo.
 
 Datos de la corrida:
 - Objetivo: ${plan.goal}

@@ -1,6 +1,6 @@
 export const meta = {
   name: 'feature-review',
-  description: 'Revisa una feature de finance_app contra convenciones criticas, arquitectura y reglas de negocio/legales, con verificacion adversarial de cada hallazgo',
+  description: 'Revisa una feature de billetudo contra convenciones criticas, arquitectura y reglas de negocio/legales, con verificacion adversarial de cada hallazgo',
   phases: [
     { title: 'Review', detail: 'agentes por dimension: convenciones, arquitectura, negocio/legal' },
     { title: 'Verify', detail: 'verificacion adversarial de cada hallazgo' },
@@ -71,7 +71,7 @@ log(`${allFindings.length} hallazgos preliminares, verificando cada uno...`)
 const verified = await parallel(
   allFindings.map(f => () =>
     agent(
-      `Intenta refutar este hallazgo de revision de codigo en finance_app. Hallazgo: "${f.summary}" — ${f.detail} (archivo: ${f.file}, linea: ${f.line ?? 'N/A'}). Lee el archivo real y confirma si el problema existe de verdad o es un falso positivo. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar).`,
+      `Intenta refutar este hallazgo de revision de codigo en billetudo. Hallazgo: "${f.summary}" — ${f.detail} (archivo: ${f.file}, linea: ${f.line ?? 'N/A'}). Lee el archivo real y confirma si el problema existe de verdad o es un falso positivo. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar).`,
       { label: `verify:${f.file}`, phase: 'Verify', schema: VERDICT_SCHEMA },
     ).then(v => ({ ...f, verdict: v })),
   ),
