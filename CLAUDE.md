@@ -13,7 +13,9 @@ Objetivo diferenciador: dar el cambio de hábito de YNAB **sin su fricción ni s
 ```bash
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # genera *.g.dart de Drift
-flutter analyze
+flutter gen-l10n                                           # regenera l10n tras tocar un .arb
+flutter analyze                                            # lints oficiales
+dart run custom_lint                                       # reglas propias (flutter analyze NO las ve)
 flutter test
 flutter run
 ```
@@ -32,11 +34,21 @@ Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
 
 ## Convenciones de código (críticas)
 
+**Antes de escribir código, lee [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md)** — es la guía completa (widgets, l10n, nombres, estado, comentarios) con el porqué de cada regla. Lo de abajo es el resumen crítico; ante cualquier duda de estilo, manda ese documento.
+
+Reglas propias del proyecto (plugin `custom_lint` en `tools/billetudo_lints/`). El IDE las muestra en vivo, pero **`flutter analyze` NO las corre** — hay que correr `dart run custom_lint` aparte:
+- `avoid_widget_functions` — nada de funciones que devuelvan `Widget`; extrae una clase.
+- `avoid_private_widgets` — los widgets son públicos y viven en su propio archivo (`_XxxState` sí es privado).
+- `avoid_hardcoded_ui_strings` — texto de UI solo desde `AppLocalizations` (`lib/core/l10n/arb/`, es + en).
+
+Resto de reglas críticas:
+
 - **Dinero: SIEMPRE enteros en unidades menores (centavos).** Nunca `double`/`float` para montos. Ej: `$12.34` → `1234` (`amountMinor`).
 - **IDs: UUID en texto** (`clientDefault` en Drift). Nunca autoincrement — rompería el sync y la fusión de datos offline.
 - **Timestamps:** actualizar `updatedAt` en cada escritura (en el repositorio).
 - **Borrado:** `deletedAt` es solo para papelera/undo de UX; PowerSync sincroniza los DELETE reales por su cuenta.
 - **Comillas simples**, comas finales, tipos de retorno explícitos (ver `analysis_options.yaml`).
+- **Código y comentarios en inglés.** En español se quedan solo: los `.arb`, las rutas (`/cuentas`), `docs/`, `design-system/` y los mensajes de commit.
 - Estructura **feature-first + Clean Architecture completa**: cada feature en `lib/features/<feature>/` con tres capas estrictas y dependencias apuntando siempre hacia adentro (`presentation` → `domain` ← `data`; `data` nunca es importado por `domain`):
   - `domain/`: entidades puras (sin Drift ni Supabase), interfaces de repositorio (`abstract class XRepository`), y **un caso de uso por acción de negocio** (`class GetAccounts`, `class CreateTransaction`, clases con un método `call()`), incluso para operaciones simples. Aquí vive toda la lógica de negocio (validaciones, cálculos como safe-to-spend, rollover de presupuesto).
   - `data/`: modelos/DTOs, datasources (DAOs de Drift, llamadas a Supabase/PowerSync) e implementación concreta de los repositorios de `domain` (`class XRepositoryImpl implements XRepository`). Mapea entre modelos de Drift y entidades de dominio — nunca expongas tipos generados de Drift fuera de esta capa.
@@ -67,12 +79,12 @@ Definido en `lib/core/database/app_database.dart`. Todas las tablas usan el mixi
 Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Antes de diseñar, construir o revisar cualquier pantalla, carga los lineamientos — no los repita el usuario ni los deduzcas del código.**
 
 - **Fuente de verdad real:** `billetudo.pen` (Pencil). Las 18 variables de color (tema claro/oscuro), tipografía y componentes reutilizables viven ahí. **Nunca hardcodear un hex** — usar siempre la variable (`get_variables`).
-- **Reglas escritas:** `design-system/finance-app/MASTER.md` (reglas globales: paleta, tipografía, radios/espaciado, componentes, accesibilidad, tono de marca) + `design-system/finance-app/pages/<pantalla>.md` (overrides por pantalla).
+- **Reglas escritas:** `design-system/billetudo/MASTER.md` (reglas globales: paleta, tipografía, radios/espaciado, componentes, accesibilidad, tono de marca) + `design-system/billetudo/pages/<pantalla>.md` (overrides por pantalla).
 - **Orden de lectura:** `pages/<pantalla>.md` (si existe, sus reglas sobreescriben) → `MASTER.md` → si el `.md` y el `.pen` difieren, **manda `billetudo.pen`** y se corrige el `.md`.
 - **Flujo por feature (diseño primero, spec después):**
   1. `pencil-designer` propone 2-3 variantes visuales de la pantalla directamente en `billetudo.pen`, **solo en tema claro**, contra `MASTER.md` (aún no existe `pages/<feature>.md` en este punto).
   2. El usuario evalúa y elige una variante; las descartadas se borran del canvas de inmediato (no se dejan a medias).
-  3. Se documenta la decisión elegida en `design-system/finance-app/pages/<feature>.md` (spec por pantalla, overrides sobre `MASTER.md`).
+  3. Se documenta la decisión elegida en `design-system/billetudo/pages/<feature>.md` (spec por pantalla, overrides sobre `MASTER.md`).
   4. Se refina el diseño base (tema claro) contra ese spec, auditado por `ui-ux-reviewer`, hasta que el usuario apruebe explícitamente que cumple todas las expectativas y estándares del sistema de diseño.
   5. Solo con el tema claro 100% aprobado se crean las variantes de estado (error, vacío, carga, etc.), también en tema claro primero.
   6. Al final, y solo al final, se genera el tema oscuro — componentizando antes lo repetido en vez de duplicar estructura.

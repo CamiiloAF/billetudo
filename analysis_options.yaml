@@ -1,16 +1,102 @@
+# Reglas de análisis de billetudo. El porqué de cada bloque está en
+# `docs/convenciones-de-codigo.md`; este archivo es solo la parte ejecutable.
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  plugins:
+    # Reglas propias: avoid_widget_functions, avoid_private_widgets,
+    # avoid_hardcoded_ui_strings (ver tools/billetudo_lints/).
+    - custom_lint
+
   exclude:
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+    - 'lib/core/l10n/gen/**'
+    - 'build/**'
+
   language:
     strict-casts: true
     strict-raw-types: true
+    strict-inference: true
+
+  errors:
+    # Olvidar un await en Drift corrompe datos en silencio.
+    unawaited_futures: error
+    # El dinero y los ids no toleran tipos dinámicos.
+    avoid_dynamic_calls: error
+    # Código muerto tras un refactor: confunde más de lo que documenta.
+    unused_import: error
+    unused_local_variable: error
+    dead_code: error
 
 linter:
   rules:
+    # --- Estilo (ya acordado en el repo) ---
     prefer_single_quotes: true
     require_trailing_commas: true
     always_declare_return_types: true
-    avoid_print: true
+    avoid_print: true # usar CrashReporter, nunca print
+    flutter_style_todos: true # TODO(usuario): descripción
+
+    # --- Corrección: lo que rompe datos o sync si se escapa ---
+    avoid_dynamic_calls: true
+    unawaited_futures: true # await explícito o unawaited()
+    discarded_futures: true
+    avoid_slow_async_io: true
+    cancel_subscriptions: true # streams de Drift en cubits
+    close_sinks: true
+    test_types_in_equals: true
+    throw_in_finally: true
+    literal_only_boolean_expressions: true
+    no_adjacent_strings_in_list: true
+    unnecessary_statements: true
+    collection_methods_unrelated_type: true
+    use_build_context_synchronously: true # gap async → context inválido
+
+    # --- Claridad de la firma: el tipo cuenta la historia ---
+    avoid_positional_boolean_parameters: true
+    avoid_bool_literals_in_conditional_expressions: true
+    avoid_returning_null_for_void: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    unnecessary_lambdas: true
+    unnecessary_parenthesis: true
+    avoid_redundant_argument_values: true
+    use_named_constants: true
+    use_enums: true
+
+    # --- Errores ---
+    # avoid_catches_without_on_clauses queda DESACTIVADA a propósito: la capa
+    # `data` necesita un catch-all para traducir cualquier excepción de
+    # infraestructura a un Failure (ver SecureStorageService). Activarla
+    # obligaría a un `ignore` en cada método de cada repositorio. La regla real
+    # —nunca tragarse un error, siempre convertirlo en Failure— la verifica
+    # `finance-code-reviewer`, no el analyzer.
+    avoid_catching_errors: true
+    only_throw_errors: true
+
+    # --- Imports: relativos dentro del paquete, nunca package: hacia lib/ ---
+    prefer_relative_imports: true
+    avoid_relative_lib_imports: true
+    directives_ordering: true
+    implementation_imports: true
+
+    # --- Flutter / widgets ---
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    use_colored_box: true
+    use_decorated_box: true
+    avoid_unnecessary_containers: true
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+
+    # --- Documentación ---
+    comment_references: true
+
+custom_lint:
+  rules:
+    - avoid_widget_functions
+    - avoid_private_widgets
+    - avoid_hardcoded_ui_strings

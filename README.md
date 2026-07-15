@@ -1,6 +1,6 @@
-# finance_app
+# Billetudo
 
-App de finanzas personales **local-first** construida en Flutter. Nombre `finance_app` es placeholder — renómbralo cuando definas la marca.
+App de finanzas personales **local-first** construida en Flutter, para el mercado hispanohablante.
 
 > Enfoque: construida primero para uso propio, con arquitectura pensada para escalar a un producto freemium para el mercado hispanohablante. Toda la investigación de mercado y el plan de producto/monetización están en [`docs/`](docs/).
 
@@ -61,7 +61,18 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+## Verificar el código
+
+```bash
+flutter analyze        # lints oficiales
+dart run custom_lint   # reglas propias del proyecto — flutter analyze NO las corre
+flutter test
+```
+
+Ambos comandos de análisis son necesarios: `flutter analyze` no carga plugins del analyzer, así que no ve las reglas de [`tools/billetudo_lints/`](tools/billetudo_lints) (el IDE sí las muestra en vivo). Ver [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md).
+
 ## Documentación
 
+- [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md) — cómo se escribe código aquí: widgets, localización, nombres, estado, manejo de errores y las reglas de lint propias. **Léelo antes del primer PR.**
 - [`docs/Viabilidad_App_Finanzas_Personales.md`](docs/Viabilidad_App_Finanzas_Personales.md) — investigación de mercado, competidores y diferenciadores.
 - [`docs/Plan_Monetizacion_y_Tecnico.md`](docs/Plan_Monetizacion_y_Tecnico.md) — niveles de acceso, features por costo marginal, capa de mejora financiera, límites, precios, stack, roadmap, riesgos legales.
