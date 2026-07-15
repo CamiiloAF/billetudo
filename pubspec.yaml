@@ -57,12 +57,22 @@ dependencies:
   google_fonts: ^6.2.1
 
   # --- Monetización (rewarded ads + suscripciones) ---
-  google_mobile_ads: ^5.1.0
-  purchases_flutter: ^10.4.1
+  # Comentadas a propósito: se agregan en el mismo cambio que implementa su
+  # feature, no antes. Aunque no las use ningún código, sus plugins inyectan
+  # permisos y frameworks en el build fusionado que las tiendas detectan y
+  # preguntan (BILLING de Play Billing, AD_ID de AdMob). google_mobile_ads
+  # además exige un App ID (com.google.android.gms.ads.APPLICATION_ID /
+  # GADApplicationIdentifier) sin el cual el SDK crashea al inicializar.
+  # Si purchases_flutter vuelve, debe ser 10.x+: la 6.x fija
+  # freezed_annotation ^2 y bloquea custom_lint.
+  #google_mobile_ads: ^5.1.0
+  #purchases_flutter: ^10.4.1
 
   # --- Captura sin fricción ---
-  speech_to_text: ^6.6.2
-  google_mlkit_text_recognition: ^0.13.0
+  # Igual: enlazan frameworks nativos y arrastran declaraciones de privacidad
+  # (micrófono, cámara) que todavía no hay qué justificar.
+  #speech_to_text: ^6.6.2
+  #google_mlkit_text_recognition: ^0.13.0
 
   # --- Utilidades ---
   intl: ^0.20.2
