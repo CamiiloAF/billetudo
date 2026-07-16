@@ -82,12 +82,12 @@ void main() {
     final snapshot = HomeSnapshot.from(
       month: month,
       accounts: [
-        buildActiveAccount(id: 'acc-1'),
+        buildActiveAccount(),
         buildActiveAccount(id: 'acc-2'),
         buildActiveAccount(id: 'acc-3'),
       ],
       transactions: [
-        buildActivity(id: 'a', accountId: 'acc-1'),
+        buildActivity(id: 'a'),
         buildActivity(id: 'b', accountId: 'acc-2'),
         buildActivity(id: 'c', accountId: 'acc-3'),
         // A tx on an account that is not in the active set is dropped.
@@ -107,11 +107,11 @@ void main() {
     final snapshot = HomeSnapshot.from(
       month: month,
       accounts: [
-        buildActiveAccount(id: 'acc-1'),
+        buildActiveAccount(),
         buildActiveAccount(id: 'acc-2'),
       ],
       transactions: [
-        buildActivity(id: 'a', accountId: 'acc-1', amountMinor: 30000),
+        buildActivity(id: 'a', amountMinor: 30000),
         buildActivity(id: 'b', accountId: 'acc-2', amountMinor: 45000),
         buildActivity(id: 'c', accountId: 'acc-tombstoned', amountMinor: 99999),
       ],
@@ -124,7 +124,7 @@ void main() {
   test('sin gastos: el hero \$0 usa la moneda de la primera cuenta activa', () {
     final snapshot = HomeSnapshot.from(
       month: month,
-      accounts: [buildActiveAccount(id: 'acc-1', currency: 'USD')],
+      accounts: [buildActiveAccount(currency: 'USD')],
       transactions: const [],
     );
 
@@ -147,9 +147,9 @@ void main() {
       'cruzado)', () {
     final snapshot = HomeSnapshot.from(
       month: month,
-      accounts: [buildActiveAccount(id: 'acc-1')],
+      accounts: [buildActiveAccount()],
       transactions: [
-        buildActivity(id: 'a', amountMinor: 20000, currency: 'COP'),
+        buildActivity(id: 'a', amountMinor: 20000),
         buildActivity(id: 'b', amountMinor: 500000, currency: 'USD'),
       ],
     );

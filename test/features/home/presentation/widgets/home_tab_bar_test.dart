@@ -39,7 +39,7 @@ void main() {
 
   testWidgets('la pestaña activa usa el color de marca; las demás text-secondary',
       (tester) async {
-    await tester.pumpHomeWidget(tabBar(currentIndex: 0));
+    await tester.pumpHomeWidget(tabBar());
 
     final ctx = tester.element(find.byType(HomeTabBar));
     final colors = ctx.colors;

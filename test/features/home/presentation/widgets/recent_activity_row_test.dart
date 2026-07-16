@@ -25,7 +25,6 @@ void main() {
     await tester.pumpHomeWidget(
       row(buildActivity(
         amountMinor: 25000,
-        type: TransactionType.expense,
         categoryName: 'Mercado',
       )),
     );
@@ -76,7 +75,7 @@ void main() {
   testWidgets('sin categoría: cae al nombre de la cuenta como título',
       (tester) async {
     await tester.pumpHomeWidget(
-      row(buildActivity(accountName: 'Bancolombia')),
+      row(buildActivity()),
     );
 
     expect(find.text('Bancolombia'), findsWidgets);

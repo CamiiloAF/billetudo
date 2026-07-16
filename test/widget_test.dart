@@ -31,7 +31,7 @@ void main() {
     // whose streams never emit, so the app stays on the loading state (no DB).
     final watchAccounts = _MockWatchAccounts();
     final watchMonthTransactions = _MockWatchMonthTransactions();
-    when(() => watchAccounts()).thenAnswer(
+    when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
     when(() => watchMonthTransactions(any())).thenAnswer(

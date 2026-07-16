@@ -107,9 +107,9 @@ void main() {
 
   test('subtotales ordenados por código de moneda (emisión estable)', () {
     final spending = build([
-      buildActivity(amountMinor: 10000, currency: 'USD'),
-      buildActivity(id: 'tx-2', amountMinor: 10000, currency: 'COP'),
-      buildActivity(id: 'tx-3', amountMinor: 10000, currency: 'EUR'),
+      buildActivity(currency: 'USD'),
+      buildActivity(id: 'tx-2'),
+      buildActivity(id: 'tx-3', currency: 'EUR'),
     ]);
 
     expect(
@@ -122,7 +122,7 @@ void main() {
       () {
     final spending = build([
       buildActivity(amountMinor: 40000, currency: 'USD'),
-      buildActivity(id: 'tx-2', amountMinor: 40000, currency: 'COP'),
+      buildActivity(id: 'tx-2', amountMinor: 40000),
     ]);
 
     // Both total 40000; the sorted-first code (COP) wins, deterministically.
