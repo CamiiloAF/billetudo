@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -36,7 +37,7 @@ class TransactionsEmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(44),
               ),
               child: Icon(
-                Icons.receipt_long_outlined,
+                LucideIcons.receipt,
                 size: 40,
                 color: colors.primaryOnSoft,
               ),
@@ -54,7 +55,7 @@ class TransactionsEmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: onCta,
-                icon: const Icon(Icons.add),
+                icon: const Icon(LucideIcons.plus),
                 label: Text(ctaLabel),
               ),
             ],

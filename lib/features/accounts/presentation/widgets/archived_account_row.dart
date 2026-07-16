@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class ArchivedAccountRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.unarchive_outlined,
+                    LucideIcons.archiveRestore,
                     size: 18,
                     // `primary-on-soft` even over `$surface`: plain `primary`
                     // drops to ~3:1 in dark mode (MASTER.md).

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/utils/money_formatter.dart';
@@ -67,13 +68,13 @@ class TransactionDetailPage extends StatelessWidget {
                 IconButton(
                   onPressed: () => onEdit(entry.transaction.id),
                   tooltip: l10n.transactionDetailEdit,
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(LucideIcons.pencil),
                 ),
                 IconButton(
                   onPressed:
                       context.read<TransactionDetailCubit>().requestDelete,
                   tooltip: l10n.transactionDetailDelete,
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(LucideIcons.trash),
                 ),
               ],
             ],

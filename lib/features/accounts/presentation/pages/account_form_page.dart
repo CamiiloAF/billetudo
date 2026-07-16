@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -46,7 +47,7 @@ class AccountFormPage extends StatelessWidget {
             leading: IconButton(
               onPressed: Navigator.of(context).pop,
               tooltip: l10n.commonCancel,
-              icon: const Icon(Icons.close),
+              icon: const Icon(LucideIcons.x),
             ),
             title: Text(
               state.isEditing
@@ -59,7 +60,7 @@ class AccountFormPage extends StatelessWidget {
                     ? null
                     : context.read<AccountFormCubit>().submit,
                 tooltip: l10n.commonSave,
-                icon: const Icon(Icons.check),
+                icon: const Icon(LucideIcons.check),
               ),
             ],
           ),
@@ -125,7 +126,7 @@ class AccountFormBody extends StatelessWidget {
         const SizedBox(height: 18),
         AccountFormField.text(
           label: l10n.accountFormNameLabel,
-          icon: Icons.drive_file_rename_outline,
+          icon: LucideIcons.pencilLine,
           hint: l10n.accountFormNameHint,
           initialValue: state.name,
           errorText: _errorFor(l10n, state, AccountDraft.fieldName),
@@ -135,7 +136,7 @@ class AccountFormBody extends StatelessWidget {
         const SizedBox(height: 16),
         AccountFormField.text(
           label: l10n.accountFormInstitutionLabel,
-          icon: Icons.account_balance_outlined,
+          icon: LucideIcons.landmark,
           hint: l10n.accountFormInstitutionHint,
           initialValue: state.institution,
           errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
@@ -145,7 +146,7 @@ class AccountFormBody extends StatelessWidget {
         const SizedBox(height: 16),
         AccountFormField.text(
           label: l10n.accountFormInitialBalanceLabel,
-          icon: Icons.payments_outlined,
+          icon: LucideIcons.banknote,
           hint: l10n.accountFormAmountHint,
           initialValue: state.initialBalanceText,
           errorText:
@@ -162,7 +163,7 @@ class AccountFormBody extends StatelessWidget {
         const SizedBox(height: 16),
         AccountFormField.selector(
           label: l10n.accountFormCurrencyLabel,
-          icon: Icons.monetization_on_outlined,
+          icon: LucideIcons.circleDollarSign,
           value: state.currency,
           errorText: _errorFor(l10n, state, AccountDraft.fieldCurrency),
           onTap: () => _pickCurrency(context),
@@ -175,7 +176,7 @@ class AccountFormBody extends StatelessWidget {
           const SizedBox(height: 16),
           AccountFormField.text(
             label: l10n.accountFormLast4Label,
-            icon: Icons.tag,
+            icon: LucideIcons.tag,
             hint: l10n.accountFormLast4Hint,
             initialValue: state.last4,
             errorText: _errorFor(l10n, state, AccountDraft.fieldLast4),
@@ -276,7 +277,7 @@ class AccountNumberField extends StatelessWidget {
       children: [
         AccountFormField.text(
           label: l10n.accountFormNumberLabel,
-          icon: Icons.pin_outlined,
+          icon: LucideIcons.hash,
           hint: l10n.accountFormNumberHint,
           helperText: l10n.accountFormNumberHelp,
           initialValue: state.fullAccountNumber,
@@ -290,9 +291,7 @@ class AccountNumberField extends StatelessWidget {
                 ? l10n.accountNumberHide
                 : l10n.accountNumberReveal,
             icon: Icon(
-              state.numberVisible
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
+              state.numberVisible ? LucideIcons.eyeOff : LucideIcons.eye,
               size: 20,
             ),
           ),

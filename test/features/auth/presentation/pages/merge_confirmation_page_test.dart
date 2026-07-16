@@ -8,6 +8,7 @@ import 'package:billetudo/features/auth/presentation/pages/merge_confirmation_pa
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../widgets/pump_widget.dart';
@@ -41,8 +42,7 @@ void main() {
       transactionsCount: 20,
       categoriesCount: 8,
     );
-    when(() => mergeLocalData())
-        .thenAnswer((_) async => const Right(summary));
+    when(() => mergeLocalData()).thenAnswer((_) async => const Right(summary));
 
     await pumpMerge(tester);
     await tester.pumpAndSettle();
@@ -62,8 +62,7 @@ void main() {
       transactionsCount: 1,
       categoriesCount: 1,
     );
-    when(() => mergeLocalData())
-        .thenAnswer((_) async => const Right(summary));
+    when(() => mergeLocalData()).thenAnswer((_) async => const Right(summary));
 
     var done = false;
     await pumpMerge(tester, onDone: () => done = true);
@@ -83,7 +82,7 @@ void main() {
     await pumpMerge(tester);
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+    expect(find.byIcon(LucideIcons.wifiOff), findsOneWidget);
     // HU-04's own merge-failure copy, distinct from HU-07's delete-account
     // error ("No pudimos eliminar tu cuenta") — see `authMergeErrorTitle`/
     // `authMergeErrorMessage`.

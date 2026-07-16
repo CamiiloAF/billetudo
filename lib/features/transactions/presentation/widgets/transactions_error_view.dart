@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -37,7 +38,7 @@ class TransactionsErrorView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Icon(
-                  Icons.warning_amber_rounded,
+                  LucideIcons.triangleAlert,
                   color: colors.textSecondary,
                   size: 28,
                 ),

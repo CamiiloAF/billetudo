@@ -13,6 +13,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAccountFormCubit extends MockCubit<AccountFormState>
@@ -179,7 +180,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(AccountNumberField),
-          matching: find.byIcon(Icons.visibility_outlined),
+          matching: find.byIcon(LucideIcons.eye),
         ),
         findsOneWidget,
       );
@@ -268,7 +269,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.check));
+    await tester.tap(find.byIcon(LucideIcons.check));
     verify(() => cubit.submit()).called(1);
   });
 
@@ -283,7 +284,7 @@ void main() {
 
     final save = tester.widget<IconButton>(
       find.ancestor(
-        of: find.byIcon(Icons.check),
+        of: find.byIcon(LucideIcons.check),
         matching: find.byType(IconButton),
       ),
     );

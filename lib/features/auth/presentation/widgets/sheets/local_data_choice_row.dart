@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 
@@ -37,9 +38,7 @@ class LocalDataChoiceRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              selected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
+              selected ? LucideIcons.circleCheck : LucideIcons.circle,
               color: selected ? colors.primary : colors.textSecondary,
             ),
             const SizedBox(width: 12),

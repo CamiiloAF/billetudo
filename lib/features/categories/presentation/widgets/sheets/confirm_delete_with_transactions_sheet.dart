@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -77,7 +78,8 @@ class _ConfirmDeleteWithTransactionsSheetState
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(Icons.delete_outline, color: colors.primaryOnSoft, size: 28),
+              child: Icon(LucideIcons.trash,
+                  color: colors.primaryOnSoft, size: 28),
             ),
             const SizedBox(height: 16),
             Text(
@@ -124,16 +126,16 @@ class _ConfirmDeleteWithTransactionsSheetState
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    onPressed: _choice == _Choice.reassign &&
-                            _targetCategoryId == null
-                        ? null
-                        : () => Navigator.of(context).pop(
-                              _choice == _Choice.reassign
-                                  ? TransactionResolution.reassign(
-                                      _targetCategoryId!,
-                                    )
-                                  : const TransactionResolution.clear(),
-                            ),
+                    onPressed:
+                        _choice == _Choice.reassign && _targetCategoryId == null
+                            ? null
+                            : () => Navigator.of(context).pop(
+                                  _choice == _Choice.reassign
+                                      ? TransactionResolution.reassign(
+                                          _targetCategoryId!,
+                                        )
+                                      : const TransactionResolution.clear(),
+                                ),
                     child: Text(l10n.commonDelete),
                   ),
                 ),

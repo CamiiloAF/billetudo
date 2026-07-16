@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -35,7 +36,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: Icons.warning_amber_rounded,
+          icon: LucideIcons.triangleAlert,
           iconColor: colors.expense,
           iconBackground: colors.expenseSoft,
           title: l10n.accountDeleteSheetTitle,
@@ -52,7 +53,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
           right: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: colors.expense),
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(LucideIcons.trash),
             label: Text(l10n.commonDelete),
           ),
         ),

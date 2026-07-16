@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import 'account_form_field.dart';
@@ -49,7 +50,7 @@ class CardDetailsSection extends StatelessWidget {
         const SizedBox(height: 12),
         AccountFormField.text(
           label: l10n.accountFormCreditLimitLabel,
-          icon: Icons.credit_score_outlined,
+          icon: LucideIcons.creditCard,
           hint: l10n.accountFormAmountHint,
           initialValue: creditLimitText,
           errorText: creditLimitError,
@@ -62,7 +63,7 @@ class CardDetailsSection extends StatelessWidget {
         const SizedBox(height: 16),
         AccountFormField.selector(
           label: l10n.accountFormStatementDayLabel,
-          icon: Icons.calendar_today_outlined,
+          icon: LucideIcons.calendar,
           hint: l10n.accountFormSelectHint,
           value: statementDay == null
               ? null
@@ -73,7 +74,7 @@ class CardDetailsSection extends StatelessWidget {
         const SizedBox(height: 16),
         AccountFormField.selector(
           label: l10n.accountFormPaymentDueDayLabel,
-          icon: Icons.event_available_outlined,
+          icon: LucideIcons.calendarCheck,
           hint: l10n.accountFormSelectHint,
           value: paymentDueDay == null
               ? null

@@ -22,8 +22,8 @@
 // which really surfaces the neutral error sheet instead of crashing).
 import 'package:billetudo/features/auth/presentation/pages/login_page.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
@@ -72,7 +72,7 @@ void main() {
       await $.tester.pumpAndSettle();
       expect(find.byType(LoginPage), findsOneWidget);
 
-      await $.tester.tap(find.byIcon(Icons.close));
+      await $.tester.tap(find.byIcon(LucideIcons.x));
       await $.tester.pumpAndSettle();
 
       expect(find.byType(SettingsPage), findsOneWidget);

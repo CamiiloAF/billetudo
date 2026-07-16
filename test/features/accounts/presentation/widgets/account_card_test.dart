@@ -3,6 +3,7 @@ import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../account_fixtures.dart';
 import 'pump_widget.dart';
@@ -72,7 +73,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(Icons.payments_outlined), findsOneWidget);
+    expect(find.byIcon(LucideIcons.banknote), findsOneWidget);
   });
 
   testWidgets('un nombre largo no desborda: se recorta', (tester) async {

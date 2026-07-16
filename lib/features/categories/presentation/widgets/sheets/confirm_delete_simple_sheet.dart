@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -37,7 +38,8 @@ class ConfirmDeleteSimpleSheet extends StatelessWidget {
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(Icons.delete_outline, color: colors.primaryOnSoft, size: 28),
+              child: Icon(LucideIcons.trash,
+                  color: colors.primaryOnSoft, size: 28),
             ),
             const SizedBox(height: 16),
             Text(
@@ -66,7 +68,7 @@ class ConfirmDeleteSimpleSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => Navigator.of(context).pop(true),
-                    icon: const Icon(Icons.delete_outline),
+                    icon: const Icon(LucideIcons.trash),
                     label: Text(l10n.commonDelete),
                   ),
                 ),

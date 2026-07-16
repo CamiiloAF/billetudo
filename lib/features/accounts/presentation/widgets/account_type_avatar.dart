@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -12,12 +13,12 @@ import '../../domain/entities/account.dart';
 /// MASTER.md verifies at 3:1.
 extension AccountTypePresentation on AccountType {
   IconData get icon => switch (this) {
-        AccountType.cash => Icons.payments_outlined,
-        AccountType.bank => Icons.account_balance_outlined,
-        AccountType.card => Icons.credit_card_outlined,
-        AccountType.savings => Icons.savings_outlined,
-        AccountType.investment => Icons.trending_up,
-        AccountType.other => Icons.account_balance_wallet_outlined,
+        AccountType.cash => LucideIcons.banknote,
+        AccountType.bank => LucideIcons.landmark,
+        AccountType.card => LucideIcons.creditCard,
+        AccountType.savings => LucideIcons.piggyBank,
+        AccountType.investment => LucideIcons.trendingUp,
+        AccountType.other => LucideIcons.wallet,
       };
 
   /// Colour of the icon itself. `primary` is read through `primaryOnSoft`,

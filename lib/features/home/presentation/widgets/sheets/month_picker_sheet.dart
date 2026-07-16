@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -67,8 +68,7 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
               year: _year,
               canGoForward: canGoForward,
               onPrevious: () => setState(() => _year -= 1),
-              onNext:
-                  canGoForward ? () => setState(() => _year += 1) : null,
+              onNext: canGoForward ? () => setState(() => _year += 1) : null,
             ),
             const SizedBox(height: 12),
             GridView.count(
@@ -132,20 +132,20 @@ class YearNavigator extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onPrevious,
-          icon: const Icon(Icons.chevron_left),
+          icon: const Icon(LucideIcons.chevronLeft),
           color: colors.textPrimary,
         ),
         Text(
           // A bare numeral, nothing to translate.
           year.toString(),
-          style:
-              theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         Opacity(
           opacity: canGoForward ? 1 : 0.35,
           child: IconButton(
             onPressed: onNext,
-            icon: const Icon(Icons.chevron_right),
+            icon: const Icon(LucideIcons.chevronRight),
             color: colors.textPrimary,
           ),
         ),

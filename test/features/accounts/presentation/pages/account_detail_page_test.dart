@@ -9,6 +9,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../account_fixtures.dart';
@@ -19,9 +20,9 @@ class MockAccountDetailCubit extends MockCubit<AccountDetailState>
 void main() {
   late MockAccountDetailCubit cubit;
 
-  final eye = find.byIcon(Icons.visibility_outlined);
-  final eyeOff = find.byIcon(Icons.visibility_off_outlined);
-  final copy = find.byIcon(Icons.copy_outlined);
+  final eye = find.byIcon(LucideIcons.eye);
+  final eyeOff = find.byIcon(LucideIcons.eyeOff);
+  final copy = find.byIcon(LucideIcons.copy);
 
   const fullNumber = '00123456784321';
 

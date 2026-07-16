@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../domain/entities/transaction_filter.dart';
@@ -50,9 +51,10 @@ class TransactionsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.transactionsTitle)),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'transactionsAddTransactionFab',
         onPressed: onAddTransaction,
         tooltip: l10n.transactionsAdd,
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
       body: SafeArea(
         child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
@@ -80,7 +82,7 @@ class TransactionsPage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                   child: TextField(
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon: const Icon(LucideIcons.search),
                       hintText: l10n.transactionsSearchHint,
                     ),
                     onChanged:
@@ -149,7 +151,7 @@ class TransactionsFilterBar extends StatelessWidget {
           ActionChip(
             label: Text(l10n.transactionsFilterAccounts),
             avatar: filter.hasAccountFilter
-                ? const Icon(Icons.check, size: 16)
+                ? const Icon(LucideIcons.check, size: 16)
                 : null,
             onPressed: () async {
               final selected = await AccountFilterSheet.show(
@@ -165,7 +167,7 @@ class TransactionsFilterBar extends StatelessWidget {
           ActionChip(
             label: Text(l10n.transactionsFilterCategories),
             avatar: filter.hasCategoryFilter
-                ? const Icon(Icons.check, size: 16)
+                ? const Icon(LucideIcons.check, size: 16)
                 : null,
             onPressed: () async {
               final selected = await CategoryFilterSheet.show(
@@ -181,8 +183,9 @@ class TransactionsFilterBar extends StatelessWidget {
           const SizedBox(width: 8),
           ActionChip(
             label: Text(l10n.transactionsFilterType),
-            avatar:
-                filter.hasTypeFilter ? const Icon(Icons.check, size: 16) : null,
+            avatar: filter.hasTypeFilter
+                ? const Icon(LucideIcons.check, size: 16)
+                : null,
             onPressed: () async {
               final selected = await TypeFilterSheet.show(
                 context,
@@ -207,8 +210,9 @@ class TransactionsFilterBar extends StatelessWidget {
           const SizedBox(width: 8),
           ActionChip(
             label: Text(l10n.transactionsFilterTag),
-            avatar:
-                filter.hasTagFilter ? const Icon(Icons.check, size: 16) : null,
+            avatar: filter.hasTagFilter
+                ? const Icon(LucideIcons.check, size: 16)
+                : null,
             onPressed: () async {
               final selected = await TagFilterSheet.show(
                 context,

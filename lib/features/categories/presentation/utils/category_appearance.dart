@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -8,7 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 ///
 /// Icon names follow the lucide naming used by `billetudo.pen`
 /// (`default_categories_seed.dart` is the other place that names them); this
-/// is the single place that maps them to a Material equivalent, so no widget
+/// is the single place that maps them to the real Lucide icon, so no widget
 /// hardcodes an `IconData` for a category.
 abstract final class CategoryAppearance {
   const CategoryAppearance._();
@@ -67,39 +68,39 @@ abstract final class CategoryAppearance {
   static const String defaultIconName = 'sparkles';
 
   static const Map<String, IconData> _icons = {
-    'utensils': Icons.restaurant_outlined,
-    'bus': Icons.directions_bus_outlined,
-    'car': Icons.directions_car_outlined,
-    'home': Icons.home_outlined,
-    'shirt': Icons.checkroom_outlined,
-    'heart-pulse': Icons.monitor_heart_outlined,
-    'shield': Icons.shield_outlined,
-    'credit-card': Icons.credit_card_outlined,
-    'graduation-cap': Icons.school_outlined,
-    'gift': Icons.card_giftcard_outlined,
-    'party-popper': Icons.celebration_outlined,
-    'plane': Icons.flight_outlined,
-    'dumbbell': Icons.fitness_center_outlined,
-    'book-open': Icons.menu_book_outlined,
-    'paw-print': Icons.pets_outlined,
-    'baby': Icons.child_care_outlined,
-    'wrench': Icons.build_outlined,
-    'phone': Icons.smartphone_outlined,
-    'wifi': Icons.wifi,
-    'piggy-bank': Icons.savings_outlined,
-    'coffee': Icons.local_cafe_outlined,
-    'banknote': Icons.attach_money,
-    'briefcase': Icons.work_outline,
-    'building-2': Icons.apartment_outlined,
-    'landmark': Icons.account_balance_outlined,
-    'trending-up': Icons.trending_up,
-    'refresh-cw': Icons.autorenew,
-    'rotate-ccw': Icons.replay,
-    'send': Icons.send_outlined,
-    'users': Icons.people_outline,
-    'file-text': Icons.description_outlined,
-    'ellipsis': Icons.more_horiz,
-    defaultIconName: Icons.auto_awesome_outlined,
+    'utensils': LucideIcons.utensils,
+    'bus': LucideIcons.bus,
+    'car': LucideIcons.car,
+    'home': LucideIcons.home,
+    'shirt': LucideIcons.shirt,
+    'heart-pulse': LucideIcons.heartPulse,
+    'shield': LucideIcons.shield,
+    'credit-card': LucideIcons.creditCard,
+    'graduation-cap': LucideIcons.graduationCap,
+    'gift': LucideIcons.gift,
+    'party-popper': LucideIcons.partyPopper,
+    'plane': LucideIcons.plane,
+    'dumbbell': LucideIcons.dumbbell,
+    'book-open': LucideIcons.bookOpen,
+    'paw-print': LucideIcons.pawPrint,
+    'baby': LucideIcons.baby,
+    'wrench': LucideIcons.wrench,
+    'phone': LucideIcons.smartphone,
+    'wifi': LucideIcons.wifi,
+    'piggy-bank': LucideIcons.piggyBank,
+    'coffee': LucideIcons.coffee,
+    'banknote': LucideIcons.banknote,
+    'briefcase': LucideIcons.briefcase,
+    'building-2': LucideIcons.building2,
+    'landmark': LucideIcons.landmark,
+    'trending-up': LucideIcons.trendingUp,
+    'refresh-cw': LucideIcons.refreshCw,
+    'rotate-ccw': LucideIcons.rotateCcw,
+    'send': LucideIcons.send,
+    'users': LucideIcons.users,
+    'file-text': LucideIcons.fileText,
+    'ellipsis': LucideIcons.ellipsis,
+    defaultIconName: LucideIcons.sparkles,
   };
 
   /// The icon for [name], falling back to the neutral default when [name] is

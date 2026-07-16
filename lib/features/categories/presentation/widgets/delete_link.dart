@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -26,7 +27,7 @@ class DeleteLink extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.delete_outline, size: 20, color: colors.expense),
+            Icon(LucideIcons.trash, size: 20, color: colors.expense),
             const SizedBox(width: 8),
             Text(
               label,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -66,7 +67,7 @@ class CurrencyRow extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(Icons.check, color: colors.primaryOnSoft, size: 20),
+                Icon(LucideIcons.check, color: colors.primaryOnSoft, size: 20),
             ],
           ),
         ),

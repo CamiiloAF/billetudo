@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/category.dart';
@@ -53,8 +54,7 @@ class ParentCategoryRow extends StatelessWidget {
                 style: theme.textTheme.bodyLarge,
               ),
             ),
-            if (selected)
-              Icon(Icons.check, color: colors.primaryOnSoft),
+            if (selected) Icon(LucideIcons.check, color: colors.primaryOnSoft),
           ],
         ),
       ),

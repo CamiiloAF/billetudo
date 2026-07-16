@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -59,7 +60,7 @@ class AccountDetailPage extends StatelessWidget {
                 IconButton(
                   onPressed: () => onEdit(account.id),
                   tooltip: l10n.commonEdit,
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(LucideIcons.pencil),
                 ),
             ],
           ),
@@ -262,7 +263,7 @@ class AccountDetailActions extends StatelessWidget {
         children: [
           OutlinedButton.icon(
             onPressed: cubit.promptArchive,
-            icon: const Icon(Icons.archive_outlined),
+            icon: const Icon(LucideIcons.archive),
             label: Text(l10n.accountArchiveAction),
           ),
           TextButton(
@@ -280,7 +281,8 @@ class AccountDetailActions extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                 ),
-                Icon(Icons.chevron_right, size: 18, color: colors.expenseText),
+                Icon(LucideIcons.chevronRight,
+                    size: 18, color: colors.expenseText),
               ],
             ),
           ),

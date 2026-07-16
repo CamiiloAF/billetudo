@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
@@ -16,7 +17,8 @@ import '../../../transactions/domain/entities/transaction_with_details.dart';
 /// brand tone: expense in `text-primary` (never red), income in `income-text`,
 /// transfer neutral (HU-05).
 class RecentActivityRow extends StatelessWidget {
-  const RecentActivityRow({required this.entry, required this.onTap, super.key});
+  const RecentActivityRow(
+      {required this.entry, required this.onTap, super.key});
 
   final TransactionWithDetails entry;
   final VoidCallback onTap;
@@ -110,7 +112,7 @@ class CategoryAvatar extends StatelessWidget {
     final colors = context.colors;
     final isTransfer = entry.transaction.isTransfer;
     final icon = isTransfer
-        ? Icons.swap_horiz
+        ? LucideIcons.arrowLeftRight
         : CategoryAppearance.iconFor(entry.categoryIcon);
     final foreground = isTransfer
         ? colors.textSecondary

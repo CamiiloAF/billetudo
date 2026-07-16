@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -37,7 +38,7 @@ class MergeConfirmationPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.wifi_off,
+                      Icon(LucideIcons.wifiOff,
                           size: 40, color: colors.textSecondary),
                       const SizedBox(height: 16),
                       Text(
@@ -77,7 +78,7 @@ class MergeConfirmationPage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const DevicePreviewIllustration(
-                              badgeIcon: Icons.check,
+                              badgeIcon: LucideIcons.check,
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -119,7 +120,7 @@ class MergeConfirmationPage extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: onDone,
-                      icon: const Icon(Icons.arrow_forward),
+                      icon: const Icon(LucideIcons.arrowRight),
                       label: Text(l10n.authMergeCta),
                     ),
                   ),

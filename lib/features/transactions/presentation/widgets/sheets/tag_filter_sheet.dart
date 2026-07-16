@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
@@ -69,7 +70,7 @@ class TagFilterSheetBody extends StatelessWidget {
                           await cubit.createTag(name);
                         }
                       },
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(LucideIcons.plus),
                       tooltip: l10n.transactionFormAddTag,
                     ),
                   ],

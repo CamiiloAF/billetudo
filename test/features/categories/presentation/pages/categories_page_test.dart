@@ -13,6 +13,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../domain/usecases/category_repository_mock.dart';
@@ -84,7 +85,8 @@ void main() {
     expect(find.byType(CategorySkeletonRow), findsNothing);
   });
 
-  testWidgets('con datos: una raíz en acordeón, expandida o colapsada '
+  testWidgets(
+      'con datos: una raíz en acordeón, expandida o colapsada '
       'según expandedRootIds', (tester) async {
     await pumpPage(
       tester,
@@ -169,7 +171,7 @@ void main() {
       onAddCategory: (kind) => added = kind,
     );
 
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.tap(find.byIcon(LucideIcons.plus));
     expect(added, CategoryKind.income);
   });
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -67,7 +68,7 @@ class HomeHeader extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 )
-              : Icon(Icons.person_outline, color: colors.onPrimary, size: 22),
+              : Icon(LucideIcons.user, color: colors.onPrimary, size: 22),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -89,7 +90,7 @@ class HomeHeader extends StatelessWidget {
             backgroundColor: colors.surface,
             foregroundColor: colors.textPrimary,
           ),
-          icon: const Icon(Icons.notifications_none),
+          icon: const Icon(LucideIcons.bell),
         ),
       ],
     );
@@ -108,9 +109,9 @@ class SyncIndicator extends StatelessWidget {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final (icon, label) = switch (status) {
-      HomeSyncStatus.synced => (Icons.cloud_done_outlined, l10n.homeSyncSynced),
-      HomeSyncStatus.syncing => (Icons.sync, l10n.homeSyncSyncing),
-      HomeSyncStatus.offline => (Icons.cloud_off_outlined, l10n.homeSyncOffline),
+      HomeSyncStatus.synced => (LucideIcons.cloudCheck, l10n.homeSyncSynced),
+      HomeSyncStatus.syncing => (LucideIcons.refreshCw, l10n.homeSyncSyncing),
+      HomeSyncStatus.offline => (LucideIcons.cloudOff, l10n.homeSyncOffline),
     };
     return Semantics(
       label: label,

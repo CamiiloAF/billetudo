@@ -7,6 +7,7 @@ import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_dele
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../pump_widget.dart';
@@ -38,7 +39,7 @@ void main() {
 
     expect(find.text('Eliminar tu cuenta'), findsOneWidget);
     expect(find.textContaining('no se puede deshacer'), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsOneWidget);
 
     final row = tester.widget<SheetButtonsRow>(find.byType(SheetButtonsRow));
     expect(row.left, isA<OutlinedButton>());
@@ -97,8 +98,8 @@ void main() {
     expect(find.text('No pudimos eliminar tu cuenta'), findsOneWidget);
     // Neutral icon, not the destructive one — this is a technical failure,
     // not the irreversibility warning anymore.
-    expect(find.byIcon(Icons.wifi_off), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    expect(find.byIcon(LucideIcons.wifiOff), findsOneWidget);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
     expect(find.text('Reintentar'), findsOneWidget);
   });
 }

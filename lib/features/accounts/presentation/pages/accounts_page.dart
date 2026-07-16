@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../domain/entities/account_with_balance.dart';
@@ -41,12 +42,12 @@ class AccountsPage extends StatelessWidget {
           IconButton(
             onPressed: onOpenArchived,
             tooltip: l10n.accountsArchivedTitle,
-            icon: const Icon(Icons.archive_outlined),
+            icon: const Icon(LucideIcons.archive),
           ),
           IconButton(
             onPressed: onAddAccount,
             tooltip: l10n.accountsAdd,
-            icon: const Icon(Icons.add),
+            icon: const Icon(LucideIcons.plus),
           ),
         ],
       ),
@@ -104,7 +105,7 @@ class AccountsEmptyView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return EmptyState(
-      icon: Icons.account_balance_outlined,
+      icon: LucideIcons.landmark,
       message: l10n.accountsEmptyMessage,
       ctaLabel: l10n.accountsAdd,
       onCta: onAddAccount,

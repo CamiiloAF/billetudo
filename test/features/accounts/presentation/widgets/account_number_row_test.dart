@@ -1,13 +1,14 @@
 import 'package:billetudo/features/accounts/presentation/widgets/account_number_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'pump_widget.dart';
 
 void main() {
-  final eye = find.byIcon(Icons.visibility_outlined);
-  final eyeOff = find.byIcon(Icons.visibility_off_outlined);
-  final copy = find.byIcon(Icons.copy_outlined);
+  final eye = find.byIcon(LucideIcons.eye);
+  final eyeOff = find.byIcon(LucideIcons.eyeOff);
+  final copy = find.byIcon(LucideIcons.copy);
 
   group('cuenta normal', () {
     testWidgets('arranca enmascarada: muestra last4, nunca el número entero',

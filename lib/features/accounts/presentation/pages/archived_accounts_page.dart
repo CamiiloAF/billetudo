@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../cubit/archived_accounts_cubit.dart';
@@ -37,7 +38,7 @@ class ArchivedAccountsPage extends StatelessWidget {
             ArchivedAccountsStatus.ready when state.accounts.isEmpty =>
               // No CTA: archiving does not start from here.
               EmptyState(
-                icon: Icons.archive_outlined,
+                icon: LucideIcons.archive,
                 message: l10n.accountsArchivedEmptyMessage,
               ),
             ArchivedAccountsStatus.ready => ListView.separated(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -60,7 +61,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: onCta,
-                icon: const Icon(Icons.add),
+                icon: const Icon(LucideIcons.plus),
                 label: Text(ctaLabel),
               ),
             ],

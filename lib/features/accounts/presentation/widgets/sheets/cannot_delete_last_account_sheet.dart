@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -32,7 +33,7 @@ class CannotDeleteLastAccountSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: Icons.info_outline,
+          icon: LucideIcons.info,
           iconColor: colors.textSecondary,
           iconBackground: colors.muted,
           title: l10n.accountCannotDeleteTitle,
@@ -46,7 +47,7 @@ class CannotDeleteLastAccountSheet extends StatelessWidget {
           ),
           right: OutlinedButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.add),
+            icon: const Icon(LucideIcons.plus),
             label: Text(l10n.accountsAdd),
           ),
         ),

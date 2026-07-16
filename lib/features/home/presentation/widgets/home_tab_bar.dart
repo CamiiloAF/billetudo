@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -32,14 +33,14 @@ class HomeTabBar extends StatelessWidget {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final items = <HomeTabItem>[
-      HomeTabItem(icon: Icons.home_outlined, label: l10n.navHome),
+      HomeTabItem(icon: LucideIcons.home, label: l10n.navHome),
       HomeTabItem(
-        icon: Icons.receipt_long_outlined,
+        icon: LucideIcons.receipt,
         label: l10n.transactionsTitle,
       ),
-      HomeTabItem(icon: Icons.pie_chart_outline, label: l10n.navBudgets),
-      HomeTabItem(icon: Icons.flag_outlined, label: l10n.navGoals),
-      HomeTabItem(icon: Icons.grid_view_outlined, label: l10n.navMore),
+      HomeTabItem(icon: LucideIcons.chartPie, label: l10n.navBudgets),
+      HomeTabItem(icon: LucideIcons.flag, label: l10n.navGoals),
+      HomeTabItem(icon: LucideIcons.layoutGrid, label: l10n.navMore),
     ];
 
     return SafeArea(

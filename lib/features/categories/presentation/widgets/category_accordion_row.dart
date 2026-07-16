@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -60,7 +61,8 @@ class CategoryAccordionRow extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: CategoryAppearance.softColorFor(colors, root.color),
+                      color:
+                          CategoryAppearance.softColorFor(colors, root.color),
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: Icon(
@@ -89,13 +91,15 @@ class CategoryAccordionRow extends StatelessWidget {
                     IconButton(
                       onPressed: onEditRoot,
                       tooltip: l10n.commonEdit,
-                      icon: Icon(Icons.edit_outlined, color: colors.textSecondary),
+                      icon:
+                          Icon(LucideIcons.pencil, color: colors.textSecondary),
                       visualDensity: VisualDensity.compact,
                     ),
                   AnimatedRotation(
                     turns: expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: Icon(Icons.expand_more, color: colors.textSecondary),
+                    child: Icon(LucideIcons.chevronDown,
+                        color: colors.textSecondary),
                   ),
                 ],
               ),
@@ -130,7 +134,7 @@ class CategoryAccordionRow extends StatelessWidget {
                             child: Row(
                               children: [
                                 Icon(
-                                  Icons.add,
+                                  LucideIcons.plus,
                                   size: 18,
                                   color: colors.primaryDeep,
                                 ),

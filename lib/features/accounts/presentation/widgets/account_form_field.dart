@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -187,7 +188,8 @@ class AccountFormSelectorBox extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.expand_more, color: colors.textSecondary, size: 20),
+            Icon(LucideIcons.chevronDown,
+                color: colors.textSecondary, size: 20),
           ],
         ),
       ),

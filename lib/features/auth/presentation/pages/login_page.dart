@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -83,7 +84,7 @@ class LoginPage extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       onPressed: onSkip,
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(LucideIcons.x),
                       style: IconButton.styleFrom(
                         backgroundColor: colors.muted,
                         fixedSize: const Size(44, 44),
@@ -120,7 +121,7 @@ class LoginPage extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  Icons.shield_outlined,
+                                  LucideIcons.shield,
                                   size: 24,
                                   color: colors.primary,
                                 ),

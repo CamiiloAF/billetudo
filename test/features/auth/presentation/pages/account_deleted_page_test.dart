@@ -1,6 +1,6 @@
 import 'package:billetudo/features/auth/presentation/pages/account_deleted_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../widgets/pump_widget.dart';
 
@@ -23,7 +23,7 @@ void main() {
     );
     // Deliberately says nothing about local data one way or the other.
     expect(find.textContaining('dispositivo'), findsNothing);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(LucideIcons.check), findsOneWidget);
   });
 
   testWidgets('el CTA "Ir al inicio" dispara onGoHome', (tester) async {

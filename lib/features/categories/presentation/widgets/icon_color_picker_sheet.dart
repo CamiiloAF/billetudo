@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -43,7 +44,8 @@ class IconColorPickerSheet extends StatefulWidget {
 
 class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
   late String _icon = widget.initialIcon ?? CategoryAppearance.iconNames.first;
-  late String _color = widget.initialColor ?? CategoryAppearance.colorTokens.first;
+  late String _color =
+      widget.initialColor ?? CategoryAppearance.colorTokens.first;
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +111,8 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () => Navigator.of(context)
-                        .pop((icon: _icon, color: _color)),
+                    onPressed: () =>
+                        Navigator.of(context).pop((icon: _icon, color: _color)),
                     child: Text(l10n.commonSave),
                   ),
                 ),
@@ -157,12 +159,13 @@ class CategoryColorSwatch extends StatelessWidget {
             border: selected ? Border.all(color: strong, width: 1.5) : null,
           ),
           child: selected
-              ? Icon(Icons.check, size: 18, color: strong)
+              ? Icon(LucideIcons.check, size: 18, color: strong)
               : Center(
                   child: Container(
                     width: 10,
                     height: 10,
-                    decoration: BoxDecoration(color: strong, shape: BoxShape.circle),
+                    decoration:
+                        BoxDecoration(color: strong, shape: BoxShape.circle),
                   ),
                 ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -46,7 +47,7 @@ class CategoriesPage extends StatelessWidget {
             builder: (context, state) => IconButton(
               onPressed: () => onAddCategory(state.kind),
               tooltip: l10n.categoriesAdd,
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
             ),
           ),
         ],
@@ -68,10 +69,9 @@ class CategoriesPage extends StatelessWidget {
                 builder: (context, state) => switch (state.status) {
                   CategoriesListStatus.loading => const CategoriesLoadingView(),
                   CategoriesListStatus.failure => CategoriesErrorView(
-                      onRetry: () =>
-                          context.read<CategoriesListCubit>().start(
-                                kind: state.kind,
-                              ),
+                      onRetry: () => context.read<CategoriesListCubit>().start(
+                            kind: state.kind,
+                          ),
                     ),
                   CategoriesListStatus.ready when state.nodes.isEmpty =>
                     CategoriesEmptyState(

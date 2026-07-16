@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -38,7 +39,7 @@ class EditImpactWarningSheet extends StatelessWidget {
                 color: colors.amberSoft,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(Icons.link, color: colors.amber, size: 28),
+              child: Icon(LucideIcons.link, color: colors.amber, size: 28),
             ),
             const SizedBox(height: 16),
             Text(

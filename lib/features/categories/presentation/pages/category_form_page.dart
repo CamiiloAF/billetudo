@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -44,7 +45,7 @@ class CategoryFormPage extends StatelessWidget {
             leading: IconButton(
               onPressed: Navigator.of(context).pop,
               tooltip: l10n.commonCancel,
-              icon: const Icon(Icons.close),
+              icon: const Icon(LucideIcons.x),
             ),
             title: Text(_titleFor(l10n, state)),
             actions: [
@@ -53,7 +54,7 @@ class CategoryFormPage extends StatelessWidget {
                     ? null
                     : context.read<CategoryFormCubit>().submit,
                 tooltip: l10n.commonSave,
-                icon: const Icon(Icons.check),
+                icon: const Icon(LucideIcons.check),
               ),
             ],
           ),
@@ -238,7 +239,8 @@ class CategoryFormBody extends StatelessWidget {
 /// Tipo Gasto/Ingreso: a plain toggle, or the locked treatment (candado +
 /// `opacity:0.55` + explanatory caption) per [CategoryFormState.kindLockReason].
 class CategoryKindField extends StatelessWidget {
-  const CategoryKindField({required this.state, required this.onChanged, super.key});
+  const CategoryKindField(
+      {required this.state, required this.onChanged, super.key});
 
   final CategoryFormState state;
   final ValueChanged<CategoryKind> onChanged;
@@ -289,7 +291,7 @@ class CategoryKindField extends StatelessWidget {
         const SizedBox(height: 6),
         Row(
           children: [
-            Icon(Icons.lock_outline, size: 14, color: colors.textSecondary),
+            Icon(LucideIcons.lock, size: 14, color: colors.textSecondary),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
@@ -353,7 +355,8 @@ class CategoryKindOption extends StatelessWidget {
 /// when creating (prefilled from "Agregar subcategoría"), tappable when
 /// editing (reclassification, HU-03).
 class CategoryParentField extends StatelessWidget {
-  const CategoryParentField({required this.state, required this.onTap, super.key});
+  const CategoryParentField(
+      {required this.state, required this.onTap, super.key});
 
   final CategoryFormState state;
   final VoidCallback? onTap;
@@ -384,7 +387,8 @@ class CategoryParentField extends StatelessWidget {
               ),
             ),
             if (editable)
-              Icon(Icons.expand_more, color: colors.textSecondary, size: 20),
+              Icon(LucideIcons.chevronDown,
+                  color: colors.textSecondary, size: 20),
           ],
         ),
       ),

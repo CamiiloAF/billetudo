@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import 'device_preview_phone.dart';
@@ -9,7 +10,8 @@ import 'device_preview_phone.dart';
 /// (Login, `fTetG`/`RSzD1`); reused on the merge confirmation screen
 /// (`vexqA`) with the badge icon swapped to a checkmark.
 class DevicePreviewIllustration extends StatelessWidget {
-  const DevicePreviewIllustration({this.badgeIcon = Icons.sync, super.key});
+  const DevicePreviewIllustration(
+      {this.badgeIcon = LucideIcons.refreshCw, super.key});
 
   final IconData badgeIcon;
 

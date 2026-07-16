@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -131,7 +132,7 @@ class MonthSelectorChip extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Icon(
-                Icons.keyboard_arrow_down,
+                LucideIcons.chevronDown,
                 size: 18,
                 color: colors.onPrimary,
               ),
@@ -170,7 +171,7 @@ class BudgetInvitationLink extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(Icons.arrow_forward, size: 18, color: colors.onPrimary),
+            Icon(LucideIcons.arrowRight, size: 18, color: colors.onPrimary),
           ],
         ),
       ),

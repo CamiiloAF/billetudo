@@ -48,6 +48,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
@@ -73,7 +74,7 @@ Future<void> _addCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
   await $.tester.enterText(find.byType(TextFormField).first, name);
   await $.tester.pumpAndSettle();
-  await $.tester.tap(find.byIcon(Icons.check));
+  await $.tester.tap(find.byIcon(LucideIcons.check));
   await $.tester.pumpAndSettle();
 }
 
@@ -97,7 +98,7 @@ Future<void> _createExpenseCategory(
   await $.tester.pumpAndSettle();
   await $.tester.enterText(find.byType(TextFormField), name);
   await $.tester.pumpAndSettle();
-  await $.tester.tap(find.byIcon(Icons.check));
+  await $.tester.tap(find.byIcon(LucideIcons.check));
   await $.tester.pumpAndSettle();
 }
 

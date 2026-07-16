@@ -15,6 +15,7 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
@@ -41,9 +42,10 @@ void main() {
       await $.tester.pumpAndSettle();
       expect(find.text('Nueva categoría'), findsOneWidget);
 
-      await $.tester.enterText(find.byType(TextFormField), 'Suscripciones test');
+      await $.tester
+          .enterText(find.byType(TextFormField), 'Suscripciones test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       expect(find.text('Suscripciones test'), findsOneWidget);
@@ -64,7 +66,7 @@ void main() {
 
       await $.tester.enterText(find.byType(TextFormField), 'Netflix test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       // Back on the (still expanded) list: root, subcategory count and the
@@ -88,7 +90,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField), 'Borrame test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       expect(find.text('Borrame test'), findsOneWidget);
@@ -127,7 +129,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField), 'Original test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       expect(find.text('Original test'), findsOneWidget);
@@ -138,7 +140,7 @@ void main() {
 
       await $.tester.enterText(find.byType(TextFormField), 'Renombrada test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       // Back on the list: the rename persisted, the old name is gone.
@@ -161,7 +163,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField), 'ConTx test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       expect(find.text('ConTx test'), findsOneWidget);
@@ -237,7 +239,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField), 'RootCascade test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.text('RootCascade test'));
@@ -246,7 +248,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField), 'SubCascade test');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       expect(find.text('RootCascade test'), findsOneWidget);
@@ -292,7 +294,7 @@ void main() {
         await $.tester.pumpAndSettle();
         await $.tester.enterText(find.byType(TextFormField), name);
         await $.tester.pumpAndSettle();
-        await $.tester.tap(find.byIcon(Icons.check));
+        await $.tester.tap(find.byIcon(LucideIcons.check));
         await $.tester.pumpAndSettle();
       }
 

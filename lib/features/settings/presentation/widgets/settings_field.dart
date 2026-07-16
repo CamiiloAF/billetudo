@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -62,7 +63,7 @@ class SettingsField extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: colors.textSecondary),
+                Icon(LucideIcons.chevronRight, color: colors.textSecondary),
               ],
             ),
           ),

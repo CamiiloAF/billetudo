@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class CategoriesEmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(44),
               ),
               child: Icon(
-                Icons.create_new_folder_outlined,
+                LucideIcons.folderPlus,
                 size: 40,
                 color: colors.primaryOnSoft,
               ),
@@ -59,7 +60,7 @@ class CategoriesEmptyState extends StatelessWidget {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: onAddCategory,
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: Text(l10n.categoriesAdd),
             ),
           ],

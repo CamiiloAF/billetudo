@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -60,7 +61,8 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(Icons.info_outline, color: colors.primaryOnSoft, size: 28),
+              child:
+                  Icon(LucideIcons.info, color: colors.primaryOnSoft, size: 28),
             ),
             const SizedBox(height: 16),
             Text(
@@ -78,7 +80,7 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             CategoryDeleteActionRow(
-              icon: Icons.swap_horiz,
+              icon: LucideIcons.arrowLeftRight,
               label: l10n.categoryReassignSubcategoriesOption,
               background: colors.primarySoft,
               foreground: colors.primaryOnSoft,
@@ -97,7 +99,7 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             CategoryDeleteActionRow(
-              icon: Icons.delete_sweep_outlined,
+              icon: LucideIcons.trash2,
               label: l10n.categoryCascadeDeleteOption,
               background: colors.expenseSoft,
               foreground: colors.expense,

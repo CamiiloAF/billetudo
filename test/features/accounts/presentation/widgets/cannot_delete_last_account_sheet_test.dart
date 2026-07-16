@@ -2,6 +2,7 @@ import 'package:billetudo/core/widgets/sheet_buttons_row.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/cannot_delete_last_account_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'pump_widget.dart';
 
@@ -15,8 +16,8 @@ void main() {
       findsOneWidget,
     );
     // Es una restricción del sistema, no un acto destructivo: icono neutral.
-    expect(find.byIcon(Icons.info_outline), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    expect(find.byIcon(LucideIcons.info), findsOneWidget);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
   });
 
   testWidgets(

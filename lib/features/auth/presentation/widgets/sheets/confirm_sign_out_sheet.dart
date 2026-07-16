@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -26,7 +27,7 @@ class ConfirmSignOutSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: Icons.logout,
+          icon: LucideIcons.logOut,
           iconColor: colors.primaryOnSoft,
           iconBackground: colors.primarySoft,
           title: l10n.authSignOutSheetTitle,
@@ -40,7 +41,7 @@ class ConfirmSignOutSheet extends StatelessWidget {
           ),
           right: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(LucideIcons.logOut),
             label: Text(l10n.authSignOutCta),
           ),
         ),

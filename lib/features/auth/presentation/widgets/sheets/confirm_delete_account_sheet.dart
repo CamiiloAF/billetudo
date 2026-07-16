@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -50,7 +51,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
           children: [
             if (hasError)
               SheetMessage(
-                icon: Icons.wifi_off,
+                icon: LucideIcons.wifiOff,
                 iconColor: colors.textSecondary,
                 iconBackground: colors.muted,
                 title: l10n.authDeleteStep1ErrorTitle,
@@ -58,7 +59,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
               )
             else
               SheetMessage(
-                icon: Icons.warning_amber_rounded,
+                icon: LucideIcons.triangleAlert,
                 iconColor: colors.expense,
                 iconBackground: colors.expenseSoft,
                 title: l10n.authDeleteStep1Title,
@@ -73,7 +74,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
               right: hasError
                   ? OutlinedButton.icon(
                       onPressed: isLoading ? null : cubit.retryDelete,
-                      icon: const Icon(Icons.refresh),
+                      icon: const Icon(LucideIcons.refreshCw),
                       label: Text(l10n.commonRetry),
                     )
                   : FilledButton.icon(
@@ -90,7 +91,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             )
-                          : const Icon(Icons.delete_outline),
+                          : const Icon(LucideIcons.trash),
                       label: Text(l10n.authDeleteStep1Cta),
                     ),
             ),

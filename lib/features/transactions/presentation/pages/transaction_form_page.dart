@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -64,7 +65,7 @@ class TransactionFormPage extends StatelessWidget {
             leading: IconButton(
               onPressed: Navigator.of(context).pop,
               tooltip: l10n.commonCancel,
-              icon: const Icon(Icons.close),
+              icon: const Icon(LucideIcons.x),
             ),
             title: Text(_titleFor(l10n, state)),
             actions: [
@@ -73,7 +74,7 @@ class TransactionFormPage extends StatelessWidget {
                     ? null
                     : () => context.read<TransactionFormCubit>().submit(),
                 tooltip: l10n.commonSave,
-                icon: const Icon(Icons.check),
+                icon: const Icon(LucideIcons.check),
               ),
             ],
           ),

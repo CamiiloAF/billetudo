@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -46,7 +47,7 @@ class SettingsPage extends StatelessWidget {
                   SettingsSessionCard(session: session, l10n: l10n)
                 else
                   SettingsField(
-                    icon: Icons.cloud_upload_outlined,
+                    icon: LucideIcons.cloudUpload,
                     label: l10n.settingsBackupTitle,
                     sublabel: l10n.settingsBackupSubtitle,
                     onTap: onOpenLogin,
@@ -54,12 +55,12 @@ class SettingsPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 SettingsSectionLabel(l10n.settingsPreferencesSection),
                 SettingsField(
-                  icon: Icons.palette_outlined,
+                  icon: LucideIcons.palette,
                   label: l10n.settingsAppearance,
                   onTap: () => onOpenComingSoon(l10n.settingsAppearance),
                 ),
                 SettingsField(
-                  icon: Icons.attach_money,
+                  icon: LucideIcons.badgeDollarSign,
                   label: l10n.settingsCurrency,
                   sublabel: l10n.settingsCurrencySubtitle,
                   onTap: () => onOpenComingSoon(l10n.settingsCurrency),
@@ -83,7 +84,7 @@ class SettingsPage extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.delete_outline,
+                              LucideIcons.trash,
                               size: 20,
                               color: colors.expense,
                             ),
@@ -101,7 +102,8 @@ class SettingsPage extends StatelessWidget {
                                   ),
                             ),
                           ),
-                          Icon(Icons.chevron_right, color: colors.expenseText),
+                          Icon(LucideIcons.chevronRight,
+                              color: colors.expenseText),
                         ],
                       ),
                     ),

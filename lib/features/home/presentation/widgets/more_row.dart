@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -56,7 +57,7 @@ class MoreRow extends StatelessWidget {
                   ComingSoonBadge(label: l10n.comingSoonBadge),
                   const SizedBox(width: 8),
                 ],
-                Icon(Icons.chevron_right, color: colors.textSecondary),
+                Icon(LucideIcons.chevronRight, color: colors.textSecondary),
               ],
             ),
           ),

@@ -10,14 +10,15 @@
 import 'package:billetudo/features/accounts/presentation/widgets/account_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
 /// The "add account" app bar action's tooltip (`accountsAdd` in the arb).
 /// Tapping by icon alone is ambiguous: the empty accounts list renders its own
-/// "Agregar cuenta" CTA with the very same [Icons.add] glyph, so
-/// `find.byIcon(Icons.add)` matches two widgets whenever the list is empty —
+/// "Agregar cuenta" CTA with the very same [LucideIcons.plus] glyph, so
+/// `find.byIcon(LucideIcons.plus)` matches two widgets whenever the list is empty —
 /// verified against a real emulator run. The CTA button has no tooltip, so
 /// this finder is unambiguous in every state the list can be in.
 const _addAccountTooltip = 'Agregar cuenta';
@@ -50,9 +51,8 @@ Future<void> _pickDay(
 ) async {
   final label = find.text(selectorLabel);
   await _scrollUntilVisible($, label);
-  final field = find
-      .ancestor(of: label, matching: find.byType(AccountFormField))
-      .first;
+  final field =
+      find.ancestor(of: label, matching: find.byType(AccountFormField)).first;
   final selectorBox =
       find.descendant(of: field, matching: find.byType(InkWell));
   await $.tester.tap(selectorBox);
@@ -83,7 +83,7 @@ void main() {
       );
       await $.tester.pumpAndSettle();
 
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       // Back on the list: the new account and its initial balance, formatted
@@ -113,7 +113,8 @@ void main() {
       await $.tester.tap(find.text('Tarjeta de crédito'));
       await $.tester.pumpAndSettle();
 
-      await $.tester.enterText(find.byType(TextFormField).first, 'Visa Platino');
+      await $.tester
+          .enterText(find.byType(TextFormField).first, 'Visa Platino');
       await $.tester.pumpAndSettle();
 
       final creditLimitField = find.text('Cupo máximo');
@@ -124,7 +125,7 @@ void main() {
       await _pickDay($, 'Día de corte', 15);
       await _pickDay($, 'Día de pago', 5);
 
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       // HU-02/HU-04: the list's credit row shows the card, its debt (the
@@ -160,13 +161,13 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField).first, 'Bolsillo');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.text('Bolsillo'));
       await $.tester.pumpAndSettle();
 
-      await $.tester.tap(find.byIcon(Icons.edit_outlined));
+      await $.tester.tap(find.byIcon(LucideIcons.pencil));
       await $.tester.pumpAndSettle();
       expect(find.text('Editar cuenta'), findsOneWidget);
 
@@ -175,7 +176,7 @@ void main() {
         'Efectivo diario',
       );
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       // Editing pops back to the detail, not the list: the rename must show
@@ -197,9 +198,10 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Banco'));
       await $.tester.pumpAndSettle();
-      await $.tester.enterText(find.byType(TextFormField).first, 'Cuenta vieja');
+      await $.tester
+          .enterText(find.byType(TextFormField).first, 'Cuenta vieja');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.text('Cuenta vieja'));
@@ -214,7 +216,7 @@ void main() {
       // Closing the sheet pops the detail: back on the (now empty) list.
       expect(find.text('Cuenta vieja'), findsNothing);
 
-      await $.tester.tap(find.byIcon(Icons.archive_outlined));
+      await $.tester.tap(find.byIcon(LucideIcons.archive));
       await $.tester.pumpAndSettle();
       expect(find.text('Cuentas archivadas'), findsOneWidget);
       expect(find.text('Cuenta vieja'), findsOneWidget);
@@ -246,7 +248,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.enterText(find.byType(TextFormField).first, 'Única');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byIcon(Icons.check));
+      await $.tester.tap(find.byIcon(LucideIcons.check));
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.text('Única'));
@@ -282,7 +284,7 @@ void main() {
         await $.tester.pumpAndSettle();
         await $.tester.enterText(find.byType(TextFormField).first, name);
         await $.tester.pumpAndSettle();
-        await $.tester.tap(find.byIcon(Icons.check));
+        await $.tester.tap(find.byIcon(LucideIcons.check));
         await $.tester.pumpAndSettle();
       }
 
@@ -327,7 +329,7 @@ void main() {
         await $.tester.pumpAndSettle();
         await $.tester.enterText(find.byType(TextFormField).first, name);
         await $.tester.pumpAndSettle();
-        await $.tester.tap(find.byIcon(Icons.check));
+        await $.tester.tap(find.byIcon(LucideIcons.check));
         await $.tester.pumpAndSettle();
       }
 

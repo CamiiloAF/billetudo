@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../widgets/more_row.dart';
@@ -42,48 +43,48 @@ class MorePage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             MoreRow(
-              icon: Icons.account_balance_wallet_outlined,
+              icon: LucideIcons.wallet,
               label: l10n.accountsTitle,
               onTap: onOpenAccounts,
             ),
             MoreRow(
-              icon: Icons.category_outlined,
+              icon: LucideIcons.shapes,
               label: l10n.categoriesTitle,
               onTap: onOpenCategories,
             ),
             MoreRow(
-              icon: Icons.request_quote_outlined,
+              icon: LucideIcons.handCoins,
               label: l10n.moreDebts,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreDebts),
             ),
             MoreRow(
-              icon: Icons.autorenew,
+              icon: LucideIcons.refreshCw,
               label: l10n.moreRecurring,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreRecurring),
             ),
             MoreRow(
-              icon: Icons.insights_outlined,
+              icon: LucideIcons.chartLine,
               label: l10n.moreReports,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreReports),
             ),
             MoreRow(
-              icon: Icons.import_export,
+              icon: LucideIcons.arrowUpDown,
               label: l10n.moreImportExport,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreImportExport),
             ),
             MoreRow(
-              icon: Icons.settings_outlined,
+              icon: LucideIcons.settings,
               label: l10n.moreSettings,
               onTap: onOpenSettings,
             ),
             if (isSignedIn) ...[
               const SizedBox(height: 16),
               MoreRow(
-                icon: Icons.logout,
+                icon: LucideIcons.logOut,
                 label: l10n.moreSignOut,
                 onTap: onSignOut,
               ),

@@ -6,12 +6,14 @@ import 'package:billetudo/features/categories/presentation/widgets/sheets/confir
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_with_transactions_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../pump_widget.dart';
 
 void main() {
   group('caso 1: sin dependientes', () {
-    testWidgets('icono neutral (color primary, no destructivo) y las 2 acciones', (
+    testWidgets(
+        'icono neutral (color primary, no destructivo) y las 2 acciones', (
       tester,
     ) async {
       await tester.pumpAppWidget(const ConfirmDeleteSimpleSheet());
@@ -25,8 +27,8 @@ void main() {
       expect(find.text('Eliminar'), findsOneWidget);
       // Es reversible vía papelera: nada de rojo/expense aquí.
       // Uno en la cabecera del sheet, otro en el botón "Eliminar".
-      expect(find.byIcon(Icons.delete_outline), findsNWidgets(2));
-      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+      expect(find.byIcon(LucideIcons.trash), findsNWidgets(2));
+      expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
     });
 
     testWidgets('tocar Eliminar resuelve `true`', (tester) async {
@@ -122,7 +124,7 @@ void main() {
       );
 
       expect(find.text('Esta categoría tiene subcategorías'), findsOneWidget);
-      expect(find.byIcon(Icons.info_outline), findsOneWidget);
+      expect(find.byIcon(LucideIcons.info), findsOneWidget);
       expect(find.text('Reasignar subcategorías'), findsOneWidget);
       expect(find.text('Eliminar todo en cascada'), findsOneWidget);
       // Un solo botón, a ancho completo: Cancelar.

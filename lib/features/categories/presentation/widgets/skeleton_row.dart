@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -43,7 +44,7 @@ class CategorySkeletonRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Icon(Icons.chevron_right, color: colors.border),
+          Icon(LucideIcons.chevronRight, color: colors.border),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
@@ -74,7 +75,7 @@ class DateFilterSheetBody extends StatelessWidget {
                     if (filter.isCustomRange)
                       IconButton(
                         onPressed: cubit.clearToThisMonth,
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(LucideIcons.x),
                       ),
                   ],
                 ),
@@ -104,12 +105,12 @@ class DateFilterSheetBody extends StatelessWidget {
                     children: [
                       IconButton(
                         onPressed: () => cubit.step(-1),
-                        icon: const Icon(Icons.chevron_left),
+                        icon: const Icon(LucideIcons.chevronLeft),
                       ),
                       Text(DateFormat.yMMMd('es_CO').format(filter.start)),
                       IconButton(
                         onPressed: () => cubit.step(1),
-                        icon: const Icon(Icons.chevron_right),
+                        icon: const Icon(LucideIcons.chevronRight),
                       ),
                     ],
                   ),

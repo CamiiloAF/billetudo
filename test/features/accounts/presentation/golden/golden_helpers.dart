@@ -42,14 +42,21 @@ void disableGoogleFontsRuntimeFetching() {
 /// with a placeholder glyph (a tofu box) to keep non-golden tests fast and
 /// deterministic. Plus Jakarta Sans escapes that substitution because
 /// `google_fonts` loads its bytes through its own `FontLoader` regardless of
-/// the test binding, but `Icons.*` (Material Icons) does not — so without
+/// the test binding, but `Icons.*` (Material Icons) and `LucideIcons.*`
+/// (this feature's real icon set, see `pubspec.yaml`) do not — so without
 /// this, every icon in a golden renders as a hollow square instead of the
 /// glyph the design actually ships. Call once per golden test file's
 /// `setUpAll`, alongside [disableGoogleFontsRuntimeFetching].
 Future<void> loadMaterialIconsFont() async {
-  final data = await rootBundle.load('fonts/MaterialIcons-Regular.otf');
-  final loader = FontLoader('MaterialIcons')..addFont(Future.value(data));
-  await loader.load();
+  final materialData = await rootBundle.load('fonts/MaterialIcons-Regular.otf');
+  final materialLoader = FontLoader('MaterialIcons')
+    ..addFont(Future.value(materialData));
+  await materialLoader.load();
+
+  final lucideData =
+      await rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf');
+  final lucideLoader = FontLoader('Lucide')..addFont(Future.value(lucideData));
+  await lucideLoader.load();
 }
 
 /// Wraps [child] with the app's real theme (light or dark), locale and

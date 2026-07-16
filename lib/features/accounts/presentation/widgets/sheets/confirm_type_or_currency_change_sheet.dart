@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -29,7 +30,7 @@ class ConfirmTypeOrCurrencyChangeSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: Icons.info_outline,
+          icon: LucideIcons.info,
           iconColor: colors.primaryOnSoft,
           iconBackground: colors.primarySoft,
           title: l10n.accountChangeSheetTitle,
@@ -43,7 +44,7 @@ class ConfirmTypeOrCurrencyChangeSheet extends StatelessWidget {
           ),
           right: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.check),
+            icon: const Icon(LucideIcons.check),
             label: Text(l10n.accountChangeConfirm),
           ),
         ),

@@ -3,17 +3,20 @@ import 'package:billetudo/features/home/presentation/widgets/sheets/month_picker
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'pump_widget.dart';
 
 void main() {
   setUpAll(initializeDateFormatting);
 
-  MonthCell cellFor(WidgetTester tester, String label) => tester.widget<MonthCell>(
+  MonthCell cellFor(WidgetTester tester, String label) =>
+      tester.widget<MonthCell>(
         find.ancestor(of: find.text(label), matching: find.byType(MonthCell)),
       );
 
-  testWidgets('marca el mes seleccionado y deshabilita los meses futuros '
+  testWidgets(
+      'marca el mes seleccionado y deshabilita los meses futuros '
       '(HU-04)', (tester) async {
     // Current month = July 2026; showing July.
     await tester.pumpHomeWidget(
@@ -148,7 +151,7 @@ void main() {
 
     // Going back a year re-enables forward and lifts the future lock for
     // every month of the past year.
-    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.tap(find.byIcon(LucideIcons.chevronLeft));
     await tester.pumpAndSettle();
 
     expect(find.text('2025'), findsOneWidget);

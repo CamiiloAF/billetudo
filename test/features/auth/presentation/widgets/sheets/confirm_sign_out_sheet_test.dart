@@ -2,6 +2,7 @@ import 'package:billetudo/core/widgets/sheet_buttons_row.dart';
 import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_sign_out_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../pump_widget.dart';
 
@@ -22,8 +23,8 @@ void main() {
     );
     // Neutral log-out tone, not the `$expense`/warning tone used by the
     // genuinely destructive delete-account sheet.
-    expect(find.byIcon(Icons.logout), findsWidgets);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    expect(find.byIcon(LucideIcons.logOut), findsWidgets);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
   });
 
   testWidgets('cancelar resuelve `show` en false', (tester) async {

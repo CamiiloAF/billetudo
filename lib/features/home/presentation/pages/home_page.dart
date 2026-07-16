@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -83,7 +84,7 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
       context,
-      icon: Icons.notifications_none,
+      icon: LucideIcons.bell,
       message: l10n.homeNotificationsSheetMessage,
     );
   }
@@ -92,7 +93,7 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
       context,
-      icon: Icons.auto_awesome_outlined,
+      icon: LucideIcons.sparkles,
       message: l10n.homeAiSheetMessage,
       disclaimer: l10n.homeAiDisclaimer,
     );
@@ -113,7 +114,7 @@ class _HomePageState extends State<HomePage> {
             heroTag: _addFabHeroTag,
             onPressed: widget.onAddTransaction,
             tooltip: l10n.transactionsAdd,
-            child: const Icon(Icons.add),
+            child: const Icon(LucideIcons.plus),
           ),
         ),
       ),
@@ -151,8 +152,8 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
                     child: RecentActivityHeader(
                       onSeeAll: widget.onSeeAllTransactions,
-                      showSeeAll: state.status == HomeStatus.ready &&
-                          !state.isEmpty,
+                      showSeeAll:
+                          state.status == HomeStatus.ready && !state.isEmpty,
                     ),
                   ),
                 ),
@@ -193,8 +194,7 @@ class _HomePageState extends State<HomePage> {
                 for (final entry in state.recentActivity)
                   RecentActivityRow(
                     entry: entry,
-                    onTap: () =>
-                        widget.onOpenTransaction(entry.transaction.id),
+                    onTap: () => widget.onOpenTransaction(entry.transaction.id),
                   ),
                 const SizedBox(height: 16),
                 AiBanner(onTap: () => _openAiSheet(context)),
@@ -255,7 +255,7 @@ class RecentActivityHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  Icon(Icons.arrow_forward,
+                  Icon(LucideIcons.arrowRight,
                       size: 16, color: colors.primaryOnSoft),
                 ],
               ),
@@ -315,7 +315,7 @@ class HomeMovementsEmptyState extends StatelessWidget {
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(44),
               ),
-              child: Icon(Icons.receipt_long_outlined,
+              child: Icon(LucideIcons.receipt,
                   size: 40, color: colors.primaryOnSoft),
             ),
             const SizedBox(height: 20),
@@ -328,7 +328,7 @@ class HomeMovementsEmptyState extends StatelessWidget {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: onAdd,
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: Text(l10n.transactionsAdd),
             ),
           ],

@@ -9,10 +9,10 @@ import 'package:billetudo/features/auth/presentation/widgets/google_sign_in_butt
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart'
     show SignInWithAppleButton;
-
 import '../widgets/pump_widget.dart';
 
 class MockSignInWithGoogle extends Mock implements SignInWithGoogle {}
@@ -78,13 +78,12 @@ void main() {
     expect(skipped, isTrue);
   });
 
-  testWidgets(
-      'HU-01: el botón de cerrar también permite posponer sin fricción',
+  testWidgets('HU-01: el botón de cerrar también permite posponer sin fricción',
       (tester) async {
     var skipped = false;
     await pumpLogin(tester, onSkip: () => skipped = true);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(LucideIcons.x));
     await tester.pump();
 
     expect(skipped, isTrue);

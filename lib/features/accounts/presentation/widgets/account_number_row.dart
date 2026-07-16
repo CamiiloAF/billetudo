@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -72,9 +73,7 @@ class AccountNumberRow extends StatelessWidget {
                   ? l10n.accountNumberHide
                   : l10n.accountNumberReveal,
               icon: Icon(
-                isRevealed
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
+                isRevealed ? LucideIcons.eyeOff : LucideIcons.eye,
                 size: 20,
                 color: colors.textSecondary,
               ),
@@ -83,7 +82,7 @@ class AccountNumberRow extends StatelessWidget {
               onPressed: onCopy,
               tooltip: l10n.accountNumberCopy,
               icon: Icon(
-                Icons.copy_outlined,
+                LucideIcons.copy,
                 size: 20,
                 color: colors.textSecondary,
               ),

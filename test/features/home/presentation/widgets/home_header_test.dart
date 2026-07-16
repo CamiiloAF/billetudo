@@ -5,6 +5,7 @@ import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'pump_widget.dart';
 
@@ -26,7 +27,7 @@ void main() {
     await tester.pumpHomeWidget(header());
 
     expect(find.text('Hola de nuevo'), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(find.byIcon(LucideIcons.user), findsOneWidget);
   });
 
   testWidgets('con sesión: saludo con nombre y avatar con inicial (HU-07)',
@@ -35,7 +36,7 @@ void main() {
 
     expect(find.text('Hola de nuevo, Camila'), findsOneWidget);
     expect(find.text('C'), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline), findsNothing);
+    expect(find.byIcon(LucideIcons.user), findsNothing);
   });
 
   testWidgets('en inglés: saludo con nombre localizado (HU-07)',

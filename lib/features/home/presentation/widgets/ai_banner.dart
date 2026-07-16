@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -32,8 +33,7 @@ class AiBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.auto_awesome_outlined,
-                  size: 20, color: colors.primaryOnSoft),
+              Icon(LucideIcons.sparkles, size: 20, color: colors.primaryOnSoft),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -43,7 +43,7 @@ class AiBanner extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward,
+              Icon(LucideIcons.arrowRight,
                   size: 18, color: colors.primaryOnSoft),
             ],
           ),

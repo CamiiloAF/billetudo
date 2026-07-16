@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../l10n/gen/app_localizations.dart';
 import '../theme/app_colors.dart';
@@ -9,7 +10,8 @@ import '../theme/app_colors.dart';
 /// "Más"). Deliberately not a per-feature scaffold — those features are empty
 /// on purpose until their own lote.
 class ComingSoonPage extends StatelessWidget {
-  const ComingSoonPage({required this.title, this.showAppBar = true, super.key});
+  const ComingSoonPage(
+      {required this.title, this.showAppBar = true, super.key});
 
   /// The screen title, already localized (e.g. "Presupuestos").
   final String title;
@@ -49,7 +51,7 @@ class ComingSoonPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(44),
                   ),
                   child: Icon(
-                    Icons.rocket_launch_outlined,
+                    LucideIcons.rocket,
                     size: 40,
                     color: colors.primaryOnSoft,
                   ),
