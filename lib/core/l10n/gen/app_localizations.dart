@@ -1405,6 +1405,192 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nombre de la etiqueta'**
   String get newTagNameHint;
+
+  /// No description provided for @navHome.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio'**
+  String get navHome;
+
+  /// No description provided for @navBudgets.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get navBudgets;
+
+  /// No description provided for @navGoals.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas'**
+  String get navGoals;
+
+  /// No description provided for @navMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Más'**
+  String get navMore;
+
+  /// Saludo genérico del header cuando no hay cuenta ni nombre local.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola de nuevo'**
+  String get homeGreeting;
+
+  /// No description provided for @homeNotificationsTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificaciones'**
+  String get homeNotificationsTooltip;
+
+  /// No description provided for @homeSyncSynced.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizado'**
+  String get homeSyncSynced;
+
+  /// No description provided for @homeSyncSyncing.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizando'**
+  String get homeSyncSyncing;
+
+  /// No description provided for @homeSyncOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get homeSyncOffline;
+
+  /// Etiqueta del hero con el mes visible.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastado en {month}'**
+  String homeSpentInMonth(String month);
+
+  /// No description provided for @homeBudgetInvitation.
+  ///
+  /// In es, this message translates to:
+  /// **'Define un presupuesto para ver cuánto te queda este mes'**
+  String get homeBudgetInvitation;
+
+  /// No description provided for @homeNoSpendingYet.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay gastos este mes'**
+  String get homeNoSpendingYet;
+
+  /// No description provided for @homeRecentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos recientes'**
+  String get homeRecentTitle;
+
+  /// No description provided for @homeSeeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todos'**
+  String get homeSeeAll;
+
+  /// No description provided for @homeEmptyMovements.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no registras movimientos'**
+  String get homeEmptyMovements;
+
+  /// No description provided for @homeLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando inicio'**
+  String get homeLoading;
+
+  /// No description provided for @homeMonthPickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir mes'**
+  String get homeMonthPickerTitle;
+
+  /// No description provided for @homeAiBanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Pronto: pregúntale a Billetudo'**
+  String get homeAiBanner;
+
+  /// No description provided for @homeAiSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Pronto podrás preguntarle a Billetudo sobre tu plata en lenguaje natural.'**
+  String get homeAiSheetMessage;
+
+  /// No description provided for @homeAiDisclaimer.
+  ///
+  /// In es, this message translates to:
+  /// **'No es asesoría financiera.'**
+  String get homeAiDisclaimer;
+
+  /// No description provided for @homeNotificationsSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Las notificaciones llegarán pronto.'**
+  String get homeNotificationsSheetMessage;
+
+  /// No description provided for @comingSoonTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get comingSoonTitle;
+
+  /// No description provided for @comingSoonMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Estamos preparando esta sección. Muy pronto la tendrás aquí.'**
+  String get comingSoonMessage;
+
+  /// No description provided for @comingSoonBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get comingSoonBadge;
+
+  /// No description provided for @comingSoonUnderstood.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get comingSoonUnderstood;
+
+  /// No description provided for @moreTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Más'**
+  String get moreTitle;
+
+  /// No description provided for @moreDebts.
+  ///
+  /// In es, this message translates to:
+  /// **'Deudas'**
+  String get moreDebts;
+
+  /// No description provided for @moreRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrentes'**
+  String get moreRecurring;
+
+  /// No description provided for @moreReports.
+  ///
+  /// In es, this message translates to:
+  /// **'Gráficas e informes'**
+  String get moreReports;
+
+  /// No description provided for @moreImportExport.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar y exportar'**
+  String get moreImportExport;
+
+  /// No description provided for @moreSettings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get moreSettings;
 }
 
 class _AppLocalizationsDelegate

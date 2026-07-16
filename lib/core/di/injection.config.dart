@@ -89,6 +89,10 @@ import 'package:billetudo/features/categories/presentation/cubit/category_form_c
     as _i99;
 import 'package:billetudo/features/categories/presentation/cubit/parent_category_picker_cubit.dart'
     as _i141;
+import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
+    as _i426;
+import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
+    as _i199;
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart'
     as _i1008;
 import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart'
@@ -182,6 +186,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i533.AccountsLocalDatasource>(),
               gh<_i612.AccountNumberLocalDatasource>(),
             ));
+    gh.factory<_i426.WatchMonthTransactions>(
+        () => _i426.WatchMonthTransactions(gh<_i654.TransactionRepository>()));
     gh.factory<_i990.CreateTransaction>(
         () => _i990.CreateTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i612.DeleteTransaction>(
@@ -288,6 +294,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
+        ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
         ));
     gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
           gh<_i832.WatchTransactions>(),

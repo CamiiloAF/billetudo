@@ -744,4 +744,103 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newTagNameHint => 'Nombre de la etiqueta';
+
+  @override
+  String get navHome => 'Inicio';
+
+  @override
+  String get navBudgets => 'Presupuestos';
+
+  @override
+  String get navGoals => 'Metas';
+
+  @override
+  String get navMore => 'Más';
+
+  @override
+  String get homeGreeting => 'Hola de nuevo';
+
+  @override
+  String get homeNotificationsTooltip => 'Notificaciones';
+
+  @override
+  String get homeSyncSynced => 'Sincronizado';
+
+  @override
+  String get homeSyncSyncing => 'Sincronizando';
+
+  @override
+  String get homeSyncOffline => 'Sin conexión';
+
+  @override
+  String homeSpentInMonth(String month) {
+    return 'Gastado en $month';
+  }
+
+  @override
+  String get homeBudgetInvitation =>
+      'Define un presupuesto para ver cuánto te queda este mes';
+
+  @override
+  String get homeNoSpendingYet => 'Aún no hay gastos este mes';
+
+  @override
+  String get homeRecentTitle => 'Movimientos recientes';
+
+  @override
+  String get homeSeeAll => 'Ver todos';
+
+  @override
+  String get homeEmptyMovements => 'Aún no registras movimientos';
+
+  @override
+  String get homeLoading => 'Cargando inicio';
+
+  @override
+  String get homeMonthPickerTitle => 'Elegir mes';
+
+  @override
+  String get homeAiBanner => 'Pronto: pregúntale a Billetudo';
+
+  @override
+  String get homeAiSheetMessage =>
+      'Pronto podrás preguntarle a Billetudo sobre tu plata en lenguaje natural.';
+
+  @override
+  String get homeAiDisclaimer => 'No es asesoría financiera.';
+
+  @override
+  String get homeNotificationsSheetMessage =>
+      'Las notificaciones llegarán pronto.';
+
+  @override
+  String get comingSoonTitle => 'Próximamente';
+
+  @override
+  String get comingSoonMessage =>
+      'Estamos preparando esta sección. Muy pronto la tendrás aquí.';
+
+  @override
+  String get comingSoonBadge => 'Próximamente';
+
+  @override
+  String get comingSoonUnderstood => 'Entendido';
+
+  @override
+  String get moreTitle => 'Más';
+
+  @override
+  String get moreDebts => 'Deudas';
+
+  @override
+  String get moreRecurring => 'Recurrentes';
+
+  @override
+  String get moreReports => 'Gráficas e informes';
+
+  @override
+  String get moreImportExport => 'Importar y exportar';
+
+  @override
+  String get moreSettings => 'Ajustes';
 }

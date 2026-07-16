@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,6 +17,10 @@ import '../../features/categories/presentation/cubit/categories_list_cubit.dart'
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
 import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/categories/presentation/pages/category_form_page.dart';
+import '../../features/home/presentation/cubit/home_cubit.dart';
+import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/home_shell_page.dart';
+import '../../features/home/presentation/pages/more_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -24,14 +29,24 @@ import '../../features/transactions/presentation/pages/transaction_detail_page.d
 import '../../features/transactions/presentation/pages/transaction_form_page.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
-import 'bootstrap_home_page.dart';
+import '../l10n/gen/app_localizations.dart';
+import '../widgets/coming_soon_page.dart';
 
-/// App routes. Each feature registers its own here (Accounts, Categories,
-/// Transactions). Paths stay in Spanish because they are user-visible URLs.
+/// App routes. Each feature registers its own here. Paths stay in Spanish
+/// because they are user-visible URLs.
+///
+/// The app is a five-tab shell (Inicio, Movimientos, Presupuestos, Metas, Más).
+/// List/hub pages live inside their tab branch (the tab bar stays visible);
+/// stacked forms and detail pages render on the root navigator, above the tab
+/// bar (MASTER: a `Page Header` and the `Tab Bar` are mutually exclusive).
 abstract final class AppRoutes {
   const AppRoutes._();
 
   static const String home = '/';
+  static const String budgets = '/presupuestos';
+  static const String goals = '/metas';
+  static const String more = '/mas';
+  static const String comingSoon = '/mas/proximamente';
   static const String accounts = '/cuentas';
   static const String newAccount = '/cuentas/nueva';
   static const String archivedAccounts = '/cuentas/archivadas';
@@ -39,14 +54,17 @@ abstract final class AppRoutes {
   static const String transactions = '/movimientos';
   static const String newTransaction = '/movimientos/nuevo';
 
+  /// A stacked "Próximamente" page titled with a destination's name.
+  static String comingSoonTitled(String title) =>
+      '$comingSoon?title=${Uri.encodeQueryComponent(title)}';
+
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
 
   /// Edit form of one account: `/cuentas/<id>/editar`.
   static String editAccount(String id) => '$accounts/$id/editar';
 
-  /// New root category, optionally starting on `kind`'s Tipo segment
-  /// (whichever Toggle segment was active when `+` was tapped).
+  /// New root category, optionally starting on `kind`'s Tipo segment.
   static String newCategory({CategoryKind kind = CategoryKind.expense}) =>
       '$categories/nueva?kind=${kind.name}';
 
@@ -64,194 +82,281 @@ abstract final class AppRoutes {
   static String editTransaction(String id) => '$transactions/$id/editar';
 }
 
+final GlobalKey<NavigatorState> _rootNavigatorKey =
+    GlobalKey<NavigatorState>();
+
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
-///
-/// Every route owns its cubit: `BlocProvider` builds it from `getIt` and starts
-/// it there, so no page ever reaches into the container itself.
 GoRouter createAppRouter() {
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.home,
     routes: [
-      GoRoute(
-        path: AppRoutes.home,
-        builder: (context, state) => const BootstrapHomePage(),
-      ),
-      GoRoute(
-        path: AppRoutes.accounts,
-        builder: (context, state) => BlocProvider(
-          create: (context) =>
-              _started(getIt<AccountsListCubit>(), (c) => c.start()),
-          child: AccountsPage(
-            onAddAccount: () => context.push(AppRoutes.newAccount),
-            onOpenAccount: (id) => context.push(AppRoutes.account(id)),
-            onOpenArchived: () => context.push(AppRoutes.archivedAccounts),
-          ),
-        ),
-        routes: [
-          // Declared before ':id' so "nueva"/"archivadas" are never read as an
-          // account id.
-          GoRoute(
-            path: 'nueva',
-            builder: (context, state) => BlocProvider(
-              create: (context) =>
-                  _started(getIt<AccountFormCubit>(), (c) => c.load(null)),
-              child: const AccountFormPage(),
-            ),
-          ),
-          GoRoute(
-            path: 'archivadas',
-            builder: (context, state) => BlocProvider(
-              create: (context) =>
-                  _started(getIt<ArchivedAccountsCubit>(), (c) => c.start()),
-              child: const ArchivedAccountsPage(),
-            ),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => BlocProvider(
-              create: (context) => _started(
-                getIt<AccountDetailCubit>(),
-                (c) => c.start(state.pathParameters['id']!),
-              ),
-              child: AccountDetailPage(
-                onEdit: (id) => context.push(AppRoutes.editAccount(id)),
-                onAddAccount: () => context.push(AppRoutes.newAccount),
-              ),
-            ),
-            routes: [
-              GoRoute(
-                path: 'editar',
-                builder: (context, state) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<AccountFormCubit>(),
-                    (c) => c.load(state.pathParameters['id']),
-                  ),
-                  child: const AccountFormPage(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.categories,
-        builder: (context, state) => BlocProvider(
-          create: (context) =>
-              _started(getIt<CategoriesListCubit>(), (c) => c.start()),
-          child: CategoriesPage(
-            onAddCategory: (kind) =>
-                context.push(AppRoutes.newCategory(kind: kind)),
-            onAddSubcategory: (rootId) =>
-                context.push(AppRoutes.newSubcategory(rootId)),
-            onOpenCategory: (id) => context.push(AppRoutes.editCategory(id)),
-          ),
-        ),
-        routes: [
-          // Declared before ':id' so "nueva" is never read as a category id.
-          GoRoute(
-            path: 'nueva',
-            builder: (context, state) => BlocProvider(
-              create: (context) => _started(
-                getIt<CategoryFormCubit>(),
-                (c) => c.load(kind: _kindFromQuery(state.uri)),
-              ),
-              child: const CategoryFormPage(),
-            ),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => BlocProvider(
-              create: (context) => _started(
-                getIt<CategoryFormCubit>(),
-                (c) => c.load(id: state.pathParameters['id']),
-              ),
-              child: const CategoryFormPage(),
-            ),
-            routes: [
-              GoRoute(
-                path: 'editar',
-                builder: (context, state) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<CategoryFormCubit>(),
-                    (c) => c.load(id: state.pathParameters['id']),
-                  ),
-                  child: const CategoryFormPage(),
-                ),
-              ),
-              GoRoute(
-                path: 'subcategoria-nueva',
-                builder: (context, state) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<CategoryFormCubit>(),
-                    (c) => c.load(parentId: state.pathParameters['id']),
-                  ),
-                  child: const CategoryFormPage(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.transactions,
-        builder: (context, state) {
-          final listCubit =
-              _started(getIt<TransactionsListCubit>(), (c) => c.start());
-          return BlocProvider.value(
-            value: listCubit,
-            child: TransactionsPage(
-              onAddTransaction: () => context.push(AppRoutes.newTransaction),
-              // Just navigates and hands back whatever the detail page popped
-              // with. `TransactionsPage` decides what to do with it (HU-05's
-              // "Deshacer" snackbar) using its own `BuildContext` — this one
-              // is an ancestor of the `BlocProvider.value` below, so reading
-              // `TransactionsListCubit` from here throws `ProviderNotFoundError`.
-              onOpenTransaction: (id) =>
-                  context.push<String>(AppRoutes.transaction(id)),
-            ),
-          );
-        },
-        routes: [
-          // Declared before ':id' so "nuevo" is never read as a transaction id.
-          GoRoute(
-            path: 'nuevo',
-            builder: (context, state) => BlocProvider(
-              create: (context) => _started(
-                getIt<TransactionFormCubit>(),
-                (c) => c.load(null, type: _typeFromQuery(state.uri)),
-              ),
-              child: const TransactionFormPage(),
-            ),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => BlocProvider(
-              create: (context) => _started(
-                getIt<TransactionDetailCubit>(),
-                (c) => c.start(state.pathParameters['id']!),
-              ),
-              child: TransactionDetailPage(
-                onEdit: (id) => context.push(AppRoutes.editTransaction(id)),
-              ),
-            ),
-            routes: [
-              GoRoute(
-                path: 'editar',
-                builder: (context, state) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<TransactionFormCubit>(),
-                    (c) => c.load(state.pathParameters['id']),
-                  ),
-                  child: const TransactionFormPage(),
-                ),
-              ),
-            ],
-          ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            HomeShellPage(navigationShell: navigationShell),
+        branches: [
+          _inicioBranch(),
+          _movimientosBranch(),
+          _presupuestosBranch(),
+          _metasBranch(),
+          _masBranch(),
         ],
       ),
     ],
   );
 }
+
+StatefulShellBranch _inicioBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.home,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<HomeCubit>(), (c) => c.start()),
+            child: HomePage(
+              onAddTransaction: () => context.push(AppRoutes.newTransaction),
+              onSeeAllTransactions: () => context.go(AppRoutes.transactions),
+              onOpenTransaction: (id) =>
+                  context.push(AppRoutes.transaction(id)),
+              onCreateBudget: () => context.go(AppRoutes.budgets),
+            ),
+          ),
+        ),
+      ],
+    );
+
+StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.transactions,
+          builder: (context, state) {
+            final listCubit =
+                _started(getIt<TransactionsListCubit>(), (c) => c.start());
+            return BlocProvider.value(
+              value: listCubit,
+              child: TransactionsPage(
+                onAddTransaction: () => context.push(AppRoutes.newTransaction),
+                onOpenTransaction: (id) =>
+                    context.push<String>(AppRoutes.transaction(id)),
+              ),
+            );
+          },
+          routes: [
+            // Declared before ':id' so "nuevo" is never read as an id.
+            GoRoute(
+              path: 'nuevo',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<TransactionFormCubit>(),
+                  (c) => c.load(null, type: _typeFromQuery(state.uri)),
+                ),
+                child: const TransactionFormPage(),
+              ),
+            ),
+            GoRoute(
+              path: ':id',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<TransactionDetailCubit>(),
+                  (c) => c.start(state.pathParameters['id']!),
+                ),
+                child: TransactionDetailPage(
+                  onEdit: (id) => context.push(AppRoutes.editTransaction(id)),
+                ),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'editar',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => _started(
+                      getIt<TransactionFormCubit>(),
+                      (c) => c.load(state.pathParameters['id']),
+                    ),
+                    child: const TransactionFormPage(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.budgets,
+          builder: (context, state) => ComingSoonPage(
+            title: AppLocalizations.of(context).navBudgets,
+            showAppBar: false,
+          ),
+        ),
+      ],
+    );
+
+StatefulShellBranch _metasBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.goals,
+          builder: (context, state) => ComingSoonPage(
+            title: AppLocalizations.of(context).navGoals,
+            showAppBar: false,
+          ),
+        ),
+      ],
+    );
+
+StatefulShellBranch _masBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.more,
+          builder: (context, state) => MorePage(
+            onOpenAccounts: () => context.push(AppRoutes.accounts),
+            onOpenCategories: () => context.push(AppRoutes.categories),
+            onOpenComingSoon: (title) =>
+                context.push(AppRoutes.comingSoonTitled(title)),
+          ),
+          routes: [
+            GoRoute(
+              path: 'proximamente',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => ComingSoonPage(
+                title: state.uri.queryParameters['title'] ??
+                    AppLocalizations.of(context).moreTitle,
+              ),
+            ),
+          ],
+        ),
+        _accountsRoute(),
+        _categoriesRoute(),
+      ],
+    );
+
+GoRoute _accountsRoute() => GoRoute(
+      path: AppRoutes.accounts,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<AccountsListCubit>(), (c) => c.start()),
+        child: AccountsPage(
+          onAddAccount: () => context.push(AppRoutes.newAccount),
+          onOpenAccount: (id) => context.push(AppRoutes.account(id)),
+          onOpenArchived: () => context.push(AppRoutes.archivedAccounts),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'nueva',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<AccountFormCubit>(), (c) => c.load(null)),
+            child: const AccountFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'archivadas',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<ArchivedAccountsCubit>(), (c) => c.start()),
+            child: const ArchivedAccountsPage(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<AccountDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: AccountDetailPage(
+              onEdit: (id) => context.push(AppRoutes.editAccount(id)),
+              onAddAccount: () => context.push(AppRoutes.newAccount),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<AccountFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
+                child: const AccountFormPage(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+GoRoute _categoriesRoute() => GoRoute(
+      path: AppRoutes.categories,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<CategoriesListCubit>(), (c) => c.start()),
+        child: CategoriesPage(
+          onAddCategory: (kind) =>
+              context.push(AppRoutes.newCategory(kind: kind)),
+          onAddSubcategory: (rootId) =>
+              context.push(AppRoutes.newSubcategory(rootId)),
+          onOpenCategory: (id) => context.push(AppRoutes.editCategory(id)),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'nueva',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<CategoryFormCubit>(),
+              (c) => c.load(kind: _kindFromQuery(state.uri)),
+            ),
+            child: const CategoryFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<CategoryFormCubit>(),
+              (c) => c.load(id: state.pathParameters['id']),
+            ),
+            child: const CategoryFormPage(),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<CategoryFormCubit>(),
+                  (c) => c.load(id: state.pathParameters['id']),
+                ),
+                child: const CategoryFormPage(),
+              ),
+            ),
+            GoRoute(
+              path: 'subcategoria-nueva',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<CategoryFormCubit>(),
+                  (c) => c.load(parentId: state.pathParameters['id']),
+                ),
+                child: const CategoryFormPage(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
 
 TransactionType _typeFromQuery(Uri uri) {
   final raw = uri.queryParameters['type'];

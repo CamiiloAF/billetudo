@@ -744,4 +744,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newTagNameHint => 'Tag name';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navBudgets => 'Budgets';
+
+  @override
+  String get navGoals => 'Goals';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String get homeGreeting => 'Welcome back';
+
+  @override
+  String get homeNotificationsTooltip => 'Notifications';
+
+  @override
+  String get homeSyncSynced => 'Synced';
+
+  @override
+  String get homeSyncSyncing => 'Syncing';
+
+  @override
+  String get homeSyncOffline => 'Offline';
+
+  @override
+  String homeSpentInMonth(String month) {
+    return 'Spent in $month';
+  }
+
+  @override
+  String get homeBudgetInvitation =>
+      'Set a budget to see how much you have left this month';
+
+  @override
+  String get homeNoSpendingYet => 'No spending yet this month';
+
+  @override
+  String get homeRecentTitle => 'Recent activity';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeEmptyMovements => 'You have not logged any movements yet';
+
+  @override
+  String get homeLoading => 'Loading home';
+
+  @override
+  String get homeMonthPickerTitle => 'Choose month';
+
+  @override
+  String get homeAiBanner => 'Coming soon: ask Billetudo';
+
+  @override
+  String get homeAiSheetMessage =>
+      'Soon you will be able to ask Billetudo about your money in plain language.';
+
+  @override
+  String get homeAiDisclaimer => 'This is not financial advice.';
+
+  @override
+  String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
+
+  @override
+  String get comingSoonTitle => 'Coming soon';
+
+  @override
+  String get comingSoonMessage =>
+      'We are building this section. It will be here very soon.';
+
+  @override
+  String get comingSoonBadge => 'Coming soon';
+
+  @override
+  String get comingSoonUnderstood => 'Got it';
+
+  @override
+  String get moreTitle => 'More';
+
+  @override
+  String get moreDebts => 'Debts';
+
+  @override
+  String get moreRecurring => 'Recurring';
+
+  @override
+  String get moreReports => 'Charts and reports';
+
+  @override
+  String get moreImportExport => 'Import and export';
+
+  @override
+  String get moreSettings => 'Settings';
 }

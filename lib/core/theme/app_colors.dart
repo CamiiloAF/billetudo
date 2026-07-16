@@ -38,6 +38,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.surface,
     required this.muted,
     required this.border,
+    required this.skeleton,
     required this.textPrimary,
     required this.textSecondary,
     required this.onPrimary,
@@ -74,6 +75,12 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color surface;
   final Color muted;
   final Color border;
+
+  /// Placeholder fill for skeleton loaders only (never borders/dividers). In
+  /// light it matches [border]; in dark it is deliberately lighter so the
+  /// skeleton reads without shouting (MASTER.md).
+  final Color skeleton;
+
   final Color textPrimary;
   final Color textSecondary;
   final Color onPrimary;
@@ -111,6 +118,7 @@ class AppColors extends ThemeExtension<AppColors> {
     surface: Color(0xFFFFFFFF),
     muted: Color(0xFFEEECFB),
     border: Color(0xFFECEBF3),
+    skeleton: Color(0xFFECEBF3),
     textPrimary: Color(0xFF1C1B29),
     textSecondary: Color(0xFF6B6980),
     onPrimary: Color(0xFFFFFFFF),
@@ -149,6 +157,7 @@ class AppColors extends ThemeExtension<AppColors> {
     surface: Color(0xFF1E1E2E),
     muted: Color(0xFF26243B),
     border: Color(0xFF2A2A3D),
+    skeleton: Color(0xFF45455F),
     textPrimary: Color(0xFFF4F3FA),
     textSecondary: Color(0xFF9A98B5),
     onPrimary: Color(0xFFFFFFFF),
@@ -187,6 +196,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? surface,
     Color? muted,
     Color? border,
+    Color? skeleton,
     Color? textPrimary,
     Color? textSecondary,
     Color? onPrimary,
@@ -223,6 +233,7 @@ class AppColors extends ThemeExtension<AppColors> {
       surface: surface ?? this.surface,
       muted: muted ?? this.muted,
       border: border ?? this.border,
+      skeleton: skeleton ?? this.skeleton,
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       onPrimary: onPrimary ?? this.onPrimary,
@@ -265,6 +276,7 @@ class AppColors extends ThemeExtension<AppColors> {
       surface: Color.lerp(surface, other.surface, t)!,
       muted: Color.lerp(muted, other.muted, t)!,
       border: Color.lerp(border, other.border, t)!,
+      skeleton: Color.lerp(skeleton, other.skeleton, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       onPrimary: Color.lerp(onPrimary, other.onPrimary, t)!,
