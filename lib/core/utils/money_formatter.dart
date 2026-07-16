@@ -7,7 +7,18 @@ import 'package:intl/intl.dart';
 ///
 /// Multi-currency note: for now the minor unit is assumed to be 1/100 (cents),
 /// consistent with the storage convention. Reconciling currencies with a
-/// different number of decimals is defined in `10-multi-moneda.md`.
+/// different number of decimals is defined in `12-multi-moneda.md`.
+///
+/// **Locale follow-up (bilingual — pending, app-wide).** [format] and
+/// [formatAmount] default to the `es_CO` grouping/decimals (`$1.234,56`), but
+/// the app now follows the device locale (es/en — see `app.dart`, which no
+/// longer pins `es-CO`). So on an English device the amount still renders in
+/// es-CO style under English UI. Making the *display* formatting follow the
+/// active locale (`Localizations.localeOf(context).toString()`, same fix the
+/// Home dates already got) is a pending change that touches every caller
+/// (Transacciones, Cuentas and Inicio). Parsing (`parseScaled`) intentionally
+/// stays es-CO: it matches the numeric-keypad input convention, not the display
+/// locale, so it is out of scope for this follow-up.
 @lazySingleton
 class MoneyFormatter {
   const MoneyFormatter();
