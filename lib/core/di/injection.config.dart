@@ -343,10 +343,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
         ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-        ));
     gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
           gh<_i832.WatchTransactions>(),
           gh<_i612.DeleteTransaction>(),
@@ -396,6 +392,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
           gh<_i1044.SignInWithGoogle>(),
           gh<_i888.SignInWithApple>(),
+        ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i716.WatchAuthSession>(),
         ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),

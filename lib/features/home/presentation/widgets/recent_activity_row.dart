@@ -52,7 +52,7 @@ class RecentActivityRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _subtitle(transaction),
+                    _subtitle(context, transaction),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall
@@ -75,8 +75,9 @@ class RecentActivityRow extends StatelessWidget {
     );
   }
 
-  String _subtitle(Transaction transaction) {
-    final date = DateFormat.MMMd('es_CO').format(transaction.date);
+  String _subtitle(BuildContext context, Transaction transaction) {
+    final locale = Localizations.localeOf(context).toString();
+    final date = DateFormat.MMMd(locale).format(transaction.date);
     return '${entry.accountName} · $date';
   }
 

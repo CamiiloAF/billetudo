@@ -603,6 +603,15 @@
   "@homeGreeting": {
     "description": "Saludo genérico del header cuando no hay cuenta ni nombre local."
   },
+  "homeGreetingNamed": "Hola de nuevo, {name}",
+  "@homeGreetingNamed": {
+    "description": "Saludo del header cuando hay sesión, con el nombre del usuario.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "homeNotificationsTooltip": "Notificaciones",
   "@homeNotificationsTooltip": {},
   "homeSyncSynced": "Sincronizado",

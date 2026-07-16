@@ -10,15 +10,21 @@ import 'package:flutter_test/flutter_test.dart';
 /// ancestor);
 /// pages that bring their own `Scaffold` (e.g. `MorePage`, `ComingSoonPage`)
 /// pass `false`.
+///
+/// Pass `brightness: Brightness.dark` to render against `AppTheme.dark()`
+/// (HU-11) — the Home is token-driven, so it must render in both themes.
 extension PumpHome on WidgetTester {
   Future<void> pumpHomeWidget(
     Widget child, {
     Locale locale = const Locale('es'),
+    Brightness brightness = Brightness.light,
     bool wrapInScaffold = true,
   }) async {
     await pumpWidget(
       MaterialApp(
-        theme: AppTheme.light(),
+        theme: brightness == Brightness.dark
+            ? AppTheme.dark()
+            : AppTheme.light(),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

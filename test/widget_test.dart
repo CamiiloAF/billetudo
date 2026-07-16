@@ -6,6 +6,8 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
+import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -19,6 +21,8 @@ class _MockWatchAccounts extends Mock implements WatchAccounts {}
 class _MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class _MockWatchAuthSession extends Mock implements WatchAuthSession {}
+
 void main() {
   setUpAll(() {
     // Stops google_fonts from trying to download fonts during tests.
@@ -31,14 +35,18 @@ void main() {
     // whose streams never emit, so the app stays on the loading state (no DB).
     final watchAccounts = _MockWatchAccounts();
     final watchMonthTransactions = _MockWatchMonthTransactions();
+    final watchAuthSession = _MockWatchAuthSession();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
     when(() => watchMonthTransactions(any())).thenAnswer(
       (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
     );
+    when(watchAuthSession.call).thenAnswer(
+      (_) => const Stream<AuthSession>.empty(),
+    );
     getIt.registerFactory<HomeCubit>(
-      () => HomeCubit(watchAccounts, watchMonthTransactions),
+      () => HomeCubit(watchAccounts, watchMonthTransactions, watchAuthSession),
     );
   });
 
@@ -46,6 +54,13 @@ void main() {
 
   testWidgets('BilletudoApp arranca y muestra el shell de navegación',
       (tester) async {
+    // The app now follows the device locale (no forced es_CO): pin the test
+    // device to Spanish so the shell resolves to the es labels.
+    tester.platformDispatcher.localesTestValue = const [Locale('es')];
+    tester.platformDispatcher.localeTestValue = const Locale('es');
+    addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+
     await tester.pumpWidget(const BilletudoApp());
     await tester.pump();
 

@@ -10,7 +10,7 @@ import '../../home_fixtures.dart';
 import 'pump_widget.dart';
 
 void main() {
-  setUpAll(() => initializeDateFormatting('es_CO'));
+  setUpAll(initializeDateFormatting);
 
   Widget row(TransactionWithDetails entry, {VoidCallback? onTap}) =>
       RecentActivityRow(entry: entry, onTap: onTap ?? () {});
@@ -79,6 +79,30 @@ void main() {
     );
 
     expect(find.text('Bancolombia'), findsWidgets);
+  });
+
+  testWidgets('subtítulo en español: mes localizado (es)', (tester) async {
+    await tester.pumpHomeWidget(
+      row(buildActivity(
+        categoryName: 'Mercado',
+        date: DateTime(2026, 7, 15),
+      )),
+    );
+
+    expect(find.textContaining('jul'), findsOneWidget);
+  });
+
+  testWidgets('subtítulo en inglés: mes localizado (en, HU dates)',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      row(buildActivity(
+        categoryName: 'Groceries',
+        date: DateTime(2026, 7, 15),
+      )),
+      locale: const Locale('en'),
+    );
+
+    expect(find.textContaining('Jul'), findsOneWidget);
   });
 
   testWidgets('tocar la fila dispara onTap', (tester) async {

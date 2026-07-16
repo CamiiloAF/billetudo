@@ -223,6 +223,7 @@
   "navGoals": "Goals",
   "navMore": "More",
   "homeGreeting": "Welcome back",
+  "homeGreetingNamed": "Welcome back, {name}",
   "homeNotificationsTooltip": "Notifications",
   "homeSyncSynced": "Synced",
   "homeSyncSyncing": "Syncing",

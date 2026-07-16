@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:patrol/patrol.dart';
@@ -33,5 +34,10 @@ Future<void> startApp(PatrolIntegrationTester $) async {
   await resetLocalDatabase();
   await getIt.reset();
   configureDependencies();
+  // The app follows the device locale (app.dart no longer pins es-CO), but
+  // these scenarios assert Spanish copy and es-CO money formatting. Pin the
+  // locale so the suite is deterministic regardless of the device/emulator
+  // language (Android emulators default to en-US).
+  $.tester.platformDispatcher.localesTestValue = const [Locale('es', 'CO')];
   await $.pumpWidgetAndSettle(const BilletudoApp());
 }

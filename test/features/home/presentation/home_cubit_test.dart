@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -18,21 +22,34 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class MockWatchAuthSession extends Mock implements WatchAuthSession {}
+
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
+  late MockWatchAuthSession watchAuthSession;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
+  const user = AuthUser(
+    id: 'u-1',
+    displayName: 'Camila',
+    provider: AuthProvider.google,
+  );
 
   setUpAll(() => registerFallbackValue(DateTime(2026)));
 
   setUp(() {
     watchAccounts = MockWatchAccounts();
     watchMonthTransactions = MockWatchMonthTransactions();
+    watchAuthSession = MockWatchAuthSession();
+    // Default: signed out; individual tests override to emit a session.
+    when(() => watchAuthSession())
+        .thenAnswer((_) => const Stream<AuthSession>.empty());
   });
 
-  HomeCubit build() => HomeCubit(watchAccounts, watchMonthTransactions);
+  HomeCubit build() =>
+      HomeCubit(watchAccounts, watchMonthTransactions, watchAuthSession);
 
   void stubReady() {
     when(() => watchAccounts()).thenAnswer(
@@ -193,14 +210,57 @@ void main() {
     },
   );
 
-  test('cerrar el cubit cancela ambas suscripciones', () async {
+  blocTest<HomeCubit, HomeState>(
+    'la sesión con nombre puebla user sin gatear el status (HU-07)',
+    setUp: () {
+      stubReady();
+      when(() => watchAuthSession()).thenAnswer(
+        (_) => Stream<AuthSession>.value(const AuthSession.signedIn(user)),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) {
+      expect(cubit.state.user, user);
+      // The status still depends only on accounts + transactions.
+      expect(cubit.state.status, HomeStatus.ready);
+    },
+  );
+
+  blocTest<HomeCubit, HomeState>(
+    'cerrar sesión limpia user a null (HU-07)',
+    setUp: () {
+      stubReady();
+      when(() => watchAuthSession()).thenAnswer(
+        (_) => Stream<AuthSession>.fromIterable(const [
+          AuthSession.signedIn(user),
+          AuthSession.signedOut(),
+        ]),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) => expect(cubit.state.user, isNull),
+  );
+
+  blocTest<HomeCubit, HomeState>(
+    'sin sesión: user queda null (local-first, HU-07)',
+    setUp: stubReady,
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) => expect(cubit.state.user, isNull),
+  );
+
+  test('cerrar el cubit cancela las tres suscripciones', () async {
     final accountsController =
         StreamController<Result<List<AccountWithBalance>>>.broadcast();
     final txController =
         StreamController<Result<List<TransactionWithDetails>>>.broadcast();
+    final authController = StreamController<AuthSession>.broadcast();
     when(() => watchAccounts()).thenAnswer((_) => accountsController.stream);
     when(() => watchMonthTransactions(any()))
         .thenAnswer((_) => txController.stream);
+    when(() => watchAuthSession()).thenAnswer((_) => authController.stream);
 
     final cubit = build();
     await cubit.start();
@@ -208,7 +268,9 @@ void main() {
 
     expect(accountsController.hasListener, isFalse);
     expect(txController.hasListener, isFalse);
+    expect(authController.hasListener, isFalse);
     await accountsController.close();
     await txController.close();
+    await authController.close();
   });
 }

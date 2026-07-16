@@ -7,7 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'pump_widget.dart';
 
 void main() {
-  setUpAll(() => initializeDateFormatting('es_CO'));
+  setUpAll(initializeDateFormatting);
 
   MonthCell cellFor(WidgetTester tester, String label) => tester.widget<MonthCell>(
         find.ancestor(of: find.text(label), matching: find.byType(MonthCell)),
@@ -39,6 +39,27 @@ void main() {
     expect(cellFor(tester, 'Jun').isDisabled, isFalse);
     expect(cellFor(tester, 'Ago').isDisabled, isTrue);
     expect(cellFor(tester, 'Dic').isDisabled, isTrue);
+  });
+
+  testWidgets('etiquetas de mes en inglés cuando el locale es en',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: SizedBox(
+          width: 360,
+          child: MonthPickerSheet(
+            selected: DateTime(2026, 7),
+            currentMonth: DateTime(2026, 7),
+          ),
+        ),
+      ),
+      locale: const Locale('en'),
+    );
+
+    // English short month names, not the Spanish 'Ago'/'Dic'.
+    expect(find.text('Aug'), findsOneWidget);
+    expect(find.text('Dec'), findsOneWidget);
   });
 
   testWidgets('elegir un mes pasado resuelve con el primer día de ese mes',

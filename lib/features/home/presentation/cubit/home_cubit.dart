@@ -6,6 +6,8 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../auth/domain/entities/auth_session.dart';
+import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
@@ -20,14 +22,19 @@ import 'home_state.dart';
 /// stream while the accounts stream stays put.
 @injectable
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._watchAccounts, this._watchMonthTransactions)
-      : super(HomeState.initial(DateTime.now()));
+  HomeCubit(
+    this._watchAccounts,
+    this._watchMonthTransactions,
+    this._watchAuthSession,
+  ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
   final WatchMonthTransactions _watchMonthTransactions;
+  final WatchAuthSession _watchAuthSession;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
+  StreamSubscription<AuthSession>? _authSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastTransactions;
@@ -36,8 +43,19 @@ class HomeCubit extends Cubit<HomeState> {
   /// failure.
   Future<void> start() async {
     await _accountsSub?.cancel();
+    await _authSub?.cancel();
     _accountsSub = _watchAccounts().listen(_onAccounts);
+    _authSub = _watchAuthSession().listen(_onAuthSession);
     await _subscribeTransactions(state.month);
+  }
+
+  /// HU-07: the session updates the greeting/avatar only — it never gates the
+  /// Home's loading/ready status (that stays on accounts + transactions).
+  void _onAuthSession(AuthSession session) {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(user: session.user, updateUser: true));
   }
 
   /// HU-04: change the visible month (hero + recent feed update together).
@@ -97,6 +115,7 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> close() async {
     await _accountsSub?.cancel();
     await _transactionsSub?.cancel();
+    await _authSub?.cancel();
     return super.close();
   }
 }

@@ -81,7 +81,7 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
               children: [
                 for (var month = 1; month <= 12; month++)
                   MonthCell(
-                    label: _monthLabel(month),
+                    label: _monthLabel(context, month),
                     isSelected: _year == widget.selected.year &&
                         month == widget.selected.month,
                     isDisabled: _isFuture(month),
@@ -101,9 +101,10 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
     return candidate.isAfter(widget.currentMonth);
   }
 
-  String _monthLabel(int month) {
+  String _monthLabel(BuildContext context, int month) {
     // A localized short month name; capitalized for the cell.
-    final raw = DateFormat.MMM('es_CO').format(DateTime(_year, month));
+    final locale = Localizations.localeOf(context).toString();
+    final raw = DateFormat.MMM(locale).format(DateTime(_year, month));
     return raw.isEmpty ? raw : raw[0].toUpperCase() + raw.substring(1);
   }
 }

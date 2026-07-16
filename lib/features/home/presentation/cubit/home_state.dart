@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../auth/domain/entities/auth_user.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/entities/month_spending.dart';
@@ -23,6 +24,7 @@ class HomeState extends Equatable {
     this.snapshot,
     this.syncStatus = HomeSyncStatus.synced,
     this.failure,
+    this.user,
   });
 
   /// The month currently visible (first day, at midnight). Defaults to
@@ -47,6 +49,11 @@ class HomeState extends Equatable {
   final HomeSyncStatus syncStatus;
   final Failure? failure;
 
+  /// The signed-in user (HU-07), or null when local-first with no session.
+  /// Tracked independently of [status]: the auth session never gates the
+  /// Home's loading/ready — only accounts + transactions do.
+  final AuthUser? user;
+
   MonthSpending? get spending => snapshot?.spending;
 
   List<TransactionWithDetails> get recentActivity =>
@@ -63,7 +70,9 @@ class HomeState extends Equatable {
     HomeSnapshot? snapshot,
     HomeSyncStatus? syncStatus,
     Failure? failure,
+    AuthUser? user,
     bool clearSnapshot = false,
+    bool updateUser = false,
   }) =>
       HomeState(
         status: status ?? this.status,
@@ -72,6 +81,9 @@ class HomeState extends Equatable {
         snapshot: clearSnapshot ? null : (snapshot ?? this.snapshot),
         syncStatus: syncStatus ?? this.syncStatus,
         failure: failure,
+        // The session updates independently: only overwrite [user] when the
+        // auth stream emits (so it can also be cleared to null on sign-out).
+        user: updateUser ? user : this.user,
       );
 
   @override
@@ -82,5 +94,6 @@ class HomeState extends Equatable {
         snapshot,
         syncStatus,
         failure,
+        user,
       ];
 }

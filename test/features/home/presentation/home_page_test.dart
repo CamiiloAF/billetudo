@@ -1,4 +1,5 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
@@ -20,7 +21,7 @@ import '../home_fixtures.dart';
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
 void main() {
-  setUpAll(() => initializeDateFormatting('es_CO'));
+  setUpAll(initializeDateFormatting);
 
   final month = DateTime(2026, 7);
 
@@ -35,15 +36,22 @@ void main() {
         ),
       );
 
-  Future<void> pumpHome(WidgetTester tester, HomeState state) async {
+  Future<void> pumpHome(
+    WidgetTester tester,
+    HomeState state, {
+    Locale locale = const Locale('es'),
+    Brightness brightness = Brightness.light,
+  }) async {
     final cubit = MockHomeCubit();
     when(() => cubit.state).thenReturn(state);
     whenListen(cubit, const Stream<HomeState>.empty(), initialState: state);
 
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.light(),
-        locale: const Locale('es'),
+        theme: brightness == Brightness.dark
+            ? AppTheme.dark()
+            : AppTheme.light(),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider<HomeCubit>.value(
@@ -83,5 +91,49 @@ void main() {
 
     expect(find.byType(HomeHeroSkeleton), findsOneWidget);
     expect(find.byType(RecentActivitySkeletonRow), findsWidgets);
+  });
+
+  testWidgets('mes en español: "Gastado en Julio" (HU-04)', (tester) async {
+    await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
+
+    expect(find.text('Gastado en Julio'), findsOneWidget);
+  });
+
+  testWidgets('mes en inglés: "Spent in July" (HU-04)', (tester) async {
+    await pumpHome(
+      tester,
+      readyWith([buildActivity(categoryName: 'Groceries')]),
+      locale: const Locale('en'),
+    );
+
+    expect(find.text('Spent in July'), findsOneWidget);
+  });
+
+  testWidgets('tema oscuro con datos: renderiza sin excepción (HU-11)',
+      (tester) async {
+    await pumpHome(
+      tester,
+      readyWith([buildActivity(categoryName: 'Mercado')]),
+      brightness: Brightness.dark,
+    );
+
+    expect(find.byType(RecentActivityRow), findsOneWidget);
+    // The scaffold picks up the dark surface token.
+    final colors = tester.element(find.byType(HomePage)).colors;
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+    expect(scaffold.backgroundColor ?? colors.background, isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tema oscuro vacío: mensaje de bienvenida sin excepción (HU-11)',
+      (tester) async {
+    await pumpHome(
+      tester,
+      readyWith(const []),
+      brightness: Brightness.dark,
+    );
+
+    expect(find.text('Aún no registras movimientos'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

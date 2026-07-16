@@ -1436,6 +1436,12 @@ abstract class AppLocalizations {
   /// **'Hola de nuevo'**
   String get homeGreeting;
 
+  /// Saludo del header cuando hay sesión, con el nombre del usuario.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola de nuevo, {name}'**
+  String homeGreetingNamed(String name);
+
   /// No description provided for @homeNotificationsTooltip.
   ///
   /// In es, this message translates to:

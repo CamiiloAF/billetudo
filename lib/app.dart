@@ -6,7 +6,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
 /// Root widget of billetudo: light/dark theme (following the system), l10n
-/// (es-CO by default) and go_router navigation.
+/// (follows the device locale, resolving against the supported locales — es +
+/// en, with es as the natural fallback) and go_router navigation.
 class BilletudoApp extends StatefulWidget {
   const BilletudoApp({super.key});
 
@@ -28,7 +29,6 @@ class _BilletudoAppState extends State<BilletudoApp> {
       routerConfig: _router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('es', 'CO'),
     );
   }
 }

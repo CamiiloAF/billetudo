@@ -761,6 +761,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeGreeting => 'Hola de nuevo';
 
   @override
+  String homeGreetingNamed(String name) {
+    return 'Hola de nuevo, $name';
+  }
+
+  @override
   String get homeNotificationsTooltip => 'Notificaciones';
 
   @override

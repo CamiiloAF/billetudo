@@ -38,6 +38,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // A unique Hero tag for the FAB: the shell keeps every tab's FAB alive in the
+  // IndexedStack at once, so they must not share the default tag. Not UI copy.
+  static const Object _addFabHeroTag = 'homeAddTransactionFab';
+
   final ScrollController _scrollController = ScrollController();
 
   /// HU-02: the FAB hides on scroll down and comes back on scroll up.
@@ -106,6 +110,7 @@ class _HomePageState extends State<HomePage> {
           duration: const Duration(milliseconds: 200),
           opacity: _fabVisible ? 1 : 0,
           child: FloatingActionButton(
+            heroTag: _addFabHeroTag,
             onPressed: widget.onAddTransaction,
             tooltip: l10n.transactionsAdd,
             child: const Icon(Icons.add),
@@ -123,6 +128,7 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: HomeHeader(
                       syncStatus: state.syncStatus,
+                      user: state.user,
                       onBellTap: () => _openBellSheet(context),
                     ),
                   ),
@@ -134,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                         ? const HomeHeroSkeleton()
                         : HomeHeroCard(
                             spending: state.spending!,
-                            monthLabel: _monthLabel(state.month),
+                            monthLabel: _monthLabel(context, state.month),
                             onMonthTap: () => _openMonthPicker(context, state),
                             onCreateBudget: widget.onCreateBudget,
                           ),
@@ -200,8 +206,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  String _monthLabel(DateTime month) {
-    final raw = DateFormat.MMMM('es_CO').format(month);
+  String _monthLabel(BuildContext context, DateTime month) {
+    final locale = Localizations.localeOf(context).toString();
+    final raw = DateFormat.MMMM(locale).format(month);
     return raw.isEmpty ? raw : raw[0].toUpperCase() + raw.substring(1);
   }
 }
