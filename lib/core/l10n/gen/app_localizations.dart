@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'Atrás'**
   String get commonBack;
 
+  /// No description provided for @commonApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar'**
+  String get commonApply;
+
   /// Mensaje genérico para UnexpectedFailure.
   ///
   /// In es, this message translates to:
@@ -955,6 +961,450 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.'**
   String get categoryCascadeConfirmMessage;
+
+  /// No description provided for @transactionsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get transactionsTitle;
+
+  /// No description provided for @transactionsSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nota o categoría'**
+  String get transactionsSearchHint;
+
+  /// No description provided for @transactionsLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando movimientos'**
+  String get transactionsLoading;
+
+  /// No description provided for @transactionsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay movimientos registrados.'**
+  String get transactionsEmptyMessage;
+
+  /// No description provided for @transactionsEmptyPeriodMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay movimientos en este periodo.'**
+  String get transactionsEmptyPeriodMessage;
+
+  /// No description provided for @transactionsErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus movimientos'**
+  String get transactionsErrorTitle;
+
+  /// No description provided for @transactionsErrorLocalFirst.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos siguen a salvo en este dispositivo.'**
+  String get transactionsErrorLocalFirst;
+
+  /// No description provided for @transactionsAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar movimiento'**
+  String get transactionsAdd;
+
+  /// No description provided for @transactionsUndoDeletedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimiento eliminado.'**
+  String get transactionsUndoDeletedMessage;
+
+  /// No description provided for @transactionsUndoAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer'**
+  String get transactionsUndoAction;
+
+  /// No description provided for @transactionsFilterAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get transactionsFilterAccounts;
+
+  /// No description provided for @transactionsFilterCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get transactionsFilterCategories;
+
+  /// No description provided for @transactionsFilterType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get transactionsFilterType;
+
+  /// No description provided for @transactionsFilterDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get transactionsFilterDate;
+
+  /// No description provided for @transactionsFilterTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiqueta'**
+  String get transactionsFilterTag;
+
+  /// No description provided for @transactionsSortDateDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Más recientes primero'**
+  String get transactionsSortDateDesc;
+
+  /// No description provided for @transactionsSortAmountDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto: mayor a menor'**
+  String get transactionsSortAmountDesc;
+
+  /// No description provided for @transactionTypeExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get transactionTypeExpense;
+
+  /// No description provided for @transactionTypeIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso'**
+  String get transactionTypeIncome;
+
+  /// No description provided for @transactionTypeTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get transactionTypeTransfer;
+
+  /// No description provided for @transactionFormNewExpenseTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo gasto'**
+  String get transactionFormNewExpenseTitle;
+
+  /// No description provided for @transactionFormNewIncomeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo ingreso'**
+  String get transactionFormNewIncomeTitle;
+
+  /// No description provided for @transactionFormNewTransferTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva transferencia'**
+  String get transactionFormNewTransferTitle;
+
+  /// No description provided for @transactionFormEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar movimiento'**
+  String get transactionFormEditTitle;
+
+  /// No description provided for @transactionFormAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get transactionFormAmountLabel;
+
+  /// No description provided for @transactionFormAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get transactionFormAccountLabel;
+
+  /// No description provided for @transactionFormAccountChoose.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir cuenta'**
+  String get transactionFormAccountChoose;
+
+  /// No description provided for @transactionFormTransferAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta destino'**
+  String get transactionFormTransferAccountLabel;
+
+  /// No description provided for @transactionFormCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get transactionFormCategoryLabel;
+
+  /// No description provided for @transactionFormCategoryNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get transactionFormCategoryNone;
+
+  /// No description provided for @transactionFormDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get transactionFormDateLabel;
+
+  /// No description provided for @transactionFormNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get transactionFormNoteLabel;
+
+  /// No description provided for @transactionFormNoteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega una nota (opcional)'**
+  String get transactionFormNoteHint;
+
+  /// No description provided for @transactionFormTagsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get transactionFormTagsLabel;
+
+  /// No description provided for @transactionFormAddTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar etiqueta'**
+  String get transactionFormAddTag;
+
+  /// No description provided for @transactionFormSourceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Origen'**
+  String get transactionFormSourceLabel;
+
+  /// No description provided for @transactionSourceManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get transactionSourceManual;
+
+  /// No description provided for @transactionSourceVoice.
+  ///
+  /// In es, this message translates to:
+  /// **'Voz'**
+  String get transactionSourceVoice;
+
+  /// No description provided for @transactionSourceOcr.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto de recibo'**
+  String get transactionSourceOcr;
+
+  /// No description provided for @transactionSourceNotification.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificación bancaria'**
+  String get transactionSourceNotification;
+
+  /// No description provided for @transactionSourceImported.
+  ///
+  /// In es, this message translates to:
+  /// **'Importado'**
+  String get transactionSourceImported;
+
+  /// No description provided for @transactionSourceRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrente'**
+  String get transactionSourceRecurring;
+
+  /// No description provided for @transactionEditImpactTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Este movimiento está vinculado'**
+  String get transactionEditImpactTitle;
+
+  /// No description provided for @transactionEditImpactRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Afecta su recurrente asociado.'**
+  String get transactionEditImpactRecurring;
+
+  /// No description provided for @transactionEditImpactGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Afecta la meta a la que aporta.'**
+  String get transactionEditImpactGoal;
+
+  /// No description provided for @transactionEditImpactDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Afecta la deuda a la que abona.'**
+  String get transactionEditImpactDebt;
+
+  /// No description provided for @transactionEditImpactConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar de todas formas'**
+  String get transactionEditImpactConfirm;
+
+  /// No description provided for @transactionDeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar este movimiento?'**
+  String get transactionDeleteTitle;
+
+  /// No description provided for @transactionDeleteMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrás recuperarlo después desde la papelera.'**
+  String get transactionDeleteMessage;
+
+  /// No description provided for @transactionDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle del movimiento'**
+  String get transactionDetailTitle;
+
+  /// No description provided for @transactionDetailEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get transactionDetailEdit;
+
+  /// No description provided for @transactionDetailDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get transactionDetailDelete;
+
+  /// No description provided for @transactionDetailSource.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrado como {source}'**
+  String transactionDetailSource(String source);
+
+  /// No description provided for @transactionDetailAccountLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta: {account}'**
+  String transactionDetailAccountLine(String account);
+
+  /// No description provided for @transactionDetailTransferLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta destino: {account}'**
+  String transactionDetailTransferLine(String account);
+
+  /// No description provided for @transactionDetailCategoryLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría: {category}'**
+  String transactionDetailCategoryLine(String category);
+
+  /// No description provided for @transactionDetailNoteLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota: {note}'**
+  String transactionDetailNoteLine(String note);
+
+  /// No description provided for @transactionDetailTagsLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas: {tags}'**
+  String transactionDetailTagsLine(String tags);
+
+  /// No description provided for @accountFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por cuenta'**
+  String get accountFilterSheetTitle;
+
+  /// No description provided for @accountFilterSelectAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get accountFilterSelectAll;
+
+  /// No description provided for @accountFilterSelectNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna'**
+  String get accountFilterSelectNone;
+
+  /// No description provided for @categoryFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por categoría'**
+  String get categoryFilterSheetTitle;
+
+  /// No description provided for @typeFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por tipo'**
+  String get typeFilterSheetTitle;
+
+  /// No description provided for @dateFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por fecha'**
+  String get dateFilterSheetTitle;
+
+  /// No description provided for @dateFilterWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get dateFilterWeek;
+
+  /// No description provided for @dateFilterMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get dateFilterMonth;
+
+  /// No description provided for @dateFilterYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Año'**
+  String get dateFilterYear;
+
+  /// No description provided for @dateFilterCustomRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Rango personalizado'**
+  String get dateFilterCustomRange;
+
+  /// No description provided for @dateFilterStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde'**
+  String get dateFilterStart;
+
+  /// No description provided for @dateFilterEnd.
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta'**
+  String get dateFilterEnd;
+
+  /// No description provided for @dateFilterRangeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{start} - {end}'**
+  String dateFilterRangeLabel(String start, String end);
+
+  /// No description provided for @tagFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por etiqueta'**
+  String get tagFilterSheetTitle;
+
+  /// No description provided for @newTagSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva etiqueta'**
+  String get newTagSheetTitle;
+
+  /// No description provided for @newTagNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la etiqueta'**
+  String get newTagNameHint;
 }
 
 class _AppLocalizationsDelegate

@@ -34,6 +34,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonBack => 'Atrás';
 
   @override
+  String get commonApply => 'Aplicar';
+
+  @override
   String get errorUnexpected => 'Algo salió mal. Intenta de nuevo.';
 
   @override
@@ -501,4 +504,244 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get categoryCascadeConfirmMessage =>
       'Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.';
+
+  @override
+  String get transactionsTitle => 'Movimientos';
+
+  @override
+  String get transactionsSearchHint => 'Buscar por nota o categoría';
+
+  @override
+  String get transactionsLoading => 'Cargando movimientos';
+
+  @override
+  String get transactionsEmptyMessage =>
+      'Todavía no hay movimientos registrados.';
+
+  @override
+  String get transactionsEmptyPeriodMessage =>
+      'No hay movimientos en este periodo.';
+
+  @override
+  String get transactionsErrorTitle => 'No pudimos cargar tus movimientos';
+
+  @override
+  String get transactionsErrorLocalFirst =>
+      'Tus datos siguen a salvo en este dispositivo.';
+
+  @override
+  String get transactionsAdd => 'Agregar movimiento';
+
+  @override
+  String get transactionsUndoDeletedMessage => 'Movimiento eliminado.';
+
+  @override
+  String get transactionsUndoAction => 'Deshacer';
+
+  @override
+  String get transactionsFilterAccounts => 'Cuentas';
+
+  @override
+  String get transactionsFilterCategories => 'Categorías';
+
+  @override
+  String get transactionsFilterType => 'Tipo';
+
+  @override
+  String get transactionsFilterDate => 'Fecha';
+
+  @override
+  String get transactionsFilterTag => 'Etiqueta';
+
+  @override
+  String get transactionsSortDateDesc => 'Más recientes primero';
+
+  @override
+  String get transactionsSortAmountDesc => 'Monto: mayor a menor';
+
+  @override
+  String get transactionTypeExpense => 'Gasto';
+
+  @override
+  String get transactionTypeIncome => 'Ingreso';
+
+  @override
+  String get transactionTypeTransfer => 'Transferencia';
+
+  @override
+  String get transactionFormNewExpenseTitle => 'Nuevo gasto';
+
+  @override
+  String get transactionFormNewIncomeTitle => 'Nuevo ingreso';
+
+  @override
+  String get transactionFormNewTransferTitle => 'Nueva transferencia';
+
+  @override
+  String get transactionFormEditTitle => 'Editar movimiento';
+
+  @override
+  String get transactionFormAmountLabel => 'Monto';
+
+  @override
+  String get transactionFormAccountLabel => 'Cuenta';
+
+  @override
+  String get transactionFormAccountChoose => 'Elegir cuenta';
+
+  @override
+  String get transactionFormTransferAccountLabel => 'Cuenta destino';
+
+  @override
+  String get transactionFormCategoryLabel => 'Categoría';
+
+  @override
+  String get transactionFormCategoryNone => 'Sin categoría';
+
+  @override
+  String get transactionFormDateLabel => 'Fecha';
+
+  @override
+  String get transactionFormNoteLabel => 'Nota';
+
+  @override
+  String get transactionFormNoteHint => 'Agrega una nota (opcional)';
+
+  @override
+  String get transactionFormTagsLabel => 'Etiquetas';
+
+  @override
+  String get transactionFormAddTag => 'Agregar etiqueta';
+
+  @override
+  String get transactionFormSourceLabel => 'Origen';
+
+  @override
+  String get transactionSourceManual => 'Manual';
+
+  @override
+  String get transactionSourceVoice => 'Voz';
+
+  @override
+  String get transactionSourceOcr => 'Foto de recibo';
+
+  @override
+  String get transactionSourceNotification => 'Notificación bancaria';
+
+  @override
+  String get transactionSourceImported => 'Importado';
+
+  @override
+  String get transactionSourceRecurring => 'Recurrente';
+
+  @override
+  String get transactionEditImpactTitle => 'Este movimiento está vinculado';
+
+  @override
+  String get transactionEditImpactRecurring => 'Afecta su recurrente asociado.';
+
+  @override
+  String get transactionEditImpactGoal => 'Afecta la meta a la que aporta.';
+
+  @override
+  String get transactionEditImpactDebt => 'Afecta la deuda a la que abona.';
+
+  @override
+  String get transactionEditImpactConfirm => 'Guardar de todas formas';
+
+  @override
+  String get transactionDeleteTitle => '¿Eliminar este movimiento?';
+
+  @override
+  String get transactionDeleteMessage =>
+      'Podrás recuperarlo después desde la papelera.';
+
+  @override
+  String get transactionDetailTitle => 'Detalle del movimiento';
+
+  @override
+  String get transactionDetailEdit => 'Editar';
+
+  @override
+  String get transactionDetailDelete => 'Eliminar';
+
+  @override
+  String transactionDetailSource(String source) {
+    return 'Registrado como $source';
+  }
+
+  @override
+  String transactionDetailAccountLine(String account) {
+    return 'Cuenta: $account';
+  }
+
+  @override
+  String transactionDetailTransferLine(String account) {
+    return 'Cuenta destino: $account';
+  }
+
+  @override
+  String transactionDetailCategoryLine(String category) {
+    return 'Categoría: $category';
+  }
+
+  @override
+  String transactionDetailNoteLine(String note) {
+    return 'Nota: $note';
+  }
+
+  @override
+  String transactionDetailTagsLine(String tags) {
+    return 'Etiquetas: $tags';
+  }
+
+  @override
+  String get accountFilterSheetTitle => 'Filtrar por cuenta';
+
+  @override
+  String get accountFilterSelectAll => 'Todas';
+
+  @override
+  String get accountFilterSelectNone => 'Ninguna';
+
+  @override
+  String get categoryFilterSheetTitle => 'Filtrar por categoría';
+
+  @override
+  String get typeFilterSheetTitle => 'Filtrar por tipo';
+
+  @override
+  String get dateFilterSheetTitle => 'Filtrar por fecha';
+
+  @override
+  String get dateFilterWeek => 'Semana';
+
+  @override
+  String get dateFilterMonth => 'Mes';
+
+  @override
+  String get dateFilterYear => 'Año';
+
+  @override
+  String get dateFilterCustomRange => 'Rango personalizado';
+
+  @override
+  String get dateFilterStart => 'Desde';
+
+  @override
+  String get dateFilterEnd => 'Hasta';
+
+  @override
+  String dateFilterRangeLabel(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get tagFilterSheetTitle => 'Filtrar por etiqueta';
+
+  @override
+  String get newTagSheetTitle => 'Nueva etiqueta';
+
+  @override
+  String get newTagNameHint => 'Nombre de la etiqueta';
 }

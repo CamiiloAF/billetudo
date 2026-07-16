@@ -16,6 +16,13 @@ import '../../features/categories/presentation/cubit/categories_list_cubit.dart'
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
 import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/categories/presentation/pages/category_form_page.dart';
+import '../../features/transactions/domain/entities/transaction.dart';
+import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
+import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
+import '../../features/transactions/presentation/cubit/transactions_list_cubit.dart';
+import '../../features/transactions/presentation/pages/transaction_detail_page.dart';
+import '../../features/transactions/presentation/pages/transaction_form_page.dart';
+import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
 import 'bootstrap_home_page.dart';
 
@@ -30,6 +37,7 @@ abstract final class AppRoutes {
   static const String archivedAccounts = '/cuentas/archivadas';
   static const String categories = '/categorias';
   static const String transactions = '/movimientos';
+  static const String newTransaction = '/movimientos/nuevo';
 
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
@@ -48,6 +56,12 @@ abstract final class AppRoutes {
   /// New subcategory of the root category [parentId].
   static String newSubcategory(String parentId) =>
       '$categories/$parentId/subcategoria-nueva';
+
+  /// Detail of one transaction: `/movimientos/<id>`.
+  static String transaction(String id) => '$transactions/$id';
+
+  /// Edit form of one transaction: `/movimientos/<id>/editar`.
+  static String editTransaction(String id) => '$transactions/$id/editar';
 }
 
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
@@ -178,7 +192,72 @@ GoRouter createAppRouter() {
           ),
         ],
       ),
+      GoRoute(
+        path: AppRoutes.transactions,
+        builder: (context, state) {
+          final listCubit =
+              _started(getIt<TransactionsListCubit>(), (c) => c.start());
+          return BlocProvider.value(
+            value: listCubit,
+            child: TransactionsPage(
+              onAddTransaction: () => context.push(AppRoutes.newTransaction),
+              // Just navigates and hands back whatever the detail page popped
+              // with. `TransactionsPage` decides what to do with it (HU-05's
+              // "Deshacer" snackbar) using its own `BuildContext` — this one
+              // is an ancestor of the `BlocProvider.value` below, so reading
+              // `TransactionsListCubit` from here throws `ProviderNotFoundError`.
+              onOpenTransaction: (id) =>
+                  context.push<String>(AppRoutes.transaction(id)),
+            ),
+          );
+        },
+        routes: [
+          // Declared before ':id' so "nuevo" is never read as a transaction id.
+          GoRoute(
+            path: 'nuevo',
+            builder: (context, state) => BlocProvider(
+              create: (context) => _started(
+                getIt<TransactionFormCubit>(),
+                (c) => c.load(null, type: _typeFromQuery(state.uri)),
+              ),
+              child: const TransactionFormPage(),
+            ),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => BlocProvider(
+              create: (context) => _started(
+                getIt<TransactionDetailCubit>(),
+                (c) => c.start(state.pathParameters['id']!),
+              ),
+              child: TransactionDetailPage(
+                onEdit: (id) => context.push(AppRoutes.editTransaction(id)),
+              ),
+            ),
+            routes: [
+              GoRoute(
+                path: 'editar',
+                builder: (context, state) => BlocProvider(
+                  create: (context) => _started(
+                    getIt<TransactionFormCubit>(),
+                    (c) => c.load(state.pathParameters['id']),
+                  ),
+                  child: const TransactionFormPage(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
+  );
+}
+
+TransactionType _typeFromQuery(Uri uri) {
+  final raw = uri.queryParameters['type'];
+  return TransactionType.values.firstWhere(
+    (type) => type.name == raw,
+    orElse: () => TransactionType.expense,
   );
 }
 

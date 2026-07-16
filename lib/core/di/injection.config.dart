@@ -89,6 +89,52 @@ import 'package:billetudo/features/categories/presentation/cubit/category_form_c
     as _i99;
 import 'package:billetudo/features/categories/presentation/cubit/parent_category_picker_cubit.dart'
     as _i141;
+import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart'
+    as _i1008;
+import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart'
+    as _i556;
+import 'package:billetudo/features/transactions/data/repositories/tag_repository_impl.dart'
+    as _i672;
+import 'package:billetudo/features/transactions/data/repositories/transaction_repository_impl.dart'
+    as _i10;
+import 'package:billetudo/features/transactions/domain/repositories/tag_repository.dart'
+    as _i716;
+import 'package:billetudo/features/transactions/domain/repositories/transaction_repository.dart'
+    as _i654;
+import 'package:billetudo/features/transactions/domain/usecases/create_tag.dart'
+    as _i281;
+import 'package:billetudo/features/transactions/domain/usecases/create_transaction.dart'
+    as _i990;
+import 'package:billetudo/features/transactions/domain/usecases/delete_transaction.dart'
+    as _i612;
+import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
+    as _i604;
+import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart'
+    as _i177;
+import 'package:billetudo/features/transactions/domain/usecases/set_transaction_tags.dart'
+    as _i460;
+import 'package:billetudo/features/transactions/domain/usecases/update_transaction.dart'
+    as _i885;
+import 'package:billetudo/features/transactions/domain/usecases/watch_tags.dart'
+    as _i121;
+import 'package:billetudo/features/transactions/domain/usecases/watch_transaction_detail.dart'
+    as _i276;
+import 'package:billetudo/features/transactions/domain/usecases/watch_transactions.dart'
+    as _i832;
+import 'package:billetudo/features/transactions/presentation/cubit/account_filter_cubit.dart'
+    as _i722;
+import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart'
+    as _i315;
+import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart'
+    as _i499;
+import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart'
+    as _i506;
+import 'package:billetudo/features/transactions/presentation/cubit/transaction_detail_cubit.dart'
+    as _i774;
+import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_cubit.dart'
+    as _i724;
+import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart'
+    as _i536;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -105,6 +151,9 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final registerModule = _$RegisterModule();
+    gh.factory<_i604.GetTransactionEditImpact>(
+        () => const _i604.GetTransactionEditImpact());
+    gh.factory<_i499.DateFilterCubit>(() => _i499.DateFilterCubit());
     gh.lazySingleton<_i249.AppDatabase>(() => registerModule.appDatabase());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
         () => registerModule.secureStorage());
@@ -117,6 +166,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i533.AccountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i1008.TagsLocalDatasource>(
+        () => _i1008.TagsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i556.TransactionsLocalDatasource>(
+        () => _i556.TransactionsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i654.TransactionRepository>(
+        () => _i10.TransactionRepositoryImpl(
+              gh<_i556.TransactionsLocalDatasource>(),
+              gh<_i1008.TagsLocalDatasource>(),
+            ));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
     gh.lazySingleton<_i1067.AccountRepository>(
@@ -124,6 +182,20 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i533.AccountsLocalDatasource>(),
               gh<_i612.AccountNumberLocalDatasource>(),
             ));
+    gh.factory<_i990.CreateTransaction>(
+        () => _i990.CreateTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i612.DeleteTransaction>(
+        () => _i612.DeleteTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i177.RestoreTransaction>(
+        () => _i177.RestoreTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i460.SetTransactionTags>(
+        () => _i460.SetTransactionTags(gh<_i654.TransactionRepository>()));
+    gh.factory<_i885.UpdateTransaction>(
+        () => _i885.UpdateTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i276.WatchTransactionDetail>(
+        () => _i276.WatchTransactionDetail(gh<_i654.TransactionRepository>()));
+    gh.factory<_i832.WatchTransactions>(
+        () => _i832.WatchTransactions(gh<_i654.TransactionRepository>()));
     gh.lazySingleton<_i802.CategoryRepository>(() =>
         _i983.CategoryRepositoryImpl(gh<_i151.CategoriesLocalDatasource>()));
     gh.factory<_i885.CreateCategory>(
@@ -149,6 +221,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
           gh<_i722.WatchCategories>(),
           gh<_i562.ReorderCategories>(),
+        ));
+    gh.factory<_i315.CategoryFilterCubit>(
+        () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
+    gh.lazySingleton<_i716.TagRepository>(
+        () => _i672.TagRepositoryImpl(gh<_i1008.TagsLocalDatasource>()));
+    gh.factory<_i281.CreateTag>(
+        () => _i281.CreateTag(gh<_i716.TagRepository>()));
+    gh.factory<_i121.WatchTags>(
+        () => _i121.WatchTags(gh<_i716.TagRepository>()));
+    gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
+          gh<_i276.WatchTransactionDetail>(),
+          gh<_i612.DeleteTransaction>(),
         ));
     gh.factory<_i79.ArchiveAccount>(
         () => _i79.ArchiveAccount(gh<_i1067.AccountRepository>()));
@@ -176,6 +260,19 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i902.WatchAccountsOverview(gh<_i1067.AccountRepository>()));
     gh.factory<_i545.WatchArchivedAccounts>(
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
+    gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
+          gh<_i121.WatchTags>(),
+          gh<_i281.CreateTag>(),
+        ));
+    gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
+          gh<_i990.CreateTransaction>(),
+          gh<_i885.UpdateTransaction>(),
+          gh<_i276.WatchTransactionDetail>(),
+          gh<_i604.GetTransactionEditImpact>(),
+          gh<_i460.SetTransactionTags>(),
+        ));
+    gh.factory<_i722.AccountFilterCubit>(
+        () => _i722.AccountFilterCubit(gh<_i837.WatchAccounts>()));
     gh.factory<_i141.ParentCategoryPickerCubit>(
         () => _i141.ParentCategoryPickerCubit(
               gh<_i172.WatchParentCandidates>(),
@@ -191,6 +288,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
+        ));
+    gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
+          gh<_i832.WatchTransactions>(),
+          gh<_i612.DeleteTransaction>(),
+          gh<_i177.RestoreTransaction>(),
         ));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),

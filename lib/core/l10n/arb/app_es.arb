@@ -22,6 +22,8 @@
   "@commonBack": {
     "description": "Etiqueta accesible del botón atrás del Page Header."
   },
+  "commonApply": "Aplicar",
+  "@commonApply": {},
   "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
   "@errorUnexpected": {
     "description": "Mensaje genérico para UnexpectedFailure."
@@ -395,5 +397,198 @@
   "categoryCascadeConfirmTitle": "¿Eliminar la categoría y sus subcategorías?",
   "@categoryCascadeConfirmTitle": {},
   "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.",
-  "@categoryCascadeConfirmMessage": {}
+  "@categoryCascadeConfirmMessage": {},
+  "transactionsTitle": "Movimientos",
+  "@transactionsTitle": {},
+  "transactionsSearchHint": "Buscar por nota o categoría",
+  "@transactionsSearchHint": {},
+  "transactionsLoading": "Cargando movimientos",
+  "@transactionsLoading": {},
+  "transactionsEmptyMessage": "Todavía no hay movimientos registrados.",
+  "@transactionsEmptyMessage": {},
+  "transactionsEmptyPeriodMessage": "No hay movimientos en este periodo.",
+  "@transactionsEmptyPeriodMessage": {},
+  "transactionsErrorTitle": "No pudimos cargar tus movimientos",
+  "@transactionsErrorTitle": {},
+  "transactionsErrorLocalFirst": "Tus datos siguen a salvo en este dispositivo.",
+  "@transactionsErrorLocalFirst": {},
+  "transactionsAdd": "Agregar movimiento",
+  "@transactionsAdd": {},
+  "transactionsUndoDeletedMessage": "Movimiento eliminado.",
+  "@transactionsUndoDeletedMessage": {},
+  "transactionsUndoAction": "Deshacer",
+  "@transactionsUndoAction": {},
+  "transactionsFilterAccounts": "Cuentas",
+  "@transactionsFilterAccounts": {},
+  "transactionsFilterCategories": "Categorías",
+  "@transactionsFilterCategories": {},
+  "transactionsFilterType": "Tipo",
+  "@transactionsFilterType": {},
+  "transactionsFilterDate": "Fecha",
+  "@transactionsFilterDate": {},
+  "transactionsFilterTag": "Etiqueta",
+  "@transactionsFilterTag": {},
+  "transactionsSortDateDesc": "Más recientes primero",
+  "@transactionsSortDateDesc": {},
+  "transactionsSortAmountDesc": "Monto: mayor a menor",
+  "@transactionsSortAmountDesc": {},
+  "transactionTypeExpense": "Gasto",
+  "@transactionTypeExpense": {},
+  "transactionTypeIncome": "Ingreso",
+  "@transactionTypeIncome": {},
+  "transactionTypeTransfer": "Transferencia",
+  "@transactionTypeTransfer": {},
+  "transactionFormNewExpenseTitle": "Nuevo gasto",
+  "@transactionFormNewExpenseTitle": {},
+  "transactionFormNewIncomeTitle": "Nuevo ingreso",
+  "@transactionFormNewIncomeTitle": {},
+  "transactionFormNewTransferTitle": "Nueva transferencia",
+  "@transactionFormNewTransferTitle": {},
+  "transactionFormEditTitle": "Editar movimiento",
+  "@transactionFormEditTitle": {},
+  "transactionFormAmountLabel": "Monto",
+  "@transactionFormAmountLabel": {},
+  "transactionFormAccountLabel": "Cuenta",
+  "@transactionFormAccountLabel": {},
+  "transactionFormAccountChoose": "Elegir cuenta",
+  "@transactionFormAccountChoose": {},
+  "transactionFormTransferAccountLabel": "Cuenta destino",
+  "@transactionFormTransferAccountLabel": {},
+  "transactionFormCategoryLabel": "Categoría",
+  "@transactionFormCategoryLabel": {},
+  "transactionFormCategoryNone": "Sin categoría",
+  "@transactionFormCategoryNone": {},
+  "transactionFormDateLabel": "Fecha",
+  "@transactionFormDateLabel": {},
+  "transactionFormNoteLabel": "Nota",
+  "@transactionFormNoteLabel": {},
+  "transactionFormNoteHint": "Agrega una nota (opcional)",
+  "@transactionFormNoteHint": {},
+  "transactionFormTagsLabel": "Etiquetas",
+  "@transactionFormTagsLabel": {},
+  "transactionFormAddTag": "Agregar etiqueta",
+  "@transactionFormAddTag": {},
+  "transactionFormSourceLabel": "Origen",
+  "@transactionFormSourceLabel": {},
+  "transactionSourceManual": "Manual",
+  "@transactionSourceManual": {},
+  "transactionSourceVoice": "Voz",
+  "@transactionSourceVoice": {},
+  "transactionSourceOcr": "Foto de recibo",
+  "@transactionSourceOcr": {},
+  "transactionSourceNotification": "Notificación bancaria",
+  "@transactionSourceNotification": {},
+  "transactionSourceImported": "Importado",
+  "@transactionSourceImported": {},
+  "transactionSourceRecurring": "Recurrente",
+  "@transactionSourceRecurring": {},
+  "transactionEditImpactTitle": "Este movimiento está vinculado",
+  "@transactionEditImpactTitle": {},
+  "transactionEditImpactRecurring": "Afecta su recurrente asociado.",
+  "@transactionEditImpactRecurring": {},
+  "transactionEditImpactGoal": "Afecta la meta a la que aporta.",
+  "@transactionEditImpactGoal": {},
+  "transactionEditImpactDebt": "Afecta la deuda a la que abona.",
+  "@transactionEditImpactDebt": {},
+  "transactionEditImpactConfirm": "Guardar de todas formas",
+  "@transactionEditImpactConfirm": {},
+  "transactionDeleteTitle": "¿Eliminar este movimiento?",
+  "@transactionDeleteTitle": {},
+  "transactionDeleteMessage": "Podrás recuperarlo después desde la papelera.",
+  "@transactionDeleteMessage": {},
+  "transactionDetailTitle": "Detalle del movimiento",
+  "@transactionDetailTitle": {},
+  "transactionDetailEdit": "Editar",
+  "@transactionDetailEdit": {},
+  "transactionDetailDelete": "Eliminar",
+  "@transactionDetailDelete": {},
+  "transactionDetailSource": "Registrado como {source}",
+  "@transactionDetailSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDetailAccountLine": "Cuenta: {account}",
+  "@transactionDetailAccountLine": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDetailTransferLine": "Cuenta destino: {account}",
+  "@transactionDetailTransferLine": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDetailCategoryLine": "Categoría: {category}",
+  "@transactionDetailCategoryLine": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDetailNoteLine": "Nota: {note}",
+  "@transactionDetailNoteLine": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDetailTagsLine": "Etiquetas: {tags}",
+  "@transactionDetailTagsLine": {
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "accountFilterSheetTitle": "Filtrar por cuenta",
+  "@accountFilterSheetTitle": {},
+  "accountFilterSelectAll": "Todas",
+  "@accountFilterSelectAll": {},
+  "accountFilterSelectNone": "Ninguna",
+  "@accountFilterSelectNone": {},
+  "categoryFilterSheetTitle": "Filtrar por categoría",
+  "@categoryFilterSheetTitle": {},
+  "typeFilterSheetTitle": "Filtrar por tipo",
+  "@typeFilterSheetTitle": {},
+  "dateFilterSheetTitle": "Filtrar por fecha",
+  "@dateFilterSheetTitle": {},
+  "dateFilterWeek": "Semana",
+  "@dateFilterWeek": {},
+  "dateFilterMonth": "Mes",
+  "@dateFilterMonth": {},
+  "dateFilterYear": "Año",
+  "@dateFilterYear": {},
+  "dateFilterCustomRange": "Rango personalizado",
+  "@dateFilterCustomRange": {},
+  "dateFilterStart": "Desde",
+  "@dateFilterStart": {},
+  "dateFilterEnd": "Hasta",
+  "@dateFilterEnd": {},
+  "dateFilterRangeLabel": "{start} - {end}",
+  "@dateFilterRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "tagFilterSheetTitle": "Filtrar por etiqueta",
+  "@tagFilterSheetTitle": {},
+  "newTagSheetTitle": "Nueva etiqueta",
+  "@newTagSheetTitle": {},
+  "newTagNameHint": "Nombre de la etiqueta",
+  "@newTagNameHint": {}
 }

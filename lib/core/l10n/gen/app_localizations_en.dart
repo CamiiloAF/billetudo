@@ -34,6 +34,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonApply => 'Apply';
+
+  @override
   String get errorUnexpected => 'Something went wrong. Please try again.';
 
   @override
@@ -500,4 +503,245 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get categoryCascadeConfirmMessage =>
       'This deletes the category and all of its subcategories. You can bring them back later from the trash.';
+
+  @override
+  String get transactionsTitle => 'Transactions';
+
+  @override
+  String get transactionsSearchHint => 'Search by note or category';
+
+  @override
+  String get transactionsLoading => 'Loading transactions';
+
+  @override
+  String get transactionsEmptyMessage => 'No transactions recorded yet.';
+
+  @override
+  String get transactionsEmptyPeriodMessage =>
+      'No transactions in this period.';
+
+  @override
+  String get transactionsErrorTitle => 'We couldn\'t load your transactions';
+
+  @override
+  String get transactionsErrorLocalFirst =>
+      'Your data is still safe on this device.';
+
+  @override
+  String get transactionsAdd => 'Add transaction';
+
+  @override
+  String get transactionsUndoDeletedMessage => 'Transaction deleted.';
+
+  @override
+  String get transactionsUndoAction => 'Undo';
+
+  @override
+  String get transactionsFilterAccounts => 'Accounts';
+
+  @override
+  String get transactionsFilterCategories => 'Categories';
+
+  @override
+  String get transactionsFilterType => 'Type';
+
+  @override
+  String get transactionsFilterDate => 'Date';
+
+  @override
+  String get transactionsFilterTag => 'Tag';
+
+  @override
+  String get transactionsSortDateDesc => 'Most recent first';
+
+  @override
+  String get transactionsSortAmountDesc => 'Amount: high to low';
+
+  @override
+  String get transactionTypeExpense => 'Expense';
+
+  @override
+  String get transactionTypeIncome => 'Income';
+
+  @override
+  String get transactionTypeTransfer => 'Transfer';
+
+  @override
+  String get transactionFormNewExpenseTitle => 'New expense';
+
+  @override
+  String get transactionFormNewIncomeTitle => 'New income';
+
+  @override
+  String get transactionFormNewTransferTitle => 'New transfer';
+
+  @override
+  String get transactionFormEditTitle => 'Edit transaction';
+
+  @override
+  String get transactionFormAmountLabel => 'Amount';
+
+  @override
+  String get transactionFormAccountLabel => 'Account';
+
+  @override
+  String get transactionFormAccountChoose => 'Choose account';
+
+  @override
+  String get transactionFormTransferAccountLabel => 'Destination account';
+
+  @override
+  String get transactionFormCategoryLabel => 'Category';
+
+  @override
+  String get transactionFormCategoryNone => 'No category';
+
+  @override
+  String get transactionFormDateLabel => 'Date';
+
+  @override
+  String get transactionFormNoteLabel => 'Note';
+
+  @override
+  String get transactionFormNoteHint => 'Add a note (optional)';
+
+  @override
+  String get transactionFormTagsLabel => 'Tags';
+
+  @override
+  String get transactionFormAddTag => 'Add tag';
+
+  @override
+  String get transactionFormSourceLabel => 'Source';
+
+  @override
+  String get transactionSourceManual => 'Manual';
+
+  @override
+  String get transactionSourceVoice => 'Voice';
+
+  @override
+  String get transactionSourceOcr => 'Receipt photo';
+
+  @override
+  String get transactionSourceNotification => 'Bank notification';
+
+  @override
+  String get transactionSourceImported => 'Imported';
+
+  @override
+  String get transactionSourceRecurring => 'Recurring';
+
+  @override
+  String get transactionEditImpactTitle => 'This transaction is linked';
+
+  @override
+  String get transactionEditImpactRecurring =>
+      'It affects its linked recurring template.';
+
+  @override
+  String get transactionEditImpactGoal =>
+      'It affects the goal it contributes to.';
+
+  @override
+  String get transactionEditImpactDebt => 'It affects the debt it pays down.';
+
+  @override
+  String get transactionEditImpactConfirm => 'Save anyway';
+
+  @override
+  String get transactionDeleteTitle => 'Delete this transaction?';
+
+  @override
+  String get transactionDeleteMessage =>
+      'You can bring it back later from the trash.';
+
+  @override
+  String get transactionDetailTitle => 'Transaction detail';
+
+  @override
+  String get transactionDetailEdit => 'Edit';
+
+  @override
+  String get transactionDetailDelete => 'Delete';
+
+  @override
+  String transactionDetailSource(String source) {
+    return 'Recorded as $source';
+  }
+
+  @override
+  String transactionDetailAccountLine(String account) {
+    return 'Account: $account';
+  }
+
+  @override
+  String transactionDetailTransferLine(String account) {
+    return 'Destination account: $account';
+  }
+
+  @override
+  String transactionDetailCategoryLine(String category) {
+    return 'Category: $category';
+  }
+
+  @override
+  String transactionDetailNoteLine(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String transactionDetailTagsLine(String tags) {
+    return 'Tags: $tags';
+  }
+
+  @override
+  String get accountFilterSheetTitle => 'Filter by account';
+
+  @override
+  String get accountFilterSelectAll => 'All';
+
+  @override
+  String get accountFilterSelectNone => 'None';
+
+  @override
+  String get categoryFilterSheetTitle => 'Filter by category';
+
+  @override
+  String get typeFilterSheetTitle => 'Filter by type';
+
+  @override
+  String get dateFilterSheetTitle => 'Filter by date';
+
+  @override
+  String get dateFilterWeek => 'Week';
+
+  @override
+  String get dateFilterMonth => 'Month';
+
+  @override
+  String get dateFilterYear => 'Year';
+
+  @override
+  String get dateFilterCustomRange => 'Custom range';
+
+  @override
+  String get dateFilterStart => 'From';
+
+  @override
+  String get dateFilterEnd => 'To';
+
+  @override
+  String dateFilterRangeLabel(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get tagFilterSheetTitle => 'Filter by tag';
+
+  @override
+  String get newTagSheetTitle => 'New tag';
+
+  @override
+  String get newTagNameHint => 'Tag name';
 }
