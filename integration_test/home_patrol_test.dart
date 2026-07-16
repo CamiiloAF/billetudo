@@ -21,6 +21,20 @@ import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
+/// Pumps frames until [finder] matches at least one widget, or a frame budget
+/// runs out. Needed for content that appears after an async Drift stream emits:
+/// `pumpWidgetAndSettle` cannot see I/O that completes after it returns, so on a
+/// fresh install the Home is still on its loading skeletons for the first frame.
+Future<void> _pumpUntilFound(
+  PatrolIntegrationTester $,
+  Finder finder, {
+  int maxFrames = 30,
+}) async {
+  for (var i = 0; i < maxFrames && finder.evaluate().isEmpty; i++) {
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
   patrolTest(
     'HU-01: la app abre en Inicio con la tab bar de cinco destinos',
@@ -41,7 +55,11 @@ void main() {
       }
 
       // Fresh install: no movements yet, so the welcome/empty state shows
-      // (HU-08) — never a full-screen error (HU-10).
+      // (HU-08) — never a full-screen error (HU-10). The Home opens on its
+      // loading skeletons and swaps to the empty state once the async Drift
+      // stream emits the empty first month, so wait for it instead of asserting
+      // on the very first frame.
+      await _pumpUntilFound($, find.text('Aún no registras movimientos'));
       expect(find.text('Aún no registras movimientos'), findsOneWidget);
     },
   );
