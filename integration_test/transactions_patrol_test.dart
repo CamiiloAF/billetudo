@@ -6,11 +6,11 @@
 // file first (see `support/patrol_app.dart`), so scenarios do not leak state
 // into each other even though they share one app process.
 //
-// `BootstrapHomePage` (the temporary shell) only links to Cuentas and
-// Categorías so far — Transacciones has no entry point there yet (same "goes
-// away with the real shell" note as those two). Reaching `/movimientos`
-// therefore goes through `GoRouter` directly, exactly like a deep link would,
-// rather than through a tap that does not exist in the UI yet.
+// The app now has the real navigation shell (`StatefulShellRoute` + tab bar):
+// Movimientos is a top-level tab and Cuentas/Categorías live under the "Más"
+// hub. These scenarios still reach routes through `GoRouter` directly, exactly
+// like a deep link would, so navigation is deterministic regardless of which
+// tab or nested stack a previous scenario left active.
 //
 // Two real product gaps surfaced while writing this suite (both left
 // unfixed, per this role's scope — reported, not patched):
@@ -54,10 +54,9 @@ import 'support/patrol_app.dart';
 
 /// Deterministic navigation via `GoRouter.go`, not a UI tap: `go` replaces
 /// the whole navigation stack and always lands on the requested route
-/// regardless of where the tester currently is, unlike tapping
-/// 'Ver mis cuentas' (which only exists on `BootstrapHomePage` and breaks as
-/// soon as this helper is chained after another one that already navigated
-/// away from home).
+/// regardless of where the tester currently is, unlike tapping through the
+/// "Más" hub to reach Cuentas, which breaks as soon as this helper is chained
+/// after another one that already navigated away from that hub.
 Future<void> _goToAccountsList(PatrolIntegrationTester $) async {
   final context = $.tester.element(find.byType(Scaffold).first);
   GoRouter.of(context).go(AppRoutes.accounts);
@@ -65,8 +64,8 @@ Future<void> _goToAccountsList(PatrolIntegrationTester $) async {
 }
 
 /// Assumes the accounts list is already on screen (see `_goToAccountsList`) —
-/// safe to call more than once per test, unlike tapping "Ver mis cuentas"
-/// again, which only exists on `BootstrapHomePage`.
+/// safe to call more than once per test, unlike re-navigating through the
+/// "Más" hub each time.
 Future<void> _addCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.tap(find.byTooltip('Agregar cuenta'));
   await $.tester.pumpAndSettle();
