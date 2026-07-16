@@ -1,48 +1,81 @@
-# Pagina: Inicio
+# Página: Inicio
 
-Sobreescribe/complementa `design-system/billetudo/MASTER.md` con detalle especifico de esta pantalla. Fuente real: `billetudo.pen`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md` con el detalle específico de esta pantalla. Fuente real: `billetudo.pen`. Requerimientos funcionales en `docs/requirements/04-inicio.md`.
+
+> **Nota de historia:** el diseño original de Inicio (bento con Hero grande + tarjeta de IA + card "Por categoría", y 8 frames de estados) fue **reemplazado** tras una revisión de valor con `ui-ux-reviewer`. Se eligió la composición **"actividad primero"** (variante A): la lista de movimientos recientes pasa a ser protagonista porque es lo más consultado, y el desglose por categoría sale del Home (vive en Gráficas). Los frames viejos se borraron del `.pen`.
 
 ## Frames en Pencil
 
-| Frame | Node ID | Tema | Estado |
-|-------|---------|------|--------|
-| Inicio - Final (Claro) | `zVI9r` | claro | con datos |
-| Inicio - Final (Oscuro) | `wyYlm` | oscuro | con datos |
-| Inicio - Vacio (Claro) | `ubNzu` | claro | vacio |
-| Inicio - Vacio (Oscuro) | `L3wAFz` | oscuro | vacio |
-| Inicio - Error (Claro) | `yMJtY` | claro | error |
-| Inicio - Error (Oscuro) | `i7M4r` | oscuro | error |
-| Inicio - Carga (Claro) | `Irsdk` | claro | carga |
-| Inicio - Carga (Oscuro) | `ACNlG` | oscuro | carga |
+| Frame | Node ID claro | Node ID oscuro | Estado |
+|-------|---------------|----------------|--------|
+| Inicio — con presupuesto | `aOhoY` | `ls7Ed` | con datos, hero con barra de presupuesto |
+| Inicio — sin presupuesto | `A9v7s` | `hceQ1` | con datos, hero con invitación a presupuestar |
+| Inicio — vacío | `DliNF` | `dJDHi` | sin transacciones — hero "$0" + `Empty State` |
+| Inicio — carga | `AmifS` | `Y5TnWd` | skeletons de hero y filas |
 
-Las versiones oscuras son `Copy()` de su equivalente claro + `theme:{mode:"dark"}` — no tienen contenido propio, cualquier cambio de contenido/estructura debe hacerse en el frame claro y luego re-copiarse (o aplicarse igual a ambos si ya divergieron, como en estos 4 pares).
+Los frames oscuros se generaron por `Copy()` del claro + `theme:{mode:"dark"}` (todo recoloreó por variable, sin hex hardcodeado). Cualquier cambio de contenido/estructura se hace en el frame claro y se re-aplica al oscuro.
 
-## Estructura (estado con datos)
+`aOhoY` y `A9v7s` son idénticas salvo el bloque de progreso del hero (barra vs. invitación). El componente de IA completa `AI Assistant` (`yTLHY`) NO se usa en el Home actual pero se **conserva movido al root del documento** para cuando la IA se habilite.
 
-De arriba a abajo, dentro del wrapper `Content` (padding `[6,20]`, gap `18`):
+**Componente propio de esta página:** `Transaction Skeleton Row` (`gDAqP`) — fila plana de carga (círculo de icono + 2 líneas + bloque de monto, todo `$skeleton`) que imita la geometría de `Transaction Row` sin card envolvente. Se creó porque `Skeleton Row` (`CKnQC`, usado en Cuentas) es una tarjeta con contenedor y no coincidía con las filas planas de movimientos.
 
-1. **Status Bar** — hora + iconos de sistema (`$text-primary`).
-2. **Header** — Avatar (gradiente `$primary`→`$primary-deep`, inicial del usuario) + saludo ("Buenos dias" / nombre) + boton de notificaciones (`$surface`, icono `bell`).
-3. **Hero Card** — gradiente `$primary-deep`→`$primary`, radio 28. Contiene: label "Gastado en [mes]" + selector de mes, monto grande (42px/800), barra de progreso de presupuesto mensual, texto "X% de tu presupuesto" / "de $Y".
-4. **AI Assistant** (`$muted`, borde `$border`) — orb con icono `sparkles` (gradiente `$primary`→`$primary-deep`→`$primary`), titulo "Preguntale a Billetudo", 2 `AI Question Chip` instanciados.
-5. **Card "Por categoria"** (`$surface`, radio 24, width fijo 350 — ver nota de robustez abajo) — titulo + link "Ver todo", lista de 4 `Category Row`: Vivienda (`$primary`/`$primary-soft`), Comida (`$mint`/`$mint-soft`), Transporte (`$sky`/`$sky-soft`), Ocio (`$peach`/`$peach-soft`).
-6. **Tab Bar** — instancia con "Inicio" activo.
+## Estructura (variante A — "actividad primero")
 
-Datos de ejemplo usados: balance `$1,297,900`, presupuesto `$3,000,000` (43%), categorias suman exactamente el balance (620k+340k+185k+152.9k). Mantener esta invariante (categorias = total gastado) en cualquier dato de ejemplo futuro — fue la base para detectar y corregir el bug de barras de progreso que no coincidian con el %.
+De arriba a abajo, dentro del wrapper `Content` (padding `[6,20]`, gap `16`, `height:fill_container`):
 
-## Decisiones especificas de esta pagina
+1. **Status Bar** — hora + iconos de sistema (`Status Bar/Android`).
+2. **Header** — Avatar (gradiente `$primary`→`$primary-deep`, inicial del usuario) + saludo "Hola de nuevo, [nombre]" + botón de notificaciones (`$surface`, icono `bell`). La campana muestra un aviso **"Próximamente"** al presionarse (aún no hay centro de notificaciones).
+3. **Hero Card** (compacta, ~190px) — gradiente `$primary-deep`→`$primary`, radio 28. Label "Gastado en [mes]" + chip selector de mes (área tocable ≥44pt). Monto grande (40px/800, `$on-primary`). Debajo, según el estado:
+   - **Con presupuesto (`aOhoY`):** barra de progreso (`$on-primary` sobre `$track-overlay`) + "X% de $Y" + "faltan Z días" (texto secundario 13px/500).
+   - **Sin presupuesto (`A9v7s`):** texto de invitación "Define un presupuesto para ver cuánto te queda este mes →" (14px/600, `$font-body`, `$on-primary`; intencionalmente más prominente que las métricas de progreso del otro estado). **No inventa un tope de gasto** — sin presupuesto la app no conoce un límite; en su lugar empuja el hábito de presupuestar.
+4. **Movimientos recientes** — header de sección ("Movimientos recientes" + link "Ver todos →" en `$primary-on-soft`, área tocable ≥44pt, que enruta a la pestaña Movimientos). Lista de **5 `Transaction Row`** que agregan los movimientos de **todas las cuentas activas** (no filtra por cuenta). Montos de gasto en `$text-primary` (nunca rojo), ingresos en `$income-text`.
+5. **AI Banner** (`$muted`, borde `$border`) — "Pronto: pregúntale a Billetudo →", **directamente debajo de los movimientos recientes** (no anclado al fondo: allá abajo se pierde y compite con el FAB). Estado **"próximamente"**: al presionarlo muestra una alerta/bottom-sheet "Próximamente estará disponible". **No ejecuta IA** ni llama a backend, por lo que no rompe Nivel 0.
+6. **Spacer** (`height:fill_container`) — deja el espacio libre debajo del banner; el FAB flota sobre ese espacio sin encimarse al banner.
+7. **Tab Bar** — instancia con "Inicio" activo.
+8. **FAB flotante** (`$primary`, absolute, abajo-derecha) — abre el formulario de nueva transacción.
+   - **Comportamiento de scroll (solo documentado, no se diseña frame aparte):** el FAB está visible en reposo y al hacer scroll hacia arriba; se **oculta al hacer scroll hacia abajo** (para no tapar contenido durante la lectura) y **reaparece al hacer scroll hacia arriba** o al detenerse. Transición suave (fade/slide down ~200ms). Implementación en Flutter (ej. escuchar la dirección del scroll y animar `offset`/`opacity`); no requiere pantalla de diseño propia.
 
-- **Paleta violeta ganadora sobre indigo/azul/verde/coral**: se probaron 5 variantes de color (`v12b` verde, `v12c` coral, `v12d` indigo, `v12e` azul) sobre la misma estructura y se descartaron. Razon: colision semantica con verde=ingreso/rojo=gasto, mayor cohesion del violeta con el fondo lavanda, mas distintivo que el azul generico de fintech, mas cercano a patrones de fintech ya familiares en Colombia (Nequi).
-- **Sin selector de paleta para el usuario final** — decisión de producto, no solo de diseño: se evaluo dejar que el usuario elija color de marca y se descarto para el lanzamiento (mas superficie de QA visual, diluye reconocimiento de marca). Si se retoma, encaja como extra cosmetico detras de Premium, nunca como gate de una funcion de Nivel 0.
-- **width:350 fijo en la Card de categorias** (en vez de `fill_container`) — anotado como hallazgo menor pendiente, funciona hoy porque coincide numericamente con el padding del Content (390 - 20*2 = 350), pero es fragil ante cambios de layout futuros.
+Datos de ejemplo: gasto del mes `$1,297,900`, presupuesto `$3,000,000` (43%, faltan 12 días); movimientos Mercado (`-$82,000`), Netflix (`-$44,900`), Salario (`+$2,100,000`), Uber (`-$18,500`), Café (`-$9,000`).
 
-## Estados vacio/error/carga — copy usado
+## Decisiones específicas de esta página
 
-- **Vacio:** Hero en "$0" / "Aun no tienes gastos este mes". Card de categorias reemplazada por icono `wallet` + "Aun no registras gastos" + subtexto + boton "Agregar gasto". Chips de IA cambiados a preguntas de onboarding ("¿Como registro mi primer gasto?", "¿Que es un presupuesto?").
-- **Error:** Hero y AI Assistant ocultos. Tarjeta centrada: icono `cloud-alert` sobre `$expense` al 10% de opacidad, "No pudimos cargar tu informacion", subtexto que aclara que los datos siguen guardados localmente, boton "Reintentar" (`$primary`).
-- **Carga:** Hero y AI Assistant mantienen su forma/fill pero con bloques `$border` en vez de contenido real; 4 filas skeleton (circulo + 2 lineas + barra corta) en la Card de categorias.
+- **Composición "actividad primero" (variante A)** elegida sobre B (dashboard equilibrado con movimientos + categorías) y C (safe-to-spend protagonista). Razón: los movimientos recientes son lo más consultado a diario; el desglose por categoría es análisis más reflexivo que tolera un click extra hacia Gráficas.
+- **"Por categoría" NO vive en el Home** — se accede desde Gráficas e informes (`09`). El Home no lo muestra.
+- **Hero de gasto siempre protagonista, presupuesto como capa opcional** — el gasto del mes se calcula solo con transacciones, así que el hero funciona con o sin presupuesto. Dos estados (con/sin), no un hero que asume presupuesto mensual siempre presente.
+- **IA en modo "próximamente" como banner de una línea** (no la tarjeta completa) — decisión del dueño tras comparar ambas. La tarjeta `yTLHY` se conserva para el futuro. Nunca ejecuta IA en esta fase (Nivel 0 intacto).
+- **Sin selector de mes con periodos flexibles en el Home** — el Home se ancla al mes calendario; los periodos `weekly/yearly/custom` de presupuesto se ven en la sección Presupuestos.
 
-## Pendientes conocidos (no bloqueantes, ver checklist de MASTER.md)
+## Correcciones de accesibilidad aplicadas (`ui-ux-reviewer`)
 
-- Ancho fijo de la Card de categorias (ver arriba).
-- Tap target de ancho <44pt en 3 items del Tab Bar (Inicio/Metas/Mas) — corregir en la implementacion Flutter asegurando que el gesto cubra el slot completo, no solo el contenido visual.
+- **Tap targets a ≥44pt:** chip de mes y link "Ver todos →" (padding vertical ampliado).
+- **Link "Ver todos" en `$primary-on-soft`** (no `$primary` crudo) — seguro en tema oscuro (`$primary` cae a ~3:1 en oscuro).
+- **Ingresos en `$income-text`** (~6.4:1) — `$income` habría fallado (~2.07:1).
+- **Gastos en `$text-primary`**, nunca `$expense` rojo (tono de marca).
+- **Texto secundario del hero a 13px** — holgura de contraste sobre el extremo claro del gradiente.
+- **`$font-body` en la invitación** (no `Plus Jakarta Sans` literal) — consistencia de variables.
+
+## Estados de pantalla
+
+Cuatro estados construidos en claro + oscuro (8 frames, tabla arriba). El chrome (Status Bar, Header, Tab Bar, FAB) se mantiene IGUAL entre estados; solo cambia el área de contenido (hero + movimientos).
+
+- **Vacío (`DliNF`/`dJDHi`):** hero en `$0` + subtexto "Aún no hay gastos este mes"; el bloque de movimientos se reemplaza por `Empty State` (icono `receipt`, "Aún no registras movimientos", CTA "Agregar movimiento"). El `Empty State` se **centra en el espacio libre** entre el hero y el tab bar (spacer arriba y abajo). **Sin banner de IA** en este estado — no aporta valor cuando no hay datos. Tono de bienvenida, no punitivo.
+- **Carga (`AmifS`/`Y5TnWd`):** skeletons de hero y 5 `Transaction Skeleton Row` planas.
+- **No hay estado de Error de pantalla completa** (a diferencia del diseño viejo): HU-10 resuelve el fallo de sync con un **indicador discreto**, porque el Home es local-first y no se vacía sin conexión.
+
+## Interacciones y sub-pantallas
+
+Bottom-sheets y elementos que se accionan desde el Home, todos en claro + oscuro:
+
+| Pieza | Frame claro | Frame oscuro | Detalle |
+|---|---|---|---|
+| Sheet "Próximamente" (IA) | `ZMNrt` | `Tr8ZF` | Lo abre el banner de IA. `Bottom Sheet Base` + orbe `sparkles` + "Próximamente" + mensaje + disclaimer "No es asesoría financiera" + botón "Entendido". No ejecuta IA (Nivel 0). |
+| Sheet "Próximamente" (notificaciones) | `HZTCs` | `Z7WpGJ` | Lo abre la campana (HU-07). Mismo sheet con icono `bell`, "Las notificaciones llegarán pronto", **sin** disclaimer. |
+| Selector de mes | `k7kv4` | `iGwrg` | Lo abre el chip de mes (HU-04). Navegador de año ‹ 2026 › + grid 3×4 de meses. |
+
+- **Componente `Month Cell` (`DB3bz`):** celda de mes (mismo espíritu que `Day Cell`). Estados: seleccionado (fill `$primary` + texto `$on-primary`), normal (`$text-primary`), y futuro/deshabilitado (`$text-secondary` + `opacity:0.4`). La flecha del navegador de año que solo lleva a meses futuros se atenúa (`opacity:0.35`).
+- **Indicador de sync (HU-10):** vive en el componente `Home Header` (`vYdCt`), así que aparece en las 8 pantallas del Home y en ambos temas. Icono `cloud-check` discreto (`$text-secondary`) junto a la campana. Es **informativo/pasivo** (no es tap target; si a futuro se abre un detalle de sync, envolver en 44pt en Flutter). 3 estados (referencia `KpeGp`): Sincronizado (`cloud-check`), Sincronizando (`refresh-cw`), Sin conexión (`cloud-off`) — discretos y en tono positivo (offline no alarmante; local-first, datos a salvo).
+
+## Pendientes
+
+- **Implementación en Flutter** (`flutter-dev`): el diseño está completo en Pencil (claro + oscuro); pasar a código con este doc + `docs/requirements/04-inicio.md`, incluyendo el cableado de destinos y el comportamiento de scroll del FAB (documentado arriba en la estructura).
+- **Override redundante:** el padding del chip de mes (`j6OObr` `[15,12]`) quedó como override de instancia en los 3 hero con contenido además de estar ya en el componente `Hero Compact` — cosmético, theme-agnóstico, sin impacto.

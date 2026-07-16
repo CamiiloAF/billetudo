@@ -45,6 +45,7 @@
 | `surface` | `#FFFFFF` | `#1E1E2E` | Tarjetas, barras, superficies elevadas. |
 | `muted` | `#EEECFB` | `#26243B` | Fondos sutiles genericos (chips inactivos, AI Assistant card). |
 | `border` | `#ECEBF3` | `#2A2A3D` | Bordes/divisores sutiles. |
+| `skeleton` | `#ECEBF3` | `#45455F` | **Relleno de bloques placeholder de skeleton (estados de carga).** Claro = idéntico a `border` (el skeleton claro no cambia); oscuro deliberadamente más luminoso que `border` (`#2A2A3D`) para que el skeleton se lea sin gritar (~1.9:1 sobre `background`, ~1.77:1 sobre `surface`) — `border` oscuro daba ~1.25:1, casi invisible. Usar SOLO para rellenos placeholder de skeleton, nunca para bordes/divisores reales (esos siguen en `border`). Disponible para reusar en skeletons de otras features (Cuentas/Categorías/Movimientos). |
 | `text-primary` | `#1C1B29` | `#F4F3FA` | Texto principal. |
 | `text-secondary` | `#6B6980` | `#9A98B5` | Texto secundario/metadatos. |
 | `on-primary` | `#FFFFFF` (fijo) | — | Texto/iconos sobre superficies `primary`. Usar SIEMPRE solido, nunca traslucido (ver Accesibilidad). |
@@ -173,6 +174,14 @@ Fila de carga: Icon Wrap circular + Mid (Skeleton Name + Skeleton Type) + Skelet
 
 - **Overrides:** `width` de `Skeleton Name`/`Skeleton Type` (variar longitud entre filas para que no se vea repetitivo).
 - Instancias: las 4 filas de `Cuentas — Carga` (`sh7r2` → `T6mGl`, `a0PS83`, `OBCP0`, `BpBqq`).
+- **Es una tarjeta** (`$surface` + borde + radio) — correcto para skeletons de `Account Card` (que SON tarjetas). Para skeletons de `Transaction Row` (filas planas) usar `Transaction Skeleton Row`, no este.
+
+### Transaction Skeleton Row (`gDAqP`)
+Fila de carga PLANA (sin card envolvente) que imita la geometria de `Transaction Row`: circulo de icono 44x44 + Mid (2 lineas) + bloque de monto a la derecha, todo en `$skeleton`.
+
+- **Overrides:** ancho de las 2 lineas (variar entre filas para que no se vea repetitivo).
+- Instancias: las 5 filas de `Inicio - Carga` (`AmifS`/`Y5TnWd`).
+- **Regla:** el skeleton debe imitar la geometria REAL de lo que carga. `Transaction Row` es una fila plana, asi que su skeleton es plano — no reusar `Skeleton Row` (`CKnQC`, que es tarjeta) aqui.
 
 ### Archived Account Row (`VS0d0`)
 `Account Card` (ref `Q1ynM`) + `Footer` (icono + label, borde superior) integrados en un solo contenedor visual — evita que la accion del footer se vea "perdida" separada de la tarjeta.
@@ -219,16 +228,18 @@ Chip pequeño reusado en dos contextos: selector de tipo de cuenta (Agregar Cuen
 
 ## Estados de pantalla (Inicio)
 
-Cada pantalla que carga datos remotos/locales de forma async debe considerar estos 4 estados. Construidos como referencia completa para **Inicio** (8 frames en `billetudo.pen`: 4 estados x 2 temas):
+Toda pantalla que carga datos de forma async debe considerar sus estados (con datos / vacio / carga; error solo si de verdad puede quedarse sin datos). **Inicio** se rediseño (composicion "actividad primero", ver `pages/inicio.md`) y es la referencia de este patron — 8 frames en `billetudo.pen` (4 estados x 2 temas):
 
 | Estado | Frame claro | Frame oscuro | Que cambia |
 |--------|-------------|---------------|------------|
-| Default (con datos) | `Inicio - Final (Claro)` | `Inicio - Final (Oscuro)` | Hero con monto real, IA, categorias con datos. |
-| Vacio | `Inicio - Vacio (Claro)` | `Inicio - Vacio (Oscuro)` | Hero en `$0` con mensaje neutral (no punitivo), tarjeta de categorias reemplazada por icono + mensaje + CTA "Agregar gasto", preguntas de IA orientadas a onboarding. |
-| Error | `Inicio - Error (Claro)` | `Inicio - Error (Oscuro)` | Hero y AI Assistant ocultos; una sola tarjeta centrada con icono de alerta, mensaje ("tus datos siguen guardados en el dispositivo" — importante decirlo, es local-first) y boton "Reintentar". |
-| Carga | `Inicio - Carga (Claro)` | `Inicio - Carga (Oscuro)` | Skeleton: bloques solidos `$border` reemplazando texto/iconos reales, misma geometria que el estado con datos. |
+| Con datos (con presupuesto) | `aOhoY` | `ls7Ed` | Hero con gasto real + barra de presupuesto, movimientos recientes, banner IA. |
+| Con datos (sin presupuesto) | `A9v7s` | `hceQ1` | Igual, pero el hero muestra invitacion a crear presupuesto en vez de barra. |
+| Vacio | `DliNF` | `dJDHi` | Hero en `$0` + mensaje neutral (no punitivo); bloque de movimientos reemplazado por `Empty State` (icono + mensaje + CTA "Agregar movimiento"). |
+| Carga | `AmifS` | `Y5TnWd` | Skeleton: hero y 5 `Transaction Skeleton Row` planas (bloques `$skeleton`), misma geometria que el estado con datos. |
 
-Status bar, header (saludo + avatar + campana) y Tab Bar se mantienen IGUALES en los 4 estados — solo cambia el area de contenido (Hero + AI Assistant + Card de categorias). Replicar este patron para Movimientos/Presupuestos/Metas: la unica parte de la pantalla que entra en estado vacio/error/carga es el area de datos, nunca el chrome de navegacion.
+**Inicio NO tiene estado de Error de pantalla completa** (el diseño viejo si; se descarto): es local-first, el Home no se vacia sin conexion, y un fallo de sync se comunica con un **indicador discreto** (HU-10 en `docs/requirements/04-inicio.md`). Otras features pueden tener su propio estado de error solo si de verdad pueden quedarse sin datos.
+
+Status bar, header (saludo + avatar + campana), Tab Bar y FAB se mantienen IGUALES en todos los estados — solo cambia el area de contenido (Hero + movimientos + banner). Replicar este patron para Movimientos/Presupuestos/Metas: la unica parte de la pantalla que entra en estado vacio/carga es el area de datos, nunca el chrome de navegacion.
 
 ---
 
