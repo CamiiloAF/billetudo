@@ -32,7 +32,10 @@ dependencies:
   fpdart: ^1.1.0
 
   # --- Crash reporting (detrás de interfaz CrashReporter; DSN por dart-define) ---
-  sentry_flutter: ^8.9.0
+  # 9.x, no 8.x: la 8.x compila con una language version de Kotlin que choca
+  # con Kotlin 2.2.20 (fijado en android/settings.gradle.kts) — "Language
+  # version 1.6 is no longer supported", bloquea cualquier build Android.
+  sentry_flutter: ^9.24.0
 
   # --- Almacenamiento seguro (número de cuenta cifrado, Keychain/Keystore) ---
   flutter_secure_storage: ^10.3.1
@@ -52,8 +55,9 @@ dependencies:
   fl_chart: ^0.68.0
 
   # --- Tipografía (Plus Jakarta Sans, ver design-system MASTER.md) ---
-  # TODO(offline): empaquetar los .ttf en assets/fonts para uso 100% offline
-  # sin fetch en el primer arranque (google_fonts los usa si están presentes).
+  # Empaquetada en assets/fonts/ (pesos 400/500/600/700/800, OFL). google_fonts
+  # la toma del bundle en vez de la red — necesario para uso offline y para que
+  # los golden tests rendericen la tipografía real, no el fallback del sistema.
   google_fonts: ^6.2.1
 
   # --- Monetización (rewarded ads + suscripciones) ---
@@ -96,11 +100,34 @@ dev_dependencies:
   # Testing (piramide: unit + cubit + mocks + e2e)
   bloc_test: ^9.1.7
   mocktail: ^1.0.4
-  patrol: ^3.11.0 # e2e; requiere `dart pub global activate patrol_cli` y setup nativo tras `flutter create .`
+  # e2e. Versión acoplada al CLI: `dart pub global activate patrol_cli 4.5.1`
+  # (patrol 4.7.x exige patrol_cli >=4.5.0 — un desajuste entre ambos falla en
+  # runtime, no en tiempo de análisis). Requiere setup nativo tras `flutter create .`.
+  patrol: ^4.7.1
+  integration_test:
+    sdk: flutter
+
+# Patrol e2e: tests live in integration_test/ (not the default patrol_test/),
+# so this project's other integration_test/ conventions (Flutter's own runner)
+# keep working unmodified.
+patrol:
+  app_name: Billetudo
+  test_directory: integration_test
+  android:
+    package_name: com.camiloagudelo.billetudo
+  ios:
+    bundle_id: com.camiloagudelo.billetudo
 
 flutter:
   uses-material-design: true
   generate: true # habilita l10n si usas flutter gen-l10n
+
+  # google_fonts encuentra estos archivos escaneando `assets` (no `fonts:` —
+  # así lo documenta el paquete: los nombres ya siguen la convención de la API
+  # de Google Fonts, así que declararlos en `fonts:` es redundante y no se
+  # debe renombrar el archivo).
+  assets:
+    - assets/fonts/
 
 dependency_overrides:
   # path_provider_foundation >=2.5 migró a native assets (hook/build.dart),

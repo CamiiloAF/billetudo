@@ -18,6 +18,10 @@
   "@commonEdit": {},
   "commonRetry": "Reintentar",
   "@commonRetry": {},
+  "commonBack": "Atrás",
+  "@commonBack": {
+    "description": "Etiqueta accesible del botón atrás del Page Header."
+  },
   "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
   "@errorUnexpected": {
     "description": "Mensaje genérico para UnexpectedFailure."
@@ -25,5 +29,371 @@
   "errorDatabase": "No pudimos guardar los cambios. Intenta de nuevo.",
   "@errorDatabase": {},
   "errorSecureStorage": "No pudimos acceder al almacenamiento seguro del dispositivo.",
-  "@errorSecureStorage": {}
+  "@errorSecureStorage": {},
+  "accountsTitle": "Cuentas",
+  "@accountsTitle": {
+    "description": "Título de la pantalla de listado de cuentas."
+  },
+  "accountsOpenAction": "Ver mis cuentas",
+  "@accountsOpenAction": {
+    "description": "Acceso temporal a Cuentas desde el Hero de Inicio."
+  },
+  "accountsAdd": "Agregar cuenta",
+  "@accountsAdd": {
+    "description": "CTA para crear una cuenta (header + estado vacío)."
+  },
+  "accountsTotalLabel": "Patrimonio total",
+  "@accountsTotalLabel": {},
+  "accountsTotalDebtsLine": "Deudas: -{amount}",
+  "@accountsTotalDebtsLine": {
+    "description": "Sub-línea de deudas del Total Card. El monto llega ya formateado.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$1.250.000,00"
+      }
+    }
+  },
+  "accountsEmptyMessage": "Aún no has agregado ninguna cuenta",
+  "@accountsEmptyMessage": {
+    "description": "Estado vacío del listado. Tono neutral, nunca culpa al usuario."
+  },
+  "accountsErrorTitle": "No pudimos cargar tus cuentas",
+  "@accountsErrorTitle": {},
+  "accountsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo",
+  "@accountsErrorLocalFirst": {
+    "description": "Recordatorio local-first del estado de error."
+  },
+  "accountsArchivedTitle": "Cuentas archivadas",
+  "@accountsArchivedTitle": {},
+  "accountsArchivedEmptyMessage": "Aún no has archivado ninguna cuenta",
+  "@accountsArchivedEmptyMessage": {},
+  "accountsUnarchive": "Desarchivar",
+  "@accountsUnarchive": {},
+  "accountsLoading": "Cargando tus cuentas",
+  "@accountsLoading": {
+    "description": "Etiqueta accesible del estado de carga (skeletons)."
+  },
+  "accountTypeCash": "Efectivo",
+  "@accountTypeCash": {},
+  "accountTypeBank": "Banco",
+  "@accountTypeBank": {},
+  "accountTypeCard": "Tarjeta de crédito",
+  "@accountTypeCard": {},
+  "accountTypeSavings": "Ahorros",
+  "@accountTypeSavings": {},
+  "accountTypeInvestment": "Inversión",
+  "@accountTypeInvestment": {},
+  "accountTypeOther": "Otra",
+  "@accountTypeOther": {},
+  "accountBalanceLabel": "Saldo actual",
+  "@accountBalanceLabel": {},
+  "accountAvailableCreditLabel": "Cupo disponible",
+  "@accountAvailableCreditLabel": {},
+  "accountDebtLabel": "Deuda actual",
+  "@accountDebtLabel": {},
+  "accountOverLimitBadge": "Sobrecupo",
+  "@accountOverLimitBadge": {},
+  "accountOverLimitCaption": "Excedido en {amount}",
+  "@accountOverLimitCaption": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$150.000,00"
+      }
+    }
+  },
+  "accountCreditUsedCaption": "{used} de {limit} usado",
+  "@accountCreditUsedCaption": {
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "$450.000,00"
+      },
+      "limit": {
+        "type": "String",
+        "example": "$3.000.000,00"
+      }
+    }
+  },
+  "accountBalancePage": "Página {index} de {total}",
+  "@accountBalancePage": {
+    "description": "Etiqueta accesible de los dots del carrusel del Balance Card.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "accountInfoInstitution": "Institución",
+  "@accountInfoInstitution": {},
+  "accountInfoType": "Tipo",
+  "@accountInfoType": {},
+  "accountInfoInterestRate": "Tasa de interés",
+  "@accountInfoInterestRate": {},
+  "accountInfoNumber": "Número de cuenta",
+  "@accountInfoNumber": {},
+  "accountInfoStatementDay": "Día de corte",
+  "@accountInfoStatementDay": {},
+  "accountInfoPaymentDueDay": "Día de pago",
+  "@accountInfoPaymentDueDay": {},
+  "accountInterestRateValue": "{rate}%",
+  "@accountInterestRateValue": {
+    "description": "Tasa anual ya formateada desde puntos básicos (2450 -> 24,5).",
+    "placeholders": {
+      "rate": {
+        "type": "String",
+        "example": "24,5"
+      }
+    }
+  },
+  "accountDayOfMonthValue": "{day} de cada mes",
+  "@accountDayOfMonthValue": {
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "accountNumberMasked": "•••• {last4}",
+  "@accountNumberMasked": {
+    "placeholders": {
+      "last4": {
+        "type": "String",
+        "example": "4321"
+      }
+    }
+  },
+  "accountNumberReveal": "Mostrar número",
+  "@accountNumberReveal": {},
+  "accountNumberHide": "Ocultar número",
+  "@accountNumberHide": {},
+  "accountNumberCopy": "Copiar número",
+  "@accountNumberCopy": {},
+  "accountNumberCopied": "Número copiado. Se borra del portapapeles en un minuto.",
+  "@accountNumberCopied": {},
+  "accountArchiveAction": "Archivar",
+  "@accountArchiveAction": {},
+  "accountDeleteAction": "Eliminar cuenta",
+  "@accountDeleteAction": {},
+  "accountFormNewTitle": "Nueva cuenta",
+  "@accountFormNewTitle": {},
+  "accountFormEditTitle": "Editar cuenta",
+  "@accountFormEditTitle": {},
+  "accountFormTypeLabel": "Tipo de cuenta",
+  "@accountFormTypeLabel": {},
+  "accountFormTypeChange": "Cambiar",
+  "@accountFormTypeChange": {},
+  "accountFormNameLabel": "Nombre",
+  "@accountFormNameLabel": {},
+  "accountFormNameHint": "Ej. Cuenta de ahorros",
+  "@accountFormNameHint": {},
+  "accountFormInstitutionLabel": "Institución",
+  "@accountFormInstitutionLabel": {},
+  "accountFormInstitutionHint": "Ej. Bancolombia",
+  "@accountFormInstitutionHint": {},
+  "accountFormInitialBalanceLabel": "Saldo inicial",
+  "@accountFormInitialBalanceLabel": {},
+  "accountFormCurrencyLabel": "Moneda",
+  "@accountFormCurrencyLabel": {},
+  "accountFormInterestRateLabel": "Tasa de interés",
+  "@accountFormInterestRateLabel": {},
+  "accountFormInterestRateHint": "Ej. 24,5",
+  "@accountFormInterestRateHint": {},
+  "accountFormNumberLabel": "Número de cuenta",
+  "@accountFormNumberLabel": {},
+  "accountFormNumberHint": "Opcional",
+  "@accountFormNumberHint": {},
+  "accountFormNumberHelp": "Se guarda solo en este dispositivo, nunca en la nube.",
+  "@accountFormNumberHelp": {
+    "description": "HU-03: el número completo vive únicamente en el almacén seguro."
+  },
+  "accountFormNumberReadError": "No pudimos leer el número guardado en este dispositivo. Lo dejamos tal cual está: si quieres cambiarlo, escríbelo de nuevo.",
+  "@accountFormNumberReadError": {
+    "description": "Aviso bajo el campo del número cuando el almacén seguro no devolvió el número guardado. Explica que el campo está vacío porque no se pudo leer, no porque no haya número, y que guardar no lo borrará."
+  },
+  "accountFormLast4Label": "Últimos 4 dígitos",
+  "@accountFormLast4Label": {},
+  "accountFormLast4Hint": "Ej. 4321",
+  "@accountFormLast4Hint": {},
+  "accountFormCardSectionTitle": "Datos de la tarjeta",
+  "@accountFormCardSectionTitle": {},
+  "accountFormCreditLimitLabel": "Cupo máximo",
+  "@accountFormCreditLimitLabel": {},
+  "accountFormStatementDayLabel": "Día de corte",
+  "@accountFormStatementDayLabel": {},
+  "accountFormPaymentDueDayLabel": "Día de pago",
+  "@accountFormPaymentDueDayLabel": {},
+  "accountFormAmountHint": "0",
+  "@accountFormAmountHint": {},
+  "accountFormSelectHint": "Seleccionar",
+  "@accountFormSelectHint": {},
+  "accountErrorType": "Elige el tipo de cuenta.",
+  "@accountErrorType": {},
+  "accountErrorName": "Escribe un nombre de hasta 100 caracteres.",
+  "@accountErrorName": {},
+  "accountErrorCurrency": "Elige una moneda.",
+  "@accountErrorCurrency": {},
+  "accountErrorInstitution": "La institución admite hasta 100 caracteres.",
+  "@accountErrorInstitution": {},
+  "accountErrorFullNumber": "Revisa el número de cuenta: solo dígitos.",
+  "@accountErrorFullNumber": {},
+  "accountErrorLast4": "Ingresa hasta 4 dígitos.",
+  "@accountErrorLast4": {},
+  "accountErrorInterestRate": "Ingresa una tasa válida, por ejemplo 24,5.",
+  "@accountErrorInterestRate": {},
+  "accountErrorInitialBalance": "Ingresa un saldo válido.",
+  "@accountErrorInitialBalance": {},
+  "accountErrorCreditLimit": "Ingresa el cupo de la tarjeta.",
+  "@accountErrorCreditLimit": {},
+  "accountErrorStatementDay": "Elige un día entre 1 y 31.",
+  "@accountErrorStatementDay": {},
+  "accountErrorPaymentDueDay": "Elige un día entre 1 y 31.",
+  "@accountErrorPaymentDueDay": {},
+  "accountDeleteSheetTitle": "¿Eliminar esta cuenta?",
+  "@accountDeleteSheetTitle": {},
+  "accountDeleteSheetMessage": "La cuenta dejará de aparecer en tus listas.",
+  "@accountDeleteSheetMessage": {},
+  "accountDeleteSheetImpact": "{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}",
+  "@accountDeleteSheetImpact": {
+    "description": "HU-08: impacto en tono neutral, informa sin culpar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountArchiveSheetTitle": "¿Archivar esta cuenta?",
+  "@accountArchiveSheetTitle": {},
+  "accountArchiveSheetMessage": "Podrás recuperarla cuando quieras desde “Cuentas archivadas”.",
+  "@accountArchiveSheetMessage": {},
+  "accountChangeSheetTitle": "¿Confirmas el cambio?",
+  "@accountChangeSheetTitle": {},
+  "accountChangeSheetMessage": "Esta cuenta ya tiene movimientos. Cambiar su tipo o su moneda cambia cómo se leen sus cifras.",
+  "@accountChangeSheetMessage": {},
+  "accountChangeConfirm": "Confirmar",
+  "@accountChangeConfirm": {},
+  "accountCurrencySheetTitle": "Moneda",
+  "@accountCurrencySheetTitle": {},
+  "currencyCopName": "Peso colombiano",
+  "@currencyCopName": {},
+  "currencyUsdName": "Dólar estadounidense",
+  "@currencyUsdName": {},
+  "accountCannotDeleteTitle": "No se puede eliminar",
+  "@accountCannotDeleteTitle": {},
+  "accountCannotDeleteMessage": "Necesitas al menos una cuenta para registrar tus movimientos. Crea otra y luego podrás eliminar esta.",
+  "@accountCannotDeleteMessage": {},
+  "accountCannotDeleteUnderstood": "Entendido",
+  "@accountCannotDeleteUnderstood": {},
+  "categoriesTitle": "Categorías",
+  "@categoriesTitle": {},
+  "categoriesOpenAction": "Ver mis categorías",
+  "@categoriesOpenAction": {
+    "description": "Acceso temporal a Categorías desde el Hero de Inicio."
+  },
+  "categoriesAdd": "Crear categoría",
+  "@categoriesAdd": {},
+  "categoriesErrorTitle": "No pudimos cargar tus categorías",
+  "@categoriesErrorTitle": {},
+  "categoriesEmptyExpense": "Aún no tienes categorías de gasto",
+  "@categoriesEmptyExpense": {
+    "description": "Estado vacío del listado (tab Gasto). Tono neutral."
+  },
+  "categoriesEmptyIncome": "Aún no tienes categorías de ingreso",
+  "@categoriesEmptyIncome": {
+    "description": "Estado vacío del listado (tab Ingreso). Tono neutral."
+  },
+  "categoriesLoading": "Cargando tus categorías",
+  "@categoriesLoading": {
+    "description": "Etiqueta accesible del estado de carga (skeletons)."
+  },
+  "categorySubcategoryCount": "{count, plural, =0{Sin subcategorías} =1{1 subcategoría} other{{count} subcategorías}}",
+  "@categorySubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryAddSubcategory": "Agregar subcategoría",
+  "@categoryAddSubcategory": {},
+  "categoryKindExpense": "Gasto",
+  "@categoryKindExpense": {},
+  "categoryKindIncome": "Ingreso",
+  "@categoryKindIncome": {},
+  "categoryFormNewTitle": "Nueva categoría",
+  "@categoryFormNewTitle": {},
+  "categoryFormNewSubcategoryTitle": "Nueva subcategoría",
+  "@categoryFormNewSubcategoryTitle": {},
+  "categoryFormEditTitle": "Editar categoría",
+  "@categoryFormEditTitle": {},
+  "categoryFormEditSubcategoryTitle": "Editar subcategoría",
+  "@categoryFormEditSubcategoryTitle": {},
+  "categoryFormAppearanceLabel": "Icono y color",
+  "@categoryFormAppearanceLabel": {},
+  "categoryFormAppearanceEmptySublabel": "Toca para elegir (opcional)",
+  "@categoryFormAppearanceEmptySublabel": {},
+  "categoryFormAppearanceFilledSublabel": "Toca para cambiar",
+  "@categoryFormAppearanceFilledSublabel": {},
+  "categoryFormNameLabel": "Nombre",
+  "@categoryFormNameLabel": {},
+  "categoryFormNameHint": "Ej. Comida y bebida",
+  "@categoryFormNameHint": {},
+  "categoryFormKindLabel": "Tipo",
+  "@categoryFormKindLabel": {},
+  "categoryFormParentLabel": "Categoría padre",
+  "@categoryFormParentLabel": {},
+  "categoryErrorName": "Escribe un nombre de hasta 100 caracteres.",
+  "@categoryErrorName": {},
+  "categoryKindLockedSubcategory": "Hereda el tipo de la categoría padre — no se puede cambiar en subcategorías.",
+  "@categoryKindLockedSubcategory": {},
+  "categoryKindLockedRoot": "No se puede cambiar el tipo porque tiene subcategorías activas. Elimina o reasigna las subcategorías primero.",
+  "@categoryKindLockedRoot": {},
+  "categoryDeleteAction": "Eliminar categoría",
+  "@categoryDeleteAction": {},
+  "categoryAppearancePickerTitle": "Icono y color",
+  "@categoryAppearancePickerTitle": {},
+  "categoryParentPickerTitle": "Categoría padre",
+  "@categoryParentPickerTitle": {},
+  "categoryParentPickerEmpty": "No hay categorías disponibles todavía.",
+  "@categoryParentPickerEmpty": {},
+  "categoryDeleteSimpleTitle": "¿Eliminar esta categoría?",
+  "@categoryDeleteSimpleTitle": {},
+  "categoryDeleteSimpleMessage": "Podrás recuperarla después desde la papelera.",
+  "@categoryDeleteSimpleMessage": {},
+  "categoryDeleteTransactionsTitle": "¿Eliminar esta categoría?",
+  "@categoryDeleteTransactionsTitle": {},
+  "categoryDeleteTransactionsCount": "{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}",
+  "@categoryDeleteTransactionsCount": {
+    "description": "HU-04 caso 2: impacto en tono neutral, informa sin culpar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryDeleteReassignOption": "Reasignar a otra categoría",
+  "@categoryDeleteReassignOption": {},
+  "categoryDeleteClearOption": "Dejar sin categoría",
+  "@categoryDeleteClearOption": {},
+  "categoryReassignTransactionsPickerTitle": "Reasignar a otra categoría",
+  "@categoryReassignTransactionsPickerTitle": {},
+  "categoryDeleteSubcategoriesTitle": "Esta categoría tiene subcategorías",
+  "@categoryDeleteSubcategoriesTitle": {},
+  "categoryDeleteSubcategoriesMessage": "Antes de eliminarla, decide qué pasa con sus subcategorías.",
+  "@categoryDeleteSubcategoriesMessage": {},
+  "categoryReassignSubcategoriesOption": "Reasignar subcategorías",
+  "@categoryReassignSubcategoriesOption": {},
+  "categoryReassignSubcategoriesPickerTitle": "Mover subcategorías a",
+  "@categoryReassignSubcategoriesPickerTitle": {},
+  "categoryCascadeDeleteOption": "Eliminar todo en cascada",
+  "@categoryCascadeDeleteOption": {},
+  "categoryCascadeConfirmTitle": "¿Eliminar la categoría y sus subcategorías?",
+  "@categoryCascadeConfirmTitle": {},
+  "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.",
+  "@categoryCascadeConfirmMessage": {}
 }

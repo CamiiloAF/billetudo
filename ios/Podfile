@@ -1,5 +1,7 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# Patrol e2e needs the Podfile's deployment target to match Xcode's Build
+# Settings for every target (Runner, RunnerTests, RunnerUITests) — a mismatch
+# is the #1 cause of "iOS deployment version" build failures per Patrol's FAQ.
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -33,6 +35,14 @@ target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
+  end
+
+  # Patrol e2e (patrol.leancode.co/documentation → iOS setup): the UI test
+  # bundle needs every pod Runner has — including `patrol` itself, whose
+  # native side (PATROL_INTEGRATION_TEST_IOS_RUNNER) RunnerUITests.m links
+  # against — so it inherits `:complete` rather than just `:search_paths`.
+  target 'RunnerUITests' do
+    inherit! :complete
   end
 end
 

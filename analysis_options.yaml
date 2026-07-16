@@ -33,7 +33,10 @@ linter:
   rules:
     # --- Estilo (ya acordado en el repo) ---
     prefer_single_quotes: true
-    require_trailing_commas: true
+    # require_trailing_commas queda DESACTIVADA: entra en ciclo con
+    # `dart format` de Dart 3.12 — el formatter quita la coma, el lint la
+    # exige, `dart fix` la repone y el formatter la vuelve a quitar. Las comas
+    # las decide `dart format`, que es la autoridad de formato del proyecto.
     always_declare_return_types: true
     avoid_print: true # usar CrashReporter, nunca print
     flutter_style_todos: true # TODO(usuario): descripción

@@ -45,6 +45,24 @@ Como usuario con sesión iniciada quiero que mis cambios se sincronicen automát
 **Criterios de aceptación:**
 - PowerSync mantiene la SQLite local en sync bidireccional con Supabase Postgres, con reconciliación automática al reconectar tras estar offline.
 - La app sigue siendo utilizable offline con sesión iniciada; los cambios se encolan y sincronizan al recuperar conexión, sin pérdida de datos.
+- **Las sync rules deben replicar el filtro `tombstonedAt IS NULL`.** Ver "Lápidas y sync rules" abajo: sin ese filtro, las cuentas borradas reaparecen en la UI.
+
+### Lápidas de integridad referencial y sync rules
+
+> Detectado al implementar Cuentas (2026-07-15). **Hay que resolverlo antes de cablear PowerSync**, no después: define el esquema de Postgres y las sync rules.
+
+Dos columnas con significados distintos que no se pueden confundir (ver CLAUDE.md → Borrado):
+
+- **`deletedAt`** — papelera/undo de UX. Reversible. PowerSync propaga el DELETE real por su cuenta.
+- **`tombstonedAt`** — lápida de integridad referencial. Irreversible. La fila **debe sobrevivir** porque otras tablas la referencian (`Transactions.accountId` necesita que su cuenta exista aunque el usuario la haya borrado). El cliente la oculta filtrando `tombstonedAt IS NULL`.
+
+Preguntas abiertas que esta feature debe contestar:
+
+1. **Las sync rules tienen que replicar el filtro.** Hoy el filtro local `tombstonedAt IS NULL` es lo **único** que oculta una cuenta borrada. Una sync rule que no lo replique **resucita cuentas borradas** en la UI de cualquier dispositivo nuevo.
+2. **¿Quién emite el DELETE real, y cuándo?** Las lápidas se acumulan en Postgres para siempre y se re-sincronizan a cada dispositivo nuevo. Decidir si una lápida recibe un DELETE real cuando ninguna transacción la referencia (¿job de limpieza en el servidor? ¿al borrar la última transacción que la referencia?) o si se aceptan como permanentes.
+3. **`accountNumberEnc` NO se sincroniza.** Es columna muerta (siempre NULL por diseño: el número completo vive solo en Keychain/Keystore, HU-03 de Cuentas). Debe excluirse explícitamente de las sync rules — **cualquier escritura futura a esa columna filtraría el número del usuario a Supabase**. Evaluar eliminarla del esquema.
+4. **`updatedAt` tiene resolución de segundos.** Drift guarda `DateTime` como epoch en segundos, así que dos escrituras dentro del mismo segundo dejan `updatedAt` igual, no mayor. Relevante para el orden de resolución de conflictos de PowerSync: si el desempate es por `updatedAt`, dos ediciones en el mismo segundo son indistinguibles. Se arregla con cambio de esquema (`storeDateTimeValuesAsText` o millis).
+5. **HU-07 (borrado de cuenta) vs. lápidas.** El borrado de cuenta debe eliminar los datos del usuario en Supabase de verdad, lápidas incluidas — una lápida no es una excusa para conservar datos de un usuario que ejerció su derecho al borrado.
 
 ### HU-06 — Cerrar sesión
 Como usuario quiero poder cerrar sesión sin perder mis datos localmente, para dejar de sincronizar en este dispositivo si lo comparto con alguien más.

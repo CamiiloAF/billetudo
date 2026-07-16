@@ -1,0 +1,372 @@
+import 'package:billetudo/core/database/app_database.dart';
+import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart';
+import 'package:drift/drift.dart' show Value;
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  late AppDatabase db;
+  late CategoriesLocalDatasource datasource;
+
+  setUp(() {
+    db = AppDatabase(NativeDatabase.memory());
+    datasource = CategoriesLocalDatasource(db);
+  });
+
+  tearDown(() async => db.close());
+
+  Future<Category> insertCategory({
+    required String name,
+    CategoryKind kind = CategoryKind.expense,
+    String? parentId,
+    int sortOrder = 0,
+    DateTime? deletedAt,
+    DateTime? tombstonedAt,
+  }) =>
+      db.into(db.categories).insertReturning(
+            CategoriesCompanion.insert(
+              name: name,
+              kind: kind,
+              parentId: Value(parentId),
+              sortOrder: Value(sortOrder),
+              deletedAt: Value(deletedAt),
+              tombstonedAt: Value(tombstonedAt),
+            ),
+          );
+
+  group('watchCategories', () {
+    test('excluye tombstoned y deleted, ordena por sortOrder', () async {
+      final b = await insertCategory(name: 'B', sortOrder: 1);
+      final a = await insertCategory(name: 'A');
+      await insertCategory(
+        name: 'Borrada',
+        deletedAt: DateTime(2026, 7),
+      );
+      await insertCategory(
+        name: 'Tombstoned',
+        tombstonedAt: DateTime(2026, 7),
+      );
+
+      final result =
+          await datasource.watchCategories(CategoryKind.expense).first;
+
+      expect(result.map((c) => c.id), [a.id, b.id]);
+    });
+
+    test('no mezcla kinds', () async {
+      await insertCategory(name: 'Salario', kind: CategoryKind.income);
+      final expense = await insertCategory(name: 'Comida');
+
+      final result =
+          await datasource.watchCategories(CategoryKind.expense).first;
+
+      expect(result.map((c) => c.id), [expense.id]);
+    });
+  });
+
+  group('watchParentCandidates', () {
+    test('solo trae raíces del kind pedido', () async {
+      final root = await insertCategory(name: 'Comida');
+      await insertCategory(name: 'Mercado', parentId: root.id);
+      await insertCategory(name: 'Salario', kind: CategoryKind.income);
+
+      final result =
+          await datasource.watchParentCandidates(CategoryKind.expense).first;
+
+      expect(result.map((c) => c.id), [root.id]);
+    });
+
+    test('excludingId omite la propia raíz', () async {
+      final root1 = await insertCategory(name: 'Comida');
+      final root2 = await insertCategory(name: 'Transporte', sortOrder: 1);
+
+      final result = await datasource
+          .watchParentCandidates(CategoryKind.expense, excludingId: root1.id)
+          .first;
+
+      expect(result.map((c) => c.id), [root2.id]);
+    });
+  });
+
+  group('nextSortOrder', () {
+    test('0 cuando no hay categorías en ese scope', () async {
+      final next = await datasource.nextSortOrder(CategoryKind.expense);
+      expect(next, 0);
+    });
+
+    test('siguiente entre raíces cuando parentId es null', () async {
+      await insertCategory(name: 'A');
+      await insertCategory(name: 'B', sortOrder: 1);
+
+      final next = await datasource.nextSortOrder(CategoryKind.expense);
+
+      expect(next, 2);
+    });
+
+    test('siguiente entre hermanas cuando parentId no es null', () async {
+      final root = await insertCategory(name: 'Comida');
+      await insertCategory(name: 'Mercado', parentId: root.id);
+
+      final next = await datasource.nextSortOrder(
+        CategoryKind.expense,
+        parentId: root.id,
+      );
+
+      expect(next, 1);
+      // Y no se ve afectado por el sortOrder de las raíces.
+      final nextRoot = await datasource.nextSortOrder(CategoryKind.expense);
+      expect(nextRoot, 1);
+    });
+  });
+
+  group('countActiveSubcategories / countActiveTransactions', () {
+    test('cuenta solo subcategorías activas', () async {
+      final root = await insertCategory(name: 'Comida');
+      await insertCategory(name: 'Mercado', parentId: root.id);
+      await insertCategory(
+        name: 'Borrada',
+        parentId: root.id,
+        deletedAt: DateTime(2026, 7),
+      );
+
+      final count = await datasource.countActiveSubcategories(root.id);
+
+      expect(count, 1);
+    });
+
+    test('cuenta solo transacciones activas', () async {
+      final root = await insertCategory(name: 'Comida');
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: await _insertAccount(db),
+              categoryId: Value(root.id),
+              amountMinor: 1000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 7, 10),
+            ),
+          );
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: await _insertAccount(db),
+              categoryId: Value(root.id),
+              amountMinor: 1000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 7, 10),
+              deletedAt: Value(DateTime(2026, 7, 12)),
+            ),
+          );
+
+      final count = await datasource.countActiveTransactions(root.id);
+
+      expect(count, 1);
+    });
+  });
+
+  group(
+      'reassignSubcategories / reassignTransactions / '
+      'clearTransactionCategory', () {
+    test('mueve todas las subcategorías activas a otra raíz', () async {
+      final root1 = await insertCategory(name: 'Comida');
+      final root2 = await insertCategory(name: 'Restaurantes', sortOrder: 1);
+      final sub = await insertCategory(name: 'Mercado', parentId: root1.id);
+
+      await datasource.reassignSubcategories(
+        root1.id,
+        root2.id,
+        DateTime(2026, 7, 15),
+      );
+
+      final row = await datasource.getCategory(sub.id);
+      expect(row!.parentId, root2.id);
+      expect(row.updatedAt, DateTime(2026, 7, 15));
+    });
+
+    test('reasignar transacciones actualiza categoryId y updatedAt', () async {
+      final root1 = await insertCategory(name: 'Comida');
+      final root2 = await insertCategory(name: 'Restaurantes', sortOrder: 1);
+      final accountId = await _insertAccount(db);
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              categoryId: Value(root1.id),
+              amountMinor: 1000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 7, 10),
+            ),
+          );
+
+      await datasource.reassignTransactions(
+        root1.id,
+        root2.id,
+        DateTime(2026, 7, 15),
+      );
+
+      final tx = await db.select(db.transactions).getSingle();
+      expect(tx.categoryId, root2.id);
+      expect(tx.updatedAt, DateTime(2026, 7, 15));
+    });
+
+    test('dejar sin categoría pone categoryId en null', () async {
+      final root = await insertCategory(name: 'Comida');
+      final accountId = await _insertAccount(db);
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              categoryId: Value(root.id),
+              amountMinor: 1000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 7, 10),
+            ),
+          );
+
+      await datasource.clearTransactionCategory(
+        root.id,
+        DateTime(2026, 7, 15),
+      );
+
+      final tx = await db.select(db.transactions).getSingle();
+      expect(tx.categoryId, isNull);
+    });
+  });
+
+  group('softDeleteCategory / cascadeDeleteCategory / restoreCategory', () {
+    test('softDeleteCategory usa deletedAt, nunca tombstonedAt', () async {
+      final category = await insertCategory(name: 'Comida');
+
+      final row = await datasource.softDeleteCategory(
+        category.id,
+        DateTime(2026, 7, 15),
+      );
+
+      expect(row!.deletedAt, isNotNull);
+      expect(row.tombstonedAt, isNull);
+    });
+
+    test('cascadeDeleteCategory borra la raíz y sus subcategorías activas',
+        () async {
+      final root = await insertCategory(name: 'Vehículo');
+      final sub1 = await insertCategory(name: 'Combustible', parentId: root.id);
+      final sub2 = await insertCategory(
+          name: 'Mantenimiento', parentId: root.id, sortOrder: 1);
+
+      await datasource.cascadeDeleteCategory(root.id, DateTime(2026, 7, 15));
+
+      final all = await db.select(db.categories).get();
+      final rootRow = all.firstWhere((c) => c.id == root.id);
+      final sub1Row = all.firstWhere((c) => c.id == sub1.id);
+      final sub2Row = all.firstWhere((c) => c.id == sub2.id);
+      expect(rootRow.deletedAt, isNotNull);
+      expect(sub1Row.deletedAt, isNotNull);
+      expect(sub2Row.deletedAt, isNotNull);
+    });
+
+    test('restoreCategory limpia deletedAt sin tocar tombstonedAt', () async {
+      final category = await insertCategory(
+        name: 'Comida',
+        deletedAt: DateTime(2026, 7),
+      );
+
+      final row =
+          await datasource.restoreCategory(category.id, DateTime(2026, 7, 15));
+
+      expect(row!.deletedAt, isNull);
+      expect(row.tombstonedAt, isNull);
+    });
+
+    test('restoreCategory no exige que el padre siga vivo', () async {
+      final root = await insertCategory(
+        name: 'Comida',
+        deletedAt: DateTime(2026, 7),
+      );
+      final sub = await insertCategory(
+        name: 'Mercado',
+        parentId: root.id,
+        deletedAt: DateTime(2026, 7),
+      );
+
+      final row =
+          await datasource.restoreCategory(sub.id, DateTime(2026, 7, 15));
+
+      expect(row!.deletedAt, isNull);
+      expect(row.parentId, root.id);
+    });
+  });
+
+  group('reorderCategories', () {
+    test('reordena de forma transaccional y contigua', () async {
+      final a = await insertCategory(name: 'A');
+      final b = await insertCategory(name: 'B', sortOrder: 1);
+      final c = await insertCategory(name: 'C', sortOrder: 2);
+
+      await datasource.reorderCategories(
+        [b.id, c.id, a.id],
+        DateTime(2026, 7, 15),
+      );
+
+      final rowB = await datasource.getCategory(b.id);
+      final rowC = await datasource.getCategory(c.id);
+      final rowA = await datasource.getCategory(a.id);
+      expect(rowB!.sortOrder, 0);
+      expect(rowC!.sortOrder, 1);
+      expect(rowA!.sortOrder, 2);
+    });
+  });
+
+  group('countActiveCategories / seedDefaultCategories', () {
+    test('0 sin categorías, > 0 tras crear una', () async {
+      expect(await datasource.countActiveCategories(), 0);
+
+      await insertCategory(name: 'Comida');
+
+      expect(await datasource.countActiveCategories(), greaterThan(0));
+    });
+
+    test('inserta el set semilla completo con sortOrder contiguo', () async {
+      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
+
+      final all = await db.select(db.categories).get();
+      // 17 raíces de gasto + sus subcategorías + 9 raíces de ingreso.
+      final expenseRoots = all
+          .where((c) => c.kind == CategoryKind.expense && c.parentId == null);
+      final incomeRoots =
+          all.where((c) => c.kind == CategoryKind.income && c.parentId == null);
+      expect(expenseRoots, hasLength(17));
+      expect(incomeRoots, hasLength(9));
+
+      final expenseRootOrders = expenseRoots.map((c) => c.sortOrder).toList()
+        ..sort();
+      expect(expenseRootOrders, List.generate(17, (i) => i));
+    });
+
+    test(
+        'vuelve a llamarse sin duplicar (comprobado por el use case, aquí '
+        'solo se verifica que el datasource siempre inserta lo que se le '
+        'pide)', () async {
+      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
+      final firstCount = await datasource.countActiveCategories();
+
+      // El datasource no es idempotente por sí mismo: esa regla vive en
+      // `SeedDefaultCategories` (el use case), que consulta `hasAnyCategory`
+      // antes de llamar aquí.
+      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
+      final secondCount = await datasource.countActiveCategories();
+
+      expect(secondCount, greaterThan(firstCount));
+    });
+  });
+}
+
+Future<String> _insertAccount(AppDatabase db) => db
+    .into(db.accounts)
+    .insertReturning(
+      AccountsCompanion.insert(
+        name: 'Cuenta',
+        type: AccountType.bank,
+        currency: 'COP',
+      ),
+    )
+    .then((row) => row.id);

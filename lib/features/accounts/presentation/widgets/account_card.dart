@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/money_formatter.dart';
+import '../../domain/entities/account_with_balance.dart';
+import 'account_type_avatar.dart';
+
+/// The `Account Card` component: one row of the accounts list.
+///
+/// Shows the account's balance, red only when it is actually negative — a
+/// normal balance is never dressed as a problem (MASTER.md, tone of voice).
+class AccountCard extends StatelessWidget {
+  const AccountCard({required this.entry, this.onTap, super.key});
+
+  final AccountWithBalance entry;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final account = entry.account;
+    final balanceMinor = entry.balance.balanceMinor;
+
+    return Material(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              AccountTypeAvatar(type: account.type),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      account.type.label(l10n),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: colors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                const MoneyFormatter()
+                    .format(balanceMinor, currencyCode: account.currency),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: balanceMinor < 0 ? colors.expense : colors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

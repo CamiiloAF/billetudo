@@ -9,9 +9,12 @@
 //    rounding errors. E.g. $12.34 -> 1234.
 //  - Timestamps: createdAt / updatedAt on every table. Update updatedAt on
 //    each write (do it in the repository or with triggers).
-//  - deletedAt: soft delete for "trash / undo" (a UX feature).
-//    Note: PowerSync syncs real DELETEs on its own; deletedAt is only for the
-//    user-facing trash, not for sync.
+//  - Deletion is TWO distinct columns, never one. See _SyncColumns:
+//      * deletedAt: soft delete for "trash / undo" (a UX feature). Reversible.
+//        PowerSync syncs real DELETEs on its own; deletedAt is only for the
+//        user-facing trash, not for sync.
+//      * tombstonedAt: referential-integrity tombstone. Irreversible. The row
+//        must survive because other tables reference its id.
 //
 // Dependencies (pubspec):
 //   drift, sqlite3_flutter_libs, uuid  (+ drift_dev, build_runner in dev)
@@ -63,8 +66,29 @@ mixin _SyncColumns on Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
-  /// Soft delete for trash/undo. null = active.
+  /// Soft delete for the user-facing **trash / undo**. null = not trashed.
+  ///
+  /// REVERSIBLE by design: the user can restore a trashed row, so an un-delete
+  /// simply clears this column. It is a UX affordance and nothing else — it is
+  /// not how deletion is propagated: PowerSync syncs real DELETEs on its own.
+  ///
+  /// Never use this column to keep a row alive for referential integrity; that
+  /// is [tombstonedAt]. Conflating the two is what this pair of columns exists
+  /// to prevent.
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// **Referential-integrity tombstone**. null = not tombstoned.
+  ///
+  /// Stamped when the user deletes a row that other tables still reference by
+  /// id (e.g. `Transactions.accountId` -> `Accounts.id`). The row must physically
+  /// survive so those foreign keys keep pointing at something real, so it is
+  /// hidden from every query instead of being removed.
+  ///
+  /// IRREVERSIBLE by design: there is no un-tombstone path, and the deletion may
+  /// destroy data that lives outside this DB (e.g. the account number in secure
+  /// storage), which no restore could bring back. Do not build undo on top of
+  /// it — that is what [deletedAt] is for.
+  DateTimeColumn get tombstonedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -201,7 +225,11 @@ class Debts extends Table with _SyncColumns {
   TextColumn get direction => textEnum<DebtDirection>()();
   IntColumn get principalMinor => integer()();
   TextColumn get currency => text().withLength(min: 3, max: 3)();
-  RealColumn get interestRate => real().nullable()(); // annual %, optional
+
+  /// Annual interest rate in whole basis points (24.5% -> 2450), optional.
+  /// Never double, same rule as `Accounts.interestRateBps`: a scaled
+  /// percentage, not an amount.
+  IntColumn get interestRateBps => integer().nullable()();
   TextColumn get counterparty => text().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
 }
@@ -264,7 +292,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -283,6 +311,48 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(accounts, accounts.statementDay);
             await m.addColumn(accounts, accounts.paymentDueDay);
             await m.addColumn(accounts, accounts.cardBalancePrimary);
+          }
+
+          // v2 -> v3: Debts.interestRate (REAL, annual %) becomes
+          // interestRateBps (INTEGER, basis points), for parity with
+          // Accounts.interestRateBps and with Postgres under PowerSync. The old
+          // percentage is scaled by 100 and backfilled before the old column
+          // goes, which is referenced by its SQL name because it no longer
+          // exists in the table class.
+          if (from < 3) {
+            await m.addColumn(debts, debts.interestRateBps);
+            await m.database.customStatement(
+              'UPDATE debts SET interest_rate_bps = '
+              'CAST(ROUND(interest_rate * 100) AS INTEGER) '
+              'WHERE interest_rate IS NOT NULL',
+            );
+            await m.dropColumn(debts, 'interest_rate');
+          }
+
+          // v3 -> v4: split the two meanings of deletion. `deletedAt` used to
+          // carry both the UX trash and the referential-integrity tombstone;
+          // the latter now has its own `tombstonedAt` on every table (see
+          // _SyncColumns).
+          if (from < 4) {
+            await m.addColumn(accounts, accounts.tombstonedAt);
+            await m.addColumn(categories, categories.tombstonedAt);
+            await m.addColumn(transactions, transactions.tombstonedAt);
+            await m.addColumn(budgets, budgets.tombstonedAt);
+            await m.addColumn(goals, goals.tombstonedAt);
+            await m.addColumn(debts, debts.tombstonedAt);
+            await m.addColumn(recurrings, recurrings.tombstonedAt);
+            await m.addColumn(tags, tags.tombstonedAt);
+            await m.addColumn(transactionTags, transactionTags.tombstonedAt);
+
+            // Backfill: every `deletedAt` on Accounts was written by
+            // softDeleteAccount (HU-08), which is a tombstone, not trash —
+            // Accounts has no trash flow. Those stamps move to the new column
+            // so `deletedAt` keeps its single documented meaning. No other
+            // table has a delete flow yet, so there is nothing else to move.
+            await m.database.customStatement(
+              'UPDATE accounts SET tombstoned_at = deleted_at, '
+              'deleted_at = NULL WHERE deleted_at IS NOT NULL',
+            );
           }
         },
       );

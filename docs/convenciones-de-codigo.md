@@ -302,10 +302,16 @@ quien escribe código:
 
 ## 11. Formato
 
-`dart format` decide, no se discute. 80 columnas.
+`dart format` decide, no se discute. 80 columnas. Es la **única** autoridad
+sobre el formato, comas finales incluidas.
 
-- Comillas simples, comas finales (`prefer_single_quotes`,
-  `require_trailing_commas`).
+Por eso `require_trailing_commas` está desactivada: con `dart format` de Dart
+3.12 entra en un ciclo infinito — el formatter quita la coma, el lint la exige,
+`dart fix` la repone y el formatter la vuelve a quitar. Dos autoridades sobre lo
+mismo no pueden ganar las dos. Si algún día el proyecto sube a tall style
+(language version 3.8+), el lint se auto-desactiva solo y esto deja de importar.
+
+- Comillas simples (`prefer_single_quotes`).
 - Tipos de retorno siempre explícitos (`always_declare_return_types`).
 - Imports relativos dentro del paquete (`prefer_relative_imports`), ordenados
   (`directives_ordering`): `dart:` → `package:` → relativos.

@@ -27,6 +27,19 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Patrol e2e (see patrol.leancode.co/documentation → Android setup):
+        // routes `patrol test` through Patrol's own instrumentation runner and
+        // wipes app storage between tests, so each scenario starts from a
+        // clean install instead of leaking state from the previous one.
+        testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
+    }
+
+    testOptions {
+        // Required by PatrolJUnitRunner: runs each test in its own instance so
+        // a crash in one scenario cannot take the rest of the suite down.
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 
     buildTypes {
@@ -36,6 +49,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    androidTestUtil("androidx.test:orchestrator:1.5.1")
 }
 
 flutter {

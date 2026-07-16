@@ -46,8 +46,11 @@ Resto de reglas críticas:
 - **Dinero: SIEMPRE enteros en unidades menores (centavos).** Nunca `double`/`float` para montos. Ej: `$12.34` → `1234` (`amountMinor`).
 - **IDs: UUID en texto** (`clientDefault` en Drift). Nunca autoincrement — rompería el sync y la fusión de datos offline.
 - **Timestamps:** actualizar `updatedAt` en cada escritura (en el repositorio).
-- **Borrado:** `deletedAt` es solo para papelera/undo de UX; PowerSync sincroniza los DELETE reales por su cuenta.
-- **Comillas simples**, comas finales, tipos de retorno explícitos (ver `analysis_options.yaml`).
+- **Borrado: dos columnas con significados distintos, nunca intercambiables.**
+  - `deletedAt` = **papelera/undo de UX**. Reversible: restaurar es limpiar la columna. PowerSync sincroniza los DELETE reales por su cuenta; `deletedAt` no es el mecanismo de sync.
+  - `tombstonedAt` = **lápida de integridad referencial**. Irreversible: la fila debe sobrevivir porque otras tablas referencian su `id` (ej. `Transactions.accountId` → `Accounts.id`), así que se oculta de las queries en vez de borrarse. No construyas undo encima.
+  - Si borras una fila referenciada por otra tabla, usa `tombstonedAt`. Nunca uses `deletedAt` para mantener viva una fila por el FK.
+- **Comillas simples**, tipos de retorno explícitos (ver `analysis_options.yaml`). El formato lo decide `dart format`, comas finales incluidas — `require_trailing_commas` está desactivada a propósito (entra en ciclo con el formatter de este SDK, ver `docs/convenciones-de-codigo.md`).
 - **Código y comentarios en inglés.** En español se quedan solo: los `.arb`, las rutas (`/cuentas`), `docs/`, `design-system/` y los mensajes de commit.
 - Estructura **feature-first + Clean Architecture completa**: cada feature en `lib/features/<feature>/` con tres capas estrictas y dependencias apuntando siempre hacia adentro (`presentation` → `domain` ← `data`; `data` nunca es importado por `domain`):
   - `domain/`: entidades puras (sin Drift ni Supabase), interfaces de repositorio (`abstract class XRepository`), y **un caso de uso por acción de negocio** (`class GetAccounts`, `class CreateTransaction`, clases con un método `call()`), incluso para operaciones simples. Aquí vive toda la lógica de negocio (validaciones, cálculos como safe-to-spend, rollover de presupuesto).
@@ -72,7 +75,7 @@ Resto de reglas críticas:
 
 ## Esquema de datos (Drift)
 
-Definido en `lib/core/database/app_database.dart`. Todas las tablas usan el mixin `_SyncColumns` (`id` UUID, `createdAt`, `updatedAt`, `deletedAt`). Tablas: `Accounts`, `Categories` (jerárquica vía `parentId`), `Transactions` (income/expense/transfer; `source` distingue captura manual vs. IA para medir cupos), `Budgets`, `Goals`, `Debts`, `Recurrings`, `Tags`, `TransactionTags` (N:N). Los enums (`AccountType`, `EntryType`, `CategoryKind`, `TxSource`, `BudgetPeriod`, `DebtDirection`, `RecurFrequency`) se guardan como texto para tener paridad con Postgres. Al añadir o modificar una tabla, sube `schemaVersion` en `AppDatabase` y regenera con build_runner.
+Definido en `lib/core/database/app_database.dart`. Todas las tablas usan el mixin `_SyncColumns` (`id` UUID, `createdAt`, `updatedAt`, `deletedAt`, `tombstonedAt`). `deletedAt` y `tombstonedAt` **no son sinónimos** — ver la regla de "Borrado" arriba: `deletedAt` es papelera reversible, `tombstonedAt` es lápida irreversible para que un FK conserve su referente. Hoy la única feature con borrado lógico es Cuentas y usa `tombstonedAt` (HU-08). Tablas: `Accounts`, `Categories` (jerárquica vía `parentId`), `Transactions` (income/expense/transfer; `source` distingue captura manual vs. IA para medir cupos), `Budgets`, `Goals`, `Debts`, `Recurrings`, `Tags`, `TransactionTags` (N:N). Los enums (`AccountType`, `EntryType`, `CategoryKind`, `TxSource`, `BudgetPeriod`, `DebtDirection`, `RecurFrequency`) se guardan como texto para tener paridad con Postgres. Al añadir o modificar una tabla, sube `schemaVersion` en `AppDatabase` y regenera con build_runner.
 
 ## Diseño / UI (Pencil)
 
@@ -102,6 +105,5 @@ Definidos en `.claude/` para automatizar las convenciones de este documento:
 
 ## Estado del repo
 
-Ya existe: esquema Drift (`lib/core/database/app_database.dart`), docs, pubspec, estructura de carpetas.
-`app_database.g.dart` **aún no está generado** — corre build_runner antes de referenciar `AppDatabase` o cualquier tabla generada. Las carpetas de `lib/core/*` y `lib/features/*` solo tienen `.gitkeep`: no hay código de features, DI, sync, ni tests todavía — es lienzo en blanco, no derives estructura por analogía a otro proyecto Flutter.
-Falta (config técnica): `flutter create .`, build_runner, wiring PowerSync+Supabase, entornos/claves. Ver README.
+Ya existe: esquema Drift (`lib/core/database/app_database.dart`, `schemaVersion` 4), base técnica cableada (`lib/core/`: DI, router, tema, l10n, errores, seguridad — ver "Cablear la base técnica de la app"), y la primera feature completa: **Cuentas** (`lib/features/accounts/`, Nivel 0, HU-01 a HU-09 salvo HU-05 que pertenece a Transacciones). El resto de `lib/features/*` sigue siendo lienzo en blanco — no derives su estructura por analogía a otro proyecto Flutter, sigue las convenciones de este documento.
+Falta (config técnica): `flutter create .` para plataformas nativas, wiring PowerSync+Supabase (ver "Lápidas y sync rules" en `docs/requirements/04-auth-sync.md` — hay decisiones pendientes ahí antes de cablear), entornos/claves. Ver README.
