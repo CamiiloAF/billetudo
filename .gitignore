@@ -33,3 +33,6 @@ android/local.properties
 
 # Config personal de Claude Code (no compartir)
 .claude/settings.local.json
+
+# Artefactos de diffs de golden tests fallidos (no son goldens válidos)
+test/**/golden/failures/
