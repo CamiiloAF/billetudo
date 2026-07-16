@@ -25,10 +25,17 @@ Feature **04** (`docs/requirements/04-inicio.md`, spec de diseño `design-system
 - **Revisión Nivel 0/legal (`compliance-reviewer`):** cumple — nada gateado, IA "próximamente" no ejecuta nada, disclaimer solo en el sheet de IA, tono positivo.
 - **Revisión de convenciones (`finance-code-reviewer`):** limpia — dinero en centavos, Clean Architecture estricta, streams cancelados, tokens sin hex.
 
+## Segunda ronda (post-auth)
+
+Con `auth` ya en el repo se cerraron tres mejoras (commit `feat(inicio): saludo con sesión, tema oscuro y fechas bilingües`):
+
+- **Saludo real (HU-07):** `HomeCubit` observa `WatchAuthSession`; el header muestra "Hola de nuevo, \<nombre\>" + avatar con la inicial con sesión, y genérico sin ella. La sesión no gatea el estado de carga.
+- **Tema oscuro (HU-11):** verificado (el Home es token-driven), con cobertura de render en oscuro y `pump_widget` admitiendo `brightness`.
+- **Fechas bilingües:** se quitó el `locale` es-CO forzado de `app.dart` (la app sigue el idioma del dispositivo, es/en) y las fechas del Home usan `Localizations.localeOf`. El harness de Patrol fija es-CO para determinismo de los e2e.
+- **QA:** e2e Patrol del shell (4/4 en emulador), suite unit/widget en verde. El artefacto de layout del month picker y los comentarios del bootstrap ya se corrigieron.
+
 ## Pendiente / fuera de alcance
 
-- **Barra de progreso de presupuesto** en el hero: espera a la feature Budgets (06).
-- **Saludo con nombre real e indicador de sync real:** esperan auth + PowerSync (05). Hoy saludo genérico y `HomeSyncStatus.synced` fijo (forward-compatible).
-- **QA profundo (`qa-automator`):** se interrumpió a mitad; alcanzó a dejar cobertura de widgets adicional (todo verde tras corregir un artefacto de layout del harness del month picker). Queda espacio para e2e Patrol del flujo Home → FAB → nueva transacción.
-- **i18n de fechas:** `DateFormat` usa locale fija `'es_CO'` (patrón de todo el repo, incl. Transacciones y `MoneyFormatter`); si se decide soportar `en` en formato de fecha, corregir con un helper compartido en todo el repo, no solo en Home.
-- **Limpieza cosmética:** comentarios en `integration_test/transactions_patrol_test.dart` mencionan el `BootstrapHomePage` ya borrado.
+- **Barra de progreso de presupuesto** en el hero: espera a la feature Budgets (06). Ver `04-inicio.md` § Pendiente.
+- **Estados reales del indicador de sync (HU-10):** espera PowerSync (05). Hoy `HomeSyncStatus.synced` fijo (forward-compatible). Ver `04-inicio.md` § Pendiente.
+- **Formato bilingüe app-wide (destapado al soltar el locale):** `MoneyFormatter` (documentado en su propio doc) y los `DateFormat` con `es_CO` fijo de **Transacciones** (`transaction_row.dart`, `date_filter_sheet.dart`) siguen en es-CO; en un dispositivo inglés muestran dinero/fechas en estilo es-CO bajo UI en inglés. Corregir con el mismo patrón `Localizations.localeOf` en cada feature.
