@@ -62,12 +62,14 @@ Criterios de aceptación cubiertos (17 en total, detalle de cobertura abajo):
 ```bash
 flutter analyze              # limpio, sin issues
 dart run custom_lint         # limpio, sin issues
-flutter test                 # 416 passed
+flutter test                 # 456 passed (416 previos + 40 nuevos de este cierre)
 ```
 
 **Actualización post-cierre (2026-07-16):** el bug de `test/features/categories/presentation/pages/category_form_page_test.dart` (re-aparición de la hoja de confirmación de borrado tras cerrarla) ya está arreglado — `_finishDelete` limpia `deletePrompt` en el mismo emit que cambia `status`, cortando la re-invocación de `_handlePrompt`. Es el mismo mecanismo de bug que `AccountDetailCubit._runClosing` en Cuentas (un estado intermedio con un campo de prompt sin limpiar, que el listener reinterpreta como una petición nueva), disparado aquí por el propio `emit` intermedio en vez de por una emisión tardía de un stream. El test pasa en verde y queda como guardia de regresión permanente, no como rojo intencional. Confirmado además con Patrol real (`categories_patrol_test`: 2/2, incluyendo el escenario "HU-04 caso 1" que antes fallaba).
 
-**Patrol / e2e:** `fail` — no se corrió en esta pasada por restricción de recursos: la corrida de Patrol de Cuentas seguía activa en este host. Unit/widget fueron la red de pruebas principal.
+**Patrol / e2e:** ~~`fail` — no se corrió en esta pasada por restricción de recursos~~ — superado, ver "Cierre de gaps de QA" justo abajo: 6/6 en verde sobre emulador Android real.
+
+**Cierre de gaps de QA (2026-07-15):** corrida dedicada a cerrar los gaps documentados abajo — goldens, Patrol ampliado a 5 nuevos escenarios (HU-03, HU-04 caso 2, HU-04 caso 3, HU-05), test de Nivel 0 (AC 16) y el widget test de `CategoriesPage` completo. `flutter analyze`, `dart run custom_lint` y `flutter test` (456/456) en verde; `patrol test --target integration_test/categories_patrol_test.dart -d emulator-5554` → 6/6 en verde sobre un emulador Android real (1m31s). Detalle completo en las secciones "Cobertura por AC", "Verifica a mano" y "Gaps de cobertura" de más abajo, todas actualizadas con esta fecha. No se commiteó nada; alcance estricto a `test/` e `integration_test/`.
 
 Cobertura por AC (✅ cubierto, ⚠️ gap):
 
@@ -83,27 +85,42 @@ Cobertura por AC (✅ cubierto, ⚠️ gap):
 - ✅ 13 `CategoriesListCubit` → `test/features/categories/presentation/cubit/categories_list_cubit_test.dart`
 - ✅ 14 `CategoryFormCubit` → `test/features/categories/presentation/cubit/category_form_cubit_test.dart`
 - ✅ 15 `updatedAt`/UUID → `category_repository_impl_test.dart` contra BD Drift real en memoria
-- ⚠️ 16 Sin gate de anuncios/Premium → sin test automatizado; verificado por lectura de código (ningún usecase/cubit/widget referencia gates de Premium/ads). Queda como verificación manual / responsabilidad de `compliance-reviewer`.
-- ✅ 17 analyze/custom_lint/test en verde (416/416, ver actualización post-cierre arriba)
+- ✅ 16 Sin gate de anuncios/Premium → **cerrado 2026-07-15** con `test/features/categories/tier0_test.dart` (mismo patrón que `test/features/accounts/tier0_test.dart`: escaneo del código fuente de `lib/features/categories/` en busca de imports de monetización y de símbolos de gate/cupo/límite, más una verificación dedicada de que `CreateCategory` y `SeedDefaultCategories` no importan nada de `ads`/`purchase`/`billing`). Ya no depende solo de lectura manual.
+- ✅ 17 analyze/custom_lint/test en verde (456/456 — 416 previos + 40 nuevos de este cierre: 9 `categories_page_test.dart`, 5 `tier0_test.dart`, 26 goldens)
 
-Widget tests adicionales: acordeón (expandir/colapsar) en `category_accordion_row_test.dart`, toggle Gasto/Ingreso en `category_kind_toggle_test.dart`, los 3 bottom sheets de confirmación de borrado en `confirm_delete_sheets_test.dart`.
+Widget tests adicionales: acordeón (expandir/colapsar) en `category_accordion_row_test.dart`, toggle Gasto/Ingreso en `category_kind_toggle_test.dart`, los 3 bottom sheets de confirmación de borrado en `confirm_delete_sheets_test.dart`, la página completa del listado (4 estados + interacciones) en `test/features/categories/presentation/pages/categories_page_test.dart` (**nuevo, 2026-07-15**).
+
+Goldens (**nuevos, 2026-07-15**, `test/features/categories/presentation/golden/`, tema claro y oscuro, 26 archivos en total):
+- `categories_page_golden_test.dart`: loading/empty/error/con-datos (una raíz expandida + una colapsada).
+- `category_form_page_golden_test.dart`: crear raíz, crear subcategoría (parent prellenado), editar raíz, editar subcategoría (Tipo bloqueado).
+- `confirm_delete_sheets_golden_test.dart`: los 3 sheets de confirmación de borrado.
+- `icon_color_picker_sheet_golden_test.dart`: selección vacía y con icono/color ya elegidos.
+- `ParentCategoryPickerSheet` queda deliberadamente sin golden: a diferencia de `IconColorPickerSheet`, resuelve su cubit vía `getIt` (DI real), lo que habría exigido levantar el grafo de DI completo de la feature solo para un golden — documentado en el propio archivo de test.
 
 ## 👤 Verifica a mano
 
 - [x] Flujo completo HU-04 caso 1 confirmado en verde tanto por widget test como por Patrol real (`categories_patrol_test` 2/2, post-fix, 2026-07-16).
-- [ ] Revisar visualmente los 3 bottom sheets de confirmación de borrado en tema claro contra `design-system/billetudo/pages/categorias.md` — el widget test valida texto/comportamiento pero no pixel-perfect del diseño.
-- [ ] Verificar con gestos reales (drag) el reordenamiento de categorías en el acordeón; `ReorderCategories` está probado a nivel de datos/usecase pero no hay widget test de drag-and-drop.
-- [ ] Confirmar en un dispositivo real el caso HU-02 (crear subcategoría con Tipo bloqueado) con teclado nativo abierto — ya cubierto en Patrol "HU-01 y HU-02" que sí pasó en verde.
+- [x] Revisar visualmente los 3 bottom sheets de confirmación de borrado en tema claro contra `design-system/billetudo/pages/categorias.md` — **parcialmente cerrado 2026-07-15**: ahora existen goldens (`confirm_delete_sheets_golden_test.dart`) que capturan el pixel exacto en claro/oscuro y fallan ante cualquier regresión visual futura; la comparación *inicial* contra el diseño de Pencil sigue siendo un juicio humano que un golden por sí solo no reemplaza (el golden solo detecta cambios, no valida que el primer render generado sea fiel al `.pen`) — revisar una vez el `ui-ux-reviewer` los audite.
+- [x] Verificar con gestos reales (drag) el reordenamiento de categorías en el acordeón — **cerrado 2026-07-15**: `integration_test/categories_patrol_test.dart`'s "HU-05" arrastra una categoría raíz sobre un emulador Android real (drag incremental con pump por paso) y confirma que el nuevo orden persiste tras el drop.
+- [x] Confirmar en un dispositivo real el caso HU-02 (crear subcategoría con Tipo bloqueado) con teclado nativo abierto — ya cubierto en Patrol "HU-01 y HU-02" que sí pasó en verde.
 
 ## Pendientes y riesgos (gaps de cobertura, blockers, observaciones)
 
 **Blockers sin resolver:** ninguno.
 
 **Gaps de cobertura:**
-- AC 16 (sin gate de monetización) solo verificado por lectura de código, sin test automatizado.
-- Golden tests (`test/features/categories/presentation/golden/categories_golden_test.dart`) no se escribieron por presupuesto de tiempo; los widget tests funcionales sí cubren acordeón, toggle y los 3 sheets.
-- No se creó página de "papelera": `RestoreCategory` queda sin consumidor en presentation, a la espera de esa feature.
-- ~~Patrol/e2e no se corrió en esta pasada~~ — corrido post-cierre (2026-07-16) una vez liberado el host: `categories_patrol_test` 2/2 (HU-01 y HU-02, HU-04 caso 1). Cobertura sigue siendo parcial frente a las 17 HU (solo esos 2 escenarios existen); ampliarla al resto de los flujos de borrado y al reordenamiento queda como gap real, no de ejecución.
+- ~~AC 16 (sin gate de monetización) solo verificado por lectura de código, sin test automatizado.~~ — **cerrado 2026-07-15**: `test/features/categories/tier0_test.dart`.
+- ~~Golden tests ... no se escribieron por presupuesto de tiempo~~ — **cerrado 2026-07-15**: 26 goldens en `test/features/categories/presentation/golden/` (listado en sus 4 estados, formulario en sus 4 casos, los 3 sheets de borrado, el picker de icono/color), tema claro y oscuro, siguiendo el patrón de `test/features/accounts/presentation/golden/` (incluida la carga de `MaterialIcons-Regular.otf` para que los íconos no rendericen como tofu). `ParentCategoryPickerSheet` queda fuera por su dependencia de `getIt` — ver detalle arriba.
+- No se creó página de "papelera": `RestoreCategory` queda sin consumidor en presentation. **Decisión explícita (2026-07-16, con el usuario):** no es un gap de esta corrida — no existe ningún frame de esa pantalla en `billetudo.pen`, solo se menciona el concepto en el copy de la hoja `jngMo`. Construirla ahora saltaría el flujo de diseño-primero del proyecto (`pencil-designer` → elegir variante → `ui-ux-reviewer` → `flutter-dev`, ver CLAUDE.md). Queda como feature futura explícita, a arrancar por diseño, no como deuda de esta feature.
+- ~~Patrol/e2e no se corrió en esta pasada~~ — corrido post-cierre (2026-07-16) una vez liberado el host: `categories_patrol_test` 2/2 (HU-01 y HU-02, HU-04 caso 1). **Ampliado 2026-07-15**: el archivo ahora cubre 6 escenarios end-to-end sobre un emulador Android real (`emulator-5554`), todos en verde:
+  - HU-01 y HU-02 (ya existía): crear raíz + subcategoría.
+  - HU-04 caso 1 (ya existía): eliminar sin dependientes.
+  - HU-03 (nuevo): renombrar una raíz y confirmar que el cambio persiste en el listado.
+  - HU-04 caso 2 (nuevo): eliminar con transacciones asociadas, resolución "dejar sin categoría". No existe todavía una pantalla de Transacciones desde la cual sembrar un movimiento real por UI (esa feature sigue siendo lienzo en blanco), así que el test inserta la transacción directamente contra la misma base Drift real on-device que la app usa (`getIt<AppDatabase>()`, no un mock), leyendo primero el id de la categoría recién creada por nombre. Se documentó esta decisión en el propio archivo de test. El test además verifica, contra esa misma BD, que la transacción sobrevive con `categoryId == null` y `deletedAt == null` — no solo que la categoría desapareció de la UI.
+  - HU-04 caso 3 (nuevo): eliminar una raíz con subcategoría activa, resolución "cascada" (incluye la segunda confirmación del `AlertDialog`), verificando que tanto la raíz como la subcategoría desaparecen del listado.
+  - HU-05 (nuevo): arrastrar una raíz para reordenar, mismo patrón de gestos incrementales con `pump()` por paso que `accounts_patrol_test.dart`'s HU-09 (`ReorderableDelayedDragStartListener` no reacciona a un solo `moveTo` grande).
+  - HU-06 (seed de onboarding) sigue fuera de alcance de Patrol, ya documentado como tal (sin consumidor en `presentation/`) — no es un hallazgo nuevo de esta pasada.
+  - Corrida real: `patrol test --target integration_test/categories_patrol_test.dart -d emulator-5554` → **6/6 exitosos**, 1m31s. Log: "Total: 6, Successful: 6, Failed: 0, Skipped: 0".
 
 **Riesgos del plan:**
 - El pendiente documentado en `categorias.md` sobre "segunda confirmación para Eliminar en cascada" no estaba resuelto en diseño (solo un tap); se resolvió con un `AlertDialog` de confirmación extra (fricción adicional), documentado como desviación justificada en el código. Puede requerir una ronda de `ui-ux-reviewer` si se considera un sheet nuevo no diseñado.
