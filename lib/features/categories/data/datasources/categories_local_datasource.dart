@@ -78,7 +78,9 @@ class CategoriesLocalDatasource {
           await (_db.update(_db.categories)
                 ..where((c) => c.id.equals(orderedIds[index]) & _alive))
               .write(
-            CategoriesCompanion(sortOrder: Value(index), updatedAt: Value(now)),
+            CategoriesCompanion(
+                sortOrder: Value(index),
+                updatedAt: Value(now.millisecondsSinceEpoch)),
           );
         }
       });
@@ -132,7 +134,9 @@ class CategoriesLocalDatasource {
   Future<Category?> softDeleteCategory(String id, DateTime now) =>
       updateCategory(
         id,
-        CategoriesCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        CategoriesCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now.millisecondsSinceEpoch)),
       );
 
   /// HU-04 case 3 (cascade): soft-deletes [rootId] and every active
@@ -142,12 +146,16 @@ class CategoriesLocalDatasource {
         await (_db.update(_db.categories)
               ..where((c) => c.parentId.equals(rootId) & _alive))
             .write(
-          CategoriesCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+          CategoriesCompanion(
+              deletedAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch)),
         );
         await (_db.update(_db.categories)
               ..where((c) => c.id.equals(rootId) & _alive))
             .write(
-          CategoriesCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+          CategoriesCompanion(
+              deletedAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch)),
         );
       });
 
@@ -162,7 +170,8 @@ class CategoriesLocalDatasource {
             ..where((c) => c.parentId.equals(rootId) & _alive))
           .write(
         CategoriesCompanion(
-            parentId: Value(targetRootId), updatedAt: Value(now)),
+            parentId: Value(targetRootId),
+            updatedAt: Value(now.millisecondsSinceEpoch)),
       );
 
   /// HU-04 case 2 (reassign): moves every active transaction referencing
@@ -179,7 +188,7 @@ class CategoriesLocalDatasource {
           .write(
         TransactionsCompanion(
           categoryId: Value(toCategoryId),
-          updatedAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
         ),
       );
 
@@ -193,7 +202,7 @@ class CategoriesLocalDatasource {
           .write(
         TransactionsCompanion(
           categoryId: const Value(null),
-          updatedAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
         ),
       );
 
@@ -207,7 +216,7 @@ class CategoriesLocalDatasource {
           .writeReturning(
             CategoriesCompanion(
               deletedAt: const Value(null),
-              updatedAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch),
             ),
           )
           .then((rows) => rows.isEmpty ? null : rows.first);
@@ -229,7 +238,7 @@ class CategoriesLocalDatasource {
                   color: Value(root.color),
                   sortOrder: Value(rootOrder),
                   createdAt: Value(now),
-                  updatedAt: Value(now),
+                  updatedAt: Value(now.millisecondsSinceEpoch),
                 ),
               );
               rootOrder++;
@@ -245,7 +254,7 @@ class CategoriesLocalDatasource {
                     color: Value(sub.color),
                     sortOrder: Value(subOrder),
                     createdAt: Value(now),
-                    updatedAt: Value(now),
+                    updatedAt: Value(now.millisecondsSinceEpoch),
                   ),
                 );
                 subOrder++;

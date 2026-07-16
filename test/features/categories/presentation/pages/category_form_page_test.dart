@@ -39,7 +39,7 @@ void main() {
     kind: CategoryKind.expense,
     sortOrder: 0,
     createdAt: DateTime(2026, 7, 15),
-    updatedAt: DateTime(2026, 7, 15),
+    updatedAt: DateTime(2026, 7, 15).millisecondsSinceEpoch,
   );
 
   setUp(() {

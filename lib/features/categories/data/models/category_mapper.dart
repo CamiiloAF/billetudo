@@ -38,7 +38,7 @@ abstract final class CategoryMapper {
         color: Value(draft.color),
         sortOrder: Value(sortOrder),
         createdAt: Value(now),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
   /// Update companion. `name`/`icon`/`color`/`kind`/`parentId` are written
@@ -54,7 +54,7 @@ abstract final class CategoryMapper {
         parentId: Value(draft.parentId),
         icon: Value(draft.icon),
         color: Value(draft.color),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
   static db.CategoryKind kindToDb(CategoryKind kind) => switch (kind) {

@@ -1,4 +1,4 @@
-import 'package:billetudo/features/accounts/presentation/widgets/sheet_buttons_row.dart';
+import 'package:billetudo/core/widgets/sheet_buttons_row.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/cannot_delete_last_account_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

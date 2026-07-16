@@ -21,8 +21,7 @@ void main() {
 
   setUp(() {
     watchAccounts = MockWatchAccounts();
-    when(() => watchAccounts())
-        .thenAnswer((_) => Stream.value(Right(entries)));
+    when(() => watchAccounts()).thenAnswer((_) => Stream.value(Right(entries)));
   });
 
   AccountFilterCubit build() => AccountFilterCubit(watchAccounts);
@@ -52,7 +51,7 @@ void main() {
   );
 
   blocTest<AccountFilterCubit, AccountFilterState>(
-    'Todas marca cada cuenta y Ninguna limpia la selección (HU-06a: vacío = todas, sin badge)',
+    'Todas marca cada cuenta (HU-06a: vacío = todas, sin badge)',
     build: build,
     act: (cubit) async {
       await cubit.start(const {});
@@ -60,5 +59,46 @@ void main() {
       cubit.selectAll();
     },
     verify: (cubit) => expect(cubit.state.selected, {'a', 'b'}),
+  );
+
+  blocTest<AccountFilterCubit, AccountFilterState>(
+    'Ninguna limpia la selección, sin importar cuántas estaban marcadas',
+    build: build,
+    act: (cubit) async {
+      await cubit.start(const {});
+      await Future<void>.delayed(Duration.zero);
+      cubit.selectAll();
+      cubit.selectNone();
+    },
+    verify: (cubit) => expect(cubit.state.selected, isEmpty),
+  );
+
+  blocTest<AccountFilterCubit, AccountFilterState>(
+    'si el stream de cuentas falla, el estado pasa a failure con el Failure',
+    build: build,
+    setUp: () {
+      when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(const Left(DatabaseFailure('sin disco'))),
+      );
+    },
+    act: (cubit) async {
+      await cubit.start(const {});
+      await Future<void>.delayed(Duration.zero);
+    },
+    verify: (cubit) {
+      expect(cubit.state.status, AccountFilterStatus.failure);
+      expect(cubit.state.failure, isA<DatabaseFailure>());
+    },
+  );
+
+  blocTest<AccountFilterCubit, AccountFilterState>(
+    'reabrir el sheet cancela la suscripción anterior antes de crear otra',
+    build: build,
+    act: (cubit) async {
+      await cubit.start({'a'});
+      await cubit.start({'b'});
+      await Future<void>.delayed(Duration.zero);
+    },
+    verify: (cubit) => expect(cubit.state.selected, {'b'}),
   );
 }

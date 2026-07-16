@@ -22,7 +22,7 @@ Category buildCategory({
   String? color,
   int sortOrder = 0,
   DateTime? createdAt,
-  DateTime? updatedAt,
+  int? updatedAt,
 }) {
   final now = DateTime(2026, 7, 15);
   return Category(
@@ -34,6 +34,7 @@ Category buildCategory({
     color: color,
     sortOrder: sortOrder,
     createdAt: createdAt ?? now,
-    updatedAt: updatedAt ?? now,
+    // `updatedAt` is epoch millis (schema v5), unlike `createdAt`.
+    updatedAt: updatedAt ?? now.millisecondsSinceEpoch,
   );
 }

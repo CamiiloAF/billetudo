@@ -68,7 +68,9 @@ class Account extends Equatable {
   final bool archived;
   final int sortOrder;
   final DateTime createdAt;
-  final DateTime updatedAt;
+
+  /// Epoch millis, not a `DateTime` (schema v5) — see `_SyncColumns.updatedAt`.
+  final int updatedAt;
 
   /// Bank/entity name, e.g. 'Bancolombia'. Applies to every type.
   final String? institution;

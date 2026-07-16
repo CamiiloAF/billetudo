@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../bottom_sheet_base.dart';
-import '../sheet_buttons_row.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_buttons_row.dart';
 
 /// HU-06: confirms changing the type or currency of an account that already has
 /// transactions.

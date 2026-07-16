@@ -57,6 +57,40 @@ import 'package:billetudo/features/accounts/presentation/cubit/accounts_list_cub
     as _i531;
 import 'package:billetudo/features/accounts/presentation/cubit/archived_accounts_cubit.dart'
     as _i958;
+import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
+    as _i22;
+import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart'
+    as _i235;
+import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart'
+    as _i835;
+import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart'
+    as _i173;
+import 'package:billetudo/features/auth/data/repositories/auth_repository_impl.dart'
+    as _i13;
+import 'package:billetudo/features/auth/domain/repositories/auth_repository.dart'
+    as _i913;
+import 'package:billetudo/features/auth/domain/usecases/delete_account.dart'
+    as _i498;
+import 'package:billetudo/features/auth/domain/usecases/merge_local_data.dart'
+    as _i916;
+import 'package:billetudo/features/auth/domain/usecases/sign_in_with_apple.dart'
+    as _i888;
+import 'package:billetudo/features/auth/domain/usecases/sign_in_with_google.dart'
+    as _i1044;
+import 'package:billetudo/features/auth/domain/usecases/sign_out.dart'
+    as _i1066;
+import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart'
+    as _i716;
+import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart'
+    as _i537;
+import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart'
+    as _i629;
+import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart'
+    as _i140;
+import 'package:billetudo/features/auth/presentation/cubit/login_cubit.dart'
+    as _i271;
+import 'package:billetudo/features/auth/presentation/cubit/merge_cubit.dart'
+    as _i489;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/repositories/category_repository_impl.dart'
@@ -164,10 +198,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i474.CrashReporter>(() => registerModule.crashReporter());
     gh.lazySingleton<_i486.SecureClipboard>(() => _i486.SecureClipboard());
     gh.lazySingleton<_i731.MoneyFormatter>(() => const _i731.MoneyFormatter());
+    gh.lazySingleton<_i22.AppleAuthDatasource>(
+        () => _i22.AppleAuthDatasource());
+    gh.lazySingleton<_i235.GoogleAuthDatasource>(
+        () => _i235.GoogleAuthDatasource());
     gh.lazySingleton<_i1034.SecureStorageService>(
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
         () => _i533.AccountsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i835.LocalDataSummaryDatasource>(
+        () => _i835.LocalDataSummaryDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i173.LocalDataWipeDatasource>(
+        () => _i173.LocalDataWipeDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i1008.TagsLocalDatasource>(
@@ -186,6 +228,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i533.AccountsLocalDatasource>(),
               gh<_i612.AccountNumberLocalDatasource>(),
             ));
+    gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
+          gh<_i235.GoogleAuthDatasource>(),
+          gh<_i22.AppleAuthDatasource>(),
+          gh<_i835.LocalDataSummaryDatasource>(),
+          gh<_i173.LocalDataWipeDatasource>(),
+        ));
     gh.factory<_i426.WatchMonthTransactions>(
         () => _i426.WatchMonthTransactions(gh<_i654.TransactionRepository>()));
     gh.factory<_i990.CreateTransaction>(
@@ -304,6 +352,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i612.DeleteTransaction>(),
           gh<_i177.RestoreTransaction>(),
         ));
+    gh.factory<_i498.DeleteAccount>(
+        () => _i498.DeleteAccount(gh<_i913.AuthRepository>()));
+    gh.factory<_i916.MergeLocalData>(
+        () => _i916.MergeLocalData(gh<_i913.AuthRepository>()));
+    gh.factory<_i888.SignInWithApple>(
+        () => _i888.SignInWithApple(gh<_i913.AuthRepository>()));
+    gh.factory<_i1044.SignInWithGoogle>(
+        () => _i1044.SignInWithGoogle(gh<_i913.AuthRepository>()));
+    gh.factory<_i1066.SignOut>(
+        () => _i1066.SignOut(gh<_i913.AuthRepository>()));
+    gh.factory<_i716.WatchAuthSession>(
+        () => _i716.WatchAuthSession(gh<_i913.AuthRepository>()));
+    gh.factory<_i537.WipeLocalData>(
+        () => _i537.WipeLocalData(gh<_i913.AuthRepository>()));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),
           gh<_i275.UpdateCategory>(),
@@ -311,6 +373,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i87.GetCategoryDeletionImpact>(),
           gh<_i968.DeleteCategory>(),
         ));
+    gh.factory<_i489.MergeCubit>(
+        () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i502.AccountDetailCubit>(() => _i502.AccountDetailCubit(
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
@@ -324,6 +388,18 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
           gh<_i787.ReorderAccounts>(),
+        ));
+    gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
+          gh<_i498.DeleteAccount>(),
+          gh<_i537.WipeLocalData>(),
+        ));
+    gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
+          gh<_i1044.SignInWithGoogle>(),
+          gh<_i888.SignInWithApple>(),
+        ));
+    gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
+          gh<_i716.WatchAuthSession>(),
+          gh<_i1066.SignOut>(),
         ));
     return this;
   }

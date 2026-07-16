@@ -1,4 +1,6 @@
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
+import 'package:billetudo/features/home/presentation/widgets/coming_soon_badge.dart';
+import 'package:billetudo/features/home/presentation/widgets/more_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,12 +12,18 @@ void main() {
     VoidCallback? onAccounts,
     VoidCallback? onCategories,
     ValueChanged<String>? onComingSoon,
+    VoidCallback? onSettings,
+    VoidCallback? onSignOut,
+    bool isSignedIn = false,
   }) =>
       tester.pumpHomeWidget(
         MorePage(
           onOpenAccounts: onAccounts ?? () {},
           onOpenCategories: onCategories ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
+          onOpenSettings: onSettings ?? () {},
+          isSignedIn: isSignedIn,
+          onSignOut: onSignOut ?? () {},
         ),
         wrapInScaffold: false,
       );
@@ -36,12 +44,13 @@ void main() {
     }
   });
 
-  testWidgets('Cuentas y Categorías están vivas (sin badge Próximamente)',
+  testWidgets(
+      'Cuentas, Categorías y Ajustes están vivas (sin badge Próximamente)',
       (tester) async {
     await pumpMore(tester);
 
-    // Two live rows, five not-yet-built ones carrying the badge.
-    expect(find.byType(ComingSoonBadge), findsNWidgets(5));
+    // Three live rows, four not-yet-built ones carrying the badge.
+    expect(find.byType(ComingSoonBadge), findsNWidgets(4));
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -59,7 +68,43 @@ void main() {
 
     expect(badgeOf('Cuentas'), isNull);
     expect(badgeOf('Categorías'), isNull);
+    expect(badgeOf('Ajustes'), isNull);
     expect(badgeOf('Deudas'), isNotNull);
+  });
+
+  testWidgets('tocar Ajustes enruta a Ajustes', (tester) async {
+    var settings = 0;
+    await pumpMore(tester, onSettings: () => settings++);
+
+    await tester.tap(find.text('Ajustes'));
+    await tester.pump();
+
+    expect(settings, 1);
+  });
+
+  testWidgets('sin sesión no muestra "Cerrar sesión" (HU-01)', (tester) async {
+    await pumpMore(tester);
+
+    expect(find.text('Cerrar sesión'), findsNothing);
+  });
+
+  testWidgets('con sesión, tocar "Cerrar sesión" dispara el callback (HU-06)',
+      (tester) async {
+    var signedOut = 0;
+    await pumpMore(tester, isSignedIn: true, onSignOut: () => signedOut++);
+
+    // Last row, below the fold in the test viewport — scroll it into view
+    // before asserting/tapping.
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    expect(find.text('Cerrar sesión'), findsOneWidget);
+
+    await tester.tap(find.text('Cerrar sesión'));
+    await tester.pump();
+    expect(signedOut, 1);
   });
 
   testWidgets('tocar Cuentas y Categorías enruta a sus destinos vivos',

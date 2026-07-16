@@ -64,7 +64,15 @@ enum CardBalanceView { debt, available }
 mixin _SyncColumns on Table {
   TextColumn get id => text().clientDefault(() => _uuid.v4())();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// Epoch millis (NOT a Drift `DateTimeColumn`), unlike [createdAt].
+  ///
+  /// PowerSync/Supabase need a monotonic, sub-second-resolution value to
+  /// resolve sync conflicts ("last write wins"); `DateTimeColumn` here is
+  /// persisted as whole seconds, which is not fine-grained enough. Stamp it
+  /// with `DateTime.now().millisecondsSinceEpoch` on every write.
+  IntColumn get updatedAt =>
+      integer().clientDefault(() => DateTime.now().millisecondsSinceEpoch)();
 
   /// Soft delete for the user-facing **trash / undo**. null = not trashed.
   ///
@@ -121,11 +129,6 @@ class Accounts extends Table with _SyncColumns {
 
   /// Bank name (e.g. 'Bancolombia', 'Nu'). Applies to every account type.
   TextColumn get institution => text().nullable().withLength(max: 100)();
-
-  /// Full account number, ENCRYPTED at the app level (Keychain/Keystore).
-  /// EXCLUDE from PowerSync sync — local only, it never reaches Supabase.
-  /// Does not apply to credit cards (app-level business rule, HU-03).
-  TextColumn get accountNumberEnc => text().nullable()();
 
   /// Last 4 digits, for identification only. The only syncable fragment.
   TextColumn get last4 => text().nullable().withLength(max: 4)();
@@ -292,7 +295,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -304,7 +307,13 @@ class AppDatabase extends _$AppDatabase {
           // (all nullable). See docs/requirements/01-cuentas.md.
           if (from < 2) {
             await m.addColumn(accounts, accounts.institution);
-            await m.addColumn(accounts, accounts.accountNumberEnc);
+            // `account_number_enc` no longer exists on the table class (see
+            // v4 -> v5 below, which drops it), so a from-v1 upgrade adds it
+            // by raw name instead of `accounts.accountNumberEnc`. It is
+            // dropped again a few lines down, in the same upgrade run.
+            await m.database.customStatement(
+              'ALTER TABLE accounts ADD COLUMN account_number_enc TEXT NULL',
+            );
             await m.addColumn(accounts, accounts.last4);
             await m.addColumn(accounts, accounts.interestRateBps);
             await m.addColumn(accounts, accounts.creditLimitMinor);
@@ -353,6 +362,35 @@ class AppDatabase extends _$AppDatabase {
               'UPDATE accounts SET tombstoned_at = deleted_at, '
               'deleted_at = NULL WHERE deleted_at IS NOT NULL',
             );
+          }
+
+          // v4 -> v5:
+          //  1. `updatedAt` moves from DateTimeColumn (whole seconds) to
+          //     IntColumn epoch millis, on every table, so PowerSync/Supabase
+          //     get enough resolution to resolve "last write wins" conflicts.
+          //     `createdAt` is unaffected. Existing values (seconds) are
+          //     backfilled by scaling by 1000.
+          //  2. `Accounts.accountNumberEnc` is dropped: dead column, always
+          //     NULL by design (the full account number only ever lives in
+          //     secure storage, HU-03; see `AccountMapper.toInsertCompanion`).
+          if (from < 5) {
+            for (final table in [
+              'accounts',
+              'categories',
+              'transactions',
+              'budgets',
+              'goals',
+              'debts',
+              'recurrings',
+              'tags',
+              'transaction_tags',
+            ]) {
+              await m.database.customStatement(
+                'UPDATE $table SET updated_at = updated_at * 1000',
+              );
+            }
+
+            await m.dropColumn(accounts, 'account_number_enc');
           }
         },
       );

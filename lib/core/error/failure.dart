@@ -59,6 +59,13 @@ final class NetworkFailure extends Failure {
   const NetworkFailure(super.message, {super.cause, super.stackTrace});
 }
 
+/// The user backed out of a social sign-in flow (closed the Google/Apple
+/// sheet). Not an error to surface as a failure banner — the UI simply
+/// returns to its normal state.
+final class AuthCancelledFailure extends Failure {
+  const AuthCancelledFailure(super.message, {super.cause});
+}
+
 /// Unanticipated error. Must always be sent to the crash reporter.
 final class UnexpectedFailure extends Failure {
   const UnexpectedFailure(super.message, {super.cause, super.stackTrace});

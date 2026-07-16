@@ -101,7 +101,10 @@ class AccountsLocalDatasource {
                       a.id.equals(orderedIds[index]) & a.tombstonedAt.isNull(),
                 ))
               .write(
-            AccountsCompanion(sortOrder: Value(index), updatedAt: Value(now)),
+            AccountsCompanion(
+              sortOrder: Value(index),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
           );
         }
       });

@@ -24,6 +24,7 @@ lib/**/*.secrets.dart
 # (si prefieres versionarlas, elimina estas líneas)
 ios/Pods/
 android/.gradle/
+android/.kotlin/
 android/local.properties
 
 # Misc

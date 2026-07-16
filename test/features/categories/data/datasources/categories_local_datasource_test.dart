@@ -180,7 +180,7 @@ void main() {
 
       final row = await datasource.getCategory(sub.id);
       expect(row!.parentId, root2.id);
-      expect(row.updatedAt, DateTime(2026, 7, 15));
+      expect(row.updatedAt, DateTime(2026, 7, 15).millisecondsSinceEpoch);
     });
 
     test('reasignar transacciones actualiza categoryId y updatedAt', () async {
@@ -206,7 +206,7 @@ void main() {
 
       final tx = await db.select(db.transactions).getSingle();
       expect(tx.categoryId, root2.id);
-      expect(tx.updatedAt, DateTime(2026, 7, 15));
+      expect(tx.updatedAt, DateTime(2026, 7, 15).millisecondsSinceEpoch);
     });
 
     test('dejar sin categoría pone categoryId en null', () async {

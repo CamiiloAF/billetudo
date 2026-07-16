@@ -9,6 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final now = DateTime(2026, 7, 15);
 
+  /// `updatedAt` is epoch millis (schema v5), unlike `createdAt`.
+  final nowMillis = now.millisecondsSinceEpoch;
+
   test('toEntity mapea kind por significado, no por índice', () {
     final row = db.Category(
       id: 'cat-1',
@@ -18,7 +21,7 @@ void main() {
       color: 'mint',
       sortOrder: 0,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: nowMillis,
     );
 
     final entity = CategoryMapper.toEntity(row);
@@ -46,7 +49,7 @@ void main() {
     expect(companion.parentId, const Value('root-1'));
     expect(companion.sortOrder.value, 3);
     expect(companion.createdAt.value, now);
-    expect(companion.updatedAt.value, now);
+    expect(companion.updatedAt.value, nowMillis);
   });
 
   test('toUpdateCompanion escribe icon/color explícitos, incluso null', () {
@@ -60,6 +63,6 @@ void main() {
 
     expect(companion.icon, const Value(null));
     expect(companion.color, const Value(null));
-    expect(companion.updatedAt.value, now);
+    expect(companion.updatedAt.value, nowMillis);
   });
 }

@@ -12,6 +12,15 @@ import '../../features/accounts/presentation/pages/account_detail_page.dart';
 import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
+import '../../features/auth/domain/entities/auth_session.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/login_cubit.dart';
+import '../../features/auth/presentation/cubit/merge_cubit.dart';
+import '../../features/auth/presentation/pages/account_deleted_page.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/merge_confirmation_page.dart';
+import '../../features/auth/presentation/widgets/delete_account_flow.dart';
+import '../../features/auth/presentation/widgets/sheets/confirm_sign_out_sheet.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -21,6 +30,7 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -53,6 +63,10 @@ abstract final class AppRoutes {
   static const String categories = '/categorias';
   static const String transactions = '/movimientos';
   static const String newTransaction = '/movimientos/nuevo';
+  static const String settings = '/mas/ajustes';
+  static const String login = '/mas/ajustes/respaldar';
+  static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
+  static const String accountDeleted = '/mas/cuenta-eliminada';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -82,8 +96,7 @@ abstract final class AppRoutes {
   static String editTransaction(String id) => '$transactions/$id/editar';
 }
 
-final GlobalKey<NavigatorState> _rootNavigatorKey =
-    GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
 GoRouter createAppRouter() {
@@ -111,8 +124,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
         GoRoute(
           path: AppRoutes.home,
           builder: (context, state) => BlocProvider(
-            create: (context) =>
-                _started(getIt<HomeCubit>(), (c) => c.start()),
+            create: (context) => _started(getIt<HomeCubit>(), (c) => c.start()),
             child: HomePage(
               onAddTransaction: () => context.push(AppRoutes.newTransaction),
               onSeeAllTransactions: () => context.go(AppRoutes.transactions),
@@ -213,11 +225,19 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
       routes: [
         GoRoute(
           path: AppRoutes.more,
-          builder: (context, state) => MorePage(
-            onOpenAccounts: () => context.push(AppRoutes.accounts),
-            onOpenCategories: () => context.push(AppRoutes.categories),
-            onOpenComingSoon: (title) =>
-                context.push(AppRoutes.comingSoonTitled(title)),
+          builder: (context, state) => BlocProvider.value(
+            value: _started(getIt<AuthCubit>(), (c) async => c.start()),
+            child: BlocBuilder<AuthCubit, AuthSession>(
+              builder: (context, session) => MorePage(
+                onOpenAccounts: () => context.push(AppRoutes.accounts),
+                onOpenCategories: () => context.push(AppRoutes.categories),
+                onOpenComingSoon: (title) =>
+                    context.push(AppRoutes.comingSoonTitled(title)),
+                onOpenSettings: () => context.push(AppRoutes.settings),
+                isSignedIn: session.isSignedIn,
+                onSignOut: () => _confirmSignOut(context),
+              ),
+            ),
           ),
           routes: [
             GoRoute(
@@ -228,10 +248,72 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
                     AppLocalizations.of(context).moreTitle,
               ),
             ),
+            GoRoute(
+              path: 'cuenta-eliminada',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => AccountDeletedPage(
+                onGoHome: () => context.go(AppRoutes.home),
+              ),
+            ),
+            _settingsRoute(),
           ],
         ),
         _accountsRoute(),
         _categoriesRoute(),
+      ],
+    );
+
+Future<void> _confirmSignOut(BuildContext context) async {
+  final confirmed = await ConfirmSignOutSheet.show(context);
+  if (confirmed == true) {
+    await getIt<AuthCubit>().signOut();
+  }
+}
+
+// Nested under `more` (not a branch-root route): Ajustes has a `Page Header`
+// and no `Tab Bar` (MASTER: the two are mutually exclusive), so it — and
+// everything reached from it — renders on the root navigator, stacked above
+// the tab shell instead of as one more tab-branch destination.
+GoRoute _settingsRoute() => GoRoute(
+      path: 'ajustes',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider.value(
+        value: getIt<AuthCubit>(),
+        child: SettingsPage(
+          onOpenLogin: () => context.push(AppRoutes.login),
+          onOpenDeleteAccount: () => DeleteAccountFlow.start(
+            context,
+            onFinished: () => context.push(AppRoutes.accountDeleted),
+          ),
+          onOpenComingSoon: (title) =>
+              context.push(AppRoutes.comingSoonTitled(title)),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'respaldar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => getIt<LoginCubit>(),
+            child: LoginPage(
+              onSignedIn: () => context.push(AppRoutes.mergeConfirmation),
+              onSkip: () => context.pop(),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'fusion',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) =>
+                    _started(getIt<MergeCubit>(), (c) => c.start()),
+                child: MergeConfirmationPage(
+                  onDone: () => context.go(AppRoutes.home),
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
 

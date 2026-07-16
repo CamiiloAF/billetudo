@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../cubit/account_form_state.dart';
-import '../bottom_sheet_base.dart';
 import '../currency_row.dart';
 
 /// Picks the account's currency.

@@ -103,10 +103,10 @@ void main() {
       );
 
       final row = await rowOf(account.id);
-      // La columna existe pero debe quedar NULL para siempre: el número vive
-      // solo en Keychain/Keystore.
-      expect(row.accountNumberEnc, isNull);
-      // last4 sí se persiste: es el único fragmento sincronizable.
+      // El número completo vive solo en Keychain/Keystore, nunca en Drift
+      // (la columna que lo hubiera guardado, `account_number_enc`, ya no
+      // existe — ver schema v5). last4 sí se persiste: es el único
+      // fragmento sincronizable.
       expect(row.last4, '4321');
 
       verify(
@@ -244,9 +244,11 @@ void main() {
   group('updateAccount (HU-06)', () {
     test('sube updatedAt por encima del valor anterior', () async {
       final account = await createAccount(bankDraft);
-      // Drift guarda DateTime en segundos unix: se retrocede el valor para que
-      // la comparación no dependa de que el test tarde más de un segundo.
-      final backdated = DateTime.now().subtract(const Duration(minutes: 5));
+      // `updatedAt` is epoch millis: back-date it so the comparison does not
+      // depend on the test running in under a millisecond.
+      final backdated = DateTime.now()
+          .subtract(const Duration(minutes: 5))
+          .millisecondsSinceEpoch;
       await (db.update(db.accounts)..where((a) => a.id.equals(account.id)))
           .write(AccountsCompanion(updatedAt: Value(backdated)));
       final before = (await rowOf(account.id)).updatedAt;
@@ -262,7 +264,7 @@ void main() {
 
       final after = await rowOf(account.id);
       expect(after.name, 'Bancolombia Ahorros');
-      expect(after.updatedAt.isAfter(before), isTrue);
+      expect(after.updatedAt > before, isTrue);
     });
 
     test('no toca createdAt', () async {
@@ -781,13 +783,15 @@ void main() {
 
     test('reordenar sube updatedAt de las cuentas movidas', () async {
       final a = await createAccount(bankDraft);
-      final backdated = DateTime.now().subtract(const Duration(minutes: 5));
+      final backdated = DateTime.now()
+          .subtract(const Duration(minutes: 5))
+          .millisecondsSinceEpoch;
       await (db.update(db.accounts)..where((row) => row.id.equals(a.id)))
           .write(AccountsCompanion(updatedAt: Value(backdated)));
 
       await repository.reorderAccounts([a.id]);
 
-      expect((await rowOf(a.id)).updatedAt.isAfter(backdated), isTrue);
+      expect((await rowOf(a.id)).updatedAt > backdated, isTrue);
     });
   });
 

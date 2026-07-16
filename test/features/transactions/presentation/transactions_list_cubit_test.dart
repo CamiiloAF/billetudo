@@ -29,8 +29,8 @@ void main() {
     restoreTransaction = MockRestoreTransaction();
   });
 
-  TransactionsListCubit build() =>
-      TransactionsListCubit(watchTransactions, deleteTransaction, restoreTransaction);
+  TransactionsListCubit build() => TransactionsListCubit(
+      watchTransactions, deleteTransaction, restoreTransaction);
 
   group('carga inicial', () {
     blocTest<TransactionsListCubit, TransactionsListState>(
@@ -138,6 +138,46 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.pendingUndoId, isNull);
         verify(() => restoreTransaction('tx-1')).called(1);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'si borrar falla, el estado pasa a error y no ofrece deshacer',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        when(() => deleteTransaction(any())).thenAnswer(
+          (_) async => const Left(DatabaseFailure('boom')),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.deleteTransaction('tx-1');
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, TransactionsListStatus.failure);
+        expect(cubit.state.pendingUndoId, isNull);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'dismissUndo limpia el pendiente sin restaurar',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        when(() => deleteTransaction(any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.deleteTransaction('tx-1');
+        cubit.dismissUndo();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoId, isNull);
+        verifyNever(() => restoreTransaction(any()));
       },
     );
 

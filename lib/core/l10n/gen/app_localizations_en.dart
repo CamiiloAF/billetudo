@@ -842,4 +842,161 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moreSettings => 'Settings';
+
+  @override
+  String get moreSignOut => 'Sign out';
+
+  @override
+  String get authContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get authContinueWithApple => 'Continue with Apple';
+
+  @override
+  String get authContinueWithoutAccount => 'Continue without an account';
+
+  @override
+  String get authLoginTitle => 'Never lose your progress';
+
+  @override
+  String get authLoginSubtitle =>
+      'An automatic backup of your accounts and transactions, ready whenever you need it.';
+
+  @override
+  String get authTrustRow =>
+      'Use the app from any phone without losing your history';
+
+  @override
+  String get authGoogleLoading => 'Connecting to Google…';
+
+  @override
+  String get authGoogleErrorSnackbar => 'We couldn\'t sign you in with Google';
+
+  @override
+  String get authAppleErrorSnackbar => 'We couldn\'t sign you in with Apple';
+
+  @override
+  String get authMergeTitle => 'Your data is safe';
+
+  @override
+  String get authMergeSubtitle =>
+      'We combined everything you already had saved with your account. Nothing was lost along the way.';
+
+  @override
+  String get authMergeStatAccounts => 'Accounts';
+
+  @override
+  String get authMergeStatTransactions => 'Transactions';
+
+  @override
+  String get authMergeStatCategories => 'Categories';
+
+  @override
+  String get authMergeCaption => 'Your devices will stay automatically synced';
+
+  @override
+  String get authMergeCta => 'Go to my finances';
+
+  @override
+  String get authMergeErrorTitle => 'We couldn\'t merge your data';
+
+  @override
+  String get authMergeErrorMessage =>
+      'Your data is still safe on this device. Try again once you have a connection.';
+
+  @override
+  String get authSignOutSheetTitle => 'Sign out';
+
+  @override
+  String get authSignOutSheetMessage =>
+      'Your accounts and transactions will stay saved on this device — they won\'t be deleted. But changes you make here afterwards won\'t sync until you sign in again.';
+
+  @override
+  String get authSignOutCta => 'Sign out';
+
+  @override
+  String get authDeleteStep1Title => 'Delete your account';
+
+  @override
+  String get authDeleteStep1Message =>
+      'We\'re about to delete your accounts, transactions, categories and everything else tied to your account in the cloud. This can\'t be undone.';
+
+  @override
+  String get authDeleteStep1Cta => 'Delete account';
+
+  @override
+  String get authDeleteStep1ErrorTitle => 'We couldn\'t delete your account';
+
+  @override
+  String get authDeleteStep1ErrorMessage =>
+      'Your data is still safe on this device. Try again once you have a connection.';
+
+  @override
+  String get authDeleteStep2Title =>
+      'What should we do with your data on this phone?';
+
+  @override
+  String get authDeleteStep2Subtitle =>
+      'Your cloud account is already deleted. This is only about this device.';
+
+  @override
+  String get authDeleteStep2KeepTitle => 'Keep my data on this device';
+
+  @override
+  String get authDeleteStep2KeepSubtitle =>
+      'Keep using billetudo without an account, with what you already logged.';
+
+  @override
+  String get authDeleteStep2DeleteTitle => 'Also delete this device\'s data';
+
+  @override
+  String get authDeleteStep2DeleteSubtitle =>
+      'Erases all of your local history.';
+
+  @override
+  String get authDeleteStep2Cta => 'Continue';
+
+  @override
+  String get authDeleteStep3Title => 'Done, your account was deleted';
+
+  @override
+  String get authDeleteStep3Subtitle =>
+      'We no longer have any of your data in the cloud. You can keep using billetudo whenever you want, with or without an account.';
+
+  @override
+  String get authDeleteStep3Cta => 'Go to home';
+
+  @override
+  String get authSessionProviderGoogle => 'Signed in with Google';
+
+  @override
+  String get authSessionProviderApple => 'Signed in with Apple';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAccountSection => 'Account and backup';
+
+  @override
+  String get settingsBackupTitle => 'Back up to the cloud';
+
+  @override
+  String get settingsBackupSubtitle => 'Keep your data safe';
+
+  @override
+  String get settingsPreferencesSection => 'Preferences';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsCurrency => 'Currency';
+
+  @override
+  String get settingsCurrencySubtitle =>
+      'Choose the currency you log your transactions in';
+
+  @override
+  String get settingsDeleteAccount => 'Delete account';
 }

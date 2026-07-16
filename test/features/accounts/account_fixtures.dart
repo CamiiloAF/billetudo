@@ -7,6 +7,9 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 /// Shared builders so each test only states what it is actually about.
 final DateTime testInstant = DateTime(2026, 7, 15, 10, 30);
 
+/// `updatedAt` is epoch millis (schema v5), unlike `createdAt`.
+final int testInstantMillis = testInstant.millisecondsSinceEpoch;
+
 Account buildAccount({
   String id = 'acc-1',
   String name = 'Cuenta de prueba',
@@ -22,7 +25,7 @@ Account buildAccount({
   int? statementDay,
   int? paymentDueDay,
   CardBalanceView? cardBalancePrimary,
-  DateTime? updatedAt,
+  int? updatedAt,
 }) =>
     Account(
       id: id,
@@ -33,7 +36,7 @@ Account buildAccount({
       archived: archived,
       sortOrder: sortOrder,
       createdAt: testInstant,
-      updatedAt: updatedAt ?? testInstant,
+      updatedAt: updatedAt ?? testInstantMillis,
       institution: institution,
       last4: last4,
       interestRateBps: interestRateBps,

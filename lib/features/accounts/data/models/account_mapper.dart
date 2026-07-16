@@ -51,8 +51,8 @@ abstract final class AccountMapper {
             : MovementKind.transferIn,
       };
 
-  /// Insert companion. `accountNumberEnc` is **never** set: the full number
-  /// lives only in secure storage (HU-03). `id` is left to Drift's
+  /// Insert companion. The full account number is **never** persisted here:
+  /// it lives only in secure storage (HU-03). `id` is left to Drift's
   /// `clientDefault` (UUID).
   static db.AccountsCompanion toInsertCompanion(
     AccountDraft draft, {
@@ -67,7 +67,7 @@ abstract final class AccountMapper {
         archived: const Value(false),
         sortOrder: Value(sortOrder),
         createdAt: Value(now),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
         institution: Value(draft.institution),
         last4: Value(draft.last4),
         interestRateBps: Value(draft.interestRateBps),
@@ -89,7 +89,7 @@ abstract final class AccountMapper {
         type: Value(_typeToDb(draft.type)),
         currency: Value(draft.currency),
         initialBalanceMinor: Value(draft.initialBalanceMinor),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
         institution: Value(draft.institution),
         last4: Value(draft.last4),
         interestRateBps: Value(draft.interestRateBps),
@@ -124,7 +124,7 @@ abstract final class AccountMapper {
   }) =>
       db.AccountsCompanion(
         archived: Value(archived),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
   /// HU-08: logical delete. Stamps `tombstonedAt`, not `deletedAt`: the row
@@ -134,7 +134,7 @@ abstract final class AccountMapper {
   static db.AccountsCompanion tombstonedCompanion({required DateTime now}) =>
       db.AccountsCompanion(
         tombstonedAt: Value(now),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
   /// HU-04: presentation preference of a card.
@@ -144,7 +144,7 @@ abstract final class AccountMapper {
   }) =>
       db.AccountsCompanion(
         cardBalancePrimary: Value(cardViewToDb(view)),
-        updatedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
   /// Also used by the repository's `setCardBalancePrimary`.

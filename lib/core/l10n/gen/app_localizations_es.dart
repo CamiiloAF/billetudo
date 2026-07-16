@@ -843,4 +843,164 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moreSettings => 'Ajustes';
+
+  @override
+  String get moreSignOut => 'Cerrar sesión';
+
+  @override
+  String get authContinueWithGoogle => 'Continuar con Google';
+
+  @override
+  String get authContinueWithApple => 'Continuar con Apple';
+
+  @override
+  String get authContinueWithoutAccount => 'Continuar sin cuenta';
+
+  @override
+  String get authLoginTitle => 'Nunca pierdas tu progreso';
+
+  @override
+  String get authLoginSubtitle =>
+      'Un respaldo automático de tus cuentas y movimientos, listo para cuando lo necesites.';
+
+  @override
+  String get authTrustRow =>
+      'Usa la app desde cualquier celular sin perder tu historial';
+
+  @override
+  String get authGoogleLoading => 'Conectando con Google…';
+
+  @override
+  String get authGoogleErrorSnackbar => 'No pudimos iniciar sesión con Google';
+
+  @override
+  String get authAppleErrorSnackbar => 'No pudimos iniciar sesión con Apple';
+
+  @override
+  String get authMergeTitle => 'Tus datos están a salvo';
+
+  @override
+  String get authMergeSubtitle =>
+      'Combinamos todo lo que ya tenías guardado con tu cuenta. Nada se perdió en el camino.';
+
+  @override
+  String get authMergeStatAccounts => 'Cuentas';
+
+  @override
+  String get authMergeStatTransactions => 'Movimientos';
+
+  @override
+  String get authMergeStatCategories => 'Categorías';
+
+  @override
+  String get authMergeCaption =>
+      'Tus dispositivos se mantendrán sincronizados automáticamente';
+
+  @override
+  String get authMergeCta => 'Ir a mis finanzas';
+
+  @override
+  String get authMergeErrorTitle => 'No pudimos fusionar tus datos';
+
+  @override
+  String get authMergeErrorMessage =>
+      'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.';
+
+  @override
+  String get authSignOutSheetTitle => 'Cerrar sesión';
+
+  @override
+  String get authSignOutSheetMessage =>
+      'Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.';
+
+  @override
+  String get authSignOutCta => 'Cerrar sesión';
+
+  @override
+  String get authDeleteStep1Title => 'Eliminar tu cuenta';
+
+  @override
+  String get authDeleteStep1Message =>
+      'Vamos a borrar tus cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta en la nube. Esta acción no se puede deshacer.';
+
+  @override
+  String get authDeleteStep1Cta => 'Eliminar cuenta';
+
+  @override
+  String get authDeleteStep1ErrorTitle => 'No pudimos eliminar tu cuenta';
+
+  @override
+  String get authDeleteStep1ErrorMessage =>
+      'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.';
+
+  @override
+  String get authDeleteStep2Title =>
+      '¿Qué hacemos con tus datos en este teléfono?';
+
+  @override
+  String get authDeleteStep2Subtitle =>
+      'Tu cuenta en la nube ya se eliminó. Esto es solo sobre este dispositivo.';
+
+  @override
+  String get authDeleteStep2KeepTitle =>
+      'Conservar mis datos en este dispositivo';
+
+  @override
+  String get authDeleteStep2KeepSubtitle =>
+      'Sigue usando billetudo sin cuenta, con lo que ya tienes registrado.';
+
+  @override
+  String get authDeleteStep2DeleteTitle =>
+      'Borrar también los datos de este dispositivo';
+
+  @override
+  String get authDeleteStep2DeleteSubtitle =>
+      'Se elimina todo tu historial local.';
+
+  @override
+  String get authDeleteStep2Cta => 'Continuar';
+
+  @override
+  String get authDeleteStep3Title => 'Listo, tu cuenta fue eliminada';
+
+  @override
+  String get authDeleteStep3Subtitle =>
+      'Ya no tenemos ningún dato tuyo en la nube. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.';
+
+  @override
+  String get authDeleteStep3Cta => 'Ir al inicio';
+
+  @override
+  String get authSessionProviderGoogle => 'Sesión iniciada con Google';
+
+  @override
+  String get authSessionProviderApple => 'Sesión iniciada con Apple';
+
+  @override
+  String get settingsTitle => 'Ajustes';
+
+  @override
+  String get settingsAccountSection => 'Cuenta y respaldo';
+
+  @override
+  String get settingsBackupTitle => 'Respaldar en la nube';
+
+  @override
+  String get settingsBackupSubtitle => 'Guarda tus datos de forma segura';
+
+  @override
+  String get settingsPreferencesSection => 'Preferencias';
+
+  @override
+  String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsCurrency => 'Moneda';
+
+  @override
+  String get settingsCurrencySubtitle =>
+      'Elige la moneda con la que registras tus movimientos';
+
+  @override
+  String get settingsDeleteAccount => 'Eliminar cuenta';
 }

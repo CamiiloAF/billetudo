@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final createdAt = DateTime(2026, 7, 1, 8);
-  final updatedAt = DateTime(2026, 7, 15, 10, 30);
+
+  /// `updatedAt` is epoch millis (schema v5), unlike `createdAt`.
+  final updatedAt = DateTime(2026, 7, 15, 10, 30).millisecondsSinceEpoch;
 
   db.Account buildRow({
     String id = 'acc-1',
@@ -17,7 +19,6 @@ void main() {
     bool archived = false,
     int sortOrder = 0,
     String? institution,
-    String? accountNumberEnc,
     String? last4,
     int? interestRateBps,
     int? creditLimitMinor,
@@ -36,7 +37,6 @@ void main() {
         archived: archived,
         sortOrder: sortOrder,
         institution: institution,
-        accountNumberEnc: accountNumberEnc,
         last4: last4,
         interestRateBps: interestRateBps,
         creditLimitMinor: creditLimitMinor,
@@ -129,17 +129,6 @@ void main() {
         CardBalanceView.available,
       );
       expect(AccountMapper.toEntity(buildRow()).cardBalancePrimary, isNull);
-    });
-
-    test('el número cifrado de la fila NUNCA llega a la entidad', () {
-      // Defensa en profundidad: aunque una fila vieja o un sync trajera algo en
-      // accountNumberEnc, la entidad no tiene dónde ponerlo.
-      final account = AccountMapper.toEntity(
-        buildRow(accountNumberEnc: 'lo-que-sea', last4: '4321'),
-      );
-
-      expect(account.last4, '4321');
-      expect(account.props, isNot(contains('lo-que-sea')));
     });
 
     test('mapea los campos de tarjeta', () {

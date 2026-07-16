@@ -1591,6 +1591,294 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ajustes'**
   String get moreSettings;
+
+  /// No description provided for @moreSignOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get moreSignOut;
+
+  /// No description provided for @authContinueWithGoogle.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar con Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authContinueWithApple.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar con Apple'**
+  String get authContinueWithApple;
+
+  /// No description provided for @authContinueWithoutAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar sin cuenta'**
+  String get authContinueWithoutAccount;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nunca pierdas tu progreso'**
+  String get authLoginTitle;
+
+  /// No description provided for @authLoginSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Un respaldo automático de tus cuentas y movimientos, listo para cuando lo necesites.'**
+  String get authLoginSubtitle;
+
+  /// No description provided for @authTrustRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Usa la app desde cualquier celular sin perder tu historial'**
+  String get authTrustRow;
+
+  /// No description provided for @authGoogleLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Conectando con Google…'**
+  String get authGoogleLoading;
+
+  /// No description provided for @authGoogleErrorSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos iniciar sesión con Google'**
+  String get authGoogleErrorSnackbar;
+
+  /// No description provided for @authAppleErrorSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos iniciar sesión con Apple'**
+  String get authAppleErrorSnackbar;
+
+  /// No description provided for @authMergeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están a salvo'**
+  String get authMergeTitle;
+
+  /// No description provided for @authMergeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Combinamos todo lo que ya tenías guardado con tu cuenta. Nada se perdió en el camino.'**
+  String get authMergeSubtitle;
+
+  /// No description provided for @authMergeStatAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get authMergeStatAccounts;
+
+  /// No description provided for @authMergeStatTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get authMergeStatTransactions;
+
+  /// No description provided for @authMergeStatCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get authMergeStatCategories;
+
+  /// No description provided for @authMergeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus dispositivos se mantendrán sincronizados automáticamente'**
+  String get authMergeCaption;
+
+  /// No description provided for @authMergeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a mis finanzas'**
+  String get authMergeCta;
+
+  /// No description provided for @authMergeErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos fusionar tus datos'**
+  String get authMergeErrorTitle;
+
+  /// No description provided for @authMergeErrorMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.'**
+  String get authMergeErrorMessage;
+
+  /// No description provided for @authSignOutSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get authSignOutSheetTitle;
+
+  /// No description provided for @authSignOutSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.'**
+  String get authSignOutSheetMessage;
+
+  /// No description provided for @authSignOutCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get authSignOutCta;
+
+  /// No description provided for @authDeleteStep1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar tu cuenta'**
+  String get authDeleteStep1Title;
+
+  /// No description provided for @authDeleteStep1Message.
+  ///
+  /// In es, this message translates to:
+  /// **'Vamos a borrar tus cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta en la nube. Esta acción no se puede deshacer.'**
+  String get authDeleteStep1Message;
+
+  /// No description provided for @authDeleteStep1Cta.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuenta'**
+  String get authDeleteStep1Cta;
+
+  /// No description provided for @authDeleteStep1ErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos eliminar tu cuenta'**
+  String get authDeleteStep1ErrorTitle;
+
+  /// No description provided for @authDeleteStep1ErrorMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.'**
+  String get authDeleteStep1ErrorMessage;
+
+  /// No description provided for @authDeleteStep2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué hacemos con tus datos en este teléfono?'**
+  String get authDeleteStep2Title;
+
+  /// No description provided for @authDeleteStep2Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta en la nube ya se eliminó. Esto es solo sobre este dispositivo.'**
+  String get authDeleteStep2Subtitle;
+
+  /// No description provided for @authDeleteStep2KeepTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar mis datos en este dispositivo'**
+  String get authDeleteStep2KeepTitle;
+
+  /// No description provided for @authDeleteStep2KeepSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue usando billetudo sin cuenta, con lo que ya tienes registrado.'**
+  String get authDeleteStep2KeepSubtitle;
+
+  /// No description provided for @authDeleteStep2DeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar también los datos de este dispositivo'**
+  String get authDeleteStep2DeleteTitle;
+
+  /// No description provided for @authDeleteStep2DeleteSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Se elimina todo tu historial local.'**
+  String get authDeleteStep2DeleteSubtitle;
+
+  /// No description provided for @authDeleteStep2Cta.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get authDeleteStep2Cta;
+
+  /// No description provided for @authDeleteStep3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo, tu cuenta fue eliminada'**
+  String get authDeleteStep3Title;
+
+  /// No description provided for @authDeleteStep3Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no tenemos ningún dato tuyo en la nube. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.'**
+  String get authDeleteStep3Subtitle;
+
+  /// No description provided for @authDeleteStep3Cta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir al inicio'**
+  String get authDeleteStep3Cta;
+
+  /// No description provided for @authSessionProviderGoogle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión iniciada con Google'**
+  String get authSessionProviderGoogle;
+
+  /// No description provided for @authSessionProviderApple.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión iniciada con Apple'**
+  String get authSessionProviderApple;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsAccountSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta y respaldo'**
+  String get settingsAccountSection;
+
+  /// No description provided for @settingsBackupTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Respaldar en la nube'**
+  String get settingsBackupTitle;
+
+  /// No description provided for @settingsBackupSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda tus datos de forma segura'**
+  String get settingsBackupSubtitle;
+
+  /// No description provided for @settingsPreferencesSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias'**
+  String get settingsPreferencesSection;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsCurrency.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda'**
+  String get settingsCurrency;
+
+  /// No description provided for @settingsCurrencySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la moneda con la que registras tus movimientos'**
+  String get settingsCurrencySubtitle;
+
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuenta'**
+  String get settingsDeleteAccount;
 }
 
 class _AppLocalizationsDelegate
