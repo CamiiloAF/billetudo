@@ -51,7 +51,7 @@ Como usuario quiero definir el orden en que aparecen mis categorías, para tener
 Como usuario nuevo quiero empezar con un set de categorías comunes en español ya creadas, para no tener que armar mi estructura desde cero.
 
 **Criterios de aceptación:**
-- Ver `12-onboarding.md` para el detalle completo del flujo.
+- Ver `13-onboarding.md` para el detalle completo del flujo.
 - Las categorías semilla son datos normales (mismas tablas, mismos IDs UUID) — el usuario puede editarlas o eliminarlas como cualquier categoría propia, sin restricción especial de "categoría del sistema".
 
 ## Reglas de negocio y edge cases
@@ -59,11 +59,11 @@ Como usuario nuevo quiero empezar con un set de categorías comunes en español 
 - No existen categorías "maestras" bloqueadas ni no editables — diferenciador explícito frente a Wallet.
 - Una transacción de tipo `transfer` no debería requerir categoría (las transferencias mueven dinero entre cuentas propias, no son gasto ni ingreso real) — validar en el formulario de transacciones.
 - El `kind` de la categoría debe ser coherente con el `type` de la transacción que la usa (una transacción `income` no debería poder elegir una categoría `expense` y viceversa).
-- Las categorías "💳 Deudas" (gasto) y "💳 Cobro de préstamos" (ingreso) del set semilla son **opcionales**, no requeridas: una transacción con `debtId` asignado se identifica y excluye de los totales de ingreso/gasto por el propio `debtId` (ver `07-deudas.md` y `09-graficas-informes.md`), no por su categoría. Sirven solo para que el usuario organice/filtre sus abonos si tiene varias deudas.
+- Las categorías "💳 Deudas" (gasto) y "💳 Cobro de préstamos" (ingreso) del set semilla son **opcionales**, no requeridas: una transacción con `debtId` asignado se identifica y excluye de los totales de ingreso/gasto por el propio `debtId` (ver `08-deudas.md` y `10-graficas-informes.md`), no por su categoría. Sirven solo para que el usuario organice/filtre sus abonos si tiene varias deudas.
 
 ## Apéndice: categorías semilla (onboarding, HU-06)
 
-Set semilla ofrecido en el onboarding (`12-onboarding.md` HU-03). Diferenciadores explícitos frente a Wallet: remesas como categoría de primera clase (relevancia LatAm), ingreso de freelance/negocio propio separado de salario, suscripciones como categoría propia, y vehículo consolidado (combustible + mantenimiento + seguro + impuestos) en una sola raíz en vez de fragmentado. Íconos/colores deben salir de las variables de `billetudo.pen`, nunca hardcodeados.
+Set semilla ofrecido en el onboarding (`13-onboarding.md` HU-03). Diferenciadores explícitos frente a Wallet: remesas como categoría de primera clase (relevancia LatAm), ingreso de freelance/negocio propio separado de salario, suscripciones como categoría propia, y vehículo consolidado (combustible + mantenimiento + seguro + impuestos) en una sola raíz en vez de fragmentado. Íconos/colores deben salir de las variables de `billetudo.pen`, nunca hardcodeados.
 
 ### Gastos (`kind = expense`)
 

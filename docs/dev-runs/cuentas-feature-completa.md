@@ -152,7 +152,7 @@ El código lo documenta como excepción deliberada (líneas 125-138) y la intenc
 - **`accountNumberEnc` es columna muerta**: siempre NULL por diseño. Falta excluirla del sync de PowerSync y evaluar eliminarla en un futuro `/drift-schema-change`. **Cualquier escritura futura a esa columna filtra el número a Supabase** en cuanto se active el sync.
 - **Rendimiento**: el saldo materializa las filas de movimiento en Dart. Suficiente para Fase 0 (SQLite local, un usuario); si el perfilado lo pide, agregar por buckets en SQL manteniendo los signos en el dominio.
 - **`Debts` no tiene `accountId`**: el conteo de deudas de HU-08 se deriva de los `debtId` distintos de las transacciones de la cuenta. **Confirmar que es la semántica esperada.**
-- **Multi-moneda**: `AccountsOverview` no expone ningún total cruzado (solo subtotales por moneda ordenados); la conversión sigue pendiente en `11-multi-moneda.md`.
+- **Multi-moneda**: `AccountsOverview` no expone ningún total cruzado (solo subtotales por moneda ordenados); la conversión sigue pendiente en `12-multi-moneda.md`.
 - **Acoplamiento cross-feature**: el saldo se deriva leyendo `Transactions` desde el datasource de Accounts, y Transacciones aún no existe. La fórmula vive **solo** en `domain/entities/account_balance.dart` y la query en un único datasource; cuando llegue Transacciones, debe **reusarse, no reimplementarse**.
 - **Gaps de cobertura**: sin widget tests de `confirm_archive` / `confirm_delete` / `currency_picker` / `day_picker` (cubiertos a nivel cubit).
 - **Affordance vacía**: revelar/copiar se muestran en cualquier cuenta con `last4` aunque no haya número guardado; el ojo entonces no hace nada (no rompe).

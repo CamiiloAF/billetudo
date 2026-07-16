@@ -31,7 +31,7 @@ class CurrencySubtotal extends Equatable {
 /// There is deliberately **no** cross-currency total: adding COP to USD would
 /// be a made-up number. With a single currency there is one subtotal (shown as
 /// "the" total); with several, the UI shows one subtotal per currency. The
-/// conversion rules live in `docs/requirements/11-multi-moneda.md`.
+/// conversion rules live in `docs/requirements/12-multi-moneda.md`.
 class AccountsOverview extends Equatable {
   const AccountsOverview(this.subtotals);
 
