@@ -150,6 +150,13 @@ Diseño **completo y aprobado** en `billetudo.pen` (claro + oscuro), spec en `de
 - Comportamiento de scroll del FAB (HU-02) documentado (sin frame propio).
 - Token temático `skeleton` añadido para el contraste de los skeletons en tema oscuro.
 
-## Pendiente
+## Estado de implementación
 
-- **Implementación en Flutter** (`flutter-dev`): pasar el Home a código usando este doc + `pages/inicio.md` como fuente, incluyendo el cableado de enlaces — "Ver todos →" a Movimientos, "Crear presupuesto →" a Presupuestos, campana/IA al sheet "próximamente".
+**Implementado en Flutter** (`lib/features/home/`, rama `feature/inicio-home`): shell de 5 tabs, hero (estado sin presupuesto), movimientos recientes, selector de mes, banner de IA y campana "próximamente", header con saludo y avatar, estados vacío/carga, FAB con auto-hide. Cobertura unit + widget + e2e Patrol del shell en verde. Detalle en `docs/dev-runs/inicio-home.md`.
+
+## Pendiente (bloqueado por dependencias externas — NO perder)
+
+Estos dos bloques quedan **estructurados pero sin cablear** en el Home porque dependen de features que aún no existen. El código los deja listos para conectar sin rediseño:
+
+1. **Barra de progreso de presupuesto en el hero (HU-03, estado "con presupuesto", frame `aOhoY`).** Hoy el hero solo muestra el estado **sin presupuesto** (invitación a presupuestar). La barra "X% de $Y · faltan Z días" requiere la feature **Presupuestos (`06-presupuestos.md`)**: leer el presupuesto global mensual vigente (`categoryId = null`) del mes visto y calcular el progreso contra el gasto del mes. Cuando exista Budgets: añadir un segundo estado al `HomeHeroCard` (la estructura ya lo contempla) y alimentarlo desde un caso de uso de Presupuestos. **No inventar un tope mientras tanto.**
+2. **Indicador de sync con estados reales (HU-10).** El header ya renderiza el indicador pasivo, pero hoy está **fijo en `HomeSyncStatus.synced`**. Los 3 estados reales (Sincronizado / Sincronizando / Sin conexión) requieren **PowerSync cableado** (ver `05-auth-sync.md`): exponer el estado de sync como stream y mapearlo a `HomeSyncStatus` en el `HomeCubit`/header. Es local-first: offline nunca alarma ni vacía el Home.
