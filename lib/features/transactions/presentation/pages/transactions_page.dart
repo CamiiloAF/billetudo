@@ -51,6 +51,7 @@ class TransactionsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.transactionsTitle)),
       floatingActionButton: FloatingActionButton(
+        // ignore: avoid_hardcoded_ui_strings
         heroTag: 'transactionsAddTransactionFab',
         onPressed: onAddTransaction,
         tooltip: l10n.transactionsAdd,

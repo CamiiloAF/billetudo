@@ -17,14 +17,14 @@ void main() {
       AccountCard(
         entry: buildAccountWithBalance(
           account: buildAccount(name: 'Bancolombia'),
-          balanceMinor: 450050,
+          balanceMinor: 450000,
         ),
       ),
     );
 
     expect(find.text('Bancolombia'), findsOneWidget);
     expect(find.text('Banco'), findsOneWidget);
-    expect(find.textContaining('4.500,50'), findsOneWidget);
+    expect(find.textContaining('4.500'), findsOneWidget);
   });
 
   testWidgets('un saldo positivo NO se pinta de rojo (tono de marca)',
@@ -33,12 +33,12 @@ void main() {
       AccountCard(
         entry: buildAccountWithBalance(
           account: buildAccount(),
-          balanceMinor: 450050,
+          balanceMinor: 450000,
         ),
       ),
     );
 
-    final amount = find.textContaining('4.500,50');
+    final amount = find.textContaining('4.500');
     expect(
       colorOfAmount(tester, tester.widget<Text>(amount).data!),
       AppColors.light.textPrimary,

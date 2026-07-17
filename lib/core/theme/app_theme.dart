@@ -12,7 +12,14 @@ abstract final class AppTheme {
   // Design system radii (MASTER.md → "Radios y espaciado").
   static const double radiusLarge = 24; // cards / hero / tab bar
   static const double radiusMedium = 16; // chips / buttons / icon-wrap
+  static const double radiusField = 14; // form fields / segmented control
   static const double sheetRadius = 28; // bottom sheets (top corners)
+
+  // Shared motion: the standard duration/curve for sober in-app transitions
+  // (expand/collapse, size changes). Keep every animation on these so the app
+  // feels of one piece.
+  static const Duration motionDuration = Duration(milliseconds: 220);
+  static const Curve motionCurve = Curves.easeInOut;
 
   static ThemeData light() => _build(AppColors.light, Brightness.light);
   static ThemeData dark() => _build(AppColors.dark, Brightness.dark);

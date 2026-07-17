@@ -30,10 +30,10 @@ void main() {
     );
 
     expect(find.text('Mercado'), findsOneWidget);
-    expect(find.text('-250,00\u{00A0}COP'), findsOneWidget);
+    expect(find.text('-250\u{00A0}COP'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '-250,00\u{00A0}COP'), colors.textPrimary);
+    expect(amountColor(tester, '-250\u{00A0}COP'), colors.textPrimary);
   });
 
   testWidgets('ingreso: signo positivo y color income (verde, HU-05)',
@@ -46,10 +46,10 @@ void main() {
       )),
     );
 
-    expect(find.text('+1.500,00\u{00A0}COP'), findsOneWidget);
+    expect(find.text('+1.500\u{00A0}COP'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '+1.500,00\u{00A0}COP'), colors.incomeText);
+    expect(amountColor(tester, '+1.500\u{00A0}COP'), colors.incomeText);
   });
 
   testWidgets('transferencia: sin signo, color neutro y título "A → B" (HU-05)',
@@ -66,10 +66,10 @@ void main() {
     await tester.pumpHomeWidget(row(entry));
 
     expect(find.text('Cuenta A → Cuenta B'), findsOneWidget);
-    expect(find.text('1.000,00\u{00A0}COP'), findsOneWidget);
+    expect(find.text('1.000\u{00A0}COP'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '1.000,00\u{00A0}COP'), colors.textPrimary);
+    expect(amountColor(tester, '1.000\u{00A0}COP'), colors.textPrimary);
   });
 
   testWidgets('sin categoría: cae al nombre de la cuenta como título',

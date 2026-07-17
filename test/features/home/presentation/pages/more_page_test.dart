@@ -35,7 +35,7 @@ void main() {
       'Cuentas',
       'Categorías',
       'Deudas',
-      'Recurrentes',
+      'Pagos programados',
       'Gráficas e informes',
       'Importar y exportar',
       'Ajustes',
@@ -133,9 +133,9 @@ void main() {
 
     await tester.tap(find.text('Deudas'));
     await tester.pump();
-    await tester.tap(find.text('Recurrentes'));
+    await tester.tap(find.text('Pagos programados'));
     await tester.pump();
 
-    expect(opened, ['Deudas', 'Recurrentes']);
+    expect(opened, ['Deudas', 'Pagos programados']);
   });
 }

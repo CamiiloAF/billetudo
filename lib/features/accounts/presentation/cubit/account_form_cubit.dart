@@ -75,13 +75,19 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       currency: account.currency,
       // Rendered with the same formatter that will parse it back, so an
       // untouched field round-trips to the exact same cents.
-      initialBalanceText: _money.formatAmount(account.initialBalanceMinor),
+      initialBalanceText: _money.formatAmount(
+        account.initialBalanceMinor,
+        decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
+      ),
       interestRateText: account.interestRateBps == null
           ? ''
           : _money.formatAmount(account.interestRateBps!),
       creditLimitText: account.creditLimitMinor == null
           ? ''
-          : _money.formatAmount(account.creditLimitMinor!),
+          : _money.formatAmount(
+              account.creditLimitMinor!,
+              decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
+            ),
       statementDay: account.statementDay,
       paymentDueDay: account.paymentDueDay,
       // HU-04: the form does not edit this preference, but the update writes it

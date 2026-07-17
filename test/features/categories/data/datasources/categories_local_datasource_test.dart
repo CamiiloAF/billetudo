@@ -358,6 +358,69 @@ void main() {
       expect(secondCount, greaterThan(firstCount));
     });
   });
+
+  group('mostUsedCategories', () {
+    Future<void> addTransaction(String accountId, String categoryId) =>
+        db.into(db.transactions).insert(
+              TransactionsCompanion.insert(
+                accountId: accountId,
+                categoryId: Value(categoryId),
+                amountMinor: 1000,
+                currency: 'COP',
+                type: EntryType.expense,
+                date: DateTime(2026, 7, 10),
+              ),
+            );
+
+    test('ordena por conteo de transacciones activas, descendente', () async {
+      final accountId = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      final ocio = await insertCategory(name: 'Ocio', sortOrder: 2);
+
+      // Transporte: 2 usos, Comida: 1, Ocio: 0.
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, comida.id);
+
+      final result =
+          await datasource.mostUsedCategories(CategoryKind.expense, 3);
+
+      expect(
+        result.map((c) => c.id),
+        [transporte.id, comida.id, ocio.id],
+      );
+    });
+
+    test('sin historial, cae en las primeras raíces por sortOrder', () async {
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      // Una subcategoría no debe adelantar a las raíces en el fallback.
+      await insertCategory(name: 'Mercado', parentId: comida.id);
+
+      final result =
+          await datasource.mostUsedCategories(CategoryKind.expense, 2);
+
+      expect(result.map((c) => c.id), [comida.id, transporte.id]);
+    });
+
+    test('respeta el limit y excluye borradas', () async {
+      final accountId = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      await insertCategory(name: 'Transporte', sortOrder: 1);
+      await insertCategory(
+        name: 'Borrada',
+        sortOrder: 2,
+        deletedAt: DateTime(2026, 7),
+      );
+      await addTransaction(accountId, comida.id);
+
+      final result =
+          await datasource.mostUsedCategories(CategoryKind.expense, 1);
+
+      expect(result.map((c) => c.id), [comida.id]);
+    });
+  });
 }
 
 Future<String> _insertAccount(AppDatabase db) => db

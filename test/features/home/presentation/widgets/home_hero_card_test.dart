@@ -34,8 +34,8 @@ void main() {
     await tester.pumpHomeWidget(hero(spendingWith(126900)));
 
     expect(find.text('Gastado en Julio'), findsOneWidget);
-    // 126900 cents => 1.269,00 COP, formatted from an int (never a double).
-    expect(find.textContaining('1.269,00'), findsOneWidget);
+    // 126900 cents => 1.269 COP (COP shows no decimals), from an int.
+    expect(find.textContaining('1.269'), findsOneWidget);
     // The month selector chip repeats the label.
     expect(find.text('Julio'), findsOneWidget);
   });
@@ -60,8 +60,8 @@ void main() {
       find.text('Define un presupuesto para ver cuánto te queda este mes'),
       findsNothing,
     );
-    // A $0 hero, never inventing a budget cap.
-    expect(find.textContaining('0,00'), findsOneWidget);
+    // A $0 hero, never inventing a budget cap (COP shows no decimals).
+    expect(find.textContaining('0\u{00A0}COP'), findsOneWidget);
   });
 
   testWidgets('tocar el chip de mes dispara onMonthTap (HU-04)', (tester) async {

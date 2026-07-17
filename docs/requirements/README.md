@@ -10,7 +10,7 @@ Requerimientos funcionales de la capa gratuita y completa de la app (Nivel 0 seg
 6. [Presupuestos](06-presupuestos.md)
 7. [Metas de ahorro](07-metas.md)
 8. [Deudas y préstamos](08-deudas.md)
-9. [Recurrentes](09-recurrentes.md)
+9. [Pagos programados](09-pagos-programados.md)
 10. [Gráficas e informes esenciales](10-graficas-informes.md)
 11. [Import/Export CSV](11-import-export.md)
 12. [Multi-moneda](12-multi-moneda.md)

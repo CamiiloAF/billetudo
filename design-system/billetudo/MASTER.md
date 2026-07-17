@@ -267,7 +267,7 @@ Una revision UX adversarial (agente `ui-ux-reviewer`) encontro y se corrigieron 
 
 ## Inventario de pantallas — Fase 1
 
-Fase 1 (`docs/Plan_Monetizacion_y_Tecnico.md`, seccion Roadmap): registro manual, cuentas, transferencias, categorias con onboarding, presupuestos, metas, deudas, graficas/informes esenciales, import/export, busqueda/filtros, recurrentes, multi-moneda, login social + borrado de cuenta. Se disena por lotes priorizados, empezando por el nucleo de uso diario.
+Fase 1 (`docs/Plan_Monetizacion_y_Tecnico.md`, seccion Roadmap): registro manual, cuentas, transferencias, categorias con onboarding, presupuestos, metas, deudas, graficas/informes esenciales, import/export, busqueda/filtros, pagos programados, multi-moneda, login social + borrado de cuenta. Se disena por lotes priorizados, empezando por el nucleo de uso diario.
 
 ### Lote 1 — Cuentas, Transacciones y Categorias (completo)
 
@@ -285,7 +285,7 @@ Todas construidas en claro + copia con `theme:{mode:"dark"}`, altura de disposit
 
 ### Pendiente (proximos lotes)
 
-Presupuestos, Metas, Deudas, Graficas/Informes, Import/Export, Busqueda/Filtros avanzada, Recurrentes, Multi-moneda (settings), Login social + borrado de cuenta, Onboarding general.
+Presupuestos, Metas, Deudas, Graficas/Informes, Import/Export, Busqueda/Filtros avanzada, Pagos programados, Multi-moneda (settings), Login social + borrado de cuenta, Onboarding general.
 
 ---
 

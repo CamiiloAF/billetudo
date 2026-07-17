@@ -40,6 +40,16 @@ void main() {
 
   group('teclado numérico anclado (criterio 11)', () {
     blocTest<TransactionFormCubit, TransactionFormState>(
+      'el formulario abre con el Monto enfocado y el teclado visible',
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.focusedField, TransactionFormFocusedField.amount);
+        expect(cubit.state.isKeypadVisible, isTrue);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
       'el foco en Monto muestra el teclado y el foco en Nota lo oculta',
       build: build,
       act: (cubit) async {
@@ -54,7 +64,7 @@ void main() {
     );
 
     blocTest<TransactionFormCubit, TransactionFormState>(
-      'construye el monto dígito a dígito',
+      'construye el monto dígito a dígito (entrada de números enteros)',
       build: build,
       act: (cubit) async {
         await cubit.load(null);
@@ -64,11 +74,29 @@ void main() {
           ..amountDigitPressed(3)
           ..amountDigitPressed(4);
       },
+      // Whole-number entry: 1234 stored as minor units (×100) = 123400.
+      verify: (cubit) => expect(cubit.state.amountMinor, 123400),
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'el punto decimal (USD) construye centavos',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..currencySelected('USD')
+          ..amountDigitPressed(1)
+          ..amountDigitPressed(2)
+          ..amountDecimalPressed()
+          ..amountDigitPressed(3)
+          ..amountDigitPressed(4);
+      },
+      // 12.34 USD → 1234 minor units.
       verify: (cubit) => expect(cubit.state.amountMinor, 1234),
     );
 
     blocTest<TransactionFormCubit, TransactionFormState>(
-      'borrar quita el último dígito',
+      'borrar quita el último dígito entero',
       build: build,
       act: (cubit) async {
         await cubit.load(null);
@@ -77,7 +105,40 @@ void main() {
           ..amountDigitPressed(2)
           ..amountBackspace();
       },
-      verify: (cubit) => expect(cubit.state.amountMinor, 1),
+      // 12 → 1 whole unit = 100 minor units.
+      verify: (cubit) => expect(cubit.state.amountMinor, 100),
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'los operadores evalúan en centavos sin double: 45 × 3 = 135',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..amountDigitPressed(4)
+          ..amountDigitPressed(5)
+          ..amountOperatorPressed(CalcOperator.multiply)
+          ..amountDigitPressed(3)
+          ..amountEqualsPressed();
+      },
+      // $45 × 3 = $135 → 13500 minor units.
+      verify: (cubit) => expect(cubit.state.amountMinor, 13500),
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'dividir redondea half-up a centavos: 10 ÷ 3 = 3,33',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..amountDigitPressed(1)
+          ..amountDigitPressed(0)
+          ..amountOperatorPressed(CalcOperator.divide)
+          ..amountDigitPressed(3)
+          ..amountEqualsPressed();
+      },
+      // $10 / 3 = $3.333… → 333 minor units (round half-up).
+      verify: (cubit) => expect(cubit.state.amountMinor, 333),
     );
   });
 
@@ -123,7 +184,7 @@ void main() {
   });
 
   group('editar (HU-04)', () {
-    final original = buildTransaction(recurringId: 'rec-1');
+    final original = buildTransaction(scheduledPaymentId: 'rec-1');
 
     blocTest<TransactionFormCubit, TransactionFormState>(
       'un cambio que afecta un vínculo se detiene con la advertencia, sin persistir',
@@ -145,7 +206,7 @@ void main() {
           ),
         ).thenReturn(
           const TransactionEditImpact(
-            affectsRecurring: true,
+            affectsScheduledPayment: true,
             affectsGoal: false,
             affectsDebt: false,
           ),
@@ -183,7 +244,7 @@ void main() {
           ),
         ).thenReturn(
           const TransactionEditImpact(
-            affectsRecurring: true,
+            affectsScheduledPayment: true,
             affectsGoal: false,
             affectsDebt: false,
           ),

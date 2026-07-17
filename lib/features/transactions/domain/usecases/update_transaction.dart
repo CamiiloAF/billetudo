@@ -10,7 +10,7 @@ import '../repositories/transaction_repository.dart';
 /// carries.
 ///
 /// Same validation as `CreateTransaction` via [TransactionDraft.validated].
-/// The edit-impact warning on a linked recurring/goal/debt (see the HU) is
+/// The edit-impact warning on a linked scheduled-payment/goal/debt (see the HU) is
 /// computed separately by `GetTransactionEditImpact`, so the caller can show
 /// it *before* confirming this write.
 @injectable

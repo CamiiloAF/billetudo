@@ -62,7 +62,8 @@ void main() {
     expect(indicator.valueColor!.value, AppColors.light.expense);
 
     // El cupo disponible se muestra en 0, nunca en negativo (HU-02).
+    // COP sin decimales: "0 COP", no "0,00".
     expect(find.textContaining('3.150.000'), findsWidgets);
-    expect(find.textContaining('0,00'), findsWidgets);
+    expect(find.textContaining('0\u{00A0}COP'), findsWidgets);
   });
 }

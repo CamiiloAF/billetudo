@@ -25,21 +25,71 @@ class MoneyFormatter {
 
   static const int _minorPerMajor = 100;
 
-  /// `1234, currencyCode: 'COP'` → `"$1.234,00"` (per [locale]).
+  /// How many decimals a currency shows to the user. Storage always keeps two
+  /// (minor unit = 1/100, see [_minorPerMajor]); this is only about *display*.
+  /// COP has no cents in practice, so it reads as a whole number (`$45.000`),
+  /// while USD keeps its two (`$12.34`). The full app-wide reconciliation of
+  /// per-currency minor units lives in `12-multi-moneda.md`; this covers the
+  /// two currencies the app handles today.
+  static int currencyDecimals(String currencyCode) =>
+      currencyCode == 'COP' ? 0 : 2;
+
+  /// `1234, currencyCode: 'COP'` → `"$1.234"` (per [locale]).
+  ///
+  /// [decimalDigits] overrides how many decimals are shown; when omitted the
+  /// currency's own default applies via [currencyDecimals] (COP `$1.234`, USD
+  /// `$12,34`). Note that intl's own default for the `COP` currency code is two
+  /// decimals, so relying on it would render `,00`; that is why the default is
+  /// pinned to [currencyDecimals] instead.
   String format(
     int amountMinor, {
     required String currencyCode,
     String locale = 'es_CO',
+    int? decimalDigits,
   }) {
-    final formatter = NumberFormat.currency(locale: locale, name: currencyCode);
+    final formatter = NumberFormat.currency(
+      locale: locale,
+      name: currencyCode,
+      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+    );
+    return formatter.format(amountMinor / _minorPerMajor);
+  }
+
+  /// Like [format] but renders the `$` **symbol** instead of the currency code
+  /// (`1234, 'COP'` → `"$1.234"`), and defaults to the currency's own decimals
+  /// ([currencyDecimals]). Use it where the design shows a plain `$45.000`
+  /// (e.g. the transaction form's Zona Fija) rather than the `COP` code.
+  ///
+  /// Display only — the amount never becomes a stored `double`, same as
+  /// [format].
+  String formatSymbol(
+    int amountMinor, {
+    required String currencyCode,
+    String locale = 'es_CO',
+    int? decimalDigits,
+  }) {
+    final formatter = NumberFormat.currency(
+      locale: locale,
+      symbol: r'$',
+      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+    );
     return formatter.format(amountMinor / _minorPerMajor);
   }
 
   /// Same as [format] but without the currency code/symbol (digits only).
-  String formatAmount(int amountMinor, {String locale = 'es_CO'}) {
+  ///
+  /// [decimalDigits] controls how many decimals are shown and defaults to two,
+  /// which suits non-currency values like basis-point rates (`2450` → `24,50`).
+  /// For money, pass the currency's own decimals via [currencyDecimals] so COP
+  /// reads as a whole number (`4500000` → `45.000`) while USD keeps its cents.
+  String formatAmount(
+    int amountMinor, {
+    String locale = 'es_CO',
+    int? decimalDigits,
+  }) {
     final formatter = NumberFormat.decimalPatternDigits(
       locale: locale,
-      decimalDigits: 2,
+      decimalDigits: decimalDigits ?? 2,
     );
     return formatter.format(amountMinor / _minorPerMajor);
   }

@@ -28,7 +28,7 @@ class TransactionDraft extends Equatable {
     this.note,
     this.transferAccountId,
     this.source = TransactionSource.manual,
-    this.recurringId,
+    this.scheduledPaymentId,
     this.goalId,
     this.debtId,
   });
@@ -65,7 +65,7 @@ class TransactionDraft extends Equatable {
   final TransactionSource source;
 
   final String? transferAccountId;
-  final String? recurringId;
+  final String? scheduledPaymentId;
   final String? goalId;
   final String? debtId;
 
@@ -133,7 +133,7 @@ class TransactionDraft extends Equatable {
         note: note,
         source: source,
         transferAccountId: transferAccountId,
-        recurringId: recurringId,
+        scheduledPaymentId: scheduledPaymentId,
         goalId: goalId,
         debtId: debtId,
       ),
@@ -204,7 +204,7 @@ class TransactionDraft extends Equatable {
         note,
         source,
         transferAccountId,
-        recurringId,
+        scheduledPaymentId,
         goalId,
         debtId,
       ];

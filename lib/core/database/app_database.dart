@@ -43,13 +43,13 @@ enum CategoryKind { income, expense }
 
 /// How the transaction was created. Used to measure AI usage and calibrate
 /// quotas: 'manual' and 'imported' cost nothing; voice/ocr/notification do.
-enum TxSource { manual, voice, ocr, notification, imported, recurring }
+enum TxSource { manual, voice, ocr, notification, imported, scheduled }
 
 enum BudgetPeriod { weekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
-enum RecurFrequency { daily, weekly, monthly, yearly }
+enum ScheduleFrequency { daily, weekly, monthly, yearly }
 
 /// Which figure to highlight on a credit card (HU-04): 'debt' = show the
 /// current debt as the headline; 'available' = the available credit. Affects
@@ -188,7 +188,8 @@ class Transactions extends Table with _SyncColumns {
       text().nullable().references(Accounts, #id)();
 
   /// Optional links.
-  TextColumn get recurringId => text().nullable().references(Recurrings, #id)();
+  TextColumn get scheduledPaymentId =>
+      text().nullable().references(ScheduledPayments, #id)();
   TextColumn get goalId => text().nullable().references(Goals, #id)();
   TextColumn get debtId => text().nullable().references(Debts, #id)();
 }
@@ -237,8 +238,9 @@ class Debts extends Table with _SyncColumns {
   DateTimeColumn get dueDate => dateTime().nullable()();
 }
 
-/// Templates for recurring transactions / planned payments.
-class Recurrings extends Table with _SyncColumns {
+/// Templates for scheduled payments: one-time or repeating planned
+/// transactions (rent, subscriptions, a one-off future payment).
+class ScheduledPayments extends Table with _SyncColumns {
   TextColumn get accountId => text().references(Accounts, #id)();
   TextColumn get categoryId => text().nullable().references(Categories, #id)();
   IntColumn get amountMinor => integer()();
@@ -246,7 +248,7 @@ class Recurrings extends Table with _SyncColumns {
   TextColumn get type => textEnum<EntryType>()();
   TextColumn get note => text().nullable()();
 
-  TextColumn get frequency => textEnum<RecurFrequency>()();
+  TextColumn get frequency => textEnum<ScheduleFrequency>()();
 
   /// How many [frequency] units between repeats. E.g. interval=2 + weekly =
   /// every 2 weeks.
@@ -286,7 +288,7 @@ class TransactionTags extends Table with _SyncColumns {
     Budgets,
     Goals,
     Debts,
-    Recurrings,
+    ScheduledPayments,
     Tags,
     TransactionTags,
   ],
@@ -295,7 +297,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -349,7 +351,12 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(budgets, budgets.tombstonedAt);
             await m.addColumn(goals, goals.tombstonedAt);
             await m.addColumn(debts, debts.tombstonedAt);
-            await m.addColumn(recurrings, recurrings.tombstonedAt);
+            // The table was still named `recurrings` at this schema version
+            // (renamed to `scheduled_payments` in v5 -> v6 below), so its
+            // `tombstoned_at` column is added by raw SQL against the old name.
+            await m.database.customStatement(
+              'ALTER TABLE recurrings ADD COLUMN tombstoned_at INTEGER NULL',
+            );
             await m.addColumn(tags, tags.tombstonedAt);
             await m.addColumn(transactionTags, transactionTags.tombstonedAt);
 
@@ -391,6 +398,28 @@ class AppDatabase extends _$AppDatabase {
             }
 
             await m.dropColumn(accounts, 'account_number_enc');
+          }
+
+          // v5 -> v6: the "recurring transactions" feature is renamed to
+          // "scheduled payments" end to end (docs/requirements/
+          // 09-pagos-programados.md). No data-shape change: the table and the
+          // FK column are renamed in place, and the `recurring` capture source
+          // becomes `scheduled`. The feature has no repository yet, so
+          // `scheduled_payments` is empty; the source UPDATE is a no-op today
+          // (nothing has generated a scheduled transaction) but keeps any
+          // stray value consistent.
+          if (from < 6) {
+            await m.database.customStatement(
+              'ALTER TABLE recurrings RENAME TO scheduled_payments',
+            );
+            await m.database.customStatement(
+              'ALTER TABLE transactions '
+              'RENAME COLUMN recurring_id TO scheduled_payment_id',
+            );
+            await m.database.customStatement(
+              "UPDATE transactions SET source = 'scheduled' "
+              "WHERE source = 'recurring'",
+            );
           }
         },
       );

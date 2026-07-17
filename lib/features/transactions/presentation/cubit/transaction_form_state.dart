@@ -12,6 +12,11 @@ enum TransactionFormStatus { loading, ready, saving, saved, failure }
 /// instant [note] gets it — the two never show at once.
 enum TransactionFormFocusedField { none, amount, note }
 
+/// The four binary operators of the anchored calculator keypad (`transacciones.md`,
+/// Pencil `Keypad` node). Kept as a domain-free enum so the math stays in the
+/// cubit and never leaks a `double` into the money path.
+enum CalcOperator { add, subtract, multiply, divide }
+
 /// State of the single add/edit form, parametrized by [type] (HU-01/02/03/04).
 class TransactionFormState extends Equatable {
   TransactionFormState({
@@ -32,6 +37,11 @@ class TransactionFormState extends Equatable {
     this.tagIds = const <String>{},
     this.source = TransactionSource.manual,
     this.focusedField = TransactionFormFocusedField.none,
+    this.calcOperator,
+    this.calcOperand,
+    this.entryFractionDigits = -1,
+    this.startNewOperand = false,
+    this.justEvaluated = false,
     this.editImpact,
     this.failure,
   }) : date = date ?? DateTime.now();
@@ -76,8 +86,30 @@ class TransactionFormState extends Equatable {
 
   final TransactionFormFocusedField focusedField;
 
+  // --- Anchored calculator keypad state (all integer, never a `double`) ---
+
+  /// The pending left operand in minor units, captured when an operator was
+  /// pressed. `null` when no operation is in progress.
+  final CalcOperator? calcOperator;
+
+  /// The operator awaiting its right operand. `null` when none is pending.
+  final int? calcOperand;
+
+  /// How many fraction digits the *current* operand has typed after a decimal
+  /// point: `-1` = whole-number entry (no point yet), `0..2` = that many
+  /// fraction digits. Drives digit placement without ever parsing a `double`.
+  final int entryFractionDigits;
+
+  /// True right after an operator: the next digit starts a fresh right operand
+  /// instead of appending to the value still shown on screen.
+  final bool startNewOperand;
+
+  /// True right after `=`: the next digit starts a brand-new calculation
+  /// (standard calculator behaviour).
+  final bool justEvaluated;
+
   /// Set once `submit()` finds the edit would desync a linked
-  /// recurring/goal/debt (HU-04) and is awaiting confirmation.
+  /// scheduled-payment/goal/debt (HU-04) and is awaiting confirmation.
   final TransactionEditImpact? editImpact;
 
   final Failure? failure;
@@ -110,11 +142,17 @@ class TransactionFormState extends Equatable {
     Set<String>? tagIds,
     TransactionSource? source,
     TransactionFormFocusedField? focusedField,
+    CalcOperator? calcOperator,
+    int? calcOperand,
+    int? entryFractionDigits,
+    bool? startNewOperand,
+    bool? justEvaluated,
     TransactionEditImpact? editImpact,
     Failure? failure,
     bool clearCategory = false,
     bool clearTransferAccount = false,
     bool clearEditImpact = false,
+    bool clearCalc = false,
   }) =>
       TransactionFormState(
         status: status ?? this.status,
@@ -140,6 +178,11 @@ class TransactionFormState extends Equatable {
         tagIds: tagIds ?? this.tagIds,
         source: source ?? this.source,
         focusedField: focusedField ?? this.focusedField,
+        calcOperator: clearCalc ? null : (calcOperator ?? this.calcOperator),
+        calcOperand: clearCalc ? null : (calcOperand ?? this.calcOperand),
+        entryFractionDigits: entryFractionDigits ?? this.entryFractionDigits,
+        startNewOperand: startNewOperand ?? this.startNewOperand,
+        justEvaluated: justEvaluated ?? this.justEvaluated,
         editImpact: clearEditImpact ? null : (editImpact ?? this.editImpact),
         // A new state carrying data is a state without an error: the caller
         // clears the failure by simply not passing one.
@@ -165,6 +208,11 @@ class TransactionFormState extends Equatable {
         tagIds,
         source,
         focusedField,
+        calcOperator,
+        calcOperand,
+        entryFractionDigits,
+        startNewOperand,
+        justEvaluated,
         editImpact,
         failure,
       ];

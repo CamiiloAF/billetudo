@@ -57,6 +57,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
       });
 
   @override
+  FutureResult<List<Category>> getMostUsedCategories(
+    CategoryKind kind, {
+    int limit = 3,
+  }) =>
+      _guard(() async {
+        final rows = await _local.mostUsedCategories(
+          CategoryMapper.kindToDb(kind),
+          limit,
+        );
+        return Right(rows.map(CategoryMapper.toEntity).toList());
+      });
+
+  @override
   FutureResult<Category> createCategory(CategoryDraft draft) =>
       _guard(() async {
         final now = DateTime.now();

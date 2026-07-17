@@ -1,7 +1,7 @@
 # Feature: Multi-moneda
 
 **Nivel:** 0 (gratis, sin anuncios) — costo marginal ~$0 (una llamada de tasas FX al día para *todos* los usuarios, no por usuario).
-**Campos relevantes:** `currency` en `Accounts`, `Transactions`, `Budgets`, `Goals`, `Debts`, `Recurrings`.
+**Campos relevantes:** `currency` en `Accounts`, `Transactions`, `Budgets`, `Goals`, `Debts`, `ScheduledPayments`.
 
 ## Contexto
 

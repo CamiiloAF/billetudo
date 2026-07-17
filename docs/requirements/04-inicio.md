@@ -23,7 +23,7 @@ Como usuario quiero una barra inferior siempre visible para moverme entre las se
 - Cinco destinos, en este orden: **Inicio**, **Movimientos** (Transacciones), **Presupuestos**, **Metas**, **Más**.
 - **Inicio** es la pestaña por defecto al abrir la app.
 - La pestaña activa se resalta (ícono + label en color de marca); las inactivas usan `text-secondary`.
-- **Más** es un hub que agrupa el resto de destinos de Nivel 0: **Cuentas**, **Categorías**, **Deudas** (`08`), **Recurrentes** (`09`), **Gráficas e informes** (`10`), **Import/Export** (`11`) y **Ajustes/Cuenta** (moneda, borrado de cuenta, etc.).
+- **Más** es un hub que agrupa el resto de destinos de Nivel 0: **Cuentas**, **Categorías**, **Deudas** (`08`), **Pagos programados** (`09`), **Gráficas e informes** (`10`), **Import/Export** (`11`) y **Ajustes/Cuenta** (moneda, borrado de cuenta, etc.).
 - Reemplaza por completo a `BootstrapHomePage`; las rutas actuales (`/cuentas`, `/categorias`, …) se cuelgan del shell.
 - Ninguna feature de Nivel 0 puede quedar inaccesible desde el shell (regla de Nivel 0).
 

@@ -9,21 +9,47 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../cubit/tag_filter_cubit.dart';
 import 'new_tag_sheet.dart';
 
-/// HU-06/HU-07's tag filter sheet: multiple selection over the live tag
-/// list, plus creating a new tag on the fly.
+/// The multi-select tag sheet (`FL1gK`): selection over the live tag list plus
+/// creating a new tag on the fly. Reused in two contexts with the same body but
+/// different copy:
+///
+/// - the transactions list filter (HU-06): title "Filtrar por etiqueta",
+///   confirm "Aplicar";
+/// - the transaction form's Etiquetas field (HU-07): title "Etiquetas", confirm
+///   "Listo".
+///
+/// [title]/[confirmLabel] default to the filter copy so existing callers keep
+/// working unchanged.
 class TagFilterSheet extends StatelessWidget {
-  const TagFilterSheet({required this.initialSelected, super.key});
+  const TagFilterSheet({
+    required this.initialSelected,
+    this.title,
+    this.confirmLabel,
+    super.key,
+  });
 
   final Set<String> initialSelected;
+
+  /// Sheet heading. Falls back to the filter copy when null.
+  final String? title;
+
+  /// Confirm button label. Falls back to "Aplicar" when null.
+  final String? confirmLabel;
 
   static Future<Set<String>?> show(
     BuildContext context, {
     required Set<String> initialSelected,
+    String? title,
+    String? confirmLabel,
   }) =>
       showModalBottomSheet<Set<String>>(
         context: context,
         isScrollControlled: true,
-        builder: (context) => TagFilterSheet(initialSelected: initialSelected),
+        builder: (context) => TagFilterSheet(
+          initialSelected: initialSelected,
+          title: title,
+          confirmLabel: confirmLabel,
+        ),
       );
 
   @override
@@ -34,17 +60,22 @@ class TagFilterSheet extends StatelessWidget {
         unawaited(cubit.start(initialSelected));
         return cubit;
       },
-      child: const TagFilterSheetBody(),
+      child: TagFilterSheetBody(title: title, confirmLabel: confirmLabel),
     );
   }
 }
 
 class TagFilterSheetBody extends StatelessWidget {
-  const TagFilterSheetBody({super.key});
+  const TagFilterSheetBody({this.title, this.confirmLabel, super.key});
+
+  final String? title;
+  final String? confirmLabel;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final heading = title ?? l10n.tagFilterSheetTitle;
+    final confirm = confirmLabel ?? l10n.commonApply;
     return BlocBuilder<TagFilterCubit, TagFilterState>(
       builder: (context, state) {
         final cubit = context.read<TagFilterCubit>();
@@ -59,7 +90,7 @@ class TagFilterSheetBody extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        l10n.tagFilterSheetTitle,
+                        heading,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
@@ -92,7 +123,7 @@ class TagFilterSheetBody extends StatelessWidget {
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(state.selected),
-                  child: Text(l10n.commonApply),
+                  child: Text(confirm),
                 ),
               ],
             ),

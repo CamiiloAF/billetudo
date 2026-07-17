@@ -23,7 +23,7 @@ abstract final class TransactionMapper {
         note: row.note,
         source: _sourceToDomain(row.source),
         transferAccountId: row.transferAccountId,
-        recurringId: row.recurringId,
+        scheduledPaymentId: row.scheduledPaymentId,
         goalId: row.goalId,
         debtId: row.debtId,
         createdAt: row.createdAt,
@@ -45,7 +45,7 @@ abstract final class TransactionMapper {
         note: Value(draft.note),
         source: Value(_sourceToDb(draft.source)),
         transferAccountId: Value(draft.transferAccountId),
-        recurringId: Value(draft.recurringId),
+        scheduledPaymentId: Value(draft.scheduledPaymentId),
         goalId: Value(draft.goalId),
         debtId: Value(draft.debtId),
         createdAt: Value(now),
@@ -70,7 +70,7 @@ abstract final class TransactionMapper {
         date: Value(draft.date),
         note: Value(draft.note),
         transferAccountId: Value(draft.transferAccountId),
-        recurringId: Value(draft.recurringId),
+        scheduledPaymentId: Value(draft.scheduledPaymentId),
         goalId: Value(draft.goalId),
         debtId: Value(draft.debtId),
         updatedAt: Value(now.millisecondsSinceEpoch),
@@ -109,7 +109,7 @@ abstract final class TransactionMapper {
         TransactionSource.ocr => db.TxSource.ocr,
         TransactionSource.notification => db.TxSource.notification,
         TransactionSource.imported => db.TxSource.imported,
-        TransactionSource.recurring => db.TxSource.recurring,
+        TransactionSource.scheduled => db.TxSource.scheduled,
       };
 
   static TransactionSource _sourceToDomain(db.TxSource source) =>
@@ -119,6 +119,6 @@ abstract final class TransactionMapper {
         db.TxSource.ocr => TransactionSource.ocr,
         db.TxSource.notification => TransactionSource.notification,
         db.TxSource.imported => TransactionSource.imported,
-        db.TxSource.recurring => TransactionSource.recurring,
+        db.TxSource.scheduled => TransactionSource.scheduled,
       };
 }

@@ -30,7 +30,7 @@ void main() {
       TransactionSource.ocr: 'Foto de recibo',
       TransactionSource.notification: 'Notificación bancaria',
       TransactionSource.imported: 'Importado',
-      TransactionSource.recurring: 'Recurrente',
+      TransactionSource.scheduled: 'Programado',
     };
 
     for (final entry in labelBySource.entries) {

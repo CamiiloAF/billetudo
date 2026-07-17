@@ -31,6 +31,15 @@ abstract class CategoryRepository {
   /// exist, or is tombstoned/deleted.
   FutureResult<Category> getCategory(String id);
 
+  /// The [limit] most-used categories of [kind] by active-transaction count,
+  /// for the transaction form's Category Quick Picker (HU-01/02). Ties — and
+  /// a user with no history at all — fall back to the earliest root
+  /// categories by `sortOrder`, so the picker always has something to show.
+  FutureResult<List<Category>> getMostUsedCategories(
+    CategoryKind kind, {
+    int limit = 3,
+  });
+
   /// Persists a new category. `sortOrder` is assigned at the end of its
   /// scope: among root categories of `draft.kind` when `draft.parentId` is
   /// `null`, or among the siblings of `draft.parentId` otherwise.

@@ -52,6 +52,37 @@ class CategoriesLocalDatasource {
     return query.watch();
   }
 
+  /// The [limit] most-used categories of [kind] by active-transaction count,
+  /// for the transaction form's Category Quick Picker (HU-01/02). Counts
+  /// transactions still alive (`deletedAt`/`tombstonedAt` null) that reference
+  /// each alive category. Ties — and the whole result for a user with no
+  /// history, where every count is zero — fall back to the earliest root
+  /// categories first, then by `sortOrder`, so a fresh user still gets a
+  /// sensible default set.
+  Future<List<Category>> mostUsedCategories(CategoryKind kind, int limit) {
+    final usageCount = _db.transactions.id.count();
+    final query = _db.select(_db.categories).join([
+      leftOuterJoin(
+        _db.transactions,
+        _db.transactions.categoryId.equalsExp(_db.categories.id) &
+            _db.transactions.deletedAt.isNull() &
+            _db.transactions.tombstonedAt.isNull(),
+      ),
+    ])
+      ..where(_db.categories.kind.equalsValue(kind) & _alive)
+      ..groupBy([_db.categories.id])
+      ..orderBy([
+        OrderingTerm.desc(usageCount),
+        // Roots (parentId IS NULL -> 1) before subcategories on a tie, so the
+        // no-history fallback favours top-level categories.
+        OrderingTerm.desc(_db.categories.parentId.isNull()),
+        OrderingTerm.asc(_db.categories.sortOrder),
+        OrderingTerm.asc(_db.categories.createdAt),
+      ])
+      ..limit(limit);
+    return query.map((row) => row.readTable(_db.categories)).get();
+  }
+
   Future<Category?> getCategory(String id) =>
       (_db.select(_db.categories)..where((c) => c.id.equals(id) & _alive))
           .getSingleOrNull();

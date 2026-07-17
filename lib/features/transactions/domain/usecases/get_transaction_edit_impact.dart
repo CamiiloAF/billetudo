@@ -5,7 +5,7 @@ import '../entities/transaction_draft.dart';
 import '../entities/transaction_edit_impact.dart';
 
 /// HU-04: evaluates whether the change proposed by a draft would desync a
-/// transaction from the recurring template, goal or debt it is linked to, so
+/// transaction from the scheduled payment, goal or debt it is linked to, so
 /// the form can warn the user *before* the edit is confirmed.
 ///
 /// A pure computation over the two entities the caller already holds (the
@@ -15,7 +15,7 @@ import '../entities/transaction_edit_impact.dart';
 ///
 /// The rule: a link is affected when a field that would make it no longer
 /// apply as-is changes.
-///  - `recurringId`: any change to amount, account or type breaks the
+///  - `scheduledPaymentId`: any change to amount, account or type breaks the
 ///    template match.
 ///  - `goalId` / `debtId`: a change to amount or account breaks the
 ///    contribution/payment they were tracking.
@@ -32,7 +32,7 @@ class GetTransactionEditImpact {
     final typeChanged = draft.type != original.type;
 
     return TransactionEditImpact(
-      affectsRecurring: original.recurringId != null &&
+      affectsScheduledPayment: original.scheduledPaymentId != null &&
           (amountChanged || accountChanged || typeChanged),
       affectsGoal: original.goalId != null && (amountChanged || accountChanged),
       affectsDebt: original.debtId != null && (amountChanged || accountChanged),

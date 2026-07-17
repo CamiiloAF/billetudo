@@ -45,7 +45,7 @@ Como usuario quiero corregir cualquier campo de una transacción ya registrada, 
 **Criterios de aceptación:**
 - Todos los campos editables excepto `source` (el origen de captura es un hecho histórico, no se reescribe manualmente).
 - `updatedAt` se actualiza en cada edición.
-- Si la transacción está enlazada a `recurringId`, `goalId` o `debtId`, la edición debe advertir el impacto en esas relaciones (ej. desvincular de la meta si cambia el monto de forma que ya no aplica el aporte).
+- Si la transacción está enlazada a `scheduledPaymentId`, `goalId` o `debtId`, la edición debe advertir el impacto en esas relaciones (ej. desvincular de la meta si cambia el monto de forma que ya no aplica el aporte).
 
 ### HU-05 — Eliminar transacción
 Como usuario quiero eliminar una transacción, para deshacer un registro duplicado o erróneo.
@@ -102,7 +102,7 @@ Como usuario quiero asignar una o varias etiquetas libres a una transacción (ad
 Como usuario quiero ver el detalle completo de una transacción (cuenta, categoría, monto, fecha, nota, etiquetas, origen), para confirmar que todo quedó bien registrado.
 
 **Criterios de aceptación:**
-- Se muestra el `source` de forma legible (manual, voz, OCR, notificación, importado, recurrente) aunque en Fase 0 la inmensa mayoría sea `manual`.
+- Se muestra el `source` de forma legible (manual, voz, OCR, notificación, importado, programado) aunque en Fase 0 la inmensa mayoría sea `manual`.
 
 ## Reglas de negocio y edge cases
 

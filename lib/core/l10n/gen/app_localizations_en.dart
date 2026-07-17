@@ -37,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonApply => 'Apply';
 
   @override
+  String get commonDone => 'Done';
+
+  @override
   String get errorUnexpected => 'Something went wrong. Please try again.';
 
   @override
@@ -594,7 +597,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionFormCategoryLabel => 'Category';
 
   @override
-  String get transactionFormCategoryNone => 'No category';
+  String get categorySelectTitle => 'Choose category';
+
+  @override
+  String get categorySelectSearchHint => 'Search category';
+
+  @override
+  String get categorySelectMore => 'See more';
+
+  @override
+  String get categorySelectEmpty =>
+      'We couldn\'t find categories with that name';
+
+  @override
+  String get categorySelectExpand => 'Show subcategories';
+
+  @override
+  String get categorySelectCollapse => 'Hide subcategories';
 
   @override
   String get transactionFormDateLabel => 'Date';
@@ -612,7 +631,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionFormAddTag => 'Add tag';
 
   @override
+  String get transactionFormTagNew => 'New';
+
+  @override
+  String get transactionFormTagsSheetTitle => 'Tags';
+
+  @override
   String get transactionFormSourceLabel => 'Source';
+
+  @override
+  String get transactionFormTransferAmountLabel => 'Amount to transfer';
+
+  @override
+  String get transactionFormTransferFromLabel => 'From account';
+
+  @override
+  String get transactionFormTransferInfo =>
+      'Transfers don\'t count as income or expense.';
+
+  @override
+  String get transactionFormSwapAccounts => 'Swap accounts';
+
+  @override
+  String get transactionFormDateToday => 'Today';
+
+  @override
+  String get transactionFormDateYesterday => 'Yesterday';
+
+  @override
+  String transactionFormDateValue(String prefix, String date) {
+    return '$prefix, $date';
+  }
+
+  @override
+  String get datePickerTitle => 'Choose date';
+
+  @override
+  String get datePickerPreviousMonth => 'Previous month';
+
+  @override
+  String get datePickerNextMonth => 'Next month';
+
+  @override
+  String get transactionFormExpandAmount => 'Edit amount';
+
+  @override
+  String get transactionFormCollapseAmount => 'Hide keypad';
+
+  @override
+  String get transactionFormKeypadAdd => 'Add';
+
+  @override
+  String get transactionFormKeypadSubtract => 'Subtract';
+
+  @override
+  String get transactionFormKeypadMultiply => 'Multiply';
+
+  @override
+  String get transactionFormKeypadDivide => 'Divide';
+
+  @override
+  String get transactionFormKeypadEquals => 'Calculate result';
+
+  @override
+  String get transactionFormKeypadDecimal => 'Decimal point';
+
+  @override
+  String get transactionFormKeypadBackspace => 'Delete';
 
   @override
   String get transactionSourceManual => 'Manual';
@@ -630,14 +715,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionSourceImported => 'Imported';
 
   @override
-  String get transactionSourceRecurring => 'Recurring';
+  String get transactionSourceScheduled => 'Scheduled';
 
   @override
   String get transactionEditImpactTitle => 'This transaction is linked';
 
   @override
-  String get transactionEditImpactRecurring =>
-      'It affects its linked recurring template.';
+  String get transactionEditImpactScheduled =>
+      'It affects its linked scheduled payment.';
 
   @override
   String get transactionEditImpactGoal =>
@@ -837,7 +922,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreDebts => 'Debts';
 
   @override
-  String get moreRecurring => 'Recurring';
+  String get moreScheduledPayments => 'Scheduled payments';
 
   @override
   String get moreReports => 'Charts and reports';

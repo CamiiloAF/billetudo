@@ -11,10 +11,15 @@ import 'package:billetudo/features/categories/domain/entities/category_node.dart
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_cubit.dart';
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart';
+import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_state.dart';
+import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_state.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/category_picker/category_quick_picker.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/numeric_keypad.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/transaction_amount_fixed_zone.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +34,13 @@ class MockAccountsListCubit extends MockCubit<AccountsListState>
 
 class MockCategoriesListCubit extends MockCubit<CategoriesListState>
     implements CategoriesListCubit {}
+
+class MockCategoryQuickPickerCubit
+    extends MockCubit<CategoryQuickPickerState>
+    implements CategoryQuickPickerCubit {}
+
+class MockTagFilterCubit extends MockCubit<TagFilterState>
+    implements TagFilterCubit {}
 
 final DateTime _instant = DateTime(2026, 7, 15);
 final int _instantMillis = _instant.millisecondsSinceEpoch;
@@ -79,6 +91,8 @@ void main() {
   late MockTransactionFormCubit cubit;
   late MockAccountsListCubit accountsListCubit;
   late MockCategoriesListCubit categoriesListCubit;
+  late MockCategoryQuickPickerCubit categoryQuickPickerCubit;
+  late MockTagFilterCubit tagFilterCubit;
 
   setUpAll(() {
     registerFallbackValue(CategoryKind.expense);
@@ -115,14 +129,56 @@ void main() {
     // `getIt` (they compose another feature's presentation layer, see
     // `transaction_form_page.dart`), so the DI container needs these
     // registered for the sheets to build at all.
+    // The Etiquetas section resolves its own `TagFilterCubit` through `getIt`
+    // to turn the form's selected tag ids into chip names (see
+    // `transaction_tags_field.dart`).
+    // The `CategoryQuickPicker` owns its own `CategoryQuickPickerCubit` through
+    // `getIt` to load the most-used chips and resolve the selection. By default
+    // it is ready with one most-used category ("Comida").
+    categoryQuickPickerCubit = MockCategoryQuickPickerCubit();
+    when(
+      () => categoryQuickPickerCubit.start(
+        kind: any(named: 'kind'),
+        selectedId: any(named: 'selectedId'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => categoryQuickPickerCubit.setKind(
+        any(),
+        selectedId: any(named: 'selectedId'),
+      ),
+    ).thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.syncSelection(any()))
+        .thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.state).thenReturn(
+      const CategoryQuickPickerState(
+        status: CategoryQuickPickerStatus.ready,
+      ),
+    );
+
+    tagFilterCubit = MockTagFilterCubit();
+    when(() => tagFilterCubit.start(any())).thenAnswer((_) async {});
+    when(() => tagFilterCubit.state).thenReturn(TagFilterState());
+
     getIt
       ..registerFactory<AccountsListCubit>(() => accountsListCubit)
-      ..registerFactory<CategoriesListCubit>(() => categoriesListCubit);
+      ..registerFactory<CategoriesListCubit>(() => categoriesListCubit)
+      ..registerFactory<CategoryQuickPickerCubit>(
+        () => categoryQuickPickerCubit,
+      )
+      ..registerFactory<TagFilterCubit>(() => tagFilterCubit);
   });
 
   tearDown(getIt.reset);
 
   Future<void> pumpForm(WidgetTester tester, TransactionFormState state) async {
+    // A phone-sized viewport: the anchored keypad's rows are sized by width, so
+    // the default 800px-wide test window would blow the amount zone up past the
+    // screen. Reset after the test to not leak into others.
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     when(() => cubit.state).thenReturn(state);
     await tester.pumpWidget(
       MaterialApp(
@@ -163,8 +219,9 @@ void main() {
       );
 
       expect(find.text('Efectivo'), findsOneWidget);
-      // El label estático "Cuenta" ya no debe seguir mostrándose en su lugar.
-      expect(find.text('Cuenta'), findsNothing);
+      // El `Form Field` conserva su label "Cuenta" arriba del valor elegido
+      // (patrón de diseño), y muestra el nombre de la cuenta como valor.
+      expect(find.text('Cuenta'), findsOneWidget);
     });
 
     testWidgets(
@@ -175,7 +232,9 @@ void main() {
         TransactionFormState(status: TransactionFormStatus.ready),
       );
 
-      await tester.tap(find.text('Cuenta'));
+      // The label "Cuenta" now sits outside the tappable box (design `wOlOA`);
+      // the placeholder value is what opens the picker sheet.
+      await tester.tap(find.text('Elegir cuenta'));
       await tester.pumpAndSettle();
       expect(find.text('Bancolombia'), findsOneWidget);
 
@@ -185,44 +244,67 @@ void main() {
       verify(() => cubit.accountSelected('acc-2', 'Bancolombia')).called(1);
     });
 
-    testWidgets('categoría sin elegir muestra el placeholder "Sin categoría"',
+    testWidgets(
+        'el quick picker muestra la etiqueta "Categoría" y el chip "Ver más"',
         (tester) async {
       await pumpForm(
         tester,
         TransactionFormState(status: TransactionFormStatus.ready),
       );
 
-      expect(find.text('Sin categoría'), findsOneWidget);
-      expect(find.text('Comida'), findsNothing);
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
+      expect(find.text('Categoría'), findsOneWidget);
+      expect(find.text('Ver más'), findsOneWidget);
     });
 
-    testWidgets(
-        'con categoryId y categoryName en el estado, el botón muestra el '
-        'nombre de la categoría', (tester) async {
-      await pumpForm(
-        tester,
-        TransactionFormState(
-          status: TransactionFormStatus.ready,
-          categoryId: 'cat-1',
-          categoryName: 'Comida',
-          categoryKind: CategoryKind.expense,
+    testWidgets('las categorías más usadas se muestran como chips',
+        (tester) async {
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
         ),
       );
-
-      expect(find.text('Comida'), findsOneWidget);
-      expect(find.text('Sin categoría'), findsNothing);
-    });
-
-    testWidgets(
-        'elegir una categoría en el bottom sheet se lo reporta al cubit con '
-        'su nombre', (tester) async {
       await pumpForm(
         tester,
         TransactionFormState(status: TransactionFormStatus.ready),
       );
 
-      await tester.tap(find.text('Sin categoría'));
+      expect(find.text('Comida'), findsOneWidget);
+    });
+
+    testWidgets('tocar un chip de categoría se lo reporta al cubit',
+        (tester) async {
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+        ),
+      );
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      await tester.tap(find.text('Comida'));
+      await tester.pump();
+
+      verify(
+        () => cubit.categorySelected('cat-1', CategoryKind.expense, 'Comida'),
+      ).called(1);
+    });
+
+    testWidgets(
+        'elegir "Ver más" abre el sheet y elegir una categoría lo reporta al '
+        'cubit con su nombre', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      await tester.tap(find.text('Ver más'));
       await tester.pumpAndSettle();
+      expect(find.text('Elegir categoría'), findsOneWidget);
       expect(find.text('Comida'), findsOneWidget);
 
       await tester.tap(find.text('Comida'));
@@ -243,7 +325,7 @@ void main() {
       );
 
       expect(find.byType(AccountPickerField), findsOneWidget);
-      expect(find.byType(CategoryPickerField), findsOneWidget);
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
       expect(find.text('Nuevo gasto'), findsOneWidget);
     });
 
@@ -258,7 +340,7 @@ void main() {
       );
 
       expect(find.byType(AccountPickerField), findsOneWidget);
-      expect(find.byType(CategoryPickerField), findsOneWidget);
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
       expect(find.text('Nuevo ingreso'), findsOneWidget);
     });
 
@@ -273,7 +355,7 @@ void main() {
       );
 
       expect(find.byType(AccountPickerField), findsNWidgets(2));
-      expect(find.byType(CategoryPickerField), findsNothing);
+      expect(find.byType(CategoryQuickPicker), findsNothing);
       expect(find.text('Cuenta destino'), findsOneWidget);
       expect(find.text('Nueva transferencia'), findsOneWidget);
     });
@@ -323,7 +405,9 @@ void main() {
         TransactionFormState(status: TransactionFormStatus.ready),
       );
 
-      await tester.tap(find.text('0,00'));
+      // Resting state shows the collapsed amount bar; tapping it reopens the
+      // keypad by asking the cubit for amount focus.
+      await tester.tap(find.byType(TransactionAmountCollapsedBar));
       await tester.pump();
 
       verify(() => cubit.amountFocused()).called(1);

@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Aplicar'**
   String get commonApply;
 
+  /// No description provided for @commonDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get commonDone;
+
   /// Mensaje genérico para UnexpectedFailure.
   ///
   /// In es, this message translates to:
@@ -1136,11 +1142,41 @@ abstract class AppLocalizations {
   /// **'Categoría'**
   String get transactionFormCategoryLabel;
 
-  /// No description provided for @transactionFormCategoryNone.
+  /// No description provided for @categorySelectTitle.
   ///
   /// In es, this message translates to:
-  /// **'Sin categoría'**
-  String get transactionFormCategoryNone;
+  /// **'Elegir categoría'**
+  String get categorySelectTitle;
+
+  /// No description provided for @categorySelectSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar categoría'**
+  String get categorySelectSearchHint;
+
+  /// No description provided for @categorySelectMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más'**
+  String get categorySelectMore;
+
+  /// No description provided for @categorySelectEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos categorías con ese nombre'**
+  String get categorySelectEmpty;
+
+  /// No description provided for @categorySelectExpand.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar subcategorías'**
+  String get categorySelectExpand;
+
+  /// No description provided for @categorySelectCollapse.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar subcategorías'**
+  String get categorySelectCollapse;
 
   /// No description provided for @transactionFormDateLabel.
   ///
@@ -1172,11 +1208,137 @@ abstract class AppLocalizations {
   /// **'Agregar etiqueta'**
   String get transactionFormAddTag;
 
+  /// No description provided for @transactionFormTagNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva'**
+  String get transactionFormTagNew;
+
+  /// No description provided for @transactionFormTagsSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get transactionFormTagsSheetTitle;
+
   /// No description provided for @transactionFormSourceLabel.
   ///
   /// In es, this message translates to:
   /// **'Origen'**
   String get transactionFormSourceLabel;
+
+  /// No description provided for @transactionFormTransferAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto a transferir'**
+  String get transactionFormTransferAmountLabel;
+
+  /// No description provided for @transactionFormTransferFromLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta origen'**
+  String get transactionFormTransferFromLabel;
+
+  /// No description provided for @transactionFormTransferInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las transferencias no cuentan como gasto ni ingreso.'**
+  String get transactionFormTransferInfo;
+
+  /// No description provided for @transactionFormSwapAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Intercambiar cuentas'**
+  String get transactionFormSwapAccounts;
+
+  /// No description provided for @transactionFormDateToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get transactionFormDateToday;
+
+  /// No description provided for @transactionFormDateYesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayer'**
+  String get transactionFormDateYesterday;
+
+  /// Valor mostrado en el campo Fecha, ej. 'Hoy, 13 jul'.
+  ///
+  /// In es, this message translates to:
+  /// **'{prefix}, {date}'**
+  String transactionFormDateValue(String prefix, String date);
+
+  /// Título del sheet selector de fecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir fecha'**
+  String get datePickerTitle;
+
+  /// No description provided for @datePickerPreviousMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes anterior'**
+  String get datePickerPreviousMonth;
+
+  /// No description provided for @datePickerNextMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes siguiente'**
+  String get datePickerNextMonth;
+
+  /// No description provided for @transactionFormExpandAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar monto'**
+  String get transactionFormExpandAmount;
+
+  /// No description provided for @transactionFormCollapseAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar teclado'**
+  String get transactionFormCollapseAmount;
+
+  /// No description provided for @transactionFormKeypadAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Sumar'**
+  String get transactionFormKeypadAdd;
+
+  /// No description provided for @transactionFormKeypadSubtract.
+  ///
+  /// In es, this message translates to:
+  /// **'Restar'**
+  String get transactionFormKeypadSubtract;
+
+  /// No description provided for @transactionFormKeypadMultiply.
+  ///
+  /// In es, this message translates to:
+  /// **'Multiplicar'**
+  String get transactionFormKeypadMultiply;
+
+  /// No description provided for @transactionFormKeypadDivide.
+  ///
+  /// In es, this message translates to:
+  /// **'Dividir'**
+  String get transactionFormKeypadDivide;
+
+  /// No description provided for @transactionFormKeypadEquals.
+  ///
+  /// In es, this message translates to:
+  /// **'Calcular resultado'**
+  String get transactionFormKeypadEquals;
+
+  /// No description provided for @transactionFormKeypadDecimal.
+  ///
+  /// In es, this message translates to:
+  /// **'Punto decimal'**
+  String get transactionFormKeypadDecimal;
+
+  /// No description provided for @transactionFormKeypadBackspace.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar'**
+  String get transactionFormKeypadBackspace;
 
   /// No description provided for @transactionSourceManual.
   ///
@@ -1208,11 +1370,11 @@ abstract class AppLocalizations {
   /// **'Importado'**
   String get transactionSourceImported;
 
-  /// No description provided for @transactionSourceRecurring.
+  /// No description provided for @transactionSourceScheduled.
   ///
   /// In es, this message translates to:
-  /// **'Recurrente'**
-  String get transactionSourceRecurring;
+  /// **'Programado'**
+  String get transactionSourceScheduled;
 
   /// No description provided for @transactionEditImpactTitle.
   ///
@@ -1220,11 +1382,11 @@ abstract class AppLocalizations {
   /// **'Este movimiento está vinculado'**
   String get transactionEditImpactTitle;
 
-  /// No description provided for @transactionEditImpactRecurring.
+  /// No description provided for @transactionEditImpactScheduled.
   ///
   /// In es, this message translates to:
-  /// **'Afecta su recurrente asociado.'**
-  String get transactionEditImpactRecurring;
+  /// **'Afecta su pago programado asociado.'**
+  String get transactionEditImpactScheduled;
 
   /// No description provided for @transactionEditImpactGoal.
   ///
@@ -1574,11 +1736,11 @@ abstract class AppLocalizations {
   /// **'Deudas'**
   String get moreDebts;
 
-  /// No description provided for @moreRecurring.
+  /// No description provided for @moreScheduledPayments.
   ///
   /// In es, this message translates to:
-  /// **'Recurrentes'**
-  String get moreRecurring;
+  /// **'Pagos programados'**
+  String get moreScheduledPayments;
 
   /// No description provided for @moreReports.
   ///

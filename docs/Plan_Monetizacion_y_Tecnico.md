@@ -44,7 +44,7 @@ Estas son el corazón de la app y jamás se limitan ni llevan anuncios. Se calcu
 | Metas de ahorro (vinculables a cuentas) | Cálculo local |
 | Deudas y préstamos | Cálculo local |
 | **Set esencial de gráficas e informes** (flujo, balance, estructura de gasto) | Se renderizan en el dispositivo con `fl_chart`. Las visualizaciones *avanzadas más allá de X* van al Cubo B |
-| Transacciones recurrentes / pagos planeados | Lógica local |
+| Pagos programados | Lógica local |
 | **Import/Export CSV** impecable (incluye formato Wallet/Mint) | Feature de *confianza*: "nunca te sentirás atrapado". Gratis a propósito |
 | Multi-moneda (con tasas cacheadas diariamente) | Una llamada de tasas al día para todos, no por usuario |
 | **Lectura de notificaciones bancarias del móvil** (Android) | Se procesa localmente; captura automática sin costo de API ni Plaid |
@@ -204,11 +204,11 @@ Tablas núcleo en Drift/SQLite:
 
 - **accounts** (id, nombre, tipo, moneda, saldo_inicial, archivada)
 - **categories** (id, nombre, icono, color, parent_id → subcategorías, tipo ingreso/gasto)
-- **transactions** (id, account_id, category_id, monto, moneda, fecha, nota, tipo, origen [manual/voz/ocr/notificacion], recurring_id)
+- **transactions** (id, account_id, category_id, monto, moneda, fecha, nota, tipo, origen [manual/voz/ocr/notificacion], scheduled_payment_id)
 - **budgets** (id, category_id, periodo, monto, tipo)
 - **goals** (id, nombre, monto_objetivo, monto_actual, account_id, fecha_meta)
 - **debts** (id, nombre, tipo [debo/me deben], monto, tasa, pagos)
-- **recurring** (id, plantilla de transacción, frecuencia, próxima_fecha)
+- **scheduled_payments** (id, plantilla de transacción, frecuencia, próxima_fecha)
 - **tags** y tabla puente transaction_tags (opcional pero útil)
 
 Diseña `transactions.source` desde el día 1: te permite medir cuánto se usa la captura por IA (para calibrar límites) y separar lo que te cuesta de lo que no.
@@ -219,7 +219,7 @@ Diseña `transactions.source` desde el día 1: te permite medir cuánto se usa l
 
 ## 8. Roadmap sugerido
 
-**Fase 1 — Núcleo para ti + respaldo en nube.** Registro manual, cuentas, **transferencias entre cuentas**, categorías (con **categorías semilla + onboarding**), presupuestos, metas, deudas, set esencial de gráficas e informes, import/export CSV, **búsqueda y filtros**, recurrentes, multi-moneda (con **fuente de tasas FX**). **Cifrado local en reposo** (SQLCipher). **Respaldo/sync en la nube (Supabase + PowerSync) disponible desde el inicio para no perder datos**, pero **local-first**: el usuario puede usar la app sin cuenta y **el login se ofrece después** ("inicia sesión para respaldar y sincronizar"). Al iniciar sesión, se **fusionan sus datos locales** con la cuenta (PowerSync lo soporta). **Login solo social: en Android solo Google; en iOS Google + Sign in with Apple** (Apple exige ofrecer Apple por su guía 4.8 cuando das login de terceros; en Android no aplica). Como hay Auth, incluye el **borrado de cuenta dentro de la app** (obligatorio para Apple y Google; borra los datos en Supabase, no solo cierra sesión). **i18n (es/en) desde ya.** Sin IA ni anuncios todavía. Al terminar tienes una app que te sirve mejor que Wallet, con tus datos a salvo, y validas el modelo de datos.
+**Fase 1 — Núcleo para ti + respaldo en nube.** Registro manual, cuentas, **transferencias entre cuentas**, categorías (con **categorías semilla + onboarding**), presupuestos, metas, deudas, set esencial de gráficas e informes, import/export CSV, **búsqueda y filtros**, pagos programados, multi-moneda (con **fuente de tasas FX**). **Cifrado local en reposo** (SQLCipher). **Respaldo/sync en la nube (Supabase + PowerSync) disponible desde el inicio para no perder datos**, pero **local-first**: el usuario puede usar la app sin cuenta y **el login se ofrece después** ("inicia sesión para respaldar y sincronizar"). Al iniciar sesión, se **fusionan sus datos locales** con la cuenta (PowerSync lo soporta). **Login solo social: en Android solo Google; en iOS Google + Sign in with Apple** (Apple exige ofrecer Apple por su guía 4.8 cuando das login de terceros; en Android no aplica). Como hay Auth, incluye el **borrado de cuenta dentro de la app** (obligatorio para Apple y Google; borra los datos en Supabase, no solo cierra sesión). **i18n (es/en) desde ya.** Sin IA ni anuncios todavía. Al terminar tienes una app que te sirve mejor que Wallet, con tus datos a salvo, y validas el modelo de datos.
 
 **Fase 2 — Captura sin fricción local (gratis).** Voz (`speech_to_text`), OCR de recibos (`mlkit`), lectura de notificaciones bancarias en Android, **widget de captura rápida** y **recordatorios de vencimientos** (notificaciones locales). Aún sin costo para ti: el parse puede empezar con reglas locales antes de meter LLM.
 

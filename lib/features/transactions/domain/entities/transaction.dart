@@ -7,8 +7,8 @@ enum TransactionType { income, expense, transfer }
 /// How a transaction was captured. Mirrors `TxSource`. Used to measure AI
 /// usage and calibrate quotas: `manual` and `imported` cost nothing; the rest
 /// are reserved for later phases (voice/OCR/notification capture,
-/// auto-generated recurring transactions).
-enum TransactionSource { manual, voice, ocr, notification, imported, recurring }
+/// transactions auto-generated from a scheduled payment).
+enum TransactionSource { manual, voice, ocr, notification, imported, scheduled }
 
 /// A single transaction: income, expense or transfer between accounts.
 ///
@@ -29,7 +29,7 @@ class Transaction extends Equatable {
     this.categoryId,
     this.note,
     this.transferAccountId,
-    this.recurringId,
+    this.scheduledPaymentId,
     this.goalId,
     this.debtId,
   });
@@ -61,7 +61,7 @@ class Transaction extends Equatable {
   final String? transferAccountId;
 
   /// Optional links to other features.
-  final String? recurringId;
+  final String? scheduledPaymentId;
   final String? goalId;
   final String? debtId;
 
@@ -84,7 +84,7 @@ class Transaction extends Equatable {
         note,
         source,
         transferAccountId,
-        recurringId,
+        scheduledPaymentId,
         goalId,
         debtId,
         createdAt,

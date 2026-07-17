@@ -18,7 +18,7 @@ class LocalDataWipeDatasource {
         // changes.
         await _db.delete(_db.transactionTags).go();
         await _db.delete(_db.transactions).go();
-        await _db.delete(_db.recurrings).go();
+        await _db.delete(_db.scheduledPayments).go();
         await _db.delete(_db.debts).go();
         await _db.delete(_db.goals).go();
         await _db.delete(_db.budgets).go();

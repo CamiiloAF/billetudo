@@ -252,6 +252,9 @@ void main() {
             id: accountId,
             name: 'Bancolombia',
             institution: 'Bancolombia S.A.',
+            // USD so the cents survive the display/round-trip; COP has no
+            // decimals (see MoneyFormatter.currencyDecimals).
+            currency: 'USD',
             initialBalanceMinor: 450050,
             interestRateBps: 2450,
             last4: '7890',

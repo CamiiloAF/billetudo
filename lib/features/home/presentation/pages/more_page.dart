@@ -60,9 +60,9 @@ class MorePage extends StatelessWidget {
             ),
             MoreRow(
               icon: LucideIcons.refreshCw,
-              label: l10n.moreRecurring,
+              label: l10n.moreScheduledPayments,
               comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreRecurring),
+              onTap: () => onOpenComingSoon(l10n.moreScheduledPayments),
             ),
             MoreRow(
               icon: LucideIcons.chartLine,

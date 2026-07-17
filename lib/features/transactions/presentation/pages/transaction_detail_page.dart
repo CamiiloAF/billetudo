@@ -143,6 +143,6 @@ class TransactionDetailBody extends StatelessWidget {
         TransactionSource.ocr => l10n.transactionSourceOcr,
         TransactionSource.notification => l10n.transactionSourceNotification,
         TransactionSource.imported => l10n.transactionSourceImported,
-        TransactionSource.recurring => l10n.transactionSourceRecurring,
+        TransactionSource.scheduled => l10n.transactionSourceScheduled,
       };
 }

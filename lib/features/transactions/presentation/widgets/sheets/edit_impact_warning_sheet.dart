@@ -6,7 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../domain/entities/transaction_edit_impact.dart';
 
 /// HU-04's edit-impact warning: shown when a pending edit would desync the
-/// transaction from a linked recurring/goal/debt. Never blocks the save —
+/// transaction from a linked scheduled-payment/goal/debt. Never blocks the save —
 /// only [onConfirm] does it, informed.
 class EditImpactWarningSheet extends StatelessWidget {
   const EditImpactWarningSheet({
@@ -49,9 +49,9 @@ class EditImpactWarningSheet extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            if (impact.affectsRecurring)
+            if (impact.affectsScheduledPayment)
               Text(
-                l10n.transactionEditImpactRecurring,
+                l10n.transactionEditImpactScheduled,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: colors.textSecondary),

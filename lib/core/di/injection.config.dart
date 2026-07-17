@@ -105,6 +105,8 @@ import 'package:billetudo/features/categories/domain/usecases/get_category.dart'
     as _i382;
 import 'package:billetudo/features/categories/domain/usecases/get_category_deletion_impact.dart'
     as _i87;
+import 'package:billetudo/features/categories/domain/usecases/get_most_used_categories.dart'
+    as _i415;
 import 'package:billetudo/features/categories/domain/usecases/reorder_categories.dart'
     as _i562;
 import 'package:billetudo/features/categories/domain/usecases/restore_category.dart'
@@ -163,6 +165,8 @@ import 'package:billetudo/features/transactions/presentation/cubit/account_filte
     as _i722;
 import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart'
     as _i315;
+import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart'
+    as _i304;
 import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart'
     as _i499;
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart'
@@ -260,6 +264,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i382.GetCategory(gh<_i802.CategoryRepository>()));
     gh.factory<_i87.GetCategoryDeletionImpact>(
         () => _i87.GetCategoryDeletionImpact(gh<_i802.CategoryRepository>()));
+    gh.factory<_i415.GetMostUsedCategories>(
+        () => _i415.GetMostUsedCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i562.ReorderCategories>(
         () => _i562.ReorderCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i119.RestoreCategory>(
@@ -280,6 +286,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
     gh.lazySingleton<_i716.TagRepository>(
         () => _i672.TagRepositoryImpl(gh<_i1008.TagsLocalDatasource>()));
+    gh.factory<_i304.CategoryQuickPickerCubit>(
+        () => _i304.CategoryQuickPickerCubit(
+              gh<_i415.GetMostUsedCategories>(),
+              gh<_i382.GetCategory>(),
+            ));
     gh.factory<_i281.CreateTag>(
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(

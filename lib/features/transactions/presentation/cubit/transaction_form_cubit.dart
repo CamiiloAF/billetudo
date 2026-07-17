@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
@@ -54,6 +55,9 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
           status: TransactionFormStatus.ready,
           type: type,
           accountId: accountId,
+          // Open with the amount focused so the Zona Fija starts expanded with
+          // the keypad visible — the design's default "Monto activo" state.
+          focusedField: TransactionFormFocusedField.amount,
         ),
       );
       return;
@@ -96,6 +100,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       note: transaction.note ?? '',
       tagIds: {for (final tag in entry.tags) tag.id},
       source: transaction.source,
+      // Same as creation: the edit form opens with the keypad expanded.
+      focusedField: TransactionFormFocusedField.amount,
     );
   }
 
@@ -134,26 +140,216 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   void tagsChanged(Set<String> tagIds) => emit(state.copyWith(tagIds: tagIds));
 
+  /// Caps entry/results at a sane ceiling instead of overflowing silently.
+  static const int _maxAmountMinor = 999999999999;
+
   /// HU-01/02/03 criterion 11: digit-by-digit money entry from the anchored
-  /// keypad, e.g. typing `1`,`2`,`3`,`4` builds `$12,34` — never through a
-  /// parsed/edited text field.
+  /// calculator keypad. Whole-number digits build the integer part; a decimal
+  /// point (see [amountDecimalPressed]) switches to the fraction. Money never
+  /// becomes a `double`: `amountMinor` stays an integer of minor units, always
+  /// scaled by 100 to match storage.
   void amountDigitPressed(int digit) {
     if (digit < 0 || digit > 9) {
       return;
     }
-    // Caps at a sane ceiling instead of overflowing silently.
-    const maxAmountMinor = 999999999999;
-    final next = state.amountMinor * 10 + digit;
-    if (next > maxAmountMinor) {
+    final base = _startFreshOperandIfNeeded(state);
+    final decimals = MoneyFormatter.currencyDecimals(base.currency);
+
+    final int next;
+    final int nextFraction;
+    if (base.entryFractionDigits < 0) {
+      // Whole-number mode: each digit shifts the integer part by one place.
+      final whole = base.amountMinor ~/ 100;
+      next = (whole * 10 + digit) * 100;
+      nextFraction = -1;
+    } else if (base.entryFractionDigits < decimals) {
+      // Fraction mode: place value shrinks from tenths (10) to cents (1).
+      final place = _pow10(1 - base.entryFractionDigits);
+      next = base.amountMinor + digit * place;
+      nextFraction = base.entryFractionDigits + 1;
+    } else {
+      return; // Fraction already full for this currency; ignore.
+    }
+    if (next > _maxAmountMinor) {
       return;
     }
-    emit(state.copyWith(amountMinor: next));
+    emit(base.copyWith(amountMinor: next, entryFractionDigits: nextFraction));
   }
 
-  void amountBackspace() =>
-      emit(state.copyWith(amountMinor: state.amountMinor ~/ 10));
+  /// The decimal-point key. Only meaningful for currencies with minor units
+  /// (USD); for COP it is a no-op since amounts are whole pesos.
+  void amountDecimalPressed() {
+    if (MoneyFormatter.currencyDecimals(state.currency) == 0) {
+      return;
+    }
+    final base = _startFreshOperandIfNeeded(state);
+    if (base.entryFractionDigits >= 0) {
+      // A second '.' does nothing, but a pending fresh-operand reset still
+      // needs to land.
+      if (!identical(base, state)) {
+        emit(base);
+      }
+      return;
+    }
+    emit(base.copyWith(entryFractionDigits: 0));
+  }
 
-  void amountCleared() => emit(state.copyWith(amountMinor: 0));
+  /// An operator key (÷ × − +). Evaluates any pending operation first so that
+  /// chaining (`2 + 3 ×`) folds the running result, then arms the new operator.
+  void amountOperatorPressed(CalcOperator operator) {
+    final s = state;
+    // Operator right after another operator (no new operand typed) just swaps
+    // the pending operator; nothing to evaluate yet.
+    if (s.startNewOperand && s.calcOperator != null) {
+      emit(s.copyWith(calcOperator: operator));
+      return;
+    }
+    final left = s.calcOperator != null && s.calcOperand != null
+        ? _evaluate(s.calcOperand!, s.calcOperator!, s.amountMinor)
+        : s.amountMinor;
+    emit(
+      s.copyWith(
+        amountMinor: left,
+        calcOperand: left,
+        calcOperator: operator,
+        startNewOperand: true,
+        justEvaluated: false,
+        entryFractionDigits: -1,
+      ),
+    );
+  }
+
+  /// The `=` key: evaluates the pending operation and leaves the result as the
+  /// amount. With nothing pending it is a no-op. Typing a digit afterwards
+  /// starts a brand-new calculation (see [_startFreshOperandIfNeeded]).
+  void amountEqualsPressed() {
+    final s = state;
+    final operator = s.calcOperator;
+    final operand = s.calcOperand;
+    if (operator == null || operand == null) {
+      return;
+    }
+    final result = _evaluate(operand, operator, s.amountMinor);
+    emit(
+      s.copyWith(
+        amountMinor: result,
+        justEvaluated: true,
+        startNewOperand: false,
+        entryFractionDigits: -1,
+        clearCalc: true,
+      ),
+    );
+  }
+
+  void amountBackspace() {
+    var s = state;
+    if (s.justEvaluated) {
+      // Editing a result turns it back into a plain operand.
+      s = s.copyWith(justEvaluated: false, clearCalc: true);
+    }
+    if (s.startNewOperand) {
+      // No digit typed for this operand yet: drop back to a fresh 0.
+      emit(
+        s.copyWith(
+          amountMinor: 0,
+          startNewOperand: false,
+          entryFractionDigits: -1,
+        ),
+      );
+      return;
+    }
+    if (s.entryFractionDigits > 0) {
+      final place = _pow10(2 - s.entryFractionDigits);
+      final digit = (s.amountMinor ~/ place) % 10;
+      emit(
+        s.copyWith(
+          amountMinor: s.amountMinor - digit * place,
+          entryFractionDigits: s.entryFractionDigits - 1,
+        ),
+      );
+      return;
+    }
+    if (s.entryFractionDigits == 0) {
+      // Only the decimal point was there: remove it.
+      emit(s.copyWith(entryFractionDigits: -1));
+      return;
+    }
+    // Whole-number mode: drop the last integer digit.
+    final whole = s.amountMinor ~/ 100;
+    emit(s.copyWith(amountMinor: (whole ~/ 10) * 100));
+  }
+
+  void amountCleared() => emit(
+        state.copyWith(
+          amountMinor: 0,
+          entryFractionDigits: -1,
+          startNewOperand: false,
+          justEvaluated: false,
+          clearCalc: true,
+        ),
+      );
+
+  /// Resets the current operand to a fresh `0` when the previous keystroke was
+  /// `=` (start a new calculation) or an operator (start the right operand).
+  /// Returns [s] untouched otherwise.
+  TransactionFormState _startFreshOperandIfNeeded(TransactionFormState s) {
+    if (s.justEvaluated) {
+      return s.copyWith(
+        amountMinor: 0,
+        entryFractionDigits: -1,
+        justEvaluated: false,
+        clearCalc: true,
+      );
+    }
+    if (s.startNewOperand) {
+      return s.copyWith(
+        amountMinor: 0,
+        entryFractionDigits: -1,
+        startNewOperand: false,
+      );
+    }
+    return s;
+  }
+
+  /// Evaluates `left <op> right` on minor-unit integers, keeping the money path
+  /// free of `double`. `+`/`−` are exact. `×`/`÷` use `BigInt` so the product
+  /// cannot overflow and the single rounding to cents is explicit round-half-up.
+  int _evaluate(int left, CalcOperator operator, int right) {
+    final int raw;
+    switch (operator) {
+      case CalcOperator.add:
+        raw = left + right;
+      case CalcOperator.subtract:
+        raw = left - right;
+      case CalcOperator.multiply:
+        // Both operands are scaled by 100, so their product is scaled by
+        // 10000; divide by 100 once to return to minor units, rounding half-up.
+        raw = ((BigInt.from(left) * BigInt.from(right) + BigInt.from(50)) ~/
+                BigInt.from(100))
+            .toInt();
+      case CalcOperator.divide:
+        if (right == 0) {
+          return left; // Guard: '÷ 0' is a no-op, never a crash.
+        }
+        // (left/100) / (right/100) = left*100 / right, rounded half-up.
+        raw = ((BigInt.from(left) * BigInt.from(100) +
+                    BigInt.from(right) ~/ BigInt.two) ~/
+                BigInt.from(right))
+            .toInt();
+    }
+    if (raw < 0) {
+      return 0; // Amounts stay non-negative.
+    }
+    return raw > _maxAmountMinor ? _maxAmountMinor : raw;
+  }
+
+  static int _pow10(int exponent) {
+    var result = 1;
+    for (var i = 0; i < exponent; i++) {
+      result *= 10;
+    }
+    return result;
+  }
 
   /// Focus rule of criterion 11: Monto and Nota never hold focus at once.
   void amountFocused() => emit(
@@ -171,7 +367,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   /// Validates through the use case and persists. [confirmed] answers HU-04's
   /// edit-impact warning: when the pending edit affects a linked
-  /// recurring/goal/debt and this is `false`, the write is held and
+  /// scheduled-payment/goal/debt and this is `false`, the write is held and
   /// `state.editImpact` is populated instead, so the caller can show the
   /// warning sheet and call `submit(confirmed: true)` to proceed.
   Future<void> submit({bool confirmed = false}) async {
@@ -247,7 +443,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       note: state.note,
       source: state.source,
       transferAccountId: state.transferAccountId,
-      recurringId: _original?.recurringId,
+      scheduledPaymentId: _original?.scheduledPaymentId,
       goalId: _original?.goalId,
       debtId: _original?.debtId,
     ).validated();

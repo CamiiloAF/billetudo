@@ -324,7 +324,7 @@ void main() {
       await $.tester.tap(find.byTooltip('Guardar'));
       await $.tester.pumpAndSettle();
 
-      // No linked recurring/goal/debt on this transaction: straight back to
+      // No linked scheduled-payment/goal/debt on this transaction: straight back to
       // the detail (`TransactionFormPage`'s single `Navigator.pop` on save
       // returns to whatever pushed it — the detail page here, since the edit
       // flow is List -> tap row -> Detail -> tap Editar -> Form, not List ->
@@ -339,17 +339,17 @@ void main() {
   );
 
   patrolTest(
-    'HU-04 caso 2: editar el monto de un movimiento ligado a un recurrente '
+    'HU-04 caso 2: editar el monto de un movimiento ligado a un pago programado '
     'advierte el impacto antes de guardar',
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
 
-      // There is no Recurrentes UI yet to create the link from (that feature
+      // There is no Pagos programados UI yet to create the link from (that feature
       // is still a blank canvas per CLAUDE.md), so the linked transaction is
       // seeded directly against the same real on-device Drift database the
       // app itself reads from — same pattern as
-      // `categories_patrol_test.dart`'s "HU-04 caso 2". `recurringId` only
+      // `categories_patrol_test.dart`'s "HU-04 caso 2". `scheduledPaymentId` only
       // needs to be non-null for `GetTransactionEditImpact` to flag the
       // impact; the row it points to does not need to exist (this schema
       // does not enforce the FK at the SQLite level).
@@ -365,7 +365,7 @@ void main() {
               type: EntryType.expense,
               date: DateTime.now(),
               note: const Value('Suscripción test'),
-              recurringId: const Value('recurring-seed-1'),
+              scheduledPaymentId: const Value('scheduled-seed-1'),
             ),
           );
 
@@ -387,10 +387,10 @@ void main() {
       await $.tester.tap(find.byTooltip('Guardar'));
       await $.tester.pumpAndSettle();
 
-      // HU-04 criterion 3: changing the amount of a recurring-linked
+      // HU-04 criterion 3: changing the amount of a scheduled-payment-linked
       // transaction must warn before it saves.
       expect(find.text('Este movimiento está vinculado'), findsOneWidget);
-      expect(find.text('Afecta su recurrente asociado.'), findsOneWidget);
+      expect(find.text('Afecta su pago programado asociado.'), findsOneWidget);
 
       await $.tester.tap(find.text('Guardar de todas formas'));
       await $.tester.pumpAndSettle();
