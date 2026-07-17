@@ -64,6 +64,10 @@ Decisiones (2026-07-16):
 4. **`updatedAt` pasa a epoch millis (`IntColumn`).** Reemplaza el `DateTimeColumn` de segundos en `_SyncColumns` para que el desempate de conflictos de PowerSync sea preciso incluso con dos escrituras en el mismo segundo. Ver migración de esquema (schemaVersion 5). `createdAt` se mantiene igual (no participa en resolución de conflictos).
 5. **HU-07 (borrado de cuenta) ignora el job de limpieza.** El borrado de cuenta llama al Edge Function que borra *todas* las filas del usuario en Supabase, lápidas incluidas, de forma síncrona e inmediata — no espera al cron del punto 2.
 
+Pendiente al cablear (no decidido aún):
+
+- **`AppSettings.categories_seeded` necesita paridad en Postgres** (columna añadida en schemaVersion 9; ver `02-categorias.md` HU-06). Falta decidir si el latch **sincroniza** o es estrictamente local por instalación: si sincroniza, un dispositivo nuevo que inicia sesión hereda `true` y no re-siembra — correcto, porque ya recibirá las categorías del usuario por sync; si es local, ese dispositivo sembraría el set semilla y luego lo vería duplicado contra lo que baja de la nube. La inclinación es **sincronizar**, pero confirmarlo contra el orden real de arranque (¿corre el seed antes o después de la primera hidratación de PowerSync?) antes de fijarlo.
+
 ### HU-06 — Cerrar sesión
 Como usuario quiero poder cerrar sesión sin perder mis datos localmente, para dejar de sincronizar en este dispositivo si lo comparto con alguien más.
 

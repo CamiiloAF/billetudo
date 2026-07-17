@@ -53,6 +53,8 @@ Como usuario nuevo quiero empezar con un set de categorías comunes en español 
 **Criterios de aceptación:**
 - Ver `13-onboarding.md` para el detalle completo del flujo.
 - Las categorías semilla son datos normales (mismas tablas, mismos IDs UUID) — el usuario puede editarlas o eliminarlas como cualquier categoría propia, sin restricción especial de "categoría del sistema".
+- El set se siembra **una sola vez por instalación**. La idempotencia la garantiza el latch persistente `categoriesSeeded` en el singleton `AppSettings`, no un conteo de filas: un usuario que borra todas sus categorías no debe verlas reaparecer al siguiente arranque. Una vez encendido, el latch no se apaga nunca.
+- Si en el primer arranque con latch ya existen categorías (instalación previa a la bandera), **no** se siembra — para no duplicar lo que el usuario armó — pero el latch igual se enciende y el chequeo queda saldado para siempre.
 
 ## Reglas de negocio y edge cases
 
