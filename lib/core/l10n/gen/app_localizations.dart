@@ -2047,6 +2047,492 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Eliminar cuenta'**
   String get settingsDeleteAccount;
+
+  /// No description provided for @budgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get budgetsTitle;
+
+  /// No description provided for @budgetsAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo presupuesto'**
+  String get budgetsAdd;
+
+  /// No description provided for @budgetsNewCta.
+  ///
+  /// In es, this message translates to:
+  /// **'+ Nuevo presupuesto'**
+  String get budgetsNewCta;
+
+  /// No description provided for @budgetsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes presupuestos'**
+  String get budgetsEmptyMessage;
+
+  /// No description provided for @budgetsEmptyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear presupuesto'**
+  String get budgetsEmptyCta;
+
+  /// No description provided for @budgetsLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando tus presupuestos'**
+  String get budgetsLoading;
+
+  /// No description provided for @budgetsErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus presupuestos'**
+  String get budgetsErrorTitle;
+
+  /// No description provided for @budgetsMenuHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver histórico'**
+  String get budgetsMenuHistory;
+
+  /// No description provided for @budgetRemainingLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Te quedan'**
+  String get budgetRemainingLabel;
+
+  /// No description provided for @budgetOverspentLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Excedido por'**
+  String get budgetOverspentLabel;
+
+  /// No description provided for @budgetResetsOn.
+  ///
+  /// In es, this message translates to:
+  /// **'se reinicia el {date}'**
+  String budgetResetsOn(String date);
+
+  /// No description provided for @budgetEndsOn.
+  ///
+  /// In es, this message translates to:
+  /// **'termina el {date}'**
+  String budgetEndsOn(String date);
+
+  /// No description provided for @budgetScopeGlobal.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el gasto'**
+  String get budgetScopeGlobal;
+
+  /// No description provided for @budgetScopeStranded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin alcance válido'**
+  String get budgetScopeStranded;
+
+  /// No description provided for @budgetScopeAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} cuenta} other{{count} cuentas}}'**
+  String budgetScopeAccounts(int count);
+
+  /// No description provided for @budgetScopeCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} categoría} other{{count} categorías}}'**
+  String budgetScopeCategories(int count);
+
+  /// No description provided for @budgetPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}%'**
+  String budgetPercent(int pct);
+
+  /// No description provided for @budgetDaysLeft.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Último día} one{Resta {count} día} other{Restan {count} días}}'**
+  String budgetDaysLeft(int count);
+
+  /// No description provided for @budgetProgressBreakdown.
+  ///
+  /// In es, this message translates to:
+  /// **'{spent} de {amount}'**
+  String budgetProgressBreakdown(String spent, String amount);
+
+  /// No description provided for @budgetActivityTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Actividad del periodo'**
+  String get budgetActivityTitle;
+
+  /// No description provided for @budgetActivityEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin movimientos en este periodo'**
+  String get budgetActivityEmpty;
+
+  /// No description provided for @budgetLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get budgetLoadMore;
+
+  /// No description provided for @budgetOpenInTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir en Movimientos'**
+  String get budgetOpenInTransactions;
+
+  /// No description provided for @budgetPeriodStatusCurrent.
+  ///
+  /// In es, this message translates to:
+  /// **'vigente'**
+  String get budgetPeriodStatusCurrent;
+
+  /// No description provided for @budgetPeriodStatusPast.
+  ///
+  /// In es, this message translates to:
+  /// **'pasado'**
+  String get budgetPeriodStatusPast;
+
+  /// No description provided for @budgetPeriodStatusFuture.
+  ///
+  /// In es, this message translates to:
+  /// **'futuro'**
+  String get budgetPeriodStatusFuture;
+
+  /// No description provided for @budgetActionClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar (guardar en histórico)'**
+  String get budgetActionClose;
+
+  /// No description provided for @budgetActionDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get budgetActionDelete;
+
+  /// No description provided for @budgetDeleteConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar presupuesto?'**
+  String get budgetDeleteConfirmTitle;
+
+  /// No description provided for @budgetDeleteConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrás recuperarlo desde la papelera.'**
+  String get budgetDeleteConfirmMessage;
+
+  /// No description provided for @budgetFormNewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo presupuesto'**
+  String get budgetFormNewTitle;
+
+  /// No description provided for @budgetFormEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar presupuesto'**
+  String get budgetFormEditTitle;
+
+  /// No description provided for @budgetFormNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get budgetFormNameLabel;
+
+  /// No description provided for @budgetFormNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. Mercado del mes'**
+  String get budgetFormNameHint;
+
+  /// No description provided for @budgetFormIconLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono'**
+  String get budgetFormIconLabel;
+
+  /// No description provided for @budgetFormAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get budgetFormAmountLabel;
+
+  /// No description provided for @budgetFormRepeatLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetir'**
+  String get budgetFormRepeatLabel;
+
+  /// No description provided for @budgetFormRepeatPeriodic.
+  ///
+  /// In es, this message translates to:
+  /// **'Periódico'**
+  String get budgetFormRepeatPeriodic;
+
+  /// No description provided for @budgetFormRepeatOneOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Una única vez'**
+  String get budgetFormRepeatOneOff;
+
+  /// No description provided for @budgetFormPeriodLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodicidad'**
+  String get budgetFormPeriodLabel;
+
+  /// No description provided for @budgetPeriodWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Semanal'**
+  String get budgetPeriodWeekly;
+
+  /// No description provided for @budgetPeriodBiweekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Quincenal'**
+  String get budgetPeriodBiweekly;
+
+  /// No description provided for @budgetPeriodMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensual'**
+  String get budgetPeriodMonthly;
+
+  /// No description provided for @budgetPeriodYearly.
+  ///
+  /// In es, this message translates to:
+  /// **'Anual'**
+  String get budgetPeriodYearly;
+
+  /// No description provided for @budgetFormStartLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio'**
+  String get budgetFormStartLabel;
+
+  /// No description provided for @budgetFormEndLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fin'**
+  String get budgetFormEndLabel;
+
+  /// No description provided for @budgetFormRepeatUntilLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetir hasta'**
+  String get budgetFormRepeatUntilLabel;
+
+  /// No description provided for @budgetFormForever.
+  ///
+  /// In es, this message translates to:
+  /// **'Para siempre'**
+  String get budgetFormForever;
+
+  /// No description provided for @budgetFormUntilDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta una fecha'**
+  String get budgetFormUntilDate;
+
+  /// No description provided for @budgetFormScopeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Alcance'**
+  String get budgetFormScopeLabel;
+
+  /// No description provided for @budgetFormScopeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo'**
+  String get budgetFormScopeAll;
+
+  /// No description provided for @budgetFormScopeCustom.
+  ///
+  /// In es, this message translates to:
+  /// **'Personalizado'**
+  String get budgetFormScopeCustom;
+
+  /// No description provided for @budgetFormAccountsRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get budgetFormAccountsRow;
+
+  /// No description provided for @budgetFormCategoriesRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get budgetFormCategoriesRow;
+
+  /// No description provided for @budgetScopeAllAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las cuentas'**
+  String get budgetScopeAllAccounts;
+
+  /// No description provided for @budgetScopeAllCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las categorías'**
+  String get budgetScopeAllCategories;
+
+  /// No description provided for @budgetFormThresholdRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisarme al {pct}% del presupuesto'**
+  String budgetFormThresholdRow(int pct);
+
+  /// No description provided for @budgetFormThresholdOff.
+  ///
+  /// In es, this message translates to:
+  /// **'No avisarme'**
+  String get budgetFormThresholdOff;
+
+  /// No description provided for @budgetFormCreateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear presupuesto'**
+  String get budgetFormCreateCta;
+
+  /// No description provided for @budgetFormSaveCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get budgetFormSaveCta;
+
+  /// No description provided for @budgetThresholdTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Umbral de alerta'**
+  String get budgetThresholdTitle;
+
+  /// No description provided for @budgetThresholdCustom.
+  ///
+  /// In es, this message translates to:
+  /// **'Personalizado'**
+  String get budgetThresholdCustom;
+
+  /// No description provided for @budgetIconSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir ícono'**
+  String get budgetIconSheetTitle;
+
+  /// No description provided for @budgetsHistoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Histórico'**
+  String get budgetsHistoryTitle;
+
+  /// No description provided for @budgetsHistoryEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No has cerrado ningún presupuesto'**
+  String get budgetsHistoryEmpty;
+
+  /// No description provided for @budgetsHistoryLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando tu histórico'**
+  String get budgetsHistoryLoading;
+
+  /// No description provided for @budgetReactivate.
+  ///
+  /// In es, this message translates to:
+  /// **'Reactivar'**
+  String get budgetReactivate;
+
+  /// No description provided for @budgetResultWithin.
+  ///
+  /// In es, this message translates to:
+  /// **'Dentro del presupuesto'**
+  String get budgetResultWithin;
+
+  /// No description provided for @budgetResultOverspent.
+  ///
+  /// In es, this message translates to:
+  /// **'Excedido por {amount}'**
+  String budgetResultOverspent(String amount);
+
+  /// Aviso neutral: cuántos presupuestos usan la cuenta/categoría que se va a eliminar. No se elimina el presupuesto en cascada.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Se usa en 1 presupuesto.} other{Se usa en {count} presupuestos.}}'**
+  String deleteImpactBudgets(int count);
+
+  /// No description provided for @settingsEnvelopeMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo sobres'**
+  String get settingsEnvelopeMode;
+
+  /// No description provided for @settingsEnvelopeModeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reparte tu ingreso del mes entre tus presupuestos'**
+  String get settingsEnvelopeModeSubtitle;
+
+  /// No description provided for @settingsEnvelopeWhatIs.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué es?'**
+  String get settingsEnvelopeWhatIs;
+
+  /// No description provided for @envelopeInfoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué es el modo sobres?'**
+  String get envelopeInfoTitle;
+
+  /// No description provided for @envelopeInfoBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.'**
+  String get envelopeInfoBody;
+
+  /// No description provided for @envelopeInfoGotIt.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get envelopeInfoGotIt;
+
+  /// No description provided for @budgetsMenuDisableEnvelope.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar modo sobres'**
+  String get budgetsMenuDisableEnvelope;
+
+  /// No description provided for @budgetsEnvelopeUnassignedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin asignar'**
+  String get budgetsEnvelopeUnassignedLabel;
+
+  /// No description provided for @budgetsEnvelopeOverLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignado de más'**
+  String get budgetsEnvelopeOverLabel;
+
+  /// No description provided for @budgetsEnvelopeAllAssigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada peso tiene un trabajo'**
+  String get budgetsEnvelopeAllAssigned;
+
+  /// No description provided for @budgetsEnvelopeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'{income} de ingreso · {assigned} asignado'**
+  String budgetsEnvelopeCaption(String income, String assigned);
 }
 
 class _AppLocalizationsDelegate

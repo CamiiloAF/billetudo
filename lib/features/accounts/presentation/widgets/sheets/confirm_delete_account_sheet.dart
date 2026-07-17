@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/budget_usage_notice.dart';
 import '../../../../../core/widgets/sheet_buttons_row.dart';
 import '../../../domain/entities/account_deletion_impact.dart';
 
@@ -32,6 +33,10 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
+    final message = impact.transactionCount > 0
+        ? l10n.accountDeleteSheetImpact(impact.transactionCount)
+        : l10n.accountDeleteSheetMessage;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -40,10 +45,9 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
           iconColor: colors.expense,
           iconBackground: colors.expenseSoft,
           title: l10n.accountDeleteSheetTitle,
-          message: impact.transactionCount > 0
-              ? l10n.accountDeleteSheetImpact(impact.transactionCount)
-              : l10n.accountDeleteSheetMessage,
+          message: message,
         ),
+        BudgetUsageNotice(count: impact.budgetCount),
         const SizedBox(height: 24),
         SheetButtonsRow(
           left: OutlinedButton(

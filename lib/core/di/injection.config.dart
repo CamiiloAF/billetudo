@@ -91,6 +91,46 @@ import 'package:billetudo/features/auth/presentation/cubit/login_cubit.dart'
     as _i271;
 import 'package:billetudo/features/auth/presentation/cubit/merge_cubit.dart'
     as _i489;
+import 'package:billetudo/features/budgets/data/datasources/budgets_local_datasource.dart'
+    as _i99;
+import 'package:billetudo/features/budgets/data/repositories/budget_repository_impl.dart'
+    as _i308;
+import 'package:billetudo/features/budgets/domain/repositories/budget_repository.dart'
+    as _i1023;
+import 'package:billetudo/features/budgets/domain/services/budget_progress_calculator.dart'
+    as _i685;
+import 'package:billetudo/features/budgets/domain/services/zero_based_summary_calculator.dart'
+    as _i529;
+import 'package:billetudo/features/budgets/domain/usecases/close_budget.dart'
+    as _i1008;
+import 'package:billetudo/features/budgets/domain/usecases/create_budget.dart'
+    as _i526;
+import 'package:billetudo/features/budgets/domain/usecases/delete_budget.dart'
+    as _i210;
+import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart'
+    as _i674;
+import 'package:billetudo/features/budgets/domain/usecases/get_archived_budgets.dart'
+    as _i829;
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart'
+    as _i871;
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart'
+    as _i559;
+import 'package:billetudo/features/budgets/domain/usecases/get_zero_based_summary.dart'
+    as _i458;
+import 'package:billetudo/features/budgets/domain/usecases/reactivate_budget.dart'
+    as _i405;
+import 'package:billetudo/features/budgets/domain/usecases/update_budget.dart'
+    as _i857;
+import 'package:billetudo/features/budgets/presentation/cubit/archived_budgets_cubit.dart'
+    as _i635;
+import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_cubit.dart'
+    as _i827;
+import 'package:billetudo/features/budgets/presentation/cubit/budget_form_cubit.dart'
+    as _i759;
+import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit.dart'
+    as _i244;
+import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
+    as _i843;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/repositories/category_repository_impl.dart'
@@ -129,6 +169,18 @@ import 'package:billetudo/features/home/domain/usecases/watch_month_transactions
     as _i426;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
     as _i199;
+import 'package:billetudo/features/settings/data/datasources/app_settings_local_datasource.dart'
+    as _i95;
+import 'package:billetudo/features/settings/data/repositories/app_settings_repository_impl.dart'
+    as _i733;
+import 'package:billetudo/features/settings/domain/repositories/app_settings_repository.dart'
+    as _i487;
+import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
+    as _i182;
+import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart'
+    as _i636;
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart'
+    as _i270;
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart'
     as _i1008;
 import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart'
@@ -206,6 +258,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i22.AppleAuthDatasource());
     gh.lazySingleton<_i235.GoogleAuthDatasource>(
         () => _i235.GoogleAuthDatasource());
+    gh.lazySingleton<_i685.BudgetProgressCalculator>(
+        () => const _i685.BudgetProgressCalculator());
+    gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
+        () => const _i529.ZeroBasedSummaryCalculator());
+    gh.factory<_i559.GetBudgetProgress>(
+        () => _i559.GetBudgetProgress(gh<_i685.BudgetProgressCalculator>()));
     gh.lazySingleton<_i1034.SecureStorageService>(
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
@@ -214,8 +272,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i835.LocalDataSummaryDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i173.LocalDataWipeDatasource>(
         () => _i173.LocalDataWipeDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i99.BudgetsLocalDatasource>(
+        () => _i99.BudgetsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i95.AppSettingsLocalDatasource>(
+        () => _i95.AppSettingsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i1008.TagsLocalDatasource>(
         () => _i1008.TagsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i556.TransactionsLocalDatasource>(
@@ -225,6 +287,29 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i556.TransactionsLocalDatasource>(),
               gh<_i1008.TagsLocalDatasource>(),
             ));
+    gh.lazySingleton<_i1023.BudgetRepository>(() => _i308.BudgetRepositoryImpl(
+          gh<_i99.BudgetsLocalDatasource>(),
+          gh<_i685.BudgetProgressCalculator>(),
+          gh<_i529.ZeroBasedSummaryCalculator>(),
+        ));
+    gh.factory<_i1008.CloseBudget>(
+        () => _i1008.CloseBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i526.CreateBudget>(
+        () => _i526.CreateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i210.DeleteBudget>(
+        () => _i210.DeleteBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i674.GetActiveBudgets>(
+        () => _i674.GetActiveBudgets(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i829.GetArchivedBudgets>(
+        () => _i829.GetArchivedBudgets(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i871.GetBudgetById>(
+        () => _i871.GetBudgetById(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i458.GetZeroBasedSummary>(
+        () => _i458.GetZeroBasedSummary(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i405.ReactivateBudget>(
+        () => _i405.ReactivateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i857.UpdateBudget>(
+        () => _i857.UpdateBudget(gh<_i1023.BudgetRepository>()));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
     gh.lazySingleton<_i1067.AccountRepository>(
@@ -254,6 +339,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i276.WatchTransactionDetail(gh<_i654.TransactionRepository>()));
     gh.factory<_i832.WatchTransactions>(
         () => _i832.WatchTransactions(gh<_i654.TransactionRepository>()));
+    gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
+          gh<_i526.CreateBudget>(),
+          gh<_i857.UpdateBudget>(),
+          gh<_i871.GetBudgetById>(),
+        ));
     gh.lazySingleton<_i802.CategoryRepository>(() =>
         _i983.CategoryRepositoryImpl(gh<_i151.CategoriesLocalDatasource>()));
     gh.factory<_i885.CreateCategory>(
@@ -299,6 +389,22 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
         ));
+    gh.lazySingleton<_i487.AppSettingsRepository>(() =>
+        _i733.AppSettingsRepositoryImpl(gh<_i95.AppSettingsLocalDatasource>()));
+    gh.factory<_i635.ArchivedBudgetsCubit>(() => _i635.ArchivedBudgetsCubit(
+          gh<_i829.GetArchivedBudgets>(),
+          gh<_i405.ReactivateBudget>(),
+        ));
+    gh.factory<_i182.GetAppSettings>(
+        () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i636.SetZeroBasedEnabled>(
+        () => _i636.SetZeroBasedEnabled(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
+          gh<_i182.GetAppSettings>(),
+          gh<_i636.SetZeroBasedEnabled>(),
+        ));
+    gh.factory<_i843.ZeroBasedSummaryCubit>(
+        () => _i843.ZeroBasedSummaryCubit(gh<_i458.GetZeroBasedSummary>()));
     gh.factory<_i79.ArchiveAccount>(
         () => _i79.ArchiveAccount(gh<_i1067.AccountRepository>()));
     gh.factory<_i703.CreateAccount>(
@@ -328,6 +434,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
           gh<_i121.WatchTags>(),
           gh<_i281.CreateTag>(),
+        ));
+    gh.factory<_i244.BudgetsListCubit>(
+        () => _i244.BudgetsListCubit(gh<_i674.GetActiveBudgets>()));
+    gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i1008.CloseBudget>(),
+          gh<_i210.DeleteBudget>(),
         ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),

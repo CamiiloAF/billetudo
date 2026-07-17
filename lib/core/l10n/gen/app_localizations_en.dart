@@ -1089,4 +1089,296 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDeleteAccount => 'Delete account';
+
+  @override
+  String get budgetsTitle => 'Budgets';
+
+  @override
+  String get budgetsAdd => 'New budget';
+
+  @override
+  String get budgetsNewCta => '+ New budget';
+
+  @override
+  String get budgetsEmptyMessage => 'You don\'t have any budgets yet';
+
+  @override
+  String get budgetsEmptyCta => 'Create budget';
+
+  @override
+  String get budgetsLoading => 'Loading your budgets';
+
+  @override
+  String get budgetsErrorTitle => 'We couldn\'t load your budgets';
+
+  @override
+  String get budgetsMenuHistory => 'View history';
+
+  @override
+  String get budgetRemainingLabel => 'You have left';
+
+  @override
+  String get budgetOverspentLabel => 'Over by';
+
+  @override
+  String budgetResetsOn(String date) {
+    return 'resets on $date';
+  }
+
+  @override
+  String budgetEndsOn(String date) {
+    return 'ends on $date';
+  }
+
+  @override
+  String get budgetScopeGlobal => 'All spending';
+
+  @override
+  String get budgetScopeStranded => 'No valid scope';
+
+  @override
+  String budgetScopeAccounts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '$count account',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetScopeCategories(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories',
+      one: '$count category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetPercent(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String budgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetProgressBreakdown(String spent, String amount) {
+    return '$spent of $amount';
+  }
+
+  @override
+  String get budgetActivityTitle => 'This period\'s activity';
+
+  @override
+  String get budgetActivityEmpty => 'No transactions in this period';
+
+  @override
+  String get budgetLoadMore => 'Load more';
+
+  @override
+  String get budgetOpenInTransactions => 'Open in Transactions';
+
+  @override
+  String get budgetPeriodStatusCurrent => 'current';
+
+  @override
+  String get budgetPeriodStatusPast => 'past';
+
+  @override
+  String get budgetPeriodStatusFuture => 'upcoming';
+
+  @override
+  String get budgetActionClose => 'Close (save to history)';
+
+  @override
+  String get budgetActionDelete => 'Delete';
+
+  @override
+  String get budgetDeleteConfirmTitle => 'Delete budget?';
+
+  @override
+  String get budgetDeleteConfirmMessage => 'You can restore it from the trash.';
+
+  @override
+  String get budgetFormNewTitle => 'New budget';
+
+  @override
+  String get budgetFormEditTitle => 'Edit budget';
+
+  @override
+  String get budgetFormNameLabel => 'Name';
+
+  @override
+  String get budgetFormNameHint => 'e.g. Monthly groceries';
+
+  @override
+  String get budgetFormIconLabel => 'Icon';
+
+  @override
+  String get budgetFormAmountLabel => 'Amount';
+
+  @override
+  String get budgetFormRepeatLabel => 'Repeat';
+
+  @override
+  String get budgetFormRepeatPeriodic => 'Recurring';
+
+  @override
+  String get budgetFormRepeatOneOff => 'One-off';
+
+  @override
+  String get budgetFormPeriodLabel => 'Frequency';
+
+  @override
+  String get budgetPeriodWeekly => 'Weekly';
+
+  @override
+  String get budgetPeriodBiweekly => 'Fortnightly';
+
+  @override
+  String get budgetPeriodMonthly => 'Monthly';
+
+  @override
+  String get budgetPeriodYearly => 'Yearly';
+
+  @override
+  String get budgetFormStartLabel => 'Start';
+
+  @override
+  String get budgetFormEndLabel => 'End';
+
+  @override
+  String get budgetFormRepeatUntilLabel => 'Repeat until';
+
+  @override
+  String get budgetFormForever => 'Forever';
+
+  @override
+  String get budgetFormUntilDate => 'Until a date';
+
+  @override
+  String get budgetFormScopeLabel => 'Scope';
+
+  @override
+  String get budgetFormScopeAll => 'All';
+
+  @override
+  String get budgetFormScopeCustom => 'Custom';
+
+  @override
+  String get budgetFormAccountsRow => 'Accounts';
+
+  @override
+  String get budgetFormCategoriesRow => 'Categories';
+
+  @override
+  String get budgetScopeAllAccounts => 'All accounts';
+
+  @override
+  String get budgetScopeAllCategories => 'All categories';
+
+  @override
+  String budgetFormThresholdRow(int pct) {
+    return 'Alert me at $pct% of the budget';
+  }
+
+  @override
+  String get budgetFormThresholdOff => 'Don\'t alert me';
+
+  @override
+  String get budgetFormCreateCta => 'Create budget';
+
+  @override
+  String get budgetFormSaveCta => 'Save changes';
+
+  @override
+  String get budgetThresholdTitle => 'Alert threshold';
+
+  @override
+  String get budgetThresholdCustom => 'Custom';
+
+  @override
+  String get budgetIconSheetTitle => 'Choose icon';
+
+  @override
+  String get budgetsHistoryTitle => 'History';
+
+  @override
+  String get budgetsHistoryEmpty => 'You haven\'t closed any budgets';
+
+  @override
+  String get budgetsHistoryLoading => 'Loading your history';
+
+  @override
+  String get budgetReactivate => 'Reactivate';
+
+  @override
+  String get budgetResultWithin => 'Within budget';
+
+  @override
+  String budgetResultOverspent(String amount) {
+    return 'Over by $amount';
+  }
+
+  @override
+  String deleteImpactBudgets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used in $count budgets.',
+      one: 'Used in 1 budget.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsEnvelopeMode => 'Envelope mode';
+
+  @override
+  String get settingsEnvelopeModeSubtitle =>
+      'Split this month\'s income across your budgets';
+
+  @override
+  String get settingsEnvelopeWhatIs => 'What is it?';
+
+  @override
+  String get envelopeInfoTitle => 'What is envelope mode?';
+
+  @override
+  String get envelopeInfoBody =>
+      'It\'s a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It\'s optional and you can turn it on or off whenever you like.';
+
+  @override
+  String get envelopeInfoGotIt => 'Got it';
+
+  @override
+  String get budgetsMenuDisableEnvelope => 'Turn off envelope mode';
+
+  @override
+  String get budgetsEnvelopeUnassignedLabel => 'Unassigned';
+
+  @override
+  String get budgetsEnvelopeOverLabel => 'Over-assigned';
+
+  @override
+  String get budgetsEnvelopeAllAssigned => 'Every cent has a job';
+
+  @override
+  String budgetsEnvelopeCaption(String income, String assigned) {
+    return '$income income · $assigned assigned';
+  }
 }

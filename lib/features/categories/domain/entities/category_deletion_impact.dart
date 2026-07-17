@@ -7,6 +7,7 @@ class CategoryDeletionImpact extends Equatable {
   const CategoryDeletionImpact({
     required this.hasActiveSubcategories,
     required this.transactionCount,
+    this.budgetCount = 0,
   });
 
   /// Whether the category has active (not tombstoned, not deleted)
@@ -18,8 +19,15 @@ class CategoryDeletionImpact extends Equatable {
   /// by `categoryId`.
   final int transactionCount;
 
-  bool get hasImpact => hasActiveSubcategories || transactionCount > 0;
+  /// Active budgets whose scope references this category (Presupuestos HU-06).
+  /// The budget is not deleted in cascade; the confirmation only tells the user
+  /// the category is used there, and restoring it repopulates the scope.
+  final int budgetCount;
+
+  bool get hasImpact =>
+      hasActiveSubcategories || transactionCount > 0 || budgetCount > 0;
 
   @override
-  List<Object?> get props => [hasActiveSubcategories, transactionCount];
+  List<Object?> get props =>
+      [hasActiveSubcategories, transactionCount, budgetCount];
 }

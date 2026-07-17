@@ -153,6 +153,30 @@ class CategoriesLocalDatasource {
     return query.map((row) => row.read(count) ?? 0).getSingle();
   }
 
+  /// Active (not deleted, not tombstoned, not closed) budgets whose scope
+  /// references [categoryId] (Presupuestos delete-impact rule). Counts the raw
+  /// join row; the budget is never cascaded, and a deleted category stays in
+  /// scope for later restore.
+  Future<int> countReferencingBudgets(String categoryId) {
+    final count = _db.budgetCategories.id.count();
+    final query = _db.selectOnly(_db.budgetCategories).join([
+      innerJoin(
+        _db.budgets,
+        _db.budgets.id.equalsExp(_db.budgetCategories.budgetId),
+      ),
+    ])
+      ..addColumns([count])
+      ..where(
+        _db.budgetCategories.categoryId.equals(categoryId) &
+            _db.budgetCategories.deletedAt.isNull() &
+            _db.budgetCategories.tombstonedAt.isNull() &
+            _db.budgets.deletedAt.isNull() &
+            _db.budgets.tombstonedAt.isNull() &
+            _db.budgets.archivedAt.isNull(),
+      );
+    return query.map((row) => row.read(count) ?? 0).getSingle();
+  }
+
   Future<int> countActiveCategories() {
     final count = _db.categories.id.count();
     final query = _db.selectOnly(_db.categories)

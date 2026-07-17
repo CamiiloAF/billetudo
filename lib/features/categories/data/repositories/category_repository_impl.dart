@@ -126,6 +126,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
             hasActiveSubcategories:
                 await _local.countActiveSubcategories(id) > 0,
             transactionCount: await _local.countActiveTransactions(id),
+            budgetCount: await _local.countReferencingBudgets(id),
           ),
         );
       });

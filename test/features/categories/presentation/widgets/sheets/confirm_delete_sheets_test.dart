@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/budget_usage_notice.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_root_with_subcategories_sheet.dart';
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_simple_sheet.dart';
@@ -147,6 +148,114 @@ void main() {
       expect(
         find.text('¿Eliminar la categoría y sus subcategorías?'),
         findsOneWidget,
+      );
+    });
+  });
+
+  group('aviso de impacto en presupuestos (Presupuestos HU-06)', () {
+    testWidgets(
+        'ConfirmDeleteSimpleSheet: budgetCount > 0 muestra el aviso con el '
+        'conteo correcto', (tester) async {
+      await tester
+          .pumpAppWidget(const ConfirmDeleteSimpleSheet(budgetCount: 2));
+
+      final context = tester.element(find.byType(ConfirmDeleteSimpleSheet));
+      final l10n = AppLocalizations.of(context);
+      expect(find.text(l10n.deleteImpactBudgets(2)), findsOneWidget);
+    });
+
+    testWidgets(
+        'ConfirmDeleteSimpleSheet: budgetCount 0 no muestra ningún aviso', (
+      tester,
+    ) async {
+      await tester.pumpAppWidget(const ConfirmDeleteSimpleSheet());
+
+      final noticeUnderSheet = find.descendant(
+        of: find.byType(ConfirmDeleteSimpleSheet),
+        matching: find.byType(BudgetUsageNotice),
+      );
+      expect(noticeUnderSheet, findsOneWidget);
+      expect(
+        find.descendant(of: noticeUnderSheet, matching: find.byType(Text)),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'ConfirmDeleteWithTransactionsSheet: budgetCount > 0 muestra el '
+        'aviso con el conteo correcto', (tester) async {
+      await tester.pumpAppWidget(
+        const ConfirmDeleteWithTransactionsSheet(
+          transactionCount: 3,
+          kind: CategoryKind.expense,
+          excludingId: 'cat-1',
+          budgetCount: 1,
+        ),
+      );
+
+      final context =
+          tester.element(find.byType(ConfirmDeleteWithTransactionsSheet));
+      final l10n = AppLocalizations.of(context);
+      expect(find.text(l10n.deleteImpactBudgets(1)), findsOneWidget);
+    });
+
+    testWidgets(
+        'ConfirmDeleteWithTransactionsSheet: budgetCount 0 no muestra '
+        'ningún aviso', (tester) async {
+      await tester.pumpAppWidget(
+        const ConfirmDeleteWithTransactionsSheet(
+          transactionCount: 3,
+          kind: CategoryKind.expense,
+          excludingId: 'cat-1',
+        ),
+      );
+
+      final noticeUnderSheet = find.descendant(
+        of: find.byType(ConfirmDeleteWithTransactionsSheet),
+        matching: find.byType(BudgetUsageNotice),
+      );
+      expect(noticeUnderSheet, findsOneWidget);
+      expect(
+        find.descendant(of: noticeUnderSheet, matching: find.byType(Text)),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'ConfirmDeleteRootWithSubcategoriesSheet: budgetCount > 0 muestra el '
+        'aviso con el conteo correcto', (tester) async {
+      await tester.pumpAppWidget(
+        const ConfirmDeleteRootWithSubcategoriesSheet(
+          kind: CategoryKind.expense,
+          rootId: 'root-1',
+          budgetCount: 4,
+        ),
+      );
+
+      final context =
+          tester.element(find.byType(ConfirmDeleteRootWithSubcategoriesSheet));
+      final l10n = AppLocalizations.of(context);
+      expect(find.text(l10n.deleteImpactBudgets(4)), findsOneWidget);
+    });
+
+    testWidgets(
+        'ConfirmDeleteRootWithSubcategoriesSheet: budgetCount 0 no muestra '
+        'ningún aviso', (tester) async {
+      await tester.pumpAppWidget(
+        const ConfirmDeleteRootWithSubcategoriesSheet(
+          kind: CategoryKind.expense,
+          rootId: 'root-1',
+        ),
+      );
+
+      final noticeUnderSheet = find.descendant(
+        of: find.byType(ConfirmDeleteRootWithSubcategoriesSheet),
+        matching: find.byType(BudgetUsageNotice),
+      );
+      expect(noticeUnderSheet, findsOneWidget);
+      expect(
+        find.descendant(of: noticeUnderSheet, matching: find.byType(Text)),
+        findsNothing,
       );
     });
   });

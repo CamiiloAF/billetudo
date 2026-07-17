@@ -336,5 +336,127 @@
   "settingsAppearance": "Appearance",
   "settingsCurrency": "Currency",
   "settingsCurrencySubtitle": "Choose the currency you log your transactions in",
-  "settingsDeleteAccount": "Delete account"
+  "settingsDeleteAccount": "Delete account",
+
+  "budgetsTitle": "Budgets",
+  "budgetsAdd": "New budget",
+  "budgetsNewCta": "+ New budget",
+  "budgetsEmptyMessage": "You don't have any budgets yet",
+  "budgetsEmptyCta": "Create budget",
+  "budgetsLoading": "Loading your budgets",
+  "budgetsErrorTitle": "We couldn't load your budgets",
+  "budgetsMenuHistory": "View history",
+  "budgetRemainingLabel": "You have left",
+  "budgetOverspentLabel": "Over by",
+  "budgetResetsOn": "resets on {date}",
+  "@budgetResetsOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "budgetEndsOn": "ends on {date}",
+  "@budgetEndsOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "budgetScopeGlobal": "All spending",
+  "budgetScopeStranded": "No valid scope",
+  "budgetScopeAccounts": "{count, plural, one{{count} account} other{{count} accounts}}",
+  "@budgetScopeAccounts": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetScopeCategories": "{count, plural, one{{count} category} other{{count} categories}}",
+  "@budgetScopeCategories": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetPercent": "{pct}%",
+  "@budgetPercent": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "budgetDaysLeft": "{count, plural, =0{Last day} one{{count} day left} other{{count} days left}}",
+  "@budgetDaysLeft": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetProgressBreakdown": "{spent} of {amount}",
+  "@budgetProgressBreakdown": {
+    "placeholders": {
+      "spent": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "budgetActivityTitle": "This period's activity",
+  "budgetActivityEmpty": "No transactions in this period",
+  "budgetLoadMore": "Load more",
+  "budgetOpenInTransactions": "Open in Transactions",
+  "budgetPeriodStatusCurrent": "current",
+  "budgetPeriodStatusPast": "past",
+  "budgetPeriodStatusFuture": "upcoming",
+  "budgetActionClose": "Close (save to history)",
+  "budgetActionDelete": "Delete",
+  "budgetDeleteConfirmTitle": "Delete budget?",
+  "budgetDeleteConfirmMessage": "You can restore it from the trash.",
+  "budgetFormNewTitle": "New budget",
+  "budgetFormEditTitle": "Edit budget",
+  "budgetFormNameLabel": "Name",
+  "budgetFormNameHint": "e.g. Monthly groceries",
+  "budgetFormIconLabel": "Icon",
+  "budgetFormAmountLabel": "Amount",
+  "budgetFormRepeatLabel": "Repeat",
+  "budgetFormRepeatPeriodic": "Recurring",
+  "budgetFormRepeatOneOff": "One-off",
+  "budgetFormPeriodLabel": "Frequency",
+  "budgetPeriodWeekly": "Weekly",
+  "budgetPeriodBiweekly": "Fortnightly",
+  "budgetPeriodMonthly": "Monthly",
+  "budgetPeriodYearly": "Yearly",
+  "budgetFormStartLabel": "Start",
+  "budgetFormEndLabel": "End",
+  "budgetFormRepeatUntilLabel": "Repeat until",
+  "budgetFormForever": "Forever",
+  "budgetFormUntilDate": "Until a date",
+  "budgetFormScopeLabel": "Scope",
+  "budgetFormScopeAll": "All",
+  "budgetFormScopeCustom": "Custom",
+  "budgetFormAccountsRow": "Accounts",
+  "budgetFormCategoriesRow": "Categories",
+  "budgetScopeAllAccounts": "All accounts",
+  "budgetScopeAllCategories": "All categories",
+  "budgetFormThresholdRow": "Alert me at {pct}% of the budget",
+  "@budgetFormThresholdRow": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "budgetFormThresholdOff": "Don't alert me",
+  "budgetFormCreateCta": "Create budget",
+  "budgetFormSaveCta": "Save changes",
+  "budgetThresholdTitle": "Alert threshold",
+  "budgetThresholdCustom": "Custom",
+  "budgetIconSheetTitle": "Choose icon",
+  "budgetsHistoryTitle": "History",
+  "budgetsHistoryEmpty": "You haven't closed any budgets",
+  "budgetsHistoryLoading": "Loading your history",
+  "budgetReactivate": "Reactivate",
+  "budgetResultWithin": "Within budget",
+  "budgetResultOverspent": "Over by {amount}",
+  "@budgetResultOverspent": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "deleteImpactBudgets": "{count, plural, =1{Used in 1 budget.} other{Used in {count} budgets.}}",
+  "@deleteImpactBudgets": {
+    "description": "Neutral notice: how many budgets use the account/category being deleted. The budget is not cascade-deleted.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsEnvelopeMode": "Envelope mode",
+  "settingsEnvelopeModeSubtitle": "Split this month's income across your budgets",
+  "settingsEnvelopeWhatIs": "What is it?",
+  "envelopeInfoTitle": "What is envelope mode?",
+  "envelopeInfoBody": "It's a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It's optional and you can turn it on or off whenever you like.",
+  "envelopeInfoGotIt": "Got it",
+  "budgetsMenuDisableEnvelope": "Turn off envelope mode",
+  "budgetsEnvelopeUnassignedLabel": "Unassigned",
+  "budgetsEnvelopeOverLabel": "Over-assigned",
+  "budgetsEnvelopeAllAssigned": "Every cent has a job",
+  "budgetsEnvelopeCaption": "{income} income · {assigned} assigned",
+  "@budgetsEnvelopeCaption": {
+    "placeholders": {
+      "income": { "type": "String" },
+      "assigned": { "type": "String" }
+    }
+  }
 }

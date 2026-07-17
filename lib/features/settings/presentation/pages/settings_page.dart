@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -6,9 +8,13 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../cubit/app_settings_cubit.dart';
+import '../cubit/app_settings_state.dart';
+import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_field.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
+import '../widgets/sheets/envelope_info_sheet.dart';
 
 /// Ajustes (`jDaUb` sin sesión / `aaQBp` con sesión): "Cuenta y respaldo" +
 /// "Preferencias", closing on "Eliminar cuenta" pushed to the very bottom of
@@ -64,6 +70,17 @@ class SettingsPage extends StatelessWidget {
                   label: l10n.settingsCurrency,
                   sublabel: l10n.settingsCurrencySubtitle,
                   onTap: () => onOpenComingSoon(l10n.settingsCurrency),
+                ),
+                BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                  builder: (context, settings) => EnvelopeModeField(
+                    enabled: settings.zeroBasedEnabled,
+                    onChanged: (value) => unawaited(
+                      context
+                          .read<AppSettingsCubit>()
+                          .setZeroBasedEnabled(value),
+                    ),
+                    onWhatIs: () => unawaited(EnvelopeInfoSheet.show(context)),
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Material(

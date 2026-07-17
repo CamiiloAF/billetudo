@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/budget_usage_notice.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/usecases/delete_category.dart';
 import '../parent_category_picker_sheet.dart';
@@ -20,17 +21,22 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   const ConfirmDeleteRootWithSubcategoriesSheet({
     required this.kind,
     required this.rootId,
+    this.budgetCount = 0,
     super.key,
   });
 
   final CategoryKind kind;
   final String rootId;
 
+  /// Budgets whose scope references this category (Presupuestos HU-06).
+  final int budgetCount;
+
   /// Resolves to the chosen [SubcategoryResolution], or `null` if dismissed.
   static Future<SubcategoryResolution?> show(
     BuildContext context, {
     required CategoryKind kind,
     required String rootId,
+    int budgetCount = 0,
   }) =>
       showModalBottomSheet<SubcategoryResolution>(
         context: context,
@@ -38,6 +44,7 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
         builder: (context) => ConfirmDeleteRootWithSubcategoriesSheet(
           kind: kind,
           rootId: rootId,
+          budgetCount: budgetCount,
         ),
       );
 
@@ -78,6 +85,7 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: colors.textSecondary),
             ),
+            BudgetUsageNotice(count: budgetCount),
             const SizedBox(height: 20),
             CategoryDeleteActionRow(
               icon: LucideIcons.arrowLeftRight,

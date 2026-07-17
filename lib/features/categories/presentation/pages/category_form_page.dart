@@ -88,7 +88,10 @@ class CategoryFormPage extends StatelessWidget {
       case CategoryDeletePrompt.none:
         return;
       case CategoryDeletePrompt.simple:
-        final confirmed = await ConfirmDeleteSimpleSheet.show(context);
+        final confirmed = await ConfirmDeleteSimpleSheet.show(
+          context,
+          budgetCount: state.deletionImpact?.budgetCount ?? 0,
+        );
         if (confirmed ?? false) {
           await cubit.confirmSimpleDelete();
         } else {
@@ -101,6 +104,7 @@ class CategoryFormPage extends StatelessWidget {
           transactionCount: impact?.transactionCount ?? 0,
           kind: state.kind,
           excludingId: state.id!,
+          budgetCount: impact?.budgetCount ?? 0,
         );
         if (resolution != null) {
           await cubit.confirmTransactionResolution(resolution);
@@ -112,6 +116,7 @@ class CategoryFormPage extends StatelessWidget {
           context,
           kind: state.kind,
           rootId: state.id!,
+          budgetCount: state.deletionImpact?.budgetCount ?? 0,
         );
         if (resolution != null) {
           await cubit.confirmSubcategoryResolution(resolution);

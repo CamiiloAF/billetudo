@@ -4,8 +4,11 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,9 +20,13 @@ class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockSignOut extends Mock implements SignOut {}
 
+class MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
+
 void main() {
   late MockWatchAuthSession watchAuthSession;
   late MockSignOut signOut;
+  late MockAppSettingsCubit appSettingsCubit;
 
   const user = AuthUser(
     id: 'google-1',
@@ -30,6 +37,13 @@ void main() {
   setUp(() {
     watchAuthSession = MockWatchAuthSession();
     signOut = MockSignOut();
+    appSettingsCubit = MockAppSettingsCubit();
+    when(() => appSettingsCubit.state).thenReturn(const AppSettingsState());
+    whenListen(
+      appSettingsCubit,
+      const Stream<AppSettingsState>.empty(),
+      initialState: const AppSettingsState(),
+    );
   });
 
   Future<void> pumpSettings(
@@ -43,8 +57,11 @@ void main() {
     when(() => watchAuthSession()).thenAnswer((_) => const Stream.empty());
 
     await tester.pumpAuthWidget(
-      BlocProvider(
-        create: (_) => AuthCubit(watchAuthSession, signOut),
+      MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => AuthCubit(watchAuthSession, signOut)),
+          BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
+        ],
         child: SettingsPage(
           onOpenLogin: onOpenLogin ?? () {},
           onOpenDeleteAccount: onOpenDeleteAccount ?? () {},

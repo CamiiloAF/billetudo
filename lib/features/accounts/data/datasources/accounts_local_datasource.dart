@@ -141,6 +141,30 @@ class AccountsLocalDatasource {
     return query.map((row) => row.read(count) ?? 0).getSingle();
   }
 
+  /// Active (not deleted, not tombstoned, not closed) budgets whose scope
+  /// references [accountId] (Presupuestos delete-impact rule). The join row is
+  /// counted raw and the budget is never cascaded — deleting the account only
+  /// strands the scope, it does not remove the budget.
+  Future<int> countReferencingBudgets(String accountId) {
+    final count = _db.budgetAccounts.id.count();
+    final query = _db.selectOnly(_db.budgetAccounts).join([
+      innerJoin(
+        _db.budgets,
+        _db.budgets.id.equalsExp(_db.budgetAccounts.budgetId),
+      ),
+    ])
+      ..addColumns([count])
+      ..where(
+        _db.budgetAccounts.accountId.equals(accountId) &
+            _db.budgetAccounts.deletedAt.isNull() &
+            _db.budgetAccounts.tombstonedAt.isNull() &
+            _db.budgets.deletedAt.isNull() &
+            _db.budgets.tombstonedAt.isNull() &
+            _db.budgets.archivedAt.isNull(),
+      );
+    return query.map((row) => row.read(count) ?? 0).getSingle();
+  }
+
   /// Active accounts other than [accountId]: drives the "last account" block.
   Future<int> countOtherActiveAccounts(String accountId) {
     final count = _db.accounts.id.count();

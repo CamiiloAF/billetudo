@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/budget_usage_notice.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/usecases/delete_category.dart';
 import '../parent_category_picker_sheet.dart';
@@ -20,11 +21,15 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
     required this.transactionCount,
     required this.kind,
     required this.excludingId,
+    this.budgetCount = 0,
     super.key,
   });
 
   final int transactionCount;
   final CategoryKind kind;
+
+  /// Budgets whose scope references this category (Presupuestos HU-06).
+  final int budgetCount;
 
   /// The category being deleted: never offered as its own reassign target.
   final String excludingId;
@@ -35,6 +40,7 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
     required int transactionCount,
     required CategoryKind kind,
     required String excludingId,
+    int budgetCount = 0,
   }) =>
       showModalBottomSheet<TransactionResolution>(
         context: context,
@@ -43,6 +49,7 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
           transactionCount: transactionCount,
           kind: kind,
           excludingId: excludingId,
+          budgetCount: budgetCount,
         ),
       );
 
@@ -95,6 +102,7 @@ class _ConfirmDeleteWithTransactionsSheetState
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: colors.textSecondary),
             ),
+            BudgetUsageNotice(count: widget.budgetCount),
             const SizedBox(height: 16),
             RadioGroup<_Choice>(
               groupValue: _choice,

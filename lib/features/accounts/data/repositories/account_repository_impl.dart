@@ -195,6 +195,7 @@ class AccountRepositoryImpl implements AccountRepository {
             transactionCount: await _local.countTransactions(id),
             goalCount: await _local.countLinkedGoals(id),
             debtCount: await _local.countLinkedDebts(id),
+            budgetCount: await _local.countReferencingBudgets(id),
             // Only an active account can be "the last one": deleting an
             // archived account never leaves the app with nowhere to record.
             isLastAccount: !row.archived && otherActive == 0,
