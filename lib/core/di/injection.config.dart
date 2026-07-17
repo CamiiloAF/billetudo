@@ -360,8 +360,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i562.ReorderCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i119.RestoreCategory>(
         () => _i119.RestoreCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i693.SeedDefaultCategories>(
-        () => _i693.SeedDefaultCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i275.UpdateCategory>(
         () => _i275.UpdateCategory(gh<_i802.CategoryRepository>()));
     gh.factory<_i722.WatchCategories>(
@@ -434,6 +432,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
           gh<_i121.WatchTags>(),
           gh<_i281.CreateTag>(),
+        ));
+    gh.factory<_i693.SeedDefaultCategories>(() => _i693.SeedDefaultCategories(
+          gh<_i802.CategoryRepository>(),
+          gh<_i487.AppSettingsRepository>(),
         ));
     gh.factory<_i244.BudgetsListCubit>(
         () => _i244.BudgetsListCubit(gh<_i674.GetActiveBudgets>()));

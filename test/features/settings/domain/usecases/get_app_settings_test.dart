@@ -16,7 +16,8 @@ void main() {
   });
 
   test('HU-06: forwards the repository stream unchanged', () {
-    const settings = AppSettings(zeroBasedEnabled: true);
+    const settings =
+        AppSettings(zeroBasedEnabled: true, categoriesSeeded: false);
     when(() => repository.watchSettings())
         .thenAnswer((_) => Stream.value(const Right(settings)));
 

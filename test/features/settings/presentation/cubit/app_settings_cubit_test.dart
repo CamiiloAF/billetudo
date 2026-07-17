@@ -12,7 +12,8 @@ void main() {
   late MockGetAppSettings getAppSettings;
   late MockSetZeroBasedEnabled setZeroBasedEnabled;
 
-  const enabledSettings = AppSettings(zeroBasedEnabled: true);
+  const enabledSettings =
+      AppSettings(zeroBasedEnabled: true, categoriesSeeded: false);
 
   setUp(() {
     getAppSettings = MockGetAppSettings();

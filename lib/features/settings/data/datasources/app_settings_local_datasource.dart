@@ -23,6 +23,24 @@ class AppSettingsLocalDatasource {
       (_db.select(_db.appSettings)..where((s) => s.id.equals(singletonId)))
           .watchSingleOrNull();
 
+  /// One-shot read of the singleton (not a stream): callers that only need the
+  /// current value once — e.g. the seed latch — should use this.
+  Future<AppSetting?> readSettings() =>
+      (_db.select(_db.appSettings)..where((s) => s.id.equals(singletonId)))
+          .getSingleOrNull();
+
+  /// Marks the onboarding default categories as seeded for this installation.
+  /// Upserts on the constant id (like [setZeroBasedEnabled]) so it can never
+  /// create a second row, and stamps [now] into `updatedAt`.
+  Future<void> markCategoriesSeeded({required DateTime now}) =>
+      _db.into(_db.appSettings).insertOnConflictUpdate(
+            AppSettingsCompanion.insert(
+              id: const Value(singletonId),
+              categoriesSeeded: const Value(true),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
+          );
+
   /// Upserts the singleton with [zeroBasedEnabled]. Uses `insertOnConflictUpdate`
   /// keyed on the constant id so it can never create a second row.
   Future<void> setZeroBasedEnabled({

@@ -24,6 +24,18 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
       .transform(_guardStream());
 
   @override
+  FutureResult<AppSettings> getSettings() async {
+    try {
+      final row = await _local.readSettings();
+      return Right(_toEntity(row));
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to read settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  @override
   FutureResult<Unit> setZeroBasedEnabled(bool enabled) async {
     try {
       await _local.setZeroBasedEnabled(
@@ -38,9 +50,24 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
     }
   }
 
+  @override
+  FutureResult<Unit> markCategoriesSeeded() async {
+    try {
+      await _local.markCategoriesSeeded(now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
   AppSettings _toEntity(db.AppSetting? row) => row == null
       ? const AppSettings.defaults()
-      : AppSettings(zeroBasedEnabled: row.zeroBasedEnabled);
+      : AppSettings(
+          zeroBasedEnabled: row.zeroBasedEnabled,
+          categoriesSeeded: row.categoriesSeeded,
+        );
 
   StreamTransformer<Result<AppSettings>, Result<AppSettings>> _guardStream() =>
       StreamTransformer<Result<AppSettings>, Result<AppSettings>>.fromHandlers(

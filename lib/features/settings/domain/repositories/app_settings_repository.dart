@@ -11,6 +11,14 @@ abstract class AppSettingsRepository {
   /// [AppSettings.defaults] semantics if the row is somehow missing.
   Stream<Result<AppSettings>> watchSettings();
 
+  /// One-shot read of the settings singleton (not a stream). Returns
+  /// [AppSettings.defaults] semantics if the row is somehow missing.
+  FutureResult<AppSettings> getSettings();
+
   /// Turns "Modo sobres" (zero-based) on or off (HU-06).
   FutureResult<Unit> setZeroBasedEnabled(bool enabled);
+
+  /// Latches the onboarding default categories as seeded for this installation
+  /// (HU-06). Idempotent: safe to call again.
+  FutureResult<Unit> markCategoriesSeeded();
 }

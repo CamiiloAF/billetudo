@@ -51,7 +51,10 @@ enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
-enum ScheduleFrequency { daily, weekly, monthly, yearly }
+/// How often a scheduled payment repeats. `once` is a one-time future payment
+/// (no repetition): it generates a single transaction on its date and then
+/// goes inactive. See docs/requirements/09-pagos-programados.md.
+enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
 
 /// Which figure to highlight on a credit card (HU-04): 'debt' = show the
 /// current debt as the headline; 'available' = the available credit. Affects
@@ -278,13 +281,24 @@ class ScheduledPayments extends Table with _SyncColumns {
   TextColumn get type => textEnum<EntryType>()();
   TextColumn get note => text().nullable()();
 
+  /// Only set when [type] is `transfer`: the destination account, same rule as
+  /// a normal transfer transaction (see docs/requirements/03-transacciones.md).
+  TextColumn get transferAccountId =>
+      text().nullable().references(Accounts, #id)();
+
   TextColumn get frequency => textEnum<ScheduleFrequency>()();
 
   /// How many [frequency] units between repeats. E.g. interval=2 + weekly =
-  /// every 2 weeks.
+  /// every 2 weeks. Ignored when [frequency] is `once`.
   IntColumn get interval => integer().withDefault(const Constant(1))();
   DateTimeColumn get nextDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
+
+  /// When true, reaching [nextDate] generates an editable draft the user must
+  /// confirm before it applies to the balance, instead of applying it
+  /// automatically (HU-03). Lets variable amounts (utilities) be adjusted.
+  BoolColumn get requiresConfirmation =>
+      boolean().withDefault(const Constant(false))();
 }
 
 /// Free-form tags (a complement to categories).
@@ -349,6 +363,14 @@ class AppSettings extends Table with _SyncColumns {
   /// Global zero-based ("Modo sobres") flag (HU-06).
   BoolColumn get zeroBasedEnabled =>
       boolean().withDefault(const Constant(false))();
+
+  /// One-shot latch: the onboarding default categories (HU-06) have been seeded
+  /// once for this installation. Set to true after the first (and only) seed and
+  /// never cleared, so wiping every category does NOT trigger a re-seed on the
+  /// next launch. This is the install-lifetime guarantee — `hasAnyCategory` only
+  /// reflects the current row count, which is not enough.
+  BoolColumn get categoriesSeeded =>
+      boolean().withDefault(const Constant(false))();
 }
 
 // ---------------------------------------------------------------------------
@@ -375,7 +397,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 9;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `INSERT OR IGNORE`. `updated_at` is stamped in epoch millis (see
@@ -539,6 +561,34 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(budgetCategories);
             await m.createTable(appSettings);
             await _seedAppSettings(m);
+          }
+
+          // v7 -> v8: scheduled payments gain a one-time frequency and two
+          // fields. `once` is additive to the ScheduleFrequency enum (stored as
+          // text), so no data migration is needed. See
+          // docs/requirements/09-pagos-programados.md.
+          //  - `transferAccountId`: destination for a transfer-type scheduled
+          //    payment (nullable).
+          //  - `requiresConfirmation`: opt-in confirmation flow (HU-03).
+          if (from < 8) {
+            await m.addColumn(
+              scheduledPayments,
+              scheduledPayments.transferAccountId,
+            );
+            await m.addColumn(
+              scheduledPayments,
+              scheduledPayments.requiresConfirmation,
+            );
+          }
+
+          // v8 -> v9: AppSettings gains `categoriesSeeded`, a one-shot latch so
+          // the onboarding default categories are seeded once per installation
+          // and never re-seeded, even if the user deletes every category (the
+          // old `hasAnyCategory` check re-seeded in that case). Additive nullable
+          // -> defaults to false via the column default; the singleton row keeps
+          // its value. See seed_default_categories.dart.
+          if (from < 9) {
+            await m.addColumn(appSettings, appSettings.categoriesSeeded);
           }
         },
       );

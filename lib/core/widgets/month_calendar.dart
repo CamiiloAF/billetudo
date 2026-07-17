@@ -268,7 +268,8 @@ class CalendarDayCell extends StatelessWidget {
             customBorder: const CircleBorder(),
             child: Center(
               child: Text(
-                '$day',
+                // A bare day numeral, nothing to translate.
+                day.toString(),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 14,
                   fontWeight: weight,

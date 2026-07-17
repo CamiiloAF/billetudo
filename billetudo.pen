@@ -27726,7 +27726,7 @@
                         },
                         "Li1oo": {
                           "content": "-$620.000",
-                          "fill": "$expense"
+                          "fill": "$expense-text"
                         },
                         "MXxWf": {
                           "name": "Check Slot",
@@ -37279,7 +37279,7 @@
                         },
                         "Li1oo": {
                           "content": "-$620.000",
-                          "fill": "$expense"
+                          "fill": "$expense-text"
                         },
                         "MXxWf": {
                           "name": "Check Slot",
@@ -75267,7 +75267,7 @@
                         },
                         "Li1oo": {
                           "content": "-$620.000",
-                          "fill": "$expense"
+                          "fill": "$expense-text"
                         },
                         "C2t9IM": {
                           "enabled": false,
@@ -76104,6 +76104,252 @@
           "height": "fill_container"
         }
       ]
+    },
+    {
+      "type": "text",
+      "id": "HXy6n",
+      "x": -220,
+      "y": 35718,
+      "name": "Label - Selectores Form Oscuro",
+      "fill": "$text-primary",
+      "content": "SELECTORES DEL FORMULARIO — OSCURO",
+      "fontFamily": "$font-body",
+      "fontSize": 24,
+      "fontWeight": "700"
+    },
+    {
+      "type": "frame",
+      "id": "BobKK",
+      "x": -220,
+      "y": 35838,
+      "name": "Selector Categoría Form - Sheet Jerárquico (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "WmYNZ",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "aJvig",
+          "type": "ref",
+          "ref": "SfSln",
+          "name": "Category Select Sheet",
+          "width": "fill_container",
+          "height": "fill_container"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "fz53P",
+      "x": 230,
+      "y": 35838,
+      "name": "Selector Categoría Form - Sheet - Sin Resultados (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "t1sbXz",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "ieusF",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "pdCv3",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "PwZoo",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "Elegir categoría",
+                  "fontFamily": "$font-body",
+                  "fontSize": 17,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "kC7CE",
+                  "name": "Search Bar",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": "$surface",
+                  "cornerRadius": 16,
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "M2nQSG",
+                      "name": "Search Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "search",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "BebqJ",
+                      "name": "Placeholder",
+                      "fill": "$text-primary",
+                      "content": "gimnasio",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "id": "fuigW",
+                  "type": "ref",
+                  "ref": "jmQO5",
+                  "name": "Empty State - Sin resultados",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Z40WX": {
+                      "icon": "search-x"
+                    },
+                    "UUiCK": {
+                      "content": "No encontramos categorías con ese nombre",
+                      "width": 280
+                    },
+                    "OQJ6H": {
+                      "enabled": false
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Zsrnf",
+      "x": 680,
+      "y": 35838,
+      "name": "Sheet - Selector de Cuenta Form (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "v97NTZ",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "FIPqm",
+          "type": "ref",
+          "ref": "fcVZN",
+          "name": "Account Select Sheet",
+          "width": "fill_container",
+          "height": "fill_container"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "nYFOZ",
+      "x": 1130,
+      "y": 35838,
+      "name": "Sheet - Date Picker Form (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "d128b",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "YeaCT",
+          "type": "ref",
+          "ref": "zMqxt",
+          "name": "Date Picker Sheet",
+          "width": "fill_container",
+          "height": "fill_container"
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "id": "jg03S",
+      "x": 680,
+      "y": 36850,
+      "name": "Review - Saldo negativo contraste",
+      "width": 390,
+      "height": 0,
+      "content": "[CRITICO] Saldo negativo '-$620.000' (comp. fcVZN, fila B5A2k / Balance Li1oo) usa $expense (#DC2626) = 3.40:1 sobre $surface oscuro -> FALLA WCAG AA (4.5:1) para 15px/700 (no es texto grande). El spec de transacciones.md exige $expense-text (#F87171 = 5.93:1). Cambiar el token en el componente fcVZN; revisar tambien el filtro de cuentas oscuro RcVAD que reusa X3tZG."
+    },
+    {
+      "type": "note",
+      "id": "owvBO",
+      "x": 1130,
+      "y": 36850,
+      "name": "Review - Anillo Hoy contraste",
+      "width": 360,
+      "height": 0,
+      "content": "[MENOR] Anillo de 'Hoy' (Day 16, QQvU5) usa stroke $primary (#6D4FE0) = 3.00:1 sobre $surface oscuro: justo en el piso de 3:1 para objeto grafico. Pasa por un pelo. El numero es $text-primary (legible). Aceptable como patron ya establecido; si se quiere margen, subir el stroke a 1.5px o usar $primary-on-soft en el anillo."
     }
   ],
   "themes": {
