@@ -3,6 +3,7 @@ import '../entities/budget.dart';
 import '../entities/budget_detail_data.dart';
 import '../entities/budget_draft.dart';
 import '../entities/budget_with_progress.dart';
+import '../entities/zero_based_summary.dart';
 
 /// Contract the Budgets feature depends on. Implemented in `data/` over Drift
 /// (source of truth). Every write updates `updatedAt`; the scope join rows are
@@ -25,6 +26,11 @@ abstract class BudgetRepository {
   /// Everything the detail screen needs for [id]: the budget, its scope and the
   /// eligible expenses (HU-04/HU-05).
   Stream<Result<BudgetDetailData>> watchBudgetDetail(String id);
+
+  /// HU-06: the "Modo sobres" summary (income of the current calendar month
+  /// minus what is assigned to active budgets). Emits `null` when there is
+  /// nothing to show. Re-emits on any change to budgets or income transactions.
+  Stream<Result<ZeroBasedSummary?>> watchZeroBasedSummary();
 
   FutureResult<Budget> getBudget(String id);
 

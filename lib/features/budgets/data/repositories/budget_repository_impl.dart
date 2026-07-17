@@ -10,9 +10,12 @@ import '../../domain/entities/budget_draft.dart';
 import '../../domain/entities/budget_expense.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../../domain/entities/budget_with_progress.dart';
+import '../../domain/entities/period_income.dart';
+import '../../domain/entities/zero_based_summary.dart';
 import '../../domain/repositories/budget_repository.dart';
 import '../../domain/services/budget_period_calculator.dart';
 import '../../domain/services/budget_progress_calculator.dart';
+import '../../domain/services/zero_based_summary_calculator.dart';
 import '../datasources/budgets_local_datasource.dart';
 import '../models/budget_mapper.dart';
 
@@ -24,10 +27,11 @@ import '../models/budget_mapper.dart';
 /// implementation of the global-vs-emptied and period rules.
 @LazySingleton(as: BudgetRepository)
 class BudgetRepositoryImpl implements BudgetRepository {
-  const BudgetRepositoryImpl(this._local, this._progress);
+  const BudgetRepositoryImpl(this._local, this._progress, this._zeroBased);
 
   final BudgetsLocalDatasource _local;
   final BudgetProgressCalculator _progress;
+  final ZeroBasedSummaryCalculator _zeroBased;
 
   @override
   Stream<Result<List<BudgetWithProgress>>> watchActiveBudgets() =>
@@ -147,6 +151,34 @@ class BudgetRepositoryImpl implements BudgetRepository {
       );
 
   @override
+  Stream<Result<ZeroBasedSummary?>> watchZeroBasedSummary() => _guardStream(
+        _combineLatest(
+          [
+            _local.watchActiveBudgets(),
+            _local.watchIncome(),
+          ],
+          (values) {
+            final budgets = values[0]! as List<db.Budget>;
+            final income = values[1]! as List<BudgetIncomeRow>;
+            return Right<Failure, ZeroBasedSummary?>(
+              _zeroBased.summarize(
+                activeBudgets: budgets.map(BudgetMapper.toEntity).toList(),
+                income: [
+                  for (final row in income)
+                    PeriodIncome(
+                      amountMinor: row.amountMinor,
+                      currency: row.currency,
+                      date: row.date,
+                    ),
+                ],
+                now: DateTime.now(),
+              ),
+            );
+          },
+        ),
+      );
+
+  @override
   FutureResult<Budget> getBudget(String id) => _guard(() async {
         final row = await _local.getBudget(id);
         if (row == null) {
@@ -214,7 +246,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
   FutureResult<Unit> reactivateBudget(String id) =>
       _writeArchived(id, archivedAt: null);
 
-  FutureResult<Unit> _writeArchived(String id, {required DateTime? archivedAt}) =>
+  FutureResult<Unit> _writeArchived(String id,
+          {required DateTime? archivedAt}) =>
       _guard(() async {
         final row = await _local.updateBudget(
           id,

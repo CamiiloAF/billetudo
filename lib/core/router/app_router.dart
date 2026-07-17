@@ -25,6 +25,7 @@ import '../../features/budgets/presentation/cubit/archived_budgets_cubit.dart';
 import '../../features/budgets/presentation/cubit/budget_detail_cubit.dart';
 import '../../features/budgets/presentation/cubit/budget_form_cubit.dart';
 import '../../features/budgets/presentation/cubit/budgets_list_cubit.dart';
+import '../../features/budgets/presentation/cubit/zero_based_summary_cubit.dart';
 import '../../features/budgets/presentation/pages/archived_budgets_page.dart';
 import '../../features/budgets/presentation/pages/budget_detail_page.dart';
 import '../../features/budgets/presentation/pages/budget_form_page.dart';
@@ -38,6 +39,7 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
@@ -217,9 +219,23 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
       routes: [
         GoRoute(
           path: AppRoutes.budgets,
-          builder: (context, state) => BlocProvider(
-            create: (context) =>
-                _started(getIt<BudgetsListCubit>(), (c) => c.start()),
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) =>
+                    _started(getIt<BudgetsListCubit>(), (c) => c.start()),
+              ),
+              BlocProvider(
+                create: (context) =>
+                    _started(getIt<AppSettingsCubit>(), (c) => c.start()),
+              ),
+              BlocProvider(
+                create: (context) => _started(
+                  getIt<ZeroBasedSummaryCubit>(),
+                  (c) => c.start(),
+                ),
+              ),
+            ],
             child: BudgetsPage(
               onAddBudget: () => context.push(AppRoutes.newBudget),
               onOpenBudget: (id) => context.push(AppRoutes.budget(id)),
@@ -347,8 +363,14 @@ Future<void> _confirmSignOut(BuildContext context) async {
 GoRoute _settingsRoute() => GoRoute(
       path: 'ajustes',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => BlocProvider.value(
-        value: getIt<AuthCubit>(),
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: getIt<AuthCubit>()),
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<AppSettingsCubit>(), (c) => c.start()),
+          ),
+        ],
         child: SettingsPage(
           onOpenLogin: () => context.push(AppRoutes.login),
           onOpenDeleteAccount: () => DeleteAccountFlow.start(

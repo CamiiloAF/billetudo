@@ -1253,4 +1253,52 @@ class AppLocalizationsEs extends AppLocalizations {
   String budgetResultOverspent(String amount) {
     return 'Excedido por $amount';
   }
+
+  @override
+  String deleteImpactBudgets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se usa en $count presupuestos.',
+      one: 'Se usa en 1 presupuesto.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsEnvelopeMode => 'Modo sobres';
+
+  @override
+  String get settingsEnvelopeModeSubtitle =>
+      'Reparte tu ingreso del mes entre tus presupuestos';
+
+  @override
+  String get settingsEnvelopeWhatIs => '¿Qué es?';
+
+  @override
+  String get envelopeInfoTitle => '¿Qué es el modo sobres?';
+
+  @override
+  String get envelopeInfoBody =>
+      'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.';
+
+  @override
+  String get envelopeInfoGotIt => 'Entendido';
+
+  @override
+  String get budgetsMenuDisableEnvelope => 'Desactivar modo sobres';
+
+  @override
+  String get budgetsEnvelopeUnassignedLabel => 'Sin asignar';
+
+  @override
+  String get budgetsEnvelopeOverLabel => 'Asignado de más';
+
+  @override
+  String get budgetsEnvelopeAllAssigned => 'Cada peso tiene un trabajo';
+
+  @override
+  String budgetsEnvelopeCaption(String income, String assigned) {
+    return '$income de ingreso · $assigned asignado';
+  }
 }

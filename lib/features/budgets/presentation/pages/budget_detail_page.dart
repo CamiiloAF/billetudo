@@ -40,9 +40,8 @@ class BudgetDetailPage extends StatelessWidget {
             builder: (context, state) => IconButton(
               tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
               icon: const Icon(LucideIcons.ellipsisVertical),
-              onPressed: state.budget == null
-                  ? null
-                  : () => _openActions(context),
+              onPressed:
+                  state.budget == null ? null : () => _openActions(context),
             ),
           ),
         ],
@@ -172,8 +171,8 @@ class BudgetDetailHero extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           overspent ? l10n.budgetOverspentLabel : l10n.budgetRemainingLabel,
-          style: theme.textTheme.bodyMedium
-              ?.copyWith(color: colors.textSecondary),
+          style:
+              theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 2),
         Text(

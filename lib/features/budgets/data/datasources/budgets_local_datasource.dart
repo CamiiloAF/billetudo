@@ -43,6 +43,20 @@ class BudgetExpenseRow {
   final String? note;
 }
 
+/// One income transaction reduced to the "Modo sobres" essentials (HU-06).
+/// Data-layer type: never leaves `data/`.
+class BudgetIncomeRow {
+  const BudgetIncomeRow({
+    required this.amountMinor,
+    required this.currency,
+    required this.date,
+  });
+
+  final int amountMinor;
+  final String currency;
+  final DateTime date;
+}
+
 /// Drift queries for the Budgets feature.
 ///
 /// A plain injected class (not a `@DriftAccessor`): the schema already has every
@@ -203,6 +217,30 @@ class BudgetsLocalDatasource {
         );
   }
 
+  /// Every income transaction that can feed the "Modo sobres" summary (HU-06):
+  /// `type = income`, not trashed nor tombstoned. The calendar-month filter and
+  /// the currency grouping are the domain's job, so this returns the raw rows.
+  Stream<List<BudgetIncomeRow>> watchIncome() {
+    final query = _db.select(_db.transactions)
+      ..where(
+        (t) =>
+            t.type.equalsValue(EntryType.income) &
+            t.deletedAt.isNull() &
+            t.tombstonedAt.isNull(),
+      );
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              BudgetIncomeRow(
+                amountMinor: row.amountMinor,
+                currency: row.currency,
+                date: row.date,
+              ),
+          ],
+        );
+  }
+
   // -- Scope reconciliation --------------------------------------------------
 
   /// Rewrites a budget's scope to exactly [accountIds] / [categoryIds] in one
@@ -256,7 +294,8 @@ class BudgetsLocalDatasource {
 
     for (final row in existing) {
       if (row.deletedAt == null && !accountIds.contains(row.accountId)) {
-        await (_db.update(_db.budgetAccounts)..where((r) => r.id.equals(row.id)))
+        await (_db.update(_db.budgetAccounts)
+              ..where((r) => r.id.equals(row.id)))
             .write(
           BudgetAccountsCompanion(
             deletedAt: Value(now),
@@ -329,7 +368,9 @@ class BudgetsLocalDatasource {
             _db.budgetAccounts.tombstonedAt.isNull(),
       );
     final rows = await query.get();
-    return [for (final row in rows) row.readTable(_db.budgetAccounts).accountId];
+    return [
+      for (final row in rows) row.readTable(_db.budgetAccounts).accountId
+    ];
   }
 
   /// The alive category scope of one budget — used to prefill the edit form.

@@ -10,8 +10,7 @@ class ConfirmDeleteBudgetSheet extends StatelessWidget {
   const ConfirmDeleteBudgetSheet({super.key});
 
   /// Resolves to `true` when the user confirms.
-  static Future<bool?> show(BuildContext context) =>
-      showModalBottomSheet<bool>(
+  static Future<bool?> show(BuildContext context) => showModalBottomSheet<bool>(
         context: context,
         builder: (context) => const ConfirmDeleteBudgetSheet(),
       );

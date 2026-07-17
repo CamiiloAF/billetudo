@@ -41,9 +41,7 @@ class PeriodStepperPill extends StatelessWidget {
           border: Border.all(color: colors.border),
           boxShadow: [
             BoxShadow(
-              color: isDark
-                  ? const Color(0x66000000)
-                  : const Color(0x1A1C1B29),
+              color: isDark ? const Color(0x66000000) : const Color(0x1A1C1B29),
               blurRadius: isDark ? 28 : 20,
               offset: const Offset(0, 8),
             ),

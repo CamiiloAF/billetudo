@@ -29,7 +29,8 @@ class ArchivedBudgetsPage extends StatelessWidget {
               ),
             ArchivedBudgetsStatus.ready when state.budgets.isEmpty =>
               const ArchivedBudgetsEmptyView(),
-            ArchivedBudgetsStatus.ready => ArchivedBudgetsListView(state: state),
+            ArchivedBudgetsStatus.ready =>
+              ArchivedBudgetsListView(state: state),
           },
         ),
       ),

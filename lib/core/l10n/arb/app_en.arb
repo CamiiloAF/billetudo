@@ -403,5 +403,27 @@
   "budgetResultOverspent": "Over by {amount}",
   "@budgetResultOverspent": {
     "placeholders": { "amount": { "type": "String" } }
+  },
+  "deleteImpactBudgets": "{count, plural, =1{Used in 1 budget.} other{Used in {count} budgets.}}",
+  "@deleteImpactBudgets": {
+    "description": "Neutral notice: how many budgets use the account/category being deleted. The budget is not cascade-deleted.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsEnvelopeMode": "Envelope mode",
+  "settingsEnvelopeModeSubtitle": "Split this month's income across your budgets",
+  "settingsEnvelopeWhatIs": "What is it?",
+  "envelopeInfoTitle": "What is envelope mode?",
+  "envelopeInfoBody": "It's a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It's optional and you can turn it on or off whenever you like.",
+  "envelopeInfoGotIt": "Got it",
+  "budgetsMenuDisableEnvelope": "Turn off envelope mode",
+  "budgetsEnvelopeUnassignedLabel": "Unassigned",
+  "budgetsEnvelopeOverLabel": "Over-assigned",
+  "budgetsEnvelopeAllAssigned": "Every cent has a job",
+  "budgetsEnvelopeCaption": "{income} income · {assigned} assigned",
+  "@budgetsEnvelopeCaption": {
+    "placeholders": {
+      "income": { "type": "String" },
+      "assigned": { "type": "String" }
+    }
   }
 }

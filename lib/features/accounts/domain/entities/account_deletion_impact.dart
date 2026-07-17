@@ -8,6 +8,7 @@ class AccountDeletionImpact extends Equatable {
     required this.goalCount,
     required this.debtCount,
     required this.isLastAccount,
+    this.budgetCount = 0,
   });
 
   /// Active transactions that belong to the account, on either side of a
@@ -20,17 +21,24 @@ class AccountDeletionImpact extends Equatable {
   /// Distinct active debts touched by the account's transactions.
   final int debtCount;
 
+  /// Active budgets whose scope references this account (Presupuestos HU-06).
+  /// The budget is not deleted in cascade; the confirmation only tells the user
+  /// the account is used there.
+  final int budgetCount;
+
   /// Whether this is the only active account left: the app always needs one to
   /// record on, so deleting is blocked (HU-08).
   final bool isLastAccount;
 
-  bool get hasImpact => transactionCount > 0 || goalCount > 0 || debtCount > 0;
+  bool get hasImpact =>
+      transactionCount > 0 || goalCount > 0 || debtCount > 0 || budgetCount > 0;
 
   @override
   List<Object?> get props => [
         transactionCount,
         goalCount,
         debtCount,
+        budgetCount,
         isLastAccount,
       ];
 }

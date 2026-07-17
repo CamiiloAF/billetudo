@@ -189,8 +189,9 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             label: l10n.budgetFormRepeatUntilLabel,
             foreverLabel: l10n.budgetFormForever,
             untilLabel: l10n.budgetFormUntilDate,
-            valueLabel:
-                state.endDate == null ? null : _dateLabel.format(state.endDate!),
+            valueLabel: state.endDate == null
+                ? null
+                : _dateLabel.format(state.endDate!),
             onForever: () => cubit.endDateSelected(null),
             onPickDate: () => _pickEndDate(context, cubit, state),
           )
@@ -198,8 +199,9 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
           AccountFormField.selector(
             label: l10n.budgetFormEndLabel,
             icon: LucideIcons.calendarCheck,
-            value:
-                state.endDate == null ? null : _dateLabel.format(state.endDate!),
+            value: state.endDate == null
+                ? null
+                : _dateLabel.format(state.endDate!),
             hint: l10n.budgetFormEndLabel,
             onTap: () => _pickEndDate(context, cubit, state),
           ),
@@ -288,9 +290,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         FilledButton(
           onPressed: state.canSubmit && !state.submitting ? cubit.submit : null,
           child: Text(
-            state.isEditing
-                ? l10n.budgetFormSaveCta
-                : l10n.budgetFormCreateCta,
+            state.isEditing ? l10n.budgetFormSaveCta : l10n.budgetFormCreateCta,
           ),
         ),
       ],

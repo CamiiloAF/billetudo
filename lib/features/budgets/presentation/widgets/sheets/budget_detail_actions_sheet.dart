@@ -31,14 +31,12 @@ class BudgetDetailActionsSheet extends StatelessWidget {
           ListTile(
             leading: const Icon(LucideIcons.pencil),
             title: Text(l10n.commonEdit),
-            onTap: () =>
-                Navigator.of(context).pop(BudgetDetailAction.edit),
+            onTap: () => Navigator.of(context).pop(BudgetDetailAction.edit),
           ),
           ListTile(
             leading: const Icon(LucideIcons.archive),
             title: Text(l10n.budgetActionClose),
-            onTap: () =>
-                Navigator.of(context).pop(BudgetDetailAction.close),
+            onTap: () => Navigator.of(context).pop(BudgetDetailAction.close),
           ),
           ListTile(
             leading: Icon(LucideIcons.trash, color: colors.expenseText),
@@ -46,8 +44,7 @@ class BudgetDetailActionsSheet extends StatelessWidget {
               l10n.budgetActionDelete,
               style: TextStyle(color: colors.expenseText),
             ),
-            onTap: () =>
-                Navigator.of(context).pop(BudgetDetailAction.delete),
+            onTap: () => Navigator.of(context).pop(BudgetDetailAction.delete),
           ),
           const SizedBox(height: 16),
         ],

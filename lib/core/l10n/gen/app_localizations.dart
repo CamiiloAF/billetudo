@@ -2299,6 +2299,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Excedido por {amount}'**
   String budgetResultOverspent(String amount);
+
+  /// Aviso neutral: cuántos presupuestos usan la cuenta/categoría que se va a eliminar. No se elimina el presupuesto en cascada.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Se usa en 1 presupuesto.} other{Se usa en {count} presupuestos.}}'**
+  String deleteImpactBudgets(int count);
+
+  /// No description provided for @settingsEnvelopeMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo sobres'**
+  String get settingsEnvelopeMode;
+
+  /// No description provided for @settingsEnvelopeModeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reparte tu ingreso del mes entre tus presupuestos'**
+  String get settingsEnvelopeModeSubtitle;
+
+  /// No description provided for @settingsEnvelopeWhatIs.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué es?'**
+  String get settingsEnvelopeWhatIs;
+
+  /// No description provided for @envelopeInfoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué es el modo sobres?'**
+  String get envelopeInfoTitle;
+
+  /// No description provided for @envelopeInfoBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.'**
+  String get envelopeInfoBody;
+
+  /// No description provided for @envelopeInfoGotIt.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get envelopeInfoGotIt;
+
+  /// No description provided for @budgetsMenuDisableEnvelope.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar modo sobres'**
+  String get budgetsMenuDisableEnvelope;
+
+  /// No description provided for @budgetsEnvelopeUnassignedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin asignar'**
+  String get budgetsEnvelopeUnassignedLabel;
+
+  /// No description provided for @budgetsEnvelopeOverLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignado de más'**
+  String get budgetsEnvelopeOverLabel;
+
+  /// No description provided for @budgetsEnvelopeAllAssigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada peso tiene un trabajo'**
+  String get budgetsEnvelopeAllAssigned;
+
+  /// No description provided for @budgetsEnvelopeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'{income} de ingreso · {assigned} asignado'**
+  String budgetsEnvelopeCaption(String income, String assigned);
 }
 
 class _AppLocalizationsDelegate

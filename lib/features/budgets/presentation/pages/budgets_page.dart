@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -6,11 +8,15 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../accounts/presentation/widgets/empty_state.dart';
+import '../../../settings/presentation/cubit/app_settings_cubit.dart';
+import '../../domain/entities/zero_based_summary.dart';
 import '../cubit/budgets_list_cubit.dart';
 import '../cubit/budgets_list_state.dart';
+import '../cubit/zero_based_summary_cubit.dart';
 import '../widgets/budget_line.dart';
 import '../widgets/budget_skeleton_row.dart';
 import '../widgets/budgets_error_view.dart';
+import '../widgets/envelope_hero.dart';
 
 /// The budgets list (`s833Gk`). Custom header ("Presupuestos" + `+`) over the
 /// app tab bar; no `Page Header`. The overflow menu reaches the history.
@@ -29,6 +35,13 @@ class BudgetsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final envelopeEnabled =
+        context.watch<AppSettingsCubit>().state.zeroBasedEnabled;
+    final ZeroBasedSummary? summary = envelopeEnabled
+        ? context.watch<ZeroBasedSummaryCubit>().state.summary
+        : null;
+    final Widget? envelopeHeader =
+        summary == null ? null : EnvelopeHero(summary: summary);
 
     return Scaffold(
       appBar: AppBar(
@@ -47,6 +60,13 @@ class BudgetsPage extends StatelessWidget {
                 onTap: onOpenHistory,
                 child: Text(l10n.budgetsMenuHistory),
               ),
+              if (envelopeEnabled)
+                PopupMenuItem<void>(
+                  onTap: () => unawaited(
+                    context.read<AppSettingsCubit>().setZeroBasedEnabled(false),
+                  ),
+                  child: Text(l10n.budgetsMenuDisableEnvelope),
+                ),
             ],
           ),
         ],
@@ -59,11 +79,15 @@ class BudgetsPage extends StatelessWidget {
                 onRetry: context.read<BudgetsListCubit>().start,
               ),
             BudgetsListStatus.ready when state.budgets.isEmpty =>
-              BudgetsEmptyView(onAddBudget: onAddBudget),
+              BudgetsEmptyView(
+                onAddBudget: onAddBudget,
+                header: envelopeHeader,
+              ),
             BudgetsListStatus.ready => BudgetsListView(
                 state: state,
                 onOpenBudget: onOpenBudget,
                 onAddBudget: onAddBudget,
+                header: envelopeHeader,
               ),
           },
         ),
@@ -94,18 +118,33 @@ class BudgetsLoadingView extends StatelessWidget {
 }
 
 class BudgetsEmptyView extends StatelessWidget {
-  const BudgetsEmptyView({required this.onAddBudget, super.key});
+  const BudgetsEmptyView({required this.onAddBudget, this.header, super.key});
 
   final VoidCallback onAddBudget;
+
+  /// The "Modo sobres" hero, when active (HU-06).
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return EmptyState(
+    final empty = EmptyState(
       icon: LucideIcons.wallet,
       message: l10n.budgetsEmptyMessage,
       ctaLabel: l10n.budgetsEmptyCta,
       onCta: onAddBudget,
+    );
+    final header = this.header;
+    if (header == null) {
+      return empty;
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+      children: [
+        header,
+        const SizedBox(height: 20),
+        empty,
+      ],
     );
   }
 }
@@ -117,6 +156,7 @@ class BudgetsListView extends StatelessWidget {
     required this.state,
     required this.onOpenBudget,
     required this.onAddBudget,
+    this.header,
     super.key,
   });
 
@@ -124,17 +164,26 @@ class BudgetsListView extends StatelessWidget {
   final ValueChanged<String> onOpenBudget;
   final VoidCallback onAddBudget;
 
+  /// The "Modo sobres" hero, when active (HU-06). Rendered as the first item.
+  final Widget? header;
+
   @override
   Widget build(BuildContext context) {
+    final header = this.header;
+    final headerCount = header == null ? 0 : 1;
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-      itemCount: state.budgets.length + 1,
+      itemCount: headerCount + state.budgets.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        if (index == state.budgets.length) {
+        if (header != null && index == 0) {
+          return header;
+        }
+        final budgetIndex = index - headerCount;
+        if (budgetIndex == state.budgets.length) {
           return NewBudgetCta(onTap: onAddBudget);
         }
-        final entry = state.budgets[index];
+        final entry = state.budgets[budgetIndex];
         return BudgetLine(
           entry: entry,
           onTap: () => onOpenBudget(entry.budget.id),

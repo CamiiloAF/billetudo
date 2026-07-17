@@ -19,8 +19,7 @@ class ArchivedBudgetsState extends Equatable {
 
   bool get isLoading => status == ArchivedBudgetsStatus.loading;
 
-  bool get isEmpty =>
-      status == ArchivedBudgetsStatus.ready && budgets.isEmpty;
+  bool get isEmpty => status == ArchivedBudgetsStatus.ready && budgets.isEmpty;
 
   ArchivedBudgetsState copyWith({
     ArchivedBudgetsStatus? status,

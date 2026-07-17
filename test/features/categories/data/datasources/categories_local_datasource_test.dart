@@ -358,6 +358,136 @@ void main() {
       expect(secondCount, greaterThan(firstCount));
     });
   });
+
+  group('countReferencingBudgets', () {
+    Future<String> insertBudget({
+      String name = 'Presupuesto',
+      DateTime? archivedAt,
+      DateTime? deletedAt,
+      DateTime? tombstonedAt,
+    }) =>
+        db
+            .into(db.budgets)
+            .insertReturning(
+              BudgetsCompanion.insert(
+                name: name,
+                amountMinor: 100000,
+                currency: 'COP',
+                period: BudgetPeriod.monthly,
+                startDate: DateTime(2026, 1, 1),
+                archivedAt: Value(archivedAt),
+                deletedAt: Value(deletedAt),
+                tombstonedAt: Value(tombstonedAt),
+              ),
+            )
+            .then((row) => row.id);
+
+    Future<void> insertBudgetCategory(
+      String budgetId,
+      String categoryId, {
+      DateTime? deletedAt,
+      DateTime? tombstonedAt,
+    }) =>
+        db.into(db.budgetCategories).insert(
+              BudgetCategoriesCompanion.insert(
+                budgetId: budgetId,
+                categoryId: categoryId,
+                deletedAt: Value(deletedAt),
+                tombstonedAt: Value(tombstonedAt),
+              ),
+            );
+
+    test('0 cuando ningún presupuesto referencia la categoría', () async {
+      final category = await insertCategory(name: 'Comida');
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test('cuenta un presupuesto activo cuyo alcance referencia la categoría',
+        () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget();
+      await insertBudgetCategory(budgetId, category.id);
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 1);
+    });
+
+    test('NO cuenta un presupuesto cerrado (archivedAt)', () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget(archivedAt: DateTime(2026, 7, 15));
+      await insertBudgetCategory(budgetId, category.id);
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test('NO cuenta un presupuesto borrado (deletedAt)', () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget(deletedAt: DateTime(2026, 7, 15));
+      await insertBudgetCategory(budgetId, category.id);
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test('NO cuenta un presupuesto tombstoned', () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget(tombstonedAt: DateTime(2026, 7, 15));
+      await insertBudgetCategory(budgetId, category.id);
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test('NO cuenta una fila de alcance borrada aunque el presupuesto activo',
+        () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget();
+      await insertBudgetCategory(
+        budgetId,
+        category.id,
+        deletedAt: DateTime(2026, 7, 15),
+      );
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test(
+        'NO cuenta una fila de alcance tombstoned aunque el presupuesto '
+        'activo', () async {
+      final category = await insertCategory(name: 'Comida');
+      final budgetId = await insertBudget();
+      await insertBudgetCategory(
+        budgetId,
+        category.id,
+        tombstonedAt: DateTime(2026, 7, 15),
+      );
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+
+    test('ignora presupuestos que apuntan a otra categoría', () async {
+      final category = await insertCategory(name: 'Comida');
+      final otherCategory = await insertCategory(name: 'Transporte');
+      final budgetId = await insertBudget();
+      await insertBudgetCategory(budgetId, otherCategory.id);
+
+      final count = await datasource.countReferencingBudgets(category.id);
+
+      expect(count, 0);
+    });
+  });
 }
 
 Future<String> _insertAccount(AppDatabase db) => db

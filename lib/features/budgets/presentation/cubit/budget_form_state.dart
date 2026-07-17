@@ -135,8 +135,9 @@ class BudgetFormState extends Equatable {
         period: period ?? this.period,
         startDate: startDate ?? this.startDate,
         endDate: clearEndDate ? null : (endDate ?? this.endDate),
-        alertThresholdPct:
-            clearThreshold ? null : (alertThresholdPct ?? this.alertThresholdPct),
+        alertThresholdPct: clearThreshold
+            ? null
+            : (alertThresholdPct ?? this.alertThresholdPct),
         accountIds: accountIds ?? this.accountIds,
         categoryIds: categoryIds ?? this.categoryIds,
         submitting: submitting ?? this.submitting,

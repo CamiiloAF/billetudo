@@ -1248,4 +1248,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String budgetResultOverspent(String amount) {
     return 'Over by $amount';
   }
+
+  @override
+  String deleteImpactBudgets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used in $count budgets.',
+      one: 'Used in 1 budget.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsEnvelopeMode => 'Envelope mode';
+
+  @override
+  String get settingsEnvelopeModeSubtitle =>
+      'Split this month\'s income across your budgets';
+
+  @override
+  String get settingsEnvelopeWhatIs => 'What is it?';
+
+  @override
+  String get envelopeInfoTitle => 'What is envelope mode?';
+
+  @override
+  String get envelopeInfoBody =>
+      'It\'s a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It\'s optional and you can turn it on or off whenever you like.';
+
+  @override
+  String get envelopeInfoGotIt => 'Got it';
+
+  @override
+  String get budgetsMenuDisableEnvelope => 'Turn off envelope mode';
+
+  @override
+  String get budgetsEnvelopeUnassignedLabel => 'Unassigned';
+
+  @override
+  String get budgetsEnvelopeOverLabel => 'Over-assigned';
+
+  @override
+  String get budgetsEnvelopeAllAssigned => 'Every cent has a job';
+
+  @override
+  String budgetsEnvelopeCaption(String income, String assigned) {
+    return '$income income · $assigned assigned';
+  }
 }

@@ -29,5 +29,6 @@ class BudgetExpense extends Equatable {
   final DateTime date;
 
   @override
-  List<Object?> get props => [id, accountId, categoryId, amountMinor, currency, date];
+  List<Object?> get props =>
+      [id, accountId, categoryId, amountMinor, currency, date];
 }

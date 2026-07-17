@@ -40,7 +40,8 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
     }
     switch (result) {
       case Left(value: final failure):
-        emit(state.copyWith(status: BudgetFormStatus.failure, failure: failure));
+        emit(
+            state.copyWith(status: BudgetFormStatus.failure, failure: failure));
       case Right(value: final data):
         emit(_formFor(data));
     }
