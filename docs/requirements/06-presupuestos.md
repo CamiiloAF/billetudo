@@ -15,7 +15,8 @@ Presupuestos flexibles con **alcance configurable** (una o varias cuentas y/o ca
 Como usuario quiero crear un presupuesto y elegir **cuáles cuentas y cuáles categorías** entran en él, para presupuestar exactamente el gasto que me interesa (ej. solo mi tarjeta, o solo "Comida" + "Restaurantes" de mis cuentas de débito).
 
 **Criterios de aceptación:**
-- Campos base: `name` (obligatorio, 1-100 caracteres — es un presupuesto **personalizado** que el usuario nombra, ej. "Tarjeta de crédito", "Mercado del mes", "Gastos fijos"), `amountMinor` (centavos, > 0, nunca decimal), `currency` (ISO-4217), periodicidad y anclaje (ver HU-03), alcance (esta HU), y opcionalmente `alertThresholdPct` (HU-08) y `rollover` (HU-07, diferido).
+- Campos base: `name` (obligatorio, 1-100 caracteres — es un presupuesto **personalizado** que el usuario nombra, ej. "Tarjeta de crédito", "Mercado del mes", "Gastos fijos"), `icon` (opcional — ícono para reconocer el presupuesto de un vistazo en lista/detalle), `amountMinor` (centavos, > 0, nunca decimal), `currency` (ISO-4217), periodicidad y anclaje (ver HU-03), alcance (esta HU), y opcionalmente `alertThresholdPct` (HU-08) y `rollover` (HU-07, diferido).
+- **Ícono (`icon`):** el usuario elige un ícono en el formulario para identificar el presupuesto (no es derivable del alcance, que puede abarcar varias categorías/cuentas). **No lleva color propio**: por el sistema de diseño sobrio, el fondo del ícono permanece neutro (`$muted`) en todas las tarjetas — no se reintroduce color por presupuesto (única excepción: el estado de sobregasto tiñe a la familia semántica `expense`). Por eso `Budgets` añade `icon` pero **no** `color`.
 - Un presupuesto es una **entidad con nombre propio**, no un desglose automático por categoría: el usuario lo crea, lo nombra, y le asigna el alcance (cuentas/categorías) que quiera. La lista de presupuestos muestra **un elemento por presupuesto**, no una fila por categoría.
 - **Alcance por cuentas:** el usuario selecciona 0..N cuentas. **0 cuentas seleccionadas = todas las cuentas** (sin filtro de cuenta).
 - **Alcance por categorías:** el usuario selecciona 0..N categorías de `kind = expense`. **0 categorías = todas las categorías de gasto**. El selector oculta las de `kind = income` (no se presupuestan ingresos). Seleccionar una **categoría raíz incluye automáticamente todas sus subcategorías**.
@@ -154,6 +155,7 @@ enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 |---|---|---|
 | ~~`categoryId`~~ | — | **Se elimina**; el alcance de categorías pasa a `BudgetCategories`. |
 | `name` | `text().withLength(min: 1, max: 100)` | Nombre del presupuesto personalizado (obligatorio). HU-01. |
+| `icon` | `text().nullable()` | Ícono del presupuesto (opcional), como en Cuentas/Categorías/Metas. **No** se añade `color`: el icon-wrap es neutro `$muted` por el diseño sobrio. HU-01. |
 | `recurring` | `boolean().withDefault(false→true?)` | `true` = periódico, `false` = una única vez. Default `true`. HU-03. |
 | `endDate` | `dateTime().nullable()` | Fin de ventana. Obligatorio si `recurring = false` o `period = custom`; en periódicos, `null` = "Para Siempre", fijado = fecha de finalización. Posterior a `startDate`. HU-03. |
 | `archivedAt` | `dateTime().nullable()` | Cierre a histórico (HU-10/11). No nulo = cerrado. Distinto de `deletedAt` (papelera) y de `tombstonedAt` (no aplica). |
