@@ -10,10 +10,11 @@ Plantillas de transacciones planeadas a futuro: pueden repetirse (suscripciones,
 ## Historias de usuario
 
 ### HU-01 — Crear un pago programado
-Como usuario quiero definir una transacción que se repite (ej. arriendo mensual, Netflix), para no tener que registrarla manualmente cada vez.
+Como usuario quiero definir una transacción planeada a futuro —que se repite (ej. arriendo mensual, Netflix) o de una sola vez (un pago puntual la próxima semana)—, para no tener que registrarla manualmente cuando llegue la fecha.
 
 **Criterios de aceptación:**
-- Campos: `accountId` (obligatorio), `categoryId` (opcional), `amountMinor` (obligatorio), `currency`, `type` (income/expense/transfer), `note` (opcional), `frequency` (`ScheduleFrequency`: daily/weekly/monthly/yearly), `interval` (cada cuántas unidades de frecuencia, default 1), `nextDate` (obligatoria), `endDate` (opcional).
+- Campos: `accountId` (obligatorio), `categoryId` (opcional), `amountMinor` (obligatorio), `currency`, `type` (income/expense/transfer), `transferAccountId` (obligatorio solo si `type = transfer`), `note` (opcional), `frequency` (`ScheduleFrequency`: `once`/daily/weekly/monthly/yearly), `interval` (cada cuántas unidades de frecuencia, default 1; se ignora si `frequency = once`), `nextDate` (obligatoria), `endDate` (opcional), `requiresConfirmation` (bool, default `false`, HU-03).
+- `frequency = once` es un **pago único**: se programa para una sola fecha (`nextDate`) y no se repite. `interval`/`endDate` no aplican.
 - No hay límite de pagos programados activos (Nivel 0).
 - Ejemplo: `frequency = weekly`, `interval = 2` = cada 2 semanas.
 
@@ -22,7 +23,8 @@ Como usuario quiero que al llegar `nextDate` se genere automáticamente la trans
 
 **Criterios de aceptación:**
 - La transacción generada tiene `source = scheduled` y `scheduledPaymentId` apuntando a la plantilla.
-- Tras generarse, `nextDate` avanza según `frequency`/`interval` hasta la siguiente ocurrencia.
+- Si `frequency = once`, tras generar su única transacción la plantilla queda inactiva/histórica (no avanza `nextDate`).
+- Si `frequency` es repetible, tras generarse `nextDate` avanza según `frequency`/`interval` hasta la siguiente ocurrencia.
 - Si `endDate` está definida y ya se alcanzó, la plantilla deja de generar nuevas transacciones (pero no se elimina; queda inactiva/histórica).
 - Si la app estuvo cerrada y pasaron varias ocurrencias, se generan todas las transacciones pendientes al reabrir (o se ofrece confirmarlas en lote), sin perder ninguna.
 
@@ -45,6 +47,15 @@ Como usuario quiero modificar el monto, frecuencia o fecha de un pago programado
 **Criterios de aceptación:**
 - Editar la plantilla no modifica transacciones ya generadas en el pasado, solo las futuras.
 - Eliminar detiene la generación futura; es borrado lógico (`deletedAt`), y las transacciones ya generadas mantienen su `scheduledPaymentId` como referencia histórica.
+
+### HU-06 — Crear un pago programado desde un gasto con fecha futura
+Como usuario quiero que, si registro un gasto (o ingreso/transferencia) con una fecha futura desde el formulario normal, la app me ofrezca convertirlo en un pago programado, para no crear por error un movimiento pasado que ya afecta mi saldo.
+
+**Criterios de aceptación:**
+- Al guardar en el formulario de transacciones con `date` en el futuro, la app pregunta "¿Es un pago programado?" antes de persistir.
+- Si el usuario acepta, se abre el flujo de pago programado prellenado con lo ya capturado (cuenta, monto, categoría, nota, fecha como `nextDate`) y `frequency = once` por defecto; el usuario ajusta frecuencia/notificaciones y confirma.
+- Si el usuario rechaza, se mantiene el comportamiento actual (movimiento normal con esa fecha).
+- El puente vive en la presentación de Transacciones; no acopla el dominio de ambas features.
 
 ## Reglas de negocio y edge cases
 
