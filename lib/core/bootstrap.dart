@@ -17,9 +17,13 @@ import 'error/result.dart';
 /// - With `SENTRY_DSN`: `SentryFlutter.init` installs its own uncaught error
 ///   handlers (zone + `FlutterError` + `PlatformDispatcher`) and runs the app
 ///   from its `appRunner`.
-/// - Without a DSN: we install our own handlers, reporting to the no-op
-///   [CrashReporter] (which prints to console in debug), inside a
-///   `runZonedGuarded`.
+/// - Without a DSN: we install our own [FlutterError.onError] and
+///   [PlatformDispatcher.onError] handlers, reporting to the no-op
+///   [CrashReporter] (which prints to console in debug). We do NOT wrap
+///   `runApp` in a `runZonedGuarded`: `PlatformDispatcher.onError` already
+///   catches otherwise-uncaught async errors, and running the app in the same
+///   (root) zone as the binding above avoids Flutter's "Zone mismatch"
+///   assertion (the binding is initialized here, in the root zone).
 Future<void> bootstrap(Widget Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
@@ -76,9 +80,5 @@ Future<void> bootstrap(Widget Function() builder) async {
     return true;
   };
 
-  runZonedGuarded(
-    () => runApp(builder()),
-    (error, stack) =>
-        crash.recordError(error, stack, context: 'zone', fatal: true),
-  );
+  runApp(builder());
 }
