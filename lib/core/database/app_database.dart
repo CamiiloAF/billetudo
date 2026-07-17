@@ -45,7 +45,9 @@ enum CategoryKind { income, expense }
 /// quotas: 'manual' and 'imported' cost nothing; voice/ocr/notification do.
 enum TxSource { manual, voice, ocr, notification, imported, recurring }
 
-enum BudgetPeriod { weekly, monthly, yearly, custom }
+/// How often a budget repeats. `biweekly` is the es-CO semi-monthly fortnight
+/// (two periods per month anchored to the start day), NOT a rolling 14 days.
+enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
@@ -193,16 +195,44 @@ class Transactions extends Table with _SyncColumns {
   TextColumn get debtId => text().nullable().references(Debts, #id)();
 }
 
-/// Budgets. categoryId null = global budget (all expenses).
+/// User-named budgets with a configurable scope (accounts + categories via the
+/// `BudgetAccounts` / `BudgetCategories` join tables). No `categoryId` column:
+/// a budget is a named entity, not a per-category breakdown. An empty scope on
+/// both join tables = the global budget (all expenses). See
+/// docs/requirements/06-presupuestos.md.
 class Budgets extends Table with _SyncColumns {
-  TextColumn get categoryId => text().nullable().references(Categories, #id)();
+  /// Custom name the user gives the budget (e.g. 'Tarjeta de crédito'). HU-01.
+  TextColumn get name => text().withLength(min: 1, max: 100)();
+
+  /// Optional icon to recognize the budget at a glance. No `color`: the
+  /// icon-wrap stays neutral (`$muted`) by design. HU-01.
+  TextColumn get icon => text().nullable()();
+
   IntColumn get amountMinor => integer()();
   TextColumn get currency => text().withLength(min: 3, max: 3)();
   TextColumn get period => textEnum<BudgetPeriod>()();
   DateTimeColumn get startDate => dateTime()();
 
+  /// true = periodic (repeats each [period] from [startDate]), false = a single
+  /// one-off window. Defaults to true (periodic is the common case). HU-03.
+  BoolColumn get recurring => boolean().withDefault(const Constant(true))();
+
+  /// End of the window. Mandatory when `recurring = false` or `period = custom`;
+  /// on periodic budgets, null = "forever", a set value = stop-renewing date.
+  /// Must be after [startDate]. HU-03.
+  DateTimeColumn get endDate => dateTime().nullable()();
+
+  /// Closed-to-history timestamp (HU-10/11). Non-null = closed. Distinct from
+  /// `deletedAt` (trash) and `tombstonedAt` (not used here).
+  DateTimeColumn get archivedAt => dateTime().nullable()();
+
+  /// Early-alert threshold as a whole percent (1-100). null = "don't alert me".
+  /// HU-08.
+  IntColumn get alertThresholdPct =>
+      integer().nullable().withDefault(const Constant(80))();
+
   /// Whether the leftover/overspend carries into the next period
-  /// (zero-based style).
+  /// (zero-based style). Logic deferred (HU-07); the column exists from Phase 0.
   BoolColumn get rollover => boolean().withDefault(const Constant(false))();
 }
 
@@ -274,6 +304,51 @@ class TransactionTags extends Table with _SyncColumns {
       ];
 }
 
+/// Budget scope by account (N:N). No rows for a budget = all accounts. Carries
+/// its own id (from the mixin) because PowerSync needs a single-column PK, just
+/// like `TransactionTags`. See docs/requirements/06-presupuestos.md.
+class BudgetAccounts extends Table with _SyncColumns {
+  TextColumn get budgetId => text().references(Budgets, #id)();
+  TextColumn get accountId => text().references(Accounts, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {budgetId, accountId},
+      ];
+}
+
+/// Budget scope by category (N:N). No rows for a budget = all expense
+/// categories; a root category expands to its subcategories in the progress
+/// calculation. Carries its own id (from the mixin) for the single-column PK.
+class BudgetCategories extends Table with _SyncColumns {
+  TextColumn get budgetId => text().references(Budgets, #id)();
+  TextColumn get categoryId => text().references(Categories, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {budgetId, categoryId},
+      ];
+}
+
+/// Account-level app settings that must sync across the user's devices
+/// (zero-based mode, default currency...). Device-local prefs like the
+/// light/dark theme do NOT belong here — they go in a separate local store.
+///
+/// DEVIATION FROM `_SyncColumns` (documented on purpose): this is a singleton.
+/// The [id] is overridden to a well-known constant (`'app'`) instead of a random
+/// per-row UUID (`clientDefault`). Two offline devices generating random UUIDs
+/// would each create a row and PowerSync would duplicate them on merge; with a
+/// constant id the row is a true singleton and the merge is last-write-wins over
+/// `updatedAt`. The default singleton row is inserted by the migration/onCreate.
+class AppSettings extends Table with _SyncColumns {
+  @override
+  TextColumn get id => text().withDefault(const Constant('app'))();
+
+  /// Global zero-based ("Modo sobres") flag (HU-06).
+  BoolColumn get zeroBasedEnabled =>
+      boolean().withDefault(const Constant(false))();
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -289,18 +364,33 @@ class TransactionTags extends Table with _SyncColumns {
     Recurrings,
     Tags,
     TransactionTags,
+    BudgetAccounts,
+    BudgetCategories,
+    AppSettings,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
+
+  /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
+  /// `INSERT OR IGNORE`. `updated_at` is stamped in epoch millis (see
+  /// `_SyncColumns.updatedAt`); `created_at` and `zero_based_enabled` use their
+  /// column defaults.
+  Future<void> _seedAppSettings(Migrator m) async {
+    await m.database.customStatement(
+      'INSERT OR IGNORE INTO app_settings (id, updated_at) '
+      "VALUES ('app', CAST(strftime('%s','now') AS INTEGER) * 1000)",
+    );
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
           await m.createAll();
+          await _seedAppSettings(m);
         },
         onUpgrade: (Migrator m, int from, int to) async {
           // v1 -> v2: bank identification and card data columns on Accounts
@@ -391,6 +481,35 @@ class AppDatabase extends _$AppDatabase {
             }
 
             await m.dropColumn(accounts, 'account_number_enc');
+          }
+
+          // v5 -> v6: Budgets feature. See docs/requirements/06-presupuestos.md.
+          //  1. Budgets gains name/icon/recurring/endDate/archivedAt/
+          //     alertThresholdPct and drops `categoryId` (scope now lives in the
+          //     BudgetAccounts / BudgetCategories join tables).
+          //  2. New tables: BudgetAccounts, BudgetCategories, AppSettings.
+          //  3. AppSettings gets its singleton row (id 'app') seeded.
+          // `biweekly` is additive to the BudgetPeriod enum (stored as text), so
+          // no data migration is needed for existing `period` values.
+          if (from < 6) {
+            // `name` is NOT NULL without a Drift default, so `addColumn` would
+            // reject it. Add it by raw SQL with a temporary DEFAULT '' so any
+            // pre-existing rows stay valid (this is a local dev DB with no
+            // production data); new inserts always supply a real name.
+            await m.database.customStatement(
+              'ALTER TABLE budgets ADD COLUMN name TEXT NOT NULL DEFAULT \'\'',
+            );
+            await m.addColumn(budgets, budgets.icon);
+            await m.addColumn(budgets, budgets.recurring);
+            await m.addColumn(budgets, budgets.endDate);
+            await m.addColumn(budgets, budgets.archivedAt);
+            await m.addColumn(budgets, budgets.alertThresholdPct);
+            await m.dropColumn(budgets, 'category_id');
+
+            await m.createTable(budgetAccounts);
+            await m.createTable(budgetCategories);
+            await m.createTable(appSettings);
+            await _seedAppSettings(m);
           }
         },
       );
