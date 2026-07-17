@@ -126,6 +126,22 @@ Como usuario quiero ver el **histórico de los presupuestos que cerré** (no los
 - **Eliminar es borrado lógico (`deletedAt`)**, recuperable desde la **papelera** (no desde el histórico). Se usa `deletedAt` y **no** `tombstonedAt` porque ninguna otra tabla referencia `Budgets.id` por FK: no hay integridad referencial que preservar. PowerSync sincroniza el DELETE real por su cuenta.
 - Histórico (`archivedAt`) y papelera (`deletedAt`) son **dos conceptos separados**: cerrar conserva a la vista de histórico; eliminar manda a papelera para undo. Nunca se mezclan.
 
+### HU-12 — Ver los pagos programados que afectan el presupuesto
+Como usuario quiero ver, dentro del presupuesto, lo que ya tengo **programado por pagar** en este periodo y verlo reflejado en la barra de progreso en un color atenuado, para saber cuánto de mi presupuesto ya está comprometido antes de gastarlo.
+
+Lee de la feature `09-pagos-programados.md` (tabla `ScheduledPayments`); no introduce esquema nuevo.
+
+**Criterios de aceptación:**
+- **Qué cuenta como programado** — ocurrencias de pagos programados que caen en el **rango vigente** del periodo (HU-03) y cumplen el **mismo alcance** que el gasto real (HU-04): `type = expense`, misma `currency`, `(cuentas vacías OR accountId ∈ cuentas)` AND `(categorías vacías OR categoryId ∈ categorías, expandiendo raíces)`, plantilla no eliminada (`deletedAt IS NULL`).
+- **Nunca doble conteo (regla crítica):** una ocurrencia ya generada existe como transacción real (`source = scheduled`) y por tanto **ya está en `spentMinor`**. El monto programado cuenta **solo las ocurrencias aún no materializadas** en una transacción. Sumar la plantilla completa además de sus transacciones generadas contaría el mismo dinero dos veces.
+- **Una plantilla puede aportar varias ocurrencias al periodo:** hay que **proyectar las ocurrencias desde `nextDate` hacia adelante** según `frequency`/`interval`, acotadas por el fin de la ventana y por `endDate` de la plantilla — no basta con `nextDate`. Ej.: una plantilla semanal dentro de un presupuesto mensual aporta ~4 ocurrencias, no una.
+- Una ocurrencia **pendiente de confirmación** (modo manual, HU-03 de pagos programados) todavía **no afectó el saldo**, así que cuenta como programado, no como gastado.
+- **En la barra de progreso:** el monto programado se muestra como un **segmento atenuado contiguo al gastado** (gastado sólido → programado atenuado → resto sin usar). Se mantiene el acento único de marca: el segmento atenuado es una variante suave de `$primary`, **no** un color nuevo ni un semáforo.
+- **La proyección no es sobregasto:** que `gastado + programado` supere el 100% **no** tiñe la tarjeta de rojo. El rojo (familia semántica `expense`) sigue reservado exclusivamente al sobregasto **real** (`spentMinor > amountMinor`, HU-04). Un compromiso futuro es un aviso útil, no una falta cometida — teñirlo de rojo sería castigar al usuario por planear, justo lo contrario del tono de la app.
+- Se muestra la cifra de lo programado y el acceso a **qué** lo compone (la lista de esos pagos programados del periodo), no solo el total opaco.
+- **Periodos pasados** (HU-05): no hay programado (toda ocurrencia ya se resolvió, se omitió o quedó atrás) → el segmento no aparece. **Periodos futuros**: el gasto real suele ser 0 y el programado es justamente el panorama de valor.
+- Cálculo **local y determinístico** (sin IA, sin red), recalculado en tiempo real igual que el progreso, y **Nivel 0**.
+
 ## Reglas de negocio y edge cases
 
 - Las **transferencias** (`type = transfer`) nunca cuentan para el progreso de ningún presupuesto (no son gasto real; evitan doble conteo con el pago de tarjeta — ver `03-transacciones.md`). Esto vale también para presupuestos con alcance de cuenta (el pago de la tarjeta desde otra cuenta no consume el presupuesto de la tarjeta).
