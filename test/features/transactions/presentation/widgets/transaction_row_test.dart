@@ -32,7 +32,8 @@ void main() {
       );
 
       final amount = tester.widget<Text>(find.textContaining('100'));
-      expect(amount.data, startsWith('-'));
+      // Pencil prints an expense unsigned: only income is marked, with '+'.
+      expect(amount.data, isNot(startsWith('-')));
       expect(amount.style?.color, AppColors.light.textPrimary);
     },
   );

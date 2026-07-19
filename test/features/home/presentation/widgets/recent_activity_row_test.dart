@@ -20,7 +20,7 @@ void main() {
       .style!
       .color!;
 
-  testWidgets('gasto: signo negativo y color text-primary (nunca rojo, HU-05)',
+  testWidgets('gasto: sin signo y color text-primary (nunca rojo, HU-05)',
       (tester) async {
     await tester.pumpHomeWidget(
       row(buildActivity(
@@ -30,10 +30,10 @@ void main() {
     );
 
     expect(find.text('Mercado'), findsOneWidget);
-    expect(find.text('-250\u{00A0}COP'), findsOneWidget);
+    expect(find.text('250\u{00A0}COP'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '-250\u{00A0}COP'), colors.textPrimary);
+    expect(amountColor(tester, '250\u{00A0}COP'), colors.textPrimary);
   });
 
   testWidgets('ingreso: signo positivo y color income (verde, HU-05)',

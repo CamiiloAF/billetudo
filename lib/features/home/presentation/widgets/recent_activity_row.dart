@@ -88,7 +88,8 @@ class RecentActivityRow extends StatelessWidget {
         .format(transaction.amountMinor, currencyCode: transaction.currency);
     return switch (transaction.type) {
       TransactionType.income => '+$formatted',
-      TransactionType.expense => '-$formatted',
+      // Unsigned expense, per Pencil: only income carries a sign.
+      TransactionType.expense => formatted,
       TransactionType.transfer => formatted,
     };
   }

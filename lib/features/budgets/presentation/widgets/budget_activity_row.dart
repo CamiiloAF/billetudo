@@ -62,12 +62,11 @@ class BudgetActivityRow extends StatelessWidget {
     );
   }
 
-  /// Every budget activity item is an expense, so it always renders negative.
-  String _amountLabel() {
-    final amount = const MoneyFormatter()
-        .format(item.amountMinor, currencyCode: item.currency);
-    return '-$amount';
-  }
+  /// Every budget activity item is an expense, and an expense renders
+  /// unsigned (Pencil): the colour already says it is money going out, only
+  /// income is ever marked (with `+`).
+  String _amountLabel() => const MoneyFormatter()
+      .format(item.amountMinor, currencyCode: item.currency);
 
   String _subtitle() {
     final date = DateFormat.yMMMd('es_CO').format(item.date);

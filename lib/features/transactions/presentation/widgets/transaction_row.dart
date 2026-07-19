@@ -107,7 +107,9 @@ class TransactionRow extends StatelessWidget {
         .format(transaction.amountMinor, currencyCode: transaction.currency);
     return switch (transaction.type) {
       TransactionType.income => '+$formatted',
-      TransactionType.expense => '-$formatted',
+      // No minus sign on an expense: Pencil prints it unsigned and lets the
+      // colour carry the meaning (only income is marked, with `+`).
+      TransactionType.expense => formatted,
       TransactionType.transfer => formatted,
     };
   }
