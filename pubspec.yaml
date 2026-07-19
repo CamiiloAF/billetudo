@@ -60,9 +60,12 @@ dependencies:
   fl_chart: ^0.68.0
 
   # --- Tipografía (Plus Jakarta Sans, ver design-system MASTER.md) ---
-  # Empaquetada en assets/fonts/ (pesos 400/500/600/700/800, OFL). google_fonts
-  # la toma del bundle en vez de la red — necesario para uso offline y para que
-  # los golden tests rendericen la tipografía real, no el fallback del sistema.
+  # Empaquetada en assets/fonts/ (pesos 400/500/600/700/800, OFL) y declarada
+  # como familia real en la sección `flutter: fonts:` de abajo — la app NO usa
+  # `google_fonts` para tipografía (ver el comentario ahí: rompía los pesos).
+  # El paquete se conserva solo porque los golden tests siguen llamando a
+  # `GoogleFonts.config.allowRuntimeFetching = false` como red de seguridad
+  # contra descargas de red en `flutter test`.
   google_fonts: ^6.2.1
 
   # --- Monetización (rewarded ads + suscripciones) ---
@@ -140,12 +143,26 @@ flutter:
   uses-material-design: true
   generate: true # habilita l10n si usas flutter gen-l10n
 
-  # google_fonts encuentra estos archivos escaneando `assets` (no `fonts:` —
-  # así lo documenta el paquete: los nombres ya siguen la convención de la API
-  # de Google Fonts, así que declararlos en `fonts:` es redundante y no se
-  # debe renombrar el archivo).
-  assets:
-    - assets/fonts/
+  # Plus Jakarta Sans se declara como UNA familia con sus 5 pesos, no via
+  # `google_fonts`. Motivo: `GoogleFonts.plusJakartaSansTextTheme` fija
+  # `fontFamily: 'PlusJakartaSans_regular'` (una familia de un solo peso) en
+  # cada estilo del text theme, asi que `copyWith(fontWeight: w700/w800)`
+  # cambiaba el peso pedido sin cambiar el archivo que renderiza y todo salia
+  # en 400. Con la familia declarada aqui, el motor elige el `.ttf` correcto
+  # por `fontWeight` y `copyWith` vuelve a funcionar en toda la app.
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+          weight: 800
 
 dependency_overrides:
   # path_provider_foundation >=2.5 migró a native assets (hook/build.dart),

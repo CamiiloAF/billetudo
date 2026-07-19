@@ -86,8 +86,11 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
         const SizedBox(height: 16),
         Text(
           l10n.categoryAppearanceIconSectionLabel,
-          style:
-              theme.textTheme.labelLarge?.copyWith(color: colors.textSecondary),
+          // `Section Label` (`O1HK1l`) is 600, not the baseline 500.
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -115,8 +118,11 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
           children: [
             Text(
               l10n.categoryAppearanceColorSectionLabel,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: colors.textSecondary),
+              // `Section Label` (`QelD2`) is 600, not the baseline 500.
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             if (widget.colorLocked) ...[
               const SizedBox(width: 6),

@@ -44,7 +44,11 @@ class MergeConfirmationPage extends StatelessWidget {
                       Text(
                         l10n.authMergeErrorTitle,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium,
+                        // `Error State`'s `Title` (`awFv1`) is 16/700.
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 8),
                       Text(

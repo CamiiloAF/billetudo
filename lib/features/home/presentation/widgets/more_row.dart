@@ -51,7 +51,13 @@ class MoreRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(label, style: theme.textTheme.titleSmall),
+                  // Row labels in `Mas — Final` reuse `Appearance Field`'s
+                  // `Label` (`IwyuZ`): 600, not the baseline 500.
+                  child: Text(
+                    label,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 if (comingSoon) ...[
                   ComingSoonBadge(label: l10n.comingSoonBadge),

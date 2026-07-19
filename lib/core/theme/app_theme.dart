@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -20,6 +19,16 @@ abstract final class AppTheme {
   // feels of one piece.
   static const Duration motionDuration = Duration(milliseconds: 220);
   static const Curve motionCurve = Curves.easeInOut;
+
+  /// The brand typeface (MASTER.md → "Tipografía"). Declared in `pubspec.yaml`
+  /// as a single family with its five weights (400/500/600/700/800) so the
+  /// engine picks the right `.ttf` from `fontWeight`.
+  ///
+  /// It replaces `GoogleFonts.plusJakartaSansTextTheme`, which stamped a
+  /// one-weight family (`PlusJakartaSans_regular`) on every text style: asking
+  /// for `w700`/`w800` through `copyWith` changed the requested weight but not
+  /// the file that rendered, so every bold in the app came out at 400.
+  static const String fontFamily = 'PlusJakartaSans';
 
   static ThemeData light() => _build(AppColors.light, Brightness.light);
   static ThemeData dark() => _build(AppColors.dark, Brightness.dark);
@@ -44,11 +53,8 @@ abstract final class AppTheme {
       scrim: c.scrim,
     );
 
-    final baseText = ThemeData(brightness: brightness).textTheme;
-    final textTheme = GoogleFonts.plusJakartaSansTextTheme(baseText).apply(
-      bodyColor: c.textPrimary,
-      displayColor: c.textPrimary,
-    );
+    final textTheme = _textTheme(ThemeData(brightness: brightness).textTheme)
+        .apply(bodyColor: c.textPrimary, displayColor: c.textPrimary);
 
     return ThemeData(
       useMaterial3: true,
@@ -56,6 +62,7 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: c.background,
       canvasColor: c.background,
+      fontFamily: fontFamily,
       textTheme: textTheme,
       dividerColor: c.border,
       dividerTheme: DividerThemeData(color: c.border, thickness: 1, space: 1),
@@ -120,8 +127,10 @@ abstract final class AppTheme {
           minimumSize: const Size(0, 52),
           padding: const EdgeInsets.symmetric(horizontal: 20),
           side: BorderSide(color: c.border),
+          // 700, same as the filled button: `Button/Secondary` (`kAVHJ`) sets
+          // its label to 15/700 in billetudo.pen, not a lighter 600.
           textStyle:
-              textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
@@ -162,6 +171,42 @@ abstract final class AppTheme {
       scrollbarTheme: const ScrollbarThemeData(
         thickness: WidgetStatePropertyAll(0),
       ),
+    );
+  }
+
+  /// Restamps every style of [base] onto the brand family at the design
+  /// system's baseline weight.
+  ///
+  /// Material's own scale mixes `w400` and `w500`, but MASTER.md's weight
+  /// palette starts at 500 (`500` body/metadata, `600` emphasis, `700` titles,
+  /// `800` hero amounts) — 400 is not part of it. So any text that does not
+  /// ask for a weight must land on 500, the frames' body weight, instead of
+  /// inheriting Material's 400.
+  ///
+  /// Call sites raise it from there with `copyWith(fontWeight: ...)`, which
+  /// now really swaps the font file (see [fontFamily]).
+  static TextTheme _textTheme(TextTheme base) {
+    TextStyle? brand(TextStyle? style) => style?.copyWith(
+          fontFamily: fontFamily,
+          fontWeight: FontWeight.w500,
+        );
+
+    return TextTheme(
+      displayLarge: brand(base.displayLarge),
+      displayMedium: brand(base.displayMedium),
+      displaySmall: brand(base.displaySmall),
+      headlineLarge: brand(base.headlineLarge),
+      headlineMedium: brand(base.headlineMedium),
+      headlineSmall: brand(base.headlineSmall),
+      titleLarge: brand(base.titleLarge),
+      titleMedium: brand(base.titleMedium),
+      titleSmall: brand(base.titleSmall),
+      bodyLarge: brand(base.bodyLarge),
+      bodyMedium: brand(base.bodyMedium),
+      bodySmall: brand(base.bodySmall),
+      labelLarge: brand(base.labelLarge),
+      labelMedium: brand(base.labelMedium),
+      labelSmall: brand(base.labelSmall),
     );
   }
 }

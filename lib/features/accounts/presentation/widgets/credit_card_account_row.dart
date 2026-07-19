@@ -51,8 +51,10 @@ class CreditCardAccountRow extends StatelessWidget {
                           account.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          // 600, not 700: `Credit Card Account Row`'s `Name`
+                          // (`Z4mwDi`) is 15/600 — only `Debt` is 700.
                           style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 2),
                         Text(

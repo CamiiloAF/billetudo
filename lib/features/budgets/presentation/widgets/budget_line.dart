@@ -101,7 +101,11 @@ class BudgetLine extends StatelessWidget {
                     entry.budget.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 15),
+                    // `Budget Line`'s `Name` (`LoPRJ`) is 15/600.
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

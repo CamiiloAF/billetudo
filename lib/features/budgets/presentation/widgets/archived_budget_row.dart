@@ -78,8 +78,12 @@ class ArchivedBudgetRow extends StatelessWidget {
                             entry.budget.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontSize: 15),
+                            // `Archived Budget Row`'s `Name` (`Du849`) is
+                            // 15/700 — heavier than a live `Budget Line`.
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(

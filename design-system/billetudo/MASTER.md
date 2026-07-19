@@ -69,7 +69,10 @@
 - **Fuente unica:** Plus Jakarta Sans (heading y body).
 - **Mood:** geometrica, moderna, legible, profesional pero calida.
 - **Google Fonts:** [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)
-- **Flutter:** paquete `google_fonts`, `GoogleFonts.plusJakartaSans()`.
+- **Flutter:** la familia se declara en `pubspec.yaml` bajo `flutter: fonts:` con sus cinco pesos (los `.ttf` viven en `assets/fonts/`) y se aplica vía `AppTheme.fontFamily`. **No usar `google_fonts` en `lib/`.**
+  - **Por qué (2026-07-19):** `GoogleFonts.plusJakartaSansTextTheme` estampaba `fontFamily: 'PlusJakartaSans_regular'` —una familia de **un solo peso**— en cada estilo del text theme, así que `copyWith(fontWeight:)` era **inerte en toda la app**: pedir 700 u 800 renderizaba 400, y ningún test lo detectaba porque los goldens congelaron el resultado. Afectaba a 233 call sites con peso explícito más 65 que heredaban el 400 de Material — un peso que ni siquiera está en la paleta de abajo.
+  - **El peso base del text theme es 500**, no el 400/500 mezclado de Material: todo texto que no pide peso debe caer en el 500 de cuerpo de los frames.
+  - **Ojo en tests:** los `.ttf` de `pubspec.yaml` se empaquetan pero `flutter test` **no los registra** — eso lo hacía `google_fonts` como efecto colateral. Lo resuelve `test/flutter_test_config.dart`, que los registra una vez para toda la suite. Sin eso, los widget tests miden con la tipografía placeholder y fallan con overflows falsos.
 - **Pesos usados:** 500 (cuerpo/metadatos), 600 (enfasis/links), 700 (titulos), 800 (montos grandes tipo Hero).
 - **Escala tipica:** 42px (monto Hero), 24px (titulo de pantalla/label de exploracion), 17px (nombre de usuario), 15-16px (titulos de tarjeta, nombres de fila), 12-14px (metadatos, labels, botones).
 

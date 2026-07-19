@@ -30,11 +30,11 @@ void setGoldenViewport(WidgetTester tester, [Size size = goldenPhoneSize]) {
   });
 }
 
-/// google_fonts falls back to the bare Material fallback typeface if it tries
-/// to hit the network — there is none in `flutter test`. The real Plus Jakarta
-/// Sans ships in `assets/fonts/` precisely so goldens capture it instead of
-/// that fallback (see `pubspec.yaml`). Idempotent: safe to call from every
-/// golden test's `setUpAll`.
+/// A safety net against `google_fonts` reaching for the network, which never
+/// resolves in `flutter test`. The app itself no longer renders through
+/// `google_fonts` (Plus Jakarta Sans is a plain `pubspec.yaml` family now, see
+/// `AppTheme.fontFamily`), so this only guards leftovers. Idempotent: safe to
+/// call from every golden test's `setUpAll`.
 void disableGoogleFontsRuntimeFetching() {
   GoogleFonts.config.allowRuntimeFetching = false;
 }
@@ -42,8 +42,9 @@ void disableGoogleFontsRuntimeFetching() {
 /// `flutter test` substitutes every font that has not been explicitly loaded
 /// with a placeholder glyph (a tofu box) to keep non-golden tests fast and
 /// deterministic. Plus Jakarta Sans escapes that substitution because
-/// `google_fonts` loads its bytes through its own `FontLoader` regardless of
-/// the test binding, but `Icons.*` (Material Icons) and `LucideIcons.*` (the
+/// `test/flutter_test_config.dart` registers its five weights once for every
+/// test file, goldens included, so a plain widget test measures the same
+/// glyphs the app ships. `Icons.*` (Material Icons) and `LucideIcons.*` (the
 /// app's real icon set, see `pubspec.yaml`) do not — so without this, every
 /// icon in a golden renders as a hollow square instead of the glyph the
 /// design actually ships. Call once per golden test file's `setUpAll`,
@@ -63,9 +64,8 @@ Future<void> loadMaterialIconsFont() async {
 
   final lucideData =
       await rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf');
-  final lucideLoader =
-      FontLoader('packages/lucide_icons_flutter/Lucide')
-        ..addFont(Future.value(lucideData));
+  final lucideLoader = FontLoader('packages/lucide_icons_flutter/Lucide')
+    ..addFont(Future.value(lucideData));
   await lucideLoader.load();
 }
 

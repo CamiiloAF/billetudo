@@ -65,7 +65,11 @@ class DateFilterSheetBody extends StatelessWidget {
                 Expanded(
                   child: Text(
                     l10n.dateFilterSheetTitle,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    // A sheet title is 700 in billetudo.pen (`ElVUc` in
+                    // `jpARf`), not the theme's baseline 500.
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ),
                 if (filter.isCustomRange)

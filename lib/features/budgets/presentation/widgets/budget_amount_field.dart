@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -22,10 +21,6 @@ import '../../../../core/utils/money_formatter.dart';
 /// so a `$` baked into the text would be stripped on the first keystroke.
 /// Painting it separately also keeps the caret arithmetic untouched.
 ///
-/// The 800 weight has to come from an explicit `GoogleFonts` variant. Every
-/// `textTheme` style resolves to the `PlusJakartaSans_regular` family, so
-/// `copyWith(fontWeight: ...)` on one changes the requested weight without
-/// changing the font file that actually renders — the figure comes out at 400.
 class BudgetAmountField extends StatelessWidget {
   const BudgetAmountField({
     required this.amountMinor,
@@ -46,7 +41,8 @@ class BudgetAmountField extends StatelessWidget {
     const money = MoneyFormatter();
     final decimals = MoneyFormatter.currencyDecimals(currency);
     final amountMinor = this.amountMinor;
-    final style = GoogleFonts.plusJakartaSans(
+    const style = TextStyle(
+      fontFamily: AppTheme.fontFamily,
       fontSize: 22,
       fontWeight: FontWeight.w800,
     );

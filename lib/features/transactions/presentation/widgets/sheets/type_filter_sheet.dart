@@ -44,8 +44,15 @@ class _TypeFilterSheetState extends State<TypeFilterSheet> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(l10n.typeFilterSheetTitle,
-            style: Theme.of(context).textTheme.titleLarge),
+        // A sheet title is 700 in billetudo.pen (`ivU3E` in `rjjfw`), not
+        // the theme's baseline 500.
+        Text(
+          l10n.typeFilterSheetTitle,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
         for (final type in TransactionType.values)
           CheckboxListTile(
             value: _selected.contains(type),

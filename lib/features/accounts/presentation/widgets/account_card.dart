@@ -45,8 +45,10 @@ class AccountCard extends StatelessWidget {
                       account.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      // 600, not 700: `Account Card`'s `Name` (`w4d4i6`) is
+                      // 15/600 — only the balance is 700.
                       style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),
                     Text(
