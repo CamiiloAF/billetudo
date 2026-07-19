@@ -74134,10 +74134,10 @@
                       "content": "cada mes"
                     },
                     "dIIG3": {
-                      "enabled": false
+                      "enabled": true
                     },
                     "CyI5F": {
-                      "content": "15 ago · en 6 días"
+                      "content": "13 ago · en 4 días"
                     }
                   }
                 },
@@ -79916,7 +79916,7 @@
                           "id": "Fp7mK",
                           "name": "Days",
                           "fill": "$primary-on-soft-strong",
-                          "content": "en 27 días",
+                          "content": "en 4 días",
                           "fontFamily": "$font-body",
                           "fontSize": 12,
                           "fontWeight": "700"
@@ -80021,7 +80021,7 @@
                       "content": "Modo de registro"
                     },
                     "JIG4w": {
-                      "content": "Automático"
+                      "content": "Manual"
                     }
                   }
                 },
@@ -82002,10 +82002,10 @@
                       "content": "cada mes"
                     },
                     "dIIG3": {
-                      "enabled": false
+                      "enabled": true
                     },
                     "CyI5F": {
-                      "content": "15 ago · en 6 días"
+                      "content": "13 ago · en 4 días"
                     }
                   }
                 },
@@ -86403,7 +86403,7 @@
                           "id": "mBwjG",
                           "name": "Days",
                           "fill": "$primary-on-soft-strong",
-                          "content": "en 27 días",
+                          "content": "en 4 días",
                           "fontFamily": "$font-body",
                           "fontSize": 12,
                           "fontWeight": "700"
@@ -86508,7 +86508,7 @@
                       "content": "Modo de registro"
                     },
                     "JIG4w": {
-                      "content": "Automático"
+                      "content": "Manual"
                     }
                   }
                 },

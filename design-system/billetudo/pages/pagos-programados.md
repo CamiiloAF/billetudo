@@ -25,17 +25,62 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 | Detalle — menú "⋮" (recurrente/transfer) | `yHf9k` |
 | Detalle — menú "⋮" (`once`, sin Posponer) | `nLkvf` |
 | Sheet — Posponer (nueva fecha) | `dQUMj` |
+| Sheet — confirmar eliminar | `tED4D` |
+| Lista — vacía (0 plantillas) | `YI1wY` |
+| Lista — vacía (0 activas, con terminadas) | `U9jUDR` |
+| Lista — carga (skeletons) | `QE1Wq` |
+| Lista — error | `KeKke` |
+| Lista — filtro Terminados (con datos) | `LmrIV` |
+| Lista — filtro Terminados, carga | `gD9g7` |
+| Lista — filtro Terminados, error | `w3MUo` |
 | Notas de decisiones para `flutter-dev` | `StBxL` (lista) · `XWSrD` (formulario) |
+
+**Sin frame (estados de runtime, no requieren diseño):** carga/vacío/error de la subpantalla "Por confirmar", carga/fallo del detalle, y los estados "guardando" de la hoja de confirmación y del sheet de Posponer.
+
+**Sin frame y pendiente de diseñar:** el detalle de una plantilla con lápida (`inactive`), hoy tratado como estado de runtime; y "Volver a programar" desde una plantilla terminada (nota `qPQAD` en el canvas, mejora futura no dibujada).
+
+## Terminados: filtro en sitio, no pantalla aparte
+
+Los chips **"Activos · N" / "Terminados · N"** son un par de pills que **filtran la misma lista**; no navegan. Se diseñó así tras una auditoría: el vocabulario de pill con estado seleccionado ya promete filtro, y la implementación original empujaba una pantalla apilada con back y **sin** la fila de chips — el usuario no podía predecir el toque y, una vez dentro, no tenía forma de volver a "Activos" salvo el back. `LmrIV` es por eso hermano de `o0twiq`/`t6UXUo`: mismo chrome, misma `Tab Bar`, mismo FAB, solo cambia el área de contenido.
+
+- **El chip "Terminados · N" se oculta con N = 0** (no deshabilitado). Por eso **no existe un frame de "filtro Terminados vacío"**: no hay chip que tocar. El caso borde —quedarse sin terminadas estando dentro del filtro— se resuelve con el fallback de estado descrito más abajo.
+- **El FAB se queda en el filtro:** crear un pago programado es acción de la pantalla, no del filtro; ocultarlo haría saltar el chrome al alternar chips.
+- **La tarjeta terminada es la misma `tit0W`, con la misma geometría que la activa** (monto arriba, en el `Top`). Solo cambia el eje inferior: donde la activa lleva el chip de cadencia va un chip **"Terminada" + `check-circle`** en `$muted`/`$text-secondary`, y la meta dice **"Último pago · 15 mar 2026"**. Dos reglas detrás de eso: (a) **no atenuar la tarjeta** — son históricos navegables, no elementos deshabilitados, y el gris leería como castigo; (b) la meta va **etiquetada** porque ocupa el mismo slot donde la activa dice "en 3 días" (próximo pago), y para una repetible que alcanzó su `endDate` el último pago y la fecha de fin **no son la misma fecha**. Se soltó el contador relativo ("hace 48 días"), que crece para siempre y a 400+ días no informa.
+- **Tap en tarjeta terminada → detalle** (`Eyold`). El `InkWell` cubre la tarjeta completa.
+- **Selección del chip: fondo `-soft` + borde `$primary-on-soft-strong` 1.5 `inner`.** El borde **no es decorativo, es el único diferenciador real**: `$primary-soft` y `$muted` tienen el mismo valor en cada tema (`#EEECFB` claro, `#26243B` oscuro), así que sin él las dos cajas son idénticas y el estado se cifra solo en el color del label — WCAG 1.4.1. Y el borde **no puede ser `$primary` crudo**: sobre `$muted` en oscuro da 2.75:1, por debajo del 3:1 de WCAG 1.4.11. `$primary-on-soft-strong` da 6.04:1 claro / 5.52:1 oscuro. `strokeAlignment: inner` para no inflar el tap target de 44px.
+- **La fila de chips se renderiza cuando los contadores ya son conocidos.** Por eso `gD9g7`/`w3MUo` (carga/error *del filtro*) sí la llevan —llegaste tocando el chip, quitarla te dejaría sin salida— y `QE1Wq`/`KeKke` (carga/error *inicial*) no. Es divergencia deliberada. **Pero la carga inicial sí reserva el alto de la fila** con un placeholder de dos pills en `$skeleton` sin labels (`QE1Wq`→`c2RuB`, `VcbSV`→`XHnuP`): sin eso, la fila de 44px + gap 16 aparece de golpe al resolver y empuja el contenido ~60px, lo que se lee como glitch. `KeKke` no lo lleva — es estado terminal, no hay resolución que empuje nada.
+- **Carga: `min(N, 5)` skeletons**, no 5 fijos. Si el contador del chip ya es conocido (que es la razón por la que la fila se muestra), pintar 5 cuando el chip dice 3 hace que la pantalla encoja al resolver.
+- **Dos vacíos distintos, y su copy debe diferir.** `YI1wY` es el vacío total (0 plantillas): no lleva chips —con 0 plantillas no hay nada que filtrar— y dice "Aún no tienes pagos programados". `U9jUDR` es "0 activas + N terminadas": **sí** lleva chips (son el único camino al histórico) y dice **"Por ahora no tienes pagos programados activos"** + subtítulo *"Tus N pagos terminados siguen disponibles en «Terminados»"*. Reusar el "Aún no" de `YI1wY` sería copy de primer uso para alguien que **sí tuvo** pagos programados: le borra el historial, en contra del tono de progreso.
+- **El fallback a "Activos" es una condición de estado, no de navegación.** Cuando N llega a 0 —sea cual sea la causa— el filtro cae a Activos. Con PowerSync la lista es un stream: N puede llegar a 0 por sync de otro dispositivo sin que haya ningún evento de retorno, así que el fallback cuelga de la emisión del stream, no de un callback de pop.
+- La fila de chips es el componente reutilizable **`Scheduled Filter Chips` (`qPSvV`)**; en código va como widget propio, no inline en cada estado.
 
 **Tema oscuro:** cada frame de arriba tiene su gemelo oscuro en la banda **"PAGOS PROGRAMADOS — OSCURO"** (etiqueta `j9f1r5`, `y:43420+`), separada debajo del claro. Generados con `theme:{mode:"dark"}` — recoloreo 100% por tokens, cero hex. Paridad y contraste AA en oscuro verificados por `ui-ux-reviewer`.
 
 **Componentes reutilizables:**
-- `Scheduled Card/B — Tarjeta` (`tit0W`) — plantilla activa en la lista principal.
+- `Scheduled Card/B — Tarjeta` (`tit0W`) — plantilla en la lista principal, **activa o terminada** (ver "Terminados: filtro en sitio" más abajo: misma geometría, solo cambia el eje inferior).
+- `Scheduled Filter Chips` (`qPSvV`) — la fila "Activos · N / Terminados · N". Filtra en sitio; **no navega**.
 - `Scheduled Pending Row/B2 — Compacta` (`QhuIP`) — ocurrencia pendiente. Su `context` lleva la regla de truncado; **léelo antes de tocarla**.
+
+## Geometría del `Content` (valores del `.pen`, no deducibles del texto)
+
+| Estado | `Content.padding` | `Content.gap` | `Lista.gap` |
+|---|---|---|---|
+| Lista con datos (`o0twiq`, `t6UXUo`, filtro `LmrIV`) | `[6, 20, 92, 20]` | 16 | 10 |
+| Lista en carga (`QE1Wq`) y carga del filtro (`gD9g7`) | `[6, 20, 92, 20]` | 16 | 10 |
+| Error del filtro (`w3MUo`) y vacío "0 activas" (`U9jUDR`) | `[6, 20, 92, 20]` | 16 | — |
+| Error inicial (`KeKke`) y vacío total (`YI1wY`) | `[6, 20, 20, 20]` | — | — |
+
+**El `92` de abajo no es espaciado: es el colchón del FAB**, que va en `layoutPosition: absolute` en `x:306 y:888` sobre un frame de 972. Es una **dependencia entre dos nodos** — con menos, la última tarjeta de una lista larga queda tapada por el FAB. Es un bug funcional, no cosmético, y no se detecta leyendo el `.md`: hay un test de regresión que verifica que el borde inferior de la última tarjeta no cruce el borde superior del FAB.
+
+**Los dos estados terminales (`KeKke`, `YI1wY`) llevan `20` en vez de `92` a propósito**: no tienen chips ni contenido vivo debajo, así que no hay nada que el FAB pueda tapar. No los uniformes con los demás — la divergencia es deliberada.
+
+Todos los estados comparten estos valores **para que ninguno mueva el contenido al transicionar a otro**: si el skeleton y la lista cargada difieren, la pantalla salta al resolver y el placeholder de chips pierde su razón de ser.
 
 ## Navegación
 
 Pantalla **apilada**: `Page Header` (atrás) + **sin `Tab Bar`** (se llega desde Más → Pagos programados). Crear = **FAB**. La subpantalla "Por confirmar" también es apilada, con scroll real (`ListView`); la lista **no** tiene scroll interno anidado.
+
+**Los chips Activos/Terminados NO navegan** — filtran en sitio (ver "Terminados: filtro en sitio" arriba). La única navegación desde la lista es: fila de desbordamiento → "Por confirmar", tarjeta → detalle, FAB → formulario.
 
 ## Arriba ocurrencias, abajo plantillas (regla crítica)
 
@@ -101,13 +146,14 @@ La fila mide **52px en la lista y en la subpantalla**. Se evaluó darle más alt
 
 Es un **bottom sheet**, no una pantalla apilada — se eligió a propósito: el caso común (`YpMV7`, ~330px, confirmar tal cual o solo mirar) es genuinamente ligero, y la hoja solo crece cuando de verdad editas (divulgación progresiva). Una confirmación que *parece* un formulario se pospone, y los pendientes se acumulan — el fracaso que esta pantalla existe para evitar.
 
-- **Monto anclado abajo** (`ofg07` colapsada / `Rslzk` expandida): tap en el monto **expande el keypad en sitio**, dentro del mismo sheet — NO abre un sheet sobre el sheet. Vocabulario de icono honesto: `chevron-down` en Monto = expande aquí; `chevron-right` en Fecha/Cuenta = abre selector (`zMqxt`/`fcVZN`). El keypad queda en zona de pulgar (~627px); se descartó un sheet dedicado de teclado (taparía justo lo que confirmas).
+- **Monto anclado abajo** (`ofg07` colapsada / `Rslzk` expandida): tap en el monto **expande el keypad en sitio**, dentro del mismo sheet — NO abre un sheet sobre el sheet. Vocabulario de icono honesto: el Monto usa **`chevron-up` colapsado** (afordancia de "se abre hacia arriba", verificado en `ofg07`/`YpMV7`) y `chevron-down` expandido (colapsar) = expande aquí; `chevron-right` en Fecha/Cuenta = abre selector (`zMqxt`/`fcVZN`). El keypad queda en zona de pulgar (~627px); se descartó un sheet dedicado de teclado (taparía justo lo que confirmas).
 - **Head = la plantilla:** icono + nombre + "categoría · frecuencia" + **lápiz** (ir a editar la plantilla, HU-05). **Toda la fila del head es tocable** (44pt), el lápiz es solo afordancia. El lápiz distingue "editar la plantilla" del `chevron-right` de las filas ("editar este campo de la ocurrencia"). **En modo guiado el lápiz NO aparece** (tocarlo abortaría la revisión).
 - **Scope Note:** "Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer $X." Es lo único que el usuario no puede deducir mirando. **Omitida cuando `frequency = once`** (no hay plantilla futura que aclarar).
 - **No hay bloque "de la plantilla"** (Tipo/Categoría/Nota en solo-lectura): se quitó. Tipo es redundante (el monto ya lo dice por signo/color), la categoría subió al head, la nota deja de informar tras leerla una vez.
 - **Ocurrencias acumuladas (×2+):** franja de contexto "Tienes N pagos de X sin confirmar / Ahora confirmas el más antiguo, del [fecha]. Las otras N siguen en tu lista." Con **×1 NO se renderiza** (la fila Fecha ya lo dice). Confirmar una ocurrencia **cierra y vuelve a la lista** (que muestra ×N−1), no encadena in-sheet; para vaciar la cola de corrido está "Revisar todas" (revisión guiada secuencial).
 - **Tres acciones:** **Confirmar** (primario, full-width, abajo, zona de pulgar) + fila secundaria **[Posponer | Omitir]** (dos `Button/Secondary` outline). Arreglo **local** — no se modificó el `Sheet Buttons Row` (`Ot4yI`) compartido. Guiada: Posponer + "Confirmar y siguiente" + Omitir + Salir (link arriba-derecha, fuera de la zona de acciones).
 - **Tipos:** `expense`; `income` (monto en `$income-text` con `+`, head con categoría de ingreso); `transfer` (dos filas Cuenta origen/destino, head sin categoría, "Monto a transferir"; **sin swap** — es conveniencia de creación, no de confirmación).
+- **Token del ingreso:** el icon tile del head de `EJAvD` usa **`$mint-soft`**. No existe `$income-soft` en el `.pen` — el par suave del verde es `mint-soft`. No lo inventes en `AppColors`.
 
 ## Formulario crear/editar (HU-01, HU-05)
 
@@ -154,7 +200,19 @@ Snooze de una ocurrencia: moverla a una fecha posterior **sin registrarla ni sal
 - **Deuda AA global de `nM9ea` (Tag Chip):** su label por defecto usa `$primary-on-soft` sobre `$primary-soft` (~4.17:1, **falla AA**). Se corrigió por **override local** a `$primary-on-soft-strong` en las instancias de esta feature (detalle + formulario); el componente global sigue con el token débil porque es compartido con Transacciones (feature cerrada / código implementado, no se quiso crear drift). **Limpieza transversal pendiente** aparte.
 - **Tap targets** de "+ Etiqueta" y de la "x" del `Tag Chip` (36px/12px): padear el área tocable a **44pt** en Flutter (mismo fix ya aplicado a `AI Question Chip`).
 - **Cambio de esquema `ScheduledPaymentTags`** + herencia de etiquetas al generar (HU-02) — vía `/drift-schema-change`.
-- **Enforcement del date picker de Posponer:** deshabilitar dinámicamente todo día ≤ `max(fecha original, hoy)`; abrir el calendario en el mes de la primera fecha seleccionable (no en el de la fecha original) por si el piso cae a fin de mes.
+- ~~**Enforcement del date picker de Posponer**~~ — **resuelto** (2026-07-19): el piso `max(fecha original, hoy) + 1 día` se aplica en `SnoozeSheetCubit`, el pasado queda atenuado en bloque continuo y el calendario abre en el mes de la primera fecha seleccionable. Verificado contra `dQUMj` por `pencil-fidelity-reviewer`.
+- ~~**CTA "Posponer" al pie del sheet `dQUMj`**~~ — **resuelto** (2026-07-19): **se queda** y ya está dibujado en ambos temas (`WBbrs` claro / `M9QWa` oscuro), `Button/Primary` full-width con `alarm-clock`. Razón: en el resto de la app el `Date Picker Sheet` llena un campo y la escritura la confirma el "Guardar" de la pantalla; aquí no hay nada después, así que sin el botón un solo tap en el calendario ejecuta una escritura real. Sin "Cancelar" al lado: el scrim y el handle ya son escotillas, y posponer es reversible por Snackbar.
+- ~~**Signo de los gastos**~~ — **resuelto** (2026-07-19): **manda el `.pen`**. Los montos de gasto van **sin signo**; solo el ingreso lleva `+` en `$income-text`. El `-` no vivía en `money_formatter.dart` (que solo emite `-` cuando el `amountMinor` es genuinamente negativo) sino compuesto a mano en 6 call sites, ya corregidos en transacciones, inicio, presupuestos y pagos programados. **Excepción deliberada:** los saldos de Cuentas conservan el negativo — un sobregiro o una deuda de tarjeta es información, no formato.
+
+## Limitaciones conocidas de los datos de mockup
+
+Los frames son maquetas, no una base de datos: sus datos son coherentes **dentro de cada pantalla** y entre las pantallas de una misma plantilla, pero no forman un dataset global consistente. Al leerlos como especificación, ten esto presente:
+
+- **El "hoy" implícito varía entre plantillas.** Está unificado por plantilla (todas las pantallas de "Ahorro mensual" asumen hoy = 9 ago 2026, forzado por las tarjetas hermanas de su misma lista), pero no en todo el canvas. Perseguir un "hoy" global es trabajo sin retorno y se rompe con cualquier edición futura.
+- **La ocurrencia pendiente de "Ahorro mensual" cae el 1 ago, pero su serie está anclada al día 13** (13 may / 13 jun / 13 jul generados). Es una ocurrencia vencida coherente con la zona "Por confirmar", pero no pertenece a la serie mensual. Alinearla exigiría reordenar filas en la zona de pendientes y chocaría con el 13 jul ya listado como generado — se dejó a propósito.
+- Los nombres de cuenta se acortan en filas compactas ("Fondo viaje") frente al detalle ("Fondo de viaje familiar"). Es **intencional**: el mockup usa cadenas cortas donde en producción hay ellipsis. No son dos cuentas distintas.
+
+Regla general: si un dato del mockup contradice una regla de `docs/requirements/09-pagos-programados.md`, **manda el requisito**. Los datos de maqueta existen para mostrar la forma, no para definir el comportamiento.
 
 ## Trampas de herramienta (aprendidas en este diseño)
 
