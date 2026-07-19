@@ -73,11 +73,15 @@ class BudgetDetailPage extends StatelessWidget {
 
   Future<void> _openActions(BuildContext context) async {
     final cubit = context.read<BudgetDetailCubit>();
-    final id = cubit.state.budget?.id;
-    if (id == null) {
+    final budget = cubit.state.budget;
+    if (budget == null) {
       return;
     }
-    final action = await BudgetDetailActionsSheet.show(context);
+    final id = budget.id;
+    final action = await BudgetDetailActionsSheet.show(
+      context,
+      budgetName: budget.name,
+    );
     if (action == null || !context.mounted) {
       return;
     }

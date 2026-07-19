@@ -46,7 +46,11 @@ class BudgetsPage extends StatelessWidget {
         ? null
         : EnvelopeHero(
             summary: summary,
-            onInfo: () => unawaited(EnvelopeInfoSheet.show(context)),
+            // Reached only while the mode is on, so the sheet drops its
+            // "Activar modo sobres" call to action.
+            onInfo: () => unawaited(
+              EnvelopeInfoSheet.show(context, envelopeEnabled: true),
+            ),
           );
 
     return Scaffold(
@@ -119,7 +123,13 @@ class BudgetsPageHeader extends StatelessWidget {
         await settings.setZeroBasedEnabled(!envelopeEnabled);
       case BudgetsMenuAction.envelopeInfo:
         if (context.mounted) {
-          await EnvelopeInfoSheet.show(context);
+          final activate = await EnvelopeInfoSheet.show(
+            context,
+            envelopeEnabled: envelopeEnabled,
+          );
+          if (activate == true) {
+            await settings.setZeroBasedEnabled(true);
+          }
         }
     }
   }

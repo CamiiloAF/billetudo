@@ -2390,10 +2390,22 @@ abstract class AppLocalizations {
   /// **'Eliminar'**
   String get budgetActionDelete;
 
+  /// No description provided for @budgetActionDeleteBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar presupuesto'**
+  String get budgetActionDeleteBudget;
+
+  /// No description provided for @budgetDetailActionsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Acciones del presupuesto'**
+  String get budgetDetailActionsSubtitle;
+
   /// No description provided for @budgetDeleteConfirmMessage.
   ///
   /// In es, this message translates to:
-  /// **'Podrás deshacerlo justo después de eliminar.'**
+  /// **'Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.'**
   String get budgetDeleteConfirmMessage;
 
   /// No description provided for @budgetFormNewTitle.
@@ -2603,8 +2615,20 @@ abstract class AppLocalizations {
   /// No description provided for @budgetThresholdTitle.
   ///
   /// In es, this message translates to:
-  /// **'Umbral de alerta'**
+  /// **'Avisarme cuando gaste el…'**
   String get budgetThresholdTitle;
+
+  /// No description provided for @budgetThresholdHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Te enviaremos un aviso local al llegar a ese % — sin costo.'**
+  String get budgetThresholdHint;
+
+  /// No description provided for @budgetThresholdRecommended.
+  ///
+  /// In es, this message translates to:
+  /// **'Recomendado'**
+  String get budgetThresholdRecommended;
 
   /// No description provided for @budgetThresholdCustom.
   ///
@@ -2612,11 +2636,53 @@ abstract class AppLocalizations {
   /// **'Personalizado'**
   String get budgetThresholdCustom;
 
+  /// No description provided for @budgetThresholdCustomSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Define tu propio %'**
+  String get budgetThresholdCustomSubtitle;
+
+  /// No description provided for @budgetThresholdCustomTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Define tu propio %'**
+  String get budgetThresholdCustomTitle;
+
+  /// No description provided for @budgetThresholdCustomHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajusta el porcentaje en pasos de 5.'**
+  String get budgetThresholdCustomHint;
+
+  /// No description provided for @budgetThresholdOffSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactiva la alerta de este presupuesto'**
+  String get budgetThresholdOffSubtitle;
+
+  /// No description provided for @budgetThresholdDecrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Bajar el porcentaje'**
+  String get budgetThresholdDecrease;
+
+  /// No description provided for @budgetThresholdIncrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir el porcentaje'**
+  String get budgetThresholdIncrease;
+
   /// No description provided for @budgetIconSheetTitle.
   ///
   /// In es, this message translates to:
   /// **'Elegir ícono'**
   String get budgetIconSheetTitle;
+
+  /// No description provided for @budgetIconSheetHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El ícono se muestra en un fondo neutro — sin color por presupuesto.'**
+  String get budgetIconSheetHint;
 
   /// No description provided for @budgetsHistoryTitle.
   ///
@@ -2771,8 +2837,32 @@ abstract class AppLocalizations {
   /// No description provided for @envelopeInfoBody.
   ///
   /// In es, this message translates to:
-  /// **'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.'**
+  /// **'Es una forma de presupuestar donde le das un trabajo a cada peso. Repartes todo tu ingreso del mes en \'sobres\' —tus presupuestos— hasta que no quede nada sin asignar.'**
   String get envelopeInfoBody;
+
+  /// No description provided for @envelopeInfoBulletJobs.
+  ///
+  /// In es, this message translates to:
+  /// **'Así decides a dónde va tu plata antes de gastarla: gastar, ahorrar o pagar deudas.'**
+  String get envelopeInfoBulletJobs;
+
+  /// No description provided for @envelopeInfoBulletZero.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando \'Sin asignar\' llega a \$0, cada peso tiene un propósito.'**
+  String get envelopeInfoBulletZero;
+
+  /// No description provided for @envelopeInfoReassure.
+  ///
+  /// In es, this message translates to:
+  /// **'Es opcional y no te bloquea nada. Actívalo o desactívalo cuando quieras.'**
+  String get envelopeInfoReassure;
+
+  /// No description provided for @envelopeInfoActivate.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar modo sobres'**
+  String get envelopeInfoActivate;
 
   /// No description provided for @envelopeInfoGotIt.
   ///

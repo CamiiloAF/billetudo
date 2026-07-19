@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -12,8 +13,19 @@ import '../../../../core/utils/money_formatter.dart';
 /// `chevron-down`) that opens the currency picker.
 ///
 /// The typed figure carries the currency's own decimals (COP has none), so a
-/// prefilled amount never reads `4.500.000,00`; the placeholder is the
-/// currency's zero (`$0`), exactly as the frame shows it.
+/// prefilled amount never reads `4.500.000,00`, and it is always prefixed by
+/// the currency symbol — `KP13F` reads `$0` empty and must read `$4.500.000`
+/// filled, never a bare `4.500.000`.
+///
+/// The symbol is a **fixed prefix outside the editable text**, not part of the
+/// value: the field's input formatter only lets digits and separators through,
+/// so a `$` baked into the text would be stripped on the first keystroke.
+/// Painting it separately also keeps the caret arithmetic untouched.
+///
+/// The 800 weight has to come from an explicit `GoogleFonts` variant. Every
+/// `textTheme` style resolves to the `PlusJakartaSans_regular` family, so
+/// `copyWith(fontWeight: ...)` on one changes the requested weight without
+/// changing the font file that actually renders — the figure comes out at 400.
 class BudgetAmountField extends StatelessWidget {
   const BudgetAmountField({
     required this.amountMinor,
@@ -31,11 +43,10 @@ class BudgetAmountField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final theme = Theme.of(context);
     const money = MoneyFormatter();
     final decimals = MoneyFormatter.currencyDecimals(currency);
     final amountMinor = this.amountMinor;
-    final style = theme.textTheme.headlineSmall?.copyWith(
+    final style = GoogleFonts.plusJakartaSans(
       fontSize: 22,
       fontWeight: FontWeight.w800,
     );
@@ -50,6 +61,14 @@ class BudgetAmountField extends StatelessWidget {
       ),
       child: Row(
         children: [
+          Text(
+            MoneyFormatter.currencySymbol,
+            style: style.copyWith(
+              color: amountMinor == null
+                  ? colors.textSecondary
+                  : colors.textPrimary,
+            ),
+          ),
           Expanded(
             child: TextFormField(
               initialValue: amountMinor == null
@@ -61,7 +80,7 @@ class BudgetAmountField extends StatelessWidget {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
-              style: style?.copyWith(color: colors.textPrimary),
+              style: style.copyWith(color: colors.textPrimary),
               decoration: InputDecoration(
                 isCollapsed: true,
                 filled: false,
@@ -69,8 +88,8 @@ class BudgetAmountField extends StatelessWidget {
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                hintText: money.formatSymbol(0, currencyCode: currency),
-                hintStyle: style?.copyWith(color: colors.textSecondary),
+                hintText: money.formatAmount(0, decimalDigits: decimals),
+                hintStyle: style.copyWith(color: colors.textSecondary),
               ),
             ),
           ),

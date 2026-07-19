@@ -1,19 +1,16 @@
-import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_detail_actions_sheet.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_threshold_custom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/golden_helpers.dart';
 
-/// The detail overflow ("⋮") sheet: Editar · Cerrar (guardar en histórico) ·
-/// Eliminar (en `$expense-text`).
+/// Where the "Personalizado ›" chevron of `m3jomu/bWlly` leads.
 ///
-/// Pencil row (`design-system/billetudo/pages/presupuestos.md`):
-/// `detail_actions` → `G26c4T` / `f1WviW` (Sheet — acciones del detalle ⋮).
-///
-/// The sheet is stateless — it offers the same three actions for every budget
-/// (recurrente, una única vez, sobregastado), so there is a single business
-/// state to capture per theme. Opened through a real trigger so the golden
-/// includes the scrim, the drag handle and the `BottomSheetBase` chrome.
+/// **No Pencil frame exists for this destination**: `billetudo.pen` draws the
+/// chevron but never designs what it opens, so this golden has nothing to be
+/// audited against — it only locks the current, primitives-only composition
+/// (`Bottom Sheet Base` head + stepper + `Button/Primary`) so it can't drift
+/// silently before design ships the real frame.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -30,10 +27,8 @@ void main() {
       wrapForGolden(
         Builder(
           builder: (context) => ElevatedButton(
-            onPressed: () => BudgetDetailActionsSheet.show(
-              context,
-              budgetName: 'Mercado del mes',
-            ),
+            onPressed: () =>
+                BudgetThresholdCustomSheet.show(context, initial: 85),
             child: const Text('open'),
           ),
         ),
@@ -51,8 +46,13 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('acciones del detalle ($suffix)', (tester) async {
-      await golden(tester, 'detail_actions_$suffix', brightness: brightness);
+    testWidgets('umbral personalizado: stepper en 85% ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'threshold_custom_stepper_$suffix',
+        brightness: brightness,
+      );
     });
   }
 }

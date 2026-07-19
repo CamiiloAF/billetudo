@@ -25,6 +25,13 @@ class MoneyFormatter {
 
   static const int _minorPerMajor = 100;
 
+  /// The leading symbol [formatSymbol] prepends. Exposed so an *editable*
+  /// amount field can paint it as a fixed prefix outside the editable text
+  /// (where it would otherwise be stripped by the field's digit-only input
+  /// formatter), and still read exactly like the read-only `$45.000` the
+  /// design shows.
+  static const String currencySymbol = r'$';
+
   /// How many decimals a currency shows to the user. Storage always keeps two
   /// (minor unit = 1/100, see [_minorPerMajor]); this is only about *display*.
   /// COP has no cents in practice, so it reads as a whole number (`$45.000`),
@@ -78,7 +85,7 @@ class MoneyFormatter {
       locale: locale,
       decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
     );
-    return '\$$digits';
+    return '$currencySymbol$digits';
   }
 
   /// Same as [format] but without the currency code/symbol (digits only).

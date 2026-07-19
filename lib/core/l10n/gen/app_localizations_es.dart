@@ -1324,8 +1324,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetActionDelete => 'Eliminar';
 
   @override
+  String get budgetActionDeleteBudget => 'Eliminar presupuesto';
+
+  @override
+  String get budgetDetailActionsSubtitle => 'Acciones del presupuesto';
+
+  @override
   String get budgetDeleteConfirmMessage =>
-      'Podrás deshacerlo justo después de eliminar.';
+      'Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get budgetFormNewTitle => 'Nuevo presupuesto';
@@ -1435,13 +1441,43 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetFormSaveCta => 'Guardar cambios';
 
   @override
-  String get budgetThresholdTitle => 'Umbral de alerta';
+  String get budgetThresholdTitle => 'Avisarme cuando gaste el…';
+
+  @override
+  String get budgetThresholdHint =>
+      'Te enviaremos un aviso local al llegar a ese % — sin costo.';
+
+  @override
+  String get budgetThresholdRecommended => 'Recomendado';
 
   @override
   String get budgetThresholdCustom => 'Personalizado';
 
   @override
+  String get budgetThresholdCustomSubtitle => 'Define tu propio %';
+
+  @override
+  String get budgetThresholdCustomTitle => 'Define tu propio %';
+
+  @override
+  String get budgetThresholdCustomHint => 'Ajusta el porcentaje en pasos de 5.';
+
+  @override
+  String get budgetThresholdOffSubtitle =>
+      'Desactiva la alerta de este presupuesto';
+
+  @override
+  String get budgetThresholdDecrease => 'Bajar el porcentaje';
+
+  @override
+  String get budgetThresholdIncrease => 'Subir el porcentaje';
+
+  @override
   String get budgetIconSheetTitle => 'Elegir ícono';
+
+  @override
+  String get budgetIconSheetHint =>
+      'El ícono se muestra en un fondo neutro — sin color por presupuesto.';
 
   @override
   String get budgetsHistoryTitle => 'Histórico';
@@ -1543,7 +1579,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get envelopeInfoBody =>
-      'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.';
+      'Es una forma de presupuestar donde le das un trabajo a cada peso. Repartes todo tu ingreso del mes en \'sobres\' —tus presupuestos— hasta que no quede nada sin asignar.';
+
+  @override
+  String get envelopeInfoBulletJobs =>
+      'Así decides a dónde va tu plata antes de gastarla: gastar, ahorrar o pagar deudas.';
+
+  @override
+  String get envelopeInfoBulletZero =>
+      'Cuando \'Sin asignar\' llega a \$0, cada peso tiene un propósito.';
+
+  @override
+  String get envelopeInfoReassure =>
+      'Es opcional y no te bloquea nada. Actívalo o desactívalo cuando quieras.';
+
+  @override
+  String get envelopeInfoActivate => 'Activar modo sobres';
 
   @override
   String get envelopeInfoGotIt => 'Entendido';

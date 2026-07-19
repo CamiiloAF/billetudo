@@ -36,6 +36,21 @@ class SettingsPage extends StatelessWidget {
   final VoidCallback onOpenDeleteAccount;
   final ValueChanged<String> onOpenComingSoon;
 
+  /// Opens the info sheet and honours its "Activar modo sobres" call to action.
+  Future<void> _openEnvelopeInfo(
+    BuildContext context, {
+    required bool envelopeEnabled,
+  }) async {
+    final cubit = context.read<AppSettingsCubit>();
+    final activate = await EnvelopeInfoSheet.show(
+      context,
+      envelopeEnabled: envelopeEnabled,
+    );
+    if (activate == true) {
+      await cubit.setZeroBasedEnabled(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -83,8 +98,12 @@ class SettingsPage extends StatelessWidget {
                                 .read<AppSettingsCubit>()
                                 .setZeroBasedEnabled(value),
                           ),
-                          onWhatIs: () =>
-                              unawaited(EnvelopeInfoSheet.show(context)),
+                          onWhatIs: () => unawaited(
+                            _openEnvelopeInfo(
+                              context,
+                              envelopeEnabled: settings.zeroBasedEnabled,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 32),

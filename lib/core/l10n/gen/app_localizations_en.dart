@@ -1320,8 +1320,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetActionDelete => 'Delete';
 
   @override
+  String get budgetActionDeleteBudget => 'Delete budget';
+
+  @override
+  String get budgetDetailActionsSubtitle => 'Budget actions';
+
+  @override
   String get budgetDeleteConfirmMessage =>
-      'You can undo this right after deleting.';
+      'This budget will be deleted. You can undo this right after deleting.';
 
   @override
   String get budgetFormNewTitle => 'New budget';
@@ -1431,13 +1437,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetFormSaveCta => 'Save changes';
 
   @override
-  String get budgetThresholdTitle => 'Alert threshold';
+  String get budgetThresholdTitle => 'Alert me when I\'ve spent…';
+
+  @override
+  String get budgetThresholdHint =>
+      'We\'ll send you a local notice when you reach that % — free of charge.';
+
+  @override
+  String get budgetThresholdRecommended => 'Recommended';
 
   @override
   String get budgetThresholdCustom => 'Custom';
 
   @override
+  String get budgetThresholdCustomSubtitle => 'Set your own %';
+
+  @override
+  String get budgetThresholdCustomTitle => 'Set your own %';
+
+  @override
+  String get budgetThresholdCustomHint =>
+      'Adjust the percentage in steps of 5.';
+
+  @override
+  String get budgetThresholdOffSubtitle => 'Turns off this budget\'s alert';
+
+  @override
+  String get budgetThresholdDecrease => 'Lower the percentage';
+
+  @override
+  String get budgetThresholdIncrease => 'Raise the percentage';
+
+  @override
   String get budgetIconSheetTitle => 'Choose icon';
+
+  @override
+  String get budgetIconSheetHint =>
+      'The icon shows on a neutral background — no color per budget.';
 
   @override
   String get budgetsHistoryTitle => 'History';
@@ -1539,7 +1575,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get envelopeInfoBody =>
-      'It\'s a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It\'s optional and you can turn it on or off whenever you like.';
+      'It\'s a way of budgeting where you give every cent a job. You split all of the month\'s income into \'envelopes\' — your budgets — until nothing is left unassigned.';
+
+  @override
+  String get envelopeInfoBulletJobs =>
+      'That\'s how you decide where your money goes before you spend it: spend, save or pay off debt.';
+
+  @override
+  String get envelopeInfoBulletZero =>
+      'When \'Unassigned\' reaches \$0, every cent has a purpose.';
+
+  @override
+  String get envelopeInfoReassure =>
+      'It\'s optional and blocks nothing. Turn it on or off whenever you like.';
+
+  @override
+  String get envelopeInfoActivate => 'Turn on envelope mode';
 
   @override
   String get envelopeInfoGotIt => 'Got it';

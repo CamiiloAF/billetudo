@@ -7,9 +7,14 @@ import '../utils/category_appearance.dart';
 /// icon/color picker (`lAxmS`).
 ///
 /// Only the **selected** tile takes color (fill `$<color>-soft` + stroke
-/// `$<color>` + icon `$<color>`, where `<color>` is whatever the color grid
+/// `$<color>` 2px + icon `$<color>`, where `<color>` is whatever the color grid
 /// below currently has picked); the rest stay neutral
 /// (`$muted`/`$text-secondary`).
+///
+/// When there is no color grid ([selectedColorToken] null, e.g. the budget
+/// picker `XsnnD`), the selected treatment falls back to the brand family
+/// (`$primary-soft` + `$primary` + `$primary-on-soft`) instead of the neutral
+/// one — otherwise "selected" would be indistinguishable from "not selected".
 class IconTile extends StatelessWidget {
   const IconTile({
     required this.iconName,
@@ -31,12 +36,23 @@ class IconTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final fg = selected
-        ? CategoryAppearance.colorFor(colors, selectedColorToken)
-        : colors.textSecondary;
-    final bg = selected
-        ? CategoryAppearance.softColorFor(colors, selectedColorToken)
-        : colors.muted;
+    final neutralSelection = selectedColorToken == null;
+    final Color fg;
+    final Color bg;
+    final Color stroke;
+    if (!selected) {
+      fg = colors.textSecondary;
+      bg = colors.muted;
+      stroke = Colors.transparent;
+    } else if (neutralSelection) {
+      fg = colors.primaryOnSoft;
+      bg = colors.primarySoft;
+      stroke = colors.primary;
+    } else {
+      fg = CategoryAppearance.colorFor(colors, selectedColorToken);
+      bg = CategoryAppearance.softColorFor(colors, selectedColorToken);
+      stroke = fg;
+    }
 
     return Semantics(
       button: true,
@@ -44,16 +60,16 @@ class IconTile extends StatelessWidget {
       label: iconName,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        customBorder: const CircleBorder(),
         child: Container(
           width: 60,
           height: 60,
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(16),
-            border: selected ? Border.all(color: fg, width: 1.5) : null,
+            shape: BoxShape.circle,
+            border: Border.all(color: stroke, width: 2),
           ),
-          child: Icon(CategoryAppearance.iconFor(iconName), color: fg),
+          child: Icon(CategoryAppearance.iconFor(iconName), size: 24, color: fg),
         ),
       ),
     );
