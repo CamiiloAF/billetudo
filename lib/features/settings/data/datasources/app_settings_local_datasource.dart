@@ -30,28 +30,34 @@ class AppSettingsLocalDatasource {
           .getSingleOrNull();
 
   /// Marks the onboarding default categories as seeded for this installation.
-  /// Upserts on the constant id (like [setZeroBasedEnabled]) so it can never
-  /// create a second row, and stamps [now] into `updatedAt`.
+  ///
+  /// A plain `UPDATE`, not an upsert: `AppSettings` is physically a
+  /// PowerSync-managed view (see decision #14, docs/requirements/05-auth-sync.md),
+  /// and SQLite rejects `INSERT ... ON CONFLICT ... DO UPDATE` against a view
+  /// outright (`cannot UPSERT a view`) regardless of its `INSTEAD OF` triggers.
+  /// Safe as a plain update because the singleton row always exists already
+  /// — `_seedAppSettings()` creates it on `onCreate`/migration — so the
+  /// "insert" branch of an upsert is never actually needed here.
   Future<void> markCategoriesSeeded({required DateTime now}) =>
-      _db.into(_db.appSettings).insertOnConflictUpdate(
-            AppSettingsCompanion.insert(
-              id: const Value(singletonId),
-              categoriesSeeded: const Value(true),
-              updatedAt: Value(now.millisecondsSinceEpoch),
-            ),
-          );
+      (_db.update(_db.appSettings)..where((s) => s.id.equals(singletonId)))
+          .write(
+        AppSettingsCompanion(
+          categoriesSeeded: const Value(true),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
 
-  /// Upserts the singleton with [zeroBasedEnabled]. Uses `insertOnConflictUpdate`
-  /// keyed on the constant id so it can never create a second row.
+  /// Updates the singleton's [zeroBasedEnabled]. See [markCategoriesSeeded]
+  /// for why this is a plain `UPDATE`, never an upsert.
   Future<void> setZeroBasedEnabled({
     required bool zeroBasedEnabled,
     required DateTime now,
   }) =>
-      _db.into(_db.appSettings).insertOnConflictUpdate(
-            AppSettingsCompanion.insert(
-              id: const Value(singletonId),
-              zeroBasedEnabled: Value(zeroBasedEnabled),
-              updatedAt: Value(now.millisecondsSinceEpoch),
-            ),
-          );
+      (_db.update(_db.appSettings)..where((s) => s.id.equals(singletonId)))
+          .write(
+        AppSettingsCompanion(
+          zeroBasedEnabled: Value(zeroBasedEnabled),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
 }
