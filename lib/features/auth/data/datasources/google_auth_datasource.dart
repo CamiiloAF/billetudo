@@ -1,6 +1,7 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/config/env.dart';
 import '../models/social_credential.dart';
 
 /// Thrown when the user dismisses the Google sign-in sheet — not a failure,
@@ -22,12 +23,14 @@ class GoogleAuthDatasource {
     if (_initialized) {
       return;
     }
-    // `serverClientId`/`clientId` come from the native `google-services.json`
-    // / `GoogleService-Info.plist` once those are generated for this app
-    // (pending `flutter create .` + Supabase project wiring, see
-    // CLAUDE.md → "Estado del repo"). Passing none lets each platform fall
-    // back to its native config file when present.
-    await GoogleSignIn.instance.initialize();
+    // `serverClientId` is the Google Cloud "Web application" OAuth client id
+    // (see `Env.googleServerClientId`): Supabase needs it server-side to
+    // validate the `idToken` collected below. The native `clientId` still
+    // comes from `google-services.json` / `GoogleService-Info.plist` per
+    // platform, which each SDK reads on its own.
+    await GoogleSignIn.instance.initialize(
+      serverClientId: Env.googleServerClientId,
+    );
     _initialized = true;
   }
 

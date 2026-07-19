@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
-import 'default_categories_seed.dart';
+import '../models/category_seed_entry.dart';
 
 /// Drift queries for the Categories feature.
 ///
@@ -276,46 +276,44 @@ class CategoriesLocalDatasource {
           )
           .then((rows) => rows.isEmpty ? null : rows.first);
 
-  /// HU-06: inserts the whole onboarding seed set in one transaction. Each
-  /// root/subcategory gets a contiguous `sortOrder` within its own scope,
-  /// following the appendix order.
-  Future<void> seedDefaultCategories(DateTime now) => _db.transaction(
-        () async {
-          for (final entry in defaultCategorySeed.entries) {
-            final kind = entry.key;
-            var rootOrder = 0;
-            for (final root in entry.value) {
-              final rootRow = await insertCategory(
-                CategoriesCompanion.insert(
-                  name: root.name,
-                  kind: kind,
-                  icon: Value(root.icon),
-                  color: Value(root.color),
-                  sortOrder: Value(rootOrder),
-                  createdAt: Value(now),
-                  updatedAt: Value(now.millisecondsSinceEpoch),
-                ),
-              );
-              rootOrder++;
-
-              var subOrder = 0;
-              for (final sub in root.subcategories) {
-                await insertCategory(
-                  CategoriesCompanion.insert(
-                    name: sub.name,
-                    kind: kind,
-                    parentId: Value(rootRow.id),
-                    icon: Value(sub.icon),
-                    color: Value(sub.color),
-                    sortOrder: Value(subOrder),
-                    createdAt: Value(now),
-                    updatedAt: Value(now.millisecondsSinceEpoch),
-                  ),
-                );
-                subOrder++;
-              }
-            }
-          }
-        },
-      );
+  /// HU-06: inserts the onboarding seed set fetched from the remote
+  /// `category_seeds` catalog (`docs/requirements/05-auth-sync.md`, decision
+  /// #12), in one transaction.
+  ///
+  /// Unlike a normal [insertCategory], every row keeps the catalog's own
+  /// stable [CategorySeedEntry.id] instead of Drift's random `clientDefault`
+  /// UUID — the whole point of the decision: it lets HU-04's merge detect,
+  /// by primary key, whether the signed-in account already seeded this exact
+  /// category before.
+  ///
+  /// Roots are inserted before subcategories regardless of the catalog's own
+  /// row order, since `Categories.parentId` is a real FK and a subcategory
+  /// would otherwise fail to insert before its root exists. [languageCode]
+  /// picks which of the catalog's `name_es`/`name_en` becomes the local
+  /// `Categories.name` (see `AppLocale.resolveLanguageCode`); once seeded the
+  /// name is just a normal, editable field like any other category's.
+  Future<void> seedDefaultCategories(
+    List<CategorySeedEntry> catalog,
+    DateTime now,
+    String languageCode,
+  ) =>
+      _db.transaction(() async {
+        final roots = catalog.where((entry) => entry.isRoot);
+        final subcategories = catalog.where((entry) => !entry.isRoot);
+        for (final entry in [...roots, ...subcategories]) {
+          await insertCategory(
+            CategoriesCompanion.insert(
+              id: Value(entry.id),
+              name: entry.nameFor(languageCode),
+              kind: entry.kind,
+              parentId: Value(entry.parentId),
+              icon: Value(entry.icon),
+              color: Value(entry.color),
+              sortOrder: Value(entry.sortOrder),
+              createdAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
+          );
+        }
+      });
 }

@@ -3,9 +3,10 @@
 Cómo se escribe código en este repo y por qué. `CLAUDE.md` define **qué** se
 construye (arquitectura, reglas de negocio); este documento define **cómo** se
 escribe. Lo que es automatizable vive en
-[`analysis_options.yaml`](../analysis_options.yaml) y en
-[`tools/billetudo_lints/`](../tools/billetudo_lints); aquí está el porqué, que
-un lint no puede explicar.
+[`analysis_options.yaml`](../analysis_options.yaml); el resto (3 reglas de
+widgets/UI que ningún lint oficial cubre) lo revisa el subagente
+`ui-convention-reviewer`; aquí está el porqué, que ni un lint ni un agente
+pueden explicar por sí solos.
 
 Regla que gobierna a todas las demás: **keep it simple**. Ninguna convención de
 abajo justifica una abstracción que nadie pidió. Si una regla te obliga a algo
@@ -19,25 +20,31 @@ silencio.
 | Mecanismo | Qué cubre | Cuándo corre |
 |---|---|---|
 | `flutter analyze` | lints oficiales de Dart/Flutter + `strict-casts`/`strict-inference` | IDE y CI |
-| `dart run custom_lint` | las 3 reglas propias del proyecto | IDE y CI |
+| `ui-convention-reviewer` | las 3 reglas propias de widgets/UI del proyecto | proactivo, tras cada cambio en `lib/` |
 | `dart format` | formato, 80 columnas | pre-commit |
 | `finance-code-reviewer` | lo que ningún lint puede ver (centavos, `updatedAt`, capas) | antes de cerrar |
 
-Las tres reglas propias viven en `tools/billetudo_lints/` porque **no existe
-lint oficial** que las cubra. Sus fixtures de regresión están en
-`tools/billetudo_lints/example/lib/fixtures.dart`: si el analyzer cambia de API
-y una regla deja de detectar, ese fixture falla.
+Las tres reglas propias de widgets/UI vivían en un plugin `custom_lint`
+(`tools/billetudo_lints/`), retirado el 2026-07-17: `drift_dev`/`powersync`
+exigían `analyzer` ≥10.0.0 y `custom_lint_builder` (última versión publicada)
+todavía fijaba `analyzer` ^8.0.0 — sin combinación válida de versiones, y sin
+fecha de solución upstream. En vez de bloquear el resto del stack a una
+versión de `analyzer` vieja, se retiró el plugin y las mismas 3 reglas las
+hace cumplir el subagente `ui-convention-reviewer` (`.claude/agents/`),
+invocado proactivamente después de que se escribe o edita código en `lib/` —
+mismo criterio de detección, ahora en prosa en vez de en un `LintRule` del
+analyzer.
 
 ```bash
 flutter analyze          # lints oficiales
-dart run custom_lint     # reglas propias — NO las corre flutter analyze
 dart format .
 ```
 
-> **Los dos comandos son obligatorios en CI.** `flutter analyze` ignora los
-> plugins de analyzer, así que **no** ve las reglas propias; el IDE sí las
-> muestra en vivo porque el analysis server sí carga el plugin. Un pipeline que
-> solo corra `flutter analyze` deja pasar las tres reglas de este documento.
+> Las 3 reglas propias (funciones que devuelven `Widget`, widgets privados,
+> strings de UI sin localizar) **no las corre `flutter analyze`** — nunca las
+> corrió, ni siquiera con el plugin (ese solo las mostraba en el IDE y en
+> `dart run custom_lint`, un comando aparte). Ahora es `ui-convention-reviewer`
+> quien las revisa; no depender solo de la memoria para acordarse de invocarlo.
 
 Un lint se silencia con `// ignore: nombre_regla` **y una línea de comentario
 que explique por qué**. Un `ignore` sin justificación es un bug esperando turno.

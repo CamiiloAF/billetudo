@@ -15,7 +15,6 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # genera *.g.dart de Drift
 flutter gen-l10n                                           # regenera l10n tras tocar un .arb
 flutter analyze                                            # lints oficiales
-dart run custom_lint                                       # reglas propias (flutter analyze NO las ve)
 flutter test
 flutter run
 ```
@@ -36,7 +35,7 @@ Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
 
 **Antes de escribir código, lee [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md)** — es la guía completa (widgets, l10n, nombres, estado, comentarios) con el porqué de cada regla. Lo de abajo es el resumen crítico; ante cualquier duda de estilo, manda ese documento.
 
-Reglas propias del proyecto (plugin `custom_lint` en `tools/billetudo_lints/`). El IDE las muestra en vivo, pero **`flutter analyze` NO las corre** — hay que correr `dart run custom_lint` aparte:
+Reglas propias del proyecto que ningún lint oficial cubre (antes un plugin `custom_lint` en `tools/billetudo_lints/`, retirado el 2026-07-17 por un conflicto de versión de `analyzer` sin solución upstream — ver `docs/convenciones-de-codigo.md`). Las hace cumplir el subagente `ui-convention-reviewer`, proactivamente después de que `flutter-dev` termine de tocar `lib/`:
 - `avoid_widget_functions` — nada de funciones que devuelvan `Widget`; extrae una clase.
 - `avoid_private_widgets` — los widgets son públicos y viven en su propio archivo (`_XxxState` sí es privado).
 - `avoid_hardcoded_ui_strings` — texto de UI solo desde `AppLocalizations` (`lib/core/l10n/arb/`, es + en).
@@ -99,7 +98,7 @@ Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Ante
 
 Definidos en `.claude/` para automatizar las convenciones de este documento:
 
-- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `compliance-reviewer` (reglas de Nivel 0/legales), `pencil-designer` (construye/edita pantallas en `billetudo.pen` contra el sistema de diseno; carga MASTER.md + `pages/<feature>.md` antes de dibujar, usa componentes `reusable:true` y variables `$token`), `ui-ux-reviewer` (audita pantallas en `billetudo.pen`/Pencil: jerarquia, accesibilidad, consistencia con el sistema de disenio y tono de marca; anota el canvas y reporta).
+- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `ui-convention-reviewer` (las 3 reglas de widgets/UI que antes vivian en el plugin custom_lint retirado), `compliance-reviewer` (reglas de Nivel 0/legales), `pencil-designer` (construye/edita pantallas en `billetudo.pen` contra el sistema de diseno; carga MASTER.md + `pages/<feature>.md` antes de dibujar, usa componentes `reusable:true` y variables `$token`), `ui-ux-reviewer` (audita pantallas en `billetudo.pen`/Pencil: jerarquia, accesibilidad, consistencia con el sistema de disenio y tono de marca; anota el canvas y reporta).
 - **Skills**: `/feature-dev <descripcion>` (feature completa en una corrida), `/new-feature <nombre>`, `/drift-schema-change <descripcion>`, `/tier0-check [ruta]`.
 - **Workflows** (`.claude/workflows/`): `feature-dev` (el principal: triage automatico s/m/l → build → tests → review escalado → un unico resumen en `docs/dev-runs/<slug>.md`, sin commitear), `feature-scaffold` (solo boilerplate capa por capa) y `feature-review` (revision multi-dimension con verificacion adversarial; `feature-dev` lo reusa como review profundo en tamano L) — se invocan explicitamente, no por defecto.
 

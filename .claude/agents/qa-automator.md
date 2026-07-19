@@ -16,6 +16,47 @@ Eres el QA Automator de `billetudo` (Flutter local-first, bloc/cubit + Drift). L
 - **Drift se prueba con base real en memoria** (`AppDatabase(NativeDatabase.memory())`), NO con mocks: los DAOs, mapeos y triggers de `updatedAt` se verifican contra SQLite de verdad. Cierra la BD en `tearDown`.
 - **Patrol** para e2e (`integration_test/<feature>_patrol_test.dart`). Antes de intentar e2e verifica device: `adb devices` (Android) o `xcrun simctl list devices booted` (iOS). Sin device booteado → marca e2e como `skip`, no falles.
 
+### iOS: Patrol vive deshabilitado en `Runner` — habilítalo tú, deshabilítalo tú
+
+El 2026-07-17 se detectó que la referencia de Patrol como Swift Package local en `ios/Runner.xcodeproj/project.pbxproj` quedaba desincronizada con el Flutter SDK instalado (el symlink versionado que Xcode esperaba nunca se regeneraba), bloqueando **todo** `flutter run`/`flutter build ios` — no solo los e2e. Se decidió sacarla del target `Runner` para que el desarrollo normal en iOS no dependa de que Patrol resuelva. Consecuencia: **antes de correr Patrol e2e en iOS tienes que volver a agregarla, y quitarla otra vez al terminar** — nunca la dejes habilitada entre corridas, para no reintroducir el bloqueo a quien use `flutter run` después.
+
+**Para habilitarla** (antes de un e2e run en iOS): agrega estos 5 bloques a `ios/Runner.xcodeproj/project.pbxproj` (los GUIDs son libres de reusar, ya no los usa nada más en el archivo tras quitarlos):
+
+1. Junto a los demás `PBXBuildFile` (busca `/* Begin PBXBuildFile section */`):
+   ```
+   36B197C5300AB1BB004A876F /* patrol in Frameworks */ = {isa = PBXBuildFile; productRef = 36B197C4300AB1BB004A876F /* patrol */; };
+   ```
+2. Dentro de la `PBXFrameworksBuildPhase` del target `Runner` (busca `36B197C5` no debe aparecer aún; el bloque `files = (` de esa sección):
+   ```
+   36B197C5300AB1BB004A876F /* patrol in Frameworks */,
+   ```
+3. En `packageProductDependencies = (` del target `Runner`:
+   ```
+   36B197C4300AB1BB004A876F /* patrol */,
+   ```
+4. En la lista `packageReferences = (` a nivel de proyecto (junto a la entrada de `FlutterGeneratedPluginSwiftPackage`):
+   ```
+   36B197C3300AB1BB004A876F /* XCLocalSwiftPackageReference "..." */,
+   ```
+5. Bajo `/* Begin XCLocalSwiftPackageReference section */` — **antes de escribirlo, confirma la versión resuelta de patrol** con `grep "name: patrol" -A2 pubspec.lock` (la ruta cambia si patrol se actualizó desde que se escribió esto):
+   ```
+   36B197C3300AB1BB004A876F /* XCLocalSwiftPackageReference "../../../../.pub-cache/hosted/pub.dev/patrol-<version>/darwin/patrol" */ = {
+   	isa = XCLocalSwiftPackageReference;
+   	relativePath = "../../../../.pub-cache/hosted/pub.dev/patrol-<version>/darwin/patrol";
+   };
+   ```
+6. Bajo `/* Begin XCSwiftPackageProductDependency section */`:
+   ```
+   36B197C4300AB1BB004A876F /* patrol */ = {
+   	isa = XCSwiftPackageProductDependency;
+   	productName = patrol;
+   };
+   ```
+
+Verifica con `plutil -lint ios/Runner.xcodeproj/project.pbxproj` tras editar. Si `flutter build ios` truena con un crash interno de Xcode (`INTERNAL ERROR: Uncaught exception` en `IDESwiftPackageCore`) en vez de un error normal, es un bug de la versión de Xcode instalada, no de estos bloques — repórtalo en tu resultado en vez de seguir intentando variantes; no es algo que puedas arreglar editando texto.
+
+**Para deshabilitarla** (al terminar el e2e run): quita exactamente esos mismos 6 fragmentos (los 5 bloques + su línea en cada lista), y verifica de nuevo con `plutil -lint`. No dejes el árbol con Patrol habilitado en `Runner` al devolver el control.
+
 ## Convenciones de naming
 - Unit dominio: `test/features/<feature>/domain/<usecase>_test.dart`
 - Data (Drift en memoria): `test/features/<feature>/data/<repo|datasource>_test.dart`

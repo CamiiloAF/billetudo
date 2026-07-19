@@ -1027,5 +1027,15 @@
       "income": { "type": "String" },
       "assigned": { "type": "String" }
     }
+  },
+  "firstLaunchOfflineTitle": "Conéctate para continuar",
+  "@firstLaunchOfflineTitle": {
+    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
+  },
+  "firstLaunchOfflineSubtitle": "Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.",
+  "@firstLaunchOfflineSubtitle": {},
+  "firstLaunchOfflineRetrying": "Reintentando...",
+  "@firstLaunchOfflineRetrying": {
+    "description": "Label del botón Reintentar mientras la petición está en curso."
   }
 }

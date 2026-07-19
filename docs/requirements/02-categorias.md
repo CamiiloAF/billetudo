@@ -52,9 +52,11 @@ Como usuario nuevo quiero empezar con un set de categorías comunes en español 
 
 **Criterios de aceptación:**
 - Ver `13-onboarding.md` para el detalle completo del flujo.
-- Las categorías semilla son datos normales (mismas tablas, mismos IDs UUID) — el usuario puede editarlas o eliminarlas como cualquier categoría propia, sin restricción especial de "categoría del sistema".
+- Las categorías semilla son datos normales (misma tabla `Categories`) — el usuario puede editarlas o eliminarlas como cualquier categoría propia, sin restricción especial de "categoría del sistema". **Diferencia real con una categoría creada a mano:** su `id` no es un UUID aleatorio, es uno estable y fijo (`seed-food-drink`, etc.) tomado del catálogo canónico — ver `05-auth-sync.md`, decisión #12.
+- **El catálogo semilla vive en Postgres** (tabla `category_seeds`, solo lectura pública), no en el código de la app — se baja una vez en el primer arranque. Esto significa que **la app requiere internet la primera vez que se abre** (excepción puntual a HU-01 de `05-auth-sync.md`, que en todo lo demás sigue aplicando sin cambios); sin conexión en ese primer arranque, se bloquea con reintento en vez de sembrar con una copia local desactualizada.
 - El set se siembra **una sola vez por instalación**. La idempotencia la garantiza el latch persistente `categoriesSeeded` en el singleton `AppSettings`, no un conteo de filas: un usuario que borra todas sus categorías no debe verlas reaparecer al siguiente arranque. Una vez encendido, el latch no se apaga nunca.
 - Si en el primer arranque con latch ya existen categorías (instalación previa a la bandera), **no** se siembra — para no duplicar lo que el usuario armó — pero el latch igual se enciende y el chequeo queda saldado para siempre.
+- **Al iniciar sesión por primera vez en un dispositivo (HU-04 de `05-auth-sync.md`):** si la cuenta ya tenía categorías semilla sembradas antes (mismo `id` ya existe en la nube), las de este dispositivo NO se suben — se dejan sin dueño y PowerSync las sobreescribe con la versión real de la cuenta al sincronizar. Cualquier edición hecha a una categoría semilla en este dispositivo antes de iniciar sesión se pierde a favor de lo que ya existía en la cuenta; se le avisa al usuario que sus categorías se sincronizaron.
 
 ## Reglas de negocio y edge cases
 

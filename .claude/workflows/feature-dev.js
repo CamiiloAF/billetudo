@@ -304,6 +304,13 @@ Devuelve (approved, blockers[{file,description}], observations[]).`,
         { label: 'code-review', phase: 'Review', schema: REVIEW_SCHEMA, agentType: 'finance-code-reviewer' },
       ),
     () =>
+      agent(
+        `Revisa SOLO las 3 convenciones de widgets/UI (funciones que devuelven Widget, widgets privados, strings de UI sin localizar) en estos archivos de la corrida "${SLUG}":
+${filesList}
+Devuelve (approved, blockers[{file,description}], observations[]). Blockers solo para violaciones reales.`,
+        { label: 'ui-convention', phase: 'Review', schema: REVIEW_SCHEMA, agentType: 'ui-convention-reviewer' },
+      ),
+    () =>
       plan.touchesTier0
         ? agent(
             `Revisa SOLO reglas de negocio/legales de billetudo (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, sin banners/interstitials, disclaimers de IA, borrado de cuenta real, tono positivo) en estos archivos de la corrida "${SLUG}":
@@ -313,11 +320,11 @@ Devuelve (approved, blockers[{file,description}], observations[]). Blockers solo
           )
         : Promise.resolve({ approved: true, blockers: [], observations: [] }),
   ])
-  const [code, compliance] = reviews.map((r) => r || { approved: true, blockers: [], observations: [] })
+  const [code, uiConvention, compliance] = reviews.map((r) => r || { approved: true, blockers: [], observations: [] })
   return {
-    approved: code.approved && compliance.approved,
-    blockers: [...code.blockers, ...compliance.blockers],
-    observations: [...code.observations, ...compliance.observations],
+    approved: code.approved && uiConvention.approved && compliance.approved,
+    blockers: [...code.blockers, ...uiConvention.blockers, ...compliance.blockers],
+    observations: [...code.observations, ...uiConvention.observations, ...compliance.observations],
   }
 }
 

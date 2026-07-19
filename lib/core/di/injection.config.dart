@@ -9,6 +9,8 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart'
+    as _i101;
 import 'package:billetudo/core/crash/crash_reporter.dart' as _i474;
 import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
@@ -61,10 +63,16 @@ import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.d
     as _i22;
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart'
     as _i235;
+import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart'
+    as _i718;
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart'
     as _i835;
 import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart'
     as _i173;
+import 'package:billetudo/features/auth/data/datasources/powersync_connector.dart'
+    as _i872;
+import 'package:billetudo/features/auth/data/datasources/seed_category_ownership_remote_datasource.dart'
+    as _i226;
 import 'package:billetudo/features/auth/data/repositories/auth_repository_impl.dart'
     as _i13;
 import 'package:billetudo/features/auth/domain/repositories/auth_repository.dart'
@@ -133,6 +141,8 @@ import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary
     as _i843;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
+import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
+    as _i180;
 import 'package:billetudo/features/categories/data/repositories/category_repository_impl.dart'
     as _i983;
 import 'package:billetudo/features/categories/domain/repositories/category_repository.dart'
@@ -232,6 +242,8 @@ import 'package:billetudo/features/transactions/presentation/cubit/transactions_
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:powersync/powersync.dart' as _i433;
+import 'package:supabase_flutter/supabase_flutter.dart' as _i454;
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -248,10 +260,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i604.GetTransactionEditImpact>(
         () => const _i604.GetTransactionEditImpact());
     gh.factory<_i499.DateFilterCubit>(() => _i499.DateFilterCubit());
+    gh.lazySingleton<_i433.PowerSyncDatabase>(
+        () => registerModule.powerSyncDatabase());
     gh.lazySingleton<_i249.AppDatabase>(() => registerModule.appDatabase());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
         () => registerModule.secureStorage());
     gh.lazySingleton<_i474.CrashReporter>(() => registerModule.crashReporter());
+    gh.lazySingleton<_i454.SupabaseClient>(
+        () => registerModule.supabaseClient());
     gh.lazySingleton<_i486.SecureClipboard>(() => _i486.SecureClipboard());
     gh.lazySingleton<_i731.MoneyFormatter>(() => const _i731.MoneyFormatter());
     gh.lazySingleton<_i22.AppleAuthDatasource>(
@@ -264,6 +280,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i529.ZeroBasedSummaryCalculator());
     gh.factory<_i559.GetBudgetProgress>(
         () => _i559.GetBudgetProgress(gh<_i685.BudgetProgressCalculator>()));
+    gh.lazySingleton<_i872.PowerSyncConnector>(
+        () => _i872.PowerSyncConnector(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
+        _i226.SeedCategoryOwnershipRemoteDatasource(
+            gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
+        () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
+        () => _i718.LocalDataOwnershipDatasource(
+              gh<_i249.AppDatabase>(),
+              gh<_i226.SeedCategoryOwnershipRemoteDatasource>(),
+            ));
     gh.lazySingleton<_i1034.SecureStorageService>(
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
@@ -317,12 +345,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i533.AccountsLocalDatasource>(),
               gh<_i612.AccountNumberLocalDatasource>(),
             ));
-    gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
-          gh<_i235.GoogleAuthDatasource>(),
-          gh<_i22.AppleAuthDatasource>(),
-          gh<_i835.LocalDataSummaryDatasource>(),
-          gh<_i173.LocalDataWipeDatasource>(),
-        ));
     gh.factory<_i426.WatchMonthTransactions>(
         () => _i426.WatchMonthTransactions(gh<_i654.TransactionRepository>()));
     gh.factory<_i990.CreateTransaction>(
@@ -344,40 +366,22 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i857.UpdateBudget>(),
           gh<_i871.GetBudgetById>(),
         ));
-    gh.lazySingleton<_i802.CategoryRepository>(() =>
-        _i983.CategoryRepositoryImpl(gh<_i151.CategoriesLocalDatasource>()));
-    gh.factory<_i885.CreateCategory>(
-        () => _i885.CreateCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i968.DeleteCategory>(
-        () => _i968.DeleteCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i382.GetCategory>(
-        () => _i382.GetCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i87.GetCategoryDeletionImpact>(
-        () => _i87.GetCategoryDeletionImpact(gh<_i802.CategoryRepository>()));
-    gh.factory<_i415.GetMostUsedCategories>(
-        () => _i415.GetMostUsedCategories(gh<_i802.CategoryRepository>()));
-    gh.factory<_i562.ReorderCategories>(
-        () => _i562.ReorderCategories(gh<_i802.CategoryRepository>()));
-    gh.factory<_i119.RestoreCategory>(
-        () => _i119.RestoreCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i275.UpdateCategory>(
-        () => _i275.UpdateCategory(gh<_i802.CategoryRepository>()));
-    gh.factory<_i722.WatchCategories>(
-        () => _i722.WatchCategories(gh<_i802.CategoryRepository>()));
-    gh.factory<_i172.WatchParentCandidates>(
-        () => _i172.WatchParentCandidates(gh<_i802.CategoryRepository>()));
-    gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
-          gh<_i722.WatchCategories>(),
-          gh<_i562.ReorderCategories>(),
+    gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
+          gh<_i235.GoogleAuthDatasource>(),
+          gh<_i22.AppleAuthDatasource>(),
+          gh<_i835.LocalDataSummaryDatasource>(),
+          gh<_i173.LocalDataWipeDatasource>(),
+          gh<_i718.LocalDataOwnershipDatasource>(),
+          gh<_i454.SupabaseClient>(),
+          gh<_i433.PowerSyncDatabase>(),
+          gh<_i872.PowerSyncConnector>(),
         ));
-    gh.factory<_i315.CategoryFilterCubit>(
-        () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
     gh.lazySingleton<_i716.TagRepository>(
         () => _i672.TagRepositoryImpl(gh<_i1008.TagsLocalDatasource>()));
-    gh.factory<_i304.CategoryQuickPickerCubit>(
-        () => _i304.CategoryQuickPickerCubit(
-              gh<_i415.GetMostUsedCategories>(),
-              gh<_i382.GetCategory>(),
+    gh.lazySingleton<_i802.CategoryRepository>(
+        () => _i983.CategoryRepositoryImpl(
+              gh<_i151.CategoriesLocalDatasource>(),
+              gh<_i180.CategorySeedsRemoteDatasource>(),
             ));
     gh.factory<_i281.CreateTag>(
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
@@ -454,11 +458,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i722.AccountFilterCubit>(
         () => _i722.AccountFilterCubit(gh<_i837.WatchAccounts>()));
-    gh.factory<_i141.ParentCategoryPickerCubit>(
-        () => _i141.ParentCategoryPickerCubit(
-              gh<_i172.WatchParentCandidates>(),
-              gh<_i722.WatchCategories>(),
-            ));
     gh.factory<_i958.ArchivedAccountsCubit>(() => _i958.ArchivedAccountsCubit(
           gh<_i545.WatchArchivedAccounts>(),
           gh<_i536.UnarchiveAccount>(),
@@ -470,6 +469,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
         ));
+    gh.factory<_i101.FirstLaunchOfflineCubit>(
+        () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
           gh<_i832.WatchTransactions>(),
           gh<_i612.DeleteTransaction>(),
@@ -489,13 +490,37 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i716.WatchAuthSession(gh<_i913.AuthRepository>()));
     gh.factory<_i537.WipeLocalData>(
         () => _i537.WipeLocalData(gh<_i913.AuthRepository>()));
-    gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
-          gh<_i885.CreateCategory>(),
-          gh<_i275.UpdateCategory>(),
-          gh<_i382.GetCategory>(),
-          gh<_i87.GetCategoryDeletionImpact>(),
-          gh<_i968.DeleteCategory>(),
+    gh.factory<_i885.CreateCategory>(
+        () => _i885.CreateCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i968.DeleteCategory>(
+        () => _i968.DeleteCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i382.GetCategory>(
+        () => _i382.GetCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i87.GetCategoryDeletionImpact>(
+        () => _i87.GetCategoryDeletionImpact(gh<_i802.CategoryRepository>()));
+    gh.factory<_i415.GetMostUsedCategories>(
+        () => _i415.GetMostUsedCategories(gh<_i802.CategoryRepository>()));
+    gh.factory<_i562.ReorderCategories>(
+        () => _i562.ReorderCategories(gh<_i802.CategoryRepository>()));
+    gh.factory<_i119.RestoreCategory>(
+        () => _i119.RestoreCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i275.UpdateCategory>(
+        () => _i275.UpdateCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i722.WatchCategories>(
+        () => _i722.WatchCategories(gh<_i802.CategoryRepository>()));
+    gh.factory<_i172.WatchParentCandidates>(
+        () => _i172.WatchParentCandidates(gh<_i802.CategoryRepository>()));
+    gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
+          gh<_i722.WatchCategories>(),
+          gh<_i562.ReorderCategories>(),
         ));
+    gh.factory<_i315.CategoryFilterCubit>(
+        () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
+    gh.factory<_i304.CategoryQuickPickerCubit>(
+        () => _i304.CategoryQuickPickerCubit(
+              gh<_i415.GetMostUsedCategories>(),
+              gh<_i382.GetCategory>(),
+            ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i502.AccountDetailCubit>(() => _i502.AccountDetailCubit(
@@ -525,9 +550,21 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i426.WatchMonthTransactions>(),
           gh<_i716.WatchAuthSession>(),
         ));
+    gh.factory<_i141.ParentCategoryPickerCubit>(
+        () => _i141.ParentCategoryPickerCubit(
+              gh<_i172.WatchParentCandidates>(),
+              gh<_i722.WatchCategories>(),
+            ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
+        ));
+    gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
+          gh<_i885.CreateCategory>(),
+          gh<_i275.UpdateCategory>(),
+          gh<_i382.GetCategory>(),
+          gh<_i87.GetCategoryDeletionImpact>(),
+          gh<_i968.DeleteCategory>(),
         ));
     return this;
   }

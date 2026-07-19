@@ -1381,4 +1381,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String budgetsEnvelopeCaption(String income, String assigned) {
     return '$income income · $assigned assigned';
   }
+
+  @override
+  String get firstLaunchOfflineTitle => 'Connect to continue';
+
+  @override
+  String get firstLaunchOfflineSubtitle =>
+      'We need an internet connection to finish setting up your account. Try again once you have signal.';
+
+  @override
+  String get firstLaunchOfflineRetrying => 'Retrying...';
 }

@@ -103,6 +103,16 @@ mixin _SyncColumns on Table {
   /// it — that is what [deletedAt] is for.
   DateTimeColumn get tombstonedAt => dateTime().nullable()();
 
+  /// Logical (non-FK) reference to `auth.users.id` in Supabase. There is no
+  /// local `users` table, so this cannot be a real SQLite foreign key.
+  ///
+  /// Nullable: the app is local-first, so rows created without a session have
+  /// no owner yet. It is filled once the user signs in and the local-data
+  /// merge (HU-04) runs. This is the prerequisite for RLS policies in
+  /// Postgres and per-user PowerSync sync rules. See
+  /// docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+  TextColumn get userId => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -397,7 +407,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `INSERT OR IGNORE`. `updated_at` is stamped in epoch millis (see
@@ -590,11 +600,34 @@ class AppDatabase extends _$AppDatabase {
           if (from < 9) {
             await m.addColumn(appSettings, appSettings.categoriesSeeded);
           }
+
+          // v9 -> v10: every `_SyncColumns` table gains `userId`, a nullable
+          // logical reference to `auth.users.id` in Supabase (no local FK).
+          // Rows created offline/without a session keep it NULL until the
+          // user signs in and the local-data merge (HU-04) fills it in; this
+          // is what unlocks RLS in Postgres and per-user PowerSync sync
+          // rules. Additive nullable column -> no backfill needed. See
+          // docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+          if (from < 10) {
+            await m.addColumn(accounts, accounts.userId);
+            await m.addColumn(categories, categories.userId);
+            await m.addColumn(transactions, transactions.userId);
+            await m.addColumn(budgets, budgets.userId);
+            await m.addColumn(goals, goals.userId);
+            await m.addColumn(debts, debts.userId);
+            await m.addColumn(scheduledPayments, scheduledPayments.userId);
+            await m.addColumn(tags, tags.userId);
+            await m.addColumn(transactionTags, transactionTags.userId);
+            await m.addColumn(budgetAccounts, budgetAccounts.userId);
+            await m.addColumn(budgetCategories, budgetCategories.userId);
+            await m.addColumn(appSettings, appSettings.userId);
+          }
         },
       );
 
-  // Once PowerSync is integrated, instead of opening our own NativeDatabase we
-  // open Drift on top of the PowerSync database, and define a PowerSync Schema
-  // mirroring these same tables/columns. PowerSync then handles bidirectional
-  // sync with Supabase Postgres.
+  // Drift opens on top of the PowerSync-managed connection instead of its own
+  // NativeDatabase (see `core/database/database_connection.dart` and decision
+  // #6, docs/requirements/05-auth-sync.md). The mirrored PowerSync `Schema`
+  // lives in `core/database/powersync_schema.dart` and must be kept in sync
+  // by hand with any change to a `_SyncColumns` table here.
 }

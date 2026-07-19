@@ -2533,6 +2533,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{income} de ingreso · {assigned} asignado'**
   String budgetsEnvelopeCaption(String income, String assigned);
+
+  /// Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización.
+  ///
+  /// In es, this message translates to:
+  /// **'Conéctate para continuar'**
+  String get firstLaunchOfflineTitle;
+
+  /// No description provided for @firstLaunchOfflineSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.'**
+  String get firstLaunchOfflineSubtitle;
+
+  /// Label del botón Reintentar mientras la petición está en curso.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentando...'**
+  String get firstLaunchOfflineRetrying;
 }
 
 class _AppLocalizationsDelegate

@@ -18,6 +18,7 @@ pubspec.lock
 # Entornos / secretos (NUNCA subir claves de Supabase, RevenueCat, AdMob, LLM)
 .env
 .env.*
+!.env.example
 lib/**/*.secrets.dart
 
 # Plataformas (se generan con `flutter create .`)

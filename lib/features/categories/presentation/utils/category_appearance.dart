@@ -7,10 +7,11 @@ import '../../../../core/theme/app_colors.dart';
 /// never depends on Flutter — into the concrete [IconData]/[Color] the icon
 /// picker (`lAxmS`) and every row/avatar need.
 ///
-/// Icon names follow the lucide naming used by `billetudo.pen`
-/// (`default_categories_seed.dart` is the other place that names them); this
-/// is the single place that maps them to the real Lucide icon, so no widget
-/// hardcodes an `IconData` for a category.
+/// Icon names follow the lucide naming used by `billetudo.pen` (the
+/// `category_seeds` catalog in Supabase is the other place that names them —
+/// see `docs/requirements/05-auth-sync.md`, decision #12); this is the single
+/// place that maps them to the real Lucide icon, so no widget hardcodes an
+/// `IconData` for a category.
 abstract final class CategoryAppearance {
   const CategoryAppearance._();
 

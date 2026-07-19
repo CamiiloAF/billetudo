@@ -4,13 +4,16 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../../core/l10n/app_locale.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/category_deletion_impact.dart';
 import '../../domain/entities/category_draft.dart';
 import '../../domain/entities/category_node.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/categories_local_datasource.dart';
+import '../datasources/category_seeds_remote_datasource.dart';
 import '../models/category_mapper.dart';
+import '../models/category_seed_entry.dart';
 
 /// Drift implementation of [CategoryRepository].
 ///
@@ -19,9 +22,10 @@ import '../models/category_mapper.dart';
 /// `deletedAt` trash is enough for this feature.
 @LazySingleton(as: CategoryRepository)
 class CategoryRepositoryImpl implements CategoryRepository {
-  const CategoryRepositoryImpl(this._local);
+  const CategoryRepositoryImpl(this._local, this._remoteSeeds);
 
   final CategoriesLocalDatasource _local;
+  final CategorySeedsRemoteDatasource _remoteSeeds;
 
   @override
   Stream<Result<List<CategoryNode>>> watchCategories(CategoryKind kind) =>
@@ -200,11 +204,37 @@ class CategoryRepositoryImpl implements CategoryRepository {
         return Right(count > 0);
       });
 
+  /// HU-06: fetches the onboarding catalog from `category_seeds`
+  /// (`docs/requirements/05-auth-sync.md`, decision #12) and seeds it
+  /// locally. A fetch failure is mapped to [NetworkFailure] explicitly —
+  /// distinct from the generic [DatabaseFailure] `_guard` produces for local
+  /// Drift errors — so the caller (`SeedDefaultCategories`) can tell "no
+  /// internet on first launch" apart from a local storage problem, without
+  /// marking the `categoriesSeeded` latch either way.
   @override
-  FutureResult<Unit> seedDefaultCategories() => _guard(() async {
-        await _local.seedDefaultCategories(DateTime.now());
-        return const Right(unit);
-      });
+  FutureResult<Unit> seedDefaultCategories() async {
+    final List<CategorySeedEntry> catalog;
+    try {
+      catalog = await _remoteSeeds.fetchCatalog();
+    } on CategorySeedsFetchException catch (e, stackTrace) {
+      return Left(
+        NetworkFailure(
+          'failed to fetch the category_seeds catalog',
+          cause: e.cause,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+
+    return _guard(() async {
+      await _local.seedDefaultCategories(
+        catalog,
+        DateTime.now(),
+        AppLocale.resolveLanguageCode(),
+      );
+      return const Right(unit);
+    });
+  }
 
   /// Groups the flat, `sortOrder`-ordered rows into roots with their
   /// subcategories, preserving that order in both lists.

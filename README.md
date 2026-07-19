@@ -54,6 +54,26 @@ Pendiente (configuración técnica — a tu cargo):
 - Claves/entornos (Supabase, RevenueCat, AdMob, LLM) fuera del repo (`.env`).
 - `claude init`.
 
+### Flavors (dev / prod)
+
+Cada ambiente apunta a su propio proyecto Supabase / Google OAuth client (Google Cloud no permite
+dos Android OAuth clients con el mismo par package+SHA-1), así que además de `--dart-define-from-file`
+la app corre en flavors nativos separados — se pueden tener ambas builds instaladas a la vez en el
+mismo teléfono. `prod` mantiene el `applicationId`/bundle id actual (`com.camiloagudelo.billetudo`);
+`dev` usa el sufijo `.dev` y se ve en el teléfono como "Billetudo Dev".
+
+```bash
+# Android
+flutter run --flavor dev --dart-define-from-file=.env.dev
+flutter run --flavor prod --dart-define-from-file=.env.prod
+flutter build apk --flavor dev --dart-define-from-file=.env.dev
+flutter build apk --flavor prod --dart-define-from-file=.env.prod
+
+# iOS (usa los Xcode schemes `dev` / `prod`, ver ios/Runner.xcodeproj/xcshareddata/xcschemes/)
+flutter run --flavor dev --dart-define-from-file=.env.dev
+flutter run --flavor prod --dart-define-from-file=.env.prod
+```
+
 ## Generar el código de Drift
 
 ```bash
@@ -65,11 +85,10 @@ dart run build_runner build --delete-conflicting-outputs
 
 ```bash
 flutter analyze        # lints oficiales
-dart run custom_lint   # reglas propias del proyecto — flutter analyze NO las corre
 flutter test
 ```
 
-Ambos comandos de análisis son necesarios: `flutter analyze` no carga plugins del analyzer, así que no ve las reglas de [`tools/billetudo_lints/`](tools/billetudo_lints) (el IDE sí las muestra en vivo). Ver [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md).
+Tres reglas propias de widgets/UI (funciones que devuelven `Widget`, widgets privados, strings sin localizar) ya no corren como plugin del analyzer — las revisa el subagente `ui-convention-reviewer` después de cada cambio en `lib/`. Ver [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md).
 
 ## Documentación
 

@@ -36,6 +36,19 @@ android {
         testInstrumentationRunnerArguments["clearPackageData"] = "true"
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Billetudo Dev")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "Billetudo")
+        }
+    }
+
     testOptions {
         // Required by PatrolJUnitRunner: runs each test in its own instance so
         // a crash in one scenario cannot take the rest of the suite down.

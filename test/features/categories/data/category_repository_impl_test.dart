@@ -1,20 +1,44 @@
 import 'package:billetudo/core/database/app_database.dart' as db;
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart';
+import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart';
+import 'package:billetudo/features/categories/data/models/category_seed_entry.dart';
 import 'package:billetudo/features/categories/data/repositories/category_repository_impl.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_draft.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockCategorySeedsRemoteDatasource extends Mock
+    implements CategorySeedsRemoteDatasource {}
 
 void main() {
   late db.AppDatabase database;
+  late MockCategorySeedsRemoteDatasource remoteSeeds;
   late CategoryRepositoryImpl repository;
+
+  final fakeCatalog = [
+    const CategorySeedEntry(
+      id: 'seed-food-drink',
+      kind: db.CategoryKind.expense,
+      parentId: null,
+      nameEs: 'Comida y bebida',
+      nameEn: 'Food & drink',
+      icon: 'utensils',
+      color: 'mint',
+      sortOrder: 0,
+    ),
+  ];
 
   setUp(() {
     database = db.AppDatabase(NativeDatabase.memory());
-    repository = CategoryRepositoryImpl(CategoriesLocalDatasource(database));
+    remoteSeeds = MockCategorySeedsRemoteDatasource();
+    repository = CategoryRepositoryImpl(
+      CategoriesLocalDatasource(database),
+      remoteSeeds,
+    );
   });
 
   tearDown(() async => database.close());
@@ -207,17 +231,47 @@ void main() {
   });
 
   group('hasAnyCategory / seedDefaultCategories (HU-06)', () {
-    test('false sin categorías, true tras sembrar', () async {
+    test('false sin categorías, true tras sembrar desde el catálogo remoto',
+        () async {
+      when(() => remoteSeeds.fetchCatalog())
+          .thenAnswer((_) async => fakeCatalog);
+
       expect(
         (await repository.hasAnyCategory()).getRight().toNullable(),
         isFalse,
       );
 
-      await repository.seedDefaultCategories();
+      final seedResult = await repository.seedDefaultCategories();
 
+      expect(seedResult.isRight(), isTrue);
       expect(
         (await repository.hasAnyCategory()).getRight().toNullable(),
         isTrue,
+      );
+      // The exact name picked (es/en) depends on `AppLocale.resolveLanguageCode`
+      // — the device's own locale in this test environment — and is covered
+      // by `CategoriesLocalDatasource`'s own seeding tests; here we only
+      // assert it landed on one of the catalog's two translations.
+      final seeded = await repository.getCategory('seed-food-drink');
+      expect(
+        seeded.getRight().toNullable()!.name,
+        anyOf('Comida y bebida', 'Food & drink'),
+      );
+    });
+
+    test(
+        'propaga NetworkFailure sin escribir nada localmente cuando el '
+        'catálogo remoto falla', () async {
+      when(() => remoteSeeds.fetchCatalog()).thenThrow(
+        const CategorySeedsFetchException('sin conexión'),
+      );
+
+      final seedResult = await repository.seedDefaultCategories();
+
+      expect(seedResult.getLeft().toNullable(), isA<NetworkFailure>());
+      expect(
+        (await repository.hasAnyCategory()).getRight().toNullable(),
+        isFalse,
       );
     });
   });

@@ -458,5 +458,8 @@
       "income": { "type": "String" },
       "assigned": { "type": "String" }
     }
-  }
+  },
+  "firstLaunchOfflineTitle": "Connect to continue",
+  "firstLaunchOfflineSubtitle": "We need an internet connection to finish setting up your account. Try again once you have signal.",
+  "firstLaunchOfflineRetrying": "Retrying..."
 }

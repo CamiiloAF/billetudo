@@ -41,14 +41,19 @@ dependencies:
   flutter_secure_storage: ^10.3.1
 
   # --- Base de datos local (offline-first, fuente de verdad) ---
-  drift: ^2.18.0
-  sqlite3_flutter_libs: ^0.5.24
+  drift: ^2.28.0
+  sqlite3_flutter_libs: ^0.6.0
   path_provider: ^2.1.3
   path: ^1.9.0
   uuid: ^4.4.0
 
   # --- Sync + backend (decisión: PowerSync + Supabase) ---
-  powersync: ^1.9.0
+  # Drift abre su conexión sobre el `sqlite_async` que administra PowerSync
+  # (decisión #6, docs/requirements/05-auth-sync.md) — drift_sqlite_async
+  # fijado en versión exacta (pre-1.0, riesgo de breaking changes entre
+  # minors, ver el mismo doc).
+  powersync: ^2.3.1
+  drift_sqlite_async: 0.3.1
   supabase_flutter: ^2.5.6
 
   # --- Gráficas ---
@@ -68,7 +73,7 @@ dependencies:
   # además exige un App ID (com.google.android.gms.ads.APPLICATION_ID /
   # GADApplicationIdentifier) sin el cual el SDK crashea al inicializar.
   # Si purchases_flutter vuelve, debe ser 10.x+: la 6.x fija
-  # freezed_annotation ^2 y bloquea custom_lint.
+  # freezed_annotation ^2, más vieja que lo que el resto del proyecto usa.
   #google_mobile_ads: ^5.1.0
   #purchases_flutter: ^10.4.1
 
@@ -97,20 +102,22 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
 
-  # Reglas propias del proyecto (ver docs/convenciones-de-codigo.md).
-  # `dart run custom_lint` las corre en CI; el IDE las muestra en vivo.
-  custom_lint: ^0.8.1
-  billetudo_lints:
-    path: tools/billetudo_lints
-
   # Codegen de Drift + injectable
-  drift_dev: ^2.18.0
+  # Fijado (no ^): 2.34.1+ sube a analyzer ^13.0.0, incompatible con el
+  # `meta` 1.17.0 que fija el Flutter SDK de este entorno (ver
+  # dependency_overrides → analyzer).
+  drift_dev: 2.34.0
   build_runner: ^2.4.11
   injectable_generator: ^2.6.2
 
   # Testing (piramide: unit + cubit + mocks + e2e)
   bloc_test: ^9.1.7
   mocktail: ^1.0.4
+  # `http.testing.MockClient`, injected into `SupabaseClient(httpClient: ...)`
+  # to fake the `category_seeds`/`categories` REST responses in datasource
+  # tests without a real network call — `PostgrestFilterBuilder` implements
+  # `Future` itself, so mocktail can't stub the query-builder chain directly.
+  http: ^1.6.0
   # e2e. Versión acoplada al CLI: `dart pub global activate patrol_cli 4.5.1`
   # (patrol 4.7.x exige patrol_cli >=4.5.0 — un desajuste entre ambos falla en
   # runtime, no en tiempo de análisis). Requiere setup nativo tras `flutter create .`.
@@ -145,3 +152,17 @@ dependency_overrides:
   # lo que rompe la compilación del build script de build_runner en este SDK.
   # Fijar a la última versión pre-hooks hasta que build_runner soporte hooks.
   path_provider_foundation: 2.4.2
+
+  # drift_dev >=2.32.1 (necesario para sqlite3 ^3.x, que a su vez exige
+  # powersync/sqlite_async/drift_sqlite_async) requiere analyzer >=10.0.0
+  # <13.0.0. Se fuerza a 10.0.1 (10.0.0 crashea con "Null check operator used
+  # on a null value" en `LibraryReader._readDirectiveUri` al correr
+  # build_runner sobre el SDK de Flutter de este entorno — Dart 3.10.4 — apenas
+  # se agregó `powersync`/`drift_sqlite_async`; 10.0.1 es la primera versión
+  # que lo arregla y sigue siendo la única compatible con el `meta` 1.17.0 que
+  # fija el Flutter SDK de este entorno — 10.0.2+ ya exige `meta` ^1.18.0).
+  analyzer: 10.0.1
+  # dart_style (transitive, via build_runner/drift_dev) must match the
+  # analyzer override above or its generated-code formatter breaks at
+  # runtime (`ParserErrorCode` moved between analyzer majors).
+  dart_style: 3.1.6

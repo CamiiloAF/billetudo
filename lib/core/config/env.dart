@@ -20,8 +20,17 @@ abstract final class Env {
 
   static bool get hasSentryDsn => sentryDsn.isNotEmpty;
 
-  // --- Placeholders for the sync phase (not wired up yet) ---
+  // --- Supabase (sync/auth backend) ---
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const String supabaseAnonKey =
       String.fromEnvironment('SUPABASE_ANON_KEY');
+
+  /// Google Cloud "Web application" OAuth client id. Not a secret: Supabase
+  /// uses it server-side to validate the `idToken` collected by the native
+  /// Android/iOS Google sign-in flow (HU-02).
+  static const String googleServerClientId =
+      String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+
+  /// PowerSync instance URL for this environment (HU-04/HU-05 sync).
+  static const String powerSyncUrl = String.fromEnvironment('POWERSYNC_URL');
 }
