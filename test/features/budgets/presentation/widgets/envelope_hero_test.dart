@@ -18,7 +18,7 @@ void main() {
         incomeMinor: 500000,
         assignedMinor: 300000,
       );
-      await tester.pumpAppWidget(const EnvelopeHero(summary: summary));
+      await tester.pumpAppWidget(EnvelopeHero(summary: summary, onInfo: () {}));
 
       final context = tester.element(find.byType(EnvelopeHero));
       final l10n = AppLocalizations.of(context);
@@ -30,13 +30,29 @@ void main() {
       );
       expect(
         find.text(
-          l10n.budgetsEnvelopeCaption(
+          l10n.budgetsEnvelopeIncome(
             money.formatSymbol(500000, currencyCode: 'COP'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          l10n.budgetsEnvelopeAssigned(
             money.formatSymbol(300000, currencyCode: 'COP'),
           ),
         ),
         findsOneWidget,
       );
+      expect(
+        find.text(
+          l10n.budgetsEnvelopeNudge(
+            money.formatSymbol(200000, currencyCode: 'COP'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.budgetsEnvelopeBadge), findsOneWidget);
     });
 
     testWidgets('over-assigned: shows the "over" label and the absolute value',
@@ -46,7 +62,7 @@ void main() {
         incomeMinor: 300000,
         assignedMinor: 500000,
       );
-      await tester.pumpAppWidget(const EnvelopeHero(summary: summary));
+      await tester.pumpAppWidget(EnvelopeHero(summary: summary, onInfo: () {}));
 
       final context = tester.element(find.byType(EnvelopeHero));
       final l10n = AppLocalizations.of(context);
@@ -60,14 +76,14 @@ void main() {
     });
 
     testWidgets(
-        'all-assigned: shows the celebratory caption instead of the '
-        'income/assigned breakdown', (tester) async {
+        'all-assigned: the nudge celebrates instead of asking for one more '
+        'assignment', (tester) async {
       const summary = ZeroBasedSummary(
         currency: 'COP',
         incomeMinor: 400000,
         assignedMinor: 400000,
       );
-      await tester.pumpAppWidget(const EnvelopeHero(summary: summary));
+      await tester.pumpAppWidget(EnvelopeHero(summary: summary, onInfo: () {}));
 
       final context = tester.element(find.byType(EnvelopeHero));
       final l10n = AppLocalizations.of(context);

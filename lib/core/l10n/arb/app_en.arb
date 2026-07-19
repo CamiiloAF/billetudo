@@ -469,8 +469,37 @@
   "budgetsHistoryTitle": "History",
   "budgetsHistoryEmpty": "You haven't closed any budgets",
   "budgetsHistoryLoading": "Loading your history",
+  "budgetClosedOn": "Closed {date}",
+  "@budgetClosedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "budgetsHistorySubtitle": "Closed budgets",
+  "budgetsHistoryHint": "You keep them without deleting. Reactivate them whenever you want.",
+  "budgetsMenuOptions": "Options",
+  "budgetsMenuHistorySubtitle": "Closed budgets",
+  "budgetsMenuEnableEnvelope": "Turn on envelope mode",
+  "budgetsMenuEnableEnvelopeSubtitle": "Split all your income into envelopes",
+  "budgetsMenuDisableEnvelopeSubtitle": "Back to the normal list",
+  "budgetsEnvelopeBadge": "Envelope mode",
+  "budgetsEnvelopeIncome": "Income {income}",
+  "@budgetsEnvelopeIncome": {
+    "placeholders": { "income": { "type": "String" } }
+  },
+  "budgetsEnvelopeAssigned": "Assigned {assigned}",
+  "@budgetsEnvelopeAssigned": {
+    "placeholders": { "assigned": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudge": "Almost there: give the remaining {amount} a job.",
+  "@budgetsEnvelopeNudge": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudgeOver": "You assigned {amount} more than came in. Adjust an envelope whenever you like.",
+  "@budgetsEnvelopeNudgeOver": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAssignedLabel": "Assigned",
   "budgetReactivate": "Reactivate",
-  "budgetResultWithin": "Within budget",
+  "budgetResultWithin": "Ended within budget",
   "budgetResultOverspent": "Over by {amount}",
   "@budgetResultOverspent": {
     "placeholders": { "amount": { "type": "String" } }
@@ -487,16 +516,9 @@
   "envelopeInfoBody": "It's a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It's optional and you can turn it on or off whenever you like.",
   "envelopeInfoGotIt": "Got it",
   "budgetsMenuDisableEnvelope": "Turn off envelope mode",
-  "budgetsEnvelopeUnassignedLabel": "Unassigned",
+  "budgetsEnvelopeUnassignedLabel": "Unassigned this month",
   "budgetsEnvelopeOverLabel": "Over-assigned",
   "budgetsEnvelopeAllAssigned": "Every cent has a job",
-  "budgetsEnvelopeCaption": "{income} income · {assigned} assigned",
-  "@budgetsEnvelopeCaption": {
-    "placeholders": {
-      "income": { "type": "String" },
-      "assigned": { "type": "String" }
-    }
-  },
   "firstLaunchOfflineTitle": "Connect to continue",
   "firstLaunchOfflineSubtitle": "We need an internet connection to finish setting up your account. Try again once you have signal.",
   "firstLaunchOfflineRetrying": "Retrying...",

@@ -21,6 +21,10 @@ abstract final class BudgetFormat {
   /// lines, not for a field the user is about to change.
   static String longDate(DateTime date) => _longDate.format(date);
 
+  /// Compact "d MMM" ("30 jun"), as the history's "Cerrado <fecha>" (`qlbT0`)
+  /// and the meta lines spell it.
+  static String dayMonth(DateTime date) => _dayMonth.format(date);
+
   /// Short scope label for the list/detail meta line (HU-04). Warns when the
   /// scope was narrowed but every referent is gone.
   static String scopeLabel(AppLocalizations l10n, BudgetScope scope) {

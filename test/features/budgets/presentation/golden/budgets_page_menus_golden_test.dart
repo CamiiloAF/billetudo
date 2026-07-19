@@ -11,6 +11,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
@@ -29,12 +30,15 @@ class MockAppSettingsCubit extends MockCubit<AppSettingsState>
 /// its content depends on whether "Modo sobres" is on.
 ///
 /// Pencil rows (`design-system/billetudo/pages/presupuestos.md`):
-/// `list_menu` → `TmOGV` / `cOcbC` (Menú lista ⋮: solo "Ver histórico") ·
-/// `list_menu_envelope_on` → `tFZyK` / `qJAka` (Menú modo activo: añade
-/// "Desactivar modo sobres").
+/// `list_menu` → `TmOGV` / `cOcbC` (Menú lista ⋮: "Ver histórico",
+/// "Activar modo sobres" y "¿Qué es el modo sobres?") ·
+/// `list_menu_envelope_on` → `tFZyK` / `qJAka` (Menú modo activo: la fila del
+/// medio pasa a "Desactivar modo sobres").
 ///
-/// Captured through a real tap on the `PopupMenuButton` so the golden includes
-/// the menu's own route/elevation, the way the design shows it.
+/// Captured through a real tap on the header's "⋮" so the golden includes the
+/// bottom sheet's own route and scrim, the way the design shows it. Both rows
+/// are instances of `Bottom Sheet Base` (`PqTUt`), never a Material
+/// `PopupMenuButton`.
 void main() {
   late MockBudgetsListCubit listCubit;
   late MockZeroBasedSummaryCubit envelopeCubit;
@@ -100,7 +104,7 @@ void main() {
         brightness: brightness,
       ),
     );
-    await tester.tap(find.byType(PopupMenuButton<void>));
+    await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
     await tester.pumpAndSettle();
     await expectLater(
       find.byType(MaterialApp),

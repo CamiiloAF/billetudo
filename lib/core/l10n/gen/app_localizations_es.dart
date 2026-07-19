@@ -1453,10 +1453,64 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsHistoryLoading => 'Cargando tu histórico';
 
   @override
+  String budgetClosedOn(String date) {
+    return 'Cerrado $date';
+  }
+
+  @override
+  String get budgetsHistorySubtitle => 'Presupuestos cerrados';
+
+  @override
+  String get budgetsHistoryHint =>
+      'Los conservas sin borrar. Puedes reactivarlos cuando quieras.';
+
+  @override
+  String get budgetsMenuOptions => 'Opciones';
+
+  @override
+  String get budgetsMenuHistorySubtitle => 'Presupuestos cerrados';
+
+  @override
+  String get budgetsMenuEnableEnvelope => 'Activar modo sobres';
+
+  @override
+  String get budgetsMenuEnableEnvelopeSubtitle =>
+      'Reparte todo tu ingreso en sobres';
+
+  @override
+  String get budgetsMenuDisableEnvelopeSubtitle => 'Vuelve a la lista normal';
+
+  @override
+  String get budgetsEnvelopeBadge => 'Modo sobres';
+
+  @override
+  String budgetsEnvelopeIncome(String income) {
+    return 'Ingreso $income';
+  }
+
+  @override
+  String budgetsEnvelopeAssigned(String assigned) {
+    return 'Asignado $assigned';
+  }
+
+  @override
+  String budgetsEnvelopeNudge(String amount) {
+    return 'Casi lo logras: dale un trabajo a los $amount restantes.';
+  }
+
+  @override
+  String budgetsEnvelopeNudgeOver(String amount) {
+    return 'Asignaste $amount más de lo que entró. Ajusta un sobre cuando quieras.';
+  }
+
+  @override
+  String get budgetAssignedLabel => 'Asignado';
+
+  @override
   String get budgetReactivate => 'Reactivar';
 
   @override
-  String get budgetResultWithin => 'Dentro del presupuesto';
+  String get budgetResultWithin => 'Terminó dentro del presupuesto';
 
   @override
   String budgetResultOverspent(String amount) {
@@ -1498,18 +1552,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsMenuDisableEnvelope => 'Desactivar modo sobres';
 
   @override
-  String get budgetsEnvelopeUnassignedLabel => 'Sin asignar';
+  String get budgetsEnvelopeUnassignedLabel => 'Sin asignar este mes';
 
   @override
   String get budgetsEnvelopeOverLabel => 'Asignado de más';
 
   @override
   String get budgetsEnvelopeAllAssigned => 'Cada peso tiene un trabajo';
-
-  @override
-  String budgetsEnvelopeCaption(String income, String assigned) {
-    return '$income de ingreso · $assigned asignado';
-  }
 
   @override
   String get firstLaunchOfflineTitle => 'Conéctate para continuar';

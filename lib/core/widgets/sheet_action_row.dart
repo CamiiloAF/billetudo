@@ -1,0 +1,135 @@
+import 'package:flutter/material.dart';
+
+import '../theme/app_colors.dart';
+
+/// An action row inside a `Bottom Sheet Base` sheet (`PqTUt`): a neutral
+/// `$muted` icon-wrap (38pt, radius 12), a 15/600 title and an optional 12/500
+/// subtitle, in a `[13, 4]` padded row.
+///
+/// This is the shape every option sheet of the app uses, so a menu never falls
+/// back to a Material `PopupMenuButton` (which brings its own radius, border
+/// and elevation, all outside the palette).
+class SheetActionRow extends StatelessWidget {
+  const SheetActionRow({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+    this.foreground,
+    super.key,
+  });
+
+  final IconData icon;
+
+  /// Already localized.
+  final String title;
+
+  /// Already localized. `null` renders a single-line row.
+  final String? subtitle;
+
+  final VoidCallback onTap;
+
+  /// Overrides the icon and title color; used by destructive actions, which
+  /// wear the semantic `expense` family.
+  final Color? foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final tint = foreground ?? colors.textPrimary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: colors.muted,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 19, color: tint),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: tint,
+                    ),
+                  ),
+                  if (subtitle case final subtitle?) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The head of an option sheet (`TmOGV/N03UGA`): the screen's name plus the
+/// "Opciones" subtitle, left-aligned above the rows.
+class SheetActionsHead extends StatelessWidget {
+  const SheetActionsHead({
+    required this.title,
+    required this.subtitle,
+    super.key,
+  });
+
+  /// Already localized.
+  final String title;
+
+  /// Already localized.
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -10,6 +10,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
+import '../../../settings/presentation/widgets/sheets/envelope_info_sheet.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../cubit/budgets_list_cubit.dart';
 import '../cubit/budgets_list_state.dart';
@@ -18,6 +19,7 @@ import '../widgets/budget_line.dart';
 import '../widgets/budget_skeleton_row.dart';
 import '../widgets/budgets_error_view.dart';
 import '../widgets/envelope_hero.dart';
+import '../widgets/sheets/budgets_menu_sheet.dart';
 
 /// The budgets list (`s833Gk`). Custom header ("Presupuestos" + `+`) over the
 /// app tab bar; no `Page Header`. The overflow menu reaches the history.
@@ -40,8 +42,12 @@ class BudgetsPage extends StatelessWidget {
     final ZeroBasedSummary? summary = envelopeEnabled
         ? context.watch<ZeroBasedSummaryCubit>().state.summary
         : null;
-    final Widget? envelopeHeader =
-        summary == null ? null : EnvelopeHero(summary: summary);
+    final Widget? envelopeHeader = summary == null
+        ? null
+        : EnvelopeHero(
+            summary: summary,
+            onInfo: () => unawaited(EnvelopeInfoSheet.show(context)),
+          );
 
     return Scaffold(
       body: SafeArea(
@@ -69,6 +75,7 @@ class BudgetsPage extends StatelessWidget {
                       onOpenBudget: onOpenBudget,
                       onAddBudget: onAddBudget,
                       header: envelopeHeader,
+                      envelopeMode: envelopeEnabled,
                     ),
                 },
               ),
@@ -96,6 +103,27 @@ class BudgetsPageHeader extends StatelessWidget {
   final VoidCallback onOpenHistory;
   final bool envelopeEnabled;
 
+  Future<void> _openMenu(BuildContext context) async {
+    final settings = context.read<AppSettingsCubit>();
+    final action = await BudgetsMenuSheet.show(
+      context,
+      envelopeEnabled: envelopeEnabled,
+    );
+    if (action == null || !context.mounted) {
+      return;
+    }
+    switch (action) {
+      case BudgetsMenuAction.history:
+        onOpenHistory();
+      case BudgetsMenuAction.toggleEnvelope:
+        await settings.setZeroBasedEnabled(!envelopeEnabled);
+      case BudgetsMenuAction.envelopeInfo:
+        if (context.mounted) {
+          await EnvelopeInfoSheet.show(context);
+        }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -116,31 +144,15 @@ class BudgetsPageHeader extends StatelessWidget {
           ),
           // `ymsmU` orders the two 44pt circles ⋮ then + — the overflow is
           // the secondary action, so the filled `$primary` one sits last,
-          // closest to the screen edge.
-          PopupMenuButton<void>(
-            padding: EdgeInsets.zero,
+          // closest to the screen edge. The overflow opens the sheet
+          // `TmOGV`/`tFZyK`, never a Material popup menu.
+          PageHeaderCircleButton(
+            icon: LucideIcons.ellipsisVertical,
+            background: colors.muted,
+            foreground: colors.textPrimary,
             tooltip: l10n.budgetsMenuTooltip,
-            child: PageHeaderCircleButton(
-              icon: LucideIcons.ellipsisVertical,
-              background: colors.muted,
-              foreground: colors.textPrimary,
-              tooltip: l10n.budgetsMenuTooltip,
-              iconSize: 20,
-              onPressed: null,
-            ),
-            itemBuilder: (context) => [
-              PopupMenuItem<void>(
-                onTap: onOpenHistory,
-                child: Text(l10n.budgetsMenuHistory),
-              ),
-              if (envelopeEnabled)
-                PopupMenuItem<void>(
-                  onTap: () => unawaited(
-                    context.read<AppSettingsCubit>().setZeroBasedEnabled(false),
-                  ),
-                  child: Text(l10n.budgetsMenuDisableEnvelope),
-                ),
-            ],
+            iconSize: 20,
+            onPressed: () => unawaited(_openMenu(context)),
           ),
           const SizedBox(width: 8),
           PageHeaderCircleButton(
@@ -218,6 +230,7 @@ class BudgetsListView extends StatelessWidget {
     required this.onOpenBudget,
     required this.onAddBudget,
     this.header,
+    this.envelopeMode = false,
     super.key,
   });
 
@@ -228,14 +241,23 @@ class BudgetsListView extends StatelessWidget {
   /// The "Modo sobres" hero, when active (HU-06). Rendered as the first item.
   final Widget? header;
 
+  /// In "Modo sobres" the rows read "Asignado" and the list is denser
+  /// (`D1G5hl`: card padding 16, gap 12 vs. the normal list's 18/18).
+  final bool envelopeMode;
+
   @override
   Widget build(BuildContext context) {
     final header = this.header;
     final headerCount = header == null ? 0 : 1;
+    // `D1G5hl` closes the envelope list with the last envelope: the "+" of
+    // the header is the only entry point there, so the CTA row does not
+    // repeat it.
+    final ctaCount = envelopeMode ? 0 : 1;
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-      itemCount: headerCount + state.budgets.length + 1,
-      separatorBuilder: (context, index) => const SizedBox(height: 18),
+      itemCount: headerCount + state.budgets.length + ctaCount,
+      separatorBuilder: (context, index) =>
+          SizedBox(height: envelopeMode ? 12 : 18),
       itemBuilder: (context, index) {
         if (header != null && index == 0) {
           return header;
@@ -247,6 +269,7 @@ class BudgetsListView extends StatelessWidget {
         final entry = state.budgets[budgetIndex];
         return BudgetLine(
           entry: entry,
+          envelopeMode: envelopeMode,
           onTap: () => onOpenBudget(entry.budget.id),
         );
       },

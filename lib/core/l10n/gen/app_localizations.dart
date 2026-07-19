@@ -2636,6 +2636,90 @@ abstract class AppLocalizations {
   /// **'Cargando tu histórico'**
   String get budgetsHistoryLoading;
 
+  /// No description provided for @budgetClosedOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado {date}'**
+  String budgetClosedOn(String date);
+
+  /// No description provided for @budgetsHistorySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos cerrados'**
+  String get budgetsHistorySubtitle;
+
+  /// No description provided for @budgetsHistoryHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Los conservas sin borrar. Puedes reactivarlos cuando quieras.'**
+  String get budgetsHistoryHint;
+
+  /// No description provided for @budgetsMenuOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones'**
+  String get budgetsMenuOptions;
+
+  /// No description provided for @budgetsMenuHistorySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos cerrados'**
+  String get budgetsMenuHistorySubtitle;
+
+  /// No description provided for @budgetsMenuEnableEnvelope.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar modo sobres'**
+  String get budgetsMenuEnableEnvelope;
+
+  /// No description provided for @budgetsMenuEnableEnvelopeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reparte todo tu ingreso en sobres'**
+  String get budgetsMenuEnableEnvelopeSubtitle;
+
+  /// No description provided for @budgetsMenuDisableEnvelopeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a la lista normal'**
+  String get budgetsMenuDisableEnvelopeSubtitle;
+
+  /// No description provided for @budgetsEnvelopeBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo sobres'**
+  String get budgetsEnvelopeBadge;
+
+  /// No description provided for @budgetsEnvelopeIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso {income}'**
+  String budgetsEnvelopeIncome(String income);
+
+  /// No description provided for @budgetsEnvelopeAssigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignado {assigned}'**
+  String budgetsEnvelopeAssigned(String assigned);
+
+  /// No description provided for @budgetsEnvelopeNudge.
+  ///
+  /// In es, this message translates to:
+  /// **'Casi lo logras: dale un trabajo a los {amount} restantes.'**
+  String budgetsEnvelopeNudge(String amount);
+
+  /// No description provided for @budgetsEnvelopeNudgeOver.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignaste {amount} más de lo que entró. Ajusta un sobre cuando quieras.'**
+  String budgetsEnvelopeNudgeOver(String amount);
+
+  /// No description provided for @budgetAssignedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignado'**
+  String get budgetAssignedLabel;
+
   /// No description provided for @budgetReactivate.
   ///
   /// In es, this message translates to:
@@ -2645,7 +2729,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetResultWithin.
   ///
   /// In es, this message translates to:
-  /// **'Dentro del presupuesto'**
+  /// **'Terminó dentro del presupuesto'**
   String get budgetResultWithin;
 
   /// No description provided for @budgetResultOverspent.
@@ -2705,7 +2789,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetsEnvelopeUnassignedLabel.
   ///
   /// In es, this message translates to:
-  /// **'Sin asignar'**
+  /// **'Sin asignar este mes'**
   String get budgetsEnvelopeUnassignedLabel;
 
   /// No description provided for @budgetsEnvelopeOverLabel.
@@ -2719,12 +2803,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cada peso tiene un trabajo'**
   String get budgetsEnvelopeAllAssigned;
-
-  /// No description provided for @budgetsEnvelopeCaption.
-  ///
-  /// In es, this message translates to:
-  /// **'{income} de ingreso · {assigned} asignado'**
-  String budgetsEnvelopeCaption(String income, String assigned);
 
   /// Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización.
   ///

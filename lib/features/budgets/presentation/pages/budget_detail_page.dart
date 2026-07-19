@@ -255,7 +255,8 @@ class BudgetDetailHero extends StatelessWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: overspent ? colors.expenseText : colors.textSecondary,
+                    color:
+                        overspent ? colors.expenseText : colors.textSecondary,
                   ),
                 ),
               ),

@@ -1050,9 +1050,47 @@
   "@budgetsHistoryEmpty": {},
   "budgetsHistoryLoading": "Cargando tu histórico",
   "@budgetsHistoryLoading": {},
+  "budgetClosedOn": "Cerrado {date}",
+  "@budgetClosedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "budgetsHistorySubtitle": "Presupuestos cerrados",
+  "@budgetsHistorySubtitle": {},
+  "budgetsHistoryHint": "Los conservas sin borrar. Puedes reactivarlos cuando quieras.",
+  "@budgetsHistoryHint": {},
+  "budgetsMenuOptions": "Opciones",
+  "@budgetsMenuOptions": {},
+  "budgetsMenuHistorySubtitle": "Presupuestos cerrados",
+  "@budgetsMenuHistorySubtitle": {},
+  "budgetsMenuEnableEnvelope": "Activar modo sobres",
+  "@budgetsMenuEnableEnvelope": {},
+  "budgetsMenuEnableEnvelopeSubtitle": "Reparte todo tu ingreso en sobres",
+  "@budgetsMenuEnableEnvelopeSubtitle": {},
+  "budgetsMenuDisableEnvelopeSubtitle": "Vuelve a la lista normal",
+  "@budgetsMenuDisableEnvelopeSubtitle": {},
+  "budgetsEnvelopeBadge": "Modo sobres",
+  "@budgetsEnvelopeBadge": {},
+  "budgetsEnvelopeIncome": "Ingreso {income}",
+  "@budgetsEnvelopeIncome": {
+    "placeholders": { "income": { "type": "String" } }
+  },
+  "budgetsEnvelopeAssigned": "Asignado {assigned}",
+  "@budgetsEnvelopeAssigned": {
+    "placeholders": { "assigned": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudge": "Casi lo logras: dale un trabajo a los {amount} restantes.",
+  "@budgetsEnvelopeNudge": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudgeOver": "Asignaste {amount} más de lo que entró. Ajusta un sobre cuando quieras.",
+  "@budgetsEnvelopeNudgeOver": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAssignedLabel": "Asignado",
+  "@budgetAssignedLabel": {},
   "budgetReactivate": "Reactivar",
   "@budgetReactivate": {},
-  "budgetResultWithin": "Dentro del presupuesto",
+  "budgetResultWithin": "Terminó dentro del presupuesto",
   "@budgetResultWithin": {},
   "budgetResultOverspent": "Excedido por {amount}",
   "@budgetResultOverspent": {
@@ -1077,19 +1115,12 @@
   "@envelopeInfoGotIt": {},
   "budgetsMenuDisableEnvelope": "Desactivar modo sobres",
   "@budgetsMenuDisableEnvelope": {},
-  "budgetsEnvelopeUnassignedLabel": "Sin asignar",
+  "budgetsEnvelopeUnassignedLabel": "Sin asignar este mes",
   "@budgetsEnvelopeUnassignedLabel": {},
   "budgetsEnvelopeOverLabel": "Asignado de más",
   "@budgetsEnvelopeOverLabel": {},
   "budgetsEnvelopeAllAssigned": "Cada peso tiene un trabajo",
   "@budgetsEnvelopeAllAssigned": {},
-  "budgetsEnvelopeCaption": "{income} de ingreso · {assigned} asignado",
-  "@budgetsEnvelopeCaption": {
-    "placeholders": {
-      "income": { "type": "String" },
-      "assigned": { "type": "String" }
-    }
-  },
   "firstLaunchOfflineTitle": "Conéctate para continuar",
   "@firstLaunchOfflineTitle": {
     "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."

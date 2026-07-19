@@ -16,10 +16,21 @@ import 'budget_progress_bar.dart';
 /// amount/percent). Tone stays positive: "Te quedan $X", "Excedido por $X" —
 /// never "Te pasaste".
 class BudgetLine extends StatelessWidget {
-  const BudgetLine({required this.entry, required this.onTap, super.key});
+  const BudgetLine({
+    required this.entry,
+    required this.onTap,
+    this.envelopeMode = false,
+    super.key,
+  });
 
   final BudgetWithProgress entry;
   final VoidCallback onTap;
+
+  /// In "Modo sobres" the row answers "how much did I put in this envelope?",
+  /// so the right stack shows **Asignado + the budgeted amount** instead of
+  /// what is left (`D1G5hl` overrides `avgVb`/`doPZl` this way), and the card
+  /// is denser (padding 16 instead of 18).
+  final bool envelopeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +42,21 @@ class BudgetLine extends StatelessWidget {
 
     const money = MoneyFormatter();
     final headlineAmount = money.formatSymbol(
-      overspent ? -progress.remainingMinor : progress.remainingMinor,
+      envelopeMode
+          ? entry.budget.amountMinor
+          : overspent
+              ? -progress.remainingMinor
+              : progress.remainingMinor,
       currencyCode: entry.budget.currency,
     );
+    final headlineLabel = envelopeMode
+        ? l10n.budgetAssignedLabel
+        : overspent
+            ? l10n.budgetOverspentLabel
+            : l10n.budgetRemainingLabel;
+    // The assigned amount is not a result, so it never turns red — only the
+    // remaining/overspent reading carries the semantic `expense` family.
+    final amountIsRed = overspent && !envelopeMode;
 
     // The percent is NOT part of this string: `FSL69` anchors it to the right
     // edge of its own row (`vdyCS`), so a long scope can never truncate it.
@@ -46,7 +69,7 @@ class BudgetLine extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(envelopeMode ? 16 : 18),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
@@ -86,13 +109,11 @@ class BudgetLine extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      overspent
-                          ? l10n.budgetOverspentLabel
-                          : l10n.budgetRemainingLabel,
+                      headlineLabel,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: overspent
+                        color: amountIsRed
                             ? colors.expenseText
                             : colors.textSecondary,
                       ),
@@ -103,8 +124,9 @@ class BudgetLine extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color:
-                            overspent ? colors.expenseText : colors.textPrimary,
+                        color: amountIsRed
+                            ? colors.expenseText
+                            : colors.textPrimary,
                       ),
                     ),
                   ],

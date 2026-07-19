@@ -26,6 +26,26 @@ class ZeroBasedSummary extends Equatable {
   /// What is still unassigned (`income − assigned`). May be negative.
   int get unassignedMinor => incomeMinor - assignedMinor;
 
+  /// Every peso of the income already has a job.
+  bool get isAllAssigned => unassignedMinor == 0;
+
+  /// More was assigned than came in. Never a blocker, just a nudge.
+  bool get isOverAssigned => unassignedMinor < 0;
+
+  /// How much of the income is already assigned, in `[0, 1]` — what the hero's
+  /// progress track (`i9NQn`) fills. With no income there is nothing to split,
+  /// so the track stays empty; over-assigning tops it out instead of
+  /// overflowing.
+  double get assignedFraction {
+    if (incomeMinor <= 0 || assignedMinor <= 0) {
+      return 0;
+    }
+    if (assignedMinor >= incomeMinor) {
+      return 1;
+    }
+    return assignedMinor / incomeMinor;
+  }
+
   @override
   List<Object?> get props => [currency, incomeMinor, assignedMinor];
 }
