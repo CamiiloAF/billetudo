@@ -87,7 +87,11 @@ class ScheduledCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        ScheduledFrequencyChip(frequency: payment.frequency),
+                        Flexible(
+                          child: ScheduledFrequencyChip(
+                            frequency: payment.frequency,
+                          ),
+                        ),
                         const SizedBox(width: 6),
                         ScheduledDueInChip(nextDate: payment.nextDate),
                       ],
@@ -180,10 +184,16 @@ class ScheduledFrequencyChip extends StatelessWidget {
             color: colors.textSecondary,
           ),
           const SizedBox(width: 4),
-          Text(
-            ScheduledPaymentFormat.frequencyLabel(l10n, frequency),
-            style: theme.textTheme.labelSmall
-                ?.copyWith(color: colors.textSecondary, fontWeight: FontWeight.w600),
+          Flexible(
+            child: Text(
+              ScheduledPaymentFormat.frequencyLabel(l10n, frequency),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
