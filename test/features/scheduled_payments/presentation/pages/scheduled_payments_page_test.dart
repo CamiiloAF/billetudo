@@ -365,8 +365,13 @@ void main() {
       ),
     );
 
-    await tester.drag(find.byType(ListView), const Offset(0, -4000));
-    await tester.pumpAndSettle();
+    // Dragged repeatedly on purpose: the list is lazy, so each drag builds
+    // more cards and grows the scroll extent, and a single drag stops short of
+    // the real end no matter how long it is.
+    for (var i = 0; i < 3; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, -4000));
+      await tester.pumpAndSettle();
+    }
 
     // `Content.padding` bottom = 92 en `o0twiq`: es el colchón del FAB, no
     // decoración. Con menos, la última tarjeta queda tapada al final del

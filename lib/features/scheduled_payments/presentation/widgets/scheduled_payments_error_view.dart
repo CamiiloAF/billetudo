@@ -7,9 +7,19 @@ import '../../../../core/theme/app_colors.dart';
 /// The list's error state (`KeKke`/`w3MUo`): local-first copy plus a retry —
 /// the data never left the device, so the message never suggests it was lost.
 class ScheduledPaymentsErrorView extends StatelessWidget {
-  const ScheduledPaymentsErrorView({required this.onRetry, super.key});
+  const ScheduledPaymentsErrorView({
+    required this.onRetry,
+    this.title,
+    super.key,
+  });
 
   final VoidCallback onRetry;
+
+  /// The headline. `KeKke` and `w3MUo` share the card but not this line: the
+  /// initial error names "tus pagos programados", the one inside the
+  /// "Terminados" filter names "tus pagos terminados" — it failed to load the
+  /// filtered list, not the whole feature. Defaults to the former.
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +53,7 @@ class ScheduledPaymentsErrorView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                l10n.scheduledPaymentsErrorTitle,
+                title ?? l10n.scheduledPaymentsErrorTitle,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700),

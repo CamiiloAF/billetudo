@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 
 /// "Activos · N" / "Terminados · N": a rounded pill counter.
 class ScheduledCountPill extends StatelessWidget {
@@ -23,11 +24,20 @@ class ScheduledCountPill extends StatelessWidget {
   /// does not inflate the 44px tap target.
   final bool emphasized;
 
+  /// `qPSvV/Hbn6k`: the chip is 44 high, not "whatever the label needs". It is
+  /// the tap target the component's own context declares, and the loading
+  /// placeholder reserves exactly this height — a shorter pill makes the whole
+  /// list jump when the counters resolve, which is the glitch the placeholder
+  /// exists to prevent.
+  static const double height = 44;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      constraints: const BoxConstraints(minHeight: height),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: emphasized ? colors.primarySoft : colors.muted,
         border: emphasized
@@ -38,7 +48,7 @@ class ScheduledCountPill extends StatelessWidget {
                 width: 1.5,
               )
             : null,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppTheme.radiusField),
       ),
       child: Text(
         label,

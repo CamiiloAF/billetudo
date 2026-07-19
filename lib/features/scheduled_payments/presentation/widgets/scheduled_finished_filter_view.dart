@@ -71,7 +71,11 @@ class ScheduledFinishedFilterView extends StatelessWidget {
             // `w3MUo`, not in the full body.
             ScheduledPaymentsListStatus.failure => Padding(
                 padding: const EdgeInsets.fromLTRB(0, 16, 0, 92),
-                child: ScheduledPaymentsErrorView(onRetry: onRetry),
+                child: ScheduledPaymentsErrorView(
+                  onRetry: onRetry,
+                  title: AppLocalizations.of(context)
+                      .scheduledFinishedErrorTitle,
+                ),
               ),
             ScheduledPaymentsListStatus.ready => ListView.separated(
                 // `Content.gap` 16 below the caption, `Lista.gap` 10 between

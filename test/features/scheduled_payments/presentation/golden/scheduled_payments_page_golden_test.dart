@@ -60,7 +60,7 @@ void main() {
       scheduledPayment: buildScheduledPayment(nextDate: inDays(5)),
       accountName: 'Bancolombia',
       categoryName: 'Arriendo',
-      categoryIcon: 'home',
+      categoryIcon: 'house',
       categoryColor: 'sky',
     ),
     ScheduledPaymentSummary(
@@ -77,7 +77,7 @@ void main() {
       ),
       accountName: 'Nequi',
       categoryName: 'Salario',
-      categoryIcon: 'banknote',
+      categoryIcon: 'wallet',
       categoryColor: 'mint',
       pendingOccurrenceCount: 3,
     ),
@@ -120,7 +120,7 @@ void main() {
           buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
       accountName: 'Nequi',
       categoryName: 'Salario',
-      categoryIcon: 'banknote',
+      categoryIcon: 'wallet',
       categoryColor: 'mint',
     ),
   ];

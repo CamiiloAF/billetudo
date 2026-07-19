@@ -1485,7 +1485,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentsErrorLocalFirst =>
-      'Your data is still safe on this device. Try again.';
+      'Your data is still stored on your device. Try again.';
 
   @override
   String scheduledPaymentsActiveCount(int count) {
@@ -1752,6 +1752,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledFinishedCardChip => 'Finished';
+
+  @override
+  String get scheduledFinishedErrorTitle =>
+      'We couldn\'t load your finished payments';
 
   @override
   String scheduledFinishedLastPayment(String date) {

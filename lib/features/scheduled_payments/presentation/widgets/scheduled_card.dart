@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
@@ -10,6 +9,13 @@ import '../utils/scheduled_payment_format.dart';
 import 'scheduled_category_icon_wrap.dart';
 import 'scheduled_finished_chip.dart';
 import 'scheduled_manual_mode_chip.dart';
+
+/// `tit0W` geometry: 18 of corner radius, 14 of padding and 12 between the two
+/// axes — the card is slightly tighter and rounder than the generic
+/// generic card, and it carries a 1px `$border` stroke.
+const double _cardRadius = 18;
+const double _cardPadding = 14;
+const double _cardGap = 12;
 
 /// `Scheduled Card`: one row of the "próximos vencimientos" list (HU-04).
 ///
@@ -52,12 +58,15 @@ class ScheduledCard extends StatelessWidget {
 
     return Material(
       color: colors.surface,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_cardRadius),
+        side: BorderSide(color: colors.border),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(_cardRadius),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(_cardPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -94,33 +103,6 @@ class ScheduledCard extends StatelessWidget {
                           style: theme.textTheme.bodySmall
                               ?.copyWith(color: colors.textSecondary),
                         ),
-                        if (!isFinished) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: ScheduledFrequencyChip(
-                                  frequency: payment.frequency,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              if (payment.requiresConfirmation) ...[
-                                const ScheduledManualModeChip(),
-                                const SizedBox(width: 6),
-                              ],
-                              Expanded(
-                                child: Text(
-                                  _dueLabel(context, l10n, payment),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.end,
-                                  style: theme.textTheme.labelSmall
-                                      ?.copyWith(color: colors.textSecondary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                       ],
                     ),
                   ),
@@ -137,31 +119,51 @@ class ScheduledCard extends StatelessWidget {
                   ),
                 ],
               ),
-              // Finished: the same bottom axis, but spanning the full card
-              // width instead of only the text column. "Último pago · 15 mar
-              // 2026" does not fit in the slot the amount leaves next to it,
-              // and truncating it would eat the year — the part the design
-              // added on purpose. Card height is unchanged: the row moved, it
-              // was not added.
-              if (isFinished) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Flexible(child: ScheduledFinishedChip()),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        _lastPaymentLabel(context, l10n),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: colors.textSecondary),
-                      ),
+              // `tit0W/UwRRQ`: the bottom axis is a sibling of `Top` at card
+              // level, not a third line of the text column. It spans the full
+              // card width, so the chip starts under the avatar and the meta
+              // ends at the card's padding edge. Active and finished cards
+              // share it — only the chip and the trailing label change.
+              const SizedBox(height: _cardGap),
+              Row(
+                children: [
+                  // `a1vmQ` fills the row and `CyI5F` is `fit_content`, so the
+                  // chips take the slack and the meta sits flush against the
+                  // card's padding edge. Two `Flexible`s instead would split
+                  // the free space in halves and leave the meta stranded mid
+                  // card — the chip only needs its label's width, but its
+                  // share is not given back.
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (isFinished)
+                          const Flexible(child: ScheduledFinishedChip())
+                        else
+                          Flexible(
+                            child: ScheduledFrequencyChip(
+                              frequency: payment.frequency,
+                            ),
+                          ),
+                        if (!isFinished && payment.requiresConfirmation) ...[
+                          const SizedBox(width: 6),
+                          const Flexible(child: ScheduledManualModeChip()),
+                        ],
+                      ],
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isFinished
+                        ? _lastPaymentLabel(context, l10n)
+                        : _dueLabel(context, l10n, payment),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: colors.textSecondary),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -228,10 +230,10 @@ class ScheduledFrequencyChip extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: colors.muted,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -249,7 +251,7 @@ class ScheduledFrequencyChip extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.textSecondary,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -271,10 +273,10 @@ class ScheduledDueInChip extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: colors.primarySoft,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         ScheduledPaymentFormat.dueInLabel(
@@ -284,7 +286,7 @@ class ScheduledDueInChip extends StatelessWidget {
         ),
         style: theme.textTheme.labelSmall?.copyWith(
           color: colors.primaryOnSoftStrong,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

@@ -2717,7 +2717,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentsErrorLocalFirst.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo.'**
+  /// **'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.'**
   String get scheduledPaymentsErrorLocalFirst;
 
   /// No description provided for @scheduledPaymentsActiveCount.
@@ -3188,6 +3188,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Terminada'**
   String get scheduledFinishedCardChip;
+
+  /// No description provided for @scheduledFinishedErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus pagos terminados'**
+  String get scheduledFinishedErrorTitle;
 
   /// No description provided for @scheduledFinishedLastPayment.
   ///

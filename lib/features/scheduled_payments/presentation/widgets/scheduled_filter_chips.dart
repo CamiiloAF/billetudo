@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../cubit/scheduled_payments_list_state.dart';
 import 'scheduled_count_pill.dart';
 
@@ -73,7 +74,7 @@ class ScheduledFilterChip extends StatelessWidget {
       selected: selected,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppTheme.radiusField),
         child: ScheduledCountPill(label: label, emphasized: selected),
       ),
     );

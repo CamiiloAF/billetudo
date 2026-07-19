@@ -1084,7 +1084,7 @@
   "@scheduledPaymentsEmptyMessage": {},
   "scheduledPaymentsErrorTitle": "No pudimos cargar tus pagos programados",
   "@scheduledPaymentsErrorTitle": {},
-  "scheduledPaymentsErrorLocalFirst": "Tus datos siguen a salvo en este dispositivo. Intenta de nuevo.",
+  "scheduledPaymentsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
   "@scheduledPaymentsErrorLocalFirst": {},
   "scheduledPaymentsActiveCount": "Activos · {count}",
   "@scheduledPaymentsActiveCount": {
@@ -1276,6 +1276,8 @@
   "@scheduledFinishedCaption": {},
   "scheduledFinishedCardChip": "Terminada",
   "@scheduledFinishedCardChip": {},
+  "scheduledFinishedErrorTitle": "No pudimos cargar tus pagos terminados",
+  "@scheduledFinishedErrorTitle": {},
   "scheduledFinishedLastPayment": "Último pago · {date}",
   "@scheduledFinishedLastPayment": {
     "placeholders": { "date": { "type": "String" } }
