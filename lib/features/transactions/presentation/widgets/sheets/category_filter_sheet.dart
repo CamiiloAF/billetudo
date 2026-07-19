@@ -99,9 +99,12 @@ class CategoryFilterSheetBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(state.selected),
-              child: Text(l10n.commonApply),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(context).pop(state.selected),
+                child: Text(l10n.commonApply),
+              ),
             ),
           ],
         );

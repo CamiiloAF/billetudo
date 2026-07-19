@@ -289,10 +289,16 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         const SizedBox(height: 28),
 
         // -- CTA --
-        FilledButton(
-          onPressed: state.canSubmit && !state.submitting ? cubit.submit : null,
-          child: Text(
-            state.isEditing ? l10n.budgetFormSaveCta : l10n.budgetFormCreateCta,
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed:
+                state.canSubmit && !state.submitting ? cubit.submit : null,
+            child: Text(
+              state.isEditing
+                  ? l10n.budgetFormSaveCta
+                  : l10n.budgetFormCreateCta,
+            ),
           ),
         ),
       ],

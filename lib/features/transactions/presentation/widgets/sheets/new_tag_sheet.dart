@@ -100,10 +100,13 @@ class _NewTagSheetState extends State<NewTagSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(context).pop(_controller.text),
-            icon: const Icon(LucideIcons.check, size: 18),
-            label: Text(l10n.commonCreate),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.of(context).pop(_controller.text),
+              icon: const Icon(LucideIcons.check, size: 18),
+              label: Text(l10n.commonCreate),
+            ),
           ),
         ],
       ),

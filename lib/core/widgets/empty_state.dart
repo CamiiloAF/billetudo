@@ -103,11 +103,10 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: onCta,
-                // The app-wide filled button is full-width (`Size.fromHeight`
-                // sets an infinite minimum width), which is right for forms and
-                // sheets but not here: this CTA is 220pt wide in the frame.
-                // A minimum rather than a fixed width, so a long label or a
-                // large text scale grows it instead of overflowing.
+                // The theme only imposes the height, so this CTA has to ask for
+                // its 220pt width from the frame. A minimum rather than a fixed
+                // width, so a long label or a large text scale grows it instead
+                // of overflowing.
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(_ctaMinWidth, 52),
                 ),

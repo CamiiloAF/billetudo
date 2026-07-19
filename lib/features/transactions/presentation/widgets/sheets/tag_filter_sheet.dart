@@ -216,10 +216,13 @@ class _TagFilterSheetBodyState extends State<TagFilterSheetBody> {
               ),
             ),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => Navigator.of(context).pop(state.selected),
-              icon: const Icon(LucideIcons.check, size: 18),
-              label: Text(confirm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => Navigator.of(context).pop(state.selected),
+                icon: const Icon(LucideIcons.check, size: 18),
+                label: Text(confirm),
+              ),
             ),
           ],
         );

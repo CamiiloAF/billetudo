@@ -725,14 +725,17 @@ class ConfirmationSheetFields extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        FilledButton.icon(
-          onPressed: isSaving ? null : onConfirm,
-          icon: Icon(isGuided ? LucideIcons.arrowRight : LucideIcons.check,
-              size: 18),
-          label: Text(
-            isGuided
-                ? l10n.scheduledGuidedReviewConfirmNext
-                : l10n.scheduledConfirmationSheetConfirm,
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: isSaving ? null : onConfirm,
+            icon: Icon(isGuided ? LucideIcons.arrowRight : LucideIcons.check,
+                size: 18),
+            label: Text(
+              isGuided
+                  ? l10n.scheduledGuidedReviewConfirmNext
+                  : l10n.scheduledConfirmationSheetConfirm,
+            ),
           ),
         ),
       ],

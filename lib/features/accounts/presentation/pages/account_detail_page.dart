@@ -272,10 +272,13 @@ class AccountDetailActions extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          OutlinedButton.icon(
-            onPressed: cubit.promptArchive,
-            icon: const Icon(LucideIcons.archive),
-            label: Text(l10n.accountArchiveAction),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: cubit.promptArchive,
+              icon: const Icon(LucideIcons.archive),
+              label: Text(l10n.accountArchiveAction),
+            ),
           ),
           TextButton(
             onPressed: cubit.promptDelete,

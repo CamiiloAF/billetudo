@@ -57,9 +57,12 @@ class _TypeFilterSheetState extends State<TypeFilterSheet> {
             title: Text(labels[type]!),
           ),
         const SizedBox(height: 12),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(_selected),
-          child: Text(l10n.commonApply),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(_selected),
+            child: Text(l10n.commonApply),
+          ),
         ),
       ],
     );

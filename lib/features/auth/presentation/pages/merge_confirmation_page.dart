@@ -56,9 +56,12 @@ class MergeConfirmationPage extends StatelessWidget {
                             ?.copyWith(color: colors.textSecondary),
                       ),
                       const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: onDone,
-                        child: Text(l10n.authMergeCta),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: onDone,
+                          child: Text(l10n.authMergeCta),
+                        ),
                       ),
                     ],
                   ),

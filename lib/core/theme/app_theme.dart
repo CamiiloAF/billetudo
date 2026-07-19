@@ -95,7 +95,15 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: c.primary,
           foregroundColor: c.onPrimary,
-          minimumSize: const Size.fromHeight(52),
+          // Height only. `Size.fromHeight` leaves the width at
+          // `double.infinity`, i.e. an infinite *minimum* width: every button
+          // in the app would be full-width by theme and no outer constraint
+          // could shrink it. Full width is a layout decision, so screens that
+          // need it ask for it (`SizedBox(width: double.infinity)`,
+          // `Expanded`). 52pt tall and 20pt of side padding come from
+          // `Button/Primary` in billetudo.pen.
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           textStyle:
               textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
@@ -107,7 +115,10 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           backgroundColor: c.surface,
           foregroundColor: c.textPrimary,
-          minimumSize: const Size.fromHeight(52),
+          // Same rule as the filled button above: impose the height, never the
+          // width. Mirrors `Button/Secondary` in billetudo.pen.
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           side: BorderSide(color: c.border),
           textStyle:
               textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),

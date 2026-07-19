@@ -141,9 +141,12 @@ class SnoozeSheetBody extends StatelessWidget {
                 onSelected: cubit.dateSelected,
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: state.isSaving ? null : cubit.save,
-                child: Text(l10n.scheduledSnoozeSheetSave),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: state.isSaving ? null : cubit.save,
+                  child: Text(l10n.scheduledSnoozeSheetSave),
+                ),
               ),
             ],
           ),

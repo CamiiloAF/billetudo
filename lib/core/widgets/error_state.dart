@@ -96,16 +96,11 @@ class ErrorState extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
+              // `inZFU` hugs its label, which is what the theme gives by
+              // default: it imposes the 52pt height and the 20pt side padding,
+              // never a width.
               FilledButton.icon(
                 onPressed: onRetry,
-                // `inZFU` hugs its label. The app-wide filled button is
-                // full-width (`Size.fromHeight` sets an infinite minimum
-                // width), so the minimum has to be released here; the height
-                // and the 20pt side padding stay.
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(0, 52),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                ),
                 icon: const Icon(LucideIcons.refreshCw, size: 18),
                 label: Text(l10n.commonRetry),
               ),
