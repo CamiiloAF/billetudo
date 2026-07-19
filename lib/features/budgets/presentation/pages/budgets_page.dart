@@ -7,7 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../accounts/presentation/widgets/empty_state.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../cubit/budgets_list_cubit.dart';

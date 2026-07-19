@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../accounts/presentation/widgets/empty_state.dart';
+import '../../../../core/widgets/empty_state.dart';
 
 /// The total empty state (`YI1wY`): no templates at all, active or finished.
 ///

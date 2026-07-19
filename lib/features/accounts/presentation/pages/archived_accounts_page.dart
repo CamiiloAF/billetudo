@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../cubit/archived_accounts_cubit.dart';
 import '../cubit/archived_accounts_state.dart';
 import '../widgets/accounts_error_view.dart';
 import '../widgets/archived_account_row.dart';
-import '../widgets/empty_state.dart';
 
 /// "Cuentas archivadas" (`ft48Z`/`eAwin`, HU-07).
 class ArchivedAccountsPage extends StatelessWidget {

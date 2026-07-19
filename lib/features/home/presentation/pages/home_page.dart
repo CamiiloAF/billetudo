@@ -8,6 +8,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
@@ -318,40 +319,16 @@ class HomeMovementsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(44),
-              ),
-              child: Icon(LucideIcons.receipt,
-                  size: 40, color: colors.primaryOnSoft),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.homeEmptyMovements,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(LucideIcons.plus),
-              label: Text(l10n.transactionsAdd),
-            ),
-          ],
-        ),
+    // The extra top/bottom inset is the only thing home adds: it sits in a
+    // fixed slot between the hero and the tab bar.
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 40),
+      child: EmptyState(
+        icon: LucideIcons.receipt,
+        message: l10n.homeEmptyMovements,
+        ctaLabel: l10n.transactionsAdd,
+        onCta: onAdd,
       ),
     );
   }

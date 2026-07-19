@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header.dart';
-import '../../../accounts/presentation/widgets/empty_state.dart';
 import '../cubit/archived_budgets_cubit.dart';
 import '../cubit/archived_budgets_state.dart';
 import '../widgets/archived_budget_row.dart';

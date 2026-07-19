@@ -8,7 +8,7 @@ import 'package:billetudo/features/accounts/presentation/widgets/account_card.da
 import 'package:billetudo/features/accounts/presentation/widgets/accounts_error_view.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/accounts_total_card.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/credit_card_account_row.dart';
-import 'package:billetudo/features/accounts/presentation/widgets/empty_state.dart';
+import 'package:billetudo/core/widgets/empty_state.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/skeleton_row.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';

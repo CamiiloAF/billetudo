@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_with_balance.dart';
@@ -13,7 +14,6 @@ import '../widgets/account_card.dart';
 import '../widgets/accounts_error_view.dart';
 import '../widgets/accounts_total_card.dart';
 import '../widgets/credit_card_account_row.dart';
-import '../widgets/empty_state.dart';
 import '../widgets/skeleton_row.dart';
 
 /// The accounts list (`l055o`/`nwFMA`/`sh7r2`/`L6Za0`).
