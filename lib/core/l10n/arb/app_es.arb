@@ -927,6 +927,10 @@
   "@budgetDaysLeft": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "budgetEndsInDays": "{count, plural, =0{Último día} one{Termina en {count} día} other{Termina en {count} días}}",
+  "@budgetEndsInDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetProgressBreakdown": "{spent} de {amount}",
   "@budgetProgressBreakdown": {
     "placeholders": {
@@ -934,14 +938,22 @@
       "amount": { "type": "String" }
     }
   },
-  "budgetActivityTitle": "Actividad del periodo",
+  "budgetActivityTitle": "Movimientos del periodo",
   "@budgetActivityTitle": {},
+  "budgetActivityCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
+  "@budgetActivityCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
-  "budgetLoadMore": "Cargar más",
+  "budgetLoadMore": "Ver más",
   "@budgetLoadMore": {},
-  "budgetOpenInTransactions": "Abrir en Movimientos",
-  "@budgetOpenInTransactions": {},
+  "budgetOneOffWindow": "Ventana única",
+  "@budgetOneOffWindow": {},
+  "budgetPeriodPreviousTooltip": "Periodo anterior",
+  "@budgetPeriodPreviousTooltip": {},
+  "budgetPeriodNextTooltip": "Periodo siguiente",
+  "@budgetPeriodNextTooltip": {},
   "budgetPeriodStatusCurrent": "vigente",
   "@budgetPeriodStatusCurrent": {},
   "budgetPeriodStatusPast": "pasado",

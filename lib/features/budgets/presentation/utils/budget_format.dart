@@ -69,12 +69,38 @@ abstract final class BudgetFormat {
     )}';
   }
 
-  /// The period stepper's inner label: "1–31 jul · vigente".
-  static String periodStepperLabel(
+  /// The stepper's leading, bold half. A recurring budget steps through cycles
+  /// so it names the range ("1–31 jul"); a one-off has a single window, so
+  /// naming a range would suggest a navigation that does not exist — `QLn6w`
+  /// reads "Ventana única" instead.
+  static String stepperRange(
     AppLocalizations l10n,
+    Budget budget,
     BudgetPeriodWindow window,
   ) =>
-      '${rangeLabel(window)} · ${statusLabel(l10n, window.status)}';
+      budget.isOneOff ? l10n.budgetOneOffWindow : rangeLabel(window);
+
+  /// The stepper's trailing, secondary half ("· vigente", "· termina el
+  /// 24 dic"). The bullet belongs to this text node in `NloPT/e6kYhx`.
+  static String stepperState(
+    AppLocalizations l10n,
+    Budget budget,
+    BudgetPeriodWindow window,
+  ) =>
+      budget.isOneOff
+          ? '· ${l10n.budgetEndsOn(_dayMonth.format(window.lastDay))}'
+          : '· ${statusLabel(l10n, window.status)}';
+
+  /// The hero's right caption: "Restan 18 días" while the cycle repeats,
+  /// "Termina en 8 días" when the window is the budget's only one (`QLn6w`).
+  static String daysLeftCaption(
+    AppLocalizations l10n,
+    Budget budget,
+    BudgetProgress progress,
+  ) =>
+      budget.isOneOff
+          ? l10n.budgetEndsInDays(progress.daysLeft)
+          : l10n.budgetDaysLeft(progress.daysLeft);
 
   static String statusLabel(
     AppLocalizations l10n,

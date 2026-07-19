@@ -4,13 +4,17 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../domain/entities/budget_scope.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
 import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
+import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budgets_error_view.dart';
 import '../widgets/period_stepper_pill.dart';
@@ -23,7 +27,6 @@ class BudgetDetailPage extends StatelessWidget {
   const BudgetDetailPage({
     required this.onEdit,
     required this.onClosed,
-    required this.onOpenInTransactions,
     super.key,
   });
 
@@ -31,7 +34,6 @@ class BudgetDetailPage extends StatelessWidget {
 
   /// Called after the budget is closed or deleted, to leave the detail.
   final VoidCallback onClosed;
-  final VoidCallback onOpenInTransactions;
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +61,7 @@ class BudgetDetailPage extends StatelessWidget {
                   BudgetDetailStatus.failure => BudgetsErrorView(
                       onRetry: () {},
                     ),
-                  BudgetDetailStatus.ready => BudgetDetailBody(
-                      state: state,
-                      onOpenInTransactions: onOpenInTransactions,
-                    ),
+                  BudgetDetailStatus.ready => BudgetDetailBody(state: state),
                 },
               ),
             ],
@@ -100,34 +99,30 @@ class BudgetDetailPage extends StatelessWidget {
 
 /// The detail content: a scrolling hero + activity under a floating stepper.
 class BudgetDetailBody extends StatelessWidget {
-  const BudgetDetailBody({
-    required this.state,
-    required this.onOpenInTransactions,
-    super.key,
-  });
+  const BudgetDetailBody({required this.state, super.key});
 
   final BudgetDetailState state;
-  final VoidCallback onOpenInTransactions;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<BudgetDetailCubit>();
     final view = state.view;
-    if (view == null || state.budget == null) {
+    final budget = state.budget;
+    if (view == null || budget == null) {
       return const SizedBox.shrink();
     }
 
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 96),
           children: [
             BudgetDetailHero(state: state),
-            const SizedBox(height: 24),
+            // `QWC08` spaces the hero and the activity by 16, not 24.
+            const SizedBox(height: 16),
             BudgetActivitySection(
               state: state,
               onLoadMore: cubit.loadMoreActivity,
-              onOpenInTransactions: onOpenInTransactions,
             ),
           ],
         ),
@@ -136,6 +131,7 @@ class BudgetDetailBody extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: PeriodStepperPill(
+            budget: budget,
             window: view.window,
             onPrevious: cubit.previousPeriod,
             onNext: cubit.nextPeriod,
@@ -146,7 +142,9 @@ class BudgetDetailBody extends StatelessWidget {
   }
 }
 
-/// Compact hero: "Te quedan $X" + bar + a single 2-part caption.
+/// Compact hero card (`NloPT/j35Yt`): the budget's identity row, "Te quedan $X"
+/// and the bar with a single 2-part caption — all inside one `$surface` card,
+/// the dominant element of the screen.
 class BudgetDetailHero extends StatelessWidget {
   const BudgetDetailHero({required this.state, super.key});
 
@@ -158,8 +156,8 @@ class BudgetDetailHero extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final budget = state.budget!;
+    final scope = state.scope ?? const BudgetScope.empty();
     final progress = state.view!.progress;
-    final window = state.view!.window;
     final overspent = progress.isOverspent;
     const money = MoneyFormatter();
 
@@ -168,67 +166,131 @@ class BudgetDetailHero extends StatelessWidget {
       currencyCode: budget.currency,
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          budget.name,
-          style: theme.textTheme.titleMedium
-              ?.copyWith(color: colors.textSecondary),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          overspent ? l10n.budgetOverspentLabel : l10n.budgetRemainingLabel,
-          style:
-              theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          headline,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: overspent ? colors.expenseText : colors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        BudgetProgressBar(fraction: progress.fraction, overspent: overspent),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                BudgetFormat.progressCaption(l10n, progress, budget.currency),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: overspent ? colors.expenseText : colors.textSecondary,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // `NloPT/UOLr6` — the identity row. The name repeats the header on
+          // purpose: the card must stand on its own as the budget's object.
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: overspent ? colors.expenseSoft : colors.muted,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  CategoryAppearance.iconFor(budget.icon),
+                  size: 20,
+                  color: overspent ? colors.expense : colors.primaryOnSoft,
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      budget.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      BudgetFormat.scopeLabel(l10n, scope),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            overspent ? l10n.budgetOverspentLabel : l10n.budgetRemainingLabel,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: overspent ? colors.expenseText : colors.textSecondary,
             ),
-            const SizedBox(width: 12),
-            Text(
-              l10n.budgetDaysLeft(window.daysLeftFrom(DateTime.now())),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colors.textSecondary),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            headline,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontSize: 34,
+              fontWeight: FontWeight.w800,
+              color: overspent ? colors.expenseText : colors.textPrimary,
             ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 16),
+          BudgetProgressBar(fraction: progress.fraction, overspent: overspent),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  BudgetFormat.progressCaption(l10n, progress, budget.currency),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: overspent ? colors.expenseText : colors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // The days left come from the domain's already-computed
+              // `progress.daysLeft`, never from `DateTime.now()` in `build`:
+              // that made the widget non-deterministic (and printed "Último
+              // día" in every golden).
+              Text(
+                BudgetFormat.daysLeftCaption(l10n, budget, progress),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// The period's activity: matched expenses, "Cargar más" and the secondary
-/// "Abrir en Movimientos ›" link.
+/// The period's activity (`NloPT/R30oao`): the section header with the movement
+/// count, the matched expenses and the "Ver más" pill.
 class BudgetActivitySection extends StatelessWidget {
   const BudgetActivitySection({
     required this.state,
     required this.onLoadMore,
-    required this.onOpenInTransactions,
     super.key,
   });
 
   final BudgetDetailState state;
   final VoidCallback onLoadMore;
-  final VoidCallback onOpenInTransactions;
 
   @override
   Widget build(BuildContext context) {
@@ -236,24 +298,36 @@ class BudgetActivitySection extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final items = state.visibleActivity;
+    final total = state.view?.activity.length ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // `NloPT/Nv04I` — title on the left, the period's movement count on
+        // the right. The count is the total of the period, not the visible
+        // slice, so it does not change as "Ver más" expands the list.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               l10n.budgetActivityTitle,
-              style: theme.textTheme.titleSmall,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            TextButton(
-              onPressed: onOpenInTransactions,
-              child: Text(l10n.budgetOpenInTransactions),
+            const SizedBox(width: 8),
+            Text(
+              l10n.budgetActivityCount(total),
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: colors.textSecondary,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         if (items.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -266,17 +340,14 @@ class BudgetActivitySection extends StatelessWidget {
             ),
           )
         else
-          for (final item in items) ...[
+          for (final (index, item) in items.indexed) ...[
+            if (index > 0) const SizedBox(height: 14),
             BudgetActivityRow(item: item),
-            const SizedBox(height: 10),
           ],
-        if (state.hasMoreActivity)
-          Center(
-            child: TextButton(
-              onPressed: onLoadMore,
-              child: Text(l10n.budgetLoadMore),
-            ),
-          ),
+        if (state.hasMoreActivity) ...[
+          const SizedBox(height: 18),
+          BudgetLoadMoreButton(onPressed: onLoadMore),
+        ],
       ],
     );
   }

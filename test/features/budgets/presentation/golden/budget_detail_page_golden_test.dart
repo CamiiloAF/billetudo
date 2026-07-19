@@ -24,21 +24,18 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 /// `detail_overspent` → `DN0GV` / `zW1s4` (Detalle — sobregasto, familia
 /// semántica `expense`) ·
 /// `detail_one_off` → `QLn6w` / `A5O26l` (Detalle — una única vez; el stepper
-/// queda acotado, ambos chevrons deshabilitados).
+/// lee "Ventana única · termina el <fecha>" y ambos chevrons quedan al 40%).
 ///
 /// States with **no row of their own in the spec table**, flagged for the
 /// audit: `detail_loading` (`CircularProgressIndicator` centrado),
 /// `detail_error` (`BudgetsErrorView`, el `Error State` compartido),
 /// `detail_activity_empty` ("Sin movimientos en este periodo"),
-/// `detail_load_more` (paginación perezosa de la actividad, HU-04) y
+/// `detail_load_more` (paginación perezosa "Ver más" de la actividad, HU-04) y
 /// `detail_past_period` (stepper en un periodo pasado, HU-05).
 ///
-/// **Caveat for the auditor:** `BudgetDetailHero` computes the days-left
-/// caption from `DateTime.now()` (`window.daysLeftFrom`), ignoring the
-/// `BudgetProgress.daysLeft` the domain already calculated. Fixtures use fixed
-/// dates so the stepper's absolute range stays deterministic, so that caption
-/// always renders "Último día" here instead of the designed "Restan 18 días".
-/// Every other element of the hero is auditable.
+/// The whole hero is auditable: its days-left caption now comes from
+/// `BudgetProgress.daysLeft` (domain), not from `DateTime.now()` inside
+/// `build`, so it is deterministic across runs.
 void main() {
   late MockBudgetDetailCubit cubit;
 
@@ -64,11 +61,7 @@ void main() {
       tester,
       BlocProvider<BudgetDetailCubit>.value(
         value: cubit,
-        child: BudgetDetailPage(
-          onEdit: (_) {},
-          onClosed: () {},
-          onOpenInTransactions: () {},
-        ),
+        child: BudgetDetailPage(onEdit: (_) {}, onClosed: () {}),
       ),
       brightness: brightness,
       size: tallGoldenPhoneSize(height: height),
@@ -134,7 +127,7 @@ void main() {
       );
     });
 
-    testWidgets('detalle con "Cargar más" (actividad paginada) ($suffix)',
+    testWidgets('detalle con "Ver más" (actividad paginada) ($suffix)',
         (tester) async {
       await golden(
         tester,

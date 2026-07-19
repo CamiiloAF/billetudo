@@ -140,6 +140,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
                     BudgetExpenseDetail(
                       expense: _toExpense(expense),
                       title: expense.categoryName ?? expense.accountName,
+                      accountName: expense.accountName,
+                      categoryIcon: expense.categoryIcon,
+                      categoryColor: expense.categoryColor,
                       note: expense.note,
                     ),
                 ],

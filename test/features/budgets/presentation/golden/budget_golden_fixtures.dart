@@ -28,12 +28,10 @@ import '../../domain/budget_fixtures.dart';
 ///
 /// **Dates are fixed, never relative to `DateTime.now()`.** The period stepper
 /// prints an absolute range ("1–31 jul"), so a now-relative window would make
-/// every detail golden differ each day. Consequence, documented for the
-/// fidelity auditor: `BudgetDetailHero` renders "Restan N días" from
-/// `window.daysLeftFrom(DateTime.now())`, so with a past window it always
-/// reads "Último día" (`budgetDaysLeft(0)`) instead of the design's "Restan 18
-/// días". That caption is the one element of the detail goldens that cannot be
-/// audited against Pencil.
+/// every detail golden differ each day. The hero's right caption is fully
+/// auditable now: it renders `BudgetProgress.daysLeft` (the value the domain
+/// computed), not `DateTime.now()`, so `healthyEntry` prints the designed
+/// "Restan 18 días".
 
 /// A period window with fixed dates. [status] is independent of the dates on
 /// purpose: the designed frames show a "vigente" pill, and the dates must stay
@@ -268,6 +266,9 @@ List<BudgetActivityItem> buildActivity({int count = 4}) {
     'Domicilios y aplicaciones de entrega',
     'Transporte y movilidad diaria',
   ];
+  const accounts = ['Bancolombia', 'Efectivo', 'Nequi', 'Davivienda'];
+  const icons = ['shopping-cart', 'utensils-crossed', 'send', 'bus'];
+  const colors = ['mint', 'peach', 'sky', 'teal'];
   const notes = [
     'Éxito Colina — compra quincenal completa',
     null,
@@ -280,6 +281,9 @@ List<BudgetActivityItem> buildActivity({int count = 4}) {
       BudgetActivityItem(
         id: 'tx-$index',
         title: titles[index % titles.length],
+        accountName: accounts[index % accounts.length],
+        categoryIcon: icons[index % icons.length],
+        categoryColor: colors[index % colors.length],
         amountMinor: amounts[index % amounts.length],
         currency: 'COP',
         date: DateTime(2025, 7, 28 - (index % 20)),

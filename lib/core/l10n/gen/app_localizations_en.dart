@@ -1259,21 +1259,50 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String budgetEndsInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ends in $count days',
+      one: 'Ends in $count day',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String budgetProgressBreakdown(String spent, String amount) {
     return '$spent of $amount';
   }
 
   @override
-  String get budgetActivityTitle => 'This period\'s activity';
+  String get budgetActivityTitle => 'This period\'s transactions';
+
+  @override
+  String budgetActivityCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '$count transaction',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get budgetActivityEmpty => 'No transactions in this period';
 
   @override
-  String get budgetLoadMore => 'Load more';
+  String get budgetLoadMore => 'See more';
 
   @override
-  String get budgetOpenInTransactions => 'Open in Transactions';
+  String get budgetOneOffWindow => 'Single window';
+
+  @override
+  String get budgetPeriodPreviousTooltip => 'Previous period';
+
+  @override
+  String get budgetPeriodNextTooltip => 'Next period';
 
   @override
   String get budgetPeriodStatusCurrent => 'current';

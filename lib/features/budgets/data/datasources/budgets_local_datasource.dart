@@ -29,6 +29,8 @@ class BudgetExpenseRow {
     required this.accountName,
     this.categoryId,
     this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
     this.note,
   });
 
@@ -40,6 +42,8 @@ class BudgetExpenseRow {
   final DateTime date;
   final String accountName;
   final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
   final String? note;
 }
 
@@ -211,6 +215,8 @@ class BudgetsLocalDatasource {
                 date: row.readTable(_db.transactions).date,
                 accountName: row.readTable(_db.accounts).name,
                 categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
                 note: row.readTable(_db.transactions).note,
               ),
           ],

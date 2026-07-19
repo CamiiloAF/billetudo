@@ -373,8 +373,6 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                 child: BudgetDetailPage(
                   onEdit: (id) => context.push(AppRoutes.editBudget(id)),
                   onClosed: () => context.pop(),
-                  onOpenInTransactions: () =>
-                      context.go(AppRoutes.transactions),
                 ),
               ),
               routes: [

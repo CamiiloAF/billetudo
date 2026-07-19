@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/budget_activity_item.dart';
 
-/// One row of a budget's period activity (HU-04). Mirrors the Transactions
-/// `Transaction Row` look — every item here is an expense (transfers are never
-/// budget spend), so the amount is always shown as a negative expense.
+/// One row of a budget's period activity (HU-04). Structurally the shared
+/// `Transaction Row` (`DKJaf`) as the detail instances it: a 44pt icon-wrap in
+/// the category's soft tone, "Cuenta · Fecha" underneath the title, and the
+/// amount on the right — no card, no border. The rows sit straight on
+/// `$background` inside the activity section (`NloPT/Abx0H`).
 class BudgetActivityRow extends StatelessWidget {
   const BudgetActivityRow({required this.item, super.key});
 
@@ -19,58 +21,83 @@ class BudgetActivityRow extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: colors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _subtitle(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: colors.textSecondary),
-                ),
-              ],
-            ),
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: CategoryAppearance.softColorFor(colors, item.categoryColor),
+            borderRadius: BorderRadius.circular(14),
           ),
-          const SizedBox(width: 12),
-          Text(
-            _amountLabel(),
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colors.expenseText,
-              fontWeight: FontWeight.w700,
-            ),
+          child: Icon(
+            CategoryAppearance.iconFor(item.categoryIcon),
+            size: 20,
+            color: CategoryAppearance.colorFor(colors, item.categoryColor),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _subtitle(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          _amountLabel(),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 
-  /// Every budget activity item is an expense, and an expense renders
-  /// unsigned (Pencil): the colour already says it is money going out, only
-  /// income is ever marked (with `+`).
-  String _amountLabel() => const MoneyFormatter()
-      .formatSymbol(item.amountMinor, currencyCode: item.currency);
+  /// Signed, and in `$text-primary` (not red) — the deliberate exception to the
+  /// app-wide rule that an expense renders unsigned. In the Transactions list a
+  /// row can be income, expense or transfer, so the sign would be noise; here
+  /// every row is an expense of the *same* budget sitting under an accumulated
+  /// total, and the `-` is what marks each one as a subtraction from the period
+  /// rather than a running balance. Verified node by node against
+  /// `NloPT/U6y9n/a1Pwa`, `rmROV`, `oD0A1`, `p4qBp` and their twins in `DN0GV`
+  /// and `QLn6w`: all 12 read `-$X` in `$text-primary`. Do not "fix" this back
+  /// to unsigned.
+  String _amountLabel() {
+    final amount = const MoneyFormatter()
+        .formatSymbol(item.amountMinor, currencyCode: item.currency);
+    return '-$amount';
+  }
 
+  /// "Cuenta · Fecha" (`DKJaf/pjX7P`); the note tags along when there is one so
+  /// it is not lost from the list.
   String _subtitle() {
     final date = DateFormat.yMMMd('es_CO').format(item.date);
+    final base = '${item.accountName} · $date';
     final note = item.note;
-    return note == null || note.isEmpty ? date : '$date · $note';
+    return note == null || note.isEmpty ? base : '$base · $note';
   }
 }

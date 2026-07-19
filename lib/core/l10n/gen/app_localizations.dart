@@ -2306,6 +2306,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{Último día} one{Resta {count} día} other{Restan {count} días}}'**
   String budgetDaysLeft(int count);
 
+  /// No description provided for @budgetEndsInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Último día} one{Termina en {count} día} other{Termina en {count} días}}'**
+  String budgetEndsInDays(int count);
+
   /// No description provided for @budgetProgressBreakdown.
   ///
   /// In es, this message translates to:
@@ -2315,8 +2321,14 @@ abstract class AppLocalizations {
   /// No description provided for @budgetActivityTitle.
   ///
   /// In es, this message translates to:
-  /// **'Actividad del periodo'**
+  /// **'Movimientos del periodo'**
   String get budgetActivityTitle;
+
+  /// No description provided for @budgetActivityCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} movimiento} other{{count} movimientos}}'**
+  String budgetActivityCount(int count);
 
   /// No description provided for @budgetActivityEmpty.
   ///
@@ -2327,14 +2339,26 @@ abstract class AppLocalizations {
   /// No description provided for @budgetLoadMore.
   ///
   /// In es, this message translates to:
-  /// **'Cargar más'**
+  /// **'Ver más'**
   String get budgetLoadMore;
 
-  /// No description provided for @budgetOpenInTransactions.
+  /// No description provided for @budgetOneOffWindow.
   ///
   /// In es, this message translates to:
-  /// **'Abrir en Movimientos'**
-  String get budgetOpenInTransactions;
+  /// **'Ventana única'**
+  String get budgetOneOffWindow;
+
+  /// No description provided for @budgetPeriodPreviousTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo anterior'**
+  String get budgetPeriodPreviousTooltip;
+
+  /// No description provided for @budgetPeriodNextTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo siguiente'**
+  String get budgetPeriodNextTooltip;
 
   /// No description provided for @budgetPeriodStatusCurrent.
   ///

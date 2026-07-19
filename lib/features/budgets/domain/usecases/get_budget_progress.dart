@@ -61,6 +61,9 @@ class GetBudgetProgress {
           BudgetActivityItem(
             id: detail.expense.id,
             title: detail.title,
+            accountName: detail.accountName,
+            categoryIcon: detail.categoryIcon,
+            categoryColor: detail.categoryColor,
             amountMinor: detail.expense.amountMinor,
             currency: detail.expense.currency,
             date: detail.expense.date,

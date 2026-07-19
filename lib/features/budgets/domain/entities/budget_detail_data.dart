@@ -11,6 +11,9 @@ class BudgetExpenseDetail extends Equatable {
   const BudgetExpenseDetail({
     required this.expense,
     required this.title,
+    required this.accountName,
+    this.categoryIcon,
+    this.categoryColor,
     this.note,
   });
 
@@ -18,10 +21,17 @@ class BudgetExpenseDetail extends Equatable {
 
   /// Category name when categorized, otherwise the account name.
   final String title;
+  final String accountName;
+
+  /// Category appearance tokens, so the activity row can draw the icon-wrap.
+  final String? categoryIcon;
+  final String? categoryColor;
+
   final String? note;
 
   @override
-  List<Object?> get props => [expense, title, note];
+  List<Object?> get props =>
+      [expense, title, accountName, categoryIcon, categoryColor, note];
 }
 
 /// Everything the detail screen needs from the data layer in one reactive

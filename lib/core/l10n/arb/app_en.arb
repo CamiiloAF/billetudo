@@ -399,6 +399,10 @@
   "@budgetDaysLeft": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "budgetEndsInDays": "{count, plural, =0{Last day} one{Ends in {count} day} other{Ends in {count} days}}",
+  "@budgetEndsInDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetProgressBreakdown": "{spent} of {amount}",
   "@budgetProgressBreakdown": {
     "placeholders": {
@@ -406,10 +410,16 @@
       "amount": { "type": "String" }
     }
   },
-  "budgetActivityTitle": "This period's activity",
+  "budgetActivityTitle": "This period's transactions",
+  "budgetActivityCount": "{count, plural, one{{count} transaction} other{{count} transactions}}",
+  "@budgetActivityCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetActivityEmpty": "No transactions in this period",
-  "budgetLoadMore": "Load more",
-  "budgetOpenInTransactions": "Open in Transactions",
+  "budgetLoadMore": "See more",
+  "budgetOneOffWindow": "Single window",
+  "budgetPeriodPreviousTooltip": "Previous period",
+  "budgetPeriodNextTooltip": "Next period",
   "budgetPeriodStatusCurrent": "current",
   "budgetPeriodStatusPast": "past",
   "budgetPeriodStatusFuture": "upcoming",
