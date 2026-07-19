@@ -2693,18 +2693,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Efectivo",
+                      "fill": "$muted",
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$mint-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
-                          "icon": "wallet"
+                          "fill": "$mint",
+                          "icon": "banknote"
                         },
                         "dxASd": {
                           "content": "Efectivo",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -2714,18 +2722,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Banco",
+                      "fill": "$primary-soft",
+                      "stroke": "$primary",
+                      "strokeWidth": 1,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$sky-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$sky",
                           "icon": "landmark"
                         },
                         "dxASd": {
                           "content": "Banco",
-                          "fill": "$text-secondary",
+                          "fill": "$primary-on-soft-strong",
                           "fontWeight": "600"
                         }
                       }
@@ -2735,18 +2751,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Tarjeta",
+                      "fill": "$muted",
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$primary-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$primary-on-soft",
                           "icon": "credit-card"
                         },
                         "dxASd": {
                           "content": "Tarjeta",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -2765,18 +2789,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Ahorros",
+                      "fill": "$muted",
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$teal-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$teal",
                           "icon": "piggy-bank"
                         },
                         "dxASd": {
                           "content": "Ahorros",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -2786,18 +2818,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Inversión",
+                      "fill": "$muted",
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$indigo-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$indigo",
                           "icon": "trending-up"
                         },
                         "dxASd": {
                           "content": "Inversión",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -2807,18 +2847,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Otro",
+                      "fill": "$muted",
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$peach-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
-                          "icon": "more-horizontal"
+                          "fill": "$peach",
+                          "icon": "wallet"
                         },
                         "dxASd": {
                           "content": "Otro",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -4026,18 +4074,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Efectivo",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$mint-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
-                              "icon": "wallet"
+                              "fill": "$mint",
+                              "icon": "banknote"
                             },
                             "dxASd": {
                               "content": "Efectivo",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -4047,18 +4103,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Banco",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$sky-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$sky",
                               "icon": "landmark"
                             },
                             "dxASd": {
                               "content": "Banco",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -4098,18 +4162,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Ahorros",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$teal-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$teal",
                               "icon": "piggy-bank"
                             },
                             "dxASd": {
                               "content": "Ahorros",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -4119,18 +4191,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Inversion",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$indigo-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$indigo",
                               "icon": "trending-up"
                             },
                             "dxASd": {
-                              "content": "Inversion",
-                              "fill": "$text-secondary",
+                              "content": "Inversión",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -4140,18 +4220,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Otro",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$peach-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
-                              "icon": "more-horizontal"
+                              "fill": "$peach",
+                              "icon": "wallet"
                             },
                             "dxASd": {
                               "content": "Otro",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -6918,18 +7006,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Efectivo",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$mint-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
-                          "icon": "wallet"
+                          "fill": "$mint",
+                          "icon": "banknote"
                         },
                         "dxASd": {
                           "content": "Efectivo",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -6939,18 +7035,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Banco",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$sky-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$sky",
                           "icon": "landmark"
                         },
                         "dxASd": {
                           "content": "Banco",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -6960,18 +7064,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Tarjeta",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$primary-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$primary-on-soft",
                           "icon": "credit-card"
                         },
                         "dxASd": {
                           "content": "Tarjeta",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -6990,18 +7102,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Ahorros",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$teal-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$teal",
                           "icon": "piggy-bank"
                         },
                         "dxASd": {
                           "content": "Ahorros",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -7011,18 +7131,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Inversión",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$indigo-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$indigo",
                           "icon": "trending-up"
                         },
                         "dxASd": {
                           "content": "Inversión",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -7032,18 +7160,26 @@
                       "type": "ref",
                       "ref": "mK8oI",
                       "name": "Chip Otro",
+                      "fill": "$muted",
+                      "cornerRadius": 16,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "stroke": "#00000000",
+                      "strokeWidth": 0,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$muted",
+                          "fill": "$peach-soft",
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
-                          "icon": "more-horizontal"
+                          "fill": "$peach",
+                          "icon": "wallet"
                         },
                         "dxASd": {
                           "content": "Otro",
-                          "fill": "$text-secondary",
+                          "fill": "$text-primary",
                           "fontWeight": "600"
                         }
                       }
@@ -7630,18 +7766,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Efectivo",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$mint-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
-                              "icon": "wallet"
+                              "fill": "$mint",
+                              "icon": "banknote"
                             },
                             "dxASd": {
                               "content": "Efectivo",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -7651,18 +7795,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Banco",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$sky-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$sky",
                               "icon": "landmark"
                             },
                             "dxASd": {
                               "content": "Banco",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -7702,18 +7854,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Ahorros",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$teal-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$teal",
                               "icon": "piggy-bank"
                             },
                             "dxASd": {
                               "content": "Ahorros",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -7723,18 +7883,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Inversion",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$indigo-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
+                              "fill": "$indigo",
                               "icon": "trending-up"
                             },
                             "dxASd": {
-                              "content": "Inversion",
-                              "fill": "$text-secondary",
+                              "content": "Inversión",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -7744,18 +7912,26 @@
                           "type": "ref",
                           "ref": "mK8oI",
                           "name": "Chip Otro",
+                          "fill": "$muted",
+                          "cornerRadius": 16,
+                          "padding": [
+                            8,
+                            0
+                          ],
+                          "stroke": "#00000000",
+                          "strokeWidth": 0,
                           "descendants": {
                             "Ml8tH": {
-                              "fill": "$muted",
+                              "fill": "$peach-soft",
                               "stroke": "#00000000"
                             },
                             "vR29h": {
-                              "fill": "$text-secondary",
-                              "icon": "more-horizontal"
+                              "fill": "$peach",
+                              "icon": "wallet"
                             },
                             "dxASd": {
                               "content": "Otro",
-                              "fill": "$text-secondary",
+                              "fill": "$text-primary",
                               "fontWeight": "600"
                             }
                           }
@@ -11915,7 +12091,7 @@
                   "fontWeight": "600"
                 },
                 {
-                  "id": "eMVic",
+                  "id": "X51QQ",
                   "type": "ref",
                   "ref": "R8PlN",
                   "name": "Icono y Color Pill",
@@ -11925,8 +12101,17 @@
                       "fill": "$mint-soft"
                     },
                     "ZKIRA": {
-                      "icon": "utensils-crossed",
-                      "fill": "$mint"
+                      "fill": "$mint",
+                      "icon": "utensils-crossed"
+                    },
+                    "N04bc": {
+                      "enabled": true
+                    },
+                    "IwyuZ": {
+                      "content": "Ícono y color"
+                    },
+                    "RK3zo": {
+                      "content": "Toca para cambiar"
                     }
                   }
                 }
@@ -13550,7 +13735,7 @@
                   "fontWeight": "600"
                 },
                 {
-                  "id": "L4VK6",
+                  "id": "FPOL2",
                   "type": "ref",
                   "ref": "R8PlN",
                   "name": "Icono y Color Pill",
@@ -13560,8 +13745,11 @@
                       "fill": "$muted"
                     },
                     "ZKIRA": {
-                      "icon": "sparkles",
-                      "fill": "$text-secondary"
+                      "fill": "$text-secondary",
+                      "icon": "sparkles"
+                    },
+                    "N04bc": {
+                      "enabled": true
                     },
                     "IwyuZ": {
                       "content": "Elegir ícono y color"
@@ -16262,6 +16450,19 @@
                   "fill": "$sky"
                 }
               ]
+            },
+            {
+              "type": "icon",
+              "id": "N04bc",
+              "x": 0,
+              "y": 0,
+              "name": "Lock Icon",
+              "enabled": false,
+              "width": 13,
+              "height": 13,
+              "icon": "lock",
+              "library": "lucide",
+              "fill": "$text-secondary"
             },
             {
               "type": "frame",
@@ -62243,16 +62444,16 @@
               "width": 72,
               "descendants": {
                 "Ml8tH": {
-                  "fill": "$primary-soft",
-                  "stroke": "$primary"
+                  "fill": "$mint-soft",
+                  "stroke": "$mint"
                 },
                 "vR29h": {
-                  "fill": "$primary-on-soft",
+                  "fill": "$mint",
                   "icon": "utensils"
                 },
                 "dxASd": {
                   "content": "Comida",
-                  "fill": "$primary-on-soft-strong"
+                  "fill": "$text-primary"
                 }
               }
             },
@@ -62268,7 +62469,7 @@
                   "stroke": "#00000000"
                 },
                 "vR29h": {
-                  "fill": "$text-secondary",
+                  "fill": "$sky",
                   "icon": "car"
                 },
                 "dxASd": {
@@ -62289,7 +62490,7 @@
                   "stroke": "#00000000"
                 },
                 "vR29h": {
-                  "fill": "$text-secondary",
+                  "fill": "$peach",
                   "icon": "film"
                 },
                 "dxASd": {
@@ -74952,16 +75153,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "note",
-      "id": "StBxL",
-      "x": 1450,
-      "y": 23000,
-      "name": "Pagos Programados — decisiones (flutter-dev)",
-      "width": 420,
-      "height": 0,
-      "content": "PAGOS PROGRAMADOS — LISTA (HU-04). Diseno cerrado, tema claro. Gano B2 tras auditoria de ui-ux-reviewer.\n\nESTRUCTURA\n• Pantalla apilada: Page Header (arrow-left) + SIN Tab Bar. FAB para crear.\n• Chips de filtro: 'Activos · N' / 'Terminados · N'. Resuelve activos vs. historicos.\n• Zona de pendientes arriba (ocurrencias), lista de plantillas activas abajo (tarjetas Scheduled Card/B).\n\nARRIBA OCURRENCIAS, ABAJO PLANTILLAS (HU-04, regla critica)\n• La seccion 'Por confirmar' lista OCURRENCIAS; la lista principal lista PLANTILLAS activas.\n• Una plantilla con ocurrencia pendiente NO se repite abajo: mientras esta pendiente, nextDate no ha avanzado (solo avanza al confirmar u omitir), asi que aparecer en ambos lados seria la misma fecha dos veces.\n• El chip 'Activos · N' cuenta TODAS las plantillas activas, incluidas las que tienen pendiente arriba. En el mockup: 8 activas = 6 con pendiente arriba + 2 tarjetas abajo. Es coherente, no un bug del mockup.\n\nREGLA DE TOPE (zona de pendientes, solo en la lista)\n• Maximo 4 filas (Scheduled Pending Row/B2), ordenadas por nextDate ASC (la mas vencida primero).\n• Si N>4: 4 filas + fila de desbordamiento de 44px al pie, DENTRO del borde $primary: iconos de categoria de los que sobran + 'Ver los otros N pendientes' ($primary-on-soft-strong 13/700) + chevron-right -> subpantalla 'Por confirmar'.\n• Alto duro ~275px, CONSTANTE para todo N>=5. Garantiza >=2 tarjetas de programados futuros siempre visibles.\n• SIN scroll interno anidado. La subpantalla si tiene scroll real (ListView).\n• El contador del header de seccion muestra N TOTAL, no las visibles.\n\nCADENA DE DEPENDENCIA DEL ALTO (no romper)\n  truncado con ellipsis  ->  fila de 52px fijos  ->  tope de ~275px  ->  >=2 tarjetas visibles\n• Sub (bYCpk) y Name (fQIa3) de la fila: Text con maxLines:1 + overflow:TextOverflow.ellipsis dentro de Expanded. NO deben envolver.\n• Verificado en canvas: con nombres de cuenta reales del sistema ('Bancolombia Ahorros · Salario') + monto ancho ('+$3.200.000') el Sub envuelve a 2 lineas y DESBORDA los 52px, chocando con el divisor. Pencil no renderiza ellipsis, asi que el mockup usa cadenas que caben — el truncado es lo que sostiene el alto fijo en produccion.\n• La fecha vive en la columna derecha (Right/Date, 12px) bajo el monto, NO en el Sub: asi el Sub no compite por ancho con el monto y las fechas alinean en columna (la pantalla esta ordenada por nextDate).\n• OJO: snapshot_layout NO detecta este desbordamiento (reporta 'No layout problems' con el bug presente). Verificar SIEMPRE por screenshot de fila con contenido largo real.\n\nUNA SOLA DENSIDAD (decision, no omision)\n• La fila mide 52px en la lista Y en la subpantalla. Se evaluo darle mas alto en la subpantalla (ahi no rige el tope) y se descarto: mismo contenido + misma tarea (triar) = misma densidad. Dos alturas del mismo row para el mismo dato es una diferencia perceptible sin pago funcional.\n• El espacio que sobra en la subpantalla con N=5-8 es inherente y aceptable; el CTA se anclo abajo (zona de pulgar) en vez de inflar filas para rellenar.\n\nCONFIRMAR NUNCA ES A CIEGAS (HU-03, regla critica)\n• Tap en una fila -> vista de verificacion/edicion (date/accountId/amountMinor precargados). NO existe aceptar-tal-cual de un toque desde la lista.\n• 'Revisar todas' (link del header de seccion en la lista + CTA de la subpantalla) NO aplica N de un golpe: abre REVISION GUIADA SECUENCIAL — misma hoja, progreso '1 de 6', CTA 'Confirmar y siguiente' + 'Omitir' + 'Salir'. Esa hoja NO esta disenada todavia.\n• Misma accion = misma etiqueta a proposito en los dos puntos de entrada. La ambiguedad se resolvio por ICONO, no por texto: chevron-right = NAVEGAR (fila de desbordamiento), list-checks = EMPEZAR LA REVISION ('Revisar todas'). Antes ambos usaban chevron y el link se leia como navegacion.\n• OMITIR no existe inline en la lista: vive en la hoja de verificacion. Acelerador opcional por swipe, siempre reversible con Snackbar 'Deshacer' (componente zSTlU).\n\nCOPY / TONO\n• Caption 'Aun no afectan tu saldo' bajo el header de seccion: es LA regla de HU-03 que el usuario necesita saber.\n• Se quito 'vencio' de las 6 filas: dentro de una seccion 'Por confirmar', bajo un caption que ya lo explica, toda fila esta vencida por definicion — no aportaba, empujaba el wrap, y repetido 6 veces arrastraba el tono hacia bandeja de cobro. La fecha desnuda ('30 jul') es igual de informativa y mas neutral.\n• Cero $expense. Violeta de marca para el estado pendiente, nunca alarma.\n• 'Activos · N' NO es un badge de notificacion — cuenta plantillas, no pendientes.\n\nBORDES: por que difieren a proposito\n• Lista (eswQN): borde $primary/1.5 — la zona de pendientes tiene que distinguirse de las tarjetas tit0W que conviven abajo.\n• Subpantalla (iEAww): borde $border/1 — ahi TODA la pantalla es pendientes; un borde morado no separaria de nada y degradaria el acento de marca a decoracion ambiental.\n\nCASOS CUBIERTOS\n• Ocurrencias acumuladas de la MISMA plantilla: chip '×3' en la fila (11px/700 — unica fuente de ese dato, no es decorativo).\n• Varias plantillas distintas con pendiente: regla de tope + desbordamiento.\n• 0 pendientes: la zona NO se renderiza (sin banner, sin seccion, sin andamiaje vacio, sin contador en cero). Ver frame 'Sin Pendientes'.\n• type income (+$3.200.000 en $income-text) y transfer ('Bancolombia -> Fondo viaje') representados, no solo expense.\n• El sub de un transfer SI lleva 'origen -> destino': es el dato de cuenta, no redundancia. Parecia duplicado solo porque el mockup llamaba a la plantilla 'Ahorro a Fondo de viaje'; se renombro a 'Ahorro mensual' (el nombre lo escribe el usuario y puede no mencionar el destino).\n• frequency once ('pago unico' + icono calendar-check) vs. repetibles ('cada mes' + icono repeat).\n\nPENDIENTE DE DISENO (no bloquea esta pantalla)\n• Hoja de verificacion/edicion + revision guiada secuencial (HU-03).\n• Estados vacio / carga / error de la lista.\n• Tema oscuro (va al final del flujo).\n• Detalle/editar plantilla y eliminar logico (HU-05): asumido tap en tarjeta -> detalle; confirmar navegacion."
     },
     {
       "type": "frame",
@@ -90532,6 +90723,1292 @@
           "content": "Reintentando..."
         }
       }
+    },
+    {
+      "type": "note",
+      "id": "l4vP6o",
+      "x": 550,
+      "y": 25135,
+      "name": "Auditoria fidelidad - [CRITICO] scheduled_payment_editable_amo",
+      "width": 420,
+      "height": 170,
+      "content": "[RESUELTO] scheduled_payment_editable_amount_field.dart: ya expande el NumericKeypad in-situ (no AlertDialog) y los botones secundarios llevan [Posponer(alarm-clock) | Omitir(circle-slash)] + Confirmar con icono check, igual que gHDTi/irJZw. [MENOR nuevo] El valor del monto usa colors.primary (morado) en vez de $text-primary como en ofg07/Rslzk (U9Xvt/ubjDy) - ajustar el color a neutro."
+    },
+    {
+      "type": "note",
+      "id": "xbmA5",
+      "x": 1860,
+      "y": 11420,
+      "name": "Review — o9116 ref discrepancy",
+      "width": 260,
+      "height": 0,
+      "content": "[IMPORTANTE] Este nodo (o9116/qsjbj, 'Sheet - Confirmar Eliminar Transacción') usa icono alert-triangle + $expense/$expense-soft (rojo) en el header, mientras que 'Categorias — Eliminar Categoria' (jngMo) usa trash-2 + $primary/$primary-soft (violeta) para la MISMA severidad de accion (borrado simple, reversible via papelera). El bug-fixes.md cita o9116/qsjbj como la referencia canonica a replicar en toda la app -> al construir SheetMessage/confirm_delete_simple_sheet.dart, usar SIEMPRE $expense/$expense-soft + alert-triangle para consistencia, y considerar actualizar jngMo en Pencil para igualar (fuera de alcance de este reporte, solo dejar constancia)."
+    },
+    {
+      "type": "note",
+      "id": "axztT",
+      "x": 2460,
+      "y": 14241,
+      "name": "Review — Budget delete sheet missing",
+      "width": 260,
+      "height": 0,
+      "content": "[CRITICO] No existe en billetudo.pen un sheet 'Confirmar Eliminar Presupuesto' (busque en toda la Zona Presupuestos, ItgUN). flutter-dev NO debe implementar confirm_delete_budget_sheet.dart a ciegas contra el .md -> segun el gate de CLAUDE.md, pencil-designer debe crear esta instancia (ref a PqTUt, mismo patron que o9116/qsjbj) antes de que se construya el sheet de presupuestos."
+    },
+    {
+      "type": "note",
+      "id": "qOUJf",
+      "x": 11890,
+      "y": 8136,
+      "name": "Review Note - Sheet Icono y Color sin variante bloqueada",
+      "width": 320,
+      "height": 0,
+      "content": "[CRITICO] lAxmS/PtZ2o - Selector de Icono y Color: solo existe un estado, grid de icono completo + 7 swatches de color, todos seleccionables. No hay variante donde el Color Section aparezca bloqueado/oculto con el color heredado del padre marcado. Spec faltante: definir en Pencil como se ve al abrirse desde una subcategoria (ocultar Color Section por completo, o mostrarla deshabilitada con el swatch del padre marcado y texto 'Heredado de [categoria padre]'). No inventar esto en Flutter sin que Diseno lo resuelva primero."
+    },
+    {
+      "type": "note",
+      "id": "D5PE4d",
+      "x": 11890,
+      "y": 8602,
+      "name": "Review Note - Catalogo de iconos diverge del codigo",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] lAxmS - grid de iconos: 32 iconos, el mismo total que 'iconNames' en category_appearance.dart, PERO 15 de los 32 nombres no coinciden entre catalogos (Pencil: utensils-crossed/house/shield-check/repeat/shopping-bag/wallet/laptop/inbox/hand-coins/heart-handshake/shopping-cart/fuel/zap/tv/film; codigo: utensils/home/shield/shirt/plane/dumbbell/book-open/baby/phone/piggy-bank/banknote/building-2/refresh-cw/users/ellipsis). No es ampliacion de catalogo (mismo tamano), es divergencia real: renderizado tal cual contra el mapa actual caeria al default 'sparkles' en 15 de 32 celdas. Antes de 'expandir iconos', reconciliar con Diseno cual catalogo manda y documentarlo en category_appearance.dart."
+    },
+    {
+      "type": "note",
+      "id": "Hlg8a",
+      "x": -240,
+      "y": 3920,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[CRITICO] AccountsPage (accounts_page.dart) usa Scaffold(appBar: AppBar(...)) generico de Material en vez de instanciar el componente 'Page Header' (Dtm0X): boton atras circular 44x44 fill $muted + boton accion circular 44x44 fill $primary no existen, el AppBar por defecto solo pone iconos planos sin fondo. Corregir: construir un widget PageHeader reutilizable que replique Dtm0X y usarlo en todas las paginas con header con-atras."
+    },
+    {
+      "type": "note",
+      "id": "y5EBwf",
+      "x": 550,
+      "y": 3670,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[CRITICO] AccountDetailPage usa AppBar generico (mismo problema que Lista de Cuentas) en vez de 'Page Header' (Dtm0X). Ademas BalanceCardSimple usa cornerRadius 24 (AppTheme.radiusLarge) en vez de 20, padding asimetrico [28,20] en vez de 22 uniforme, y NO tiene borde stroke $border (Pencil ZCSCc: stroke #ECEBF3 1px). El label 'Saldo actual' deberia ser 13px/600 $text-secondary, hoy usa bodyMedium por defecto (14/400)."
+    },
+    {
+      "type": "note",
+      "id": "TyA1t",
+      "x": 550,
+      "y": 5970,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] ArchivedAccountsPage usa AppBar generico en vez de 'Page Header' (Dtm0X). El spacer de 44x44 con ExcludeSemantics SI sigue correctamente la regla de accesibilidad del spec (bien resuelto), pero el chrome del header no coincide visualmente con Pencil."
+    },
+    {
+      "type": "note",
+      "id": "lo2mb",
+      "x": 1450,
+      "y": 3670,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] AccountFormPage usa AppBar generico (leading X, action check) en vez de 'Page Header'. Ademas DayPickerSheet/CurrencyPickerSheet si son custom (bien), pero confirmar que replican exactamente Day Cell/Currency Row de Pencil."
+    },
+    {
+      "type": "note",
+      "id": "aoJGX",
+      "x": 100,
+      "y": 13991,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[CRITICO] BudgetsPage usa AppBar(automaticallyImplyLeading:false) con centerTitle:true (tema global), pero el Header real en Pencil (s833Gk) es un frame justifyContent:space_between con el titulo 'Presupuestos' alineado a la IZQUIERDA, no centrado. El AppBarTheme centra el titulo en todas las pantallas raiz de tab (Presupuestos, Mas), lo cual diverge del patron de Inicio (header propio alineado a la izquierda)."
+    },
+    {
+      "type": "note",
+      "id": "Y6phb",
+      "x": 659,
+      "y": 456,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] budget_form_page.dart usa SegmentedButton (Material 3 nativo) para 'Repetir', 'Periodicidad' y 'Alcance' en vez de instanciar el componente reusable 'Segmented Control' (hFu41: pill radius 14, fondo $muted, segmento activo blanco radius 11, label 13/700). El SegmentedButton nativo tiene otros radios/colores/bordes por defecto de Material, es una deriva visible de componente generico."
+    },
+    {
+      "type": "note",
+      "id": "Dwhv7",
+      "x": 570,
+      "y": 13991,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] budget_form_page.dart usa showDatePicker (dialogo nativo de Material) para Inicio/Fin en vez del componente 'Date Picker Sheet' (zMqxt, Bottom Sheet Base + Month Calendar) ya definido en Pencil y usado en otras partes del sistema. MASTER.md establece Bottom Sheet como patron obligatorio para selectores en mobile."
+    },
+    {
+      "type": "note",
+      "id": "O5CJaU",
+      "x": 1000,
+      "y": 13991,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] BudgetDetailPage usa AppBar generico (solo boton overflow) en vez de 'Page Header' con boton atras circular. Revisar tambien que el titulo del AppBar no está centrado igual que en la lista."
+    },
+    {
+      "type": "note",
+      "id": "V6qgZ2",
+      "x": 5500,
+      "y": 19250,
+      "name": "UX Review Note",
+      "width": 340,
+      "height": 0,
+      "content": "[CRITICO] MorePage (more_page.dart) no coincide con el frame 'Mas — Final' (gXcHt): (1) fila 'Pagos programados' deberia llamarse 'Recurrentes' con icono lucide:repeat segun Pencil, pero el codigo usa el icono refresh-cw y el label 'Pagos programados'; (2) existe una fila extra 'Gráficas e informes' (moreReports) que NO esta en el diseño aprobado (gXcHt solo define 6 filas: Cuentas/Categorias/Deudas/Recurrentes/Importar y exportar/Ajustes) — o se disenó despues y falta documentar/actualizar el .pen, o es una desviacion no aprobada."
+    },
+    {
+      "type": "note",
+      "id": "X7VNO",
+      "x": 5500,
+      "y": 19420,
+      "name": "UX Review Note",
+      "width": 340,
+      "height": 0,
+      "content": "[MENOR] El titulo 'Mas' usa AppBar con centerTitle:true (queda centrado); en Pencil (gXcHt) el Header es un frame justifyContent:space_between con el texto alineado a la izquierda, 24px/700, sin Page Header (correcto no usar back-button) pero la alineacion difiere."
+    },
+    {
+      "type": "note",
+      "id": "zMb36",
+      "x": 5500,
+      "y": 19820,
+      "name": "UX Review Note",
+      "width": 340,
+      "height": 0,
+      "content": "[MENOR] MoreRow (more_row.dart) usa icon-wrap uniforme $primarySoft/$primaryOnSoft violeta en TODAS las filas. En Pencil (Appearance Field / R8PlN dentro de gXcHt) el icon-wrap de las filas de navegacion normales es neutro ($muted #EEECFB + $text-secondary #6B6980); el color primario solo se reserva para el CTA especial 'Respaldar en la nube' en Ajustes (jDaUb). Aplicar icon-wrap neutro a las filas de Mas para no diluir el acento de marca."
+    },
+    {
+      "type": "note",
+      "id": "W4TyOS",
+      "x": 4600,
+      "y": 19320,
+      "name": "UX Review Note",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] SettingsPage usa AppBar generico (solo titulo, sin acciones) en vez de 'Page Header' (Dtm0X) con boton atras circular + spacer real de 44x44 donde Pencil (jDaUb) muestra un Action Spacer deshabilitado. Aqui no hay spacer ni boton atras replicado visualmente."
+    },
+    {
+      "type": "frame",
+      "id": "hxkUC",
+      "x": 2290,
+      "y": 16439,
+      "name": "Presupuestos — Eliminar Presupuesto (Claro)",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "OiyjA",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "F6t8D",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "children": [
+                {
+                  "id": "rHkX9",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$primary-soft"
+                    },
+                    "IPjWU": {
+                      "fill": "$primary-on-soft",
+                      "icon": "trash-2"
+                    },
+                    "FxD3p": {
+                      "content": "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
+                    }
+                  }
+                },
+                {
+                  "id": "nU7Zt",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "qfTBg": {
+                      "fill": "$primary"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Eliminar"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "nqoD6",
+      "x": 12290,
+      "y": 7670,
+      "name": "Categorias — Selector de Icono y Color — Bloqueado-Heredado (Claro)",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "i0lzk",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "eISSE",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "MmoGh",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wfIwN",
+                  "name": "Title Block",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HTInY",
+                      "name": "Title Row",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E0kup5",
+                          "name": "Title",
+                          "fill": "$text-primary",
+                          "content": "Ícono y color",
+                          "fontFamily": "$font-body",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "d9JHkO",
+                      "name": "Caption",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras.",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e0WXl",
+                  "name": "Icon Section",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "EtZT1",
+                      "name": "Section Label Row",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "D0qNl",
+                          "name": "Section Label",
+                          "fill": "$text-secondary",
+                          "content": "Ícono",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Lbe61",
+                      "name": "Icon Grid Viewport",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 320,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "RhiSb",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Icon Grid Content",
+                          "width": 350,
+                          "layout": "vertical",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "BhYQ5",
+                              "name": "Icon Row 1",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "Q9yLyt",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile utensils-crossed",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "utensils-crossed",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "jeBia",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile bus",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "bus",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "WWrXx",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile car",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$sky-soft",
+                                  "stroke": "$sky",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "car",
+                                      "fill": "$sky"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "UcBff",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile house",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "house",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KkOQq",
+                              "name": "Icon Row 2",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "pHGSK",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile heart-pulse",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "heart-pulse",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ptcvT",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile shield-check",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "shield-check",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "s738q",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile repeat",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "repeat",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "tdJAR",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile shopping-bag",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "shopping-bag",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "j34SHx",
+                              "name": "Icon Row 3",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "y7Pepn",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile party-popper",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "party-popper",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Csv5P",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile graduation-cap",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "graduation-cap",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "EtzK3",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile paw-print",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "paw-print",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "EXvXj",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile credit-card",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "credit-card",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "U2xK4",
+                              "name": "Icon Row 4",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "Rj7St",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile landmark",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "landmark",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "g9ZBHY",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile file-text",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "file-text",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "nKfL2",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile send",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "send",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "GugYG",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile gift",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "gift",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "U0oCAO",
+                              "name": "Icon Row 5",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "qgr7r",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile wallet",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "wallet",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "XXOeZ",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile laptop",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "laptop",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "VOOvo",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile briefcase",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "briefcase",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "W50wRb",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile inbox",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "inbox",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "J9XBVU",
+                              "name": "Icon Row 6",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "wn6vk",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile trending-up",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "trending-up",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Afat6",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile hand-coins",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "hand-coins",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "e0kzpg",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile rotate-ccw",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "rotate-ccw",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "MWzeV",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile heart-handshake",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "heart-handshake",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kY7jP",
+                              "name": "Icon Row 7",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "q8RO4z",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile shopping-cart",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "shopping-cart",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "DtkHG",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile coffee",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "coffee",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "jAYGz",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile fuel",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "fuel",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Yc1V4",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile wrench",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "wrench",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t8Ho3e",
+                              "name": "Icon Row 8",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "id": "fTJ7m",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile zap",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "zap",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "f22CGy",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile wifi",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "wifi",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "L2zqBM",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile tv",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "tv",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "pYncU",
+                                  "type": "ref",
+                                  "ref": "skuz9",
+                                  "name": "Icon Tile film",
+                                  "width": 60,
+                                  "height": 60,
+                                  "fill": "$muted",
+                                  "stroke": "#00000000",
+                                  "descendants": {
+                                    "n8Nf4D": {
+                                      "icon": "film",
+                                      "fill": "$text-secondary"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "whPQI",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 288,
+                          "name": "Scroll Mask",
+                          "width": 350,
+                          "height": 32,
+                          "fill": "$surface"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "qsw0M",
+                          "layoutPosition": "absolute",
+                          "x": 165,
+                          "y": 296,
+                          "name": "Scroll Hint",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CguAx",
+                  "name": "Color Section",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "g5otu",
+                      "name": "Section Label Row",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "i3QyF",
+                          "name": "Section Label",
+                          "fill": "$text-secondary",
+                          "content": "Color",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "A00HBV",
+                          "name": "Lock Icon",
+                          "width": 13,
+                          "height": 13,
+                          "icon": "lock",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Q2uLY",
+                      "name": "Color Grid",
+                      "opacity": 0.55,
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ydKz3",
+                          "name": "Color Row 1",
+                          "width": "fill_container",
+                          "gap": 58,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "iNyAS",
+                              "name": "Color Swatch mint",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$mint-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "gknWM",
+                                  "name": "Dot mint",
+                                  "fill": "$mint",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rykrl",
+                              "name": "Color Swatch sky",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$sky-soft",
+                              "cornerRadius": 22,
+                              "stroke": "$sky",
+                              "strokeWidth": 2,
+                              "strokeAlignment": "inner",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "W6ihJ",
+                                  "name": "Check",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$sky"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ozaeW",
+                              "name": "Color Swatch peach",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$peach-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "AsBSi",
+                                  "name": "Dot peach",
+                                  "fill": "$peach",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NmJws",
+                              "name": "Color Swatch coral",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$coral-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "FFMSR",
+                                  "name": "Dot coral",
+                                  "fill": "$coral",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "z4C8lN",
+                          "name": "Color Row 2",
+                          "width": "fill_container",
+                          "gap": 58,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WwHCn",
+                              "name": "Color Swatch amber",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$amber-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "jtev4",
+                                  "name": "Dot amber",
+                                  "fill": "$amber",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TRnZI",
+                              "name": "Color Swatch teal",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$teal-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "aADi6",
+                                  "name": "Dot teal",
+                                  "fill": "$teal",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "q6mYdB",
+                              "name": "Color Swatch indigo",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$indigo-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "o5uK1A",
+                                  "name": "Dot indigo",
+                                  "fill": "$indigo",
+                                  "width": 18,
+                                  "height": 18
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "dJs9p",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Sheet Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX": {
+                      "enabled": true
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "check"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Guardar"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "id": "AiTGP",
+      "x": 2090,
+      "y": 1981,
+      "name": "Review - EIoVx monocromatico",
+      "width": 320,
+      "height": 0,
+      "content": "[IMPORTANTE] EIoVx/mK8oI (Category Quick Picker) es monocromatico violeta/gris, pero TODO el resto del sistema (SLfJW Category Select Row, R6fYf Category Manage Row, DRc5X Category Row, DKJaf via categoria) usa el color propio de cada categoria (mint/sky/peach) para el icono, siempre. Incluso la descripcion de mK8oI en MASTER.md dice 'borde solido del color de la categoria' para seleccionado -- el .pen actual no cumple su propia spec escrita. Recomendacion: actualizar EIoVx/mK8oI en el .pen para usar el color de categoria (icono siempre en su color propio, fondo -soft del mismo token), no violeta/gris generico. El codigo ya implementado (category_picker_chip.dart) va en la direccion correcta en esto."
+    },
+    {
+      "type": "note",
+      "id": "s6urq",
+      "x": 2090,
+      "y": 2160,
+      "name": "Review - estado seleccionado violeta",
+      "width": 320,
+      "height": 0,
+      "content": "[MENOR] Independiente de tile vs pill: cuando SLfJW (Category Select Sheet) marca una fila como seleccionada, el icono conserva su color de categoria (solo el contenedor gana borde/fondo primary-soft). El chip de codigo (category_picker_chip.dart) en cambio SI recolorea el icono a violeta al seleccionar, perdiendo la pista de color justo cuando mas se necesita reconocerla. Alinear el estado seleccionado del pill con el patron de SLfJW: icono siempre en su color de categoria, solo el borde/fondo del contenedor cambia a primary/primary-soft."
+    },
+    {
+      "type": "note",
+      "id": "K65cE",
+      "x": 1450,
+      "y": 3860,
+      "name": "Review Note - E9jSG",
+      "width": 370,
+      "height": 0,
+      "content": "[APROBADO] Tipo Section (Cuentas - Agregar, Claro): fix correcto. Los 6 chips muestran color propio por tipo sobre fondo -soft (mint/sky/primary-on-soft/teal/indigo/peach). Banco seleccionado usa borde+fondo $primary-soft en el contenedor, icono se mantiene en $sky (correcto, no se recolorea a violeta). Sin problemas de layout ni contraste. Queda como referencia canonica para las demas instancias."
+    },
+    {
+      "type": "note",
+      "id": "G0KXkR",
+      "x": 2350,
+      "y": 3860,
+      "name": "Review Note - Edo4G fix",
+      "width": 370,
+      "height": 0,
+      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Editar (Claro) - Tipo Expandido: los 5 chips no seleccionados (Efectivo/Banco/Ahorros/Inversion/Otro) estaban monocromaticos ($text-secondary + $muted), desincronizados de E9jSG. Se aplico el mismo patron: icono a color propio + fondo -soft + pill exterior. El chip Tarjeta (seleccionado) ya estaba correcto, no se toco."
+    },
+    {
+      "type": "note",
+      "id": "Q1XFds",
+      "x": 5140,
+      "y": 3860,
+      "name": "Review Note - jpH4F fix",
+      "width": 370,
+      "height": 0,
+      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Agregar (Oscuro): contraparte oscura de E9jSG, tenia los 6 chips monocromaticos (ninguno seleccionado en este estado). Se aplico el mismo patron de color por tipo + fondo -soft. Copia congelada, no era instancia viva de un componente base, se corrigio manualmente."
+    },
+    {
+      "type": "note",
+      "id": "b69hP",
+      "x": 6040,
+      "y": 3860,
+      "name": "Review Note - kgcSM fix",
+      "width": 370,
+      "height": 0,
+      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Editar (Oscuro) - Tipo Expandido: contraparte oscura de Edo4G, mismo problema (5 chips monocromaticos, Tarjeta seleccionada ya correcta). Corregido con el mismo patron de color por tipo + fondo -soft."
     }
   ],
   "themes": {

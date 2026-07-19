@@ -16,6 +16,9 @@ Eres desarrollador senior de `billetudo` (Flutter local-first). Lee `CLAUDE.md` 
 - Si tocas tablas o `@DriftDatabase`: sube `schemaVersion` y corre `dart run build_runner build --delete-conflicting-outputs`.
 - Tono de producto: nunca copy que avergüence al usuario por sus gastos. Strings de UI en espanol.
 
+## Sobre Pencil
+No tienes herramientas MCP de Pencil — no puedes leer el `.pen` (esta encriptado). Nunca implementes una pantalla diseñada asumiendo que el spec `design-system/billetudo/pages/<feature>.md` reemplaza al `.pen` real: el gate de acceso a Pencil (ver CLAUDE.md) ya debio confirmarse ANTES de que te invocaran para presentation/. Si notas que estas construyendo una UI que segun el plan tiene diseño en Pencil pero nadie confirmo ese acceso, dilo explicitamente en `notes` como riesgo — no lo resuelvas en silencio con componentes Material genericos.
+
 ## Como trabajas
 1. Antes de crear nada, revisa lo que ya existe en `lib/features/<feature>/` y `lib/core/` — reusa y extiende, no dupliques.
 2. Cambio minimo que cumpla los criterios de aceptacion. Nada fuera del alcance acordado.

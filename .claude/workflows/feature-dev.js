@@ -115,6 +115,16 @@ const QA_SCHEMA = {
   },
 }
 
+const PENCIL_ACCESS_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['accessible', 'reason'],
+  properties: {
+    accessible: { type: 'boolean', description: 'true SOLO si pudiste leer el .pen real (editor state + screenshot de la pantalla relevante), no solo el spec .md' },
+    reason: { type: 'string' },
+  },
+}
+
 const REVIEW_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -175,6 +185,36 @@ if (hardBlocker) {
 const changeMapStr = plan.changeMap.map((c) => `${c.action} ${c.file} — ${c.reason}`).join('\n')
 const acStr = plan.acceptanceCriteria.map((a, i) => `${i + 1}. ${a}`).join('\n')
 log(`[plan] "${SLUG}" tamano=${SIZE.toUpperCase()} — ${plan.changeMap.length} archivos, esquema=${plan.needsSchema}, ui=${plan.needsUi}, tier0=${plan.touchesTier0}`)
+
+// ---------------------------------------------------------------------------
+// Gate: acceso a Pencil — obligatorio antes de implementar UI diseñada.
+// flutter-dev NUNCA tiene herramientas MCP de Pencil (el .pen esta encriptado),
+// asi que solo puede trabajar contra el spec .md — eso ya produjo deriva visual
+// (componentes Material genericos en vez de los frames reales) en corridas previas.
+// Un agente CON acceso real (ui-ux-reviewer) debe confirmar que puede leer el .pen
+// antes de que arranque cualquier implementacion de presentation/. Sin eso, se detiene.
+// ---------------------------------------------------------------------------
+if (plan.needsUi) {
+  phase('Plan')
+  const pencilCheck = await agent(
+    `Antes de que flutter-dev implemente la capa presentation/ de la corrida "${SLUG}" (${plan.goal}), verifica que tienes acceso FUNCIONAL y REAL al archivo .pen de billetudo — no basta con que exista el spec .md.
+
+Pasos: llama a mcp__pencil__get_editor_state (include_schema:true si no conoces el schema todavia), y luego intenta localizar y ver (mcp__pencil__get_screenshot o mcp__pencil__batch_get) la o las pantallas relevantes a este objetivo dentro del canvas. Revisa tambien si existe design-system/billetudo/pages/<feature>.md correspondiente.
+
+Devuelve accessible=true SOLO si lograste ver el diseño real (frames del canvas), no solo leer el .md. Si el MCP de Pencil no responde, el archivo no carga, o no encuentras las pantallas de esta feature en el canvas, accessible=false y explica la causa exacta en reason.`,
+    { label: 'pencil-access-check', phase: 'Plan', schema: PENCIL_ACCESS_SCHEMA, agentType: 'ui-ux-reviewer', effort: 'low' },
+  )
+  if (!pencilCheck || !pencilCheck.accessible) {
+    return {
+      slug: SLUG,
+      aborted: true,
+      reason: `BLOQUEANTE: sin acceso real a Pencil (.pen) antes de implementar UI — ${pencilCheck ? pencilCheck.reason : 'el agente de verificacion no respondio.'}`,
+      plan,
+      note: 'Regla del proyecto (CLAUDE.md): flutter-dev no puede implementar presentation/ de una pantalla diseñada sin que se confirme primero acceso real al .pen — evita reintroducir la deriva visual (Material generico en vez de los frames reales) vista en pagos-programados. Reintenta esta corrida cuando Pencil este accesible.',
+    }
+  }
+  log(`[plan] acceso a Pencil confirmado — ${pencilCheck.reason}`)
+}
 
 // ---------------------------------------------------------------------------
 // Phase: Build — flutter-dev por etapas segun flags (secuencial: las capas dependen entre si)

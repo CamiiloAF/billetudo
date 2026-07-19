@@ -81,6 +81,12 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+> Si el build falla con "Failed to compile build script" (crash de `gen_snapshot`
+> ligado a los hooks de native assets de `powersync`/`sqlite3` en este SDK),
+> usa `--force-jit` en vez del flag anterior — corre el build script en modo
+> JIT saltándose el compile AOT que crashea:
+> `dart run build_runner build --delete-conflicting-outputs --force-jit`.
+
 ## Verificar el código
 
 ```bash

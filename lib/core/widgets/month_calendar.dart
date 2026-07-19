@@ -21,6 +21,7 @@ class MonthCalendar extends StatelessWidget {
     required this.onDaySelected,
     required this.onPreviousMonth,
     required this.onNextMonth,
+    this.disabledBefore,
     super.key,
   });
 
@@ -33,6 +34,9 @@ class MonthCalendar extends StatelessWidget {
   final ValueChanged<DateTime> onDaySelected;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
+
+  /// Days strictly before this floor render dimmed and ignore taps.
+  final DateTime? disabledBefore;
 
   static const double _cell = 44;
 
@@ -90,6 +94,7 @@ class MonthCalendar extends StatelessWidget {
           visibleMonth: visibleMonth,
           selected: selected,
           onDaySelected: onDaySelected,
+          disabledBefore: disabledBefore,
         ),
       ],
     );
@@ -167,12 +172,14 @@ class CalendarMonthGrid extends StatelessWidget {
     required this.visibleMonth,
     required this.selected,
     required this.onDaySelected,
+    this.disabledBefore,
     super.key,
   });
 
   final DateTime visibleMonth;
   final DateTime selected;
   final ValueChanged<DateTime> onDaySelected;
+  final DateTime? disabledBefore;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +190,8 @@ class CalendarMonthGrid extends StatelessWidget {
     final leadingBlanks = firstOfMonth.weekday - 1;
     final today = DateUtils.dateOnly(DateTime.now());
     final selectedDay = DateUtils.dateOnly(selected);
+    final floor =
+        disabledBefore == null ? null : DateUtils.dateOnly(disabledBefore!);
 
     final cells = <Widget>[
       for (var i = 0; i < leadingBlanks; i++)
@@ -198,6 +207,9 @@ class CalendarMonthGrid extends StatelessWidget {
               selectedDay,
           isToday:
               DateTime(visibleMonth.year, visibleMonth.month, day) == today,
+          isDisabled: floor != null &&
+              DateTime(visibleMonth.year, visibleMonth.month, day)
+                  .isBefore(floor),
           onTap: onDaySelected,
         ),
     ];
@@ -215,6 +227,7 @@ class CalendarDayCell extends StatelessWidget {
     required this.isSelected,
     required this.isToday,
     required this.onTap,
+    this.isDisabled = false,
     super.key,
   });
 
@@ -222,6 +235,7 @@ class CalendarDayCell extends StatelessWidget {
   final DateTime date;
   final bool isSelected;
   final bool isToday;
+  final bool isDisabled;
   final ValueChanged<DateTime> onTap;
 
   @override
@@ -250,30 +264,33 @@ class CalendarDayCell extends StatelessWidget {
       border = null;
     }
 
-    return SizedBox(
-      width: MonthCalendar._cell,
-      height: MonthCalendar._cell,
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: Material(
-          color: background,
-          shape: CircleBorder(
-            side: border == null
-                ? BorderSide.none
-                : BorderSide(color: colors.primary),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => onTap(date),
-            customBorder: const CircleBorder(),
-            child: Center(
-              child: Text(
-                // A bare day numeral, nothing to translate.
-                day.toString(),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight: weight,
-                  color: foreground,
+    return Opacity(
+      opacity: isDisabled ? 0.35 : 1,
+      child: SizedBox(
+        width: MonthCalendar._cell,
+        height: MonthCalendar._cell,
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: Material(
+            color: background,
+            shape: CircleBorder(
+              side: border == null
+                  ? BorderSide.none
+                  : BorderSide(color: colors.primary),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: isDisabled ? null : () => onTap(date),
+              customBorder: const CircleBorder(),
+              child: Center(
+                child: Text(
+                  // A bare day numeral, nothing to translate.
+                  day.toString(),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    fontWeight: weight,
+                    color: foreground,
+                  ),
                 ),
               ),
             ),

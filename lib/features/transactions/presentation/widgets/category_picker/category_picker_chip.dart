@@ -7,9 +7,10 @@ import '../../../../categories/presentation/utils/category_appearance.dart';
 
 /// One chip of the `Category Quick Picker` (`EIoVx`): a category's icon + name,
 /// styled as a selectable pill. Selected reuses the app's selectable-row
-/// pattern (`$primary-soft` fill, `$primary` border, `primary-on-soft-strong`
-/// content); unselected is the neutral `$surface`/`$border` chip with the
-/// category's own decorative color for its icon.
+/// pattern (`$primary-soft` fill, `$primary` border, `$text-primary` label);
+/// unselected is the neutral `$surface`/`$border` chip with `$text-secondary`
+/// label. The icon always keeps the category's own decorative color, in
+/// both states.
 class CategoryPickerChip extends StatelessWidget {
   const CategoryPickerChip({
     required this.category,
@@ -26,8 +27,7 @@ class CategoryPickerChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final foreground =
-        selected ? colors.primaryOnSoftStrong : colors.textSecondary;
+    final foreground = selected ? colors.textPrimary : colors.textSecondary;
     return Material(
       color: selected ? colors.primarySoft : colors.surface,
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -49,9 +49,7 @@ class CategoryPickerChip extends StatelessWidget {
               Icon(
                 CategoryAppearance.iconFor(category.icon),
                 size: 16,
-                color: selected
-                    ? colors.primaryOnSoftStrong
-                    : CategoryAppearance.colorFor(colors, category.color),
+                color: CategoryAppearance.colorFor(colors, category.color),
               ),
               const SizedBox(width: 6),
               Text(
