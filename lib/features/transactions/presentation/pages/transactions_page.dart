@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_fab.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
@@ -61,12 +62,10 @@ class TransactionsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.transactionsTitle)),
-      floatingActionButton: FloatingActionButton(
-        // ignore: avoid_hardcoded_ui_strings
-        heroTag: 'transactionsAddTransactionFab',
-        onPressed: onAddTransaction,
+      floatingActionButton: AppFab(
+        icon: LucideIcons.plus,
         tooltip: l10n.transactionsAdd,
-        child: const Icon(LucideIcons.plus),
+        onPressed: onAddTransaction,
       ),
       body: SafeArea(
         child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
