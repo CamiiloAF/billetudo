@@ -119,7 +119,7 @@ class ScheduledCard extends StatelessWidget {
 
   String _amountLabel(AppLocalizations l10n, ScheduledPayment payment) {
     final formatted = const MoneyFormatter()
-        .format(payment.amountMinor, currencyCode: payment.currency);
+        .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
       ScheduledPaymentType.expense => '-$formatted',

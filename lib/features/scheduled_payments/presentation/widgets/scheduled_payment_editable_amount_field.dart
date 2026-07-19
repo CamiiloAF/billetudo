@@ -5,17 +5,22 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../transactions/presentation/cubit/transaction_form_state.dart'
+    show CalcOperator;
 import '../../../transactions/presentation/widgets/numeric_keypad.dart';
 import '../utils/calculator_amount_buffer.dart';
 
-/// The confirmation sheet's editable amount row (criterion 8): tapping it
-/// expands the same calculator [NumericKeypad] Transacciones uses (Pencil
-/// `irJZw`), in-situ inside the sheet — never an `AlertDialog` on top of it.
+/// The editable amount row shared by the template form's own "Zona Fija"
+/// (`ScheduledPaymentAmountFixedZone`) and the confirmation sheet (criterion
+/// 8): tapping it expands the same calculator [NumericKeypad] Transacciones
+/// uses (Pencil `irJZw`), in-situ — never an `AlertDialog` on top of it.
 ///
-/// A reduced, local version of Transacciones' "Zona Fija": only the
-/// expand/collapse of the keypad itself, not the anchored header/collapsed
-/// bar mechanism (out of scope here, see confirmation sheet spec). The
-/// arithmetic lives in [CalculatorAmountBuffer], a presentation-only port of
+/// Mirrors `TransactionAmountFixedZone`'s expanded/collapsed structure
+/// exactly (header label + 44x44 chevron button, then the big centered
+/// value at 40px/800 when expanded; a centered label + value at 20px/700
+/// with matching 44x44 chevron buttons on both sides when collapsed) so the
+/// two features' keyboard zones read as the same control. The arithmetic
+/// lives in [CalculatorAmountBuffer], a presentation-only port of
 /// `TransactionFormCubit`'s calculator so this widget never touches the
 /// Transactions feature's cubit/state beyond the shared `CalcOperator` enum
 /// and the [NumericKeypad] widget itself.
@@ -49,7 +54,8 @@ class _ScheduledPaymentEditableAmountFieldState
   int? _lastEmitted;
 
   @override
-  void didUpdateWidget(covariant ScheduledPaymentEditableAmountField oldWidget) {
+  void didUpdateWidget(
+      covariant ScheduledPaymentEditableAmountField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.amountMinor != oldWidget.amountMinor &&
         widget.amountMinor != _lastEmitted) {
@@ -66,64 +72,186 @@ class _ScheduledPaymentEditableAmountFieldState
     widget.onChanged(next.amountMinor);
   }
 
+  void _expand() => setState(() => _expanded = true);
+
+  void _collapse() => setState(() => _expanded = false);
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    return AnimatedSize(
+      duration: AppTheme.motionDuration,
+      curve: AppTheme.motionCurve,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: AppTheme.motionDuration,
+        switchInCurve: AppTheme.motionCurve,
+        switchOutCurve: AppTheme.motionCurve,
+        child: _expanded
+            ? ScheduledPaymentAmountExpanded(
+                key: const ValueKey('expanded'),
+                amountMinor: _buffer.amountMinor,
+                currency: widget.currency,
+                onCollapse: _collapse,
+                onDigit: (digit) => _apply(
+                    _buffer.digitPressed(digit, currency: widget.currency)),
+                onDecimal: () =>
+                    _apply(_buffer.decimalPressed(currency: widget.currency)),
+                onOperator: (operator) =>
+                    _apply(_buffer.operatorPressed(operator)),
+                onEquals: () => _apply(_buffer.equalsPressed()),
+                onBackspace: () => _apply(_buffer.backspacePressed()),
+              )
+            : ScheduledPaymentAmountCollapsed(
+                key: const ValueKey('collapsed'),
+                amountMinor: _buffer.amountMinor,
+                currency: widget.currency,
+                onExpand: _expand,
+              ),
+      ),
+    );
+  }
+}
+
+/// The expanded state: a header row (label + 44x44 collapse chevron), the
+/// big centered amount (40px/800), then the anchored keypad — same structure
+/// as `TransactionAmountExpandedZone`.
+class ScheduledPaymentAmountExpanded extends StatelessWidget {
+  const ScheduledPaymentAmountExpanded({
+    required this.amountMinor,
+    required this.currency,
+    required this.onCollapse,
+    required this.onDigit,
+    required this.onDecimal,
+    required this.onOperator,
+    required this.onEquals,
+    required this.onBackspace,
+    super.key,
+  });
+
+  final int amountMinor;
+  final String currency;
+  final VoidCallback onCollapse;
+  final ValueChanged<int> onDigit;
+  final VoidCallback onDecimal;
+  final ValueChanged<CalcOperator> onOperator;
+  final VoidCallback onEquals;
+  final VoidCallback onBackspace;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    const money = MoneyFormatter();
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Row(
-            children: [
-              Text(
+        Row(
+          children: [
+            Expanded(
+              child: Text(
                 l10n.transactionFormAmountLabel,
-                style:
-                    theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
-              ),
-              const Spacer(),
-              Text(
-                const MoneyFormatter().format(
-                  _buffer.amountMinor,
-                  currencyCode: widget.currency,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700, color: colors.primary),
               ),
-              const SizedBox(width: 4),
-              Icon(
-                _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                size: 16,
-                color: colors.textSecondary,
-              ),
-            ],
+            ),
+            IconButton(
+              onPressed: onCollapse,
+              tooltip: l10n.transactionFormCollapseAmount,
+              iconSize: 20,
+              color: colors.textSecondary,
+              constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+              icon: const Icon(LucideIcons.chevronDown),
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            money.formatSymbol(amountMinor, currencyCode: currency),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.displaySmall?.copyWith(
+              color: colors.primary,
+              fontSize: 40,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-        AnimatedSize(
-          duration: AppTheme.motionDuration,
-          curve: AppTheme.motionCurve,
-          alignment: Alignment.topCenter,
-          child: _expanded
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: NumericKeypad(
-                    onDigit: (digit) => _apply(
-                      _buffer.digitPressed(digit, currency: widget.currency),
-                    ),
-                    onDecimal: () => _apply(
-                      _buffer.decimalPressed(currency: widget.currency),
-                    ),
-                    onOperator: (operator) =>
-                        _apply(_buffer.operatorPressed(operator)),
-                    onEquals: () => _apply(_buffer.equalsPressed()),
-                    onBackspace: () => _apply(_buffer.backspacePressed()),
-                  ),
-                )
-              : const SizedBox.shrink(),
+        NumericKeypad(
+          onDigit: onDigit,
+          onDecimal: onDecimal,
+          onOperator: onOperator,
+          onEquals: onEquals,
+          onBackspace: onBackspace,
         ),
       ],
+    );
+  }
+}
+
+/// The collapsed state: a centered label + value (20px/700), flanked by a
+/// left spacer and a 44x44 expand chevron on the right so the amount block
+/// stays truly centered — same structure as `TransactionAmountCollapsedBar`.
+class ScheduledPaymentAmountCollapsed extends StatelessWidget {
+  const ScheduledPaymentAmountCollapsed({
+    required this.amountMinor,
+    required this.currency,
+    required this.onExpand,
+    super.key,
+  });
+
+  final int amountMinor;
+  final String currency;
+  final VoidCallback onExpand;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    const money = MoneyFormatter();
+    return InkWell(
+      onTap: onExpand,
+      child: Row(
+        children: [
+          const SizedBox(width: 44, height: 44),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.transactionFormAmountLabel,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  money.formatSymbol(amountMinor, currencyCode: currency),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: colors.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onExpand,
+            tooltip: l10n.transactionFormExpandAmount,
+            iconSize: 20,
+            color: colors.textSecondary,
+            constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+            icon: const Icon(LucideIcons.chevronUp),
+          ),
+        ],
+      ),
     );
   }
 }

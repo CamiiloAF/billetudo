@@ -402,8 +402,9 @@ class AccountPickerField extends StatelessWidget {
   final void Function(String id, String name) onSelected;
   final String? excludingId;
 
-  /// The account type icon shown inline before the value. Only the transfer
-  /// fields set it; Gasto/Ingreso Cuenta stays icon-less.
+  /// The account type icon shown inline before the value. The transfer
+  /// fields set it to the picked account's own type icon; Gasto/Ingreso
+  /// Cuenta falls back to a plain `wallet` (`SckMF`).
   final IconData? inlineIcon;
 
   /// Set when the field failed validation (e.g. HU-01 criterion 8: no
@@ -417,7 +418,7 @@ class AccountPickerField extends StatelessWidget {
       label: label,
       value: selectedName ?? l10n.transactionFormAccountChoose,
       hasValue: selectedName != null,
-      inlineIcon: selectedName != null ? inlineIcon : null,
+      inlineIcon: inlineIcon ?? LucideIcons.wallet,
       errorText: errorText,
       onTap: () async {
         final account = await BottomSheetBase.show<Account>(

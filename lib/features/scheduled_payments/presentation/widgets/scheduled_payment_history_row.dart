@@ -42,11 +42,12 @@ class ScheduledPaymentHistoryRow extends StatelessWidget {
                 ),
               ),
               Text(
-                const MoneyFormatter().format(
+                const MoneyFormatter().formatSymbol(
                   transaction.amountMinor,
                   currencyCode: transaction.currency,
                 ),
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
           ),

@@ -16,7 +16,8 @@ import '../utils/scheduled_payment_format.dart';
 /// deliberate trade-off for long account/category names, documented in the
 /// design spec.
 class ScheduledPendingRow extends StatelessWidget {
-  const ScheduledPendingRow({required this.entry, required this.onTap, super.key});
+  const ScheduledPendingRow(
+      {required this.entry, required this.onTap, super.key});
 
   final PendingScheduledOccurrence entry;
   final VoidCallback onTap;
@@ -87,7 +88,7 @@ class ScheduledPendingRow extends StatelessWidget {
 
   String _amountLabel(AppLocalizations l10n, ScheduledPayment payment) {
     final formatted = const MoneyFormatter()
-        .format(payment.amountMinor, currencyCode: payment.currency);
+        .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
       ScheduledPaymentType.expense => '-$formatted',

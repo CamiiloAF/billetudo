@@ -14,12 +14,12 @@ import '../../../categories/domain/entities/category.dart';
 import '../../../categories/presentation/widgets/delete_link.dart';
 import '../../../transactions/presentation/pages/transaction_form_page.dart'
     show AccountPickerField;
+import '../../../transactions/presentation/widgets/category_picker/category_quick_picker.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../cubit/scheduled_payment_form_cubit.dart';
 import '../cubit/scheduled_payment_form_state.dart';
 import '../widgets/scheduled_payment_amount_fixed_zone.dart';
-import '../widgets/scheduled_payment_category_tiles.dart';
 import '../widgets/scheduled_payment_date_field.dart';
 import '../widgets/scheduled_payment_frequency_unit_chips.dart';
 import '../widgets/scheduled_payment_interval_stepper.dart';
@@ -157,11 +157,13 @@ class ScheduledPaymentFormBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          ScheduledPaymentCategoryTiles(
+          CategoryQuickPicker(
             kind: state.type == ScheduledPaymentType.income
                 ? CategoryKind.income
                 : CategoryKind.expense,
             selectedId: state.categoryId,
+            showLabel: false,
+            moreLabel: l10n.scheduledPaymentFormCategoryMoreLabel,
             onSelected: (category) => cubit.categorySelected(
               category.id,
               category.kind,

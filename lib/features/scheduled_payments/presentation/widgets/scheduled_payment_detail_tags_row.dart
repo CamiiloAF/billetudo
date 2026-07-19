@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../transactions/presentation/widgets/transaction_form_tag_chip.dart';
 import '../../domain/entities/tag.dart';
-import 'scheduled_payment_tags_field.dart' show ScheduledPaymentTagChip;
 
 /// The detail's read-only "Etiquetas" row inside `InfoCard`: same padding
 /// language as `InfoRow`, but stacks the label above a `Wrap` of read-only
@@ -42,7 +42,7 @@ class ScheduledPaymentDetailTagsRow extends StatelessWidget {
               runSpacing: 8,
               children: [
                 for (final tag in tags)
-                  ScheduledPaymentTagChip(
+                  TransactionFormTagChip(
                     label: tag.name,
                     removable: false,
                     onTap: () {},

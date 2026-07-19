@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
@@ -24,6 +25,7 @@ class TransactionDateField extends StatelessWidget {
     return TransactionFormFieldButton(
       label: l10n.transactionFormDateLabel,
       value: _label(context, l10n),
+      inlineIcon: LucideIcons.calendar,
       onTap: () async {
         final picked = await DatePickerSheet.show(context, initialDate: date);
         if (picked != null) {

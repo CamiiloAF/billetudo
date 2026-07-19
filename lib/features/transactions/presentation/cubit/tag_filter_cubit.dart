@@ -87,6 +87,14 @@ class TagFilterCubit extends Cubit<TagFilterState> {
     emit(state.copyWith(selected: next));
   }
 
+  /// Selects every tag currently loaded (`FL1gK`'s "Todas" header action).
+  void selectAll() => emit(
+        state.copyWith(selected: {for (final tag in state.tags) tag.id}),
+      );
+
+  /// Clears every selection (`FL1gK`'s "Ninguna" header action).
+  void selectNone() => emit(state.copyWith(selected: const <String>{}));
+
   /// HU-07: creates (or reuses) a tag by [name] and selects it right away.
   Future<void> createTag(String name) async {
     emit(state.copyWith(creating: true));

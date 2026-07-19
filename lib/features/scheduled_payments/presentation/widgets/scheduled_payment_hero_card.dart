@@ -66,15 +66,16 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitleParts.join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: colors.textSecondary),
               ),
             ],
           ),
@@ -156,7 +157,8 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   if (isPending)
-                    ScheduledPaymentDetailBadge(label: l10n.scheduledPendingBadge)
+                    ScheduledPaymentDetailBadge(
+                        label: l10n.scheduledPendingBadge)
                   else
                     ScheduledDueInChip(nextDate: payment.nextDate),
                 ],
@@ -176,7 +178,7 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
 
   static String _amountLabel(ScheduledPayment payment) {
     final formatted = const MoneyFormatter()
-        .format(payment.amountMinor, currencyCode: payment.currency);
+        .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
       ScheduledPaymentType.expense => '-$formatted',

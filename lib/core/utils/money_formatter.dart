@@ -60,6 +60,11 @@ class MoneyFormatter {
   /// ([currencyDecimals]). Use it where the design shows a plain `$45.000`
   /// (e.g. the transaction form's Zona Fija) rather than the `COP` code.
   ///
+  /// Builds the string manually (symbol + [formatAmount]) instead of letting
+  /// `NumberFormat.currency` place the symbol: for `es_CO`, ICU's currency
+  /// pattern puts the symbol *after* the number (`"1.234 $"`), which reads
+  /// backwards for a `$`-prefixed design — Pencil always shows `$` leading.
+  ///
   /// Display only — the amount never becomes a stored `double`, same as
   /// [format].
   String formatSymbol(
@@ -68,12 +73,12 @@ class MoneyFormatter {
     String locale = 'es_CO',
     int? decimalDigits,
   }) {
-    final formatter = NumberFormat.currency(
+    final digits = formatAmount(
+      amountMinor,
       locale: locale,
-      symbol: r'$',
       decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
     );
-    return formatter.format(amountMinor / _minorPerMajor);
+    return '\$$digits';
   }
 
   /// Same as [format] but without the currency code/symbol (digits only).

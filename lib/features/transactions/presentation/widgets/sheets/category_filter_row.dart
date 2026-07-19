@@ -106,14 +106,6 @@ class CategoryFilterRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (!isSubcategory) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.categorySubcategoryCount(subcategoryCount),
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: colors.textSecondary),
-                      ),
-                    ],
                   ],
                 ),
               ),
