@@ -12,10 +12,14 @@ Budget buildBudget({
   DateTime? endDate,
   int? alertThresholdPct = 80,
   bool rollover = false,
+  String? icon,
+  DateTime? archivedAt,
 }) =>
     Budget(
       id: id,
       name: name,
+      icon: icon,
+      archivedAt: archivedAt,
       amountMinor: amountMinor,
       currency: currency,
       period: period,
