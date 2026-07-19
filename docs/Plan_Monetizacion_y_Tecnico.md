@@ -83,6 +83,7 @@ Aquí un anuncio de LatAm no alcanza a cubrir el costo, así que **no** se ofrec
 | **Chat / asistente financiero con IA** (razonamiento) | Una sesión conversacional cuesta $0.01-0.10; un anuncio no lo cubre |
 | **Insights proactivos** generados por IA (resúmenes semanales/mensuales automáticos) | Costo recurrente por usuario, no puntual |
 | **Sincronización multi-dispositivo en la nube** | Infraestructura continua (servidor + almacenamiento) |
+| **Espacios compartidos** (presupuestos y cuentas con la pareja o la familia) | Infraestructura continua + multiplica el costo de sync por miembro. Ver §11 |
 | **Respaldo automático en la nube** | Almacenamiento continuo |
 | Quitar la (opcional) invitación a anuncios | Comodidad para quien ya paga |
 
@@ -229,6 +230,8 @@ Diseña `transactions.source` desde el día 1: te permite medir cuánto se usa l
 
 **Fase 5 — Validar y ajustar.** Mide con `transactions.source` el uso real de IA, ajusta límites al percentil ~80, mide conversión (meta 2-5%) y retención. Solo entonces considera features mayores.
 
+**Fase 6 — Espacios compartidos (presupuestos y cuentas con la pareja).** La feature mayor que justifica haber esperado: ver §11.
+
 ---
 
 ## 9. Riesgos y cómo mitigarlos
@@ -260,6 +263,29 @@ Revisión de completitud. Lo más urgente es lo legal, porque una app de finanza
 - **i18n** (español + inglés) desde el inicio, para no reescribir la UI después.
 - **Analítica de producto** (PostHog o Firebase Analytics) — sin ella no puedes ejecutar la fase de validación (conversión, retención, embudos).
 - **Estrategia de tests** (bloc facilita unit/bloc tests; añade tests de integración del sync con PowerSync).
+
+---
+
+## 11. Espacios compartidos (futuro — Fase 6)
+
+**Qué es:** poder compartir presupuestos —y probablemente también cuentas y metas— con otra persona: la pareja, la familia, un roommate. Ambos ven el mismo presupuesto y sus gastos lo alimentan en tiempo real.
+
+**Por qué vale la pena:** la investigación de mercado ya lo señala como oportunidad (ver `Viabilidad_App_Finanzas_Personales.md`, punto 5): es una feature muy pedida y mal cubierta, y **Monarch usó el "multiplayer" como diferenciador central justamente porque el mercado lo pedía**. Wallet la tiene (cuentas compartidas) pero es de las cosas por las que cobra. Para el mercado hispanohablante, donde la economía del hogar suele manejarse en pareja, es probablemente la feature de mayor valor percibido después de la captura sin fricción.
+
+**Por qué va tan tarde en el roadmap — no es pereza, es que rompe tres supuestos de base:**
+
+1. **El modelo de datos es de un solo dueño.** Hoy cada tabla lleva `userId` y todo el sync asume que un usuario ve exactamente sus filas. Compartir exige un nivel más: un *espacio* (u hogar) con miembros y roles, y que la pertenencia de cada fila sea al espacio, no a la persona. Es un cambio de esquema profundo y de las sync rules de PowerSync, no una columna nueva.
+2. **Local-first + multi-usuario es un problema de concurrencia real.** Dos personas editando el mismo presupuesto desde dos dispositivos, una de ellas sin conexión, es exactamente el caso donde "última escritura gana" produce pérdida de datos visible y difícil de explicar. Hay que decidir la estrategia de resolución de conflictos *antes* de construir, no después.
+3. **Cambia el modelo de permisos y de privacidad.** ¿La pareja ve todas tus transacciones o solo las del presupuesto compartido? ¿Puede editar las tuyas o solo las propias? ¿Qué pasa cuando alguien sale del espacio — se lleva su historial, lo deja, se anonimiza? Eso último tiene además implicaciones legales de borrado de datos.
+
+**Decisiones abiertas, para cuando se retome:**
+
+- **Granularidad:** ¿se comparte una entidad concreta (este presupuesto), o se comparte un espacio completo (todo lo del hogar)? Compartir por entidad es más flexible y más caro de modelar; compartir por espacio es más simple pero obliga a decidir qué queda fuera.
+- **Nivel de acceso:** si va a Premium (Cubo C, por el costo de infraestructura), decidir si **basta con que uno de los dos pague** — que es lo que hace que estas features se adopten — o si ambos necesitan suscripción.
+- **Invitación:** cómo se invita a alguien sin exigirle que ya tenga la app, y qué ve mientras decide.
+- **Alcance:** si aplica solo a presupuestos o también a cuentas, metas y deudas. La deuda compartida en particular es delicada: "me deben" y "debo" tienen dos lados y compartir el registro puede convertirse en una conversación incómoda dentro de la app.
+
+**Regla que no cambia:** nada de esto puede degradar el Nivel 0. Un usuario individual debe seguir teniendo la app completa y gratis, y el modelo de datos compartido no puede volver más lenta ni más frágil la experiencia de quien nunca comparte nada.
 
 ---
 
