@@ -827,7 +827,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryFormAppearanceLabel.
   ///
   /// In es, this message translates to:
-  /// **'Icono y color'**
+  /// **'Ícono y color'**
   String get categoryFormAppearanceLabel;
 
   /// No description provided for @categoryFormAppearanceEmptySublabel.
@@ -899,7 +899,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryAppearancePickerTitle.
   ///
   /// In es, this message translates to:
-  /// **'Icono y color'**
+  /// **'Ícono y color'**
   String get categoryAppearancePickerTitle;
 
   /// No description provided for @categoryColorLockedSubcategory.

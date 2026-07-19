@@ -418,7 +418,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryFormEditSubcategoryTitle => 'Editar subcategoría';
 
   @override
-  String get categoryFormAppearanceLabel => 'Icono y color';
+  String get categoryFormAppearanceLabel => 'Ícono y color';
 
   @override
   String get categoryFormAppearanceEmptySublabel =>
@@ -457,7 +457,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryDeleteSubcategoryAction => 'Eliminar subcategoría';
 
   @override
-  String get categoryAppearancePickerTitle => 'Icono y color';
+  String get categoryAppearancePickerTitle => 'Ícono y color';
 
   @override
   String get categoryColorLockedSubcategory =>

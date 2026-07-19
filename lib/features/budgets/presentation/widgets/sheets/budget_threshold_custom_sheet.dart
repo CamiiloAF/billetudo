@@ -5,6 +5,7 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_head.dart';
+import '../budget_threshold_stepper_button.dart';
 
 /// Where the "Personalizado ›" chevron of `m3jomu/bWlly` leads.
 ///
@@ -55,10 +56,10 @@ class _BudgetThresholdCustomSheetState
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
-              onPressed: _value > 5 ? () => _nudge(-5) : null,
+            BudgetThresholdStepperButton(
+              icon: LucideIcons.minus,
               tooltip: l10n.budgetThresholdDecrease,
-              icon: const Icon(LucideIcons.minus),
+              onPressed: _value > 5 ? () => _nudge(-5) : null,
             ),
             SizedBox(
               width: 96,
@@ -72,10 +73,10 @@ class _BudgetThresholdCustomSheetState
                 ),
               ),
             ),
-            IconButton(
-              onPressed: _value < 100 ? () => _nudge(5) : null,
+            BudgetThresholdStepperButton(
+              icon: LucideIcons.plus,
               tooltip: l10n.budgetThresholdIncrease,
-              icon: const Icon(LucideIcons.plus),
+              onPressed: _value < 100 ? () => _nudge(5) : null,
             ),
           ],
         ),
