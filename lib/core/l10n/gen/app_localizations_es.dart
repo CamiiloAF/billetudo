@@ -25,6 +25,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonDelete => 'Eliminar';
 
   @override
+  String get commonContinue => 'Continuar';
+
+  @override
   String get commonEdit => 'Editar';
 
   @override
@@ -165,7 +168,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String accountNumberMasked(String last4) {
-    return '•••• $last4';
+    return '••••••• $last4';
   }
 
   @override
@@ -213,6 +216,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountFormInitialBalanceLabel => 'Saldo inicial';
+
+  @override
+  String get accountFormCurrentDebtLabel => 'Deuda actual';
 
   @override
   String get accountFormCurrencyLabel => 'Moneda';
@@ -333,7 +339,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountChangeConfirm => 'Confirmar';
 
   @override
-  String get accountCurrencySheetTitle => 'Moneda';
+  String get accountCurrencySheetTitle => 'Selecciona la moneda';
 
   @override
   String get currencyCopName => 'Peso colombiano';
@@ -442,6 +448,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryDeleteAction => 'Eliminar categoría';
 
   @override
+  String get categoryDeleteSubcategoryAction => 'Eliminar subcategoría';
+
+  @override
   String get categoryAppearancePickerTitle => 'Icono y color';
 
   @override
@@ -456,7 +465,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryDeleteSimpleMessage =>
-      'Podrás recuperarla después desde la papelera.';
+      'Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get categoryDeleteTransactionsTitle => '¿Eliminar esta categoría?';
@@ -506,7 +515,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryCascadeConfirmMessage =>
-      'Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.';
+      'Se eliminarán la categoría y todas sus subcategorías. Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get transactionsTitle => 'Movimientos';
@@ -563,6 +572,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsSortAmountDesc => 'Monto: mayor a menor';
 
   @override
+  String transactionsFilterAccountsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cuentas',
+      one: '1 cuenta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transactionsGroupToday => 'Hoy';
+
+  @override
+  String get transactionsGroupYesterday => 'Ayer';
+
+  @override
+  String transactionsGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos',
+      one: '1 movimiento',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get transactionTypeExpense => 'Gasto';
 
   @override
@@ -597,6 +634,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionFormCategoryLabel => 'Categoría';
+
+  @override
+  String get transactionErrorAccount => 'Elige una cuenta.';
+
+  @override
+  String get transactionErrorCategory => 'Elige una categoría.';
 
   @override
   String get categorySelectTitle => 'Elegir categoría';
@@ -739,16 +782,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionDeleteMessage =>
-      'Podrás recuperarlo después desde la papelera.';
+      'Podrás deshacerlo justo después de eliminar.';
 
   @override
-  String get transactionDetailTitle => 'Detalle del movimiento';
+  String get transactionDetailTitleExpense => 'Detalle del gasto';
 
   @override
-  String get transactionDetailEdit => 'Editar';
+  String get transactionDetailTitleIncome => 'Detalle del ingreso';
 
   @override
-  String get transactionDetailDelete => 'Eliminar';
+  String get transactionDetailTitleTransfer => 'Detalle de la transferencia';
 
   @override
   String transactionDetailSource(String source) {
@@ -756,29 +799,37 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String transactionDetailAccountLine(String account) {
-    return 'Cuenta: $account';
-  }
+  String get transactionDetailAccountLabel => 'Cuenta';
 
   @override
-  String transactionDetailTransferLine(String account) {
-    return 'Cuenta destino: $account';
-  }
+  String get transactionDetailAccountFromLabel => 'Cuenta origen';
 
   @override
-  String transactionDetailCategoryLine(String category) {
-    return 'Categoría: $category';
-  }
+  String get transactionDetailAccountToLabel => 'Cuenta destino';
 
   @override
-  String transactionDetailNoteLine(String note) {
-    return 'Nota: $note';
-  }
+  String get transactionDetailCategoryLabel => 'Categoría';
 
   @override
-  String transactionDetailTagsLine(String tags) {
-    return 'Etiquetas: $tags';
-  }
+  String get transactionDetailDateLabel => 'Fecha';
+
+  @override
+  String get transactionDetailNoteLabel => 'Nota';
+
+  @override
+  String get transactionDetailNoNote => 'Sin nota';
+
+  @override
+  String get transactionDetailSourceLabel => 'Origen';
+
+  @override
+  String get transactionDetailTagsLabel => 'Etiquetas';
+
+  @override
+  String get transactionDetailTransferSubtitle => 'Transferencia';
+
+  @override
+  String get transactionDetailDeleteLink => 'Eliminar movimiento';
 
   @override
   String get accountFilterSheetTitle => 'Filtrar por cuenta';
@@ -923,7 +974,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moreDebts => 'Deudas';
 
   @override
-  String get moreScheduledPayments => 'Pagos programados';
+  String get moreScheduledPayments => 'Recurrentes';
 
   @override
   String get moreReports => 'Gráficas e informes';
@@ -1216,7 +1267,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetDeleteConfirmMessage =>
-      'Podrás recuperarlo desde la papelera.';
+      'Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get budgetFormNewTitle => 'Nuevo presupuesto';
@@ -1396,4 +1447,322 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get firstLaunchOfflineRetrying => 'Reintentando...';
+
+  @override
+  String get scheduledPaymentsTitle => 'Pagos programados';
+
+  @override
+  String get scheduledPaymentsAdd => 'Nuevo pago programado';
+
+  @override
+  String get scheduledPaymentsLoading => 'Cargando tus pagos programados';
+
+  @override
+  String get scheduledPaymentsEmptyMessage =>
+      'Aún no tienes pagos programados. Agrega uno para no perder de vista tus pagos recurrentes.';
+
+  @override
+  String get scheduledPaymentsErrorTitle =>
+      'No pudimos cargar tus pagos programados';
+
+  @override
+  String get scheduledPaymentsErrorLocalFirst =>
+      'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo.';
+
+  @override
+  String scheduledPaymentsActiveCount(int count) {
+    return 'Activos · $count';
+  }
+
+  @override
+  String get scheduledPendingTitle => 'Por confirmar';
+
+  @override
+  String get scheduledPendingEmpty => 'No tienes pagos por confirmar.';
+
+  @override
+  String get scheduledReviewAll => 'Revisar todas';
+
+  @override
+  String get scheduledPendingBadge => 'Pendiente de confirmar';
+
+  @override
+  String get scheduledOnceBadge => 'Pago único';
+
+  @override
+  String get scheduledInactiveBadge => 'Inactivo';
+
+  @override
+  String get scheduledConfirmationSheetTitle => 'Confirmar pago';
+
+  @override
+  String get scheduledConfirmationSheetConfirm => 'Confirmar';
+
+  @override
+  String get scheduledConfirmationSheetSkip => 'Omitir';
+
+  @override
+  String get scheduledConfirmationSheetSnooze => 'Posponer';
+
+  @override
+  String scheduledGuidedReviewPosition(int position, int total) {
+    return 'Pago $position de $total';
+  }
+
+  @override
+  String get scheduledUndoSkipMessage => 'Pago omitido';
+
+  @override
+  String get scheduledUndoSnoozeMessage => 'Pago pospuesto';
+
+  @override
+  String get scheduledSnoozeSheetTitle => 'Posponer pago';
+
+  @override
+  String get scheduledSnoozeSheetSave => 'Posponer';
+
+  @override
+  String get scheduledDeleteSheetTitle => '¿Eliminar este pago programado?';
+
+  @override
+  String get scheduledDeleteSheetMessage =>
+      'Se detiene la generación de nuevos pagos, pero los movimientos ya generados conservan su historial.';
+
+  @override
+  String get scheduledPaymentFormNewTitle => 'Nuevo pago programado';
+
+  @override
+  String get scheduledPaymentFormEditTitle => 'Editar pago programado';
+
+  @override
+  String get scheduledPaymentFormNextDateLabel => 'Próxima fecha';
+
+  @override
+  String get scheduledPaymentFormFrequencyLabel => 'Frecuencia';
+
+  @override
+  String get scheduledPaymentFormCategoryMoreLabel => 'Otra';
+
+  @override
+  String get scheduledPaymentFormIntervalStepperLabel => 'Repetir cada';
+
+  @override
+  String get scheduledPaymentFormEndDateLabel => 'Fecha de fin';
+
+  @override
+  String get scheduledPaymentFormEndDateNone => 'Sin fecha de fin';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticTitle => 'Automático';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticSubtitle => 'Se registra solo';
+
+  @override
+  String get scheduledPaymentFormModeManualTitle => 'Manual';
+
+  @override
+  String get scheduledPaymentFormModeManualSubtitle =>
+      'Te avisamos antes de afectar tu saldo';
+
+  @override
+  String get scheduledPaymentFormDeleteAction => 'Eliminar pago programado';
+
+  @override
+  String get scheduledFrequencyOnce => 'Solo una vez';
+
+  @override
+  String get scheduledFrequencyDaily => 'Cada día';
+
+  @override
+  String get scheduledFrequencyWeekly => 'Cada semana';
+
+  @override
+  String get scheduledFrequencyMonthly => 'Cada mes';
+
+  @override
+  String get scheduledFrequencyYearly => 'Cada año';
+
+  @override
+  String get scheduledFrequencyChipOnce => 'Único';
+
+  @override
+  String get scheduledFrequencyChipDaily => 'Día';
+
+  @override
+  String get scheduledFrequencyChipWeekly => 'Semana';
+
+  @override
+  String get scheduledFrequencyChipMonthly => 'Mes';
+
+  @override
+  String get scheduledFrequencyChipYearly => 'Año';
+
+  @override
+  String get scheduledPaymentDetailTitle => 'Pago programado';
+
+  @override
+  String scheduledPaymentDetailNextPayment(String date) {
+    return 'Próximo pago: $date';
+  }
+
+  @override
+  String get scheduledPaymentDetailHistoryTitle => 'Historial';
+
+  @override
+  String get scheduledPaymentDetailHistoryEmpty =>
+      'Todavía no se ha generado ningún movimiento de este pago programado.';
+
+  @override
+  String scheduledPaymentDetailHistorySeeAll(int count) {
+    return 'Ver historial completo ($count)';
+  }
+
+  @override
+  String get scheduledPaymentDetailHeroLabel => 'Próximo pago';
+
+  @override
+  String scheduledPaymentDetailRecurrenceOnce(String date) {
+    return 'Pago único el $date';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceForever(String unit, String date) {
+    return 'Se repite $unit desde el $date, para siempre';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceUntil(
+      String unit, String date, String endDate) {
+    return 'Se repite $unit desde el $date, hasta el $endDate';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitDaily => 'cada día';
+
+  @override
+  String scheduledRecurrenceUnitDailyInterval(int interval) {
+    return 'cada $interval días';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitWeekly => 'cada semana';
+
+  @override
+  String scheduledRecurrenceUnitWeeklyInterval(int interval) {
+    return 'cada $interval semanas';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitMonthly => 'cada mes';
+
+  @override
+  String scheduledRecurrenceUnitMonthlyInterval(int interval) {
+    return 'cada $interval meses';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitYearly => 'cada año';
+
+  @override
+  String scheduledRecurrenceUnitYearlyInterval(int interval) {
+    return 'cada $interval años';
+  }
+
+  @override
+  String get scheduledPaymentDetailModeLabel => 'Modo';
+
+  @override
+  String get scheduledPaymentDetailModeAutomatic => 'Automático';
+
+  @override
+  String get scheduledPaymentDetailModeManual => 'Manual';
+
+  @override
+  String get scheduledPaymentDetailAccountLabel => 'Cuenta';
+
+  @override
+  String get scheduledPaymentDetailStatusLabel => 'Estado';
+
+  @override
+  String get scheduledPaymentDetailStatusActive => 'Activo';
+
+  @override
+  String get scheduledPaymentDetailTagsLabel => 'Etiquetas';
+
+  @override
+  String get scheduledPaymentDetailTagsEmpty => 'Sin etiquetas';
+
+  @override
+  String get scheduledPaymentBridgeTitle => '¿Es un pago programado?';
+
+  @override
+  String get scheduledPaymentBridgeMessage =>
+      'Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.';
+
+  @override
+  String get scheduledPaymentBridgeAccept => 'Sí, programarlo';
+
+  @override
+  String get scheduledPaymentBridgeDecline => 'No, guardar como siempre';
+
+  @override
+  String scheduledFinishedCount(int count) {
+    return 'Terminados · $count';
+  }
+
+  @override
+  String get scheduledFinishedTitle => 'Terminados';
+
+  @override
+  String get scheduledFinishedEmpty =>
+      'Todavía no tienes pagos programados terminados.';
+
+  @override
+  String scheduledPendingCardOverflow(int count) {
+    return 'Ver los otros $count pendientes';
+  }
+
+  @override
+  String scheduledPendingCardTitle(int count) {
+    return 'Por confirmar $count';
+  }
+
+  @override
+  String get scheduledPendingCardCaption => 'Aún no afectan tu saldo';
+
+  @override
+  String get scheduledDueToday => 'Vence hoy';
+
+  @override
+  String scheduledDueInDays(int count) {
+    return 'en $count días';
+  }
+
+  @override
+  String get scheduledDueInOneDay => 'en 1 día';
+
+  @override
+  String get scheduledConfirmationSheetScopeNote =>
+      'Lo que edites aquí aplica solo a este pago, no cambia la plantilla.';
+
+  @override
+  String scheduledConfirmationSheetAccumulated(
+      int count, String template, String date) {
+    return 'Tienes $count pagos de $template sin confirmar. Ahora confirmas el más antiguo, del $date.';
+  }
+
+  @override
+  String get scheduledConfirmationSheetEditTooltip => 'Editar plantilla';
+
+  @override
+  String get scheduledGuidedReviewExit => 'Salir';
+
+  @override
+  String get scheduledGuidedReviewConfirmNext => 'Confirmar y siguiente';
+
+  @override
+  String scheduledSnoozeContextLine(String template, String date) {
+    return '$template · vencía el $date · muévelo hacia adelante';
+  }
 }

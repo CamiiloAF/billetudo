@@ -19,6 +19,7 @@ class TransactionFormFieldButton extends StatelessWidget {
     required this.onTap,
     this.inlineIcon,
     this.hasValue = true,
+    this.errorText,
     super.key,
   });
 
@@ -35,12 +36,17 @@ class TransactionFormFieldButton extends StatelessWidget {
   /// (18px, `$text-secondary`). Only the transfer account fields use it.
   final IconData? inlineIcon;
 
+  /// When set, the box border and a message below it switch to the error
+  /// state — same pattern as `AccountFormField` (`$expense` border/text).
+  final String? errorText;
+
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final errorText = this.errorText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,7 +70,9 @@ class TransactionFormFieldButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusField),
-                border: Border.all(color: colors.border),
+                border: Border.all(
+                  color: errorText != null ? colors.expense : colors.border,
+                ),
               ),
               child: Row(
                 children: [
@@ -91,6 +99,13 @@ class TransactionFormFieldButton extends StatelessWidget {
             ),
           ),
         ),
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            errorText,
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.expense),
+          ),
+        ],
       ],
     );
   }

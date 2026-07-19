@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 class MockAccountFormCubit extends MockCubit<AccountFormState>
     implements AccountFormCubit {}
@@ -38,7 +38,7 @@ void main() {
         child: const AccountFormPage(),
       ),
       brightness: brightness,
-      size: tallGoldenPhoneSize,
+      size: tallGoldenPhoneSize(),
     );
     await expectLater(
       find.byType(AccountFormPage),

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 
@@ -13,6 +14,7 @@ class TransactionsListState extends Equatable {
   TransactionsListState({
     this.status = TransactionsListStatus.loading,
     this.items = const <TransactionWithDetails>[],
+    this.accounts = const <AccountWithBalance>[],
     TransactionFilter? filter,
     this.failure,
     this.pendingUndoId,
@@ -22,6 +24,11 @@ class TransactionsListState extends Equatable {
 
   /// Already filtered, searched and ordered by the repository (HU-06).
   final List<TransactionWithDetails> items;
+
+  /// Active accounts, only kept to resolve the account chip's name/icon when
+  /// exactly one is the active filter (`B3GGa`/`xAk6Y`) — the list itself
+  /// never needs it.
+  final List<AccountWithBalance> accounts;
 
   /// Persists across re-emissions/scroll: this is the single source of truth
   /// for every active filter and the search text.
@@ -40,6 +47,7 @@ class TransactionsListState extends Equatable {
   TransactionsListState copyWith({
     TransactionsListStatus? status,
     List<TransactionWithDetails>? items,
+    List<AccountWithBalance>? accounts,
     TransactionFilter? filter,
     Failure? failure,
     String? pendingUndoId,
@@ -48,6 +56,7 @@ class TransactionsListState extends Equatable {
       TransactionsListState(
         status: status ?? this.status,
         items: items ?? this.items,
+        accounts: accounts ?? this.accounts,
         filter: filter ?? this.filter,
         // A new state carrying data is a state without an error: the caller
         // clears the failure by simply not passing one.
@@ -57,5 +66,6 @@ class TransactionsListState extends Equatable {
       );
 
   @override
-  List<Object?> get props => [status, items, filter, failure, pendingUndoId];
+  List<Object?> get props =>
+      [status, items, accounts, filter, failure, pendingUndoId];
 }

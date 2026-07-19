@@ -117,6 +117,10 @@ class AccountFormState extends Equatable {
       type != AccountType.cash &&
       (!showFullNumberField || (fullAccountNumber ?? '').isEmpty);
 
+  /// Interest rate only makes sense on a credit card (HU-02): a cash or bank
+  /// account carries no rate the form should ask for.
+  bool get showInterestRateField => isCard;
+
   /// The stored number is unknown: the read failed and the user has not typed a
   /// replacement, so the empty field is hiding a value instead of stating there
   /// is none. Saving must leave the stored number alone, and the form must say

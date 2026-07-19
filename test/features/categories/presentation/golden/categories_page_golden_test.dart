@@ -8,8 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/golden_helpers.dart';
 import '../../domain/usecases/category_repository_mock.dart';
-import 'golden_helpers.dart';
 
 class MockCategoriesListCubit extends MockCubit<CategoriesListState>
     implements CategoriesListCubit {}
@@ -76,7 +76,7 @@ void main() {
         ),
       ),
       brightness: brightness,
-      size: tallGoldenPhoneSize,
+      size: tallGoldenPhoneSize(height: 1600),
     );
     await expectLater(
       find.byType(CategoriesPage),

@@ -66,6 +66,14 @@ class AccountFormCubit extends Cubit<AccountFormState> {
     // device, so a silent empty field would be its last stop before deletion.
     final number = await _getAccountNumber(account.id);
 
+    // A card's balance is stored negative (it is debt, see
+    // `AccountBalance.fromBalance`), but the field the user sees is relabeled
+    // "Deuda actual" and always takes a positive number — so it is shown here
+    // as one, and `_buildDraft` negates it back on save.
+    final displayedBalanceMinor = account.type == AccountType.card
+        ? account.initialBalanceMinor.abs()
+        : account.initialBalanceMinor;
+
     return AccountFormState(
       status: AccountFormStatus.ready,
       id: account.id,
@@ -74,17 +82,19 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       institution: account.institution ?? '',
       currency: account.currency,
       // Rendered with the same formatter that will parse it back, so an
-      // untouched field round-trips to the exact same cents.
-      initialBalanceText: _money.formatAmount(
-        account.initialBalanceMinor,
+      // untouched field round-trips to the exact same cents. `formatAmount`
+      // would bake in a thousands separator the user then has to fight while
+      // editing, so the editable field uses `formatAmountForEditing` instead.
+      initialBalanceText: _money.formatAmountForEditing(
+        displayedBalanceMinor,
         decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
       ),
       interestRateText: account.interestRateBps == null
           ? ''
-          : _money.formatAmount(account.interestRateBps!),
+          : _money.formatAmountForEditing(account.interestRateBps!),
       creditLimitText: account.creditLimitMinor == null
           ? ''
-          : _money.formatAmount(
+          : _money.formatAmountForEditing(
               account.creditLimitMinor!,
               decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
             ),
@@ -243,7 +253,13 @@ class AccountFormCubit extends Cubit<AccountFormState> {
         name: state.name,
         type: type,
         currency: state.currency,
-        initialBalanceMinor: initialBalanceMinor,
+        // A card's field is labeled "Deuda actual" (Bug 3) and always takes a
+        // positive number from the user, but `AccountBalance.fromBalance`
+        // treats a card's balance as debt, i.e. negative — so it is negated
+        // here, on the way into the draft, mirroring `_formFor`'s `.abs()` on
+        // the way back out.
+        initialBalanceMinor:
+            type.isCard ? -initialBalanceMinor.abs() : initialBalanceMinor,
         institution: state.institution,
         numberEdit: _numberEdit(type),
         last4: state.last4,

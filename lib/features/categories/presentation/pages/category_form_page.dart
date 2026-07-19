@@ -91,6 +91,7 @@ class CategoryFormPage extends StatelessWidget {
         final confirmed = await ConfirmDeleteSimpleSheet.show(
           context,
           budgetCount: state.deletionImpact?.budgetCount ?? 0,
+          isSubcategory: state.isSubcategory,
         );
         if (confirmed ?? false) {
           await cubit.confirmSimpleDelete();

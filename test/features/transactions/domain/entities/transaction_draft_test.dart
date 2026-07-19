@@ -46,20 +46,16 @@ void main() {
     });
 
     test('acepta una categoría de kind expense en un gasto', () {
-      final result = buildExpenseDraft(
-        categoryId: 'cat-expense',
-        categoryKind: CategoryKind.expense,
-      ).validated();
+      final result = buildExpenseDraft(categoryId: 'cat-expense').validated();
 
       expect(result.isRight(), isTrue);
       expect(result.getRight().toNullable()!.categoryId, 'cat-expense');
     });
 
-    test('la categoría es opcional', () {
-      final result = buildExpenseDraft().validated();
+    test('rechaza un gasto sin categoría', () {
+      final result = buildExpenseDraft(categoryId: null).validated();
 
-      expect(result.isRight(), isTrue);
-      expect(result.getRight().toNullable()!.categoryId, isNull);
+      expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
     });
 
     test('normaliza la moneda a mayúsculas', () {
@@ -112,12 +108,15 @@ void main() {
     });
 
     test('acepta una categoría de kind income en un ingreso', () {
-      final result = buildIncomeDraft(
-        categoryId: 'cat-income',
-        categoryKind: CategoryKind.income,
-      ).validated();
+      final result = buildIncomeDraft(categoryId: 'cat-income').validated();
 
       expect(result.isRight(), isTrue);
+    });
+
+    test('rechaza un ingreso sin categoría', () {
+      final result = buildIncomeDraft(categoryId: null).validated();
+
+      expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
     });
   });
 

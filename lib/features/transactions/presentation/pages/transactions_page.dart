@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../accounts/domain/entities/account.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../accounts/presentation/widgets/account_type_avatar.dart';
+import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
+import '../utils/transaction_date_grouping.dart';
+import '../widgets/filter_chip_pill.dart';
 import '../widgets/sheets/account_filter_sheet.dart';
 import '../widgets/sheets/category_filter_sheet.dart';
 import '../widgets/sheets/date_filter_sheet.dart';
 import '../widgets/sheets/tag_filter_sheet.dart';
 import '../widgets/sheets/type_filter_sheet.dart';
 import '../widgets/skeleton_row.dart';
+import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
 import '../widgets/transactions_empty_state.dart';
 import '../widgets/transactions_error_view.dart';
+import '../widgets/transactions_sort_button.dart';
 
-/// The transaction list (HU-06): search, every combinable filter, and the
-/// delete/"Deshacer" flow (HU-05).
+/// The transaction list (HU-06/`B3GGa`/`xAk6Y`): search, every combinable
+/// filter, and the delete/"Deshacer" flow (HU-05). A root destination of the
+/// Tab Bar, so its header carries no back button and no trailing action.
 class TransactionsPage extends StatelessWidget {
   const TransactionsPage({
     required this.onAddTransaction,
@@ -73,24 +84,17 @@ class TransactionsPage extends StatelessWidget {
                     label: l10n.transactionsUndoAction,
                     onPressed: cubit.undoDelete,
                   ),
+                  persist: false,
                 ),
               );
           },
           builder: (context, state) {
             return Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(LucideIcons.search),
-                      hintText: l10n.transactionsSearchHint,
-                    ),
-                    onChanged:
-                        context.read<TransactionsListCubit>().searchChanged,
-                  ),
-                ),
+                TransactionsSearchRow(state: state),
+                const SizedBox(height: 8),
                 TransactionsFilterBar(state: state),
+                const SizedBox(height: 8),
                 Expanded(
                   child: switch (state.status) {
                     TransactionsListStatus.loading =>
@@ -120,8 +124,6 @@ class TransactionsPage extends StatelessWidget {
   }
 }
 
-/// The row of filter chips: account, category, type, date and tag
-/// (HU-06/HU-06a/HU-06b/HU-07).
 /// Whether HU-06's search/filters are all at their untouched default (the
 /// current month with no other filter): only then does an empty list read as
 /// "no movements yet" instead of "nothing in this period".
@@ -131,8 +133,71 @@ bool _isUnfiltered(TransactionFilter filter) =>
     !filter.hasCategoryFilter &&
     !filter.hasTypeFilter &&
     !filter.hasTagFilter &&
-    !filter.datePeriod.isCustomRange;
+    !_hasDateFilter(filter.datePeriod);
 
+/// HU-06b's date filter has no bare "no filter" state (it always defaults to
+/// "this month"), so "active" here means "not the untouched default".
+bool _hasDateFilter(DatePeriodFilter period) =>
+    period != DatePeriodFilter.thisMonth();
+
+/// The search field + sort button row (`B3GGa`/`xAk6Y`).
+class TransactionsSearchRow extends StatelessWidget {
+  const TransactionsSearchRow({required this.state, super.key});
+
+  final TransactionsListState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final cubit = context.read<TransactionsListCubit>();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                prefixIcon: Icon(
+                  LucideIcons.search,
+                  size: 20,
+                  color: colors.textSecondary,
+                ),
+                hintText: l10n.transactionsSearchHint,
+                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textSecondary,
+                    ),
+              ),
+              onChanged: cubit.searchChanged,
+            ),
+          ),
+          const SizedBox(width: 8),
+          TransactionsSortButton(
+            sortOrder: state.filter.sortOrder,
+            onTap: () => cubit.updateFilter(
+              state.filter.copyWith(
+                sortOrder:
+                    state.filter.sortOrder == TransactionSortOrder.dateDesc
+                        ? TransactionSortOrder.amountDesc
+                        : TransactionSortOrder.dateDesc,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The row of filter chips: account, category, type, date and tag
+/// (HU-06/HU-06a/HU-06b/HU-07). Every chip adopts the same active style
+/// (`primary-soft`/`primary`) the instant its own dimension has a filter.
 class TransactionsFilterBar extends StatelessWidget {
   const TransactionsFilterBar({required this.state, super.key});
 
@@ -143,18 +208,22 @@ class TransactionsFilterBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
+    final dateActive = _hasDateFilter(filter.datePeriod);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          ActionChip(
-            label: Text(l10n.transactionsFilterAccounts),
-            avatar: filter.hasAccountFilter
-                ? const Icon(LucideIcons.check, size: 16)
+          FilterChipPill(
+            label: _accountChipLabel(l10n, filter, state.accounts),
+            active: filter.hasAccountFilter,
+            leadingIcon: filter.hasAccountFilter
+                ? _accountChipIcon(filter, state.accounts)
                 : null,
-            onPressed: () async {
+            trailingIcon:
+                filter.hasAccountFilter ? LucideIcons.chevronDown : null,
+            onTap: () async {
               final selected = await AccountFilterSheet.show(
                 context,
                 initialSelected: filter.accountIds,
@@ -165,12 +234,10 @@ class TransactionsFilterBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 8),
-          ActionChip(
-            label: Text(l10n.transactionsFilterCategories),
-            avatar: filter.hasCategoryFilter
-                ? const Icon(LucideIcons.check, size: 16)
-                : null,
-            onPressed: () async {
+          FilterChipPill(
+            label: l10n.transactionsFilterCategories,
+            active: filter.hasCategoryFilter,
+            onTap: () async {
               final selected = await CategoryFilterSheet.show(
                 context,
                 initialSelected: filter.categoryIds,
@@ -182,12 +249,10 @@ class TransactionsFilterBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 8),
-          ActionChip(
-            label: Text(l10n.transactionsFilterType),
-            avatar: filter.hasTypeFilter
-                ? const Icon(LucideIcons.check, size: 16)
-                : null,
-            onPressed: () async {
+          FilterChipPill(
+            label: l10n.transactionsFilterType,
+            active: filter.hasTypeFilter,
+            onTap: () async {
               final selected = await TypeFilterSheet.show(
                 context,
                 initialSelected: filter.types,
@@ -198,9 +263,13 @@ class TransactionsFilterBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 8),
-          ActionChip(
-            label: Text(l10n.transactionsFilterDate),
-            onPressed: () async {
+          FilterChipPill(
+            label: dateActive
+                ? _dateChipLabel(filter.datePeriod)
+                : l10n.transactionsFilterDate,
+            active: dateActive,
+            leadingIcon: LucideIcons.calendar,
+            onTap: () async {
               final applied = await DateFilterSheet.show(
                 context,
                 initial: filter.datePeriod,
@@ -209,12 +278,10 @@ class TransactionsFilterBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 8),
-          ActionChip(
-            label: Text(l10n.transactionsFilterTag),
-            avatar: filter.hasTagFilter
-                ? const Icon(LucideIcons.check, size: 16)
-                : null,
-            onPressed: () async {
+          FilterChipPill(
+            label: l10n.transactionsFilterTag,
+            active: filter.hasTagFilter,
+            onTap: () async {
               final selected = await TagFilterSheet.show(
                 context,
                 initialSelected: filter.tagIds,
@@ -227,6 +294,69 @@ class TransactionsFilterBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// The active account chip's label: the account's own name when exactly
+  /// one is selected, otherwise a count (HU-06a) — "Cuentas" when there is no
+  /// filter at all.
+  static String _accountChipLabel(
+    AppLocalizations l10n,
+    TransactionFilter filter,
+    List<AccountWithBalance> accounts,
+  ) {
+    if (!filter.hasAccountFilter) {
+      return l10n.transactionsFilterAccounts;
+    }
+    final selected = _singleSelectedAccount(filter, accounts);
+    if (selected != null) {
+      return selected.name;
+    }
+    return l10n.transactionsFilterAccountsSelected(filter.accountIds.length);
+  }
+
+  /// Only resolved when exactly one account is selected and it is already
+  /// loaded — the account's own type icon (`AccountTypePresentation.icon`).
+  static IconData? _accountChipIcon(
+    TransactionFilter filter,
+    List<AccountWithBalance> accounts,
+  ) =>
+      _singleSelectedAccount(filter, accounts)?.type.icon;
+
+  static Account? _singleSelectedAccount(
+    TransactionFilter filter,
+    List<AccountWithBalance> accounts,
+  ) {
+    if (filter.accountIds.length != 1) {
+      return null;
+    }
+    final id = filter.accountIds.first;
+    for (final entry in accounts) {
+      if (entry.account.id == id) {
+        return entry.account;
+      }
+    }
+    return null;
+  }
+
+  /// "Este mes" / "julio 2026" / "12 jul - 18 jul" / a custom range —
+  /// whatever best names the active period, only computed once it is not the
+  /// untouched default (HU-06b).
+  static String _dateChipLabel(DatePeriodFilter period) {
+    if (period.isCustomRange) {
+      return _rangeLabel(period);
+    }
+    return switch (period.granularity!) {
+      DateGranularity.week => _rangeLabel(period),
+      DateGranularity.month =>
+        DateFormat('MMMM yyyy', 'es_CO').format(period.anchor!),
+      DateGranularity.year => DateFormat.y('es_CO').format(period.anchor!),
+    };
+  }
+
+  static String _rangeLabel(DatePeriodFilter period) {
+    final format = DateFormat.MMMd('es_CO');
+    final end = period.endExclusive.subtract(const Duration(days: 1));
+    return '${format.format(period.start)} - ${format.format(end)}';
   }
 }
 
@@ -262,15 +392,33 @@ class TransactionsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
+    final l10n = AppLocalizations.of(context);
+    final groups = groupTransactionsByDate(state.items);
+
+    return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-      itemCount: state.items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemCount: groups.length,
       itemBuilder: (context, index) {
-        final entry = state.items[index];
-        return TransactionRow(
-          entry: entry,
-          onTap: () => onOpenTransaction(entry.transaction.id),
+        final group = groups[index];
+        return Padding(
+          padding: EdgeInsets.only(top: index == 0 ? 0 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TransactionGroupHeader(
+                label: transactionGroupLabel(l10n, group.date),
+                count: group.items.length,
+              ),
+              const SizedBox(height: 12),
+              for (var i = 0; i < group.items.length; i++) ...[
+                TransactionRow(
+                  entry: group.items[i],
+                  onTap: () => onOpenTransaction(group.items[i].transaction.id),
+                ),
+                if (i != group.items.length - 1) const SizedBox(height: 16),
+              ],
+            ],
+          ),
         );
       },
     );

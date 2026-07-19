@@ -1,7 +1,11 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/accounts/domain/entities/account.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -13,12 +17,35 @@ import 'package:mocktail/mocktail.dart';
 import '../transaction_fixtures.dart';
 import 'usecase_mocks.dart';
 
+AccountWithBalance _accountWithBalance({
+  String id = 'acc-1',
+  String name = 'Cuenta 1',
+  int sortOrder = 0,
+}) {
+  final account = Account(
+    id: id,
+    name: name,
+    type: AccountType.bank,
+    currency: 'COP',
+    initialBalanceMinor: 0,
+    archived: false,
+    sortOrder: sortOrder,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026).millisecondsSinceEpoch,
+  );
+  return AccountWithBalance(
+    account: account,
+    balance: AccountBalance.fromBalance(account: account, balanceMinor: 0),
+  );
+}
+
 void main() {
   late MockCreateTransaction createTransaction;
   late MockUpdateTransaction updateTransaction;
   late MockWatchTransactionDetail watchTransactionDetail;
   late MockGetTransactionEditImpact getTransactionEditImpact;
   late MockSetTransactionTags setTransactionTags;
+  late MockWatchAccounts watchAccounts;
 
   setUpAll(registerPresentationFallbacks);
 
@@ -28,6 +55,12 @@ void main() {
     watchTransactionDetail = MockWatchTransactionDetail();
     getTransactionEditImpact = MockGetTransactionEditImpact();
     setTransactionTags = MockSetTransactionTags();
+    watchAccounts = MockWatchAccounts();
+    // No accounts by default, so `load(null)` never auto-preselects one and
+    // the existing "no account picked" scenarios stay meaningful — tests
+    // that care about the preselection stub their own account list.
+    when(() => watchAccounts())
+        .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
   });
 
   TransactionFormCubit build() => TransactionFormCubit(
@@ -36,6 +69,7 @@ void main() {
         watchTransactionDetail,
         getTransactionEditImpact,
         setTransactionTags,
+        watchAccounts,
       );
 
   group('teclado numérico anclado (criterio 11)', () {
@@ -156,6 +190,7 @@ void main() {
         await cubit.load(null);
         cubit
           ..accountSelected('acc-1', 'Cuenta 1')
+          ..categorySelected('cat-1', CategoryKind.expense, 'Comida')
           ..amountDigitPressed(1)
           ..amountDigitPressed(0)
           ..amountDigitPressed(0)
@@ -181,10 +216,76 @@ void main() {
         verifyNever(() => createTransaction(any()));
       },
     );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'sin categoría seleccionada no llama al caso de uso (bug fix 11a)',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.failedField, TransactionDraft.fieldCategoryId);
+        verifyNever(() => createTransaction(any()));
+      },
+    );
+  });
+
+  group('preselección de cuenta al crear (bug fix 11b)', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null) preselecciona la primera cuenta por sortOrder',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        // `WatchAccounts` already returns the list ordered by `sortOrder`
+        // (same source `AccountPickerSheetBody` uses); the cubit trusts that
+        // order and just takes the first entry.
+        (_) => Stream.value(
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-1');
+        expect(cubit.state.accountName, 'Bancolombia');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null) sin cuentas no preselecciona nada',
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.accountId, isNull);
+        expect(cubit.state.accountName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null, accountId: ...) respeta la cuenta del llamador y no consulta',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) =>
+            Stream.value(Right([_accountWithBalance(id: 'acc-2', name: 'Nequi')])),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(null, accountId: 'acc-caller'),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-caller');
+        verifyNever(() => watchAccounts());
+      },
+    );
   });
 
   group('editar (HU-04)', () {
-    final original = buildTransaction(scheduledPaymentId: 'rec-1');
+    final original = buildTransaction(
+      categoryId: 'cat-1',
+      scheduledPaymentId: 'rec-1',
+    );
 
     blocTest<TransactionFormCubit, TransactionFormState>(
       'un cambio que afecta un vínculo se detiene con la advertencia, sin persistir',

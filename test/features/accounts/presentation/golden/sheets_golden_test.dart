@@ -1,12 +1,15 @@
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_deletion_impact.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/cannot_delete_last_account_sheet.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/confirm_archive_account_sheet.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/confirm_delete_account_sheet.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/sheets/confirm_type_or_currency_change_sheet.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/sheets/currency_picker_sheet.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/sheets/day_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 void main() {
   setUpAll(() async {
@@ -86,6 +89,28 @@ void main() {
         tester,
         CannotDeleteLastAccountSheet.show,
         'cannot_delete_last_account_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('currency picker ($suffix)', (tester) async {
+      await golden(
+        tester,
+        (context) => CurrencyPickerSheet.show(context, selected: 'COP'),
+        'currency_picker_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('day picker ($suffix)', (tester) async {
+      await golden(
+        tester,
+        (context) => DayPickerSheet.show(
+          context,
+          title: AppLocalizations.of(context).accountFormStatementDayLabel,
+          selected: 15,
+        ),
+        'day_picker_$suffix',
         brightness: brightness,
       );
     });

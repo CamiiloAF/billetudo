@@ -11,6 +11,7 @@ void main() {
     WidgetTester tester, {
     VoidCallback? onAccounts,
     VoidCallback? onCategories,
+    VoidCallback? onScheduledPayments,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -20,6 +21,7 @@ void main() {
         MorePage(
           onOpenAccounts: onAccounts ?? () {},
           onOpenCategories: onCategories ?? () {},
+          onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -35,7 +37,7 @@ void main() {
       'Cuentas',
       'Categorías',
       'Deudas',
-      'Pagos programados',
+      'Recurrentes',
       'Gráficas e informes',
       'Importar y exportar',
       'Ajustes',
@@ -45,12 +47,12 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías y Ajustes están vivas (sin badge Próximamente)',
+      'Cuentas, Categorías, Recurrentes y Ajustes están vivas (sin badge Próximamente)',
       (tester) async {
     await pumpMore(tester);
 
-    // Three live rows, four not-yet-built ones carrying the badge.
-    expect(find.byType(ComingSoonBadge), findsNWidgets(4));
+    // Four live rows, three not-yet-built ones carrying the badge.
+    expect(find.byType(ComingSoonBadge), findsNWidgets(3));
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -68,6 +70,7 @@ void main() {
 
     expect(badgeOf('Cuentas'), isNull);
     expect(badgeOf('Categorías'), isNull);
+    expect(badgeOf('Recurrentes'), isNull);
     expect(badgeOf('Ajustes'), isNull);
     expect(badgeOf('Deudas'), isNotNull);
   });
@@ -107,23 +110,29 @@ void main() {
     expect(signedOut, 1);
   });
 
-  testWidgets('tocar Cuentas y Categorías enruta a sus destinos vivos',
+  testWidgets(
+      'tocar Cuentas, Categorías y Recurrentes enruta a sus destinos vivos',
       (tester) async {
     var accounts = 0;
     var categories = 0;
+    var scheduledPayments = 0;
     await pumpMore(
       tester,
       onAccounts: () => accounts++,
       onCategories: () => categories++,
+      onScheduledPayments: () => scheduledPayments++,
     );
 
     await tester.tap(find.text('Cuentas'));
     await tester.pump();
     await tester.tap(find.text('Categorías'));
     await tester.pump();
+    await tester.tap(find.text('Recurrentes'));
+    await tester.pump();
 
     expect(accounts, 1);
     expect(categories, 1);
+    expect(scheduledPayments, 1);
   });
 
   testWidgets('tocar un destino "Próximamente" pasa su etiqueta al callback',
@@ -133,9 +142,7 @@ void main() {
 
     await tester.tap(find.text('Deudas'));
     await tester.pump();
-    await tester.tap(find.text('Pagos programados'));
-    await tester.pump();
 
-    expect(opened, ['Deudas', 'Pagos programados']);
+    expect(opened, ['Deudas']);
   });
 }

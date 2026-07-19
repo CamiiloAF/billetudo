@@ -94,6 +94,25 @@ class MoneyFormatter {
     return formatter.format(amountMinor / _minorPerMajor);
   }
 
+  /// Like [formatAmount] but **editable**: it never bakes in a thousands
+  /// separator, only the decimal one (when [decimalDigits] > 0). Use it for the
+  /// `initialValue` of a plain `TextFormField` the user is meant to keep
+  /// typing in — `formatAmount`'s grouping dot lands inside the editable text
+  /// and fights every edit after the first (e.g. reopening a saved credit
+  /// limit). [format]/[formatAmount] stay the ones to use for read-only
+  /// display, where the grouping helps instead of getting in the way.
+  String formatAmountForEditing(
+    int amountMinor, {
+    String locale = 'es_CO',
+    int? decimalDigits,
+  }) {
+    final formatter = NumberFormat.decimalPatternDigits(
+      locale: locale,
+      decimalDigits: decimalDigits ?? 2,
+    )..turnOffGrouping();
+    return formatter.format(amountMinor / _minorPerMajor);
+  }
+
   /// Converts a major value (e.g. `12.34`) to minor units (`1234`).
   ///
   /// Only for values that are already numbers. To read **user input** use

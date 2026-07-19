@@ -15,13 +15,16 @@ import '../../../accounts/presentation/widgets/account_select_row.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../domain/entities/transaction.dart';
+import '../../domain/entities/transaction_draft.dart';
 import '../cubit/transaction_form_cubit.dart';
 import '../cubit/transaction_form_state.dart';
 import '../widgets/category_picker/category_quick_picker.dart';
 import '../widgets/sheets/edit_impact_warning_sheet.dart';
+import '../widgets/sheets/future_date_scheduled_payment_prompt_sheet.dart';
 import '../widgets/transaction_amount_fixed_zone.dart';
 import '../widgets/transaction_date_field.dart';
 import '../widgets/transaction_form_field_button.dart';
+import '../widgets/transaction_header_button.dart';
 import '../widgets/transaction_info_box.dart';
 import '../widgets/transaction_note_field.dart';
 import '../widgets/transaction_tags_field.dart';
@@ -32,7 +35,17 @@ import '../widgets/transaction_type_segmented_control.dart';
 /// (Segmented Control -> Cuenta(s) -> Categoría -> Fecha -> Nota -> Etiquetas);
 /// the amount lives in the anchored Zona Fija at the bottom.
 class TransactionFormPage extends StatelessWidget {
-  const TransactionFormPage({super.key});
+  const TransactionFormPage({this.onConvertToScheduledPayment, super.key});
+
+  /// HU-06/criterion 14: called instead of `cubit.submit()` when the user
+  /// accepts turning a future-dated new movement into a scheduled payment.
+  /// The router supplies it (it is the only layer that may know about both
+  /// features) and is responsible for opening the Pagos Programados form
+  /// prefilled from [TransactionFormState] — this page never imports
+  /// anything from that feature, so Transacciones' domain stays uncoupled
+  /// from it. `null` (e.g. in tests) simply disables the puente: Guardar
+  /// always behaves like today.
+  final ValueChanged<TransactionFormState>? onConvertToScheduledPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +61,8 @@ class TransactionFormPage extends StatelessWidget {
         final impact = state.editImpact;
         if (impact != null && impact.hasImpact) {
           final cubit = context.read<TransactionFormCubit>();
-          await showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
+          await BottomSheetBase.show<void>(
+            context,
             builder: (context) => EditImpactWarningSheet(
               impact: impact,
               onCancel: () {
@@ -100,7 +112,7 @@ class TransactionFormPage extends StatelessWidget {
                   tooltip: l10n.commonSave,
                   onPressed: state.status == TransactionFormStatus.saving
                       ? null
-                      : cubit.submit,
+                      : () => _handleSave(context, state, cubit),
                 ),
               ),
             ],
@@ -145,6 +157,28 @@ class TransactionFormPage extends StatelessWidget {
       TransactionType.transfer => l10n.transactionFormNewTransferTitle,
     };
   }
+
+  /// HU-06/criterion 14: intercepts Guardar for a future-dated new movement
+  /// with "¿Es un pago programado?" before anything is persisted. Accepting
+  /// hands off to [onConvertToScheduledPayment] instead of saving the
+  /// movement; declining (or an editing/past-dated form, where
+  /// [TransactionFormState.isFutureDate] is false) keeps today's behaviour.
+  Future<void> _handleSave(
+    BuildContext context,
+    TransactionFormState state,
+    TransactionFormCubit cubit,
+  ) async {
+    if (!state.isFutureDate) {
+      await cubit.submit();
+      return;
+    }
+    final accepted = await FutureDateScheduledPaymentPromptSheet.show(context);
+    if (accepted == true) {
+      onConvertToScheduledPayment?.call(state);
+      return;
+    }
+    await cubit.submit();
+  }
 }
 
 /// The scrollable selectors of the form — everything but the anchored amount
@@ -177,6 +211,9 @@ class TransactionFormScrollZone extends StatelessWidget {
             selectedId: state.accountId,
             selectedName: state.accountName,
             onSelected: cubit.accountSelected,
+            errorText: state.failedField == TransactionDraft.fieldAccountId
+                ? l10n.transactionErrorAccount
+                : null,
           ),
           const SizedBox(height: 8),
           CategoryQuickPicker(
@@ -189,6 +226,9 @@ class TransactionFormScrollZone extends StatelessWidget {
               category.kind,
               category.name,
             ),
+            errorText: state.failedField == TransactionDraft.fieldCategoryId
+                ? l10n.transactionErrorCategory
+                : null,
           ),
         ],
         const SizedBox(height: 8),
@@ -262,6 +302,9 @@ class TransferAccountsGroupBody extends StatelessWidget {
               onSelected: cubit.accountSelected,
               excludingId: state.transferAccountId,
               inlineIcon: iconByAccountId[state.accountId],
+              errorText: state.failedField == TransactionDraft.fieldAccountId
+                  ? l10n.transactionErrorAccount
+                  : null,
             ),
             const SizedBox(height: 4),
             Align(
@@ -333,48 +376,6 @@ class TransactionSwapButton extends StatelessWidget {
   }
 }
 
-/// A circular 44x44 action button of the form's page header (`Dtm0X`): a filled
-/// wrap with a single 18px icon. The back button uses `muted`, the save action
-/// `primary`.
-class TransactionHeaderButton extends StatelessWidget {
-  const TransactionHeaderButton({
-    required this.icon,
-    required this.background,
-    required this.foreground,
-    required this.tooltip,
-    required this.onPressed,
-    super.key,
-  });
-
-  final IconData icon;
-  final Color background;
-  final Color foreground;
-  final String tooltip;
-
-  /// Null disables the button (e.g. save while already saving).
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(22),
-        child: Tooltip(
-          message: tooltip,
-          child: SizedBox(
-            width: 44,
-            height: 44,
-            child: Icon(icon, size: 18, color: foreground),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// A "pick from a bottom sheet" account field, styled as a `Form Field`.
 /// Reuses the accounts feature's own `AccountsListCubit` — composing another
 /// feature's presentation is fine; only reaching into its `data`/domain
@@ -387,6 +388,7 @@ class AccountPickerField extends StatelessWidget {
     required this.onSelected,
     this.excludingId,
     this.inlineIcon,
+    this.errorText,
     super.key,
   });
 
@@ -404,6 +406,10 @@ class AccountPickerField extends StatelessWidget {
   /// fields set it; Gasto/Ingreso Cuenta stays icon-less.
   final IconData? inlineIcon;
 
+  /// Set when the field failed validation (e.g. HU-01 criterion 8: no
+  /// account picked).
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -412,6 +418,7 @@ class AccountPickerField extends StatelessWidget {
       value: selectedName ?? l10n.transactionFormAccountChoose,
       hasValue: selectedName != null,
       inlineIcon: selectedName != null ? inlineIcon : null,
+      errorText: errorText,
       onTap: () async {
         final account = await BottomSheetBase.show<Account>(
           context,

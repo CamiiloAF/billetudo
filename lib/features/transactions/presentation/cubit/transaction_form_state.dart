@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart' show DateUtils;
 
 import '../../../../core/error/result.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
@@ -118,11 +119,28 @@ class TransactionFormState extends Equatable {
 
   bool get isTransfer => type == TransactionType.transfer;
 
+  /// HU-06/criterion 14: the puente to Pagos Programados only offers to turn
+  /// a **new** movement into a template — editing an existing transaction
+  /// never re-triggers it, even if its date is moved into the future.
+  bool get isFutureDate {
+    if (isEditing) {
+      return false;
+    }
+    final today = DateUtils.dateOnly(DateTime.now());
+    return DateUtils.dateOnly(date).isAfter(today);
+  }
+
   bool get isKeypadVisible =>
       focusedField == TransactionFormFocusedField.amount;
 
   bool get isAwaitingEditImpactConfirmation =>
       editImpact != null && editImpact!.hasImpact;
+
+  /// The failing field, when [failure] points at one — mirrors
+  /// `AccountFormState.failedField` so the form can highlight the offending
+  /// selector.
+  String? get failedField =>
+      failure is ValidationFailure ? (failure! as ValidationFailure).field : null;
 
   TransactionFormState copyWith({
     TransactionFormStatus? status,

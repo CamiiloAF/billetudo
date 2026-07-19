@@ -44,10 +44,10 @@ class MoreRow extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: colors.primarySoft,
+                    color: colors.muted,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
-                  child: Icon(icon, size: 20, color: colors.primaryOnSoft),
+                  child: Icon(icon, size: 20, color: colors.textSecondary),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

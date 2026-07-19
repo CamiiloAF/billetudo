@@ -7,6 +7,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/account_with_balance.dart';
 import '../cubit/account_detail_cubit.dart';
@@ -52,32 +54,41 @@ class AccountDetailPage extends StatelessWidget {
       },
       builder: (context, state) {
         final account = state.account;
+        final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            title: Text(account?.name ?? l10n.accountsTitle),
-            actions: [
-              if (account != null)
-                IconButton(
-                  onPressed: () => onEdit(account.id),
-                  tooltip: l10n.commonEdit,
-                  icon: const Icon(LucideIcons.pencil),
-                ),
-            ],
-          ),
           body: SafeArea(
-            child: switch (state.status) {
-              AccountDetailStatus.loading ||
-              AccountDetailStatus.closed =>
-                const Center(child: CircularProgressIndicator()),
-              AccountDetailStatus.failure => AccountsErrorView(
-                  onRetry: () =>
-                      context.read<AccountDetailCubit>().start(account!.id),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: account?.name ?? l10n.accountsTitle,
+                  trailing: account == null
+                      ? null
+                      : PageHeaderCircleButton(
+                          icon: LucideIcons.pencil,
+                          background: colors.primary,
+                          foreground: colors.onPrimary,
+                          tooltip: l10n.commonEdit,
+                          onPressed: () => onEdit(account.id),
+                        ),
                 ),
-              AccountDetailStatus.ready => AccountDetailBody(
-                  entry: state.entry!,
-                  revealedNumber: state.revealedNumber,
+                Expanded(
+                  child: switch (state.status) {
+                    AccountDetailStatus.loading ||
+                    AccountDetailStatus.closed =>
+                      const Center(child: CircularProgressIndicator()),
+                    AccountDetailStatus.failure => AccountsErrorView(
+                        onRetry: () => context
+                            .read<AccountDetailCubit>()
+                            .start(account!.id),
+                      ),
+                    AccountDetailStatus.ready => AccountDetailBody(
+                        entry: state.entry!,
+                        revealedNumber: state.revealedNumber,
+                      ),
+                  },
                 ),
-            },
+              ],
+            ),
           ),
         );
       },
@@ -273,16 +284,17 @@ class AccountDetailActions extends StatelessWidget {
               children: [
                 Text(
                   l10n.accountDeleteAction,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        // `expense-text`, not `expense`: a normal-sized
-                        // destructive link needs the calibrated token to clear
-                        // 4.5:1 (MASTER.md).
-                        color: colors.expenseText,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    // `expense-text`, not `expense`: a normal-sized
+                    // destructive link needs the calibrated token to clear
+                    // 4.5:1 (MASTER.md).
+                    color: colors.expenseText,
+                  ),
                 ),
-                Icon(LucideIcons.chevronRight,
-                    size: 18, color: colors.expenseText),
+                const SizedBox(width: 4),
+                Icon(LucideIcons.trash2, size: 16, color: colors.expenseText),
               ],
             ),
           ),

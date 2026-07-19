@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// The `Bottom Sheet Base` component: the chrome every sheet of this feature
 /// shares.
 ///
@@ -16,13 +18,20 @@ class BottomSheetBase extends StatelessWidget {
   final Widget child;
 
   /// Opens [child] as a modal sheet with the feature's chrome.
+  ///
+  /// [useRootNavigator] defaults to `false` (existing callers' behaviour
+  /// unchanged); pass `true` when the sheet opens from a page nested under a
+  /// shell route with a bottom nav bar, so the sheet covers it instead of
+  /// stopping above it.
   static Future<T?> show<T>(
     BuildContext context, {
     required WidgetBuilder builder,
+    bool useRootNavigator = false,
   }) =>
       showModalBottomSheet<T>(
         context: context,
         isScrollControlled: true,
+        useRootNavigator: useRootNavigator,
         builder: (context) => BottomSheetBase(child: builder(context)),
       );
 
@@ -38,14 +47,17 @@ class BottomSheetBase extends StatelessWidget {
   }
 }
 
-/// The icon + title + message body the confirmation sheets share.
+/// The icon + optional title + message body the confirmation sheets share.
+///
+/// Not every sheet opens with a title: the plain `alert-triangle` delete
+/// pattern (`o9116/qsjbj` in `billetudo.pen`) only has icon + message.
 class SheetMessage extends StatelessWidget {
   const SheetMessage({
     required this.icon,
     required this.iconColor,
     required this.iconBackground,
-    required this.title,
     required this.message,
+    this.title,
     super.key,
   });
 
@@ -53,13 +65,16 @@ class SheetMessage extends StatelessWidget {
   final Color iconColor;
   final Color iconBackground;
 
-  /// Both already localized.
-  final String title;
+  /// Already localized. `null` renders no title (icon + message only).
+  final String? title;
+
+  /// Already localized.
   final String message;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.colors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -70,21 +85,26 @@ class SheetMessage extends StatelessWidget {
             color: iconBackground,
             borderRadius: BorderRadius.circular(28),
           ),
-          child: Icon(icon, color: iconColor, size: 28),
+          child: Icon(icon, color: iconColor, size: 26),
         ),
         const SizedBox(height: 16),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
+        if (title case final title?) ...[
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+        ],
         Text(
           message,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+            color: colors.textPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            height: 1.4,
           ),
         ),
       ],

@@ -14,6 +14,8 @@
   "@commonCancel": {},
   "commonDelete": "Eliminar",
   "@commonDelete": {},
+  "commonContinue": "Continuar",
+  "@commonContinue": {},
   "commonEdit": "Editar",
   "@commonEdit": {},
   "commonRetry": "Reintentar",
@@ -163,7 +165,7 @@
       }
     }
   },
-  "accountNumberMasked": "•••• {last4}",
+  "accountNumberMasked": "••••••• {last4}",
   "@accountNumberMasked": {
     "placeholders": {
       "last4": {
@@ -202,6 +204,10 @@
   "@accountFormInstitutionHint": {},
   "accountFormInitialBalanceLabel": "Saldo inicial",
   "@accountFormInitialBalanceLabel": {},
+  "accountFormCurrentDebtLabel": "Deuda actual",
+  "@accountFormCurrentDebtLabel": {
+    "description": "Reemplaza a accountFormInitialBalanceLabel cuando el tipo de cuenta es tarjeta de crédito: el monto que se escribe es la deuda actual, no un saldo."
+  },
   "accountFormCurrencyLabel": "Moneda",
   "@accountFormCurrencyLabel": {},
   "accountFormInterestRateLabel": "Tasa de interés",
@@ -281,7 +287,7 @@
   "@accountChangeSheetMessage": {},
   "accountChangeConfirm": "Confirmar",
   "@accountChangeConfirm": {},
-  "accountCurrencySheetTitle": "Moneda",
+  "accountCurrencySheetTitle": "Selecciona la moneda",
   "@accountCurrencySheetTitle": {},
   "currencyCopName": "Peso colombiano",
   "@currencyCopName": {},
@@ -359,6 +365,8 @@
   "@categoryKindLockedRoot": {},
   "categoryDeleteAction": "Eliminar categoría",
   "@categoryDeleteAction": {},
+  "categoryDeleteSubcategoryAction": "Eliminar subcategoría",
+  "@categoryDeleteSubcategoryAction": {},
   "categoryAppearancePickerTitle": "Icono y color",
   "@categoryAppearancePickerTitle": {},
   "categoryParentPickerTitle": "Categoría padre",
@@ -367,7 +375,7 @@
   "@categoryParentPickerEmpty": {},
   "categoryDeleteSimpleTitle": "¿Eliminar esta categoría?",
   "@categoryDeleteSimpleTitle": {},
-  "categoryDeleteSimpleMessage": "Podrás recuperarla después desde la papelera.",
+  "categoryDeleteSimpleMessage": "Podrás deshacerlo justo después de eliminar.",
   "@categoryDeleteSimpleMessage": {},
   "categoryDeleteTransactionsTitle": "¿Eliminar esta categoría?",
   "@categoryDeleteTransactionsTitle": {},
@@ -398,7 +406,7 @@
   "@categoryCascadeDeleteOption": {},
   "categoryCascadeConfirmTitle": "¿Eliminar la categoría y sus subcategorías?",
   "@categoryCascadeConfirmTitle": {},
-  "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.",
+  "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás deshacerlo justo después de eliminar.",
   "@categoryCascadeConfirmMessage": {},
   "transactionsTitle": "Movimientos",
   "@transactionsTitle": {},
@@ -434,6 +442,28 @@
   "@transactionsSortDateDesc": {},
   "transactionsSortAmountDesc": "Monto: mayor a menor",
   "@transactionsSortAmountDesc": {},
+  "transactionsFilterAccountsSelected": "{count, plural, =1{1 cuenta} other{{count} cuentas}}",
+  "@transactionsFilterAccountsSelected": {
+    "description": "Etiqueta del chip de cuenta cuando hay más de una cuenta activa como filtro (HU-06a).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transactionsGroupToday": "Hoy",
+  "@transactionsGroupToday": {},
+  "transactionsGroupYesterday": "Ayer",
+  "@transactionsGroupYesterday": {},
+  "transactionsGroupCount": "{count, plural, =1{1 movimiento} other{{count} movimientos}}",
+  "@transactionsGroupCount": {
+    "description": "Contador del encabezado de cada grupo de fecha de la lista de movimientos (HU-06).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "transactionTypeExpense": "Gasto",
   "@transactionTypeExpense": {},
   "transactionTypeIncome": "Ingreso",
@@ -458,6 +488,10 @@
   "@transactionFormTransferAccountLabel": {},
   "transactionFormCategoryLabel": "Categoría",
   "@transactionFormCategoryLabel": {},
+  "transactionErrorAccount": "Elige una cuenta.",
+  "@transactionErrorAccount": {},
+  "transactionErrorCategory": "Elige una categoría.",
+  "@transactionErrorCategory": {},
   "categorySelectTitle": "Elegir categoría",
   "@categorySelectTitle": {},
   "categorySelectSearchHint": "Buscar categoría",
@@ -556,14 +590,14 @@
   "@transactionEditImpactConfirm": {},
   "transactionDeleteTitle": "¿Eliminar este movimiento?",
   "@transactionDeleteTitle": {},
-  "transactionDeleteMessage": "Podrás recuperarlo después desde la papelera.",
+  "transactionDeleteMessage": "Podrás deshacerlo justo después de eliminar.",
   "@transactionDeleteMessage": {},
-  "transactionDetailTitle": "Detalle del movimiento",
-  "@transactionDetailTitle": {},
-  "transactionDetailEdit": "Editar",
-  "@transactionDetailEdit": {},
-  "transactionDetailDelete": "Eliminar",
-  "@transactionDetailDelete": {},
+  "transactionDetailTitleExpense": "Detalle del gasto",
+  "@transactionDetailTitleExpense": {},
+  "transactionDetailTitleIncome": "Detalle del ingreso",
+  "@transactionDetailTitleIncome": {},
+  "transactionDetailTitleTransfer": "Detalle de la transferencia",
+  "@transactionDetailTitleTransfer": {},
   "transactionDetailSource": "Registrado como {source}",
   "@transactionDetailSource": {
     "placeholders": {
@@ -572,46 +606,28 @@
       }
     }
   },
-  "transactionDetailAccountLine": "Cuenta: {account}",
-  "@transactionDetailAccountLine": {
-    "placeholders": {
-      "account": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailTransferLine": "Cuenta destino: {account}",
-  "@transactionDetailTransferLine": {
-    "placeholders": {
-      "account": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailCategoryLine": "Categoría: {category}",
-  "@transactionDetailCategoryLine": {
-    "placeholders": {
-      "category": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailNoteLine": "Nota: {note}",
-  "@transactionDetailNoteLine": {
-    "placeholders": {
-      "note": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailTagsLine": "Etiquetas: {tags}",
-  "@transactionDetailTagsLine": {
-    "placeholders": {
-      "tags": {
-        "type": "String"
-      }
-    }
-  },
+  "transactionDetailAccountLabel": "Cuenta",
+  "@transactionDetailAccountLabel": {},
+  "transactionDetailAccountFromLabel": "Cuenta origen",
+  "@transactionDetailAccountFromLabel": {},
+  "transactionDetailAccountToLabel": "Cuenta destino",
+  "@transactionDetailAccountToLabel": {},
+  "transactionDetailCategoryLabel": "Categoría",
+  "@transactionDetailCategoryLabel": {},
+  "transactionDetailDateLabel": "Fecha",
+  "@transactionDetailDateLabel": {},
+  "transactionDetailNoteLabel": "Nota",
+  "@transactionDetailNoteLabel": {},
+  "transactionDetailNoNote": "Sin nota",
+  "@transactionDetailNoNote": {},
+  "transactionDetailSourceLabel": "Origen",
+  "@transactionDetailSourceLabel": {},
+  "transactionDetailTagsLabel": "Etiquetas",
+  "@transactionDetailTagsLabel": {},
+  "transactionDetailTransferSubtitle": "Transferencia",
+  "@transactionDetailTransferSubtitle": {},
+  "transactionDetailDeleteLink": "Eliminar movimiento",
+  "@transactionDetailDeleteLink": {},
   "accountFilterSheetTitle": "Filtrar por cuenta",
   "@accountFilterSheetTitle": {},
   "accountFilterSelectAll": "Todas",
@@ -726,7 +742,7 @@
   "@moreTitle": {},
   "moreDebts": "Deudas",
   "@moreDebts": {},
-  "moreScheduledPayments": "Pagos programados",
+  "moreScheduledPayments": "Recurrentes",
   "@moreScheduledPayments": {},
   "moreReports": "Gráficas e informes",
   "@moreReports": {},
@@ -912,7 +928,7 @@
   "@budgetActionDelete": {},
   "budgetDeleteConfirmTitle": "¿Eliminar presupuesto?",
   "@budgetDeleteConfirmTitle": {},
-  "budgetDeleteConfirmMessage": "Podrás recuperarlo desde la papelera.",
+  "budgetDeleteConfirmMessage": "Podrás deshacerlo justo después de eliminar.",
   "@budgetDeleteConfirmMessage": {},
   "budgetFormNewTitle": "Nuevo presupuesto",
   "@budgetFormNewTitle": {},
@@ -1037,5 +1053,238 @@
   "firstLaunchOfflineRetrying": "Reintentando...",
   "@firstLaunchOfflineRetrying": {
     "description": "Label del botón Reintentar mientras la petición está en curso."
+  },
+  "scheduledPaymentsTitle": "Pagos programados",
+  "@scheduledPaymentsTitle": {},
+  "scheduledPaymentsAdd": "Nuevo pago programado",
+  "@scheduledPaymentsAdd": {},
+  "scheduledPaymentsLoading": "Cargando tus pagos programados",
+  "@scheduledPaymentsLoading": {},
+  "scheduledPaymentsEmptyMessage": "Aún no tienes pagos programados. Agrega uno para no perder de vista tus pagos recurrentes.",
+  "@scheduledPaymentsEmptyMessage": {},
+  "scheduledPaymentsErrorTitle": "No pudimos cargar tus pagos programados",
+  "@scheduledPaymentsErrorTitle": {},
+  "scheduledPaymentsErrorLocalFirst": "Tus datos siguen a salvo en este dispositivo. Intenta de nuevo.",
+  "@scheduledPaymentsErrorLocalFirst": {},
+  "scheduledPaymentsActiveCount": "Activos · {count}",
+  "@scheduledPaymentsActiveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingTitle": "Por confirmar",
+  "@scheduledPendingTitle": {},
+  "scheduledPendingEmpty": "No tienes pagos por confirmar.",
+  "@scheduledPendingEmpty": {},
+  "scheduledReviewAll": "Revisar todas",
+  "@scheduledReviewAll": {},
+  "scheduledPendingBadge": "Pendiente de confirmar",
+  "@scheduledPendingBadge": {},
+  "scheduledOnceBadge": "Pago único",
+  "@scheduledOnceBadge": {},
+  "scheduledInactiveBadge": "Inactivo",
+  "@scheduledInactiveBadge": {},
+  "scheduledConfirmationSheetTitle": "Confirmar pago",
+  "@scheduledConfirmationSheetTitle": {},
+  "scheduledConfirmationSheetConfirm": "Confirmar",
+  "@scheduledConfirmationSheetConfirm": {},
+  "scheduledConfirmationSheetSkip": "Omitir",
+  "@scheduledConfirmationSheetSkip": {},
+  "scheduledConfirmationSheetSnooze": "Posponer",
+  "@scheduledConfirmationSheetSnooze": {},
+  "scheduledGuidedReviewPosition": "Pago {position} de {total}",
+  "@scheduledGuidedReviewPosition": {
+    "placeholders": {
+      "position": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "scheduledUndoSkipMessage": "Pago omitido",
+  "@scheduledUndoSkipMessage": {},
+  "scheduledUndoSnoozeMessage": "Pago pospuesto",
+  "@scheduledUndoSnoozeMessage": {},
+  "scheduledSnoozeSheetTitle": "Posponer pago",
+  "@scheduledSnoozeSheetTitle": {},
+  "scheduledSnoozeSheetSave": "Posponer",
+  "@scheduledSnoozeSheetSave": {},
+  "scheduledDeleteSheetTitle": "¿Eliminar este pago programado?",
+  "@scheduledDeleteSheetTitle": {},
+  "scheduledDeleteSheetMessage": "Se detiene la generación de nuevos pagos, pero los movimientos ya generados conservan su historial.",
+  "@scheduledDeleteSheetMessage": {},
+  "scheduledPaymentFormNewTitle": "Nuevo pago programado",
+  "@scheduledPaymentFormNewTitle": {},
+  "scheduledPaymentFormEditTitle": "Editar pago programado",
+  "@scheduledPaymentFormEditTitle": {},
+  "scheduledPaymentFormNextDateLabel": "Próxima fecha",
+  "@scheduledPaymentFormNextDateLabel": {},
+  "scheduledPaymentFormFrequencyLabel": "Frecuencia",
+  "@scheduledPaymentFormFrequencyLabel": {},
+  "scheduledPaymentFormCategoryMoreLabel": "Otra",
+  "@scheduledPaymentFormCategoryMoreLabel": {},
+  "scheduledPaymentFormIntervalStepperLabel": "Repetir cada",
+  "@scheduledPaymentFormIntervalStepperLabel": {},
+  "scheduledPaymentFormEndDateLabel": "Fecha de fin",
+  "@scheduledPaymentFormEndDateLabel": {},
+  "scheduledPaymentFormEndDateNone": "Sin fecha de fin",
+  "@scheduledPaymentFormEndDateNone": {},
+  "scheduledPaymentFormModeAutomaticTitle": "Automático",
+  "@scheduledPaymentFormModeAutomaticTitle": {},
+  "scheduledPaymentFormModeAutomaticSubtitle": "Se registra solo",
+  "@scheduledPaymentFormModeAutomaticSubtitle": {},
+  "scheduledPaymentFormModeManualTitle": "Manual",
+  "@scheduledPaymentFormModeManualTitle": {},
+  "scheduledPaymentFormModeManualSubtitle": "Te avisamos antes de afectar tu saldo",
+  "@scheduledPaymentFormModeManualSubtitle": {},
+  "scheduledPaymentFormDeleteAction": "Eliminar pago programado",
+  "@scheduledPaymentFormDeleteAction": {},
+  "scheduledFrequencyOnce": "Solo una vez",
+  "@scheduledFrequencyOnce": {},
+  "scheduledFrequencyDaily": "Cada día",
+  "@scheduledFrequencyDaily": {},
+  "scheduledFrequencyWeekly": "Cada semana",
+  "@scheduledFrequencyWeekly": {},
+  "scheduledFrequencyMonthly": "Cada mes",
+  "@scheduledFrequencyMonthly": {},
+  "scheduledFrequencyYearly": "Cada año",
+  "@scheduledFrequencyYearly": {},
+  "scheduledFrequencyChipOnce": "Único",
+  "@scheduledFrequencyChipOnce": {},
+  "scheduledFrequencyChipDaily": "Día",
+  "@scheduledFrequencyChipDaily": {},
+  "scheduledFrequencyChipWeekly": "Semana",
+  "@scheduledFrequencyChipWeekly": {},
+  "scheduledFrequencyChipMonthly": "Mes",
+  "@scheduledFrequencyChipMonthly": {},
+  "scheduledFrequencyChipYearly": "Año",
+  "@scheduledFrequencyChipYearly": {},
+  "scheduledPaymentDetailTitle": "Pago programado",
+  "@scheduledPaymentDetailTitle": {},
+  "scheduledPaymentDetailNextPayment": "Próximo pago: {date}",
+  "@scheduledPaymentDetailNextPayment": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentDetailHistoryTitle": "Historial",
+  "@scheduledPaymentDetailHistoryTitle": {},
+  "scheduledPaymentDetailHistoryEmpty": "Todavía no se ha generado ningún movimiento de este pago programado.",
+  "@scheduledPaymentDetailHistoryEmpty": {},
+  "scheduledPaymentDetailHistorySeeAll": "Ver historial completo ({count})",
+  "@scheduledPaymentDetailHistorySeeAll": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPaymentDetailHeroLabel": "Próximo pago",
+  "@scheduledPaymentDetailHeroLabel": {},
+  "scheduledPaymentDetailRecurrenceOnce": "Pago único el {date}",
+  "@scheduledPaymentDetailRecurrenceOnce": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentDetailRecurrenceForever": "Se repite {unit} desde el {date}, para siempre",
+  "@scheduledPaymentDetailRecurrenceForever": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "scheduledPaymentDetailRecurrenceUntil": "Se repite {unit} desde el {date}, hasta el {endDate}",
+  "@scheduledPaymentDetailRecurrenceUntil": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "date": { "type": "String" },
+      "endDate": { "type": "String" }
+    }
+  },
+  "scheduledRecurrenceUnitDaily": "cada día",
+  "@scheduledRecurrenceUnitDaily": {},
+  "scheduledRecurrenceUnitDailyInterval": "cada {interval} días",
+  "@scheduledRecurrenceUnitDailyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitWeekly": "cada semana",
+  "@scheduledRecurrenceUnitWeekly": {},
+  "scheduledRecurrenceUnitWeeklyInterval": "cada {interval} semanas",
+  "@scheduledRecurrenceUnitWeeklyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitMonthly": "cada mes",
+  "@scheduledRecurrenceUnitMonthly": {},
+  "scheduledRecurrenceUnitMonthlyInterval": "cada {interval} meses",
+  "@scheduledRecurrenceUnitMonthlyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitYearly": "cada año",
+  "@scheduledRecurrenceUnitYearly": {},
+  "scheduledRecurrenceUnitYearlyInterval": "cada {interval} años",
+  "@scheduledRecurrenceUnitYearlyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledPaymentDetailModeLabel": "Modo",
+  "@scheduledPaymentDetailModeLabel": {},
+  "scheduledPaymentDetailModeAutomatic": "Automático",
+  "@scheduledPaymentDetailModeAutomatic": {},
+  "scheduledPaymentDetailModeManual": "Manual",
+  "@scheduledPaymentDetailModeManual": {},
+  "scheduledPaymentDetailAccountLabel": "Cuenta",
+  "@scheduledPaymentDetailAccountLabel": {},
+  "scheduledPaymentDetailStatusLabel": "Estado",
+  "@scheduledPaymentDetailStatusLabel": {},
+  "scheduledPaymentDetailStatusActive": "Activo",
+  "@scheduledPaymentDetailStatusActive": {},
+  "scheduledPaymentDetailTagsLabel": "Etiquetas",
+  "@scheduledPaymentDetailTagsLabel": {},
+  "scheduledPaymentDetailTagsEmpty": "Sin etiquetas",
+  "@scheduledPaymentDetailTagsEmpty": {},
+  "scheduledPaymentBridgeTitle": "¿Es un pago programado?",
+  "@scheduledPaymentBridgeTitle": {},
+  "scheduledPaymentBridgeMessage": "Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.",
+  "@scheduledPaymentBridgeMessage": {},
+  "scheduledPaymentBridgeAccept": "Sí, programarlo",
+  "@scheduledPaymentBridgeAccept": {},
+  "scheduledPaymentBridgeDecline": "No, guardar como siempre",
+  "@scheduledPaymentBridgeDecline": {},
+  "scheduledFinishedCount": "Terminados · {count}",
+  "@scheduledFinishedCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledFinishedTitle": "Terminados",
+  "@scheduledFinishedTitle": {},
+  "scheduledFinishedEmpty": "Todavía no tienes pagos programados terminados.",
+  "@scheduledFinishedEmpty": {},
+  "scheduledPendingCardOverflow": "Ver los otros {count} pendientes",
+  "@scheduledPendingCardOverflow": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingCardTitle": "Por confirmar {count}",
+  "@scheduledPendingCardTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingCardCaption": "Aún no afectan tu saldo",
+  "@scheduledPendingCardCaption": {},
+  "scheduledDueToday": "Vence hoy",
+  "@scheduledDueToday": {},
+  "scheduledDueInDays": "en {count} días",
+  "@scheduledDueInDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledDueInOneDay": "en 1 día",
+  "@scheduledDueInOneDay": {},
+  "scheduledConfirmationSheetScopeNote": "Lo que edites aquí aplica solo a este pago, no cambia la plantilla.",
+  "@scheduledConfirmationSheetScopeNote": {},
+  "scheduledConfirmationSheetAccumulated": "Tienes {count} pagos de {template} sin confirmar. Ahora confirmas el más antiguo, del {date}.",
+  "@scheduledConfirmationSheetAccumulated": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "template": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "scheduledConfirmationSheetEditTooltip": "Editar plantilla",
+  "@scheduledConfirmationSheetEditTooltip": {},
+  "scheduledGuidedReviewExit": "Salir",
+  "@scheduledGuidedReviewExit": {},
+  "scheduledGuidedReviewConfirmNext": "Confirmar y siguiente",
+  "@scheduledGuidedReviewConfirmNext": {},
+  "scheduledSnoozeContextLine": "{template} · vencía el {date} · muévelo hacia adelante",
+  "@scheduledSnoozeContextLine": {
+    "placeholders": {
+      "template": { "type": "String" },
+      "date": { "type": "String" }
+    }
   }
 }

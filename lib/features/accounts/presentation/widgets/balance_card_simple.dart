@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 
 /// Balance Card of a non-card account (`ZCSCc`): one label, one figure.
@@ -23,17 +22,21 @@ class BalanceCardSimple extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         children: [
           Text(
             AppLocalizations.of(context).accountBalanceLabel,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: colors.textSecondary),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: colors.textSecondary,
+            ),
           ),
           const SizedBox(height: 8),
           Text(

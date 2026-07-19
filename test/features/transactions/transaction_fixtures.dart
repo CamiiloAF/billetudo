@@ -45,11 +45,15 @@ Transaction buildTransaction({
     );
 
 /// A valid expense draft: tests override only the field under test.
+///
+/// [categoryId]/[categoryKind] default to a matching expense category since
+/// `TransactionDraft.validated` now requires one — pass `categoryId: null`
+/// explicitly to exercise that rejection.
 TransactionDraft buildExpenseDraft({
   String? id,
   String accountId = 'acc-1',
-  String? categoryId,
-  CategoryKind? categoryKind,
+  String? categoryId = 'cat-expense-1',
+  CategoryKind? categoryKind = CategoryKind.expense,
   int amountMinor = 10000,
   String currency = 'COP',
   DateTime? date,
@@ -75,11 +79,14 @@ TransactionDraft buildExpenseDraft({
       debtId: debtId,
     );
 
+/// [categoryId]/[categoryKind] default to a matching income category since
+/// `TransactionDraft.validated` now requires one — pass `categoryId: null`
+/// explicitly to exercise that rejection.
 TransactionDraft buildIncomeDraft({
   String? id,
   String accountId = 'acc-1',
-  String? categoryId,
-  CategoryKind? categoryKind,
+  String? categoryId = 'cat-income-1',
+  CategoryKind? categoryKind = CategoryKind.income,
   int amountMinor = 10000,
   String currency = 'COP',
   DateTime? date,

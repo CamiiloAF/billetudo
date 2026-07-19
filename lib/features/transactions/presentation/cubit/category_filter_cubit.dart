@@ -19,8 +19,10 @@ class CategoryFilterState extends Equatable {
     this.expenseNodes = const <CategoryNode>[],
     this.incomeNodes = const <CategoryNode>[],
     Set<String> selected = const <String>{},
+    Set<String> expandedRootIds = const <String>{},
     this.failure,
-  }) : selected = Set.unmodifiable(selected);
+  })  : selected = Set.unmodifiable(selected),
+        expandedRootIds = Set.unmodifiable(expandedRootIds);
 
   final CategoryFilterStatus status;
   final List<CategoryNode> expenseNodes;
@@ -29,13 +31,20 @@ class CategoryFilterState extends Equatable {
   /// Empty means "all categories" (HU-06).
   final Set<String> selected;
 
+  /// Which root rows are expanded in the sheet's list (`q0CTl`/`NZbsD`).
+  /// Purely a UI concern: never persisted, always starts collapsed.
+  final Set<String> expandedRootIds;
+
   final Failure? failure;
+
+  bool isExpanded(String rootId) => expandedRootIds.contains(rootId);
 
   CategoryFilterState copyWith({
     CategoryFilterStatus? status,
     List<CategoryNode>? expenseNodes,
     List<CategoryNode>? incomeNodes,
     Set<String>? selected,
+    Set<String>? expandedRootIds,
     Failure? failure,
   }) =>
       CategoryFilterState(
@@ -43,12 +52,13 @@ class CategoryFilterState extends Equatable {
         expenseNodes: expenseNodes ?? this.expenseNodes,
         incomeNodes: incomeNodes ?? this.incomeNodes,
         selected: selected ?? this.selected,
+        expandedRootIds: expandedRootIds ?? this.expandedRootIds,
         failure: failure,
       );
 
   @override
   List<Object?> get props =>
-      [status, expenseNodes, incomeNodes, selected, failure];
+      [status, expenseNodes, incomeNodes, selected, expandedRootIds, failure];
 }
 
 /// Drives the category filter sheet: the symmetric root/subcategory toggle of
@@ -129,6 +139,30 @@ class CategoryFilterCubit extends Cubit<CategoryFilterState> {
     }
     emit(state.copyWith(selected: next));
   }
+
+  /// Expands/collapses [rootId]'s subcategories in the sheet's list — its own
+  /// 44x44 tap zone, independent of selecting the root (`q0CTl`/`NZbsD`).
+  void toggleExpanded(String rootId) {
+    final next = Set<String>.of(state.expandedRootIds);
+    if (!next.remove(rootId)) {
+      next.add(rootId);
+    }
+    emit(state.copyWith(expandedRootIds: next));
+  }
+
+  /// The header's "Todas": selects every root and subcategory across both
+  /// trees.
+  void selectAll() {
+    final next = <String>{};
+    for (final node in [...state.expenseNodes, ...state.incomeNodes]) {
+      next.add(node.root.id);
+      next.addAll(node.subcategories.map((category) => category.id));
+    }
+    emit(state.copyWith(selected: next));
+  }
+
+  /// The header's "Ninguna": clears the whole selection.
+  void selectNone() => emit(state.copyWith(selected: const <String>{}));
 
   Future<void> _cancelSubscriptions() async {
     await _expenseSubscription?.cancel();

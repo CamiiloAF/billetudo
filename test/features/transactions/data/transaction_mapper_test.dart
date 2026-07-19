@@ -85,13 +85,26 @@ void main() {
     });
 
     test('escribe explícitamente los campos nulos para poder limpiarlos', () {
+      // categoryId is required for expense/income drafts since
+      // `TransactionDraft.validated`; pass it explicitly as null here to
+      // exercise that the mapper still writes an explicit null (vs. absent)
+      // when a draft carries no category.
       final companion = TransactionMapper.toUpdateCompanion(
-        buildExpenseDraft(id: 'tx-1'),
+        buildExpenseDraft(id: 'tx-1', categoryId: null, categoryKind: null),
         now: testInstant,
       );
 
       expect(companion.categoryId, const Value(null));
       expect(companion.transferAccountId, const Value(null));
+    });
+
+    test('escribe el categoryId real cuando el draft lo trae', () {
+      final companion = TransactionMapper.toUpdateCompanion(
+        buildExpenseDraft(id: 'tx-1'),
+        now: testInstant,
+      );
+
+      expect(companion.categoryId, const Value('cat-expense-1'));
     });
   });
 

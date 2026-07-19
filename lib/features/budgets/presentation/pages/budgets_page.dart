@@ -34,7 +34,6 @@ class BudgetsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final envelopeEnabled =
         context.watch<AppSettingsCubit>().state.zeroBasedEnabled;
     final ZeroBasedSummary? summary = envelopeEnabled
@@ -44,10 +43,76 @@ class BudgetsPage extends StatelessWidget {
         summary == null ? null : EnvelopeHero(summary: summary);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(l10n.budgetsTitle),
-        actions: [
+      body: SafeArea(
+        child: Column(
+          children: [
+            BudgetsPageHeader(
+              onAddBudget: onAddBudget,
+              onOpenHistory: onOpenHistory,
+              envelopeEnabled: envelopeEnabled,
+            ),
+            Expanded(
+              child: BlocBuilder<BudgetsListCubit, BudgetsListState>(
+                builder: (context, state) => switch (state.status) {
+                  BudgetsListStatus.loading => const BudgetsLoadingView(),
+                  BudgetsListStatus.failure => BudgetsErrorView(
+                      onRetry: context.read<BudgetsListCubit>().start,
+                    ),
+                  BudgetsListStatus.ready when state.budgets.isEmpty =>
+                    BudgetsEmptyView(
+                      onAddBudget: onAddBudget,
+                      header: envelopeHeader,
+                    ),
+                  BudgetsListStatus.ready => BudgetsListView(
+                      state: state,
+                      onOpenBudget: onOpenBudget,
+                      onAddBudget: onAddBudget,
+                      header: envelopeHeader,
+                    ),
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The list's own header (`s833Gk`): title left-aligned ("Presupuestos" +
+/// `700`/24px), unlike the shared `PageHeader` (which is for detail/form
+/// screens with a back button) — this is the root of the tab, so the global
+/// `AppBarTheme.centerTitle` never applies here.
+class BudgetsPageHeader extends StatelessWidget {
+  const BudgetsPageHeader({
+    required this.onAddBudget,
+    required this.onOpenHistory,
+    required this.envelopeEnabled,
+    super.key,
+  });
+
+  final VoidCallback onAddBudget;
+  final VoidCallback onOpenHistory;
+  final bool envelopeEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.budgetsTitle,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: colors.textPrimary,
+                  ),
+            ),
+          ),
           IconButton(
             onPressed: onAddBudget,
             tooltip: l10n.budgetsAdd,
@@ -70,27 +135,6 @@ class BudgetsPage extends StatelessWidget {
             ],
           ),
         ],
-      ),
-      body: SafeArea(
-        child: BlocBuilder<BudgetsListCubit, BudgetsListState>(
-          builder: (context, state) => switch (state.status) {
-            BudgetsListStatus.loading => const BudgetsLoadingView(),
-            BudgetsListStatus.failure => BudgetsErrorView(
-                onRetry: context.read<BudgetsListCubit>().start,
-              ),
-            BudgetsListStatus.ready when state.budgets.isEmpty =>
-              BudgetsEmptyView(
-                onAddBudget: onAddBudget,
-                header: envelopeHeader,
-              ),
-            BudgetsListStatus.ready => BudgetsListView(
-                state: state,
-                onOpenBudget: onOpenBudget,
-                onAddBudget: onAddBudget,
-                header: envelopeHeader,
-              ),
-          },
-        ),
       ),
     );
   }

@@ -3,87 +3,76 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/budget_usage_notice.dart';
+import '../../../../../core/widgets/sheet_buttons_row.dart';
 
-/// HU-04 case 1: no dependents (`jngMo`).
+/// HU-04 case 1: no dependents (`o9116/qsjbj`).
 ///
-/// The `trash-2` icon is `$primary`/`$primary-soft`, never red: the delete is
-/// reversible via the trash, so nothing here is alarming.
+/// Plain destructive pattern: `alert-triangle` on `$expense`/`$expense-soft`,
+/// no title — icon + message only.
 class ConfirmDeleteSimpleSheet extends StatelessWidget {
-  const ConfirmDeleteSimpleSheet({this.budgetCount = 0, super.key});
+  const ConfirmDeleteSimpleSheet({
+    this.budgetCount = 0,
+    this.isSubcategory = false,
+    super.key,
+  });
 
   /// Budgets whose scope references this category (Presupuestos HU-06).
   final int budgetCount;
 
+  /// Whether the category being deleted is a subcategory: changes the
+  /// confirm button's label.
+  final bool isSubcategory;
+
   /// Resolves to `true` when the user confirms.
-  static Future<bool?> show(BuildContext context, {int budgetCount = 0}) =>
-      showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) =>
-            ConfirmDeleteSimpleSheet(budgetCount: budgetCount),
+  static Future<bool?> show(
+    BuildContext context, {
+    int budgetCount = 0,
+    bool isSubcategory = false,
+  }) =>
+      BottomSheetBase.show<bool>(
+        context,
+        useRootNavigator: true,
+        builder: (context) => ConfirmDeleteSimpleSheet(
+          budgetCount: budgetCount,
+          isSubcategory: isSubcategory,
+        ),
       );
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Icon(LucideIcons.trash,
-                  color: colors.primaryOnSoft, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.categoryDeleteSimpleTitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.categoryDeleteSimpleMessage,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            BudgetUsageNotice(count: budgetCount),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(l10n.commonCancel),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    icon: const Icon(LucideIcons.trash),
-                    label: Text(l10n.commonDelete),
-                  ),
-                ),
-              ],
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetMessage(
+          icon: LucideIcons.triangleAlert,
+          iconColor: colors.expense,
+          iconBackground: colors.expenseSoft,
+          message: l10n.categoryDeleteSimpleMessage,
         ),
-      ),
+        BudgetUsageNotice(count: budgetCount),
+        const SizedBox(height: 24),
+        SheetButtonsRow(
+          left: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          right: FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: colors.expense),
+            icon: const Icon(LucideIcons.trash2),
+            label: Text(
+              isSubcategory
+                  ? l10n.categoryDeleteSubcategoryAction
+                  : l10n.commonDelete,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

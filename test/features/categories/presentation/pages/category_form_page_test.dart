@@ -68,7 +68,8 @@ void main() {
         subcategoryResolution: any(named: 'subcategoryResolution'),
       ),
     ).thenAnswer(
-      (_) => Future.delayed(const Duration(milliseconds: 50), () => const Right(unit)),
+      (_) => Future.delayed(
+          const Duration(milliseconds: 50), () => const Right(unit)),
     );
 
     cubit = CategoryFormCubit(
@@ -127,7 +128,12 @@ void main() {
 
       await tester.tap(find.text('Eliminar categoría'));
       await tester.pumpAndSettle();
-      expect(find.text('¿Eliminar esta categoría?'), findsOneWidget);
+      // The plain `alert-triangle` delete pattern (`o9116/qsjbj`) opens with
+      // icon + message only, no title.
+      expect(
+        find.textContaining('Podrás deshacerlo justo después de eliminar'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Eliminar'));
       // Let the delayed `deleteCategory` future and every listener rebuild

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../categories/presentation/utils/category_appearance.dart';
 import '../../../../categories/presentation/widgets/icon_tile.dart';
 
@@ -14,49 +15,42 @@ class BudgetIconSheet extends StatelessWidget {
 
   /// Resolves to the picked icon name, or `null` if dismissed.
   static Future<String?> show(BuildContext context, {String? selected}) =>
-      showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<String>(
+        context,
         builder: (context) => BudgetIconSheet(selected: selected),
       );
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.budgetIconSheetTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
-              child: GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: 5,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                children: [
-                  for (final iconName in CategoryAppearance.iconNames)
-                    IconTile(
-                      iconName: iconName,
-                      selected: iconName == selected,
-                      // No color for budgets: keep the selected treatment neutral.
-                      selectedColorToken: null,
-                      onTap: () => Navigator.of(context).pop(iconName),
-                    ),
-                ],
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          l10n.budgetIconSheetTitle,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-      ),
+        const SizedBox(height: 16),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 360),
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 5,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            children: [
+              for (final iconName in CategoryAppearance.iconNames)
+                IconTile(
+                  iconName: iconName,
+                  selected: iconName == selected,
+                  // No color for budgets: keep the selected treatment neutral.
+                  selectedColorToken: null,
+                  onTap: () => Navigator.of(context).pop(iconName),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
@@ -11,6 +12,7 @@ import 'package:billetudo/features/categories/domain/entities/category_node.dart
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_cubit.dart';
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_state.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
@@ -424,6 +426,55 @@ void main() {
       await tester.pump();
 
       verify(() => cubit.noteFocused()).called(1);
+    });
+  });
+
+  group('errores de validación (bug fixes 8 y 11a)', () {
+    testWidgets(
+        'sin cuenta seleccionada y falla de fieldAccountId, el selector de '
+        'cuenta muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          failure: const ValidationFailure(
+            'an account is required',
+            field: TransactionDraft.fieldAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una cuenta.'), findsOneWidget);
+    });
+
+    testWidgets(
+        'sin categoría seleccionada y falla de fieldCategoryId, el selector '
+        'de categoría muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'a category is required',
+            field: TransactionDraft.fieldCategoryId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una categoría.'), findsOneWidget);
+    });
+
+    testWidgets('sin fallas, ningún mensaje de error se muestra',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      expect(find.text('Elige una cuenta.'), findsNothing);
+      expect(find.text('Elige una categoría.'), findsNothing);
     });
   });
 }

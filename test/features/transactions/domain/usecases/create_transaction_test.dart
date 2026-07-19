@@ -33,14 +33,14 @@ void main() {
       verify(() => repository.createTransaction(captureAny())).captured.single
           as TransactionDraft;
 
-  test('HU-01: persiste un gasto válido y no toca la categoría si no hay una',
-      () async {
+  test('HU-01: persiste un gasto válido con su categoría', () async {
     final result = await createTransaction(buildExpenseDraft());
 
     expect(result.isRight(), isTrue);
     final draft = capturedDraft();
     expect(draft.type, TransactionType.expense);
     expect(draft.source, TransactionSource.manual);
+    expect(draft.categoryId, isNotNull);
   });
 
   test('HU-01: rechaza un gasto sin cuenta antes de llegar al repositorio',
@@ -48,6 +48,18 @@ void main() {
     final result = await createTransaction(buildExpenseDraft(accountId: ''));
 
     expect(result.isLeft(), isTrue);
+    verifyNever(() => repository.createTransaction(any()));
+  });
+
+  test('HU-01: rechaza un gasto sin categoría antes de llegar al repositorio',
+      () async {
+    final result =
+        await createTransaction(buildExpenseDraft(categoryId: null));
+
+    expect(
+      (result.getLeft().toNullable()! as ValidationFailure).field,
+      TransactionDraft.fieldCategoryId,
+    );
     verifyNever(() => repository.createTransaction(any()));
   });
 
@@ -64,9 +76,8 @@ void main() {
   });
 
   test('HU-02: persiste un ingreso válido', () async {
-    final result = await createTransaction(
-      buildIncomeDraft(categoryId: 'cat-2', categoryKind: CategoryKind.income),
-    );
+    final result =
+        await createTransaction(buildIncomeDraft(categoryId: 'cat-2'));
 
     expect(result.isRight(), isTrue);
     expect(capturedDraft().type, TransactionType.income);

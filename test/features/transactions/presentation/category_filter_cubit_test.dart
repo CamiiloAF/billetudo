@@ -87,4 +87,51 @@ void main() {
     },
     verify: (cubit) => expect(cubit.state.selected, {'sub-1'}),
   );
+
+  blocTest<CategoryFilterCubit, CategoryFilterState>(
+    'toggleExpanded abre y cierra una raíz de forma independiente',
+    build: build,
+    act: (cubit) async {
+      await cubit.start(const {});
+      cubit.toggleExpanded('root');
+    },
+    verify: (cubit) {
+      expect(cubit.state.isExpanded('root'), isTrue);
+      expect(cubit.state.isExpanded('other'), isFalse);
+    },
+  );
+
+  blocTest<CategoryFilterCubit, CategoryFilterState>(
+    'toggleExpanded llamado dos veces vuelve a colapsar',
+    build: build,
+    act: (cubit) async {
+      await cubit.start(const {});
+      cubit.toggleExpanded('root');
+      cubit.toggleExpanded('root');
+    },
+    verify: (cubit) => expect(cubit.state.isExpanded('root'), isFalse),
+  );
+
+  blocTest<CategoryFilterCubit, CategoryFilterState>(
+    'selectAll selecciona todo lo cargado en ambos árboles',
+    build: build,
+    act: (cubit) async {
+      await cubit.start(const {});
+      await Future<void>.delayed(Duration.zero);
+      cubit.selectAll();
+    },
+    verify: (cubit) => expect(cubit.state.selected, {'root', 'sub-1', 'sub-2'}),
+  );
+
+  blocTest<CategoryFilterCubit, CategoryFilterState>(
+    'selectNone limpia toda la selección',
+    build: build,
+    act: (cubit) async {
+      await cubit.start(const {});
+      await Future<void>.delayed(Duration.zero);
+      cubit.selectAll();
+      cubit.selectNone();
+    },
+    verify: (cubit) => expect(cubit.state.selected, isEmpty),
+  );
 }

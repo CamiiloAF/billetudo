@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/page_header.dart';
 import '../../../accounts/presentation/widgets/empty_state.dart';
 import '../cubit/archived_budgets_cubit.dart';
 import '../cubit/archived_budgets_state.dart';
@@ -19,19 +20,26 @@ class ArchivedBudgetsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.budgetsHistoryTitle)),
       body: SafeArea(
-        child: BlocBuilder<ArchivedBudgetsCubit, ArchivedBudgetsState>(
-          builder: (context, state) => switch (state.status) {
-            ArchivedBudgetsStatus.loading => const ArchivedBudgetsLoadingView(),
-            ArchivedBudgetsStatus.failure => BudgetsErrorView(
-                onRetry: context.read<ArchivedBudgetsCubit>().start,
+        child: Column(
+          children: [
+            PageHeader(title: l10n.budgetsHistoryTitle),
+            Expanded(
+              child: BlocBuilder<ArchivedBudgetsCubit, ArchivedBudgetsState>(
+                builder: (context, state) => switch (state.status) {
+                  ArchivedBudgetsStatus.loading =>
+                    const ArchivedBudgetsLoadingView(),
+                  ArchivedBudgetsStatus.failure => BudgetsErrorView(
+                      onRetry: context.read<ArchivedBudgetsCubit>().start,
+                    ),
+                  ArchivedBudgetsStatus.ready when state.budgets.isEmpty =>
+                    const ArchivedBudgetsEmptyView(),
+                  ArchivedBudgetsStatus.ready =>
+                    ArchivedBudgetsListView(state: state),
+                },
               ),
-            ArchivedBudgetsStatus.ready when state.budgets.isEmpty =>
-              const ArchivedBudgetsEmptyView(),
-            ArchivedBudgetsStatus.ready =>
-              ArchivedBudgetsListView(state: state),
-          },
+            ),
+          ],
         ),
       ),
     );

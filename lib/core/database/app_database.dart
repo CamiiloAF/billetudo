@@ -56,6 +56,21 @@ enum DebtDirection { iOwe, owedToMe }
 /// goes inactive. See docs/requirements/09-pagos-programados.md.
 enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
 
+/// Lifecycle of a single occurrence of a scheduled payment (as opposed to the
+/// template itself). One row per due date that has been processed by the
+/// catch-up generator (HU-02), used as the idempotency ledger so a due date
+/// is never generated twice and never silently lost if the app closes
+/// mid-run. See `ScheduledPaymentOccurrences` and
+/// docs/requirements/09-pagos-programados.md.
+///  - `pending`: manual-confirmation template (HU-03), due date reached, not
+///    yet applied to the balance.
+///  - `confirmed`: applied — a `Transaction` was generated (auto mode
+///    reaches this directly; manual mode reaches it via user confirmation).
+///  - `skipped`: user discarded it (HU-03), no transaction generated.
+///  - `snoozed`: user moved only this occurrence to [snoozedToDate] (HU-07);
+///    the template's cadence/`nextDate` is untouched.
+enum ScheduledOccurrenceStatus { pending, confirmed, skipped, snoozed }
+
 /// Which figure to highlight on a credit card (HU-04): 'debt' = show the
 /// current debt as the headline; 'available' = the available credit. Affects
 /// presentation only, never the balance calculation.
@@ -68,7 +83,15 @@ enum CardBalanceView { debt, available }
 
 mixin _SyncColumns on Table {
   TextColumn get id => text().clientDefault(() => _uuid.v4())();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// `clientDefault`, not `.withDefault(currentDateAndTime)`: every
+  /// `_SyncColumns` table is physically a PowerSync-managed view (see
+  /// decision #14, docs/requirements/05-auth-sync.md), which has no real SQL
+  /// column defaults — any column a raw or Drift-builder INSERT statement
+  /// doesn't list explicitly comes back NULL, not this default. `clientDefault`
+  /// computes the value in Dart and always includes it in the generated
+  /// INSERT, so it survives being written through the view.
+  DateTimeColumn get createdAt => dateTime().clientDefault(DateTime.now)();
 
   /// Epoch millis (NOT a Drift `DateTimeColumn`), unlike [createdAt].
   ///
@@ -131,13 +154,12 @@ class Accounts extends Table with _SyncColumns {
 
   /// Opening balance in cents. The current balance is derived by summing
   /// transactions.
-  IntColumn get initialBalanceMinor =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get initialBalanceMinor => integer().clientDefault(() => 0)();
 
   TextColumn get icon => text().nullable()();
   TextColumn get color => text().nullable()();
-  BoolColumn get archived => boolean().withDefault(const Constant(false))();
-  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  BoolColumn get archived => boolean().clientDefault(() => false)();
+  IntColumn get sortOrder => integer().clientDefault(() => 0)();
 
   // -- Bank identification and card data (all nullable so existing accounts
   //    are not broken; see docs/requirements/01-cuentas.md). --
@@ -176,7 +198,7 @@ class Categories extends Table with _SyncColumns {
 
   TextColumn get icon => text().nullable()();
   TextColumn get color => text().nullable()();
-  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  IntColumn get sortOrder => integer().clientDefault(() => 0)();
 }
 
 /// Transactions (income, expenses and transfers between accounts).
@@ -194,8 +216,9 @@ class Transactions extends Table with _SyncColumns {
   TextColumn get note => text().nullable()();
 
   /// Capture origin (to measure AI usage). Defaults to manual.
-  TextColumn get source =>
-      textEnum<TxSource>().withDefault(Constant(TxSource.manual.name))();
+  TextColumn get source => textEnum<TxSource>().clientDefault(
+        () => TxSource.manual.name,
+      )();
 
   /// Only for type == transfer: destination account.
   @ReferenceName('transactionsAsTransferAccount')
@@ -229,7 +252,7 @@ class Budgets extends Table with _SyncColumns {
 
   /// true = periodic (repeats each [period] from [startDate]), false = a single
   /// one-off window. Defaults to true (periodic is the common case). HU-03.
-  BoolColumn get recurring => boolean().withDefault(const Constant(true))();
+  BoolColumn get recurring => boolean().clientDefault(() => true)();
 
   /// End of the window. Mandatory when `recurring = false` or `period = custom`;
   /// on periodic budgets, null = "forever", a set value = stop-renewing date.
@@ -243,11 +266,11 @@ class Budgets extends Table with _SyncColumns {
   /// Early-alert threshold as a whole percent (1-100). null = "don't alert me".
   /// HU-08.
   IntColumn get alertThresholdPct =>
-      integer().nullable().withDefault(const Constant(80))();
+      integer().nullable().clientDefault(() => 80)();
 
   /// Whether the leftover/overspend carries into the next period
   /// (zero-based style). Logic deferred (HU-07); the column exists from Phase 0.
-  BoolColumn get rollover => boolean().withDefault(const Constant(false))();
+  BoolColumn get rollover => boolean().clientDefault(() => false)();
 }
 
 /// Savings goals.
@@ -256,7 +279,7 @@ class Goals extends Table with _SyncColumns {
   IntColumn get targetMinor => integer()();
 
   /// Saved so far (optional: can be derived from transactions with goalId).
-  IntColumn get savedMinor => integer().withDefault(const Constant(0))();
+  IntColumn get savedMinor => integer().clientDefault(() => 0)();
   TextColumn get currency => text().withLength(min: 3, max: 3)();
 
   /// Goal tied to a specific account (a pain point we fix vs. Wallet).
@@ -300,15 +323,14 @@ class ScheduledPayments extends Table with _SyncColumns {
 
   /// How many [frequency] units between repeats. E.g. interval=2 + weekly =
   /// every 2 weeks. Ignored when [frequency] is `once`.
-  IntColumn get interval => integer().withDefault(const Constant(1))();
+  IntColumn get interval => integer().clientDefault(() => 1)();
   DateTimeColumn get nextDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
 
   /// When true, reaching [nextDate] generates an editable draft the user must
   /// confirm before it applies to the balance, instead of applying it
   /// automatically (HU-03). Lets variable amounts (utilities) be adjusted.
-  BoolColumn get requiresConfirmation =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get requiresConfirmation => boolean().clientDefault(() => false)();
 }
 
 /// Free-form tags (a complement to categories).
@@ -327,6 +349,62 @@ class TransactionTags extends Table with _SyncColumns {
   @override
   List<Set<Column>> get uniqueKeys => [
         {transactionId, tagId},
+      ];
+}
+
+/// N:N relation between scheduled payment templates and tags. Twin of
+/// `TransactionTags`, same mechanics: its own id (from the mixin) because
+/// PowerSync needs a single-column PK. Never populated when the template's
+/// `type` is `transfer` (enforced in `data/`, mirrors the transaction rule).
+class ScheduledPaymentTags extends Table with _SyncColumns {
+  TextColumn get scheduledPaymentId =>
+      text().references(ScheduledPayments, #id)();
+  TextColumn get tagId => text().references(Tags, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {scheduledPaymentId, tagId},
+      ];
+}
+
+/// One row per due date of a scheduled payment template that has been
+/// processed by the catch-up generator (HU-02) or acted on by the user
+/// (confirm/skip/snooze, HU-03/HU-07). This is the idempotency ledger: the
+/// unique key on (scheduledPaymentId, occurrenceDate) guarantees a due date
+/// is generated at most once, even if the app closes mid-catch-up, and that
+/// no due date is silently skipped.
+///
+/// [occurrenceDate] is the template's original anchor date for this
+/// occurrence and is never mutated — the next occurrence's date is always
+/// computed from the template's own `frequency`/`interval`/`nextDate`, never
+/// from a snoozed date (see docs/requirements/09-pagos-programados.md,
+/// HU-07 "nota de dominio"). Snoozing only records where the user wants
+/// *this* occurrence to land, in [snoozedToDate].
+class ScheduledPaymentOccurrences extends Table with _SyncColumns {
+  TextColumn get scheduledPaymentId =>
+      text().references(ScheduledPayments, #id)();
+
+  /// The due date per the template's original cadence. Combined with
+  /// [scheduledPaymentId] as the idempotency key; see class doc.
+  DateTimeColumn get occurrenceDate => dateTime()();
+
+  TextColumn get status => textEnum<ScheduledOccurrenceStatus>().clientDefault(
+        () => ScheduledOccurrenceStatus.pending.name,
+      )();
+
+  /// Set only when [status] is `snoozed`: the later date the user chose.
+  /// Null for every other status. The effective due date to display is this
+  /// value when present, [occurrenceDate] otherwise.
+  DateTimeColumn get snoozedToDate => dateTime().nullable()();
+
+  /// The transaction generated when this occurrence was confirmed (auto or
+  /// manual mode). Null while `pending`, `skipped` or `snoozed`.
+  TextColumn get generatedTransactionId =>
+      text().nullable().references(Transactions, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {scheduledPaymentId, occurrenceDate},
       ];
 }
 
@@ -361,26 +439,25 @@ class BudgetCategories extends Table with _SyncColumns {
 /// light/dark theme do NOT belong here — they go in a separate local store.
 ///
 /// DEVIATION FROM `_SyncColumns` (documented on purpose): this is a singleton.
-/// The [id] is overridden to a well-known constant (`'app'`) instead of a random
-/// per-row UUID (`clientDefault`). Two offline devices generating random UUIDs
-/// would each create a row and PowerSync would duplicate them on merge; with a
-/// constant id the row is a true singleton and the merge is last-write-wins over
-/// `updatedAt`. The default singleton row is inserted by the migration/onCreate.
+/// The [id] is overridden to a well-known constant (`'app'`) instead of a
+/// random per-row UUID. Two offline devices generating random UUIDs would
+/// each create a row and PowerSync would duplicate them on merge; with a
+/// constant id the row is a true singleton and the merge is last-write-wins
+/// over `updatedAt`. The default singleton row is inserted by the
+/// migration/onCreate (see `_seedAppSettings`).
 class AppSettings extends Table with _SyncColumns {
   @override
-  TextColumn get id => text().withDefault(const Constant('app'))();
+  TextColumn get id => text().clientDefault(() => 'app')();
 
   /// Global zero-based ("Modo sobres") flag (HU-06).
-  BoolColumn get zeroBasedEnabled =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get zeroBasedEnabled => boolean().clientDefault(() => false)();
 
   /// One-shot latch: the onboarding default categories (HU-06) have been seeded
   /// once for this installation. Set to true after the first (and only) seed and
   /// never cleared, so wiping every category does NOT trigger a re-seed on the
   /// next launch. This is the install-lifetime guarantee — `hasAnyCategory` only
   /// reflects the current row count, which is not enough.
-  BoolColumn get categoriesSeeded =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get categoriesSeeded => boolean().clientDefault(() => false)();
 }
 
 // ---------------------------------------------------------------------------
@@ -398,6 +475,8 @@ class AppSettings extends Table with _SyncColumns {
     ScheduledPayments,
     Tags,
     TransactionTags,
+    ScheduledPaymentTags,
+    ScheduledPaymentOccurrences,
     BudgetAccounts,
     BudgetCategories,
     AppSettings,
@@ -407,24 +486,29 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
-  /// `INSERT OR IGNORE`. `updated_at` is stamped in epoch millis (see
-  /// `_SyncColumns.updatedAt`); `created_at` and `zero_based_enabled` use their
-  /// column defaults.
-  Future<void> _seedAppSettings(Migrator m) async {
-    await m.database.customStatement(
-      'INSERT OR IGNORE INTO app_settings (id, updated_at) '
-      "VALUES ('app', CAST(strftime('%s','now') AS INTEGER) * 1000)",
-    );
-  }
+  /// `InsertMode.insertOrIgnore`.
+  ///
+  /// Goes through Drift's typed insert API, NOT a raw `customStatement`, on
+  /// purpose: every `_SyncColumns` table is physically a PowerSync-managed
+  /// view (decision #14, docs/requirements/05-auth-sync.md), which has no SQL
+  /// column defaults of its own — a raw INSERT that only lists a couple of
+  /// columns leaves every other column NULL. The typed API fills every
+  /// `clientDefault` column (id, createdAt, updatedAt, zeroBasedEnabled,
+  /// categoriesSeeded) explicitly, so the row comes out fully populated
+  /// however it gets written.
+  Future<void> _seedAppSettings() => into(appSettings).insert(
+        const AppSettingsCompanion(),
+        mode: InsertMode.insertOrIgnore,
+      );
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
           await m.createAll();
-          await _seedAppSettings(m);
+          await _seedAppSettings();
         },
         onUpgrade: (Migrator m, int from, int to) async {
           // v1 -> v2: bank identification and card data columns on Accounts
@@ -570,7 +654,7 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(budgetAccounts);
             await m.createTable(budgetCategories);
             await m.createTable(appSettings);
-            await _seedAppSettings(m);
+            await _seedAppSettings();
           }
 
           // v7 -> v8: scheduled payments gain a one-time frequency and two
@@ -621,6 +705,20 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(budgetAccounts, budgetAccounts.userId);
             await m.addColumn(budgetCategories, budgetCategories.userId);
             await m.addColumn(appSettings, appSettings.userId);
+          }
+
+          // v10 -> v11: Scheduled Payments feature (docs/requirements/
+          // 09-pagos-programados.md). Two new tables, both additive (no
+          // existing data to migrate):
+          //  - `ScheduledPaymentTags`: N:N bridge between templates and
+          //    `Tags`, twin of `TransactionTags` (HU-01).
+          //  - `ScheduledPaymentOccurrences`: idempotency ledger for the
+          //    catch-up generator plus per-occurrence state (pending
+          //    confirmation, skipped, snoozed) that never mutates the
+          //    template's own cadence (HU-02/HU-03/HU-07).
+          if (from < 11) {
+            await m.createTable(scheduledPaymentTags);
+            await m.createTable(scheduledPaymentOccurrences);
           }
         },
       );

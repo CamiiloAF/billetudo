@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'Eliminar'**
   String get commonDelete;
 
+  /// No description provided for @commonContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get commonContinue;
+
   /// No description provided for @commonEdit.
   ///
   /// In es, this message translates to:
@@ -377,7 +383,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountNumberMasked.
   ///
   /// In es, this message translates to:
-  /// **'•••• {last4}'**
+  /// **'••••••• {last4}'**
   String accountNumberMasked(String last4);
 
   /// No description provided for @accountNumberReveal.
@@ -469,6 +475,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo inicial'**
   String get accountFormInitialBalanceLabel;
+
+  /// Reemplaza a accountFormInitialBalanceLabel cuando el tipo de cuenta es tarjeta de crédito: el monto que se escribe es la deuda actual, no un saldo.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda actual'**
+  String get accountFormCurrentDebtLabel;
 
   /// No description provided for @accountFormCurrencyLabel.
   ///
@@ -677,7 +689,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountCurrencySheetTitle.
   ///
   /// In es, this message translates to:
-  /// **'Moneda'**
+  /// **'Selecciona la moneda'**
   String get accountCurrencySheetTitle;
 
   /// No description provided for @currencyCopName.
@@ -866,6 +878,12 @@ abstract class AppLocalizations {
   /// **'Eliminar categoría'**
   String get categoryDeleteAction;
 
+  /// No description provided for @categoryDeleteSubcategoryAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar subcategoría'**
+  String get categoryDeleteSubcategoryAction;
+
   /// No description provided for @categoryAppearancePickerTitle.
   ///
   /// In es, this message translates to:
@@ -893,7 +911,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryDeleteSimpleMessage.
   ///
   /// In es, this message translates to:
-  /// **'Podrás recuperarla después desde la papelera.'**
+  /// **'Podrás deshacerlo justo después de eliminar.'**
   String get categoryDeleteSimpleMessage;
 
   /// No description provided for @categoryDeleteTransactionsTitle.
@@ -965,7 +983,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryCascadeConfirmMessage.
   ///
   /// In es, this message translates to:
-  /// **'Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.'**
+  /// **'Se eliminarán la categoría y todas sus subcategorías. Podrás deshacerlo justo después de eliminar.'**
   String get categoryCascadeConfirmMessage;
 
   /// No description provided for @transactionsTitle.
@@ -1070,6 +1088,30 @@ abstract class AppLocalizations {
   /// **'Monto: mayor a menor'**
   String get transactionsSortAmountDesc;
 
+  /// Etiqueta del chip de cuenta cuando hay más de una cuenta activa como filtro (HU-06a).
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
+  String transactionsFilterAccountsSelected(int count);
+
+  /// No description provided for @transactionsGroupToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get transactionsGroupToday;
+
+  /// No description provided for @transactionsGroupYesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayer'**
+  String get transactionsGroupYesterday;
+
+  /// Contador del encabezado de cada grupo de fecha de la lista de movimientos (HU-06).
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 movimiento} other{{count} movimientos}}'**
+  String transactionsGroupCount(int count);
+
   /// No description provided for @transactionTypeExpense.
   ///
   /// In es, this message translates to:
@@ -1141,6 +1183,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Categoría'**
   String get transactionFormCategoryLabel;
+
+  /// No description provided for @transactionErrorAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta.'**
+  String get transactionErrorAccount;
+
+  /// No description provided for @transactionErrorCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una categoría.'**
+  String get transactionErrorCategory;
 
   /// No description provided for @categorySelectTitle.
   ///
@@ -1415,26 +1469,26 @@ abstract class AppLocalizations {
   /// No description provided for @transactionDeleteMessage.
   ///
   /// In es, this message translates to:
-  /// **'Podrás recuperarlo después desde la papelera.'**
+  /// **'Podrás deshacerlo justo después de eliminar.'**
   String get transactionDeleteMessage;
 
-  /// No description provided for @transactionDetailTitle.
+  /// No description provided for @transactionDetailTitleExpense.
   ///
   /// In es, this message translates to:
-  /// **'Detalle del movimiento'**
-  String get transactionDetailTitle;
+  /// **'Detalle del gasto'**
+  String get transactionDetailTitleExpense;
 
-  /// No description provided for @transactionDetailEdit.
+  /// No description provided for @transactionDetailTitleIncome.
   ///
   /// In es, this message translates to:
-  /// **'Editar'**
-  String get transactionDetailEdit;
+  /// **'Detalle del ingreso'**
+  String get transactionDetailTitleIncome;
 
-  /// No description provided for @transactionDetailDelete.
+  /// No description provided for @transactionDetailTitleTransfer.
   ///
   /// In es, this message translates to:
-  /// **'Eliminar'**
-  String get transactionDetailDelete;
+  /// **'Detalle de la transferencia'**
+  String get transactionDetailTitleTransfer;
 
   /// No description provided for @transactionDetailSource.
   ///
@@ -1442,35 +1496,71 @@ abstract class AppLocalizations {
   /// **'Registrado como {source}'**
   String transactionDetailSource(String source);
 
-  /// No description provided for @transactionDetailAccountLine.
+  /// No description provided for @transactionDetailAccountLabel.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta: {account}'**
-  String transactionDetailAccountLine(String account);
+  /// **'Cuenta'**
+  String get transactionDetailAccountLabel;
 
-  /// No description provided for @transactionDetailTransferLine.
+  /// No description provided for @transactionDetailAccountFromLabel.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta destino: {account}'**
-  String transactionDetailTransferLine(String account);
+  /// **'Cuenta origen'**
+  String get transactionDetailAccountFromLabel;
 
-  /// No description provided for @transactionDetailCategoryLine.
+  /// No description provided for @transactionDetailAccountToLabel.
   ///
   /// In es, this message translates to:
-  /// **'Categoría: {category}'**
-  String transactionDetailCategoryLine(String category);
+  /// **'Cuenta destino'**
+  String get transactionDetailAccountToLabel;
 
-  /// No description provided for @transactionDetailNoteLine.
+  /// No description provided for @transactionDetailCategoryLabel.
   ///
   /// In es, this message translates to:
-  /// **'Nota: {note}'**
-  String transactionDetailNoteLine(String note);
+  /// **'Categoría'**
+  String get transactionDetailCategoryLabel;
 
-  /// No description provided for @transactionDetailTagsLine.
+  /// No description provided for @transactionDetailDateLabel.
   ///
   /// In es, this message translates to:
-  /// **'Etiquetas: {tags}'**
-  String transactionDetailTagsLine(String tags);
+  /// **'Fecha'**
+  String get transactionDetailDateLabel;
+
+  /// No description provided for @transactionDetailNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get transactionDetailNoteLabel;
+
+  /// No description provided for @transactionDetailNoNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin nota'**
+  String get transactionDetailNoNote;
+
+  /// No description provided for @transactionDetailSourceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Origen'**
+  String get transactionDetailSourceLabel;
+
+  /// No description provided for @transactionDetailTagsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get transactionDetailTagsLabel;
+
+  /// No description provided for @transactionDetailTransferSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get transactionDetailTransferSubtitle;
+
+  /// No description provided for @transactionDetailDeleteLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar movimiento'**
+  String get transactionDetailDeleteLink;
 
   /// No description provided for @accountFilterSheetTitle.
   ///
@@ -1739,7 +1829,7 @@ abstract class AppLocalizations {
   /// No description provided for @moreScheduledPayments.
   ///
   /// In es, this message translates to:
-  /// **'Pagos programados'**
+  /// **'Recurrentes'**
   String get moreScheduledPayments;
 
   /// No description provided for @moreReports.
@@ -2225,7 +2315,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetDeleteConfirmMessage.
   ///
   /// In es, this message translates to:
-  /// **'Podrás recuperarlo desde la papelera.'**
+  /// **'Podrás deshacerlo justo después de eliminar.'**
   String get budgetDeleteConfirmMessage;
 
   /// No description provided for @budgetFormNewTitle.
@@ -2551,6 +2641,554 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Reintentando...'**
   String get firstLaunchOfflineRetrying;
+
+  /// No description provided for @scheduledPaymentsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos programados'**
+  String get scheduledPaymentsTitle;
+
+  /// No description provided for @scheduledPaymentsAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo pago programado'**
+  String get scheduledPaymentsAdd;
+
+  /// No description provided for @scheduledPaymentsLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando tus pagos programados'**
+  String get scheduledPaymentsLoading;
+
+  /// No description provided for @scheduledPaymentsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes pagos programados. Agrega uno para no perder de vista tus pagos recurrentes.'**
+  String get scheduledPaymentsEmptyMessage;
+
+  /// No description provided for @scheduledPaymentsErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus pagos programados'**
+  String get scheduledPaymentsErrorTitle;
+
+  /// No description provided for @scheduledPaymentsErrorLocalFirst.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo.'**
+  String get scheduledPaymentsErrorLocalFirst;
+
+  /// No description provided for @scheduledPaymentsActiveCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Activos · {count}'**
+  String scheduledPaymentsActiveCount(int count);
+
+  /// No description provided for @scheduledPendingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Por confirmar'**
+  String get scheduledPendingTitle;
+
+  /// No description provided for @scheduledPendingEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes pagos por confirmar.'**
+  String get scheduledPendingEmpty;
+
+  /// No description provided for @scheduledReviewAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar todas'**
+  String get scheduledReviewAll;
+
+  /// No description provided for @scheduledPendingBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente de confirmar'**
+  String get scheduledPendingBadge;
+
+  /// No description provided for @scheduledOnceBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago único'**
+  String get scheduledOnceBadge;
+
+  /// No description provided for @scheduledInactiveBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Inactivo'**
+  String get scheduledInactiveBadge;
+
+  /// No description provided for @scheduledConfirmationSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar pago'**
+  String get scheduledConfirmationSheetTitle;
+
+  /// No description provided for @scheduledConfirmationSheetConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get scheduledConfirmationSheetConfirm;
+
+  /// No description provided for @scheduledConfirmationSheetSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir'**
+  String get scheduledConfirmationSheetSkip;
+
+  /// No description provided for @scheduledConfirmationSheetSnooze.
+  ///
+  /// In es, this message translates to:
+  /// **'Posponer'**
+  String get scheduledConfirmationSheetSnooze;
+
+  /// No description provided for @scheduledGuidedReviewPosition.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago {position} de {total}'**
+  String scheduledGuidedReviewPosition(int position, int total);
+
+  /// No description provided for @scheduledUndoSkipMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago omitido'**
+  String get scheduledUndoSkipMessage;
+
+  /// No description provided for @scheduledUndoSnoozeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago pospuesto'**
+  String get scheduledUndoSnoozeMessage;
+
+  /// No description provided for @scheduledSnoozeSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Posponer pago'**
+  String get scheduledSnoozeSheetTitle;
+
+  /// No description provided for @scheduledSnoozeSheetSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Posponer'**
+  String get scheduledSnoozeSheetSave;
+
+  /// No description provided for @scheduledDeleteSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar este pago programado?'**
+  String get scheduledDeleteSheetTitle;
+
+  /// No description provided for @scheduledDeleteSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Se detiene la generación de nuevos pagos, pero los movimientos ya generados conservan su historial.'**
+  String get scheduledDeleteSheetMessage;
+
+  /// No description provided for @scheduledPaymentFormNewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo pago programado'**
+  String get scheduledPaymentFormNewTitle;
+
+  /// No description provided for @scheduledPaymentFormEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar pago programado'**
+  String get scheduledPaymentFormEditTitle;
+
+  /// No description provided for @scheduledPaymentFormNextDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Próxima fecha'**
+  String get scheduledPaymentFormNextDateLabel;
+
+  /// No description provided for @scheduledPaymentFormFrequencyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Frecuencia'**
+  String get scheduledPaymentFormFrequencyLabel;
+
+  /// No description provided for @scheduledPaymentFormCategoryMoreLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra'**
+  String get scheduledPaymentFormCategoryMoreLabel;
+
+  /// No description provided for @scheduledPaymentFormIntervalStepperLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetir cada'**
+  String get scheduledPaymentFormIntervalStepperLabel;
+
+  /// No description provided for @scheduledPaymentFormEndDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de fin'**
+  String get scheduledPaymentFormEndDateLabel;
+
+  /// No description provided for @scheduledPaymentFormEndDateNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha de fin'**
+  String get scheduledPaymentFormEndDateNone;
+
+  /// No description provided for @scheduledPaymentFormModeAutomaticTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get scheduledPaymentFormModeAutomaticTitle;
+
+  /// No description provided for @scheduledPaymentFormModeAutomaticSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Se registra solo'**
+  String get scheduledPaymentFormModeAutomaticSubtitle;
+
+  /// No description provided for @scheduledPaymentFormModeManualTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get scheduledPaymentFormModeManualTitle;
+
+  /// No description provided for @scheduledPaymentFormModeManualSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos antes de afectar tu saldo'**
+  String get scheduledPaymentFormModeManualSubtitle;
+
+  /// No description provided for @scheduledPaymentFormDeleteAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar pago programado'**
+  String get scheduledPaymentFormDeleteAction;
+
+  /// No description provided for @scheduledFrequencyOnce.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo una vez'**
+  String get scheduledFrequencyOnce;
+
+  /// No description provided for @scheduledFrequencyDaily.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada día'**
+  String get scheduledFrequencyDaily;
+
+  /// No description provided for @scheduledFrequencyWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada semana'**
+  String get scheduledFrequencyWeekly;
+
+  /// No description provided for @scheduledFrequencyMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada mes'**
+  String get scheduledFrequencyMonthly;
+
+  /// No description provided for @scheduledFrequencyYearly.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada año'**
+  String get scheduledFrequencyYearly;
+
+  /// No description provided for @scheduledFrequencyChipOnce.
+  ///
+  /// In es, this message translates to:
+  /// **'Único'**
+  String get scheduledFrequencyChipOnce;
+
+  /// No description provided for @scheduledFrequencyChipDaily.
+  ///
+  /// In es, this message translates to:
+  /// **'Día'**
+  String get scheduledFrequencyChipDaily;
+
+  /// No description provided for @scheduledFrequencyChipWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get scheduledFrequencyChipWeekly;
+
+  /// No description provided for @scheduledFrequencyChipMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get scheduledFrequencyChipMonthly;
+
+  /// No description provided for @scheduledFrequencyChipYearly.
+  ///
+  /// In es, this message translates to:
+  /// **'Año'**
+  String get scheduledFrequencyChipYearly;
+
+  /// No description provided for @scheduledPaymentDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago programado'**
+  String get scheduledPaymentDetailTitle;
+
+  /// No description provided for @scheduledPaymentDetailNextPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximo pago: {date}'**
+  String scheduledPaymentDetailNextPayment(String date);
+
+  /// No description provided for @scheduledPaymentDetailHistoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get scheduledPaymentDetailHistoryTitle;
+
+  /// No description provided for @scheduledPaymentDetailHistoryEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no se ha generado ningún movimiento de este pago programado.'**
+  String get scheduledPaymentDetailHistoryEmpty;
+
+  /// No description provided for @scheduledPaymentDetailHistorySeeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver historial completo ({count})'**
+  String scheduledPaymentDetailHistorySeeAll(int count);
+
+  /// No description provided for @scheduledPaymentDetailHeroLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximo pago'**
+  String get scheduledPaymentDetailHeroLabel;
+
+  /// No description provided for @scheduledPaymentDetailRecurrenceOnce.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago único el {date}'**
+  String scheduledPaymentDetailRecurrenceOnce(String date);
+
+  /// No description provided for @scheduledPaymentDetailRecurrenceForever.
+  ///
+  /// In es, this message translates to:
+  /// **'Se repite {unit} desde el {date}, para siempre'**
+  String scheduledPaymentDetailRecurrenceForever(String unit, String date);
+
+  /// No description provided for @scheduledPaymentDetailRecurrenceUntil.
+  ///
+  /// In es, this message translates to:
+  /// **'Se repite {unit} desde el {date}, hasta el {endDate}'**
+  String scheduledPaymentDetailRecurrenceUntil(
+      String unit, String date, String endDate);
+
+  /// No description provided for @scheduledRecurrenceUnitDaily.
+  ///
+  /// In es, this message translates to:
+  /// **'cada día'**
+  String get scheduledRecurrenceUnitDaily;
+
+  /// No description provided for @scheduledRecurrenceUnitDailyInterval.
+  ///
+  /// In es, this message translates to:
+  /// **'cada {interval} días'**
+  String scheduledRecurrenceUnitDailyInterval(int interval);
+
+  /// No description provided for @scheduledRecurrenceUnitWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'cada semana'**
+  String get scheduledRecurrenceUnitWeekly;
+
+  /// No description provided for @scheduledRecurrenceUnitWeeklyInterval.
+  ///
+  /// In es, this message translates to:
+  /// **'cada {interval} semanas'**
+  String scheduledRecurrenceUnitWeeklyInterval(int interval);
+
+  /// No description provided for @scheduledRecurrenceUnitMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'cada mes'**
+  String get scheduledRecurrenceUnitMonthly;
+
+  /// No description provided for @scheduledRecurrenceUnitMonthlyInterval.
+  ///
+  /// In es, this message translates to:
+  /// **'cada {interval} meses'**
+  String scheduledRecurrenceUnitMonthlyInterval(int interval);
+
+  /// No description provided for @scheduledRecurrenceUnitYearly.
+  ///
+  /// In es, this message translates to:
+  /// **'cada año'**
+  String get scheduledRecurrenceUnitYearly;
+
+  /// No description provided for @scheduledRecurrenceUnitYearlyInterval.
+  ///
+  /// In es, this message translates to:
+  /// **'cada {interval} años'**
+  String scheduledRecurrenceUnitYearlyInterval(int interval);
+
+  /// No description provided for @scheduledPaymentDetailModeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo'**
+  String get scheduledPaymentDetailModeLabel;
+
+  /// No description provided for @scheduledPaymentDetailModeAutomatic.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get scheduledPaymentDetailModeAutomatic;
+
+  /// No description provided for @scheduledPaymentDetailModeManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get scheduledPaymentDetailModeManual;
+
+  /// No description provided for @scheduledPaymentDetailAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get scheduledPaymentDetailAccountLabel;
+
+  /// No description provided for @scheduledPaymentDetailStatusLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get scheduledPaymentDetailStatusLabel;
+
+  /// No description provided for @scheduledPaymentDetailStatusActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo'**
+  String get scheduledPaymentDetailStatusActive;
+
+  /// No description provided for @scheduledPaymentDetailTagsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get scheduledPaymentDetailTagsLabel;
+
+  /// No description provided for @scheduledPaymentDetailTagsEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin etiquetas'**
+  String get scheduledPaymentDetailTagsEmpty;
+
+  /// No description provided for @scheduledPaymentBridgeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Es un pago programado?'**
+  String get scheduledPaymentBridgeTitle;
+
+  /// No description provided for @scheduledPaymentBridgeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.'**
+  String get scheduledPaymentBridgeMessage;
+
+  /// No description provided for @scheduledPaymentBridgeAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, programarlo'**
+  String get scheduledPaymentBridgeAccept;
+
+  /// No description provided for @scheduledPaymentBridgeDecline.
+  ///
+  /// In es, this message translates to:
+  /// **'No, guardar como siempre'**
+  String get scheduledPaymentBridgeDecline;
+
+  /// No description provided for @scheduledFinishedCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminados · {count}'**
+  String scheduledFinishedCount(int count);
+
+  /// No description provided for @scheduledFinishedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminados'**
+  String get scheduledFinishedTitle;
+
+  /// No description provided for @scheduledFinishedEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tienes pagos programados terminados.'**
+  String get scheduledFinishedEmpty;
+
+  /// No description provided for @scheduledPendingCardOverflow.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver los otros {count} pendientes'**
+  String scheduledPendingCardOverflow(int count);
+
+  /// No description provided for @scheduledPendingCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Por confirmar {count}'**
+  String scheduledPendingCardTitle(int count);
+
+  /// No description provided for @scheduledPendingCardCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no afectan tu saldo'**
+  String get scheduledPendingCardCaption;
+
+  /// No description provided for @scheduledDueToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence hoy'**
+  String get scheduledDueToday;
+
+  /// No description provided for @scheduledDueInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'en {count} días'**
+  String scheduledDueInDays(int count);
+
+  /// No description provided for @scheduledDueInOneDay.
+  ///
+  /// In es, this message translates to:
+  /// **'en 1 día'**
+  String get scheduledDueInOneDay;
+
+  /// No description provided for @scheduledConfirmationSheetScopeNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que edites aquí aplica solo a este pago, no cambia la plantilla.'**
+  String get scheduledConfirmationSheetScopeNote;
+
+  /// No description provided for @scheduledConfirmationSheetAccumulated.
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes {count} pagos de {template} sin confirmar. Ahora confirmas el más antiguo, del {date}.'**
+  String scheduledConfirmationSheetAccumulated(
+      int count, String template, String date);
+
+  /// No description provided for @scheduledConfirmationSheetEditTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar plantilla'**
+  String get scheduledConfirmationSheetEditTooltip;
+
+  /// No description provided for @scheduledGuidedReviewExit.
+  ///
+  /// In es, this message translates to:
+  /// **'Salir'**
+  String get scheduledGuidedReviewExit;
+
+  /// No description provided for @scheduledGuidedReviewConfirmNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar y siguiente'**
+  String get scheduledGuidedReviewConfirmNext;
+
+  /// No description provided for @scheduledSnoozeContextLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{template} · vencía el {date} · muévelo hacia adelante'**
+  String scheduledSnoozeContextLine(String template, String date);
 }
 
 class _AppLocalizationsDelegate

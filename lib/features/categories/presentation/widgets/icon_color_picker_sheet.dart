@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../utils/category_appearance.dart';
 import 'icon_tile.dart';
 
@@ -29,9 +30,8 @@ class IconColorPickerSheet extends StatefulWidget {
     String? initialIcon,
     String? initialColor,
   }) =>
-      showModalBottomSheet<CategoryAppearancePick>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<CategoryAppearancePick>(
+        context,
         builder: (context) => IconColorPickerSheet(
           initialIcon: initialIcon,
           initialColor: initialColor,
@@ -52,75 +52,69 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.categoryAppearancePickerTitle,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.categoryAppearancePickerTitle,
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 320,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 320,
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                ),
-                itemCount: CategoryAppearance.iconNames.length,
-                itemBuilder: (context, index) {
-                  final name = CategoryAppearance.iconNames[index];
-                  return IconTile(
-                    iconName: name,
-                    selected: name == _icon,
-                    selectedColorToken: _color,
-                    onTap: () => setState(() => _icon = name),
-                  );
-                },
+            itemCount: CategoryAppearance.iconNames.length,
+            itemBuilder: (context, index) {
+              final name = CategoryAppearance.iconNames[index];
+              return IconTile(
+                iconName: name,
+                selected: name == _icon,
+                selectedColorToken: _color,
+                onTap: () => setState(() => _icon = name),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 58,
+          runSpacing: 16,
+          children: [
+            for (final token in CategoryAppearance.colorTokens)
+              CategoryColorSwatch(
+                token: token,
+                selected: token == _color,
+                onTap: () => setState(() => _color = token),
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.commonCancel),
               ),
             ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 58,
-              runSpacing: 16,
-              children: [
-                for (final token in CategoryAppearance.colorTokens)
-                  CategoryColorSwatch(
-                    token: token,
-                    selected: token == _color,
-                    onTap: () => setState(() => _color = token),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.commonCancel),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () =>
-                        Navigator.of(context).pop((icon: _icon, color: _color)),
-                    child: Text(l10n.commonSave),
-                  ),
-                ),
-              ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: () =>
+                    Navigator.of(context).pop((icon: _icon, color: _color)),
+                child: Text(l10n.commonSave),
+              ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

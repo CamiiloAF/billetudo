@@ -5,7 +5,7 @@ import 'package:billetudo/features/categories/presentation/widgets/sheets/confir
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 void main() {
   setUpAll(() async {

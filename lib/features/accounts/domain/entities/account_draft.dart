@@ -142,6 +142,9 @@ class AccountDraft extends Equatable {
         name: name,
         type: type,
         currency: currency,
+        // A card's balance is negated on its way into this draft already
+        // (see `AccountFormCubit._buildDraft`): `AccountBalance.fromBalance`
+        // treats it as debt, i.e. negative, so nothing left to flip here.
         initialBalanceMinor: initialBalanceMinor,
         institution: institution,
         numberEdit: _normalizedNumberEdit(),

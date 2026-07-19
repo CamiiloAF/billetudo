@@ -62,7 +62,19 @@ Verifica con `plutil -lint ios/Runner.xcodeproj/project.pbxproj` tras editar. Si
 - Data (Drift en memoria): `test/features/<feature>/data/<repo|datasource>_test.dart`
 - Cubit: `test/features/<feature>/presentation/<cubit>_test.dart`
 - Widget: `test/features/<feature>/presentation/pages/<page>_test.dart`
+- Golden: `test/features/<feature>/presentation/golden/<page_o_sheet>_golden_test.dart`, imágenes en `goldens/` junto al test (ver sección propia abajo)
 - E2E: `integration_test/<feature>_patrol_test.dart` (extiende el archivo si ya existe)
+
+## Golden tests: dueño de que existan y cubran TODA la feature
+
+Los golden tests (`matchesGoldenFile`, `flutter_test` puro, sin paquetes externos) son la forma en que este proyecto detecta regresiones visuales sin depender de un emulador — un emulador en vivo es frágil (ver incidente documentado en `docs/dev-runs/bug-fixes-pixel-audit.md`: `adb input tap` dejó de responder de forma persistente en toda una sesión). Un golden **no valida por sí solo que el render sea fiel a Pencil** — eso lo hace el agente `pencil-fidelity-reviewer` comparando cada golden contra su nodeId — pero es el prerequisito: sin golden no hay nada que comparar.
+
+Cuando te pidan escribir/completar goldens de una feature (directo, o vía el skill `/design-fidelity-check`):
+
+- **Cobertura completa, no una muestra**: un golden por cada archivo bajo `presentation/pages/` y cada uno bajo `presentation/widgets/sheets/` de esa feature — incluidos los sheets, que hoy son el hueco más común (ver `accounts`, que solo tiene goldens de sus pages). Dentro de cada archivo, un caso por cada estado de negocio distinguible (vacío, con datos, error, variantes de tipo como cuenta normal vs. tarjeta, campo opcional presente/ausente) — el criterio ya usado en `account_detail_page_golden_test.dart`/`category_form_page_golden_test.dart`, que son la referencia a imitar. Cada caso se genera en claro y oscuro (`for (final brightness in Brightness.values)`).
+- **Usa el helper compartido, no dupliques uno nuevo**: `test/support/golden_helpers.dart` (`goldenPhoneSize`, `tallGoldenPhoneSize({height})` para paginas con scroll largo que deben capturarse completas, `setGoldenViewport`, `wrapForGolden`, `pumpGolden`, `disableGoogleFontsRuntimeFetching`, `loadMaterialIconsFont`). Import relativo desde `test/features/<feature>/presentation/golden/<archivo>.dart` es `'../../../../support/golden_helpers.dart'`. Nunca copies este archivo dentro de la carpeta de la feature — si algo del helper no sirve para tu caso, amplíalo (parámetro opcional) en el compartido en vez de bifurcar.
+- Mockea el cubit/bloc igual que en el resto de tus widget tests (`mocktail`/`bloc_test`), nunca datos reales de Drift — un golden es puro render, no integración.
+- Corre `flutter test --update-goldens <paths>` para generar/actualizar los `.png`. Un golden que falla porque el diseño cambió a propósito (confirmado contra Pencil) se regenera sin dudar; uno que falla sin que nadie haya tocado el widget es una regresión real — repórtala, no la "arregles" regenerando a ciegas.
 
 ## Que verificar SIEMPRE en los tests que escribas
 - Montos en centavos: asserts sobre enteros `amountMinor`, jamas doubles.

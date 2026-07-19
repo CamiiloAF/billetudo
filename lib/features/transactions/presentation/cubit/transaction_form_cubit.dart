@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
@@ -29,6 +30,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     this._watchTransactionDetail,
     this._getTransactionEditImpact,
     this._setTransactionTags,
+    this._watchAccounts,
   ) : super(TransactionFormState());
 
   final CreateTransaction _createTransaction;
@@ -36,6 +38,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   final WatchTransactionDetail _watchTransactionDetail;
   final GetTransactionEditImpact _getTransactionEditImpact;
   final SetTransactionTags _setTransactionTags;
+  final WatchAccounts _watchAccounts;
 
   /// Kept for HU-04's edit-impact check; not part of the (Equatable) state,
   /// since it is never rendered — only diffed against the pending draft.
@@ -50,11 +53,28 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   }) async {
     if (id == null) {
       _original = null;
+      var initialAccountId = accountId;
+      String? initialAccountName;
+      if (initialAccountId == null) {
+        // No caller-supplied account (e.g. the puente from a scheduled
+        // payment): preselect the first account by `sortOrder`, the same
+        // order the account picker sheet shows, so the form never opens with
+        // no account chosen.
+        final result = await _watchAccounts().first;
+        if (isClosed) {
+          return;
+        }
+        if (result case Right(value: final accounts) when accounts.isNotEmpty) {
+          initialAccountId = accounts.first.account.id;
+          initialAccountName = accounts.first.account.name;
+        }
+      }
       emit(
         TransactionFormState(
           status: TransactionFormStatus.ready,
           type: type,
-          accountId: accountId,
+          accountId: initialAccountId,
+          accountName: initialAccountName,
           // Open with the amount focused so the Zona Fija starts expanded with
           // the keypad visible — the design's default "Monto activo" state.
           focusedField: TransactionFormFocusedField.amount,
@@ -93,6 +113,17 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       transferAccountId: transaction.transferAccountId,
       transferAccountName: entry.transferAccountName,
       categoryId: transaction.categoryId,
+      // `Transaction` never stores the category's `kind` (it is Categories'
+      // data, not Transactions'); re-derive it from the transaction's own
+      // type instead of leaving it null, or `validated()` would reject the
+      // save on every edit of an already-categorized expense/income (the
+      // category always matched the type when it was first picked — see
+      // `TransactionDraft` class doc).
+      categoryKind: transaction.categoryId == null
+          ? null
+          : (transaction.type == TransactionType.expense
+              ? CategoryKind.expense
+              : CategoryKind.income),
       categoryName: entry.categoryName,
       amountMinor: transaction.amountMinor,
       currency: transaction.currency,

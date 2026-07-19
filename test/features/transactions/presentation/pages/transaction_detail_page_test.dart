@@ -41,13 +41,12 @@ void main() {
           TransactionWithDetails(
             transaction: buildTransaction(source: entry.key),
             accountName: 'Efectivo',
+            categoryName: 'Comida',
           ),
         );
 
-        expect(
-          find.text('Registrado como ${entry.value}'),
-          findsOneWidget,
-        );
+        expect(find.text('Origen'), findsOneWidget);
+        expect(find.text(entry.value), findsOneWidget);
       });
     }
   });
@@ -64,9 +63,61 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('Efectivo'), findsWidgets);
-    expect(find.textContaining('Comida'), findsWidgets);
-    expect(find.textContaining('Almuerzo con el equipo'), findsWidgets);
-    expect(find.textContaining('viaje'), findsWidgets);
+    expect(find.text('Cuenta'), findsOneWidget);
+    expect(find.text('Efectivo'), findsOneWidget);
+    expect(find.text('Categoría'), findsOneWidget);
+    expect(find.text('Comida'), findsWidgets);
+    expect(find.text('Nota'), findsOneWidget);
+    expect(find.text('Almuerzo con el equipo'), findsOneWidget);
+    expect(find.text('Etiquetas'), findsOneWidget);
+    expect(find.text('viaje'), findsOneWidget);
+  });
+
+  testWidgets('sin nota muestra el placeholder "Sin nota"', (tester) async {
+    await pumpBody(
+      tester,
+      TransactionWithDetails(
+        transaction: buildTransaction(),
+        accountName: 'Efectivo',
+        categoryName: 'Comida',
+      ),
+    );
+
+    expect(find.text('Sin nota'), findsOneWidget);
+  });
+
+  testWidgets('sin etiquetas oculta la sección completa', (tester) async {
+    await pumpBody(
+      tester,
+      TransactionWithDetails(
+        transaction: buildTransaction(),
+        accountName: 'Efectivo',
+        categoryName: 'Comida',
+      ),
+    );
+
+    expect(find.text('Etiquetas'), findsNothing);
+  });
+
+  testWidgets('transferencia muestra cuenta origen/destino y no categoría',
+      (tester) async {
+    await pumpBody(
+      tester,
+      TransactionWithDetails(
+        transaction: buildTransaction(
+          type: TransactionType.transfer,
+          transferAccountId: 'acc-2',
+        ),
+        accountName: 'Efectivo',
+        transferAccountName: 'Nequi',
+      ),
+    );
+
+    expect(find.text('Cuenta origen'), findsOneWidget);
+    expect(find.text('Efectivo'), findsOneWidget);
+    expect(find.text('Cuenta destino'), findsOneWidget);
+    expect(find.text('Nequi'), findsOneWidget);
+    expect(find.text('Categoría'), findsNothing);
+    expect(find.text('Transferencia'), findsOneWidget);
   });
 }

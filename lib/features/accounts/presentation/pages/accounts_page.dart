@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_with_balance.dart';
 import '../cubit/accounts_list_cubit.dart';
 import '../cubit/accounts_list_state.dart';
@@ -34,37 +37,52 @@ class AccountsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.accountsTitle),
-        actions: [
-          IconButton(
-            onPressed: onOpenArchived,
-            tooltip: l10n.accountsArchivedTitle,
-            icon: const Icon(LucideIcons.archive),
-          ),
-          IconButton(
-            onPressed: onAddAccount,
-            tooltip: l10n.accountsAdd,
-            icon: const Icon(LucideIcons.plus),
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: BlocBuilder<AccountsListCubit, AccountsListState>(
-          builder: (context, state) => switch (state.status) {
-            AccountsListStatus.loading => const AccountsLoadingView(),
-            AccountsListStatus.failure => AccountsErrorView(
-                onRetry: context.read<AccountsListCubit>().start,
+        child: Column(
+          children: [
+            PageHeader(
+              title: l10n.accountsTitle,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.archive,
+                    background: colors.muted,
+                    foreground: colors.textPrimary,
+                    tooltip: l10n.accountsArchivedTitle,
+                    onPressed: onOpenArchived,
+                  ),
+                  const SizedBox(width: 8),
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.plus,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.accountsAdd,
+                    onPressed: onAddAccount,
+                  ),
+                ],
               ),
-            AccountsListStatus.ready when state.accounts.isEmpty =>
-              AccountsEmptyView(onAddAccount: onAddAccount),
-            AccountsListStatus.ready => AccountsListView(
-                state: state,
-                onOpenAccount: onOpenAccount,
+            ),
+            Expanded(
+              child: BlocBuilder<AccountsListCubit, AccountsListState>(
+                builder: (context, state) => switch (state.status) {
+                  AccountsListStatus.loading => const AccountsLoadingView(),
+                  AccountsListStatus.failure => AccountsErrorView(
+                      onRetry: context.read<AccountsListCubit>().start,
+                    ),
+                  AccountsListStatus.ready when state.accounts.isEmpty =>
+                    AccountsEmptyView(onAddAccount: onAddAccount),
+                  AccountsListStatus.ready => AccountsListView(
+                      state: state,
+                      onOpenAccount: onOpenAccount,
+                    ),
+                },
               ),
-          },
+            ),
+          ],
         ),
       ),
     );

@@ -43,14 +43,16 @@ void main() {
       expect(overview.singleCurrencySubtotal?.netWorthMinor, 750000);
     });
 
-    test('la deuda de la tarjeta resta del patrimonio y se reporta aparte', () {
+    test(
+        'la tarjeta queda fuera del patrimonio por completo; su deuda se '
+        'reporta aparte', () {
       final overview = AccountsOverview.from([
         accountIn('COP', id: 'a', balanceMinor: 500000),
         cardIn('COP', id: 'c', balanceMinor: -200000),
       ]);
 
       final subtotal = overview.subtotals.single;
-      expect(subtotal.netWorthMinor, 300000); // 500000 - 200000
+      expect(subtotal.netWorthMinor, 500000); // la tarjeta no participa
       expect(subtotal.debtMinor, 200000); // positiva, para la sub-línea
       expect(subtotal.hasDebt, isTrue);
     });
@@ -71,6 +73,18 @@ void main() {
       ]);
 
       expect(overview.subtotals.single.debtMinor, 0);
+    });
+
+    test(
+        'una moneda con solo tarjetas sigue mostrando su subtotal, con '
+        'patrimonio en 0', () {
+      final overview = AccountsOverview.from([
+        cardIn('COP', id: 'c', balanceMinor: -150000),
+      ]);
+
+      final subtotal = overview.subtotals.single;
+      expect(subtotal.netWorthMinor, 0);
+      expect(subtotal.debtMinor, 150000);
     });
   });
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/gen/app_localizations.dart';
 import '../theme/app_colors.dart';
+import 'bottom_sheet_base.dart';
 
 /// A generic "Próximamente" bottom sheet: icon orb + "Próximamente" title +
 /// message + optional "no es asesoría financiera" disclaimer + "Entendido".
@@ -32,9 +33,8 @@ class ComingSoonSheet extends StatelessWidget {
     required String message,
     String? disclaimer,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<void>(
+        context,
         builder: (context) => ComingSoonSheet(
           icon: icon,
           message: message,
@@ -49,56 +49,50 @@ class ComingSoonSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final disclaimer = this.disclaimer;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: colors.primaryOnSoft, size: 30),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.comingSoonTitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            if (disclaimer != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                disclaimer,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: colors.textSecondary),
-              ),
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.comingSoonUnderstood),
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: colors.primarySoft,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: colors.primaryOnSoft, size: 30),
         ),
-      ),
+        const SizedBox(height: 16),
+        Text(
+          l10n.comingSoonTitle,
+          textAlign: TextAlign.center,
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style:
+              theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+        ),
+        if (disclaimer != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            disclaimer,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: colors.textSecondary),
+          ),
+        ],
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.comingSoonUnderstood),
+          ),
+        ),
+      ],
     );
   }
 }

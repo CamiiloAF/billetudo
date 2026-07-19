@@ -5,17 +5,22 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/budget_usage_notice.dart';
+import '../../../../../core/widgets/sheet_buttons_row.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/usecases/delete_category.dart';
 import '../parent_category_picker_sheet.dart';
+import 'delete_resolution_radio_card.dart';
 
 /// HU-04 case 2: the category has associated transactions (`snXFk`).
 ///
-/// Same neutral `trash-2` treatment as the simple sheet, plus the movement
-/// count and 2 radio options: reassign them to another category of the same
-/// [kind] (opens [ParentCategoryPickerSheet], unfiltered per the pending
-/// note in `categorias.md`), or leave them without one.
+/// Header keeps the neutral `trash-2` on `$primary-soft` — this step never
+/// escalates to red, it only chooses what happens to the existing movements
+/// before the actual delete runs. Reassigning to another category of the
+/// same [kind] (opens [ParentCategoryPickerSheet], unfiltered per the
+/// pending note in `categorias.md`) is the default option; the confirm
+/// button reads "Continuar" since this step doesn't delete by itself.
 class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
   const ConfirmDeleteWithTransactionsSheet({
     required this.transactionCount,
@@ -42,9 +47,9 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
     required String excludingId,
     int budgetCount = 0,
   }) =>
-      showModalBottomSheet<TransactionResolution>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<TransactionResolution>(
+        context,
+        useRootNavigator: true,
         builder: (context) => ConfirmDeleteWithTransactionsSheet(
           transactionCount: transactionCount,
           kind: kind,
@@ -62,96 +67,61 @@ enum _Choice { reassign, clear }
 
 class _ConfirmDeleteWithTransactionsSheetState
     extends State<ConfirmDeleteWithTransactionsSheet> {
-  _Choice _choice = _Choice.clear;
+  _Choice _choice = _Choice.reassign;
   String? _targetCategoryId;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Icon(LucideIcons.trash,
-                  color: colors.primaryOnSoft, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.categoryDeleteTransactionsTitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.categoryDeleteTransactionsCount(widget.transactionCount),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            BudgetUsageNotice(count: widget.budgetCount),
-            const SizedBox(height: 16),
-            RadioGroup<_Choice>(
-              groupValue: _choice,
-              onChanged: (value) => unawaited(_onChoiceChanged(context, value)),
-              child: Column(
-                children: [
-                  RadioListTile<_Choice>(
-                    contentPadding: EdgeInsets.zero,
-                    value: _Choice.reassign,
-                    title: Text(l10n.categoryDeleteReassignOption),
-                  ),
-                  RadioListTile<_Choice>(
-                    contentPadding: EdgeInsets.zero,
-                    value: _Choice.clear,
-                    title: Text(l10n.categoryDeleteClearOption),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.commonCancel),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed:
-                        _choice == _Choice.reassign && _targetCategoryId == null
-                            ? null
-                            : () => Navigator.of(context).pop(
-                                  _choice == _Choice.reassign
-                                      ? TransactionResolution.reassign(
-                                          _targetCategoryId!,
-                                        )
-                                      : const TransactionResolution.clear(),
-                                ),
-                    child: Text(l10n.commonDelete),
-                  ),
-                ),
-              ],
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetMessage(
+          icon: LucideIcons.trash2,
+          iconColor: colors.primaryOnSoft,
+          iconBackground: colors.primarySoft,
+          title: l10n.categoryDeleteTransactionsTitle,
+          message: l10n.categoryDeleteTransactionsCount(
+            widget.transactionCount,
+          ),
         ),
-      ),
+        BudgetUsageNotice(count: widget.budgetCount),
+        const SizedBox(height: 16),
+        DeleteResolutionRadioCard(
+          selected: _choice == _Choice.reassign,
+          label: l10n.categoryDeleteReassignOption,
+          onTap: () => unawaited(_onChoiceChanged(context, _Choice.reassign)),
+        ),
+        const SizedBox(height: 12),
+        DeleteResolutionRadioCard(
+          selected: _choice == _Choice.clear,
+          label: l10n.categoryDeleteClearOption,
+          onTap: () => unawaited(_onChoiceChanged(context, _Choice.clear)),
+        ),
+        const SizedBox(height: 20),
+        SheetButtonsRow(
+          left: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+          right: FilledButton.icon(
+            onPressed:
+                _choice == _Choice.reassign && _targetCategoryId == null
+                    ? null
+                    : () => Navigator.of(context).pop(
+                          _choice == _Choice.reassign
+                              ? TransactionResolution.reassign(
+                                  _targetCategoryId!,
+                                )
+                              : const TransactionResolution.clear(),
+                        ),
+            icon: const Icon(LucideIcons.arrowRight),
+            label: Text(l10n.commonContinue),
+          ),
+        ),
+      ],
     );
   }
 
@@ -159,10 +129,7 @@ class _ConfirmDeleteWithTransactionsSheetState
   /// target picker first — the selection only "sticks" once the user
   /// actually picked a category, so tapping it and backing out of the
   /// picker leaves the previous choice in place.
-  Future<void> _onChoiceChanged(BuildContext context, _Choice? value) async {
-    if (value == null) {
-      return;
-    }
+  Future<void> _onChoiceChanged(BuildContext context, _Choice value) async {
     if (value == _Choice.clear) {
       setState(() => _choice = _Choice.clear);
       return;

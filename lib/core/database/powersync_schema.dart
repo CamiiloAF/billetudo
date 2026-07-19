@@ -1,6 +1,6 @@
 // PowerSync's client-side schema (decision #6, docs/requirements/05-auth-sync.md).
 //
-// This mirrors the 12 tables in `app_database.dart` that carry `_SyncColumns`
+// This mirrors the 14 tables in `app_database.dart` that carry `_SyncColumns`
 // — same table and column names (snake_case), matching the Postgres schema
 // created for HU-04/HU-05 sync. There is no codegen deriving one schema from
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
@@ -134,6 +134,19 @@ const powerSyncSchema = Schema([
   Table('transaction_tags', [
     Column.text('transaction_id'),
     Column.text('tag_id'),
+    ..._syncColumns,
+  ]),
+  Table('scheduled_payment_tags', [
+    Column.text('scheduled_payment_id'),
+    Column.text('tag_id'),
+    ..._syncColumns,
+  ]),
+  Table('scheduled_payment_occurrences', [
+    Column.text('scheduled_payment_id'),
+    Column.integer('occurrence_date'),
+    Column.text('status'),
+    Column.integer('snoozed_to_date'),
+    Column.text('generated_transaction_id'),
     ..._syncColumns,
   ]),
   Table('budget_accounts', [

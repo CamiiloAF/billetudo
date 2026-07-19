@@ -7,6 +7,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_draft.dart';
 import '../cubit/account_form_cubit.dart';
 import '../cubit/account_form_state.dart';
@@ -42,32 +44,33 @@ class AccountFormPage extends StatelessWidget {
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
+        final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: Navigator.of(context).pop,
-              tooltip: l10n.commonCancel,
-              icon: const Icon(LucideIcons.x),
-            ),
-            title: Text(
-              state.isEditing
-                  ? l10n.accountFormEditTitle
-                  : l10n.accountFormNewTitle,
-            ),
-            actions: [
-              IconButton(
-                onPressed: state.status == AccountFormStatus.saving
-                    ? null
-                    : context.read<AccountFormCubit>().submit,
-                tooltip: l10n.commonSave,
-                icon: const Icon(LucideIcons.check),
-              ),
-            ],
-          ),
           body: SafeArea(
-            child: state.status == AccountFormStatus.loading
-                ? const Center(child: CircularProgressIndicator())
-                : AccountFormBody(state: state),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: state.isEditing
+                      ? l10n.accountFormEditTitle
+                      : l10n.accountFormNewTitle,
+                  onBack: Navigator.of(context).pop,
+                  trailing: PageHeaderCircleButton(
+                    icon: LucideIcons.check,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.commonSave,
+                    onPressed: state.status == AccountFormStatus.saving
+                        ? null
+                        : context.read<AccountFormCubit>().submit,
+                  ),
+                ),
+                Expanded(
+                  child: state.status == AccountFormStatus.loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : AccountFormBody(state: state),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -145,7 +148,9 @@ class AccountFormBody extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         AccountFormField.text(
-          label: l10n.accountFormInitialBalanceLabel,
+          label: state.isCard
+              ? l10n.accountFormCurrentDebtLabel
+              : l10n.accountFormInitialBalanceLabel,
           icon: LucideIcons.banknote,
           hint: l10n.accountFormAmountHint,
           initialValue: state.initialBalanceText,
@@ -186,18 +191,21 @@ class AccountFormBody extends StatelessWidget {
             onChanged: cubit.last4Changed,
           ),
         ],
-        const SizedBox(height: 16),
-        AccountFormField.text(
-          label: l10n.accountFormInterestRateLabel,
-          hint: l10n.accountFormInterestRateHint,
-          initialValue: state.interestRateText,
-          errorText: _errorFor(l10n, state, AccountDraft.fieldInterestRateBps),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-          ],
-          onChanged: cubit.interestRateChanged,
-        ),
+        if (state.showInterestRateField) ...[
+          const SizedBox(height: 16),
+          AccountFormField.text(
+            label: l10n.accountFormInterestRateLabel,
+            hint: l10n.accountFormInterestRateHint,
+            initialValue: state.interestRateText,
+            errorText:
+                _errorFor(l10n, state, AccountDraft.fieldInterestRateBps),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+            ],
+            onChanged: cubit.interestRateChanged,
+          ),
+        ],
         if (state.isCard) ...[
           const SizedBox(height: 24),
           CardDetailsSection(

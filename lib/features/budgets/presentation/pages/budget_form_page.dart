@@ -7,6 +7,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/segmented_control.dart';
 import '../../../accounts/presentation/widgets/account_form_field.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../../transactions/presentation/widgets/sheets/account_filter_sheet.dart';
@@ -36,22 +39,21 @@ class BudgetFormPage extends StatelessWidget {
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: Navigator.of(context).pop,
-              tooltip: l10n.commonCancel,
-              icon: const Icon(LucideIcons.x),
-            ),
-            title: Text(
-              state.isEditing
-                  ? l10n.budgetFormEditTitle
-                  : l10n.budgetFormNewTitle,
-            ),
-          ),
           body: SafeArea(
-            child: state.status == BudgetFormStatus.loading
-                ? const Center(child: CircularProgressIndicator())
-                : const BudgetFormBody(),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: state.isEditing
+                      ? l10n.budgetFormEditTitle
+                      : l10n.budgetFormNewTitle,
+                ),
+                Expanded(
+                  child: state.status == BudgetFormStatus.loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const BudgetFormBody(),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -131,20 +133,20 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         // -- Repeat (before Frequency) --
         BudgetFieldLabel(text: l10n.budgetFormRepeatLabel),
         const SizedBox(height: 8),
-        SegmentedButton<bool>(
+        SegmentedControl<bool>(
           segments: [
-            ButtonSegment(
+            SegmentedControlOption(
               value: true,
-              label: Text(l10n.budgetFormRepeatPeriodic),
+              label: l10n.budgetFormRepeatPeriodic,
             ),
-            ButtonSegment(
+            SegmentedControlOption(
               value: false,
-              label: Text(l10n.budgetFormRepeatOneOff),
+              label: l10n.budgetFormRepeatOneOff,
             ),
           ],
-          selected: {state.recurring},
-          onSelectionChanged: (selection) =>
-              cubit.recurringChanged(recurring: selection.first),
+          selected: state.recurring,
+          onChanged: (recurring) =>
+              cubit.recurringChanged(recurring: recurring),
         ),
         const SizedBox(height: 18),
 
@@ -152,8 +154,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         if (state.recurring) ...[
           BudgetFieldLabel(text: l10n.budgetFormPeriodLabel),
           const SizedBox(height: 8),
-          SegmentedButton<BudgetPeriod>(
-            showSelectedIcon: false,
+          SegmentedControl<BudgetPeriod>(
             segments: [
               for (final period in const [
                 BudgetPeriod.weekly,
@@ -161,14 +162,13 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                 BudgetPeriod.monthly,
                 BudgetPeriod.yearly,
               ])
-                ButtonSegment(
+                SegmentedControlOption(
                   value: period,
-                  label: Text(BudgetFormat.periodLabel(l10n, period)),
+                  label: BudgetFormat.periodLabel(l10n, period),
                 ),
             ],
-            selected: {state.period},
-            onSelectionChanged: (selection) =>
-                cubit.periodSelected(selection.first),
+            selected: state.period,
+            onChanged: cubit.periodSelected,
           ),
           const SizedBox(height: 18),
         ],
@@ -210,17 +210,19 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         // -- Scope --
         BudgetFieldLabel(text: l10n.budgetFormScopeLabel),
         const SizedBox(height: 8),
-        SegmentedButton<bool>(
+        SegmentedControl<bool>(
           segments: [
-            ButtonSegment(value: false, label: Text(l10n.budgetFormScopeAll)),
-            ButtonSegment(
+            SegmentedControlOption(
+              value: false,
+              label: l10n.budgetFormScopeAll,
+            ),
+            SegmentedControlOption(
               value: true,
-              label: Text(l10n.budgetFormScopeCustom),
+              label: l10n.budgetFormScopeCustom,
             ),
           ],
-          selected: {scopeCustom},
-          onSelectionChanged: (selection) {
-            final custom = selection.first;
+          selected: scopeCustom,
+          onChanged: (custom) {
             setState(() => _scopeCustom = custom);
             if (!custom) {
               cubit
@@ -302,11 +304,9 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
     BudgetFormCubit cubit,
     BudgetFormState state,
   ) async {
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await DatePickerSheet.show(
+      context,
       initialDate: state.startDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
     );
     if (picked != null) {
       cubit.startDateSelected(picked);
@@ -318,11 +318,9 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
     BudgetFormCubit cubit,
     BudgetFormState state,
   ) async {
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await DatePickerSheet.show(
+      context,
       initialDate: state.endDate ?? state.startDate,
-      firstDate: state.startDate,
-      lastDate: DateTime(2100),
     );
     if (picked != null) {
       cubit.endDateSelected(picked);
@@ -406,14 +404,14 @@ class BudgetRepeatUntilField extends StatelessWidget {
       children: [
         BudgetFieldLabel(text: label),
         const SizedBox(height: 8),
-        SegmentedButton<bool>(
+        SegmentedControl<bool>(
           segments: [
-            ButtonSegment(value: false, label: Text(foreverLabel)),
-            ButtonSegment(value: true, label: Text(untilLabel)),
+            SegmentedControlOption(value: false, label: foreverLabel),
+            SegmentedControlOption(value: true, label: untilLabel),
           ],
-          selected: {endDate != null},
-          onSelectionChanged: (selection) {
-            if (selection.first) {
+          selected: endDate != null,
+          onChanged: (untilDate) {
+            if (untilDate) {
               onPickDate();
             } else {
               onForever();

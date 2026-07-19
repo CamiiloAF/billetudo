@@ -8,8 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/golden_helpers.dart';
 import '../../account_fixtures.dart';
-import 'golden_helpers.dart';
 
 class MockAccountsListCubit extends MockCubit<AccountsListState>
     implements AccountsListCubit {}

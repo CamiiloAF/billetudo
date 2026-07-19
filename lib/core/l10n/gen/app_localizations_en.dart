@@ -25,6 +25,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonContinue => 'Continue';
+
+  @override
   String get commonEdit => 'Edit';
 
   @override
@@ -165,7 +168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String accountNumberMasked(String last4) {
-    return '•••• $last4';
+    return '••••••• $last4';
   }
 
   @override
@@ -213,6 +216,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountFormInitialBalanceLabel => 'Opening balance';
+
+  @override
+  String get accountFormCurrentDebtLabel => 'Current debt';
 
   @override
   String get accountFormCurrencyLabel => 'Currency';
@@ -332,7 +338,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountChangeConfirm => 'Confirm';
 
   @override
-  String get accountCurrencySheetTitle => 'Currency';
+  String get accountCurrencySheetTitle => 'Select the currency';
 
   @override
   String get currencyCopName => 'Colombian peso';
@@ -440,6 +446,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteAction => 'Delete category';
+
+  @override
+  String get categoryDeleteSubcategoryAction => 'Delete subcategory';
 
   @override
   String get categoryAppearancePickerTitle => 'Icon and color';
@@ -561,6 +570,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsSortAmountDesc => 'Amount: high to low';
 
   @override
+  String transactionsFilterAccountsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transactionsGroupToday => 'Today';
+
+  @override
+  String get transactionsGroupYesterday => 'Yesterday';
+
+  @override
+  String transactionsGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '1 transaction',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get transactionTypeExpense => 'Expense';
 
   @override
@@ -595,6 +632,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionFormCategoryLabel => 'Category';
+
+  @override
+  String get transactionErrorAccount => 'Choose an account.';
+
+  @override
+  String get transactionErrorCategory => 'Choose a category.';
 
   @override
   String get categorySelectTitle => 'Choose category';
@@ -742,13 +785,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can bring it back later from the trash.';
 
   @override
-  String get transactionDetailTitle => 'Transaction detail';
+  String get transactionDetailTitleExpense => 'Expense detail';
 
   @override
-  String get transactionDetailEdit => 'Edit';
+  String get transactionDetailTitleIncome => 'Income detail';
 
   @override
-  String get transactionDetailDelete => 'Delete';
+  String get transactionDetailTitleTransfer => 'Transfer detail';
 
   @override
   String transactionDetailSource(String source) {
@@ -756,29 +799,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String transactionDetailAccountLine(String account) {
-    return 'Account: $account';
-  }
+  String get transactionDetailAccountLabel => 'Account';
 
   @override
-  String transactionDetailTransferLine(String account) {
-    return 'Destination account: $account';
-  }
+  String get transactionDetailAccountFromLabel => 'Source account';
 
   @override
-  String transactionDetailCategoryLine(String category) {
-    return 'Category: $category';
-  }
+  String get transactionDetailAccountToLabel => 'Destination account';
 
   @override
-  String transactionDetailNoteLine(String note) {
-    return 'Note: $note';
-  }
+  String get transactionDetailCategoryLabel => 'Category';
 
   @override
-  String transactionDetailTagsLine(String tags) {
-    return 'Tags: $tags';
-  }
+  String get transactionDetailDateLabel => 'Date';
+
+  @override
+  String get transactionDetailNoteLabel => 'Note';
+
+  @override
+  String get transactionDetailNoNote => 'No note';
+
+  @override
+  String get transactionDetailSourceLabel => 'Source';
+
+  @override
+  String get transactionDetailTagsLabel => 'Tags';
+
+  @override
+  String get transactionDetailTransferSubtitle => 'Transfer';
+
+  @override
+  String get transactionDetailDeleteLink => 'Delete transaction';
 
   @override
   String get accountFilterSheetTitle => 'Filter by account';
@@ -922,7 +973,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreDebts => 'Debts';
 
   @override
-  String get moreScheduledPayments => 'Scheduled payments';
+  String get moreScheduledPayments => 'Recurring';
 
   @override
   String get moreReports => 'Charts and reports';
@@ -1391,4 +1442,324 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstLaunchOfflineRetrying => 'Retrying...';
+
+  @override
+  String get scheduledPaymentsTitle => 'Scheduled payments';
+
+  @override
+  String get scheduledPaymentsAdd => 'New scheduled payment';
+
+  @override
+  String get scheduledPaymentsLoading => 'Loading your scheduled payments';
+
+  @override
+  String get scheduledPaymentsEmptyMessage =>
+      'You don\'t have any scheduled payments yet. Add one so you don\'t lose track of your recurring payments.';
+
+  @override
+  String get scheduledPaymentsErrorTitle =>
+      'We couldn\'t load your scheduled payments';
+
+  @override
+  String get scheduledPaymentsErrorLocalFirst =>
+      'Your data is still safe on this device. Try again.';
+
+  @override
+  String scheduledPaymentsActiveCount(int count) {
+    return 'Active · $count';
+  }
+
+  @override
+  String get scheduledPendingTitle => 'Pending confirmation';
+
+  @override
+  String get scheduledPendingEmpty =>
+      'You don\'t have any payments to confirm.';
+
+  @override
+  String get scheduledReviewAll => 'Review all';
+
+  @override
+  String get scheduledPendingBadge => 'Pending confirmation';
+
+  @override
+  String get scheduledOnceBadge => 'One-time payment';
+
+  @override
+  String get scheduledInactiveBadge => 'Inactive';
+
+  @override
+  String get scheduledConfirmationSheetTitle => 'Confirm payment';
+
+  @override
+  String get scheduledConfirmationSheetConfirm => 'Confirm';
+
+  @override
+  String get scheduledConfirmationSheetSkip => 'Skip';
+
+  @override
+  String get scheduledConfirmationSheetSnooze => 'Snooze';
+
+  @override
+  String scheduledGuidedReviewPosition(int position, int total) {
+    return 'Payment $position of $total';
+  }
+
+  @override
+  String get scheduledUndoSkipMessage => 'Payment skipped';
+
+  @override
+  String get scheduledUndoSnoozeMessage => 'Payment snoozed';
+
+  @override
+  String get scheduledSnoozeSheetTitle => 'Snooze payment';
+
+  @override
+  String get scheduledSnoozeSheetSave => 'Snooze';
+
+  @override
+  String get scheduledDeleteSheetTitle => 'Delete this scheduled payment?';
+
+  @override
+  String get scheduledDeleteSheetMessage =>
+      'New payments stop being generated, but transactions already generated keep their history.';
+
+  @override
+  String get scheduledPaymentFormNewTitle => 'New scheduled payment';
+
+  @override
+  String get scheduledPaymentFormEditTitle => 'Edit scheduled payment';
+
+  @override
+  String get scheduledPaymentFormNextDateLabel => 'Next date';
+
+  @override
+  String get scheduledPaymentFormFrequencyLabel => 'Frequency';
+
+  @override
+  String get scheduledPaymentFormCategoryMoreLabel => 'Other';
+
+  @override
+  String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';
+
+  @override
+  String get scheduledPaymentFormEndDateLabel => 'End date';
+
+  @override
+  String get scheduledPaymentFormEndDateNone => 'No end date';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticTitle => 'Automatic';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticSubtitle => 'Registers itself';
+
+  @override
+  String get scheduledPaymentFormModeManualTitle => 'Manual';
+
+  @override
+  String get scheduledPaymentFormModeManualSubtitle =>
+      'We\'ll check with you before it affects your balance';
+
+  @override
+  String get scheduledPaymentFormDeleteAction => 'Delete scheduled payment';
+
+  @override
+  String get scheduledFrequencyOnce => 'Once only';
+
+  @override
+  String get scheduledFrequencyDaily => 'Every day';
+
+  @override
+  String get scheduledFrequencyWeekly => 'Every week';
+
+  @override
+  String get scheduledFrequencyMonthly => 'Every month';
+
+  @override
+  String get scheduledFrequencyYearly => 'Every year';
+
+  @override
+  String get scheduledFrequencyChipOnce => 'Once';
+
+  @override
+  String get scheduledFrequencyChipDaily => 'Day';
+
+  @override
+  String get scheduledFrequencyChipWeekly => 'Week';
+
+  @override
+  String get scheduledFrequencyChipMonthly => 'Month';
+
+  @override
+  String get scheduledFrequencyChipYearly => 'Year';
+
+  @override
+  String get scheduledPaymentDetailTitle => 'Scheduled payment';
+
+  @override
+  String scheduledPaymentDetailNextPayment(String date) {
+    return 'Next payment: $date';
+  }
+
+  @override
+  String get scheduledPaymentDetailHistoryTitle => 'History';
+
+  @override
+  String get scheduledPaymentDetailHistoryEmpty =>
+      'No transaction has been generated for this scheduled payment yet.';
+
+  @override
+  String scheduledPaymentDetailHistorySeeAll(int count) {
+    return 'See full history ($count)';
+  }
+
+  @override
+  String get scheduledPaymentDetailHeroLabel => 'Next payment';
+
+  @override
+  String scheduledPaymentDetailRecurrenceOnce(String date) {
+    return 'One-time payment on $date';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceForever(String unit, String date) {
+    return 'Repeats $unit from $date, forever';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceUntil(
+      String unit, String date, String endDate) {
+    return 'Repeats $unit from $date, until $endDate';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitDaily => 'every day';
+
+  @override
+  String scheduledRecurrenceUnitDailyInterval(int interval) {
+    return 'every $interval days';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitWeekly => 'every week';
+
+  @override
+  String scheduledRecurrenceUnitWeeklyInterval(int interval) {
+    return 'every $interval weeks';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitMonthly => 'every month';
+
+  @override
+  String scheduledRecurrenceUnitMonthlyInterval(int interval) {
+    return 'every $interval months';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitYearly => 'every year';
+
+  @override
+  String scheduledRecurrenceUnitYearlyInterval(int interval) {
+    return 'every $interval years';
+  }
+
+  @override
+  String get scheduledPaymentDetailModeLabel => 'Mode';
+
+  @override
+  String get scheduledPaymentDetailModeAutomatic => 'Automatic';
+
+  @override
+  String get scheduledPaymentDetailModeManual => 'Manual';
+
+  @override
+  String get scheduledPaymentDetailAccountLabel => 'Account';
+
+  @override
+  String get scheduledPaymentDetailStatusLabel => 'Status';
+
+  @override
+  String get scheduledPaymentDetailStatusActive => 'Active';
+
+  @override
+  String get scheduledPaymentDetailTagsLabel => 'Tags';
+
+  @override
+  String get scheduledPaymentDetailTagsEmpty => 'No tags';
+
+  @override
+  String get scheduledPaymentBridgeTitle => 'Is this a scheduled payment?';
+
+  @override
+  String get scheduledPaymentBridgeMessage =>
+      'You picked a future date. You can turn this transaction into a scheduled payment so you don\'t have to record it again.';
+
+  @override
+  String get scheduledPaymentBridgeAccept => 'Yes, schedule it';
+
+  @override
+  String get scheduledPaymentBridgeDecline => 'No, save as usual';
+
+  @override
+  String scheduledFinishedCount(int count) {
+    return 'Finished · $count';
+  }
+
+  @override
+  String get scheduledFinishedTitle => 'Finished';
+
+  @override
+  String get scheduledFinishedEmpty =>
+      'You don\'t have any finished scheduled payments yet.';
+
+  @override
+  String scheduledPendingCardOverflow(int count) {
+    return 'See the other $count pending';
+  }
+
+  @override
+  String scheduledPendingCardTitle(int count) {
+    return 'Pending confirmation $count';
+  }
+
+  @override
+  String get scheduledPendingCardCaption =>
+      'They haven\'t affected your balance yet';
+
+  @override
+  String get scheduledDueToday => 'Due today';
+
+  @override
+  String scheduledDueInDays(int count) {
+    return 'in $count days';
+  }
+
+  @override
+  String get scheduledDueInOneDay => 'in 1 day';
+
+  @override
+  String get scheduledConfirmationSheetScopeNote =>
+      'What you edit here only applies to this payment, it doesn\'t change the template.';
+
+  @override
+  String scheduledConfirmationSheetAccumulated(
+      int count, String template, String date) {
+    return 'You have $count unconfirmed payments for $template. You\'re now confirming the oldest one, from $date.';
+  }
+
+  @override
+  String get scheduledConfirmationSheetEditTooltip => 'Edit template';
+
+  @override
+  String get scheduledGuidedReviewExit => 'Exit';
+
+  @override
+  String get scheduledGuidedReviewConfirmNext => 'Confirm and next';
+
+  @override
+  String scheduledSnoozeContextLine(String template, String date) {
+    return '$template · was due on $date · move it forward';
+  }
 }

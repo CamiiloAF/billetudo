@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../domain/entities/date_period_filter.dart';
 import '../../cubit/date_filter_cubit.dart';
 
@@ -24,9 +25,8 @@ class DateFilterSheet extends StatelessWidget {
     required DatePeriodFilter initial,
   }) async {
     final cubit = getIt<DateFilterCubit>()..start(initial);
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
+    await BottomSheetBase.show<void>(
+      context,
       builder: (context) => BlocProvider.value(
         value: cubit,
         child: const DateFilterSheetBody(),
@@ -56,81 +56,75 @@ class DateFilterSheetBody extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DateFilterCubit>();
         final filter = state.filter;
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.dateFilterSheetTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                    if (filter.isCustomRange)
-                      IconButton(
-                        onPressed: cubit.clearToThisMonth,
-                        icon: const Icon(LucideIcons.x),
-                      ),
-                  ],
+                Expanded(
+                  child: Text(
+                    l10n.dateFilterSheetTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-                if (!filter.isCustomRange) ...[
-                  SegmentedButton<DateGranularity>(
-                    segments: [
-                      ButtonSegment(
-                        value: DateGranularity.week,
-                        label: Text(l10n.dateFilterWeek),
-                      ),
-                      ButtonSegment(
-                        value: DateGranularity.month,
-                        label: Text(l10n.dateFilterMonth),
-                      ),
-                      ButtonSegment(
-                        value: DateGranularity.year,
-                        label: Text(l10n.dateFilterYear),
-                      ),
-                    ],
-                    selected: {filter.granularity!},
-                    onSelectionChanged: (selection) =>
-                        cubit.granularitySelected(selection.first),
+                if (filter.isCustomRange)
+                  IconButton(
+                    onPressed: cubit.clearToThisMonth,
+                    icon: const Icon(LucideIcons.x),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        onPressed: () => cubit.step(-1),
-                        icon: const Icon(LucideIcons.chevronLeft),
-                      ),
-                      Text(DateFormat.yMMMd('es_CO').format(filter.start)),
-                      IconButton(
-                        onPressed: () => cubit.step(1),
-                        icon: const Icon(LucideIcons.chevronRight),
-                      ),
-                    ],
-                  ),
-                ] else
-                  Text(
-                    l10n.dateFilterRangeLabel(
-                      DateFormat.yMMMd('es_CO').format(filter.start),
-                      DateFormat.yMMMd('es_CO').format(
-                        filter.endExclusive.subtract(const Duration(days: 1)),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => _pickCustomRange(context, cubit, filter),
-                  child: Text(l10n.dateFilterCustomRange),
-                ),
               ],
             ),
-          ),
+            if (!filter.isCustomRange) ...[
+              SegmentedButton<DateGranularity>(
+                segments: [
+                  ButtonSegment(
+                    value: DateGranularity.week,
+                    label: Text(l10n.dateFilterWeek),
+                  ),
+                  ButtonSegment(
+                    value: DateGranularity.month,
+                    label: Text(l10n.dateFilterMonth),
+                  ),
+                  ButtonSegment(
+                    value: DateGranularity.year,
+                    label: Text(l10n.dateFilterYear),
+                  ),
+                ],
+                selected: {filter.granularity!},
+                onSelectionChanged: (selection) =>
+                    cubit.granularitySelected(selection.first),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () => cubit.step(-1),
+                    icon: const Icon(LucideIcons.chevronLeft),
+                  ),
+                  Text(DateFormat.yMMMd('es_CO').format(filter.start)),
+                  IconButton(
+                    onPressed: () => cubit.step(1),
+                    icon: const Icon(LucideIcons.chevronRight),
+                  ),
+                ],
+              ),
+            ] else
+              Text(
+                l10n.dateFilterRangeLabel(
+                  DateFormat.yMMMd('es_CO').format(filter.start),
+                  DateFormat.yMMMd('es_CO').format(
+                    filter.endExclusive.subtract(const Duration(days: 1)),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => _pickCustomRange(context, cubit, filter),
+              child: Text(l10n.dateFilterCustomRange),
+            ),
+          ],
         );
       },
     );

@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../month_cell.dart';
 
 /// The month selector (HU-04): a year navigator ‹ 2026 › over a 3×4 grid of
@@ -28,9 +29,8 @@ class MonthPickerSheet extends StatefulWidget {
     required DateTime selected,
     required DateTime currentMonth,
   }) =>
-      showModalBottomSheet<DateTime>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<DateTime>(
+        context,
         builder: (context) => MonthPickerSheet(
           selected: selected,
           currentMonth: currentMonth,
@@ -50,49 +50,42 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
     final l10n = AppLocalizations.of(context);
     final canGoForward = _year < widget.currentMonth.year;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.homeMonthPickerTitle,
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 16),
+        YearNavigator(
+          year: _year,
+          canGoForward: canGoForward,
+          onPrevious: () => setState(() => _year -= 1),
+          onNext: canGoForward ? () => setState(() => _year += 1) : null,
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 2.2,
           children: [
-            Text(
-              l10n.homeMonthPickerTitle,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 16),
-            YearNavigator(
-              year: _year,
-              canGoForward: canGoForward,
-              onPrevious: () => setState(() => _year -= 1),
-              onNext: canGoForward ? () => setState(() => _year += 1) : null,
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.2,
-              children: [
-                for (var month = 1; month <= 12; month++)
-                  MonthCell(
-                    label: _monthLabel(context, month),
-                    isSelected: _year == widget.selected.year &&
-                        month == widget.selected.month,
-                    isDisabled: _isFuture(month),
-                    onTap: () =>
-                        Navigator.of(context).pop(DateTime(_year, month)),
-                  ),
-              ],
-            ),
+            for (var month = 1; month <= 12; month++)
+              MonthCell(
+                label: _monthLabel(context, month),
+                isSelected: _year == widget.selected.year &&
+                    month == widget.selected.month,
+                isDisabled: _isFuture(month),
+                onTap: () => Navigator.of(context).pop(DateTime(_year, month)),
+              ),
           ],
         ),
-      ),
+      ],
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../cubit/tag_filter_cubit.dart';
 import 'new_tag_sheet.dart';
 
@@ -42,9 +43,8 @@ class TagFilterSheet extends StatelessWidget {
     String? title,
     String? confirmLabel,
   }) =>
-      showModalBottomSheet<Set<String>>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<Set<String>>(
+        context,
         builder: (context) => TagFilterSheet(
           initialSelected: initialSelected,
           title: title,
@@ -79,55 +79,49 @@ class TagFilterSheetBody extends StatelessWidget {
     return BlocBuilder<TagFilterCubit, TagFilterState>(
       builder: (context, state) {
         final cubit = context.read<TagFilterCubit>();
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        heading,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        final name = await NewTagSheet.show(context);
-                        if (name != null && name.trim().isNotEmpty) {
-                          await cubit.createTag(name);
-                        }
-                      },
-                      icon: const Icon(LucideIcons.plus),
-                      tooltip: l10n.transactionFormAddTag,
-                    ),
-                  ],
-                ),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 360),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (final tag in state.tags)
-                        CheckboxListTile(
-                          value: state.selected.contains(tag.id),
-                          onChanged: (_) => cubit.toggle(tag.id),
-                          title: Text(tag.name),
-                        ),
-                    ],
+                Expanded(
+                  child: Text(
+                    heading,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(state.selected),
-                  child: Text(confirm),
+                IconButton(
+                  onPressed: () async {
+                    final name = await NewTagSheet.show(context);
+                    if (name != null && name.trim().isNotEmpty) {
+                      await cubit.createTag(name);
+                    }
+                  },
+                  icon: const Icon(LucideIcons.plus),
+                  tooltip: l10n.transactionFormAddTag,
                 ),
               ],
             ),
-          ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 360),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final tag in state.tags)
+                    CheckboxListTile(
+                      value: state.selected.contains(tag.id),
+                      onChanged: (_) => cubit.toggle(tag.id),
+                      title: Text(tag.name),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(state.selected),
+              child: Text(confirm),
+            ),
+          ],
         );
       },
     );

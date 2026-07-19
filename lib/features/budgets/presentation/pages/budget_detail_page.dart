@@ -5,6 +5,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
 import '../utils/budget_format.dart';
@@ -33,32 +35,38 @@ class BudgetDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          BlocBuilder<BudgetDetailCubit, BudgetDetailState>(
-            builder: (context, state) => IconButton(
-              tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-              icon: const Icon(LucideIcons.ellipsisVertical),
-              onPressed:
-                  state.budget == null ? null : () => _openActions(context),
-            ),
-          ),
-        ],
-      ),
       body: SafeArea(
         child: BlocBuilder<BudgetDetailCubit, BudgetDetailState>(
-          builder: (context, state) => switch (state.status) {
-            BudgetDetailStatus.loading =>
-              const Center(child: CircularProgressIndicator()),
-            BudgetDetailStatus.failure => BudgetsErrorView(
-                onRetry: () {},
+          builder: (context, state) => Column(
+            children: [
+              PageHeader(
+                title: state.budget?.name ?? '',
+                trailing: PageHeaderCircleButton(
+                  icon: LucideIcons.ellipsisVertical,
+                  background: colors.muted,
+                  foreground: colors.textPrimary,
+                  tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+                  onPressed:
+                      state.budget == null ? null : () => _openActions(context),
+                ),
               ),
-            BudgetDetailStatus.ready => BudgetDetailBody(
-                state: state,
-                onOpenInTransactions: onOpenInTransactions,
+              Expanded(
+                child: switch (state.status) {
+                  BudgetDetailStatus.loading =>
+                    const Center(child: CircularProgressIndicator()),
+                  BudgetDetailStatus.failure => BudgetsErrorView(
+                      onRetry: () {},
+                    ),
+                  BudgetDetailStatus.ready => BudgetDetailBody(
+                      state: state,
+                      onOpenInTransactions: onOpenInTransactions,
+                    ),
+                },
               ),
-          },
+            ],
+          ),
         ),
       ),
     );

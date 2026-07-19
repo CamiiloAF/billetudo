@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../../domain/entities/category.dart';
 import '../cubit/parent_category_picker_cubit.dart';
 import '../cubit/parent_category_picker_state.dart';
@@ -42,9 +43,8 @@ class ParentCategoryPickerSheet extends StatelessWidget {
     bool rootsOnly = true,
     String? title,
   }) =>
-      showModalBottomSheet<Category>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<Category>(
+        context,
         builder: (context) => ParentCategoryPickerSheet(
           kind: kind,
           excludingId: excludingId,
@@ -84,55 +84,49 @@ class ParentCategoryPickerSheetBody extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title ?? l10n.categoryParentPickerTitle,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 320,
-              child: BlocBuilder<ParentCategoryPickerCubit,
-                  ParentCategoryPickerState>(
-                builder: (context, state) {
-                  if (state.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (state.candidates.isEmpty) {
-                    return Center(
-                      child: Text(
-                        l10n.categoryParentPickerEmpty,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: state.candidates.length,
-                    itemBuilder: (context, index) {
-                      final category = state.candidates[index];
-                      return ParentCategoryRow(
-                        category: category,
-                        selected: category.id == state.selectedId,
-                        onTap: () => Navigator.of(context).pop(category),
-                      );
-                    },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title ?? l10n.categoryParentPickerTitle,
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 320,
+          child:
+              BlocBuilder<ParentCategoryPickerCubit, ParentCategoryPickerState>(
+            builder: (context, state) {
+              if (state.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.candidates.isEmpty) {
+                return Center(
+                  child: Text(
+                    l10n.categoryParentPickerEmpty,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: context.colors.textSecondary,
+                    ),
+                  ),
+                );
+              }
+              return ListView.builder(
+                itemCount: state.candidates.length,
+                itemBuilder: (context, index) {
+                  final category = state.candidates[index];
+                  return ParentCategoryRow(
+                    category: category,
+                    selected: category.id == state.selectedId,
+                    onTap: () => Navigator.of(context).pop(category),
                   );
                 },
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }

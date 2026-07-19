@@ -15,6 +15,7 @@ void main() {
   late MockWatchTransactions watchTransactions;
   late MockDeleteTransaction deleteTransaction;
   late MockRestoreTransaction restoreTransaction;
+  late MockWatchAccounts watchAccounts;
 
   final entry = TransactionWithDetails(
     transaction: buildTransaction(),
@@ -27,10 +28,12 @@ void main() {
     watchTransactions = MockWatchTransactions();
     deleteTransaction = MockDeleteTransaction();
     restoreTransaction = MockRestoreTransaction();
+    watchAccounts = MockWatchAccounts();
+    when(() => watchAccounts()).thenAnswer((_) => const Stream.empty());
   });
 
   TransactionsListCubit build() => TransactionsListCubit(
-      watchTransactions, deleteTransaction, restoreTransaction);
+      watchTransactions, deleteTransaction, restoreTransaction, watchAccounts);
 
   group('carga inicial', () {
     blocTest<TransactionsListCubit, TransactionsListState>(

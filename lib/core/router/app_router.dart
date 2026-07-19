@@ -39,6 +39,17 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
+import '../../features/scheduled_payments/presentation/cubit/finished_scheduled_payments_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payments_list_cubit.dart';
+import '../../features/scheduled_payments/presentation/pages/finished_scheduled_payments_page.dart';
+import '../../features/scheduled_payments/presentation/pages/pending_occurrences_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
@@ -79,6 +90,12 @@ abstract final class AppRoutes {
   static const String login = '/mas/ajustes/respaldar';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String accountDeleted = '/mas/cuenta-eliminada';
+  static const String scheduledPayments = '/pagos-programados';
+  static const String newScheduledPayment = '/pagos-programados/nuevo';
+  static const String pendingScheduledPayments =
+      '/pagos-programados/por-confirmar';
+  static const String finishedScheduledPayments =
+      '/pagos-programados/terminados';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -112,6 +129,52 @@ abstract final class AppRoutes {
 
   /// Edit form of one transaction: `/movimientos/<id>/editar`.
   static String editTransaction(String id) => '$transactions/$id/editar';
+
+  /// Detail of one scheduled payment template: `/pagos-programados/<id>`.
+  static String scheduledPayment(String id) => '$scheduledPayments/$id';
+
+  /// Edit form of one template: `/pagos-programados/<id>/editar`.
+  static String editScheduledPayment(String id) =>
+      '$scheduledPayments/$id/editar';
+
+  /// HU-06/criterion 14: the puente from a future-dated new transaction to a
+  /// brand-new `once` template, prefilled via query params — the router is
+  /// the only layer allowed to translate a `TransactionFormState` into
+  /// this, so neither feature's domain depends on the other.
+  static String newScheduledPaymentFromTransaction({
+    required String accountId,
+    required String accountName,
+    required int amountMinor,
+    required String currency,
+    required String type,
+    required DateTime nextDate,
+    String? categoryId,
+    String? categoryKind,
+    String? categoryName,
+    String? note,
+    List<String> tagIds = const <String>[],
+  }) {
+    final params = <String, String>{
+      'accountId': accountId,
+      'accountName': accountName,
+      'amountMinor': amountMinor.toString(),
+      'currency': currency,
+      'type': type,
+      'nextDate': nextDate.toIso8601String(),
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryKind != null) 'categoryKind': categoryKind,
+      if (categoryName != null) 'categoryName': categoryName,
+      if (note != null && note.isNotEmpty) 'note': note,
+      if (tagIds.isNotEmpty) 'tagIds': tagIds.join(','),
+    };
+    final query = params.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    return '$newScheduledPayment?$query';
+  }
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -181,7 +244,23 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                   getIt<TransactionFormCubit>(),
                   (c) => c.load(null, type: _typeFromQuery(state.uri)),
                 ),
-                child: const TransactionFormPage(),
+                child: TransactionFormPage(
+                  onConvertToScheduledPayment: (formState) => context.push(
+                    AppRoutes.newScheduledPaymentFromTransaction(
+                      accountId: formState.accountId ?? '',
+                      accountName: formState.accountName ?? '',
+                      amountMinor: formState.amountMinor,
+                      currency: formState.currency,
+                      type: formState.type.name,
+                      nextDate: formState.date,
+                      categoryId: formState.categoryId,
+                      categoryKind: formState.categoryKind?.name,
+                      categoryName: formState.categoryName,
+                      note: formState.note,
+                      tagIds: formState.tagIds.toList(),
+                    ),
+                  ),
+                ),
               ),
             ),
             GoRoute(
@@ -273,7 +352,8 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                 child: BudgetDetailPage(
                   onEdit: (id) => context.push(AppRoutes.editBudget(id)),
                   onClosed: () => context.pop(),
-                  onOpenInTransactions: () => context.go(AppRoutes.transactions),
+                  onOpenInTransactions: () =>
+                      context.go(AppRoutes.transactions),
                 ),
               ),
               routes: [
@@ -317,6 +397,8 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
               builder: (context, session) => MorePage(
                 onOpenAccounts: () => context.push(AppRoutes.accounts),
                 onOpenCategories: () => context.push(AppRoutes.categories),
+                onOpenScheduledPayments: () =>
+                    context.push(AppRoutes.scheduledPayments),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -346,6 +428,7 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
         ),
         _accountsRoute(),
         _categoriesRoute(),
+        _scheduledPaymentsRoute(),
       ],
     );
 
@@ -531,6 +614,144 @@ GoRoute _categoriesRoute() => GoRoute(
         ),
       ],
     );
+
+// Pagos Programados (HU-01/02/03/04/05/06/07): list, "por confirmar",
+// create/edit and detail, apiladas bajo Más — same pattern as Cuentas and
+// Categorías (`parentNavigatorKey: _rootNavigatorKey` for everything stacked
+// above the tab shell).
+GoRoute _scheduledPaymentsRoute() => GoRoute(
+      path: AppRoutes.scheduledPayments,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => _started(
+              getIt<ScheduledPaymentsListCubit>(),
+              (c) => c.start(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => _started(
+              getIt<PendingOccurrencesCubit>(),
+              (c) => c.start(),
+            ),
+          ),
+        ],
+        child: ScheduledPaymentsPage(
+          onAddScheduledPayment: () =>
+              context.push(AppRoutes.newScheduledPayment),
+          onOpenScheduledPayment: (id) =>
+              context.push(AppRoutes.scheduledPayment(id)),
+          onOpenPending: () => context.push(AppRoutes.pendingScheduledPayments),
+          onOpenFinished: () =>
+              context.push(AppRoutes.finishedScheduledPayments),
+        ),
+      ),
+      routes: [
+        // Declared before ':id' so "nuevo"/"por-confirmar"/"terminados" are
+        // never read as ids.
+        GoRoute(
+          path: 'nuevo',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _startedScheduledPaymentForm(state.uri),
+            child: const ScheduledPaymentFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'por-confirmar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<PendingOccurrencesCubit>(), (c) => c.start()),
+            child: const PendingOccurrencesPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'terminados',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<FinishedScheduledPaymentsCubit>(),
+              (c) => c.start(),
+            ),
+            child: FinishedScheduledPaymentsPage(
+              onOpenScheduledPayment: (id) =>
+                  context.push(AppRoutes.scheduledPayment(id)),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<ScheduledPaymentDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: ScheduledPaymentDetailPage(
+              onEdit: (id) => context.push(AppRoutes.editScheduledPayment(id)),
+              onOpenTransaction: (id) =>
+                  context.push(AppRoutes.transaction(id)),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<ScheduledPaymentFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
+                child: const ScheduledPaymentFormPage(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+/// HU-06/criterion 14: when the "nuevo" template route carries the puente's
+/// query params (see `AppRoutes.newScheduledPaymentFromTransaction`), starts
+/// the form prefilled from them instead of empty.
+ScheduledPaymentFormCubit _startedScheduledPaymentForm(Uri uri) {
+  final cubit = getIt<ScheduledPaymentFormCubit>();
+  final accountId = uri.queryParameters['accountId'];
+  if (accountId == null || accountId.isEmpty) {
+    unawaited(cubit.load(null));
+    return cubit;
+  }
+  final typeRaw = uri.queryParameters['type'];
+  final type = ScheduledPaymentType.values.firstWhere(
+    (value) => value.name == typeRaw,
+    orElse: () => ScheduledPaymentType.expense,
+  );
+  final categoryKindRaw = uri.queryParameters['categoryKind'];
+  final categoryKind = categoryKindRaw == null
+      ? null
+      : CategoryKind.values.firstWhere(
+          (value) => value.name == categoryKindRaw,
+          orElse: () => CategoryKind.expense,
+        );
+  cubit.loadFromBridge(
+    accountId: accountId,
+    accountName: uri.queryParameters['accountName'] ?? '',
+    amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? '') ?? 0,
+    currency: uri.queryParameters['currency'] ?? 'COP',
+    type: type,
+    nextDate: DateTime.tryParse(uri.queryParameters['nextDate'] ?? '') ??
+        DateTime.now(),
+    categoryId: uri.queryParameters['categoryId'],
+    categoryKind: categoryKind,
+    categoryName: uri.queryParameters['categoryName'],
+    note: uri.queryParameters['note'],
+    tagIds: (uri.queryParameters['tagIds'] ?? '')
+        .split(',')
+        .where((id) => id.isNotEmpty)
+        .toSet(),
+  );
+  return cubit;
+}
 
 TransactionType _typeFromQuery(Uri uri) {
   final raw = uri.queryParameters['type'];

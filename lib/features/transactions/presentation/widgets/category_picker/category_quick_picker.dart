@@ -28,6 +28,7 @@ class CategoryQuickPicker extends StatefulWidget {
     required this.kind,
     required this.selectedId,
     required this.onSelected,
+    this.errorText,
     super.key,
   });
 
@@ -36,6 +37,11 @@ class CategoryQuickPicker extends StatefulWidget {
 
   /// Reports the category the user picked (chip or sheet) back to the form.
   final ValueChanged<Category> onSelected;
+
+  /// Set when the field failed validation (HU-01/02 criterion: a category is
+  /// required for expense/income). Same message pattern as `AccountFormField`
+  /// (`$expense`-colored text below the control).
+  final String? errorText;
 
   @override
   State<CategoryQuickPicker> createState() => _CategoryQuickPickerState();
@@ -152,6 +158,14 @@ class _CategoryQuickPickerState extends State<CategoryQuickPicker> {
                   ),
                 ],
               ),
+              if (widget.errorText != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  widget.errorText!,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.expense),
+                ),
+              ],
             ],
           );
         },

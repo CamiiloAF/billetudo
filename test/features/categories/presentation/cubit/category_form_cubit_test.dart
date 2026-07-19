@@ -77,7 +77,8 @@ void main() {
       'hereda el kind del padre y bloquea Tipo',
       setUp: () => when(() => getCategory('root-1')).thenAnswer(
         (_) async => Right(
-          buildCategory(id: 'root-1', name: 'Transporte', kind: CategoryKind.income),
+          buildCategory(
+              id: 'root-1', name: 'Transporte', kind: CategoryKind.income),
         ),
       ),
       build: build,
@@ -89,6 +90,35 @@ void main() {
           parentId: 'root-1',
           parentName: 'Transporte',
           kind: CategoryKind.income,
+          kindLockReason: CategoryKindLockReason.subcategory,
+        ),
+      ],
+    );
+
+    blocTest<CategoryFormCubit, CategoryFormState>(
+      'hereda también el ícono y el color del padre, no solo el kind',
+      setUp: () => when(() => getCategory('root-1')).thenAnswer(
+        (_) async => Right(
+          buildCategory(
+            id: 'root-1',
+            name: 'Transporte',
+            kind: CategoryKind.income,
+            icon: 'bus',
+            color: '#FF5733',
+          ),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(parentId: 'root-1'),
+      expect: () => [
+        const CategoryFormState(),
+        const CategoryFormState(
+          status: CategoryFormStatus.ready,
+          parentId: 'root-1',
+          parentName: 'Transporte',
+          kind: CategoryKind.income,
+          icon: 'bus',
+          color: '#FF5733',
           kindLockReason: CategoryKindLockReason.subcategory,
         ),
       ],

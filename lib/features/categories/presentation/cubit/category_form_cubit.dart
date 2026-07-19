@@ -80,6 +80,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
             parentName: parent.name,
             kind: parent.kind,
             kindLockReason: CategoryKindLockReason.subcategory,
+            icon: parent.icon,
+            color: parent.color,
           ),
         );
     }

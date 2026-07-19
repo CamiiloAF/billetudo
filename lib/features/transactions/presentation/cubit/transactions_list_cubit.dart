@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 import '../../domain/usecases/delete_transaction.dart';
@@ -22,20 +24,39 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     this._watchTransactions,
     this._deleteTransaction,
     this._restoreTransaction,
+    this._watchAccounts,
   ) : super(TransactionsListState());
 
   final WatchTransactions _watchTransactions;
   final DeleteTransaction _deleteTransaction;
   final RestoreTransaction _restoreTransaction;
+  final WatchAccounts _watchAccounts;
 
   StreamSubscription<Result<List<TransactionWithDetails>>>? _subscription;
+
+  /// Kept only to resolve the account chip's name/icon (`B3GGa`/`xAk6Y`)
+  /// when exactly one account is the active filter.
+  StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
 
   /// Subscribes with the current (or default) filter. Safe to call again to
   /// retry after an error.
   Future<void> start() async {
     await _subscription?.cancel();
+    await _accountsSubscription?.cancel();
     emit(TransactionsListState(filter: state.filter));
     _subscribe();
+    _accountsSubscription = _watchAccounts().listen((result) {
+      if (isClosed) {
+        return;
+      }
+      result.fold(
+        // The account chip simply falls back to the count/id it already has
+        // when the accounts stream fails — not worth surfacing as a list-wide
+        // error.
+        (failure) {},
+        (accounts) => emit(state.copyWith(accounts: accounts)),
+      );
+    });
   }
 
   /// HU-06: free-text search over note and category name.
@@ -118,6 +139,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   @override
   Future<void> close() async {
     await _subscription?.cancel();
+    await _accountsSubscription?.cancel();
     return super.close();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/page_header_circle_button.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_state.dart';
@@ -95,7 +96,11 @@ void main() {
 
       // Sin ojo no hay forma de disparar la lectura: el PAN de una tarjeta no
       // existe, así que el detalle jamás debe intentar leerlo ni copiarlo.
-      expect(find.byType(IconButton), findsOneWidget); // solo "Editar"
+      expect(
+        find.byType(PageHeaderCircleButton),
+        findsNWidgets(2),
+      ); // volver + "Editar", nada de acciones sobre el número
+      expect(find.byIcon(LucideIcons.pencil), findsOneWidget);
       verifyNever(cubit.revealNumber);
       verifyNever(cubit.copyNumber);
     });

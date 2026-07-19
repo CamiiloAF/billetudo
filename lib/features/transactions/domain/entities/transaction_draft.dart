@@ -169,18 +169,24 @@ class TransactionDraft extends Equatable {
       case TransactionType.expense:
       case TransactionType.income:
         final categoryId = this.categoryId;
-        if (categoryId != null) {
-          final expectedKind = type == TransactionType.expense
-              ? CategoryKind.expense
-              : CategoryKind.income;
-          if (categoryKind != expectedKind) {
-            return Left(
-              ValidationFailure(
-                'the category must be of kind ${expectedKind.name}',
-                field: fieldCategoryId,
-              ),
-            );
-          }
+        final expectedKind = type == TransactionType.expense
+            ? CategoryKind.expense
+            : CategoryKind.income;
+        if (categoryId == null) {
+          return const Left(
+            ValidationFailure(
+              'a category is required',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        if (categoryKind != expectedKind) {
+          return Left(
+            ValidationFailure(
+              'the category must be of kind ${expectedKind.name}',
+              field: fieldCategoryId,
+            ),
+          );
         }
         return Right((categoryId, categoryKind, null));
     }

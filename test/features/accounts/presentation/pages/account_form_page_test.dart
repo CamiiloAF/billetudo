@@ -1,6 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/page_header_circle_button.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_state.dart';
@@ -282,10 +283,10 @@ void main() {
       ),
     );
 
-    final save = tester.widget<IconButton>(
+    final save = tester.widget<PageHeaderCircleButton>(
       find.ancestor(
         of: find.byIcon(LucideIcons.check),
-        matching: find.byType(IconButton),
+        matching: find.byType(PageHeaderCircleButton),
       ),
     );
     expect(save.onPressed, isNull);

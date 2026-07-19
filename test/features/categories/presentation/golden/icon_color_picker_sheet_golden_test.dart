@@ -2,7 +2,7 @@ import 'package:billetudo/features/categories/presentation/widgets/icon_color_pi
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 /// `ParentCategoryPickerSheet` is deliberately not covered here: unlike this
 /// sheet, it resolves its cubit through `getIt` (see

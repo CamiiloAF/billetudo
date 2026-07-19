@@ -13,8 +13,10 @@ class CurrencySubtotal extends Equatable {
 
   final String currency;
 
-  /// Sum of the balances of the active accounts in this currency. Card debt
-  /// counts negatively, so this is net worth, not just assets.
+  /// Sum of the balances of the active accounts in this currency, **excluding
+  /// credit cards entirely**: a card neither adds to net worth as an asset nor
+  /// nets it down as a liability here. Its debt is reported separately, in
+  /// [debtMinor].
   final int netWorthMinor;
 
   /// Sum of the debts of the cards in this currency, as a positive figure.
@@ -43,22 +45,28 @@ class AccountsOverview extends Equatable {
 
     for (final entry in accounts) {
       final currency = entry.account.currency;
-      netWorthByCurrency.update(
-        currency,
-        (value) => value + entry.balance.balanceMinor,
-        ifAbsent: () => entry.balance.balanceMinor,
-      );
-      // Only cards carry debt; a negative cash balance is an accounting
-      // artifact, not a liability we advertise.
-      final debtMinor = entry.account.isCard ? entry.balance.debtMinor : 0;
-      debtByCurrency.update(
-        currency,
-        (value) => value + debtMinor,
-        ifAbsent: () => debtMinor,
-      );
+      // A credit card is excluded from net worth altogether — it neither adds
+      // as an asset nor nets in as debt there; its debt is only ever reported
+      // through the separate `debtByCurrency` sub-total below.
+      if (!entry.account.isCard) {
+        netWorthByCurrency.update(
+          currency,
+          (value) => value + entry.balance.balanceMinor,
+          ifAbsent: () => entry.balance.balanceMinor,
+        );
+      } else {
+        final debtMinor = entry.balance.debtMinor;
+        debtByCurrency.update(
+          currency,
+          (value) => value + debtMinor,
+          ifAbsent: () => debtMinor,
+        );
+      }
     }
 
-    final currencies = netWorthByCurrency.keys.toList()..sort();
+    final currencies = {...netWorthByCurrency.keys, ...debtByCurrency.keys}
+        .toList()
+      ..sort();
     return AccountsOverview([
       for (final currency in currencies)
         CurrencySubtotal(
