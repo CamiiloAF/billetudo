@@ -29,12 +29,29 @@ class ScheduledPaymentEditableAmountField extends StatefulWidget {
     required this.amountMinor,
     required this.currency,
     required this.onChanged,
+    this.label,
+    this.valueColor,
+    this.amountPrefix = '',
     super.key,
   });
 
   final int amountMinor;
   final String currency;
   final ValueChanged<int> onChanged;
+
+  /// Already localized. `null` falls back to the form's generic "Monto"; the
+  /// confirmation sheet passes "Monto a registrar"/"Monto a transferir".
+  final String? label;
+
+  /// The collapsed value's colour. `null` keeps the brand `primary` the
+  /// template form uses; the confirmation sheet passes the type's own tone
+  /// (`text-primary` for a gasto, `income-text` for an ingreso).
+  final Color? valueColor;
+
+  /// Prepended to the formatted amount — `'+'` for an ingreso, empty
+  /// otherwise (an expense is never shown with a minus sign here: the sheet
+  /// already says what it is registering).
+  final String amountPrefix;
 
   @override
   State<ScheduledPaymentEditableAmountField> createState() =>
@@ -91,6 +108,8 @@ class _ScheduledPaymentEditableAmountFieldState
                 key: const ValueKey('expanded'),
                 amountMinor: _buffer.amountMinor,
                 currency: widget.currency,
+                label: widget.label,
+                amountPrefix: widget.amountPrefix,
                 onCollapse: _collapse,
                 onDigit: (digit) => _apply(
                     _buffer.digitPressed(digit, currency: widget.currency)),
@@ -105,6 +124,9 @@ class _ScheduledPaymentEditableAmountFieldState
                 key: const ValueKey('collapsed'),
                 amountMinor: _buffer.amountMinor,
                 currency: widget.currency,
+                label: widget.label,
+                valueColor: widget.valueColor,
+                amountPrefix: widget.amountPrefix,
                 onExpand: _expand,
               ),
       ),
@@ -125,11 +147,15 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.label,
+    this.amountPrefix = '',
     super.key,
   });
 
   final int amountMinor;
   final String currency;
+  final String? label;
+  final String amountPrefix;
   final VoidCallback onCollapse;
   final ValueChanged<int> onDigit;
   final VoidCallback onDecimal;
@@ -150,7 +176,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                l10n.transactionFormAmountLabel,
+                label ?? l10n.transactionFormAmountLabel,
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: colors.textSecondary,
                   fontSize: 12,
@@ -171,7 +197,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
-            money.formatSymbol(amountMinor, currencyCode: currency),
+            '$amountPrefix${money.formatSymbol(amountMinor, currencyCode: currency)}',
             textAlign: TextAlign.center,
             style: theme.textTheme.displaySmall?.copyWith(
               color: colors.primary,
@@ -200,11 +226,17 @@ class ScheduledPaymentAmountCollapsed extends StatelessWidget {
     required this.amountMinor,
     required this.currency,
     required this.onExpand,
+    this.label,
+    this.valueColor,
+    this.amountPrefix = '',
     super.key,
   });
 
   final int amountMinor;
   final String currency;
+  final String? label;
+  final Color? valueColor;
+  final String amountPrefix;
   final VoidCallback onExpand;
 
   @override
@@ -223,7 +255,7 @@ class ScheduledPaymentAmountCollapsed extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  l10n.transactionFormAmountLabel,
+                  label ?? l10n.transactionFormAmountLabel,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.textSecondary,
                     fontSize: 12,
@@ -232,9 +264,9 @@ class ScheduledPaymentAmountCollapsed extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  money.formatSymbol(amountMinor, currencyCode: currency),
+                  '$amountPrefix${money.formatSymbol(amountMinor, currencyCode: currency)}',
                   style: theme.textTheme.titleLarge?.copyWith(
-                    color: colors.primary,
+                    color: valueColor ?? colors.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),

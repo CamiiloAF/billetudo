@@ -40,12 +40,10 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
 import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
-import '../../features/scheduled_payments/presentation/cubit/finished_scheduled_payments_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payments_list_cubit.dart';
-import '../../features/scheduled_payments/presentation/pages/finished_scheduled_payments_page.dart';
 import '../../features/scheduled_payments/presentation/pages/pending_occurrences_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
@@ -94,8 +92,6 @@ abstract final class AppRoutes {
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
-  static const String finishedScheduledPayments =
-      '/pagos-programados/terminados';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -667,13 +663,11 @@ GoRoute _scheduledPaymentsRoute() => GoRoute(
           onOpenScheduledPayment: (id) =>
               context.push(AppRoutes.scheduledPayment(id)),
           onOpenPending: () => context.push(AppRoutes.pendingScheduledPayments),
-          onOpenFinished: () =>
-              context.push(AppRoutes.finishedScheduledPayments),
         ),
       ),
       routes: [
-        // Declared before ':id' so "nuevo"/"por-confirmar"/"terminados" are
-        // never read as ids.
+        // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
+        // ids.
         GoRoute(
           path: 'nuevo',
           parentNavigatorKey: _rootNavigatorKey,
@@ -689,20 +683,6 @@ GoRoute _scheduledPaymentsRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<PendingOccurrencesCubit>(), (c) => c.start()),
             child: const PendingOccurrencesPage(),
-          ),
-        ),
-        GoRoute(
-          path: 'terminados',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _started(
-              getIt<FinishedScheduledPaymentsCubit>(),
-              (c) => c.start(),
-            ),
-            child: FinishedScheduledPaymentsPage(
-              onOpenScheduledPayment: (id) =>
-                  context.push(AppRoutes.scheduledPayment(id)),
-            ),
           ),
         ),
         GoRoute(

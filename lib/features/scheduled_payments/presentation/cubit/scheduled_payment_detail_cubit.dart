@@ -134,7 +134,8 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     await _undoSnoozeOccurrence(occurrenceId);
   }
 
-  void dismissUndoSnooze() => emit(state.copyWith(clearPendingUndoSnooze: true));
+  void dismissUndoSnooze() =>
+      emit(state.copyWith(clearPendingUndoSnooze: true));
 
   @override
   Future<void> close() async {

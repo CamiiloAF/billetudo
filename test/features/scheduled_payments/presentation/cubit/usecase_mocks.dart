@@ -27,8 +27,7 @@ class MockGetScheduledPayments extends Mock implements GetScheduledPayments {}
 class MockGenerateDueScheduledPayments extends Mock
     implements GenerateDueScheduledPayments {}
 
-class MockGetPendingOccurrences extends Mock
-    implements GetPendingOccurrences {}
+class MockGetPendingOccurrences extends Mock implements GetPendingOccurrences {}
 
 class MockGetFinishedScheduledPayments extends Mock
     implements GetFinishedScheduledPayments {}

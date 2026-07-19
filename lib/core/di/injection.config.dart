@@ -227,8 +227,6 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/update_sch
     as _i843;
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_cubit.dart'
     as _i385;
-import 'package:billetudo/features/scheduled_payments/presentation/cubit/finished_scheduled_payments_cubit.dart'
-    as _i878;
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/guided_review_cubit.dart'
     as _i414;
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart'
@@ -636,8 +634,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i722.WatchCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i172.WatchParentCandidates>(
         () => _i172.WatchParentCandidates(gh<_i802.CategoryRepository>()));
-    gh.factory<_i1099.SuggestSubcategoryIcon>(() =>
-        _i1099.SuggestSubcategoryIcon(gh<_i802.CategoryRepository>()));
+    gh.factory<_i1099.SuggestSubcategoryIcon>(
+        () => _i1099.SuggestSubcategoryIcon(gh<_i802.CategoryRepository>()));
     gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
           gh<_i722.WatchCategories>(),
           gh<_i562.ReorderCategories>(),
@@ -674,9 +672,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i460.SetTransactionTags>(),
           gh<_i837.WatchAccounts>(),
         ));
-    gh.factory<_i878.FinishedScheduledPaymentsCubit>(() =>
-        _i878.FinishedScheduledPaymentsCubit(
-            gh<_i274.GetFinishedScheduledPayments>()));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),

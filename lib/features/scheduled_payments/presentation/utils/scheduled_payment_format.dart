@@ -38,16 +38,21 @@ abstract final class ScheduledPaymentFormat {
         ScheduledPaymentFrequency.yearly => l10n.scheduledFrequencyYearly,
       };
 
-  /// The icon for the frequency chip: a loop for anything recurring, a plain
-  /// calendar for a one-off payment.
+  /// The icon for the frequency chip: a loop for anything recurring,
+  /// `calendar-check` for a one-off payment (page spec — never the generic
+  /// calendar, which reads as "a date" instead of "done, just once").
   static IconData frequencyIcon(ScheduledPaymentFrequency frequency) =>
       frequency == ScheduledPaymentFrequency.once
-          ? LucideIcons.calendar1
+          ? LucideIcons.calendarCheck
           : LucideIcons.repeat;
 
   /// The "en N días" pill, comparing [nextDate] against [today] (both
   /// truncated to the day so a due date later today still reads as "Vence
   /// hoy" instead of "en 0 días").
+  ///
+  /// A date already in the past reads "hace N días": collapsing everything
+  /// overdue into "Vence hoy" was honest only for an occurrence that just
+  /// came due, and plainly wrong on a template whose date passed weeks ago.
   static String dueInLabel(
     AppLocalizations l10n,
     DateTime nextDate, {
@@ -56,8 +61,14 @@ abstract final class ScheduledPaymentFormat {
     final from = DateTime(today.year, today.month, today.day);
     final to = DateTime(nextDate.year, nextDate.month, nextDate.day);
     final days = to.difference(from).inDays;
-    if (days <= 0) {
+    if (days == 0) {
       return l10n.scheduledDueToday;
+    }
+    if (days < 0) {
+      final ago = -days;
+      return ago == 1
+          ? l10n.scheduledDueOneDayAgo
+          : l10n.scheduledDueDaysAgo(ago);
     }
     if (days == 1) {
       return l10n.scheduledDueInOneDay;
@@ -71,10 +82,38 @@ abstract final class ScheduledPaymentFormat {
   }
 
   /// The long form used by the detail hero's recurrence sentence, e.g.
-  /// "13 de julio de 2026".
+  /// "13 de julio de 2026" — spelled-out month so it reads as prose next to
+  /// the sentence's other date, never "13 jul 2026".
   static String longDateLabel(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMMd(locale).format(date);
+  }
+
+  /// The compact form with a year ("15 jun 2026") the "Ya generados" rows
+  /// use: they span years, but the sub-line competes with the amount for
+  /// width, so the month stays abbreviated there.
+  static String shortDateLabel(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
     return DateFormat.yMMMd(locale).format(date);
+  }
+
+  /// The detail hero's big date, "13 de agosto, 2026" (`OY2Kj`).
+  ///
+  /// `yMMMMd` renders Spanish as "13 de agosto de 2026", so Spanish uses the
+  /// design's explicit pattern; every other locale keeps the ICU default.
+  static String heroDateLabel(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    if (locale.startsWith('es')) {
+      return DateFormat("d 'de' MMMM, y", locale).format(date);
+    }
+    return DateFormat.yMMMMd(locale).format(date);
+  }
+
+  /// The day-and-month form the hero's natural-language sentence uses ("26 de
+  /// julio"): the year is already implied by the big date above it.
+  static String phraseDateLabel(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.MMMMd(locale).format(date);
   }
 
   /// The natural-language sentence under the detail hero describing how a
@@ -92,7 +131,7 @@ abstract final class ScheduledPaymentFormat {
     AppLocalizations l10n,
     ScheduledPayment payment,
   ) {
-    final date = longDateLabel(context, payment.nextDate);
+    final date = phraseDateLabel(context, payment.nextDate);
     if (payment.frequency == ScheduledPaymentFrequency.once) {
       return l10n.scheduledPaymentDetailRecurrenceOnce(date);
     }
@@ -144,4 +183,44 @@ abstract final class ScheduledPaymentFormat {
       (isTransfer
           ? '$accountName → ${transferAccountName ?? ''}'
           : accountName);
+
+  /// The display name of a template in the list and in the "por confirmar"
+  /// rows: the user-written [note] when there is one (the design's "Arriendo",
+  /// "Ahorro mensual"), falling back to [templateTitle] otherwise.
+  static String templateName({
+    required String? note,
+    required String? categoryName,
+    required bool isTransfer,
+    required String accountName,
+    String? transferAccountName,
+  }) {
+    final trimmed = note?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      return trimmed;
+    }
+    return templateTitle(
+      categoryName: categoryName,
+      isTransfer: isTransfer,
+      accountName: accountName,
+      transferAccountName: transferAccountName,
+    );
+  }
+
+  /// The sub-line of a card/row: "Cuenta · Categoría", or "origen → destino"
+  /// for a transfer (the account data HU-04 asks for, not redundancy — see
+  /// the page spec).
+  static String accountCategoryLine({
+    required String accountName,
+    required String? categoryName,
+    required bool isTransfer,
+    String? transferAccountName,
+  }) {
+    if (isTransfer) {
+      return '$accountName → ${transferAccountName ?? ''}';
+    }
+    if (categoryName == null || categoryName.isEmpty) {
+      return accountName;
+    }
+    return '$accountName · $categoryName';
+  }
 }

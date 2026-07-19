@@ -44,8 +44,7 @@ class ScheduledPaymentTagsLocalDatasource {
     final query = _db.selectOnly(_db.scheduledPaymentTags)
       ..addColumns([_db.scheduledPaymentTags.tagId])
       ..where(
-        _db.scheduledPaymentTags.scheduledPaymentId
-                .equals(scheduledPaymentId) &
+        _db.scheduledPaymentTags.scheduledPaymentId.equals(scheduledPaymentId) &
             _db.scheduledPaymentTags.deletedAt.isNull() &
             _db.scheduledPaymentTags.tombstonedAt.isNull(),
       );
@@ -62,8 +61,7 @@ class ScheduledPaymentTagsLocalDatasource {
       ),
     ])
       ..where(
-        _db.scheduledPaymentTags.scheduledPaymentId
-                .equals(scheduledPaymentId) &
+        _db.scheduledPaymentTags.scheduledPaymentId.equals(scheduledPaymentId) &
             _db.scheduledPaymentTags.deletedAt.isNull() &
             _db.scheduledPaymentTags.tombstonedAt.isNull(),
       );

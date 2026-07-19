@@ -8,7 +8,9 @@ import 'package:mocktail/mocktail.dart';
 import '../../scheduled_payment_fixtures.dart';
 import 'usecase_mocks.dart';
 
-/// HU-07: the Posponer sheet's floor is `max(fecha original, hoy)`, saving
+/// HU-07: the Posponer sheet's floor is `max(fecha original, hoy)` and the new
+/// date must be strictly after it, so the first selectable day is the day
+/// after that floor; saving
 /// moves only the target occurrence, and it never affects the template's
 /// cadence or balance (that lives entirely in the use case; here we only
 /// verify the cubit wires it correctly).
@@ -25,7 +27,8 @@ void main() {
 
   group('start', () {
     blocTest<SnoozeSheetCubit, SnoozeSheetState>(
-      'floor is the occurrence date when it is later than today',
+      'first selectable day is the day after the occurrence date when it is '
+      'later than today',
       build: build,
       act: (cubit) => cubit.start(
         scheduledPaymentId: 'sp-1',
@@ -34,14 +37,15 @@ void main() {
       ),
       expect: () => [
         SnoozeSheetState(
-          minDate: DateTime(2026, 8, 10),
-          selectedDate: DateTime(2026, 8, 10),
+          minDate: DateTime(2026, 8, 11),
+          selectedDate: DateTime(2026, 8, 11),
         ),
       ],
     );
 
     blocTest<SnoozeSheetCubit, SnoozeSheetState>(
-      'floor is today when the occurrence date is already in the past (overdue)',
+      'first selectable day is tomorrow when the occurrence date is already '
+      'in the past (overdue)',
       build: build,
       act: (cubit) => cubit.start(
         scheduledPaymentId: 'sp-1',
@@ -50,8 +54,8 @@ void main() {
       ),
       expect: () => [
         SnoozeSheetState(
-          minDate: DateTime(2026, 7, 15),
-          selectedDate: DateTime(2026, 7, 15),
+          minDate: DateTime(2026, 7, 16),
+          selectedDate: DateTime(2026, 7, 16),
         ),
       ],
     );
@@ -70,11 +74,11 @@ void main() {
     },
     expect: () => [
       SnoozeSheetState(
-        minDate: DateTime(2026, 7, 15),
-        selectedDate: DateTime(2026, 7, 15),
+        minDate: DateTime(2026, 7, 16),
+        selectedDate: DateTime(2026, 7, 16),
       ),
       SnoozeSheetState(
-        minDate: DateTime(2026, 7, 15),
+        minDate: DateTime(2026, 7, 16),
         selectedDate: DateTime(2026, 7, 20),
       ),
     ],

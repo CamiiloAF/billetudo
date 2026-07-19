@@ -44,8 +44,7 @@ void main() {
 
   setUp(() async {
     account = await createAccount('Efectivo');
-    expenseCategory =
-        await createCategory('Renta', kind: CategoryKind.expense);
+    expenseCategory = await createCategory('Renta', kind: CategoryKind.expense);
   });
 
   ScheduledPaymentDraft monthlyDraft({
@@ -154,8 +153,7 @@ void main() {
             .copyWithAmount(99999),
       );
 
-      final generatedAfter =
-          await database.select(database.transactions).get();
+      final generatedAfter = await database.select(database.transactions).get();
       expect(generatedAfter.single.amountMinor, originalAmount);
     });
 
@@ -169,8 +167,7 @@ void main() {
   });
 
   group('deleteScheduledPayment (HU-05)', () {
-    test('borra vía tombstonedAt y preserva la referencia histórica',
-        () async {
+    test('borra vía tombstonedAt y preserva la referencia histórica', () async {
       final template = await createTemplate(
         monthlyDraft(nextDate: DateTime(2026, 7, 1)),
       );
@@ -295,7 +292,8 @@ void main() {
         hasLength(1),
       );
       expect(
-        summaries.firstWhere((s) => s.scheduledPayment.id == template.id)
+        summaries
+            .firstWhere((s) => s.scheduledPayment.id == template.id)
             .pendingOccurrenceCount,
         1,
       );
@@ -461,8 +459,7 @@ void main() {
       expect(templateRow.amountMinor, 50000);
     });
 
-    test('omitir descarta sin generar transacción y es reversible',
-        () async {
+    test('omitir descarta sin generar transacción y es reversible', () async {
       final template = await createTemplate(
         monthlyDraft(
           nextDate: DateTime(2026, 7, 1),
@@ -526,8 +523,7 @@ void main() {
       );
       final occurrenceId = snoozeResult.getRight().toNullable()!.id;
 
-      final undoResult =
-          await repository.undoSnoozeOccurrence(occurrenceId);
+      final undoResult = await repository.undoSnoozeOccurrence(occurrenceId);
 
       expect(undoResult.isRight(), isTrue);
       final remaining =
@@ -537,8 +533,7 @@ void main() {
   });
 
   group('watchScheduledPaymentDetail / history (criterio 13)', () {
-    test('expone la primera página y el conteo total del historial',
-        () async {
+    test('expone la primera página y el conteo total del historial', () async {
       final template = await createTemplate(
         monthlyDraft(nextDate: DateTime(2026, 1, 1)),
       );
@@ -546,9 +541,8 @@ void main() {
         now: DateTime(2026, 5, 1),
       );
 
-      final result = await repository
-          .watchScheduledPaymentDetail(template.id)
-          .first;
+      final result =
+          await repository.watchScheduledPaymentDetail(template.id).first;
 
       final detail = result.getRight().toNullable()!;
       expect(detail.historyTotalCount, 5);
@@ -579,10 +573,49 @@ void main() {
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
     });
   });
+
+  group('watchFinishedScheduledPayments (filtro "Terminados")', () {
+    test(
+        'expone la fecha del último pago realmente generado, no la de fin '
+        'de la plantilla', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 1, 15),
+          endDate: DateTime(2026, 3, 31),
+        ),
+      );
+      // Modo automático: la puesta al día confirma cada vencimiento hasta
+      // que la plantilla pasa su endDate y deja de generar.
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 4, 1));
+
+      final result = await repository.watchFinishedScheduledPayments().first;
+      final items = result.getRight().toNullable()!;
+
+      expect(items, hasLength(1));
+      expect(items.single.scheduledPayment.id, template.id);
+      expect(items.single.lastPaymentDate, DateTime(2026, 3, 15));
+    });
+
+    test('sin pagos generados no hay fecha que mostrar', () async {
+      await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 5, 1),
+          endDate: DateTime(2026, 4, 1),
+        ),
+      );
+
+      final result = await repository.watchFinishedScheduledPayments().first;
+      final items = result.getRight().toNullable()!;
+
+      expect(items, hasLength(1));
+      expect(items.single.lastPaymentDate, isNull);
+    });
+  });
 }
 
 extension on ScheduledPaymentDraft {
-  ScheduledPaymentDraft copyWithAmount(int amountMinor) => ScheduledPaymentDraft(
+  ScheduledPaymentDraft copyWithAmount(int amountMinor) =>
+      ScheduledPaymentDraft(
         id: id,
         accountId: accountId,
         categoryId: categoryId,

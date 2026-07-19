@@ -29,7 +29,8 @@ void main() {
     expect(find.byType(NumericKeypad), findsNothing);
   });
 
-  testWidgets('tocar la fila expande el teclado calculadora embebido (nunca un AlertDialog)',
+  testWidgets(
+      'tocar la fila expande el teclado calculadora embebido (nunca un AlertDialog)',
       (tester) async {
     await tester.pumpWidget(
       appWith(
@@ -48,7 +49,8 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
   });
 
-  testWidgets('teclear un dígito recalcula el monto en centavos (entero) y lo reporta',
+  testWidgets(
+      'teclear un dígito recalcula el monto en centavos (entero) y lo reporta',
       (tester) async {
     int? reported;
     await tester.pumpWidget(

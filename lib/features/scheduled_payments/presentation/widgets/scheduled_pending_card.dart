@@ -5,6 +5,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/pending_scheduled_occurrence.dart';
+import '../utils/pending_occurrence_grouping.dart';
 import 'scheduled_category_icon_wrap.dart';
 import 'scheduled_pending_row.dart';
 
@@ -34,8 +35,9 @@ class ScheduledPendingCard extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final visible = items.take(maxVisibleRows).toList();
-    final overflow = items.skip(visible.length).toList();
+    final groups = PendingOccurrenceGroup.groupByTemplate(items);
+    final visible = groups.take(maxVisibleRows).toList();
+    final overflow = groups.skip(visible.length).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,7 +50,7 @@ class ScheduledPendingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.scheduledPendingCardTitle(items.length),
+                    l10n.scheduledPendingCardTitle(groups.length),
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
@@ -79,8 +81,12 @@ class ScheduledPendingCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (final entry in visible) ...[
-                ScheduledPendingRow(entry: entry, onTap: () => onTapRow(entry)),
+              for (final group in visible) ...[
+                ScheduledPendingRow(
+                  entry: group.entry,
+                  count: group.count,
+                  onTap: () => onTapRow(group.entry),
+                ),
                 const SizedBox(height: 6),
               ],
               if (overflow.isNotEmpty)
@@ -107,7 +113,7 @@ class ScheduledPendingOverflowRow extends StatelessWidget {
     super.key,
   });
 
-  final List<PendingScheduledOccurrence> overflow;
+  final List<PendingOccurrenceGroup> overflow;
   final VoidCallback onTap;
 
   static const int _maxIcons = 3;
@@ -126,11 +132,11 @@ class ScheduledPendingOverflowRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            for (final entry in overflow.take(_maxIcons)) ...[
+            for (final group in overflow.take(_maxIcons)) ...[
               ScheduledCategoryIconWrap(
-                isTransfer: entry.scheduledPayment.isTransfer,
-                categoryIcon: entry.categoryIcon,
-                categoryColor: entry.categoryColor,
+                isTransfer: group.entry.scheduledPayment.isTransfer,
+                categoryIcon: group.entry.categoryIcon,
+                categoryColor: group.entry.categoryColor,
                 size: _iconSize,
                 iconSize: 11,
               ),

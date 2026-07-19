@@ -76,7 +76,8 @@ class ScheduledPaymentDetailState extends Equatable {
         snoozePrompt: snoozePrompt ?? this.snoozePrompt,
         pendingUndoSnoozeOccurrenceId: clearPendingUndoSnooze
             ? null
-            : (pendingUndoSnoozeOccurrenceId ?? this.pendingUndoSnoozeOccurrenceId),
+            : (pendingUndoSnoozeOccurrenceId ??
+                this.pendingUndoSnoozeOccurrenceId),
         failure: failure,
       );
 

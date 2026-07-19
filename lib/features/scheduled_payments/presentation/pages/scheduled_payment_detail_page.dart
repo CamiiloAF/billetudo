@@ -8,6 +8,8 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../accounts/presentation/widgets/info_card.dart';
 import '../../../accounts/presentation/widgets/info_row.dart';
+import '../../../transactions/presentation/widgets/transaction_header_button.dart';
+import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../cubit/scheduled_payment_detail_cubit.dart';
 import '../cubit/scheduled_payment_detail_state.dart';
@@ -68,14 +70,34 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       },
       builder: (context, state) {
         final detail = state.detail;
+        final colors = context.colors;
         return Scaffold(
           appBar: AppBar(
+            // `OY2Kj`: same header vocabulary as the list — `arrow-left` and
+            // the ⋮ both sit inside a `$muted` circle.
+            leadingWidth: 60,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: TransactionHeaderButton(
+                icon: LucideIcons.arrowLeft,
+                background: colors.muted,
+                foreground: colors.textPrimary,
+                tooltip: l10n.commonBack,
+                onPressed: Navigator.of(context).pop,
+              ),
+            ),
             title: Text(l10n.scheduledPaymentDetailTitle),
             actions: [
               if (detail != null)
-                IconButton(
-                  icon: const Icon(LucideIcons.ellipsisVertical),
-                  onPressed: () => _openActions(context, detail),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: TransactionHeaderButton(
+                    icon: LucideIcons.ellipsisVertical,
+                    background: colors.muted,
+                    foreground: colors.textPrimary,
+                    tooltip: l10n.commonMoreActions,
+                    onPressed: () => _openActions(context, detail),
+                  ),
                 ),
             ],
           ),
@@ -105,10 +127,16 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
     ScheduledPaymentDetail detail,
   ) {
     final cubit = context.read<ScheduledPaymentDetailCubit>();
-    final canSnooze = !detail.scheduledPayment.isDeleted;
+    // HU-07: posponer moves *one* occurrence without touching the cadence.
+    // A `once` template has no cadence, so moving its date is editing the
+    // template (HU-05), not snoozing — hence Pencil's `nLkvf`, the ⋮ menu
+    // without Posponer.
+    final canSnooze = !detail.scheduledPayment.isDeleted &&
+        detail.scheduledPayment.frequency != ScheduledPaymentFrequency.once;
     return ScheduledPaymentDetailActionsSheet.show(
       context,
       canSnooze: canSnooze,
+      templateName: _templateName(detail),
       onSnooze:
           canSnooze ? () => unawaited(_openSnooze(context, detail)) : null,
       onEdit: () => onEdit(detail.scheduledPayment.id),
@@ -129,17 +157,24 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       scheduledPaymentId: detail.scheduledPayment.id,
       occurrenceDate: detail.pendingOccurrence?.occurrence.occurrenceDate ??
           detail.scheduledPayment.nextDate,
-      templateTitle: ScheduledPaymentFormat.templateTitle(
-        categoryName: detail.categoryName,
-        isTransfer: detail.scheduledPayment.isTransfer,
-        accountName: detail.accountName,
-        transferAccountName: detail.transferAccountName,
-      ),
+      templateName: _templateName(detail),
+      isTransfer: detail.scheduledPayment.isTransfer,
+      categoryIcon: detail.categoryIcon,
+      categoryColor: detail.categoryColor,
     );
     if (result != null) {
       cubit.notifySnoozed(result.id);
     }
   }
+
+  String _templateName(ScheduledPaymentDetail detail) =>
+      ScheduledPaymentFormat.templateName(
+        note: detail.scheduledPayment.note,
+        categoryName: detail.categoryName,
+        isTransfer: detail.scheduledPayment.isTransfer,
+        accountName: detail.accountName,
+        transferAccountName: detail.transferAccountName,
+      );
 }
 
 class ScheduledPaymentDetailBody extends StatelessWidget {
@@ -179,6 +214,7 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
         ScheduledPaymentHeroCard(
           payment: payment,
           pending: pending,
+          executed: detail.onceAlreadyGenerated,
           onTapPending: () => ConfirmationSheet.show(context, source: pending!),
         ),
         const SizedBox(height: 16),
@@ -198,9 +234,18 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
             ),
             InfoRow(
               label: l10n.scheduledPaymentDetailStatusLabel,
-              value: payment.isDeleted
-                  ? l10n.scheduledInactiveBadge
-                  : l10n.scheduledPaymentDetailStatusActive,
+              // The "Estado" row is the slot the design models for this: an
+              // active template with an occurrence still to confirm reads
+              // "Pendiente de confirmar" here, never as a second pill in the
+              // hero (which already owns the countdown pill).
+              value: switch ((detail.isActive, payment.isDeleted)) {
+                (true, _) when pending != null => l10n.scheduledPendingBadge,
+                (true, _) => l10n.scheduledPaymentDetailStatusActive,
+                (false, true) => l10n.scheduledInactiveBadge,
+                // `Eyold`: the one-off already fired — terminada, not
+                // inactiva (nobody deleted it) and never activa.
+                (false, false) => l10n.scheduledPaymentDetailStatusFinished,
+              },
             ),
             if (!payment.isTransfer)
               ScheduledPaymentDetailTagsRow(tags: detail.tags),
@@ -223,6 +268,17 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
           for (final entry in state.history) ...[
             ScheduledPaymentHistoryRow(
               transaction: entry,
+              name: ScheduledPaymentFormat.templateName(
+                note: payment.note,
+                categoryName: detail.categoryName,
+                isTransfer: payment.isTransfer,
+                accountName: detail.accountName,
+                transferAccountName: detail.transferAccountName,
+              ),
+              accountName: detail.accountName,
+              isTransfer: payment.isTransfer,
+              categoryIcon: detail.categoryIcon,
+              categoryColor: detail.categoryColor,
               onTap: () => onOpenTransaction(entry.id),
             ),
             const SizedBox(height: 8),
@@ -232,13 +288,15 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: state.loadingMoreHistory
                 ? const Center(child: CircularProgressIndicator())
-                : TextButton(
-                    onPressed: () => context
-                        .read<ScheduledPaymentDetailCubit>()
-                        .loadMoreHistory(),
-                    child: Text(
-                      l10n.scheduledPaymentDetailHistorySeeAll(
-                          state.historyTotalCount),
+                : Center(
+                    child: TextButton(
+                      onPressed: () => context
+                          .read<ScheduledPaymentDetailCubit>()
+                          .loadMoreHistory(),
+                      child: Text(
+                        l10n.scheduledPaymentDetailHistorySeeAll(
+                            state.historyTotalCount),
+                      ),
                     ),
                   ),
           ),

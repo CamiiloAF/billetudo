@@ -45,8 +45,8 @@ class PendingOccurrencesCubit extends Cubit<PendingOccurrencesState> {
           status: PendingOccurrencesStatus.failure,
           failure: failure,
         ),
-        (items) =>
-            state.copyWith(status: PendingOccurrencesStatus.ready, items: items),
+        (items) => state.copyWith(
+            status: PendingOccurrencesStatus.ready, items: items),
       ),
     );
   }
@@ -55,8 +55,8 @@ class PendingOccurrencesCubit extends Cubit<PendingOccurrencesState> {
   /// was skipped, so the list page can offer "Deshacer".
   void notifySkipped(String occurrenceId) => emit(
         state.copyWith(
-          pendingUndo:
-              PendingOccurrenceUndo(occurrenceId: occurrenceId, isSnooze: false),
+          pendingUndo: PendingOccurrenceUndo(
+              occurrenceId: occurrenceId, isSnooze: false),
         ),
       );
 

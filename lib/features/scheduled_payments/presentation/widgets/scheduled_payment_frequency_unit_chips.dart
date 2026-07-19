@@ -30,17 +30,27 @@ class ScheduledPaymentFrequencyUnitChips extends StatelessWidget {
       ScheduledPaymentFrequency.monthly: l10n.scheduledFrequencyChipMonthly,
       ScheduledPaymentFrequency.yearly: l10n.scheduledFrequencyChipYearly,
     };
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final entry in labels.entries)
-          ScheduledPaymentFrequencyUnitChip(
-            label: entry.value,
-            selected: entry.key == frequency,
-            onTap: () => onChanged(entry.key),
-          ),
-      ],
+    // The five units live on a single line in Pencil and keep their natural
+    // width (a fifth of the row each would clip "Semana"). On a narrow phone
+    // or with a large text scale the strip **scrolls** instead of shrinking:
+    // scaling the labels down would silently push the type below MASTER.md's
+    // minimum without failing anything.
+    final entries = labels.entries.toList();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < entries.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            ScheduledPaymentFrequencyUnitChip(
+              label: entries[i].value,
+              selected: entries[i].key == frequency,
+              onTap: () => onChanged(entries[i].key),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -62,24 +72,23 @@ class ScheduledPaymentFrequencyUnitChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    // `J0DSIm`: the selected chip is **solid** `$primary`. An outline over
+    // the same `$muted` fill left it lighter than its unselected neighbours.
     return Material(
-      color: colors.muted,
+      color: selected ? colors.primary : colors.muted,
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            border: Border.all(
-              color: selected ? colors.primary : Colors.transparent,
-            ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: theme.textTheme.labelLarge?.copyWith(
-              color: selected ? colors.primaryDeep : colors.textSecondary,
+              color: selected ? colors.onPrimary : colors.textSecondary,
               fontWeight: FontWeight.w700,
             ),
           ),

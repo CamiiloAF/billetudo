@@ -41,7 +41,8 @@ void main() {
     expect(find.textContaining('Ver los otros'), findsNothing);
   });
 
-  testWidgets('con más ítems que maxVisibleRows, corta la lista y muestra el overflow',
+  testWidgets(
+      'con más ítems que maxVisibleRows, corta la lista y muestra el overflow',
       (tester) async {
     await tester.pumpWidget(
       appWith(

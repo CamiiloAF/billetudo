@@ -55,12 +55,14 @@ class ScheduledPaymentFormPage extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             leadingWidth: 60,
+            // `J0DSIm` draws the form's ✕ as a bare icon — unlike the
+            // detail's `arrow-left`/⋮, which do sit in a `$muted` circle.
+            // The difference is intentional; do not unify them.
             leading: Padding(
               padding: const EdgeInsets.only(left: 12),
-              child: TransactionHeaderButton(
-                icon: LucideIcons.x,
-                background: colors.muted,
-                foreground: colors.textPrimary,
+              child: IconButton(
+                icon: const Icon(LucideIcons.x, size: 20),
+                color: colors.textPrimary,
                 tooltip: l10n.commonCancel,
                 onPressed: Navigator.of(context).pop,
               ),
@@ -194,7 +196,12 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         ScheduledPaymentDateField(
-          label: l10n.scheduledPaymentFormNextDateLabel,
+          // The label itself is part of the `once` disclosure (spec
+          // §"Disclosure condicional de la frecuencia"): with no recurrence
+          // there is no "primer" pago, just *the* payment date.
+          label: state.showRecurrenceOptions
+              ? l10n.scheduledPaymentFormNextDateLabel
+              : l10n.scheduledPaymentFormOnceDateLabel,
           date: state.nextDate,
           onChanged: cubit.nextDateChanged,
         ),
@@ -209,6 +216,15 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
+        Text(
+          l10n.scheduledPaymentFormModeSectionLabel,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: colors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
         ScheduledPaymentModeRadioCard(
           selected: !state.requiresConfirmation,
           icon: LucideIcons.zap,
@@ -224,10 +240,19 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           subtitle: l10n.scheduledPaymentFormModeManualSubtitle,
           onTap: () => cubit.requiresConfirmationChanged(true),
         ),
+        const SizedBox(height: 16),
+        Text(
+          l10n.transactionFormNoteLabel,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: colors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           initialValue: state.note,
-          decoration: InputDecoration(labelText: l10n.transactionFormNoteLabel),
+          decoration: InputDecoration(hintText: l10n.transactionFormNoteLabel),
           onChanged: cubit.noteChanged,
         ),
         if (!state.isTransfer) ...[

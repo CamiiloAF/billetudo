@@ -74,7 +74,8 @@ void main() {
         when(() => getDetail('sp-1'))
             .thenAnswer((_) => Stream.value(Right(detail)));
         when(
-          () => getHistory('sp-1', offset: any(named: 'offset'), limit: any(named: 'limit')),
+          () => getHistory('sp-1',
+              offset: any(named: 'offset'), limit: any(named: 'limit')),
         ).thenAnswer((_) async => const Right([]));
       },
       build: build,

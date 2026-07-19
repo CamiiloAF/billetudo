@@ -24,6 +24,10 @@
   "@commonBack": {
     "description": "Etiqueta accesible del botón atrás del Page Header."
   },
+  "commonMoreActions": "Más opciones",
+  "@commonMoreActions": {
+    "description": "Etiqueta accesible del botón ⋮ del Page Header."
+  },
   "commonApply": "Aplicar",
   "@commonApply": {},
   "commonDone": "Listo",
@@ -1076,7 +1080,7 @@
   "@scheduledPaymentsAdd": {},
   "scheduledPaymentsLoading": "Cargando tus pagos programados",
   "@scheduledPaymentsLoading": {},
-  "scheduledPaymentsEmptyMessage": "Aún no tienes pagos programados. Agrega uno para no perder de vista tus pagos recurrentes.",
+  "scheduledPaymentsEmptyMessage": "Aún no tienes pagos programados",
   "@scheduledPaymentsEmptyMessage": {},
   "scheduledPaymentsErrorTitle": "No pudimos cargar tus pagos programados",
   "@scheduledPaymentsErrorTitle": {},
@@ -1123,43 +1127,49 @@
   "@scheduledSnoozeSheetSave": {},
   "scheduledDeleteSheetTitle": "¿Eliminar este pago programado?",
   "@scheduledDeleteSheetTitle": {},
-  "scheduledDeleteSheetMessage": "Se detiene la generación de nuevos pagos, pero los movimientos ya generados conservan su historial.",
+  "scheduledDeleteSheetMessage": "Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.",
   "@scheduledDeleteSheetMessage": {},
   "scheduledPaymentFormNewTitle": "Nuevo pago programado",
   "@scheduledPaymentFormNewTitle": {},
   "scheduledPaymentFormEditTitle": "Editar pago programado",
   "@scheduledPaymentFormEditTitle": {},
-  "scheduledPaymentFormNextDateLabel": "Próxima fecha",
+  "scheduledPaymentFormNextDateLabel": "Primer pago",
   "@scheduledPaymentFormNextDateLabel": {},
+  "scheduledPaymentFormOnceDateLabel": "Fecha del pago",
+  "@scheduledPaymentFormOnceDateLabel": {},
+  "scheduledPaymentFormModeSectionLabel": "Al llegar la fecha",
+  "@scheduledPaymentFormModeSectionLabel": {},
+  "scheduledPaymentFormTagNew": "Etiqueta",
+  "@scheduledPaymentFormTagNew": {},
   "scheduledPaymentFormFrequencyLabel": "Frecuencia",
   "@scheduledPaymentFormFrequencyLabel": {},
   "scheduledPaymentFormCategoryMoreLabel": "Otra",
   "@scheduledPaymentFormCategoryMoreLabel": {},
   "scheduledPaymentFormIntervalStepperLabel": "Repetir cada",
   "@scheduledPaymentFormIntervalStepperLabel": {},
-  "scheduledPaymentFormEndDateLabel": "Fecha de fin",
+  "scheduledPaymentFormEndDateLabel": "Termina",
   "@scheduledPaymentFormEndDateLabel": {},
-  "scheduledPaymentFormEndDateNone": "Sin fecha de fin",
+  "scheduledPaymentFormEndDateNone": "Para siempre",
   "@scheduledPaymentFormEndDateNone": {},
   "scheduledPaymentFormModeAutomaticTitle": "Automático",
   "@scheduledPaymentFormModeAutomaticTitle": {},
-  "scheduledPaymentFormModeAutomaticSubtitle": "Se registra solo",
+  "scheduledPaymentFormModeAutomaticSubtitle": "Se registra solo al llegar la fecha",
   "@scheduledPaymentFormModeAutomaticSubtitle": {},
   "scheduledPaymentFormModeManualTitle": "Manual",
   "@scheduledPaymentFormModeManualTitle": {},
-  "scheduledPaymentFormModeManualSubtitle": "Te avisamos antes de afectar tu saldo",
+  "scheduledPaymentFormModeManualSubtitle": "Te avisamos para que confirmes antes de afectar tu saldo",
   "@scheduledPaymentFormModeManualSubtitle": {},
   "scheduledPaymentFormDeleteAction": "Eliminar pago programado",
   "@scheduledPaymentFormDeleteAction": {},
   "scheduledFrequencyOnce": "Solo una vez",
   "@scheduledFrequencyOnce": {},
-  "scheduledFrequencyDaily": "Cada día",
+  "scheduledFrequencyDaily": "cada día",
   "@scheduledFrequencyDaily": {},
-  "scheduledFrequencyWeekly": "Cada semana",
+  "scheduledFrequencyWeekly": "cada semana",
   "@scheduledFrequencyWeekly": {},
-  "scheduledFrequencyMonthly": "Cada mes",
+  "scheduledFrequencyMonthly": "cada mes",
   "@scheduledFrequencyMonthly": {},
-  "scheduledFrequencyYearly": "Cada año",
+  "scheduledFrequencyYearly": "cada año",
   "@scheduledFrequencyYearly": {},
   "scheduledFrequencyChipOnce": "Único",
   "@scheduledFrequencyChipOnce": {},
@@ -1171,13 +1181,13 @@
   "@scheduledFrequencyChipMonthly": {},
   "scheduledFrequencyChipYearly": "Año",
   "@scheduledFrequencyChipYearly": {},
-  "scheduledPaymentDetailTitle": "Pago programado",
+  "scheduledPaymentDetailTitle": "Detalle",
   "@scheduledPaymentDetailTitle": {},
   "scheduledPaymentDetailNextPayment": "Próximo pago: {date}",
   "@scheduledPaymentDetailNextPayment": {
     "placeholders": { "date": { "type": "String" } }
   },
-  "scheduledPaymentDetailHistoryTitle": "Historial",
+  "scheduledPaymentDetailHistoryTitle": "Ya generados",
   "@scheduledPaymentDetailHistoryTitle": {},
   "scheduledPaymentDetailHistoryEmpty": "Todavía no se ha generado ningún movimiento de este pago programado.",
   "@scheduledPaymentDetailHistoryEmpty": {},
@@ -1185,9 +1195,9 @@
   "@scheduledPaymentDetailHistorySeeAll": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduledPaymentDetailHeroLabel": "Próximo pago",
+  "scheduledPaymentDetailHeroLabel": "PRÓXIMO PAGO",
   "@scheduledPaymentDetailHeroLabel": {},
-  "scheduledPaymentDetailRecurrenceOnce": "Pago único el {date}",
+  "scheduledPaymentDetailRecurrenceOnce": "Una sola vez el {date}",
   "@scheduledPaymentDetailRecurrenceOnce": {
     "placeholders": { "date": { "type": "String" } }
   },
@@ -1230,7 +1240,7 @@
   "@scheduledRecurrenceUnitYearlyInterval": {
     "placeholders": { "interval": { "type": "int" } }
   },
-  "scheduledPaymentDetailModeLabel": "Modo",
+  "scheduledPaymentDetailModeLabel": "Modo de registro",
   "@scheduledPaymentDetailModeLabel": {},
   "scheduledPaymentDetailModeAutomatic": "Automático",
   "@scheduledPaymentDetailModeAutomatic": {},
@@ -1240,8 +1250,12 @@
   "@scheduledPaymentDetailAccountLabel": {},
   "scheduledPaymentDetailStatusLabel": "Estado",
   "@scheduledPaymentDetailStatusLabel": {},
-  "scheduledPaymentDetailStatusActive": "Activo",
+  "scheduledPaymentDetailStatusActive": "Activa",
   "@scheduledPaymentDetailStatusActive": {},
+  "scheduledPaymentDetailStatusFinished": "Terminada",
+  "@scheduledPaymentDetailStatusFinished": {},
+  "scheduledPaymentDetailHeroLabelExecuted": "PAGO EJECUTADO",
+  "@scheduledPaymentDetailHeroLabelExecuted": {},
   "scheduledPaymentDetailTagsLabel": "Etiquetas",
   "@scheduledPaymentDetailTagsLabel": {},
   "scheduledPaymentDetailTagsEmpty": "Sin etiquetas",
@@ -1258,10 +1272,20 @@
   "@scheduledFinishedCount": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "scheduledFinishedTitle": "Terminados",
-  "@scheduledFinishedTitle": {},
-  "scheduledFinishedEmpty": "Todavía no tienes pagos programados terminados.",
-  "@scheduledFinishedEmpty": {},
+  "scheduledFinishedCaption": "Ya no generan movimientos. Los que crearon siguen en tus cuentas.",
+  "@scheduledFinishedCaption": {},
+  "scheduledFinishedCardChip": "Terminada",
+  "@scheduledFinishedCardChip": {},
+  "scheduledFinishedLastPayment": "Último pago · {date}",
+  "@scheduledFinishedLastPayment": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentsNoActiveMessage": "Por ahora no tienes pagos programados activos",
+  "@scheduledPaymentsNoActiveMessage": {},
+  "scheduledPaymentsNoActiveDescription": "{count, plural, one{Tu pago terminado sigue disponible en «Terminados».} other{Tus {count} pagos terminados siguen disponibles en «Terminados».}}",
+  "@scheduledPaymentsNoActiveDescription": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "scheduledPendingCardOverflow": "Ver los otros {count} pendientes",
   "@scheduledPendingCardOverflow": {
     "placeholders": { "count": { "type": "int" } }
@@ -1272,34 +1296,69 @@
   },
   "scheduledPendingCardCaption": "Aún no afectan tu saldo",
   "@scheduledPendingCardCaption": {},
+  "scheduledPaymentsEmptyCta": "Programar un pago",
+  "@scheduledPaymentsEmptyCta": {},
+  "scheduledManualNotifyChip": "Te avisamos",
+  "@scheduledManualNotifyChip": {},
   "scheduledDueToday": "Vence hoy",
   "@scheduledDueToday": {},
+  "scheduledDueOneDayAgo": "hace 1 día",
+  "@scheduledDueOneDayAgo": {},
+  "scheduledDueDaysAgo": "hace {count} días",
+  "@scheduledDueDaysAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "scheduledDueInDays": "en {count} días",
   "@scheduledDueInDays": {
     "placeholders": { "count": { "type": "int" } }
   },
   "scheduledDueInOneDay": "en 1 día",
   "@scheduledDueInOneDay": {},
-  "scheduledConfirmationSheetScopeNote": "Lo que edites aquí aplica solo a este pago, no cambia la plantilla.",
-  "@scheduledConfirmationSheetScopeNote": {},
-  "scheduledConfirmationSheetAccumulated": "Tienes {count} pagos de {template} sin confirmar. Ahora confirmas el más antiguo, del {date}.",
-  "@scheduledConfirmationSheetAccumulated": {
+  "scheduledConfirmationSheetScopeNote": "Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer {amount}.",
+  "@scheduledConfirmationSheetScopeNote": {
     "placeholders": {
-      "count": { "type": "int" },
-      "template": { "type": "String" },
-      "date": { "type": "String" }
+      "amount": { "type": "String" }
     }
   },
+  "scheduledConfirmationSheetAccumulatedTitle": "Tienes {count} pagos de {template} sin confirmar",
+  "@scheduledConfirmationSheetAccumulatedTitle": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "template": { "type": "String" }
+    }
+  },
+  "scheduledConfirmationSheetAccumulatedSub": "Ahora confirmas la más antigua, del {date}. {others, plural, =1{La otra sigue en tu lista.} other{Las otras {others} siguen en tu lista.}}",
+  "@scheduledConfirmationSheetAccumulatedSub": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "others": { "type": "int" }
+    }
+  },
+  "scheduledConfirmationSheetAmountLabel": "Monto a registrar",
+  "@scheduledConfirmationSheetAmountLabel": {},
+  "scheduledConfirmationSheetTransferAmountLabel": "Monto a transferir",
+  "@scheduledConfirmationSheetTransferAmountLabel": {},
+  "scheduledConfirmationSheetSourceAccountLabel": "Cuenta origen",
+  "@scheduledConfirmationSheetSourceAccountLabel": {},
+  "scheduledConfirmationSheetTargetAccountLabel": "Cuenta destino",
+  "@scheduledConfirmationSheetTargetAccountLabel": {},
+  "scheduledDetailActionsSheetSubtitle": "Acciones del pago programado",
+  "@scheduledDetailActionsSheetSubtitle": {},
+  "scheduledDetailActionsSnooze": "Posponer este pago",
+  "@scheduledDetailActionsSnooze": {},
+  "scheduledDetailActionsDelete": "Eliminar pago programado",
+  "@scheduledDetailActionsDelete": {},
+  "scheduledSnoozeSheetSectionTitle": "Elige la nueva fecha",
+  "@scheduledSnoozeSheetSectionTitle": {},
   "scheduledConfirmationSheetEditTooltip": "Editar plantilla",
   "@scheduledConfirmationSheetEditTooltip": {},
   "scheduledGuidedReviewExit": "Salir",
   "@scheduledGuidedReviewExit": {},
   "scheduledGuidedReviewConfirmNext": "Confirmar y siguiente",
   "@scheduledGuidedReviewConfirmNext": {},
-  "scheduledSnoozeContextLine": "{template} · vencía el {date} · muévelo hacia adelante",
+  "scheduledSnoozeContextLine": "Vencía el {date} · muévelo hacia adelante",
   "@scheduledSnoozeContextLine": {
     "placeholders": {
-      "template": { "type": "String" },
       "date": { "type": "String" }
     }
   }

@@ -15,6 +15,7 @@ class ScheduledPaymentRowWithJoins {
     this.transferAccount,
     this.category,
     this.pendingOccurrenceCount = 0,
+    this.lastPaymentDate,
   });
 
   final ScheduledPayment scheduledPayment;
@@ -22,6 +23,10 @@ class ScheduledPaymentRowWithJoins {
   final Account? transferAccount;
   final Category? category;
   final int pendingOccurrenceCount;
+
+  /// Effective date of the newest `confirmed` occurrence, only resolved for
+  /// the "Terminados" filter (null everywhere else).
+  final DateTime? lastPaymentDate;
 }
 
 /// A pending/snoozed occurrence row together with its template and the
@@ -174,13 +179,26 @@ class ScheduledPaymentsLocalDatasource {
         );
   }
 
-  /// The "Terminados" history: the same join as [watchActiveScheduledPayments]
+  /// The "Terminados" filter: the same join as [watchActiveScheduledPayments]
   /// but for templates that no longer generate occurrences (the negation of
   /// [_activeExpr], still excluding tombstoned ones from a fresh "recién
   /// vencido" narrative — a deleted template belongs to HU-05's detail link,
   /// not to this list), ordered by `nextDate` descending.
+  ///
+  /// Also resolves each template's last real payment: the newest effective
+  /// date (`snoozedToDate` when the occurrence was moved, `occurrenceDate`
+  /// otherwise) among its `confirmed` occurrences. That is the card's
+  /// "Último pago", which is not the template's `endDate`.
   Stream<List<ScheduledPaymentRowWithJoins>> watchFinishedScheduledPayments() {
-    final transferAccounts = _db.alias(_db.accounts, 'finished_transfer_accounts');
+    final transferAccounts =
+        _db.alias(_db.accounts, 'finished_transfer_accounts');
+    final lastPaymentDate = coalesce([
+      _db.scheduledPaymentOccurrences.snoozedToDate,
+      _db.scheduledPaymentOccurrences.occurrenceDate,
+    ]).max(
+      filter: _db.scheduledPaymentOccurrences.status
+          .equalsValue(ScheduledOccurrenceStatus.confirmed),
+    );
 
     final query = _db.select(_db.scheduledPayments).join([
       innerJoin(
@@ -195,8 +213,15 @@ class ScheduledPaymentsLocalDatasource {
         _db.categories,
         _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
       ),
+      leftOuterJoin(
+        _db.scheduledPaymentOccurrences,
+        _db.scheduledPaymentOccurrences.scheduledPaymentId
+            .equalsExp(_db.scheduledPayments.id),
+      ),
     ])
+      ..addColumns([lastPaymentDate])
       ..where(_activeExpr().not() & _db.scheduledPayments.tombstonedAt.isNull())
+      ..groupBy([_db.scheduledPayments.id])
       ..orderBy([OrderingTerm.desc(_db.scheduledPayments.nextDate)]);
 
     return query.watch().map(
@@ -207,6 +232,7 @@ class ScheduledPaymentsLocalDatasource {
                 account: row.readTable(_db.accounts),
                 transferAccount: row.readTableOrNull(transferAccounts),
                 category: row.readTableOrNull(_db.categories),
+                lastPaymentDate: row.read(lastPaymentDate),
               ),
           ],
         );
@@ -389,8 +415,7 @@ class ScheduledPaymentsLocalDatasource {
     final query = _db.selectOnly(_db.scheduledPaymentTags)
       ..addColumns([_db.scheduledPaymentTags.tagId])
       ..where(
-        _db.scheduledPaymentTags.scheduledPaymentId
-                .equals(scheduledPaymentId) &
+        _db.scheduledPaymentTags.scheduledPaymentId.equals(scheduledPaymentId) &
             _db.scheduledPaymentTags.deletedAt.isNull() &
             _db.scheduledPaymentTags.tombstonedAt.isNull(),
       );

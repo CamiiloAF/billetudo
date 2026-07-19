@@ -17,6 +17,9 @@ class ScheduledCategoryIconWrap extends StatelessWidget {
     this.categoryColor,
     this.size = 44,
     this.iconSize = 20,
+    this.cornerRadius,
+    this.background,
+    this.foreground,
     super.key,
   });
 
@@ -26,26 +29,39 @@ class ScheduledCategoryIconWrap extends StatelessWidget {
   final double size;
   final double iconSize;
 
+  /// Squircle radius of the tile. Defaults to a circle (`size / 2`); the
+  /// "por confirmar" row overrides it to 14 (design spec, node `QhuIP`).
+  final double? cornerRadius;
+
+  /// Overrides of the tile's own palette, for the surfaces whose design
+  /// colours the tile by the *movement* instead of by the category — the
+  /// confirmation sheet's `income` head (`EJAvD`), tinted `income-soft`.
+  final Color? background;
+  final Color? foreground;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final foreground = isTransfer
-        ? colors.textSecondary
-        : CategoryAppearance.colorFor(colors, categoryColor);
-    final background = isTransfer
-        ? colors.muted
-        : CategoryAppearance.softColorFor(colors, categoryColor);
-    final icon =
-        isTransfer ? LucideIcons.arrowLeftRight : CategoryAppearance.iconFor(categoryIcon);
+    final resolvedForeground = foreground ??
+        (isTransfer
+            ? colors.textSecondary
+            : CategoryAppearance.colorFor(colors, categoryColor));
+    final resolvedBackground = background ??
+        (isTransfer
+            ? colors.muted
+            : CategoryAppearance.softColorFor(colors, categoryColor));
+    final icon = isTransfer
+        ? LucideIcons.arrowLeftRight
+        : CategoryAppearance.iconFor(categoryIcon);
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(size / 2),
+        color: resolvedBackground,
+        borderRadius: BorderRadius.circular(cornerRadius ?? size / 2),
       ),
-      child: Icon(icon, color: foreground, size: iconSize),
+      child: Icon(icon, color: resolvedForeground, size: iconSize),
     );
   }
 }

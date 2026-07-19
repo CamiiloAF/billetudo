@@ -18,6 +18,7 @@ class ScheduledPaymentSummary extends Equatable {
     this.categoryColor,
     this.transferAccountName,
     this.pendingOccurrenceCount = 0,
+    this.lastPaymentDate,
   });
 
   final ScheduledPayment scheduledPayment;
@@ -39,6 +40,17 @@ class ScheduledPaymentSummary extends Equatable {
   /// (HU-04, criterion 11).
   final int pendingOccurrenceCount;
 
+  /// The effective date of the last occurrence this template actually
+  /// generated (`confirmed` in the ledger), for the "Terminados" filter's
+  /// "Último pago · 15 mar 2026" meta.
+  ///
+  /// Not the same as `endDate`: a repeating template stops at its `endDate`,
+  /// but the last payment it really produced lands on the last cadence date
+  /// before it — and a snoozed-then-confirmed occurrence lands on the date
+  /// the user moved it to. Null when the template never fired (it reached
+  /// `endDate` without generating anything).
+  final DateTime? lastPaymentDate;
+
   bool get hasPendingOccurrence => pendingOccurrenceCount > 0;
 
   @override
@@ -50,5 +62,6 @@ class ScheduledPaymentSummary extends Equatable {
         categoryColor,
         transferAccountName,
         pendingOccurrenceCount,
+        lastPaymentDate,
       ];
 }

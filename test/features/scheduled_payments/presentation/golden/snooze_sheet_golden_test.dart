@@ -12,9 +12,17 @@ import '../../../../support/golden_helpers.dart';
 class MockSnoozeSheetCubit extends MockCubit<SnoozeSheetState>
     implements SnoozeSheetCubit {}
 
-/// HU-07's Posponer sheet: a single date picker with a floor of
-/// `max(fecha original, hoy)` (criterion 10), reusing the app's own
-/// `MonthCalendar`.
+/// HU-07's Posponer sheet: a single date picker whose first selectable day is
+/// the one right after the floor `max(fecha original, hoy)` (criterion 10) —
+/// the whole past up to it dims in one continuous block — reusing the app's
+/// own `MonthCalendar`.
+///
+/// The fixture sits in a month with no "today" in it on purpose: the calendar
+/// rings the real current day, which would make these goldens rot.
+///
+/// Pencil row: `sheet_snooze_default`/`sheet_snooze_selected` → `dQUMj`
+/// (Sheet — Posponer, nueva fecha). `saving` is a runtime state with no
+/// frame of its own.
 void main() {
   late MockSnoozeSheetCubit cubit;
 
@@ -42,8 +50,11 @@ void main() {
               builder: (context) => BlocProvider<SnoozeSheetCubit>.value(
                 value: cubit,
                 child: SnoozeSheetBody(
-                  templateTitle: 'Netflix',
+                  templateName: 'Netflix',
                   occurrenceDate: _fixedDate,
+                  isTransfer: false,
+                  categoryIcon: 'wifi',
+                  categoryColor: 'indigo',
                 ),
               ),
             ),
@@ -67,7 +78,10 @@ void main() {
     testWidgets('sin fecha seleccionada aún ($suffix)', (tester) async {
       await golden(
         tester,
-        SnoozeSheetState(minDate: _fixedDate, selectedDate: _fixedDate),
+        SnoozeSheetState(
+          minDate: _firstSelectable,
+          selectedDate: _firstSelectable,
+        ),
         'default_$suffix',
         brightness: brightness,
       );
@@ -77,8 +91,8 @@ void main() {
       await golden(
         tester,
         SnoozeSheetState(
-          minDate: _fixedDate,
-          selectedDate: _fixedDate.add(const Duration(days: 5)),
+          minDate: _firstSelectable,
+          selectedDate: _firstSelectable.add(const Duration(days: 5)),
         ),
         'selected_$suffix',
         brightness: brightness,
@@ -89,8 +103,8 @@ void main() {
       await golden(
         tester,
         SnoozeSheetState(
-          minDate: _fixedDate,
-          selectedDate: _fixedDate.add(const Duration(days: 5)),
+          minDate: _firstSelectable,
+          selectedDate: _firstSelectable.add(const Duration(days: 5)),
           status: SnoozeSheetStatus.saving,
         ),
         'saving_$suffix',
@@ -100,4 +114,8 @@ void main() {
   }
 }
 
-final DateTime _fixedDate = DateTime(2026, 7, 15);
+final DateTime _fixedDate = DateTime(2026, 8, 15);
+
+/// What `SnoozeSheetCubit.start` computes for [_fixedDate]: the day after the
+/// floor, since the new date has to be strictly later.
+final DateTime _firstSelectable = DateTime(2026, 8, 16);

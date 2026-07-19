@@ -9,7 +9,6 @@ import '../../domain/entities/scheduled_payment.dart';
 import '../utils/scheduled_payment_format.dart';
 import 'scheduled_card.dart' show ScheduledDueInChip;
 import 'scheduled_category_icon_wrap.dart';
-import 'scheduled_payment_detail_badge.dart';
 
 /// The detail's "Identity Strip": the category icon-wrap, the template's
 /// display name and a "categoría · tipo" subtitle — sits directly above the
@@ -39,7 +38,8 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final isTransfer = payment.isTransfer;
-    final title = ScheduledPaymentFormat.templateTitle(
+    final title = ScheduledPaymentFormat.templateName(
+      note: payment.note,
       categoryName: categoryName,
       isTransfer: isTransfer,
       accountName: accountName,
@@ -92,11 +92,15 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
       };
 }
 
-/// The detail's "Hero Híbrido" (`OY2Kj`/`Eyold`/`XmaSX`): a neutral card with
-/// the "PRÓXIMO PAGO" caption, the amount next to the due-in pill (or the
-/// "Pendiente de confirmar" badge when a manual occurrence is waiting), and a
-/// plain-language sentence describing the template's recurrence — the single
-/// place the amount is shown on the detail screen.
+/// The detail's "Hero Híbrido" (`OY2Kj`/`Eyold`/`XmaSX`): a neutral card that
+/// answers "cuándo cae el próximo pago y de cuánto" in Pencil's order —
+/// eyebrow + "en N días" pill, the **big date**, the amount, and a
+/// plain-language sentence (with `repeat`/`calendar-check`) describing the
+/// template's recurrence. Single place the amount is shown on this screen.
+///
+/// [executed] flips it to `Eyold`: a `once` template whose transaction has
+/// already been generated reads "PAGO EJECUTADO", drops the countdown pill
+/// (nothing is coming) and keeps the past date.
 ///
 /// Tappable only when [pending] is not null: same "tap to confirm" affordance
 /// the previous single-line "Próximo pago" text already offered.
@@ -105,12 +109,16 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
     required this.payment,
     required this.pending,
     required this.onTapPending,
+    this.executed = false,
     super.key,
   });
 
   final ScheduledPayment payment;
   final PendingScheduledOccurrence? pending;
   final VoidCallback onTapPending;
+
+  /// True for `Eyold`: the one-off already fired, so the hero is history.
+  final bool executed;
 
   @override
   Widget build(BuildContext context) {
@@ -134,41 +142,67 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.scheduledPaymentDetailHeroLabel,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                ),
-              ),
-              const SizedBox(height: 10),
               Row(
                 children: [
-                  Text(
-                    _amountLabel(payment),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: ScheduledPaymentFormat.amountColor(
-                        colors,
-                        payment.type,
+                  Expanded(
+                    child: Text(
+                      executed
+                          ? l10n.scheduledPaymentDetailHeroLabelExecuted
+                          : l10n.scheduledPaymentDetailHeroLabel,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
                       ),
-                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  if (isPending)
-                    ScheduledPaymentDetailBadge(
-                        label: l10n.scheduledPendingBadge)
-                  else
-                    ScheduledDueInChip(nextDate: payment.nextDate),
+                  if (!executed) ScheduledDueInChip(nextDate: payment.nextDate),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
-                ScheduledPaymentFormat.recurrencePhrase(context, l10n, payment),
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
+                ScheduledPaymentFormat.heroDateLabel(context, payment.nextDate),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
+              const SizedBox(height: 4),
+              Text(
+                _amountLabel(payment),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: ScheduledPaymentFormat.amountColor(
+                    colors,
+                    payment.type,
+                  ),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    ScheduledPaymentFormat.frequencyIcon(payment.frequency),
+                    size: 16,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      ScheduledPaymentFormat.recurrencePhrase(
+                          context, l10n, payment),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: colors.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+              // No "pendiente de confirmar" badge here: the hero already
+              // carries a `$primary-soft` pill (the countdown), and a second
+              // pill of the same colour and weight in the same card would
+              // read as the same affordance with a different meaning. The
+              // pending state is expressed in the card's "Estado" row.
             ],
           ),
         ),
@@ -181,7 +215,8 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
-      ScheduledPaymentType.expense => '-$formatted',
+      // Unsigned expense, per Pencil: only income carries a sign.
+      ScheduledPaymentType.expense => formatted,
       ScheduledPaymentType.transfer => formatted,
     };
   }

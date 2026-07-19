@@ -53,7 +53,8 @@ class PendingOccurrencesSection extends StatelessWidget {
         }
         final cubit = context.read<PendingOccurrencesCubit>();
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          // `Content.gap` = 16 between "Por confirmar" and the list below it.
+          padding: const EdgeInsets.only(bottom: 16),
           child: ScheduledPendingCard(
             items: state.items,
             onReviewAll: onOpenPending,

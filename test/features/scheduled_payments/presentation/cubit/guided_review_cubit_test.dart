@@ -3,7 +3,8 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/pending_sc
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/guided_review_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/guided_review_state.dart';
-import 'package:billetudo/features/transactions/domain/entities/transaction.dart' as tx;
+import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
+    as tx;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -65,8 +66,7 @@ void main() {
   GuidedReviewCubit build() =>
       GuidedReviewCubit(confirmOccurrence, skipOccurrence, snoozeOccurrence);
 
-  group('start (criterion 7: guided review is not an apply-all shortcut)',
-      () {
+  group('start (criterion 7: guided review is not an apply-all shortcut)', () {
     blocTest<GuidedReviewCubit, GuidedReviewState>(
       'loads the first occurrence pre-filled and editable, exactly like the standalone sheet',
       build: build,

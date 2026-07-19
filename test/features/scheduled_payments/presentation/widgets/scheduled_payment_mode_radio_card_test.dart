@@ -8,7 +8,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 void main() {
   Widget appWith(Widget child, {Brightness brightness = Brightness.light}) =>
       MaterialApp(
-        theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+        theme:
+            brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
         home: Scaffold(body: child),
       );
 

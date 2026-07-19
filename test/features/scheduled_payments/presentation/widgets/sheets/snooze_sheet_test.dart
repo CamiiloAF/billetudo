@@ -43,8 +43,9 @@ void main() {
           value: cubit,
           child: Scaffold(
             body: SnoozeSheetBody(
-              templateTitle: 'Netflix',
+              templateName: 'Netflix',
               occurrenceDate: occurrenceDate ?? DateTime(2026, 7, 15),
+              isTransfer: false,
             ),
           ),
         ),
@@ -52,7 +53,7 @@ void main() {
     );
   }
 
-  testWidgets('shows the context line with the template title and date',
+  testWidgets('shows the icon header with the template name and the due date',
       (tester) async {
     await pumpBody(
       tester,
@@ -62,7 +63,9 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('Netflix'), findsOneWidget);
+    expect(find.text('Netflix'), findsOneWidget);
+    expect(find.textContaining('muévelo hacia adelante'), findsOneWidget);
+    expect(find.text('Elige la nueva fecha'), findsOneWidget);
   });
 
   testWidgets('tapping Guardar while ready calls cubit.save()', (tester) async {
@@ -80,7 +83,8 @@ void main() {
     verify(() => cubit.save()).called(1);
   });
 
-  testWidgets('Guardar is disabled while saving, so it never fires save() again',
+  testWidgets(
+      'Guardar is disabled while saving, so it never fires save() again',
       (tester) async {
     await pumpBody(
       tester,

@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Atrás'**
   String get commonBack;
 
+  /// Etiqueta accesible del botón ⋮ del Page Header.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get commonMoreActions;
+
   /// No description provided for @commonApply.
   ///
   /// In es, this message translates to:
@@ -2699,7 +2705,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentsEmptyMessage.
   ///
   /// In es, this message translates to:
-  /// **'Aún no tienes pagos programados. Agrega uno para no perder de vista tus pagos recurrentes.'**
+  /// **'Aún no tienes pagos programados'**
   String get scheduledPaymentsEmptyMessage;
 
   /// No description provided for @scheduledPaymentsErrorTitle.
@@ -2819,7 +2825,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledDeleteSheetMessage.
   ///
   /// In es, this message translates to:
-  /// **'Se detiene la generación de nuevos pagos, pero los movimientos ya generados conservan su historial.'**
+  /// **'Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.'**
   String get scheduledDeleteSheetMessage;
 
   /// No description provided for @scheduledPaymentFormNewTitle.
@@ -2837,8 +2843,26 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentFormNextDateLabel.
   ///
   /// In es, this message translates to:
-  /// **'Próxima fecha'**
+  /// **'Primer pago'**
   String get scheduledPaymentFormNextDateLabel;
+
+  /// No description provided for @scheduledPaymentFormOnceDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha del pago'**
+  String get scheduledPaymentFormOnceDateLabel;
+
+  /// No description provided for @scheduledPaymentFormModeSectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Al llegar la fecha'**
+  String get scheduledPaymentFormModeSectionLabel;
+
+  /// No description provided for @scheduledPaymentFormTagNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiqueta'**
+  String get scheduledPaymentFormTagNew;
 
   /// No description provided for @scheduledPaymentFormFrequencyLabel.
   ///
@@ -2861,13 +2885,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentFormEndDateLabel.
   ///
   /// In es, this message translates to:
-  /// **'Fecha de fin'**
+  /// **'Termina'**
   String get scheduledPaymentFormEndDateLabel;
 
   /// No description provided for @scheduledPaymentFormEndDateNone.
   ///
   /// In es, this message translates to:
-  /// **'Sin fecha de fin'**
+  /// **'Para siempre'**
   String get scheduledPaymentFormEndDateNone;
 
   /// No description provided for @scheduledPaymentFormModeAutomaticTitle.
@@ -2879,7 +2903,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentFormModeAutomaticSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Se registra solo'**
+  /// **'Se registra solo al llegar la fecha'**
   String get scheduledPaymentFormModeAutomaticSubtitle;
 
   /// No description provided for @scheduledPaymentFormModeManualTitle.
@@ -2891,7 +2915,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentFormModeManualSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Te avisamos antes de afectar tu saldo'**
+  /// **'Te avisamos para que confirmes antes de afectar tu saldo'**
   String get scheduledPaymentFormModeManualSubtitle;
 
   /// No description provided for @scheduledPaymentFormDeleteAction.
@@ -2909,25 +2933,25 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledFrequencyDaily.
   ///
   /// In es, this message translates to:
-  /// **'Cada día'**
+  /// **'cada día'**
   String get scheduledFrequencyDaily;
 
   /// No description provided for @scheduledFrequencyWeekly.
   ///
   /// In es, this message translates to:
-  /// **'Cada semana'**
+  /// **'cada semana'**
   String get scheduledFrequencyWeekly;
 
   /// No description provided for @scheduledFrequencyMonthly.
   ///
   /// In es, this message translates to:
-  /// **'Cada mes'**
+  /// **'cada mes'**
   String get scheduledFrequencyMonthly;
 
   /// No description provided for @scheduledFrequencyYearly.
   ///
   /// In es, this message translates to:
-  /// **'Cada año'**
+  /// **'cada año'**
   String get scheduledFrequencyYearly;
 
   /// No description provided for @scheduledFrequencyChipOnce.
@@ -2963,7 +2987,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailTitle.
   ///
   /// In es, this message translates to:
-  /// **'Pago programado'**
+  /// **'Detalle'**
   String get scheduledPaymentDetailTitle;
 
   /// No description provided for @scheduledPaymentDetailNextPayment.
@@ -2975,7 +2999,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailHistoryTitle.
   ///
   /// In es, this message translates to:
-  /// **'Historial'**
+  /// **'Ya generados'**
   String get scheduledPaymentDetailHistoryTitle;
 
   /// No description provided for @scheduledPaymentDetailHistoryEmpty.
@@ -2993,13 +3017,13 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailHeroLabel.
   ///
   /// In es, this message translates to:
-  /// **'Próximo pago'**
+  /// **'PRÓXIMO PAGO'**
   String get scheduledPaymentDetailHeroLabel;
 
   /// No description provided for @scheduledPaymentDetailRecurrenceOnce.
   ///
   /// In es, this message translates to:
-  /// **'Pago único el {date}'**
+  /// **'Una sola vez el {date}'**
   String scheduledPaymentDetailRecurrenceOnce(String date);
 
   /// No description provided for @scheduledPaymentDetailRecurrenceForever.
@@ -3066,7 +3090,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailModeLabel.
   ///
   /// In es, this message translates to:
-  /// **'Modo'**
+  /// **'Modo de registro'**
   String get scheduledPaymentDetailModeLabel;
 
   /// No description provided for @scheduledPaymentDetailModeAutomatic.
@@ -3096,8 +3120,20 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailStatusActive.
   ///
   /// In es, this message translates to:
-  /// **'Activo'**
+  /// **'Activa'**
   String get scheduledPaymentDetailStatusActive;
+
+  /// No description provided for @scheduledPaymentDetailStatusFinished.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminada'**
+  String get scheduledPaymentDetailStatusFinished;
+
+  /// No description provided for @scheduledPaymentDetailHeroLabelExecuted.
+  ///
+  /// In es, this message translates to:
+  /// **'PAGO EJECUTADO'**
+  String get scheduledPaymentDetailHeroLabelExecuted;
 
   /// No description provided for @scheduledPaymentDetailTagsLabel.
   ///
@@ -3141,17 +3177,35 @@ abstract class AppLocalizations {
   /// **'Terminados · {count}'**
   String scheduledFinishedCount(int count);
 
-  /// No description provided for @scheduledFinishedTitle.
+  /// No description provided for @scheduledFinishedCaption.
   ///
   /// In es, this message translates to:
-  /// **'Terminados'**
-  String get scheduledFinishedTitle;
+  /// **'Ya no generan movimientos. Los que crearon siguen en tus cuentas.'**
+  String get scheduledFinishedCaption;
 
-  /// No description provided for @scheduledFinishedEmpty.
+  /// No description provided for @scheduledFinishedCardChip.
   ///
   /// In es, this message translates to:
-  /// **'Todavía no tienes pagos programados terminados.'**
-  String get scheduledFinishedEmpty;
+  /// **'Terminada'**
+  String get scheduledFinishedCardChip;
+
+  /// No description provided for @scheduledFinishedLastPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Último pago · {date}'**
+  String scheduledFinishedLastPayment(String date);
+
+  /// No description provided for @scheduledPaymentsNoActiveMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ahora no tienes pagos programados activos'**
+  String get scheduledPaymentsNoActiveMessage;
+
+  /// No description provided for @scheduledPaymentsNoActiveDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{Tu pago terminado sigue disponible en «Terminados».} other{Tus {count} pagos terminados siguen disponibles en «Terminados».}}'**
+  String scheduledPaymentsNoActiveDescription(int count);
 
   /// No description provided for @scheduledPendingCardOverflow.
   ///
@@ -3171,11 +3225,35 @@ abstract class AppLocalizations {
   /// **'Aún no afectan tu saldo'**
   String get scheduledPendingCardCaption;
 
+  /// No description provided for @scheduledPaymentsEmptyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Programar un pago'**
+  String get scheduledPaymentsEmptyCta;
+
+  /// No description provided for @scheduledManualNotifyChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos'**
+  String get scheduledManualNotifyChip;
+
   /// No description provided for @scheduledDueToday.
   ///
   /// In es, this message translates to:
   /// **'Vence hoy'**
   String get scheduledDueToday;
+
+  /// No description provided for @scheduledDueOneDayAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'hace 1 día'**
+  String get scheduledDueOneDayAgo;
+
+  /// No description provided for @scheduledDueDaysAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {count} días'**
+  String scheduledDueDaysAgo(int count);
 
   /// No description provided for @scheduledDueInDays.
   ///
@@ -3192,15 +3270,68 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledConfirmationSheetScopeNote.
   ///
   /// In es, this message translates to:
-  /// **'Lo que edites aquí aplica solo a este pago, no cambia la plantilla.'**
-  String get scheduledConfirmationSheetScopeNote;
+  /// **'Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer {amount}.'**
+  String scheduledConfirmationSheetScopeNote(String amount);
 
-  /// No description provided for @scheduledConfirmationSheetAccumulated.
+  /// No description provided for @scheduledConfirmationSheetAccumulatedTitle.
   ///
   /// In es, this message translates to:
-  /// **'Tienes {count} pagos de {template} sin confirmar. Ahora confirmas el más antiguo, del {date}.'**
-  String scheduledConfirmationSheetAccumulated(
-      int count, String template, String date);
+  /// **'Tienes {count} pagos de {template} sin confirmar'**
+  String scheduledConfirmationSheetAccumulatedTitle(int count, String template);
+
+  /// No description provided for @scheduledConfirmationSheetAccumulatedSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora confirmas la más antigua, del {date}. {others, plural, =1{La otra sigue en tu lista.} other{Las otras {others} siguen en tu lista.}}'**
+  String scheduledConfirmationSheetAccumulatedSub(String date, int others);
+
+  /// No description provided for @scheduledConfirmationSheetAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto a registrar'**
+  String get scheduledConfirmationSheetAmountLabel;
+
+  /// No description provided for @scheduledConfirmationSheetTransferAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto a transferir'**
+  String get scheduledConfirmationSheetTransferAmountLabel;
+
+  /// No description provided for @scheduledConfirmationSheetSourceAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta origen'**
+  String get scheduledConfirmationSheetSourceAccountLabel;
+
+  /// No description provided for @scheduledConfirmationSheetTargetAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta destino'**
+  String get scheduledConfirmationSheetTargetAccountLabel;
+
+  /// No description provided for @scheduledDetailActionsSheetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Acciones del pago programado'**
+  String get scheduledDetailActionsSheetSubtitle;
+
+  /// No description provided for @scheduledDetailActionsSnooze.
+  ///
+  /// In es, this message translates to:
+  /// **'Posponer este pago'**
+  String get scheduledDetailActionsSnooze;
+
+  /// No description provided for @scheduledDetailActionsDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar pago programado'**
+  String get scheduledDetailActionsDelete;
+
+  /// No description provided for @scheduledSnoozeSheetSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la nueva fecha'**
+  String get scheduledSnoozeSheetSectionTitle;
 
   /// No description provided for @scheduledConfirmationSheetEditTooltip.
   ///
@@ -3223,8 +3354,8 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledSnoozeContextLine.
   ///
   /// In es, this message translates to:
-  /// **'{template} · vencía el {date} · muévelo hacia adelante'**
-  String scheduledSnoozeContextLine(String template, String date);
+  /// **'Vencía el {date} · muévelo hacia adelante'**
+  String scheduledSnoozeContextLine(String date);
 }
 
 class _AppLocalizationsDelegate

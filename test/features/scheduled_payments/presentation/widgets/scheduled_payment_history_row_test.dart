@@ -18,14 +18,24 @@ void main() {
     final transaction = buildTransaction(amountMinor: 12345);
 
     await tester.pumpWidget(
-      appWith(ScheduledPaymentHistoryRow(transaction: transaction, onTap: () {})),
+      appWith(
+        ScheduledPaymentHistoryRow(
+          transaction: transaction,
+          name: 'Arriendo',
+          accountName: 'Bancolombia',
+          onTap: () {},
+        ),
+      ),
     );
 
     // 12345 minor units => 123,45 in the currency formatting.
     expect(find.textContaining('123'), findsOneWidget);
+    expect(find.text('Arriendo'), findsOneWidget);
+    expect(find.textContaining('Bancolombia · '), findsOneWidget);
   });
 
-  testWidgets('tapping the row triggers onTap once, and links to its own transaction',
+  testWidgets(
+      'tapping the row triggers onTap once, and links to its own transaction',
       (tester) async {
     var tapCount = 0;
     final transaction = buildTransaction(id: 'tx-77');
@@ -34,6 +44,8 @@ void main() {
       appWith(
         ScheduledPaymentHistoryRow(
           transaction: transaction,
+          name: 'Arriendo',
+          accountName: 'Bancolombia',
           onTap: () => tapCount++,
         ),
       ),

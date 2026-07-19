@@ -13,7 +13,8 @@ import 'snooze_sheet_state.dart';
 class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
   SnoozeSheetCubit(this._snoozeOccurrence)
       : super(
-          SnoozeSheetState(minDate: DateTime.now(), selectedDate: DateTime.now()),
+          SnoozeSheetState(
+              minDate: DateTime.now(), selectedDate: DateTime.now()),
         );
 
   final SnoozeScheduledOccurrence _snoozeOccurrence;
@@ -21,7 +22,11 @@ class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
   late String _scheduledPaymentId;
   late DateTime _occurrenceDate;
 
-  /// Criterion 10: the floor is `max(fecha original, hoy)`.
+  /// Criterion 10 / HU-07: the floor is `max(fecha original, hoy)` and the new
+  /// date must be strictly *after* it — posponer never moves a payment to the
+  /// past, nor leaves it where it already is. So the first selectable day (and
+  /// the default selection, which also decides the month the calendar opens
+  /// on) is the day after that floor.
   void start({
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
@@ -30,7 +35,10 @@ class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
     _scheduledPaymentId = scheduledPaymentId;
     _occurrenceDate = occurrenceDate;
     final floor = _laterOf(occurrenceDate, today ?? DateTime.now());
-    emit(SnoozeSheetState(minDate: floor, selectedDate: floor));
+    final firstSelectable = DateTime(floor.year, floor.month, floor.day + 1);
+    emit(
+      SnoozeSheetState(minDate: firstSelectable, selectedDate: firstSelectable),
+    );
   }
 
   void dateSelected(DateTime date) => emit(state.copyWith(selectedDate: date));
@@ -47,9 +55,11 @@ class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
     }
     switch (result) {
       case Left(value: final failure):
-        emit(state.copyWith(status: SnoozeSheetStatus.failure, failure: failure));
+        emit(state.copyWith(
+            status: SnoozeSheetStatus.failure, failure: failure));
       case Right(value: final occurrence):
-        emit(state.copyWith(status: SnoozeSheetStatus.saved, saved: occurrence));
+        emit(
+            state.copyWith(status: SnoozeSheetStatus.saved, saved: occurrence));
     }
   }
 

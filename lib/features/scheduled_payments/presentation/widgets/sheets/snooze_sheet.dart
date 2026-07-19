@@ -10,6 +10,7 @@ import '../../../../../core/widgets/month_calendar.dart';
 import '../../../domain/entities/scheduled_payment_occurrence.dart';
 import '../../cubit/snooze_sheet_cubit.dart';
 import '../../cubit/snooze_sheet_state.dart';
+import 'scheduled_sheet_icon_header.dart';
 
 /// HU-07's Posponer sheet: moves a single occurrence to a later date, floor
 /// `max(fecha original, hoy)` (criterion 10). Reuses the app's own
@@ -19,17 +20,24 @@ class SnoozeSheet extends StatelessWidget {
   const SnoozeSheet({
     required this.scheduledPaymentId,
     required this.occurrenceDate,
-    required this.templateTitle,
+    required this.templateName,
+    required this.isTransfer,
+    this.categoryIcon,
+    this.categoryColor,
     super.key,
   });
 
   final String scheduledPaymentId;
   final DateTime occurrenceDate;
 
-  /// The template's display name (category, falling back to account —
-  /// `ScheduledPaymentFormat.templateTitle`), shown in the context line above
-  /// the calendar so the user knows exactly which payment they are moving.
-  final String templateTitle;
+  /// The template's display name (`ScheduledPaymentFormat.templateName`),
+  /// shown in the sheet's icon header so the user knows exactly which payment
+  /// they are moving.
+  final String templateName;
+
+  final bool isTransfer;
+  final String? categoryIcon;
+  final String? categoryColor;
 
   /// Returns the resulting occurrence on success (so the caller can offer
   /// "Deshacer"), or `null` when dismissed/failed.
@@ -37,7 +45,10 @@ class SnoozeSheet extends StatelessWidget {
     BuildContext context, {
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
-    required String templateTitle,
+    required String templateName,
+    required bool isTransfer,
+    String? categoryIcon,
+    String? categoryColor,
   }) =>
       showModalBottomSheet<ScheduledPaymentOccurrence>(
         context: context,
@@ -45,7 +56,10 @@ class SnoozeSheet extends StatelessWidget {
         builder: (context) => SnoozeSheet(
           scheduledPaymentId: scheduledPaymentId,
           occurrenceDate: occurrenceDate,
-          templateTitle: templateTitle,
+          templateName: templateName,
+          isTransfer: isTransfer,
+          categoryIcon: categoryIcon,
+          categoryColor: categoryColor,
         ),
       );
 
@@ -53,10 +67,15 @@ class SnoozeSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => getIt<SnoozeSheetCubit>()
-        ..start(scheduledPaymentId: scheduledPaymentId, occurrenceDate: occurrenceDate),
+        ..start(
+            scheduledPaymentId: scheduledPaymentId,
+            occurrenceDate: occurrenceDate),
       child: SnoozeSheetBody(
-        templateTitle: templateTitle,
+        templateName: templateName,
         occurrenceDate: occurrenceDate,
+        isTransfer: isTransfer,
+        categoryIcon: categoryIcon,
+        categoryColor: categoryColor,
       ),
     );
   }
@@ -64,13 +83,19 @@ class SnoozeSheet extends StatelessWidget {
 
 class SnoozeSheetBody extends StatelessWidget {
   const SnoozeSheetBody({
-    required this.templateTitle,
+    required this.templateName,
     required this.occurrenceDate,
+    required this.isTransfer,
+    this.categoryIcon,
+    this.categoryColor,
     super.key,
   });
 
-  final String templateTitle;
+  final String templateName;
   final DateTime occurrenceDate;
+  final bool isTransfer;
+  final String? categoryIcon;
+  final String? categoryColor;
 
   @override
   Widget build(BuildContext context) {
@@ -90,28 +115,26 @@ class SnoozeSheetBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                l10n.scheduledSnoozeSheetTitle,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.scheduledSnoozeContextLine(
-                  templateTitle,
+              ScheduledSheetIconHeader(
+                title: templateName,
+                subtitle: l10n.scheduledSnoozeContextLine(
                   DateFormat.yMMMd(Localizations.localeOf(context).toString())
                       .format(occurrenceDate),
                 ),
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: colors.textSecondary),
+                isTransfer: isTransfer,
+                categoryIcon: categoryIcon,
+                categoryColor: categoryColor,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              Text(
+                l10n.scheduledSnoozeSheetSectionTitle,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: colors.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: 12),
               MonthCalendarBridge(
                 minDate: state.minDate,
                 selectedDate: state.selectedDate,
@@ -167,10 +190,12 @@ class _MonthCalendarBridgeState extends State<MonthCalendarBridge> {
         widget.onSelected(date);
       },
       onPreviousMonth: () => setState(
-        () => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month - 1),
+        () => _visibleMonth =
+            DateTime(_visibleMonth.year, _visibleMonth.month - 1),
       ),
       onNextMonth: () => setState(
-        () => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + 1),
+        () => _visibleMonth =
+            DateTime(_visibleMonth.year, _visibleMonth.month + 1),
       ),
     );
   }

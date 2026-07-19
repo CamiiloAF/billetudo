@@ -68,7 +68,8 @@ void main() {
       },
       expect: () => [
         const PendingOccurrencesState(
-          pendingUndo: PendingOccurrenceUndo(occurrenceId: 'occ-1', isSnooze: false),
+          pendingUndo:
+              PendingOccurrenceUndo(occurrenceId: 'occ-1', isSnooze: false),
         ),
         const PendingOccurrencesState(),
       ],

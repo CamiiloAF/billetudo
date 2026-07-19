@@ -26,7 +26,8 @@ void main() {
     cubit = MockPendingOccurrencesCubit();
   });
 
-  Future<void> pumpPage(WidgetTester tester, PendingOccurrencesState state) async {
+  Future<void> pumpPage(
+      WidgetTester tester, PendingOccurrencesState state) async {
     when(() => cubit.state).thenReturn(state);
     when(() => cubit.stream)
         .thenAnswer((_) => const Stream<PendingOccurrencesState>.empty());
@@ -53,14 +54,16 @@ void main() {
       ),
       buildPendingOccurrence(
         occurrence: buildOccurrence(id: 'occ-2'),
-        scheduledPayment: buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
+        scheduledPayment:
+            buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
         accountName: 'Nequi',
       ),
     ];
 
     await pumpPage(
       tester,
-      PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items),
+      PendingOccurrencesState(
+          status: PendingOccurrencesStatus.ready, items: items),
     );
 
     expect(find.byType(ScheduledPendingRow), findsNWidgets(2));
@@ -71,16 +74,18 @@ void main() {
     expect(find.byType(IconButton), findsNothing);
   });
 
-  testWidgets('"Revisar todas" es el único atajo de lote, y sigue exigiendo la hoja',
+  testWidgets(
+      '"Revisar todas" es el único atajo de lote, y sigue exigiendo la hoja',
       (tester) async {
     final items = [buildPendingOccurrence()];
 
     await pumpPage(
       tester,
-      PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items),
+      PendingOccurrencesState(
+          status: PendingOccurrencesStatus.ready, items: items),
     );
 
-    expect(find.widgetWithText(OutlinedButton, 'Revisar todas'), findsOneWidget);
+    expect(find.text('Revisar todas'), findsOneWidget);
   });
 
   testWidgets('estado vacío no renderiza ninguna fila ni acción de omitir',

@@ -3,7 +3,8 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/pending_sc
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_state.dart';
-import 'package:billetudo/features/transactions/domain/entities/transaction.dart' as tx;
+import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
+    as tx;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -52,8 +53,8 @@ void main() {
     snoozeOccurrence = MockSnoozeScheduledOccurrence();
   });
 
-  ConfirmationSheetCubit build() =>
-      ConfirmationSheetCubit(confirmOccurrence, skipOccurrence, snoozeOccurrence);
+  ConfirmationSheetCubit build() => ConfirmationSheetCubit(
+      confirmOccurrence, skipOccurrence, snoozeOccurrence);
 
   group('load (criterion 7)', () {
     blocTest<ConfirmationSheetCubit, ConfirmationSheetState>(

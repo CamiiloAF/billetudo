@@ -43,16 +43,28 @@ class DeleteScheduledPaymentSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: LucideIcons.trash,
-          iconColor: colors.textSecondary,
-          iconBackground: colors.muted,
+          // Destructive, so it wears the destructive tone: `$expense` on
+          // `$expense-soft` with an `alert-triangle`. A delete that looks
+          // exactly like "Confirmar" is the risk this avoids.
+          icon: LucideIcons.triangleAlert,
+          iconColor: colors.expense,
+          iconBackground: colors.expenseSoft,
           title: l10n.scheduledDeleteSheetTitle,
           message: l10n.scheduledDeleteSheetMessage,
         ),
         const SizedBox(height: 20),
         SheetButtonsRow(
-          left: OutlinedButton(onPressed: onCancel, child: Text(l10n.commonCancel)),
-          right: FilledButton(onPressed: onConfirm, child: Text(l10n.commonDelete)),
+          left: OutlinedButton(
+              onPressed: onCancel, child: Text(l10n.commonCancel)),
+          right: FilledButton.icon(
+            onPressed: onConfirm,
+            style: FilledButton.styleFrom(
+              backgroundColor: colors.expense,
+              foregroundColor: colors.onPrimary,
+            ),
+            icon: const Icon(LucideIcons.trash2, size: 18),
+            label: Text(l10n.commonDelete),
+          ),
         ),
       ],
     );

@@ -8,7 +8,8 @@ enum PendingOccurrencesStatus { loading, ready, failure }
 /// What the last resolved occurrence was, so the page can offer "Deshacer"
 /// (criterion 9/10). `null` once dismissed or undone.
 class PendingOccurrenceUndo extends Equatable {
-  const PendingOccurrenceUndo({required this.occurrenceId, required this.isSnooze});
+  const PendingOccurrenceUndo(
+      {required this.occurrenceId, required this.isSnooze});
 
   final String occurrenceId;
 
@@ -50,7 +51,8 @@ class PendingOccurrencesState extends Equatable {
       PendingOccurrencesState(
         status: status ?? this.status,
         items: items ?? this.items,
-        pendingUndo: clearPendingUndo ? null : (pendingUndo ?? this.pendingUndo),
+        pendingUndo:
+            clearPendingUndo ? null : (pendingUndo ?? this.pendingUndo),
         failure: failure,
       );
 

@@ -29,27 +29,57 @@ class ScheduledPaymentIntervalStepper extends StatelessWidget {
     return Row(
       children: [
         Expanded(
+          // Same treatment as its neighbours ("Cuenta", "Frecuencia",
+          // "Primer pago", "Termina"): a small `text-secondary` field label,
+          // not a section title.
           child: Text(
             l10n.scheduledPaymentFormIntervalStepperLabel,
-            style: theme.textTheme.bodyLarge,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: colors.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-        IconButton(
-          onPressed: interval > _min ? () => onChanged(interval - 1) : null,
-          icon: const Icon(LucideIcons.minus),
-        ),
-        SizedBox(
-          width: 28,
-          child: Text(
-            '$interval',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(color: colors.primary, fontWeight: FontWeight.w700),
+        // Pencil groups `− N +` inside a single `$muted` capsule instead of
+        // letting the three controls float on the row.
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.muted,
+            borderRadius: BorderRadius.circular(999),
           ),
-        ),
-        IconButton(
-          onPressed: interval < _max ? () => onChanged(interval + 1) : null,
-          icon: const Icon(LucideIcons.plus),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed:
+                    interval > _min ? () => onChanged(interval - 1) : null,
+                iconSize: 18,
+                constraints:
+                    const BoxConstraints.tightFor(width: 44, height: 44),
+                icon: const Icon(LucideIcons.minus),
+              ),
+              SizedBox(
+                width: 28,
+                child: Text(
+                  '$interval',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed:
+                    interval < _max ? () => onChanged(interval + 1) : null,
+                iconSize: 18,
+                constraints:
+                    const BoxConstraints.tightFor(width: 44, height: 44),
+                icon: const Icon(LucideIcons.plus),
+              ),
+            ],
+          ),
         ),
       ],
     );

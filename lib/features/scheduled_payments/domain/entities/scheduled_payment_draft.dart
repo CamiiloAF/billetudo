@@ -131,7 +131,8 @@ class ScheduledPaymentDraft extends Equatable {
       );
     }
 
-    final interval = frequency == ScheduledPaymentFrequency.once ? 1 : this.interval;
+    final interval =
+        frequency == ScheduledPaymentFrequency.once ? 1 : this.interval;
     if (interval < 1) {
       return const Left(
         ValidationFailure(

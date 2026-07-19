@@ -17,6 +17,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockScheduledPaymentFormCubit extends MockCubit<ScheduledPaymentFormState>
@@ -63,7 +64,8 @@ void main() {
         .thenReturn(ScheduledPaymentTagPickerState());
 
     getIt
-      ..registerFactory<CategoryQuickPickerCubit>(() => categoryQuickPickerCubit)
+      ..registerFactory<CategoryQuickPickerCubit>(
+          () => categoryQuickPickerCubit)
       ..registerFactory<ScheduledPaymentTagPickerCubit>(() => tagPickerCubit);
   });
 
@@ -87,7 +89,8 @@ void main() {
         .thenAnswer((_) => const Stream<ScheduledPaymentFormState>.empty());
     await tester.pumpWidget(
       MaterialApp(
-        theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+        theme:
+            brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
         locale: const Locale('es'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -153,7 +156,8 @@ void main() {
     verify(() => cubit.requiresConfirmationChanged(true)).called(1);
   });
 
-  testWidgets('cambiar de modo manual a automático llama requiresConfirmationChanged(false)',
+  testWidgets(
+      'cambiar de modo manual a automático llama requiresConfirmationChanged(false)',
       (tester) async {
     await pumpForm(
       tester,
@@ -167,6 +171,61 @@ void main() {
     await tester.pump();
 
     verify(() => cubit.requiresConfirmationChanged(false)).called(1);
+  });
+
+  testWidgets(
+      'el disclosure de `once` renombra el campo de fecha y esconde Termina',
+      (tester) async {
+    await pumpForm(
+      tester,
+      ScheduledPaymentFormState(
+        status: ScheduledPaymentFormStatus.ready,
+        frequency: ScheduledPaymentFrequency.once,
+      ),
+    );
+
+    expect(find.text('Fecha del pago'), findsOneWidget);
+    expect(find.text('Primer pago'), findsNothing);
+    expect(find.text('Termina'), findsNothing);
+  });
+
+  testWidgets('una frecuencia repetible usa "Primer pago" y "Termina"',
+      (tester) async {
+    await pumpForm(
+      tester,
+      ScheduledPaymentFormState(status: ScheduledPaymentFormStatus.ready),
+    );
+
+    expect(find.text('Primer pago'), findsOneWidget);
+    expect(find.text('Fecha del pago'), findsNothing);
+    expect(find.text('Termina'), findsOneWidget);
+    expect(find.text('Para siempre'), findsOneWidget);
+  });
+
+  testWidgets('las tarjetas de modo van bajo el label "Al llegar la fecha"',
+      (tester) async {
+    await pumpForm(
+      tester,
+      ScheduledPaymentFormState(status: ScheduledPaymentFormStatus.ready),
+    );
+
+    expect(find.text('Al llegar la fecha'), findsOneWidget);
+    expect(find.text('Se registra solo al llegar la fecha'), findsOneWidget);
+    expect(
+      find.text('Te avisamos para que confirmes antes de afectar tu saldo'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('el chip de añadir etiqueta dice "Etiqueta", no "Nueva"',
+      (tester) async {
+    await pumpForm(
+      tester,
+      ScheduledPaymentFormState(status: ScheduledPaymentFormStatus.ready),
+    );
+
+    expect(find.text('Etiqueta'), findsOneWidget);
+    expect(find.text('Nueva'), findsNothing);
   });
 
   testWidgets('una transferencia oculta la sección de Etiquetas (criterio 16)',
@@ -193,7 +252,7 @@ void main() {
   });
 
   testWidgets(
-      'tema oscuro: los botones x/check del header resuelven AppColors.dark, no los de light',
+      'tema oscuro: el botón check del header resuelve AppColors.dark, no los de light',
       (tester) async {
     await pumpForm(
       tester,
@@ -201,19 +260,21 @@ void main() {
       brightness: Brightness.dark,
     );
 
+    // `J0DSIm`: the ✕ is a bare icon here (unlike the detail's header), so
+    // the only circled header button of this screen is the save check.
     final buttons = tester.widgetList<TransactionHeaderButton>(
       find.byType(TransactionHeaderButton),
     );
-    expect(buttons, hasLength(2));
+    expect(buttons, hasLength(1));
 
-    final cancelButton =
-        buttons.firstWhere((button) => button.tooltip == 'Cancelar');
-    expect(cancelButton.background, AppColors.dark.muted);
-    expect(cancelButton.background, isNot(AppColors.light.muted));
-    expect(cancelButton.foreground, AppColors.dark.textPrimary);
-    expect(cancelButton.foreground, isNot(AppColors.light.textPrimary));
+    final cancelButton = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, LucideIcons.x),
+    );
+    expect(cancelButton.color, AppColors.dark.textPrimary);
+    expect(cancelButton.color, isNot(AppColors.light.textPrimary));
 
-    final saveButton = buttons.firstWhere((button) => button.tooltip == 'Guardar');
+    final saveButton =
+        buttons.firstWhere((button) => button.tooltip == 'Guardar');
     expect(saveButton.background, AppColors.dark.primary);
     expect(saveButton.background, isNot(AppColors.light.primary));
     expect(saveButton.foreground, AppColors.dark.onPrimary);

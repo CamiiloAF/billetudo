@@ -13,6 +13,7 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
   const ScheduledPaymentDetailActionsSheet({
     required this.canSnooze,
+    required this.templateName,
     required this.onEdit,
     required this.onDelete,
     this.onSnooze,
@@ -20,6 +21,10 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
   });
 
   final bool canSnooze;
+
+  /// The template's display name, shown as the sheet's title so the user
+  /// knows which scheduled payment these actions apply to.
+  final String templateName;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onSnooze;
@@ -27,6 +32,7 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     required bool canSnooze,
+    required String templateName,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
     VoidCallback? onSnooze,
@@ -35,6 +41,7 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
         context,
         builder: (context) => ScheduledPaymentDetailActionsSheet(
           canSnooze: canSnooze,
+          templateName: templateName,
           onEdit: onEdit,
           onDelete: onDelete,
           onSnooze: onSnooze,
@@ -45,14 +52,35 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final theme = Theme.of(context);
     final snooze = onSnooze;
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          templateName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          l10n.scheduledDetailActionsSheetSubtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: colors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 12),
         if (canSnooze && snooze != null) ...[
           ScheduledPaymentDetailActionTile(
             icon: LucideIcons.alarmClock,
-            label: l10n.scheduledConfirmationSheetSnooze,
+            label: l10n.scheduledDetailActionsSnooze,
             onTap: () {
               Navigator.of(context).pop();
               snooze();
@@ -69,8 +97,8 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
           },
         ),
         ScheduledPaymentDetailActionTile(
-          icon: LucideIcons.trash,
-          label: l10n.commonDelete,
+          icon: LucideIcons.trash2,
+          label: l10n.scheduledDetailActionsDelete,
           destructive: true,
           onTap: () {
             Navigator.of(context).pop();
@@ -113,8 +141,11 @@ class ScheduledPaymentDetailActionTile extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               label,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(color: color, fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontSize: 15,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

@@ -36,8 +36,7 @@ void main() {
       );
     });
 
-    test('monthly ajusta al último día cuando el mes destino es más corto',
-        () {
+    test('monthly ajusta al último día cuando el mes destino es más corto', () {
       // 31 de enero + 1 mes -> 28 de febrero de 2026 (no bisiesto).
       expect(
         ProjectUpcomingOccurrences.advance(

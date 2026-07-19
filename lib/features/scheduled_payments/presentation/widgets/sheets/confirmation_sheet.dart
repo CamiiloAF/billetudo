@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -11,8 +13,10 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../accounts/domain/entities/account.dart';
+import '../../../../accounts/presentation/cubit/accounts_list_cubit.dart';
 import '../../../../transactions/presentation/pages/transaction_form_page.dart'
-    show AccountPickerField;
+    show AccountPickerSheetBody;
 import '../../../domain/entities/pending_scheduled_occurrence.dart';
 import '../../../domain/entities/scheduled_payment.dart';
 import '../../cubit/confirmation_sheet_cubit.dart';
@@ -22,7 +26,8 @@ import '../../cubit/guided_review_state.dart';
 import '../../utils/scheduled_payment_format.dart';
 import '../scheduled_category_icon_wrap.dart';
 import '../scheduled_payment_editable_amount_field.dart';
-import '../scheduled_payment_read_only_row.dart';
+import 'confirmation_sheet_field_row.dart';
+import 'scheduled_scope_note.dart';
 import 'snooze_sheet.dart';
 
 /// What the mandatory confirmation sheet did (criterion 7), so the caller
@@ -107,6 +112,7 @@ class ConfirmationSheetBody extends StatelessWidget {
             scheduledPaymentId: state.scheduledPaymentId,
             type: state.type,
             currency: state.currency,
+            note: state.note,
             categoryName: state.categoryName,
             categoryIcon: source.categoryIcon,
             categoryColor: source.categoryColor,
@@ -117,6 +123,7 @@ class ConfirmationSheetBody extends StatelessWidget {
             accountId: state.accountId,
             accountName: state.accountName,
             amountMinor: state.amountMinor!,
+            templateAmountMinor: source.scheduledPayment.amountMinor,
             isSaving: state.isSaving,
             pendingCountForTemplate: state.pendingCountForTemplate,
             oldestPendingDate: source.occurrence.effectiveDate,
@@ -130,12 +137,16 @@ class ConfirmationSheetBody extends StatelessWidget {
                 context,
                 scheduledPaymentId: state.scheduledPaymentId,
                 occurrenceDate: source.occurrence.occurrenceDate,
-                templateTitle: ScheduledPaymentFormat.templateTitle(
+                templateName: ScheduledPaymentFormat.templateName(
+                  note: state.note,
                   categoryName: state.categoryName,
                   isTransfer: state.isTransfer,
                   accountName: state.accountName ?? '',
                   transferAccountName: state.transferAccountName,
                 ),
+                isTransfer: state.isTransfer,
+                categoryIcon: source.categoryIcon,
+                categoryColor: source.categoryColor,
               );
               if (result != null && context.mounted) {
                 Navigator.of(context).pop(ConfirmationSheetResult.snoozed);
@@ -144,7 +155,8 @@ class ConfirmationSheetBody extends StatelessWidget {
             onEdit: () {
               final router = GoRouter.of(context);
               Navigator.of(context).pop(ConfirmationSheetResult.cancelled);
-              router.push(AppRoutes.editScheduledPayment(state.scheduledPaymentId));
+              router.push(
+                  AppRoutes.editScheduledPayment(state.scheduledPaymentId));
             },
           ),
         );
@@ -188,7 +200,8 @@ class GuidedReviewSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return BlocConsumer<GuidedReviewCubit, GuidedReviewState>(
-      listenWhen: (previous, current) => previous.isFinished != current.isFinished,
+      listenWhen: (previous, current) =>
+          previous.isFinished != current.isFinished,
       listener: (context, state) {
         if (state.isFinished) {
           Navigator.of(context).pop();
@@ -213,21 +226,17 @@ class GuidedReviewSheetBody extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: GuidedReviewProgressBar(
-                      position: state.position,
-                      total: state.total,
+                    child: Text(
+                      l10n.scheduledGuidedReviewPosition(
+                        state.position,
+                        state.total,
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 13,
+                            color: context.colors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    l10n.scheduledGuidedReviewPosition(
-                      state.position,
-                      state.total,
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: context.colors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
@@ -236,11 +245,17 @@ class GuidedReviewSheetBody extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              GuidedReviewProgressBar(
+                position: state.position,
+                total: state.total,
+              ),
               const SizedBox(height: 12),
               ConfirmationSheetFields(
                 scheduledPaymentId: current.scheduledPayment.id,
                 type: current.scheduledPayment.type,
                 currency: current.scheduledPayment.currency,
+                note: current.scheduledPayment.note,
                 categoryName: current.categoryName,
                 categoryIcon: current.categoryIcon,
                 categoryColor: current.categoryColor,
@@ -251,6 +266,7 @@ class GuidedReviewSheetBody extends StatelessWidget {
                 accountId: state.accountId,
                 accountName: state.accountName,
                 amountMinor: state.amountMinor!,
+                templateAmountMinor: current.scheduledPayment.amountMinor,
                 isSaving: state.isSaving,
                 pendingCountForTemplate: state.pendingCountForTemplate,
                 oldestPendingDate: current.occurrence.effectiveDate,
@@ -265,12 +281,16 @@ class GuidedReviewSheetBody extends StatelessWidget {
                     context,
                     scheduledPaymentId: current.scheduledPayment.id,
                     occurrenceDate: current.occurrence.occurrenceDate,
-                    templateTitle: ScheduledPaymentFormat.templateTitle(
+                    templateName: ScheduledPaymentFormat.templateName(
+                      note: current.scheduledPayment.note,
                       categoryName: current.categoryName,
                       isTransfer: current.scheduledPayment.isTransfer,
                       accountName: current.accountName,
                       transferAccountName: current.transferAccountName,
                     ),
+                    isTransfer: current.scheduledPayment.isTransfer,
+                    categoryIcon: current.categoryIcon,
+                    categoryColor: current.categoryColor,
                   );
                   if (result != null) {
                     await cubit.skipCurrent();
@@ -337,9 +357,11 @@ class GuidedReviewProgressBar extends StatelessWidget {
 class ConfirmationSheetHead extends StatelessWidget {
   const ConfirmationSheetHead({
     required this.isTransfer,
+    this.isIncome = false,
     required this.accountName,
     required this.frequency,
     required this.onEdit,
+    this.note,
     this.categoryName,
     this.categoryIcon,
     this.categoryColor,
@@ -348,8 +370,18 @@ class ConfirmationSheetHead extends StatelessWidget {
   });
 
   final bool isTransfer;
+
+  /// `income` templates tint the icon tile `income-soft` instead of wearing
+  /// the category's own colour (`EJAvD`): the head is the first place that
+  /// says "this one adds money".
+  final bool isIncome;
   final String accountName;
   final String? transferAccountName;
+
+  /// The user-written name of the template, when there is one: it is the
+  /// head's `Name`, so the category is left to the `Sub` instead of being
+  /// printed twice.
+  final String? note;
   final String? categoryName;
   final String? categoryIcon;
   final String? categoryColor;
@@ -366,7 +398,8 @@ class ConfirmationSheetHead extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final theme = Theme.of(context);
-    final title = ScheduledPaymentFormat.templateTitle(
+    final title = ScheduledPaymentFormat.templateName(
+      note: note,
       categoryName: categoryName,
       isTransfer: isTransfer,
       accountName: accountName,
@@ -383,6 +416,12 @@ class ConfirmationSheetHead extends StatelessWidget {
           isTransfer: isTransfer,
           categoryIcon: categoryIcon,
           categoryColor: categoryColor,
+          cornerRadius: 14,
+          // `$income-soft` has no `AppColors` token yet; `mintSoft` is the
+          // theme's soft green counterpart in both themes, paired here with
+          // `incomeText` so the glyph keeps AA contrast on it.
+          background: isIncome ? colors.mintSoft : null,
+          foreground: isIncome ? colors.incomeText : null,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -393,14 +432,16 @@ class ConfirmationSheetHead extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitleParts.join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: colors.textSecondary),
               ),
             ],
           ),
@@ -443,19 +484,45 @@ class ScheduledAccumulatedStrip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: colors.primarySoft,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusField),
       ),
-      child: Text(
-        l10n.scheduledConfirmationSheetAccumulated(
-          count,
-          templateTitle,
-          DateFormat.yMMMd(Localizations.localeOf(context).toString())
-              .format(oldestDate),
-        ),
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colors.primaryOnSoftStrong,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(LucideIcons.layers, size: 16, color: colors.primaryOnSoftStrong),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.scheduledConfirmationSheetAccumulatedTitle(
+                    count,
+                    templateTitle,
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: colors.primaryOnSoftStrong,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.scheduledConfirmationSheetAccumulatedSub(
+                    DateFormat.yMMMd(Localizations.localeOf(context).toString())
+                        .format(oldestDate),
+                    count - 1,
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -479,6 +546,7 @@ class ConfirmationSheetFields extends StatelessWidget {
     required this.accountId,
     required this.accountName,
     required this.amountMinor,
+    required this.templateAmountMinor,
     required this.isSaving,
     required this.pendingCountForTemplate,
     required this.oldestPendingDate,
@@ -489,6 +557,7 @@ class ConfirmationSheetFields extends StatelessWidget {
     required this.onSkip,
     required this.onSnooze,
     required this.onEdit,
+    this.note,
     this.categoryName,
     this.categoryIcon,
     this.categoryColor,
@@ -501,6 +570,9 @@ class ConfirmationSheetFields extends StatelessWidget {
   final ScheduledPaymentType type;
   final String currency;
   final bool isTransfer;
+
+  /// The template's user-written name (its `note`), used as the head's title.
+  final String? note;
   final String? categoryName;
   final String? categoryIcon;
   final String? categoryColor;
@@ -511,6 +583,10 @@ class ConfirmationSheetFields extends StatelessWidget {
   final String? accountId;
   final String? accountName;
   final int amountMinor;
+
+  /// The amount the *template* holds, which the Scope Note quotes as what the
+  /// next occurrence will propose — unaffected by edits made here.
+  final int templateAmountMinor;
 
   final bool isSaving;
 
@@ -537,69 +613,97 @@ class ConfirmationSheetFields extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    final theme = Theme.of(context);
     final resolvedAccountName = accountName ?? transferAccountName ?? '';
+    final templateName = ScheduledPaymentFormat.templateName(
+      note: note,
+      categoryName: categoryName,
+      isTransfer: isTransfer,
+      accountName: resolvedAccountName,
+      transferAccountName: transferAccountName,
+    );
+    final divider = Divider(height: 1, thickness: 1, color: colors.border);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ConfirmationSheetHead(
           isTransfer: isTransfer,
+          isIncome: type == ScheduledPaymentType.income,
           accountName: resolvedAccountName,
           transferAccountName: transferAccountName,
+          note: note,
           categoryName: categoryName,
           categoryIcon: categoryIcon,
           categoryColor: categoryColor,
           frequency: frequency,
           onEdit: isGuided ? null : onEdit,
         ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.scheduledConfirmationSheetScopeNote,
-          style: theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
-        ),
-        const SizedBox(height: 16),
-        InkWell(
+        if (pendingCountForTemplate >= 2) ...[
+          const SizedBox(height: 12),
+          ScheduledAccumulatedStrip(
+            count: pendingCountForTemplate,
+            templateTitle: templateName,
+            oldestDate: oldestPendingDate,
+          ),
+        ],
+        const SizedBox(height: 8),
+        ConfirmationSheetFieldRow(
+          label: l10n.transactionFormDateLabel,
+          value: DateFormat.yMMMd(Localizations.localeOf(context).toString())
+              .format(date),
           onTap: () async {
-            final picked = await DatePickerSheet.show(context, initialDate: date);
+            final picked =
+                await DatePickerSheet.show(context, initialDate: date);
             if (picked != null) {
               onDateChanged(picked);
             }
           },
-          child: ScheduledPaymentReadOnlyRow(
-            label: l10n.transactionFormDateLabel,
-            value: DateFormat.yMMMd(Localizations.localeOf(context).toString())
-                .format(date),
-            editable: true,
-          ),
         ),
-        const SizedBox(height: 8),
-        if (!isTransfer)
-          AccountPickerField(
-            label: l10n.transactionFormAccountLabel,
-            selectedId: accountId,
-            selectedName: accountName,
-            onSelected: onAccountSelected,
-          ),
-        const SizedBox(height: 12),
-        ScheduledPaymentEditableAmountField(
-          amountMinor: amountMinor,
-          currency: currency,
-          onChanged: onAmountChanged,
+        divider,
+        ConfirmationSheetFieldRow(
+          label: isTransfer
+              ? l10n.scheduledConfirmationSheetSourceAccountLabel
+              : l10n.transactionFormAccountLabel,
+          value: accountName ?? '',
+          onTap: () => unawaited(_pickAccount(context)),
         ),
-        if (pendingCountForTemplate >= 2) ...[
-          const SizedBox(height: 16),
-          ScheduledAccumulatedStrip(
-            count: pendingCountForTemplate,
-            templateTitle: ScheduledPaymentFormat.templateTitle(
-              categoryName: categoryName,
-              isTransfer: isTransfer,
-              accountName: resolvedAccountName,
-              transferAccountName: transferAccountName,
-            ),
-            oldestDate: oldestPendingDate,
+        // A transfer's destination account (HU-04) is shown but not
+        // selectable here: the confirmation sheet only ever edits
+        // `date`/`accountId`/`amountMinor` (HU-03), so it carries no chevron.
+        if (isTransfer) ...[
+          divider,
+          ConfirmationSheetFieldRow(
+            label: l10n.scheduledConfirmationSheetTargetAccountLabel,
+            value: transferAccountName ?? '',
           ),
         ],
+        const SizedBox(height: 12),
+        // Omitted for a `once` template: there is no future occurrence whose
+        // scope needs clarifying (page spec, "Scope Note").
+        if (frequency != ScheduledPaymentFrequency.once)
+          ScheduledScopeNote(
+            templateAmountMinor: templateAmountMinor,
+            currency: currency,
+          ),
+        const SizedBox(height: 12),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: colors.border)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: ScheduledPaymentEditableAmountField(
+              amountMinor: amountMinor,
+              currency: currency,
+              label: isTransfer
+                  ? l10n.scheduledConfirmationSheetTransferAmountLabel
+                  : l10n.scheduledConfirmationSheetAmountLabel,
+              valueColor: ScheduledPaymentFormat.amountColor(colors, type),
+              amountPrefix: type == ScheduledPaymentType.income ? '+' : '',
+              onChanged: onAmountChanged,
+            ),
+          ),
+        ),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -623,7 +727,8 @@ class ConfirmationSheetFields extends StatelessWidget {
         const SizedBox(height: 8),
         FilledButton.icon(
           onPressed: isSaving ? null : onConfirm,
-          icon: Icon(isGuided ? LucideIcons.arrowRight : LucideIcons.check, size: 18),
+          icon: Icon(isGuided ? LucideIcons.arrowRight : LucideIcons.check,
+              size: 18),
           label: Text(
             isGuided
                 ? l10n.scheduledGuidedReviewConfirmNext
@@ -632,5 +737,25 @@ class ConfirmationSheetFields extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Opens the shared account picker sheet (the same `AccountPickerSheetBody`
+  /// Transacciones uses) from the boxless "Cuenta" row: this sheet needs the
+  /// picker's behaviour, not the `Form Field` chrome of `AccountPickerField`.
+  Future<void> _pickAccount(BuildContext context) async {
+    final account = await BottomSheetBase.show<Account>(
+      context,
+      builder: (context) => BlocProvider(
+        create: (context) {
+          final cubit = getIt<AccountsListCubit>();
+          unawaited(cubit.start());
+          return cubit;
+        },
+        child: AccountPickerSheetBody(selectedId: accountId),
+      ),
+    );
+    if (account != null) {
+      onAccountSelected(account.id, account.name);
+    }
   }
 }

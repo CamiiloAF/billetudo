@@ -40,8 +40,9 @@ void main() {
     test('suma: 100 + 50 = 150 (en centavos)', () {
       const buffer = CalculatorAmountBuffer(amountMinor: 10000); // $100.00
       final afterOperator = buffer.operatorPressed(CalcOperator.add);
-      final afterOperand =
-          afterOperator.digitPressed(5, currency: 'COP').digitPressed(0, currency: 'COP');
+      final afterOperand = afterOperator
+          .digitPressed(5, currency: 'COP')
+          .digitPressed(0, currency: 'COP');
       final result = afterOperand.equalsPressed();
 
       expect(result.amountMinor, 15000);
@@ -101,7 +102,9 @@ void main() {
       expect(result.amountMinor, 500);
     });
 
-    test('tras evaluar con =, backspace edita el resultado, no el cálculo previo', () {
+    test(
+        'tras evaluar con =, backspace edita el resultado, no el cálculo previo',
+        () {
       const buffer = CalculatorAmountBuffer(amountMinor: 10000);
       final evaluated = buffer
           .operatorPressed(CalcOperator.add)

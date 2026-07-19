@@ -10,8 +10,7 @@ import '../../scheduled_payment_fixtures.dart';
 void main() {
   group('ScheduledPaymentDraft.validated (HU-01)', () {
     test('acepta un gasto válido y normaliza la moneda', () {
-      final result =
-          buildExpenseDraft(currency: 'cop').validated();
+      final result = buildExpenseDraft(currency: 'cop').validated();
 
       expect(result.isRight(), isTrue);
       expect(result.getRight().toNullable()!.currency, 'COP');

@@ -8,6 +8,8 @@ import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
 import '../utils/scheduled_payment_format.dart';
 import 'scheduled_category_icon_wrap.dart';
+import 'scheduled_finished_chip.dart';
+import 'scheduled_manual_mode_chip.dart';
 
 /// `Scheduled Card`: one row of the "próximos vencimientos" list (HU-04).
 ///
@@ -17,10 +19,21 @@ import 'scheduled_category_icon_wrap.dart';
 /// second row carries the frequency chip ("cada mes"/"pago único") and the
 /// "en N días" countdown pill.
 class ScheduledCard extends StatelessWidget {
-  const ScheduledCard({required this.entry, required this.onTap, super.key});
+  const ScheduledCard({
+    required this.entry,
+    required this.onTap,
+    this.isFinished = false,
+    super.key,
+  });
 
   final ScheduledPaymentSummary entry;
   final VoidCallback onTap;
+
+  /// True inside the "Terminados" filter. Same geometry as an active card
+  /// (amount on top, full-card tap target, no dimming): these are navigable
+  /// history, not disabled rows. Only the bottom axis changes — the cadence
+  /// chip becomes "Terminada" and the countdown becomes "Último pago · fecha".
+  final bool isFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +42,8 @@ class ScheduledCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final payment = entry.scheduledPayment;
     final isTransfer = payment.isTransfer;
-    final title = ScheduledPaymentFormat.templateTitle(
+    final title = ScheduledPaymentFormat.templateName(
+      note: payment.note,
       categoryName: entry.categoryName,
       isTransfer: isTransfer,
       accountName: entry.accountName,
@@ -44,76 +58,148 @@ class ScheduledCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScheduledCategoryIconWrap(
-                isTransfer: isTransfer,
-                categoryIcon: entry.categoryIcon,
-                categoryColor: entry.categoryColor,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ScheduledCategoryIconWrap(
+                    isTransfer: isTransfer,
+                    categoryIcon: entry.categoryIcon,
+                    categoryColor: entry.categoryColor,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                        if (entry.hasPendingOccurrence) ...[
-                          const SizedBox(width: 6),
-                          ScheduledPendingCountChip(
-                            count: entry.pendingOccurrenceCount,
+                        const SizedBox(height: 2),
+                        Text(
+                          ScheduledPaymentFormat.accountCategoryLine(
+                            accountName: entry.accountName,
+                            categoryName: entry.categoryName,
+                            isTransfer: isTransfer,
+                            transferAccountName: entry.transferAccountName,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: colors.textSecondary),
+                        ),
+                        if (!isFinished) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: ScheduledFrequencyChip(
+                                  frequency: payment.frequency,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              if (payment.requiresConfirmation) ...[
+                                const ScheduledManualModeChip(),
+                                const SizedBox(width: 6),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  _dueLabel(context, l10n, payment),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.end,
+                                  style: theme.textTheme.labelSmall
+                                      ?.copyWith(color: colors.textSecondary),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${entry.accountName} · ${ScheduledPaymentFormat.dateLabel(context, payment.nextDate)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: colors.textSecondary),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _amountLabel(l10n, payment),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: ScheduledPaymentFormat.amountColor(
+                        colors,
+                        payment.type,
+                      ),
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: ScheduledFrequencyChip(
-                            frequency: payment.frequency,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        ScheduledDueInChip(nextDate: payment.nextDate),
-                      ],
+                  ),
+                ],
+              ),
+              // Finished: the same bottom axis, but spanning the full card
+              // width instead of only the text column. "Último pago · 15 mar
+              // 2026" does not fit in the slot the amount leaves next to it,
+              // and truncating it would eat the year — the part the design
+              // added on purpose. Card height is unchanged: the row moved, it
+              // was not added.
+              if (isFinished) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Flexible(child: ScheduledFinishedChip()),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _lastPaymentLabel(context, l10n),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(color: colors.textSecondary),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                _amountLabel(l10n, payment),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: ScheduledPaymentFormat.amountColor(
-                    colors,
-                    payment.type,
-                  ),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              ],
             ],
           ),
         ),
       ),
+    );
+  }
+
+  /// "12 ago · en 3 días": the next due date and its countdown, plain text
+  /// on the right of the chip row (page spec) — not a chip, so the only
+  /// pill-shaped elements of the row are the frequency and the mode.
+  String _dueLabel(
+    BuildContext context,
+    AppLocalizations l10n,
+    ScheduledPayment payment,
+  ) {
+    final date = ScheduledPaymentFormat.dateLabel(context, payment.nextDate);
+    final dueIn = ScheduledPaymentFormat.dueInLabel(
+      l10n,
+      payment.nextDate,
+      today: DateTime.now(),
+    );
+    return '$date · $dueIn';
+  }
+
+  /// "Último pago · 15 mar 2026": the date of the last occurrence the template
+  /// really generated, with an explicit year.
+  ///
+  /// Labeled on purpose — the same slot reads "en 3 días" on an active card,
+  /// and for a repeating template that reached its `endDate` the last payment
+  /// and the end date are different dates. Empty when the template stopped
+  /// without ever firing: there is no payment to name.
+  String _lastPaymentLabel(BuildContext context, AppLocalizations l10n) {
+    final date = entry.lastPaymentDate;
+    if (date == null) {
+      return '';
+    }
+    return l10n.scheduledFinishedLastPayment(
+      ScheduledPaymentFormat.shortDateLabel(context, date),
     );
   }
 
@@ -122,38 +208,10 @@ class ScheduledCard extends StatelessWidget {
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
-      ScheduledPaymentType.expense => '-$formatted',
+      // Unsigned expense, per Pencil: only income carries a sign.
+      ScheduledPaymentType.expense => formatted,
       ScheduledPaymentType.transfer => formatted,
     };
-  }
-}
-
-/// The "×N" pill (criterion 11): a template appears once even when several
-/// occurrences vencieron while the app was closed. Neutral tone on purpose —
-/// this is a count, not an alert.
-class ScheduledPendingCountChip extends StatelessWidget {
-  const ScheduledPendingCountChip({required this.count, super.key});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: colors.muted,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        '×$count',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: colors.textSecondary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
   }
 }
 

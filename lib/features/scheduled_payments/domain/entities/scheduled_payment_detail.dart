@@ -55,6 +55,20 @@ class ScheduledPaymentDetail extends Equatable {
   /// completo (N)".
   final int historyTotalCount;
 
+  /// Whether this is a `once` template whose single transaction has already
+  /// been generated — the fact `ScheduledPayment.isActive` asks the caller
+  /// for, since the template itself has no column recording it fired. A
+  /// generated transaction is exactly what [historyTotalCount] counts.
+  bool get onceAlreadyGenerated =>
+      scheduledPayment.frequency == ScheduledPaymentFrequency.once &&
+      historyTotalCount > 0;
+
+  /// Whether the template still produces future occurrences: drives the
+  /// hero's "PRÓXIMO PAGO" vs. "PAGO EJECUTADO" and the ficha's
+  /// "Activa"/"Terminada" (Pencil `OY2Kj` vs. `Eyold`).
+  bool get isActive =>
+      scheduledPayment.isActive(onceAlreadyGenerated: onceAlreadyGenerated);
+
   @override
   List<Object?> get props => [
         scheduledPayment,

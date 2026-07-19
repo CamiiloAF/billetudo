@@ -4,6 +4,7 @@ import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirm
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/guided_review_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/guided_review_state.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_editable_amount_field.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/confirmation_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,12 @@ class MockGuidedReviewCubit extends MockCubit<GuidedReviewState>
 /// occurrence, the same sheet with 3+ accumulated occurrences of the same
 /// template (the "Acumuladas" strip, criterion 11), and the guided-review
 /// variant stepped through one at a time (`GuidedReviewSheet`, item 3).
+///
+/// Pencil rows (`design-system/billetudo/pages/pagos-programados.md`):
+/// `individual` → `YpMV7` (monto colapsado) · `amount_editing` → `irJZw`
+/// (keypad) · `accumulated` → `K5lXU` · `income` → `EJAvD` ·
+/// `transfer` → `woFWS` · `guided` → `rOb6U`. `saving` has no Pencil frame:
+/// it is the disabled-while-writing state, not a designed screen.
 ///
 /// Rendered by wiring `ConfirmationSheetBody`/`GuidedReviewSheetBody`
 /// directly to a mocked, already-`ready` cubit instead of going through
@@ -50,12 +57,21 @@ void main() {
       buildPendingOccurrence(
         scheduledPayment: buildScheduledPayment(
           type: type,
-          transferAccountId: type == ScheduledPaymentType.transfer ? 'acc-2' : null,
+          // The head's Name is the user-written note; the category lives in
+          // the Sub, so it is never printed twice.
+          note: type == ScheduledPaymentType.transfer
+              ? 'Ahorro mensual'
+              : 'Netflix',
+          amountMinor: 18000000,
+          transferAccountId:
+              type == ScheduledPaymentType.transfer ? 'acc-2' : null,
           requiresConfirmation: true,
         ),
         accountName: 'Bancolombia',
-        transferAccountName: type == ScheduledPaymentType.transfer ? 'Nequi' : null,
-        categoryName: type == ScheduledPaymentType.transfer ? null : 'Suscripciones',
+        transferAccountName:
+            type == ScheduledPaymentType.transfer ? 'Nequi' : null,
+        categoryName:
+            type == ScheduledPaymentType.transfer ? null : 'Suscripciones',
         categoryIcon: type == ScheduledPaymentType.transfer ? null : 'wifi',
         categoryColor: type == ScheduledPaymentType.transfer ? null : 'indigo',
       );
@@ -70,9 +86,11 @@ void main() {
     ConfirmationSheetState state,
     String name, {
     required Brightness brightness,
+    Size size = goldenPhoneSize,
+    Future<void> Function(WidgetTester tester)? afterOpen,
   }) async {
     when(() => cubit.state).thenReturn(state);
-    setGoldenViewport(tester);
+    setGoldenViewport(tester, size);
     await tester.pumpWidget(
       wrapForGolden(
         Builder(
@@ -93,6 +111,10 @@ void main() {
     );
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
+    if (afterOpen != null) {
+      await afterOpen(tester);
+      await tester.pumpAndSettle();
+    }
     await expectLater(
       find.byType(MaterialApp),
       matchesGoldenFile('goldens/sheet_confirmation_$name.png'),
@@ -145,13 +167,47 @@ void main() {
       );
     });
 
-    testWidgets('transferencia: sin selector de cuenta destino ($suffix)',
+    testWidgets(
+        'transferencia: la fila de cuenta destino conserva el chevron aunque '
+        'no abra selector ($suffix)', (tester) async {
+      await goldenStandalone(
+        tester,
+        ConfirmationSheetState.loaded(
+            source(type: ScheduledPaymentType.transfer)),
+        'transfer_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('ingreso: monto en verde y copy de ingreso ($suffix)',
         (tester) async {
       await goldenStandalone(
         tester,
-        ConfirmationSheetState.loaded(source(type: ScheduledPaymentType.transfer)),
-        'transfer_$suffix',
+        ConfirmationSheetState.loaded(
+          source(type: ScheduledPaymentType.income),
+        ),
+        'income_$suffix',
         brightness: brightness,
+      );
+    });
+
+    testWidgets('monto en edición: keypad expandido in-situ ($suffix)',
+        (tester) async {
+      await goldenStandalone(
+        tester,
+        ConfirmationSheetState.loaded(source()),
+        'amount_editing_$suffix',
+        brightness: brightness,
+        // The expanded calculator adds the keypad below the sheet's other
+        // rows: at 844px the sheet's own scroll view would clip it, and a
+        // golden of a keypad that is half off-screen shows nothing useful.
+        size: tallGoldenPhoneSize(height: 1100),
+        afterOpen: (tester) => tester.tap(
+          find.descendant(
+            of: find.byType(ScheduledPaymentAmountCollapsed),
+            matching: find.byType(IconButton),
+          ),
+        ),
       );
     });
 
@@ -164,7 +220,8 @@ void main() {
       );
     });
 
-    testWidgets('guardando: los botones se deshabilitan ($suffix)', (tester) async {
+    testWidgets('guardando: los botones se deshabilitan ($suffix)',
+        (tester) async {
       await goldenStandalone(
         tester,
         ConfirmationSheetState.loaded(source())
@@ -174,7 +231,8 @@ void main() {
       );
     });
 
-    testWidgets('revisar todas (guiada): posición N de M, sin lápiz de editar ($suffix)',
+    testWidgets(
+        'revisar todas (guiada): posición N de M, sin lápiz de editar ($suffix)',
         (tester) async {
       final queue = [source(), source(type: ScheduledPaymentType.income)];
       await goldenGuided(

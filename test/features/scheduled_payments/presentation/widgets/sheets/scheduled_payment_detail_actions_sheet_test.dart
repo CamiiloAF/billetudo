@@ -18,12 +18,14 @@ void main() {
         ),
       );
 
-  testWidgets('canSnooze=true: muestra Posponer, un Divider, y luego Editar/Eliminar',
+  testWidgets(
+      'canSnooze=true: muestra Posponer, un Divider, y luego Editar/Eliminar',
       (tester) async {
     await pump(
       tester,
       ScheduledPaymentDetailActionsSheet(
         canSnooze: true,
+        templateName: 'Netflix',
         onEdit: () {},
         onDelete: () {},
         onSnooze: () {},
@@ -48,12 +50,14 @@ void main() {
     expect(dividerIndex, lessThan(tileIndices[1]));
   });
 
-  testWidgets('canSnooze=false: sin Posponer y sin Divider, solo Editar/Eliminar',
+  testWidgets(
+      'canSnooze=false: sin Posponer y sin Divider, solo Editar/Eliminar',
       (tester) async {
     await pump(
       tester,
       ScheduledPaymentDetailActionsSheet(
         canSnooze: false,
+        templateName: 'Netflix',
         onEdit: () {},
         onDelete: () {},
       ),
@@ -61,6 +65,22 @@ void main() {
 
     expect(find.byType(Divider), findsNothing);
     expect(find.byType(ScheduledPaymentDetailActionTile), findsNWidgets(2));
+  });
+
+  testWidgets('muestra el head con el nombre de la plantilla y su subtítulo',
+      (tester) async {
+    await pump(
+      tester,
+      ScheduledPaymentDetailActionsSheet(
+        canSnooze: false,
+        templateName: 'Netflix',
+        onEdit: () {},
+        onDelete: () {},
+      ),
+    );
+
+    expect(find.text('Netflix'), findsOneWidget);
+    expect(find.text('Acciones del pago programado'), findsOneWidget);
   });
 
   testWidgets('tocar Editar cierra la hoja y llama onEdit', (tester) async {
@@ -72,6 +92,7 @@ void main() {
           onPressed: () => ScheduledPaymentDetailActionsSheet.show(
             context,
             canSnooze: false,
+            templateName: 'Netflix',
             onEdit: () => edited = true,
             onDelete: () {},
           ),
@@ -89,18 +110,23 @@ void main() {
     expect(find.byType(ScheduledPaymentDetailActionsSheet), findsNothing);
   });
 
-  testWidgets('eliminar se pinta en el color destructivo (expense)', (tester) async {
+  testWidgets('eliminar se pinta en el color destructivo (expense)',
+      (tester) async {
     await pump(
       tester,
       ScheduledPaymentDetailActionsSheet(
         canSnooze: false,
+        templateName: 'Netflix',
         onEdit: () {},
         onDelete: () {},
       ),
     );
 
     final deleteTile = tester.widget<ScheduledPaymentDetailActionTile>(
-      find.widgetWithText(ScheduledPaymentDetailActionTile, 'Eliminar'),
+      find.widgetWithText(
+        ScheduledPaymentDetailActionTile,
+        'Eliminar pago programado',
+      ),
     );
     expect(deleteTile.destructive, isTrue);
   });

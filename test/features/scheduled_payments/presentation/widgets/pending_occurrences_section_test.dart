@@ -62,14 +62,19 @@ void main() {
 
   testWidgets('renders the ScheduledPendingCard with every pending occurrence',
       (tester) async {
-    final items = [buildPendingOccurrence(), buildPendingOccurrence(
-      occurrence: buildOccurrence(id: 'occ-2'),
-      scheduledPayment: buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
-    )];
+    final items = [
+      buildPendingOccurrence(),
+      buildPendingOccurrence(
+        occurrence: buildOccurrence(id: 'occ-2'),
+        scheduledPayment:
+            buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
+      )
+    ];
 
     await pumpSection(
       tester,
-      PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items),
+      PendingOccurrencesState(
+          status: PendingOccurrencesStatus.ready, items: items),
     );
 
     final card = tester.widget<ScheduledPendingCard>(
@@ -84,7 +89,8 @@ void main() {
 
     await pumpSection(
       tester,
-      PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items),
+      PendingOccurrencesState(
+          status: PendingOccurrencesStatus.ready, items: items),
       onOpenPending: () => opened = true,
     );
 
@@ -98,8 +104,8 @@ void main() {
       'a snooze undo shows the snoozed Snackbar, and tapping Deshacer calls cubit.undo()',
       (tester) async {
     final items = [buildPendingOccurrence()];
-    final initial =
-        PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items);
+    final initial = PendingOccurrencesState(
+        status: PendingOccurrencesStatus.ready, items: items);
     final withUndo = initial.copyWith(
       pendingUndo:
           const PendingOccurrenceUndo(occurrenceId: 'occ-1', isSnooze: true),

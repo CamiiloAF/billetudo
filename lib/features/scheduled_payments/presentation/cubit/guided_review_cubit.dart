@@ -121,7 +121,8 @@ class GuidedReviewCubit extends Cubit<GuidedReviewState> {
     }
     switch (result) {
       case Left(value: final failure):
-        emit(state.copyWith(status: GuidedReviewStatus.ready, failure: failure));
+        emit(
+            state.copyWith(status: GuidedReviewStatus.ready, failure: failure));
       case Right():
         emit(
           state.copyWith(

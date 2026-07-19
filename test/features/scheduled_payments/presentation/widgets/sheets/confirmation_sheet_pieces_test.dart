@@ -29,14 +29,16 @@ void main() {
         ),
       );
 
-      final text = tester.widget<Text>(find.byType(Text));
-      expect(text.data, contains('3'));
-      expect(text.data, contains('Netflix'));
+      expect(find.textContaining('3'), findsWidgets);
+      expect(find.textContaining('Netflix'), findsOneWidget);
+      // The sub-line is the part that says the rest of the backlog stays put.
+      expect(find.textContaining('siguen en tu lista'), findsOneWidget);
     });
   });
 
   group('ConfirmationSheetHead', () {
-    testWidgets('sin categoría (transferencia): título usa "cuenta → cuenta destino"',
+    testWidgets(
+        'sin categoría (transferencia): título usa "cuenta → cuenta destino"',
         (tester) async {
       await tester.pumpWidget(
         appWith(
@@ -53,7 +55,7 @@ void main() {
       expect(find.text('Bancolombia → Nequi'), findsOneWidget);
     });
 
-    testWidgets('con categoría: el título es la categoría, no la cuenta',
+    testWidgets('sin nota: el título cae a la categoría, no a la cuenta',
         (tester) async {
       await tester.pumpWidget(
         appWith(
@@ -68,6 +70,26 @@ void main() {
       );
 
       expect(find.text('Suscripciones'), findsOneWidget);
+    });
+
+    testWidgets(
+        'con nota: el nombre es la nota y la categoría vive solo en el sub',
+        (tester) async {
+      await tester.pumpWidget(
+        appWith(
+          ConfirmationSheetHead(
+            isTransfer: false,
+            accountName: 'Bancolombia',
+            note: 'Netflix',
+            categoryName: 'Suscripciones',
+            frequency: ScheduledPaymentFrequency.monthly,
+            onEdit: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('Netflix'), findsOneWidget);
+      expect(find.text('Suscripciones · cada mes'), findsOneWidget);
     });
 
     testWidgets('tocar el ícono de lápiz llama onEdit', (tester) async {

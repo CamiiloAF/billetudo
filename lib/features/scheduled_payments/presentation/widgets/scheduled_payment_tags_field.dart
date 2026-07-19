@@ -83,7 +83,8 @@ class ScheduledPaymentTagsFieldBody extends StatelessWidget {
                     onTap: () => onChanged({...selectedIds}..remove(id)),
                   ),
                 TransactionFormTagChip(
-                  label: l10n.transactionFormTagNew,
+                  // "+ Etiqueta" here, not Transacciones' "+ Nueva".
+                  label: l10n.scheduledPaymentFormTagNew,
                   icon: LucideIcons.plus,
                   removable: false,
                   neutral: true,

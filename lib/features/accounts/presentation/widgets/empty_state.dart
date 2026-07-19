@@ -14,6 +14,7 @@ class EmptyState extends StatelessWidget {
   const EmptyState({
     required this.icon,
     required this.message,
+    this.description,
     this.ctaLabel,
     this.onCta,
     super.key,
@@ -25,13 +26,19 @@ class EmptyState extends StatelessWidget {
   /// fact, it never blames the user (MASTER.md).
   final String message;
 
+  /// Optional second line, for the empty states whose title alone would leave
+  /// out what the user still has (already localized).
+  final String? description;
+
   final String? ctaLabel;
   final VoidCallback? onCta;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
     final ctaLabel = this.ctaLabel;
+    final description = this.description;
 
     return Center(
       child: Padding(
@@ -52,11 +59,20 @@ class EmptyState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
+              style: theme.textTheme.bodyLarge
                   ?.copyWith(color: colors.textSecondary),
             ),
+            if (description != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                description,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: 13,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
             if (ctaLabel != null) ...[
               const SizedBox(height: 24),
               FilledButton.icon(

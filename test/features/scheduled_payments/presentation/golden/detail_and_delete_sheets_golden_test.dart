@@ -9,6 +9,15 @@ import '../../../../support/golden_helpers.dart';
 /// (grouping "Posponer" above a divider from "Editar"/"Eliminar" only when
 /// the template can still be snoozed) and the delete confirmation (criterion
 /// 12's copy: stops future generation, keeps generated history).
+///
+/// Pencil rows (`design-system/billetudo/pages/pagos-programados.md`):
+/// `detail_actions_active` → `yHf9k` (menú ⋮ recurrente/transfer) ·
+/// `detail_actions_inactive` → `nLkvf` (menú ⋮ sin Posponer), which the page
+/// now reaches for a `once` template as well as for a tombstoned one (HU-07:
+/// a one-off payment has no cadence to keep, so moving its date is editing
+/// the template, not snoozing an occurrence). `sheet_delete` has no row of its own in the
+/// table; it is the "sheet de confirmar-eliminar" the spec's Estado
+/// paragraph lists.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -54,6 +63,7 @@ void main() {
         (context) => ScheduledPaymentDetailActionsSheet.show(
           context,
           canSnooze: true,
+          templateName: 'Netflix',
           onSnooze: () {},
           onEdit: () {},
           onDelete: () {},
@@ -63,13 +73,15 @@ void main() {
       );
     });
 
-    testWidgets('acciones: plantilla inactiva, sin Posponer ni divisor ($suffix)',
+    testWidgets(
+        'acciones: plantilla inactiva, sin Posponer ni divisor ($suffix)',
         (tester) async {
       await golden(
         tester,
         (context) => ScheduledPaymentDetailActionsSheet.show(
           context,
           canSnooze: false,
+          templateName: 'Netflix',
           onEdit: () {},
           onDelete: () {},
         ),
@@ -81,7 +93,8 @@ void main() {
     testWidgets('eliminar plantilla: confirmación ($suffix)', (tester) async {
       await golden(
         tester,
-        (context) => DeleteScheduledPaymentSheet.show(context, onConfirm: () {}),
+        (context) =>
+            DeleteScheduledPaymentSheet.show(context, onConfirm: () {}),
         'delete_$suffix',
         brightness: brightness,
       );

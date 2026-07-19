@@ -1,76 +1,113 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/pending_scheduled_occurrence.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../utils/scheduled_payment_format.dart';
+import 'scheduled_category_icon_wrap.dart';
+import 'scheduled_pending_count_chip.dart';
 
-/// `Scheduled Pending Row`: one row of "Por confirmar" (HU-03/HU-04).
+/// `Scheduled Pending Row/B2 — Compacta` (`QhuIP`): one row of "Por
+/// confirmar" (HU-03/HU-04). Category icon tile + name (with the "×N" chip
+/// when the template has more than one occurrence accumulated) over a
+/// "Cuenta · Categoría" sub-line, the amount and its due date stacked on the
+/// right, and a trailing `chevron-right`.
 ///
-/// Fixed 52px height so the list scrolls predictably; the title truncates to
-/// a single line with an ellipsis instead of wrapping, to keep that height —
-/// deliberate trade-off for long account/category names, documented in the
-/// design spec.
+/// Fixed 52px height so the list scrolls predictably; both texts truncate to
+/// a single line with an ellipsis instead of wrapping, which is what keeps
+/// that height with real account names. The date lives in the right column,
+/// under the amount, so the sub-line never competes for width with it — see
+/// "Cadena de dependencia del alto" in the page spec.
 class ScheduledPendingRow extends StatelessWidget {
-  const ScheduledPendingRow(
-      {required this.entry, required this.onTap, super.key});
+  const ScheduledPendingRow({
+    required this.entry,
+    required this.onTap,
+    this.count = 1,
+    super.key,
+  });
 
   final PendingScheduledOccurrence entry;
   final VoidCallback onTap;
+
+  /// How many pending occurrences of this template the row stands for.
+  final int count;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
     final payment = entry.scheduledPayment;
-    final title = entry.categoryName ??
-        (payment.isTransfer
-            ? '${entry.accountName} → ${entry.transferAccountName ?? ''}'
-            : entry.accountName);
+    final isTransfer = payment.isTransfer;
+    final name = ScheduledPaymentFormat.templateName(
+      note: payment.note,
+      categoryName: entry.categoryName,
+      isTransfer: isTransfer,
+      accountName: entry.accountName,
+      transferAccountName: entry.transferAccountName,
+    );
+    final subtitle = ScheduledPaymentFormat.accountCategoryLine(
+      accountName: entry.accountName,
+      categoryName: entry.categoryName,
+      isTransfer: isTransfer,
+      transferAccountName: entry.transferAccountName,
+    );
 
-    return Material(
-      color: colors.surface,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        child: SizedBox(
-          height: 52,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 52,
+        child: Row(
+          children: [
+            ScheduledCategoryIconWrap(
+              isTransfer: isTransfer,
+              categoryIcon: entry.categoryIcon,
+              categoryColor: entry.categoryColor,
+              cornerRadius: 14,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                      Flexible(
+                        child: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                       ),
-                      Text(
-                        _dateLabel(context),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: colors.textSecondary),
-                      ),
+                      if (count > 1) ...[
+                        const SizedBox(width: 6),
+                        ScheduledPendingCountChip(count: count),
+                      ],
                     ],
                   ),
-                ),
-                const SizedBox(width: 12),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 Text(
-                  _amountLabel(l10n, payment),
+                  _amountLabel(payment),
                   style: theme.textTheme.titleSmall?.copyWith(
+                    fontSize: 15,
                     color: ScheduledPaymentFormat.amountColor(
                       colors,
                       payment.type,
@@ -78,26 +115,38 @@ class ScheduledPendingRow extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                Text(
+                  ScheduledPaymentFormat.dateLabel(
+                    context,
+                    entry.occurrence.effectiveDate,
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    color: colors.textSecondary,
+                  ),
+                ),
               ],
             ),
-          ),
+            const SizedBox(width: 4),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 18,
+              color: colors.textSecondary,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  String _amountLabel(AppLocalizations l10n, ScheduledPayment payment) {
+  String _amountLabel(ScheduledPayment payment) {
     final formatted = const MoneyFormatter()
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
       ScheduledPaymentType.income => '+$formatted',
-      ScheduledPaymentType.expense => '-$formatted',
+      // Unsigned expense, per Pencil: only income carries a sign.
+      ScheduledPaymentType.expense => formatted,
       ScheduledPaymentType.transfer => formatted,
     };
-  }
-
-  String _dateLabel(BuildContext context) {
-    final locale = Localizations.localeOf(context).toString();
-    return DateFormat('d MMM', locale).format(entry.occurrence.effectiveDate);
   }
 }

@@ -16,6 +16,10 @@ class MockPendingOccurrencesCubit extends MockCubit<PendingOccurrencesState>
 
 /// "Por confirmar" (HU-03/HU-04 overflow): every pending occurrence across
 /// every manual-mode template.
+///
+/// Pencil row: `with_data` → `QkLV0` (subpantalla "Por confirmar",
+/// desbordamiento). `empty`, `loading` and `error` are runtime states with
+/// no frame of their own.
 void main() {
   late MockPendingOccurrencesCubit cubit;
 
@@ -51,6 +55,7 @@ void main() {
     PendingOccurrencesState state,
     String name, {
     required Brightness brightness,
+    bool settle = true,
   }) async {
     when(() => cubit.state).thenReturn(state);
     await pumpGolden(
@@ -60,6 +65,7 @@ void main() {
         child: const PendingOccurrencesPage(),
       ),
       brightness: brightness,
+      settle: settle,
     );
     await expectLater(
       find.byType(PendingOccurrencesPage),
@@ -69,6 +75,25 @@ void main() {
 
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
+
+    testWidgets('loading ($suffix)', (tester) async {
+      await golden(
+        tester,
+        const PendingOccurrencesState(),
+        'loading_$suffix',
+        brightness: brightness,
+        settle: false,
+      );
+    });
+
+    testWidgets('failure ($suffix)', (tester) async {
+      await golden(
+        tester,
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.failure),
+        'error_$suffix',
+        brightness: brightness,
+      );
+    });
 
     testWidgets('empty ($suffix)', (tester) async {
       await golden(
@@ -82,7 +107,8 @@ void main() {
     testWidgets('with data ($suffix)', (tester) async {
       await golden(
         tester,
-        PendingOccurrencesState(status: PendingOccurrencesStatus.ready, items: items),
+        PendingOccurrencesState(
+            status: PendingOccurrencesStatus.ready, items: items),
         'with_data_$suffix',
         brightness: brightness,
       );

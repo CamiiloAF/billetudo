@@ -20,9 +20,9 @@ void main() {
     when(() => repository.createScheduledPayment(any())).thenAnswer(
       (invocation) async => Right(
         buildScheduledPayment(
-          accountId: (invocation.positionalArguments.first
-                  as ScheduledPaymentDraft)
-              .accountId,
+          accountId:
+              (invocation.positionalArguments.first as ScheduledPaymentDraft)
+                  .accountId,
         ),
       ),
     );

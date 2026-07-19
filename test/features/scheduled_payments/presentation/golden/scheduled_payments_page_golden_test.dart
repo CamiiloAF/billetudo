@@ -14,13 +14,23 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../support/golden_helpers.dart';
 import '../../scheduled_payment_fixtures.dart';
 
-class MockScheduledPaymentsListCubit extends MockCubit<ScheduledPaymentsListState>
+class MockScheduledPaymentsListCubit
+    extends MockCubit<ScheduledPaymentsListState>
     implements ScheduledPaymentsListCubit {}
 
 class MockPendingOccurrencesCubit extends MockCubit<PendingOccurrencesState>
     implements PendingOccurrencesCubit {}
 
-/// The "próximos vencimientos" list (HU-04). `ScheduledDueInChip`/
+/// The "próximos vencimientos" list (HU-04).
+///
+/// Pencil rows: `with_data_with_pending` → `o0twiq` (lista con pendientes) ·
+/// `with_data_no_pending` → `t6UXUo` (lista sin pendientes) · `empty` →
+/// `YI1wY` (vacío total) · `no_active` → `U9jUDR` (0 activas + N terminadas) ·
+/// `loading` → `QE1Wq` · `error` → `KeKke` · `finished_*` → el filtro
+/// "Terminados" (`LmrIV`/`gD9g7`/`w3MUo`), que filtra esta misma lista en
+/// sitio en vez de apilar una pantalla.
+///
+/// `ScheduledDueInChip`/
 /// `ScheduledPendingRow` compare their dates against `DateTime.now()` at
 /// render time, so every fixture date here is built relative to "today"
 /// (see [inDays]) instead of a hardcoded date — otherwise the "en N días"
@@ -73,10 +83,41 @@ void main() {
     ),
   ];
 
+  // "Terminados": la fecha es fija a propósito (a diferencia de las activas,
+  // que se comparan contra hoy): "Último pago" es una fecha histórica y no se
+  // mueve con el calendario.
+  final finishedItems = [
+    ScheduledPaymentSummary(
+      scheduledPayment: buildScheduledPayment(
+        id: 'sp-fin-1',
+        endDate: DateTime(2026, 3, 20),
+        nextDate: DateTime(2026, 4, 20),
+      ),
+      accountName: 'Bancolombia',
+      categoryName: 'Gimnasio',
+      categoryIcon: 'dumbbell',
+      categoryColor: 'sky',
+      lastPaymentDate: DateTime(2026, 3, 15),
+    ),
+    ScheduledPaymentSummary(
+      scheduledPayment: buildScheduledPayment(
+        id: 'sp-fin-2',
+        frequency: ScheduledPaymentFrequency.once,
+        nextDate: DateTime(2025, 12, 20),
+      ),
+      accountName: 'Nequi',
+      categoryName: 'Matrícula',
+      categoryIcon: 'graduation-cap',
+      categoryColor: 'indigo',
+      lastPaymentDate: DateTime(2025, 12, 20),
+    ),
+  ];
+
   final pendingItems = [
     buildPendingOccurrence(
       occurrence: buildOccurrence(occurrenceDate: inDays(-1)),
-      scheduledPayment: buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
+      scheduledPayment:
+          buildScheduledPayment(id: 'sp-2', requiresConfirmation: true),
       accountName: 'Nequi',
       categoryName: 'Salario',
       categoryIcon: 'banknote',
@@ -105,7 +146,6 @@ void main() {
           onAddScheduledPayment: () {},
           onOpenScheduledPayment: (_) {},
           onOpenPending: () {},
-          onOpenFinished: () {},
         ),
       ),
       brightness: brightness,
@@ -135,7 +175,8 @@ void main() {
     testWidgets('empty ($suffix)', (tester) async {
       await golden(
         tester,
-        const ScheduledPaymentsListState(status: ScheduledPaymentsListStatus.ready),
+        const ScheduledPaymentsListState(
+            status: ScheduledPaymentsListStatus.ready),
         const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
         'empty_$suffix',
         brightness: brightness,
@@ -145,7 +186,8 @@ void main() {
     testWidgets('error ($suffix)', (tester) async {
       await golden(
         tester,
-        const ScheduledPaymentsListState(status: ScheduledPaymentsListStatus.failure),
+        const ScheduledPaymentsListState(
+            status: ScheduledPaymentsListStatus.failure),
         const PendingOccurrencesState(),
         'error_$suffix',
         brightness: brightness,
@@ -158,10 +200,72 @@ void main() {
         ScheduledPaymentsListState(
           status: ScheduledPaymentsListStatus.ready,
           items: items,
-          finishedCount: 4,
+          finishedItems: finishedItems,
         ),
         const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
         'with_data_no_pending_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('no active + terminadas ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentsListState(
+          status: ScheduledPaymentsListStatus.ready,
+          finishedStatus: ScheduledPaymentsListStatus.ready,
+          finishedItems: finishedItems,
+        ),
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
+        'no_active_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('filtro Terminados, con datos ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentsListState(
+          status: ScheduledPaymentsListStatus.ready,
+          finishedStatus: ScheduledPaymentsListStatus.ready,
+          filter: ScheduledPaymentsFilter.finished,
+          items: items,
+          finishedItems: finishedItems,
+        ),
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
+        'finished_with_data_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('filtro Terminados, carga ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentsListState(
+          status: ScheduledPaymentsListStatus.ready,
+          filter: ScheduledPaymentsFilter.finished,
+          items: items,
+          finishedItems: finishedItems,
+        ),
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
+        'finished_loading_$suffix',
+        brightness: brightness,
+        settle: false,
+      );
+    });
+
+    testWidgets('filtro Terminados, error ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentsListState(
+          status: ScheduledPaymentsListStatus.ready,
+          finishedStatus: ScheduledPaymentsListStatus.failure,
+          filter: ScheduledPaymentsFilter.finished,
+          items: items,
+          finishedItems: finishedItems,
+        ),
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
+        'finished_error_$suffix',
         brightness: brightness,
       );
     });
@@ -172,7 +276,7 @@ void main() {
         ScheduledPaymentsListState(
           status: ScheduledPaymentsListStatus.ready,
           items: items,
-          finishedCount: 4,
+          finishedItems: finishedItems,
         ),
         PendingOccurrencesState(
           status: PendingOccurrencesStatus.ready,

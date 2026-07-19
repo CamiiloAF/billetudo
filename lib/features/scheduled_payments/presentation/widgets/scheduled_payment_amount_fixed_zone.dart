@@ -40,6 +40,9 @@ class ScheduledPaymentAmountFixedZone extends StatelessWidget {
           child: ScheduledPaymentEditableAmountField(
             amountMinor: amountMinor,
             currency: currency,
+            // Pencil paints the anchored amount in `$text-primary`: the
+            // brand violet is for the keypad/actions, not for the value.
+            valueColor: colors.textPrimary,
             onChanged: onChanged,
           ),
         ),

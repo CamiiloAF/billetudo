@@ -17,7 +17,8 @@ void main() {
         ),
       );
 
-  testWidgets('shows the delete confirmation title and message', (tester) async {
+  testWidgets('shows the delete confirmation title and message',
+      (tester) async {
     await pump(
       tester,
       DeleteScheduledPaymentSheet(onConfirm: () {}, onCancel: () {}),

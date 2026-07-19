@@ -30,6 +30,11 @@ class MockScheduledPaymentTagPickerCubit
 /// The create/edit template form (HU-01/HU-05): once vs. repeating
 /// (interval/endDate collapse away), the two always-visible mode radio
 /// cards, and a transfer that drops category/tags entirely (criterion 16).
+///
+/// Pencil rows: `create_expense_automatic`/`create_manual_mode`/
+/// `create_transfer`/`edit_expense` → `J0DSIm` (formulario repetible) ·
+/// `create_income_once` → `jJhpW` (formulario de pago único, con el
+/// companion `once`).
 /// `CategoryQuickPicker`/`ScheduledPaymentTagsField` resolve their own cubit
 /// through `getIt` as soon as they build (see `scheduled_payment_form_page_test.dart`),
 /// so both are registered here even though this suite never taps them.
@@ -75,7 +80,8 @@ void main() {
     );
 
     getIt
-      ..registerFactory<CategoryQuickPickerCubit>(() => categoryQuickPickerCubit)
+      ..registerFactory<CategoryQuickPickerCubit>(
+          () => categoryQuickPickerCubit)
       ..registerFactory<ScheduledPaymentTagPickerCubit>(() => tagPickerCubit);
   });
 
@@ -180,7 +186,8 @@ void main() {
       );
     });
 
-    testWidgets('editar plantilla: título "Editar" y Delete Link visible ($suffix)',
+    testWidgets(
+        'editar plantilla: título "Editar" y Delete Link visible ($suffix)',
         (tester) async {
       await golden(
         tester,

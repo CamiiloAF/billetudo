@@ -68,7 +68,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       _guardStream(
         _local.watchScheduledPaymentRow(id).asyncMap((row) async {
           if (row == null) {
-            return Left(NotFoundFailure('scheduled payment "$id" does not exist'));
+            return Left(
+                NotFoundFailure('scheduled payment "$id" does not exist'));
           }
           final tags = await _tags.tagsFor(id);
           final pendingRow = await _local.getNextAwaitingOccurrence(id);
@@ -133,7 +134,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       _guard(() async {
         final row = await _local.getScheduledPayment(id);
         if (row == null) {
-          return Left(NotFoundFailure('scheduled payment "$id" does not exist'));
+          return Left(
+              NotFoundFailure('scheduled payment "$id" does not exist'));
         }
         return Right(ScheduledPaymentMapper.toEntity(row));
       });
@@ -173,7 +175,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           ScheduledPaymentMapper.toUpdateCompanion(draft, now: now),
         );
         if (row == null) {
-          return Left(NotFoundFailure('scheduled payment "$id" does not exist'));
+          return Left(
+              NotFoundFailure('scheduled payment "$id" does not exist'));
         }
         await _tags.replaceTags(id, draft.tagIds, now);
         return Right(ScheduledPaymentMapper.toEntity(row));
@@ -186,7 +189,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           ScheduledPaymentMapper.tombstonedCompanion(now: DateTime.now()),
         );
         if (row == null) {
-          return Left(NotFoundFailure('scheduled payment "$id" does not exist'));
+          return Left(
+              NotFoundFailure('scheduled payment "$id" does not exist'));
         }
         return const Right(unit);
       });
@@ -240,31 +244,31 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   // -- Pending occurrences (HU-03) -------------------------------------------
 
   @override
-  Stream<Result<List<PendingScheduledOccurrence>>>
-      watchPendingOccurrences() => _guardStream(
-            _local.watchPendingOccurrences().asyncMap((rows) async {
-              final items = await Future.wait(
-                rows.map((row) async {
-                  final tagIds = await _tags.tagIdsFor(
-                    row.scheduledPayment.id,
-                  );
-                  return PendingScheduledOccurrence(
-                    occurrence:
-                        ScheduledPaymentOccurrenceMapper.toEntity(row.occurrence),
-                    scheduledPayment:
-                        ScheduledPaymentMapper.toEntity(row.scheduledPayment),
-                    accountName: row.account.name,
-                    categoryName: row.category?.name,
-                    categoryIcon: row.category?.icon,
-                    categoryColor: row.category?.color,
-                    transferAccountName: row.transferAccount?.name,
-                    tagIds: tagIds,
-                  );
-                }),
+  Stream<Result<List<PendingScheduledOccurrence>>> watchPendingOccurrences() =>
+      _guardStream(
+        _local.watchPendingOccurrences().asyncMap((rows) async {
+          final items = await Future.wait(
+            rows.map((row) async {
+              final tagIds = await _tags.tagIdsFor(
+                row.scheduledPayment.id,
               );
-              return Right(items);
+              return PendingScheduledOccurrence(
+                occurrence:
+                    ScheduledPaymentOccurrenceMapper.toEntity(row.occurrence),
+                scheduledPayment:
+                    ScheduledPaymentMapper.toEntity(row.scheduledPayment),
+                accountName: row.account.name,
+                categoryName: row.category?.name,
+                categoryIcon: row.category?.icon,
+                categoryColor: row.category?.color,
+                transferAccountName: row.transferAccount?.name,
+                tagIds: tagIds,
+              );
             }),
           );
+          return Right(items);
+        }),
+      );
 
   // -- Catch-up generation (HU-02) -------------------------------------------
 
@@ -278,7 +282,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         return const Right(unit);
       });
 
-  Future<void> _catchUpTemplate(db.ScheduledPayment template, DateTime now) async {
+  Future<void> _catchUpTemplate(
+      db.ScheduledPayment template, DateTime now) async {
     var cursor = template.nextDate;
     DateTime? lastProcessed;
 
@@ -333,8 +338,9 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     }
     // `once` never advances (criterion 4): re-writing the same `nextDate` is
     // a harmless no-op that keeps this branch simple.
-    final newNextDate =
-        template.frequency == db.ScheduleFrequency.once ? template.nextDate : cursor;
+    final newNextDate = template.frequency == db.ScheduleFrequency.once
+        ? template.nextDate
+        : cursor;
     await _local.updateScheduledPayment(
       template.id,
       ScheduledPaymentMapper.nextDateCompanion(nextDate: newNextDate, now: now),
@@ -553,6 +559,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         categoryColor: row.category?.color,
         transferAccountName: row.transferAccount?.name,
         pendingOccurrenceCount: row.pendingOccurrenceCount,
+        lastPaymentDate: row.lastPaymentDate,
       );
 
   Tag _toTagEntity(db.Tag row) => Tag(

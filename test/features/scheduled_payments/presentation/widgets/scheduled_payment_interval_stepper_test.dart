@@ -56,7 +56,8 @@ void main() {
     expect(result, 2);
   });
 
-  testWidgets('en el mínimo (1), el botón "-" queda deshabilitado', (tester) async {
+  testWidgets('en el mínimo (1), el botón "-" queda deshabilitado',
+      (tester) async {
     var called = false;
     await tester.pumpWidget(
       appWith(
@@ -67,8 +68,8 @@ void main() {
       ),
     );
 
-    final minusButton =
-        tester.widget<IconButton>(find.widgetWithIcon(IconButton, LucideIcons.minus));
+    final minusButton = tester
+        .widget<IconButton>(find.widgetWithIcon(IconButton, LucideIcons.minus));
     expect(minusButton.onPressed, isNull);
 
     await tester.tap(find.widgetWithIcon(IconButton, LucideIcons.minus));
@@ -76,7 +77,8 @@ void main() {
     expect(called, isFalse);
   });
 
-  testWidgets('en el máximo (99), el botón "+" queda deshabilitado', (tester) async {
+  testWidgets('en el máximo (99), el botón "+" queda deshabilitado',
+      (tester) async {
     var called = false;
     await tester.pumpWidget(
       appWith(
@@ -87,8 +89,8 @@ void main() {
       ),
     );
 
-    final plusButton =
-        tester.widget<IconButton>(find.widgetWithIcon(IconButton, LucideIcons.plus));
+    final plusButton = tester
+        .widget<IconButton>(find.widgetWithIcon(IconButton, LucideIcons.plus));
     expect(plusButton.onPressed, isNull);
 
     await tester.tap(find.widgetWithIcon(IconButton, LucideIcons.plus));

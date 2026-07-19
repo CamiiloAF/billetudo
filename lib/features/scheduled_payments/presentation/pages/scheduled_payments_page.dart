@@ -4,230 +4,112 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_fab.dart';
+import '../../../transactions/presentation/widgets/transaction_header_button.dart';
 import '../cubit/scheduled_payments_list_cubit.dart';
 import '../cubit/scheduled_payments_list_state.dart';
-import '../widgets/pending_occurrences_section.dart';
-import '../widgets/scheduled_card.dart';
-import '../widgets/scheduled_count_pill.dart';
+import '../widgets/scheduled_finished_filter_view.dart';
+import '../widgets/scheduled_payments_empty_view.dart';
+import '../widgets/scheduled_payments_error_view.dart';
+import '../widgets/scheduled_payments_list_view.dart';
+import '../widgets/scheduled_payments_loading_view.dart';
+import '../widgets/scheduled_payments_no_active_view.dart';
 
 /// The "próximos vencimientos" list (HU-04): active templates ordered by
-/// `nextDate` ascending, with an "Activos · N" / "Terminados · N" counter
-/// pair and a "Pendientes" card shortcut to "Por confirmar" for manual-mode
+/// `nextDate` ascending, with an "Activos · N" / "Terminados · N" chip pair
+/// and a "Pendientes" card shortcut to "Por confirmar" for manual-mode
 /// occurrences already due.
+///
+/// "Terminados" is a **filter of this list**, not a screen of its own: the
+/// chips look like a filter, so they behave like one. Header, chips, FAB and
+/// tab bar stay put; only the content area swaps.
 class ScheduledPaymentsPage extends StatelessWidget {
   const ScheduledPaymentsPage({
     required this.onAddScheduledPayment,
     required this.onOpenScheduledPayment,
     required this.onOpenPending,
-    required this.onOpenFinished,
     super.key,
   });
 
   final VoidCallback onAddScheduledPayment;
   final ValueChanged<String> onOpenScheduledPayment;
   final VoidCallback onOpenPending;
-  final VoidCallback onOpenFinished;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.scheduledPaymentsTitle)),
-      floatingActionButton: FloatingActionButton(
-        // ignore: avoid_hardcoded_ui_strings
-        heroTag: 'scheduledPaymentsAddFab',
-        onPressed: onAddScheduledPayment,
+      appBar: AppBar(
+        // `Dtm0X`: the back affordance is an `arrow-left` inside a `$muted`
+        // circle, not the platform default chevron.
+        leadingWidth: 60,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: TransactionHeaderButton(
+            icon: LucideIcons.arrowLeft,
+            background: colors.muted,
+            foreground: colors.textPrimary,
+            tooltip: l10n.commonBack,
+            onPressed: Navigator.of(context).pop,
+          ),
+        ),
+        title: Text(l10n.scheduledPaymentsTitle),
+      ),
+      floatingActionButton: AppFab(
+        icon: LucideIcons.plus,
         tooltip: l10n.scheduledPaymentsAdd,
-        child: const Icon(LucideIcons.plus),
+        onPressed: onAddScheduledPayment,
       ),
       body: SafeArea(
         child:
             BlocBuilder<ScheduledPaymentsListCubit, ScheduledPaymentsListState>(
-          builder: (context, state) => switch (state.status) {
-            ScheduledPaymentsListStatus.loading =>
-              const ScheduledPaymentsLoadingView(),
-            ScheduledPaymentsListStatus.failure => ScheduledPaymentsErrorView(
-                onRetry: context.read<ScheduledPaymentsListCubit>().start,
-              ),
-            ScheduledPaymentsListStatus.ready when state.items.isEmpty =>
-              ScheduledPaymentsEmptyView(onAdd: onAddScheduledPayment),
-            ScheduledPaymentsListStatus.ready => ScheduledPaymentsListView(
+          builder: (context, state) {
+            final cubit = context.read<ScheduledPaymentsListCubit>();
+            if (state.showsFinished) {
+              return ScheduledFinishedFilterView(
                 state: state,
                 onOpenScheduledPayment: onOpenScheduledPayment,
-                onOpenPending: onOpenPending,
-                onOpenFinished: onOpenFinished,
-              ),
+                onFilterSelected: cubit.showFilter,
+                onRetry: cubit.start,
+              );
+            }
+            return switch (state.status) {
+              // The counters are unknown here, so the chips row is replaced by
+              // a placeholder that reserves its height instead of letting it
+              // pop in and push the content down.
+              ScheduledPaymentsListStatus.loading =>
+                const ScheduledPaymentsLoadingView(
+                  showsChipsPlaceholder: true,
+                ),
+              // `KeKke` `Content`: padding [6, 20, 20, 20] — a terminal state
+              // with no chips and no list, so it does not reserve the FAB's
+              // 92px the way the loaded states do.
+              ScheduledPaymentsListStatus.failure => Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 6, 0, 20),
+                  child: ScheduledPaymentsErrorView(onRetry: cubit.start),
+                ),
+              // 0 activas + N terminadas keeps the chips (`U9jUDR`); with
+              // nothing at all there is no filter to offer (`YI1wY`).
+              ScheduledPaymentsListStatus.ready
+                  when state.items.isEmpty && state.finishedCount > 0 =>
+                ScheduledPaymentsNoActiveView(
+                  state: state,
+                  onAdd: onAddScheduledPayment,
+                  onFilterSelected: cubit.showFilter,
+                ),
+              ScheduledPaymentsListStatus.ready when state.items.isEmpty =>
+                ScheduledPaymentsEmptyView(onAdd: onAddScheduledPayment),
+              ScheduledPaymentsListStatus.ready => ScheduledPaymentsListView(
+                  state: state,
+                  onOpenScheduledPayment: onOpenScheduledPayment,
+                  onOpenPending: onOpenPending,
+                  onFilterSelected: cubit.showFilter,
+                ),
+            };
           },
         ),
       ),
-    );
-  }
-}
-
-class ScheduledPaymentsLoadingView extends StatelessWidget {
-  const ScheduledPaymentsLoadingView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: AppLocalizations.of(context).scheduledPaymentsLoading,
-      child: const Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-class ScheduledPaymentsEmptyView extends StatelessWidget {
-  const ScheduledPaymentsEmptyView({required this.onAdd, super.key});
-
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colors = context.colors;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(44),
-              ),
-              child: Icon(LucideIcons.repeat,
-                  size: 40, color: colors.primaryOnSoft),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.scheduledPaymentsEmptyMessage,
-              textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(LucideIcons.plus),
-              label: Text(l10n.scheduledPaymentsAdd),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ScheduledPaymentsErrorView extends StatelessWidget {
-  const ScheduledPaymentsErrorView({required this.onRetry, super.key});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: colors.muted,
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Icon(
-                  LucideIcons.triangleAlert,
-                  color: colors.textSecondary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.scheduledPaymentsErrorTitle,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.scheduledPaymentsErrorLocalFirst,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ScheduledPaymentsListView extends StatelessWidget {
-  const ScheduledPaymentsListView({
-    required this.state,
-    required this.onOpenScheduledPayment,
-    required this.onOpenPending,
-    required this.onOpenFinished,
-    super.key,
-  });
-
-  final ScheduledPaymentsListState state;
-  final ValueChanged<String> onOpenScheduledPayment;
-  final VoidCallback onOpenPending;
-  final VoidCallback onOpenFinished;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-      children: [
-        Row(
-          children: [
-            ScheduledCountPill(
-              label: l10n.scheduledPaymentsActiveCount(state.activeCount),
-              emphasized: true,
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onOpenFinished,
-              child: ScheduledCountPill(
-                label: l10n.scheduledFinishedCount(state.finishedCount),
-                emphasized: false,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        PendingOccurrencesSection(onOpenPending: onOpenPending),
-        for (final entry in state.items) ...[
-          ScheduledCard(
-            entry: entry,
-            onTap: () => onOpenScheduledPayment(entry.scheduledPayment.id),
-          ),
-          const SizedBox(height: 12),
-        ],
-      ],
     );
   }
 }

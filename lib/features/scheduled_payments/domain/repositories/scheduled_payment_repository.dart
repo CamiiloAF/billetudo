@@ -25,7 +25,8 @@ abstract class ScheduledPaymentRepository {
   /// Presupuestos): templates that no longer generate occurrences — tombstoned,
   /// past `endDate`, or a `once` template already fired — ordered by
   /// `nextDate` descending (most recently finished first).
-  Stream<Result<List<ScheduledPaymentSummary>>> watchFinishedScheduledPayments();
+  Stream<Result<List<ScheduledPaymentSummary>>>
+      watchFinishedScheduledPayments();
 
   /// HU-03/HU-04: pending occurrences across every manual-mode template,
   /// ordered by effective due date ascending.

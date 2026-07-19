@@ -37,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonMoreActions => 'More options';
+
+  @override
   String get commonApply => 'Apply';
 
   @override
@@ -1474,7 +1477,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentsEmptyMessage =>
-      'You don\'t have any scheduled payments yet. Add one so you don\'t lose track of your recurring payments.';
+      'You have no scheduled payments yet';
 
   @override
   String get scheduledPaymentsErrorTitle =>
@@ -1542,7 +1545,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledDeleteSheetMessage =>
-      'New payments stop being generated, but transactions already generated keep their history.';
+      'Future payments stop being generated. The transactions it already generated stay in your history.';
 
   @override
   String get scheduledPaymentFormNewTitle => 'New scheduled payment';
@@ -1551,7 +1554,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledPaymentFormEditTitle => 'Edit scheduled payment';
 
   @override
-  String get scheduledPaymentFormNextDateLabel => 'Next date';
+  String get scheduledPaymentFormNextDateLabel => 'First payment';
+
+  @override
+  String get scheduledPaymentFormOnceDateLabel => 'Payment date';
+
+  @override
+  String get scheduledPaymentFormModeSectionLabel => 'When the date arrives';
+
+  @override
+  String get scheduledPaymentFormTagNew => 'Tag';
 
   @override
   String get scheduledPaymentFormFrequencyLabel => 'Frequency';
@@ -1563,23 +1575,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';
 
   @override
-  String get scheduledPaymentFormEndDateLabel => 'End date';
+  String get scheduledPaymentFormEndDateLabel => 'Ends';
 
   @override
-  String get scheduledPaymentFormEndDateNone => 'No end date';
+  String get scheduledPaymentFormEndDateNone => 'Forever';
 
   @override
   String get scheduledPaymentFormModeAutomaticTitle => 'Automatic';
 
   @override
-  String get scheduledPaymentFormModeAutomaticSubtitle => 'Registers itself';
+  String get scheduledPaymentFormModeAutomaticSubtitle =>
+      'Records itself when the date arrives';
 
   @override
   String get scheduledPaymentFormModeManualTitle => 'Manual';
 
   @override
   String get scheduledPaymentFormModeManualSubtitle =>
-      'We\'ll check with you before it affects your balance';
+      'We\'ll ask you to confirm before it affects your balance';
 
   @override
   String get scheduledPaymentFormDeleteAction => 'Delete scheduled payment';
@@ -1588,16 +1601,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledFrequencyOnce => 'Once only';
 
   @override
-  String get scheduledFrequencyDaily => 'Every day';
+  String get scheduledFrequencyDaily => 'every day';
 
   @override
-  String get scheduledFrequencyWeekly => 'Every week';
+  String get scheduledFrequencyWeekly => 'every week';
 
   @override
-  String get scheduledFrequencyMonthly => 'Every month';
+  String get scheduledFrequencyMonthly => 'every month';
 
   @override
-  String get scheduledFrequencyYearly => 'Every year';
+  String get scheduledFrequencyYearly => 'every year';
 
   @override
   String get scheduledFrequencyChipOnce => 'Once';
@@ -1615,7 +1628,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledFrequencyChipYearly => 'Year';
 
   @override
-  String get scheduledPaymentDetailTitle => 'Scheduled payment';
+  String get scheduledPaymentDetailTitle => 'Detail';
 
   @override
   String scheduledPaymentDetailNextPayment(String date) {
@@ -1623,7 +1636,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduledPaymentDetailHistoryTitle => 'History';
+  String get scheduledPaymentDetailHistoryTitle => 'Already generated';
 
   @override
   String get scheduledPaymentDetailHistoryEmpty =>
@@ -1635,11 +1648,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduledPaymentDetailHeroLabel => 'Next payment';
+  String get scheduledPaymentDetailHeroLabel => 'NEXT PAYMENT';
 
   @override
   String scheduledPaymentDetailRecurrenceOnce(String date) {
-    return 'One-time payment on $date';
+    return 'Just once on $date';
   }
 
   @override
@@ -1686,7 +1699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduledPaymentDetailModeLabel => 'Mode';
+  String get scheduledPaymentDetailModeLabel => 'Recording mode';
 
   @override
   String get scheduledPaymentDetailModeAutomatic => 'Automatic';
@@ -1702,6 +1715,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentDetailStatusActive => 'Active';
+
+  @override
+  String get scheduledPaymentDetailStatusFinished => 'Finished';
+
+  @override
+  String get scheduledPaymentDetailHeroLabelExecuted => 'PAYMENT MADE';
 
   @override
   String get scheduledPaymentDetailTagsLabel => 'Tags';
@@ -1728,11 +1747,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduledFinishedTitle => 'Finished';
+  String get scheduledFinishedCaption =>
+      'They no longer create transactions. The ones they already created stay in your accounts.';
 
   @override
-  String get scheduledFinishedEmpty =>
-      'You don\'t have any finished scheduled payments yet.';
+  String get scheduledFinishedCardChip => 'Finished';
+
+  @override
+  String scheduledFinishedLastPayment(String date) {
+    return 'Last payment · $date';
+  }
+
+  @override
+  String get scheduledPaymentsNoActiveMessage =>
+      'You don\'t have any active scheduled payments right now';
+
+  @override
+  String scheduledPaymentsNoActiveDescription(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Your $count finished payments are still available under \"Finished\".',
+      one: 'Your finished payment is still available under \"Finished\".',
+    );
+    return '$_temp0';
+  }
 
   @override
   String scheduledPendingCardOverflow(int count) {
@@ -1749,7 +1789,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'They haven\'t affected your balance yet';
 
   @override
+  String get scheduledPaymentsEmptyCta => 'Schedule a payment';
+
+  @override
+  String get scheduledManualNotifyChip => 'We\'ll remind you';
+
+  @override
   String get scheduledDueToday => 'Due today';
+
+  @override
+  String get scheduledDueOneDayAgo => '1 day ago';
+
+  @override
+  String scheduledDueDaysAgo(int count) {
+    return '$count days ago';
+  }
 
   @override
   String scheduledDueInDays(int count) {
@@ -1760,14 +1814,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledDueInOneDay => 'in 1 day';
 
   @override
-  String get scheduledConfirmationSheetScopeNote =>
-      'What you edit here only applies to this payment, it doesn\'t change the template.';
+  String scheduledConfirmationSheetScopeNote(String amount) {
+    return 'What you edit applies to this payment only. The template stays the same and next month it will propose $amount again.';
+  }
 
   @override
-  String scheduledConfirmationSheetAccumulated(
-      int count, String template, String date) {
-    return 'You have $count unconfirmed payments for $template. You\'re now confirming the oldest one, from $date.';
+  String scheduledConfirmationSheetAccumulatedTitle(
+      int count, String template) {
+    return 'You have $count unconfirmed payments for $template';
   }
+
+  @override
+  String scheduledConfirmationSheetAccumulatedSub(String date, int others) {
+    String _temp0 = intl.Intl.pluralLogic(
+      others,
+      locale: localeName,
+      other: 'The other $others stay on your list.',
+      one: 'The other one stays on your list.',
+    );
+    return 'You\'re now confirming the oldest one, from $date. $_temp0';
+  }
+
+  @override
+  String get scheduledConfirmationSheetAmountLabel => 'Amount to record';
+
+  @override
+  String get scheduledConfirmationSheetTransferAmountLabel =>
+      'Amount to transfer';
+
+  @override
+  String get scheduledConfirmationSheetSourceAccountLabel => 'From account';
+
+  @override
+  String get scheduledConfirmationSheetTargetAccountLabel => 'To account';
+
+  @override
+  String get scheduledDetailActionsSheetSubtitle => 'Scheduled payment actions';
+
+  @override
+  String get scheduledDetailActionsSnooze => 'Snooze this payment';
+
+  @override
+  String get scheduledDetailActionsDelete => 'Delete scheduled payment';
+
+  @override
+  String get scheduledSnoozeSheetSectionTitle => 'Pick the new date';
 
   @override
   String get scheduledConfirmationSheetEditTooltip => 'Edit template';
@@ -1779,7 +1870,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledGuidedReviewConfirmNext => 'Confirm and next';
 
   @override
-  String scheduledSnoozeContextLine(String template, String date) {
-    return '$template · was due on $date · move it forward';
+  String scheduledSnoozeContextLine(String date) {
+    return 'Was due on $date · move it forward';
   }
 }

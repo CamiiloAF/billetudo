@@ -76,7 +76,8 @@ class ConfirmationSheetState extends Equatable {
   String? get transferAccountName => source!.transferAccountName;
   bool get isTransfer => source!.scheduledPayment.isTransfer;
 
-  bool get isReady => status != ConfirmationSheetStatus.loading && source != null;
+  bool get isReady =>
+      status != ConfirmationSheetStatus.loading && source != null;
   bool get isSaving => status == ConfirmationSheetStatus.saving;
 
   ConfirmationSheetState copyWith({

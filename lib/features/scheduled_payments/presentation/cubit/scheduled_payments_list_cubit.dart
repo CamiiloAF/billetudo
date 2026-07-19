@@ -16,8 +16,9 @@ import 'scheduled_payments_list_state.dart';
 /// the screen opens) so anything that vencía while the app was closed lands —
 /// generated automatically or accumulated as a pending occurrence — before the
 /// list subscribes, so the very first frame is already caught up. It also
-/// subscribes to the finished-templates count (feeds the "Terminados · N"
-/// pill) so the page never needs a second cubit just for that number.
+/// subscribes to the finished templates: they are not a separate screen but a
+/// filter of this same list, so both slices live in one cubit and the
+/// "Terminados · N" chip is just `state.finishedCount`.
 @injectable
 class ScheduledPaymentsListCubit extends Cubit<ScheduledPaymentsListState> {
   ScheduledPaymentsListCubit(
@@ -47,6 +48,17 @@ class ScheduledPaymentsListCubit extends Cubit<ScheduledPaymentsListState> {
         _getFinishedScheduledPayments().listen(_onFinishedItems);
   }
 
+  /// Switches the content area between "Activos" and "Terminados" in place.
+  /// Switching to "Terminados" is only offered while there is something to
+  /// show (the chip is hidden at 0), so it is guarded here too.
+  void showFilter(ScheduledPaymentsFilter filter) {
+    if (filter == ScheduledPaymentsFilter.finished &&
+        state.finishedItems.isEmpty) {
+      return;
+    }
+    emit(state.copyWith(filter: filter));
+  }
+
   void _onItems(Result<List<ScheduledPaymentSummary>> result) {
     if (isClosed) {
       return;
@@ -69,9 +81,20 @@ class ScheduledPaymentsListCubit extends Cubit<ScheduledPaymentsListState> {
     if (isClosed) {
       return;
     }
-    result.fold(
-      (_) {},
-      (items) => emit(state.copyWith(finishedCount: items.length)),
+    emit(
+      result.fold(
+        (_) => state.copyWith(
+          finishedStatus: ScheduledPaymentsListStatus.failure,
+        ),
+        (items) => state.copyWith(
+          finishedStatus: ScheduledPaymentsListStatus.ready,
+          finishedItems: items,
+          // Deleting the last finished template while inside the filter drops
+          // the user back to "Activos": the chip disappears with the count, so
+          // an empty "Terminados" view would be a dead end nobody can leave.
+          filter: items.isEmpty ? ScheduledPaymentsFilter.active : null,
+        ),
+      ),
     );
   }
 

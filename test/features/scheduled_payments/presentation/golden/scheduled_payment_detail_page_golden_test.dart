@@ -4,7 +4,8 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/tag.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
-import 'package:billetudo/features/transactions/domain/entities/transaction.dart' as tx;
+import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
+    as tx;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,13 @@ class MockScheduledPaymentDetailCubit
 /// with a pending occurrence badge, active/automatic, inactive (tombstoned)
 /// and transfer variants, each with a bit of generation history so the
 /// history rows render too.
+///
+/// Pencil rows (`design-system/billetudo/pages/pagos-programados.md`):
+/// `active_manual_pending`/`active_automatic` → `OY2Kj` (híbrido repetible
+/// activo) · `once_historic` → `Eyold` · `transfer` → `XmaSX`. `loading`,
+/// `failure` and `inactive` (plantilla con lápida) have no Pencil frame of
+/// their own — they are runtime states, captured here so a regression in
+/// them is still caught.
 void main() {
   late MockScheduledPaymentDetailCubit cubit;
 
@@ -68,24 +76,31 @@ void main() {
 
   ScheduledPaymentDetail buildDetail({
     ScheduledPaymentType type = ScheduledPaymentType.expense,
+    ScheduledPaymentFrequency frequency = ScheduledPaymentFrequency.monthly,
     bool requiresConfirmation = false,
     bool isDeleted = false,
     bool withPending = false,
+    DateTime? nextDate,
+    bool hasEndDate = true,
     List<Tag> tags = const [],
     List<tx.Transaction> historyRows = const [],
   }) =>
       ScheduledPaymentDetail(
         scheduledPayment: buildScheduledPayment(
           type: type,
-          transferAccountId: type == ScheduledPaymentType.transfer ? 'acc-2' : null,
+          frequency: frequency,
+          transferAccountId:
+              type == ScheduledPaymentType.transfer ? 'acc-2' : null,
           requiresConfirmation: requiresConfirmation,
-          nextDate: inDays(5),
+          nextDate: nextDate ?? inDays(5),
           tombstonedAt: isDeleted ? DateTime(2026, 8) : null,
-          endDate: inDays(200),
+          endDate: hasEndDate ? inDays(200) : null,
         ),
         accountName: 'Bancolombia',
-        transferAccountName: type == ScheduledPaymentType.transfer ? 'Nequi' : null,
-        categoryName: type == ScheduledPaymentType.transfer ? null : 'Suscripciones',
+        transferAccountName:
+            type == ScheduledPaymentType.transfer ? 'Nequi' : null,
+        categoryName:
+            type == ScheduledPaymentType.transfer ? null : 'Suscripciones',
         categoryIcon: type == ScheduledPaymentType.transfer ? null : 'wifi',
         categoryColor: type == ScheduledPaymentType.transfer ? null : 'indigo',
         tags: tags,
@@ -93,7 +108,8 @@ void main() {
         history: historyRows,
         pendingOccurrence: withPending
             ? buildPendingOccurrence(
-                scheduledPayment: buildScheduledPayment(requiresConfirmation: true),
+                scheduledPayment:
+                    buildScheduledPayment(requiresConfirmation: true),
                 categoryName: 'Suscripciones',
                 categoryIcon: 'wifi',
                 categoryColor: 'indigo',
@@ -113,7 +129,8 @@ void main() {
       tester,
       BlocProvider<ScheduledPaymentDetailCubit>.value(
         value: cubit,
-        child: ScheduledPaymentDetailPage(onEdit: (_) {}, onOpenTransaction: (_) {}),
+        child: ScheduledPaymentDetailPage(
+            onEdit: (_) {}, onOpenTransaction: (_) {}),
       ),
       brightness: brightness,
       size: tallGoldenPhoneSize(height: 1300),
@@ -138,7 +155,8 @@ void main() {
       );
     });
 
-    testWidgets('active, automatic mode, with history ($suffix)', (tester) async {
+    testWidgets('active, automatic mode, with history ($suffix)',
+        (tester) async {
       await golden(
         tester,
         ScheduledPaymentDetailState(
@@ -161,7 +179,11 @@ void main() {
             requiresConfirmation: true,
             withPending: true,
             tags: [
-              Tag(id: 't-1', name: 'Hogar', createdAt: testInstant, updatedAt: testInstantMillis),
+              Tag(
+                  id: 't-1',
+                  name: 'Hogar',
+                  createdAt: testInstant,
+                  updatedAt: testInstantMillis),
             ],
           ),
         ),
@@ -178,6 +200,41 @@ void main() {
           detail: buildDetail(isDeleted: true),
         ),
         'inactive_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('failure ($suffix)', (tester) async {
+      await golden(
+        tester,
+        const ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.failure,
+        ),
+        'failure_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Pencil `Eyold`: a `once` template whose single occurrence already
+    // generated — its `nextDate` is in the past, it has exactly one history
+    // row and no end date, so the header reads as history instead of
+    // "próximo pago". Distinct from `inactive_*`, which is a *tombstoned*
+    // template (the "Inactivo" badge + "Inactivo" status row).
+    testWidgets('pago único ya generado (histórico) ($suffix)', (tester) async {
+      final onceHistory = [history.first];
+      await golden(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(
+            frequency: ScheduledPaymentFrequency.once,
+            nextDate: inDays(-30),
+            hasEndDate: false,
+            historyRows: onceHistory,
+          ),
+          history: onceHistory,
+        ),
+        'once_historic_$suffix',
         brightness: brightness,
       );
     });
