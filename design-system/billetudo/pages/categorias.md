@@ -23,6 +23,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Confirmar eliminar raiz con subcategorias | `w9ixr` | `kYA4E` |
 | Selector de categoria padre | `Q55fEz` | `A7pbY3` |
 | Selector de icono y color | `lAxmS` | `PtZ2o` |
+| Selector de icono y color — bloqueado/heredado (subcategoria) | `nqoD6` | _pendiente_ |
 
 **Navegacion:** todas usan `Page Header` (boton atras) SIN `Tab Bar` — Categorias es una subseccion, se llega desde el listado o desde el menu "Mas" (mismo criterio que Cuentas). El listado principal (`bA51N`) es la unica excepcion parcial: no lleva `Page Header` clasico, su encabezado es el titulo "Categorias" + boton `+` directo (igual patron que Presupuestos/Metas).
 
@@ -78,9 +79,17 @@ Se exploraron y descartaron 2 variantes con catalogo ampliado (grilla+scroll sin
 - **Grilla de color:** 7 swatches decorativos (`mint`/`sky`/`peach`/`coral`/`amber`/`teal`/`indigo` — nunca `$primary`, reservado para marca/CTAs). Tratamiento pastel: fondo `$<color>-soft` + punto centrado en `$<color>` (no circulos solidos a color pleno, que generaban ruido visual al estar los 7 uno junto al otro). El seleccionado ademas lleva un anillo `stroke:$<color>` + check en `$<color>` (no `$on-primary`, que no tendria contraste suficiente sobre un fondo pastel claro). Ambas filas usan el mismo `gap:58` fijo y alineacion a la izquierda (antes la fila de 3 colores se estiraba con `space_between` y se veia desordenada frente a la fila de 4).
 - **Sin preview separado:** se elimino la fila de preview grande (76px, icono+color combinados) al tope de la pantalla — quedo redundante una vez que el tile seleccionado en la grilla ya refleja el color elegido en tiempo real.
 
+### Variante bloqueada/heredada — subcategorías (`nqoD6`)
+
+**Regla de negocio:** en una subcategoría, el **ícono se puede cambiar libremente**, pero el **color SIEMPRE se hereda de la categoría raíz y queda bloqueado** — coherente con que el color identifica visualmente a la categoría padre en listados y gráficas, mientras el ícono puede variar por subcategoría para mayor granularidad visual.
+
+- **Sección "Ícono":** grilla normal, totalmente interactiva, igual que en `lAxmS`.
+- **Sección "Color":** `opacity:0.55` en toda la grilla + ícono candado (`lock`, 13px, `$text-secondary`) junto al label "Color" + caption explicativo: "El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras."
+- Se abre desde `Appearance Field` (`R8PlN`) en `Editar Subcategoría` (`CuTjr`) y `Crear Subcategoría` (`STIfS`).
+
 ## Componentes reutilizables nuevos de esta feature
 
-Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios), `Parent Category Row` (fila del selector de categoria padre).
+Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios — **propiedad `colorLocked`**: el nodo interno `N04bc` (ícono `lock`, Lucide, 13px, `$text-secondary`) controla vía su flag `enabled` si se muestra el candado junto al icon-wrap; se activa en instancias de subcategoría (`CuTjr`, `STIfS`) porque el color se hereda del padre, el ícono en sí nunca se bloquea), `Parent Category Row` (fila del selector de categoria padre).
 
 ## Tokens de accesibilidad — hallazgo nuevo de esta feature
 

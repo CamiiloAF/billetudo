@@ -157,8 +157,14 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   void nameChanged(String value) => emit(state.copyWith(name: value));
 
+  /// Icon is always free to change. Color, however, is locked for
+  /// subcategories — it always inherits the parent's, set once in
+  /// [_loadForNewSubcategory]/[_emitFormFor] and never overwritten here.
   void appearanceSelected({String? icon, String? color}) => emit(
-        state.copyWith(icon: icon, color: color),
+        state.copyWith(
+          icon: icon,
+          color: state.isSubcategory ? state.color : color,
+        ),
       );
 
   /// Ignored while [CategoryFormState.kindLocked] — the toggle renders

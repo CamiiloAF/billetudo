@@ -78,7 +78,7 @@ void main() {
 
       // La fila existe (el last4 identifica la tarjeta)...
       expect(find.byType(AccountNumberRow), findsOneWidget);
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
 
       // ...pero la página la arma en modo tarjeta: sin nada que revelar.
       final row =
@@ -113,7 +113,7 @@ void main() {
       final row =
           tester.widget<AccountNumberRow>(find.byType(AccountNumberRow));
       expect(row.isCard, isFalse);
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
       expect(find.text(fullNumber), findsNothing);
       expect(eye, findsOneWidget);
       expect(copy, findsOneWidget);

@@ -20,21 +20,34 @@ typedef CategoryAppearancePick = ({String icon, String color});
 /// unlike the parent picker, two independent choices (icon + color) need to
 /// be made before the pick is meaningful.
 class IconColorPickerSheet extends StatefulWidget {
-  const IconColorPickerSheet({this.initialIcon, this.initialColor, super.key});
+  const IconColorPickerSheet({
+    this.initialIcon,
+    this.initialColor,
+    this.colorLocked = false,
+    super.key,
+  });
 
   final String? initialIcon;
   final String? initialColor;
+
+  /// Subcategories inherit their parent's color and can't change it: the
+  /// color grid renders disabled (`nqoD6`), with a lock icon inline next to
+  /// the "Color" section label — same pattern the "Tipo" toggle already uses
+  /// — while the icon grid above stays fully interactive.
+  final bool colorLocked;
 
   static Future<CategoryAppearancePick?> show(
     BuildContext context, {
     String? initialIcon,
     String? initialColor,
+    bool colorLocked = false,
   }) =>
       BottomSheetBase.show<CategoryAppearancePick>(
         context,
         builder: (context) => IconColorPickerSheet(
           initialIcon: initialIcon,
           initialColor: initialColor,
+          colorLocked: colorLocked,
         ),
       );
 
@@ -51,6 +64,7 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -61,7 +75,21 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
           style:
               theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
+        if (widget.colorLocked) ...[
+          const SizedBox(height: 4),
+          Text(
+            l10n.categoryColorLockedSubcategory,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: colors.textSecondary),
+          ),
+        ],
         const SizedBox(height: 16),
+        Text(
+          l10n.categoryAppearanceIconSectionLabel,
+          style: theme.textTheme.labelLarge
+              ?.copyWith(color: colors.textSecondary),
+        ),
+        const SizedBox(height: 8),
         SizedBox(
           height: 320,
           child: GridView.builder(
@@ -83,17 +111,36 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
           ),
         ),
         const SizedBox(height: 20),
-        Wrap(
-          spacing: 58,
-          runSpacing: 16,
+        Row(
           children: [
-            for (final token in CategoryAppearance.colorTokens)
-              CategoryColorSwatch(
-                token: token,
-                selected: token == _color,
-                onTap: () => setState(() => _color = token),
-              ),
+            Text(
+              l10n.categoryAppearanceColorSectionLabel,
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(color: colors.textSecondary),
+            ),
+            if (widget.colorLocked) ...[
+              const SizedBox(width: 6),
+              Icon(LucideIcons.lock, size: 13, color: colors.textSecondary),
+            ],
           ],
+        ),
+        const SizedBox(height: 8),
+        Opacity(
+          opacity: widget.colorLocked ? 0.55 : 1,
+          child: Wrap(
+            spacing: 58,
+            runSpacing: 16,
+            children: [
+              for (final token in CategoryAppearance.colorTokens)
+                CategoryColorSwatch(
+                  token: token,
+                  selected: token == _color,
+                  onTap: widget.colorLocked
+                      ? null
+                      : () => setState(() => _color = token),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         Row(
@@ -129,7 +176,9 @@ class CategoryColorSwatch extends StatelessWidget {
 
   final String token;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// `null` disables the swatch (color locked on a subcategory).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

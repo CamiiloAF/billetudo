@@ -454,6 +454,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryAppearancePickerTitle => 'Icono y color';
 
   @override
+  String get categoryColorLockedSubcategory =>
+      'El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras.';
+
+  @override
+  String get categoryAppearanceIconSectionLabel => 'Ícono';
+
+  @override
+  String get categoryAppearanceColorSectionLabel => 'Color';
+
+  @override
   String get categoryParentPickerTitle => 'Categoría padre';
 
   @override
@@ -1261,9 +1271,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetActionDelete => 'Eliminar';
-
-  @override
-  String get budgetDeleteConfirmTitle => '¿Eliminar presupuesto?';
 
   @override
   String get budgetDeleteConfirmMessage =>

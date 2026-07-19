@@ -14,6 +14,7 @@ class AppearanceField extends StatelessWidget {
     required this.onTap,
     this.iconName,
     this.colorToken,
+    this.colorLocked = false,
     super.key,
   });
 
@@ -26,6 +27,13 @@ class AppearanceField extends StatelessWidget {
 
   final String? iconName;
   final String? colorToken;
+
+  /// Subcategory only (`R8PlN`/`N04bc`): shows a small lock icon inline
+  /// between the swatch and the label (no background/border, matches
+  /// Pencil's `Left Group` layout). The row stays fully tappable — only the
+  /// color grid inside the picker sheet is disabled, the icon grid is not.
+  final bool colorLocked;
+
   final VoidCallback onTap;
 
   @override
@@ -57,7 +65,12 @@ class AppearanceField extends StatelessWidget {
                     : colors.textSecondary,
               ),
             ),
-            const SizedBox(width: 12),
+            if (colorLocked) ...[
+              const SizedBox(width: 10),
+              Icon(LucideIcons.lock, size: 13, color: colors.textSecondary),
+              const SizedBox(width: 10),
+            ] else
+              const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

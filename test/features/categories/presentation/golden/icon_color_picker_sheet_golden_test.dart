@@ -22,6 +22,7 @@ void main() {
     required Brightness brightness,
     String? initialIcon,
     String? initialColor,
+    bool colorLocked = false,
   }) async {
     setGoldenViewport(tester);
     await tester.pumpWidget(
@@ -32,6 +33,7 @@ void main() {
               context,
               initialIcon: initialIcon,
               initialColor: initialColor,
+              colorLocked: colorLocked,
             ),
             child: const Text('open'),
           ),
@@ -63,6 +65,18 @@ void main() {
         brightness: brightness,
         initialIcon: 'car',
         initialColor: 'sky',
+      );
+    });
+
+    testWidgets('color locked, inherited from parent ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'locked_$suffix',
+        brightness: brightness,
+        initialIcon: 'utensils',
+        initialColor: 'coral',
+        colorLocked: true,
       );
     });
   }

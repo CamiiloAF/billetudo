@@ -454,6 +454,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryAppearancePickerTitle => 'Icon and color';
 
   @override
+  String get categoryColorLockedSubcategory =>
+      'The color is inherited from the parent category and can\'t be changed. Pick the icon you like.';
+
+  @override
+  String get categoryAppearanceIconSectionLabel => 'Icon';
+
+  @override
+  String get categoryAppearanceColorSectionLabel => 'Color';
+
+  @override
   String get categoryParentPickerTitle => 'Parent category';
 
   @override
@@ -464,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteSimpleMessage =>
-      'You can bring it back later from the trash.';
+      'You can undo this right after deleting.';
 
   @override
   String get categoryDeleteTransactionsTitle => 'Delete this category?';
@@ -514,7 +524,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryCascadeConfirmMessage =>
-      'This deletes the category and all of its subcategories. You can bring them back later from the trash.';
+      'This deletes the category and all of its subcategories. You can undo this right after deleting.';
 
   @override
   String get transactionsTitle => 'Transactions';
@@ -782,7 +792,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionDeleteMessage =>
-      'You can bring it back later from the trash.';
+      'You can undo this right after deleting.';
 
   @override
   String get transactionDetailTitleExpense => 'Expense detail';
@@ -1259,10 +1269,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetActionDelete => 'Delete';
 
   @override
-  String get budgetDeleteConfirmTitle => 'Delete budget?';
-
-  @override
-  String get budgetDeleteConfirmMessage => 'You can restore it from the trash.';
+  String get budgetDeleteConfirmMessage =>
+      'You can undo this right after deleting.';
 
   @override
   String get budgetFormNewTitle => 'New budget';

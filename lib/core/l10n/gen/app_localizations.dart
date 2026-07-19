@@ -890,6 +890,24 @@ abstract class AppLocalizations {
   /// **'Icono y color'**
   String get categoryAppearancePickerTitle;
 
+  /// No description provided for @categoryColorLockedSubcategory.
+  ///
+  /// In es, this message translates to:
+  /// **'El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras.'**
+  String get categoryColorLockedSubcategory;
+
+  /// No description provided for @categoryAppearanceIconSectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono'**
+  String get categoryAppearanceIconSectionLabel;
+
+  /// No description provided for @categoryAppearanceColorSectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Color'**
+  String get categoryAppearanceColorSectionLabel;
+
   /// No description provided for @categoryParentPickerTitle.
   ///
   /// In es, this message translates to:
@@ -2305,12 +2323,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Eliminar'**
   String get budgetActionDelete;
-
-  /// No description provided for @budgetDeleteConfirmTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Eliminar presupuesto?'**
-  String get budgetDeleteConfirmTitle;
 
   /// No description provided for @budgetDeleteConfirmMessage.
   ///

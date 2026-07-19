@@ -150,11 +150,13 @@ class CategoryFormBody extends StatelessWidget {
               : l10n.categoryFormAppearanceFilledSublabel,
           iconName: state.icon,
           colorToken: state.color,
+          colorLocked: state.isSubcategory,
           onTap: () async {
             final picked = await IconColorPickerSheet.show(
               context,
               initialIcon: state.icon,
               initialColor: state.color,
+              colorLocked: state.isSubcategory,
             );
             if (picked != null) {
               cubit.appearanceSelected(icon: picked.icon, color: picked.color);

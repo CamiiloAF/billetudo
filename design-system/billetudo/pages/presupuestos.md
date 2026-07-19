@@ -28,6 +28,7 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en la banda `Zona
 | Menú lista (⋮ header) | `TmOGV` | `cOcbC` |
 | Menú modo activo | `tFZyK` | `qJAka` |
 | Fila en Ajustes ("Modo sobres") | `r5aVv` | `GZUqi` |
+| Sheet — eliminar presupuesto | `hxkUC` | _pendiente (tema oscuro aún no existe)_ |
 
 **Componentes reutilizables** (temáticos, sin variante oscura separada):
 - `Budget Line` (`FSL69`) — fila de presupuesto en la lista.
@@ -73,7 +74,7 @@ Orden vertical: `Page Header` (atrás + **"⋮"**) → **hero de progreso** → 
 - **Hero de progreso — patrón compacto:** dato primario **"Te quedan $X"** + barra, y **debajo de la barra una sola caption de 2 partes** al estilo del Hero de Inicio (`HC Prog Row`): izq **"82% · $492.000 de $600.000"**, der **"Restan 18 días"**. **Prohibido** desglosar esas cifras en varios `Info Row`/chips apilados (se probó y saturó). Sobregasto → familia semántica `expense` (hero rojo).
 - **Stepper de periodo (HU-05) — pastilla flotante inferior:** NO es una fila arriba ni una barra de ancho completo (evita confundirse con la `Tab Bar`). Es una **píldora centrada flotante anclada abajo**, con el rango explícito del ciclo del propio presupuesto + estado: `‹ 1–31 jul · vigente ›` (la tarjeta sería "21 jul – 20 ago"), NO un mes calendario global. Siempre visible mientras la actividad scrollea. Controla qué periodo reflejan el hero y la actividad. Chevron deshabilitado en los bordes (no antes de `startDate` ni después de `endDate`). Alinear con el `DatePeriodFilter` de Transacciones.
 - **Actividad del periodo — expandir INLINE (no redirigir):** transacciones que cuentan para el presupuesto (reusa `Transaction Row`), excluye transferencias. El "ver más" **expande la lista in-place** con **"Cargar más"** (paginación perezosa) — **nunca** redirige a una lista global (rompería el contexto de periodo + alcance). Acceso secundario sutil **"Abrir en Movimientos ›"** para la lista global filtrada.
-- **Acciones — en overflow "⋮" del header** (sheet `G26c4T`/`f1WviW`): **Editar** (→ form prellenado) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (rojo `$expense-text`, → papelera `deletedAt`, HU-11).
+- **Acciones — en overflow "⋮" del header** (sheet `G26c4T`/`f1WviW`): **Editar** (→ form prellenado) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (→ papelera `deletedAt`, HU-11; sheet de confirmación `hxkUC`, tema oscuro pendiente). El sheet de confirmación usa tono **neutral `$primary`** (ícono `trash-2`), no rojo — es reversible vía papelera, mensaje: "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
 - **Variantes:** sobregasto (hero + caption en familia `expense`) y una única vez (ancla "termina el [fecha]", stepper acotado a `[startDate, endDate]`, chevron derecho deshabilitado en el último periodo).
 
 ## Formulario crear/editar (`a3gGPM` / `AHGQc`)
