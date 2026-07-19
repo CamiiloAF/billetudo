@@ -74,7 +74,7 @@ void main() {
         tester,
         'locked_$suffix',
         brightness: brightness,
-        initialIcon: 'utensils',
+        initialIcon: 'utensils-crossed',
         initialColor: 'coral',
         colorLocked: true,
       );

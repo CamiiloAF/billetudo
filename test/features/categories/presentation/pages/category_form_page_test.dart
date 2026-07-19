@@ -31,6 +31,7 @@ void main() {
   late MockDeleteCategory deleteCategory;
   late MockCreateCategory createCategory;
   late MockUpdateCategory updateCategory;
+  late MockSuggestSubcategoryIcon suggestSubcategoryIcon;
   late CategoryFormCubit cubit;
 
   final category = Category(
@@ -48,6 +49,7 @@ void main() {
     deleteCategory = MockDeleteCategory();
     createCategory = MockCreateCategory();
     updateCategory = MockUpdateCategory();
+    suggestSubcategoryIcon = MockSuggestSubcategoryIcon();
 
     when(() => getCategory('cat-1')).thenAnswer((_) async => Right(category));
     when(() => getDeletionImpact('cat-1')).thenAnswer(
@@ -78,6 +80,7 @@ void main() {
       getCategory,
       getDeletionImpact,
       deleteCategory,
+      suggestSubcategoryIcon,
     );
   });
 

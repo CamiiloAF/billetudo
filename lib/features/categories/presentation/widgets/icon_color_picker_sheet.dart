@@ -86,8 +86,8 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
         const SizedBox(height: 16),
         Text(
           l10n.categoryAppearanceIconSectionLabel,
-          style: theme.textTheme.labelLarge
-              ?.copyWith(color: colors.textSecondary),
+          style:
+              theme.textTheme.labelLarge?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -124,10 +124,9 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
             ],
           ],
         ),
-        const SizedBox(height: 8),
-        Opacity(
-          opacity: widget.colorLocked ? 0.55 : 1,
-          child: Wrap(
+        if (!widget.colorLocked) ...[
+          const SizedBox(height: 8),
+          Wrap(
             spacing: 58,
             runSpacing: 16,
             children: [
@@ -135,13 +134,11 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
                 CategoryColorSwatch(
                   token: token,
                   selected: token == _color,
-                  onTap: widget.colorLocked
-                      ? null
-                      : () => setState(() => _color = token),
+                  onTap: () => setState(() => _color = token),
                 ),
             ],
           ),
-        ),
+        ],
         const SizedBox(height: 24),
         Row(
           children: [

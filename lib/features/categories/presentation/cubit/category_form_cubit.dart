@@ -8,6 +8,7 @@ import '../../domain/usecases/create_category.dart';
 import '../../domain/usecases/delete_category.dart';
 import '../../domain/usecases/get_category.dart';
 import '../../domain/usecases/get_category_deletion_impact.dart';
+import '../../domain/usecases/suggest_subcategory_icon.dart';
 import '../../domain/usecases/update_category.dart';
 import 'category_form_state.dart';
 
@@ -27,6 +28,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     this._getCategory,
     this._getDeletionImpact,
     this._deleteCategory,
+    this._suggestSubcategoryIcon,
   ) : super(const CategoryFormState());
 
   final CreateCategory _createCategory;
@@ -34,6 +36,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
   final GetCategory _getCategory;
   final GetCategoryDeletionImpact _getDeletionImpact;
   final DeleteCategory _deleteCategory;
+  final SuggestSubcategoryIcon _suggestSubcategoryIcon;
 
   /// Loads the form for one of its 4 cases.
   ///  - `id == null, parentId == null` -> create a root category, with
@@ -70,9 +73,16 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     switch (result) {
       case Left(value: final failure):
         emit(
-          CategoryFormState(status: CategoryFormStatus.failure, failure: failure),
+          CategoryFormState(
+              status: CategoryFormStatus.failure, failure: failure),
         );
       case Right(value: final parent):
+        final iconResult = await _suggestSubcategoryIcon(parent.id);
+        if (isClosed) {
+          return;
+        }
+        final suggestedIcon =
+            iconResult.fold((_) => parent.icon, (icon) => icon);
         emit(
           CategoryFormState(
             status: CategoryFormStatus.ready,
@@ -80,7 +90,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
             parentName: parent.name,
             kind: parent.kind,
             kindLockReason: CategoryKindLockReason.subcategory,
-            icon: parent.icon,
+            icon: suggestedIcon,
             color: parent.color,
           ),
         );
@@ -96,7 +106,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     switch (result) {
       case Left(value: final failure):
         emit(
-          CategoryFormState(status: CategoryFormStatus.failure, failure: failure),
+          CategoryFormState(
+              status: CategoryFormStatus.failure, failure: failure),
         );
       case Right(value: final category):
         await _emitFormFor(category);
@@ -111,7 +122,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
       if (isClosed) {
         return;
       }
-      final parentName = parentResult.fold((_) => null, (parent) => parent.name);
+      final parentName =
+          parentResult.fold((_) => null, (parent) => parent.name);
 
       emit(
         CategoryFormState(
@@ -205,7 +217,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
     switch (result) {
       case Left(value: final failure):
-        emit(state.copyWith(status: CategoryFormStatus.ready, failure: failure));
+        emit(
+            state.copyWith(status: CategoryFormStatus.ready, failure: failure));
       case Right():
         emit(state.copyWith(status: CategoryFormStatus.saved));
     }
@@ -274,14 +287,16 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     SubcategoryResolution resolution,
   ) =>
       _finishDelete(
-        transactionResolution:
-            state.pendingTransactionResolution ?? const TransactionResolution.none(),
+        transactionResolution: state.pendingTransactionResolution ??
+            const TransactionResolution.none(),
         subcategoryResolution: resolution,
       );
 
   Future<void> _finishDelete({
-    TransactionResolution transactionResolution = const TransactionResolution.none(),
-    SubcategoryResolution subcategoryResolution = const SubcategoryResolution.none(),
+    TransactionResolution transactionResolution =
+        const TransactionResolution.none(),
+    SubcategoryResolution subcategoryResolution =
+        const SubcategoryResolution.none(),
   }) async {
     final id = state.id;
     if (id == null) {

@@ -23,7 +23,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Confirmar eliminar raiz con subcategorias | `w9ixr` | `kYA4E` |
 | Selector de categoria padre | `Q55fEz` | `A7pbY3` |
 | Selector de icono y color | `lAxmS` | `PtZ2o` |
-| Selector de icono y color — bloqueado/heredado (subcategoria) | `nqoD6` | _pendiente_ |
+| Selector de icono y color — bloqueado/heredado (subcategoria) | `nqoD6` | `g3z4E` |
 
 **Navegacion:** todas usan `Page Header` (boton atras) SIN `Tab Bar` — Categorias es una subseccion, se llega desde el listado o desde el menu "Mas" (mismo criterio que Cuentas). El listado principal (`bA51N`) es la unica excepcion parcial: no lleva `Page Header` clasico, su encabezado es el titulo "Categorias" + boton `+` directo (igual patron que Presupuestos/Metas).
 
@@ -73,23 +73,44 @@ Bottom sheet, patron tap-para-elegir-y-cerrar (sin boton "Confirmar" explicito, 
 
 ## Selector de icono y color (`lAxmS`)
 
-Se exploraron y descartaron 2 variantes con catalogo ampliado (grilla+scroll sin buscador vs grilla+scroll+buscador) — se eligio la **sin buscador**. Razon: los 32 iconos ya estan agrupados por afinidad visual (comida/transporte/vehiculo/vivienda, salud/seguros/suscripciones/compras, etc.), un solo swipe cubre el catalogo completo; el buscador no reducia esa carga y ademas no tenia forma de funcionar de verdad (ningun icono tiene un nombre/caption visible que el usuario pudiera escribir).
+Se exploraron y descartaron 2 variantes con catalogo ampliado (grilla+scroll sin buscador vs grilla+scroll+buscador) — se eligio la **sin buscador**. Razon: los iconos ya estan agrupados por afinidad visual (comida/transporte/vehiculo/vivienda, salud/seguros/suscripciones/compras, etc.), un solo swipe cubre el catalogo completo; el buscador no reducia esa carga y ademas no tenia forma de funcionar de verdad (ningun icono tiene un nombre/caption visible que el usuario pudiera escribir).
 
-- **Grilla de iconos:** 32 iconos lucide (componente reusable `Icon Tile`, 60x60), viewport de 320px con scroll acotado (mismo patron del selector de padre). Solo el icono **seleccionado** toma color (fill `$<color>-soft` + stroke `$<color>` + icono `$<color>`) — el resto queda neutro (`$muted`/`$text-secondary`). Antes el seleccionado usaba un acento fijo en `$primary` desconectado del color realmente elegido en la seccion de abajo; se corrigio para que ambos coincidan.
+- **Grilla de iconos:** **64** iconos lucide (ampliado desde 32 tras feedback del usuario — cobertura insuficiente del apendice real de categorias), componente reusable `Icon Tile` (60x60), viewport de 320px con scroll acotado (mismo patron del selector de padre, ahora 16 filas de contenido en vez de 8). Lista canonica y orden exacto del catalogo:
+
+  ```
+  utensils-crossed, bus, car, house,
+  heart-pulse, shield-check, repeat, shopping-bag,
+  party-popper, graduation-cap, paw-print, credit-card,
+  landmark, file-text, send, gift,
+  wallet, laptop, briefcase, inbox,
+  trending-up, hand-coins, rotate-ccw, heart-handshake,
+  shopping-cart, coffee, fuel, wrench,
+  zap, wifi, tv, washing-machine,
+  cat, dog, music, gamepad-2,
+  clapperboard, headphones, trophy, bike,
+  pill, stethoscope, hammer, droplet,
+  flame, monitor, smartphone, piggy-bank,
+  coins, receipt, calculator, scale,
+  scissors, plane, luggage, map-pin,
+  bed, train, users, baby,
+  book-open, building-2, church, dumbbell
+  ```
+
+  Solo el icono **seleccionado** toma color (fill `$<color>-soft` + stroke `$<color>` + icono `$<color>`) — el resto queda neutro (`$muted`/`$text-secondary`). Antes el seleccionado usaba un acento fijo en `$primary` desconectado del color realmente elegido en la seccion de abajo; se corrigio para que ambos coincidan.
 - **Grilla de color:** 7 swatches decorativos (`mint`/`sky`/`peach`/`coral`/`amber`/`teal`/`indigo` — nunca `$primary`, reservado para marca/CTAs). Tratamiento pastel: fondo `$<color>-soft` + punto centrado en `$<color>` (no circulos solidos a color pleno, que generaban ruido visual al estar los 7 uno junto al otro). El seleccionado ademas lleva un anillo `stroke:$<color>` + check en `$<color>` (no `$on-primary`, que no tendria contraste suficiente sobre un fondo pastel claro). Ambas filas usan el mismo `gap:58` fijo y alineacion a la izquierda (antes la fila de 3 colores se estiraba con `space_between` y se veia desordenada frente a la fila de 4).
 - **Sin preview separado:** se elimino la fila de preview grande (76px, icono+color combinados) al tope de la pantalla — quedo redundante una vez que el tile seleccionado en la grilla ya refleja el color elegido en tiempo real.
 
-### Variante bloqueada/heredada — subcategorías (`nqoD6`)
+### Variante bloqueada/heredada — subcategorías (`nqoD6` claro / `g3z4E` oscuro)
 
 **Regla de negocio:** en una subcategoría, el **ícono se puede cambiar libremente**, pero el **color SIEMPRE se hereda de la categoría raíz y queda bloqueado** — coherente con que el color identifica visualmente a la categoría padre en listados y gráficas, mientras el ícono puede variar por subcategoría para mayor granularidad visual.
 
-- **Sección "Ícono":** grilla normal, totalmente interactiva, igual que en `lAxmS`.
-- **Sección "Color":** `opacity:0.55` en toda la grilla + ícono candado (`lock`, 13px, `$text-secondary`) junto al label "Color" + caption explicativo: "El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras."
+- **Sección "Ícono":** grilla normal, totalmente interactiva, igual que en `lAxmS` (mismos 64 iconos).
+- **Sección "Color":** la grilla de 7 swatches queda **completamente oculta** (no solo atenuada — corregido tras feedback del usuario: mostrar swatches deshabilitados desperdiciaba espacio vertical sin aportar nada). Solo quedan visibles el label "Color" + ícono candado (`lock`, 13px, `$text-secondary`) + caption explicativo: "El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras." El sheet se ajusta de alto automáticamente, sin espacio muerto donde estaba la grilla.
 - Se abre desde `Appearance Field` (`R8PlN`) en `Editar Subcategoría` (`CuTjr`) y `Crear Subcategoría` (`STIfS`).
 
 ## Componentes reutilizables nuevos de esta feature
 
-Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios — **propiedad `colorLocked`**: el nodo interno `N04bc` (ícono `lock`, Lucide, 13px, `$text-secondary`) controla vía su flag `enabled` si se muestra el candado junto al icon-wrap; se activa en instancias de subcategoría (`CuTjr`, `STIfS`) porque el color se hereda del padre, el ícono en sí nunca se bloquea), `Parent Category Row` (fila del selector de categoria padre).
+Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios — el nodo interno `N04bc` (ícono `lock`, Lucide, 13px, `$text-secondary`) existe en el componente pero queda **siempre `enabled:false`, en toda instancia, raíz o subcategoría** — corregido tras feedback del usuario: el candado en esta fila no debe verse nunca; el único candado real de la feature es el de la sección "Color" dentro del selector de ícono/color bloqueado, ver arriba), `Parent Category Row` (fila del selector de categoria padre).
 
 ## Tokens de accesibilidad — hallazgo nuevo de esta feature
 

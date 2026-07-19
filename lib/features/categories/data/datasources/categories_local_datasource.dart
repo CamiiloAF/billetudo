@@ -134,6 +134,15 @@ class CategoriesLocalDatasource {
     return current == null ? 0 : current + 1;
   }
 
+  /// Active subcategories of [parentId], ordered by `sortOrder` — feeds
+  /// `SuggestSubcategoryIcon` (icon/color picker, HU-02).
+  Future<List<Category>> activeSubcategories(String parentId) {
+    final query = _db.select(_db.categories)
+      ..where((c) => c.parentId.equals(parentId) & _alive)
+      ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]);
+    return query.get();
+  }
+
   Future<int> countActiveSubcategories(String parentId) {
     final count = _db.categories.id.count();
     final query = _db.selectOnly(_db.categories)

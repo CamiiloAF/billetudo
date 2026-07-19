@@ -163,6 +163,8 @@ import 'package:billetudo/features/categories/domain/usecases/restore_category.d
     as _i119;
 import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart'
     as _i693;
+import 'package:billetudo/features/categories/domain/usecases/suggest_subcategory_icon.dart'
+    as _i1099;
 import 'package:billetudo/features/categories/domain/usecases/update_category.dart'
     as _i275;
 import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart'
@@ -634,6 +636,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i722.WatchCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i172.WatchParentCandidates>(
         () => _i172.WatchParentCandidates(gh<_i802.CategoryRepository>()));
+    gh.factory<_i1099.SuggestSubcategoryIcon>(() =>
+        _i1099.SuggestSubcategoryIcon(gh<_i802.CategoryRepository>()));
     gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
           gh<_i722.WatchCategories>(),
           gh<_i562.ReorderCategories>(),
@@ -729,6 +733,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i382.GetCategory>(),
           gh<_i87.GetCategoryDeletionImpact>(),
           gh<_i968.DeleteCategory>(),
+          gh<_i1099.SuggestSubcategoryIcon>(),
         ));
     return this;
   }

@@ -199,6 +199,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
       });
 
   @override
+  FutureResult<List<Category>> getActiveSubcategories(String parentId) =>
+      _guard(() async {
+        final rows = await _local.activeSubcategories(parentId);
+        return Right(rows.map(CategoryMapper.toEntity).toList());
+      });
+
+  @override
   FutureResult<bool> hasAnyCategory() => _guard(() async {
         final count = await _local.countActiveCategories();
         return Right(count > 0);

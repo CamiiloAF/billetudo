@@ -18,6 +18,7 @@ void main() {
   late MockGetCategory getCategory;
   late MockGetCategoryDeletionImpact getDeletionImpact;
   late MockDeleteCategory deleteCategory;
+  late MockSuggestSubcategoryIcon suggestSubcategoryIcon;
 
   setUpAll(registerCategoryPresentationFallbacks);
 
@@ -27,6 +28,7 @@ void main() {
     getCategory = MockGetCategory();
     getDeletionImpact = MockGetCategoryDeletionImpact();
     deleteCategory = MockDeleteCategory();
+    suggestSubcategoryIcon = MockSuggestSubcategoryIcon();
   });
 
   CategoryFormCubit build() => CategoryFormCubit(
@@ -35,6 +37,7 @@ void main() {
         getCategory,
         getDeletionImpact,
         deleteCategory,
+        suggestSubcategoryIcon,
       );
 
   group('caso 1: crear categoría raíz', () {
@@ -75,12 +78,16 @@ void main() {
   group('caso 2: crear subcategoría', () {
     blocTest<CategoryFormCubit, CategoryFormState>(
       'hereda el kind del padre y bloquea Tipo',
-      setUp: () => when(() => getCategory('root-1')).thenAnswer(
-        (_) async => Right(
-          buildCategory(
-              id: 'root-1', name: 'Transporte', kind: CategoryKind.income),
-        ),
-      ),
+      setUp: () {
+        when(() => getCategory('root-1')).thenAnswer(
+          (_) async => Right(
+            buildCategory(
+                id: 'root-1', name: 'Transporte', kind: CategoryKind.income),
+          ),
+        );
+        when(() => suggestSubcategoryIcon('root-1'))
+            .thenAnswer((_) async => const Right('bus'));
+      },
       build: build,
       act: (cubit) => cubit.load(parentId: 'root-1'),
       expect: () => [
@@ -90,24 +97,63 @@ void main() {
           parentId: 'root-1',
           parentName: 'Transporte',
           kind: CategoryKind.income,
+          icon: 'bus',
           kindLockReason: CategoryKindLockReason.subcategory,
         ),
       ],
     );
 
     blocTest<CategoryFormCubit, CategoryFormState>(
-      'hereda también el ícono y el color del padre, no solo el kind',
-      setUp: () => when(() => getCategory('root-1')).thenAnswer(
-        (_) async => Right(
-          buildCategory(
-            id: 'root-1',
-            name: 'Transporte',
-            kind: CategoryKind.income,
-            icon: 'bus',
-            color: '#FF5733',
+      'usa el ícono sugerido (distinto a las hermanas) y hereda el color del padre',
+      setUp: () {
+        when(() => getCategory('root-1')).thenAnswer(
+          (_) async => Right(
+            buildCategory(
+              id: 'root-1',
+              name: 'Transporte',
+              kind: CategoryKind.income,
+              icon: 'bus',
+              color: '#FF5733',
+            ),
           ),
+        );
+        when(() => suggestSubcategoryIcon('root-1'))
+            .thenAnswer((_) async => const Right('car'));
+      },
+      build: build,
+      act: (cubit) => cubit.load(parentId: 'root-1'),
+      expect: () => [
+        const CategoryFormState(),
+        const CategoryFormState(
+          status: CategoryFormStatus.ready,
+          parentId: 'root-1',
+          parentName: 'Transporte',
+          kind: CategoryKind.income,
+          icon: 'car',
+          color: '#FF5733',
+          kindLockReason: CategoryKindLockReason.subcategory,
         ),
-      ),
+      ],
+    );
+
+    blocTest<CategoryFormCubit, CategoryFormState>(
+      'si SuggestSubcategoryIcon falla, cae al ícono del padre',
+      setUp: () {
+        when(() => getCategory('root-1')).thenAnswer(
+          (_) async => Right(
+            buildCategory(
+              id: 'root-1',
+              name: 'Transporte',
+              kind: CategoryKind.income,
+              icon: 'bus',
+              color: '#FF5733',
+            ),
+          ),
+        );
+        when(() => suggestSubcategoryIcon('root-1')).thenAnswer(
+          (_) async => const Left(DatabaseFailure('boom')),
+        );
+      },
       build: build,
       act: (cubit) => cubit.load(parentId: 'root-1'),
       expect: () => [

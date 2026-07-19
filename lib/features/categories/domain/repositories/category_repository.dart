@@ -85,6 +85,11 @@ abstract class CategoryRepository {
   /// restored as-is (documented, non-blocking edge case).
   FutureResult<Unit> restoreCategory(String id);
 
+  /// Active (not tombstoned, not deleted) subcategories of [parentId],
+  /// in no particular order — feeds `SuggestSubcategoryIcon` to pick an icon
+  /// not already used by any of them.
+  FutureResult<List<Category>> getActiveSubcategories(String parentId);
+
   /// Whether the user has any active category at all, of any kind — drives
   /// the idempotency of [seedDefaultCategories] (HU-06).
   FutureResult<bool> hasAnyCategory();

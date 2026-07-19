@@ -200,6 +200,45 @@ void main() {
     });
   });
 
+  group('getActiveSubcategories', () {
+    test('solo las subcategorías activas del padre, no las de otro padre',
+        () async {
+      final root = await createRoot('Comida');
+      final otherRoot = await createRoot('Transporte');
+      final sub1 = await repository
+          .createCategory(
+            CategoryDraft(
+              name: 'Mercado',
+              kind: CategoryKind.expense,
+              parentId: root.id,
+            ),
+          )
+          .then((r) => r.getRight().toNullable()!);
+      await repository.createCategory(
+        CategoryDraft(
+          name: 'Bus',
+          kind: CategoryKind.expense,
+          parentId: otherRoot.id,
+        ),
+      );
+      final sub2 = await repository
+          .createCategory(
+            CategoryDraft(
+              name: 'Restaurantes',
+              kind: CategoryKind.expense,
+              parentId: root.id,
+            ),
+          )
+          .then((r) => r.getRight().toNullable()!);
+      await repository.softDeleteCategory(sub2.id);
+
+      final result = await repository.getActiveSubcategories(root.id);
+
+      final ids = result.getRight().toNullable()!.map((c) => c.id);
+      expect(ids, [sub1.id]);
+    });
+  });
+
   group('softDeleteCategory / restoreCategory (HU-04)', () {
     test('el borrado es reversible vía deletedAt', () async {
       final root = await createRoot('Comida');

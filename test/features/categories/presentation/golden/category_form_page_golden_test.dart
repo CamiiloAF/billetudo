@@ -94,7 +94,7 @@ void main() {
           parentId: 'root-1',
           parentName: 'Comida',
           name: 'Restaurantes',
-          icon: 'utensils',
+          icon: 'utensils-crossed',
           color: 'coral',
           kindLockReason: CategoryKindLockReason.subcategory,
         ),

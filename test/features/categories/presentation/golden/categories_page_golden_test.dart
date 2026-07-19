@@ -21,7 +21,7 @@ void main() {
     CategoryNode(
       root: buildCategory(
         id: 'root-1',
-        icon: 'utensils',
+        icon: 'utensils-crossed',
         color: 'coral',
       ),
       subcategories: [
@@ -29,14 +29,14 @@ void main() {
           id: 'sub-1',
           name: 'Restaurantes',
           parentId: 'root-1',
-          icon: 'utensils',
+          icon: 'utensils-crossed',
           color: 'coral',
         ),
         buildCategory(
           id: 'sub-2',
           name: 'Mercado',
           parentId: 'root-1',
-          icon: 'banknote',
+          icon: 'coins',
           color: 'mint',
         ),
       ],
