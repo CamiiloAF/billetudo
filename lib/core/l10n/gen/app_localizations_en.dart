@@ -1333,6 +1333,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetFormNameLabel => 'Name';
 
   @override
+  String get budgetFormIconNameLabel => 'Icon and name';
+
+  @override
+  String budgetFormRowValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get budgetFormScopeAllHint =>
+      'Covers all your spending: every account and category.';
+
+  @override
   String get budgetFormNameHint => 'e.g. Monthly groceries';
 
   @override
@@ -1370,6 +1382,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetFormEndLabel => 'End';
+
+  @override
+  String get budgetFormEndHint => 'Pick a date';
 
   @override
   String get budgetFormRepeatUntilLabel => 'Repeat until';

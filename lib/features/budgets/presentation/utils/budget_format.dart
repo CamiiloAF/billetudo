@@ -14,6 +14,12 @@ abstract final class BudgetFormat {
   const BudgetFormat._();
 
   static final DateFormat _dayMonth = DateFormat('d MMM', 'es_CO');
+  static final DateFormat _longDate = DateFormat("d 'de' MMMM y", 'es_CO');
+
+  /// The form's date rows spell the month out ("21 de julio 2026",
+  /// `a3gGPM/cb5On`) — the compact "21 jul" is for the dense list/detail meta
+  /// lines, not for a field the user is about to change.
+  static String longDate(DateTime date) => _longDate.format(date);
 
   /// Short scope label for the list/detail meta line (HU-04). Warns when the
   /// scope was narrowed but every referent is gone.

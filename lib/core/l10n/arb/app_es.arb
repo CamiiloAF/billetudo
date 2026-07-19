@@ -972,6 +972,14 @@
   "@budgetFormEditTitle": {},
   "budgetFormNameLabel": "Nombre",
   "@budgetFormNameLabel": {},
+  "budgetFormIconNameLabel": "Ícono y nombre",
+  "@budgetFormIconNameLabel": {},
+  "budgetFormRowValue": "{label}: {value}",
+  "@budgetFormRowValue": {
+    "placeholders": { "label": { "type": "String" }, "value": { "type": "String" } }
+  },
+  "budgetFormScopeAllHint": "Incluye todo tu gasto: todas las cuentas y categorías.",
+  "@budgetFormScopeAllHint": {},
   "budgetFormNameHint": "Ej. Mercado del mes",
   "@budgetFormNameHint": {},
   "budgetFormIconLabel": "Ícono",
@@ -998,6 +1006,8 @@
   "@budgetFormStartLabel": {},
   "budgetFormEndLabel": "Fin",
   "@budgetFormEndLabel": {},
+  "budgetFormEndHint": "Elegir fecha",
+  "@budgetFormEndHint": {},
   "budgetFormRepeatUntilLabel": "Repetir hasta",
   "@budgetFormRepeatUntilLabel": {},
   "budgetFormForever": "Para siempre",

@@ -83,6 +83,9 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
             : state.copyWith(amountMinor: amountMinor),
       );
 
+  void currencyChanged(String currency) =>
+      emit(state.copyWith(currency: currency));
+
   /// HU-03: switching between "Periódico" and "Una única vez". A one-off must
   /// carry an end date; a periodic budget keeps whatever end (or none) it had.
   void recurringChanged({required bool recurring}) => emit(

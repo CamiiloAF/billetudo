@@ -2414,6 +2414,24 @@ abstract class AppLocalizations {
   /// **'Nombre'**
   String get budgetFormNameLabel;
 
+  /// No description provided for @budgetFormIconNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono y nombre'**
+  String get budgetFormIconNameLabel;
+
+  /// No description provided for @budgetFormRowValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{label}: {value}'**
+  String budgetFormRowValue(String label, String value);
+
+  /// No description provided for @budgetFormScopeAllHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluye todo tu gasto: todas las cuentas y categorías.'**
+  String get budgetFormScopeAllHint;
+
   /// No description provided for @budgetFormNameHint.
   ///
   /// In es, this message translates to:
@@ -2491,6 +2509,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Fin'**
   String get budgetFormEndLabel;
+
+  /// No description provided for @budgetFormEndHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir fecha'**
+  String get budgetFormEndHint;
 
   /// No description provided for @budgetFormRepeatUntilLabel.
   ///
