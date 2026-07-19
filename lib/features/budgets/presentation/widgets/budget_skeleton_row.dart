@@ -7,9 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 /// budget line. Uses the `$skeleton` token (NOT `$border`, which is nearly
 /// invisible over `$surface` in dark).
 class BudgetSkeletonRow extends StatelessWidget {
-  const BudgetSkeletonRow({this.nameWidth = 140, super.key});
-
-  final double nameWidth;
+  const BudgetSkeletonRow({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,29 +19,33 @@ class BudgetSkeletonRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         border: Border.all(color: colors.border),
       ),
-      child: Column(
+      // Mirrors `iVri4` bar for bar, so the placeholder announces the very
+      // row that arrives: one name line on the left, the label+amount stack
+      // on the right, then the loose meta line and the track.
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const BudgetSkeletonBox(width: 44, height: 44, radius: 22),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BudgetSkeletonBox(width: nameWidth, height: 14),
-                    const SizedBox(height: 8),
-                    const BudgetSkeletonBox(width: 100, height: 12),
-                  ],
-                ),
+              BudgetSkeletonBox(width: 44, height: 44, radius: 14),
+              SizedBox(width: 12),
+              BudgetSkeletonBox(width: 120, height: 14, radius: 4),
+              Spacer(),
+              SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  BudgetSkeletonBox(width: 54, height: 9, radius: 4),
+                  SizedBox(height: 6),
+                  BudgetSkeletonBox(width: 84, height: 16, radius: 4),
+                ],
               ),
-              const SizedBox(width: 12),
-              const BudgetSkeletonBox(width: 70, height: 16),
             ],
           ),
-          const SizedBox(height: 16),
-          const BudgetSkeletonBox(width: double.infinity, height: 8, radius: 8),
+          SizedBox(height: 14),
+          BudgetSkeletonBox(width: 170, height: 10, radius: 4),
+          SizedBox(height: 14),
+          BudgetSkeletonBox(width: double.infinity, height: 8, radius: 4),
         ],
       ),
     );

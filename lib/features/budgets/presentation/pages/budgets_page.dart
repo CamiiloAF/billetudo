@@ -8,6 +8,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../cubit/budgets_list_cubit.dart';
@@ -113,13 +114,20 @@ class BudgetsPageHeader extends StatelessWidget {
                   ),
             ),
           ),
-          IconButton(
-            onPressed: onAddBudget,
-            tooltip: l10n.budgetsAdd,
-            icon: const Icon(LucideIcons.plus),
-          ),
+          // `ymsmU` orders the two 44pt circles ⋮ then + — the overflow is
+          // the secondary action, so the filled `$primary` one sits last,
+          // closest to the screen edge.
           PopupMenuButton<void>(
-            icon: const Icon(LucideIcons.ellipsisVertical),
+            padding: EdgeInsets.zero,
+            tooltip: l10n.budgetsMenuTooltip,
+            child: PageHeaderCircleButton(
+              icon: LucideIcons.ellipsisVertical,
+              background: colors.muted,
+              foreground: colors.textPrimary,
+              tooltip: l10n.budgetsMenuTooltip,
+              iconSize: 20,
+              onPressed: null,
+            ),
             itemBuilder: (context) => [
               PopupMenuItem<void>(
                 onTap: onOpenHistory,
@@ -134,6 +142,15 @@ class BudgetsPageHeader extends StatelessWidget {
                 ),
             ],
           ),
+          const SizedBox(width: 8),
+          PageHeaderCircleButton(
+            icon: LucideIcons.plus,
+            background: colors.primary,
+            foreground: colors.onPrimary,
+            tooltip: l10n.budgetsAdd,
+            iconSize: 20,
+            onPressed: onAddBudget,
+          ),
         ],
       ),
     );
@@ -144,18 +161,15 @@ class BudgetsPageHeader extends StatelessWidget {
 class BudgetsLoadingView extends StatelessWidget {
   const BudgetsLoadingView({super.key});
 
-  static const List<double> _nameWidths = [140, 100, 160, 120];
-
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: AppLocalizations.of(context).budgetsLoading,
       child: ListView.separated(
         padding: const EdgeInsets.all(20),
-        itemCount: _nameWidths.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 14),
-        itemBuilder: (context, index) =>
-            BudgetSkeletonRow(nameWidth: _nameWidths[index]),
+        itemCount: 4,
+        separatorBuilder: (context, index) => const SizedBox(height: 18),
+        itemBuilder: (context, index) => const BudgetSkeletonRow(),
       ),
     );
   }
@@ -175,6 +189,9 @@ class BudgetsEmptyView extends StatelessWidget {
     final empty = EmptyState(
       icon: LucideIcons.wallet,
       message: l10n.budgetsEmptyMessage,
+      description: l10n.budgetsEmptyDescription,
+      // `bzHnz`: title + invite read as one block, 6pt apart.
+      descriptionSpacing: 6,
       ctaLabel: l10n.budgetsEmptyCta,
       onCta: onAddBudget,
     );
@@ -218,7 +235,7 @@ class BudgetsListView extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
       itemCount: headerCount + state.budgets.length + 1,
-      separatorBuilder: (context, index) => const SizedBox(height: 14),
+      separatorBuilder: (context, index) => const SizedBox(height: 18),
       itemBuilder: (context, index) {
         if (header != null && index == 0) {
           return header;
@@ -251,7 +268,7 @@ class NewBudgetCta extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
           color: colors.primarySoft,
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
@@ -261,20 +278,21 @@ class NewBudgetCta extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: colors.surface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(LucideIcons.plus, size: 18, color: colors.primary),
+              child:
+                  Icon(LucideIcons.plus, size: 20, color: colors.primaryOnSoft),
             ),
             const SizedBox(width: 10),
             Text(
-              l10n.budgetsEmptyCta,
+              l10n.budgetsAdd,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: colors.primaryOnSoftStrong,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
             ),
           ],

@@ -124,7 +124,13 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
           ],
           initialValue: state.amountMinor == null
               ? null
-              : const MoneyFormatter().formatAmount(state.amountMinor!),
+              // The currency's own decimals (Pencil shows a whole `$0`): COP
+              // has none, so a prefilled amount must not read `4.500.000,00`.
+              : const MoneyFormatter().formatAmount(
+                  state.amountMinor!,
+                  decimalDigits:
+                      MoneyFormatter.currencyDecimals(state.currency),
+                ),
           onChanged: (value) =>
               cubit.amountChanged(MoneyFormatter.parseMinor(value)),
         ),

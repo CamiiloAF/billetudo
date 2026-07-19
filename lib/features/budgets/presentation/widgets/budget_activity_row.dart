@@ -66,7 +66,7 @@ class BudgetActivityRow extends StatelessWidget {
   /// unsigned (Pencil): the colour already says it is money going out, only
   /// income is ever marked (with `+`).
   String _amountLabel() => const MoneyFormatter()
-      .format(item.amountMinor, currencyCode: item.currency);
+      .formatSymbol(item.amountMinor, currencyCode: item.currency);
 
   String _subtitle() {
     final date = DateFormat.yMMMd('es_CO').format(item.date);

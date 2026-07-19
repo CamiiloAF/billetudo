@@ -16,6 +16,7 @@ class EmptyState extends StatelessWidget {
     required this.icon,
     required this.message,
     this.description,
+    this.descriptionSpacing = 16,
     this.ctaLabel,
     this.ctaIcon = LucideIcons.plus,
     this.onCta,
@@ -43,6 +44,12 @@ class EmptyState extends StatelessWidget {
   /// Optional second line, for the empty states whose title alone would leave
   /// out what the user still has (already localized).
   final String? description;
+
+  /// Distance between the title and [description]. `jmQO5`'s own `Subtitle`
+  /// node is a sibling in the 16pt column (Pagos programados uses it that
+  /// way), but Presupuestos replaces the message with a tighter block
+  /// (`bzHnz`) where the two lines read as one unit, 6pt apart.
+  final double descriptionSpacing;
 
   final String? ctaLabel;
   final IconData ctaIcon;
@@ -73,32 +80,34 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: _textMaxWidth),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textPrimary,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colors.textPrimary,
+                    ),
+                  ),
+                  if (description != null) ...[
+                    SizedBox(height: descriptionSpacing),
+                    Text(
+                      description,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (description != null) ...[
-              const SizedBox(height: 16),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _textMaxWidth),
-                child: Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
             if (ctaLabel != null) ...[
               const SizedBox(height: 16),
               FilledButton.icon(

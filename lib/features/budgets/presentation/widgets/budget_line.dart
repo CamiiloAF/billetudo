@@ -30,15 +30,16 @@ class BudgetLine extends StatelessWidget {
     final overspent = progress.isOverspent;
 
     const money = MoneyFormatter();
-    final headlineAmount = money.format(
+    final headlineAmount = money.formatSymbol(
       overspent ? -progress.remainingMinor : progress.remainingMinor,
       currencyCode: entry.budget.currency,
     );
 
+    // The percent is NOT part of this string: `FSL69` anchors it to the right
+    // edge of its own row (`vdyCS`), so a long scope can never truncate it.
     final meta = [
       BudgetFormat.scopeLabel(l10n, entry.scope),
       BudgetFormat.temporalAnchor(l10n, entry.budget, entry.window),
-      l10n.budgetPercent(progress.percent),
     ].join(' · ');
 
     return InkWell(
@@ -54,45 +55,30 @@ class BudgetLine extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // `FSL69/Olsr9` — icon + name on the left, the "Te quedan / $X"
+            // stack on the right.
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: overspent ? colors.expenseSoft : colors.muted,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     CategoryAppearance.iconFor(entry.budget.icon),
-                    size: 22,
-                    color: overspent ? colors.expense : colors.textSecondary,
+                    size: 20,
+                    color: overspent ? colors.expense : colors.primaryOnSoft,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        entry.budget.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        meta,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: overspent
-                              ? colors.expenseText
-                              : colors.textSecondary,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    entry.budget.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 15),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -103,13 +89,19 @@ class BudgetLine extends StatelessWidget {
                       overspent
                           ? l10n.budgetOverspentLabel
                           : l10n.budgetRemainingLabel,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: colors.textSecondary),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: overspent
+                            ? colors.expenseText
+                            : colors.textSecondary,
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       headlineAmount,
                       style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color:
                             overspent ? colors.expenseText : colors.textPrimary,
@@ -119,10 +111,42 @@ class BudgetLine extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
+            // `FSL69/oLUrn` — the meta gets the full width and the percent is
+            // pinned to the right, so the ellipsis can never eat it. The meta
+            // stays `$text-secondary` even when overspent: red is a signal
+            // with meaning here (the amount and the percent), not ambience.
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    meta,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.budgetPercent(progress.percent),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        overspent ? colors.expenseText : colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             BudgetProgressBar(
               fraction: progress.fraction,
               overspent: overspent,
+              height: 6,
             ),
           ],
         ),

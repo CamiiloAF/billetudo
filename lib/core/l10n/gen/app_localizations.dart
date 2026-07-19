@@ -2216,6 +2216,12 @@ abstract class AppLocalizations {
   /// **'Crear presupuesto'**
   String get budgetsEmptyCta;
 
+  /// No description provided for @budgetsEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea uno para controlar tu gasto sin esfuerzo'**
+  String get budgetsEmptyDescription;
+
   /// No description provided for @budgetsLoading.
   ///
   /// In es, this message translates to:
@@ -2233,6 +2239,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver histórico'**
   String get budgetsMenuHistory;
+
+  /// No description provided for @budgetsMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get budgetsMenuTooltip;
 
   /// No description provided for @budgetRemainingLabel.
   ///

@@ -30,7 +30,9 @@ class BudgetProgressBar extends StatelessWidget {
       child: LinearProgressIndicator(
         value: value,
         minHeight: height,
-        backgroundColor: colors.muted,
+        // The track is `$border` in every frame that uses it (`FSL69/QrCsr`,
+        // `NloPT/Ip7RK`), not `$muted`.
+        backgroundColor: colors.border,
         valueColor: AlwaysStoppedAnimation<Color>(fill),
       ),
     );

@@ -163,7 +163,7 @@ class BudgetDetailHero extends StatelessWidget {
     final overspent = progress.isOverspent;
     const money = MoneyFormatter();
 
-    final headline = money.format(
+    final headline = money.formatSymbol(
       overspent ? -progress.remainingMinor : progress.remainingMinor,
       currencyCode: budget.currency,
     );

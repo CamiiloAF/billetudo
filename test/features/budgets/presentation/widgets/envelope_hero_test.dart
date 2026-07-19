@@ -25,14 +25,14 @@ void main() {
 
       expect(find.text(l10n.budgetsEnvelopeUnassignedLabel), findsOneWidget);
       expect(
-        find.text(money.format(200000, currencyCode: 'COP')),
+        find.text(money.formatSymbol(200000, currencyCode: 'COP')),
         findsOneWidget,
       );
       expect(
         find.text(
           l10n.budgetsEnvelopeCaption(
-            money.format(500000, currencyCode: 'COP'),
-            money.format(300000, currencyCode: 'COP'),
+            money.formatSymbol(500000, currencyCode: 'COP'),
+            money.formatSymbol(300000, currencyCode: 'COP'),
           ),
         ),
         findsOneWidget,
@@ -54,7 +54,7 @@ void main() {
       expect(find.text(l10n.budgetsEnvelopeOverLabel), findsOneWidget);
       // unassignedMinor is -200000; the headline shows the absolute value.
       expect(
-        find.text(money.format(200000, currencyCode: 'COP')),
+        find.text(money.formatSymbol(200000, currencyCode: 'COP')),
         findsOneWidget,
       );
     });
@@ -74,7 +74,7 @@ void main() {
 
       expect(find.text(l10n.budgetsEnvelopeAllAssigned), findsOneWidget);
       expect(
-        find.text(money.format(0, currencyCode: 'COP')),
+        find.text(money.formatSymbol(0, currencyCode: 'COP')),
         findsOneWidget,
       );
     });

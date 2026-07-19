@@ -64,8 +64,8 @@ abstract final class BudgetFormat {
     const money = MoneyFormatter();
     return '${l10n.budgetPercent(progress.percent)} · '
         '${l10n.budgetProgressBreakdown(
-      money.format(progress.spentMinor, currencyCode: currency),
-      money.format(progress.amountMinor, currencyCode: currency),
+      money.formatSymbol(progress.spentMinor, currencyCode: currency),
+      money.formatSymbol(progress.amountMinor, currencyCode: currency),
     )}';
   }
 

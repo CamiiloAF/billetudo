@@ -82,7 +82,7 @@ class ArchivedBudgetRow extends StatelessWidget {
                       child: Text(
                         overspent
                             ? l10n.budgetResultOverspent(
-                                const MoneyFormatter().format(
+                                const MoneyFormatter().formatSymbol(
                                   -entry.progress.remainingMinor,
                                   currencyCode: entry.budget.currency,
                                 ),

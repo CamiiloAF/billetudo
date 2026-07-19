@@ -32,7 +32,7 @@ class EnvelopeHero extends StatelessWidget {
     final headlineLabel = isOverAssigned
         ? l10n.budgetsEnvelopeOverLabel
         : l10n.budgetsEnvelopeUnassignedLabel;
-    final headlineAmount = money.format(
+    final headlineAmount = money.formatSymbol(
       unassigned.abs(),
       currencyCode: summary.currency,
     );
@@ -65,11 +65,11 @@ class EnvelopeHero extends StatelessWidget {
             isAllAssigned
                 ? l10n.budgetsEnvelopeAllAssigned
                 : l10n.budgetsEnvelopeCaption(
-                    money.format(
+                    money.formatSymbol(
                       summary.incomeMinor,
                       currencyCode: summary.currency,
                     ),
-                    money.format(
+                    money.formatSymbol(
                       summary.assignedMinor,
                       currencyCode: summary.currency,
                     ),

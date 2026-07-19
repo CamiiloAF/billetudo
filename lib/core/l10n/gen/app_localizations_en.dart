@@ -1182,6 +1182,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsEmptyCta => 'Create budget';
 
   @override
+  String get budgetsEmptyDescription =>
+      'Create one to keep an effortless eye on your spending';
+
+  @override
   String get budgetsLoading => 'Loading your budgets';
 
   @override
@@ -1189,6 +1193,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetsMenuHistory => 'View history';
+
+  @override
+  String get budgetsMenuTooltip => 'More options';
 
   @override
   String get budgetRemainingLabel => 'You have left';

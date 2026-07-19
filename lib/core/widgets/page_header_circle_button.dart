@@ -10,6 +10,7 @@ class PageHeaderCircleButton extends StatelessWidget {
     required this.foreground,
     required this.tooltip,
     required this.onPressed,
+    this.iconSize = 18,
     super.key,
   });
 
@@ -17,6 +18,10 @@ class PageHeaderCircleButton extends StatelessWidget {
   final Color background;
   final Color foreground;
   final String tooltip;
+
+  /// `Dtm0X` draws its icons at 18; the budgets list header (`ymsmU`) uses the
+  /// same 44pt circle with a 20pt icon.
+  final double iconSize;
 
   /// Null disables the button.
   final VoidCallback? onPressed;
@@ -34,7 +39,7 @@ class PageHeaderCircleButton extends StatelessWidget {
           child: SizedBox(
             width: 44,
             height: 44,
-            child: Icon(icon, size: 18, color: foreground),
+            child: Icon(icon, size: iconSize, color: foreground),
           ),
         ),
       ),
