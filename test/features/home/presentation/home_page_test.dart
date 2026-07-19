@@ -7,6 +7,7 @@ import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/widgets/ai_banner.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_skeleton.dart';
+import 'package:billetudo/features/home/presentation/widgets/quick_access_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_skeleton_row.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -41,6 +42,10 @@ void main() {
     HomeState state, {
     Locale locale = const Locale('es'),
     Brightness brightness = Brightness.light,
+    VoidCallback? onOpenAccounts,
+    VoidCallback? onOpenScheduledPayments,
+    VoidCallback? onOpenDebts,
+    VoidCallback? onOpenReports,
   }) async {
     final cubit = MockHomeCubit();
     when(() => cubit.state).thenReturn(state);
@@ -48,9 +53,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        theme: brightness == Brightness.dark
-            ? AppTheme.dark()
-            : AppTheme.light(),
+        theme:
+            brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -61,6 +65,10 @@ void main() {
             onSeeAllTransactions: () {},
             onOpenTransaction: (_) {},
             onCreateBudget: () {},
+            onOpenAccounts: onOpenAccounts ?? () {},
+            onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
+            onOpenDebts: onOpenDebts ?? () {},
+            onOpenReports: onOpenReports ?? () {},
           ),
         ),
       ),
@@ -135,5 +143,54 @@ void main() {
 
     expect(find.text('Aún no registras movimientos'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'estado ready: renderiza QuickAccessRow como chrome fijo (HU-05b)',
+      (tester) async {
+    await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
+
+    expect(find.byType(QuickAccessRow), findsOneWidget);
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
+  });
+
+  testWidgets(
+      'estado loading: QuickAccessRow sigue presente pese a los skeletons '
+      '(HU-05b)', (tester) async {
+    await pumpHome(tester, HomeState.initial(month));
+
+    expect(find.byType(QuickAccessRow), findsOneWidget);
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
+  });
+
+  testWidgets('tocar cada chip de QuickAccessRow invoca su callback propio '
+      '(HU-05b)', (tester) async {
+    var accountsTapped = 0;
+    var scheduledTapped = 0;
+    var debtsTapped = 0;
+    var reportsTapped = 0;
+
+    await pumpHome(
+      tester,
+      readyWith([buildActivity(categoryName: 'Mercado')]),
+      onOpenAccounts: () => accountsTapped++,
+      onOpenScheduledPayments: () => scheduledTapped++,
+      onOpenDebts: () => debtsTapped++,
+      onOpenReports: () => reportsTapped++,
+    );
+
+    final chips =
+        tester.widgetList<QuickAccessChip>(find.byType(QuickAccessChip));
+    expect(chips.length, 4);
+
+    for (final chip in chips) {
+      await tester.tap(find.byWidget(chip));
+      await tester.pump();
+    }
+
+    expect(accountsTapped, 1);
+    expect(scheduledTapped, 1);
+    expect(debtsTapped, 1);
+    expect(reportsTapped, 1);
   });
 }

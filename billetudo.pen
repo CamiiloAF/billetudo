@@ -300,6 +300,61 @@
           "descendants": {
             "QnxB2": {
               "content": "Cuentas"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "MREY9",
+              "name": "Actions",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Vtx2z",
+                  "name": "Archived Accounts Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "K72DA",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "archive",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eEg9S",
+                  "name": "Action Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$primary",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "C0r95",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                }
+              ]
             }
           }
         },
@@ -1512,6 +1567,61 @@
           "descendants": {
             "QnxB2": {
               "content": "Cuentas"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "NUyxw",
+              "name": "Actions",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TjQOL",
+                  "name": "Archived Accounts Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "muLwF",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "archive",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IYsZV",
+                  "name": "Action Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$primary",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ZwM7Y",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                }
+              ]
             }
           }
         },
@@ -5103,8 +5213,12 @@
                       "icon": "info",
                       "fill": "$primary-on-soft"
                     },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "No se puede eliminar"
+                    },
                     "FxD3p": {
-                      "content": "Necesitas al menos una cuenta para registrar tus movimientos. Crea otra cuenta antes de eliminar esta."
+                      "content": "Necesitas al menos una cuenta para registrar tus movimientos. Crea otra y luego podrás eliminar esta."
                     }
                   }
                 },
@@ -5113,7 +5227,40 @@
                   "type": "ref",
                   "ref": "Ot4yI",
                   "name": "Buttons Row",
-                  "width": "fill_container"
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX": {
+                      "id": "W2Bt4r",
+                      "type": "ref",
+                      "ref": "j7Zvt",
+                      "name": "Left Button",
+                      "width": "fill_container",
+                      "descendants": {
+                        "PKzAO": {
+                          "enabled": false
+                        },
+                        "JHbmq": {
+                          "content": "Entendido"
+                        }
+                      }
+                    },
+                    "qfTBg": {
+                      "id": "kSadh",
+                      "type": "ref",
+                      "ref": "pNjOz",
+                      "name": "Right Button",
+                      "width": "fill_container",
+                      "descendants": {
+                        "d514i": {
+                          "enabled": true,
+                          "icon": "plus"
+                        },
+                        "kAVHJ": {
+                          "content": "Agregar cuenta"
+                        }
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -5266,6 +5413,9 @@
                 },
                 "WY5NF": {
                   "fill": "$muted"
+                },
+                "pMREY": {
+                  "content": "Excedido en $500.000"
                 }
               }
             },
@@ -9411,8 +9561,12 @@
                       "icon": "info",
                       "fill": "$primary-on-soft"
                     },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "No se puede eliminar"
+                    },
                     "FxD3p": {
-                      "content": "Necesitas al menos una cuenta para registrar tus movimientos. Crea otra cuenta antes de eliminar esta."
+                      "content": "Necesitas al menos una cuenta para registrar tus movimientos. Crea otra y luego podrás eliminar esta."
                     }
                   }
                 },
@@ -9421,7 +9575,40 @@
                   "type": "ref",
                   "ref": "Ot4yI",
                   "name": "Buttons Row",
-                  "width": "fill_container"
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX": {
+                      "id": "G1DDw",
+                      "type": "ref",
+                      "ref": "j7Zvt",
+                      "name": "Left Button",
+                      "width": "fill_container",
+                      "descendants": {
+                        "PKzAO": {
+                          "enabled": false
+                        },
+                        "JHbmq": {
+                          "content": "Entendido"
+                        }
+                      }
+                    },
+                    "qfTBg": {
+                      "id": "g1Hbv",
+                      "type": "ref",
+                      "ref": "pNjOz",
+                      "name": "Right Button",
+                      "width": "fill_container",
+                      "descendants": {
+                        "d514i": {
+                          "enabled": true,
+                          "icon": "plus"
+                        },
+                        "kAVHJ": {
+                          "content": "Agregar cuenta"
+                        }
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -9508,6 +9695,9 @@
                 },
                 "WY5NF": {
                   "fill": "$muted"
+                },
+                "pMREY": {
+                  "content": "Excedido en $500.000"
                 }
               }
             },
@@ -10317,8 +10507,12 @@
                   "name": "Sub Row: Combustible",
                   "width": "fill_container",
                   "descendants": {
+                    "NSzPZ": {
+                      "fill": "$amber-soft"
+                    },
                     "gX813": {
-                      "icon": "fuel"
+                      "icon": "fuel",
+                      "fill": "$amber"
                     },
                     "vqJLZ": {
                       "content": "Combustible"
@@ -10332,8 +10526,12 @@
                   "name": "Sub Row: Mantenimiento y reparaciones",
                   "width": "fill_container",
                   "descendants": {
+                    "NSzPZ": {
+                      "fill": "$amber-soft"
+                    },
                     "gX813": {
-                      "icon": "wrench"
+                      "icon": "wrench",
+                      "fill": "$amber"
                     },
                     "vqJLZ": {
                       "content": "Mantenimiento y reparaciones"
@@ -10347,8 +10545,12 @@
                   "name": "Sub Row: Seguro del vehículo",
                   "width": "fill_container",
                   "descendants": {
+                    "NSzPZ": {
+                      "fill": "$amber-soft"
+                    },
                     "gX813": {
-                      "icon": "shield"
+                      "icon": "shield",
+                      "fill": "$amber"
                     },
                     "vqJLZ": {
                       "content": "Seguro del vehículo"
@@ -10362,8 +10564,12 @@
                   "name": "Sub Row: Impuestos y matrícula (SOAT, revisión, etc.)",
                   "width": "fill_container",
                   "descendants": {
+                    "NSzPZ": {
+                      "fill": "$amber-soft"
+                    },
                     "gX813": {
-                      "icon": "file-text"
+                      "icon": "file-text",
+                      "fill": "$amber"
                     },
                     "vqJLZ": {
                       "content": "Impuestos y matrícula (SOAT, revisión, etc.)"
@@ -10377,8 +10583,12 @@
                   "name": "Sub Row: Parqueadero y peajes",
                   "width": "fill_container",
                   "descendants": {
+                    "NSzPZ": {
+                      "fill": "$amber-soft"
+                    },
                     "gX813": {
-                      "icon": "square-parking"
+                      "icon": "square-parking",
+                      "fill": "$amber"
                     },
                     "vqJLZ": {
                       "content": "Parqueadero y peajes"
@@ -17278,7 +17488,7 @@
                       "name": "Icon Wrap",
                       "width": 32,
                       "height": 32,
-                      "fill": "$muted",
+                      "fill": "$amber-soft",
                       "cornerRadius": 16,
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -17291,7 +17501,7 @@
                           "height": 16,
                           "icon": "fuel",
                           "library": "lucide",
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         }
                       ]
                     },
@@ -17339,7 +17549,7 @@
                       "name": "Icon Wrap",
                       "width": 32,
                       "height": 32,
-                      "fill": "$muted",
+                      "fill": "$amber-soft",
                       "cornerRadius": 16,
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -17352,7 +17562,7 @@
                           "height": 16,
                           "icon": "wrench",
                           "library": "lucide",
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         }
                       ]
                     },
@@ -17400,7 +17610,7 @@
                       "name": "Icon Wrap",
                       "width": 32,
                       "height": 32,
-                      "fill": "$muted",
+                      "fill": "$amber-soft",
                       "cornerRadius": 16,
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -17413,7 +17623,7 @@
                           "height": 16,
                           "icon": "shield",
                           "library": "lucide",
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         }
                       ]
                     },
@@ -17461,7 +17671,7 @@
                       "name": "Icon Wrap",
                       "width": 32,
                       "height": 32,
-                      "fill": "$muted",
+                      "fill": "$amber-soft",
                       "cornerRadius": 16,
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -17474,7 +17684,7 @@
                           "height": 16,
                           "icon": "file-text",
                           "library": "lucide",
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         }
                       ]
                     },
@@ -17522,7 +17732,7 @@
                       "name": "Icon Wrap",
                       "width": 32,
                       "height": 32,
-                      "fill": "$muted",
+                      "fill": "$amber-soft",
                       "cornerRadius": 16,
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -17535,7 +17745,7 @@
                           "height": 16,
                           "icon": "square-parking",
                           "library": "lucide",
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         }
                       ]
                     },
@@ -27016,8 +27226,12 @@
                       "fill": "$primary-soft",
                       "stroke": "$primary",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "fuel"
+                          "icon": "fuel",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Combustible"
@@ -27031,8 +27245,12 @@
                       "name": "Sub Row: Mantenimiento y reparaciones",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "wrench"
+                          "icon": "wrench",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Mantenimiento y reparaciones"
@@ -27049,8 +27267,12 @@
                       "name": "Sub Row: Seguro del vehículo",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "shield"
+                          "icon": "shield",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Seguro del vehículo"
@@ -27067,8 +27289,12 @@
                       "name": "Sub Row: Impuestos y matrícula (SOAT, revisión, etc.)",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "file-text"
+                          "icon": "file-text",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Impuestos y matrícula (SOAT, revisión, etc.)"
@@ -27085,8 +27311,12 @@
                       "name": "Sub Row: Parqueadero y peajes",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "square-parking"
+                          "icon": "square-parking",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Parqueadero y peajes"
@@ -31855,16 +32085,16 @@
                       "width": 72,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$primary-soft",
-                          "stroke": "$primary"
+                          "fill": "$mint-soft",
+                          "stroke": "$mint"
                         },
                         "vR29h": {
                           "icon": "utensils",
-                          "fill": "$primary-on-soft"
+                          "fill": "$mint"
                         },
                         "dxASd": {
                           "content": "Comida",
-                          "fill": "$primary-on-soft-strong"
+                          "fill": "$text-primary"
                         }
                       }
                     },
@@ -31881,7 +32111,7 @@
                         },
                         "vR29h": {
                           "icon": "car",
-                          "fill": "$text-secondary"
+                          "fill": "$sky"
                         },
                         "dxASd": {
                           "content": "Transporte",
@@ -31902,7 +32132,7 @@
                         },
                         "vR29h": {
                           "icon": "film",
-                          "fill": "$text-secondary"
+                          "fill": "$peach"
                         },
                         "dxASd": {
                           "content": "Ocio",
@@ -35829,8 +36059,12 @@
                       "fill": "$primary-soft",
                       "stroke": "$primary",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "fuel"
+                          "icon": "fuel",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Combustible"
@@ -35844,8 +36078,12 @@
                       "name": "Sub Row: Mantenimiento y reparaciones",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "wrench"
+                          "icon": "wrench",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Mantenimiento y reparaciones"
@@ -35862,8 +36100,12 @@
                       "name": "Sub Row: Seguro del vehículo",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "shield"
+                          "icon": "shield",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Seguro del vehículo"
@@ -35880,8 +36122,12 @@
                       "name": "Sub Row: Impuestos y matrícula (SOAT, revisión, etc.)",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "file-text"
+                          "icon": "file-text",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Impuestos y matrícula (SOAT, revisión, etc.)"
@@ -35898,8 +36144,12 @@
                       "name": "Sub Row: Parqueadero y peajes",
                       "width": "fill_container",
                       "descendants": {
+                        "P5xwo": {
+                          "fill": "$amber-soft"
+                        },
                         "lyCQY": {
-                          "icon": "square-parking"
+                          "icon": "square-parking",
+                          "fill": "$amber"
                         },
                         "soR17": {
                           "content": "Parqueadero y peajes"
@@ -62709,13 +62959,13 @@
                           "width": 32,
                           "height": 32,
                           "cornerRadius": 16,
-                          "fill": "$muted"
+                          "fill": "$amber-soft"
                         },
                         "MFZQ4": {
                           "icon": "fuel",
                           "width": 16,
                           "height": 16,
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         },
                         "GnHAK": {
                           "content": "Combustible",
@@ -62758,13 +63008,13 @@
                           "width": 32,
                           "height": 32,
                           "cornerRadius": 16,
-                          "fill": "$muted"
+                          "fill": "$amber-soft"
                         },
                         "MFZQ4": {
                           "icon": "wrench",
                           "width": 16,
                           "height": 16,
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         },
                         "GnHAK": {
                           "content": "Mantenimiento y reparaciones",
@@ -62807,13 +63057,13 @@
                           "width": 32,
                           "height": 32,
                           "cornerRadius": 16,
-                          "fill": "$muted"
+                          "fill": "$amber-soft"
                         },
                         "MFZQ4": {
                           "icon": "shield",
                           "width": 16,
                           "height": 16,
-                          "fill": "$text-secondary"
+                          "fill": "$amber"
                         },
                         "GnHAK": {
                           "content": "Seguro del vehículo",
@@ -77585,16 +77835,16 @@
                       "width": 72,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$primary-soft",
-                          "stroke": "$primary"
+                          "fill": "$peach-soft",
+                          "stroke": "$peach"
                         },
                         "vR29h": {
-                          "fill": "$primary-on-soft",
+                          "fill": "$peach",
                           "icon": "film"
                         },
                         "dxASd": {
                           "content": "Ocio",
-                          "fill": "$primary-on-soft-strong"
+                          "fill": "$text-primary"
                         }
                       }
                     },
@@ -77610,7 +77860,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$coral",
                           "icon": "house"
                         },
                         "dxASd": {
@@ -77631,7 +77881,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$amber",
                           "icon": "zap"
                         },
                         "dxASd": {
@@ -87724,16 +87974,16 @@
                       "width": 72,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$primary-soft",
-                          "stroke": "$primary"
+                          "fill": "$peach-soft",
+                          "stroke": "$peach"
                         },
                         "vR29h": {
-                          "fill": "$primary-on-soft",
+                          "fill": "$peach",
                           "icon": "film"
                         },
                         "dxASd": {
                           "content": "Ocio",
-                          "fill": "$primary-on-soft-strong"
+                          "fill": "$text-primary"
                         }
                       }
                     },
@@ -87749,7 +87999,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$coral",
                           "icon": "house"
                         },
                         "dxASd": {
@@ -87770,7 +88020,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$amber",
                           "icon": "zap"
                         },
                         "dxASd": {
@@ -88552,16 +88802,16 @@
                       "width": 72,
                       "descendants": {
                         "Ml8tH": {
-                          "fill": "$primary-soft",
-                          "stroke": "$primary"
+                          "fill": "$peach-soft",
+                          "stroke": "$peach"
                         },
                         "vR29h": {
-                          "fill": "$primary-on-soft",
+                          "fill": "$peach",
                           "icon": "film"
                         },
                         "dxASd": {
                           "content": "Ocio",
-                          "fill": "$primary-on-soft-strong"
+                          "fill": "$text-primary"
                         }
                       }
                     },
@@ -88577,7 +88827,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$coral",
                           "icon": "house"
                         },
                         "dxASd": {
@@ -88598,7 +88848,7 @@
                           "stroke": "#00000000"
                         },
                         "vR29h": {
-                          "fill": "$text-secondary",
+                          "fill": "$amber",
                           "icon": "zap"
                         },
                         "dxASd": {
@@ -90461,7 +90711,7 @@
           "name": "Icon Wrap",
           "width": 32,
           "height": 32,
-          "fill": "$muted",
+          "fill": "$mint-soft",
           "cornerRadius": 16,
           "justifyContent": "center",
           "alignItems": "center",
@@ -90474,7 +90724,7 @@
               "height": 16,
               "icon": "fuel",
               "library": "lucide",
-              "fill": "$text-secondary"
+              "fill": "$mint"
             }
           ]
         },
@@ -90529,7 +90779,7 @@
           "name": "Icon Wrap",
           "width": 32,
           "height": 32,
-          "fill": "$muted",
+          "fill": "$mint-soft",
           "cornerRadius": 16,
           "justifyContent": "center",
           "alignItems": "center",
@@ -90542,7 +90792,7 @@
               "height": 16,
               "icon": "fuel",
               "library": "lucide",
-              "fill": "$text-secondary"
+              "fill": "$mint"
             }
           ]
         },

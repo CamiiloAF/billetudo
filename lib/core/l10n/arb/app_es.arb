@@ -28,6 +28,8 @@
   "@commonApply": {},
   "commonDone": "Listo",
   "@commonDone": {},
+  "commonCreate": "Crear",
+  "@commonCreate": {},
   "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
   "@errorUnexpected": {
     "description": "Mensaje genérico para UnexpectedFailure."
@@ -671,6 +673,8 @@
   },
   "tagFilterSheetTitle": "Filtrar por etiqueta",
   "@tagFilterSheetTitle": {},
+  "tagFilterSearchHint": "Buscar etiqueta",
+  "@tagFilterSearchHint": {},
   "newTagSheetTitle": "Nueva etiqueta",
   "@newTagSheetTitle": {},
   "newTagNameHint": "Nombre de la etiqueta",
@@ -718,6 +722,14 @@
   "@homeBudgetInvitation": {},
   "homeNoSpendingYet": "Aún no hay gastos este mes",
   "@homeNoSpendingYet": {},
+  "homeQuickAccessTitle": "Acceso rápido",
+  "@homeQuickAccessTitle": {
+    "description": "Caption de la fila de accesos directos del Home (HU-05b)."
+  },
+  "homeQuickAccessScheduledPayments": "Pagos programados",
+  "@homeQuickAccessScheduledPayments": {
+    "description": "Label del chip de acceso rápido a Pagos programados; distinto de moreScheduledPayments (\"Recurrentes\") que se usa en el hub Más."
+  },
   "homeRecentTitle": "Movimientos recientes",
   "@homeRecentTitle": {},
   "homeSeeAll": "Ver todos",

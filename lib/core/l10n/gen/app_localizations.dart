@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'Listo'**
   String get commonDone;
 
+  /// No description provided for @commonCreate.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear'**
+  String get commonCreate;
+
   /// Mensaje genérico para UnexpectedFailure.
   ///
   /// In es, this message translates to:
@@ -1664,6 +1670,12 @@ abstract class AppLocalizations {
   /// **'Filtrar por etiqueta'**
   String get tagFilterSheetTitle;
 
+  /// No description provided for @tagFilterSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar etiqueta'**
+  String get tagFilterSearchHint;
+
   /// No description provided for @newTagSheetTitle.
   ///
   /// In es, this message translates to:
@@ -1753,6 +1765,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aún no hay gastos este mes'**
   String get homeNoSpendingYet;
+
+  /// Caption de la fila de accesos directos del Home (HU-05b).
+  ///
+  /// In es, this message translates to:
+  /// **'Acceso rápido'**
+  String get homeQuickAccessTitle;
+
+  /// Label del chip de acceso rápido a Pagos programados; distinto de moreScheduledPayments ("Recurrentes") que se usa en el hub Más.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos programados'**
+  String get homeQuickAccessScheduledPayments;
 
   /// No description provided for @homeRecentTitle.
   ///

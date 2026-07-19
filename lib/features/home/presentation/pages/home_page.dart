@@ -13,19 +13,25 @@ import '../widgets/ai_banner.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/home_hero_skeleton.dart';
+import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
 import '../widgets/sheets/month_picker_sheet.dart';
 
-/// The Inicio tab (feature 04): header, hero, recent activity, AI banner and a
-/// scroll-aware FAB. It only reads and aggregates data (HU-01…HU-10); the one
-/// write it triggers is opening the new-transaction form via the FAB (HU-02).
+/// The Inicio tab (feature 04): header, hero, quick access, recent activity,
+/// AI banner and a scroll-aware FAB. It only reads and aggregates data
+/// (HU-01…HU-10); the one write it triggers is opening the new-transaction
+/// form via the FAB (HU-02).
 class HomePage extends StatefulWidget {
   const HomePage({
     required this.onAddTransaction,
     required this.onSeeAllTransactions,
     required this.onOpenTransaction,
     required this.onCreateBudget,
+    required this.onOpenAccounts,
+    required this.onOpenScheduledPayments,
+    required this.onOpenDebts,
+    required this.onOpenReports,
     super.key,
   });
 
@@ -33,6 +39,12 @@ class HomePage extends StatefulWidget {
   final VoidCallback onSeeAllTransactions;
   final ValueChanged<String> onOpenTransaction;
   final VoidCallback onCreateBudget;
+
+  /// HU-05b: quick-access chip destinations.
+  final VoidCallback onOpenAccounts;
+  final VoidCallback onOpenScheduledPayments;
+  final VoidCallback onOpenDebts;
+  final VoidCallback onOpenReports;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -145,6 +157,17 @@ class _HomePageState extends State<HomePage> {
                             onMonthTap: () => _openMonthPicker(context, state),
                             onCreateBudget: widget.onCreateBudget,
                           ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: QuickAccessRow(
+                      onOpenAccounts: widget.onOpenAccounts,
+                      onOpenScheduledPayments: widget.onOpenScheduledPayments,
+                      onOpenDebts: widget.onOpenDebts,
+                      onOpenReports: widget.onOpenReports,
+                    ),
                   ),
                 ),
                 SliverToBoxAdapter(

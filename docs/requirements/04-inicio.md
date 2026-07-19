@@ -69,6 +69,17 @@ Como usuario quiero ver mi actividad reciente apenas abro la app, para confirmar
 - Header de sección "Movimientos recientes" + enlace "Ver todos →" que lleva a la pestaña **Movimientos** (lista completa).
 - El detalle por categoría **no** está aquí; vive en Gráficas e informes (`10`).
 
+### HU-05b — Acceso rápido a otras secciones
+Como usuario quiero llegar directo a las secciones que hoy solo están escondidas en "Más", sin pasar por el hub.
+
+**Criterios de aceptación:**
+- Fila de chips con scroll horizontal, justo debajo de la Hero Card (HU-03) y antes de Movimientos recientes (HU-05).
+- 4 accesos, en este orden: **Cuentas**, **Pagos programados**, **Deudas**, **Gráficas e informes**. Excluye deliberadamente **Categorías** (se percibe como función de ajustes) e **Import/Export**.
+- No incluye Presupuestos ni Metas: ya viven en el Tab Bar (HU-01) y duplicarlos ahí sería redundante.
+- Cada chip navega de forma **directa**: hace push a una ruta nueva **sin el bottom nav bar visible**, a diferencia de los destinos del Tab Bar. Ningún chip tiene estado seleccionado/activo (no es un tab).
+- Es **chrome fijo**: aparece igual en los 4 estados de la pantalla (con presupuesto, sin presupuesto, vacío, carga) — no depende de que existan transacciones.
+- Diseño en `billetudo.pen`: componente `Quick Access Chip A`, fila `Quick Access A`. Ver `design-system/billetudo/pages/inicio.md`.
+
 ### HU-06 — Asistente de IA ("Próximamente")
 Como usuario quiero saber que podré preguntarle a Billetudo sobre mi plata en lenguaje natural.
 
@@ -158,5 +169,6 @@ Diseño **completo y aprobado** en `billetudo.pen` (claro + oscuro), spec en `de
 
 Estos dos bloques quedan **estructurados pero sin cablear** en el Home porque dependen de features que aún no existen. El código los deja listos para conectar sin rediseño:
 
-1. **Barra de progreso de presupuesto en el hero (HU-03, estado "con presupuesto", frame `aOhoY`).** Hoy el hero solo muestra el estado **sin presupuesto** (invitación a presupuestar). La barra "X% de $Y · faltan Z días" requiere la feature **Presupuestos (`06-presupuestos.md`)**: leer el presupuesto global mensual vigente (`categoryId = null`) del mes visto y calcular el progreso contra el gasto del mes. Cuando exista Budgets: añadir un segundo estado al `HomeHeroCard` (la estructura ya lo contempla) y alimentarlo desde un caso de uso de Presupuestos. **No inventar un tope mientras tanto.**
-2. **Indicador de sync con estados reales (HU-10).** El header ya renderiza el indicador pasivo, pero hoy está **fijo en `HomeSyncStatus.synced`**. Los 3 estados reales (Sincronizado / Sincronizando / Sin conexión) requieren **PowerSync cableado** (ver `05-auth-sync.md`): exponer el estado de sync como stream y mapearlo a `HomeSyncStatus` en el `HomeCubit`/header. Es local-first: offline nunca alarma ni vacía el Home.
+1. **Orden configurable del acceso rápido (HU-05b).** Hoy el orden de los 4 chips (Cuentas, Pagos programados, Deudas, Gráficas e informes) es fijo en código. A futuro, el usuario podrá reordenarlos desde Ajustes. Implica: una preferencia persistida (local, tabla/columna a definir — no existe hoy en el esquema Drift) que el `HomeCubit` lea para ordenar la fila, y una pantalla/lista reordenable en Ajustes. No bloquea la primera implementación del acceso rápido (que puede salir con el orden fijo documentado en HU-05b); es una mejora incremental posterior.
+2. **Barra de progreso de presupuesto en el hero (HU-03, estado "con presupuesto", frame `aOhoY`).** Hoy el hero solo muestra el estado **sin presupuesto** (invitación a presupuestar). La barra "X% de $Y · faltan Z días" requiere la feature **Presupuestos (`06-presupuestos.md`)**: leer el presupuesto global mensual vigente (`categoryId = null`) del mes visto y calcular el progreso contra el gasto del mes. Cuando exista Budgets: añadir un segundo estado al `HomeHeroCard` (la estructura ya lo contempla) y alimentarlo desde un caso de uso de Presupuestos. **No inventar un tope mientras tanto.**
+3. **Indicador de sync con estados reales (HU-10).** El header ya renderiza el indicador pasivo, pero hoy está **fijo en `HomeSyncStatus.synced`**. Los 3 estados reales (Sincronizado / Sincronizando / Sin conexión) requieren **PowerSync cableado** (ver `05-auth-sync.md`): exponer el estado de sync como stream y mapearlo a `HomeSyncStatus` en el `HomeCubit`/header. Es local-first: offline nunca alarma ni vacía el Home.

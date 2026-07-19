@@ -196,6 +196,18 @@ GoRouter createAppRouter() {
           _masBranch(),
         ],
       ),
+      // Reachable from both the "Más" hub and Inicio's quick-access row, but
+      // deliberately outside every StatefulShellBranch: a top-level branch
+      // route can only use its own branch's navigator (go_router asserts
+      // `parentNavigatorKey == null || parentNavigatorKey == branch.navigatorKey`
+      // for the *first-level* routes of a branch — unlike routes nested a
+      // level deeper, e.g. Ajustes under `more`, see `_settingsRoute()`).
+      // Declaring these as siblings of the shell route itself is the
+      // documented go_router pattern for screens that must render without
+      // the tab bar regardless of which tab launched them.
+      _accountsRoute(),
+      _categoriesRoute(),
+      _scheduledPaymentsRoute(),
     ],
   );
 }
@@ -212,6 +224,19 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onOpenTransaction: (id) =>
                   context.push(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
+              onOpenAccounts: () => context.push(AppRoutes.accounts),
+              onOpenScheduledPayments: () =>
+                  context.push(AppRoutes.scheduledPayments),
+              onOpenDebts: () => context.push(
+                AppRoutes.comingSoonTitled(
+                  AppLocalizations.of(context).moreDebts,
+                ),
+              ),
+              onOpenReports: () => context.push(
+                AppRoutes.comingSoonTitled(
+                  AppLocalizations.of(context).moreReports,
+                ),
+              ),
             ),
           ),
         ),
@@ -426,9 +451,6 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
             _settingsRoute(),
           ],
         ),
-        _accountsRoute(),
-        _categoriesRoute(),
-        _scheduledPaymentsRoute(),
       ],
     );
 
@@ -494,6 +516,7 @@ GoRoute _settingsRoute() => GoRoute(
 
 GoRoute _accountsRoute() => GoRoute(
       path: AppRoutes.accounts,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => BlocProvider(
         create: (context) =>
             _started(getIt<AccountsListCubit>(), (c) => c.start()),
@@ -554,6 +577,7 @@ GoRoute _accountsRoute() => GoRoute(
 
 GoRoute _categoriesRoute() => GoRoute(
       path: AppRoutes.categories,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => BlocProvider(
         create: (context) =>
             _started(getIt<CategoriesListCubit>(), (c) => c.start()),
@@ -621,6 +645,7 @@ GoRoute _categoriesRoute() => GoRoute(
 // above the tab shell).
 GoRoute _scheduledPaymentsRoute() => GoRoute(
       path: AppRoutes.scheduledPayments,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => MultiBlocProvider(
         providers: [
           BlocProvider(

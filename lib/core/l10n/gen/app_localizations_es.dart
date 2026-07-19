@@ -43,6 +43,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonDone => 'Listo';
 
   @override
+  String get commonCreate => 'Crear';
+
+  @override
   String get errorUnexpected => 'Algo salió mal. Intenta de nuevo.';
 
   @override
@@ -886,6 +889,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tagFilterSheetTitle => 'Filtrar por etiqueta';
 
   @override
+  String get tagFilterSearchHint => 'Buscar etiqueta';
+
+  @override
   String get newTagSheetTitle => 'Nueva etiqueta';
 
   @override
@@ -934,6 +940,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeNoSpendingYet => 'Aún no hay gastos este mes';
+
+  @override
+  String get homeQuickAccessTitle => 'Acceso rápido';
+
+  @override
+  String get homeQuickAccessScheduledPayments => 'Pagos programados';
 
   @override
   String get homeRecentTitle => 'Movimientos recientes';
