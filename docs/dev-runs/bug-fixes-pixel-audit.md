@@ -1,6 +1,6 @@
 # Dev run: bug-fixing + auditoría pixel-a-pixel
 
-Fecha: 2026-07-19. Fuente: `docs/bug-fixes.md` (12 puntos reportados por el usuario) + auditoría de diseño completa contra `billetudo.pen`, excluyendo `lib/features/scheduled_payments/` (corrida en paralelo de otro agente).
+Fecha: 2026-07-19. Fuente: un reporte de 12 puntos del usuario (vivía en `docs/bug-fixes.md`, eliminado al cerrarse; recuperable del historial de git anterior a esa eliminación) + auditoría de diseño completa contra `billetudo.pen`, excluyendo `lib/features/scheduled_payments/` (corrida en paralelo de otro agente).
 
 ## Resumen
 

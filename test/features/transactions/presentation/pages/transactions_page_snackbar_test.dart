@@ -3,7 +3,7 @@ import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Root-cause reproduction for bug-fixes.md #7: "Movimiento eliminado.
+/// Root-cause reproduction for a reported bug: "Movimiento eliminado.
 /// Deshacer" (and every other undo/retry `SnackBar` in the app) never
 /// auto-dismisses, only a manual swipe closes it.
 ///
