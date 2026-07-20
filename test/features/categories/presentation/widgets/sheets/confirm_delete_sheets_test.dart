@@ -1,5 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/bottom_sheet_base.dart';
 import 'package:billetudo/core/widgets/budget_usage_notice.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/usecases/delete_category.dart';
@@ -15,25 +17,33 @@ import '../pump_widget.dart';
 void main() {
   group('caso 1: sin dependientes', () {
     testWidgets(
-        'icono destructivo alert-triangle (tono expense), sin título, y las '
+        'icono trash-2 en tono violeta (nunca rojo), sin título, y las '
         '2 acciones', (
       tester,
     ) async {
       await tester.pumpAppWidget(const ConfirmDeleteSimpleSheet());
 
-      // Plain `alert-triangle` pattern (`o9116/qsjbj`): icon + message only,
-      // no title.
+      // Reversible via papelera: icon + message only, no separate title, and
+      // the icon/button stay violeta ($primary), never a destructive red.
       expect(
-        find.textContaining('Podrás deshacerlo justo después de eliminar'),
+        find.textContaining('Podrás recuperarla luego desde la papelera'),
         findsOneWidget,
       );
       expect(find.text('Cancelar'), findsOneWidget);
       expect(find.text('Eliminar'), findsOneWidget);
-      // Header uses alert-triangle in $expense; the confirm button's icon is
-      // trash2 — never the neutral `trash`.
-      expect(find.byIcon(LucideIcons.triangleAlert), findsOneWidget);
-      expect(find.byIcon(LucideIcons.trash2), findsOneWidget);
+      // Both the header icon and the confirm button's icon are trash2 — never
+      // a destructive alert-triangle, and never the neutral `trash`.
+      expect(find.byIcon(LucideIcons.trash2), findsNWidgets(2));
+      expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
       expect(find.byIcon(LucideIcons.trash), findsNothing);
+
+      final context = tester.element(find.byType(ConfirmDeleteSimpleSheet));
+      final colors = context.colors;
+      final sheetMessage = tester.widget<SheetMessage>(
+        find.byType(SheetMessage),
+      );
+      expect(sheetMessage.iconColor, colors.primaryOnSoft);
+      expect(sheetMessage.iconBackground, colors.primarySoft);
     });
 
     testWidgets('tocar Eliminar resuelve `true`', (tester) async {
@@ -61,6 +71,7 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -68,7 +79,7 @@ void main() {
       );
 
       expect(
-        find.text('Tiene 3 movimientos asociados.'),
+        find.textContaining('"Restaurantes" tiene 3 movimientos asociados'),
         findsOneWidget,
       );
       expect(find.text('Reasignar a otra categoría'), findsOneWidget);
@@ -80,6 +91,7 @@ void main() {
         'deshabilitado hasta elegir destino', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 1,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -111,6 +123,7 @@ void main() {
           onPressed: (context) async {
             result = await ConfirmDeleteWithTransactionsSheet.show(
               context,
+              categoryName: 'Restaurantes',
               transactionCount: 1,
               kind: CategoryKind.expense,
               excludingId: 'cat-1',
@@ -151,12 +164,19 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),
       );
 
-      expect(find.text('Esta categoría tiene subcategorías'), findsOneWidget);
+      // `w9ixr`'s title is `enabled:false`: a single message with the real
+      // category name and subcategory count interpolated, no separate title.
+      expect(
+        find.textContaining('"Transporte" tiene 2 subcategorías activas'),
+        findsOneWidget,
+      );
       expect(find.byIcon(LucideIcons.info), findsOneWidget);
       expect(find.text('Reasignar subcategorías'), findsOneWidget);
       expect(find.text('Eliminar todo en cascada'), findsOneWidget);
@@ -169,6 +189,8 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),
@@ -218,6 +240,7 @@ void main() {
         'aviso con el conteo correcto', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -236,6 +259,7 @@ void main() {
         'ningún aviso', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -258,6 +282,8 @@ void main() {
         'aviso con el conteo correcto', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
           budgetCount: 4,
@@ -275,6 +301,8 @@ void main() {
         'ningún aviso', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),

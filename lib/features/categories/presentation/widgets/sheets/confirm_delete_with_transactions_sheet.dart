@@ -21,14 +21,22 @@ import 'delete_resolution_radio_card.dart';
 /// same [kind] (opens [ParentCategoryPickerSheet], unfiltered per the
 /// pending note in `categorias.md`) is the default option; the confirm
 /// button reads "Continuar" since this step doesn't delete by itself.
+///
+/// `snXFk`'s `Sheet Icon Header` title is `enabled:false` — there's only one
+/// message, with the category's real name and the transaction count
+/// interpolated into it, not a generic title plus a separate subtitle.
 class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
   const ConfirmDeleteWithTransactionsSheet({
+    required this.categoryName,
     required this.transactionCount,
     required this.kind,
     required this.excludingId,
     this.budgetCount = 0,
     super.key,
   });
+
+  /// The real category name, interpolated into the sheet's single message.
+  final String categoryName;
 
   final int transactionCount;
   final CategoryKind kind;
@@ -42,6 +50,7 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
   /// Resolves to the chosen [TransactionResolution], or `null` if dismissed.
   static Future<TransactionResolution?> show(
     BuildContext context, {
+    required String categoryName,
     required int transactionCount,
     required CategoryKind kind,
     required String excludingId,
@@ -51,6 +60,7 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
         context,
         useRootNavigator: true,
         builder: (context) => ConfirmDeleteWithTransactionsSheet(
+          categoryName: categoryName,
           transactionCount: transactionCount,
           kind: kind,
           excludingId: excludingId,
@@ -82,8 +92,8 @@ class _ConfirmDeleteWithTransactionsSheetState
           icon: LucideIcons.trash2,
           iconColor: colors.primaryOnSoft,
           iconBackground: colors.primarySoft,
-          title: l10n.categoryDeleteTransactionsTitle,
-          message: l10n.categoryDeleteTransactionsCount(
+          message: l10n.categoryDeleteTransactionsMessage(
+            widget.categoryName,
             widget.transactionCount,
           ),
         ),

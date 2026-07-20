@@ -131,10 +131,11 @@ void main() {
 
       await tester.tap(find.text('Eliminar categoría'));
       await tester.pumpAndSettle();
-      // The plain `alert-triangle` delete pattern (`o9116/qsjbj`) opens with
-      // icon + message only, no title.
+      // The reversible, violeta `trash-2` delete pattern (`jngMo`) opens with
+      // icon + message only, no title (never a destructive red treatment:
+      // this delete is undoable from the trash).
       expect(
-        find.textContaining('Podrás deshacerlo justo después de eliminar'),
+        find.textContaining('Podrás recuperarla luego desde la papelera'),
         findsOneWidget,
       );
 

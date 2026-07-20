@@ -424,6 +424,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryFormAppearanceLabel => 'Ícono y color';
 
   @override
+  String get categoryFormAppearanceEmptyLabel => 'Elegir ícono y color';
+
+  @override
   String get categoryFormAppearanceEmptySublabel =>
       'Toca para elegir (opcional)';
 
@@ -476,6 +479,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryParentPickerTitle => 'Categoría padre';
 
   @override
+  String get categoryParentPickerHint =>
+      'Solo se muestran categorías principales de Gasto. Las subcategorías no pueden anidarse dentro de otras subcategorías.';
+
+  @override
   String get categoryParentPickerEmpty =>
       'No hay categorías disponibles todavía.';
 
@@ -484,18 +491,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryDeleteSimpleMessage =>
-      'Podrás deshacerlo justo después de eliminar.';
+      'Esta categoría se eliminará de tu lista. Podrás recuperarla luego desde la papelera, en Ajustes.';
 
   @override
-  String get categoryDeleteTransactionsTitle => '¿Eliminar esta categoría?';
-
-  @override
-  String categoryDeleteTransactionsCount(int count) {
+  String categoryDeleteTransactionsMessage(String categoryName, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiene $count movimientos asociados.',
-      one: 'Tiene 1 movimiento asociado.',
+      other:
+          '\"$categoryName\" tiene $count movimientos asociados. Elige qué hacer con ellos antes de eliminar la categoría.',
+      one:
+          '\"$categoryName\" tiene 1 movimiento asociado. Elige qué hacer con él antes de eliminar la categoría.',
     );
     return '$_temp0';
   }
@@ -511,12 +517,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Reasignar a otra categoría';
 
   @override
-  String get categoryDeleteSubcategoriesTitle =>
-      'Esta categoría tiene subcategorías';
-
-  @override
-  String get categoryDeleteSubcategoriesMessage =>
-      'Antes de eliminarla, decide qué pasa con sus subcategorías.';
+  String categoryDeleteSubcategoriesMessage(String categoryName, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '\"$categoryName\" tiene $count subcategorías activas. Debes resolverlas antes de eliminar esta categoría raíz.',
+      one:
+          '\"$categoryName\" tiene 1 subcategoría activa. Debes resolverla antes de eliminar esta categoría raíz.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get categoryReassignSubcategoriesOption => 'Reasignar subcategorías';

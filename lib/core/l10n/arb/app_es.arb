@@ -355,6 +355,8 @@
   "@categoryFormEditSubcategoryTitle": {},
   "categoryFormAppearanceLabel": "Ícono y color",
   "@categoryFormAppearanceLabel": {},
+  "categoryFormAppearanceEmptyLabel": "Elegir ícono y color",
+  "@categoryFormAppearanceEmptyLabel": {},
   "categoryFormAppearanceEmptySublabel": "Toca para elegir (opcional)",
   "@categoryFormAppearanceEmptySublabel": {},
   "categoryFormAppearanceFilledSublabel": "Toca para cambiar",
@@ -387,18 +389,21 @@
   "@categoryAppearanceColorSectionLabel": {},
   "categoryParentPickerTitle": "Categoría padre",
   "@categoryParentPickerTitle": {},
+  "categoryParentPickerHint": "Solo se muestran categorías principales de Gasto. Las subcategorías no pueden anidarse dentro de otras subcategorías.",
+  "@categoryParentPickerHint": {},
   "categoryParentPickerEmpty": "No hay categorías disponibles todavía.",
   "@categoryParentPickerEmpty": {},
   "categoryDeleteSimpleTitle": "¿Eliminar esta categoría?",
   "@categoryDeleteSimpleTitle": {},
-  "categoryDeleteSimpleMessage": "Podrás deshacerlo justo después de eliminar.",
+  "categoryDeleteSimpleMessage": "Esta categoría se eliminará de tu lista. Podrás recuperarla luego desde la papelera, en Ajustes.",
   "@categoryDeleteSimpleMessage": {},
-  "categoryDeleteTransactionsTitle": "¿Eliminar esta categoría?",
-  "@categoryDeleteTransactionsTitle": {},
-  "categoryDeleteTransactionsCount": "{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}",
-  "@categoryDeleteTransactionsCount": {
-    "description": "HU-04 caso 2: impacto en tono neutral, informa sin culpar.",
+  "categoryDeleteTransactionsMessage": "{count, plural, =1{\"{categoryName}\" tiene 1 movimiento asociado. Elige qué hacer con él antes de eliminar la categoría.} other{\"{categoryName}\" tiene {count} movimientos asociados. Elige qué hacer con ellos antes de eliminar la categoría.}}",
+  "@categoryDeleteTransactionsMessage": {
+    "description": "HU-04 caso 2 (`snXFk`): mensaje único con el nombre real de la categoría y el conteo de movimientos, en tono neutral.",
     "placeholders": {
+      "categoryName": {
+        "type": "String"
+      },
       "count": {
         "type": "int"
       }
@@ -410,10 +415,18 @@
   "@categoryDeleteClearOption": {},
   "categoryReassignTransactionsPickerTitle": "Reasignar a otra categoría",
   "@categoryReassignTransactionsPickerTitle": {},
-  "categoryDeleteSubcategoriesTitle": "Esta categoría tiene subcategorías",
-  "@categoryDeleteSubcategoriesTitle": {},
-  "categoryDeleteSubcategoriesMessage": "Antes de eliminarla, decide qué pasa con sus subcategorías.",
-  "@categoryDeleteSubcategoriesMessage": {},
+  "categoryDeleteSubcategoriesMessage": "{count, plural, =1{\"{categoryName}\" tiene 1 subcategoría activa. Debes resolverla antes de eliminar esta categoría raíz.} other{\"{categoryName}\" tiene {count} subcategorías activas. Debes resolverlas antes de eliminar esta categoría raíz.}}",
+  "@categoryDeleteSubcategoriesMessage": {
+    "description": "HU-04 caso 3 (`w9ixr`): mensaje único con el nombre real de la categoría raíz y el conteo de subcategorías activas.",
+    "placeholders": {
+      "categoryName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "categoryReassignSubcategoriesOption": "Reasignar subcategorías",
   "@categoryReassignSubcategoriesOption": {},
   "categoryReassignSubcategoriesPickerTitle": "Mover subcategorías a",

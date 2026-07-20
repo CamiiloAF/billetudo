@@ -125,10 +125,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
         if (row == null) {
           return Left(NotFoundFailure('category "$id" does not exist'));
         }
+        final subcategoryCount = await _local.countActiveSubcategories(id);
         return Right(
           CategoryDeletionImpact(
-            hasActiveSubcategories:
-                await _local.countActiveSubcategories(id) > 0,
+            hasActiveSubcategories: subcategoryCount > 0,
+            subcategoryCount: subcategoryCount,
             transactionCount: await _local.countActiveTransactions(id),
             budgetCount: await _local.countReferencingBudgets(id),
           ),

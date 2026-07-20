@@ -25,7 +25,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Selector de icono y color | `lAxmS` | `PtZ2o` |
 | Selector de icono y color — bloqueado/heredado (subcategoria) | `nqoD6` | `g3z4E` |
 
-**Navegacion:** todas usan `Page Header` (boton atras) SIN `Tab Bar` — Categorias es una subseccion, se llega desde el listado o desde el menu "Mas" (mismo criterio que Cuentas). El listado principal (`bA51N`) es la unica excepcion parcial: no lleva `Page Header` clasico, su encabezado es el titulo "Categorias" + boton `+` directo (igual patron que Presupuestos/Metas).
+**Navegacion:** todas usan `Page Header` (`Dtm0X`: boton atras circular `arrow-left` + titulo centrado + boton de accion circular violeta) SIN `Tab Bar` — Categorias es una subseccion, se llega desde el listado o desde el menu "Mas" (mismo criterio que Cuentas). El listado principal (`bA51N`) tambien instancia `Page Header` completo (titulo "Categorias" + boton `+` en el slot de accion) — **correccion 2026-07-20**: esta linea decia antes que el listado no llevaba `Page Header` clasico; se verifico contra el `.pen` real y sí lo lleva, la excepcion no existe. Los 4 formularios (`PZvWF`/`STIfS`/`iUmrh`/`CuTjr`) usan `arrow-left`/`check` en los mismos slots.
 
 **Organizacion del canvas:** componentes reutilizables en `y:140`. Zona CLARA de Categorias en fila unica (`y:5704`, 13 pantallas, pitch 450px). Zona OSCURA muy por debajo (`y:18386/18456/18576`), justo despues de Cuentas-Oscuro. Regla del proyecto: **el oscuro se genera solo cuando el claro esta 100% aprobado** — nunca en paralelo.
 

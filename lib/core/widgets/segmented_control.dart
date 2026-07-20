@@ -16,6 +16,7 @@ class SegmentedControl<T> extends StatelessWidget {
     required this.segments,
     required this.selected,
     required this.onChanged,
+    this.enabled = true,
     super.key,
   });
 
@@ -26,6 +27,11 @@ class SegmentedControl<T> extends StatelessWidget {
   final T selected;
 
   final ValueChanged<T> onChanged;
+
+  /// `false` disables every segment's tap handling — used for the
+  /// conditional lock treatment (e.g. Categorías' "Tipo" field on a
+  /// subcategory or a root with subcategories).
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +51,7 @@ class SegmentedControl<T> extends StatelessWidget {
                 label: segments[i].label,
                 selected: segments[i].value == selected,
                 activeColor: segments[i].activeColor,
-                onTap: () => onChanged(segments[i].value),
+                onTap: enabled ? () => onChanged(segments[i].value) : null,
               ),
             ),
           ],
@@ -85,7 +91,9 @@ class SegmentedControlSegment extends StatelessWidget {
   final String label;
   final bool selected;
   final Color? activeColor;
-  final VoidCallback onTap;
+
+  /// `null` renders the segment visually the same but disables taps.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

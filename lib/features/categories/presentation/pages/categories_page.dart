@@ -4,20 +4,22 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/category.dart';
 import '../cubit/categories_list_cubit.dart';
 import '../cubit/categories_list_state.dart';
 import '../widgets/categories_empty_state.dart';
 import '../widgets/categories_error_view.dart';
 import '../widgets/category_accordion_row.dart';
+import '../widgets/category_kind_toggle.dart';
 import '../widgets/skeleton_row.dart';
 
 /// The categories list (`bA51N`/`vH7RI`/`QZAKU`/`oaBzm`).
 ///
-/// No `Page Header`/`Tab Bar`: title "Categorías" + `+` button directly, same
-/// pattern as Presupuestos/Metas — Categorías is reached from elsewhere, not
-/// a top-level tab.
+/// Uses the shared `Page Header` (`Dtm0X`): back button + centered title
+/// "Categorías" + `+` action button — same component as every other
+/// non-top-level screen (Cuentas, Presupuestos), no `Tab Bar`.
 class CategoriesPage extends StatelessWidget {
   const CategoriesPage({
     required this.onAddCategory,
@@ -39,22 +41,24 @@ class CategoriesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    final colors = context.colors;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.categoriesTitle),
-        actions: [
-          BlocBuilder<CategoriesListCubit, CategoriesListState>(
-            builder: (context, state) => IconButton(
-              onPressed: () => onAddCategory(state.kind),
-              tooltip: l10n.categoriesAdd,
-              icon: const Icon(LucideIcons.plus),
-            ),
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Column(
           children: [
+            PageHeader(
+              title: l10n.categoriesTitle,
+              trailing: BlocBuilder<CategoriesListCubit, CategoriesListState>(
+                builder: (context, state) => PageHeaderCircleButton(
+                  icon: LucideIcons.plus,
+                  background: colors.primary,
+                  foreground: colors.onPrimary,
+                  tooltip: l10n.categoriesAdd,
+                  onPressed: () => onAddCategory(state.kind),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: BlocBuilder<CategoriesListCubit, CategoriesListState>(
@@ -87,94 +91,6 @@ class CategoriesPage extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The `Segmented Control` toggle (`hFu41`), Gasto/Ingreso only — categories
-/// never apply to transfers, so that 3rd segment stays hidden.
-///
-/// "Gasto" renders in `$text-primary`, never `$expense`: labeling it red
-/// felt punitive (`categorias.md`).
-class CategoryKindToggle extends StatelessWidget {
-  const CategoryKindToggle({
-    required this.selected,
-    required this.onChanged,
-    super.key,
-  });
-
-  final CategoryKind selected;
-  final ValueChanged<CategoryKind> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colors.muted,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: CategoryKindSegment(
-              label: l10n.categoryKindExpense,
-              selected: selected == CategoryKind.expense,
-              onTap: () => onChanged(CategoryKind.expense),
-            ),
-          ),
-          Expanded(
-            child: CategoryKindSegment(
-              label: l10n.categoryKindIncome,
-              selected: selected == CategoryKind.income,
-              onTap: () => onChanged(CategoryKind.income),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CategoryKindSegment extends StatelessWidget {
-  const CategoryKindSegment({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? colors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: colors.textPrimary,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          ),
         ),
       ),
     );

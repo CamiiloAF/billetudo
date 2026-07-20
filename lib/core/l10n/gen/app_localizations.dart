@@ -836,6 +836,12 @@ abstract class AppLocalizations {
   /// **'Ícono y color'**
   String get categoryFormAppearanceLabel;
 
+  /// No description provided for @categoryFormAppearanceEmptyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir ícono y color'**
+  String get categoryFormAppearanceEmptyLabel;
+
   /// No description provided for @categoryFormAppearanceEmptySublabel.
   ///
   /// In es, this message translates to:
@@ -932,6 +938,12 @@ abstract class AppLocalizations {
   /// **'Categoría padre'**
   String get categoryParentPickerTitle;
 
+  /// No description provided for @categoryParentPickerHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se muestran categorías principales de Gasto. Las subcategorías no pueden anidarse dentro de otras subcategorías.'**
+  String get categoryParentPickerHint;
+
   /// No description provided for @categoryParentPickerEmpty.
   ///
   /// In es, this message translates to:
@@ -947,20 +959,14 @@ abstract class AppLocalizations {
   /// No description provided for @categoryDeleteSimpleMessage.
   ///
   /// In es, this message translates to:
-  /// **'Podrás deshacerlo justo después de eliminar.'**
+  /// **'Esta categoría se eliminará de tu lista. Podrás recuperarla luego desde la papelera, en Ajustes.'**
   String get categoryDeleteSimpleMessage;
 
-  /// No description provided for @categoryDeleteTransactionsTitle.
+  /// HU-04 caso 2 (`snXFk`): mensaje único con el nombre real de la categoría y el conteo de movimientos, en tono neutral.
   ///
   /// In es, this message translates to:
-  /// **'¿Eliminar esta categoría?'**
-  String get categoryDeleteTransactionsTitle;
-
-  /// HU-04 caso 2: impacto en tono neutral, informa sin culpar.
-  ///
-  /// In es, this message translates to:
-  /// **'{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}'**
-  String categoryDeleteTransactionsCount(int count);
+  /// **'{count, plural, =1{\"{categoryName}\" tiene 1 movimiento asociado. Elige qué hacer con él antes de eliminar la categoría.} other{\"{categoryName}\" tiene {count} movimientos asociados. Elige qué hacer con ellos antes de eliminar la categoría.}}'**
+  String categoryDeleteTransactionsMessage(String categoryName, int count);
 
   /// No description provided for @categoryDeleteReassignOption.
   ///
@@ -980,17 +986,11 @@ abstract class AppLocalizations {
   /// **'Reasignar a otra categoría'**
   String get categoryReassignTransactionsPickerTitle;
 
-  /// No description provided for @categoryDeleteSubcategoriesTitle.
+  /// HU-04 caso 3 (`w9ixr`): mensaje único con el nombre real de la categoría raíz y el conteo de subcategorías activas.
   ///
   /// In es, this message translates to:
-  /// **'Esta categoría tiene subcategorías'**
-  String get categoryDeleteSubcategoriesTitle;
-
-  /// No description provided for @categoryDeleteSubcategoriesMessage.
-  ///
-  /// In es, this message translates to:
-  /// **'Antes de eliminarla, decide qué pasa con sus subcategorías.'**
-  String get categoryDeleteSubcategoriesMessage;
+  /// **'{count, plural, =1{\"{categoryName}\" tiene 1 subcategoría activa. Debes resolverla antes de eliminar esta categoría raíz.} other{\"{categoryName}\" tiene {count} subcategorías activas. Debes resolverlas antes de eliminar esta categoría raíz.}}'**
+  String categoryDeleteSubcategoriesMessage(String categoryName, int count);
 
   /// No description provided for @categoryReassignSubcategoriesOption.
   ///

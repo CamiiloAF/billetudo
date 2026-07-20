@@ -9,7 +9,9 @@ import '../../../../support/golden_helpers.dart';
 /// `ParentCategoryPickerSheet.build`), which would require standing up the
 /// feature's whole DI graph just to render a golden. `IconColorPickerSheet`
 /// has no such dependency, so it is the one picker cheap enough to golden in
-/// isolation.
+/// isolation this way; `parent_category_picker_sheet_golden_test.dart`
+/// covers the other picker by goldening its body widget with a mocked cubit
+/// instead, sidestepping the same DI concern.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();

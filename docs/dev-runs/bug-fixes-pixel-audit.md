@@ -40,12 +40,11 @@ Hallazgo sistémico: 8 pantallas usaban `AppBar` de Material genérico en vez de
 ## Bloqueado — requiere `pencil-designer` antes de implementar
 
 - **Sheet "Eliminar presupuesto"**: no existe ningún frame en `billetudo.pen` para esta confirmación. `confirm_delete_budget_sheet.dart` no se tocó.
-- **Picker de ícono/color de subcategorías**: Pencil no tiene diseñado un estado "color bloqueado/heredado" (sí existe el patrón para "Tipo", no se replicó para Apariencia). Además el catálogo de íconos en Pencil (32) diverge en 15/32 nombres del catálogo en código (`category_appearance.dart`) — no es ampliación, es divergencia real que debe reconciliarse con Diseño antes de tocar el grid.
+- ~~**Picker de ícono/color de subcategorías**: estado "color bloqueado/heredado" sin diseñar, catálogo de íconos divergente 15/32.~~ **Resuelto — 2026-07-20**, ver `docs/dev-runs/fidelidad-categorias.md`. El estado bloqueado/heredado ya existe en Pencil (`nqoD6`/`g3z4E`) y está implementado. El catálogo de íconos ya no diverge: confirmado línea por línea, idéntico entre `category_appearance.dart` y el `.pen` vigente (64 íconos, ampliado desde el conteo de 32 que tenía esta nota).
 
 ## Fuera de alcance (acordado con el usuario)
 
 - Onboarding completo (punto 8): feature nueva, corrida aparte.
-- Expansión grande del catálogo de íconos: depende del bloqueo de arriba.
 - `lib/features/scheduled_payments/`: cubierto por otro agente en paralelo.
 
 ## Verificación

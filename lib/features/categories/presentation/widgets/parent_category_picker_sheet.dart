@@ -90,8 +90,15 @@ class ParentCategoryPickerSheetBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // A sheet title is 17/700 in billetudo.pen (`oj9LB` in `Q55fEz`),
-        // which is what `SheetHead` renders.
-        SheetHead(title: title ?? l10n.categoryParentPickerTitle),
+        // which is what `SheetHead` renders. The explanatory hint (`l00BA0`
+        // in `Q55fEz`) only applies to the default "Categoría padre" use
+        // case — the reassign-transactions/reassign-subcategories variants
+        // pass their own [title] and don't scope to roots-only, so the
+        // "solo categorías principales" copy wouldn't be accurate for them.
+        SheetHead(
+          title: title ?? l10n.categoryParentPickerTitle,
+          hint: title == null ? l10n.categoryParentPickerHint : null,
+        ),
         const SizedBox(height: 12),
         SizedBox(
           height: 320,

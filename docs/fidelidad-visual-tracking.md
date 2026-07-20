@@ -15,7 +15,7 @@ los `docs/dev-runs/*.md` quedan como el detalle de cada corrida.
 |---|---|---|---|---|---|
 | Cuentas | 🟡 Parcial | 2026-07-19 | ✅ (`test/features/accounts/.../golden`) | `docs/dev-runs/bug-fixes-pixel-audit.md` | Auditoría pixel-a-pixel corrigió 8 pantallas migradas a `PageHeader`, `BalanceCardSimple`, detalle de movimiento (`Of2sW`), etc. No hubo un cierre formal vía `/design-fidelity-check` después de esas correcciones — falta re-verificación con `pencil-fidelity-reviewer` para pasar a ✅. |
 | Pagos programados | ✅ Aprobada | 2026-07-19 | ✅ (`test/features/scheduled_payments/.../golden`) | `docs/dev-runs/pagos-programados.md` (sección "Fidelidad visual — historial de correcciones") | 7 rondas: 4 de auditoría/fix inicial + color por categoría (alcance ampliado a todo el sistema) + unificación de componentes compartidos con Transacciones. Cierre más completo que existe hasta hoy. |
-| Categorías | 🟡 Parcial | 2026-07-15 | ✅ (`test/features/categories/.../golden`) | `docs/dev-runs/categorias-feature.md` | Solo se cerraron los 3 bottom sheets de borrado (golden que detecta regresión de píxel, no que valide fidelidad inicial contra el `.pen` — eso seguía pendiente de `ui-ux-reviewer`). El resto de la pantalla (lista, formulario, picker de ícono/color) no tuvo pasada de fidelidad. `docs/bugfixes.md` (2026-07-20) todavía la lista como pendiente (punto 3). Bloqueo abierto: catálogo de íconos diverge 15/32 entre Pencil y código (`bug-fixes-pixel-audit.md`). |
+| Categorías | ✅ Aprobada | 2026-07-20 | ✅ (`test/features/categories/.../golden`, 156 tests) | `docs/dev-runs/fidelidad-categorias.md` | 2 rondas: 7 hallazgos (Page Header ausente en 8 pantallas, Segmented Control reconstruido a mano, sheet de borrado simple con rojo punitivo, título extra no diseñado en 2 sheets, link/label/subtítulo condicionales faltantes) + re-verificación sin hallazgos pendientes. Bloqueo de catálogo de íconos (15/32) **cerrado**: confirmado idéntico al `.pen` vigente (64 íconos), ya no diverge. Gap no bloqueante: picker de categoría padre sin frame de loading/empty en Pencil. |
 | Presupuestos | ⏳ Agendada | — | ✅ (`test/features/budgets/.../golden`, generados en la corrida de 2026-07-20) | `docs/dev-runs/fidelidad-presupuestos-PROMPT.md` | Prompt de auditoría completo ya redactado (equivalente al de Pagos Programados), listo para pegar en una sesión nueva. Sospecha explícita de deriva amplia — no corrido todavía. El segmento "programado" (HU-12, `docs/dev-runs/budgets-scheduled-progress.md`) no tiene frame en Pencil, así que quedará fuera del alcance de esa auditoría hasta que exista. |
 | Transacciones | ✅ Aprobada | 2026-07-20 | ✅ (`test/features/transactions/.../golden`, 323 tests) | `docs/dev-runs/fidelidad-transacciones.md` | 3 rondas: 9 hallazgos + bug de nota/categoría (ronda 1) + 2 gaps de implementación reales (calendario de rango nativo en vez de propio, menú de orden inexistente) + 3 hallazgos nuevos sobre esas piezas (ronda 2) + cierre (ronda 3). Todo re-verificado sin hallazgos pendientes. Gaps de cobertura no bloqueantes: 6 estados sin frame en Pencil (ver dev-run). |
 | Home / Dashboard | ❌ Sin auditar | — | ❌ | `docs/dev-runs/inicio-home.md`, `docs/bugfixes.md` (punto 8) | Sin mención de fidelidad en el dev-run original ni goldens. Pendiente explícito en `docs/bugfixes.md`. |
@@ -25,10 +25,9 @@ los `docs/dev-runs/*.md` quedan como el detalle de cada corrida.
 
 ## Pendientes activos (backlog, `docs/bugfixes.md` al 2026-07-20)
 
-1. Ejecutar pasada de fidelidad en **Categorías**.
-2. Ejecutar pasada de fidelidad en **Home/Dashboard**.
-3. Correr el prompt ya redactado para **Presupuestos** (`docs/dev-runs/fidelidad-presupuestos-PROMPT.md`).
-4. Re-verificar **Cuentas** con `pencil-fidelity-reviewer` tras las correcciones del 2026-07-19 (nunca se cerró formalmente con el gate de fidelidad, solo con la auditoría pixel-a-pixel manual).
+1. Ejecutar pasada de fidelidad en **Home/Dashboard**.
+2. Correr el prompt ya redactado para **Presupuestos** (`docs/dev-runs/fidelidad-presupuestos-PROMPT.md`).
+3. Re-verificar **Cuentas** con `pencil-fidelity-reviewer` tras las correcciones del 2026-07-19 (nunca se cerró formalmente con el gate de fidelidad, solo con la auditoría pixel-a-pixel manual).
 
 ## Lecciones ya documentadas para las próximas corridas
 

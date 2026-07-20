@@ -1,5 +1,5 @@
 import 'package:billetudo/features/categories/domain/entities/category.dart';
-import 'package:billetudo/features/categories/presentation/pages/categories_page.dart';
+import 'package:billetudo/features/categories/presentation/widgets/category_kind_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

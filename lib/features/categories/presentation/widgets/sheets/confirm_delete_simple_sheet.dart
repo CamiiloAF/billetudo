@@ -7,10 +7,12 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/budget_usage_notice.dart';
 import '../../../../../core/widgets/sheet_buttons_row.dart';
 
-/// HU-04 case 1: no dependents (`o9116/qsjbj`).
+/// HU-04 case 1: no dependents (`jngMo`).
 ///
-/// Plain destructive pattern: `alert-triangle` on `$expense`/`$expense-soft`,
-/// no title — icon + message only.
+/// Never a destructive/red treatment — deletion here is reversible via the
+/// trash (`deletedAt`), so the icon stays `trash-2` on
+/// `$primary-on-soft`/`$primary-soft` (violeta) and there's no title, just
+/// icon + message (`categorias.md`).
 class ConfirmDeleteSimpleSheet extends StatelessWidget {
   const ConfirmDeleteSimpleSheet({
     this.budgetCount = 0,
@@ -49,9 +51,9 @@ class ConfirmDeleteSimpleSheet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetMessage(
-          icon: LucideIcons.triangleAlert,
-          iconColor: colors.expense,
-          iconBackground: colors.expenseSoft,
+          icon: LucideIcons.trash2,
+          iconColor: colors.primaryOnSoft,
+          iconBackground: colors.primarySoft,
           message: l10n.categoryDeleteSimpleMessage,
         ),
         BudgetUsageNotice(count: budgetCount),
@@ -63,7 +65,6 @@ class ConfirmDeleteSimpleSheet extends StatelessWidget {
           ),
           right: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: colors.expense),
             icon: const Icon(LucideIcons.trash2),
             label: Text(
               isSubcategory

@@ -4,11 +4,14 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/category_draft.dart';
 import '../cubit/category_form_cubit.dart';
 import '../cubit/category_form_state.dart';
 import '../widgets/appearance_field.dart';
+import '../widgets/category_kind_toggle.dart';
 import '../widgets/delete_link.dart';
 import '../widgets/icon_color_picker_sheet.dart';
 import '../widgets/parent_category_picker_sheet.dart';
@@ -40,28 +43,30 @@ class CategoryFormPage extends StatelessWidget {
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
+        final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: Navigator.of(context).pop,
-              tooltip: l10n.commonCancel,
-              icon: const Icon(LucideIcons.x),
-            ),
-            title: Text(_titleFor(l10n, state)),
-            actions: [
-              IconButton(
-                onPressed: state.status == CategoryFormStatus.saving
-                    ? null
-                    : context.read<CategoryFormCubit>().submit,
-                tooltip: l10n.commonSave,
-                icon: const Icon(LucideIcons.check),
-              ),
-            ],
-          ),
           body: SafeArea(
-            child: state.status == CategoryFormStatus.loading
-                ? const Center(child: CircularProgressIndicator())
-                : CategoryFormBody(state: state),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: _titleFor(l10n, state),
+                  trailing: PageHeaderCircleButton(
+                    icon: LucideIcons.check,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.commonSave,
+                    onPressed: state.status == CategoryFormStatus.saving
+                        ? null
+                        : context.read<CategoryFormCubit>().submit,
+                  ),
+                ),
+                Expanded(
+                  child: state.status == CategoryFormStatus.loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : CategoryFormBody(state: state),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -102,6 +107,7 @@ class CategoryFormPage extends StatelessWidget {
         final impact = state.deletionImpact;
         final resolution = await ConfirmDeleteWithTransactionsSheet.show(
           context,
+          categoryName: state.name,
           transactionCount: impact?.transactionCount ?? 0,
           kind: state.kind,
           excludingId: state.id!,
@@ -115,6 +121,8 @@ class CategoryFormPage extends StatelessWidget {
       case CategoryDeletePrompt.subcategories:
         final resolution = await ConfirmDeleteRootWithSubcategoriesSheet.show(
           context,
+          categoryName: state.name,
+          subcategoryCount: state.deletionImpact?.subcategoryCount ?? 0,
           kind: state.kind,
           rootId: state.id!,
           budgetCount: state.deletionImpact?.budgetCount ?? 0,
@@ -144,7 +152,9 @@ class CategoryFormBody extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
         AppearanceField(
-          label: l10n.categoryFormAppearanceLabel,
+          label: state.icon == null
+              ? l10n.categoryFormAppearanceEmptyLabel
+              : l10n.categoryFormAppearanceLabel,
           sublabel: state.icon == null
               ? l10n.categoryFormAppearanceEmptySublabel
               : l10n.categoryFormAppearanceFilledSublabel,
@@ -221,7 +231,9 @@ class CategoryFormBody extends StatelessWidget {
         if (state.isEditing) ...[
           const SizedBox(height: 28),
           DeleteLink(
-            label: l10n.categoryDeleteAction,
+            label: state.isSubcategory
+                ? l10n.categoryDeleteSubcategoryAction
+                : l10n.categoryDeleteAction,
             onTap: cubit.promptDelete,
           ),
         ],
@@ -243,8 +255,10 @@ class CategoryFormBody extends StatelessWidget {
   }
 }
 
-/// Tipo Gasto/Ingreso: a plain toggle, or the locked treatment (candado +
-/// `opacity:0.55` + explanatory caption) per [CategoryFormState.kindLockReason].
+/// Tipo Gasto/Ingreso: the shared [CategoryKindToggle] (same `Segmented
+/// Control` component `hFu41` used by the listing), or the locked treatment
+/// (candado + `opacity:0.55` + explanatory caption) per
+/// [CategoryFormState.kindLockReason].
 class CategoryKindField extends StatelessWidget {
   const CategoryKindField(
       {required this.state, required this.onChanged, super.key});
@@ -260,26 +274,10 @@ class CategoryKindField extends StatelessWidget {
 
     final toggle = Opacity(
       opacity: state.kindLocked ? 0.55 : 1,
-      child: Row(
-        children: [
-          Expanded(
-            child: CategoryKindOption(
-              label: l10n.categoryKindExpense,
-              selected: state.kind == CategoryKind.expense,
-              enabled: !state.kindLocked,
-              onTap: () => onChanged(CategoryKind.expense),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: CategoryKindOption(
-              label: l10n.categoryKindIncome,
-              selected: state.kind == CategoryKind.income,
-              enabled: !state.kindLocked,
-              onTap: () => onChanged(CategoryKind.income),
-            ),
-          ),
-        ],
+      child: CategoryKindToggle(
+        selected: state.kind,
+        enabled: !state.kindLocked,
+        onChanged: onChanged,
       ),
     );
 
@@ -310,50 +308,6 @@ class CategoryKindField extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class CategoryKindOption extends StatelessWidget {
-  const CategoryKindOption({
-    required this.label,
-    required this.selected,
-    required this.enabled,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? colors.primarySoft : colors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? colors.primary : colors.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
-          ),
-        ),
-      ),
     );
   }
 }

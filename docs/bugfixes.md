@@ -5,7 +5,7 @@
 
 2) ~~Ejecutar pasada de fidelidad en Transacciones~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-transacciones.md`
 
-3) Ejecutar pasada de fidelidad en Categorías
+3) ~~Ejecutar pasada de fidelidad en Categorías~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-categorias.md`
 
 4) El bottom sheet de cerrar sesión debería sobreponerse al bottom nav bar, ahora mismo lo deja visible, De hecho, TODOS lo botom sheets deben tener este comportamiento
 

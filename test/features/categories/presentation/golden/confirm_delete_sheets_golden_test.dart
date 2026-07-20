@@ -61,6 +61,7 @@ void main() {
         tester,
         (context) => ConfirmDeleteWithTransactionsSheet.show(
           context,
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -76,6 +77,8 @@ void main() {
         tester,
         (context) => ConfirmDeleteRootWithSubcategoriesSheet.show(
           context,
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),

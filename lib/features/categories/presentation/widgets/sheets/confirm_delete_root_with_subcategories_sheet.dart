@@ -18,14 +18,25 @@ import '../parent_category_picker_sheet.dart';
 /// 2 real actions already live above. Cascade asks for a second, explicit
 /// confirmation (`categorias.md`'s pending note: this action is broad and
 /// deserves extra friction).
+///
+/// `w9ixr`'s `Sheet Icon Header` title is `enabled:false` — there's only one
+/// message, with the root category's real name and the subcategory count
+/// interpolated into it, not a generic title plus a separate subtitle.
 class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   const ConfirmDeleteRootWithSubcategoriesSheet({
+    required this.categoryName,
+    required this.subcategoryCount,
     required this.kind,
     required this.rootId,
     this.budgetCount = 0,
     super.key,
   });
 
+  /// The real root category name, interpolated into the sheet's single
+  /// message.
+  final String categoryName;
+
+  final int subcategoryCount;
   final CategoryKind kind;
   final String rootId;
 
@@ -35,6 +46,8 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   /// Resolves to the chosen [SubcategoryResolution], or `null` if dismissed.
   static Future<SubcategoryResolution?> show(
     BuildContext context, {
+    required String categoryName,
+    required int subcategoryCount,
     required CategoryKind kind,
     required String rootId,
     int budgetCount = 0,
@@ -43,6 +56,8 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
         context,
         useRootNavigator: true,
         builder: (context) => ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: categoryName,
+          subcategoryCount: subcategoryCount,
           kind: kind,
           rootId: rootId,
           budgetCount: budgetCount,
@@ -61,8 +76,10 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
           icon: LucideIcons.info,
           iconColor: colors.primaryOnSoft,
           iconBackground: colors.primarySoft,
-          title: l10n.categoryDeleteSubcategoriesTitle,
-          message: l10n.categoryDeleteSubcategoriesMessage,
+          message: l10n.categoryDeleteSubcategoriesMessage(
+            categoryName,
+            subcategoryCount,
+          ),
         ),
         BudgetUsageNotice(count: budgetCount),
         const SizedBox(height: 20),
