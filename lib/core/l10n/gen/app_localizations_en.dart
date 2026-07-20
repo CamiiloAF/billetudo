@@ -87,7 +87,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountsErrorLocalFirst =>
-      'Your data is still saved on your device';
+      'Your data is still saved on your device. Try again.';
 
   @override
   String get accountsArchivedTitle => 'Archived accounts';

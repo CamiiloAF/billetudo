@@ -109,7 +109,9 @@ void main() {
     expect(find.byType(AccountsErrorView), findsOneWidget);
     expect(find.text('No pudimos cargar tus cuentas'), findsOneWidget);
     expect(
-      find.text('Tus datos siguen guardados en tu dispositivo'),
+      find.text(
+        'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.',
+      ),
       findsOneWidget,
     );
     expect(find.text('Reintentar'), findsOneWidget);

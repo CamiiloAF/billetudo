@@ -87,7 +87,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountsErrorLocalFirst =>
-      'Tus datos siguen guardados en tu dispositivo';
+      'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.';
 
   @override
   String get accountsArchivedTitle => 'Cuentas archivadas';

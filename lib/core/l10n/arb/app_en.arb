@@ -24,7 +24,7 @@
   "accountsTotalDebtsLine": "Debts: -{amount}",
   "accountsEmptyMessage": "You haven't added any account yet",
   "accountsErrorTitle": "We couldn't load your accounts",
-  "accountsErrorLocalFirst": "Your data is still saved on your device",
+  "accountsErrorLocalFirst": "Your data is still saved on your device. Try again.",
   "accountsArchivedTitle": "Archived accounts",
   "accountsArchivedEmptyMessage": "You haven't archived any account yet",
   "accountsUnarchive": "Unarchive",

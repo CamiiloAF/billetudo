@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// Recordatorio local-first del estado de error.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos siguen guardados en tu dispositivo'**
+  /// **'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.'**
   String get accountsErrorLocalFirst;
 
   /// No description provided for @accountsArchivedTitle.

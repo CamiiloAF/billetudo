@@ -76,7 +76,7 @@
   },
   "accountsErrorTitle": "No pudimos cargar tus cuentas",
   "@accountsErrorTitle": {},
-  "accountsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo",
+  "accountsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
   "@accountsErrorLocalFirst": {
     "description": "Recordatorio local-first del estado de error."
   },

@@ -17,6 +17,6 @@
 
 8) ~~Ejecutar pasada de fidelidad en Home/Dashboard~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-home.md`. Pendiente diferido a propósito: estado "con presupuesto" del hero (barra de progreso).
 
-9) Ejecutar pasada de fidelidad en Presupuestos. [text](dev-runs/fidelidad-presupuestos-PROMPT.md) Reutiliza lo que necesites de este doc y luego lo elimines
+9) ~~Ejecutar pasada de fidelidad en Presupuestos~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-presupuestos.md`. La sospecha de deriva amplia no se confirmó: solo 1 hallazgo (subtítulo truncado, compartido con Cuentas/Categorías).
 
 10) Implementar las pantallas **Ajustes** y **Más**, que están diseñadas en `billetudo.pen` pero sin código todavía. Nodos: Ajustes sin sesión `jDaUb` / con sesión `aaQBp` (oscuros `j4JYF` / `TQHmY`), Más `gXcHt` (oscuro `X9x7x`). Spec en `design-system/billetudo/pages/auth.md`. Son el punto de entrada a Cerrar sesión (HU-06, ya implementada) y a Borrar cuenta (HU-07). Al construirlas, correr `/design-fidelity-check auth` de nuevo para cubrir estos frames — hoy quedan fuera del alcance porque no hay código que auditar (ver `docs/fidelidad-visual-tracking.md`, fila Auth).

@@ -21,6 +21,7 @@ void main() {
     WidgetTester tester,
     String name, {
     required Brightness brightness,
+    required int initial,
   }) async {
     setGoldenViewport(tester);
     await tester.pumpWidget(
@@ -28,7 +29,7 @@ void main() {
         Builder(
           builder: (context) => ElevatedButton(
             onPressed: () =>
-                BudgetThresholdCustomSheet.show(context, initial: 85),
+                BudgetThresholdCustomSheet.show(context, initial: initial),
             child: const Text('open'),
           ),
         ),
@@ -52,6 +53,27 @@ void main() {
         tester,
         'threshold_custom_stepper_$suffix',
         brightness: brightness,
+        initial: 85,
+      );
+    });
+
+    testWidgets('umbral personalizado: stepper en mínimo 5% (menos deshabilitado) ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'threshold_custom_stepper_min_$suffix',
+        brightness: brightness,
+        initial: 5,
+      );
+    });
+
+    testWidgets('umbral personalizado: stepper en máximo 100% (más deshabilitado) ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'threshold_custom_stepper_max_$suffix',
+        brightness: brightness,
+        initial: 100,
       );
     });
   }
