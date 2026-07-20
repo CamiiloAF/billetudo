@@ -15,7 +15,7 @@
 
 7) ~~Node ID: oAM6Y no se muestra el snackbar cuando se elimina una transacción desde el home pero si se muestra si se elimina desde la pestaña de movimientos~~ — ✅ hecho 2026-07-20, mismo bug corregido también en Detalle de Presupuesto y Detalle de Pago Programado
 
-8) Ejecutar pasada de fidelidad en Home/Dashboard
+8) ~~Ejecutar pasada de fidelidad en Home/Dashboard~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-home.md`. Pendiente diferido a propósito: estado "con presupuesto" del hero (barra de progreso).
 
 9) Ejecutar pasada de fidelidad en Presupuestos. [text](dev-runs/fidelidad-presupuestos-PROMPT.md) Reutiliza lo que necesites de este doc y luego lo elimines
 

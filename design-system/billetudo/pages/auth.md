@@ -23,7 +23,7 @@ Local-first estricto: la app es 100% usable sin cuenta (HU-01). La pantalla de L
 | Auth — Borrar cuenta, paso 3: confirmación final (HU-07) | `sqm4I` | `q43mHJ` | Decisión final, ambos temas — pantalla completa, cierre neutral |
 | Ajustes — sin sesión | `jDaUb` | `j4JYF` | Decisión final, ambos temas. Punto de entrada a Login. |
 | Ajustes — con sesión | `aaQBp` | `TQHmY` | Decisión final, ambos temas. Sin "Cerrar sesión" (se movió a "Más", ver abajo) — termina en la fila "Eliminar cuenta" rediseñada. |
-| Más (nueva, destino de la pestaña "Más" del Tab Bar) | `gXcHt` | `X9x7x` | Decisión final, ambos temas. Lista Cuentas/Categorías/Deudas/Pagos programados/Import-Export/Ajustes + "Cerrar sesión" al final. |
+| Más (destino de la pestaña "Más" del Tab Bar) | `gXcHt` | `X9x7x` | Decisión final, ambos temas. Lista Cuentas/Categorías/Deudas/Recurrentes/Gráficas e informes/Importar y exportar/Ajustes + "Cerrar sesión" al final. Deudas, Gráficas e informes e Importar y exportar llevan badge "Próximamente" (roadmap real, no bloqueado por Nivel 0). |
 | Borrar cuenta, paso 1 — estado de error | `T1YkkA` | — | Solo claro, referencia de patrón |
 | Login Android — estado de carga | `QD8kh` | — | Solo claro, referencia de patrón |
 | Login Android — estado de error | `JA0KD` | — | Solo claro, referencia de patrón. Snackbar anclado a 16px del `Sign-in Buttons Group` (mismo margen que el patrón de "Snackbar Undo" en Movimientos), no flotando a mitad de pantalla. |
@@ -175,14 +175,14 @@ Componentes reusados: `Page Header` (`Dtm0X`), `Appearance Field` (`R8PlN`, 3 in
 
 Destino de la pestaña "Más" del Tab Bar (`u3b5s9`) — no existía, se construyó para resolver el pendiente de navegación de toda la feature. Agrupa los destinos que no caben en el tab bar (regla de `CLAUDE.md`). Header de texto simple "Más" (24px/700, sin back — es una pestaña raíz, no una pantalla apilada; no usa `Page Header`, mismo patrón que el resto de pestañas raíz del Tab Bar), Tab Bar al fondo con "Más" activo.
 
-1. **6 filas de navegación**, instancias de `Appearance Field` (`R8PlN`), cada una ícono + label + sublabel descriptivo + chevron: Cuentas, Categorías, Deudas, Pagos programados, Importar y exportar, **Ajustes** (→ `jDaUb`/`aaQBp` según sesión).
+1. **7 filas de navegación**, instancias de `Appearance Field` (`R8PlN`), cada una ícono + label + sublabel descriptivo + chevron: Cuentas, Categorías, Deudas, Recurrentes, **Gráficas e informes** (agregada 2026-07-20, `chart-line`, "Visualiza tus finanzas con gráficas"), Importar y exportar, **Ajustes** (→ `jDaUb`/`aaQBp` según sesión). Deudas, Gráficas e informes e Importar y exportar llevan el componente nuevo `Badge/Próximamente` (`yfvHv`, pill `$muted`/`$text-secondary` 11px/600) junto al label, dentro de un `Title Row` agregado a `R8PlN` — roadmap real, no bloqueado por Nivel 0.
 2. **Spacer** (`fill_container`).
 3. **Cerrar sesión** (reconstruida a mano replicando la fila que antes vivía en Ajustes: icon-wrap `$primary-soft`/`log-out`, tono neutral) → navega al Bottom Sheet `j4hgYN`. Vive aquí, no en Ajustes, por ser una acción de nivel superior que el usuario debe poder encontrar sin entrar a Ajustes primero.
 
 **Pendientes específicos de "Más":**
-- Solo tema claro.
 - Si "Cerrar sesión" llega a repetirse en un tercer lugar del `.pen`, componentizarla (`reusable:true`) — hoy es una única instancia manual.
 - Navegación de Inicio → "Más" ya está resuelta (pestaña del Tab Bar), pero no se verificó si además debería existir un acceso directo desde Inicio (ej. ícono de perfil) — no estaba en alcance.
+- **Advertencia de mantenimiento (2026-07-20):** al agregar el slot de badge a `R8PlN`, restructurar ese componente muy reusado (~20 instancias entre Más y Ajustes) borró momentáneamente el override de título (`IwyuZ`) de todas sus instancias — se corrigió restaurando cada una a mano. Si se vuelve a tocar la estructura interna de `R8PlN`, verificar con `get_screenshot` que ninguna instancia perdió sus overrides antes de dar por cerrado el cambio.
 
 ## Botones de login — reglas de marca (no negociables)
 

@@ -62,7 +62,7 @@ void main() {
       findsNothing,
     );
     // A $0 hero, never inventing a budget cap (COP shows no decimals).
-    expect(find.textContaining('0\u{00A0}COP'), findsOneWidget);
+    expect(find.text(r'$0'), findsOneWidget);
   });
 
   testWidgets('tocar el chip de mes dispara onMonthTap (HU-04)',

@@ -37,7 +37,7 @@ class HomeHeroCard extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final amount = const MoneyFormatter().format(
+    final amount = const MoneyFormatter().formatSymbol(
       spending.displayTotalMinor,
       currencyCode: spending.displayCurrency,
     );

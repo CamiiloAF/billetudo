@@ -47,22 +47,26 @@ class MorePage extends StatelessWidget {
             MoreRow(
               icon: LucideIcons.wallet,
               label: l10n.accountsTitle,
+              description: l10n.moreAccountsDescription,
               onTap: onOpenAccounts,
             ),
             MoreRow(
               icon: LucideIcons.shapes,
               label: l10n.categoriesTitle,
+              description: l10n.moreCategoriesDescription,
               onTap: onOpenCategories,
             ),
             MoreRow(
               icon: LucideIcons.handCoins,
               label: l10n.moreDebts,
+              description: l10n.moreDebtsDescription,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreDebts),
             ),
             MoreRow(
               icon: LucideIcons.repeat,
               label: l10n.moreScheduledPayments,
+              description: l10n.moreScheduledPaymentsDescription,
               onTap: onOpenScheduledPayments,
             ),
             // Design debt: Pencil frame `gXcHt` only defines 6 rows and
@@ -72,18 +76,21 @@ class MorePage extends StatelessWidget {
             MoreRow(
               icon: LucideIcons.chartLine,
               label: l10n.moreReports,
+              description: l10n.moreReportsDescription,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreReports),
             ),
             MoreRow(
               icon: LucideIcons.arrowUpDown,
               label: l10n.moreImportExport,
+              description: l10n.moreImportExportDescription,
               comingSoon: true,
               onTap: () => onOpenComingSoon(l10n.moreImportExport),
             ),
             MoreRow(
               icon: LucideIcons.settings,
               label: l10n.moreSettings,
+              description: l10n.moreSettingsDescription,
               onTap: onOpenSettings,
             ),
             if (isSignedIn) ...[

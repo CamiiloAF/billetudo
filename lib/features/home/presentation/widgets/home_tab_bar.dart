@@ -35,12 +35,12 @@ class HomeTabBar extends StatelessWidget {
     final items = <HomeTabItem>[
       HomeTabItem(icon: LucideIcons.home, label: l10n.navHome),
       HomeTabItem(
-        icon: LucideIcons.receipt,
+        icon: LucideIcons.arrowLeftRight,
         label: l10n.transactionsTitle,
       ),
       HomeTabItem(icon: LucideIcons.chartPie, label: l10n.navBudgets),
-      HomeTabItem(icon: LucideIcons.flag, label: l10n.navGoals),
-      HomeTabItem(icon: LucideIcons.layoutGrid, label: l10n.navMore),
+      HomeTabItem(icon: LucideIcons.target, label: l10n.navGoals),
+      HomeTabItem(icon: LucideIcons.ellipsis, label: l10n.navMore),
     ];
 
     return SafeArea(
@@ -51,7 +51,14 @@ class HomeTabBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            border: Border.all(color: colors.border),
+            // `Tab Inner` (`qmpbo`) has only a soft shadow, no stroke.
+            boxShadow: [
+              BoxShadow(
+                color: colors.primary.withValues(alpha: 0.10),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           child: Row(
@@ -115,8 +122,12 @@ class HomeTabBarItem extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
+                // Pencil's `Label` (e.g. `rOzr4`) is 9pt: `labelSmall`'s
+                // default (11pt) is what was clipping "Movimientos" and
+                // "Presupuestos" to an ellipsis in a 5-column row.
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: foreground,
+                  fontSize: 9,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),

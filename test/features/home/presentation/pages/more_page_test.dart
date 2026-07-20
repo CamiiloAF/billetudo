@@ -97,12 +97,16 @@ void main() {
     await pumpMore(tester, isSignedIn: true, onSignOut: () => signedOut++);
 
     // Last row, below the fold in the test viewport — scroll it into view
-    // before asserting/tapping.
+    // before asserting/tapping. The row grew taller once its description
+    // moved to its own line, so scrollUntilVisible alone can leave it right
+    // at the viewport edge (fails hit-testing) — ensureVisible settles it.
     await tester.scrollUntilVisible(
       find.text('Cerrar sesión'),
       100,
       scrollable: find.byType(Scrollable),
     );
+    await tester.ensureVisible(find.text('Cerrar sesión'));
+    await tester.pump();
     expect(find.text('Cerrar sesión'), findsOneWidget);
 
     await tester.tap(find.text('Cerrar sesión'));

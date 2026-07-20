@@ -86,12 +86,17 @@ class RecentActivityRow extends StatelessWidget {
   }
 
   String _amountLabel(Transaction transaction) {
-    final formatted = const MoneyFormatter()
-        .format(transaction.amountMinor, currencyCode: transaction.currency);
+    final formatted = const MoneyFormatter().formatSymbol(
+      transaction.amountMinor,
+      currencyCode: transaction.currency,
+    );
+    // Both income and expense carry a sign in Pencil (`A9v7s`/`aOhoY`):
+    // '+$2.100.000' for income, '-$62.000' for expense. Transfers stay
+    // unsigned — they move money between the user's own accounts, so
+    // there is no gain or loss to signal.
     return switch (transaction.type) {
       TransactionType.income => '+$formatted',
-      // Unsigned expense, per Pencil: only income carries a sign.
-      TransactionType.expense => formatted,
+      TransactionType.expense => '-$formatted',
       TransactionType.transfer => formatted,
     };
   }

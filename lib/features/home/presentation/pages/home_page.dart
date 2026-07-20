@@ -176,7 +176,11 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: state.isLoading
+                    // Checks `spending == null` rather than `isLoading`: a
+                    // failed first load (no snapshot yet) is not "loading"
+                    // but still has no spending to show, and must fall back
+                    // to the skeleton instead of a null-check crash.
+                    child: state.spending == null
                         ? const HomeHeroSkeleton()
                         : HomeHeroCard(
                             spending: state.spending!,
@@ -197,16 +201,20 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
-                    child: RecentActivityHeader(
-                      onSeeAll: widget.onSeeAllTransactions,
-                      showSeeAll:
-                          state.status == HomeStatus.ready && !state.isEmpty,
+                // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
+                // from "Acceso rápido" to the loading/empty state: the
+                // "Movimientos recientes" header only exists once there is
+                // something to head.
+                if (state.status == HomeStatus.ready && !state.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
+                      child: RecentActivityHeader(
+                        onSeeAll: widget.onSeeAllTransactions,
+                        showSeeAll: true,
+                      ),
                     ),
                   ),
-                ),
                 ..._bodySlivers(context, state),
               ],
             );

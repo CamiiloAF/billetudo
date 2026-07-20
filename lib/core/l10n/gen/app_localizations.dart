@@ -1853,7 +1853,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeMonthPickerTitle.
   ///
   /// In es, this message translates to:
-  /// **'Elegir mes'**
+  /// **'Selecciona el mes'**
   String get homeMonthPickerTitle;
 
   /// No description provided for @homeAiBanner.
@@ -1928,11 +1928,29 @@ abstract class AppLocalizations {
   /// **'Más'**
   String get moreTitle;
 
+  /// No description provided for @moreAccountsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestiona tus cuentas y saldos'**
+  String get moreAccountsDescription;
+
+  /// No description provided for @moreCategoriesDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Organiza tus gastos e ingresos'**
+  String get moreCategoriesDescription;
+
   /// No description provided for @moreDebts.
   ///
   /// In es, this message translates to:
   /// **'Deudas'**
   String get moreDebts;
+
+  /// No description provided for @moreDebtsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue tus deudas y pagos'**
+  String get moreDebtsDescription;
 
   /// No description provided for @moreScheduledPayments.
   ///
@@ -1940,11 +1958,23 @@ abstract class AppLocalizations {
   /// **'Recurrentes'**
   String get moreScheduledPayments;
 
+  /// No description provided for @moreScheduledPaymentsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos e ingresos automáticos'**
+  String get moreScheduledPaymentsDescription;
+
   /// No description provided for @moreReports.
   ///
   /// In es, this message translates to:
   /// **'Gráficas e informes'**
   String get moreReports;
+
+  /// No description provided for @moreReportsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Visualiza tus finanzas con gráficas'**
+  String get moreReportsDescription;
 
   /// No description provided for @moreImportExport.
   ///
@@ -1952,11 +1982,23 @@ abstract class AppLocalizations {
   /// **'Importar y exportar'**
   String get moreImportExport;
 
+  /// No description provided for @moreImportExportDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Respalda o trae tus datos'**
+  String get moreImportExportDescription;
+
   /// No description provided for @moreSettings.
   ///
   /// In es, this message translates to:
   /// **'Ajustes'**
   String get moreSettings;
+
+  /// No description provided for @moreSettingsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias y tu cuenta'**
+  String get moreSettingsDescription;
 
   /// No description provided for @moreSignOut.
   ///

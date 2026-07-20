@@ -995,7 +995,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeLoading => 'Loading home';
 
   @override
-  String get homeMonthPickerTitle => 'Choose month';
+  String get homeMonthPickerTitle => 'Select month';
 
   @override
   String get homeAiBanner => 'Coming soon: ask Billetudo';
@@ -1037,19 +1037,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreTitle => 'More';
 
   @override
+  String get moreAccountsDescription => 'Manage your accounts and balances';
+
+  @override
+  String get moreCategoriesDescription => 'Organize your income and expenses';
+
+  @override
   String get moreDebts => 'Debts';
+
+  @override
+  String get moreDebtsDescription => 'Track your debts and payments';
 
   @override
   String get moreScheduledPayments => 'Recurring';
 
   @override
+  String get moreScheduledPaymentsDescription =>
+      'Automatic payments and income';
+
+  @override
   String get moreReports => 'Charts and reports';
+
+  @override
+  String get moreReportsDescription => 'See your finances in charts';
 
   @override
   String get moreImportExport => 'Import and export';
 
   @override
+  String get moreImportExportDescription => 'Back up or bring in your data';
+
+  @override
   String get moreSettings => 'Settings';
+
+  @override
+  String get moreSettingsDescription => 'Preferences and your account';
 
   @override
   String get moreSignOut => 'Sign out';
