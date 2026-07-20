@@ -542,6 +542,39 @@ void main() {
           .timeout(const Duration(seconds: 5));
     });
 
+    test(
+      'swallows an error on the stream (a failed token refresh, typically '
+      'just being offline) without touching the session',
+      () async {
+        await repository.dispose();
+        when(() => auth.currentSession)
+            .thenReturn(sessionFor(supabaseUser(id: 'user-7')));
+        final restored = buildRepository();
+        final signedIn = restored.currentSession;
+        final emitted = await watch(restored);
+
+        // Supabase reports a failed refresh as an *error* on this stream, not
+        // as an event. Without the listener's `onError` this escapes into the
+        // test's zone as an uncaught async error and fails the test on its
+        // own — which is exactly the regression this guards.
+        authStateChanges.addError(
+          const AuthException('Invalid Refresh Token'),
+          StackTrace.current,
+        );
+        await pumpEventQueue();
+
+        expect(restored.currentSession, signedIn);
+        expect(restored.currentSession.isSignedIn, isTrue);
+        expect(restored.currentSession.user!.id, 'user-7');
+        expect(
+          emitted,
+          [signedIn],
+          reason: 'watchSession() should only have replayed the current '
+              'session, with nothing emitted for the error',
+        );
+      },
+    );
+
     test('dispose() stops listening without throwing', () async {
       await repository.dispose();
       builtRepositories.remove(repository);

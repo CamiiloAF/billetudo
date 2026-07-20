@@ -36,8 +36,16 @@ class AuthRepositoryImpl implements AuthRepository {
     this._connector,
   ) {
     _restoreSession();
-    _authStateSubscription =
-        _supabase.auth.onAuthStateChange.listen(_onAuthStateChange);
+    _authStateSubscription = _supabase.auth.onAuthStateChange.listen(
+      _onAuthStateChange,
+      // Supabase reports a failed token refresh as an *error* on this stream,
+      // not as an event. Swallowing it is deliberate: the app is local-first,
+      // so a refresh that fails (typically just being offline) must neither
+      // tear down the session nor escape as an uncaught async error. If the
+      // token is really gone, Supabase follows up with a signed-out event and
+      // [_onAuthStateChange] handles it there.
+      onError: (Object _, StackTrace __) {},
+    );
   }
 
   /// Releases the Supabase auth listener and the session stream. In a normal

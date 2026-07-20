@@ -3,6 +3,7 @@ import 'package:powersync/powersync.dart' as ps;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/config/env.dart';
+import '../../../../core/crash/crash_reporter.dart';
 
 /// Bridges PowerSync (HU-04/HU-05) to Supabase: supplies the JWT the sync
 /// stream needs, and replicates PowerSync's local write queue against
@@ -16,9 +17,10 @@ import '../../../../core/config/env.dart';
 /// pieces (the schema, the Drift-over-PowerSync connection).
 @lazySingleton
 class PowerSyncConnector extends ps.PowerSyncBackendConnector {
-  PowerSyncConnector(this._supabase);
+  PowerSyncConnector(this._supabase, this._crash);
 
   final SupabaseClient _supabase;
+  final CrashReporter _crash;
 
   /// Postgres error codes that will never succeed on retry (RLS denial,
   /// invalid input, missing FK target, uniqueness clash...). Matches
@@ -51,12 +53,25 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
       return;
     }
 
+    // Rows are born without an owner: the app is local-first, so `user_id` is
+    // nullable and nothing stamps it at creation time (`claimUnownedRows` only
+    // runs once, during the post-login merge). Stamping it here — the single
+    // edge where local data crosses into the cloud — is what makes the row
+    // pass the `WITH CHECK (user_id = auth.uid())` policy every synced table
+    // carries. Without it every INSERT came back 403/42501 and was dropped as
+    // fatal below, silently losing the row on every table.
+    final userId = _supabase.auth.currentSession?.user.id;
+
     try {
       for (final op in transaction.crud) {
         final table = _supabase.from(op.table);
         switch (op.op) {
           case ps.UpdateType.put:
-            await table.upsert({'id': op.id, ...?op.opData});
+            final data = {'id': op.id, ...?op.opData};
+            if (userId != null && data['user_id'] == null) {
+              data['user_id'] = userId;
+            }
+            await table.upsert(data);
           case ps.UpdateType.patch:
             if (op.opData case final data? when data.isNotEmpty) {
               await table.update(data).eq('id', op.id);
@@ -66,13 +81,20 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
         }
       }
       await transaction.complete();
-    } on PostgrestException catch (e) {
+    } on PostgrestException catch (e, stackTrace) {
       final code = e.code;
       final isFatal = code != null &&
           _fatalResponseCodes.any((pattern) => pattern.hasMatch(code));
       if (isFatal) {
         // Discard the offending op rather than retrying it forever — see
-        // `_fatalResponseCodes`.
+        // `_fatalResponseCodes`. Reported, never swallowed: dropping a write
+        // means losing user data, and doing that without a trace is how the
+        // missing `user_id` above went unnoticed while every insert failed.
+        await _crash.recordError(
+          e,
+          stackTrace,
+          context: 'PowerSync upload dropped a fatal op (code $code)',
+        );
         await transaction.complete();
         return;
       }
