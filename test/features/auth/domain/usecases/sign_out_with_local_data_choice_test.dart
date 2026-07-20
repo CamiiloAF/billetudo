@@ -107,32 +107,56 @@ void main() {
     );
   });
 
-  group('HU-06: el Result de SignOut se descarta a proposito', () {
-    // Comportamiento heredado del router: un signOut fallido no cambia el
-    // desenlace. Queda escrito para que cambiarlo sea deliberado, no un
-    // efecto colateral.
-    test('signOut fallido + keep sigue siendo SignedOutKeepingData', () async {
-      when(signOut.call).thenAnswer(
-        (_) async => const Left(NetworkFailure('sin red')),
-      );
+  group('HU-06: un SignOut fallido aborta todo (SignOutFailed)', () {
+    // Antes este grupo afirmaba lo contrario ("el Result de SignOut se
+    // descarta a proposito"): `signOut()` disparaba sus pasos con `unawaited`
+    // y siempre devolvia Right, asi que el Result no traia informacion. Ahora
+    // los espera y puede fallar, y ese fallo es el cuarto desenlace.
+    const failure = NetworkFailure('sin red');
+
+    void givenSignOutFails() {
+      when(signOut.call).thenAnswer((_) async => const Left(failure));
+    }
+
+    test('con keep devuelve SignOutFailed, no SignedOutKeepingData', () async {
+      givenSignOutFails();
 
       final outcome = await useCase(LocalDataChoice.keep);
 
-      expect(outcome, isA<SignedOutKeepingData>());
+      expect(outcome, isA<SignOutFailed>());
+      expect((outcome as SignOutFailed).failure, same(failure));
       verifyNever(wipeLocalData.call);
     });
 
-    test('signOut fallido + delete igual intenta el wipe y reporta su '
-        'resultado', () async {
-      when(signOut.call).thenAnswer(
-        (_) async => const Left(NetworkFailure('sin red')),
-      );
+    test(
+      'con delete NO borra nada: la sesion sigue viva y el sync repoblaria '
+      'lo borrado al reabrir la app',
+      () async {
+        givenSignOutFails();
+        when(wipeLocalData.call).thenAnswer((_) async => const Right(unit));
+
+        final outcome = await useCase(LocalDataChoice.delete);
+
+        expect(outcome, isA<SignOutFailed>());
+        expect((outcome as SignOutFailed).failure, same(failure));
+        // Lo importante del cambio: el desenlace se decide ANTES de mirar la
+        // eleccion del usuario. Confirmarle un borrado que la proxima apertura
+        // deshace es peor que no borrar.
+        verifyNever(wipeLocalData.call);
+      },
+    );
+
+    test('SignOutFailed nunca se confunde con un desenlace exitoso', () async {
+      givenSignOutFails();
       when(wipeLocalData.call).thenAnswer((_) async => const Right(unit));
 
       final outcome = await useCase(LocalDataChoice.delete);
 
-      expect(outcome, isA<SignedOutAndWiped>());
-      verify(wipeLocalData.call).called(1);
+      expect(outcome, isNot(isA<SignedOutAndWiped>()));
+      expect(outcome, isNot(isA<SignedOutKeepingData>()));
+      // Tampoco es el "sesion cerrada pero el wipe fallo": ahi la sesion SI
+      // se cerro, y el mensaje que le toca al usuario es otro.
+      expect(outcome, isNot(isA<SignedOutButWipeFailed>()));
     });
   });
 }

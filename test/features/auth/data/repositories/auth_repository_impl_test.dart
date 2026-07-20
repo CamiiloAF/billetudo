@@ -154,6 +154,165 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
+  /// Collects everything `watchSession()` emits, starting with the current
+  /// session it replays on subscription. Shared by the sign-out groups, which
+  /// care as much about what is *not* emitted as about the returned `Result`.
+  Future<List<AuthSession>> watchSessions(AuthRepositoryImpl repo) async {
+    final emitted = <AuthSession>[];
+    repo.watchSession().listen(emitted.add);
+    await pumpEventQueue();
+    return emitted;
+  }
+
+  /// A repository whose constructor found a persisted Supabase session, i.e.
+  /// the signed-in starting point every sign-out test needs.
+  AuthRepositoryImpl buildSignedInRepository({String id = 'user-7'}) {
+    when(() => auth.currentSession).thenReturn(sessionFor(supabaseUser(id: id)));
+    return buildRepository();
+  }
+
+  group('signOut (HU-06)', () {
+    test(
+      'devuelve Right, deja la sesion cerrada y lo reporta a la UI cuando '
+      'los tres pasos salen bien',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        final emitted = await watchSessions(signedIn);
+
+        final result = await signedIn.signOut();
+        await pumpEventQueue();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        expect(signedIn.currentSession, const AuthSession.signedOut());
+        expect(emitted.last, const AuthSession.signedOut());
+        verify(() => google.signOutSilently()).called(1);
+        verify(() => auth.signOut()).called(1);
+      },
+    );
+
+    test(
+      'devuelve Left cuando falla el signOut de Supabase, SIN emitir '
+      'signedOut ni cambiar la sesion actual',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        final sessionBefore = signedIn.currentSession;
+        final emitted = await watchSessions(signedIn);
+        when(() => auth.signOut())
+            .thenThrow(const AuthException('no se pudo cerrar sesion'));
+
+        final result = await signedIn.signOut();
+        await pumpEventQueue();
+
+        expect(result, isA<Left<Failure, Unit>>());
+        expect((result as Left).value, isA<NetworkFailure>());
+        // Lo que de verdad protege este test: la sesion sobrevive en disco, y
+        // decirle a la UI que esta deslogueada crea un estado que se revierte
+        // solo al reabrir la app (`_restoreSession` encuentra el token,
+        // PowerSync reconecta y repuebla).
+        expect(signedIn.currentSession, sessionBefore);
+        expect(signedIn.currentSession.isSignedIn, isTrue);
+        expect(
+          emitted,
+          [sessionBefore],
+          reason: 'watchSession() solo debio replayar la sesion vigente: nada '
+              'de signedOut mientras el token sigue en disco',
+        );
+      },
+    );
+
+    test(
+      'la desconexion de PowerSync esta COMPLETADA cuando signOut resuelve, '
+      'no solo disparada',
+      () async {
+        // `PowerSyncDatabase` no es mockeable (es `base`), asi que el gancho
+        // observable es su propio estado: mientras una peticion de
+        // credenciales sigue en vuelo el status queda en `connecting`, y solo
+        // un `disconnect()` **esperado** lo baja. Con el `unawaited(...)`
+        // anterior, este `connecting` seguia en true al resolver signOut.
+        Future<Null> slowCredentials() => Future<Null>.delayed(
+              const Duration(seconds: 2),
+              () => null,
+            );
+        when(() => connector.fetchCredentials())
+            .thenAnswer((_) => slowCredentials());
+        when(() => connector.getCredentialsCached())
+            .thenAnswer((_) => slowCredentials());
+        when(() => connector.prefetchCredentials())
+            .thenAnswer((_) => slowCredentials());
+
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        await untilCalled(() => connector.fetchCredentials())
+            .timeout(const Duration(seconds: 5));
+        expect(
+          powerSync.currentStatus.connecting,
+          isTrue,
+          reason: 'precondicion: el sync debe estar levantandose para que '
+              'apagarlo signifique algo',
+        );
+
+        final result = await signedIn.signOut();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        expect(
+          powerSync.currentStatus.connecting,
+          isFalse,
+          reason: 'un wipe posterior correria contra un stream vivo: es '
+              'exactamente la carrera que HU-06 evita',
+        );
+        expect(powerSync.connected, isFalse);
+      },
+      timeout: const Timeout(Duration(seconds: 30)),
+    );
+
+    test(
+      'espera de verdad al signOut de Supabase antes de resolver',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        final supabaseSignOut = Completer<void>();
+        when(() => auth.signOut()).thenAnswer((_) => supabaseSignOut.future);
+
+        var resolved = false;
+        final pending = signedIn.signOut().then((_) => resolved = true);
+        await pumpEventQueue();
+
+        expect(
+          resolved,
+          isFalse,
+          reason: 'con `unawaited` esto ya habria devuelto Right sin que la '
+              'sesion de Supabase estuviera cerrada',
+        );
+        expect(signedIn.currentSession.isSignedIn, isTrue);
+
+        supabaseSignOut.complete();
+        await pending;
+
+        expect(resolved, isTrue);
+        expect(signedIn.currentSession, const AuthSession.signedOut());
+      },
+    );
+  });
+
+  group('GoogleAuthDatasource.signOutSilently (contrato de HU-06)', () {
+    test(
+      'se traga sus propios errores, asi que nunca puede tumbar el cierre de '
+      'sesion',
+      () async {
+        // Sin plugin de `google_sign_in` bajo `flutter test`, `initialize()`
+        // falla de verdad. El datasource real debe absorberlo: si alguien
+        // quita ese try/catch, `_clearLocalSession` empieza a propagar la
+        // excepcion y el usuario no puede cerrar sesion.
+        await expectLater(
+          GoogleAuthDatasource().signOutSilently(),
+          completes,
+        );
+      },
+    );
+  });
+
   group('deleteAccount', () {
     test(
       'invokes the delete-account Edge Function and clears the local '
@@ -172,6 +331,35 @@ void main() {
         verify(() => functions.invoke('delete-account')).called(1);
         verify(() => google.signOutSilently()).called(1);
         verify(() => auth.signOut()).called(1);
+        expect(powerSync.connected, isFalse);
+      },
+    );
+
+    test(
+      'sigue devolviendo Right y emitiendo signedOut aunque falle el signOut '
+      'de Supabase: la cuenta en la nube ya no existe',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        final emitted = await watchSessions(signedIn);
+        when(() => functions.invoke('delete-account')).thenAnswer(
+          (_) async => const FunctionResponse(
+            data: {'success': true},
+            status: 200,
+          ),
+        );
+        when(() => auth.signOut())
+            .thenThrow(const AuthException('no se pudo cerrar sesion'));
+
+        final result = await signedIn.deleteAccount();
+        await pumpEventQueue();
+
+        // Al reves que HU-06: aca un fallo de limpieza local no puede
+        // convertir un borrado ya consumado en un error que el usuario lea
+        // como "no paso nada".
+        expect(result, const Right<Failure, Unit>(unit));
+        expect(signedIn.currentSession, const AuthSession.signedOut());
+        expect(emitted.last, const AuthSession.signedOut());
         expect(powerSync.connected, isFalse);
       },
     );
