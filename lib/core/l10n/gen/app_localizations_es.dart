@@ -1763,6 +1763,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get firstLaunchOfflineRetrying => 'Reintentando...';
 
   @override
+  String get splashLoadingCaption => 'Cargando tus finanzas...';
+
+  @override
+  String get brandWordmarkPrefix => 'b';
+
+  @override
+  String get brandWordmarkDotlessI => 'ı';
+
+  @override
+  String get brandWordmarkSuffix => 'lletudo';
+
+  @override
   String get scheduledPaymentsTitle => 'Pagos programados';
 
   @override

@@ -1284,6 +1284,22 @@
   "@firstLaunchOfflineRetrying": {
     "description": "Label del botón Reintentar mientras la petición está en curso."
   },
+  "splashLoadingCaption": "Cargando tus finanzas...",
+  "@splashLoadingCaption": {
+    "description": "Caption bajo el spinner indeterminado del splash inicial (design-system/billetudo/pages/splash.md, nodo M0TfmS), mientras arrancan Drift/PowerSync antes de mostrar la app real."
+  },
+  "brandWordmarkPrefix": "b",
+  "@brandWordmarkPrefix": {
+    "description": "Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string."
+  },
+  "brandWordmarkDotlessI": "ı",
+  "@brandWordmarkDotlessI": {
+    "description": "La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales."
+  },
+  "brandWordmarkSuffix": "lletudo",
+  "@brandWordmarkSuffix": {
+    "description": "Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real."
+  },
   "scheduledPaymentsTitle": "Pagos programados",
   "@scheduledPaymentsTitle": {},
   "scheduledPaymentsAdd": "Nuevo pago programado",

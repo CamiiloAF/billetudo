@@ -1350,6 +1350,7 @@
               "textGrowth": "fixed-width",
               "width": "fill_container",
               "content": "Descripcion",
+              "lineHeight": 1.3,
               "fontFamily": "$font-body",
               "fontSize": 15,
               "fontWeight": "600"
@@ -25885,40 +25886,6 @@
                               "fontWeight": "700"
                             }
                           ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "k4ya1",
-                          "name": "Sep",
-                          "fill": "$border",
-                          "content": "·",
-                          "fontFamily": "$font-body",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "dbsUh",
-                          "name": "Ninguna Btn",
-                          "height": 44,
-                          "padding": [
-                            0,
-                            6
-                          ],
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "T69Xjf",
-                              "name": "Label",
-                              "fill": "$primary-on-soft",
-                              "content": "Ninguna",
-                              "fontFamily": "$font-body",
-                              "fontSize": 13,
-                              "fontWeight": "700"
-                            }
-                          ]
                         }
                       ]
                     }
@@ -34219,40 +34186,6 @@
                               "name": "Label",
                               "fill": "$primary-on-soft",
                               "content": "Todas",
-                              "fontFamily": "$font-body",
-                              "fontSize": 13,
-                              "fontWeight": "700"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "kiHfU",
-                          "name": "Sep",
-                          "fill": "$border",
-                          "content": "·",
-                          "fontFamily": "$font-body",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "HIsKp",
-                          "name": "Ninguna Btn",
-                          "height": 44,
-                          "padding": [
-                            0,
-                            6
-                          ],
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "vKAoI",
-                              "name": "Label",
-                              "fill": "$primary-on-soft",
-                              "content": "Ninguna",
                               "fontFamily": "$font-body",
                               "fontSize": 13,
                               "fontWeight": "700"
@@ -114678,6 +114611,477 @@
               ]
             }
           }
+        }
+      ]
+    },
+    {
+      "type": "ellipse",
+      "id": "U60Oq",
+      "x": -726,
+      "y": -160,
+      "name": "Coin Glyph",
+      "reusable": true,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 135,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "$primary",
+            "position": 0
+          },
+          {
+            "color": "$primary-deep",
+            "position": 1
+          }
+        ]
+      },
+      "width": 44,
+      "height": 44,
+      "stroke": "$primary-light",
+      "strokeWidth": 3,
+      "strokeAlignment": "inner"
+    },
+    {
+      "type": "frame",
+      "id": "y5JJtf",
+      "x": -622,
+      "y": -160,
+      "name": "Logo Wordmark",
+      "reusable": true,
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "text",
+          "id": "Z4mUsO",
+          "name": "Letter b",
+          "fill": "$text-primary",
+          "content": "b",
+          "fontFamily": "$font-body",
+          "fontSize": 56,
+          "fontWeight": "800",
+          "letterSpacing": -2
+        },
+        {
+          "type": "frame",
+          "id": "vCqdv",
+          "name": "I Stack",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "text",
+              "id": "yuFkB",
+              "name": "Dotless I",
+              "fill": "$text-primary",
+              "content": "ı",
+              "fontFamily": "$font-body",
+              "fontSize": 56,
+              "fontWeight": "800",
+              "letterSpacing": -2
+            },
+            {
+              "id": "H9Gwq",
+              "type": "ref",
+              "ref": "U60Oq",
+              "name": "Coin Dot",
+              "width": 16,
+              "height": 16,
+              "strokeWidth": 2,
+              "layoutPosition": "absolute",
+              "x": -2,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "L45h19",
+          "name": "Rest lletudo",
+          "fill": "$text-primary",
+          "content": "lletudo",
+          "fontFamily": "$font-body",
+          "fontSize": 56,
+          "fontWeight": "800",
+          "letterSpacing": -2
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ZiNl0",
+      "x": -726,
+      "y": -336,
+      "name": "App Icon Tile",
+      "reusable": true,
+      "width": 96,
+      "height": 96,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 150,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "$primary",
+            "position": 0
+          },
+          {
+            "color": "$primary-deep",
+            "position": 1
+          }
+        ]
+      },
+      "cornerRadius": 24,
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "GsuQs",
+          "x": 28,
+          "y": 16,
+          "name": "Tile B",
+          "fill": "$on-primary",
+          "content": "b",
+          "fontFamily": "$font-body",
+          "fontSize": 56,
+          "fontWeight": "800"
+        },
+        {
+          "id": "tT9ao",
+          "type": "ref",
+          "ref": "U60Oq",
+          "name": "Tile Coin",
+          "width": 22,
+          "height": 22,
+          "strokeWidth": 2,
+          "x": 62,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "bSOQb",
+      "x": 10240,
+      "y": 21220,
+      "name": "Splash - B Wordmark",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "n6xPJO",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "children": [
+            {
+              "id": "S0yNu",
+              "type": "ref",
+              "ref": "S0yNu"
+            },
+            {
+              "id": "GthW8",
+              "type": "ref",
+              "ref": "GthW8",
+              "children": [
+                {
+                  "id": "cOZb3",
+                  "type": "ref",
+                  "ref": "cOZb3"
+                },
+                {
+                  "id": "irBay",
+                  "type": "ref",
+                  "ref": "irBay"
+                },
+                {
+                  "id": "gg2Ii",
+                  "type": "ref",
+                  "ref": "gg2Ii"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "s72DK",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            6,
+            20
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hg0l8",
+              "name": "Brand Block",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "scU2x",
+                  "type": "ref",
+                  "ref": "y5JJtf",
+                  "name": "Wordmark",
+                  "children": [
+                    {
+                      "id": "Z4mUsO",
+                      "type": "ref",
+                      "ref": "Z4mUsO",
+                      "fontSize": 56
+                    },
+                    {
+                      "id": "vCqdv",
+                      "type": "ref",
+                      "ref": "vCqdv",
+                      "layout": "vertical",
+                      "gap": 0,
+                      "alignItems": "start",
+                      "children": [
+                        {
+                          "id": "H9Gwq",
+                          "type": "ref",
+                          "ref": "H9Gwq",
+                          "width": 16,
+                          "height": 16,
+                          "x": -2,
+                          "y": 3,
+                          "strokeWidth": 1,
+                          "layoutPosition": "absolute"
+                        },
+                        {
+                          "id": "yuFkB",
+                          "type": "ref",
+                          "ref": "yuFkB",
+                          "fontSize": 56
+                        }
+                      ]
+                    },
+                    {
+                      "id": "L45h19",
+                      "type": "ref",
+                      "ref": "L45h19",
+                      "fontSize": 56
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KEolH",
+              "layoutPosition": "absolute",
+              "x": 20,
+              "y": 820,
+              "name": "Bottom Block",
+              "width": 350,
+              "layout": "vertical",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "QqHXB",
+                  "name": "Loading Spinner",
+                  "innerRadius": 0.82,
+                  "startAngle": -90,
+                  "sweepAngle": 270,
+                  "fill": "$primary",
+                  "width": 36,
+                  "height": 36
+                },
+                {
+                  "type": "text",
+                  "id": "M0TfmS",
+                  "name": "Loading Caption",
+                  "fill": "$text-secondary",
+                  "content": "Cargando tus finanzas...",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "raS94",
+      "x": 10240,
+      "y": 22272,
+      "name": "Splash - B Wordmark (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "w3N9c",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "children": [
+            {
+              "id": "S0yNu",
+              "type": "ref",
+              "ref": "S0yNu"
+            },
+            {
+              "id": "GthW8",
+              "type": "ref",
+              "ref": "GthW8",
+              "children": [
+                {
+                  "id": "cOZb3",
+                  "type": "ref",
+                  "ref": "cOZb3"
+                },
+                {
+                  "id": "irBay",
+                  "type": "ref",
+                  "ref": "irBay"
+                },
+                {
+                  "id": "gg2Ii",
+                  "type": "ref",
+                  "ref": "gg2Ii"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YT7c1",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            6,
+            20
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ztREK",
+              "name": "Brand Block",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "ZsrHI",
+                  "type": "ref",
+                  "ref": "y5JJtf",
+                  "name": "Wordmark",
+                  "children": [
+                    {
+                      "id": "Z4mUsO",
+                      "type": "ref",
+                      "ref": "Z4mUsO",
+                      "fontSize": 56
+                    },
+                    {
+                      "id": "vCqdv",
+                      "type": "ref",
+                      "ref": "vCqdv",
+                      "layout": "vertical",
+                      "gap": 0,
+                      "alignItems": "start",
+                      "children": [
+                        {
+                          "id": "H9Gwq",
+                          "type": "ref",
+                          "ref": "H9Gwq",
+                          "width": 16,
+                          "height": 16,
+                          "x": -2,
+                          "y": 3,
+                          "strokeWidth": 1,
+                          "layoutPosition": "absolute"
+                        },
+                        {
+                          "id": "yuFkB",
+                          "type": "ref",
+                          "ref": "yuFkB",
+                          "fontSize": 56
+                        }
+                      ]
+                    },
+                    {
+                      "id": "L45h19",
+                      "type": "ref",
+                      "ref": "L45h19",
+                      "fontSize": 56
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "v0Tou",
+              "layoutPosition": "absolute",
+              "x": 20,
+              "y": 820,
+              "name": "Bottom Block",
+              "width": 350,
+              "layout": "vertical",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "p8QtYW",
+                  "name": "Loading Spinner",
+                  "innerRadius": 0.82,
+                  "startAngle": -90,
+                  "sweepAngle": 270,
+                  "fill": "$primary",
+                  "width": 36,
+                  "height": 36
+                },
+                {
+                  "type": "text",
+                  "id": "x75Qb",
+                  "name": "Loading Caption",
+                  "fill": "$text-secondary",
+                  "content": "Cargando tus finanzas...",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

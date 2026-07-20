@@ -3098,6 +3098,30 @@ abstract class AppLocalizations {
   /// **'Reintentando...'**
   String get firstLaunchOfflineRetrying;
 
+  /// Caption bajo el spinner indeterminado del splash inicial (design-system/billetudo/pages/splash.md, nodo M0TfmS), mientras arrancan Drift/PowerSync antes de mostrar la app real.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando tus finanzas...'**
+  String get splashLoadingCaption;
+
+  /// Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string.
+  ///
+  /// In es, this message translates to:
+  /// **'b'**
+  String get brandWordmarkPrefix;
+
+  /// La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales.
+  ///
+  /// In es, this message translates to:
+  /// **'ı'**
+  String get brandWordmarkDotlessI;
+
+  /// Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real.
+  ///
+  /// In es, this message translates to:
+  /// **'lletudo'**
+  String get brandWordmarkSuffix;
+
   /// No description provided for @scheduledPaymentsTitle.
   ///
   /// In es, this message translates to:
