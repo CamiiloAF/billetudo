@@ -6,13 +6,11 @@ Lo que falta ejercitar de Auth + Sync (`docs/requirements/05-auth-sync.md`) con 
 
 - **Corré todo contra dev, no contra prod.** Dev tiene una copia exacta de los datos (los ids son deterministas, por eso coinciden). La prueba 5 borra la cuenta entera.
 - Confirmá a qué entorno apunta la app: las claves salen de `Env`. Si dice producción, parás.
-- Tené a mano el `user_id` de tu cuenta en dev:
+- Las consultas ya vienen con el `user_id` de la cuenta de dev (`19bd6a2c-10da-492e-bb1a-d51385f90968`), listas para copiar. Si alguna vez cambia la cuenta:
 
 ```sql
 select id, email from auth.users;
 ```
-
-Reemplazá `TU_USER_ID` en las consultas de abajo.
 
 ---
 
@@ -30,7 +28,7 @@ Reemplazá `TU_USER_ID` en las consultas de abajo.
 select id, note, amount_minor,
        to_timestamp(updated_at / 1000) at time zone 'America/Bogota' as actualizado
 from transactions
-where user_id = 'TU_USER_ID'
+where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
 order by updated_at desc
 limit 5;
 ```
@@ -55,7 +53,7 @@ select count(*) as total,
        count(*) filter (where tombstoned_at is not null) as lapidas,
        count(*) filter (where deleted_at is null and tombstoned_at is null) as visibles
 from transactions
-where user_id = 'TU_USER_ID';
+where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968';
 ```
 
 **Pasos**
@@ -69,7 +67,7 @@ where user_id = 'TU_USER_ID';
 select id, note, amount_minor,
        to_timestamp(deleted_at) at time zone 'America/Bogota' as borrado
 from transactions
-where user_id = 'TU_USER_ID' and deleted_at is not null
+where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968' and deleted_at is not null
 order by deleted_at desc;
 ```
 
@@ -93,11 +91,20 @@ order by deleted_at desc;
 4. Cerrá la app por completo y volvé a abrirla, todavía sin conexión. Los movimientos deben seguir ahí.
 5. Quitá el modo avión.
 6. Mirá el indicador: debe pasar a **girar** (sincronizando) y luego a nube con check.
-7. Verificá que llegaron todos:
+7. Verificá que llegaron todos. Esta consulta muestra los últimos creados, así que los que registraste sin conexión deben estar arriba con su hora real de creación:
 
 ```sql
-select count(*) from transactions where user_id = 'TU_USER_ID';
+select note, amount_minor,
+       to_timestamp(created_at) at time zone 'America/Bogota' as creado,
+       to_timestamp(updated_at / 1000) at time zone 'America/Bogota' as subido
+from transactions
+where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+  and deleted_at is null
+order by created_at desc
+limit 8;
 ```
+
+**Mirá la diferencia entre `creado` y `subido`:** `creado` debe ser la hora en que los registraste (sin conexión) y `subido` la de la reconexión. Si `creado` coincide con la reconexión en vez de con el momento real, la marca de tiempo se está generando al subir y no al escribir — sería un bug distinto, que desordena el historial.
 
 **Si falla:** si el indicador se queda girando para siempre, la cola se atascó. Es FIFO, así que una sola operación trabada bloquea todo lo demás. Mirá el reporte de errores — desde el commit `e284dc1` los reintentos se reportan en vez de ser mudos.
 
@@ -131,8 +138,8 @@ Dos cosas concretas a mirar:
 2. Verificá que existan de verdad:
 
 ```sql
-select count(*) as ocurrencias from scheduled_payment_occurrences where user_id = 'TU_USER_ID';
-select count(*) as etiquetas   from scheduled_payment_tags        where user_id = 'TU_USER_ID';
+select count(*) as ocurrencias from scheduled_payment_occurrences where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968';
+select count(*) as etiquetas   from scheduled_payment_tags        where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968';
 ```
 
 Si `ocurrencias` da 0, la prueba no sirve — volvé al paso 1.
@@ -141,26 +148,26 @@ Si `ocurrencias` da 0, la prueba no sirve — volvé al paso 1.
 4. Verificá que **no quedó nada** en ninguna de las 14 tablas:
 
 ```sql
-select 'accounts' t, count(*) from accounts where user_id = 'TU_USER_ID'
-union all select 'transactions', count(*) from transactions where user_id = 'TU_USER_ID'
-union all select 'categories', count(*) from categories where user_id = 'TU_USER_ID'
-union all select 'budgets', count(*) from budgets where user_id = 'TU_USER_ID'
-union all select 'goals', count(*) from goals where user_id = 'TU_USER_ID'
-union all select 'debts', count(*) from debts where user_id = 'TU_USER_ID'
-union all select 'tags', count(*) from tags where user_id = 'TU_USER_ID'
-union all select 'transaction_tags', count(*) from transaction_tags where user_id = 'TU_USER_ID'
-union all select 'scheduled_payments', count(*) from scheduled_payments where user_id = 'TU_USER_ID'
-union all select 'scheduled_payment_tags', count(*) from scheduled_payment_tags where user_id = 'TU_USER_ID'
-union all select 'scheduled_payment_occurrences', count(*) from scheduled_payment_occurrences where user_id = 'TU_USER_ID'
-union all select 'budget_accounts', count(*) from budget_accounts where user_id = 'TU_USER_ID'
-union all select 'budget_categories', count(*) from budget_categories where user_id = 'TU_USER_ID'
-union all select 'app_settings', count(*) from app_settings where user_id = 'TU_USER_ID';
+select 'accounts' t, count(*) from accounts where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'transactions', count(*) from transactions where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'categories', count(*) from categories where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'budgets', count(*) from budgets where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'goals', count(*) from goals where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'debts', count(*) from debts where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'tags', count(*) from tags where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'transaction_tags', count(*) from transaction_tags where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'scheduled_payments', count(*) from scheduled_payments where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'scheduled_payment_tags', count(*) from scheduled_payment_tags where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'scheduled_payment_occurrences', count(*) from scheduled_payment_occurrences where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'budget_accounts', count(*) from budget_accounts where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'budget_categories', count(*) from budget_categories where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968'
+union all select 'app_settings', count(*) from app_settings where user_id = '19bd6a2c-10da-492e-bb1a-d51385f90968';
 ```
 
 **Todas deben dar 0.** Y el usuario debe haber desaparecido:
 
 ```sql
-select count(*) from auth.users where id = 'TU_USER_ID';
+select count(*) from auth.users where id = '19bd6a2c-10da-492e-bb1a-d51385f90968';
 ```
 
 5. Confirmá que la app quedó **usable sin cuenta**, no rota ni en una pantalla de error.
