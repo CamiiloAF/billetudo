@@ -1,9 +1,14 @@
 import 'package:injectable/injectable.dart';
 
+import '../../../scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
+import '../../../scheduled_payments/domain/entities/scheduled_payment.dart';
+import '../../../scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
 import '../entities/budget.dart';
+import '../entities/budget_detail_data.dart';
 import '../entities/budget_expense.dart';
 import '../entities/budget_period_window.dart';
 import '../entities/budget_progress.dart';
+import '../entities/budget_scheduled_item.dart';
 import '../entities/budget_scope.dart';
 
 /// Computes a budget's spend over a window (HU-04). Pure and deterministic: the
@@ -86,32 +91,191 @@ class BudgetProgressCalculator {
         !expense.date.isBefore(window.endExclusive)) {
       return false;
     }
-    if (!_matchesAccounts(scope, expense)) {
+    if (!_matchesAccountId(scope, expense.accountId)) {
       return false;
     }
-    return _matchesCategories(scope, expandedCategories, expense);
+    return _matchesCategoryId(scope, expandedCategories, expense.categoryId);
   }
 
-  bool _matchesAccounts(BudgetScope scope, BudgetExpense expense) {
+  /// Whether [template] belongs to the budget's scope (HU-12): same currency,
+  /// same account/category rule as [matches], generalized to `type = expense`
+  /// scheduled-payment templates. Deliberately date-less — window membership
+  /// is decided per-occurrence, once a date has been projected or read off the
+  /// pending ledger (see [matchesProjectedOccurrence] /
+  /// [matchesPendingScheduledOccurrence]).
+  bool matchesTemplateScope({
+    required Budget budget,
+    required BudgetScope scope,
+    required Set<String> expandedCategories,
+    required ScheduledPayment template,
+  }) {
+    if (template.type != ScheduledPaymentType.expense) {
+      return false;
+    }
+    if (template.currency != budget.currency) {
+      return false;
+    }
+    if (!_matchesAccountId(scope, template.accountId)) {
+      return false;
+    }
+    return _matchesCategoryId(scope, expandedCategories, template.categoryId);
+  }
+
+  /// Whether a still-future [occurrence] (projected from a template's cadence,
+  /// not yet a `Transaction` nor a `ScheduledPaymentOccurrence` row) belongs in
+  /// [window] and in the budget's scope (HU-12, criteria 1/3).
+  bool matchesProjectedOccurrence({
+    required Budget budget,
+    required BudgetScope scope,
+    required Set<String> expandedCategories,
+    required BudgetPeriodWindow window,
+    required ProjectedScheduledOccurrence occurrence,
+    required ScheduledPayment template,
+  }) {
+    if (!matchesTemplateScope(
+      budget: budget,
+      scope: scope,
+      expandedCategories: expandedCategories,
+      template: template,
+    )) {
+      return false;
+    }
+    return _inWindow(window, occurrence.date);
+  }
+
+  /// Whether an already-registered `pending` occurrence belongs in [window]
+  /// and in the budget's scope (HU-12, criterion 4). Only `pending` counts —
+  /// `confirmed`/`skipped`/`snoozed` are excluded here (a `confirmed` one is
+  /// already a `Transaction`, counted via [spentIn] instead).
+  bool matchesPendingScheduledOccurrence({
+    required Budget budget,
+    required BudgetScope scope,
+    required Set<String> expandedCategories,
+    required BudgetPeriodWindow window,
+    required PendingScheduledOccurrence pending,
+  }) {
+    if (!pending.occurrence.isPending) {
+      return false;
+    }
+    if (!matchesTemplateScope(
+      budget: budget,
+      scope: scope,
+      expandedCategories: expandedCategories,
+      template: pending.scheduledPayment,
+    )) {
+      return false;
+    }
+    return _inWindow(window, pending.occurrence.effectiveDate);
+  }
+
+  /// The items behind [BudgetProgress.scheduledMinor] for [window] (HU-12):
+  /// combines still-future occurrences [projected] from eligible templates'
+  /// cadence with occurrences already registered in
+  /// [pendingOccurrences]. The two sources never overlap by construction — the
+  /// catch-up generator always advances a template's `nextDate` past whatever
+  /// due date it processed (confirmed *or* pending), so [projected] (which
+  /// starts at each template's current `nextDate`) never re-covers a date
+  /// already sitting in [pendingOccurrences] or already materialized as a
+  /// `Transaction`.
+  List<BudgetScheduledItem> scheduledItemsIn({
+    required Budget budget,
+    required BudgetScope scope,
+    required BudgetPeriodWindow window,
+    required List<BudgetScheduledTemplateDetail> templates,
+    required List<ProjectedScheduledOccurrence> projected,
+    required List<PendingScheduledOccurrence> pendingOccurrences,
+    Map<String, List<String>> categoryChildren = const {},
+  }) {
+    final expanded =
+        expandCategories(scope.aliveCategoryIds, categoryChildren);
+    final detailById = {
+      for (final detail in templates) detail.template.id: detail,
+    };
+
+    final items = <BudgetScheduledItem>[];
+
+    for (final occurrence in projected) {
+      final detail = detailById[occurrence.scheduledPaymentId];
+      if (detail == null) {
+        continue;
+      }
+      if (!matchesProjectedOccurrence(
+        budget: budget,
+        scope: scope,
+        expandedCategories: expanded,
+        window: window,
+        occurrence: occurrence,
+        template: detail.template,
+      )) {
+        continue;
+      }
+      items.add(
+        BudgetScheduledItem(
+          id: '${occurrence.scheduledPaymentId}@'
+              '${occurrence.date.toIso8601String()}',
+          scheduledPaymentId: occurrence.scheduledPaymentId,
+          title: detail.title,
+          accountName: detail.accountName,
+          categoryIcon: detail.categoryIcon,
+          categoryColor: detail.categoryColor,
+          amountMinor: occurrence.amountMinor,
+          currency: occurrence.currency,
+          date: occurrence.date,
+        ),
+      );
+    }
+
+    for (final pending in pendingOccurrences) {
+      if (!matchesPendingScheduledOccurrence(
+        budget: budget,
+        scope: scope,
+        expandedCategories: expanded,
+        window: window,
+        pending: pending,
+      )) {
+        continue;
+      }
+      items.add(
+        BudgetScheduledItem(
+          id: pending.occurrence.id,
+          scheduledPaymentId: pending.scheduledPayment.id,
+          title: pending.categoryName ?? pending.accountName,
+          accountName: pending.accountName,
+          categoryIcon: pending.categoryIcon,
+          categoryColor: pending.categoryColor,
+          amountMinor: pending.scheduledPayment.amountMinor,
+          currency: pending.scheduledPayment.currency,
+          date: pending.occurrence.effectiveDate,
+        ),
+      );
+    }
+
+    items.sort((a, b) => a.date.compareTo(b.date));
+    return items;
+  }
+
+  bool _matchesAccountId(BudgetScope scope, String accountId) {
     // No rows = every account. With rows, only surviving referents count; an
     // emptied dimension (rows but none alive) matches nothing, never "all".
     if (scope.isAccountGlobal) {
       return true;
     }
-    return scope.aliveAccountIds.contains(expense.accountId);
+    return scope.aliveAccountIds.contains(accountId);
   }
 
-  bool _matchesCategories(
+  bool _matchesCategoryId(
     BudgetScope scope,
     Set<String> expandedCategories,
-    BudgetExpense expense,
+    String? categoryId,
   ) {
     if (scope.isCategoryGlobal) {
       return true;
     }
-    final categoryId = expense.categoryId;
     return categoryId != null && expandedCategories.contains(categoryId);
   }
+
+  bool _inWindow(BudgetPeriodWindow window, DateTime date) =>
+      !date.isBefore(window.start) && date.isBefore(window.endExclusive);
 
   /// Expands each scoped category to itself plus its subcategories (HU-04). The
   /// hierarchy is two levels (root -> sub), but a BFS keeps it correct if that

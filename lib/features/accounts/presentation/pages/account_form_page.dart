@@ -7,6 +7,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/utils/money_input_formatter.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_draft.dart';
@@ -161,7 +163,10 @@ class AccountFormBody extends StatelessWidget {
             signed: true,
           ),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d.,-]')),
+            MoneyInputFormatter(
+              decimals: MoneyFormatter.currencyDecimals(state.currency),
+              allowNegative: true,
+            ),
           ],
           onChanged: cubit.initialBalanceChanged,
         ),
@@ -209,6 +214,7 @@ class AccountFormBody extends StatelessWidget {
         if (state.isCard) ...[
           const SizedBox(height: 24),
           CardDetailsSection(
+            currencyDecimals: MoneyFormatter.currencyDecimals(state.currency),
             creditLimitText: state.creditLimitText,
             statementDay: state.statementDay,
             paymentDueDay: state.paymentDueDay,

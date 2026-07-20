@@ -82,10 +82,12 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       institution: account.institution ?? '',
       currency: account.currency,
       // Rendered with the same formatter that will parse it back, so an
-      // untouched field round-trips to the exact same cents. `formatAmount`
-      // would bake in a thousands separator the user then has to fight while
-      // editing, so the editable field uses `formatAmountForEditing` instead.
-      initialBalanceText: _money.formatAmountForEditing(
+      // untouched field round-trips to the exact same cents. It comes in
+      // grouped (`4.500.000`) because the field now keeps it grouped while the
+      // user types (`MoneyInputFormatter`): an ungrouped initial value would
+      // jump into groups on the first keystroke. The grouping is no longer
+      // something to fight — the caret survives it.
+      initialBalanceText: _money.formatAmount(
         displayedBalanceMinor,
         decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
       ),
@@ -94,7 +96,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
           : _money.formatAmountForEditing(account.interestRateBps!),
       creditLimitText: account.creditLimitMinor == null
           ? ''
-          : _money.formatAmountForEditing(
+          : _money.formatAmount(
               account.creditLimitMinor!,
               decimalDigits: MoneyFormatter.currencyDecimals(account.currency),
             ),

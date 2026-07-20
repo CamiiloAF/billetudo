@@ -292,7 +292,10 @@ void main() {
       ),
       build: build,
       act: (cubit) => cubit.load(accountId),
-      verify: (cubit) => expect(cubit.state.initialBalanceText, '100000'),
+      // Grouped, like the field itself keeps it while the user types
+      // (MoneyInputFormatter): a bare '100000' would jump into groups on the
+      // first keystroke.
+      verify: (cubit) => expect(cubit.state.initialBalanceText, '100.000'),
     );
   });
 
@@ -321,9 +324,10 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.isEditing, isTrue);
         expect(cubit.state.name, 'Bancolombia');
-        // Editable text: no thousands separator baked in, only the decimal
-        // one — otherwise the user has to fight a fixed dot to edit it.
-        expect(cubit.state.initialBalanceText, '4500,50');
+        // Editable text, grouped exactly as the field's own mask keeps it —
+        // the caret survives the separators now, so they no longer get in the
+        // way of editing.
+        expect(cubit.state.initialBalanceText, '4.500,50');
         // El número vuelve al formulario: sin él, el repositorio lo borraría
         // del almacén seguro en el siguiente guardado.
         expect(cubit.state.fullAccountNumber, '1234567890');

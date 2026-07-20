@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/utils/money_input_formatter.dart';
 
 /// The amount input of the budget form (`a3gGPM/k9OW4h`): a 52pt box holding
 /// the figure at 22/800 and, anchored inside it, the currency pill
@@ -15,6 +15,11 @@ import '../../../../core/utils/money_formatter.dart';
 /// prefilled amount never reads `4.500.000,00`, and it is always prefixed by
 /// the currency symbol — `KP13F` reads `$0` empty and must read `$4.500.000`
 /// filled, never a bare `4.500.000`.
+///
+/// [MoneyInputFormatter] keeps the figure grouped while the user types
+/// (`4500000` → `4.500.000`) without moving the caret, so what is being typed
+/// reads like money from the first keystroke and not only after an external
+/// rebuild.
 ///
 /// The symbol is a **fixed prefix outside the editable text**, not part of the
 /// value: the field's input formatter only lets digits and separators through,
@@ -73,9 +78,7 @@ class BudgetAmountField extends StatelessWidget {
               onChanged: (value) => onChanged(MoneyFormatter.parseMinor(value)),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
+              inputFormatters: [MoneyInputFormatter(decimals: decimals)],
               style: style.copyWith(color: colors.textPrimary),
               decoration: InputDecoration(
                 isCollapsed: true,

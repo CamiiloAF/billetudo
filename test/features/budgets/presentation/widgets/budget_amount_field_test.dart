@@ -13,6 +13,7 @@ void main() {
     WidgetTester tester, {
     int? amountMinor,
     String currency = 'COP',
+    ValueChanged<int?>? onChanged,
   }) =>
       tester.pumpAppWidget(
         SizedBox(
@@ -20,7 +21,7 @@ void main() {
           child: BudgetAmountField(
             amountMinor: amountMinor,
             currency: currency,
-            onChanged: (_) {},
+            onChanged: onChanged ?? (_) {},
             onCurrencyTap: () {},
           ),
         ),
@@ -41,6 +42,30 @@ void main() {
     expect(find.text(r'$'), findsOneWidget);
     expect(find.text('4.500.000'), findsOneWidget);
     expect(find.text('4.500.000,00'), findsNothing);
+  });
+
+  testWidgets('what the user types is grouped as money right away',
+      (tester) async {
+    int? reported;
+    await pump(tester, onChanged: (value) => reported = value);
+
+    await tester.enterText(find.byType(TextFormField), '4500000');
+    await tester.pump();
+
+    expect(find.text('4.500.000'), findsOneWidget);
+    expect(reported, 450000000);
+  });
+
+  testWidgets('clearing the field reports no amount, not zero', (tester) async {
+    var reported = 1;
+    await pump(tester, amountMinor: 450000000, onChanged: (value) {
+      reported = value ?? -1;
+    });
+
+    await tester.enterText(find.byType(TextFormField), '');
+    await tester.pump();
+
+    expect(reported, -1);
   });
 
   testWidgets('a currency with cents keeps them', (tester) async {
