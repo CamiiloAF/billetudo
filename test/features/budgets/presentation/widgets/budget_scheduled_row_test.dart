@@ -1,9 +1,12 @@
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scheduled_item.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_scheduled_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
   setUpAll(() async {
@@ -29,6 +32,9 @@ void main() {
       tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: BudgetScheduledRow(item: item, onTap: onTap ?? (_) {}),
           ),
@@ -44,11 +50,54 @@ void main() {
     expect(find.textContaining('-\$45.000'), findsNothing);
   });
 
-  testWidgets('the subtitle reads "Cuenta · Fecha"', (tester) async {
+  testWidgets('the amount renders in the secondary text color, not primary',
+      (tester) async {
     await pump(tester);
 
-    expect(find.textContaining('Bancolombia'), findsOneWidget);
-    expect(find.textContaining('jul'), findsOneWidget);
+    const colors = AppColors.light;
+    final amountText = tester.widget<Text>(find.textContaining(r'$45.000'));
+    expect(amountText.style?.color, colors.textSecondary);
+    expect(amountText.style?.color, isNot(colors.textPrimary));
+  });
+
+  testWidgets(
+      'the subtitle reads "Próximo: fecha · cuenta", date before account',
+      (tester) async {
+    await pump(tester);
+
+    final subtitle = tester.widget<Text>(find.textContaining('Próximo:'));
+    final data = subtitle.data!;
+    expect(data.startsWith('Próximo:'), isTrue);
+    final proximoIndex = data.indexOf('Próximo:');
+    final accountIndex = data.indexOf('Bancolombia');
+    expect(accountIndex, greaterThan(proximoIndex));
+    expect(data, contains('Bancolombia'));
+    expect(data, contains('jul'));
+  });
+
+  testWidgets(
+      'shows the recurrence badge overlaid on the category icon wrap',
+      (tester) async {
+    await pump(tester);
+
+    expect(find.byIcon(LucideIcons.repeat), findsOneWidget);
+
+    // The badge sits inside a Positioned within the icon-wrap's own Stack —
+    // find the Stack that is an ancestor of the repeat icon.
+    final badgeStackFinder = find.ancestor(
+      of: find.byIcon(LucideIcons.repeat),
+      matching: find.byType(Stack),
+    );
+    expect(badgeStackFinder, findsOneWidget);
+
+    final positioned = tester.widget<Positioned>(
+      find.ancestor(
+        of: find.byIcon(LucideIcons.repeat),
+        matching: find.byType(Positioned),
+      ),
+    );
+    expect(positioned.left, 28);
+    expect(positioned.top, 28);
   });
 
   testWidgets(

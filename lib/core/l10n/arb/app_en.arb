@@ -454,6 +454,14 @@
     "placeholders": { "amount": { "type": "String" } }
   },
   "budgetScheduledSheetEmpty": "No scheduled payments in this period yet",
+  "budgetScheduledRowSubtitle": "Next: {date} · {accountName}",
+  "@budgetScheduledRowSubtitle": {
+    "description": "Subtitle of a scheduled payment row within a budget: date of the next occurrence and its associated account.",
+    "placeholders": {
+      "date": { "type": "String" },
+      "accountName": { "type": "String" }
+    }
+  },
   "budgetLoadMore": "See more",
   "budgetOneOffWindow": "Single window",
   "budgetPeriodPreviousTooltip": "Previous period",

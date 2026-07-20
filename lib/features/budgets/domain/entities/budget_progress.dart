@@ -73,6 +73,23 @@ class BudgetProgress extends Equatable {
   /// overspend — only actual spend is.
   bool get isOverspent => spentMinor > amountMinor;
 
+  /// True when the *projection* (spent + programado) would exceed the budget
+  /// while spend itself still does not (HU-12, "riesgo de sobregiro
+  /// proyectado"). Mutually exclusive with [isOverspent]: once real spend
+  /// crosses 100%, that hero is red for a materialized reason, not a
+  /// projected one, and this stays `false`.
+  bool get isScheduledOverspendRisk =>
+      !isOverspent && scheduledMinor > 0 && committedFraction > 1;
+
+  /// How much the projection in [isScheduledOverspendRisk] would exceed the
+  /// budget by, in cents. `0` when not in that state.
+  int get scheduledOverageMinor =>
+      isScheduledOverspendRisk ? spentMinor + scheduledMinor - amountMinor : 0;
+
+  /// [committedFraction] as a whole percentage, for the "llega a Y% si se
+  /// ejecuta" caption (HU-12).
+  int get committedPercent => (committedFraction * 100).round();
+
   @override
   List<Object?> get props =>
       [amountMinor, spentMinor, daysLeft, scheduledMinor];

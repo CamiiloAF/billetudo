@@ -1011,6 +1011,14 @@
   },
   "budgetScheduledSheetEmpty": "Aún no tienes pagos programados en este período",
   "@budgetScheduledSheetEmpty": {},
+  "budgetScheduledRowSubtitle": "Próximo: {date} · {accountName}",
+  "@budgetScheduledRowSubtitle": {
+    "description": "Subtítulo de una fila de pago programado dentro del presupuesto: fecha de la próxima ocurrencia y la cuenta asociada.",
+    "placeholders": {
+      "date": { "type": "String" },
+      "accountName": { "type": "String" }
+    }
+  },
   "budgetLoadMore": "Ver más",
   "@budgetLoadMore": {},
   "budgetOneOffWindow": "Ventana única",

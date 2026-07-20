@@ -2438,6 +2438,12 @@ abstract class AppLocalizations {
   /// **'Aún no tienes pagos programados en este período'**
   String get budgetScheduledSheetEmpty;
 
+  /// Subtítulo de una fila de pago programado dentro del presupuesto: fecha de la próxima ocurrencia y la cuenta asociada.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximo: {date} · {accountName}'**
+  String budgetScheduledRowSubtitle(String date, String accountName);
+
   /// No description provided for @budgetLoadMore.
   ///
   /// In es, this message translates to:

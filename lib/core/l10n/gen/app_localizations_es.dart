@@ -1379,6 +1379,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no tienes pagos programados en este período';
 
   @override
+  String budgetScheduledRowSubtitle(String date, String accountName) {
+    return 'Próximo: $date · $accountName';
+  }
+
+  @override
   String get budgetLoadMore => 'Ver más';
 
   @override

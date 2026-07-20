@@ -17,9 +17,11 @@ import '../widgets/budget_activity_row.dart';
 import '../widgets/budget_detail_skeleton_view.dart';
 import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
+import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
 import '../widgets/period_stepper_pill.dart';
 import '../widgets/sheets/budget_detail_actions_sheet.dart';
+import '../widgets/sheets/budget_scheduled_sheet.dart';
 import '../widgets/sheets/confirm_delete_budget_sheet.dart';
 
 /// The budget detail (`NloPT`, HU-04/HU-05). Hero + activity, with the floating
@@ -28,6 +30,8 @@ class BudgetDetailPage extends StatelessWidget {
   const BudgetDetailPage({
     required this.onEdit,
     required this.onClosed,
+    required this.onOpenTransaction,
+    required this.onOpenScheduledPayment,
     super.key,
   });
 
@@ -35,6 +39,13 @@ class BudgetDetailPage extends StatelessWidget {
 
   /// Called after the budget is closed or deleted, to leave the detail.
   final VoidCallback onClosed;
+
+  /// Called with a transaction id, from an activity row, to open its detail.
+  final ValueChanged<String> onOpenTransaction;
+
+  /// Called with a scheduled payment (template) id, from a scheduled row, to
+  /// open its detail.
+  final ValueChanged<String> onOpenScheduledPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +73,11 @@ class BudgetDetailPage extends StatelessWidget {
                   BudgetDetailStatus.failure => BudgetsErrorView(
                       onRetry: () {},
                     ),
-                  BudgetDetailStatus.ready => BudgetDetailBody(state: state),
+                  BudgetDetailStatus.ready => BudgetDetailBody(
+                      state: state,
+                      onOpenTransaction: onOpenTransaction,
+                      onOpenScheduledPayment: onOpenScheduledPayment,
+                    ),
                 },
               ),
             ],
@@ -104,9 +119,20 @@ class BudgetDetailPage extends StatelessWidget {
 
 /// The detail content: a scrolling hero + activity under a floating stepper.
 class BudgetDetailBody extends StatelessWidget {
-  const BudgetDetailBody({required this.state, super.key});
+  const BudgetDetailBody({
+    required this.state,
+    required this.onOpenTransaction,
+    required this.onOpenScheduledPayment,
+    super.key,
+  });
 
   final BudgetDetailState state;
+
+  /// Called with a transaction id, from an activity row.
+  final ValueChanged<String> onOpenTransaction;
+
+  /// Called with a scheduled payment (template) id, from a scheduled row.
+  final ValueChanged<String> onOpenScheduledPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +142,7 @@ class BudgetDetailBody extends StatelessWidget {
     if (view == null || budget == null) {
       return const SizedBox.shrink();
     }
+    final progress = view.progress;
 
     return Stack(
       children: [
@@ -123,11 +150,39 @@ class BudgetDetailBody extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 96),
           children: [
             BudgetDetailHero(state: state),
+            // HU-12: the "Programado" entry (`s09qcC`) is its own card under
+            // the hero, not part of it — hidden entirely when the window has
+            // nothing scheduled (`kLUl7`).
+            if (progress.scheduledMinor > 0) ...[
+              const SizedBox(height: 16),
+              BudgetScheduledEntryCard(
+                label: AppLocalizations.of(context).budgetScheduledLabel,
+                sub: BudgetFormat.scheduledEntrySub(
+                  AppLocalizations.of(context),
+                  progress,
+                  budget.currency,
+                  view.scheduledItems.length,
+                ),
+                amountLabel: const MoneyFormatter().formatSymbol(
+                  progress.scheduledMinor,
+                  currencyCode: budget.currency,
+                ),
+                atRisk: progress.isScheduledOverspendRisk,
+                onTap: () => BudgetScheduledSheet.show(
+                  context,
+                  items: view.scheduledItems,
+                  totalMinor: progress.scheduledMinor,
+                  currency: budget.currency,
+                  onOpenScheduledPayment: onOpenScheduledPayment,
+                ),
+              ),
+            ],
             // `QWC08` spaces the hero and the activity by 16, not 24.
             const SizedBox(height: 16),
             BudgetActivitySection(
               state: state,
               onLoadMore: cubit.loadMoreActivity,
+              onOpenTransaction: onOpenTransaction,
             ),
           ],
         ),
@@ -251,7 +306,12 @@ class BudgetDetailHero extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          BudgetProgressBar(fraction: progress.fraction, overspent: overspent),
+          BudgetProgressBar(
+            fraction: progress.fraction,
+            overspent: overspent,
+            scheduledFraction: progress.scheduledFraction,
+            scheduledAtRisk: progress.isScheduledOverspendRisk,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -286,6 +346,26 @@ class BudgetDetailHero extends StatelessWidget {
               ],
             ],
           ),
+          // HU-12's second caption line, e.g. "+ $60.000 programado (llega a
+          // 92% si se ejecuta)" (sano) or "... — excedería el presupuesto por
+          // $Y" (riesgo, `amber-text`). `null` when the window has nothing
+          // scheduled, matching WCAG 1.4.1: the "programado"/riesgo segment
+          // is always named in text here, never signalled by the bar's color
+          // alone.
+          if (BudgetFormat.scheduledCaption(l10n, progress, budget.currency)
+              case final scheduledCaption?) ...[
+            const SizedBox(height: 8),
+            Text(
+              scheduledCaption,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: progress.isScheduledOverspendRisk
+                    ? colors.amberText
+                    : colors.textSecondary,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -298,11 +378,15 @@ class BudgetActivitySection extends StatelessWidget {
   const BudgetActivitySection({
     required this.state,
     required this.onLoadMore,
+    required this.onOpenTransaction,
     super.key,
   });
 
   final BudgetDetailState state;
   final VoidCallback onLoadMore;
+
+  /// Called with a row's transaction id to open its detail.
+  final ValueChanged<String> onOpenTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -354,7 +438,7 @@ class BudgetActivitySection extends StatelessWidget {
         else
           for (final (index, item) in items.indexed) ...[
             if (index > 0) const SizedBox(height: 14),
-            BudgetActivityRow(item: item),
+            BudgetActivityRow(item: item, onTap: onOpenTransaction),
           ],
         if (state.hasMoreActivity) ...[
           const SizedBox(height: 18),

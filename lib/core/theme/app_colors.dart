@@ -30,6 +30,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.coralSoft,
     required this.amber,
     required this.amberSoft,
+    required this.amberText,
     required this.teal,
     required this.tealSoft,
     required this.indigo,
@@ -67,6 +68,13 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color coralSoft;
   final Color amber;
   final Color amberSoft;
+
+  /// `amber` calibrated for 12px/700 text on `$surface` (~5.12:1 in light;
+  /// `amber` itself only clears ~4.2:1, failing AA). Same pattern as
+  /// `expenseText`/`incomeText`. First real use: the "riesgo de sobregiro
+  /// proyectado" caption/row of Presupuestos (HU-12), see
+  /// `design-system/billetudo/pages/presupuestos.md`.
+  final Color amberText;
   final Color teal;
   final Color tealSoft;
   final Color indigo;
@@ -110,6 +118,7 @@ class AppColors extends ThemeExtension<AppColors> {
     coralSoft: Color(0xFFFDE8ED),
     amber: Color(0xFF9B7608),
     amberSoft: Color(0xFFFDF3E0),
+    amberText: Color(0xFF8A6906),
     teal: Color(0xFF0F766E),
     tealSoft: Color(0xFFE0F5F3),
     indigo: Color(0xFF3730A3),
@@ -149,6 +158,7 @@ class AppColors extends ThemeExtension<AppColors> {
     coralSoft: Color(0xFF3A1620),
     amber: Color(0xFFFBDE24),
     amberSoft: Color(0xFF3A2E0F),
+    amberText: Color(0xFFFBDE24),
     teal: Color(0xFF2DD4BF),
     tealSoft: Color(0xFF0F2E2B),
     indigo: Color(0xFF818CF8),
@@ -188,6 +198,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? coralSoft,
     Color? amber,
     Color? amberSoft,
+    Color? amberText,
     Color? teal,
     Color? tealSoft,
     Color? indigo,
@@ -225,6 +236,7 @@ class AppColors extends ThemeExtension<AppColors> {
       coralSoft: coralSoft ?? this.coralSoft,
       amber: amber ?? this.amber,
       amberSoft: amberSoft ?? this.amberSoft,
+      amberText: amberText ?? this.amberText,
       teal: teal ?? this.teal,
       tealSoft: tealSoft ?? this.tealSoft,
       indigo: indigo ?? this.indigo,
@@ -268,6 +280,7 @@ class AppColors extends ThemeExtension<AppColors> {
       coralSoft: Color.lerp(coralSoft, other.coralSoft, t)!,
       amber: Color.lerp(amber, other.amber, t)!,
       amberSoft: Color.lerp(amberSoft, other.amberSoft, t)!,
+      amberText: Color.lerp(amberText, other.amberText, t)!,
       teal: Color.lerp(teal, other.teal, t)!,
       tealSoft: Color.lerp(tealSoft, other.tealSoft, t)!,
       indigo: Color.lerp(indigo, other.indigo, t)!,

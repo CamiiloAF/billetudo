@@ -11,69 +11,82 @@ import '../../domain/entities/budget_activity_item.dart';
 /// the category's soft tone, "Cuenta · Fecha" underneath the title, and the
 /// amount on the right — no card, no border. The rows sit straight on
 /// `$background` inside the activity section (`NloPT/Abx0H`).
+///
+/// Tappable, same as `Transaction Row`: opens the real transaction's detail.
 class BudgetActivityRow extends StatelessWidget {
-  const BudgetActivityRow({required this.item, super.key});
+  const BudgetActivityRow({
+    required this.item,
+    required this.onTap,
+    super.key,
+  });
 
   final BudgetActivityItem item;
+
+  /// Called with [item.id] (the real `Transaction` id) to open its detail.
+  final ValueChanged<String> onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
 
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: CategoryAppearance.softColorFor(colors, item.categoryColor),
-            borderRadius: BorderRadius.circular(14),
+    return InkWell(
+      onTap: () => onTap(item.id),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color:
+                  CategoryAppearance.softColorFor(colors, item.categoryColor),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              CategoryAppearance.iconFor(item.categoryIcon),
+              size: 20,
+              color: CategoryAppearance.colorFor(colors, item.categoryColor),
+            ),
           ),
-          child: Icon(
-            CategoryAppearance.iconFor(item.categoryIcon),
-            size: 20,
-            color: CategoryAppearance.colorFor(colors, item.categoryColor),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                _subtitle(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colors.textSecondary,
+                const SizedBox(height: 2),
+                Text(
+                  _subtitle(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          _amountLabel(),
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
+          const SizedBox(width: 12),
+          Text(
+            _amountLabel(),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: colors.textPrimary,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

@@ -7,10 +7,13 @@ import '../../../../core/error/result.dart';
 import '../../../scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
 import '../../../scheduled_payments/domain/entities/scheduled_payment.dart';
 import '../../../scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
+import '../../../scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/entities/budget_draft.dart';
 import '../../domain/entities/budget_expense.dart';
+import '../../domain/entities/budget_period_window.dart';
+import '../../domain/entities/budget_progress.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../../domain/entities/budget_with_progress.dart';
 import '../../domain/entities/period_income.dart';
@@ -30,11 +33,17 @@ import '../models/budget_mapper.dart';
 /// implementation of the global-vs-emptied and period rules.
 @LazySingleton(as: BudgetRepository)
 class BudgetRepositoryImpl implements BudgetRepository {
-  const BudgetRepositoryImpl(this._local, this._progress, this._zeroBased);
+  const BudgetRepositoryImpl(
+    this._local,
+    this._progress,
+    this._zeroBased,
+    this._projectOccurrences,
+  );
 
   final BudgetsLocalDatasource _local;
   final BudgetProgressCalculator _progress;
   final ZeroBasedSummaryCalculator _zeroBased;
+  final ProjectUpcomingOccurrences _projectOccurrences;
 
   @override
   Stream<Result<List<BudgetWithProgress>>> watchActiveBudgets() =>
@@ -60,6 +69,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchScopeCategories(),
             _local.watchExpenses(),
             _local.watchAliveCategories(),
+            _local.watchScheduledExpenseTemplates(),
+            _local.watchPendingScheduledOccurrences(),
           ],
           (values) {
             final rows = values[0]! as List<db.Budget>;
@@ -67,9 +78,15 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categoryScope = values[2]! as List<BudgetScopeRefRow>;
             final expenses = values[3]! as List<BudgetExpenseRow>;
             final categories = values[4]! as List<db.Category>;
+            final templates = values[5]! as List<BudgetScheduledTemplateRow>;
+            final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
             final children = _categoryChildren(categories);
             final now = DateTime.now();
             final domainExpenses = expenses.map(_toExpense).toList();
+            final scheduledTemplates =
+                templates.map(_toScheduledTemplateDetail).toList();
+            final pendingOccurrences =
+                pending.map(_toPendingOccurrence).toList();
 
             return Right<Failure, List<BudgetWithProgress>>([
               for (final row in rows)
@@ -79,7 +96,12 @@ class BudgetRepositoryImpl implements BudgetRepository {
                   categoryScope: categoryScope,
                   expenses: domainExpenses,
                   children: children,
+                  scheduledTemplates: scheduledTemplates,
+                  pendingOccurrences: pendingOccurrences,
                   reference: atClose ? (row.archivedAt ?? now) : now,
+                  // A closed budget's window is history: it never projects
+                  // future "programado" spend for a period that is over.
+                  includeScheduled: !atClose,
                 ),
             ]);
           },
@@ -92,7 +114,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
     required List<BudgetScopeRefRow> categoryScope,
     required List<BudgetExpense> expenses,
     required Map<String, List<String>> children,
+    required List<BudgetScheduledTemplateDetail> scheduledTemplates,
+    required List<PendingScheduledOccurrence> pendingOccurrences,
     required DateTime reference,
+    required bool includeScheduled,
   }) {
     final scope = _scopeFor(budget.id, accountScope, categoryScope);
     final window = BudgetPeriodCalculator(budget).currentWindow(reference);
@@ -104,12 +129,55 @@ class BudgetRepositoryImpl implements BudgetRepository {
       now: reference,
       categoryChildren: children,
     );
+    final scheduledMinor =
+        includeScheduled && window.status != BudgetWindowStatus.past
+            ? _scheduledMinorIn(
+                budget: budget,
+                scope: scope,
+                window: window,
+                templates: scheduledTemplates,
+                pendingOccurrences: pendingOccurrences,
+                children: children,
+              )
+            : 0;
     return BudgetWithProgress(
       budget: budget,
       scope: scope,
       window: window,
-      progress: progress,
+      progress: BudgetProgress(
+        amountMinor: progress.amountMinor,
+        spentMinor: progress.spentMinor,
+        daysLeft: progress.daysLeft,
+        scheduledMinor: scheduledMinor,
+      ),
     );
+  }
+
+  /// Sums [BudgetProgressCalculator.scheduledItemsIn] for the list — same
+  /// calculators `GetBudgetProgress` uses for the detail screen, so the two
+  /// never disagree on what "programado" means for a given window.
+  int _scheduledMinorIn({
+    required Budget budget,
+    required BudgetScope scope,
+    required BudgetPeriodWindow window,
+    required List<BudgetScheduledTemplateDetail> templates,
+    required List<PendingScheduledOccurrence> pendingOccurrences,
+    required Map<String, List<String>> children,
+  }) {
+    final items = _progress.scheduledItemsIn(
+      budget: budget,
+      scope: scope,
+      window: window,
+      templates: templates,
+      projected: _projectOccurrences(
+        templates: [for (final detail in templates) detail.template],
+        windowStart: window.start,
+        windowEndInclusive: window.lastDay,
+      ),
+      pendingOccurrences: pendingOccurrences,
+      categoryChildren: children,
+    );
+    return items.fold<int>(0, (sum, item) => sum + item.amountMinor);
   }
 
   @override
@@ -154,28 +222,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
                     ),
                 ],
                 categoryChildren: _categoryChildren(categories),
-                scheduledTemplates: [
-                  for (final template in templates)
-                    BudgetScheduledTemplateDetail(
-                      template: _toScheduledPayment(template.template),
-                      title: template.categoryName ?? template.accountName,
-                      accountName: template.accountName,
-                      categoryIcon: template.categoryIcon,
-                      categoryColor: template.categoryColor,
-                    ),
-                ],
-                pendingScheduledOccurrences: [
-                  for (final occurrence in pending)
-                    PendingScheduledOccurrence(
-                      occurrence: _toScheduledOccurrence(occurrence.occurrence),
-                      scheduledPayment:
-                          _toScheduledPayment(occurrence.template),
-                      accountName: occurrence.accountName,
-                      categoryName: occurrence.categoryName,
-                      categoryIcon: occurrence.categoryIcon,
-                      categoryColor: occurrence.categoryColor,
-                    ),
-                ],
+                scheduledTemplates:
+                    templates.map(_toScheduledTemplateDetail).toList(),
+                pendingScheduledOccurrences:
+                    pending.map(_toPendingOccurrence).toList(),
               ),
             );
           },
@@ -331,6 +381,29 @@ class BudgetRepositoryImpl implements BudgetRepository {
         amountMinor: row.amountMinor,
         currency: row.currency,
         date: row.date,
+      );
+
+  BudgetScheduledTemplateDetail _toScheduledTemplateDetail(
+    BudgetScheduledTemplateRow row,
+  ) =>
+      BudgetScheduledTemplateDetail(
+        template: _toScheduledPayment(row.template),
+        title: row.categoryName ?? row.accountName,
+        accountName: row.accountName,
+        categoryIcon: row.categoryIcon,
+        categoryColor: row.categoryColor,
+      );
+
+  PendingScheduledOccurrence _toPendingOccurrence(
+    BudgetPendingOccurrenceRow row,
+  ) =>
+      PendingScheduledOccurrence(
+        occurrence: _toScheduledOccurrence(row.occurrence),
+        scheduledPayment: _toScheduledPayment(row.template),
+        accountName: row.accountName,
+        categoryName: row.categoryName,
+        categoryIcon: row.categoryIcon,
+        categoryColor: row.categoryColor,
       );
 
   /// Maps a raw `db.ScheduledPayment` row into the Pagos Programados domain

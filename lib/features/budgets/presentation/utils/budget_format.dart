@@ -79,6 +79,50 @@ abstract final class BudgetFormat {
     )}';
   }
 
+  /// The hero's second caption line for what is "programado" (HU-12): `null`
+  /// when nothing is scheduled in the window. Reads as a projection, never
+  /// a fact already true — "excedería", never "excede" (MASTER.md).
+  static String? scheduledCaption(
+    AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+  ) {
+    if (progress.scheduledMinor <= 0) {
+      return null;
+    }
+    const money = MoneyFormatter();
+    final scheduledAmount =
+        money.formatSymbol(progress.scheduledMinor, currencyCode: currency);
+    if (progress.isScheduledOverspendRisk) {
+      final overage = money.formatSymbol(
+        progress.scheduledOverageMinor,
+        currencyCode: currency,
+      );
+      return l10n.budgetScheduledCaptionRisk(scheduledAmount, overage);
+    }
+    return l10n.budgetScheduledCaption(
+        scheduledAmount, progress.committedPercent);
+  }
+
+  /// The "Programado" entry card's sub line (HU-12): the risk's overage takes
+  /// over the plain "N pagos próximos" count, same reasoning as
+  /// [scheduledCaption].
+  static String scheduledEntrySub(
+    AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+    int count,
+  ) {
+    if (progress.isScheduledOverspendRisk) {
+      const money = MoneyFormatter();
+      return l10n.budgetScheduledEntrySubRisk(
+        money.formatSymbol(progress.scheduledOverageMinor,
+            currencyCode: currency),
+      );
+    }
+    return l10n.budgetScheduledEntrySub(count);
+  }
+
   /// The stepper's leading, bold half. A recurring budget steps through cycles
   /// so it names the range ("1–31 jul"); a one-off has a single window, so
   /// naming a range would suggest a navigation that does not exist — `QLn6w`
