@@ -80,7 +80,11 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
             transferAccountName: detail.transferAccountName,
             frequency: payment.frequency,
             interval: payment.interval,
-            nextDate: payment.nextDate,
+            // `firstPaymentDate` (immutable), never the live `nextDate`
+            // cursor — showing the cursor here made "Primer pago" appear to
+            // change on its own as the catch-up generator advanced it.
+            nextDate: payment.firstPaymentDate,
+            originalNextDate: payment.nextDate,
             endDate: payment.endDate,
             requiresConfirmation: payment.requiresConfirmation,
             tagIds: {for (final tag in detail.tags) tag.id},
@@ -178,7 +182,9 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
   void intervalChanged(int interval) =>
       emit(state.copyWith(interval: interval));
 
-  void nextDateChanged(DateTime date) => emit(state.copyWith(nextDate: date));
+  void nextDateChanged(DateTime date) => emit(
+        state.copyWith(nextDate: date, nextDateEdited: true),
+      );
 
   void endDateChanged(DateTime? date) => date == null
       ? emit(state.copyWith(clearEndDate: true))
@@ -278,6 +284,17 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     }
     final amountMinor = MoneyFormatter.parseMinor(state.amountText) ?? 0;
 
+    // While editing, the date field displays `firstPaymentDate` (see
+    // `load()`), not the live `nextDate` cursor — so an edit-and-save that
+    // never touches the date must resubmit the cursor untouched instead of
+    // resetting it back to the first payment date. Only an explicit edit
+    // (`nextDateChanged`, HU-05's "modificar ... la fecha") overrides it.
+    final effectiveNextDate = state.isEditing &&
+            !state.nextDateEdited &&
+            state.originalNextDate != null
+        ? state.originalNextDate!
+        : state.nextDate;
+
     return ScheduledPaymentDraft(
       id: state.id,
       accountId: accountId,
@@ -290,7 +307,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
       transferAccountId: state.transferAccountId,
       frequency: state.frequency,
       interval: state.interval,
-      nextDate: state.nextDate,
+      nextDate: effectiveNextDate,
       endDate: state.endDate,
       requiresConfirmation: state.requiresConfirmation,
       tagIds: state.tagIds.toList(),

@@ -131,6 +131,7 @@ const powerSyncSchema = Schema([
     Column.text('transfer_account_id'),
     Column.text('frequency'),
     Column.integer('interval'),
+    Column.integer('first_payment_date'),
     Column.integer('next_date'),
     Column.integer('end_date'),
     Column.integer('requires_confirmation'),

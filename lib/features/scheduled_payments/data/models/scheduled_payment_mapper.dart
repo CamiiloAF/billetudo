@@ -24,6 +24,7 @@ abstract final class ScheduledPaymentMapper {
         transferAccountId: row.transferAccountId,
         frequency: frequencyToDomain(row.frequency),
         interval: row.interval,
+        firstPaymentDate: row.firstPaymentDate,
         nextDate: row.nextDate,
         endDate: row.endDate,
         requiresConfirmation: row.requiresConfirmation,
@@ -33,6 +34,13 @@ abstract final class ScheduledPaymentMapper {
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).
+  ///
+  /// `firstPaymentDate` is fixed here to `draft.nextDate` — at creation time
+  /// the date the user picked IS the first payment, so this is the one and
+  /// only place that ever sets this column. [toUpdateCompanion] deliberately
+  /// never touches it again: it is immutable after creation, unlike
+  /// [db.ScheduledPaymentsCompanion.nextDate], which the catch-up generator
+  /// (HU-02, see `nextDateCompanion`) keeps advancing.
   static db.ScheduledPaymentsCompanion toInsertCompanion(
     ScheduledPaymentDraft draft, {
     required DateTime now,
@@ -47,6 +55,7 @@ abstract final class ScheduledPaymentMapper {
         transferAccountId: Value(draft.transferAccountId),
         frequency: frequencyToDb(draft.frequency),
         interval: Value(draft.interval),
+        firstPaymentDate: draft.nextDate,
         nextDate: draft.nextDate,
         endDate: Value(draft.endDate),
         requiresConfirmation: Value(draft.requiresConfirmation),
@@ -57,6 +66,11 @@ abstract final class ScheduledPaymentMapper {
   /// Update companion (HU-05). Every nullable field is written explicitly
   /// (`Value(null)` rather than `absent()`) so clearing one in the form
   /// actually clears its old data instead of silently keeping it.
+  ///
+  /// Deliberately does NOT set `firstPaymentDate`: it is written once, at
+  /// creation, in [toInsertCompanion], and must never be rewritten — see that
+  /// doc comment. Leaving it absent here keeps the column untouched by every
+  /// update.
   static db.ScheduledPaymentsCompanion toUpdateCompanion(
     ScheduledPaymentDraft draft, {
     required DateTime now,

@@ -324,6 +324,18 @@ class ScheduledPayments extends Table with _SyncColumns {
   /// How many [frequency] units between repeats. E.g. interval=2 + weekly =
   /// every 2 weeks. Ignored when [frequency] is `once`.
   IntColumn get interval => integer().clientDefault(() => 1)();
+
+  /// The date the user picked as the first payment when the template was
+  /// created. IMMUTABLE: unlike [nextDate], this never changes after
+  /// creation — it is not a cursor. It exists purely for display (e.g. "First
+  /// payment" in the edit form), so the UI never confuses the recurrence
+  /// cursor with the original scheduled date. See
+  /// docs/requirements/09-pagos-programados.md.
+  DateTimeColumn get firstPaymentDate => dateTime()();
+
+  /// The next due date to be processed by the catch-up generator (HU-02).
+  /// MUTABLE cursor: rewritten every time catch-up advances the recurrence.
+  /// Never use this to display "first payment" — use [firstPaymentDate].
   DateTimeColumn get nextDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
 
@@ -486,7 +498,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -719,6 +731,26 @@ class AppDatabase extends _$AppDatabase {
           if (from < 11) {
             await m.createTable(scheduledPaymentTags);
             await m.createTable(scheduledPaymentOccurrences);
+          }
+
+          // v11 -> v12: ScheduledPayments gains `firstPaymentDate`, the
+          // immutable date the user originally picked as the first payment.
+          // Fixes a bug where the edit form displayed `nextDate` (a mutable
+          // catch-up cursor) as "First payment", which silently changed once
+          // the generator advanced the recurrence. `firstPaymentDate` is NOT
+          // NULL without a Drift default, so it is added by raw SQL with a
+          // temporary default and then backfilled from each row's current
+          // `next_date` — the best available approximation, though not exact
+          // for templates whose cursor has already advanced past their true
+          // original date.
+          if (from < 12) {
+            await m.database.customStatement(
+              'ALTER TABLE scheduled_payments '
+              'ADD COLUMN first_payment_date INTEGER NOT NULL DEFAULT 0',
+            );
+            await m.database.customStatement(
+              'UPDATE scheduled_payments SET first_payment_date = next_date',
+            );
           }
         },
       );

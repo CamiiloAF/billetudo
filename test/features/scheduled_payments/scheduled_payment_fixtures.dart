@@ -20,6 +20,7 @@ ScheduledPayment buildScheduledPayment({
   String? transferAccountId,
   ScheduledPaymentFrequency frequency = ScheduledPaymentFrequency.monthly,
   int interval = 1,
+  DateTime? firstPaymentDate,
   DateTime? nextDate,
   DateTime? endDate,
   bool requiresConfirmation = false,
@@ -37,6 +38,11 @@ ScheduledPayment buildScheduledPayment({
       transferAccountId: transferAccountId,
       frequency: frequency,
       interval: interval,
+      // Defaults to the same value as `nextDate` (or `testInstant`) so
+      // existing fixtures that never touched the recurrence cursor stay
+      // coherent: the immutable "first payment" and the live cursor start
+      // out equal, and only diverge once the generator advances `nextDate`.
+      firstPaymentDate: firstPaymentDate ?? nextDate ?? testInstant,
       nextDate: nextDate ?? testInstant,
       endDate: endDate,
       requiresConfirmation: requiresConfirmation,

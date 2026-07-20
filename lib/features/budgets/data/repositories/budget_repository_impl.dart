@@ -423,6 +423,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         frequency: _scheduledFrequencyToDomain(row.frequency),
         interval: row.interval,
         nextDate: row.nextDate,
+        firstPaymentDate: row.firstPaymentDate,
         endDate: row.endDate,
         requiresConfirmation: row.requiresConfirmation,
         createdAt: row.createdAt,

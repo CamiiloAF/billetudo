@@ -1,5 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -114,6 +116,111 @@ void main() {
         expect(cubit.state.categoryId, isNull);
         expect(cubit.state.tagIds, isEmpty);
         expect(cubit.state.isTransfer, isTrue);
+      },
+    );
+  });
+
+  group('Fix: "Primer pago" no cambia solo (firstPaymentDate vs. nextDate)',
+      () {
+    // The cursor has already advanced past the immutable first payment date
+    // — the exact drift the fix must not surface in the form.
+    final firstPaymentDate = DateTime(2026, 1, 15);
+    final advancedCursor = DateTime(2026, 4, 15);
+
+    ScheduledPayment loadedPayment() => buildScheduledPayment(
+          id: 'sp-1',
+          firstPaymentDate: firstPaymentDate,
+          nextDate: advancedCursor,
+        );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'load() puebla el campo mostrado con firstPaymentDate, no con nextDate',
+      setUp: () {
+        when(() => getScheduledPaymentDetail('sp-1')).thenAnswer(
+          (_) => Stream.value(
+            Right(
+              ScheduledPaymentDetail(
+                scheduledPayment: loadedPayment(),
+                accountName: 'Bancolombia',
+                historyTotalCount: 0,
+              ),
+            ),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) => cubit.load('sp-1'),
+      verify: (cubit) {
+        expect(cubit.state.nextDate, firstPaymentDate);
+        expect(cubit.state.originalNextDate, advancedCursor);
+        expect(cubit.state.nextDateEdited, isFalse);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'guardar sin tocar la fecha preserva el cursor original, no lo resetea',
+      setUp: () {
+        when(() => getScheduledPaymentDetail('sp-1')).thenAnswer(
+          (_) => Stream.value(
+            Right(
+              ScheduledPaymentDetail(
+                scheduledPayment: loadedPayment(),
+                accountName: 'Bancolombia',
+                historyTotalCount: 0,
+              ),
+            ),
+          ),
+        );
+        when(() => updateScheduledPayment(any()))
+            .thenAnswer((_) async => Right(loadedPayment()));
+        when(() => setScheduledPaymentTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load('sp-1');
+        // No nextDateChanged() call: the user never touched the date field.
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        final captured =
+            verify(() => updateScheduledPayment(captureAny())).captured;
+        final draft = captured.single as ScheduledPaymentDraft;
+        expect(draft.nextDate, advancedCursor);
+        expect(draft.nextDate, isNot(firstPaymentDate));
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'editar explícitamente la fecha y guardar usa el valor editado',
+      setUp: () {
+        when(() => getScheduledPaymentDetail('sp-1')).thenAnswer(
+          (_) => Stream.value(
+            Right(
+              ScheduledPaymentDetail(
+                scheduledPayment: loadedPayment(),
+                accountName: 'Bancolombia',
+                historyTotalCount: 0,
+              ),
+            ),
+          ),
+        );
+        when(() => updateScheduledPayment(any()))
+            .thenAnswer((_) async => Right(loadedPayment()));
+        when(() => setScheduledPaymentTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load('sp-1');
+        cubit.nextDateChanged(DateTime(2026, 6));
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        final captured =
+            verify(() => updateScheduledPayment(captureAny())).captured;
+        final draft = captured.single as ScheduledPaymentDraft;
+        expect(draft.nextDate, DateTime(2026, 6));
       },
     );
   });

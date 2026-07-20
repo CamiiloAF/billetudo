@@ -27,6 +27,7 @@ class ScheduledPayment extends Equatable {
     required this.type,
     required this.frequency,
     required this.interval,
+    required this.firstPaymentDate,
     required this.nextDate,
     required this.requiresConfirmation,
     required this.createdAt,
@@ -65,6 +66,14 @@ class ScheduledPayment extends Equatable {
   /// How many [frequency] units between repeats. Ignored (normalized to 1)
   /// when [frequency] is `once`.
   final int interval;
+
+  /// The date the user originally picked as the first payment when the
+  /// template was created. IMMUTABLE: unlike [nextDate], it is set once at
+  /// creation and never rewritten afterwards — it is not a cursor, it is a
+  /// historical fact. This is what the UI must show for "Primer pago" so it
+  /// never appears to change on its own as the catch-up generator advances
+  /// [nextDate].
+  final DateTime firstPaymentDate;
 
   /// The next due date the catch-up generator (HU-02) has not yet processed.
   /// Advances by [frequency]/[interval] only when the generator processes it;
@@ -129,6 +138,7 @@ class ScheduledPayment extends Equatable {
         transferAccountId,
         frequency,
         interval,
+        firstPaymentDate,
         nextDate,
         endDate,
         requiresConfirmation,

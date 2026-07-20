@@ -59,6 +59,20 @@ class ScheduledPaymentOccurrence extends Equatable {
 
   bool get isPending => status == ScheduledOccurrenceStatus.pending;
 
+  /// Whether [date] counts as due — today or earlier, never a future date.
+  /// The single rule for what counts as "pendiente para confirmar": both
+  /// "Zona de pendientes" (list) and the detail's confirm affordance are
+  /// gated on it, so a future occurrence (e.g. one snoozed forward past
+  /// today) never surfaces as actionable early.
+  static bool dateIsDueOn(DateTime date, DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final normalized = DateTime(date.year, date.month, date.day);
+    return !normalized.isAfter(today);
+  }
+
+  /// Same as [dateIsDueOn], applied to [effectiveDate].
+  bool isDueOn(DateTime now) => dateIsDueOn(effectiveDate, now);
+
   @override
   List<Object?> get props => [
         id,

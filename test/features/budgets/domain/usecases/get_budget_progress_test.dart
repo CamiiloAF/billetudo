@@ -32,6 +32,7 @@ void main() {
         type: ScheduledPaymentType.expense,
         frequency: ScheduledPaymentFrequency.monthly,
         interval: 1,
+        firstPaymentDate: nextDate ?? DateTime(2024, 1, 20),
         nextDate: nextDate ?? DateTime(2024, 1, 20),
         requiresConfirmation: false,
         createdAt: DateTime(2024),

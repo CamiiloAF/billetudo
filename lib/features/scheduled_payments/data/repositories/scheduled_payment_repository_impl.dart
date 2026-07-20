@@ -72,7 +72,10 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
                 NotFoundFailure('scheduled payment "$id" does not exist'));
           }
           final tags = await _tags.tagsFor(id);
-          final pendingRow = await _local.getNextAwaitingOccurrence(id);
+          final pendingRow = await _ensureDuePendingOccurrence(
+            row.scheduledPayment,
+            DateTime.now(),
+          );
           final history = await _local.getHistory(
             id,
             offset: 0,
@@ -296,12 +299,10 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       final existing = await _local.getOccurrenceForDate(template.id, cursor);
       if (existing == null) {
         if (template.requiresConfirmation) {
-          await _local.insertOccurrence(
-            ScheduledPaymentOccurrenceMapper.pendingInsertCompanion(
-              scheduledPaymentId: template.id,
-              occurrenceDate: cursor,
-              now: now,
-            ),
+          await _insertPendingOccurrence(
+            scheduledPaymentId: template.id,
+            occurrenceDate: cursor,
+            now: now,
           );
         } else {
           final generated = await _generateTransaction(
@@ -514,6 +515,75 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       });
 
   // -- Shared helpers ---------------------------------------------------------
+
+  /// Resolves the occurrence the detail screen shows/acts on as "pendiente"
+  /// (HU-03). A manual-mode template usually already has one from the
+  /// catch-up ledger (HU-02's `pending` branch); an automatic-mode template
+  /// normally never does, because catch-up resolves its due dates straight
+  /// into a `confirmed` transaction (`_catchUpTemplate`'s `else` branch).
+  ///
+  /// This closes that gap on demand: whenever the template's cursor
+  /// (`nextDate`) is due (today or earlier per
+  /// [ScheduledPaymentOccurrence.dateIsDueOn]) and nothing has been recorded
+  /// for it yet, it materializes the same `pending` ledger row the manual
+  /// branch of catch-up would have created — automatic or manual, so the
+  /// existing confirm/skip/snooze flow (`ConfirmScheduledOccurrence` and
+  /// friends) works identically for both modes from the detail screen.
+  /// Idempotent: a later call, or the next catch-up run, finds the row
+  /// already there and leaves it alone.
+  Future<db.ScheduledPaymentOccurrence?> _ensureDuePendingOccurrence(
+    db.ScheduledPayment template,
+    DateTime now,
+  ) async {
+    final existing = await _local.getNextAwaitingOccurrence(template.id);
+    if (existing != null) {
+      final effectiveDate = existing.snoozedToDate ?? existing.occurrenceDate;
+      return ScheduledPaymentOccurrence.dateIsDueOn(effectiveDate, now)
+          ? existing
+          : null;
+    }
+    if (template.tombstonedAt != null) {
+      return null;
+    }
+    final endDate = template.endDate;
+    if (endDate != null && template.nextDate.isAfter(endDate)) {
+      return null;
+    }
+    if (!ScheduledPaymentOccurrence.dateIsDueOn(template.nextDate, now)) {
+      return null;
+    }
+    // Guards against a duplicate for an exact date already resolved (e.g. a
+    // `once` template already `confirmed`, whose `nextDate` never advances
+    // and would otherwise look "due" forever).
+    final alreadyRecorded = await _local.getOccurrenceForDate(
+      template.id,
+      template.nextDate,
+    );
+    if (alreadyRecorded != null) {
+      return null;
+    }
+    return _insertPendingOccurrence(
+      scheduledPaymentId: template.id,
+      occurrenceDate: template.nextDate,
+      now: now,
+    );
+  }
+
+  /// Inserts a fresh `pending` ledger row — the manual branch of catch-up
+  /// (HU-02) and [_ensureDuePendingOccurrence] both funnel through this
+  /// instead of duplicating the companion construction.
+  Future<db.ScheduledPaymentOccurrence> _insertPendingOccurrence({
+    required String scheduledPaymentId,
+    required DateTime occurrenceDate,
+    required DateTime now,
+  }) =>
+      _local.insertOccurrence(
+        ScheduledPaymentOccurrenceMapper.pendingInsertCompanion(
+          scheduledPaymentId: scheduledPaymentId,
+          occurrenceDate: occurrenceDate,
+          now: now,
+        ),
+      );
 
   /// Generates the transaction a due/confirmed occurrence produces. `date`/
   /// `accountId`/`amountMinor` are the (possibly edited, HU-03) final

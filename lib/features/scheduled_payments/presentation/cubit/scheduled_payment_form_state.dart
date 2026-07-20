@@ -36,6 +36,8 @@ class ScheduledPaymentFormState extends Equatable {
     this.frequency = ScheduledPaymentFrequency.monthly,
     this.interval = 1,
     DateTime? nextDate,
+    this.originalNextDate,
+    this.nextDateEdited = false,
     this.endDate,
     this.requiresConfirmation = false,
     this.tagIds = const <String>{},
@@ -66,7 +68,26 @@ class ScheduledPaymentFormState extends Equatable {
 
   final ScheduledPaymentFrequency frequency;
   final int interval;
+
+  /// The value the "Primer pago"/"Fecha del pago" field shows and edits.
+  /// Populated from `ScheduledPayment.firstPaymentDate` on `load()` — never
+  /// from the live `nextDate` cursor, which the catch-up generator advances
+  /// on its own (that drift is exactly the bug this field must not show).
   final DateTime nextDate;
+
+  /// The template's actual `nextDate` cursor as loaded, kept aside (never
+  /// shown) so an edit-and-save that never touches the date field submits
+  /// this unchanged value instead of silently resetting the cursor back to
+  /// `firstPaymentDate`. Null while creating (there is no live cursor yet).
+  final DateTime? originalNextDate;
+
+  /// Whether the user has explicitly changed the date field during this
+  /// editing session (via `ScheduledPaymentFormCubit.nextDateChanged`).
+  /// HU-05 lets the user move the schedule's date on purpose; this flag is
+  /// what tells `_buildDraft` an edit is intentional rather than the
+  /// untouched display value.
+  final bool nextDateEdited;
+
   final DateTime? endDate;
 
   final bool requiresConfirmation;
@@ -106,6 +127,7 @@ class ScheduledPaymentFormState extends Equatable {
     ScheduledPaymentFrequency? frequency,
     int? interval,
     DateTime? nextDate,
+    bool nextDateEdited = false,
     DateTime? endDate,
     bool clearEndDate = false,
     bool? requiresConfirmation,
@@ -135,6 +157,12 @@ class ScheduledPaymentFormState extends Equatable {
         frequency: frequency ?? this.frequency,
         interval: interval ?? this.interval,
         nextDate: nextDate ?? this.nextDate,
+        // No `originalNextDate` parameter on purpose: it is only ever set
+        // once, by `load()`'s direct constructor call, and must survive
+        // every subsequent `copyWith` untouched — the bare reference below
+        // resolves to `this.originalNextDate`.
+        originalNextDate: originalNextDate,
+        nextDateEdited: nextDateEdited || this.nextDateEdited,
         endDate: clearEndDate ? null : (endDate ?? this.endDate),
         requiresConfirmation: requiresConfirmation ?? this.requiresConfirmation,
         tagIds: type == ScheduledPaymentType.transfer
@@ -161,6 +189,8 @@ class ScheduledPaymentFormState extends Equatable {
         frequency,
         interval,
         nextDate,
+        originalNextDate,
+        nextDateEdited,
         endDate,
         requiresConfirmation,
         tagIds,

@@ -574,6 +574,110 @@ void main() {
     });
   });
 
+  group(
+      'watchScheduledPaymentDetail materializa pendiente bajo demanda '
+      '(modo automático, fix)', () {
+    test(
+        'plantilla automática vencida sin fila materializa una ocurrencia '
+        'pending', () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+
+      final result = await repository
+          .watchScheduledPaymentDetail(template.id)
+          .first;
+
+      final detail = result.getRight().toNullable()!;
+      expect(detail.pendingOccurrence, isNotNull);
+      expect(
+        detail.pendingOccurrence!.occurrence.status,
+        domain.ScheduledOccurrenceStatus.pending,
+      );
+      expect(
+        detail.pendingOccurrence!.occurrence.occurrenceDate,
+        DateTime(2026, 7, 1),
+      );
+      final occurrences =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(occurrences.single.scheduledPaymentId, template.id);
+      expect(occurrences.single.status, ScheduledOccurrenceStatus.pending);
+      // La plantilla queda intacta: es una materialización de la ocurrencia,
+      // no una generación (eso solo lo hace generateDueScheduledPayments).
+      final generated = await database.select(database.transactions).get();
+      expect(generated, isEmpty);
+    });
+
+    test('cursor futuro no materializa nada', () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 12, 1)),
+      );
+
+      final result = await repository
+          .watchScheduledPaymentDetail(template.id)
+          .first;
+
+      expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+
+    test('no duplica si ya hay una fila para esa fecha exacta', () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+
+      await repository.watchScheduledPaymentDetail(template.id).first;
+      await repository.watchScheduledPaymentDetail(template.id).first;
+
+      final occurrences = await (database.select(
+        database.scheduledPaymentOccurrences,
+      )..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(occurrences, hasLength(1));
+    });
+
+    test('respeta endDate: no materializa pasado el fin de la plantilla',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          endDate: DateTime(2026, 6, 1),
+        ),
+      );
+
+      final result = await repository
+          .watchScheduledPaymentDetail(template.id)
+          .first;
+
+      expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+
+    test('una plantilla borrada (tombstonedAt) no materializa nada',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+      await repository.deleteScheduledPayment(template.id);
+
+      final result = await repository
+          .watchScheduledPaymentDetail(template.id)
+          .first;
+
+      expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+  });
+
   group('watchFinishedScheduledPayments (filtro "Terminados")', () {
     test(
         'expone la fecha del último pago realmente generado, no la de fin '

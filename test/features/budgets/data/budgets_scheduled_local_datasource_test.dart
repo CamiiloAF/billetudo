@@ -51,6 +51,7 @@ void main() {
               currency: currency,
               type: type,
               frequency: frequency,
+              firstPaymentDate: nextDate ?? DateTime(2026, 7, 1),
               nextDate: nextDate ?? DateTime(2026, 7, 1),
               endDate: Value(endDate),
               tombstonedAt: Value(tombstonedAt),
