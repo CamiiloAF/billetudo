@@ -89,6 +89,10 @@ dependencies:
   # --- Utilidades ---
   intl: ^0.20.2
 
+  # --- Cripto (nonce hasheado del sign-in nativo con Google, ver
+  # google_auth_datasource.dart) ---
+  crypto: ^3.0.7
+
   # --- Auth social (decisión: solo Google/Apple, nunca email+contraseña) ---
   # Android: solo Google. iOS: Google + Sign in with Apple (guideline 4.8).
   google_sign_in: ^7.2.0
@@ -143,9 +147,9 @@ patrol:
   app_name: Billetudo
   test_directory: integration_test
   android:
-    package_name: com.camiloagudelo.billetudo
+    package_name: com.billetudo.app
   ios:
-    bundle_id: com.camiloagudelo.billetudo
+    bundle_id: com.billetudo.app
 
 # Ícono de app (billetudo, ver assets/branding/MARCA.md). No incluye
 # variantes por flavor (dev/prod) todavía — ambos flavors comparten master.

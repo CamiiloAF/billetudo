@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:billetudo/core/crash/crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/database/powersync_schema.dart';
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart';
@@ -16,6 +18,7 @@ import 'package:billetudo/features/auth/domain/entities/sign_out_outcome.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out_with_local_data_choice.dart';
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
+import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -37,6 +40,10 @@ class MockSupabaseClient extends Mock implements SupabaseClient {}
 class MockGoTrueClient extends Mock implements GoTrueClient {}
 
 class MockPowerSyncConnector extends Mock implements PowerSyncConnector {}
+
+class MockSeedDefaultCategories extends Mock implements SeedDefaultCategories {}
+
+class MockCrashReporter extends Mock implements CrashReporter {}
 
 /// Contrato "la nube no se toca" de HU-06, sobre una [PowerSyncDatabase]
 /// **real** y el caso de uso completo que corre el usuario.
@@ -129,9 +136,15 @@ void main() {
       powerSync,
       connector,
     );
+    // La re-siembra post-wipe (HU-06) es best-effort y ajena a lo que este
+    // archivo verifica (que la nube no se toca): se mockea como no-op.
+    final seedDefaultCategories = MockSeedDefaultCategories();
+    when(seedDefaultCategories.call).thenAnswer((_) async => const Right(unit));
     signOutWithChoice = SignOutWithLocalDataChoice(
       SignOut(repository),
       WipeLocalData(repository),
+      seedDefaultCategories,
+      MockCrashReporter(),
     );
   });
 

@@ -746,15 +746,17 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i747.GenerateDueScheduledPayments>(),
               gh<_i274.GetFinishedScheduledPayments>(),
             ));
-    gh.factory<_i141.ParentCategoryPickerCubit>(
-        () => _i141.ParentCategoryPickerCubit(
-              gh<_i172.WatchParentCandidates>(),
-              gh<_i722.WatchCategories>(),
-            ));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
               gh<_i1066.SignOut>(),
               gh<_i537.WipeLocalData>(),
+              gh<_i693.SeedDefaultCategories>(),
+              gh<_i474.CrashReporter>(),
+            ));
+    gh.factory<_i141.ParentCategoryPickerCubit>(
+        () => _i141.ParentCategoryPickerCubit(
+              gh<_i172.WatchParentCandidates>(),
+              gh<_i722.WatchCategories>(),
             ));
     gh.factory<_i385.ConfirmationSheetCubit>(() => _i385.ConfirmationSheetCubit(
           gh<_i1034.ConfirmScheduledOccurrence>(),

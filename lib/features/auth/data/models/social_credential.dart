@@ -8,6 +8,7 @@ class SocialCredential {
     this.email,
     this.avatarUrl,
     this.idToken,
+    this.rawNonce,
   });
 
   final String providerUserId;
@@ -16,7 +17,14 @@ class SocialCredential {
   final String? avatarUrl;
 
   /// The OpenID Connect ID token, needed to exchange this credential for a
-  /// Supabase session (`supabase.auth.signInWithIdToken`) once that wiring
-  /// exists.
+  /// Supabase session (`supabase.auth.signInWithIdToken`).
   final String? idToken;
+
+  /// The un-hashed nonce that was bound to this sign-in attempt. The provider
+  /// received its SHA-256 hash (embedded in [idToken]'s `nonce` claim), while
+  /// Supabase needs this raw value to re-hash and compare — passing one
+  /// without the other makes `signInWithIdToken` fail with "Passed nonce and
+  /// nonce in id_token should either both exist or not". Null when the
+  /// provider flow did not bind a nonce.
+  final String? rawNonce;
 }

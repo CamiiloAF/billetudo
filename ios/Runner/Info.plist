@@ -66,5 +66,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Google Sign-In (iOS): the SDK reads GIDClientID for the native client
+	     and needs the reversed client id registered as a URL scheme to receive
+	     the auth callback. Values from the iOS OAuth client (bundle id
+	     com.billetudo.app). serverClientId (web) stays in Env. -->
+	<key>GIDClientID</key>
+	<string>315684773654-gda6lh8sjiqakoaomnrabn8ahpli5fka.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.315684773654-gda6lh8sjiqakoaomnrabn8ahpli5fka</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

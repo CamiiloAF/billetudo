@@ -1,4 +1,4 @@
-package com.camiloagudelo.billetudo;
+package com.billetudo.app;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;

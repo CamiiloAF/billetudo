@@ -188,6 +188,12 @@ class AuthRepositoryImpl implements AuthRepository {
             ? OAuthProvider.google
             : OAuthProvider.apple,
         idToken: idToken,
+        // On iOS the Google idToken carries a `nonce` claim, so the raw nonce
+        // must accompany it here or Supabase rejects the exchange with 400
+        // "Passed nonce and nonce in id_token should either both exist or
+        // not". Null (Android Google today, Apple) means no nonce was bound,
+        // and passing null keeps the "neither exists" branch valid.
+        nonce: credential.rawNonce,
       );
       final supabaseUser = response.user;
       if (supabaseUser == null) {

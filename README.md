@@ -59,7 +59,7 @@ Pendiente (configuración técnica — a tu cargo):
 Cada ambiente apunta a su propio proyecto Supabase / Google OAuth client (Google Cloud no permite
 dos Android OAuth clients con el mismo par package+SHA-1), así que además de `--dart-define-from-file`
 la app corre en flavors nativos separados — se pueden tener ambas builds instaladas a la vez en el
-mismo teléfono. `prod` mantiene el `applicationId`/bundle id actual (`com.camiloagudelo.billetudo`);
+mismo teléfono. `prod` mantiene el `applicationId`/bundle id actual (`com.billetudo.app`);
 `dev` usa el sufijo `.dev` y se ve en el teléfono como "Billetudo Dev".
 
 ```bash

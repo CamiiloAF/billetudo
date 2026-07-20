@@ -1,4 +1,4 @@
-package com.camiloagudelo.billetudo
+package com.billetudo.app
 
 import io.flutter.embedding.android.FlutterActivity
 

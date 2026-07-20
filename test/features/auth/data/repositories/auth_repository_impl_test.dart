@@ -426,6 +426,77 @@ void main() {
     );
   });
 
+  group('signInWithGoogle / nonce exchange (iOS bug fix)', () {
+    test(
+      'forwards the credential rawNonce to signInWithIdToken so Supabase '
+      'accepts the iOS Google idToken that carries a nonce claim',
+      () async {
+        when(() => google.signIn()).thenAnswer(
+          (_) async => const SocialCredential(
+            providerUserId: 'google-1',
+            displayName: 'Ana',
+            idToken: 'id-token',
+            rawNonce: 'raw-nonce-abc',
+          ),
+        );
+        when(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: 'id-token',
+            nonce: 'raw-nonce-abc',
+          ),
+        ).thenAnswer(
+          (_) async => AuthResponse(user: supabaseUser(id: 'user-1')),
+        );
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result.isRight(), isTrue);
+        verify(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: 'id-token',
+            nonce: 'raw-nonce-abc',
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'passes a null nonce for Apple, whose flow binds none — the "neither '
+      'exists" branch must stay valid so Apple keeps working',
+      () async {
+        when(() => apple.signIn()).thenAnswer(
+          (_) async => const SocialCredential(
+            providerUserId: 'apple-1',
+            displayName: 'Ana',
+            idToken: 'apple-id-token',
+          ),
+        );
+        when(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.apple,
+            idToken: 'apple-id-token',
+            nonce: null,
+          ),
+        ).thenAnswer(
+          (_) async => AuthResponse(user: supabaseUser(id: 'user-9')),
+        );
+
+        final result = await repository.signInWithApple();
+
+        expect(result.isRight(), isTrue);
+        verify(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.apple,
+            idToken: 'apple-id-token',
+            nonce: null,
+          ),
+        ).called(1);
+      },
+    );
+  });
+
   group('mergeLocalData', () {
     /// Signs the repository in via Google (HU-02) so `mergeLocalData` (HU-04)
     /// has a `currentSession.user` to claim rows for.
