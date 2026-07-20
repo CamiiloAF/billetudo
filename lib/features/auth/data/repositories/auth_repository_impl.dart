@@ -260,24 +260,82 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  FutureResult<Unit> signOut() async {
+  FutureResult<Unit> signOut() {
     // Signing out is entirely local (HU-06): it only stops sync going
     // forward and clears the cached provider/Supabase session, it never
-    // touches data.
-    _clearLocalSession();
-    return const Right(unit);
+    // touches data. It is awaited end to end so the caller can sequence a
+    // local wipe *after* the session is really gone and PowerSync is really
+    // disconnected — see [SignOutWithLocalDataChoice].
+    return _clearLocalSession(force: false);
   }
 
   /// Drops the local half of the session: Google's cached credential,
   /// Supabase's own session, and the PowerSync connection. Shared by
   /// [signOut] (HU-06) and [deleteAccount] (HU-07) — once the cloud account
   /// is gone there is nothing left to keep a local session alive for either.
-  void _clearLocalSession() {
-    unawaited(_google.signOutSilently());
-    unawaited(_supabase.auth.signOut());
-    unawaited(_powerSync.disconnect());
+  ///
+  /// Every step is awaited, so a `Right` means the session really is closed
+  /// and the sync stream really is down. That is what lets HU-06 wipe this
+  /// device afterwards without racing a download that repopulates it.
+  ///
+  /// Google's `signOutSilently` is awaited but can never fail the flow: the
+  /// datasource swallows its own errors on purpose, since a stale cached
+  /// Google credential does not keep the app's session alive — only Supabase's
+  /// does. It is awaited anyway to keep the sequence deterministic.
+  ///
+  /// On failure the local state is left **as it was**: `_current` stays
+  /// signed-in and nothing is emitted. Telling the UI it is signed out while
+  /// the Supabase session survives on disk creates a state that silently
+  /// reverts on the next launch (`_restoreSession` finds the token, reconnects
+  /// PowerSync). Better to keep showing the truth and let the user retry.
+  ///
+  /// [force] is [deleteAccount]'s path (HU-07): the cloud account is already
+  /// gone, so the local session points at nothing and cleanup failing must not
+  /// block anything — the signed-out state is emitted regardless.
+  FutureResult<Unit> _clearLocalSession({required bool force}) async {
+    await _google.signOutSilently();
+
+    final failure = await _runQuietly(
+      _supabase.auth.signOut,
+      'Supabase sign-out failed — the session may still be on disk.',
+    );
+    if (failure != null && !force) {
+      return Left(failure);
+    }
+
+    final disconnectFailure = await _runQuietly(
+      _powerSync.disconnect,
+      'PowerSync disconnect failed after signing out.',
+    );
+
     _current = const AuthSession.signedOut();
     _controller.add(_current);
+
+    // The Supabase session is gone by now, so the signed-out state above is
+    // accurate; but sync may still be streaming, and a wipe running against a
+    // live stream is exactly the race this method exists to prevent. Report it
+    // so the caller skips the wipe instead of confirming a delete that sync
+    // could undo.
+    if (disconnectFailure != null && !force) {
+      return Left(disconnectFailure);
+    }
+    return const Right(unit);
+  }
+
+  /// Runs a cleanup step and turns whatever it throws into a [NetworkFailure]
+  /// instead of letting it escape as an async error, so [_clearLocalSession]
+  /// can decide what each step's failure means rather than aborting on the
+  /// first one.
+  Future<Failure?> _runQuietly(
+    Future<void> Function() step,
+    String message,
+  ) async {
+    try {
+      await step();
+      return null;
+    } on Object catch (e, stackTrace) {
+      return NetworkFailure('$message ($e)', cause: e, stackTrace: stackTrace);
+    }
   }
 
   @override
@@ -296,8 +354,11 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(_deleteAccountFailure(data));
       }
       // The cloud account no longer exists — clear the local session so it
-      // doesn't linger pointing at a dead account.
-      _clearLocalSession();
+      // doesn't linger pointing at a dead account. `force: true`: there is no
+      // session left to protect, so a failing cleanup step must not turn a
+      // completed deletion into an error the user could read as "nothing
+      // happened".
+      await _clearLocalSession(force: true);
       return const Right(unit);
     } on FunctionException catch (e, stackTrace) {
       return Left(

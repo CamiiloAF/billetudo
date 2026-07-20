@@ -1119,6 +1119,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'We signed you out, but couldn\'t delete this phone\'s data. It\'s still here.';
 
   @override
+  String get authSignOutFailedMessage =>
+      'We couldn\'t sign you out, so nothing was deleted from this phone. Please try again.';
+
+  @override
   String get authDeleteStep1Title => 'Delete your account';
 
   @override

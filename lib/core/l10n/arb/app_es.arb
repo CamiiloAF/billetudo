@@ -850,6 +850,10 @@
   "@authSignOutWipeErrorMessage": {
     "description": "HU-06: el wipe falló después de cerrar sesión. No reportar un éxito falso."
   },
+  "authSignOutFailedMessage": "No pudimos cerrar tu sesión, así que no borramos nada de este teléfono. Inténtalo de nuevo.",
+  "@authSignOutFailedMessage": {
+    "description": "HU-06: el cierre de sesión falló, por lo que el borrado se canceló. Deja claro que los datos siguen intactos para que el usuario reintente."
+  },
 
   "authDeleteStep1Title": "Eliminar tu cuenta",
   "@authDeleteStep1Title": {},

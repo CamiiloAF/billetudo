@@ -1121,6 +1121,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.';
 
   @override
+  String get authSignOutFailedMessage =>
+      'No pudimos cerrar tu sesión, así que no borramos nada de este teléfono. Inténtalo de nuevo.';
+
+  @override
   String get authDeleteStep1Title => 'Eliminar tu cuenta';
 
   @override

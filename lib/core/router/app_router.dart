@@ -483,6 +483,12 @@ Future<void> _confirmSignOut(BuildContext context) async {
               Text(AppLocalizations.of(context).authSignOutWipeErrorMessage),
         ),
       );
+    case SignOutFailed():
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).authSignOutFailedMessage),
+        ),
+      );
   }
 }
 

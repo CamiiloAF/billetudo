@@ -339,6 +339,7 @@
   "authSignOutUnsyncedTitle": "Some changes haven't been uploaded yet",
   "authSignOutUnsyncedBody": "{count, plural, =1{1 change is still saved only on this phone. If you delete now, that change won't make it to the cloud.} other{{count} changes are still saved only on this phone. If you delete now, those changes won't make it to the cloud.}}",
   "authSignOutWipeErrorMessage": "We signed you out, but couldn't delete this phone's data. It's still here.",
+  "authSignOutFailedMessage": "We couldn't sign you out, so nothing was deleted from this phone. Please try again.",
 
   "authDeleteStep1Title": "Delete your account",
   "authDeleteStep1Message": "We're about to delete your accounts, transactions, categories and everything else tied to your account in the cloud. This can't be undone.",

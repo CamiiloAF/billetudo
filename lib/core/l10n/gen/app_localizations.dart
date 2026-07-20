@@ -2078,6 +2078,12 @@ abstract class AppLocalizations {
   /// **'Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.'**
   String get authSignOutWipeErrorMessage;
 
+  /// HU-06: el cierre de sesión falló, por lo que el borrado se canceló. Deja claro que los datos siguen intactos para que el usuario reintente.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cerrar tu sesión, así que no borramos nada de este teléfono. Inténtalo de nuevo.'**
+  String get authSignOutFailedMessage;
+
   /// No description provided for @authDeleteStep1Title.
   ///
   /// In es, this message translates to:
