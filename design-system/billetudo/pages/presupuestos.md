@@ -30,12 +30,18 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en una banda sepa
 | Menú modo activo | `tFZyK` | `qJAka` |
 | Fila en Ajustes ("Modo sobres") | `r5aVv` | `GZUqi` |
 | Sheet — eliminar presupuesto | `hxkUC` | `T7pTgh` |
+| Detalle HU-12 — solo gastado (sin programado) | `kLUl7` | `KFaVk` |
+| Detalle HU-12 — programado sano | `H4HDen` | `S8OEo` |
+| Detalle HU-12 — riesgo de sobregiro proyectado | `EZeos` | `AqSs3` |
+| Sheet HU-12 — pagos programados del período (con datos) | `hFPFU` | `HH9m9` |
+| Sheet HU-12 — pagos programados del período (vacío) | `Tg476` | `ZCYip` |
 
 **Componentes reutilizables** (temáticos, sin variante oscura separada):
 - `Budget Line` (`FSL69`) — fila de presupuesto en la lista.
 - `Budget Skeleton Row` (`iVri4`) — placeholder de carga; usa token `$skeleton` (NO `$border`, invisible en oscuro).
 - `Archived Budget Row` (`Ote7d`) — fila del histórico. **Tarjeta de dos zonas**, no una fila plana: Body (icon-wrap + nombre + **alcance** + `"Cerrado <fecha>"` a la derecha, y debajo la fila de resultado con `circle-check-big` / `circle-minus` — el icono va en **ambos** resultados, no solo en sobregasto) y **Footer** separado por borde superior, alineado a la derecha, con `archive-restore` + "Reactivar".
 - `Archived Budget Skeleton Row` (`ktlIa`) — placeholder de carga del histórico, con la geometría de dos zonas de `Ote7d`. No reusar `iVri4`: es el placeholder de `FSL69` y tiene otra geometría.
+- `Budget Scheduled Row` (`j3b8Se`, "Variante A — Badge recurrencia") — fila de un pago programado dentro del sheet de HU-12 (ver más abajo). Icon-wrap con badge circular de recurrencia superpuesto (18×18 `$surface`+borde, ícono `repeat` 9px, mismo patrón del badge de edición de ícono del formulario), sub "Próximo: [fecha] · [cuenta]", monto en `$text-secondary`. Sin variante oscura separada (recolorea por tema).
 
 ## Navegación
 
@@ -70,6 +76,12 @@ Componente `Budget Line` (`FSL69`): **3 datos + barra**, no más.
 - Aire: padding de card ~18, gap ~18, borde `$border` 1px, radio 20, fondo `$surface` dominante.
 - **Sin resumen agregado permanente** ("$X presupuestado este mes" sumando todos): es engañoso porque los presupuestos tienen periodos distintos, se solapan (doble conteo) y son multi-moneda. Solo válido en Modo sobres (HU-06). No usarlo como hero de la lista.
 
+**Extensión HU-12 (pagos programados) en la lista:** el tramo "programado"/"riesgo" ya aprobado para el hero del detalle también se refleja aquí, sin agregar una línea de texto nueva (la línea de meta ya está saturada — ver arriba). Cambios sobre `Budget Line` (`FSL69`), se propagan a toda instancia (lista normal y Modo sobres) sin afectar las que no tienen nada programado (nacen `enabled:false`):
+- **Barra (altura 6, más delgada que el hero):** tramo `Scheduled` (`lyaNM`), hermano de `Fill` — mismo color y misma convención de recorte al 100% del track que el hero: `$primary-light` (programado sano) / `$amber` (riesgo de sobregiro proyectado, `spentMinor+scheduledMinor > amountMinor` sin sobregasto real). En tema claro el tramo sano es sutil a este grosor — no es un fallo (el texto ya lo nombra, WCAG 1.4.1 cubierto), pero no reusar este track de 6px para otro indicador de color sin verificar contraste real en dispositivo.
+- **Línea de meta:** el `%` (`vdyCS`) pasa a vivir en un `Pct Group` (`vNZMO`) junto a un ícono `calendar-clock` 12px (`PDFgP`), oculto por defecto — se habilita solo si hay tramo programado/riesgo, coloreado `$text-secondary` (sano) / `$amber-text` (riesgo). Resuelve "no depender solo de color" sin espacio para texto nuevo.
+- **Stack derecho:** tercer estado de copy, mutuamente excluyente con los otros dos — **"Podría exceder por $X"** en `$amber-text` (riesgo de sobregiro proyectado), distinto de "Te quedan $X" (sano) y "Excedido por $X" (sobregasto real, `$expense-text`). Condicional siempre ("Podría"), nunca un hecho consumado.
+- El estado de riesgo es la única combinación que agrega el ícono `calendar-clock` + barra de dos tonos — el sobregasto real sigue siendo una barra sólida roja sin ese ícono, para que ambas alertas no se confundan en un escaneo rápido.
+
 **Punto de entrada a crear:** fila-CTA **"+ Nuevo presupuesto"** al final de la lista (círculo **40pt** `$surface` + `plus`, fondo `$primary-soft`, borde `$primary-light`, label **700** `$primary-on-soft-strong` para pasar contraste AA). Reemplaza al FAB en esta pantalla — **Presupuestos no lleva `AppFab`**, su acción de crear vive en el header y en esta fila. El copy es "Nuevo presupuesto", no el del estado vacío ("Crear presupuesto").
 
 **Header** (`ymsmU`): dos botones **circulares de 44pt** en orden **`⋮` → `+`** (`HqZOy` con `ellipsis-vertical` sobre `$muted`; `QAY0j` con `plus` sobre `$primary`), gap 8. No son `IconButton` planos.
@@ -87,6 +99,28 @@ Orden vertical: `Page Header` (atrás + **"⋮"**) → **hero de progreso** → 
 > **No hay acceso "Abrir en Movimientos ›".** El spec lo pidió en prosa, pero no está dibujado en ninguna de las seis variantes del detalle y ocupaba en código el lugar que el frame da al contador. Se retiró (2026-07-19): el "ver más" ya despliega la lista completa ahí mismo, que es el objetivo; y el motivo por el que este mismo párrafo prohíbe redirigir —romper el contexto de periodo + alcance— aplica igual a un acceso secundario. Además, traducir un alcance compuesto ("2 cuentas · 3 categorías" + ventana del periodo) a los filtros de Movimientos no siempre es fiel, y un enlace que lleva a una lista distinta es peor que no tenerlo. Si alguna vez se quiere, se diseña en Pencil primero.
 - **Acciones — en overflow "⋮" del header** (sheet `G26c4T`/`f1WviW`): **Editar** (→ form prellenado) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (→ papelera `deletedAt`, HU-11; sheet de confirmación `hxkUC` / `T7pTgh`). El sheet de confirmación usa tono **neutral `$primary`** (ícono `trash-2`), no rojo — es reversible vía papelera, mensaje: "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
 - **Variantes:** sobregasto (hero + caption en familia `expense`) y una única vez (ancla "termina el [fecha]", stepper acotado a `[startDate, endDate]`, chevron derecho deshabilitado en el último periodo).
+
+## HU-12 — Pagos programados dentro del presupuesto
+
+Extiende el hero de progreso del detalle (arriba) para proyectar, dentro del período vigente, los pagos programados que aún no se materializaron como transacción. Diseñado retroactivamente: la implementación en código llegó primero (ver `docs/dev-runs/budgets-scheduled-progress.md`) sin pasar por el gate de Pencil; este diseño formaliza esa deuda antes de que `flutter-dev` reconcilie el código contra él.
+
+Tres estados del hero, según si hay algo programado y si `spentMinor + scheduledMinor` supera `amountMinor` (proyección, no gasto real):
+
+- **Solo gastado** (`kLUl7`/`KFaVk`): nada programado en el período — la caption y el entry point "Programado" se ocultan por completo (`enabled:false`), la pantalla es indistinguible del detalle sin HU-12.
+- **Programado sano** (`H4HDen`/`S8OEo`): la barra suma un tercer tramo contiguo al gastado (ver "Barra de tres tramos" abajo) y la caption del hero gana una segunda línea: **"+ $X programado (llega a Y% si se ejecuta)"**, en `$text-secondary`.
+- **Riesgo de sobregiro proyectado** (`EZeos`/`AqSs3`): se activa cuando `spentMinor + scheduledMinor > amountMinor` **y el gasto real todavía NO excede** (ese caso ya existe y es el hero rojo `expense` de sobregasto real — no se tocan ni se confunden). La caption pasa a **"+ $X programado — excedería el presupuesto por $Y"** en `amber-text`, siempre en condicional ("excedería"/"Excedería"), nunca en presente ("excede") — es una proyección, nada se ejecutó todavía.
+
+**Excepción documentada a "Modelo de color — SOBRIO (no semáforo)":** la regla de arriba prohíbe explícitamente ámbar/semáforo por cercanía al límite, y ese caso general sigue vigente (gasto real acercándose al 100% sigue siendo violeta hasta sobregastar). El estado de riesgo de HU-12 es un caso distinto — **proyección de pagos aún no ejecutados**, no proximidad de gasto real — y usa `$amber`/`$amber-text`/`$amber-soft` (ver MASTER) como excepción deliberada, decidida explícitamente por el usuario tras auditoría de `ui-ux-reviewer`. No generalizar esta excepción a ningún otro indicador de cercanía al límite en la app.
+
+**Barra de tres tramos** (`F6J4sx` y equivalentes en `EZeos`/`AqSs3`):
+- Tramo 1 "gastado": `$primary` (o `$expense` si hay sobregasto real — mutuamente excluyente con el tramo de riesgo).
+- Tramo 2 "programado": `$primary-light` (no `$primary-soft` — casi hex-idéntico a `$border`, el segmento se perdía contra el track vacío) en estado sano; `$amber` en estado de riesgo. Extensión de uso de `$primary-light` documentada en MASTER (antes solo decoración pura, ahora codifica un dato real; sigue sin llevar texto/icono superpuesto).
+- **Convención de recorte al 100%:** la barra NUNCA excede el ancho visual del track, aunque el monto programado real implique más del 100% (ej. un tramo de riesgo que matemáticamente sería 45% del track se dibuja recortado a lo que quepa hasta el borde). La cifra exacta vive solo en el texto de la caption/fila ("excedería por $Y"), nunca en el ancho de la barra — decisión explícita del usuario, no un bug de proporción a corregir en código.
+- El tramo "programado"/"riesgo" nunca se comunica solo por color: la caption siempre lo nombra en texto (evita depender únicamente de color, WCAG 1.4.1).
+
+**Entry point "Programado"** (`s09qcC` y equivalentes): fila-tarjeta bajo el hero, oculta si no hay nada programado. Icon-wrap 40×40 `$primary-soft`/`calendar-clock` (o `$amber-soft` en riesgo) + label "Programado" + sub "N pagos próximos" + monto + chevron. Abre el sheet de la lista.
+
+**Sheet "Pagos programados del período"** (con datos `hFPFU`/`HH9m9`; vacío `Tg476`/`ZCYip`): reusa `Bottom Sheet Base`. Lista cada ocurrencia con `Budget Scheduled Row` (`j3b8Se` — ver "Componentes reutilizables"). Estado vacío reusa `Empty State` (`jmQO5`) con CTA deshabilitado (el sheet es de solo lectura, sin acción posible desde ahí); el head del sheet lleva solo el título, sin repetir el mensaje del `Empty State` en un hint aparte.
 
 ## Formulario crear/editar (`a3gGPM` / `AHGQc`)
 

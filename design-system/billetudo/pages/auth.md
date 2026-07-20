@@ -15,7 +15,10 @@ Local-first estricto: la app es 100% usable sin cuenta (HU-01). La pantalla de L
 | Auth — Respaldo D: Centrado (Android, **ganadora**) | `fTetG` | `eCMut` | Decisión final, ambos temas |
 | Auth — Respaldo D: Centrado (iOS, **ganadora**) | `RSzD1` | `DFlXI` | Decisión final, ambos temas — misma estructura que `fTetG`, solo difiere Status Bar/iOS y Apple visible |
 | Auth — Fusión de datos (HU-04, **ganadora**) | `vexqA` | `V5NA1` | Decisión final, ambos temas — mismo lenguaje centrado que Login |
-| Auth — Cerrar sesión (HU-06, **ganadora**) | `j4hgYN` | `MDDdY` | Decisión final, ambos temas — Bottom Sheet, sigue el patrón obligatorio de MASTER |
+| Auth — Cerrar sesión, opt-in apagado (HU-06, **ganadora**) | `wlVUL` | `CWvdi` | Decisión final, ambos temas — Bottom Sheet. Reemplaza a `j4hgYN`, ver abajo |
+| Auth — Cerrar sesión, opt-in activado + sync al día (HU-06) | `c87DpD` | `Af1SN` | Decisión final, ambos temas — el caso mayoritario: se borra y no hay nada pendiente |
+| Auth — Cerrar sesión, opt-in activado + cambios sin subir (HU-06) | `dpxOS` | `WXI8Z` | Decisión final, ambos temas — suma el aviso ámbar de pérdida |
+| Auth — Cerrar sesión, versión anterior (HU-06, **obsoleta**) | `j4hgYN` | `MDDdY` | Superada por las 3 de arriba. Se conserva hasta que la nueva esté implementada |
 | Auth — Borrar cuenta, paso 1: confirmación irreversible (HU-07) | `j8ZdEx` | `QOJ74` | Decisión final, ambos temas — Bottom Sheet, tono destructivo |
 | Auth — Borrar cuenta, paso 2: datos locales (HU-07) | `K8SAG` | `jxqEb` | Decisión final, ambos temas — Bottom Sheet, elección sin dark pattern |
 | Auth — Borrar cuenta, paso 3: confirmación final (HU-07) | `sqm4I` | `q43mHJ` | Decisión final, ambos temas — pantalla completa, cierre neutral |
@@ -73,15 +76,45 @@ Aparece justo después de un login exitoso donde había datos locales que fusion
 
 **Nota de contraste:** los valores de la Stats Card usan `$primary-on-soft` (no `$primary` puro) — en tema claro son visualmente idénticos, pero `$primary` puro sobre `$surface` cae a ~3.00:1 en tema oscuro (falla texto normal), mientras `$primary-on-soft` está calibrado para pasar en ambos temas. Aplica este mismo criterio a cualquier valor numérico destacado que se agregue después en esta pantalla o en Login.
 
-## Estructura (`j4hgYN`, cerrar sesión — HU-06)
+## Estructura (cerrar sesión — HU-06, 3 estados)
 
-Se dispara desde un botón "Cerrar sesión" en Ajustes/Configuración (pantalla que todavía no existe — punto de entrada futuro). Es un **Bottom Sheet**, no una pantalla completa ni un diálogo modal centrado: `MASTER.md` establece Bottom Sheet como patrón **obligatorio** para confirmaciones en mobile, y todo el precedente existente (Confirmar Eliminar, Confirmar Archivar, Confirmar Cambio, No se Puede Eliminar, todos en Cuentas) lo sigue sin excepción. Se probó una variante de diálogo centrado (`jpOWk`) solo para comparar y se descartó de inmediato por romper esa convención sin justificación.
+Se dispara desde "Cerrar sesión" al final de la pantalla **Más** (`gXcHt`). Es un **Bottom Sheet**, no una pantalla completa ni un diálogo modal centrado: `MASTER.md` establece Bottom Sheet como patrón **obligatorio** para confirmaciones en mobile, y todo el precedente existente (Confirmar Eliminar, Confirmar Archivar, Confirmar Cambio, No se Puede Eliminar, todos en Cuentas) lo sigue sin excepción. Se probó una variante de diálogo centrado (`jpOWk`) solo para comparar y se descartó de inmediato por romper esa convención sin justificación.
+
+### Por qué se rediseñó (2026-07-20)
+
+La versión anterior (`j4hgYN`) solo confirmaba cerrar sesión, prometiendo que los datos se conservan. El problema no era la hoja sino la HU: su criterio de aceptación ("conservar los datos locales") **contradice el motivo que ella misma declara** — *"para dejar de sincronizar en este dispositivo si lo comparto con alguien más"*. El caso de uso que justifica la historia es justamente el que la historia no resolvía: las finanzas quedaban visibles para quien usara el teléfono después.
+
+Decisiones de producto:
+- Se **ofrece elegir** qué pasa con los datos locales. **Conservar es el default** — sin cuenta la app sigue siendo plenamente usable (local-first), así que borrar nunca puede ser el camino por omisión.
+- **Borrar está disponible siempre, nunca bloqueado.** Se evaluó deshabilitarlo mientras la cola de subida tuviera pendientes y se descartó: un sync atascado —que ya ocurrió de verdad, ver decisión #17 de `05-auth-sync.md`— dejaría al usuario sin poder borrar sus propios datos. Se prefiere advertir explícitamente y respetar su decisión.
+- **Opt-in con casilla, no elección de dos opciones.** Se exploraron ambas. Ganó el opt-in porque el borrado es un *modificador* de cerrar sesión, no una acción par: dos radios del mismo peso le darían el 50% de la decisión visual a "borrar mis datos" en una hoja titulada "Cerrar sesión". Además, una elección de dos habría competido con `K8SAG` (paso 2 de borrar cuenta), que deliberadamente **no** lleva default por la regla de no-dark-pattern de HU-07: el usuario vería el mismo par de opciones dos veces, una con default y otra sin, y esa diferencia se puede justificar en un `.md` pero no en pantalla.
+
+### Estructura
 
 Instancia de `Bottom Sheet Base` (`PqTUt`) con el `Content Slot` reemplazado:
-- **Icon Circle** (56px, `$primary-soft`) + ícono `log-out` (26px, `$primary-on-soft`) — mismo tratamiento no alarmante que "Confirmar Archivar", NO el rojo/`$expense` de "Confirmar Eliminar" (cerrar sesión no es una acción destructiva).
-- **Título**: "Cerrar sesión".
-- **Mensaje**: "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión." — cubre las dos garantías de HU-06 (datos locales intactos + advertencia de no-sync) en tono neutral.
-- **`Sheet Buttons Row`** (`Ot4yI`): "Cancelar" (`Button/Secondary`, ícono `x` oculto) / "Cerrar sesión" (`Button/Primary`, ícono `log-out`).
+- **`Sheet Icon Header`** (`XPjIZ`): Icon Circle 56px `$primary-soft` + ícono `log-out` `$primary-on-soft` — mismo tratamiento no alarmante que "Confirmar Archivar", NO el `$expense` de "Confirmar Eliminar". **El header se mantiene neutro incluso con el opt-in activado**: la acción base sigue siendo cerrar sesión.
+- **`Delete Opt-in Row`** (`S533j9`, `reusable:true`): "Borrar también los datos de este teléfono" / "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas."
+- **`Unsynced Warning`**: bloque `$amber-soft` con ícono `cloud-off`, solo cuando hay cola pendiente. Va **entre** el opt-in y los botones, nunca flotando arriba.
+- **`Sheet Buttons Row`** (`Ot4yI`): "Cancelar" / CTA que muta según el opt-in.
+
+### El mensaje del header cambia con el estado (no es cosmético)
+
+| Estado | Mensaje |
+|---|---|
+| Opt-in apagado | "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión." |
+| Opt-in activado (ambos) | "Dejarás de sincronizar hasta que vuelvas a iniciar sesión." |
+
+Con la casilla marcada, prometer que los datos "seguirán guardados" es **literalmente falso** y queda a 30px de la fila roja que dice lo contrario. Detectado por `ui-ux-reviewer` como hallazgo crítico. El tono positivo que exige `CLAUDE.md` no autoriza un mensaje que desmienta la acción que el usuario acaba de configurar.
+
+### Contraste a vigilar
+
+`$text-secondary` sobre `$amber-soft` en oscuro (cuerpo del aviso, 13px/500) da **4.77:1** contra un umbral de 4.5. Pasa, pero es el par más ajustado de la pantalla y **el primero que se rompe si alguna vez se recalibra `$amber-soft`**. Se evaluó subirlo a `$text-primary` (12:1) y se descartó: compra 0.27 puntos a cambio de aplanar la jerarquía título/cuerpo del bloque, y es el mismo par que ya usa el mensaje del header de este sheet, así que cambiarlo introduciría una inconsistencia interna.
+
+### Pendiente antes de implementar
+
+- **Regla de conteo del aviso.** "3 movimientos y 1 cuenta" es dato de mockup. Falta definir la pluralización (0/1/N), si se enumeran entidades o se agrupa en "N cambios", y confirmar que con 0 pendientes el bloque no se muestra (estado `c87DpD`/`Af1SN`).
+- **Sin estado de "borrando…"** tras confirmar, ni frame de transición entre apagado y activado.
+- **Tap target:** el área tocable es la fila completa (350x112), **no** el checkbox de 24x24. Implementarlo sobre el checkbox incumple el mínimo de 44 de MASTER.
 
 ## Estructura (borrar cuenta — HU-07, flujo de 3 pasos)
 
