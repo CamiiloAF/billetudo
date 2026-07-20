@@ -69,6 +69,28 @@ Future<void> loadMaterialIconsFont() async {
   await lucideLoader.load();
 }
 
+/// Registers the app's bundled typeface under the `'Roboto'` family so a
+/// golden that renders the Google sign-in button measures its label with real
+/// glyph metrics.
+///
+/// `GoogleSignInButton`'s label is pinned to `fontFamily: 'Roboto'` per
+/// Google's branding guidelines, and Roboto is deliberately NOT bundled (it is
+/// the Android platform default on device). In `flutter test` an unregistered
+/// family falls back to the placeholder typeface, whose glyphs are much wider
+/// than the real font — enough to overflow that button by ~20px. That overflow
+/// is the documented test-only artifact `test/flutter_test_config.dart` warns
+/// about, not a device bug, so a golden must not capture it. Aliasing the
+/// bundled Plus Jakarta Sans faces to `'Roboto'` renders the label in a real,
+/// correctly-metricised font (a close visual stand-in for device Roboto, which
+/// tests can never load anyway). Call once per golden test file that renders
+/// the button, in `setUpAll`, alongside [loadMaterialIconsFont].
+Future<void> loadGoogleButtonFontFallback() async {
+  final loader = FontLoader('Roboto')
+    ..addFont(rootBundle.load('assets/fonts/PlusJakartaSans-Regular.ttf'))
+    ..addFont(rootBundle.load('assets/fonts/PlusJakartaSans-SemiBold.ttf'));
+  await loader.load();
+}
+
 /// Wraps [child] with the app's real theme (light or dark), locale and
 /// localizations — the same chrome `PumpApp` (widget_tests' pump helper) uses,
 /// plus the `theme`/`darkTheme` split a golden needs to pick.
