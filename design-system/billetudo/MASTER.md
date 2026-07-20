@@ -43,7 +43,7 @@
 | `indigo-soft` | `#E7E6F7` | `#211F45` | Fondo tenue para `indigo`. |
 | `background` | `#F4F3FA` | `#14141F` | Fondo de pantalla. |
 | `surface` | `#FFFFFF` | `#1E1E2E` | Tarjetas, barras, superficies elevadas. |
-| `muted` | `#EEECFB` | `#26243B` | Fondos sutiles genericos (chips inactivos, AI Assistant card). |
+| `muted` | `#EEECFB` | `#26243B` | Fondos sutiles genericos (chips inactivos, AI Assistant card). **`muted` y `primary-soft` son el MISMO hex en ambos temas** — ver la regla de "estado seleccionado sin color de entidad" mas abajo antes de usar uno para distinguir del otro. |
 | `border` | `#ECEBF3` | `#2A2A3D` | Bordes/divisores sutiles. |
 | `skeleton` | `#ECEBF3` | `#45455F` | **Relleno de bloques placeholder de skeleton (estados de carga).** Claro = idéntico a `border` (el skeleton claro no cambia); oscuro deliberadamente más luminoso que `border` (`#2A2A3D`) para que el skeleton se lea sin gritar (~1.9:1 sobre `background`, ~1.77:1 sobre `surface`) — `border` oscuro daba ~1.25:1, casi invisible. Usar SOLO para rellenos placeholder de skeleton, nunca para bordes/divisores reales (esos siguen en `border`). Disponible para reusar en skeletons de otras features (Cuentas/Categorías/Movimientos). |
 | `text-primary` | `#1C1B29` | `#F4F3FA` | Texto principal. |
@@ -100,6 +100,12 @@ Viven como frames `reusable:true` en `billetudo.pen`. Instanciar con `ref` + `de
 ### Patron de seleccion en grids (icono vs. color)
 Cuando un grid permite elegir una opcion (ej. icono de cuenta, color de cuenta), el tratamiento del item seleccionado depende de que se esta mostrando, no es un patron unico:
 - **Iconos**: fondo `$primary-soft` + borde `$primary` + icono en `$primary-on-soft` (mismo criterio que `Category Chip`).
+
+**Estado seleccionado cuando la entidad NO tiene color propio (regla critica).** `$muted` y `$primary-soft` son **el mismo hex** en claro (`#EEECFB`) y en oscuro (`#26243B`). Por eso:
+
+- Si la entidad **tiene color** (categorias, cuentas), el seleccionado se dibuja con su par cromatico: `fill $<color>-soft` + `stroke $<color>` (ej. `$sky-soft` + `$sky` en `lAxmS`). Se distingue del reposo porque es **otra familia de color**, no por el tono.
+- Si la entidad **no tiene color** (presupuestos: `Budgets` guarda `icon` pero no `color`), su "soft" es `$primary-soft` — hex-identico a `$muted`. Pintar el seleccionado con `$primary-soft` lo deja **visualmente identico al reposo**, y el estado queda cifrado solo en el anillo. En ese caso el seleccionado va **hueco**: `fill $surface` + `stroke $primary` 2. Ejemplo: `XsnnD/x9w2F`.
+- La misma trampa aplica a cualquier par seleccionado/inactivo que intente distinguirse con esos dos tokens: ya paso en `Scheduled Filter Chips`, donde el estado se cifraba solo en el color del label (fallo WCAG 1.4.1) y hubo que anadir borde. **Antes de usar `$primary-soft` vs `$muted` como senal de estado, comprueba que no sean el mismo valor** — no lo son en ningun tema.
 - **Colores solidos** (swatches): un check superpuesto en `$on-primary`, sin fondo `-soft` extra (el color solido ya comunica suficiente, agregar fondo tenue detras de un color solido es redundante).
 - **Filas de texto/lista** (ej. selector de moneda): check a la derecha de la fila, sin cambiar el fondo de toda la fila.
 Es intencional que varien segun el tipo de contenido — no "corregir" para forzar un patron unico entre estos tres casos.

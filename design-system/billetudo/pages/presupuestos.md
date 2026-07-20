@@ -6,7 +6,7 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 
 ## Frames
 
-Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en la banda `Zona — Presupuestos (Oscuro)` (`Q9o9pz`), separada abajo del canvas claro.
+Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en una banda separada abajo del canvas claro, con un offset de **7010px** respecto al frame claro equivalente. (La banda no tiene frame contenedor propio: es posicional. El `ID` `Q9o9pz` que citaba este documento no existe en el `.pen`.)
 
 | Pantalla / pieza | Node ID (Claro) | Node ID (Oscuro) |
 |---|---|---|
@@ -29,7 +29,7 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en la banda `Zona
 | Menú lista (⋮ header) | `TmOGV` | `cOcbC` |
 | Menú modo activo | `tFZyK` | `qJAka` |
 | Fila en Ajustes ("Modo sobres") | `r5aVv` | `GZUqi` |
-| Sheet — eliminar presupuesto | `hxkUC` | _pendiente (tema oscuro aún no existe)_ |
+| Sheet — eliminar presupuesto | `hxkUC` | `T7pTgh` |
 
 **Componentes reutilizables** (temáticos, sin variante oscura separada):
 - `Budget Line` (`FSL69`) — fila de presupuesto en la lista.
