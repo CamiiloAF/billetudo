@@ -4,6 +4,8 @@
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
@@ -23,6 +25,8 @@ class _MockWatchMonthTransactions extends Mock
 
 class _MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
+class _MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+
 void main() {
   setUpAll(() {
     // Stops google_fonts from trying to download fonts during tests.
@@ -36,6 +40,7 @@ void main() {
     final watchAccounts = _MockWatchAccounts();
     final watchMonthTransactions = _MockWatchMonthTransactions();
     final watchAuthSession = _MockWatchAuthSession();
+    final watchSyncStatus = _MockWatchSyncStatus();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -45,8 +50,16 @@ void main() {
     when(watchAuthSession.call).thenAnswer(
       (_) => const Stream<AuthSession>.empty(),
     );
+    when(watchSyncStatus.call).thenAnswer(
+      (_) => const Stream<SyncState>.empty(),
+    );
     getIt.registerFactory<HomeCubit>(
-      () => HomeCubit(watchAccounts, watchMonthTransactions, watchAuthSession),
+      () => HomeCubit(
+        watchAccounts,
+        watchMonthTransactions,
+        watchAuthSession,
+        watchSyncStatus,
+      ),
     );
   });
 

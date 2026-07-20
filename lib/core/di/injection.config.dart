@@ -16,6 +16,12 @@ import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
 import 'package:billetudo/core/security/secure_storage_service.dart' as _i1034;
+import 'package:billetudo/core/sync/data/repositories/sync_status_repository_impl.dart'
+    as _i975;
+import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart'
+    as _i691;
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart'
+    as _i567;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
 import 'package:billetudo/features/accounts/data/datasources/account_number_local_datasource.dart'
     as _i612;
@@ -355,6 +361,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i691.SyncStatusRepository>(
+        () => _i975.SyncStatusRepositoryImpl(gh<_i433.PowerSyncDatabase>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
         () => _i718.LocalDataOwnershipDatasource(
               gh<_i249.AppDatabase>(),
@@ -382,6 +390,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1008.TagsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i556.TransactionsLocalDatasource>(
         () => _i556.TransactionsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.factory<_i567.WatchSyncStatus>(
+        () => _i567.WatchSyncStatus(gh<_i691.SyncStatusRepository>()));
     gh.lazySingleton<_i654.TransactionRepository>(
         () => _i10.TransactionRepositoryImpl(
               gh<_i556.TransactionsLocalDatasource>(),
@@ -676,6 +686,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i460.SetTransactionTags>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i567.WatchSyncStatus>(),
+        ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
@@ -703,11 +719,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
           gh<_i1044.SignInWithGoogle>(),
           gh<_i888.SignInWithApple>(),
-        ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i716.WatchAuthSession>(),
         ));
     gh.factory<_i458.ScheduledPaymentsListCubit>(
         () => _i458.ScheduledPaymentsListCubit(

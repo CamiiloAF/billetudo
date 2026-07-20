@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/sync/domain/entities/sync_state.dart';
+import '../../../../core/sync/domain/usecases/watch_sync_status.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
@@ -26,15 +28,18 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchAccounts,
     this._watchMonthTransactions,
     this._watchAuthSession,
+    this._watchSyncStatus,
   ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
   final WatchMonthTransactions _watchMonthTransactions;
   final WatchAuthSession _watchAuthSession;
+  final WatchSyncStatus _watchSyncStatus;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
   StreamSubscription<AuthSession>? _authSub;
+  StreamSubscription<SyncState>? _syncSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastTransactions;
@@ -44,8 +49,10 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> start() async {
     await _accountsSub?.cancel();
     await _authSub?.cancel();
+    await _syncSub?.cancel();
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _authSub = _watchAuthSession().listen(_onAuthSession);
+    _syncSub = _watchSyncStatus().listen(_onSyncState);
     await _subscribeTransactions(state.month);
   }
 
@@ -56,6 +63,22 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     emit(state.copyWith(user: session.user, updateUser: true));
+  }
+
+  /// HU-10: the sync indicator is passive and independent of [HomeStatus] —
+  /// being offline or mid-merge never turns the Home into an error screen.
+  void _onSyncState(SyncState syncState) {
+    if (isClosed) {
+      return;
+    }
+    final syncStatus = switch (syncState) {
+      SyncState.synced => HomeSyncStatus.synced,
+      SyncState.syncing => HomeSyncStatus.syncing,
+      SyncState.offline => HomeSyncStatus.offline,
+    };
+    // `failure` is re-passed on purpose: `copyWith` drops it when omitted, and
+    // a sync tick must not clear a failure the body is still rendering.
+    emit(state.copyWith(syncStatus: syncStatus, failure: state.failure));
   }
 
   /// HU-04: change the visible month (hero + recent feed update together).
@@ -115,6 +138,7 @@ class HomeCubit extends Cubit<HomeState> {
     await _accountsSub?.cancel();
     await _transactionsSub?.cancel();
     await _authSub?.cancel();
+    await _syncSub?.cancel();
     return super.close();
   }
 }

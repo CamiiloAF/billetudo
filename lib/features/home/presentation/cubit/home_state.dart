@@ -12,8 +12,8 @@ import '../../domain/entities/month_spending.dart';
 enum HomeStatus { loading, ready, failure }
 
 /// The passive sync indicator (HU-10). Informative only, never a tap target.
-/// Defaults to [synced]: PowerSync is not wired yet and, local-first, data is
-/// always safe on device.
+/// Mirrors `core/sync`'s `SyncState`, which the cubit maps from the live sync
+/// engine; the default only holds until that stream's first emission.
 enum HomeSyncStatus { synced, syncing, offline }
 
 class HomeState extends Equatable {

@@ -710,7 +710,7 @@
   "@homeNotificationsTooltip": {},
   "homeSyncSynced": "Sincronizado",
   "@homeSyncSynced": {},
-  "homeSyncSyncing": "Sincronizando",
+  "homeSyncSyncing": "Sincronizando…",
   "@homeSyncSyncing": {},
   "homeSyncOffline": "Sin conexión",
   "@homeSyncOffline": {},
@@ -948,6 +948,38 @@
   },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
+  "budgetScheduledLabel": "Programado",
+  "@budgetScheduledLabel": {},
+  "budgetScheduledEntrySub": "{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}",
+  "@budgetScheduledEntrySub": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetScheduledEntrySubRisk": "Excedería el presupuesto por {amount}",
+  "@budgetScheduledEntrySubRisk": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledCaption": "+ {amount} programado (llega a {pct}% si se ejecuta)",
+  "@budgetScheduledCaption": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "pct": { "type": "int" }
+    }
+  },
+  "budgetScheduledCaptionRisk": "+ {amount} programado — excedería el presupuesto por {overage}",
+  "@budgetScheduledCaptionRisk": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "overage": { "type": "String" }
+    }
+  },
+  "budgetScheduledSheetTitle": "Pagos programados del período",
+  "@budgetScheduledSheetTitle": {},
+  "budgetScheduledSheetHint": "Suman {amount} de lo reservado este período.",
+  "@budgetScheduledSheetHint": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledSheetEmpty": "Aún no tienes pagos programados en este período",
+  "@budgetScheduledSheetEmpty": {},
   "budgetLoadMore": "Ver más",
   "@budgetLoadMore": {},
   "budgetOneOffWindow": "Ventana única",

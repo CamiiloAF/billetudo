@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -99,23 +101,84 @@ class HomeHeader extends StatelessWidget {
 
 /// The discreet sync-status icon (HU-10). Passive: it carries a semantics
 /// label but is not interactive.
-class SyncIndicator extends StatelessWidget {
+///
+/// While syncing, the refresh icon rotates so the user can tell something is
+/// happening (notably during the post-login merge, where a static "synced"
+/// icon read as the app being stuck). Stateful only for that rotation.
+class SyncIndicator extends StatefulWidget {
   const SyncIndicator({required this.status, super.key});
 
   final HomeSyncStatus status;
 
   @override
+  State<SyncIndicator> createState() => _SyncIndicatorState();
+}
+
+class _SyncIndicatorState extends State<SyncIndicator>
+    with SingleTickerProviderStateMixin {
+  /// One turn every 2s: slow enough to read as calm progress rather than an
+  /// alarm, fast enough to be visibly moving at 20px.
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
+
+  /// False when the OS asks for reduced motion (MASTER.md accessibility): the
+  /// icon then stays static and only the semantics label reports progress.
+  bool _motionAllowed = true;
+
+  bool get _shouldSpin =>
+      widget.status == HomeSyncStatus.syncing && _motionAllowed;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _motionAllowed = !MediaQuery.disableAnimationsOf(context);
+    _applySpin();
+  }
+
+  @override
+  void didUpdateWidget(SyncIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _applySpin();
+  }
+
+  /// Never leaves the controller ticking outside [HomeSyncStatus.syncing] —
+  /// an endless repeat in the background burns frames and battery.
+  void _applySpin() {
+    if (_shouldSpin) {
+      if (!_controller.isAnimating) {
+        // The ticker future only completes on dispose; nothing to await.
+        unawaited(_controller.repeat());
+      }
+    } else if (_controller.isAnimating || _controller.value != 0) {
+      _controller
+        ..stop()
+        ..reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final (icon, label) = switch (status) {
+    final (icon, label) = switch (widget.status) {
       HomeSyncStatus.synced => (LucideIcons.cloudCheck, l10n.homeSyncSynced),
       HomeSyncStatus.syncing => (LucideIcons.refreshCw, l10n.homeSyncSyncing),
       HomeSyncStatus.offline => (LucideIcons.cloudOff, l10n.homeSyncOffline),
     };
     return Semantics(
       label: label,
-      child: Icon(icon, size: 20, color: colors.textSecondary),
+      child: RotationTransition(
+        turns: _controller,
+        child: Icon(icon, size: 18, color: colors.textSecondary),
+      ),
     );
   }
 }

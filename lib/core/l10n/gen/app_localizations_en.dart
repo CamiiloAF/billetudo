@@ -930,7 +930,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSyncSynced => 'Synced';
 
   @override
-  String get homeSyncSyncing => 'Syncing';
+  String get homeSyncSyncing => 'Syncing…';
 
   @override
   String get homeSyncOffline => 'Offline';
@@ -1294,6 +1294,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetActivityEmpty => 'No transactions in this period';
+
+  @override
+  String get budgetScheduledLabel => 'Scheduled';
+
+  @override
+  String budgetScheduledEntrySub(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count upcoming payments',
+      one: '$count upcoming payment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetScheduledEntrySubRisk(String amount) {
+    return 'Would go over budget by $amount';
+  }
+
+  @override
+  String budgetScheduledCaption(String amount, int pct) {
+    return '+ $amount scheduled (reaches $pct% if it goes through)';
+  }
+
+  @override
+  String budgetScheduledCaptionRisk(String amount, String overage) {
+    return '+ $amount scheduled — would go over budget by $overage';
+  }
+
+  @override
+  String get budgetScheduledSheetTitle => 'Scheduled payments for this period';
+
+  @override
+  String budgetScheduledSheetHint(String amount) {
+    return '$amount of what\'s set aside this period.';
+  }
+
+  @override
+  String get budgetScheduledSheetEmpty =>
+      'No scheduled payments in this period yet';
 
   @override
   String get budgetLoadMore => 'See more';

@@ -1751,7 +1751,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSyncSyncing.
   ///
   /// In es, this message translates to:
-  /// **'Sincronizando'**
+  /// **'Sincronizando…'**
   String get homeSyncSyncing;
 
   /// No description provided for @homeSyncOffline.
@@ -2341,6 +2341,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin movimientos en este periodo'**
   String get budgetActivityEmpty;
+
+  /// No description provided for @budgetScheduledLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Programado'**
+  String get budgetScheduledLabel;
+
+  /// No description provided for @budgetScheduledEntrySub.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}'**
+  String budgetScheduledEntrySub(int count);
+
+  /// No description provided for @budgetScheduledEntrySubRisk.
+  ///
+  /// In es, this message translates to:
+  /// **'Excedería el presupuesto por {amount}'**
+  String budgetScheduledEntrySubRisk(String amount);
+
+  /// No description provided for @budgetScheduledCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'+ {amount} programado (llega a {pct}% si se ejecuta)'**
+  String budgetScheduledCaption(String amount, int pct);
+
+  /// No description provided for @budgetScheduledCaptionRisk.
+  ///
+  /// In es, this message translates to:
+  /// **'+ {amount} programado — excedería el presupuesto por {overage}'**
+  String budgetScheduledCaptionRisk(String amount, String overage);
+
+  /// No description provided for @budgetScheduledSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos programados del período'**
+  String get budgetScheduledSheetTitle;
+
+  /// No description provided for @budgetScheduledSheetHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Suman {amount} de lo reservado este período.'**
+  String budgetScheduledSheetHint(String amount);
+
+  /// No description provided for @budgetScheduledSheetEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes pagos programados en este período'**
+  String get budgetScheduledSheetEmpty;
 
   /// No description provided for @budgetLoadMore.
   ///

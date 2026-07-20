@@ -281,7 +281,7 @@
   "homeGreetingNamed": "Welcome back, {name}",
   "homeNotificationsTooltip": "Notifications",
   "homeSyncSynced": "Synced",
-  "homeSyncSyncing": "Syncing",
+  "homeSyncSyncing": "Syncing…",
   "homeSyncOffline": "Offline",
   "homeSpentInMonth": "Spent in {month}",
   "homeBudgetInvitation": "Set a budget to see how much you have left this month",
@@ -417,6 +417,35 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "budgetActivityEmpty": "No transactions in this period",
+  "budgetScheduledLabel": "Scheduled",
+  "budgetScheduledEntrySub": "{count, plural, one{{count} upcoming payment} other{{count} upcoming payments}}",
+  "@budgetScheduledEntrySub": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetScheduledEntrySubRisk": "Would go over budget by {amount}",
+  "@budgetScheduledEntrySubRisk": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledCaption": "+ {amount} scheduled (reaches {pct}% if it goes through)",
+  "@budgetScheduledCaption": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "pct": { "type": "int" }
+    }
+  },
+  "budgetScheduledCaptionRisk": "+ {amount} scheduled — would go over budget by {overage}",
+  "@budgetScheduledCaptionRisk": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "overage": { "type": "String" }
+    }
+  },
+  "budgetScheduledSheetTitle": "Scheduled payments for this period",
+  "budgetScheduledSheetHint": "{amount} of what's set aside this period.",
+  "@budgetScheduledSheetHint": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledSheetEmpty": "No scheduled payments in this period yet",
   "budgetLoadMore": "See more",
   "budgetOneOffWindow": "Single window",
   "budgetPeriodPreviousTooltip": "Previous period",

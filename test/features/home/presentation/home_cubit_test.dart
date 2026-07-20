@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
@@ -24,10 +26,13 @@ class MockWatchMonthTransactions extends Mock
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
+class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
   late MockWatchAuthSession watchAuthSession;
+  late MockWatchSyncStatus watchSyncStatus;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -43,13 +48,22 @@ void main() {
     watchAccounts = MockWatchAccounts();
     watchMonthTransactions = MockWatchMonthTransactions();
     watchAuthSession = MockWatchAuthSession();
+    watchSyncStatus = MockWatchSyncStatus();
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
+    // Default: the sync stream stays quiet, so the state keeps its initial
+    // `syncStatus`; individual tests override to emit sync ticks.
+    when(() => watchSyncStatus())
+        .thenAnswer((_) => const Stream<SyncState>.empty());
   });
 
-  HomeCubit build() =>
-      HomeCubit(watchAccounts, watchMonthTransactions, watchAuthSession);
+  HomeCubit build() => HomeCubit(
+        watchAccounts,
+        watchMonthTransactions,
+        watchAuthSession,
+        watchSyncStatus,
+      );
 
   void stubReady() {
     when(() => watchAccounts()).thenAnswer(
@@ -252,16 +266,89 @@ void main() {
     verify: (cubit) => expect(cubit.state.user, isNull),
   );
 
-  test('cerrar el cubit cancela las tres suscripciones', () async {
+  for (final (syncState, expected) in const [
+    (SyncState.synced, HomeSyncStatus.synced),
+    (SyncState.syncing, HomeSyncStatus.syncing),
+    (SyncState.offline, HomeSyncStatus.offline),
+  ]) {
+    blocTest<HomeCubit, HomeState>(
+      'el estado de sync $syncState se refleja en syncStatus (HU-10)',
+      setUp: () {
+        stubReady();
+        when(() => watchSyncStatus())
+            .thenAnswer((_) => Stream<SyncState>.value(syncState));
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (cubit) {
+        expect(cubit.state.syncStatus, expected);
+        // The indicator is passive: it never turns the Home into an error.
+        expect(cubit.state.status, HomeStatus.ready);
+      },
+    );
+  }
+
+  blocTest<HomeCubit, HomeState>(
+    'el sync sigue los cambios sucesivos del stream (HU-10)',
+    setUp: () {
+      stubReady();
+      when(() => watchSyncStatus()).thenAnswer(
+        (_) => Stream<SyncState>.fromIterable(
+          const [SyncState.offline, SyncState.syncing, SyncState.synced],
+        ),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) => expect(cubit.state.syncStatus, HomeSyncStatus.synced),
+  );
+
+  test('un tick de sync no borra el failure que el body sigue mostrando',
+      () async {
+    const failure = DatabaseFailure('boom');
+    when(() => watchAccounts()).thenAnswer(
+      (_) => Stream<Result<List<AccountWithBalance>>>.value(
+        const Left(failure),
+      ),
+    );
+    when(() => watchMonthTransactions(any())).thenAnswer(
+      (_) =>
+          Stream<Result<List<TransactionWithDetails>>>.value(Right(activity)),
+    );
+    final syncController = StreamController<SyncState>();
+    when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
+
+    final cubit = build();
+    await cubit.start();
+    await Future<void>.delayed(Duration.zero);
+    expect(cubit.state.status, HomeStatus.failure);
+    expect(cubit.state.failure, failure);
+
+    syncController.add(SyncState.syncing);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.syncStatus, HomeSyncStatus.syncing);
+    // Regression: `copyWith` drops `failure` when omitted, so `_onSyncState`
+    // must re-pass it — otherwise the error banner would vanish on a tick.
+    expect(cubit.state.failure, failure);
+    expect(cubit.state.status, HomeStatus.failure);
+
+    await cubit.close();
+    await syncController.close();
+  });
+
+  test('cerrar el cubit cancela las cuatro suscripciones', () async {
     final accountsController =
         StreamController<Result<List<AccountWithBalance>>>.broadcast();
     final txController =
         StreamController<Result<List<TransactionWithDetails>>>.broadcast();
     final authController = StreamController<AuthSession>.broadcast();
+    final syncController = StreamController<SyncState>.broadcast();
     when(() => watchAccounts()).thenAnswer((_) => accountsController.stream);
     when(() => watchMonthTransactions(any()))
         .thenAnswer((_) => txController.stream);
     when(() => watchAuthSession()).thenAnswer((_) => authController.stream);
+    when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
 
     final cubit = build();
     await cubit.start();
@@ -270,8 +357,10 @@ void main() {
     expect(accountsController.hasListener, isFalse);
     expect(txController.hasListener, isFalse);
     expect(authController.hasListener, isFalse);
+    expect(syncController.hasListener, isFalse);
     await accountsController.close();
     await txController.close();
     await authController.close();
+    await syncController.close();
   });
 }
