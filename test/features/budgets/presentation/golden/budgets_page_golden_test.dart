@@ -43,6 +43,13 @@ class MockAppSettingsCubit extends MockCubit<AppSettingsState>
 /// `BudgetsErrorView` (shared `Error State` `ECG7D`) on
 /// `BudgetsListStatus.failure`; flagged for the audit.
 ///
+/// HU-12's list extension (`design-system/billetudo/pages/presupuestos.md`,
+/// líneas 79-83) has no dedicated row of its own in the spec table — it
+/// propagates the hero's "programado"/"riesgo" bar segment and `Pct Group`
+/// icon to every `Budget Line` instance, so `list_scheduled_states` below
+/// covers both new row outcomes (programado sano / riesgo de sobregiro
+/// proyectado) without touching `list_with_data`'s existing fixtures.
+///
 /// The overflow menu (`TmOGV`/`cOcbC`) and the active-mode menu
 /// (`tFZyK`/`qJAka`) are `PopupMenuButton` routes, captured in
 /// `budgets_page_menus_golden_test.dart`.
@@ -141,6 +148,20 @@ void main() {
         const BudgetsListState(),
         'list_loading_$suffix',
         brightness: brightness,
+      );
+    });
+
+    testWidgets('lista con fila programada sana y en riesgo ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        BudgetsListState(
+          status: BudgetsListStatus.ready,
+          budgets: [scheduledHealthyEntry, scheduledRiskEntry],
+        ),
+        'list_scheduled_states_$suffix',
+        brightness: brightness,
+        height: 700,
       );
     });
 

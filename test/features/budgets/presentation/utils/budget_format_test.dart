@@ -90,4 +90,76 @@ void main() {
       );
     });
   });
+
+  // `MoneyFormatter` always divides `amountMinor` by 100 regardless of
+  // currency (COP just shows 0 decimals) — these mirror the exact pesos
+  // `H4HDen`/`EZeos` show ($600.000 budget, $492.000/$420.000 spent,
+  // $60.000/$270.000 programado, $90.000 overage), so `amountMinor` here is
+  // that peso figure ×100, not the peso figure itself.
+  group('scheduledCaption (HU-12)', () {
+    test('is null when nothing is scheduled in the window', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 49200000,
+        daysLeft: 18,
+      );
+      expect(BudgetFormat.scheduledCaption(l10n, progress, 'COP'), isNull);
+    });
+
+    test('sano: names the amount and the projected percentage', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 49200000,
+        scheduledMinor: 6000000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.scheduledCaption(l10n, progress, 'COP'),
+        '+ \$60.000 programado (llega a 92% si se ejecuta)',
+      );
+    });
+
+    test(
+        'riesgo: names the amount and the projected overage, always in '
+        'the conditional tense', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 42000000,
+        scheduledMinor: 27000000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.scheduledCaption(l10n, progress, 'COP'),
+        '+ \$270.000 programado — excedería el presupuesto por \$90.000',
+      );
+    });
+  });
+
+  group('scheduledEntrySub (HU-12)', () {
+    test('sano: reports the upcoming payment count', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 49200000,
+        scheduledMinor: 6000000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.scheduledEntrySub(l10n, progress, 'COP', 2),
+        '2 pagos próximos',
+      );
+    });
+
+    test('riesgo: the overage takes over the plain count', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 42000000,
+        scheduledMinor: 27000000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.scheduledEntrySub(l10n, progress, 'COP', 2),
+        'Excedería el presupuesto por \$90.000',
+      );
+    });
+  });
 }

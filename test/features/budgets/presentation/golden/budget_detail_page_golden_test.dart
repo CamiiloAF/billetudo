@@ -26,6 +26,19 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 /// `detail_one_off` → `QLn6w` / `A5O26l` (Detalle — una única vez; el stepper
 /// lee "Ventana única · termina el <fecha>" y ambos chevrons quedan al 40%).
 ///
+/// HU-12 (pagos programados dentro del presupuesto) adds three hero states,
+/// mutually exclusive by `scheduledMinor`/`isScheduledOverspendRisk`:
+/// `detail_recurring_healthy`/`detail_overspent`/`detail_one_off` above are
+/// already the "solo gastado" case (`kLUl7`/`KFaVk` — nothing scheduled, the
+/// screen is indistinguishable from pre-HU-12) since their fixtures carry no
+/// `scheduledMinor`. The two new ones below are:
+/// `detail_scheduled_healthy` → `H4HDen` / `S8OEo` (programado sano: tercer
+/// tramo `$primary-light` + caption "+ $X programado (llega a Y% si se
+/// ejecuta)") ·
+/// `detail_scheduled_risk` → `EZeos` / `AqSs3` (riesgo de sobregiro
+/// proyectado: tramo `$amber` + caption "... excedería el presupuesto por
+/// $Y", entry point y card en la familia `amber`/`amberText`).
+///
 /// States with **no row of their own in the spec table**, flagged for the
 /// audit: `detail_loading` (`BudgetDetailSkeletonView`, esqueleto con la
 /// geometría real del hero y de la actividad — no un spinner),
@@ -62,7 +75,12 @@ void main() {
       tester,
       BlocProvider<BudgetDetailCubit>.value(
         value: cubit,
-        child: BudgetDetailPage(onEdit: (_) {}, onClosed: () {}),
+        child: BudgetDetailPage(
+          onEdit: (_) {},
+          onClosed: () {},
+          onOpenTransaction: (_) {},
+          onOpenScheduledPayment: (_) {},
+        ),
       ),
       brightness: brightness,
       size: tallGoldenPhoneSize(height: height),
@@ -136,6 +154,41 @@ void main() {
         'detail_load_more_$suffix',
         brightness: brightness,
         height: 1500,
+      );
+    });
+
+    testWidgets('detalle con programado sano ($suffix)', (tester) async {
+      final entry = scheduledHealthyEntry;
+      await golden(
+        tester,
+        readyState(
+          entry,
+          view: buildPeriodView(
+            entry,
+            activityCount: 3,
+            scheduledItems: buildScheduledItems(),
+          ),
+        ),
+        'detail_scheduled_healthy_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('detalle en riesgo de sobregiro proyectado ($suffix)',
+        (tester) async {
+      final entry = scheduledRiskEntry;
+      await golden(
+        tester,
+        readyState(
+          entry,
+          view: buildPeriodView(
+            entry,
+            activityCount: 3,
+            scheduledItems: buildScheduledItems(),
+          ),
+        ),
+        'detail_scheduled_risk_$suffix',
+        brightness: brightness,
       );
     });
 

@@ -3,6 +3,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_activity_item.
 import 'package:billetudo/features/budgets/domain/entities/budget_period_view.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_scheduled_item.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 
@@ -161,6 +162,52 @@ BudgetWithProgress get oneOffEntry => BudgetWithProgress(
       ),
     );
 
+/// HU-12: healthy "programado" — spent 60%, scheduled another 20%, so the
+/// projection (`committedFraction`) lands at 80%, still under 100%. The bar's
+/// third segment renders `$primary-light` and the hero/entry-card caption
+/// reads "+ $X programado (llega a 80% si se ejecuta)".
+BudgetWithProgress get scheduledHealthyEntry => BudgetWithProgress(
+      budget: buildBudget(
+        id: 'bud-suscripciones',
+        name: 'Suscripciones y streaming del hogar',
+        icon: 'credit-card',
+        amountMinor: 90000000,
+        startDate: DateTime(2025, 7),
+      ),
+      scope: const BudgetScope.empty(),
+      window: buildWindow(),
+      progress: const BudgetProgress(
+        amountMinor: 90000000,
+        spentMinor: 54000000,
+        daysLeft: 10,
+        scheduledMinor: 18000000,
+      ),
+    );
+
+/// HU-12: "riesgo de sobregiro proyectado" — spent 80% (still not overspent)
+/// plus 30% scheduled pushes the projection to 110%, so
+/// `isScheduledOverspendRisk` is true and `scheduledOverageMinor` is
+/// `$90.000`. Bar segment and captions switch to `$amber`/`$amber-text`
+/// (documented MASTER exception), never confused with a real overspend (the
+/// existing `overspentEntry` fixture stays the red `expense` case).
+BudgetWithProgress get scheduledRiskEntry => BudgetWithProgress(
+      budget: buildBudget(
+        id: 'bud-servicios',
+        name: 'Servicios públicos y facturas del apartamento',
+        icon: 'house',
+        amountMinor: 90000000,
+        startDate: DateTime(2025, 7),
+      ),
+      scope: const BudgetScope.empty(),
+      window: buildWindow(),
+      progress: const BudgetProgress(
+        amountMinor: 90000000,
+        spentMinor: 72000000,
+        daysLeft: 10,
+        scheduledMinor: 27000000,
+      ),
+    );
+
 /// A budget whose scope referents were all deleted (stranded, HU-04): 0 spent
 /// because it can never match a transaction.
 BudgetWithProgress get strandedEntry => BudgetWithProgress(
@@ -292,13 +339,41 @@ List<BudgetActivityItem> buildActivity({int count = 4}) {
   ];
 }
 
-/// The detail's period view for [entry], with [activityCount] rows.
+/// The detail's period view for [entry], with [activityCount] rows and
+/// [scheduledItems] behind [BudgetProgress.scheduledMinor] (HU-12, empty by
+/// default so existing callers are unaffected).
 BudgetPeriodView buildPeriodView(
   BudgetWithProgress entry, {
   int activityCount = 4,
+  List<BudgetScheduledItem> scheduledItems = const [],
 }) =>
     BudgetPeriodView(
       window: entry.window,
       progress: entry.progress,
       activity: buildActivity(count: activityCount),
+      scheduledItems: scheduledItems,
     );
+
+/// HU-12's "programado" list (soonest first), long enough by default (2) to
+/// show real content in `BudgetScheduledEntryCard`'s sub line and the
+/// `BudgetScheduledSheet` list.
+List<BudgetScheduledItem> buildScheduledItems({int count = 2}) {
+  const titles = ['Netflix', 'Internet y TV hogar'];
+  const icons = ['credit-card', 'house'];
+  const colors = ['sky', 'peach'];
+  const amounts = [9000000, 18000000];
+  return [
+    for (var index = 0; index < count; index++)
+      BudgetScheduledItem(
+        id: 'sp-$index@2025-07-${10 + index}',
+        scheduledPaymentId: 'sp-$index',
+        title: titles[index % titles.length],
+        accountName: 'Bancolombia',
+        categoryIcon: icons[index % icons.length],
+        categoryColor: colors[index % colors.length],
+        amountMinor: amounts[index % amounts.length],
+        currency: 'COP',
+        date: DateTime(2025, 7, 10 + index),
+      ),
+  ];
+}

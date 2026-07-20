@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/sync/data/datasources/sync_status_source.dart';
 import 'package:billetudo/core/sync/data/repositories/sync_status_repository_impl.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
@@ -192,6 +193,40 @@ void main() {
         SyncState.syncing,
         SyncState.synced,
       ]);
+    });
+  });
+
+  group('pendingUploadCount', () {
+    test('mapea el conteo del source tal cual en un Right', () async {
+      source.pendingCount = 4;
+
+      final result = await SyncStatusRepositoryImpl(source)
+          .pendingUploadCount();
+
+      expect(result, const Right<Failure, int>(4));
+    });
+
+    test('una cola vacía es Right(0), no un fallo', () async {
+      source.pendingCount = 0;
+
+      expect(
+        await SyncStatusRepositoryImpl(source).pendingUploadCount(),
+        const Right<Failure, int>(0),
+      );
+    });
+
+    test('una excepción del source se convierte en DatabaseFailure', () async {
+      // La cola vive en el SQLite local (`ps_crud`): un fallo leyéndola es de
+      // base de datos, no de red.
+      source.pendingUploadError = StateError('ps_crud unavailable');
+
+      final result = await SyncStatusRepositoryImpl(source)
+          .pendingUploadCount();
+
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<DatabaseFailure>());
+      expect(failure!.cause, isA<StateError>());
+      expect(failure.stackTrace, isNotNull);
     });
   });
 

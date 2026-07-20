@@ -92,4 +92,58 @@ void main() {
       expect(progress.committedFraction, closeTo(1.2, 1e-9));
     });
   });
+
+  group('isScheduledOverspendRisk (HU-12)', () {
+    test(
+        'activates when spent + scheduled exceeds the amount but spend '
+        'alone does not', () {
+      const progress = BudgetProgress(
+        amountMinor: 600000,
+        spentMinor: 420000,
+        scheduledMinor: 270000,
+        daysLeft: 18,
+      );
+      expect(progress.isScheduledOverspendRisk, isTrue);
+      expect(progress.scheduledOverageMinor, 90000);
+    });
+
+    test(
+        'does not activate when the projection stays within the amount '
+        '("programado sano")', () {
+      const progress = BudgetProgress(
+        amountMinor: 600000,
+        spentMinor: 492000,
+        scheduledMinor: 60000,
+        daysLeft: 18,
+      );
+      expect(progress.isScheduledOverspendRisk, isFalse);
+      expect(progress.scheduledOverageMinor, 0);
+      expect(progress.committedPercent, 92);
+    });
+
+    test(
+        'is mutually exclusive with isOverspent: real overspend never '
+        'flips it on, no matter how much is scheduled', () {
+      const progress = BudgetProgress(
+        amountMinor: 1000,
+        spentMinor: 1200,
+        scheduledMinor: 500,
+        daysLeft: 0,
+      );
+      expect(progress.isOverspent, isTrue);
+      expect(progress.isScheduledOverspendRisk, isFalse);
+      expect(progress.scheduledOverageMinor, 0);
+    });
+
+    test(
+        'does not activate with nothing scheduled, even past 100% spent '
+        'is handled by isOverspent instead', () {
+      const progress = BudgetProgress(
+        amountMinor: 1000,
+        spentMinor: 900,
+        daysLeft: 5,
+      );
+      expect(progress.isScheduledOverspendRisk, isFalse);
+    });
+  });
 }
