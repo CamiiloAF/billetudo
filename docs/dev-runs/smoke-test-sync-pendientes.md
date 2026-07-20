@@ -45,19 +45,39 @@ limit 5;
 
 ## 2. HU-05 — DELETE
 
-**Pasos**
+**Antes de nada: borrar un movimiento NO borra la fila en Postgres.** La app marca `deleted_at` (papelera reversible, para el undo) y deja la fila en su lugar. Las sync rules no filtran esa columna (decisión #9), así que sigue viajando a la nube. Un `count(*)` sin filtro **da lo mismo antes y después de borrar**, y eso es correcto, no un bug.
 
-1. Contá lo que hay ahora:
+Usá siempre esta consulta, que separa los tres estados:
 
 ```sql
-select count(*) from transactions where user_id = 'TU_USER_ID';
+select count(*) as total,
+       count(*) filter (where deleted_at is not null)  as en_papelera,
+       count(*) filter (where tombstoned_at is not null) as lapidas,
+       count(*) filter (where deleted_at is null and tombstoned_at is null) as visibles
+from transactions
+where user_id = 'TU_USER_ID';
 ```
 
-2. Borrá un movimiento desde la app.
-3. Esperá a "Sincronizado" y volvé a contar. Debe haber **uno menos**.
-4. Probá también el **undo** (la papelera de UX, `deletedAt`): borrá otro y restauralo antes de que se sincronice. Debe volver a la lista y seguir en la nube.
+**Pasos**
 
-**Ojo con la diferencia:** `deletedAt` es papelera reversible y `tombstonedAt` es lápida de integridad. Las sync rules **no filtran ninguna de las dos** (decisión #9), así que una fila borrada lógicamente sigue viajando — lo que no debe pasar es que reaparezca en la UI.
+1. Corré la consulta y anotá `en_papelera` y `visibles`.
+2. Borrá un movimiento desde la app.
+3. Esperá a "Sincronizado" y volvé a correrla: `en_papelera` sube en 1, `visibles` baja en 1, `total` **no cambia**.
+4. Para ver cuál fue:
+
+```sql
+select id, note, amount_minor,
+       to_timestamp(deleted_at) at time zone 'America/Bogota' as borrado
+from transactions
+where user_id = 'TU_USER_ID' and deleted_at is not null
+order by deleted_at desc;
+```
+
+5. **Probá el undo:** borrá otro movimiento y restauralo. `deleted_at` debe volver a `null` — o sea `en_papelera` regresa a su valor anterior. Eso confirma que el borrado viaja en ambos sentidos.
+
+**Las dos columnas no son sinónimos** (ver CLAUDE.md → Borrado): `deletedAt` es papelera reversible de UX; `tombstonedAt` es lápida irreversible que existe para que otra tabla conserve su referencia por FK. Hoy la única feature que usa lápidas es Cuentas. Ninguna de las dos se filtra en el sync — el cliente ya las oculta en sus queries, y excluirlas del sync rompería la FK local en un dispositivo nuevo.
+
+**Pendiente de producto, no de esta prueba:** las filas en papelera no se purgan nunca. El cron de limpieza previsto en la decisión #2 cubre lápidas, no papelera. Si el undo tiene una ventana de tiempo, alguien tiene que borrarlas de verdad al vencer.
 
 ---
 
