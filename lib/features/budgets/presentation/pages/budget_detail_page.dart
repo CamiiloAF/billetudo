@@ -40,19 +40,49 @@ class BudgetDetailPage extends StatelessWidget {
   /// Called after the budget is closed or deleted, to leave the detail.
   final VoidCallback onClosed;
 
-  /// Called with a transaction id, from an activity row, to open its detail.
-  final ValueChanged<String> onOpenTransaction;
+  /// Navigates to the transaction detail page (from an activity row) and
+  /// resolves with whatever it popped with (the deleted transaction's id, or
+  /// `null`).
+  final Future<String?> Function(String id) onOpenTransaction;
 
   /// Called with a scheduled payment (template) id, from a scheduled row, to
   /// open its detail.
   final ValueChanged<String> onOpenScheduledPayment;
 
+  /// Awaits the detail page's navigation, then — if it deleted something —
+  /// offers HU-05's "Deshacer" snackbar via [BudgetDetailCubit].
+  Future<void> _openTransaction(BuildContext context, String id) async {
+    final deletedId = await onOpenTransaction(id);
+    if (deletedId != null && context.mounted) {
+      context.read<BudgetDetailCubit>().notifyExternalDelete(deletedId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<BudgetDetailCubit, BudgetDetailState>(
+        child: BlocConsumer<BudgetDetailCubit, BudgetDetailState>(
+          listenWhen: (previous, current) =>
+              previous.pendingUndoId != current.pendingUndoId &&
+              current.pendingUndoId != null,
+          listener: (context, state) {
+            final cubit = context.read<BudgetDetailCubit>();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l10n.transactionsUndoDeletedMessage),
+                  action: SnackBarAction(
+                    label: l10n.transactionsUndoAction,
+                    onPressed: cubit.undoDelete,
+                  ),
+                  persist: false,
+                ),
+              );
+          },
           builder: (context, state) => Column(
             children: [
               PageHeader(
@@ -75,7 +105,7 @@ class BudgetDetailPage extends StatelessWidget {
                     ),
                   BudgetDetailStatus.ready => BudgetDetailBody(
                       state: state,
-                      onOpenTransaction: onOpenTransaction,
+                      onOpenTransaction: (id) => _openTransaction(context, id),
                       onOpenScheduledPayment: onOpenScheduledPayment,
                     ),
                 },

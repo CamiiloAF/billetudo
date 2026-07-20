@@ -21,6 +21,7 @@ import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_sign
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
+import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,6 +35,8 @@ class MockWatchMonthTransactions extends Mock
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+
+class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -73,6 +76,7 @@ void main() {
     final watchMonthTransactions = MockWatchMonthTransactions();
     final watchAuthSession = MockWatchAuthSession();
     final watchSyncStatus = MockWatchSyncStatus();
+    final restoreTransaction = MockRestoreTransaction();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -95,6 +99,7 @@ void main() {
           watchMonthTransactions,
           watchAuthSession,
           watchSyncStatus,
+          restoreTransaction,
         ),
       )
       ..registerFactory<AuthCubit>(

@@ -39,7 +39,10 @@ class HomePage extends StatefulWidget {
 
   final VoidCallback onAddTransaction;
   final VoidCallback onSeeAllTransactions;
-  final ValueChanged<String> onOpenTransaction;
+
+  /// Navigates to the detail page and resolves with whatever it popped with
+  /// (the deleted transaction's id, or `null`).
+  final Future<String?> Function(String id) onOpenTransaction;
   final VoidCallback onCreateBudget;
 
   /// HU-05b: quick-access chip destinations.
@@ -99,6 +102,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Awaits the detail page's navigation, then — if it deleted something —
+  /// offers HU-05's "Deshacer" snackbar via [HomeCubit].
+  Future<void> _openTransaction(BuildContext context, String id) async {
+    final deletedId = await widget.onOpenTransaction(id);
+    if (deletedId != null && context.mounted) {
+      context.read<HomeCubit>().notifyExternalDelete(deletedId);
+    }
+  }
+
   Future<void> _openAiSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -128,7 +140,25 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: SafeArea(
-        child: BlocBuilder<HomeCubit, HomeState>(
+        child: BlocConsumer<HomeCubit, HomeState>(
+          listenWhen: (previous, current) =>
+              previous.pendingUndoId != current.pendingUndoId &&
+              current.pendingUndoId != null,
+          listener: (context, state) {
+            final cubit = context.read<HomeCubit>();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l10n.transactionsUndoDeletedMessage),
+                  action: SnackBarAction(
+                    label: l10n.transactionsUndoAction,
+                    onPressed: cubit.undoDelete,
+                  ),
+                  persist: false,
+                ),
+              );
+          },
           builder: (context, state) {
             return CustomScrollView(
               controller: _scrollController,
@@ -214,7 +244,8 @@ class _HomePageState extends State<HomePage> {
                 for (final entry in state.recentActivity)
                   RecentActivityRow(
                     entry: entry,
-                    onTap: () => widget.onOpenTransaction(entry.transaction.id),
+                    onTap: () =>
+                        _openTransaction(context, entry.transaction.id),
                   ),
                 const SizedBox(height: 16),
                 AiBanner(onTap: () => _openAiSheet(context)),

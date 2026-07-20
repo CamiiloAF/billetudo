@@ -11,6 +11,7 @@ import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
+import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
 import 'home_state.dart';
@@ -29,12 +30,14 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchMonthTransactions,
     this._watchAuthSession,
     this._watchSyncStatus,
+    this._restoreTransaction,
   ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
   final WatchMonthTransactions _watchMonthTransactions;
   final WatchAuthSession _watchAuthSession;
   final WatchSyncStatus _watchSyncStatus;
+  final RestoreTransaction _restoreTransaction;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
@@ -131,6 +134,35 @@ class HomeCubit extends Cubit<HomeState> {
       accounts: accounts.getRight().toNullable() ?? const [],
     );
     emit(state.copyWith(status: HomeStatus.ready, snapshot: snapshot));
+  }
+
+  /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the
+  /// transaction detail page opened from Home's recent activity. The month's
+  /// transactions stream itself removes the row once `deletedAt` lands, so
+  /// this only tracks the undo affordance.
+  void notifyExternalDelete(String id) {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(pendingUndoId: id));
+  }
+
+  /// HU-05: "Deshacer" from the snackbar.
+  Future<void> undoDelete() async {
+    final id = state.pendingUndoId;
+    if (id == null) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndo: true));
+    await _restoreTransaction(id);
+  }
+
+  /// The snackbar timed out or the user dismissed it without undoing.
+  void dismissUndo() {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndo: true));
   }
 
   @override

@@ -664,8 +664,22 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
+    gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i1008.CloseBudget>(),
+          gh<_i210.DeleteBudget>(),
+          gh<_i177.RestoreTransaction>(),
+        ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i567.WatchSyncStatus>(),
+          gh<_i177.RestoreTransaction>(),
+        ));
     gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
           gh<_i832.WatchTransactions>(),
           gh<_i612.DeleteTransaction>(),
@@ -695,12 +709,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i460.SetTransactionTags>(),
           gh<_i837.WatchAccounts>(),
         ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i716.WatchAuthSession>(),
-          gh<_i567.WatchSyncStatus>(),
-        ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
@@ -718,13 +726,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i49.GetScheduledPaymentHistory>(),
               gh<_i636.DeleteScheduledPayment>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
+              gh<_i177.RestoreTransaction>(),
             ));
-    gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
-          gh<_i1008.CloseBudget>(),
-          gh<_i210.DeleteBudget>(),
-        ));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),
           gh<_i275.UpdateCategory>(),

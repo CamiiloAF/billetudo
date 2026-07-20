@@ -130,7 +130,7 @@ void main() {
       BlocProvider<ScheduledPaymentDetailCubit>.value(
         value: cubit,
         child: ScheduledPaymentDetailPage(
-            onEdit: (_) {}, onOpenTransaction: (_) {}),
+            onEdit: (_) {}, onOpenTransaction: (_) async => null),
       ),
       brightness: brightness,
       size: tallGoldenPhoneSize(height: 1300),

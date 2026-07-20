@@ -19,6 +19,7 @@ class BudgetDetailState extends Equatable {
     this.view,
     this.visibleActivityCount = activityPageSize,
     this.failure,
+    this.pendingUndoId,
   });
 
   /// How many activity rows a "Cargar más" tap reveals.
@@ -30,6 +31,11 @@ class BudgetDetailState extends Equatable {
   final BudgetPeriodView? view;
   final int visibleActivityCount;
   final Failure? failure;
+
+  /// The id of a transaction a "Deshacer" snackbar is currently offered for,
+  /// after a delete triggered from the transaction detail page opened from
+  /// this budget's activity. `null` once dismissed or undone.
+  final String? pendingUndoId;
 
   bool get isLoading => status == BudgetDetailStatus.loading;
 
@@ -51,6 +57,8 @@ class BudgetDetailState extends Equatable {
     BudgetPeriodView? view,
     int? visibleActivityCount,
     Failure? failure,
+    String? pendingUndoId,
+    bool clearPendingUndo = false,
   }) =>
       BudgetDetailState(
         status: status ?? this.status,
@@ -59,9 +67,18 @@ class BudgetDetailState extends Equatable {
         view: view ?? this.view,
         visibleActivityCount: visibleActivityCount ?? this.visibleActivityCount,
         failure: failure,
+        pendingUndoId:
+            clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
       );
 
   @override
-  List<Object?> get props =>
-      [status, budget, scope, view, visibleActivityCount, failure];
+  List<Object?> get props => [
+        status,
+        budget,
+        scope,
+        view,
+        visibleActivityCount,
+        failure,
+        pendingUndoId,
+      ];
 }

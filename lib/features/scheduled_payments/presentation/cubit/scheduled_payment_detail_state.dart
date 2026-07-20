@@ -25,6 +25,7 @@ class ScheduledPaymentDetailState extends Equatable {
     this.snoozePrompt = false,
     this.pendingUndoSnoozeOccurrenceId,
     this.failure,
+    this.pendingUndoDeleteTransactionId,
   });
 
   final ScheduledPaymentDetailStatus status;
@@ -50,6 +51,11 @@ class ScheduledPaymentDetailState extends Equatable {
 
   final Failure? failure;
 
+  /// The id of a transaction a "Deshacer" snackbar is currently offered for,
+  /// after a delete triggered from the transaction detail page opened from
+  /// this template's history. `null` once dismissed or undone.
+  final String? pendingUndoDeleteTransactionId;
+
   int get historyTotalCount => detail?.historyTotalCount ?? 0;
 
   bool get hasMoreHistory => history.length < historyTotalCount;
@@ -65,6 +71,8 @@ class ScheduledPaymentDetailState extends Equatable {
     String? pendingUndoSnoozeOccurrenceId,
     bool clearPendingUndoSnooze = false,
     Failure? failure,
+    String? pendingUndoDeleteTransactionId,
+    bool clearPendingUndoDeleteTransaction = false,
   }) =>
       ScheduledPaymentDetailState(
         status: status ?? this.status,
@@ -79,6 +87,10 @@ class ScheduledPaymentDetailState extends Equatable {
             : (pendingUndoSnoozeOccurrenceId ??
                 this.pendingUndoSnoozeOccurrenceId),
         failure: failure,
+        pendingUndoDeleteTransactionId: clearPendingUndoDeleteTransaction
+            ? null
+            : (pendingUndoDeleteTransactionId ??
+                this.pendingUndoDeleteTransactionId),
       );
 
   @override
@@ -92,5 +104,6 @@ class ScheduledPaymentDetailState extends Equatable {
         snoozePrompt,
         pendingUndoSnoozeOccurrenceId,
         failure,
+        pendingUndoDeleteTransactionId,
       ];
 }

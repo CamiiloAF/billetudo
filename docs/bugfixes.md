@@ -13,7 +13,7 @@
 
 6) Analiza la opción de editar un presupuesto para 1 sola vez, es decir, tal vez yo hice un trabajo extra y me gané 2 millones más y por consiguiente mi presupuesto para el proximo mes será mayor pero el resto de meses seguirá siendo igual. — 📋 analizado 2026-07-20, plan listo en `docs/dev-runs/presupuestos-ajuste-un-periodo.md`, pendiente de implementar
 
-7) Node ID: oAM6Y no se muestra el snackbar cuando se elimina una transacción desde el home pero si se muestra si se elimina desde la pestaña de movimientos
+7) ~~Node ID: oAM6Y no se muestra el snackbar cuando se elimina una transacción desde el home pero si se muestra si se elimina desde la pestaña de movimientos~~ — ✅ hecho 2026-07-20, mismo bug corregido también en Detalle de Presupuesto y Detalle de Pago Programado
 
 8) Ejecutar pasada de fidelidad en Home/Dashboard
 

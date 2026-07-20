@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/usecases/delete_scheduled_payment.dart';
 import '../../domain/usecases/get_scheduled_payment_detail.dart';
@@ -21,12 +22,14 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     this._getScheduledPaymentHistory,
     this._deleteScheduledPayment,
     this._undoSnoozeOccurrence,
+    this._restoreTransaction,
   ) : super(const ScheduledPaymentDetailState());
 
   final GetScheduledPaymentDetail _getScheduledPaymentDetail;
   final GetScheduledPaymentHistory _getScheduledPaymentHistory;
   final DeleteScheduledPayment _deleteScheduledPayment;
   final UndoSnoozeScheduledOccurrence _undoSnoozeOccurrence;
+  final RestoreTransaction _restoreTransaction;
 
   StreamSubscription<Result<ScheduledPaymentDetail>>? _subscription;
   String? _id;
@@ -136,6 +139,35 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
 
   void dismissUndoSnooze() =>
       emit(state.copyWith(clearPendingUndoSnooze: true));
+
+  /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the
+  /// transaction detail page opened from this template's history. The
+  /// history stream itself removes the row once `deletedAt` lands, so this
+  /// only tracks the undo affordance.
+  void notifyExternalDelete(String id) {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(pendingUndoDeleteTransactionId: id));
+  }
+
+  /// HU-05: "Deshacer" from the snackbar.
+  Future<void> undoDelete() async {
+    final id = state.pendingUndoDeleteTransactionId;
+    if (id == null) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndoDeleteTransaction: true));
+    await _restoreTransaction(id);
+  }
+
+  /// The snackbar timed out or the user dismissed it without undoing.
+  void dismissUndoDelete() {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndoDeleteTransaction: true));
+  }
 
   @override
   Future<void> close() async {

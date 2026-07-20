@@ -78,7 +78,7 @@ void main() {
         child: BudgetDetailPage(
           onEdit: (_) {},
           onClosed: () {},
-          onOpenTransaction: (_) {},
+          onOpenTransaction: (_) async => null,
           onOpenScheduledPayment: (_) {},
         ),
       ),

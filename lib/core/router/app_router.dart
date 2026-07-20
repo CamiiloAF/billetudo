@@ -221,7 +221,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onAddTransaction: () => context.push(AppRoutes.newTransaction),
               onSeeAllTransactions: () => context.go(AppRoutes.transactions),
               onOpenTransaction: (id) =>
-                  context.push(AppRoutes.transaction(id)),
+                  context.push<String>(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
               onOpenAccounts: () => context.push(AppRoutes.accounts),
               onOpenScheduledPayments: () =>
@@ -377,7 +377,7 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                   onEdit: (id) => context.push(AppRoutes.editBudget(id)),
                   onClosed: () => context.pop(),
                   onOpenTransaction: (id) =>
-                      context.push(AppRoutes.transaction(id)),
+                      context.push<String>(AppRoutes.transaction(id)),
                   onOpenScheduledPayment: (id) =>
                       context.push(AppRoutes.scheduledPayment(id)),
                 ),
@@ -731,7 +731,7 @@ GoRoute _scheduledPaymentsRoute() => GoRoute(
             child: ScheduledPaymentDetailPage(
               onEdit: (id) => context.push(AppRoutes.editScheduledPayment(id)),
               onOpenTransaction: (id) =>
-                  context.push(AppRoutes.transaction(id)),
+                  context.push<String>(AppRoutes.transaction(id)),
             ),
           ),
           routes: [

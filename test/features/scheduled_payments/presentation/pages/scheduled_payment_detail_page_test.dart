@@ -68,7 +68,7 @@ void main() {
           value: cubit,
           child: ScheduledPaymentDetailPage(
             onEdit: (_) {},
-            onOpenTransaction: (_) {},
+            onOpenTransaction: (_) async => null,
           ),
         ),
       ),

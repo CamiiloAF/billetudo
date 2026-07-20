@@ -25,6 +25,7 @@ class HomeState extends Equatable {
     this.syncStatus = HomeSyncStatus.synced,
     this.failure,
     this.user,
+    this.pendingUndoId,
   });
 
   /// The month currently visible (first day, at midnight). Defaults to
@@ -54,6 +55,11 @@ class HomeState extends Equatable {
   /// Home's loading/ready — only accounts + transactions do.
   final AuthUser? user;
 
+  /// The id of the transaction a "Deshacer" snackbar is currently offered
+  /// for, after a delete triggered from the transaction detail page opened
+  /// from Home's recent activity. `null` once dismissed or undone.
+  final String? pendingUndoId;
+
   MonthSpending? get spending => snapshot?.spending;
 
   List<TransactionWithDetails> get recentActivity =>
@@ -73,6 +79,8 @@ class HomeState extends Equatable {
     AuthUser? user,
     bool clearSnapshot = false,
     bool updateUser = false,
+    String? pendingUndoId,
+    bool clearPendingUndo = false,
   }) =>
       HomeState(
         status: status ?? this.status,
@@ -84,6 +92,8 @@ class HomeState extends Equatable {
         // The session updates independently: only overwrite [user] when the
         // auth stream emits (so it can also be cleared to null on sign-out).
         user: updateUser ? user : this.user,
+        pendingUndoId:
+            clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
       );
 
   @override
@@ -95,5 +105,6 @@ class HomeState extends Equatable {
         syncStatus,
         failure,
         user,
+        pendingUndoId,
       ];
 }

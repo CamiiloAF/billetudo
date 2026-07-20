@@ -34,7 +34,22 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
   });
 
   final ValueChanged<String> onEdit;
-  final ValueChanged<String> onOpenTransaction;
+
+  /// Navigates to the transaction detail page (from a history row) and
+  /// resolves with whatever it popped with (the deleted transaction's id, or
+  /// `null`).
+  final Future<String?> Function(String id) onOpenTransaction;
+
+  /// Awaits the detail page's navigation, then — if it deleted something —
+  /// offers HU-05's "Deshacer" snackbar via [ScheduledPaymentDetailCubit].
+  Future<void> _openTransaction(BuildContext context, String id) async {
+    final deletedId = await onOpenTransaction(id);
+    if (deletedId != null && context.mounted) {
+      context
+          .read<ScheduledPaymentDetailCubit>()
+          .notifyExternalDelete(deletedId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,15 +59,18 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       listenWhen: (previous, current) =>
           previous.status != current.status ||
           previous.pendingUndoSnoozeOccurrenceId !=
-              current.pendingUndoSnoozeOccurrenceId,
+              current.pendingUndoSnoozeOccurrenceId ||
+          (previous.pendingUndoDeleteTransactionId !=
+                  current.pendingUndoDeleteTransactionId &&
+              current.pendingUndoDeleteTransactionId != null),
       listener: (context, state) {
         if (state.status == ScheduledPaymentDetailStatus.closed) {
           Navigator.of(context).pop();
           return;
         }
-        final undoId = state.pendingUndoSnoozeOccurrenceId;
-        if (undoId != null) {
-          final cubit = context.read<ScheduledPaymentDetailCubit>();
+        final cubit = context.read<ScheduledPaymentDetailCubit>();
+        final undoSnoozeId = state.pendingUndoSnoozeOccurrenceId;
+        if (undoSnoozeId != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -63,6 +81,22 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
                   onPressed: cubit.undoSnooze,
                 ),
                 duration: const Duration(seconds: 5),
+                persist: false,
+              ),
+            );
+          return;
+        }
+        final undoDeleteId = state.pendingUndoDeleteTransactionId;
+        if (undoDeleteId != null) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(l10n.transactionsUndoDeletedMessage),
+                action: SnackBarAction(
+                  label: l10n.transactionsUndoAction,
+                  onPressed: cubit.undoDelete,
+                ),
                 persist: false,
               ),
             );
@@ -112,7 +146,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
                 ScheduledPaymentDetailBody(
                   detail: detail,
                   state: state,
-                  onOpenTransaction: onOpenTransaction,
+                  onOpenTransaction: (id) => _openTransaction(context, id),
                 ),
               ScheduledPaymentDetailStatus.ready => const SizedBox.shrink(),
             },

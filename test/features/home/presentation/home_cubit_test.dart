@@ -13,6 +13,7 @@ import 'package:billetudo/features/home/domain/usecases/watch_month_transactions
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
+import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -28,11 +29,14 @@ class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
 
+class MockRestoreTransaction extends Mock implements RestoreTransaction {}
+
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
   late MockWatchAuthSession watchAuthSession;
   late MockWatchSyncStatus watchSyncStatus;
+  late MockRestoreTransaction restoreTransaction;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -49,6 +53,7 @@ void main() {
     watchMonthTransactions = MockWatchMonthTransactions();
     watchAuthSession = MockWatchAuthSession();
     watchSyncStatus = MockWatchSyncStatus();
+    restoreTransaction = MockRestoreTransaction();
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
@@ -56,6 +61,8 @@ void main() {
     // `syncStatus`; individual tests override to emit sync ticks.
     when(() => watchSyncStatus())
         .thenAnswer((_) => const Stream<SyncState>.empty());
+    when(() => restoreTransaction(any()))
+        .thenAnswer((_) async => const Right(unit));
   });
 
   HomeCubit build() => HomeCubit(
@@ -63,6 +70,7 @@ void main() {
         watchMonthTransactions,
         watchAuthSession,
         watchSyncStatus,
+        restoreTransaction,
       );
 
   void stubReady() {
@@ -335,6 +343,55 @@ void main() {
 
     await cubit.close();
     await syncController.close();
+  });
+
+  group('borrar y deshacer desde el detalle (HU-05)', () {
+    blocTest<HomeCubit, HomeState>(
+      'notifyExternalDelete ofrece deshacer con el id de la transacción',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) => cubit.notifyExternalDelete('tx-1'),
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoId, 'tx-1');
+        verifyNever(() => restoreTransaction(any()));
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'undoDelete restaura la transacción y limpia el pendiente',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) async {
+        cubit.notifyExternalDelete('tx-1');
+        await cubit.undoDelete();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoId, isNull);
+        verify(() => restoreTransaction('tx-1')).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'dismissUndo limpia el pendiente sin restaurar',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) {
+        cubit.notifyExternalDelete('tx-1');
+        cubit.dismissUndo();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoId, isNull);
+        verifyNever(() => restoreTransaction(any()));
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'undoDelete sin pendiente no llama al caso de uso',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) => cubit.undoDelete(),
+      verify: (_) => verifyNever(() => restoreTransaction(any())),
+    );
   });
 
   test('cerrar el cubit cancela las cuatro suscripciones', () async {

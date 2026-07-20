@@ -63,7 +63,7 @@ void main() {
           child: HomePage(
             onAddTransaction: () {},
             onSeeAllTransactions: () {},
-            onOpenTransaction: (_) {},
+            onOpenTransaction: (_) async => null,
             onCreateBudget: () {},
             onOpenAccounts: onOpenAccounts ?? () {},
             onOpenScheduledPayments: onOpenScheduledPayments ?? () {},

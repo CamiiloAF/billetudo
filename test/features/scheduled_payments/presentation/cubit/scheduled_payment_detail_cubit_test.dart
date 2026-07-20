@@ -2,12 +2,15 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
+import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../scheduled_payment_fixtures.dart';
 import 'usecase_mocks.dart';
+
+class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
 /// HU-05/HU-07: hybrid detail screen — load, error, in-place history
 /// pagination (criterion 13), delete flow (criterion 12), and the
@@ -17,6 +20,7 @@ void main() {
   late MockGetScheduledPaymentHistory getHistory;
   late MockDeleteScheduledPayment deleteScheduledPayment;
   late MockUndoSnoozeScheduledOccurrence undoSnoozeOccurrence;
+  late MockRestoreTransaction restoreTransaction;
 
   final detail = ScheduledPaymentDetail(
     scheduledPayment: buildScheduledPayment(),
@@ -31,6 +35,7 @@ void main() {
     getHistory = MockGetScheduledPaymentHistory();
     deleteScheduledPayment = MockDeleteScheduledPayment();
     undoSnoozeOccurrence = MockUndoSnoozeScheduledOccurrence();
+    restoreTransaction = MockRestoreTransaction();
   });
 
   ScheduledPaymentDetailCubit build() => ScheduledPaymentDetailCubit(
@@ -38,6 +43,7 @@ void main() {
         getHistory,
         deleteScheduledPayment,
         undoSnoozeOccurrence,
+        restoreTransaction,
       );
 
   blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
@@ -216,6 +222,55 @@ void main() {
       verify: (_) {
         verifyNever(() => undoSnoozeOccurrence(any()));
       },
+    );
+  });
+
+  group('borrar y deshacer desde el historial (HU-05)', () {
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'notifyExternalDelete ofrece deshacer con el id de la transacción',
+      build: build,
+      act: (cubit) => cubit.notifyExternalDelete('tx-1'),
+      expect: () => [
+        const ScheduledPaymentDetailState(
+          pendingUndoDeleteTransactionId: 'tx-1',
+        ),
+      ],
+      verify: (_) => verifyNever(() => restoreTransaction(any())),
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'undoDelete restaura la transacción y limpia el pendiente',
+      setUp: () => when(() => restoreTransaction('tx-1'))
+          .thenAnswer((_) async => const Right(unit)),
+      build: build,
+      act: (cubit) async {
+        cubit.notifyExternalDelete('tx-1');
+        await cubit.undoDelete();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoDeleteTransactionId, isNull);
+        verify(() => restoreTransaction('tx-1')).called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'dismissUndoDelete limpia el pendiente sin restaurar',
+      build: build,
+      act: (cubit) {
+        cubit.notifyExternalDelete('tx-1');
+        cubit.dismissUndoDelete();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoDeleteTransactionId, isNull);
+        verifyNever(() => restoreTransaction(any()));
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'undoDelete sin pendiente no llama al caso de uso',
+      build: build,
+      act: (cubit) => cubit.undoDelete(),
+      verify: (_) => verifyNever(() => restoreTransaction(any())),
     );
   });
 }
