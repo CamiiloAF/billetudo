@@ -18,7 +18,6 @@ Local-first estricto: la app es 100% usable sin cuenta (HU-01). La pantalla de L
 | Auth — Cerrar sesión, opt-in apagado (HU-06, **ganadora**) | `wlVUL` | `CWvdi` | Decisión final, ambos temas — Bottom Sheet. Reemplaza a `j4hgYN`, ver abajo |
 | Auth — Cerrar sesión, opt-in activado + sync al día (HU-06) | `c87DpD` | `Af1SN` | Decisión final, ambos temas — el caso mayoritario: se borra y no hay nada pendiente |
 | Auth — Cerrar sesión, opt-in activado + cambios sin subir (HU-06) | `dpxOS` | `WXI8Z` | Decisión final, ambos temas — suma el aviso ámbar de pérdida |
-| Auth — Cerrar sesión, versión anterior (HU-06, **obsoleta**) | `j4hgYN` | `MDDdY` | Superada por las 3 de arriba. Se conserva hasta que la nueva esté implementada |
 | Auth — Borrar cuenta, paso 1: confirmación irreversible (HU-07) | `j8ZdEx` | `QOJ74` | Decisión final, ambos temas — Bottom Sheet, tono destructivo |
 | Auth — Borrar cuenta, paso 2: datos locales (HU-07) | `K8SAG` | `jxqEb` | Decisión final, ambos temas — Bottom Sheet, elección sin dark pattern |
 | Auth — Borrar cuenta, paso 3: confirmación final (HU-07) | `sqm4I` | `q43mHJ` | Decisión final, ambos temas — pantalla completa, cierre neutral |
@@ -126,9 +125,14 @@ El título ("Hay cambios que aún no se han subido") es fijo, no varía con N.
 
 **Altura verificada empíricamente** con N=1, N=4 y N=128: el bloque se mantiene en 104px (3 líneas) en los tres casos, así que el número no descuadra el sheet.
 
-### Pendiente antes de implementar
+### Estado: implementada (2026-07-20)
 
-- **Sin estado de "borrando…"** tras confirmar, ni frame de transición entre apagado y activado. Decisión: **no se diseña por ahora.** Borrar la SQLite local es rápido y el patrón de carga en el propio botón ya existe (`QD8kh`, Login). Si al implementar resulta perceptible, se agrega entonces — diseñarlo antes es especular sobre una latencia que nadie midió.
+Los 3 estados están en código y cubiertos por tests. Dos cosas que la implementación descubrió y que conviene saber antes de tocar esta pantalla:
+
+- **El `Sheet Icon Header` de esta hoja anula el estilo del mensaje** (`$text-secondary` / 14, contra `$text-primary` / 15 del componente base `XPjIZ`). Está en el `.pen` y no estaba en esta spec; `SheetMessage` ganó dos parámetros opcionales para soportarlo sin afectar a los demás sheets.
+- **`BottomSheetBase` no tiene scroll.** La fila de opt-in y el aviso envuelven texto sin ellipsis, igual que en el frame, así que con la escala de fuente de accesibilidad alta el sheet puede desbordar. Es un problema del componente base y afecta a todos los sheets, no solo a este — pendiente aparte.
+
+**Sin estado de "borrando…"** ni frame de transición entre apagado y activado. Decisión: no se diseña. Borrar la base local es rápido y el patrón de carga en el propio botón ya existe (`QD8kh`, Login). Si alguna vez resulta perceptible, se agrega entonces — diseñarlo antes era especular sobre una latencia que nadie midió, y la implementación confirmó que no hace falta.
 - **Tap target:** el área tocable es la fila completa (350x112), **no** el checkbox de 24x24. Implementarlo sobre el checkbox incumple el mínimo de 44 de MASTER.
 
 ## Estructura (borrar cuenta — HU-07, flujo de 3 pasos)
