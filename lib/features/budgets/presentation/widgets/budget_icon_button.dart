@@ -37,7 +37,11 @@ class BudgetIconButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTheme.radiusField),
               ),
               child: Icon(
-                CategoryAppearance.iconFor(icon),
+                // Nothing picked yet is its own state: the neutral
+                // placeholder, never `sparkles` (the AI/nudge glyph).
+                icon == null
+                    ? CategoryAppearance.placeholderIcon
+                    : CategoryAppearance.iconFor(icon),
                 size: 22,
                 color: colors.primaryOnSoft,
               ),

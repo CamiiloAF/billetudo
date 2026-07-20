@@ -479,7 +479,10 @@
   "budgetIconSheetHint": "The icon shows on a neutral background — no color per budget.",
   "budgetsHistoryTitle": "History",
   "budgetsHistoryEmpty": "You haven't closed any budgets",
+  "budgetsHistoryEmptyDescription": "When you close one, you'll find it here to review or reactivate",
   "budgetsHistoryLoading": "Loading your history",
+  "budgetDetailLoading": "Loading the budget",
+  "budgetFormLoading": "Loading the form",
   "budgetClosedOn": "Closed {date}",
   "@budgetClosedOn": {
     "placeholders": { "date": { "type": "String" } }

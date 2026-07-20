@@ -2696,11 +2696,29 @@ abstract class AppLocalizations {
   /// **'No has cerrado ningún presupuesto'**
   String get budgetsHistoryEmpty;
 
+  /// No description provided for @budgetsHistoryEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando cierres uno, lo encontrarás aquí para consultarlo o reactivarlo'**
+  String get budgetsHistoryEmptyDescription;
+
   /// No description provided for @budgetsHistoryLoading.
   ///
   /// In es, this message translates to:
   /// **'Cargando tu histórico'**
   String get budgetsHistoryLoading;
+
+  /// No description provided for @budgetDetailLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando el presupuesto'**
+  String get budgetDetailLoading;
+
+  /// No description provided for @budgetFormLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando el formulario'**
+  String get budgetFormLoading;
 
   /// No description provided for @budgetClosedOn.
   ///

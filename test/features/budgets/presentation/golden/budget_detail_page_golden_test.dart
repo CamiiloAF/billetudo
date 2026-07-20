@@ -27,7 +27,8 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 /// lee "Ventana única · termina el <fecha>" y ambos chevrons quedan al 40%).
 ///
 /// States with **no row of their own in the spec table**, flagged for the
-/// audit: `detail_loading` (`CircularProgressIndicator` centrado),
+/// audit: `detail_loading` (`BudgetDetailSkeletonView`, esqueleto con la
+/// geometría real del hero y de la actividad — no un spinner),
 /// `detail_error` (`BudgetsErrorView`, el `Error State` compartido),
 /// `detail_activity_empty` ("Sin movimientos en este periodo"),
 /// `detail_load_more` (paginación perezosa "Ver más" de la actividad, HU-04) y
@@ -166,7 +167,6 @@ void main() {
         const BudgetDetailState(),
         'detail_loading_$suffix',
         brightness: brightness,
-        settle: false,
       );
     });
 

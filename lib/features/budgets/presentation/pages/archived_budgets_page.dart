@@ -55,7 +55,9 @@ class ArchivedBudgetsLoadingView extends StatelessWidget {
         label: AppLocalizations.of(context).budgetsHistoryLoading,
         child: ListView.separated(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          itemCount: 4,
+          // `rI2bL/KqkhS` shows 4 placeholder cards; the subheader is the
+          // extra first item, so the count is 5.
+          itemCount: 5,
           separatorBuilder: (context, index) => const SizedBox(height: 14),
           itemBuilder: (context, index) => index == 0
               ? const ArchivedBudgetsSubheader()
@@ -68,17 +70,29 @@ class ArchivedBudgetsEmptyView extends StatelessWidget {
   const ArchivedBudgetsEmptyView({super.key});
 
   @override
-  Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-        children: [
-          const ArchivedBudgetsSubheader(),
-          const SizedBox(height: 14),
-          EmptyState(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // The subheader stays anchored under the header (it explains the screen
+    // even with nothing in it) and the empty block centers in what is left,
+    // the same shape as the budgets list's own empty state (`Zqsi1`) — which
+    // also carries a second line, so this one does too.
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
+          child: ArchivedBudgetsSubheader(),
+        ),
+        Expanded(
+          child: EmptyState(
             icon: LucideIcons.archive,
-            message: AppLocalizations.of(context).budgetsHistoryEmpty,
+            message: l10n.budgetsHistoryEmpty,
+            description: l10n.budgetsHistoryEmptyDescription,
+            descriptionSpacing: 6,
           ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 }
 
 class ArchivedBudgetsListView extends StatelessWidget {

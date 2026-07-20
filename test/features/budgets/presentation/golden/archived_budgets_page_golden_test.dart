@@ -22,8 +22,10 @@ class MockArchivedBudgetsCubit extends MockCubit<ArchivedBudgetsState>
 /// `$expense-text`).
 ///
 /// States with **no row of their own in the spec table**, flagged for the
-/// audit: `history_empty` (`EmptyState` con `archive`), `history_loading`
-/// (3× `Budget Skeleton Row`) y `history_error` (`BudgetsErrorView`).
+/// audit: `history_empty` (`EmptyState` con `archive`, centrado bajo el
+/// subheader y con subtítulo, igual que el vacío de la lista `Zqsi1`),
+/// `history_loading` (subheader + 4× `Archived Budget Skeleton Row`, como
+/// `rI2bL/KqkhS`) y `history_error` (`BudgetsErrorView`).
 void main() {
   late MockArchivedBudgetsCubit cubit;
 

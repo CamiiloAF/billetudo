@@ -35,9 +35,17 @@ abstract final class CategoryAppearance {
     'indigo',
   ];
 
-  /// Fallback icon shown before the user picks one (`sparkles`, neutral),
-  /// per the "crear categoría" empty state.
+  /// Fallback icon for a saved-but-unknown icon name.
   static const String defaultIconName = 'sparkles';
+
+  /// Shown where nothing has been picked *yet* (an empty appearance slot).
+  ///
+  /// Deliberately NOT [defaultIconName]: `sparkles` is the AI/nudge glyph of
+  /// the system (it labels the assistant entry points and the envelope-mode
+  /// nudge strip), so using it as a placeholder promises an AI suggestion
+  /// where there is only "pick an icon". `shapes` is a neutral
+  /// "choose a symbol" affordance and belongs to no semantic family.
+  static const IconData placeholderIcon = LucideIcons.shapes;
 
   static const Map<String, IconData> _icons = {
     'utensils-crossed': LucideIcons.utensilsCrossed,

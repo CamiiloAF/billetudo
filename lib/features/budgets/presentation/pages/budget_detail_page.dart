@@ -14,6 +14,7 @@ import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
 import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
+import '../widgets/budget_detail_skeleton_view.dart';
 import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budgets_error_view.dart';
@@ -57,7 +58,7 @@ class BudgetDetailPage extends StatelessWidget {
               Expanded(
                 child: switch (state.status) {
                   BudgetDetailStatus.loading =>
-                    const Center(child: CircularProgressIndicator()),
+                    const BudgetDetailSkeletonView(),
                   BudgetDetailStatus.failure => BudgetsErrorView(
                       onRetry: () {},
                     ),
@@ -161,8 +162,11 @@ class BudgetDetailHero extends StatelessWidget {
     final theme = Theme.of(context);
     final budget = state.budget!;
     final scope = state.scope ?? const BudgetScope.empty();
-    final progress = state.view!.progress;
+    final view = state.view!;
+    final progress = view.progress;
     final overspent = progress.isOverspent;
+    final daysLeft =
+        BudgetFormat.daysLeftCaption(l10n, budget, view.window, progress);
     const money = MoneyFormatter();
 
     final headline = money.formatSymbol(
@@ -264,19 +268,22 @@ class BudgetDetailHero extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
               // The days left come from the domain's already-computed
               // `progress.daysLeft`, never from `DateTime.now()` in `build`:
               // that made the widget non-deterministic (and printed "Último
-              // día" in every golden).
-              Text(
-                BudgetFormat.daysLeftCaption(l10n, budget, progress),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colors.textSecondary,
+              // día" in every golden). Absent on a period that is not the
+              // running one.
+              if (daysLeft != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  daysLeft,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ],

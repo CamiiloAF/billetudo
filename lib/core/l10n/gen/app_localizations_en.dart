@@ -1482,7 +1482,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsHistoryEmpty => 'You haven\'t closed any budgets';
 
   @override
+  String get budgetsHistoryEmptyDescription =>
+      'When you close one, you\'ll find it here to review or reactivate';
+
+  @override
   String get budgetsHistoryLoading => 'Loading your history';
+
+  @override
+  String get budgetDetailLoading => 'Loading the budget';
+
+  @override
+  String get budgetFormLoading => 'Loading the form';
 
   @override
   String budgetClosedOn(String date) {

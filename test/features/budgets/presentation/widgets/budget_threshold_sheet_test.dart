@@ -1,9 +1,12 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/budget_threshold_option.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_threshold_custom_sheet.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_threshold_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
   BudgetThresholdChoice? result;
@@ -70,7 +73,8 @@ void main() {
       expect(result?.pct, isNull);
     });
 
-    testWidgets('"Personalizado" navigates to its own sheet instead of '
+    testWidgets(
+        '"Personalizado" navigates to its own sheet instead of '
         'stepping inline', (tester) async {
       await pump(tester);
       await open(tester);
@@ -108,6 +112,35 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(result?.pct, 85);
+    });
+
+    testWidgets(
+        'the picked "Personalizado" row shows the check next to its chevron',
+        (tester) async {
+      await pump(tester, selected: 85);
+      await open(tester);
+
+      final custom = find.ancestor(
+        of: find.text('85%'),
+        matching: find.byType(BudgetThresholdOption),
+      );
+      expect(custom, findsOneWidget);
+      expect(
+        find.descendant(of: custom, matching: find.byIcon(LucideIcons.check)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: custom,
+          matching: find.byIcon(LucideIcons.chevronRight),
+        ),
+        findsOneWidget,
+      );
+      // The selection is not carried by font weight alone.
+      expect(
+        tester.getSemantics(custom).hasFlag(SemanticsFlag.isSelected),
+        isTrue,
+      );
     });
   });
 }

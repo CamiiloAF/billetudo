@@ -30,8 +30,8 @@ class MockBudgetFormCubit extends MockCubit<BudgetFormState>
 /// audit: `form_edit` (mismo frame con título "Editar presupuesto" y CTA
 /// "Guardar cambios", HU-09), `form_repeat_until_date` ("Repetir hasta → Hasta
 /// una fecha", que revela el selector de fecha), `form_threshold_off`
-/// ("No avisarme", HU-08) y `form_loading` (spinner mientras carga el form de
-/// edición).
+/// ("No avisarme", HU-08) y `form_loading` (`BudgetFormSkeletonView`: el
+/// esqueleto de los campos mientras carga el form de edición, no un spinner).
 void main() {
   late MockBudgetFormCubit cubit;
 
@@ -198,7 +198,6 @@ void main() {
         BudgetFormState.loading(),
         'form_loading_$suffix',
         brightness: brightness,
-        settle: false,
         height: 844,
       );
     });

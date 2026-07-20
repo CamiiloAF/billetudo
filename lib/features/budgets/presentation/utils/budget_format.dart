@@ -103,14 +103,23 @@ abstract final class BudgetFormat {
 
   /// The hero's right caption: "Restan 18 días" while the cycle repeats,
   /// "Termina en 8 días" when the window is the budget's only one (`QLn6w`).
-  static String daysLeftCaption(
+  ///
+  /// `null` outside the running window: a period the stepper already labels
+  /// "pasado" (or "próximo") has no days left to announce — counting down a
+  /// closed cycle is simply false.
+  static String? daysLeftCaption(
     AppLocalizations l10n,
     Budget budget,
+    BudgetPeriodWindow window,
     BudgetProgress progress,
-  ) =>
-      budget.isOneOff
-          ? l10n.budgetEndsInDays(progress.daysLeft)
-          : l10n.budgetDaysLeft(progress.daysLeft);
+  ) {
+    if (!window.isCurrent) {
+      return null;
+    }
+    return budget.isOneOff
+        ? l10n.budgetEndsInDays(progress.daysLeft)
+        : l10n.budgetDaysLeft(progress.daysLeft);
+  }
 
   static String statusLabel(
     AppLocalizations l10n,

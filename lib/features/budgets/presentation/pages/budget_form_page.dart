@@ -15,6 +15,7 @@ import '../utils/budget_format.dart';
 import '../widgets/budget_amount_field.dart';
 import '../widgets/budget_field_label.dart';
 import '../widgets/budget_form_bottom_bar.dart';
+import '../widgets/budget_form_skeleton_view.dart';
 import '../widgets/budget_icon_button.dart';
 import '../widgets/budget_name_field.dart';
 import '../widgets/budget_nav_field.dart';
@@ -57,7 +58,7 @@ class BudgetFormPage extends StatelessWidget {
                 ),
                 Expanded(
                   child: loading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const BudgetFormSkeletonView()
                       : const BudgetFormBody(),
                 ),
                 if (!loading)

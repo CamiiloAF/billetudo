@@ -1486,7 +1486,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsHistoryEmpty => 'No has cerrado ningún presupuesto';
 
   @override
+  String get budgetsHistoryEmptyDescription =>
+      'Cuando cierres uno, lo encontrarás aquí para consultarlo o reactivarlo';
+
+  @override
   String get budgetsHistoryLoading => 'Cargando tu histórico';
+
+  @override
+  String get budgetDetailLoading => 'Cargando el presupuesto';
+
+  @override
+  String get budgetFormLoading => 'Cargando el formulario';
 
   @override
   String budgetClosedOn(String date) {

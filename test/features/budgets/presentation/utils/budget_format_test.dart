@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/presentation/utils/budget_format.dart';
 import 'package:flutter/widgets.dart';
@@ -61,15 +62,31 @@ void main() {
 
     test('a recurring budget counts down to the reset', () {
       expect(
-        BudgetFormat.daysLeftCaption(l10n, recurring, progress),
+        BudgetFormat.daysLeftCaption(l10n, recurring, window, progress),
         'Restan 8 días',
       );
     });
 
     test('a one-off counts down to the end of its window', () {
       expect(
-        BudgetFormat.daysLeftCaption(l10n, oneOff, progress),
+        BudgetFormat.daysLeftCaption(l10n, oneOff, window, progress),
         'Termina en 8 días',
+      );
+    });
+
+    test('a closed period announces no days left at all', () {
+      final past = buildWindow(
+        start: DateTime(2025, 11),
+        endExclusive: DateTime(2025, 12),
+        status: BudgetWindowStatus.past,
+      );
+      expect(
+        BudgetFormat.daysLeftCaption(l10n, recurring, past, progress),
+        isNull,
+      );
+      expect(
+        BudgetFormat.daysLeftCaption(l10n, oneOff, past, progress),
+        isNull,
       );
     });
   });

@@ -1070,8 +1070,14 @@
   "@budgetsHistoryTitle": {},
   "budgetsHistoryEmpty": "No has cerrado ningún presupuesto",
   "@budgetsHistoryEmpty": {},
+  "budgetsHistoryEmptyDescription": "Cuando cierres uno, lo encontrarás aquí para consultarlo o reactivarlo",
+  "@budgetsHistoryEmptyDescription": {},
   "budgetsHistoryLoading": "Cargando tu histórico",
   "@budgetsHistoryLoading": {},
+  "budgetDetailLoading": "Cargando el presupuesto",
+  "@budgetDetailLoading": {},
+  "budgetFormLoading": "Cargando el formulario",
+  "@budgetFormLoading": {},
   "budgetClosedOn": "Cerrado {date}",
   "@budgetClosedOn": {
     "placeholders": { "date": { "type": "String" } }
