@@ -16,6 +16,6 @@ Reglas no negociables al modificar el esquema:
 - Al anadir/modificar/eliminar una tabla o columna, **sube `schemaVersion`** en `AppDatabase` y anade la migracion correspondiente en `MigrationStrategy` (si no existe aun, creala) describiendo el paso de la version anterior a la nueva.
 - Cualquier cambio de esquema debe reflejarse tambien del lado de Supabase/PowerSync (mismo nombre de tabla y columnas) — si el usuario no ha mencionado el lado de Supabase, adviertelo explicitamente en tu resumen final, no lo asumas hecho.
 
-Despues de editar el archivo, corre `dart run build_runner build --delete-conflicting-outputs` y reporta errores de generacion si los hay. Si `app_database.g.dart` no existe todavia en el repo, dilo antes de empezar — puede ser la primera vez que se genera.
+Despues de editar el archivo, corre `dart run build_runner build --force-jit` y reporta errores de generacion si los hay. Si `app_database.g.dart` no existe todavia en el repo, dilo antes de empezar — puede ser la primera vez que se genera.
 
 Termina con un resumen: que tablas/columnas cambiaron, el nuevo `schemaVersion`, si la migracion quedo escrita, y el recordatorio de replicar el cambio en el esquema de Supabase/PowerSync.

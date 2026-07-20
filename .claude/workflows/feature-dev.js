@@ -255,7 +255,7 @@ if (SIZE === 's') {
   await build('implementer', `Implementa TODO el cambio en una pasada (es tamano S: mecanico/bajo riesgo).${plan.needsSchema ? ' Incluye el cambio de esquema Drift: sube schemaVersion, agrega la migracion en onUpgrade y corre build_runner.' : ''}`)
 } else {
   if (plan.needsSchema) {
-    await build('schema', 'SOLO el cambio de esquema Drift: tablas/columnas en lib/core/database/app_database.dart, sube schemaVersion, migracion en onUpgrade, y corre dart run build_runner build --delete-conflicting-outputs. Nada de logica de feature todavia. Recuerda: UUIDs clientDefault, enums como texto, mixin _SyncColumns.')
+    await build('schema', 'SOLO el cambio de esquema Drift: tablas/columnas en lib/core/database/app_database.dart, sube schemaVersion, migracion en onUpgrade, y corre dart run build_runner build --force-jit. Nada de logica de feature todavia. Recuerda: UUIDs clientDefault, enums como texto, mixin _SyncColumns.')
   }
   await build('core', 'Las capas domain/ y data/ de la feature: entidades puras, interfaces de repositorio, un caso de uso por accion (con la logica de negocio y validaciones), DTOs/datasources Drift y la implementacion del repositorio (updatedAt en cada escritura). Con sus tests unit (casos de uso) y de data (Drift con NativeDatabase.memory()).')
   if (plan.needsUi) {

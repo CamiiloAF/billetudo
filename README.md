@@ -78,14 +78,19 @@ flutter run --flavor prod --dart-define-from-file=.env.prod
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build --force-jit
 ```
 
-> Si el build falla con "Failed to compile build script" (crash de `gen_snapshot`
-> ligado a los hooks de native assets de `powersync`/`sqlite3` en este SDK),
-> usa `--force-jit` en vez del flag anterior — corre el build script en modo
-> JIT saltándose el compile AOT que crashea:
-> `dart run build_runner build --delete-conflicting-outputs --force-jit`.
+> `--force-jit` es obligatorio, no un plan B. Sin él el build siempre falla con
+> "Failed to compile build script": `build_runner` precompila su script de
+> arranque con `dart compile`, que en Dart 3.10.4 no soporta *build hooks*, y
+> tres dependencias los traen por sus assets nativos (`sqlite3`, `powersync`,
+> `objective_c`). El fallback automático a JIT que documenta `build_runner` no
+> se dispara acá, así que hay que pedirlo explícito. El modo JIT genera lo mismo
+> y sigue siendo incremental.
+>
+> `--delete-conflicting-outputs` ya no existe: `build_runner` 2.15 lo removió y
+> lo ignora con un warning.
 
 ## Verificar el código
 

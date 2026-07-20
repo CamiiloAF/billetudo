@@ -164,7 +164,7 @@ import 'package:billetudo/features/categories/domain/usecases/restore_category.d
 import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart'
     as _i693;
 import 'package:billetudo/features/categories/domain/usecases/suggest_subcategory_icon.dart'
-    as _i1099;
+    as _i928;
 import 'package:billetudo/features/categories/domain/usecases/update_category.dart'
     as _i275;
 import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart'
@@ -343,8 +343,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
         () => const _i529.ZeroBasedSummaryCalculator());
     gh.factory<_i559.GetBudgetProgress>(() => _i559.GetBudgetProgress(
-        gh<_i685.BudgetProgressCalculator>(),
-        gh<_i450.ProjectUpcomingOccurrences>()));
+          gh<_i685.BudgetProgressCalculator>(),
+          gh<_i450.ProjectUpcomingOccurrences>(),
+        ));
     gh.lazySingleton<_i872.PowerSyncConnector>(() => _i872.PowerSyncConnector(
           gh<_i454.SupabaseClient>(),
           gh<_i474.CrashReporter>(),
@@ -631,14 +632,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i562.ReorderCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i119.RestoreCategory>(
         () => _i119.RestoreCategory(gh<_i802.CategoryRepository>()));
+    gh.factory<_i928.SuggestSubcategoryIcon>(
+        () => _i928.SuggestSubcategoryIcon(gh<_i802.CategoryRepository>()));
     gh.factory<_i275.UpdateCategory>(
         () => _i275.UpdateCategory(gh<_i802.CategoryRepository>()));
     gh.factory<_i722.WatchCategories>(
         () => _i722.WatchCategories(gh<_i802.CategoryRepository>()));
     gh.factory<_i172.WatchParentCandidates>(
         () => _i172.WatchParentCandidates(gh<_i802.CategoryRepository>()));
-    gh.factory<_i1099.SuggestSubcategoryIcon>(
-        () => _i1099.SuggestSubcategoryIcon(gh<_i802.CategoryRepository>()));
     gh.factory<_i335.CategoriesListCubit>(() => _i335.CategoriesListCubit(
           gh<_i722.WatchCategories>(),
           gh<_i562.ReorderCategories>(),
@@ -691,6 +692,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i636.DeleteScheduledPayment>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
             ));
+    gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
+          gh<_i885.CreateCategory>(),
+          gh<_i275.UpdateCategory>(),
+          gh<_i382.GetCategory>(),
+          gh<_i87.GetCategoryDeletionImpact>(),
+          gh<_i968.DeleteCategory>(),
+          gh<_i928.SuggestSubcategoryIcon>(),
+        ));
     gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
           gh<_i1044.SignInWithGoogle>(),
           gh<_i888.SignInWithApple>(),
@@ -724,14 +733,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
-        ));
-    gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
-          gh<_i885.CreateCategory>(),
-          gh<_i275.UpdateCategory>(),
-          gh<_i382.GetCategory>(),
-          gh<_i87.GetCategoryDeletionImpact>(),
-          gh<_i968.DeleteCategory>(),
-          gh<_i1099.SuggestSubcategoryIcon>(),
         ));
     return this;
   }

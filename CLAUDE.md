@@ -12,7 +12,7 @@ Objetivo diferenciador: dar el cambio de hábito de YNAB **sin su fricción ni s
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # genera *.g.dart de Drift
+dart run build_runner build --force-jit                    # genera *.g.dart de Drift
 flutter gen-l10n                                           # regenera l10n tras tocar un .arb
 flutter analyze                                            # lints oficiales
 flutter test
@@ -20,6 +20,10 @@ flutter run
 ```
 
 Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
+
+**`--force-jit` no es opcional.** Sin él, el build falla con `Failed to compile build script`: `build_runner` precompila su script de arranque con `dart compile`, que en Dart 3.10.4 no soporta *build hooks* — y tres dependencias del proyecto los traen (`sqlite3`, `powersync`, `objective_c`, todas por sus assets nativos). El fallback automático a JIT que `build_runner` documenta no se dispara acá, así que hay que pedirlo explícito. El modo JIT genera exactamente lo mismo y sigue siendo incremental.
+
+`--delete-conflicting-outputs` ya no existe (`build_runner` 2.15 lo removió); si se pasa, se ignora con un warning.
 
 ## Arquitectura y decisiones (no cambiar sin justificación)
 

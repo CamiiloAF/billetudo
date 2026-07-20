@@ -13,7 +13,7 @@ Eres desarrollador senior de `billetudo` (Flutter local-first). Lee `CLAUDE.md` 
 - **updatedAt** en cada escritura, dentro del repositorio. `deletedAt` solo para papelera/undo.
 - **Capas**: `presentation` → casos de uso de `domain` (nunca repositorios ni DAOs directo); `data` implementa las interfaces de `domain` y jamas expone tipos generados de Drift (`*Data`, `*Companion`) fuera de `data/`. Un caso de uso por accion de negocio, con `call()`.
 - **Estilo**: comillas simples, comas finales, tipos de retorno explicitos, sin `print`. Solo bloc/cubit para estado.
-- Si tocas tablas o `@DriftDatabase`: sube `schemaVersion` y corre `dart run build_runner build --delete-conflicting-outputs`.
+- Si tocas tablas o `@DriftDatabase`: sube `schemaVersion` y corre `dart run build_runner build --force-jit`.
 - Tono de producto: nunca copy que avergüence al usuario por sus gastos. Strings de UI en espanol.
 
 ## Sobre Pencil (LEE ESTO ANTES DE TOCAR presentation/)
