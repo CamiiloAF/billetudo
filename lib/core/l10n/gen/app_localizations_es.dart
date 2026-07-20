@@ -1013,6 +1013,16 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las notificaciones llegarán pronto.';
 
   @override
+  String get homeExitConfirmTitle => '¿Salir de Billetudo?';
+
+  @override
+  String get homeExitConfirmMessage =>
+      'Puedes volver cuando quieras, tus datos se quedan guardados.';
+
+  @override
+  String get homeExitConfirmAction => 'Salir';
+
+  @override
   String get comingSoonTitle => 'Próximamente';
 
   @override

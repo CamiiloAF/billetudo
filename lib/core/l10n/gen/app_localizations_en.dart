@@ -1011,6 +1011,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
 
   @override
+  String get homeExitConfirmTitle => 'Leave Billetudo?';
+
+  @override
+  String get homeExitConfirmMessage =>
+      'You can come back anytime, your data stays saved.';
+
+  @override
+  String get homeExitConfirmAction => 'Exit';
+
+  @override
   String get comingSoonTitle => 'Coming soon';
 
   @override

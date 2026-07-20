@@ -9,7 +9,7 @@
 
 4) El bottom sheet de cerrar sesión debería sobreponerse al bottom nav bar, ahora mismo lo deja visible, De hecho, TODOS lo botom sheets deben tener este comportamiento
 
-5) Si el usuario está en el home y navega hacía atrás con gestos, debería mostrarle una alerta de confirmación para salir de la app, si lo hace en otra se las opciones del bottom nav bar, lo debe llevar al home
+5) ~~Si el usuario está en el home y navega hacía atrás con gestos, debería mostrarle una alerta de confirmación para salir de la app, si lo hace en otra se las opciones del bottom nav bar, lo debe llevar al home~~ — ✅ hecho 2026-07-20
 
 6) Analiza la opción de editar un presupuesto para 1 sola vez, es decir, tal vez yo hice un trabajo extra y me gané 2 millones más y por consiguiente mi presupuesto para el proximo mes será mayor pero el resto de meses seguirá siendo igual.
 

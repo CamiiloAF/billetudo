@@ -1880,6 +1880,24 @@ abstract class AppLocalizations {
   /// **'Las notificaciones llegarán pronto.'**
   String get homeNotificationsSheetMessage;
 
+  /// No description provided for @homeExitConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Salir de Billetudo?'**
+  String get homeExitConfirmTitle;
+
+  /// No description provided for @homeExitConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes volver cuando quieras, tus datos se quedan guardados.'**
+  String get homeExitConfirmMessage;
+
+  /// No description provided for @homeExitConfirmAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Salir'**
+  String get homeExitConfirmAction;
+
   /// No description provided for @comingSoonTitle.
   ///
   /// In es, this message translates to:
