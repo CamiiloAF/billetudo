@@ -1258,10 +1258,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsBackupSubtitle => 'Guarda tus datos de forma segura';
 
   @override
+  String get settingsBudgetSection => 'Presupuesto';
+
+  @override
   String get settingsPreferencesSection => 'Preferencias';
 
   @override
   String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsAppearanceLight => 'Claro';
+
+  @override
+  String get settingsAppearanceDark => 'Oscuro';
 
   @override
   String get settingsCurrency => 'Moneda';
@@ -1731,7 +1740,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsEnvelopeModeSubtitle =>
-      'Reparte tu ingreso del mes entre tus presupuestos';
+      'Reparte todo tu ingreso en sobres';
 
   @override
   String get settingsEnvelopeWhatIs => '¿Qué es?';

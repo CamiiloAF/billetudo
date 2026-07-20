@@ -2306,6 +2306,12 @@ abstract class AppLocalizations {
   /// **'Guarda tus datos de forma segura'**
   String get settingsBackupSubtitle;
 
+  /// No description provided for @settingsBudgetSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get settingsBudgetSection;
+
   /// No description provided for @settingsPreferencesSection.
   ///
   /// In es, this message translates to:
@@ -2317,6 +2323,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Apariencia'**
   String get settingsAppearance;
+
+  /// No description provided for @settingsAppearanceLight.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro'**
+  String get settingsAppearanceLight;
+
+  /// No description provided for @settingsAppearanceDark.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro'**
+  String get settingsAppearanceDark;
 
   /// No description provided for @settingsCurrency.
   ///
@@ -3047,7 +3065,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsEnvelopeModeSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Reparte tu ingreso del mes entre tus presupuestos'**
+  /// **'Reparte todo tu ingreso en sobres'**
   String get settingsEnvelopeModeSubtitle;
 
   /// No description provided for @settingsEnvelopeWhatIs.

@@ -1254,10 +1254,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsBackupSubtitle => 'Keep your data safe';
 
   @override
+  String get settingsBudgetSection => 'Budget';
+
+  @override
   String get settingsPreferencesSection => 'Preferences';
 
   @override
   String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceLight => 'Light';
+
+  @override
+  String get settingsAppearanceDark => 'Dark';
 
   @override
   String get settingsCurrency => 'Currency';
@@ -1727,7 +1736,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsEnvelopeModeSubtitle =>
-      'Split this month\'s income across your budgets';
+      'Split your entire income into envelopes';
 
   @override
   String get settingsEnvelopeWhatIs => 'What is it?';

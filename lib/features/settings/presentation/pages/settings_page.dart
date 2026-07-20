@@ -78,18 +78,7 @@ class SettingsPage extends StatelessWidget {
                           onTap: onOpenLogin,
                         ),
                       const SizedBox(height: 20),
-                      SettingsSectionLabel(l10n.settingsPreferencesSection),
-                      SettingsField(
-                        icon: LucideIcons.palette,
-                        label: l10n.settingsAppearance,
-                        onTap: () => onOpenComingSoon(l10n.settingsAppearance),
-                      ),
-                      SettingsField(
-                        icon: LucideIcons.badgeDollarSign,
-                        label: l10n.settingsCurrency,
-                        sublabel: l10n.settingsCurrencySubtitle,
-                        onTap: () => onOpenComingSoon(l10n.settingsCurrency),
-                      ),
+                      SettingsSectionLabel(l10n.settingsBudgetSection),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(
                         builder: (context, settings) => EnvelopeModeField(
                           enabled: settings.zeroBasedEnabled,
@@ -105,6 +94,23 @@ class SettingsPage extends StatelessWidget {
                             ),
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      SettingsSectionLabel(l10n.settingsPreferencesSection),
+                      SettingsField(
+                        icon: LucideIcons.palette,
+                        label: l10n.settingsAppearance,
+                        sublabel:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? l10n.settingsAppearanceDark
+                                : l10n.settingsAppearanceLight,
+                        onTap: () => onOpenComingSoon(l10n.settingsAppearance),
+                      ),
+                      SettingsField(
+                        icon: LucideIcons.badgeDollarSign,
+                        label: l10n.settingsCurrency,
+                        sublabel: l10n.settingsCurrencySubtitle,
+                        onTap: () => onOpenComingSoon(l10n.settingsCurrency),
                       ),
                       const SizedBox(height: 32),
                       Material(

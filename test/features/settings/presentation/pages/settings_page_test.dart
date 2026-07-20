@@ -128,6 +128,8 @@ void main() {
     );
 
     expect(find.text('Eliminar cuenta'), findsOneWidget);
+    await tester.ensureVisible(find.text('Eliminar cuenta'));
+    await tester.pump();
     await tester.tap(find.text('Eliminar cuenta'));
     await tester.pump();
 
@@ -143,7 +145,11 @@ void main() {
       onOpenComingSoon: opened.add,
     );
 
+    await tester.ensureVisible(find.text('Apariencia'));
+    await tester.pump();
     await tester.tap(find.text('Apariencia'));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Moneda'));
     await tester.pump();
     await tester.tap(find.text('Moneda'));
     await tester.pump();
