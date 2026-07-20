@@ -817,10 +817,39 @@
 
   "authSignOutSheetTitle": "Cerrar sesión",
   "@authSignOutSheetTitle": {},
-  "authSignOutSheetMessage": "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.",
-  "@authSignOutSheetMessage": {},
+  "authSignOutSheetMessage": "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+  "@authSignOutSheetMessage": {
+    "description": "HU-06: mensaje con el opt-in de borrado APAGADO."
+  },
+  "authSignOutSheetMessageDeleting": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+  "@authSignOutSheetMessageDeleting": {
+    "description": "HU-06: mensaje con el opt-in ACTIVADO. Pierde la promesa de conservación a propósito: con la casilla marcada sería falsa."
+  },
   "authSignOutCta": "Cerrar sesión",
   "@authSignOutCta": {},
+  "authSignOutDeleteCta": "Borrar y salir",
+  "@authSignOutDeleteCta": {
+    "description": "HU-06: CTA cuando el opt-in de borrado está activado."
+  },
+  "authSignOutDeleteOptInTitle": "Borrar también los datos de este teléfono",
+  "@authSignOutDeleteOptInTitle": {},
+  "authSignOutDeleteOptInSubtitle": "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.",
+  "@authSignOutDeleteOptInSubtitle": {},
+  "authSignOutUnsyncedTitle": "Hay cambios que aún no se han subido",
+  "@authSignOutUnsyncedTitle": {},
+  "authSignOutUnsyncedBody": "{count, plural, =1{1 cambio sigue guardado solo en este teléfono. Si borras ahora, ese cambio no quedará en la nube.} other{{count} cambios siguen guardados solo en este teléfono. Si borras ahora, esos cambios no quedarán en la nube.}}",
+  "@authSignOutUnsyncedBody": {
+    "description": "HU-06: la concordancia alcanza cinco palabras (sigue/siguen, guardado/guardados, ese/esos cambio(s), quedará/quedarán), por eso el plural ICU cubre la frase entera y no la palabra suelta.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authSignOutWipeErrorMessage": "Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.",
+  "@authSignOutWipeErrorMessage": {
+    "description": "HU-06: el wipe falló después de cerrar sesión. No reportar un éxito falso."
+  },
 
   "authDeleteStep1Title": "Eliminar tu cuenta",
   "@authDeleteStep1Title": {},
@@ -901,6 +930,8 @@
   "@budgetRemainingLabel": {},
   "budgetOverspentLabel": "Excedido por",
   "@budgetOverspentLabel": {},
+  "budgetAtRiskLabel": "Podría exceder por",
+  "@budgetAtRiskLabel": {},
   "budgetResetsOn": "se reinicia el {date}",
   "@budgetResetsOn": {
     "placeholders": { "date": { "type": "String" } }

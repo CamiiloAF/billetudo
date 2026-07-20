@@ -31,4 +31,10 @@ abstract class SyncStatusSource {
 
   /// Emits on every change (not on subscription).
   Stream<SyncSourceStatus> get statusStream;
+
+  /// How many local operations are still waiting to be pushed, right now.
+  ///
+  /// A one-shot read on purpose: the sign-out sheet needs a photo to decide
+  /// on, not a live counter.
+  Future<int> pendingUploadCount();
 }

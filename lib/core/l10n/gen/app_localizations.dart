@@ -2024,17 +2024,59 @@ abstract class AppLocalizations {
   /// **'Cerrar sesión'**
   String get authSignOutSheetTitle;
 
-  /// No description provided for @authSignOutSheetMessage.
+  /// HU-06: mensaje con el opt-in de borrado APAGADO.
   ///
   /// In es, this message translates to:
-  /// **'Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.'**
+  /// **'Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.'**
   String get authSignOutSheetMessage;
+
+  /// HU-06: mensaje con el opt-in ACTIVADO. Pierde la promesa de conservación a propósito: con la casilla marcada sería falsa.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejarás de sincronizar hasta que vuelvas a iniciar sesión.'**
+  String get authSignOutSheetMessageDeleting;
 
   /// No description provided for @authSignOutCta.
   ///
   /// In es, this message translates to:
   /// **'Cerrar sesión'**
   String get authSignOutCta;
+
+  /// HU-06: CTA cuando el opt-in de borrado está activado.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar y salir'**
+  String get authSignOutDeleteCta;
+
+  /// No description provided for @authSignOutDeleteOptInTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar también los datos de este teléfono'**
+  String get authSignOutDeleteOptInTitle;
+
+  /// No description provided for @authSignOutDeleteOptInSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.'**
+  String get authSignOutDeleteOptInSubtitle;
+
+  /// No description provided for @authSignOutUnsyncedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay cambios que aún no se han subido'**
+  String get authSignOutUnsyncedTitle;
+
+  /// HU-06: la concordancia alcanza cinco palabras (sigue/siguen, guardado/guardados, ese/esos cambio(s), quedará/quedarán), por eso el plural ICU cubre la frase entera y no la palabra suelta.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio sigue guardado solo en este teléfono. Si borras ahora, ese cambio no quedará en la nube.} other{{count} cambios siguen guardados solo en este teléfono. Si borras ahora, esos cambios no quedarán en la nube.}}'**
+  String authSignOutUnsyncedBody(int count);
+
+  /// HU-06: el wipe falló después de cerrar sesión. No reportar un éxito falso.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.'**
+  String get authSignOutWipeErrorMessage;
 
   /// No description provided for @authDeleteStep1Title.
   ///
@@ -2263,6 +2305,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Excedido por'**
   String get budgetOverspentLabel;
+
+  /// No description provided for @budgetAtRiskLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Podría exceder por'**
+  String get budgetAtRiskLabel;
 
   /// No description provided for @budgetResetsOn.
   ///

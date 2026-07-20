@@ -1078,10 +1078,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authSignOutSheetMessage =>
-      'Your accounts and transactions will stay saved on this device — they won\'t be deleted. But changes you make here afterwards won\'t sync until you sign in again.';
+      'Your accounts and transactions will stay saved on this phone. You\'ll stop syncing until you sign in again.';
+
+  @override
+  String get authSignOutSheetMessageDeleting =>
+      'You\'ll stop syncing until you sign in again.';
 
   @override
   String get authSignOutCta => 'Sign out';
+
+  @override
+  String get authSignOutDeleteCta => 'Delete and sign out';
+
+  @override
+  String get authSignOutDeleteOptInTitle => 'Also delete this phone\'s data';
+
+  @override
+  String get authSignOutDeleteOptInSubtitle =>
+      'Your cloud account stays untouched: sign in again and you get it all back.';
+
+  @override
+  String get authSignOutUnsyncedTitle =>
+      'Some changes haven\'t been uploaded yet';
+
+  @override
+  String authSignOutUnsyncedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are still saved only on this phone. If you delete now, those changes won\'t make it to the cloud.',
+      one:
+          '1 change is still saved only on this phone. If you delete now, that change won\'t make it to the cloud.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authSignOutWipeErrorMessage =>
+      'We signed you out, but couldn\'t delete this phone\'s data. It\'s still here.';
 
   @override
   String get authDeleteStep1Title => 'Delete your account';
@@ -1205,6 +1240,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetOverspentLabel => 'Over by';
+
+  @override
+  String get budgetAtRiskLabel => 'Could exceed by';
 
   @override
   String budgetResetsOn(String date) {

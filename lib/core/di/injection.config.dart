@@ -24,6 +24,8 @@ import 'package:billetudo/core/sync/data/repositories/sync_status_repository_imp
     as _i975;
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart'
     as _i691;
+import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dart'
+    as _i102;
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart'
     as _i567;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
@@ -109,6 +111,8 @@ import 'package:billetudo/features/auth/presentation/cubit/login_cubit.dart'
     as _i271;
 import 'package:billetudo/features/auth/presentation/cubit/merge_cubit.dart'
     as _i489;
+import 'package:billetudo/features/auth/presentation/cubit/sign_out_sheet_cubit.dart'
+    as _i446;
 import 'package:billetudo/features/budgets/data/datasources/budgets_local_datasource.dart'
     as _i99;
 import 'package:billetudo/features/budgets/data/repositories/budget_repository_impl.dart'
@@ -500,6 +504,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i121.WatchTags>(),
           gh<_i281.CreateTag>(),
         ));
+    gh.factory<_i102.GetPendingUploadCount>(
+        () => _i102.GetPendingUploadCount(gh<_i691.SyncStatusRepository>()));
     gh.factory<_i567.WatchSyncStatus>(
         () => _i567.WatchSyncStatus(gh<_i691.SyncStatusRepository>()));
     gh.factory<_i693.SeedDefaultCategories>(() => _i693.SeedDefaultCategories(
@@ -621,6 +627,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i964.UndoSkipScheduledOccurrence>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
             ));
+    gh.factory<_i446.SignOutSheetCubit>(
+        () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
     gh.factory<_i885.CreateCategory>(
         () => _i885.CreateCategory(gh<_i802.CategoryRepository>()));
     gh.factory<_i968.DeleteCategory>(

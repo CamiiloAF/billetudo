@@ -63,6 +63,8 @@ class SheetMessage extends StatelessWidget {
     required this.iconBackground,
     required this.message,
     this.title,
+    this.messageColor,
+    this.messageFontSize = 15,
     super.key,
   });
 
@@ -75,6 +77,13 @@ class SheetMessage extends StatelessWidget {
 
   /// Already localized.
   final String message;
+
+  /// Defaults to `$text-primary` / 15, the component's own values (`FxD3p` in
+  /// `XPjIZ`). "Cerrar sesión" (HU-06) overrides both to `$text-secondary`/14
+  /// in `billetudo.pen`, so the instance can say so instead of the shared
+  /// widget guessing.
+  final Color? messageColor;
+  final double messageFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -112,8 +121,8 @@ class SheetMessage extends StatelessWidget {
           message,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: colors.textPrimary,
-            fontSize: 15,
+            color: messageColor ?? colors.textPrimary,
+            fontSize: messageFontSize,
             fontWeight: FontWeight.w500,
             height: 1.4,
           ),

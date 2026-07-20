@@ -1080,10 +1080,45 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authSignOutSheetMessage =>
-      'Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.';
+      'Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.';
+
+  @override
+  String get authSignOutSheetMessageDeleting =>
+      'Dejarás de sincronizar hasta que vuelvas a iniciar sesión.';
 
   @override
   String get authSignOutCta => 'Cerrar sesión';
+
+  @override
+  String get authSignOutDeleteCta => 'Borrar y salir';
+
+  @override
+  String get authSignOutDeleteOptInTitle =>
+      'Borrar también los datos de este teléfono';
+
+  @override
+  String get authSignOutDeleteOptInSubtitle =>
+      'Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.';
+
+  @override
+  String get authSignOutUnsyncedTitle => 'Hay cambios que aún no se han subido';
+
+  @override
+  String authSignOutUnsyncedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count cambios siguen guardados solo en este teléfono. Si borras ahora, esos cambios no quedarán en la nube.',
+      one:
+          '1 cambio sigue guardado solo en este teléfono. Si borras ahora, ese cambio no quedará en la nube.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authSignOutWipeErrorMessage =>
+      'Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.';
 
   @override
   String get authDeleteStep1Title => 'Eliminar tu cuenta';
@@ -1209,6 +1244,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetOverspentLabel => 'Excedido por';
+
+  @override
+  String get budgetAtRiskLabel => 'Podría exceder por';
 
   @override
   String budgetResetsOn(String date) {

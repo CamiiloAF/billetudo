@@ -20,6 +20,13 @@ class PowerSyncStatusSource implements SyncStatusSource {
   Stream<SyncSourceStatus> get statusStream =>
       _powerSync.statusStream.map(_snapshot);
 
+  /// `UploadQueueStats` stops here: only its `count` crosses out of `data/`.
+  @override
+  Future<int> pendingUploadCount() async {
+    final stats = await _powerSync.getUploadQueueStats();
+    return stats.count;
+  }
+
   SyncSourceStatus _snapshot(ps.SyncStatus status) => SyncSourceStatus(
         connected: status.connected,
         uploading: status.uploading,

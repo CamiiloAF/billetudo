@@ -13,9 +13,12 @@ import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
+import '../../features/auth/domain/entities/local_data_choice.dart';
+import '../../features/auth/domain/usecases/wipe_local_data.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/merge_cubit.dart';
+import '../../features/auth/presentation/cubit/sign_out_sheet_cubit.dart';
 import '../../features/auth/presentation/pages/account_deleted_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/merge_confirmation_page.dart';
@@ -373,6 +376,10 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                 child: BudgetDetailPage(
                   onEdit: (id) => context.push(AppRoutes.editBudget(id)),
                   onClosed: () => context.pop(),
+                  onOpenTransaction: (id) =>
+                      context.push(AppRoutes.transaction(id)),
+                  onOpenScheduledPayment: (id) =>
+                      context.push(AppRoutes.scheduledPayment(id)),
                 ),
               ),
               routes: [
@@ -448,11 +455,43 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
       ],
     );
 
+/// HU-06: signing out, optionally wiping this device.
+///
+/// Order matters: **sign out first, wipe second.** Signing out disconnects
+/// PowerSync, so nothing can re-download while the wipe runs. The other way
+/// around, a `signOut` that failed after the wipe would leave a live session
+/// over an empty database and sync would pull everything back — the delete
+/// would have achieved nothing.
+///
+/// If the wipe fails the session is already closed, so the user is told their
+/// data is still here instead of being handed a false success.
 Future<void> _confirmSignOut(BuildContext context) async {
-  final confirmed = await ConfirmSignOutSheet.show(context);
-  if (confirmed == true) {
-    await getIt<AuthCubit>().signOut();
+  final cubit = getIt<SignOutSheetCubit>();
+  unawaited(cubit.start());
+
+  final choice = await ConfirmSignOutSheet.show(context, cubit);
+  await cubit.close();
+  if (choice == null) {
+    return; // cancelled
   }
+
+  await getIt<AuthCubit>().signOut();
+  if (choice == LocalDataChoice.keep) {
+    return;
+  }
+
+  final result = await getIt<WipeLocalData>()();
+  if (!context.mounted) {
+    return;
+  }
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  result.fold(
+    (_) => messenger.showSnackBar(
+      SnackBar(content: Text(l10n.authSignOutWipeErrorMessage)),
+    ),
+    (_) {},
+  );
 }
 
 // Nested under `more` (not a branch-root route): Ajustes has a `Page Header`

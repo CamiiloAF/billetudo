@@ -21,6 +21,19 @@ class FakeSyncStatusSource implements SyncStatusSource {
   @override
   Stream<SyncSourceStatus> get statusStream => _controller.stream;
 
+  /// What `pendingUploadCount()` resolves to; set it to a throwing value by
+  /// assigning `pendingUploadError` instead.
+  int pendingCount = 0;
+  Object? pendingUploadError;
+
+  @override
+  Future<int> pendingUploadCount() async {
+    if (pendingUploadError case final error?) {
+      throw error;
+    }
+    return pendingCount;
+  }
+
   void emit(SyncSourceStatus status) => _controller.add(status);
 
   Future<void> close() => _controller.close();

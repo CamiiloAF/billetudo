@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 
+import '../../../error/result.dart';
 import '../../domain/entities/sync_state.dart';
 import '../../domain/repositories/sync_status_repository.dart';
 import '../datasources/sync_status_source.dart';
@@ -21,6 +22,23 @@ class SyncStatusRepositoryImpl implements SyncStatusRepository {
     // otherwise the indicator would sit on its default until sync moved.
     yield _map(_source.currentStatus);
     yield* _source.statusStream.map(_map).distinct();
+  }
+
+  @override
+  FutureResult<int> pendingUploadCount() async {
+    try {
+      return Right(await _source.pendingUploadCount());
+    } catch (e, st) {
+      // The queue lives in the local SQLite file (`ps_crud`), so a failure
+      // here is a database failure, not a network one.
+      return Left(
+        DatabaseFailure(
+          'could not read the upload queue',
+          cause: e,
+          stackTrace: st,
+        ),
+      );
+    }
   }
 
   /// Signed out, the repository never calls `connect()` (and sign-out calls
