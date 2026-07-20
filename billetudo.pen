@@ -25007,6 +25007,14 @@
               ]
             },
             {
+              "type": "note",
+              "id": "xbmA5",
+              "name": "Review — o9116 ref discrepancy",
+              "width": 260,
+              "height": 0,
+              "content": "[IMPORTANTE] Este nodo (o9116/qsjbj, 'Sheet - Confirmar Eliminar Transacción') usa icono alert-triangle + $expense/$expense-soft (rojo) en el header, mientras que 'Categorias — Eliminar Categoria' (jngMo) usa trash-2 + $primary/$primary-soft (violeta) para la MISMA severidad de accion (borrado simple, reversible via papelera). El bug-fixes.md cita o9116/qsjbj como la referencia canonica a replicar en toda la app -> al construir SheetMessage/confirm_delete_simple_sheet.dart, usar SIEMPRE $expense/$expense-soft + alert-triangle para consistencia, y considerar actualizar jngMo en Pencil para igualar (fuera de alcance de este reporte, solo dejar constancia)."
+            },
+            {
               "type": "frame",
               "id": "acCww",
               "name": "List",
@@ -91353,16 +91361,6 @@
     },
     {
       "type": "note",
-      "id": "xbmA5",
-      "x": 1860,
-      "y": 11420,
-      "name": "Review — o9116 ref discrepancy",
-      "width": 260,
-      "height": 0,
-      "content": "[IMPORTANTE] Este nodo (o9116/qsjbj, 'Sheet - Confirmar Eliminar Transacción') usa icono alert-triangle + $expense/$expense-soft (rojo) en el header, mientras que 'Categorias — Eliminar Categoria' (jngMo) usa trash-2 + $primary/$primary-soft (violeta) para la MISMA severidad de accion (borrado simple, reversible via papelera). El bug-fixes.md cita o9116/qsjbj como la referencia canonica a replicar en toda la app -> al construir SheetMessage/confirm_delete_simple_sheet.dart, usar SIEMPRE $expense/$expense-soft + alert-triangle para consistencia, y considerar actualizar jngMo en Pencil para igualar (fuera de alcance de este reporte, solo dejar constancia)."
-    },
-    {
-      "type": "note",
       "id": "Hlg8a",
       "x": -240,
       "y": 3920,
@@ -113599,7 +113597,7 @@
       "x": 76,
       "y": 29608,
       "name": "Zona — Exploración Cerrar Sesión HU-06 (Claro)",
-      "width": 960,
+      "width": 1410,
       "height": 1160,
       "fill": "#00000000",
       "cornerRadius": 24,
@@ -113923,68 +113921,11 @@
                   }
                 },
                 {
-                  "type": "frame",
-                  "id": "tokda",
+                  "id": "ZryJD",
+                  "type": "ref",
+                  "ref": "S533j9",
                   "name": "Delete Opt-in Row",
-                  "width": "fill_container",
-                  "fill": "$surface",
-                  "cornerRadius": 16,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 12,
-                  "padding": 16,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "opEA7",
-                      "name": "Checkbox",
-                      "width": 24,
-                      "height": 24,
-                      "fill": "$surface",
-                      "cornerRadius": 7,
-                      "stroke": "$text-secondary",
-                      "strokeWidth": 2,
-                      "layout": "vertical",
-                      "justifyContent": "center",
-                      "alignItems": "center"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "mSSsN",
-                      "name": "Text Col",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "IMvvJ",
-                          "name": "Opt Title",
-                          "fill": "$text-primary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Borrar también los datos de este teléfono",
-                          "lineHeight": 1.3,
-                          "fontFamily": "$font-body",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "EZqag",
-                          "name": "Opt Desc",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.",
-                          "lineHeight": 1.35,
-                          "fontFamily": "$font-body",
-                          "fontSize": 13,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
+                  "width": "fill_container"
                 },
                 {
                   "id": "h7CuO",
@@ -114016,7 +113957,7 @@
     {
       "type": "frame",
       "id": "dpxOS",
-      "x": 586,
+      "x": 1036,
       "y": 29728,
       "name": "Auth — Cerrar Sesión V3 · Opt-in activado + aviso de cambios sin subir (Claro)",
       "theme": {
@@ -114073,87 +114014,33 @@
                       "lineHeight": 1.3
                     },
                     "FxD3p": {
-                      "content": "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+                      "content": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
                       "fill": "$text-secondary",
                       "fontSize": 14
                     }
                   }
                 },
                 {
-                  "type": "frame",
-                  "id": "IysGZ",
-                  "name": "Delete Opt-in Row",
+                  "id": "erroG",
+                  "type": "ref",
+                  "ref": "S533j9",
+                  "name": "Delete Opt-in Row (Activado)",
                   "width": "fill_container",
                   "fill": "$expense-soft",
-                  "cornerRadius": 16,
                   "stroke": "$expense",
                   "strokeWidth": 2,
-                  "gap": 12,
-                  "padding": 16,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "sfgNK",
-                      "name": "Checkbox",
-                      "width": 24,
-                      "height": 24,
+                  "descendants": {
+                    "pp1Bf": {
                       "fill": "$expense",
-                      "cornerRadius": 7,
-                      "stroke": "$expense",
-                      "strokeWidth": 2,
-                      "layout": "vertical",
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "W4tkV",
-                          "name": "Check",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "check",
-                          "library": "lucide",
-                          "fill": "$on-primary"
-                        }
-                      ]
+                      "stroke": "$expense"
                     },
-                    {
-                      "type": "frame",
-                      "id": "WyUHW",
-                      "name": "Text Col",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "BeADW",
-                          "name": "Opt Title",
-                          "fill": "$expense-text",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Borrar también los datos de este teléfono",
-                          "lineHeight": 1.3,
-                          "fontFamily": "$font-body",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "LoJgR",
-                          "name": "Opt Desc",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.",
-                          "lineHeight": 1.35,
-                          "fontFamily": "$font-body",
-                          "fontSize": 13,
-                          "fontWeight": "500"
-                        }
-                      ]
+                    "PBLV7": {
+                      "enabled": true
+                    },
+                    "J2M7Nn": {
+                      "fill": "$expense-text"
                     }
-                  ]
+                  }
                 },
                 {
                   "type": "frame",
@@ -114289,6 +114176,686 @@
       "width": 260,
       "height": 0,
       "content": "[APROBADO] Tono de marca: 'Podria exceder por $X' en amber (no rojo) + fraseo condicional se lee informativo/cauteloso, no alarmante, incluso en un escaneo rapido de lista sin el contexto del detalle. Cumple CLAUDE.md."
+    },
+    {
+      "type": "frame",
+      "id": "S533j9",
+      "x": 2714,
+      "y": 1373,
+      "name": "Delete Opt-in Row",
+      "context": "Fila de opt-in de borrado local (Cerrar sesion, HU-06).\n\nESTADOS. Reposo = $surface + $border 1. Activado = override en la instancia: root fill $expense-soft + stroke $expense 2, Checkbox fill $expense + stroke $expense, Check enabled true, Opt Title fill $expense-text.\n\nWCAG 1.4.1: el estado se comunica por TRES senales redundantes -- relleno del checkbox, glifo 'check' visible y borde de 2px -- no solo por color. No simplificar a solo color: sin el glifo el estado deja de percibirse en vision monocromatica.\n\nTAP TARGET: el area tocable es la FILA COMPLETA (350x112), no el checkbox de 24x24. Implementar el gesto sobre todo el contenedor; un target de 24px incumple el minimo de 44 de MASTER. El alto de 112px solo cumple si el gesto cubre la fila entera.\n\nEFECTOS FUERA DEL COMPONENTE (parte del contrato del opt-in, no del frame que lo contiene): al marcar la casilla, (a) el CTA primario del sheet muta a fill $expense + icono trash-2 + label 'Borrar y salir', y (b) el Message del Sheet Icon Header pierde la promesa de conservacion y queda solo en 'Dejaras de sincronizar hasta que vuelvas a iniciar sesion.' -- con la casilla marcada esa promesa es falsa.\n\nNO confundir con las filas de opcion de K8SAG (paso 2 de borrar cuenta): esas son radios de eleccion excluyente, no un checkbox de opt-in. Deliberadamente NO se unificaron.",
+      "reusable": true,
+      "width": 350,
+      "fill": "$surface",
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "gap": 12,
+      "padding": 16,
+      "children": [
+        {
+          "type": "frame",
+          "id": "pp1Bf",
+          "name": "Checkbox",
+          "width": 24,
+          "height": 24,
+          "fill": "$surface",
+          "cornerRadius": 7,
+          "stroke": "$text-secondary",
+          "strokeWidth": 2,
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "PBLV7",
+              "x": 0,
+              "y": 0,
+              "name": "Check",
+              "enabled": false,
+              "width": 16,
+              "height": 16,
+              "icon": "check",
+              "library": "lucide",
+              "fill": "$on-primary"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JrQ6D",
+          "name": "Text Col",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 4,
+          "children": [
+            {
+              "type": "text",
+              "id": "J2M7Nn",
+              "name": "Opt Title",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Borrar también los datos de este teléfono",
+              "lineHeight": 1.3,
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "fNNBN",
+              "name": "Opt Desc",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.",
+              "lineHeight": 1.35,
+              "fontFamily": "$font-body",
+              "fontSize": 13,
+              "fontWeight": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hbIZX",
+      "x": 76,
+      "y": 30828,
+      "name": "Zona — Exploración Cerrar Sesión HU-06 (Oscuro)",
+      "width": 1410,
+      "height": 1160,
+      "fill": "#00000000",
+      "cornerRadius": 24,
+      "stroke": "$border",
+      "strokeWidth": 2,
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "CWvdi",
+      "x": 136,
+      "y": 30948,
+      "name": "Auth — Cerrar Sesión V3 · Acción neutral + opt-in de borrado, apagado (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "YgiGQ",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "wvncW",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "X6taeI",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "o7wWyM",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$primary-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "log-out",
+                      "fill": "$primary-on-soft"
+                    },
+                    "lmN3k": {
+                      "content": "Cerrar sesión",
+                      "enabled": true,
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+                      "fill": "$text-secondary",
+                      "fontSize": 14
+                    }
+                  }
+                },
+                {
+                  "id": "Bebnn",
+                  "type": "ref",
+                  "ref": "S533j9",
+                  "name": "Delete Opt-in Row",
+                  "width": "fill_container"
+                },
+                {
+                  "id": "bFKOj",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$primary"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "log-out"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Cerrar sesión"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "WXI8Z",
+      "x": 1036,
+      "y": 30948,
+      "name": "Auth — Cerrar Sesión V3 · Opt-in activado + aviso de cambios sin subir (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "YRUDc",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "YIIXS",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "IBS0V",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "T0BxS1",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$primary-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "log-out",
+                      "fill": "$primary-on-soft"
+                    },
+                    "lmN3k": {
+                      "content": "Cerrar sesión",
+                      "enabled": true,
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+                      "fill": "$text-secondary",
+                      "fontSize": 14
+                    }
+                  }
+                },
+                {
+                  "id": "vPRaZ",
+                  "type": "ref",
+                  "ref": "S533j9",
+                  "name": "Delete Opt-in Row (Activado)",
+                  "width": "fill_container",
+                  "fill": "$expense-soft",
+                  "stroke": "$expense",
+                  "strokeWidth": 2,
+                  "descendants": {
+                    "pp1Bf": {
+                      "fill": "$expense",
+                      "stroke": "$expense"
+                    },
+                    "PBLV7": {
+                      "enabled": true
+                    },
+                    "J2M7Nn": {
+                      "fill": "$expense-text"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "JMaY3",
+                  "name": "Unsynced Warning",
+                  "width": "fill_container",
+                  "fill": "$amber-soft",
+                  "cornerRadius": 16,
+                  "gap": 12,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "IzQJr",
+                      "name": "Warn Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "cloud-off",
+                      "library": "lucide",
+                      "fill": "$amber"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gf8Dv",
+                      "name": "Text Col",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Y6dOq",
+                          "name": "Warn Title",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Hay cambios que aún no se han subido",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "v06zrw",
+                          "name": "Warn Body",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "3 movimientos y 1 cuenta siguen guardados solo aquí. Si borras ahora, esos cambios no quedarán en la nube.",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "feZfq",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Borrar y salir"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "id": "pETAi",
+      "x": 1922,
+      "y": 29762,
+      "name": "N1 Copy contradictorio (Claro)",
+      "width": 400,
+      "height": 0,
+      "content": "[CRITICO] El mensaje del Sheet Icon Header sigue diciendo \"Tus cuentas y movimientos seguirán guardados en este teléfono\" mientras la casilla de borrado está MARCADA y el CTA dice \"Borrar y salir\". En este estado la promesa es falsa: sí se borran. Acción: sobrescribir el Message en la instancia activada por un texto que no prometa retención (ej. \"Dejarás de sincronizar hasta que vuelvas a iniciar sesión.\") y dejar la promesa de conservación solo en el estado apagado. Mismo arreglo en WXI8Z (oscuro)."
+    },
+    {
+      "type": "note",
+      "id": "cUdCA",
+      "x": 1722,
+      "y": 29867,
+      "name": "N2 Falta estado opt-in ON sin cola",
+      "width": 400,
+      "height": 0,
+      "content": "[IMPORTANTE] El estado \"activado\" solo existe en su peor caso (con aviso ámbar). Falta el frame más común: casilla marcada y sync al día, sin bloque ámbar. Sin él, quien implemente puede asumir que el aviso siempre acompaña al checkbox y que la altura del sheet es fija. Es un frame barato: copia de dpxOS sin el nodo CJeVa."
+    },
+    {
+      "type": "note",
+      "id": "D21IF",
+      "x": 1554,
+      "y": 30104,
+      "name": "N3 Aviso ámbar: contraste OK, no tocar",
+      "width": 400,
+      "height": 0,
+      "content": "[MENOR] Verificado independientemente: cuerpo del aviso $text-secondary sobre $amber-soft = 4.82:1 en claro y 4.77:1 en oscuro (pasa AA 4.5). Título $text-primary = 15.40:1 / 12.07:1; icono $amber = 3.82:1 / 9.87:1 (pasa 3:1). Recomendación: NO subir el cuerpo a $text-primary — aplanaría la jerarquía título/cuerpo por 0.3 puntos de margen que ya cumplen, y es el mismo par que ya se usa en todo el sheet. Sí documentar el par como verificado: si se recalibra $amber-soft, este bloque se rompe."
+    },
+    {
+      "type": "note",
+      "id": "nonh8",
+      "x": 1662,
+      "y": 30240,
+      "name": "N4 Pendientes de contenido",
+      "width": 400,
+      "height": 0,
+      "content": "[MENOR] \"3 movimientos y 1 cuenta\" es dato de mockup. Falta definir: regla de pluralización (0/1/N), si se enumeran entidades o se agrupa en \"N cambios\", y qué se muestra si el conteo es 0 (probablemente: no mostrar el aviso). Definir antes de implementar, no bloquea el diseño."
+    },
+    {
+      "type": "note",
+      "id": "K7JPNN",
+      "x": 1640,
+      "y": 30425,
+      "name": "N5 Sin estado de progreso",
+      "width": 400,
+      "height": 0,
+      "content": "[MENOR] No hay frame de \"Borrando…\" tras confirmar ni transición de aparición del aviso al marcar la casilla. No bloqueante para cerrar el diseño (mismo pendiente ya aceptado en HU-07 paso 1), pero el borrado local puede tardar lo suficiente como para necesitar feedback: dejarlo escrito como pendiente en auth.md."
+    },
+    {
+      "type": "note",
+      "id": "oy7MT",
+      "x": 1070,
+      "y": 30960,
+      "name": "N1b Copy contradictorio (Oscuro)",
+      "width": 400,
+      "height": 0,
+      "content": "[CRITICO] Mismo problema que en dpxOS: el header promete que los datos se conservan mientras la casilla de borrado está marcada y el CTA es \"Borrar y salir\". Corregir el Message de la instancia activada en ambos temas."
+    },
+    {
+      "type": "note",
+      "id": "lPOXe",
+      "x": 3100,
+      "y": 1373,
+      "name": "N6 Contrato del componente incompleto",
+      "width": 420,
+      "height": 0,
+      "content": "[IMPORTANTE] El `context` de S533j9 documenta bien los 4 overrides visuales del estado activado, pero omite lo que un implementador necesita para no reinventarlo:\n1) El área tocable es la FILA COMPLETA (350x112), no el checkbox de 24x24. Sin esto se implementa un target de 24px (falla el mínimo de 44).\n2) Marcar la casilla tiene consecuencias FUERA de la fila: el CTA cambia a $expense + trash-2 + \"Borrar y salir\", y el mensaje del header deja de prometer retención. Eso pertenece al contrato, no al frame.\n3) El estado se comunica por relleno + glifo `check` + borde 2px, no solo por color (cumple 1.4.1) — dejarlo escrito para que nadie lo \"simplifique\" a solo color.\nAcción: ampliar el `context` con estos 3 puntos."
+    },
+    {
+      "type": "note",
+      "id": "mGQ59",
+      "x": 3100,
+      "y": 1700,
+      "name": "N7 Decisiones validadas",
+      "width": 420,
+      "height": 0,
+      "content": "[MENOR — validación, no hallazgo] De acuerdo con NO unificar con K8SAG: la diferencia es de affordance (radio de elección excluyente sin default vs. checkbox de opt-in con default apagado), y Pencil no soporta variantes nombradas, así que fusionarlos obligaría a reconstruir el subárbol del indicador en cada instancia. Mantener separados.\nDe acuerdo con NO componentizar el bloque ámbar hoy: una sola instancia real en claro (la oscura es copia de tema). Reevaluar si aparece una segunda: el patrón \"callout ámbar\" (icono + título + cuerpo sobre $amber-soft) ya se insinúa en Presupuestos HU-12 (riesgo de sobregiro)."
+    },
+    {
+      "type": "frame",
+      "id": "c87DpD",
+      "x": 586,
+      "y": 29728,
+      "name": "Auth — Cerrar Sesión V3 · Opt-in activado, sync al día (Claro)",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "so8XN",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "acMh1",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "ocK7x",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "X89MRH",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$primary-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "log-out",
+                      "fill": "$primary-on-soft"
+                    },
+                    "lmN3k": {
+                      "content": "Cerrar sesión",
+                      "enabled": true,
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+                      "fill": "$text-secondary",
+                      "fontSize": 14
+                    }
+                  }
+                },
+                {
+                  "id": "F3DfF",
+                  "type": "ref",
+                  "ref": "S533j9",
+                  "name": "Delete Opt-in Row (Activado)",
+                  "width": "fill_container",
+                  "fill": "$expense-soft",
+                  "stroke": "$expense",
+                  "strokeWidth": 2,
+                  "descendants": {
+                    "pp1Bf": {
+                      "fill": "$expense",
+                      "stroke": "$expense"
+                    },
+                    "PBLV7": {
+                      "enabled": true
+                    },
+                    "J2M7Nn": {
+                      "fill": "$expense-text"
+                    }
+                  }
+                },
+                {
+                  "id": "C0jHp",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Borrar y salir"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Af1SN",
+      "x": 586,
+      "y": 30948,
+      "name": "Auth — Cerrar Sesión V3 · Opt-in activado, sync al día (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "GWFQf",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "q2cOE",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "QabUg",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "ZAxog",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$primary-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "log-out",
+                      "fill": "$primary-on-soft"
+                    },
+                    "lmN3k": {
+                      "content": "Cerrar sesión",
+                      "enabled": true,
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+                      "fill": "$text-secondary",
+                      "fontSize": 14
+                    }
+                  }
+                },
+                {
+                  "id": "TsYko",
+                  "type": "ref",
+                  "ref": "S533j9",
+                  "name": "Delete Opt-in Row (Activado)",
+                  "width": "fill_container",
+                  "fill": "$expense-soft",
+                  "stroke": "$expense",
+                  "strokeWidth": 2,
+                  "descendants": {
+                    "pp1Bf": {
+                      "fill": "$expense",
+                      "stroke": "$expense"
+                    },
+                    "PBLV7": {
+                      "enabled": true
+                    },
+                    "J2M7Nn": {
+                      "fill": "$expense-text"
+                    }
+                  }
+                },
+                {
+                  "id": "XsP2M",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Borrar y salir"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "themes": {

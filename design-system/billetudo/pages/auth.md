@@ -110,10 +110,25 @@ Con la casilla marcada, prometer que los datos "seguirán guardados" es **litera
 
 `$text-secondary` sobre `$amber-soft` en oscuro (cuerpo del aviso, 13px/500) da **4.77:1** contra un umbral de 4.5. Pasa, pero es el par más ajustado de la pantalla y **el primero que se rompe si alguna vez se recalibra `$amber-soft`**. Se evaluó subirlo a `$text-primary` (12:1) y se descartó: compra 0.27 puntos a cambio de aplanar la jerarquía título/cuerpo del bloque, y es el mismo par que ya usa el mensaje del header de este sheet, así que cambiarlo introduciría una inconsistencia interna.
 
+### Regla de conteo del aviso
+
+**Se agrupa en un total, nunca se enumeran entidades por tipo.** Enumerar obliga a pluralizar cada entidad y el texto crece sin control ("3 movimientos, 2 presupuestos, 1 cuenta y 1 meta…"), justo en un bloque que debe leerse de un vistazo antes de una acción irreversible.
+
+| N | Texto del cuerpo |
+|---|---|
+| 0 | El bloque **no se muestra** — es el estado `c87DpD` / `Af1SN` |
+| 1 | "1 cambio **sigue guardado** solo en este teléfono. Si borras ahora, **ese cambio no quedará** en la nube." |
+| >1 | "4 cambios **siguen guardados** solo en este teléfono. Si borras ahora, **esos cambios no quedarán** en la nube." |
+
+**La concordancia alcanza cinco palabras, no una** (`siguen/sigue`, `guardados/guardado`, `esos cambios/ese cambio`, `quedarán/quedará`). Implementarlo como `count == 1 ? 'cambio' : 'cambios'` deja el resto de la frase mal concordada. En los `.arb` esto exige **dos strings completos o un plural ICU sobre la frase entera**, nunca interpolar la palabra suelta.
+
+El título ("Hay cambios que aún no se han subido") es fijo, no varía con N.
+
+**Altura verificada empíricamente** con N=1, N=4 y N=128: el bloque se mantiene en 104px (3 líneas) en los tres casos, así que el número no descuadra el sheet.
+
 ### Pendiente antes de implementar
 
-- **Regla de conteo del aviso.** "3 movimientos y 1 cuenta" es dato de mockup. Falta definir la pluralización (0/1/N), si se enumeran entidades o se agrupa en "N cambios", y confirmar que con 0 pendientes el bloque no se muestra (estado `c87DpD`/`Af1SN`).
-- **Sin estado de "borrando…"** tras confirmar, ni frame de transición entre apagado y activado.
+- **Sin estado de "borrando…"** tras confirmar, ni frame de transición entre apagado y activado. Decisión: **no se diseña por ahora.** Borrar la SQLite local es rápido y el patrón de carga en el propio botón ya existe (`QD8kh`, Login). Si al implementar resulta perceptible, se agrega entonces — diseñarlo antes es especular sobre una latencia que nadie midió.
 - **Tap target:** el área tocable es la fila completa (350x112), **no** el checkbox de 24x24. Implementarlo sobre el checkbox incumple el mínimo de 44 de MASTER.
 
 ## Estructura (borrar cuenta — HU-07, flujo de 3 pasos)
