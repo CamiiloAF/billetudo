@@ -47,7 +47,7 @@ class SettingsPage extends StatelessWidget {
       envelopeEnabled: envelopeEnabled,
     );
     if (activate == true) {
-      await cubit.setZeroBasedEnabled(true);
+      await cubit.setZeroBasedEnabled(enabled: true);
     }
   }
 
@@ -96,7 +96,7 @@ class SettingsPage extends StatelessWidget {
                           onChanged: (value) => unawaited(
                             context
                                 .read<AppSettingsCubit>()
-                                .setZeroBasedEnabled(value),
+                                .setZeroBasedEnabled(enabled: value),
                           ),
                           onWhatIs: () => unawaited(
                             _openEnvelopeInfo(

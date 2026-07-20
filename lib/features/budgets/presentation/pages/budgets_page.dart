@@ -120,7 +120,7 @@ class BudgetsPageHeader extends StatelessWidget {
       case BudgetsMenuAction.history:
         onOpenHistory();
       case BudgetsMenuAction.toggleEnvelope:
-        await settings.setZeroBasedEnabled(!envelopeEnabled);
+        await settings.setZeroBasedEnabled(enabled: !envelopeEnabled);
       case BudgetsMenuAction.envelopeInfo:
         if (context.mounted) {
           final activate = await EnvelopeInfoSheet.show(
@@ -128,7 +128,7 @@ class BudgetsPageHeader extends StatelessWidget {
             envelopeEnabled: envelopeEnabled,
           );
           if (activate == true) {
-            await settings.setZeroBasedEnabled(true);
+            await settings.setZeroBasedEnabled(enabled: true);
           }
         }
     }
