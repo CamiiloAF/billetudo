@@ -50,9 +50,13 @@ class SnoozeSheet extends StatelessWidget {
     String? categoryIcon,
     String? categoryColor,
   }) =>
+      // Not `BottomSheetBase.show`: the body below already builds its own
+      // `BottomSheetBase` wrapper directly, so this keeps
+      // `showModalBottomSheet` as-is and just opts into the root navigator.
       showModalBottomSheet<ScheduledPaymentOccurrence>(
         context: context,
         isScrollControlled: true,
+        useRootNavigator: true,
         builder: (context) => SnoozeSheet(
           scheduledPaymentId: scheduledPaymentId,
           occurrenceDate: occurrenceDate,

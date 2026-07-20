@@ -19,14 +19,18 @@ class BottomSheetBase extends StatelessWidget {
 
   /// Opens [child] as a modal sheet with the feature's chrome.
   ///
-  /// [useRootNavigator] defaults to `false` (existing callers' behaviour
-  /// unchanged); pass `true` when the sheet opens from a page nested under a
-  /// shell route with a bottom nav bar, so the sheet covers it instead of
-  /// stopping above it.
+  /// [useRootNavigator] defaults to `true`: almost every page in this app is
+  /// nested under `HomeShellPage`'s `StatefulShellRoute.indexedStack`, and a
+  /// sheet opened on the branch navigator only covers its own branch,
+  /// leaving the bottom nav bar visible above it. Opening on the root
+  /// navigator instead makes the sheet cover the whole screen, nav bar
+  /// included — the behaviour every sheet in the app is expected to have.
+  /// Pass `false` only for the rare sheet that must stay scoped to its
+  /// branch, with a comment at the call site explaining why.
   static Future<T?> show<T>(
     BuildContext context, {
     required WidgetBuilder builder,
-    bool useRootNavigator = false,
+    bool useRootNavigator = true,
   }) =>
       showModalBottomSheet<T>(
         context: context,

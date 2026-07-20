@@ -24,9 +24,14 @@ class FutureDateScheduledPaymentPromptSheet extends StatelessWidget {
 
   /// Returns `true` when the user accepted turning the movement into a
   /// scheduled payment, `false` when they declined, `null` if dismissed.
+  // Not `BottomSheetBase.show`: this widget's `build` returns its content
+  // unwrapped (no `BottomSheetBase` padding/handle chrome around it), so
+  // this keeps `showModalBottomSheet` as-is and just opts into the root
+  // navigator.
   static Future<bool?> show(BuildContext context) => showModalBottomSheet<bool>(
         context: context,
         isScrollControlled: true,
+        useRootNavigator: true,
         builder: (context) => FutureDateScheduledPaymentPromptSheet(
           onAccept: () => Navigator.of(context).pop(true),
           onDecline: () => Navigator.of(context).pop(false),

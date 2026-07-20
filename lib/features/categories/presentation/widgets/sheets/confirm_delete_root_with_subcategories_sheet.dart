@@ -54,7 +54,6 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   }) =>
       BottomSheetBase.show<SubcategoryResolution>(
         context,
-        useRootNavigator: true,
         builder: (context) => ConfirmDeleteRootWithSubcategoriesSheet(
           categoryName: categoryName,
           subcategoryCount: subcategoryCount,

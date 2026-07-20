@@ -24,7 +24,6 @@ class BudgetsMenuSheet extends StatelessWidget {
   }) =>
       BottomSheetBase.show<BudgetsMenuAction>(
         context,
-        useRootNavigator: true,
         builder: (context) =>
             BudgetsMenuSheet(envelopeEnabled: envelopeEnabled),
       );

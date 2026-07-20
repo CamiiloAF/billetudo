@@ -20,9 +20,8 @@ class ConfirmDeleteTransactionSheet extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
-  /// Opens the sheet via [BottomSheetBase.show] (`useRootNavigator: true`),
-  /// so it covers the bottom nav bar even when the detail page sits under a
-  /// nested navigator.
+  /// Opens the sheet via [BottomSheetBase.show], which covers the bottom
+  /// nav bar even when the detail page sits under a nested navigator.
   static Future<void> show(
     BuildContext context, {
     required VoidCallback onConfirm,
@@ -30,7 +29,6 @@ class ConfirmDeleteTransactionSheet extends StatelessWidget {
   }) =>
       BottomSheetBase.show<void>(
         context,
-        useRootNavigator: true,
         builder: (context) => ConfirmDeleteTransactionSheet(
           onConfirm: onConfirm,
           onCancel: onCancel,

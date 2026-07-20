@@ -35,7 +35,6 @@ class ConfirmDeleteSimpleSheet extends StatelessWidget {
   }) =>
       BottomSheetBase.show<bool>(
         context,
-        useRootNavigator: true,
         builder: (context) => ConfirmDeleteSimpleSheet(
           budgetCount: budgetCount,
           isSubcategory: isSubcategory,

@@ -58,11 +58,17 @@ class ConfirmationSheet extends StatelessWidget {
     required PendingScheduledOccurrence source,
     List<PendingScheduledOccurrence> allPending = const [],
   }) =>
+      // Not `BottomSheetBase.show`: this sheet is not dismissible/draggable
+      // (criterion 7, no shortcut past it), which the helper doesn't expose,
+      // and it renders its own chrome instead of `BottomSheetBase`'s.
+      // `useRootNavigator: true` still applies so it covers the bottom nav
+      // bar like every other sheet in the app.
       showModalBottomSheet<ConfirmationSheetResult>(
         context: context,
         isScrollControlled: true,
         isDismissible: false,
         enableDrag: false,
+        useRootNavigator: true,
         builder: (context) =>
             ConfirmationSheet(source: source, allPending: allPending),
       );

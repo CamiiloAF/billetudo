@@ -58,7 +58,6 @@ class ConfirmDeleteWithTransactionsSheet extends StatefulWidget {
   }) =>
       BottomSheetBase.show<TransactionResolution>(
         context,
-        useRootNavigator: true,
         builder: (context) => ConfirmDeleteWithTransactionsSheet(
           categoryName: categoryName,
           transactionCount: transactionCount,
