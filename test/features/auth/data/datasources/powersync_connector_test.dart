@@ -436,15 +436,32 @@ void main() {
         expect(captured[0], isA<PostgrestException>());
         expect((captured[0] as PostgrestException).code, code);
         expect(captured[1], isA<StackTrace>());
-        expect(captured[2], allOf(isA<String>(), contains(code)));
+        // El contexto es el de descarte, no el de reintento: los dos caminos
+        // reportan, y no deben confundirse al leerlos en el crash reporter.
+        expect(
+          captured[2],
+          allOf(
+            isA<String>(),
+            contains(code),
+            contains('dropped'),
+            isNot(contains('retrying')),
+          ),
+        );
         expect(await queuedOps(db), 0);
       });
     }
 
-    for (final code in ['08006', '57014']) {
+    // `42P01` (undefined_table) es el caso real que motivó reportar los no
+    // fatales: una tabla que el cliente sincroniza pero que no existe en
+    // Postgres (pasó con `scheduled_payment_occurrences` y
+    // `scheduled_payment_tags`). Como la cola es FIFO y ese error nunca se
+    // resuelve solo, bloquea las escrituras de TODAS las tablas sin ningún
+    // síntoma en la app: reintentar sigue siendo lo correcto, pero tiene que
+    // dejar rastro.
+    for (final code in ['08006', '57014', '42P01']) {
       test(
-          'un error transitorio $code se relanza, no se reporta y deja la op '
-          'en la cola para reintento', () async {
+          'un error no fatal $code se reporta al CrashReporter, se relanza y '
+          'deja la op en la cola para reintento', () async {
         final supabase = await buildSupabase(
           signedInUserId: 'user-1',
           responder: (request) => postgrestError(request, code),
@@ -456,18 +473,36 @@ void main() {
         );
         final connector = PowerSyncConnector(supabase, crash);
 
+        // 1) Se relanza para que PowerSync reintente el batch.
         await expectLater(
           connector.uploadData(db),
-          throwsA(isA<PostgrestException>()),
+          throwsA(
+            isA<PostgrestException>().having((e) => e.code, 'code', code),
+          ),
         );
 
+        // 2) La op sigue en la cola: nunca se descarta (perdería datos).
         expect(await queuedOps(db), 1);
-        verifyNever(
+
+        // 3) Y además queda registrada, con el contexto de reintento (no el
+        // de descarte fatal) y con el código dentro.
+        final captured = verify(
           () => crash.recordError(
-            any(),
-            any(),
-            context: any(named: 'context'),
-            fatal: any(named: 'fatal'),
+            captureAny(),
+            captureAny(),
+            context: captureAny(named: 'context'),
+          ),
+        ).captured;
+        expect(captured[0], isA<PostgrestException>());
+        expect((captured[0] as PostgrestException).code, code);
+        expect(captured[1], isA<StackTrace>());
+        expect(
+          captured[2],
+          allOf(
+            isA<String>(),
+            contains(code),
+            contains('retrying'),
+            isNot(contains('dropped')),
           ),
         );
       });

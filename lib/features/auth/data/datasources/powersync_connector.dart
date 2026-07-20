@@ -99,6 +99,20 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
         return;
       }
       // Transient (network, timeout...): let PowerSync retry the batch.
+      //
+      // Reported anyway, because "retry forever" is only right when the cause
+      // really is transient. A schema mismatch — a table the client syncs but
+      // Postgres lacks — also lands here, and the queue is FIFO: that one op
+      // blocks every later write from every table, indefinitely and with no
+      // symptom in the app. That is how `scheduled_payment_occurrences` and
+      // `scheduled_payment_tags` sat missing from Postgres unnoticed. Retrying
+      // is still the right call (dropping the op would lose user data); what
+      // was missing is that somebody finds out.
+      await _crash.recordError(
+        e,
+        stackTrace,
+        context: 'PowerSync upload is retrying an op (code $code)',
+      );
       rethrow;
     }
   }
