@@ -8,7 +8,12 @@ import '../theme/app_colors.dart';
 /// Distinct from `SheetActionsHead`, whose subtitle is a short single-line
 /// label under a menu title; here the hint is a real sentence that wraps.
 class SheetHead extends StatelessWidget {
-  const SheetHead({required this.title, this.hint, super.key});
+  const SheetHead({
+    required this.title,
+    this.hint,
+    this.centered = false,
+    super.key,
+  });
 
   /// Already localized.
   final String title;
@@ -16,16 +21,22 @@ class SheetHead extends StatelessWidget {
   /// Already localized. `null` renders the title alone.
   final String? hint;
 
+  /// Some sheets centre their title (`u75wf` in `k7kv4`); most keep it left
+  /// aligned (`yHRaI` in `SfSln`).
+  final bool centered;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          centered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         Text(
           title,
+          textAlign: centered ? TextAlign.center : TextAlign.start,
           style: theme.textTheme.titleMedium?.copyWith(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -36,6 +47,7 @@ class SheetHead extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             hint,
+            textAlign: centered ? TextAlign.center : TextAlign.start,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w500,

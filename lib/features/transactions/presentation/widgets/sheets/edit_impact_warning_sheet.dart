@@ -42,11 +42,17 @@ class EditImpactWarningSheet extends StatelessWidget {
               child: Icon(LucideIcons.link, color: colors.amber, size: 28),
             ),
             const SizedBox(height: 16),
+            // `Sheet Icon Header`'s title (`lmN3k` in `XPjIZ`) is 17/700,
+            // not the theme's 22/500 `titleLarge`.
             Text(
               l10n.transactionEditImpactTitle,
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                height: 1.3,
+                color: colors.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             if (impact.affectsScheduledPayment)

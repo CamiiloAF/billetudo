@@ -7,6 +7,7 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/utils/money_formatter.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_head.dart';
 import '../../cubit/account_filter_cubit.dart';
 
 /// HU-06a: multiple-selection bottom sheet over the live account list, with
@@ -58,14 +59,9 @@ class AccountFilterSheetBody extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    l10n.accountFilterSheetTitle,
-                    // A sheet title is 700 in billetudo.pen (`ElVUc` in
-                    // `jpARf`), not the theme's baseline 500.
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
+                  // A sheet title is 17/700 in billetudo.pen (`ElVUc` in
+                  // `jpARf`), which is what `SheetHead` renders.
+                  child: SheetHead(title: l10n.accountFilterSheetTitle),
                 ),
                 TextButton(
                   onPressed: cubit.selectAll,

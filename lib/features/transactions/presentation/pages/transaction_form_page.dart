@@ -8,6 +8,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../core/widgets/sheet_head.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/presentation/cubit/accounts_list_cubit.dart';
 import '../../../accounts/presentation/cubit/accounts_list_state.dart';
@@ -453,7 +454,6 @@ class AccountPickerSheetBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     return BlocBuilder<AccountsListCubit, AccountsListState>(
       builder: (context, state) {
@@ -465,11 +465,11 @@ class AccountPickerSheetBody extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.transactionFormAccountChoose,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+            // The account sheet's title is 17/700 and centred in
+            // billetudo.pen (`fcVZN`), not the theme's 22/500 `titleLarge`.
+            SheetHead(
+              title: l10n.transactionFormAccountChoose,
+              centered: true,
             ),
             const SizedBox(height: 16),
             if (state.isLoading)

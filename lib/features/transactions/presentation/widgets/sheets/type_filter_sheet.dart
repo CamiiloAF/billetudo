@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_head.dart';
 import '../../../domain/entities/transaction.dart';
 
 /// HU-06's type filter sheet: income/expense/transfer, multiple selection.
@@ -44,15 +45,9 @@ class _TypeFilterSheetState extends State<TypeFilterSheet> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // A sheet title is 700 in billetudo.pen (`ivU3E` in `rjjfw`), not
-        // the theme's baseline 500.
-        Text(
-          l10n.typeFilterSheetTitle,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        // A sheet title is 17/700 in billetudo.pen (`ivU3E` in `rjjfw`),
+        // which is what `SheetHead` renders.
+        SheetHead(title: l10n.typeFilterSheetTitle),
         for (final type in TransactionType.values)
           CheckboxListTile(
             value: _selected.contains(type),

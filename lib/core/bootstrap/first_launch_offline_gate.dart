@@ -25,8 +25,7 @@ class FirstLaunchOfflineGate extends StatefulWidget {
   final Widget Function() builder;
 
   @override
-  State<FirstLaunchOfflineGate> createState() =>
-      _FirstLaunchOfflineGateState();
+  State<FirstLaunchOfflineGate> createState() => _FirstLaunchOfflineGateState();
 }
 
 class _FirstLaunchOfflineGateState extends State<FirstLaunchOfflineGate> {

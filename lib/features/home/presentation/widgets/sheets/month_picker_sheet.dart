@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_head.dart';
 import '../month_cell.dart';
 
 /// The month selector (HU-04): a year navigator ‹ 2026 › over a 3×4 grid of
@@ -46,7 +47,6 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final canGoForward = _year < widget.currentMonth.year;
 
@@ -54,11 +54,9 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.homeMonthPickerTitle,
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        // The month picker's title (`u75wf` in `k7kv4`) is 17/700 and
+        // centred, not the theme's 22/500 `titleLarge`.
+        SheetHead(title: l10n.homeMonthPickerTitle, centered: true),
         const SizedBox(height: 16),
         YearNavigator(
           year: _year,

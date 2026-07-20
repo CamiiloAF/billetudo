@@ -73,8 +73,8 @@ class ScheduledFinishedFilterView extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(0, 16, 0, 92),
                 child: ScheduledPaymentsErrorView(
                   onRetry: onRetry,
-                  title: AppLocalizations.of(context)
-                      .scheduledFinishedErrorTitle,
+                  title:
+                      AppLocalizations.of(context).scheduledFinishedErrorTitle,
                 ),
               ),
             ScheduledPaymentsListStatus.ready => ListView.separated(

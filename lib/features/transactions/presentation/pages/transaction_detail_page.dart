@@ -101,7 +101,8 @@ class TransactionDetailPage extends StatelessWidget {
                 TransactionDetailBody(
                   entry: entry,
                   onEdit: () => onEdit(entry.transaction.id),
-                  onDelete: context.read<TransactionDetailCubit>().requestDelete,
+                  onDelete:
+                      context.read<TransactionDetailCubit>().requestDelete,
                 ),
               TransactionDetailStatus.ready => const SizedBox.shrink(),
             },

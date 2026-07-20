@@ -7,6 +7,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../core/widgets/sheet_head.dart';
 import '../../domain/entities/category.dart';
 import '../cubit/parent_category_picker_cubit.dart';
 import '../cubit/parent_category_picker_state.dart';
@@ -88,11 +89,9 @@ class ParentCategoryPickerSheetBody extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title ?? l10n.categoryParentPickerTitle,
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        // A sheet title is 17/700 in billetudo.pen (`oj9LB` in `Q55fEz`),
+        // which is what `SheetHead` renders.
+        SheetHead(title: title ?? l10n.categoryParentPickerTitle),
         const SizedBox(height: 12),
         SizedBox(
           height: 320,

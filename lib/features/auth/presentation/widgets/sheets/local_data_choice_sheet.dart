@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_head.dart';
 import '../../../domain/entities/local_data_choice.dart';
 import '../../cubit/delete_account_cubit.dart';
 import '../../cubit/delete_account_state.dart';
@@ -45,11 +46,9 @@ class LocalDataChoiceSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.authDeleteStep2Title,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
+            // A sheet title is 17/700 in billetudo.pen (`lmN3k` in `K8SAG`'s
+            // `Sheet Icon Header`), which is what `SheetHead` renders.
+            SheetHead(title: l10n.authDeleteStep2Title),
             const SizedBox(height: 8),
             Text(
               l10n.authDeleteStep2Subtitle,

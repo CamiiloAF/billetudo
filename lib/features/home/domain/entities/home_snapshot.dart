@@ -41,11 +41,13 @@ class HomeSnapshot extends Equatable {
 
     // The hero's currency, when the month has no expenses, follows the active
     // accounts so a `$0` still reads in the user's money.
-    final currency =
-        accounts.isNotEmpty ? accounts.first.account.currency : fallbackCurrency;
+    final currency = accounts.isNotEmpty
+        ? accounts.first.account.currency
+        : fallbackCurrency;
 
     final recent = transactions
-        .where((entry) => activeAccountIds.contains(entry.transaction.accountId))
+        .where(
+            (entry) => activeAccountIds.contains(entry.transaction.accountId))
         .toList()
       ..sort((a, b) => b.transaction.date.compareTo(a.transaction.date));
 

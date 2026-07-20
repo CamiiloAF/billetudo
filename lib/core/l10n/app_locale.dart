@@ -37,8 +37,7 @@ abstract final class AppLocale {
         .map((locale) => locale.languageCode)
         .toSet();
 
-    final preferred =
-        preferredLocales ?? PlatformDispatcher.instance.locales;
+    final preferred = preferredLocales ?? PlatformDispatcher.instance.locales;
     for (final locale in preferred) {
       if (supportedLanguageCodes.contains(locale.languageCode)) {
         return locale.languageCode;

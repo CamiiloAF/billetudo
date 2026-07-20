@@ -85,7 +85,8 @@ class FirstLaunchOfflineScreen extends StatelessWidget {
                     child: FilledButton.icon(
                       onPressed: isRetrying
                           ? null
-                          : () => context.read<FirstLaunchOfflineCubit>().retry(),
+                          : () =>
+                              context.read<FirstLaunchOfflineCubit>().retry(),
                       icon: isRetrying
                           ? const SizedBox(
                               width: 18,

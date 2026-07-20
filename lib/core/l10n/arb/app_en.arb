@@ -270,6 +270,7 @@
   "dateFilterRangeLabel": "{start} - {end}",
   "tagFilterSheetTitle": "Filter by tag",
   "tagFilterSearchHint": "Search tag",
+  "tagFilterEmpty": "We couldn't find tags with that name",
   "newTagSheetTitle": "New tag",
   "newTagNameHint": "Tag name",
   "navHome": "Home",

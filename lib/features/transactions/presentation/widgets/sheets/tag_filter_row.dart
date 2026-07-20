@@ -33,37 +33,45 @@ class TagFilterRow extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected ? colors.primarySoft : colors.muted,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '#',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: selected
-                            ? colors.primaryOnSoft
-                            : colors.textSecondary,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: selected ? colors.primarySoft : colors.muted,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '#',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: selected
+                              ? colors.primaryOnSoft
+                              : colors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: colors.textPrimary,
+                    const SizedBox(width: 12),
+                    // The row has a fixed height, so a long tag name has to
+                    // truncate instead of overflowing it.
+                    Expanded(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textPrimary,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(
                 width: 24,

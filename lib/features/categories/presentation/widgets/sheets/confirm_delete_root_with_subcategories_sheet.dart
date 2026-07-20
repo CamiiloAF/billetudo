@@ -93,8 +93,7 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
           onTap: () async {
             final confirmed = await _confirmCascade(context, l10n);
             if ((confirmed ?? false) && context.mounted) {
-              Navigator.of(context)
-                  .pop(const SubcategoryResolution.cascade());
+              Navigator.of(context).pop(const SubcategoryResolution.cascade());
             }
           },
         ),

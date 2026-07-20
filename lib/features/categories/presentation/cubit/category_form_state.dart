@@ -92,8 +92,9 @@ class CategoryFormState extends Equatable {
   bool get isSubcategory => parentId != null;
   bool get kindLocked => kindLockReason != CategoryKindLockReason.none;
 
-  String? get failedField =>
-      failure is ValidationFailure ? (failure! as ValidationFailure).field : null;
+  String? get failedField => failure is ValidationFailure
+      ? (failure! as ValidationFailure).field
+      : null;
 
   CategoryFormState copyWith({
     CategoryFormStatus? status,

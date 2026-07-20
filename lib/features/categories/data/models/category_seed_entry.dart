@@ -35,6 +35,5 @@ class CategorySeedEntry {
   /// Picks the catalog name for [languageCode], falling back to Spanish for
   /// any language the catalog doesn't carry a translation for (today only
   /// `es`/`en` exist, matching `AppLocalizations.supportedLocales`).
-  String nameFor(String languageCode) =>
-      languageCode == 'en' ? nameEn : nameEs;
+  String nameFor(String languageCode) => languageCode == 'en' ? nameEn : nameEs;
 }

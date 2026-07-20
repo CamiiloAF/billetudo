@@ -64,9 +64,8 @@ class AccountsOverview extends Equatable {
       }
     }
 
-    final currencies = {...netWorthByCurrency.keys, ...debtByCurrency.keys}
-        .toList()
-      ..sort();
+    final currencies =
+        {...netWorthByCurrency.keys, ...debtByCurrency.keys}.toList()..sort();
     return AccountsOverview([
       for (final currency in currencies)
         CurrencySubtotal(

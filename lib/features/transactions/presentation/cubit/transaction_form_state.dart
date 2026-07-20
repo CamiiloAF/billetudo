@@ -139,8 +139,9 @@ class TransactionFormState extends Equatable {
   /// The failing field, when [failure] points at one — mirrors
   /// `AccountFormState.failedField` so the form can highlight the offending
   /// selector.
-  String? get failedField =>
-      failure is ValidationFailure ? (failure! as ValidationFailure).field : null;
+  String? get failedField => failure is ValidationFailure
+      ? (failure! as ValidationFailure).field
+      : null;
 
   TransactionFormState copyWith({
     TransactionFormStatus? status,

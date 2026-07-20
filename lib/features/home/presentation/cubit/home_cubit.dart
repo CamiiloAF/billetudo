@@ -72,8 +72,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> _subscribeTransactions(DateTime month) async {
     await _transactionsSub?.cancel();
-    _transactionsSub =
-        _watchMonthTransactions(month).listen(_onTransactions);
+    _transactionsSub = _watchMonthTransactions(month).listen(_onTransactions);
   }
 
   void _onAccounts(Result<List<AccountWithBalance>> result) {
@@ -96,8 +95,8 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
 
-    final failure = accounts.getLeft().toNullable() ??
-        transactions.getLeft().toNullable();
+    final failure =
+        accounts.getLeft().toNullable() ?? transactions.getLeft().toNullable();
     if (failure != null) {
       emit(state.copyWith(status: HomeStatus.failure, failure: failure));
       return;

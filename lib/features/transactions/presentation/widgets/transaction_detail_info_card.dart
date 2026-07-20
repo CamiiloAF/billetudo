@@ -54,7 +54,8 @@ class TransactionDetailInfoCard extends StatelessWidget {
       ),
       InfoRow(
         label: l10n.transactionDetailNoteLabel,
-        value: note == null || note.isEmpty ? l10n.transactionDetailNoNote : note,
+        value:
+            note == null || note.isEmpty ? l10n.transactionDetailNoNote : note,
       ),
       InfoRow(
         label: l10n.transactionDetailSourceLabel,

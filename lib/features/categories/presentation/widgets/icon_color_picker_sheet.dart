@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../core/widgets/sheet_head.dart';
 import '../utils/category_appearance.dart';
 import 'icon_tile.dart';
 
@@ -70,11 +71,9 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.categoryAppearancePickerTitle,
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        // A sheet title is 17/700 in billetudo.pen (`AIggi` in `lAxmS`),
+        // which is what `SheetHead` renders.
+        SheetHead(title: l10n.categoryAppearancePickerTitle),
         if (widget.colorLocked) ...[
           const SizedBox(height: 4),
           Text(
@@ -86,8 +85,9 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
         const SizedBox(height: 16),
         Text(
           l10n.categoryAppearanceIconSectionLabel,
-          // `Section Label` (`O1HK1l`) is 600, not the baseline 500.
+          // `Section Label` (`O1HK1l`) is 13/600, not the theme's 14/500.
           style: theme.textTheme.labelLarge?.copyWith(
+            fontSize: 13,
             color: colors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
@@ -118,8 +118,9 @@ class _IconColorPickerSheetState extends State<IconColorPickerSheet> {
           children: [
             Text(
               l10n.categoryAppearanceColorSectionLabel,
-              // `Section Label` (`QelD2`) is 600, not the baseline 500.
+              // `Section Label` (`QelD2`) is 13/600, not the theme's 14/500.
               style: theme.textTheme.labelLarge?.copyWith(
+                fontSize: 13,
                 color: colors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),

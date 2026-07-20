@@ -895,6 +895,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagFilterSearchHint => 'Search tag';
 
   @override
+  String get tagFilterEmpty => 'We couldn\'t find tags with that name';
+
+  @override
   String get newTagSheetTitle => 'New tag';
 
   @override

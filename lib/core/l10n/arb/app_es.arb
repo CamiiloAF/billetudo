@@ -679,6 +679,8 @@
   "@tagFilterSheetTitle": {},
   "tagFilterSearchHint": "Buscar etiqueta",
   "@tagFilterSearchHint": {},
+  "tagFilterEmpty": "No encontramos etiquetas con ese nombre",
+  "@tagFilterEmpty": {},
   "newTagSheetTitle": "Nueva etiqueta",
   "@newTagSheetTitle": {},
   "newTagNameHint": "Nombre de la etiqueta",

@@ -9,6 +9,8 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_head.dart';
+import '../../../../../core/widgets/sheet_list_viewport.dart';
 import '../../../../categories/domain/entities/category.dart';
 import '../../../../categories/domain/entities/category_node.dart';
 import '../../../../categories/presentation/cubit/categories_list_cubit.dart';
@@ -96,7 +98,6 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final searching = _query.trim().isNotEmpty;
 
@@ -108,12 +109,9 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.categorySelectTitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
+            // The title (`yHRaI` in `SfSln`) is 17/700 and left aligned,
+            // not the theme's 22/500 `titleLarge` centred.
+            SheetHead(title: l10n.categorySelectTitle),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
@@ -135,65 +133,70 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
               ),
             ),
             const SizedBox(height: 12),
-            if (state.isLoading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (nodes.isEmpty)
-              const CategorySelectEmptyState()
-            else
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 420),
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (final node in nodes)
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          CategorySelectRow(
-                            category: node.root,
-                            selected: node.root.id == widget.selectedId,
-                            showChevron: node.hasSubcategories && !searching,
-                            expanded:
-                                searching || state.isExpanded(node.root.id),
-                            onToggleExpand: () =>
-                                cubit.toggleExpanded(node.root.id),
-                            onTap: () => Navigator.of(context).pop(node.root),
-                          ),
-                          // Subcategories slide open/closed in step with the
-                          // root's chevron, on the shared motion tokens.
-                          AnimatedSize(
-                            duration: AppTheme.motionDuration,
-                            curve: AppTheme.motionCurve,
-                            alignment: Alignment.topCenter,
-                            child: (searching ||
-                                        state.isExpanded(node.root.id)) &&
-                                    node.subcategories.isNotEmpty
-                                ? Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      for (final sub in node.subcategories)
-                                        CategorySelectRow(
-                                          category: sub,
-                                          selected: sub.id == widget.selectedId,
-                                          isSubcategory: true,
-                                          onTap: () =>
-                                              Navigator.of(context).pop(sub),
-                                        ),
-                                    ],
-                                  )
-                                : const SizedBox(width: double.infinity),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
+            // Loading, "no matches" and the list all live inside the same
+            // fixed viewport, so typing in the search field never resizes the
+            // sheet.
+            SheetListViewport(
+              height: 420,
+              child: state.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : nodes.isEmpty
+                      ? const Center(child: CategorySelectEmptyState())
+                      : ListView(
+                          children: [
+                            for (final node in nodes)
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  CategorySelectRow(
+                                    category: node.root,
+                                    selected: node.root.id == widget.selectedId,
+                                    showChevron:
+                                        node.hasSubcategories && !searching,
+                                    expanded: searching ||
+                                        state.isExpanded(node.root.id),
+                                    onToggleExpand: () =>
+                                        cubit.toggleExpanded(node.root.id),
+                                    onTap: () =>
+                                        Navigator.of(context).pop(node.root),
+                                  ),
+                                  // Subcategories slide open/closed in step with the
+                                  // root's chevron, on the shared motion tokens.
+                                  AnimatedSize(
+                                    duration: AppTheme.motionDuration,
+                                    curve: AppTheme.motionCurve,
+                                    alignment: Alignment.topCenter,
+                                    child: (searching ||
+                                                state.isExpanded(
+                                                    node.root.id)) &&
+                                            node.subcategories.isNotEmpty
+                                        ? Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              for (final sub
+                                                  in node.subcategories)
+                                                CategorySelectRow(
+                                                  category: sub,
+                                                  selected: sub.id ==
+                                                      widget.selectedId,
+                                                  isSubcategory: true,
+                                                  onTap: () =>
+                                                      Navigator.of(context)
+                                                          .pop(sub),
+                                                ),
+                                            ],
+                                          )
+                                        : const SizedBox(
+                                            width: double.infinity),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+            ),
           ],
         );
       },

@@ -9,9 +9,11 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_list_viewport.dart';
 import '../../cubit/tag_filter_cubit.dart';
 import 'category_filter_header_action.dart';
 import 'new_tag_sheet.dart';
+import 'tag_filter_empty_state.dart';
 import 'tag_filter_row.dart';
 
 /// The multi-select tag sheet (`FL1gK`, "Sheet - Filtro de Etiqueta"):
@@ -201,19 +203,23 @@ class _TagFilterSheetBodyState extends State<TagFilterSheetBody> {
               ),
             ),
             const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  for (final tag in tags)
-                    TagFilterRow(
-                      name: tag.name,
-                      selected: state.selected.contains(tag.id),
-                      onTap: () => cubit.toggle(tag.id),
+            // The list lives in a fixed viewport so typing in the search
+            // field never resizes the sheet; an empty query result shows the
+            // "no matches" state instead of a blank gap.
+            SheetListViewport(
+              height: 360,
+              child: tags.isEmpty
+                  ? const Center(child: TagFilterEmptyState())
+                  : ListView(
+                      children: [
+                        for (final tag in tags)
+                          TagFilterRow(
+                            name: tag.name,
+                            selected: state.selected.contains(tag.id),
+                            onTap: () => cubit.toggle(tag.id),
+                          ),
+                      ],
                     ),
-                ],
-              ),
             ),
             const SizedBox(height: 12),
             SizedBox(

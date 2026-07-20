@@ -69,7 +69,8 @@ class IconTile extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: stroke, width: 2),
           ),
-          child: Icon(CategoryAppearance.iconFor(iconName), size: 24, color: fg),
+          child:
+              Icon(CategoryAppearance.iconFor(iconName), size: 24, color: fg),
         ),
       ),
     );

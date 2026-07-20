@@ -107,16 +107,15 @@ class _ConfirmDeleteWithTransactionsSheetState
             child: Text(l10n.commonCancel),
           ),
           right: FilledButton.icon(
-            onPressed:
-                _choice == _Choice.reassign && _targetCategoryId == null
-                    ? null
-                    : () => Navigator.of(context).pop(
-                          _choice == _Choice.reassign
-                              ? TransactionResolution.reassign(
-                                  _targetCategoryId!,
-                                )
-                              : const TransactionResolution.clear(),
-                        ),
+            onPressed: _choice == _Choice.reassign && _targetCategoryId == null
+                ? null
+                : () => Navigator.of(context).pop(
+                      _choice == _Choice.reassign
+                          ? TransactionResolution.reassign(
+                              _targetCategoryId!,
+                            )
+                          : const TransactionResolution.clear(),
+                    ),
             icon: const Icon(LucideIcons.arrowRight),
             label: Text(l10n.commonContinue),
           ),

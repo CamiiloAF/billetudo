@@ -1682,6 +1682,12 @@ abstract class AppLocalizations {
   /// **'Buscar etiqueta'**
   String get tagFilterSearchHint;
 
+  /// No description provided for @tagFilterEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos etiquetas con ese nombre'**
+  String get tagFilterEmpty;
+
   /// No description provided for @newTagSheetTitle.
   ///
   /// In es, this message translates to:

@@ -1,6 +1,8 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/sheet_list_viewport.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/sheets/tag_filter_empty_state.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/tag_filter_row.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/tag_filter_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -107,6 +109,32 @@ void main() {
 
     await tester.tap(find.text('comida'));
     verify(() => cubit.toggle('tag-1')).called(1);
+  });
+
+  testWidgets('el alto del viewport no cambia al filtrar', (tester) async {
+    await tester.pumpWidget(appWith(null, null));
+
+    final before = tester.getSize(find.byType(SheetListViewport)).height;
+
+    await tester.enterText(find.byType(TextField), 'via');
+    await tester.pump();
+    expect(tester.getSize(find.byType(SheetListViewport)).height, before);
+
+    await tester.enterText(find.byType(TextField), 'zzz');
+    await tester.pump();
+    expect(tester.getSize(find.byType(SheetListViewport)).height, before);
+  });
+
+  testWidgets('sin coincidencias muestra el estado vacío, no un hueco',
+      (tester) async {
+    await tester.pumpWidget(appWith(null, null));
+
+    await tester.enterText(find.byType(TextField), 'zzz');
+    await tester.pump();
+
+    expect(find.byType(TagFilterRow), findsNothing);
+    expect(find.byType(TagFilterEmptyState), findsOneWidget);
+    expect(find.text('No encontramos etiquetas con ese nombre'), findsOneWidget);
   });
 
   testWidgets('cada fila usa el carácter "#" en vez de un ícono Lucide',

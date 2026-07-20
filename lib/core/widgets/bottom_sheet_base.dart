@@ -37,11 +37,16 @@ class BottomSheetBase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: child,
+    // The keyboard inset lifts the whole sheet instead of covering it, so the
+    // search field of a filtering sheet stays visible while typing.
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: child,
+        ),
       ),
     );
   }
@@ -92,8 +97,14 @@ class SheetMessage extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700),
+            // `Sheet Icon Header`'s title (`lmN3k` in `XPjIZ`) is 17/700 with
+            // a 1.3 line height, not the theme's 22/500 `titleLarge`.
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
+              color: colors.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
         ],
