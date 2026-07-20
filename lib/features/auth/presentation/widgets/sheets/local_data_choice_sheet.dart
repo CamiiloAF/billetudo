@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
-import '../../../../../core/widgets/sheet_head.dart';
 import '../../../domain/entities/local_data_choice.dart';
 import '../../cubit/delete_account_cubit.dart';
 import '../../cubit/delete_account_state.dart';
@@ -35,7 +36,7 @@ class LocalDataChoiceSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final colors = context.colors;
 
     return BlocBuilder<DeleteAccountCubit, DeleteAccountState>(
       builder: (context, state) {
@@ -44,16 +45,20 @@ class LocalDataChoiceSheet extends StatelessWidget {
 
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // A sheet title is 17/700 in billetudo.pen (`lmN3k` in `K8SAG`'s
-            // `Sheet Icon Header`), which is what `SheetHead` renders.
-            SheetHead(title: l10n.authDeleteStep2Title),
-            const SizedBox(height: 8),
-            Text(
-              l10n.authDeleteStep2Subtitle,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            // `K8SAG`'s header (`zLjcF`) is a `Sheet Icon Header`: a 56px
+            // `$primary-soft` circle with the `phone` glyph in
+            // `$primary-on-soft`, a centred 17/700 title and a centred 14
+            // `$text-secondary` subtitle — same treatment as Cerrar sesión,
+            // not a left-aligned `SheetHead`.
+            SheetMessage(
+              icon: LucideIcons.phone,
+              iconColor: colors.primaryOnSoft,
+              iconBackground: colors.primarySoft,
+              title: l10n.authDeleteStep2Title,
+              message: l10n.authDeleteStep2Subtitle,
+              messageColor: colors.textSecondary,
+              messageFontSize: 14,
             ),
             const SizedBox(height: 20),
             LocalDataChoiceRow(
@@ -77,6 +82,15 @@ class LocalDataChoiceSheet extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
+                // Disabled keeps the brand violet at 0.4 opacity (`GamyH` in
+                // billetudo.pen), the same pattern Cuentas uses, instead of
+                // Material's default grey.
+                style: FilledButton.styleFrom(
+                  disabledBackgroundColor:
+                      colors.primary.withValues(alpha: 0.4),
+                  disabledForegroundColor:
+                      colors.onPrimary.withValues(alpha: 0.4),
+                ),
                 onPressed: !state.canContinueFromChoice || isLoading
                     ? null
                     : cubit.confirmLocalDataChoice,
@@ -86,7 +100,17 @@ class LocalDataChoiceSheet extends StatelessWidget {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(l10n.authDeleteStep2Cta),
+                    // `lsZwE` renders the CTA as a `Button/Primary` with the
+                    // `arrow-right` glyph (18px) to the left of "Continuar",
+                    // same icon-left treatment as merge_confirmation's CTA.
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(LucideIcons.arrowRight, size: 18),
+                          const SizedBox(width: 8),
+                          Text(l10n.authDeleteStep2Cta),
+                        ],
+                      ),
               ),
             ),
           ],

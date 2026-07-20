@@ -2093,7 +2093,7 @@ abstract class AppLocalizations {
   /// No description provided for @authDeleteStep1Message.
   ///
   /// In es, this message translates to:
-  /// **'Vamos a borrar tus cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta en la nube. Esta acción no se puede deshacer.'**
+  /// **'Esta acción es irreversible. Se borrarán para siempre todos tus datos en la nube: cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta.'**
   String get authDeleteStep1Message;
 
   /// No description provided for @authDeleteStep1Cta.
@@ -2111,7 +2111,7 @@ abstract class AppLocalizations {
   /// No description provided for @authDeleteStep1ErrorMessage.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.'**
+  /// **'Hubo un problema para conectar con el servidor y no pudimos completar la solicitud. Tus datos siguen a salvo en este dispositivo — intenta de nuevo.'**
   String get authDeleteStep1ErrorMessage;
 
   /// No description provided for @authDeleteStep2Title.
@@ -2123,7 +2123,7 @@ abstract class AppLocalizations {
   /// No description provided for @authDeleteStep2Subtitle.
   ///
   /// In es, this message translates to:
-  /// **'Tu cuenta en la nube ya se eliminó. Esto es solo sobre este dispositivo.'**
+  /// **'Tu cuenta en la nube ya fue eliminada. Elige qué pasa con lo que queda guardado aquí, en este dispositivo.'**
   String get authDeleteStep2Subtitle;
 
   /// No description provided for @authDeleteStep2KeepTitle.

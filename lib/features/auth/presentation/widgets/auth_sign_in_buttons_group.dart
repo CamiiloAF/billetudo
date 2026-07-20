@@ -54,6 +54,7 @@ class AuthSignInButtonsGroup extends StatelessWidget {
         ],
         GoogleSignInButton(
           label: l10n.authContinueWithGoogle,
+          loadingLabel: l10n.authGoogleLoading,
           isLoading: isGoogleLoading,
           onPressed: onGoogle,
         ),

@@ -1127,7 +1127,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeleteStep1Message =>
-      'We\'re about to delete your accounts, transactions, categories and everything else tied to your account in the cloud. This can\'t be undone.';
+      'This action is irreversible. All your cloud data will be permanently deleted: accounts, transactions, categories and everything else tied to your account.';
 
   @override
   String get authDeleteStep1Cta => 'Delete account';
@@ -1137,7 +1137,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeleteStep1ErrorMessage =>
-      'Your data is still safe on this device. Try again once you have a connection.';
+      'There was a problem connecting to the server and we couldn\'t complete the request. Your data is still safe on this device — try again.';
 
   @override
   String get authDeleteStep2Title =>
@@ -1145,7 +1145,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeleteStep2Subtitle =>
-      'Your cloud account is already deleted. This is only about this device.';
+      'Your cloud account has already been deleted. Choose what happens to what\'s still saved here, on this device.';
 
   @override
   String get authDeleteStep2KeepTitle => 'Keep my data on this device';

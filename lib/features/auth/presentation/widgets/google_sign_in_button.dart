@@ -17,18 +17,27 @@ import 'google_logo_mark.dart';
 class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({
     required this.label,
+    required this.loadingLabel,
     required this.onPressed,
     this.isLoading = false,
     super.key,
   });
 
   final String label;
+
+  /// Shown in place of [label] while [isLoading] — "Conectando con Google…"
+  /// per the loading frame (`QD8kh`), which swaps the label too, not only the
+  /// logo for the spinner.
+  final String loadingLabel;
   final VoidCallback? onPressed;
   final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    // The loading frame (`QD8kh`) mutes the whole content to `$text-secondary`
+    // and bumps the label to 700; the resting button stays `$text-primary`/600.
+    final contentColor = isLoading ? colors.textSecondary : colors.textPrimary;
 
     return SizedBox(
       height: 50,
@@ -52,14 +61,14 @@ class GoogleSignInButton extends StatelessWidget {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: colors.textPrimary,
+                  color: contentColor,
                 ),
               )
             else
               const GoogleLogoMark(),
             const SizedBox(width: 12),
             Text(
-              label,
+              isLoading ? loadingLabel : label,
               // 'Roboto' isn't bundled in assets/fonts/ (only Plus Jakarta
               // Sans is, see pubspec.yaml) — this falls back to the platform
               // default, which is Roboto on Android anyway. Both brand
@@ -67,8 +76,8 @@ class GoogleSignInButton extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: colors.textPrimary,
+                fontWeight: isLoading ? FontWeight.w700 : FontWeight.w600,
+                color: contentColor,
               ),
             ),
           ],
