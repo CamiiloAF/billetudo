@@ -1,0 +1,25 @@
+# Instalar:  flutter pub add dev:flutter_launcher_icons
+# Generar:   dart run flutter_launcher_icons
+#
+# Copia este bloque a pubspec.yaml (o usa este archivo con -f).
+# Requiere que los PNG de assets/branding/ estén dentro del proyecto Flutter.
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true                 # iOS no admite transparencia en el ícono
+  image_path: "assets/branding/ic_launcher_master.png"        # 1024, full-bleed
+  # --- Android adaptive (API 26+) ---
+  adaptive_icon_background: "assets/branding/ic_launcher_bg.png"    # capa de fondo (degradado)
+  adaptive_icon_foreground: "assets/branding/ic_launcher_fg.png"    # "b" + moneda en zona segura
+  min_sdk_android: 21
+
+  # --- iOS 18 (opcional, flutter_launcher_icons >= 0.14) ---
+  # image_path_ios_dark_transparent: "assets/branding/ic_launcher_fg.png"
+  # image_path_ios_tinted_grayscale: "assets/branding/ic_launcher_fg.png"
+
+# NOTA sobre flavors (dev/prod): la app corre en flavors nativos separados
+# (ver README). flutter_launcher_icons puede generar por flavor con la clave
+# `flutter_launcher_icons-dev:` / `flutter_launcher_icons-prod:` y el flag
+# `--flavor`. Para "Billetudo Dev" conviene un ícono con badge distinto; si se
+# quiere, se genera una variante del master con una cinta/― esquina "DEV".
