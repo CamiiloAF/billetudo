@@ -13,8 +13,8 @@ import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
-import '../../features/auth/domain/entities/local_data_choice.dart';
-import '../../features/auth/domain/usecases/wipe_local_data.dart';
+import '../../features/auth/domain/entities/sign_out_outcome.dart';
+import '../../features/auth/domain/usecases/sign_out_with_local_data_choice.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/merge_cubit.dart';
@@ -455,16 +455,9 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
       ],
     );
 
-/// HU-06: signing out, optionally wiping this device.
-///
-/// Order matters: **sign out first, wipe second.** Signing out disconnects
-/// PowerSync, so nothing can re-download while the wipe runs. The other way
-/// around, a `signOut` that failed after the wipe would leave a live session
-/// over an empty database and sync would pull everything back — the delete
-/// would have achieved nothing.
-///
-/// If the wipe fails the session is already closed, so the user is told their
-/// data is still here instead of being handed a false success.
+/// HU-06: shows the sheet and turns the outcome into UI. The ordering rule
+/// (sign out first, wipe second) and the "wipe failed but the session is gone"
+/// case live in [SignOutWithLocalDataChoice], where they can be tested.
 Future<void> _confirmSignOut(BuildContext context) async {
   final cubit = getIt<SignOutSheetCubit>();
   unawaited(cubit.start());
@@ -475,23 +468,22 @@ Future<void> _confirmSignOut(BuildContext context) async {
     return; // cancelled
   }
 
-  await getIt<AuthCubit>().signOut();
-  if (choice == LocalDataChoice.keep) {
-    return;
-  }
-
-  final result = await getIt<WipeLocalData>()();
+  final outcome = await getIt<SignOutWithLocalDataChoice>()(choice);
   if (!context.mounted) {
     return;
   }
-  final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
-  result.fold(
-    (_) => messenger.showSnackBar(
-      SnackBar(content: Text(l10n.authSignOutWipeErrorMessage)),
-    ),
-    (_) {},
-  );
+  switch (outcome) {
+    case SignedOutKeepingData():
+    case SignedOutAndWiped():
+      break;
+    case SignedOutButWipeFailed():
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(AppLocalizations.of(context).authSignOutWipeErrorMessage),
+        ),
+      );
+  }
 }
 
 // Nested under `more` (not a branch-root route): Ajustes has a `Page Header`

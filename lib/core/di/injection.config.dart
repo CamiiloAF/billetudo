@@ -99,6 +99,8 @@ import 'package:billetudo/features/auth/domain/usecases/sign_in_with_google.dart
     as _i1044;
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart'
     as _i1066;
+import 'package:billetudo/features/auth/domain/usecases/sign_out_with_local_data_choice.dart'
+    as _i675;
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart'
     as _i716;
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart'
@@ -745,6 +747,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i141.ParentCategoryPickerCubit(
               gh<_i172.WatchParentCandidates>(),
               gh<_i722.WatchCategories>(),
+            ));
+    gh.factory<_i675.SignOutWithLocalDataChoice>(
+        () => _i675.SignOutWithLocalDataChoice(
+              gh<_i1066.SignOut>(),
+              gh<_i537.WipeLocalData>(),
             ));
     gh.factory<_i385.ConfirmationSheetCubit>(() => _i385.ConfirmationSheetCubit(
           gh<_i1034.ConfirmScheduledOccurrence>(),
