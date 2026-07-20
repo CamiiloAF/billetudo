@@ -382,8 +382,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i533.AccountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i835.LocalDataSummaryDatasource>(
         () => _i835.LocalDataSummaryDatasource(gh<_i249.AppDatabase>()));
-    gh.lazySingleton<_i173.LocalDataWipeDatasource>(
-        () => _i173.LocalDataWipeDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i99.BudgetsLocalDatasource>(
         () => _i99.BudgetsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
@@ -400,6 +398,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i556.TransactionsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i130.SyncStatusSource>(
         () => _i358.PowerSyncStatusSource(gh<_i433.PowerSyncDatabase>()));
+    gh.lazySingleton<_i173.LocalDataWipeDatasource>(
+        () => _i173.LocalDataWipeDatasource(gh<_i433.PowerSyncDatabase>()));
     gh.lazySingleton<_i654.TransactionRepository>(
         () => _i10.TransactionRepositoryImpl(
               gh<_i556.TransactionsLocalDatasource>(),

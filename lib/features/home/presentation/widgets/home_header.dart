@@ -45,7 +45,7 @@ class HomeHeader extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final initial = _initial;
     final greeting = user != null
-        ? l10n.homeGreetingNamed(user!.displayName)
+        ? l10n.homeGreetingNamed(user!.displayName.split(' ').first)
         : l10n.homeGreeting;
 
     return Row(
