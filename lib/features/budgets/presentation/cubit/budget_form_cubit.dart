@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/usecases/create_budget.dart';
@@ -83,8 +84,27 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
             : state.copyWith(amountMinor: amountMinor),
       );
 
-  void currencyChanged(String currency) =>
-      emit(state.copyWith(currency: currency));
+  /// Switching currency keeps the figure and only re-cuts its precision: COP
+  /// shows no cents, so a USD `1.234,56` becomes `1.235`
+  /// ([MoneyFormatter.roundToCurrencyPrecision] explains why half-up and not
+  /// truncation). The stored amount is rounded here, in the cubit, so the
+  /// field can never display a figure the state does not hold. No FX
+  /// conversion happens — the number itself is the user's, only its currency
+  /// label changed.
+  void currencyChanged(String currency) {
+    if (currency == state.currency) {
+      return;
+    }
+    final amountMinor = state.amountMinor;
+    emit(
+      state.copyWith(
+        currency: currency,
+        amountMinor: amountMinor == null
+            ? null
+            : MoneyFormatter.roundToCurrencyPrecision(amountMinor, currency),
+      ),
+    );
+  }
 
   /// HU-03: switching between "Periódico" and "Una única vez". A one-off must
   /// carry an end date; a periodic budget keeps whatever end (or none) it had.

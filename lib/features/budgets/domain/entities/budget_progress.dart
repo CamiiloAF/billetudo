@@ -59,7 +59,7 @@ class BudgetProgress extends Equatable {
     if (amountMinor <= 0 || scheduledMinor <= 0) {
       return 0;
     }
-    final spentFraction = fraction < 0 ? 0 : fraction;
+    final spentFraction = fraction < 0 ? 0.0 : fraction;
     final remaining = 1 - spentFraction;
     if (remaining <= 0) {
       return 0;
@@ -74,5 +74,6 @@ class BudgetProgress extends Equatable {
   bool get isOverspent => spentMinor > amountMinor;
 
   @override
-  List<Object?> get props => [amountMinor, spentMinor, daysLeft, scheduledMinor];
+  List<Object?> get props =>
+      [amountMinor, spentMinor, daysLeft, scheduledMinor];
 }

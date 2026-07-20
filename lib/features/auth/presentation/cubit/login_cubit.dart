@@ -50,15 +50,16 @@ class LoginCubit extends Cubit<LoginState> {
       if (isClosed) {
         return;
       }
-      // Reached only until PowerSync/Supabase are wired (see
-      // AuthRepositoryImpl._completeSignIn) — the backend half of sign-in
-      // throws `UnimplementedError` today, so the screen surfaces it as a
-      // regular sign-in failure instead of crashing.
+      // Last-resort net so a provider SDK throwing something unmapped shows
+      // as a sign-in error instead of crashing the screen. The cause is kept
+      // intact — an earlier version flattened everything into a fixed
+      // "auth backend not wired yet" message, which hid real failures once
+      // the backend was in fact wired.
       emit(
         state.copyWith(
           status: LoginStatus.error,
-          failure: NetworkFailure(
-            'auth backend not wired yet',
+          failure: UnexpectedFailure(
+            'sign-in failed unexpectedly',
             cause: e,
             stackTrace: st,
           ),

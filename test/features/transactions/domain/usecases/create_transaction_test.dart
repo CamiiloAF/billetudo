@@ -53,8 +53,7 @@ void main() {
 
   test('HU-01: rechaza un gasto sin categoría antes de llegar al repositorio',
       () async {
-    final result =
-        await createTransaction(buildExpenseDraft(categoryId: null));
+    final result = await createTransaction(buildExpenseDraft(categoryId: null));
 
     expect(
       (result.getLeft().toNullable()! as ValidationFailure).field,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:billetudo/core/database/database_connection.dart';
@@ -10,6 +11,8 @@ import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasou
 import 'package:billetudo/features/auth/data/datasources/powersync_connector.dart';
 import 'package:billetudo/features/auth/data/models/social_credential.dart';
 import 'package:billetudo/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/merge_summary.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -54,6 +57,53 @@ void main() {
   late Directory tempDir;
   late MockPowerSyncConnector connector;
   late AuthRepositoryImpl repository;
+  // Feeds `GoTrueClient.onAuthStateChange`, which the repository's
+  // constructor now subscribes to. Broadcast so more than one repository
+  // instance (a test that rebuilds one with a restored session) can listen,
+  // and never closed mid-test so no listener sees an unexpected `onDone`.
+  late StreamController<AuthState> authStateChanges;
+  late List<AuthRepositoryImpl> builtRepositories;
+
+  /// Builds a repository against the current stubs. Every instance is torn
+  /// down in `tearDown` so its auth-state listener doesn't leak into the
+  /// next test.
+  AuthRepositoryImpl buildRepository() {
+    final built = AuthRepositoryImpl(
+      google,
+      apple,
+      summaries,
+      wipe,
+      ownership,
+      supabase,
+      powerSync,
+      connector,
+    );
+    builtRepositories.add(built);
+    return built;
+  }
+
+  /// A Supabase session for [user], as `auth.currentSession` would return it
+  /// after `supabase_flutter` restored it from disk on relaunch.
+  Session sessionFor(User user) => Session(
+        accessToken: 'access-token',
+        tokenType: 'bearer',
+        user: user,
+      );
+
+  User supabaseUser({
+    required String id,
+    Map<String, dynamic> appMetadata = const {},
+    Map<String, dynamic> userMetadata = const {},
+    String? email,
+  }) =>
+      User(
+        id: id,
+        appMetadata: appMetadata,
+        userMetadata: userMetadata,
+        email: email,
+        aud: 'authenticated',
+        createdAt: DateTime(2026, 7, 15).toIso8601String(),
+      );
 
   setUp(() async {
     google = MockGoogleAuthDatasource();
@@ -72,24 +122,34 @@ void main() {
     );
     connector = MockPowerSyncConnector();
 
+    authStateChanges = StreamController<AuthState>.broadcast();
+    builtRepositories = [];
+
     when(() => supabase.functions).thenReturn(functions);
     when(() => supabase.auth).thenReturn(auth);
     when(() => auth.signOut()).thenAnswer((_) async {});
     when(() => google.signOutSilently()).thenAnswer((_) async {});
+    when(() => auth.onAuthStateChange)
+        .thenAnswer((_) => authStateChanges.stream);
+    // Default for every existing test: no session persisted from a previous
+    // run, i.e. the app relaunches signed out.
+    when(() => auth.currentSession).thenReturn(null);
+    // `PowerSyncDatabase` cannot be mocked (see above), so the connector is
+    // the observable proxy for "did the repository connect?": a real
+    // `connect()` asks it for credentials within milliseconds. Returning null
+    // keeps the sync loop from ever reaching the network.
+    when(() => connector.fetchCredentials()).thenAnswer((_) async => null);
+    when(() => connector.getCredentialsCached()).thenAnswer((_) async => null);
+    when(() => connector.prefetchCredentials()).thenAnswer((_) async => null);
 
-    repository = AuthRepositoryImpl(
-      google,
-      apple,
-      summaries,
-      wipe,
-      ownership,
-      supabase,
-      powerSync,
-      connector,
-    );
+    repository = buildRepository();
   });
 
   tearDown(() async {
+    for (final built in builtRepositories) {
+      await built.dispose();
+    }
+    await authStateChanges.close();
     await powerSync.close();
     await tempDir.delete(recursive: true);
   });
@@ -254,5 +314,244 @@ void main() {
         expect((result as Left).value, isA<NetworkFailure>());
       },
     );
+  });
+
+  group('session restore on construction', () {
+    /// Waits until the repository asked the connector for credentials, which
+    /// only happens because `PowerSyncDatabase.connect()` was called.
+    Future<void> expectConnected() => untilCalled(
+          () => connector.fetchCredentials(),
+        ).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => fail(
+            'PowerSync was never connected: the connector was never asked '
+            'for credentials.',
+          ),
+        );
+
+    test(
+      'rebuilds the signed-in session from the persisted Supabase session '
+      'and starts sync (regression: every relaunch used to come up signed '
+      'out with sync off)',
+      () async {
+        await repository.dispose();
+        when(() => auth.currentSession).thenReturn(
+          sessionFor(
+            supabaseUser(
+              id: 'user-7',
+              userMetadata: const {
+                'full_name': 'Ana',
+                'avatar_url': 'https://example.com/ana.png',
+              },
+              email: 'ana@example.com',
+            ),
+          ),
+        );
+
+        final restored = buildRepository();
+
+        expect(restored.currentSession.isSignedIn, isTrue);
+        final user = restored.currentSession.user!;
+        expect(user.id, 'user-7');
+        expect(user.displayName, 'Ana');
+        expect(user.email, 'ana@example.com');
+        expect(user.avatarUrl, 'https://example.com/ana.png');
+        expect(user.provider, AuthProvider.google);
+        await expectConnected();
+      },
+    );
+
+    test(
+      'stays signed out and does not start sync when there is no persisted '
+      'session',
+      () async {
+        // `repository` was built in setUp with `currentSession` == null.
+        expect(repository.currentSession, const AuthSession.signedOut());
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        verifyNever(() => connector.fetchCredentials());
+      },
+    );
+
+    test('maps the Apple provider from the Supabase app metadata', () async {
+      await repository.dispose();
+      when(() => auth.currentSession).thenReturn(
+        sessionFor(
+          supabaseUser(
+            id: 'user-1',
+            appMetadata: const {'provider': 'apple'},
+          ),
+        ),
+      );
+
+      final restored = buildRepository();
+
+      expect(restored.currentSession.user!.provider, AuthProvider.apple);
+    });
+
+    test(
+      'falls back to the email as display name when the user metadata has '
+      'no name',
+      () async {
+        await repository.dispose();
+        when(() => auth.currentSession).thenReturn(
+          sessionFor(supabaseUser(id: 'user-1', email: 'sin.nombre@example.com')),
+        );
+
+        final restored = buildRepository();
+
+        expect(
+          restored.currentSession.user!.displayName,
+          'sin.nombre@example.com',
+        );
+      },
+    );
+
+    test(
+      'falls back to an empty display name rather than dropping a session '
+      'with neither name nor email',
+      () async {
+        await repository.dispose();
+        when(() => auth.currentSession).thenReturn(sessionFor(supabaseUser(id: 'user-1')));
+
+        final restored = buildRepository();
+
+        expect(restored.currentSession.isSignedIn, isTrue);
+        expect(restored.currentSession.user!.displayName, '');
+      },
+    );
+
+    test('prefers name over email when full_name is absent', () async {
+      await repository.dispose();
+      when(() => auth.currentSession).thenReturn(
+        sessionFor(
+          supabaseUser(
+            id: 'user-1',
+            userMetadata: const {'name': 'Ana G.'},
+            email: 'ana@example.com',
+          ),
+        ),
+      );
+
+      final restored = buildRepository();
+
+      expect(restored.currentSession.user!.displayName, 'Ana G.');
+    });
+  });
+
+  group('onAuthStateChange', () {
+    /// Collects everything `watchSession()` emits, starting with the current
+    /// session it replays on subscription.
+    Future<List<AuthSession>> watch(AuthRepositoryImpl repo) async {
+      final emitted = <AuthSession>[];
+      repo.watchSession().listen(emitted.add);
+      await pumpEventQueue();
+      return emitted;
+    }
+
+    test(
+      'emits signedOut when Supabase reports the session is gone (expired '
+      'refresh token, sign-out elsewhere)',
+      () async {
+        await repository.dispose();
+        when(() => auth.currentSession)
+            .thenReturn(sessionFor(supabaseUser(id: 'user-7')));
+        final restored = buildRepository();
+        final emitted = await watch(restored);
+
+        authStateChanges.add(
+          const AuthState(AuthChangeEvent.signedOut, null),
+        );
+        await pumpEventQueue();
+
+        expect(restored.currentSession, const AuthSession.signedOut());
+        expect(emitted.last, const AuthSession.signedOut());
+      },
+    );
+
+    test('ignores a null session while already signed out', () async {
+      final emitted = await watch(repository);
+
+      authStateChanges.add(const AuthState(AuthChangeEvent.signedOut, null));
+      await pumpEventQueue();
+
+      expect(emitted, [const AuthSession.signedOut()]);
+    });
+
+    test(
+      'does not re-emit for the same user id, keeping the richer identity '
+      'from the interactive sign-in (Apple only returns the name once)',
+      () async {
+        when(() => google.signIn()).thenAnswer(
+          (_) async => const SocialCredential(
+            providerUserId: 'google-1',
+            displayName: 'Ana',
+            idToken: 'id-token',
+            avatarUrl: 'https://example.com/ana.png',
+          ),
+        );
+        when(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: 'id-token',
+          ),
+        ).thenAnswer(
+          (_) async => AuthResponse(user: supabaseUser(id: 'user-1')),
+        );
+        await repository.signInWithGoogle();
+        final emitted = await watch(repository);
+
+        // Same account, but the bare Supabase user has no name/avatar.
+        authStateChanges.add(
+          AuthState(
+            AuthChangeEvent.tokenRefreshed,
+            sessionFor(supabaseUser(id: 'user-1')),
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(emitted.length, 1, reason: 'no new session should be emitted');
+        expect(repository.currentSession.user!.displayName, 'Ana');
+        expect(
+          repository.currentSession.user!.avatarUrl,
+          'https://example.com/ana.png',
+        );
+      },
+    );
+
+    test('emits the new session when a different user id signs in', () async {
+      final emitted = await watch(repository);
+
+      authStateChanges.add(
+        AuthState(
+          AuthChangeEvent.signedIn,
+          sessionFor(
+            supabaseUser(
+              id: 'user-2',
+              userMetadata: const {'full_name': 'Beto'},
+            ),
+          ),
+        ),
+      );
+      await pumpEventQueue();
+
+      expect(repository.currentSession.isSignedIn, isTrue);
+      expect(repository.currentSession.user!.id, 'user-2');
+      expect(emitted.length, 2);
+      expect(emitted.last.user!.displayName, 'Beto');
+      await untilCalled(() => connector.fetchCredentials())
+          .timeout(const Duration(seconds: 5));
+    });
+
+    test('dispose() stops listening without throwing', () async {
+      await repository.dispose();
+      builtRepositories.remove(repository);
+
+      authStateChanges.add(
+        AuthState(AuthChangeEvent.signedIn, sessionFor(supabaseUser(id: 'user-1'))),
+      );
+      await pumpEventQueue();
+
+      expect(repository.currentSession, const AuthSession.signedOut());
+    });
   });
 }

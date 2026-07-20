@@ -138,8 +138,7 @@ void main() {
       expect(
         find.text('Movimiento eliminado.'),
         findsOneWidget,
-        reason:
-            'Root cause confirmado: SnackBar.persist por defecto es '
+        reason: 'Root cause confirmado: SnackBar.persist por defecto es '
             '"action != null" (snack_bar.dart:303) y el timer de '
             'ScaffoldMessengerState no hace nada cuando persist es true '
             '(scaffold.dart:616-625). Con un action y sin persist:false, '
@@ -184,8 +183,7 @@ void main() {
       expect(
         find.text('Movimiento eliminado.'),
         findsNothing,
-        reason:
-            'persist: false es el fix minimo: hace que el mismo Timer que '
+        reason: 'persist: false es el fix minimo: hace que el mismo Timer que '
             'ya se arma correctamente si llame a hideCurrentSnackBar().',
       );
     },

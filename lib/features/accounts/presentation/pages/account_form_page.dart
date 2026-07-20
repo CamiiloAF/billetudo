@@ -7,14 +7,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/money_formatter.dart';
-import '../../../../core/utils/money_input_formatter.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_draft.dart';
 import '../cubit/account_form_cubit.dart';
 import '../cubit/account_form_state.dart';
 import '../widgets/account_form_field.dart';
+import '../widgets/account_money_field.dart';
 import '../widgets/account_type_grid.dart';
 import '../widgets/account_type_pill.dart';
 import '../widgets/card_details_section.dart';
@@ -149,25 +148,17 @@ class AccountFormBody extends StatelessWidget {
           onChanged: cubit.institutionChanged,
         ),
         const SizedBox(height: 16),
-        AccountFormField.text(
+        AccountMoneyField(
           label: state.isCard
               ? l10n.accountFormCurrentDebtLabel
               : l10n.accountFormInitialBalanceLabel,
           icon: LucideIcons.banknote,
           hint: l10n.accountFormAmountHint,
-          initialValue: state.initialBalanceText,
+          currency: state.currency,
+          text: state.initialBalanceText,
           errorText:
               _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-            signed: true,
-          ),
-          inputFormatters: [
-            MoneyInputFormatter(
-              decimals: MoneyFormatter.currencyDecimals(state.currency),
-              allowNegative: true,
-            ),
-          ],
+          allowNegative: true,
           onChanged: cubit.initialBalanceChanged,
         ),
         const SizedBox(height: 16),
@@ -214,7 +205,7 @@ class AccountFormBody extends StatelessWidget {
         if (state.isCard) ...[
           const SizedBox(height: 24),
           CardDetailsSection(
-            currencyDecimals: MoneyFormatter.currencyDecimals(state.currency),
+            currency: state.currency,
             creditLimitText: state.creditLimitText,
             statementDay: state.statementDay,
             paymentDueDay: state.paymentDueDay,

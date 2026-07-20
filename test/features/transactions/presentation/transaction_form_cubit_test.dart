@@ -269,8 +269,8 @@ void main() {
     blocTest<TransactionFormCubit, TransactionFormState>(
       'load(null, accountId: ...) respeta la cuenta del llamador y no consulta',
       setUp: () => when(() => watchAccounts()).thenAnswer(
-        (_) =>
-            Stream.value(Right([_accountWithBalance(id: 'acc-2', name: 'Nequi')])),
+        (_) => Stream.value(
+            Right([_accountWithBalance(id: 'acc-2', name: 'Nequi')])),
       ),
       build: build,
       act: (cubit) => cubit.load(null, accountId: 'acc-caller'),
@@ -374,7 +374,8 @@ void main() {
           (_) => Stream.value(
             Right(
               TransactionWithDetails(
-                transaction: buildTransaction(source: TransactionSource.imported),
+                transaction:
+                    buildTransaction(source: TransactionSource.imported),
                 accountName: 'Bancolombia',
               ),
             ),

@@ -58,7 +58,8 @@ void main() {
     );
   });
 
-  test('ninguna capacidad de Transacciones está condicionada por premium o '
+  test(
+      'ninguna capacidad de Transacciones está condicionada por premium o '
       'cupo', () {
     // Identificadores que delatarían un gate: `isPremium`, `hasQuota`,
     // `showRewardedAd`, `entitlement`... Se busca por símbolo, no por palabra
@@ -113,7 +114,8 @@ void main() {
     );
   });
 
-  test('crear una transacción no consulta ningún gate: solo valida y '
+  test(
+      'crear una transacción no consulta ningún gate: solo valida y '
       'persiste', () {
     // CreateTransaction es el punto natural donde aparecería un "ya usaste
     // tus N registros gratis" (ej. para diferenciar captura manual de IA).

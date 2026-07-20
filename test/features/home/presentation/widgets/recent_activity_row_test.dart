@@ -15,10 +15,8 @@ void main() {
   Widget row(TransactionWithDetails entry, {VoidCallback? onTap}) =>
       RecentActivityRow(entry: entry, onTap: onTap ?? () {});
 
-  Color amountColor(WidgetTester tester, String amountText) => tester
-      .widget<Text>(find.text(amountText))
-      .style!
-      .color!;
+  Color amountColor(WidgetTester tester, String amountText) =>
+      tester.widget<Text>(find.text(amountText)).style!.color!;
 
   testWidgets('gasto: sin signo y color text-primary (nunca rojo, HU-05)',
       (tester) async {

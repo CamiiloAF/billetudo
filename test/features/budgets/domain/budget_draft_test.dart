@@ -25,7 +25,8 @@ void main() {
         alertThresholdPct: alertThresholdPct,
       );
 
-  Failure? failureOf(BudgetDraft d) => d.validated().fold((f) => f, (_) => null);
+  Failure? failureOf(BudgetDraft d) =>
+      d.validated().fold((f) => f, (_) => null);
 
   group('BudgetDraft.validated (HU-01/HU-03)', () {
     test('rejects a blank name', () {
@@ -38,7 +39,8 @@ void main() {
 
     test('rejects a threshold out of 1..100', () {
       expect(failureOf(draft(alertThresholdPct: 0)), isA<ValidationFailure>());
-      expect(failureOf(draft(alertThresholdPct: 101)), isA<ValidationFailure>());
+      expect(
+          failureOf(draft(alertThresholdPct: 101)), isA<ValidationFailure>());
     });
 
     test('a one-off requires an end date after the start', () {

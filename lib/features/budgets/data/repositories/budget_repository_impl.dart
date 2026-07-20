@@ -4,6 +4,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
+import '../../../scheduled_payments/domain/entities/scheduled_payment.dart';
+import '../../../scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/entities/budget_draft.dart';
@@ -118,6 +121,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchScopeCategories(),
             _local.watchExpenses(),
             _local.watchAliveCategories(),
+            _local.watchScheduledExpenseTemplates(),
+            _local.watchPendingScheduledOccurrences(),
           ],
           (values) {
             final row = values[0] as db.Budget?;
@@ -130,6 +135,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categoryScope = values[2]! as List<BudgetScopeRefRow>;
             final expenses = values[3]! as List<BudgetExpenseRow>;
             final categories = values[4]! as List<db.Category>;
+            final templates = values[5]! as List<BudgetScheduledTemplateRow>;
+            final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
 
             return Right<Failure, BudgetDetailData>(
               BudgetDetailData(
@@ -147,6 +154,28 @@ class BudgetRepositoryImpl implements BudgetRepository {
                     ),
                 ],
                 categoryChildren: _categoryChildren(categories),
+                scheduledTemplates: [
+                  for (final template in templates)
+                    BudgetScheduledTemplateDetail(
+                      template: _toScheduledPayment(template.template),
+                      title: template.categoryName ?? template.accountName,
+                      accountName: template.accountName,
+                      categoryIcon: template.categoryIcon,
+                      categoryColor: template.categoryColor,
+                    ),
+                ],
+                pendingScheduledOccurrences: [
+                  for (final occurrence in pending)
+                    PendingScheduledOccurrence(
+                      occurrence: _toScheduledOccurrence(occurrence.occurrence),
+                      scheduledPayment:
+                          _toScheduledPayment(occurrence.template),
+                      accountName: occurrence.accountName,
+                      categoryName: occurrence.categoryName,
+                      categoryIcon: occurrence.categoryIcon,
+                      categoryColor: occurrence.categoryColor,
+                    ),
+                ],
               ),
             );
           },
@@ -303,6 +332,76 @@ class BudgetRepositoryImpl implements BudgetRepository {
         currency: row.currency,
         date: row.date,
       );
+
+  /// Maps a raw `db.ScheduledPayment` row into the Pagos Programados domain
+  /// entity (HU-12) — reimplemented here, not imported from that feature's
+  /// `data/` mapper, per the layering rule (a feature's `data/` never imports
+  /// another feature's `data/`).
+  ScheduledPayment _toScheduledPayment(db.ScheduledPayment row) =>
+      ScheduledPayment(
+        id: row.id,
+        accountId: row.accountId,
+        categoryId: row.categoryId,
+        amountMinor: row.amountMinor,
+        currency: row.currency,
+        type: _scheduledTypeToDomain(row.type),
+        note: row.note,
+        transferAccountId: row.transferAccountId,
+        frequency: _scheduledFrequencyToDomain(row.frequency),
+        interval: row.interval,
+        nextDate: row.nextDate,
+        endDate: row.endDate,
+        requiresConfirmation: row.requiresConfirmation,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        tombstonedAt: row.tombstonedAt,
+      );
+
+  ScheduledPaymentType _scheduledTypeToDomain(db.EntryType type) =>
+      switch (type) {
+        db.EntryType.income => ScheduledPaymentType.income,
+        db.EntryType.expense => ScheduledPaymentType.expense,
+        db.EntryType.transfer => ScheduledPaymentType.transfer,
+      };
+
+  ScheduledPaymentFrequency _scheduledFrequencyToDomain(
+    db.ScheduleFrequency frequency,
+  ) =>
+      switch (frequency) {
+        db.ScheduleFrequency.once => ScheduledPaymentFrequency.once,
+        db.ScheduleFrequency.daily => ScheduledPaymentFrequency.daily,
+        db.ScheduleFrequency.weekly => ScheduledPaymentFrequency.weekly,
+        db.ScheduleFrequency.monthly => ScheduledPaymentFrequency.monthly,
+        db.ScheduleFrequency.yearly => ScheduledPaymentFrequency.yearly,
+      };
+
+  ScheduledPaymentOccurrence _toScheduledOccurrence(
+    db.ScheduledPaymentOccurrence row,
+  ) =>
+      ScheduledPaymentOccurrence(
+        id: row.id,
+        scheduledPaymentId: row.scheduledPaymentId,
+        occurrenceDate: row.occurrenceDate,
+        status: _scheduledStatusToDomain(row.status),
+        snoozedToDate: row.snoozedToDate,
+        generatedTransactionId: row.generatedTransactionId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      );
+
+  ScheduledOccurrenceStatus _scheduledStatusToDomain(
+    db.ScheduledOccurrenceStatus status,
+  ) =>
+      switch (status) {
+        db.ScheduledOccurrenceStatus.pending =>
+          ScheduledOccurrenceStatus.pending,
+        db.ScheduledOccurrenceStatus.confirmed =>
+          ScheduledOccurrenceStatus.confirmed,
+        db.ScheduledOccurrenceStatus.skipped =>
+          ScheduledOccurrenceStatus.skipped,
+        db.ScheduledOccurrenceStatus.snoozed =>
+          ScheduledOccurrenceStatus.snoozed,
+      };
 
   Map<String, List<String>> _categoryChildren(List<db.Category> categories) {
     final children = <String, List<String>>{};

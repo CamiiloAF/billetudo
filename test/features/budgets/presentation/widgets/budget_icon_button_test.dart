@@ -15,7 +15,8 @@ void main() {
       );
 
   group('BudgetIconButton', () {
-    testWidgets('with nothing picked it shows a neutral placeholder, never '
+    testWidgets(
+        'with nothing picked it shows a neutral placeholder, never '
         'the AI glyph', (tester) async {
       await pump(tester);
 

@@ -25,6 +25,10 @@ class MoneyFormatter {
 
   static const int _minorPerMajor = 100;
 
+  /// How many decimals the *stored* minor unit carries, for every currency.
+  /// Paired with [_minorPerMajor]; only [currencyDecimals] varies.
+  static const int _storedDecimals = 2;
+
   /// The leading symbol [formatSymbol] prepends. Exposed so an *editable*
   /// amount field can paint it as a fixed prefix outside the editable text
   /// (where it would otherwise be stripped by the field's digit-only input
@@ -123,6 +127,54 @@ class MoneyFormatter {
       decimalDigits: decimalDigits ?? 2,
     )..turnOffGrouping();
     return formatter.format(amountMinor / _minorPerMajor);
+  }
+
+  /// Rounds [amountMinor] to the precision [currencyCode] actually shows.
+  ///
+  /// Storage always keeps 1/100 (see [_minorPerMajor]) whatever the currency,
+  /// so switching currency never *reinterprets* a stored amount: `450000000`
+  /// is 4.500.000,00 in COP and in USD alike. What does change is how many of
+  /// those decimals are visible — COP shows none — and a field must not
+  /// display `1.235` while it still holds `1.234,56`. This is what reconciles
+  /// the two: the visible figure is also the stored one.
+  ///
+  /// Rounds **half-up on the magnitude**, the same rule [parseScaled] already
+  /// applies to digits typed past the currency's precision. Truncating was the
+  /// alternative and it is worse: it drops the user's cents silently *and*
+  /// always downwards, so `1.234,99` would become `1.234`. Half-up moves the
+  /// figure by at most half a unit and matches what the user was already
+  /// reading. Going back to a currency with cents cannot restore them — they
+  /// are gone at the moment the figure is shown without them.
+  static int roundToCurrencyPrecision(int amountMinor, String currencyCode) {
+    final factor = _pow10(_storedDecimals - currencyDecimals(currencyCode));
+    if (factor <= 1) {
+      return amountMinor;
+    }
+    final negative = amountMinor < 0;
+    final magnitude = negative ? -amountMinor : amountMinor;
+    final rounded = ((magnitude + factor ~/ 2) ~/ factor) * factor;
+    return negative ? -rounded : rounded;
+  }
+
+  /// Re-renders an *editable* money [text] with [currencyCode]'s own decimals,
+  /// rounding it via [roundToCurrencyPrecision] first.
+  ///
+  /// Returns [text] untouched when it does not parse (empty field, a lone `-`,
+  /// a half-typed figure): there is nothing to re-render and rewriting it
+  /// would fight the user mid-keystroke.
+  ///
+  /// Grouped like the fields keep it while typing (`4.500.000`), so the result
+  /// can be handed straight back to a `TextEditingController` next to a
+  /// `MoneyInputFormatter`.
+  String reformatForCurrency(String text, String currencyCode) {
+    final minor = parseMinor(text);
+    if (minor == null) {
+      return text;
+    }
+    return formatAmount(
+      roundToCurrencyPrecision(minor, currencyCode),
+      decimalDigits: currencyDecimals(currencyCode),
+    );
   }
 
   /// Converts a major value (e.g. `12.34`) to minor units (`1234`).

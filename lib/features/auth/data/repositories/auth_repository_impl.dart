@@ -34,7 +34,20 @@ class AuthRepositoryImpl implements AuthRepository {
     this._supabase,
     this._powerSync,
     this._connector,
-  );
+  ) {
+    _restoreSession();
+    _authStateSubscription =
+        _supabase.auth.onAuthStateChange.listen(_onAuthStateChange);
+  }
+
+  /// Releases the Supabase auth listener and the session stream. In a normal
+  /// run this singleton lives as long as the app does and nothing calls this;
+  /// it exists so tests can tear an instance down without leaking a listener
+  /// into the next one.
+  Future<void> dispose() async {
+    await _authStateSubscription.cancel();
+    await _controller.close();
+  }
 
   final GoogleAuthDatasource _google;
   final AppleAuthDatasource _apple;
@@ -47,9 +60,76 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthSession _current = const AuthSession.signedOut();
   final _controller = StreamController<AuthSession>.broadcast();
+  late final StreamSubscription<AuthState> _authStateSubscription;
 
   @override
   AuthSession get currentSession => _current;
+
+  /// Rebuilds the session from the one `supabase_flutter` already restored
+  /// from disk (it persists and auto-refreshes it on its own). Without this
+  /// every relaunch started as [AuthSession.signedOut] even with a live
+  /// token, so the UI asked the user to sign in again and — worse —
+  /// [_connectPowerSync] never ran, leaving sync off for the whole session.
+  ///
+  /// Safe to call from the constructor: `Supabase.initialize()` is awaited in
+  /// `bootstrap.dart` before the DI graph is built, so the session is already
+  /// loaded and `currentSession` is a synchronous read.
+  void _restoreSession() {
+    final user = _supabase.auth.currentSession?.user;
+    if (user == null) {
+      return;
+    }
+    _current = AuthSession.signedIn(_toAuthUser(user));
+    _connectPowerSync();
+  }
+
+  /// Keeps the session in step with Supabase's own lifecycle: a token refresh
+  /// that fails, a sign-out from another part of the app, or the initial
+  /// restore landing after this was constructed.
+  void _onAuthStateChange(AuthState state) {
+    final user = state.session?.user;
+
+    if (user == null) {
+      if (!_current.isSignedIn) {
+        return;
+      }
+      _current = const AuthSession.signedOut();
+      _controller.add(_current);
+      return;
+    }
+
+    // Already tracking this account: don't rebuild it. `_completeSignIn` has
+    // richer identity data (the provider credential's own name/avatar, which
+    // Apple only ever returns on the *first* authorization) than anything
+    // recoverable from the Supabase user alone.
+    if (_current.user?.id == user.id) {
+      _connectPowerSync();
+      return;
+    }
+
+    _current = AuthSession.signedIn(_toAuthUser(user));
+    _controller.add(_current);
+    _connectPowerSync();
+  }
+
+  /// Best-effort identity from a Supabase user alone (no provider credential
+  /// at hand). [AuthUser.displayName] is non-nullable, so it falls back to the
+  /// email and then to empty rather than dropping the session entirely.
+  AuthUser _toAuthUser(User user) {
+    final metadata = user.userMetadata ?? const {};
+    return AuthUser(
+      id: user.id,
+      displayName: (metadata['full_name'] as String?) ??
+          (metadata['name'] as String?) ??
+          user.email ??
+          '',
+      provider: user.appMetadata['provider'] == 'apple'
+          ? AuthProvider.apple
+          : AuthProvider.google,
+      email: user.email,
+      avatarUrl: metadata['avatar_url'] as String?,
+    );
+  }
 
   @override
   Stream<AuthSession> watchSession() async* {

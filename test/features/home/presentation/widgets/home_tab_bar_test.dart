@@ -30,14 +30,16 @@ void main() {
       (tester) async {
     await tester.pumpHomeWidget(tabBar(currentIndex: 2));
 
-    final items = tester.widgetList<HomeTabBarItem>(find.byType(HomeTabBarItem));
+    final items =
+        tester.widgetList<HomeTabBarItem>(find.byType(HomeTabBarItem));
     expect(
       items.map((i) => i.isActive).toList(),
       [false, false, true, false, false],
     );
   });
 
-  testWidgets('la pestaña activa usa el color de marca; las demás text-secondary',
+  testWidgets(
+      'la pestaña activa usa el color de marca; las demás text-secondary',
       (tester) async {
     await tester.pumpHomeWidget(tabBar());
 

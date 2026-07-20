@@ -35,7 +35,8 @@ void main() {
     expect(picked, CategoryKind.income);
   });
 
-  testWidgets('"Gasto" nunca se pinta en el tono de \$expense (tono de marca)', (
+  testWidgets('"Gasto" nunca se pinta en el tono de \$expense (tono de marca)',
+      (
     tester,
   ) async {
     await tester.pumpAppWidget(

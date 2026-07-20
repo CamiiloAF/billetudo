@@ -97,8 +97,7 @@ void main() {
       givenImpact(transactionCount: 5);
       givenCategory(buildCategory());
       when(() => repository.getCategory('cat-2')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'cat-2')),
+        (_) async => Right(buildCategory(id: 'cat-2')),
       );
 
       final result = await deleteCategory(
@@ -167,8 +166,7 @@ void main() {
       givenImpact(hasActiveSubcategories: true);
       givenCategory(buildCategory(id: 'root-1'));
       when(() => repository.getCategory('root-2')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'root-2')),
+        (_) async => Right(buildCategory(id: 'root-2')),
       );
 
       final result = await deleteCategory(
@@ -223,12 +221,10 @@ void main() {
       givenImpact(hasActiveSubcategories: true, transactionCount: 2);
       givenCategory(buildCategory(id: 'root-1'));
       when(() => repository.getCategory('cat-2')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'cat-2')),
+        (_) async => Right(buildCategory(id: 'cat-2')),
       );
       when(() => repository.getCategory('root-2')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'root-2')),
+        (_) async => Right(buildCategory(id: 'root-2')),
       );
 
       final result = await deleteCategory(

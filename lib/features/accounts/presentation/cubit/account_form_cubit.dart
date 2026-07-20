@@ -117,7 +117,30 @@ class AccountFormCubit extends Cubit<AccountFormState> {
   void institutionChanged(String value) =>
       emit(state.copyWith(institution: value));
 
-  void currencySelected(String value) => emit(state.copyWith(currency: value));
+  /// Picking another currency re-cuts the precision of every money field the
+  /// form holds, so nothing keeps reading `1.234,56` under a currency that has
+  /// no cents. It is a re-render, never an FX conversion: the figure the user
+  /// typed stays theirs, rounded half-up when the new currency shows fewer
+  /// decimals (see [MoneyFormatter.roundToCurrencyPrecision]).
+  ///
+  /// Note this is only about the *draft*. On an account that already has
+  /// transactions, `UpdateAccount` still stops the change until the user
+  /// confirms it — rewriting the meaning of a history is its call, not this
+  /// one's.
+  void currencySelected(String value) {
+    if (value == state.currency) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        currency: value,
+        initialBalanceText:
+            _money.reformatForCurrency(state.initialBalanceText, value),
+        creditLimitText:
+            _money.reformatForCurrency(state.creditLimitText, value),
+      ),
+    );
+  }
 
   void initialBalanceChanged(String value) =>
       emit(state.copyWith(initialBalanceText: value));

@@ -342,8 +342,9 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i685.BudgetProgressCalculator());
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
         () => const _i529.ZeroBasedSummaryCalculator());
-    gh.factory<_i559.GetBudgetProgress>(
-        () => _i559.GetBudgetProgress(gh<_i685.BudgetProgressCalculator>()));
+    gh.factory<_i559.GetBudgetProgress>(() => _i559.GetBudgetProgress(
+        gh<_i685.BudgetProgressCalculator>(),
+        gh<_i450.ProjectUpcomingOccurrences>()));
     gh.lazySingleton<_i872.PowerSyncConnector>(
         () => _i872.PowerSyncConnector(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>

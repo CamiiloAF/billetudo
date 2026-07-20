@@ -9,7 +9,8 @@ import '../golden/budget_golden_fixtures.dart';
 
 void main() {
   group('ArchivedBudgetRow', () {
-    testWidgets('shows the closed-on date, the scope and the "within" result '
+    testWidgets(
+        'shows the closed-on date, the scope and the "within" result '
         'with its own icon', (tester) async {
       final entry = archivedEntries.first;
       await tester.pumpAppWidget(

@@ -163,7 +163,8 @@ void main() {
     expect(find.byType(QuickAccessChip), findsNWidgets(4));
   });
 
-  testWidgets('tocar cada chip de QuickAccessRow invoca su callback propio '
+  testWidgets(
+      'tocar cada chip de QuickAccessRow invoca su callback propio '
       '(HU-05b)', (tester) async {
     var accountsTapped = 0;
     var scheduledTapped = 0;

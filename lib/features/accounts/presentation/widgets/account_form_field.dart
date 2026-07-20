@@ -20,6 +20,7 @@ class AccountFormField extends StatelessWidget {
     this.icon,
     this.hint,
     this.initialValue,
+    this.controller,
     this.errorText,
     this.helperText,
     this.keyboardType,
@@ -30,7 +31,11 @@ class AccountFormField extends StatelessWidget {
     this.onChanged,
     super.key,
   })  : onTap = null,
-        value = null;
+        value = null,
+        assert(
+          initialValue == null || controller == null,
+          'a field is driven either by initialValue or by a controller',
+        );
 
   const AccountFormField.selector({
     required this.label,
@@ -42,6 +47,7 @@ class AccountFormField extends StatelessWidget {
     this.helperText,
     super.key,
   })  : initialValue = null,
+        controller = null,
         keyboardType = null,
         inputFormatters = null,
         maxLength = null,
@@ -54,6 +60,12 @@ class AccountFormField extends StatelessWidget {
   final IconData? icon;
   final String? hint;
   final String? initialValue;
+
+  /// Drives the text when the field's content can change from the outside
+  /// after the first build (a money field re-rendered on a currency change).
+  /// Mutually exclusive with [initialValue]; its owner disposes it.
+  final TextEditingController? controller;
+
   final String? errorText;
   final String? helperText;
   final TextInputType? keyboardType;
@@ -102,6 +114,7 @@ class AccountFormField extends StatelessWidget {
         else
           TextFormField(
             initialValue: initialValue,
+            controller: controller,
             onChanged: onChanged,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,

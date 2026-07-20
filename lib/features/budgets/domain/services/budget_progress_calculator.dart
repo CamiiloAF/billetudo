@@ -186,8 +186,7 @@ class BudgetProgressCalculator {
     required List<PendingScheduledOccurrence> pendingOccurrences,
     Map<String, List<String>> categoryChildren = const {},
   }) {
-    final expanded =
-        expandCategories(scope.aliveCategoryIds, categoryChildren);
+    final expanded = expandCategories(scope.aliveCategoryIds, categoryChildren);
     final detailById = {
       for (final detail in templates) detail.template.id: detail,
     };

@@ -61,6 +61,48 @@ class BudgetIncomeRow {
   final DateTime date;
 }
 
+/// An active expense scheduled-payment template eligible for a budget's
+/// "programado" segment (HU-12), enriched with the names its row would show.
+/// Data-layer type: never leaves `data/`; the repository maps [template] (a
+/// raw Drift row) into the domain `ScheduledPayment` entity itself, rather
+/// than importing Pagos Programados' `data/` mapper.
+class BudgetScheduledTemplateRow {
+  const BudgetScheduledTemplateRow({
+    required this.template,
+    required this.accountName,
+    this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
+  });
+
+  final ScheduledPayment template;
+  final String accountName;
+  final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
+}
+
+/// A `pending` occurrence (HU-03 ledger) of an expense scheduled-payment
+/// template, eligible for a budget's "programado" segment (HU-12). Data-layer
+/// type, same reasoning as [BudgetScheduledTemplateRow].
+class BudgetPendingOccurrenceRow {
+  const BudgetPendingOccurrenceRow({
+    required this.occurrence,
+    required this.template,
+    required this.accountName,
+    this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
+  });
+
+  final ScheduledPaymentOccurrence occurrence;
+  final ScheduledPayment template;
+  final String accountName;
+  final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
+}
+
 /// Drift queries for the Budgets feature.
 ///
 /// A plain injected class (not a `@DriftAccessor`): the schema already has every
@@ -242,6 +284,106 @@ class BudgetsLocalDatasource {
                 amountMinor: row.amountMinor,
                 currency: row.currency,
                 date: row.date,
+              ),
+          ],
+        );
+  }
+
+  // -- Scheduled payments (HU-12) ---------------------------------------------
+
+  /// Active expense scheduled-payment templates that can feed a budget's
+  /// "programado" segment: `type = expense`, not tombstoned, and — for a
+  /// `once` template that already fired — excluded (its `nextDate` never
+  /// advances past the date it already generated, so it must not be
+  /// re-projected; same rule `_activeExpr` applies in Pagos Programados,
+  /// reselected here rather than imported, per the data-layer boundary).
+  /// Enriched with account/category names for display.
+  Stream<List<BudgetScheduledTemplateRow>> watchScheduledExpenseTemplates() {
+    final query = _db.select(_db.scheduledPayments).join([
+      innerJoin(
+        _db.accounts,
+        _db.accounts.id.equalsExp(_db.scheduledPayments.accountId),
+      ),
+      leftOuterJoin(
+        _db.categories,
+        _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
+      ),
+    ])
+      ..where(
+        _db.scheduledPayments.type.equalsValue(EntryType.expense) &
+            _db.scheduledPayments.tombstonedAt.isNull() &
+            (_db.scheduledPayments.frequency
+                    .equalsValue(ScheduleFrequency.once)
+                    .not() |
+                _onceAlreadyFired().not()),
+      );
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              BudgetScheduledTemplateRow(
+                template: row.readTable(_db.scheduledPayments),
+                accountName: row.readTable(_db.accounts).name,
+                categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
+              ),
+          ],
+        );
+  }
+
+  /// Whether a template has already generated a `confirmed` occurrence — the
+  /// only way a `once` template (whose `nextDate` never advances) must stop
+  /// projecting.
+  Expression<bool> _onceAlreadyFired() => existsQuery(
+        _db.selectOnly(_db.scheduledPaymentOccurrences)
+          ..addColumns([_db.scheduledPaymentOccurrences.id])
+          ..where(
+            _db.scheduledPaymentOccurrences.scheduledPaymentId
+                    .equalsExp(_db.scheduledPayments.id) &
+                _db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.confirmed),
+          ),
+      );
+
+  /// Occurrences still `pending` (HU-03) of expense templates, eligible for a
+  /// budget's "programado" segment: `confirmed`/`skipped`/`snoozed` ones are
+  /// excluded (`snoozed` moves the effective date but is not itself owed, so
+  /// HU-12 leaves it out — see
+  /// `BudgetProgressCalculator.matchesPendingScheduledOccurrence`).
+  Stream<List<BudgetPendingOccurrenceRow>> watchPendingScheduledOccurrences() {
+    final query = _db.select(_db.scheduledPaymentOccurrences).join([
+      innerJoin(
+        _db.scheduledPayments,
+        _db.scheduledPayments.id
+            .equalsExp(_db.scheduledPaymentOccurrences.scheduledPaymentId),
+      ),
+      innerJoin(
+        _db.accounts,
+        _db.accounts.id.equalsExp(_db.scheduledPayments.accountId),
+      ),
+      leftOuterJoin(
+        _db.categories,
+        _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
+      ),
+    ])
+      ..where(
+        _db.scheduledPaymentOccurrences.status
+                .equalsValue(ScheduledOccurrenceStatus.pending) &
+            _db.scheduledPayments.type.equalsValue(EntryType.expense) &
+            _db.scheduledPayments.tombstonedAt.isNull(),
+      );
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              BudgetPendingOccurrenceRow(
+                occurrence: row.readTable(_db.scheduledPaymentOccurrences),
+                template: row.readTable(_db.scheduledPayments),
+                accountName: row.readTable(_db.accounts).name,
+                categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
               ),
           ],
         );

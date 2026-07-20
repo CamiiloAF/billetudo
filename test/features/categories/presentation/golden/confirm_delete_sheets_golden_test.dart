@@ -56,8 +56,7 @@ void main() {
       );
     });
 
-    testWidgets('confirm delete, with transactions ($suffix)',
-        (tester) async {
+    testWidgets('confirm delete, with transactions ($suffix)', (tester) async {
       await golden(
         tester,
         (context) => ConfirmDeleteWithTransactionsSheet.show(

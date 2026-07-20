@@ -26,7 +26,14 @@ import '../../../../core/utils/money_input_formatter.dart';
 /// so a `$` baked into the text would be stripped on the first keystroke.
 /// Painting it separately also keeps the caret arithmetic untouched.
 ///
-class BudgetAmountField extends StatelessWidget {
+/// It owns a [TextEditingController] rather than an `initialValue` so that
+/// switching currency **with a figure already typed** re-renders it: an
+/// `initialValue` is read once, and the field kept showing `1.234,56` under a
+/// COP that has no cents. The cubit has already rounded the stored amount by
+/// then ([MoneyFormatter.roundToCurrencyPrecision]), so this only adopts it —
+/// and only when the currency truly changed, never on every rebuild, which
+/// would drag the caret mid-word.
+class BudgetAmountField extends StatefulWidget {
   const BudgetAmountField({
     required this.amountMinor,
     required this.currency,
@@ -41,11 +48,52 @@ class BudgetAmountField extends StatelessWidget {
   final VoidCallback onCurrencyTap;
 
   @override
+  State<BudgetAmountField> createState() => _BudgetAmountFieldState();
+}
+
+class _BudgetAmountFieldState extends State<BudgetAmountField> {
+  static const MoneyFormatter _money = MoneyFormatter();
+
+  late final TextEditingController _controller = TextEditingController(
+      text: _textFor(widget.amountMinor, widget.currency));
+
+  static String _textFor(int? amountMinor, String currency) =>
+      amountMinor == null
+          ? ''
+          : _money.formatAmount(
+              amountMinor,
+              decimalDigits: MoneyFormatter.currencyDecimals(currency),
+            );
+
+  @override
+  void didUpdateWidget(BudgetAmountField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currency == oldWidget.currency) {
+      return;
+    }
+    final text = _textFor(widget.amountMinor, widget.currency);
+    if (text == _controller.text) {
+      return;
+    }
+    // Caret to the end: the old offset counted characters of a figure that no
+    // longer exists (`1.234,56` → `1.235`) and could land out of range.
+    _controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    const money = MoneyFormatter();
-    final decimals = MoneyFormatter.currencyDecimals(currency);
-    final amountMinor = this.amountMinor;
+    final decimals = MoneyFormatter.currencyDecimals(widget.currency);
+    final amountMinor = widget.amountMinor;
     const style = TextStyle(
       fontFamily: AppTheme.fontFamily,
       fontSize: 22,
@@ -72,10 +120,9 @@ class BudgetAmountField extends StatelessWidget {
           ),
           Expanded(
             child: TextFormField(
-              initialValue: amountMinor == null
-                  ? null
-                  : money.formatAmount(amountMinor, decimalDigits: decimals),
-              onChanged: (value) => onChanged(MoneyFormatter.parseMinor(value)),
+              controller: _controller,
+              onChanged: (value) =>
+                  widget.onChanged(MoneyFormatter.parseMinor(value)),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [MoneyInputFormatter(decimals: decimals)],
@@ -87,13 +134,16 @@ class BudgetAmountField extends StatelessWidget {
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                hintText: money.formatAmount(0, decimalDigits: decimals),
+                hintText: _money.formatAmount(0, decimalDigits: decimals),
                 hintStyle: style.copyWith(color: colors.textSecondary),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          BudgetCurrencyPill(code: currency, onTap: onCurrencyTap),
+          BudgetCurrencyPill(
+            code: widget.currency,
+            onTap: widget.onCurrencyTap,
+          ),
         ],
       ),
     );

@@ -9,7 +9,8 @@ void main() {
   group('BudgetPeriodCalculator — weekly', () {
     test('advances in whole 7-day blocks from the anchor', () {
       final calc = BudgetPeriodCalculator(
-        buildBudget(period: BudgetPeriod.weekly, startDate: DateTime(2024, 1, 1)),
+        buildBudget(
+            period: BudgetPeriod.weekly, startDate: DateTime(2024, 1, 1)),
       );
       final window = calc.windowAt(2, DateTime(2024, 1, 16));
       expect(window.start, DateTime(2024, 1, 15));
@@ -32,15 +33,18 @@ void main() {
       final calc = BudgetPeriodCalculator(
         buildBudget(startDate: DateTime(2024, 1, 31)),
       );
-      expect(calc.windowAt(1, DateTime(2024, 2, 10)).start, DateTime(2024, 2, 29));
-      expect(calc.windowAt(2, DateTime(2024, 3, 10)).start, DateTime(2024, 3, 31));
+      expect(
+          calc.windowAt(1, DateTime(2024, 2, 10)).start, DateTime(2024, 2, 29));
+      expect(
+          calc.windowAt(2, DateTime(2024, 3, 10)).start, DateTime(2024, 3, 31));
     });
 
     test('clamps day 31 to Feb 28 in a non-leap year', () {
       final calc = BudgetPeriodCalculator(
         buildBudget(startDate: DateTime(2023, 1, 31)),
       );
-      expect(calc.windowAt(1, DateTime(2023, 2, 10)).start, DateTime(2023, 2, 28));
+      expect(
+          calc.windowAt(1, DateTime(2023, 2, 10)).start, DateTime(2023, 2, 28));
     });
 
     test('currentWindow lands on the period containing today', () {
@@ -58,17 +62,21 @@ void main() {
   group('BudgetPeriodCalculator — yearly', () {
     test('clamps a Feb 29 anchor to Feb 28 in a non-leap year', () {
       final calc = BudgetPeriodCalculator(
-        buildBudget(period: BudgetPeriod.yearly, startDate: DateTime(2024, 2, 29)),
+        buildBudget(
+            period: BudgetPeriod.yearly, startDate: DateTime(2024, 2, 29)),
       );
-      expect(calc.windowAt(0, DateTime(2024, 6, 1)).start, DateTime(2024, 2, 29));
-      expect(calc.windowAt(1, DateTime(2025, 6, 1)).start, DateTime(2025, 2, 28));
+      expect(
+          calc.windowAt(0, DateTime(2024, 6, 1)).start, DateTime(2024, 2, 29));
+      expect(
+          calc.windowAt(1, DateTime(2025, 6, 1)).start, DateTime(2025, 2, 28));
     });
   });
 
   group('BudgetPeriodCalculator — biweekly (semi-monthly)', () {
     test('anchor day 1 -> 1–15 and 16–end (two periods per month)', () {
       final calc = BudgetPeriodCalculator(
-        buildBudget(period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 1)),
+        buildBudget(
+            period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 1)),
       );
       final first = calc.windowAt(0, DateTime(2024, 1, 5));
       expect(first.start, DateTime(2024, 1, 1));
@@ -85,7 +93,8 @@ void main() {
 
     test('anchor day 21 -> 21–5 and 6–20 (wraps into the next month)', () {
       final calc = BudgetPeriodCalculator(
-        buildBudget(period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 21)),
+        buildBudget(
+            period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 21)),
       );
       final first = calc.windowAt(0, DateTime(2024, 1, 25));
       expect(first.start, DateTime(2024, 1, 21));
@@ -102,7 +111,8 @@ void main() {
 
     test('currentWindow selects the semi-monthly period containing today', () {
       final calc = BudgetPeriodCalculator(
-        buildBudget(period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 21)),
+        buildBudget(
+            period: BudgetPeriod.biweekly, startDate: DateTime(2024, 1, 21)),
       );
       final window = calc.currentWindow(DateTime(2024, 2, 15));
       expect(window.start, DateTime(2024, 2, 6));

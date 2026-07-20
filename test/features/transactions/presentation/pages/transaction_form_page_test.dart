@@ -37,8 +37,7 @@ class MockAccountsListCubit extends MockCubit<AccountsListState>
 class MockCategoriesListCubit extends MockCubit<CategoriesListState>
     implements CategoriesListCubit {}
 
-class MockCategoryQuickPickerCubit
-    extends MockCubit<CategoryQuickPickerState>
+class MockCategoryQuickPickerCubit extends MockCubit<CategoryQuickPickerState>
     implements CategoryQuickPickerCubit {}
 
 class MockTagFilterCubit extends MockCubit<TagFilterState>

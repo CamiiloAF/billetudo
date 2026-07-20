@@ -39,8 +39,7 @@ void main() {
   // listened to once — the cubit unsubscribes from the old kind and
   // subscribes to the new one, so each call needs its own stream instance.
   void stub(Result<List<CategoryNode>> Function() value) {
-    when(() => watchCategories(any()))
-        .thenAnswer((_) => Stream.value(value()));
+    when(() => watchCategories(any())).thenAnswer((_) => Stream.value(value()));
   }
 
   void stubOnce(Result<List<CategoryNode>> result) => stub(() => result);
@@ -73,8 +72,7 @@ void main() {
 
     blocTest<CategoriesListCubit, CategoriesListState>(
       'un fallo del stream deja el estado de error',
-      setUp: () =>
-          stubOnce(const Left(DatabaseFailure('boom'))),
+      setUp: () => stubOnce(const Left(DatabaseFailure('boom'))),
       build: build,
       act: (cubit) => cubit.start(),
       verify: (cubit) {
@@ -195,8 +193,7 @@ void main() {
   });
 
   test('cerrar el cubit cancela la suscripción al stream', () async {
-    final controller =
-        StreamController<Result<List<CategoryNode>>>.broadcast();
+    final controller = StreamController<Result<List<CategoryNode>>>.broadcast();
     when(() => watchCategories(any())).thenAnswer((_) => controller.stream);
 
     final cubit = build();

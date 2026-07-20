@@ -59,8 +59,7 @@ void main() {
     expect(result, ['seed-food-drink']);
   });
 
-  test(
-      'propaga un fallo de red como SeedCategoryOwnershipCheckException',
+  test('propaga un fallo de red como SeedCategoryOwnershipCheckException',
       () async {
     final supabase = await buildClient(
       (request) => http.Response('boom', 500, request: request),

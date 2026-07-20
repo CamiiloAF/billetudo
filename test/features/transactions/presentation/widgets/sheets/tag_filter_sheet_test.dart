@@ -134,7 +134,8 @@ void main() {
 
     expect(find.byType(TagFilterRow), findsNothing);
     expect(find.byType(TagFilterEmptyState), findsOneWidget);
-    expect(find.text('No encontramos etiquetas con ese nombre'), findsOneWidget);
+    expect(
+        find.text('No encontramos etiquetas con ese nombre'), findsOneWidget);
   });
 
   testWidgets('cada fila usa el carácter "#" en vez de un ícono Lucide',

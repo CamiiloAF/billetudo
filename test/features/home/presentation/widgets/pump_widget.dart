@@ -22,9 +22,8 @@ extension PumpHome on WidgetTester {
   }) async {
     await pumpWidget(
       MaterialApp(
-        theme: brightness == Brightness.dark
-            ? AppTheme.dark()
-            : AppTheme.light(),
+        theme:
+            brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

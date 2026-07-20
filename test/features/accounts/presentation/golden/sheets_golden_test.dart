@@ -56,8 +56,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('confirm delete, with transactions ($suffix)',
-        (tester) async {
+    testWidgets('confirm delete, with transactions ($suffix)', (tester) async {
       await golden(
         tester,
         (context) => ConfirmDeleteAccountSheet.show(context, impact: impact),

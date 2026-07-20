@@ -40,7 +40,8 @@ void main() {
     expect(find.text('Julio'), findsOneWidget);
   });
 
-  testWidgets('con gastos: muestra la invitación a presupuesto, no el "sin '
+  testWidgets(
+      'con gastos: muestra la invitación a presupuesto, no el "sin '
       'gastos"', (tester) async {
     await tester.pumpHomeWidget(hero(spendingWith(50000)));
 
@@ -64,7 +65,8 @@ void main() {
     expect(find.textContaining('0\u{00A0}COP'), findsOneWidget);
   });
 
-  testWidgets('tocar el chip de mes dispara onMonthTap (HU-04)', (tester) async {
+  testWidgets('tocar el chip de mes dispara onMonthTap (HU-04)',
+      (tester) async {
     var tapped = 0;
     await tester.pumpHomeWidget(
       hero(spendingWith(50000), onMonthTap: () => tapped++),

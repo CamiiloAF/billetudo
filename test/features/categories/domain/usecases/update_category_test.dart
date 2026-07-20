@@ -178,8 +178,7 @@ void main() {
 
     test('permite cambiar el kind si no tiene subcategorías activas', () async {
       when(() => repository.getCategory('root-1')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'root-1')),
+        (_) async => Right(buildCategory(id: 'root-1')),
       );
       when(() => repository.getDeletionImpact('root-1')).thenAnswer(
         (_) async => const Right(
@@ -205,8 +204,7 @@ void main() {
         'rechaza cambiar el kind cuando la raíz tiene subcategorías '
         'activas', () async {
       when(() => repository.getCategory('root-1')).thenAnswer(
-        (_) async =>
-            Right(buildCategory(id: 'root-1')),
+        (_) async => Right(buildCategory(id: 'root-1')),
       );
       when(() => repository.getDeletionImpact('root-1')).thenAnswer(
         (_) async => const Right(

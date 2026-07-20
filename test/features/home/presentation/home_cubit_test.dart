@@ -168,7 +168,8 @@ void main() {
       when(() => watchMonthTransactions(any())).thenAnswer((_) {
         call++;
         return call == 1
-            ? Stream<Result<List<TransactionWithDetails>>>.value(Right(activity))
+            ? Stream<Result<List<TransactionWithDetails>>>.value(
+                Right(activity))
             : const Stream<Result<List<TransactionWithDetails>>>.empty();
       });
     },

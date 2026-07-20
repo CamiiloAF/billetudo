@@ -66,7 +66,8 @@ void main() {
           .thenAnswer((_) async => Right([_category()]));
     },
     build: build,
-    act: (cubit) => cubit.start(kind: CategoryKind.expense, selectedId: 'cat-1'),
+    act: (cubit) =>
+        cubit.start(kind: CategoryKind.expense, selectedId: 'cat-1'),
     verify: (cubit) {
       expect(cubit.state.selected?.id, 'cat-1');
       verifyNever(() => getCategory(any()));
@@ -127,7 +128,6 @@ void main() {
       await cubit.start(kind: CategoryKind.expense);
       await cubit.setKind(CategoryKind.income);
     },
-    verify: (cubit) =>
-        expect(cubit.state.mostUsed.map((c) => c.id), ['inc-1']),
+    verify: (cubit) => expect(cubit.state.mostUsed.map((c) => c.id), ['inc-1']),
   );
 }

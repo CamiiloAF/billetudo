@@ -22,7 +22,8 @@ void main() {
   AppLocalizations l10nOf(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(QuickAccessRow)));
 
-  testWidgets('muestra el caption "Acceso rápido" y los 4 chips con sus '
+  testWidgets(
+      'muestra el caption "Acceso rápido" y los 4 chips con sus '
       'labels (HU-05b)', (tester) async {
     await tester.pumpHomeWidget(row());
     final l10n = l10nOf(tester);

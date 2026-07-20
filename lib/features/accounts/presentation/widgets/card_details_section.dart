@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/utils/money_input_formatter.dart';
 import 'account_form_field.dart';
+import 'account_money_field.dart';
 
 /// The "Datos de la tarjeta" group of the form: credit limit, statement day and
 /// payment due day (HU-02).
@@ -12,7 +12,7 @@ import 'account_form_field.dart';
 /// there, and the draft nulls them out for any other type.
 class CardDetailsSection extends StatelessWidget {
   const CardDetailsSection({
-    required this.currencyDecimals,
+    required this.currency,
     required this.creditLimitText,
     required this.statementDay,
     required this.paymentDueDay,
@@ -25,9 +25,10 @@ class CardDetailsSection extends StatelessWidget {
     super.key,
   });
 
-  /// The selected currency's decimals (`MoneyFormatter.currencyDecimals`), so
-  /// the limit is grouped as that currency is typed — COP takes no cents.
-  final int currencyDecimals;
+  /// The selected currency's ISO code, so the limit is grouped as that
+  /// currency is typed — COP takes no cents — and re-rendered when the user
+  /// switches currency with a figure already typed.
+  final String currency;
 
   final String creditLimitText;
   final int? statementDay;
@@ -53,14 +54,13 @@ class CardDetailsSection extends StatelessWidget {
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AccountFormField.text(
+        AccountMoneyField(
           label: l10n.accountFormCreditLimitLabel,
           icon: LucideIcons.creditCard,
           hint: l10n.accountFormAmountHint,
-          initialValue: creditLimitText,
+          currency: currency,
+          text: creditLimitText,
           errorText: creditLimitError,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [MoneyInputFormatter(decimals: currencyDecimals)],
           onChanged: onCreditLimitChanged,
         ),
         const SizedBox(height: 16),

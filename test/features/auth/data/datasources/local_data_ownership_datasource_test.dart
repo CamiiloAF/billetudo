@@ -75,8 +75,7 @@ void main() {
     expect(rows['seed-transport'], 'user-1');
   });
 
-  test(
-      'reclama normal una categoría seed que la cuenta nunca había sembrado',
+  test('reclama normal una categoría seed que la cuenta nunca había sembrado',
       () async {
     await insertCategory('seed-food-drink');
     when(() => seedOwnership.existingSeedCategoryIds('user-1', any()))

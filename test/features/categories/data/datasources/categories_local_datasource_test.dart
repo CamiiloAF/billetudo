@@ -386,8 +386,7 @@ void main() {
       final all = await db.select(db.categories).get();
       expect(all, hasLength(4));
 
-      final food =
-          all.singleWhere((c) => c.id == 'seed-food-drink');
+      final food = all.singleWhere((c) => c.id == 'seed-food-drink');
       expect(food.name, 'Comida y bebida');
       expect(food.parentId, isNull);
       expect(food.kind, CategoryKind.expense);

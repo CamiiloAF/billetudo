@@ -10,8 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockFirstLaunchOfflineCubit
-    extends MockCubit<FirstLaunchOfflineState>
+class MockFirstLaunchOfflineCubit extends MockCubit<FirstLaunchOfflineState>
     implements FirstLaunchOfflineCubit {}
 
 void main() {
@@ -34,7 +33,8 @@ void main() {
         ),
       );
 
-  testWidgets('estado idle: muestra el copy agnóstico, icono y botón habilitado',
+  testWidgets(
+      'estado idle: muestra el copy agnóstico, icono y botón habilitado',
       (tester) async {
     when(() => cubit.state).thenReturn(const FirstLaunchOfflineState());
 

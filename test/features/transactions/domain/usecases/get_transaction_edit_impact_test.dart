@@ -15,9 +15,11 @@ void main() {
     expect(impact.hasImpact, isFalse);
   });
 
-  test('HU-04: cambiar el monto de una transacción con scheduledPaymentId advierte',
+  test(
+      'HU-04: cambiar el monto de una transacción con scheduledPaymentId advierte',
       () {
-    final original = buildTransaction(amountMinor: 1000, scheduledPaymentId: 'rec-1');
+    final original =
+        buildTransaction(amountMinor: 1000, scheduledPaymentId: 'rec-1');
     final draft = buildExpenseDraft(id: original.id, amountMinor: 5000);
 
     final impact = getImpact(original: original, draft: draft);

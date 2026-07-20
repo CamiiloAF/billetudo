@@ -20,6 +20,16 @@
 //    seconds. `updatedAt` is already a Drift `IntColumn` (epoch millis, see
 //    `_SyncColumns.updatedAt`) rather than a `DateTimeColumn`, but it maps to
 //    the same PowerSync `Column.integer`.
+//
+// **Postgres must match these types, not the other way around** (decision #15,
+// docs/requirements/05-auth-sync.md). Drift reads through PowerSync's *views*,
+// where every column is a `CAST(json_extract(data,'$.col') AS <type>)`. A date
+// column typed `timestamptz` in Postgres arrives as text, and SQLite's
+// `CAST('2026-07-17...' AS INTEGER)` silently yields `2026` — every server-born
+// row then reads as 1970 on device, while device-born rows are rejected on
+// upload and dropped as a fatal `22xxx`. So in Postgres a `DateTimeColumn` is
+// `bigint` in unix SECONDS and `updatedAt` is `bigint` in MILLIseconds. Never
+// `timestamptz` on a synced table.
 import 'package:powersync/powersync.dart';
 
 /// Columns shared by every table with Drift's `_SyncColumns` mixin, minus

@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 /// awaiting confirmation.
 ///
 /// Enriched with everything the list/sheet row draws, mirror of
-/// [BudgetActivityItem] but for what is not spent yet.
+/// `BudgetActivityItem` but for what is not spent yet.
 class BudgetScheduledItem extends Equatable {
   const BudgetScheduledItem({
     required this.id,
@@ -34,7 +34,7 @@ class BudgetScheduledItem extends Equatable {
   final String title;
 
   /// Account the occurrence would be paid from; the row's subtitle leads with
-  /// it, same convention as [BudgetActivityItem].
+  /// it, same convention as `BudgetActivityItem`.
   final String accountName;
 
   /// Category appearance tokens, null for an uncategorized occurrence.

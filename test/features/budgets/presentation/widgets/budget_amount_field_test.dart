@@ -74,4 +74,77 @@ void main() {
     expect(find.text(r'$'), findsOneWidget);
     expect(find.text('1.234,56'), findsOneWidget);
   });
+
+  testWidgets('switching to a currency with cents re-renders what was typed',
+      (tester) async {
+    // The field owns a controller now: an `initialValue` was read once and the
+    // typed figure kept the old currency's precision forever.
+    await pump(tester, amountMinor: 450000000);
+    await tester.enterText(find.byType(TextFormField), '4.500.000');
+    await tester.pump();
+
+    await pump(tester, amountMinor: 450000000, currency: 'USD');
+    await tester.pump();
+
+    expect(find.text('4.500.000,00'), findsOneWidget);
+  });
+
+  testWidgets('switching to a currency without cents drops them from the text',
+      (tester) async {
+    await pump(tester, amountMinor: 123456, currency: 'USD');
+    expect(find.text('1.234,56'), findsOneWidget);
+
+    // What the cubit does on the same change: round first, then re-render.
+    await pump(tester, amountMinor: 123500);
+    await tester.pump();
+
+    expect(find.text('1.235'), findsOneWidget);
+    expect(find.text('1.234,56'), findsNothing);
+  });
+
+  testWidgets('an empty field survives a currency change still empty',
+      (tester) async {
+    await pump(tester, currency: 'USD');
+    await pump(tester);
+    await tester.pump();
+
+    expect(find.text('0'), findsOneWidget); // The hint, not a typed zero.
+    expect(tester.widget<TextField>(find.byType(TextField)).controller?.text,
+        isEmpty);
+  });
+
+  testWidgets('the caret stays put while typing without a currency change',
+      (tester) async {
+    await pump(tester, amountMinor: 450000000);
+    final field = find.byType(TextFormField);
+
+    await tester.enterText(field, '4.500.000');
+    await tester.pump();
+    // Put the caret in the middle, as tapping mid-figure would.
+    final controller =
+        tester.widget<TextField>(find.byType(TextField)).controller!;
+    controller.selection = const TextSelection.collapsed(offset: 3);
+
+    // A rebuild with the same currency must not touch the text or the caret.
+    await pump(tester, amountMinor: 450000000);
+    await tester.pump();
+
+    expect(controller.text, '4.500.000');
+    expect(controller.selection.baseOffset, 3);
+  });
+
+  testWidgets('the caret lands at the end after a currency change',
+      (tester) async {
+    await pump(tester, amountMinor: 123456, currency: 'USD');
+    final controller =
+        tester.widget<TextField>(find.byType(TextField)).controller!;
+    controller.selection = const TextSelection.collapsed(offset: 8);
+
+    await pump(tester, amountMinor: 123500);
+    await tester.pump();
+
+    // The old offset counted characters of a figure that no longer exists.
+    expect(controller.text, '1.235');
+    expect(controller.selection.baseOffset, controller.text.length);
+  });
 }
