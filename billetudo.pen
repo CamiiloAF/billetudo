@@ -49,13 +49,25 @@
       "x": 76,
       "y": 19444,
       "name": "Zona — AUTH / AJUSTES / MAS (Claro+Oscuro)",
-      "width": 11778,
+      "width": 11328,
       "height": 1309,
       "fill": "#00000000",
       "cornerRadius": 24,
       "stroke": "$border",
       "strokeWidth": 2,
-      "layout": "none"
+      "layout": "none",
+      "children": [
+        {
+          "type": "note",
+          "id": "zMb36",
+          "x": 5229,
+          "y": 448,
+          "name": "UX Review Note",
+          "width": 340,
+          "height": 0,
+          "content": "[MENOR] MoreRow (more_row.dart) usa icon-wrap uniforme $primarySoft/$primaryOnSoft violeta en TODAS las filas. En Pencil (Appearance Field / R8PlN dentro de gXcHt) el icon-wrap de las filas de navegacion normales es neutro ($muted #EEECFB + $text-secondary #6B6980); el color primario solo se reserva para el CTA especial 'Respaldar en la nube' en Ajustes (jDaUb). Aplicar icon-wrap neutro a las filas de Mas para no diluir el acento de marca."
+        }
+      ]
     },
     {
       "type": "frame",
@@ -83,7 +95,19 @@
       "cornerRadius": 24,
       "stroke": "$border",
       "strokeWidth": 2,
-      "layout": "none"
+      "layout": "none",
+      "children": [
+        {
+          "type": "note",
+          "id": "xbmA5",
+          "x": 2274,
+          "y": 2623,
+          "name": "Review — o9116 ref discrepancy",
+          "width": 292,
+          "height": 636,
+          "content": "[IMPORTANTE] Este nodo (o9116/qsjbj, 'Sheet - Confirmar Eliminar Transacción') usa icono alert-triangle + $expense/$expense-soft (rojo) en el header, mientras que 'Categorias — Eliminar Categoria' (jngMo) usa trash-2 + $primary/$primary-soft (violeta) para la MISMA severidad de accion (borrado simple, reversible via papelera). El bug-fixes.md cita o9116/qsjbj como la referencia canonica a replicar en toda la app -> al construir SheetMessage/confirm_delete_simple_sheet.dart, usar SIEMPRE $expense/$expense-soft + alert-triangle para consistencia, y considerar actualizar jngMo en Pencil para igualar (fuera de alcance de este reporte, solo dejar constancia)."
+        }
+      ]
     },
     {
       "type": "frame",
@@ -25005,14 +25029,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "note",
-              "id": "xbmA5",
-              "name": "Review — o9116 ref discrepancy",
-              "width": 260,
-              "height": 0,
-              "content": "[IMPORTANTE] Este nodo (o9116/qsjbj, 'Sheet - Confirmar Eliminar Transacción') usa icono alert-triangle + $expense/$expense-soft (rojo) en el header, mientras que 'Categorias — Eliminar Categoria' (jngMo) usa trash-2 + $primary/$primary-soft (violeta) para la MISMA severidad de accion (borrado simple, reversible via papelera). El bug-fixes.md cita o9116/qsjbj como la referencia canonica a replicar en toda la app -> al construir SheetMessage/confirm_delete_simple_sheet.dart, usar SIEMPRE $expense/$expense-soft + alert-triangle para consistencia, y considerar actualizar jngMo en Pencil para igualar (fuera de alcance de este reporte, solo dejar constancia)."
             },
             {
               "type": "frame",
@@ -53002,7 +53018,7 @@
     {
       "type": "frame",
       "id": "QOJ74",
-      "x": 8740,
+      "x": 8290,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 1: Confirmar (Oscuro)",
       "theme": {
@@ -53093,7 +53109,7 @@
     {
       "type": "frame",
       "id": "jxqEb",
-      "x": 9640,
+      "x": 9190,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 2: Datos Locales (Oscuro)",
       "theme": {
@@ -53324,7 +53340,7 @@
     {
       "type": "frame",
       "id": "q43mHJ",
-      "x": 10090,
+      "x": 9640,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 3: Confirmacion (Oscuro)",
       "theme": {
@@ -54935,98 +54951,6 @@
       ]
     },
     {
-      "type": "frame",
-      "id": "MDDdY",
-      "x": 8290,
-      "y": 19570,
-      "name": "Auth — Cerrar Sesion Variante A: Bottom Sheet (Oscuro)",
-      "theme": {
-        "mode": "dark"
-      },
-      "clip": true,
-      "width": 390,
-      "height": 972,
-      "fill": "$background",
-      "cornerRadius": 40,
-      "layout": "vertical",
-      "children": [
-        {
-          "id": "t4qJ5U",
-          "type": "ref",
-          "ref": "vYZJT",
-          "name": "Status Bar",
-          "width": "fill_container",
-          "height": 62
-        },
-        {
-          "id": "SAw01",
-          "type": "ref",
-          "ref": "PqTUt",
-          "name": "Overlay",
-          "width": "fill_container",
-          "height": "fill_container",
-          "descendants": {
-            "wJBMX": {
-              "type": "frame",
-              "id": "m8R0Mh",
-              "name": "Content Slot",
-              "width": "fill_container",
-              "layout": "vertical",
-              "gap": 16,
-              "children": [
-                {
-                  "id": "UKEml",
-                  "type": "ref",
-                  "ref": "XPjIZ",
-                  "name": "Sheet Icon Header",
-                  "width": "fill_container",
-                  "descendants": {
-                    "mv2jh": {
-                      "fill": "$primary-soft"
-                    },
-                    "IPjWU": {
-                      "icon": "log-out",
-                      "fill": "$primary-on-soft"
-                    },
-                    "lmN3k": {
-                      "enabled": true,
-                      "content": "Cerrar sesión",
-                      "lineHeight": 1.3
-                    },
-                    "FxD3p": {
-                      "content": "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.",
-                      "fill": "$text-secondary"
-                    }
-                  }
-                },
-                {
-                  "id": "GOFzd",
-                  "type": "ref",
-                  "ref": "Ot4yI",
-                  "name": "Buttons Row",
-                  "width": "fill_container",
-                  "descendants": {
-                    "yX5SX/kAVHJ": {
-                      "content": "Cancelar"
-                    },
-                    "qfTBg": {
-                      "fill": "$primary"
-                    },
-                    "qfTBg/PKzAO": {
-                      "icon": "log-out"
-                    },
-                    "qfTBg/JHbmq": {
-                      "content": "Cerrar sesión"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
       "type": "text",
       "id": "agNKU",
       "x": 100,
@@ -55041,7 +54965,7 @@
     {
       "type": "frame",
       "id": "GamyH",
-      "x": 3700,
+      "x": 3250,
       "y": 20582,
       "name": "Auth — Borrar Cuenta Paso 2: Estado Deshabilitado CTA (Claro)",
       "theme": {
@@ -55090,7 +55014,7 @@
     {
       "type": "frame",
       "id": "Fqpgc",
-      "x": 9640,
+      "x": 9190,
       "y": 20582,
       "name": "Auth — Borrar Cuenta Paso 2: Estado Deshabilitado CTA (Oscuro)",
       "theme": {
@@ -56169,100 +56093,8 @@
     },
     {
       "type": "frame",
-      "id": "j4hgYN",
-      "x": 2350,
-      "y": 19570,
-      "name": "Auth — Cerrar Sesion Variante A: Bottom Sheet (Claro)",
-      "theme": {
-        "mode": "light"
-      },
-      "clip": true,
-      "width": 390,
-      "height": 972,
-      "fill": "$background",
-      "cornerRadius": 40,
-      "layout": "vertical",
-      "children": [
-        {
-          "id": "z5QXOE",
-          "type": "ref",
-          "ref": "vYZJT",
-          "name": "Status Bar",
-          "width": "fill_container",
-          "height": 62
-        },
-        {
-          "id": "MpUhq",
-          "type": "ref",
-          "ref": "PqTUt",
-          "name": "Overlay",
-          "width": "fill_container",
-          "height": "fill_container",
-          "descendants": {
-            "wJBMX": {
-              "type": "frame",
-              "id": "w2zALN",
-              "name": "Content Slot",
-              "width": "fill_container",
-              "layout": "vertical",
-              "gap": 16,
-              "children": [
-                {
-                  "id": "t4kOpp",
-                  "type": "ref",
-                  "ref": "XPjIZ",
-                  "name": "Sheet Icon Header",
-                  "width": "fill_container",
-                  "descendants": {
-                    "mv2jh": {
-                      "fill": "$primary-soft"
-                    },
-                    "IPjWU": {
-                      "icon": "log-out",
-                      "fill": "$primary-on-soft"
-                    },
-                    "lmN3k": {
-                      "enabled": true,
-                      "content": "Cerrar sesión",
-                      "lineHeight": 1.3
-                    },
-                    "FxD3p": {
-                      "content": "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.",
-                      "fill": "$text-secondary"
-                    }
-                  }
-                },
-                {
-                  "id": "WHRel",
-                  "type": "ref",
-                  "ref": "Ot4yI",
-                  "name": "Buttons Row",
-                  "width": "fill_container",
-                  "descendants": {
-                    "yX5SX/kAVHJ": {
-                      "content": "Cancelar"
-                    },
-                    "qfTBg": {
-                      "fill": "$primary"
-                    },
-                    "qfTBg/PKzAO": {
-                      "icon": "log-out"
-                    },
-                    "qfTBg/JHbmq": {
-                      "content": "Cerrar sesión"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "type": "frame",
       "id": "j8ZdEx",
-      "x": 2800,
+      "x": 2350,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 1: Confirmar (Claro)",
       "theme": {
@@ -56353,7 +56185,7 @@
     {
       "type": "frame",
       "id": "T1YkkA",
-      "x": 3250,
+      "x": 2800,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 1: Error (Claro)",
       "theme": {
@@ -56473,7 +56305,7 @@
     {
       "type": "frame",
       "id": "K8SAG",
-      "x": 3700,
+      "x": 3250,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 2: Datos Locales (Claro)",
       "theme": {
@@ -56704,7 +56536,7 @@
     {
       "type": "frame",
       "id": "sqm4I",
-      "x": 4150,
+      "x": 3700,
       "y": 19570,
       "name": "Auth — Borrar Cuenta Paso 3: Confirmacion (Claro)",
       "theme": {
@@ -56837,7 +56669,7 @@
     {
       "type": "frame",
       "id": "jDaUb",
-      "x": 4600,
+      "x": 4150,
       "y": 19570,
       "name": "Ajustes — Sin sesion (Claro)",
       "theme": {
@@ -57105,7 +56937,7 @@
     {
       "type": "frame",
       "id": "aaQBp",
-      "x": 5050,
+      "x": 4600,
       "y": 19570,
       "name": "Ajustes — Con sesion (Claro)",
       "theme": {
@@ -57524,7 +57356,7 @@
     {
       "type": "frame",
       "id": "gXcHt",
-      "x": 5500,
+      "x": 5050,
       "y": 19570,
       "name": "Mas — Final (Claro)",
       "clip": true,
@@ -57824,7 +57656,7 @@
     {
       "type": "frame",
       "id": "j4JYF",
-      "x": 10540,
+      "x": 10090,
       "y": 19570,
       "name": "Ajustes — Sin sesion (Oscuro)",
       "theme": {
@@ -58092,7 +57924,7 @@
     {
       "type": "frame",
       "id": "TQHmY",
-      "x": 10990,
+      "x": 10540,
       "y": 19570,
       "name": "Ajustes — Con sesion (Oscuro)",
       "theme": {
@@ -58511,7 +58343,7 @@
     {
       "type": "frame",
       "id": "X9x7x",
-      "x": 11440,
+      "x": 10990,
       "y": 19570,
       "name": "Mas — Final (Oscuro)",
       "theme": {
@@ -91442,7 +91274,7 @@
     {
       "type": "note",
       "id": "V6qgZ2",
-      "x": 5500,
+      "x": 5050,
       "y": 19250,
       "name": "UX Review Note",
       "width": 340,
@@ -91452,7 +91284,7 @@
     {
       "type": "note",
       "id": "X7VNO",
-      "x": 5500,
+      "x": 5050,
       "y": 19420,
       "name": "UX Review Note",
       "width": 340,
@@ -91461,18 +91293,8 @@
     },
     {
       "type": "note",
-      "id": "zMb36",
-      "x": 5500,
-      "y": 19820,
-      "name": "UX Review Note",
-      "width": 340,
-      "height": 0,
-      "content": "[MENOR] MoreRow (more_row.dart) usa icon-wrap uniforme $primarySoft/$primaryOnSoft violeta en TODAS las filas. En Pencil (Appearance Field / R8PlN dentro de gXcHt) el icon-wrap de las filas de navegacion normales es neutro ($muted #EEECFB + $text-secondary #6B6980); el color primario solo se reserva para el CTA especial 'Respaldar en la nube' en Ajustes (jDaUb). Aplicar icon-wrap neutro a las filas de Mas para no diluir el acento de marca."
-    },
-    {
-      "type": "note",
       "id": "W4TyOS",
-      "x": 4600,
+      "x": 4150,
       "y": 19320,
       "name": "UX Review Note",
       "width": 320,

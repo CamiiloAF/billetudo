@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Continuar'**
   String get commonContinue;
 
+  /// Conjunción para unir el último elemento de una lista en prosa, ej. 'a, b y c'.
+  ///
+  /// In es, this message translates to:
+  /// **'y'**
+  String get commonAnd;
+
   /// No description provided for @commonEdit.
   ///
   /// In es, this message translates to:
@@ -1112,11 +1118,47 @@ abstract class AppLocalizations {
   /// **'Más recientes primero'**
   String get transactionsSortDateDesc;
 
+  /// No description provided for @transactionsSortDateAsc.
+  ///
+  /// In es, this message translates to:
+  /// **'Más antiguos primero'**
+  String get transactionsSortDateAsc;
+
   /// No description provided for @transactionsSortAmountDesc.
   ///
   /// In es, this message translates to:
-  /// **'Monto: mayor a menor'**
+  /// **'Mayor a menor'**
   String get transactionsSortAmountDesc;
+
+  /// No description provided for @transactionsSortAmountAsc.
+  ///
+  /// In es, this message translates to:
+  /// **'Menor a mayor'**
+  String get transactionsSortAmountAsc;
+
+  /// No description provided for @transactionsSortSectionDate.
+  ///
+  /// In es, this message translates to:
+  /// **'FECHA'**
+  String get transactionsSortSectionDate;
+
+  /// No description provided for @transactionsSortSectionAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'MONTO'**
+  String get transactionsSortSectionAmount;
+
+  /// No description provided for @transactionsSortActiveByDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenado por fecha'**
+  String get transactionsSortActiveByDate;
+
+  /// No description provided for @transactionsSortActiveByAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenado por monto'**
+  String get transactionsSortActiveByAmount;
 
   /// Etiqueta del chip de cuenta cuando hay más de una cuenta activa como filtro (HU-06a).
   ///
@@ -1460,35 +1502,29 @@ abstract class AppLocalizations {
   /// **'Programado'**
   String get transactionSourceScheduled;
 
-  /// No description provided for @transactionEditImpactTitle.
+  /// No description provided for @transactionEditImpactMessage.
   ///
   /// In es, this message translates to:
-  /// **'Este movimiento está vinculado'**
-  String get transactionEditImpactTitle;
+  /// **'Esta transacción está vinculada a {links}. Si cambias el monto, revisa que siga coincidiendo.'**
+  String transactionEditImpactMessage(String links);
 
-  /// No description provided for @transactionEditImpactScheduled.
+  /// No description provided for @transactionEditImpactLinkScheduled.
   ///
   /// In es, this message translates to:
-  /// **'Afecta su pago programado asociado.'**
-  String get transactionEditImpactScheduled;
+  /// **'tu pago programado'**
+  String get transactionEditImpactLinkScheduled;
 
-  /// No description provided for @transactionEditImpactGoal.
+  /// No description provided for @transactionEditImpactLinkGoal.
   ///
   /// In es, this message translates to:
-  /// **'Afecta la meta a la que aporta.'**
-  String get transactionEditImpactGoal;
+  /// **'tu meta'**
+  String get transactionEditImpactLinkGoal;
 
-  /// No description provided for @transactionEditImpactDebt.
+  /// No description provided for @transactionEditImpactLinkDebt.
   ///
   /// In es, this message translates to:
-  /// **'Afecta la deuda a la que abona.'**
-  String get transactionEditImpactDebt;
-
-  /// No description provided for @transactionEditImpactConfirm.
-  ///
-  /// In es, this message translates to:
-  /// **'Guardar de todas formas'**
-  String get transactionEditImpactConfirm;
+  /// **'tu deuda'**
+  String get transactionEditImpactLinkDebt;
 
   /// No description provided for @transactionDeleteTitle.
   ///

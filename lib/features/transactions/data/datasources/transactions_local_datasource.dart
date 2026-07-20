@@ -23,7 +23,7 @@ class TransactionRowWithJoins {
 }
 
 /// How the transaction list is ordered at the SQL level (HU-06).
-enum TransactionOrderBy { dateDesc, amountDesc }
+enum TransactionOrderBy { dateDesc, dateAsc, amountDesc, amountAsc }
 
 /// Drift queries for the Transactions feature.
 ///
@@ -116,8 +116,11 @@ class TransactionsLocalDatasource {
         switch (orderBy) {
           TransactionOrderBy.dateDesc =>
             OrderingTerm.desc(_db.transactions.date),
+          TransactionOrderBy.dateAsc => OrderingTerm.asc(_db.transactions.date),
           TransactionOrderBy.amountDesc =>
             OrderingTerm.desc(_db.transactions.amountMinor),
+          TransactionOrderBy.amountAsc =>
+            OrderingTerm.asc(_db.transactions.amountMinor),
         },
         // Stable tiebreaker: also keeps every fanned-out tag row of the same
         // transaction contiguous, which [_groupByTransaction] relies on.

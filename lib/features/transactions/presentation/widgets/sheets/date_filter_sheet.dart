@@ -6,9 +6,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/date_range_picker_sheet.dart';
 import '../../../../../core/widgets/sheet_head.dart';
 import '../../../domain/entities/date_period_filter.dart';
 import '../../cubit/date_filter_cubit.dart';
+import '../../utils/date_period_label.dart';
 
 /// HU-06b's date filter sheet: the granularity segmented control and stepper
 /// apply immediately (delegated straight to [DateFilterCubit]); a custom
@@ -103,7 +105,7 @@ class DateFilterSheetBody extends StatelessWidget {
                     onPressed: () => cubit.step(-1),
                     icon: const Icon(LucideIcons.chevronLeft),
                   ),
-                  Text(DateFormat.yMMMd('es_CO').format(filter.start)),
+                  Text(datePeriodLabel(filter)),
                   IconButton(
                     onPressed: () => cubit.step(1),
                     icon: const Icon(LucideIcons.chevronRight),
@@ -136,16 +138,14 @@ class DateFilterSheetBody extends StatelessWidget {
     DatePeriodFilter filter,
   ) async {
     final now = DateTime.now();
-    final range = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(now.year - 5),
-      lastDate: DateTime(now.year + 5),
-      initialDateRange: filter.isCustomRange
-          ? DateTimeRange(
-              start: filter.start,
-              end: filter.endExclusive.subtract(const Duration(days: 1)),
-            )
-          : null,
+    final initialStart = filter.isCustomRange ? filter.start : now;
+    final initialEnd = filter.isCustomRange
+        ? filter.endExclusive.subtract(const Duration(days: 1))
+        : now;
+    final range = await DateRangePickerSheet.show(
+      context,
+      initialStart: initialStart,
+      initialEnd: initialEnd,
     );
     if (range == null) {
       return;

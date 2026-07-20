@@ -28,6 +28,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonContinue => 'Continue';
 
   @override
+  String get commonAnd => 'and';
+
+  @override
   String get commonEdit => 'Edit';
 
   @override
@@ -583,7 +586,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsSortDateDesc => 'Most recent first';
 
   @override
-  String get transactionsSortAmountDesc => 'Amount: high to low';
+  String get transactionsSortDateAsc => 'Oldest first';
+
+  @override
+  String get transactionsSortAmountDesc => 'High to low';
+
+  @override
+  String get transactionsSortAmountAsc => 'Low to high';
+
+  @override
+  String get transactionsSortSectionDate => 'DATE';
+
+  @override
+  String get transactionsSortSectionAmount => 'AMOUNT';
+
+  @override
+  String get transactionsSortActiveByDate => 'Sorted by date';
+
+  @override
+  String get transactionsSortActiveByAmount => 'Sorted by amount';
 
   @override
   String transactionsFilterAccountsSelected(int count) {
@@ -777,21 +798,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionSourceScheduled => 'Scheduled';
 
   @override
-  String get transactionEditImpactTitle => 'This transaction is linked';
+  String transactionEditImpactMessage(String links) {
+    return 'This transaction is linked to $links. If you change the amount, make sure it still matches.';
+  }
 
   @override
-  String get transactionEditImpactScheduled =>
-      'It affects its linked scheduled payment.';
+  String get transactionEditImpactLinkScheduled => 'your scheduled payment';
 
   @override
-  String get transactionEditImpactGoal =>
-      'It affects the goal it contributes to.';
+  String get transactionEditImpactLinkGoal => 'your goal';
 
   @override
-  String get transactionEditImpactDebt => 'It affects the debt it pays down.';
-
-  @override
-  String get transactionEditImpactConfirm => 'Save anyway';
+  String get transactionEditImpactLinkDebt => 'your debt';
 
   @override
   String get transactionDeleteTitle => 'Delete this transaction?';

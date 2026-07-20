@@ -138,8 +138,10 @@ class TransactionDetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final transaction = entry.transaction;
-    final money = const MoneyFormatter()
-        .format(transaction.amountMinor, currencyCode: transaction.currency);
+    final money = const MoneyFormatter().formatSymbol(
+      transaction.amountMinor,
+      currencyCode: transaction.currency,
+    );
     final locale = Localizations.localeOf(context).toString();
 
     return ListView(

@@ -36,46 +36,34 @@ class EditImpactWarningSheet extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: colors.amberSoft,
+                // Informative, not destructive (`L9DJI`): the same
+                // `primary-soft`/`primary-on-soft` treatment as the rest of
+                // this feature's informational states — never the warning
+                // amber, which is reserved for genuinely risky actions.
+                color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(LucideIcons.link, color: colors.amber, size: 28),
+              child: Icon(
+                LucideIcons.link2,
+                color: colors.primaryOnSoft,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 16),
-            // `Sheet Icon Header`'s title (`lmN3k` in `XPjIZ`) is 17/700,
-            // not the theme's 22/500 `titleLarge`.
+            // Pencil (`L9DJI`/`j8W9a`) has no separate title here — the
+            // `Sheet Icon Header`'s title (`lmN3k`) is left disabled, only
+            // its 15/500 message (`FxD3p`) is shown, as a single paragraph
+            // naming every linked relation that applies.
             Text(
-              l10n.transactionEditImpactTitle,
+              l10n.transactionEditImpactMessage(_links(l10n)),
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                height: 1.3,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
                 color: colors.textPrimary,
               ),
             ),
-            const SizedBox(height: 8),
-            if (impact.affectsScheduledPayment)
-              Text(
-                l10n.transactionEditImpactScheduled,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
-              ),
-            if (impact.affectsGoal)
-              Text(
-                l10n.transactionEditImpactGoal,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
-              ),
-            if (impact.affectsDebt)
-              Text(
-                l10n.transactionEditImpactDebt,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
-              ),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -89,7 +77,7 @@ class EditImpactWarningSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: onConfirm,
-                    child: Text(l10n.transactionEditImpactConfirm),
+                    child: Text(l10n.commonContinue),
                   ),
                 ),
               ],
@@ -98,5 +86,21 @@ class EditImpactWarningSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Joins the localized names of every linked relation that applies, in
+  /// prose form ("a, b y c" / "a, b and c"), for the message placeholder.
+  String _links(AppLocalizations l10n) {
+    final fragments = [
+      if (impact.affectsScheduledPayment)
+        l10n.transactionEditImpactLinkScheduled,
+      if (impact.affectsGoal) l10n.transactionEditImpactLinkGoal,
+      if (impact.affectsDebt) l10n.transactionEditImpactLinkDebt,
+    ];
+    if (fragments.length <= 1) {
+      return fragments.join();
+    }
+    final allButLast = fragments.sublist(0, fragments.length - 1).join(', ');
+    return '$allButLast ${l10n.commonAnd} ${fragments.last}';
   }
 }

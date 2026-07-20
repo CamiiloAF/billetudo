@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -13,7 +12,9 @@ import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
+import '../utils/date_period_label.dart';
 import '../utils/transaction_date_grouping.dart';
+import '../utils/transaction_sort_label.dart';
 import '../widgets/filter_chip_pill.dart';
 import '../widgets/sheets/account_filter_sheet.dart';
 import '../widgets/sheets/category_filter_sheet.dart';
@@ -179,13 +180,8 @@ class TransactionsSearchRow extends StatelessWidget {
           const SizedBox(width: 8),
           TransactionsSortButton(
             sortOrder: state.filter.sortOrder,
-            onTap: () => cubit.updateFilter(
-              state.filter.copyWith(
-                sortOrder:
-                    state.filter.sortOrder == TransactionSortOrder.dateDesc
-                        ? TransactionSortOrder.amountDesc
-                        : TransactionSortOrder.dateDesc,
-              ),
+            onSelect: (sortOrder) => cubit.updateFilter(
+              state.filter.copyWith(sortOrder: sortOrder),
             ),
           ),
         ],
@@ -207,7 +203,6 @@ class TransactionsFilterBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
-    final dateActive = _hasDateFilter(filter.datePeriod);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -216,12 +211,12 @@ class TransactionsFilterBar extends StatelessWidget {
         children: [
           FilterChipPill(
             label: _accountChipLabel(l10n, filter, state.accounts),
-            active: filter.hasAccountFilter,
-            leadingIcon: filter.hasAccountFilter
-                ? _accountChipIcon(filter, state.accounts)
-                : null,
-            trailingIcon:
-                filter.hasAccountFilter ? LucideIcons.chevronDown : null,
+            // The Account Chip has no neutral/unset look: HU-06a's 3 states
+            // ("N cuentas" / one account / "Todas" as a stand-in for "no
+            // filter") are all rendered in the same active pill (`s8uIq`).
+            active: true,
+            leadingIcon: _accountChipIcon(filter, state.accounts),
+            trailingIcon: LucideIcons.chevronDown,
             onTap: () async {
               final selected = await AccountFilterSheet.show(
                 context,
@@ -263,10 +258,11 @@ class TransactionsFilterBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           FilterChipPill(
-            label: dateActive
-                ? _dateChipLabel(filter.datePeriod)
-                : l10n.transactionsFilterDate,
-            active: dateActive,
+            // HU-06b: there is always a real date filter active (defaults to
+            // "Este mes"), so the Chip Fecha never renders as unset — always
+            // its own `calendar` icon plus the current period's label.
+            label: datePeriodLabel(filter.datePeriod),
+            active: true,
             leadingIcon: LucideIcons.calendar,
             onTap: () async {
               final applied = await DateFilterSheet.show(
@@ -295,16 +291,17 @@ class TransactionsFilterBar extends StatelessWidget {
     );
   }
 
-  /// The active account chip's label: the account's own name when exactly
-  /// one is selected, otherwise a count (HU-06a) — "Cuentas" when there is no
-  /// filter at all.
+  /// The Account Chip's label across HU-06a's 3 states: the account's own
+  /// name when exactly one is selected, a count for 2+, and "Todas" (not
+  /// "Cuentas") when there is no filter — `s8uIq` treats "no filter" as the
+  /// same active "Todas" state, never as an unset 4th look.
   static String _accountChipLabel(
     AppLocalizations l10n,
     TransactionFilter filter,
     List<AccountWithBalance> accounts,
   ) {
     if (!filter.hasAccountFilter) {
-      return l10n.transactionsFilterAccounts;
+      return l10n.accountFilterSelectAll;
     }
     final selected = _singleSelectedAccount(filter, accounts);
     if (selected != null) {
@@ -313,13 +310,19 @@ class TransactionsFilterBar extends StatelessWidget {
     return l10n.transactionsFilterAccountsSelected(filter.accountIds.length);
   }
 
-  /// Only resolved when exactly one account is selected and it is already
-  /// loaded — the account's own type icon (`AccountTypePresentation.icon`).
-  static IconData? _accountChipIcon(
+  /// The Account Chip's leading icon across its 3 states: the selected
+  /// account's own type icon for exactly one, a generic `layers` for 2+, and
+  /// a generic `wallet` for "Todas" (`s8uIq`/`XlXA8`).
+  static IconData _accountChipIcon(
     TransactionFilter filter,
     List<AccountWithBalance> accounts,
-  ) =>
-      _singleSelectedAccount(filter, accounts)?.type.icon;
+  ) {
+    if (!filter.hasAccountFilter) {
+      return LucideIcons.wallet;
+    }
+    final selected = _singleSelectedAccount(filter, accounts);
+    return selected?.type.icon ?? LucideIcons.layers;
+  }
 
   static Account? _singleSelectedAccount(
     TransactionFilter filter,
@@ -335,27 +338,6 @@ class TransactionsFilterBar extends StatelessWidget {
       }
     }
     return null;
-  }
-
-  /// "Este mes" / "julio 2026" / "12 jul - 18 jul" / a custom range —
-  /// whatever best names the active period, only computed once it is not the
-  /// untouched default (HU-06b).
-  static String _dateChipLabel(DatePeriodFilter period) {
-    if (period.isCustomRange) {
-      return _rangeLabel(period);
-    }
-    return switch (period.granularity!) {
-      DateGranularity.week => _rangeLabel(period),
-      DateGranularity.month =>
-        DateFormat('MMMM yyyy', 'es_CO').format(period.anchor!),
-      DateGranularity.year => DateFormat.y('es_CO').format(period.anchor!),
-    };
-  }
-
-  static String _rangeLabel(DatePeriodFilter period) {
-    final format = DateFormat.MMMd('es_CO');
-    final end = period.endExclusive.subtract(const Duration(days: 1));
-    return '${format.format(period.start)} - ${format.format(end)}';
   }
 }
 
@@ -392,6 +374,45 @@ class TransactionsListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final sortOrder = state.filter.sortOrder;
+
+    // HU-06 (`tigaH`/`Q8gSaB`): sorting by amount drops chronological order,
+    // so the `Date Head` grouping stops making sense — the list flattens
+    // into one plain run of `Transaction Row`, with a `Sort Label` above it
+    // for context since the date headers are gone.
+    if (transactionSortIsByAmount(sortOrder)) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                transactionSortActiveLabel(l10n, sortOrder)!,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+              itemCount: state.items.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) => TransactionRow(
+                entry: state.items[index],
+                onTap: () =>
+                    onOpenTransaction(state.items[index].transaction.id),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final groups = groupTransactionsByDate(state.items);
 
     return ListView.builder(

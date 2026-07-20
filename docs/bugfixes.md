@@ -3,7 +3,7 @@
     - Node IDs: ie6BF, eswQN esto debería mostrarse si la fecha de pago es HOY o anterior
     - Hay un bug, el campo "Primer pago" está cambiando solo. Tenía un pago programado para el 19 de julio y al llegar a esa fecha voy al formulario de edición y veo que el cmapo primer pago ahora dice "19 de Agosto"
 
-2) Ejecutar pasada de fidelidad en Transacciones
+2) ~~Ejecutar pasada de fidelidad en Transacciones~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-transacciones.md`
 
 3) Ejecutar pasada de fidelidad en Categorías
 

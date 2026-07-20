@@ -5,14 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../../core/utils/money_formatter.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_head.dart';
+import '../../../../accounts/presentation/widgets/account_select_row.dart';
 import '../../cubit/account_filter_cubit.dart';
 
 /// HU-06a: multiple-selection bottom sheet over the live account list, with
-/// "Todas"/"Ninguna" and an explicit "Aplicar" — dismissing without it
-/// discards every change.
+/// "Todas" and an explicit "Aplicar" — dismissing without it discards every
+/// change. There is deliberately no "Ninguna": clearing every account would
+/// leave the list showing nothing, which is never useful.
 class AccountFilterSheet extends StatelessWidget {
   const AccountFilterSheet({required this.initialSelected, super.key});
 
@@ -67,30 +68,24 @@ class AccountFilterSheetBody extends StatelessWidget {
                   onPressed: cubit.selectAll,
                   child: Text(l10n.accountFilterSelectAll),
                 ),
-                TextButton(
-                  onPressed: cubit.selectNone,
-                  child: Text(l10n.accountFilterSelectNone),
-                ),
               ],
             ),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 360),
-              child: ListView(
+              child: ListView.separated(
                 shrinkWrap: true,
-                children: [
-                  for (final entry in state.accounts)
-                    CheckboxListTile(
-                      value: state.selected.contains(entry.account.id),
-                      onChanged: (_) => cubit.toggle(entry.account.id),
-                      title: Text(entry.account.name),
-                      subtitle: Text(
-                        const MoneyFormatter().format(
-                          entry.balance.balanceMinor,
-                          currencyCode: entry.account.currency,
-                        ),
-                      ),
-                    ),
-                ],
+                itemCount: state.accounts.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final entry = state.accounts[index];
+                  return AccountSelectRow(
+                    account: entry.account,
+                    balance: entry.balance,
+                    selected: state.selected.contains(entry.account.id),
+                    onTap: () => cubit.toggle(entry.account.id),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 12),

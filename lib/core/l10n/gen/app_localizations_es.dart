@@ -28,6 +28,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonContinue => 'Continuar';
 
   @override
+  String get commonAnd => 'y';
+
+  @override
   String get commonEdit => 'Editar';
 
   @override
@@ -585,7 +588,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsSortDateDesc => 'Más recientes primero';
 
   @override
-  String get transactionsSortAmountDesc => 'Monto: mayor a menor';
+  String get transactionsSortDateAsc => 'Más antiguos primero';
+
+  @override
+  String get transactionsSortAmountDesc => 'Mayor a menor';
+
+  @override
+  String get transactionsSortAmountAsc => 'Menor a mayor';
+
+  @override
+  String get transactionsSortSectionDate => 'FECHA';
+
+  @override
+  String get transactionsSortSectionAmount => 'MONTO';
+
+  @override
+  String get transactionsSortActiveByDate => 'Ordenado por fecha';
+
+  @override
+  String get transactionsSortActiveByAmount => 'Ordenado por monto';
 
   @override
   String transactionsFilterAccountsSelected(int count) {
@@ -778,20 +799,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionSourceScheduled => 'Programado';
 
   @override
-  String get transactionEditImpactTitle => 'Este movimiento está vinculado';
+  String transactionEditImpactMessage(String links) {
+    return 'Esta transacción está vinculada a $links. Si cambias el monto, revisa que siga coincidiendo.';
+  }
 
   @override
-  String get transactionEditImpactScheduled =>
-      'Afecta su pago programado asociado.';
+  String get transactionEditImpactLinkScheduled => 'tu pago programado';
 
   @override
-  String get transactionEditImpactGoal => 'Afecta la meta a la que aporta.';
+  String get transactionEditImpactLinkGoal => 'tu meta';
 
   @override
-  String get transactionEditImpactDebt => 'Afecta la deuda a la que abona.';
-
-  @override
-  String get transactionEditImpactConfirm => 'Guardar de todas formas';
+  String get transactionEditImpactLinkDebt => 'tu deuda';
 
   @override
   String get transactionDeleteTitle => '¿Eliminar este movimiento?';

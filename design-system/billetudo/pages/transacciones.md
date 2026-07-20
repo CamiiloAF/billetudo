@@ -105,6 +105,7 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
 4. **List**: agrupada por fecha.
    - **Date Head** (`justifyContent:"space_between"`): label del grupo ("Hoy"/"Ayer"/"12 de julio") en `$text-primary` 14/700 + contador "N movimientos" en `$text-secondary` 12/500 a la derecha.
    - Filas: instancias de `Transaction Row` (`DKJaf`), gap **16** entre filas dentro de un grupo, gap **24** entre grupos.
+   - **Corregido:** `Name` (`ua7j7`, la descripción del movimiento) desbordaba sin límite con textos largos (ej. "Diseño freelance para agencia internacional de branding" tapaba el `Sub` de abajo). Ahora envuelto en `Name Wrap` (`XWfyu`, `clip:true`, `height:40` ≈ 2 líneas a 15px/1.3). Pencil no soporta ellipsis nativo — el clip a 2 líneas en el `.pen` es la aproximación visual; en Flutter implementar con `maxLines: 2` + `TextOverflow.ellipsis` en el widget real.
 5. **FAB**: círculo 56px `$primary`, icono `plus` (`$on-primary`), `layoutPosition:"absolute"`, sombra `#6C5CE766`. **Construcción ad-hoc, NO es `reusable:true` todavía** — candidato a componentizar si se repite en otra pantalla (ej. si Presupuestos/Metas usan el mismo patrón de FAB).
 
 **Decisión de diseño (variante ganadora):** se exploraron 4 variantes (V1 chips scroll + agrupado, V2 filtro único + lista continua, V3 chip cuenta protagonista + airy, V4 mezcla V1+V3). Se eligió **V4** (Chips Row de V1 combinado con el Account Chip protagonista de V3) por dar acceso de un toque a los filtros de HU-06/HU-06a sin sacrificar la jerarquía visual de la cuenta seleccionada. Variantes descartadas (V1 `vk9HA`, V2 `JJ90m`, V3 `KCh28`) eliminadas del `.pen` de inmediato tras la decisión.
@@ -179,7 +180,7 @@ Aplica a Gasto e Ingreso (Transferencia no lleva categoría). Reemplaza el selec
 
 ### Selector de cuenta del formulario (sheet single-select)
 
-El campo Cuenta (y las 2 cuentas de Transferencia) abre un sheet de **selección simple** — distinto del Filtro de Cuentas de la Lista (`jpARf`), que es multi-select con "Todas"/"Ninguna" y botón "Aplicar". Aquí un tap elige y cierra, sin confirmación.
+El campo Cuenta (y las 2 cuentas de Transferencia) abre un sheet de **selección simple** — distinto del Filtro de Cuentas de la Lista (`jpARf`), que es multi-select con "Todas" y botón "Aplicar". Aquí un tap elige y cierra, sin confirmación.
 
 - **Sheet** (Pencil `fcVZN` "Account Select Sheet", ref `a510v` / código `AccountPickerSheetBody` sobre `Bottom Sheet Base` `PqTUt` / `BottomSheetBase`): título centrado "Elegir cuenta" + lista viva de cuentas, cada fila la misma `Filter Account Row` (`X3tZG`) reusada del filtro pero en modo single-select (la cuenta elegida queda marcada con su `check`). Saldo en rojo (`$expense-text`) si es negativo.
 - **Transferencia**: el sheet de cada campo excluye la cuenta ya elegida en el otro (`excludingId`) para no permitir origen == destino.
@@ -252,7 +253,7 @@ Las 7 piezas que cerraban el 100% de cobertura de HU. Todas reutilizan `Bottom S
 | Sheet - Nueva Etiqueta | `NazyV` | HU-07 |
 | Sheet - Aviso Impacto Edición | `L9DJI` | HU-04 |
 
-- **Filtro de cuentas** (`jpARf`): nuevo componente **`Filter Account Row`** (`X3tZG`) — icono circular + nombre/tipo + saldo, reusado en las 4 filas de ejemplo (Efectivo y Nequi marcadas). "Todas"/"Ninguna" en la cabecera + `Button/Primary` "Aplicar" al fondo.
+- **Filtro de cuentas** (`jpARf`): nuevo componente **`Filter Account Row`** (`X3tZG`) — icono circular + nombre/tipo + saldo, reusado en las 4 filas de ejemplo (Efectivo y Nequi marcadas). "Todas" en la cabecera (se quitó "Ninguna" 2026-07-20: no aporta valor, seleccionarla dejaría la lista sin movimientos) + `Button/Primary` "Aplicar" al fondo.
 - **Filtro de categoría** (`q0CTl`): **lista expandible raíz + subcategorías**, no un grid plano (rediseñado — ver detalle abajo).
 - **Filtro de tipo** (`rjjfw`): filas seleccionables (mismo patrón que cuentas, ver abajo) — no `Segmented Control`, decisión deliberada (HU-06 permite combinar tipos, no son mutuamente excluyentes).
 

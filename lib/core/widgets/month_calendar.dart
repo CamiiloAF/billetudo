@@ -22,13 +22,15 @@ class MonthCalendar extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     this.disabledBefore,
+    this.rangeEnd,
     super.key,
   });
 
   /// Any day inside the month currently shown; only its year/month matter.
   final DateTime visibleMonth;
 
-  /// The currently selected day.
+  /// The currently selected day. In range mode ([rangeEnd] non-null) this is
+  /// the range's start.
   final DateTime selected;
 
   final ValueChanged<DateTime> onDaySelected;
@@ -37,6 +39,13 @@ class MonthCalendar extends StatelessWidget {
 
   /// Days strictly before this floor render dimmed and ignore taps.
   final DateTime? disabledBefore;
+
+  /// When set, switches the grid to range mode: [selected] and [rangeEnd]
+  /// render as solid `primary` endpoints, and the days strictly between them
+  /// render in `primary-soft` (`Sheet - Rango Personalizado` in
+  /// `billetudo.pen`, e.g. days 4-8 between the 3rd and the 9th). `null`
+  /// keeps the single-date behaviour used by `DatePickerSheet`/`SnoozeSheet`.
+  final DateTime? rangeEnd;
 
   static const double _cell = 44;
 
@@ -95,6 +104,7 @@ class MonthCalendar extends StatelessWidget {
           selected: selected,
           onDaySelected: onDaySelected,
           disabledBefore: disabledBefore,
+          rangeEnd: rangeEnd,
         ),
       ],
     );
@@ -173,6 +183,7 @@ class CalendarMonthGrid extends StatelessWidget {
     required this.selected,
     required this.onDaySelected,
     this.disabledBefore,
+    this.rangeEnd,
     super.key,
   });
 
@@ -180,6 +191,9 @@ class CalendarMonthGrid extends StatelessWidget {
   final DateTime selected;
   final ValueChanged<DateTime> onDaySelected;
   final DateTime? disabledBefore;
+
+  /// See [MonthCalendar.rangeEnd].
+  final DateTime? rangeEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +204,7 @@ class CalendarMonthGrid extends StatelessWidget {
     final leadingBlanks = firstOfMonth.weekday - 1;
     final today = DateUtils.dateOnly(DateTime.now());
     final selectedDay = DateUtils.dateOnly(selected);
+    final rangeEndDay = rangeEnd == null ? null : DateUtils.dateOnly(rangeEnd!);
     final floor =
         disabledBefore == null ? null : DateUtils.dateOnly(disabledBefore!);
 
@@ -204,7 +219,15 @@ class CalendarMonthGrid extends StatelessWidget {
           day: day,
           date: DateTime(visibleMonth.year, visibleMonth.month, day),
           isSelected: DateTime(visibleMonth.year, visibleMonth.month, day) ==
-              selectedDay,
+                  selectedDay ||
+              (rangeEndDay != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day) ==
+                      rangeEndDay),
+          isRangeMiddle: rangeEndDay != null &&
+              DateTime(visibleMonth.year, visibleMonth.month, day)
+                  .isAfter(selectedDay) &&
+              DateTime(visibleMonth.year, visibleMonth.month, day)
+                  .isBefore(rangeEndDay),
           isToday:
               DateTime(visibleMonth.year, visibleMonth.month, day) == today,
           isDisabled: floor != null &&
@@ -228,6 +251,7 @@ class CalendarDayCell extends StatelessWidget {
     required this.isToday,
     required this.onTap,
     this.isDisabled = false,
+    this.isRangeMiddle = false,
     super.key,
   });
 
@@ -237,6 +261,11 @@ class CalendarDayCell extends StatelessWidget {
   final bool isToday;
   final bool isDisabled;
   final ValueChanged<DateTime> onTap;
+
+  /// Strictly between a range's start and end (`isSelected` is reserved for
+  /// the two endpoints). Renders `primary-soft` background with
+  /// `primary-on-soft` text, as in `billetudo.pen`'s range sheet.
+  final bool isRangeMiddle;
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +280,11 @@ class CalendarDayCell extends StatelessWidget {
       background = colors.primary;
       foreground = colors.onPrimary;
       weight = FontWeight.w700;
+      border = null;
+    } else if (isRangeMiddle) {
+      background = colors.primarySoft;
+      foreground = colors.primaryOnSoft;
+      weight = FontWeight.w500;
       border = null;
     } else if (isToday) {
       background = Colors.transparent;
