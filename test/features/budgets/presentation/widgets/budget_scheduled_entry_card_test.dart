@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// HU-12: the "Programado" entry point (`s09qcC`/`pb88i`) — its own card
-/// under the hero, switching to `$amber`/`$amber-text` when [atRisk] (a
+/// under the hero, switching to `$amber`/`$amber-text` when `atRisk` (a
 /// projected overdraw), the documented exception to the sober palette.
 void main() {
   Future<void> pump(

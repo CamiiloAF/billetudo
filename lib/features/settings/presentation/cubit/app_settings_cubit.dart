@@ -37,8 +37,8 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
 
   /// Persists the "Modo sobres" flag (HU-06). The stream re-emits the stored
   /// value, so no manual state juggling is needed.
-  Future<void> setZeroBasedEnabled(bool enabled) =>
-      _setZeroBasedEnabled(enabled);
+  Future<void> setZeroBasedEnabled({required bool enabled}) =>
+      _setZeroBasedEnabled(enabled: enabled);
 
   @override
   Future<void> close() async {

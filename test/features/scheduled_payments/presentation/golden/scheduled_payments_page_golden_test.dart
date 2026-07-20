@@ -33,7 +33,7 @@ class MockPendingOccurrencesCubit extends MockCubit<PendingOccurrencesState>
 /// `ScheduledDueInChip`/
 /// `ScheduledPendingRow` compare their dates against `DateTime.now()` at
 /// render time, so every fixture date here is built relative to "today"
-/// (see [inDays]) instead of a hardcoded date — otherwise the "en N días"
+/// (see `inDays`) instead of a hardcoded date — otherwise the "en N días"
 /// text would drift a little every day this suite runs, which is not a real
 /// regression.
 void main() {

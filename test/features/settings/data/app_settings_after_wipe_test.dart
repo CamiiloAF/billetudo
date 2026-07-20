@@ -62,7 +62,7 @@ void main() {
   group('el wipe se lleva app_settings', () {
     test('la fila singleton desaparece (powersync_clear no la perdona)',
         () async {
-      await settingsRepository.setZeroBasedEnabled(true);
+      await settingsRepository.setZeroBasedEnabled(enabled: true);
       expect(await settingsRows(), 1);
 
       await wipe.wipeAll();
@@ -80,7 +80,7 @@ void main() {
     test('setZeroBasedEnabled persiste de verdad (recrea la fila)', () async {
       await wipe.wipeAll();
 
-      await settingsRepository.setZeroBasedEnabled(true);
+      await settingsRepository.setZeroBasedEnabled(enabled: true);
 
       final settings = await settingsRepository.getSettings();
       expect(settings.getRight().toNullable()!.zeroBasedEnabled, isTrue);
@@ -100,7 +100,7 @@ void main() {
       await wipe.wipeAll();
 
       await settingsRepository.markCategoriesSeeded();
-      await settingsRepository.setZeroBasedEnabled(true);
+      await settingsRepository.setZeroBasedEnabled(enabled: true);
 
       expect(
         await settingsRows(),

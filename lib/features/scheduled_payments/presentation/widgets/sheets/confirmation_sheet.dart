@@ -155,8 +155,11 @@ class ConfirmationSheetBody extends StatelessWidget {
             onEdit: () {
               final router = GoRouter.of(context);
               Navigator.of(context).pop(ConfirmationSheetResult.cancelled);
-              router.push(
-                  AppRoutes.editScheduledPayment(state.scheduledPaymentId));
+              unawaited(
+                router.push(
+                  AppRoutes.editScheduledPayment(state.scheduledPaymentId),
+                ),
+              );
             },
           ),
         );

@@ -25,8 +25,8 @@ class BudgetScheduledRow extends StatelessWidget {
 
   final BudgetScheduledItem item;
 
-  /// Called with [item.scheduledPaymentId] (the template's id) to open its
-  /// detail.
+  /// Called with [item]'s `scheduledPaymentId` (the template's id) to open
+  /// its detail.
   final ValueChanged<String> onTap;
 
   @override

@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/empty_state.dart';
 import 'package:billetudo/features/accounts/domain/entities/accounts_overview.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/accounts_list_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/accounts_list_state.dart';
@@ -8,7 +9,6 @@ import 'package:billetudo/features/accounts/presentation/widgets/account_card.da
 import 'package:billetudo/features/accounts/presentation/widgets/accounts_error_view.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/accounts_total_card.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/credit_card_account_row.dart';
-import 'package:billetudo/core/widgets/empty_state.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/skeleton_row.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';

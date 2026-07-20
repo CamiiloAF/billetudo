@@ -22,7 +22,7 @@ class BudgetActivityRow extends StatelessWidget {
 
   final BudgetActivityItem item;
 
-  /// Called with [item.id] (the real `Transaction` id) to open its detail.
+  /// Called with [item]'s id (the real `Transaction` id) to open its detail.
   final ValueChanged<String> onTap;
 
   @override

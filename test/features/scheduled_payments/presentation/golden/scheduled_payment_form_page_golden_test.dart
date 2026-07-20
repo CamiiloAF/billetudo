@@ -201,7 +201,7 @@ void main() {
           categoryName: 'Suscripciones',
           amountText: '10000',
           note: 'Netflix + Spotify',
-          tagIds: {'t-1'},
+          tagIds: const {'t-1'},
         ),
         'edit_expense_$suffix',
         brightness: brightness,

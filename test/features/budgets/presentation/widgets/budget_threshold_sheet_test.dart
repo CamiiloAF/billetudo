@@ -1,10 +1,11 @@
+import 'dart:ui' show Tristate;
+
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_threshold_option.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_threshold_custom_sheet.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_threshold_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -138,8 +139,8 @@ void main() {
       );
       // The selection is not carried by font weight alone.
       expect(
-        tester.getSemantics(custom).hasFlag(SemanticsFlag.isSelected),
-        isTrue,
+        tester.getSemantics(custom).flagsCollection.isSelected,
+        Tristate.isTrue,
       );
     });
   });

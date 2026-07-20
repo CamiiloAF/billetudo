@@ -67,7 +67,7 @@ enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
 ///  - `confirmed`: applied — a `Transaction` was generated (auto mode
 ///    reaches this directly; manual mode reaches it via user confirmation).
 ///  - `skipped`: user discarded it (HU-03), no transaction generated.
-///  - `snoozed`: user moved only this occurrence to [snoozedToDate] (HU-07);
+///  - `snoozed`: user moved only this occurrence to `snoozedToDate` (HU-07);
 ///    the template's cadence/`nextDate` is untouched.
 enum ScheduledOccurrenceStatus { pending, confirmed, skipped, snoozed }
 

@@ -25,7 +25,7 @@ class FakeSyncStatusSource implements SyncStatusSource {
   /// What `pendingUploadCount()` resolves to; set it to a throwing value by
   /// assigning `pendingUploadError` instead.
   int pendingCount = 0;
-  Object? pendingUploadError;
+  Error? pendingUploadError;
 
   @override
   Future<int> pendingUploadCount() async {

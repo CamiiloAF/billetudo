@@ -1,7 +1,7 @@
 name: billetudo
 description: Billetudo — app de finanzas personales local-first (Flutter) para el mercado hispanohablante.
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.0.1+1
 
 # NOTA: las versiones son indicativas. Ajusta con:
 #   flutter pub get   /   flutter pub upgrade --major-versions
@@ -127,6 +127,9 @@ dev_dependencies:
   patrol: ^4.7.1
   integration_test:
     sdk: flutter
+  # SharedPreferences.setMockInitialValues en di_test — transitiva vía
+  # otros paquetes, pero se usa directo así que hay que declararla.
+  shared_preferences: ^2.3.2
 
 # Patrol e2e: tests live in integration_test/ (not the default patrol_test/),
 # so this project's other integration_test/ conventions (Flutter's own runner)
