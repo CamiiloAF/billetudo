@@ -9,6 +9,7 @@ import '../../../../core/widgets/segmented_control.dart';
 import '../../../accounts/presentation/widgets/sheets/currency_picker_sheet.dart';
 import '../../../transactions/presentation/widgets/sheets/account_filter_sheet.dart';
 import '../../../transactions/presentation/widgets/sheets/category_filter_sheet.dart';
+import '../../domain/entities/budget_draft.dart';
 import '../cubit/budget_form_cubit.dart';
 import '../cubit/budget_form_state.dart';
 import '../utils/budget_format.dart';
@@ -66,9 +67,11 @@ class BudgetFormPage extends StatelessWidget {
                     label: state.isEditing
                         ? l10n.budgetFormSaveCta
                         : l10n.budgetFormCreateCta,
-                    onPressed: state.canSubmit && !state.submitting
-                        ? cubit.submit
-                        : null,
+                    // Always tappable (only disabled mid-save): a greyed-out CTA
+                    // that does nothing reads as a bug. Tapping with an invalid
+                    // form now surfaces an inline error on the offending field
+                    // instead of a silent no-op.
+                    onPressed: state.submitting ? null : cubit.submit,
                   ),
               ],
             ),
@@ -124,6 +127,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                 initialValue: state.name,
                 hint: l10n.budgetFormNameHint,
                 onChanged: cubit.nameChanged,
+                errorText: _errorFor(l10n, state, BudgetDraft.fieldName),
               ),
             ),
           ],
@@ -136,6 +140,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         BudgetAmountField(
           amountMinor: state.amountMinor,
           currency: state.currency,
+          errorText: _errorFor(l10n, state, BudgetDraft.fieldAmount),
           onChanged: cubit.amountChanged,
           onCurrencyTap: () async {
             final picked = await CurrencyPickerSheet.show(
@@ -260,6 +265,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             value: state.endDate == null
                 ? l10n.budgetFormForever
                 : BudgetFormat.longDate(state.endDate!, locale),
+            errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
             onTap: () => _pickEndDate(context, cubit, state),
             onCleared: state.endDate == null
                 ? null
@@ -272,6 +278,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             value: state.endDate == null
                 ? l10n.budgetFormEndHint
                 : BudgetFormat.longDate(state.endDate!, locale),
+            errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
             onTap: () => _pickEndDate(context, cubit, state),
           ),
         const SizedBox(height: 12),
@@ -322,5 +329,20 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
     if (picked != null) {
       cubit.endDateSelected(picked);
     }
+  }
+
+  /// Maps the failing field the domain named to the localized message for that
+  /// field, shown only on the input that actually failed (mirrors
+  /// `AccountFormPage._errorFor`).
+  String? _errorFor(AppLocalizations l10n, BudgetFormState state, String field) {
+    if (state.failedField != field) {
+      return null;
+    }
+    return switch (field) {
+      BudgetDraft.fieldName => l10n.budgetErrorName,
+      BudgetDraft.fieldAmount => l10n.budgetErrorAmount,
+      BudgetDraft.fieldEndDate => l10n.budgetErrorEndDate,
+      _ => null,
+    };
   }
 }

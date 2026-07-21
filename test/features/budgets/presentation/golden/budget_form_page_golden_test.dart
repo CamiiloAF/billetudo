@@ -84,7 +84,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('nuevo, vacío (CTA deshabilitado) ($suffix)', (tester) async {
+    testWidgets('nuevo, vacío (CTA siempre activo) ($suffix)', (tester) async {
       await golden(
         tester,
         BudgetFormState.initial(DateTime(2025, 7, 21)),

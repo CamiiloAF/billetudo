@@ -12,6 +12,7 @@ class BudgetNameField extends StatelessWidget {
     required this.initialValue,
     required this.hint,
     required this.onChanged,
+    this.errorText,
     super.key,
   });
 
@@ -22,41 +23,62 @@ class BudgetNameField extends StatelessWidget {
 
   final ValueChanged<String> onChanged;
 
+  /// Set when the name failed validation (HU-01: a budget needs a name).
+  /// Switches the box border to `$expense` and shows a message below it —
+  /// same pattern as `AccountFormField`.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final errorText = this.errorText;
     final textStyle = theme.textTheme.titleMedium?.copyWith(
       fontSize: 15,
       fontWeight: FontWeight.w500,
     );
 
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusField),
-        border: Border.all(color: colors.border),
-      ),
-      alignment: Alignment.center,
-      child: TextFormField(
-        initialValue: initialValue,
-        onChanged: onChanged,
-        maxLength: BudgetDraft.maxNameLength,
-        style: textStyle?.copyWith(color: colors.textPrimary),
-        decoration: InputDecoration(
-          isCollapsed: true,
-          filled: false,
-          counterText: '',
-          contentPadding: EdgeInsets.zero,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          hintText: hint,
-          hintStyle: textStyle?.copyWith(color: colors.textSecondary),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusField),
+            border: Border.all(
+              color: errorText != null ? colors.expense : colors.border,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: TextFormField(
+            initialValue: initialValue,
+            onChanged: onChanged,
+            maxLength: BudgetDraft.maxNameLength,
+            textCapitalization: TextCapitalization.sentences,
+            style: textStyle?.copyWith(color: colors.textPrimary),
+            decoration: InputDecoration(
+              isCollapsed: true,
+              filled: false,
+              counterText: '',
+              contentPadding: EdgeInsets.zero,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              hintText: hint,
+              hintStyle: textStyle?.copyWith(color: colors.textSecondary),
+            ),
+          ),
         ),
-      ),
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            errorText,
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.expense),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -693,6 +693,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionErrorCategory => 'Choose a category.';
 
   @override
+  String get transactionErrorAmount => 'Enter an amount greater than zero.';
+
+  @override
+  String get transactionErrorTransferAccount =>
+      'Choose the destination account.';
+
+  @override
   String get categorySelectTitle => 'Choose category';
 
   @override
@@ -1546,6 +1553,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetFormNameHint => 'e.g. Monthly groceries';
 
   @override
+  String get budgetErrorName => 'Enter a name for the budget.';
+
+  @override
+  String get budgetErrorAmount => 'Enter an amount greater than zero.';
+
+  @override
+  String get budgetErrorEndDate => 'Choose an end date after the start date.';
+
+  @override
   String get budgetFormIconLabel => 'Icon';
 
   @override
@@ -1935,6 +1951,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentFormCategoryMoreLabel => 'Other';
+
+  @override
+  String get scheduledPaymentErrorAccount => 'Choose an account.';
+
+  @override
+  String get scheduledPaymentErrorAmount =>
+      'Enter an amount greater than zero.';
+
+  @override
+  String get scheduledPaymentErrorTransferAccount =>
+      'Choose the destination account.';
+
+  @override
+  String get scheduledPaymentErrorCategory => 'Choose a category.';
 
   @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';

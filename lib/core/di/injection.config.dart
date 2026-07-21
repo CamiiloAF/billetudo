@@ -498,14 +498,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i889.GetTags>(),
               gh<_i877.CreateTag>(),
             ));
-    gh.factory<_i117.ScheduledPaymentFormCubit>(
-        () => _i117.ScheduledPaymentFormCubit(
-              gh<_i242.CreateScheduledPayment>(),
-              gh<_i843.UpdateScheduledPayment>(),
-              gh<_i470.GetScheduledPaymentDetail>(),
-              gh<_i452.SetScheduledPaymentTags>(),
-              gh<_i636.DeleteScheduledPayment>(),
-            ));
     gh.factory<_i426.WatchMonthTransactions>(
         () => _i426.WatchMonthTransactions(gh<_i654.TransactionRepository>()));
     gh.factory<_i990.CreateTransaction>(
@@ -737,6 +729,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
+            ));
+    gh.factory<_i117.ScheduledPaymentFormCubit>(
+        () => _i117.ScheduledPaymentFormCubit(
+              gh<_i242.CreateScheduledPayment>(),
+              gh<_i843.UpdateScheduledPayment>(),
+              gh<_i470.GetScheduledPaymentDetail>(),
+              gh<_i452.SetScheduledPaymentTags>(),
+              gh<_i636.DeleteScheduledPayment>(),
+              gh<_i837.WatchAccounts>(),
             ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));

@@ -184,6 +184,7 @@ class CategoryFormBody extends StatelessWidget {
         TextFormField(
           initialValue: state.name,
           maxLength: CategoryDraft.maxNameLength,
+          textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
             hintText: l10n.categoryFormNameHint,
             counterText: '',

@@ -139,6 +139,10 @@ class TransactionFormPage extends StatelessWidget {
                         onOperator: cubit.amountOperatorPressed,
                         onEquals: cubit.amountEqualsPressed,
                         onBackspace: cubit.amountBackspace,
+                        errorText: state.failedField ==
+                                TransactionDraft.fieldAmountMinor
+                            ? l10n.transactionErrorAmount
+                            : null,
                       ),
                     ],
                   ),
@@ -329,6 +333,10 @@ class TransferAccountsGroupBody extends StatelessWidget {
               onSelected: cubit.transferAccountSelected,
               excludingId: state.accountId,
               inlineIcon: iconByAccountId[state.transferAccountId],
+              errorText:
+                  state.failedField == TransactionDraft.fieldTransferAccountId
+                      ? l10n.transactionErrorTransferAccount
+                      : null,
             ),
           ],
         );

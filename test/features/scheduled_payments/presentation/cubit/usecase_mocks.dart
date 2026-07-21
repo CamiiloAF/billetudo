@@ -1,3 +1,4 @@
+import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/confirm_scheduled_occurrence.dart';
@@ -68,6 +69,8 @@ class MockSetScheduledPaymentTags extends Mock
 class MockGetTags extends Mock implements GetTags {}
 
 class MockCreateTag extends Mock implements CreateTag {}
+
+class MockWatchAccounts extends Mock implements WatchAccounts {}
 
 /// Fallbacks mocktail needs for `any()` on the feature's own types.
 void registerScheduledPaymentPresentationFallbacks() {

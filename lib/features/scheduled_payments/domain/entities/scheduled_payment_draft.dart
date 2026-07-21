@@ -199,18 +199,26 @@ class ScheduledPaymentDraft extends Equatable {
       case ScheduledPaymentType.expense:
       case ScheduledPaymentType.income:
         final categoryId = this.categoryId;
-        if (categoryId != null) {
-          final expectedKind = type == ScheduledPaymentType.expense
-              ? CategoryKind.expense
-              : CategoryKind.income;
-          if (categoryKind != expectedKind) {
-            return Left(
-              ValidationFailure(
-                'the category must be of kind ${expectedKind.name}',
-                field: fieldCategoryId,
-              ),
-            );
-          }
+        final expectedKind = type == ScheduledPaymentType.expense
+            ? CategoryKind.expense
+            : CategoryKind.income;
+        // A gasto/ingreso template must be categorized (product decision,
+        // mirrors `TransactionDraft`): a transfer never is (handled above).
+        if (categoryId == null) {
+          return const Left(
+            ValidationFailure(
+              'a category is required',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        if (categoryKind != expectedKind) {
+          return Left(
+            ValidationFailure(
+              'the category must be of kind ${expectedKind.name}',
+              field: fieldCategoryId,
+            ),
+          );
         }
         return Right((categoryId, categoryKind, null, tagIds));
     }

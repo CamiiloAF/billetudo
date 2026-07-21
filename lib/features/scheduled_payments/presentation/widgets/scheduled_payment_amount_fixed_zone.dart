@@ -18,6 +18,7 @@ class ScheduledPaymentAmountFixedZone extends StatelessWidget {
     required this.amountMinor,
     required this.currency,
     required this.onChanged,
+    this.errorText,
     super.key,
   });
 
@@ -25,9 +26,16 @@ class ScheduledPaymentAmountFixedZone extends StatelessWidget {
   final String currency;
   final ValueChanged<int> onChanged;
 
+  /// Set when the amount failed validation (HU-01: a template needs a positive
+  /// amount). Shown as a message anchored above the zone so Guardar no longer
+  /// feels like a silent no-op.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
+    final errorText = this.errorText;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -37,13 +45,28 @@ class ScheduledPaymentAmountFixedZone extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          child: ScheduledPaymentEditableAmountField(
-            amountMinor: amountMinor,
-            currency: currency,
-            // Pencil paints the anchored amount in `$text-primary`: the
-            // brand violet is for the keypad/actions, not for the value.
-            valueColor: colors.textPrimary,
-            onChanged: onChanged,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (errorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    errorText,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colors.expense),
+                  ),
+                ),
+              ScheduledPaymentEditableAmountField(
+                amountMinor: amountMinor,
+                currency: currency,
+                // Pencil paints the anchored amount in `$text-primary`: the
+                // brand violet is for the keypad/actions, not for the value.
+                valueColor: colors.textPrimary,
+                onChanged: onChanged,
+              ),
+            ],
           ),
         ),
       ),

@@ -13,7 +13,8 @@ El núcleo de la app. Registro **manual** ilimitado — limitarlo rompería la p
 Como usuario quiero registrar un gasto indicando cuenta, categoría, monto, fecha y nota opcional, para llevar control de en qué se me va el dinero.
 
 **Criterios de aceptación:**
-- Campos: `accountId` (obligatorio), `categoryId` (opcional, debe ser `kind = expense`), `amountMinor` (obligatorio, entero positivo en centavos), `currency`, `date` (obligatoria, default hoy), `note` (opcional).
+- Campos: `accountId` (obligatorio), `categoryId` (**obligatorio** para gasto, debe ser `kind = expense`), `amountMinor` (obligatorio, entero positivo en centavos), `currency`, `date` (obligatoria, default hoy), `note` (opcional).
+- **Categoría obligatoria en gasto/ingreso** (decisión de producto): un movimiento de gasto o ingreso sin categoría no aporta a los reportes. Solo la **transferencia** queda exenta (HU-03, no lleva categoría). El formulario valida y muestra error visible si falta (nunca no-op silencioso al guardar).
 - `type = expense`, `source = manual` por defecto.
 - El saldo de la cuenta se refleja de inmediato tras guardar.
 - El monto se captura en la moneda de la cuenta seleccionada por defecto; ver `12-multi-moneda.md` si se registra en otra moneda.
@@ -28,7 +29,7 @@ Como usuario quiero registrar un gasto indicando cuenta, categoría, monto, fech
 Como usuario quiero registrar un ingreso (salario, freelance, etc.), para que mi saldo y mis reportes reflejen también lo que entra, no solo lo que gasto.
 
 **Criterios de aceptación:**
-- Igual que HU-01 pero `type = income`, y `categoryId` debe ser de `kind = income` si se asigna.
+- Igual que HU-01 pero `type = income`, y `categoryId` es **obligatorio** y de `kind = income`.
 
 ### HU-03 — Registrar una transferencia entre cuentas
 Como usuario quiero mover dinero de una cuenta a otra (ej. de banco a efectivo), para que mi patrimonio total no se distorsione como si fuera un gasto.

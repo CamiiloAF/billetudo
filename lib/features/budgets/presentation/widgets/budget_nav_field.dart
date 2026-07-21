@@ -25,6 +25,7 @@ class BudgetNavField extends StatelessWidget {
     required this.onTap,
     this.label,
     this.onCleared,
+    this.errorText,
     super.key,
   });
 
@@ -42,70 +43,90 @@ class BudgetNavField extends StatelessWidget {
   /// When set, clears the field in one tap instead of opening the picker.
   final VoidCallback? onCleared;
 
+  /// Set when the field failed validation (e.g. a one-off budget with no end
+  /// date). Switches the box border to `$expense` and shows a message below.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final label = this.label;
+    final errorText = this.errorText;
     final text = label == null
         ? value
         : AppLocalizations.of(context).budgetFormRowValue(label, value);
 
-    return Material(
-      color: colors.surface,
-      borderRadius: BorderRadius.circular(AppTheme.radiusField),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusField),
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Material(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusField),
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(AppTheme.radiusField),
-            border: Border.all(color: colors.border),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: colors.textSecondary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  text,
-                  // Pencil renders no ellipsis, so a long account name looks
-                  // fine on the frame and would wrap here: pin it to one line.
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: colors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
+            child: Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppTheme.radiusField),
+                border: Border.all(
+                  color: errorText != null ? colors.expense : colors.border,
                 ),
               ),
-              const SizedBox(width: 8),
-              if (onCleared != null)
-                InkWell(
-                  onTap: onCleared,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      LucideIcons.x,
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: colors.textSecondary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      text,
+                      // Pencil renders no ellipsis, so a long account name looks
+                      // fine on the frame and would wrap here: pin it to one line.
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (onCleared != null)
+                    InkWell(
+                      onTap: onCleared,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          LucideIcons.x,
+                          size: 16,
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    )
+                  else
+                    Icon(
+                      LucideIcons.chevronRight,
                       size: 16,
                       color: colors.textSecondary,
                     ),
-                  ),
-                )
-              else
-                Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: colors.textSecondary,
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            errorText,
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.expense),
+          ),
+        ],
+      ],
     );
   }
 }

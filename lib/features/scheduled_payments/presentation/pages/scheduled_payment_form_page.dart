@@ -17,6 +17,7 @@ import '../../../transactions/presentation/pages/transaction_form_page.dart'
 import '../../../transactions/presentation/widgets/category_picker/category_quick_picker.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
 import '../../domain/entities/scheduled_payment.dart';
+import '../../domain/entities/scheduled_payment_draft.dart';
 import '../cubit/scheduled_payment_form_cubit.dart';
 import '../cubit/scheduled_payment_form_state.dart';
 import '../widgets/scheduled_payment_amount_fixed_zone.dart';
@@ -102,6 +103,10 @@ class ScheduledPaymentFormPage extends StatelessWidget {
                             MoneyFormatter.parseMinor(state.amountText) ?? 0,
                         currency: state.currency,
                         onChanged: cubit.amountChanged,
+                        errorText: state.failedField ==
+                                ScheduledPaymentDraft.fieldAmountMinor
+                            ? l10n.scheduledPaymentErrorAmount
+                            : null,
                       ),
                     ],
                   ),
@@ -138,6 +143,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           selectedName: state.accountName,
           onSelected: cubit.accountSelected,
           excludingId: state.transferAccountId,
+          errorText:
+              state.failedField == ScheduledPaymentDraft.fieldAccountId
+                  ? l10n.scheduledPaymentErrorAccount
+                  : null,
         ),
         if (state.isTransfer) ...[
           const SizedBox(height: 8),
@@ -147,6 +156,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
             selectedName: state.transferAccountName,
             onSelected: cubit.transferAccountSelected,
             excludingId: state.accountId,
+            errorText: state.failedField ==
+                    ScheduledPaymentDraft.fieldTransferAccountId
+                ? l10n.scheduledPaymentErrorTransferAccount
+                : null,
           ),
         ] else ...[
           const SizedBox(height: 8),
@@ -171,6 +184,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
               category.kind,
               category.name,
             ),
+            errorText:
+                state.failedField == ScheduledPaymentDraft.fieldCategoryId
+                    ? l10n.scheduledPaymentErrorCategory
+                    : null,
           ),
         ],
         const SizedBox(height: 16),
@@ -252,6 +269,7 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         const SizedBox(height: 8),
         TextFormField(
           initialValue: state.note,
+          textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(hintText: l10n.transactionFormNoteLabel),
           onChanged: cubit.noteChanged,
         ),

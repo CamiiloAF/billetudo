@@ -1274,6 +1274,18 @@ abstract class AppLocalizations {
   /// **'Elige una categoría.'**
   String get transactionErrorCategory;
 
+  /// No description provided for @transactionErrorAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto mayor a cero.'**
+  String get transactionErrorAmount;
+
+  /// No description provided for @transactionErrorTransferAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la cuenta de destino.'**
+  String get transactionErrorTransferAccount;
+
   /// No description provided for @categorySelectTitle.
   ///
   /// In es, this message translates to:
@@ -2714,6 +2726,24 @@ abstract class AppLocalizations {
   /// **'Ej. Mercado del mes'**
   String get budgetFormNameHint;
 
+  /// No description provided for @budgetErrorName.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un nombre para el presupuesto.'**
+  String get budgetErrorName;
+
+  /// No description provided for @budgetErrorAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto mayor a cero.'**
+  String get budgetErrorAmount;
+
+  /// No description provided for @budgetErrorEndDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una fecha de fin posterior al inicio.'**
+  String get budgetErrorEndDate;
+
   /// No description provided for @budgetFormIconLabel.
   ///
   /// In es, this message translates to:
@@ -3409,6 +3439,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Otra'**
   String get scheduledPaymentFormCategoryMoreLabel;
+
+  /// No description provided for @scheduledPaymentErrorAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta.'**
+  String get scheduledPaymentErrorAccount;
+
+  /// No description provided for @scheduledPaymentErrorAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto mayor a cero.'**
+  String get scheduledPaymentErrorAmount;
+
+  /// No description provided for @scheduledPaymentErrorTransferAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la cuenta de destino.'**
+  String get scheduledPaymentErrorTransferAccount;
+
+  /// No description provided for @scheduledPaymentErrorCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una categoría.'**
+  String get scheduledPaymentErrorCategory;
 
   /// No description provided for @scheduledPaymentFormIntervalStepperLabel.
   ///

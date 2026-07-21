@@ -135,6 +135,7 @@ class AccountFormBody extends StatelessWidget {
           initialValue: state.name,
           errorText: _errorFor(l10n, state, AccountDraft.fieldName),
           maxLength: AccountDraft.maxNameLength,
+          textCapitalization: TextCapitalization.words,
           onChanged: cubit.nameChanged,
         ),
         const SizedBox(height: 16),
@@ -145,6 +146,7 @@ class AccountFormBody extends StatelessWidget {
           initialValue: state.institution,
           errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
           maxLength: AccountDraft.maxInstitutionLength,
+          textCapitalization: TextCapitalization.words,
           onChanged: cubit.institutionChanged,
         ),
         // A card's debt lives only in "Datos de la tarjeta" (`Cupo máximo`

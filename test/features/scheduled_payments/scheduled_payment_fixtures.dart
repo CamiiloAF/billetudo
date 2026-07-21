@@ -1,3 +1,5 @@
+import 'package:billetudo/features/categories/domain/entities/category.dart'
+    show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
@@ -51,10 +53,14 @@ ScheduledPayment buildScheduledPayment({
       tombstonedAt: tombstonedAt,
     );
 
+/// [categoryId]/[categoryKind] default to a matching expense category since
+/// `ScheduledPaymentDraft.validated` now requires one for a gasto/ingreso
+/// template — pass `categoryId: null` to exercise the "sin categoría" path.
 ScheduledPaymentDraft buildExpenseDraft({
   String? id,
   String accountId = 'acc-1',
-  String? categoryId,
+  String? categoryId = 'cat-expense-1',
+  CategoryKind? categoryKind = CategoryKind.expense,
   int amountMinor = 10000,
   String currency = 'COP',
   DateTime? nextDate,
@@ -69,6 +75,7 @@ ScheduledPaymentDraft buildExpenseDraft({
       id: id,
       accountId: accountId,
       categoryId: categoryId,
+      categoryKind: categoryKind,
       amountMinor: amountMinor,
       currency: currency,
       type: ScheduledPaymentType.expense,

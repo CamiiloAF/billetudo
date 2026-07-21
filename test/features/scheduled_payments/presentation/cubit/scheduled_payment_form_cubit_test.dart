@@ -1,4 +1,9 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/accounts/domain/entities/account.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart'
+    show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
@@ -11,12 +16,35 @@ import 'package:mocktail/mocktail.dart';
 import '../../scheduled_payment_fixtures.dart';
 import 'usecase_mocks.dart';
 
+AccountWithBalance _accountWithBalance({
+  String id = 'acc-1',
+  String name = 'Cuenta 1',
+  int sortOrder = 0,
+}) {
+  final account = Account(
+    id: id,
+    name: name,
+    type: AccountType.bank,
+    currency: 'COP',
+    initialBalanceMinor: 0,
+    archived: false,
+    sortOrder: sortOrder,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026).millisecondsSinceEpoch,
+  );
+  return AccountWithBalance(
+    account: account,
+    balance: AccountBalance.fromBalance(account: account, balanceMinor: 0),
+  );
+}
+
 void main() {
   late MockCreateScheduledPayment createScheduledPayment;
   late MockUpdateScheduledPayment updateScheduledPayment;
   late MockGetScheduledPaymentDetail getScheduledPaymentDetail;
   late MockSetScheduledPaymentTags setScheduledPaymentTags;
   late MockDeleteScheduledPayment deleteScheduledPayment;
+  late MockWatchAccounts watchAccounts;
 
   setUpAll(registerScheduledPaymentPresentationFallbacks);
 
@@ -26,6 +54,12 @@ void main() {
     getScheduledPaymentDetail = MockGetScheduledPaymentDetail();
     setScheduledPaymentTags = MockSetScheduledPaymentTags();
     deleteScheduledPayment = MockDeleteScheduledPayment();
+    watchAccounts = MockWatchAccounts();
+    // Default: no accounts, so a new form opens with an empty account unless a
+    // test stubs otherwise. Individual tests override this to assert the
+    // preselection of the first account.
+    when(() => watchAccounts())
+        .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
   });
 
   ScheduledPaymentFormCubit build() => ScheduledPaymentFormCubit(
@@ -34,6 +68,7 @@ void main() {
         getScheduledPaymentDetail,
         setScheduledPaymentTags,
         deleteScheduledPayment,
+        watchAccounts,
       );
 
   group('HU-01: crear plantilla', () {
@@ -49,6 +84,7 @@ void main() {
       act: (cubit) async {
         await cubit.load(null);
         cubit.accountSelected('acc-1', 'Bancolombia');
+        cubit.categorySelected('cat-1', CategoryKind.expense, 'Arriendo');
         cubit.amountTextChanged('100');
         await cubit.submit();
       },
@@ -68,6 +104,42 @@ void main() {
       },
       verify: (cubit) {
         expect(cubit.state.failure, isNotNull);
+        verifyNever(() => createScheduledPayment(any()));
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'una plantilla nueva preselecciona la primera cuenta por sortOrder',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right(<AccountWithBalance>[
+            _accountWithBalance(id: 'acc-1', name: 'Nequi'),
+            _accountWithBalance(id: 'acc-2', name: 'Bancolombia', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-1');
+        expect(cubit.state.accountName, 'Nequi');
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'gasto sin categoría, submit falla con el campo categoría',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.accountSelected('acc-1', 'Bancolombia');
+        cubit.amountTextChanged('100');
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(
+          cubit.state.failedField,
+          ScheduledPaymentDraft.fieldCategoryId,
+        );
         verifyNever(() => createScheduledPayment(any()));
       },
     );
@@ -129,6 +201,9 @@ void main() {
 
     ScheduledPayment loadedPayment() => buildScheduledPayment(
           id: 'sp-1',
+          // A gasto template is now categorized (category required); load()
+          // re-derives its kind so an untouched edit still validates.
+          categoryId: 'cat-1',
           firstPaymentDate: firstPaymentDate,
           nextDate: advancedCursor,
         );

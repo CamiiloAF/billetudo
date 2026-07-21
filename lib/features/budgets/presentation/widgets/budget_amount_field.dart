@@ -39,6 +39,7 @@ class BudgetAmountField extends StatefulWidget {
     required this.currency,
     required this.onChanged,
     required this.onCurrencyTap,
+    this.errorText,
     super.key,
   });
 
@@ -46,6 +47,10 @@ class BudgetAmountField extends StatefulWidget {
   final String currency;
   final ValueChanged<int?> onChanged;
   final VoidCallback onCurrencyTap;
+
+  /// Set when the amount failed validation (HU-01: a budget needs a positive
+  /// amount). Switches the box border to `$expense` and shows a message below.
+  final String? errorText;
 
   @override
   State<BudgetAmountField> createState() => _BudgetAmountFieldState();
@@ -92,60 +97,76 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
     final decimals = MoneyFormatter.currencyDecimals(widget.currency);
     final amountMinor = widget.amountMinor;
+    final errorText = widget.errorText;
     const style = TextStyle(
       fontFamily: AppTheme.fontFamily,
       fontSize: 22,
       fontWeight: FontWeight.w800,
     );
 
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusField),
-        border: Border.all(color: colors.border),
-      ),
-      child: Row(
-        children: [
-          Text(
-            MoneyFormatter.currencySymbol,
-            style: style.copyWith(
-              color: amountMinor == null
-                  ? colors.textSecondary
-                  : colors.textPrimary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusField),
+            border: Border.all(
+              color: errorText != null ? colors.expense : colors.border,
             ),
           ),
-          Expanded(
-            child: TextFormField(
-              controller: _controller,
-              onChanged: (value) =>
-                  widget.onChanged(MoneyFormatter.parseMinor(value)),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [MoneyInputFormatter(decimals: decimals)],
-              style: style.copyWith(color: colors.textPrimary),
-              decoration: InputDecoration(
-                isCollapsed: true,
-                filled: false,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                hintText: _money.formatAmount(0, decimalDigits: decimals),
-                hintStyle: style.copyWith(color: colors.textSecondary),
+          child: Row(
+            children: [
+              Text(
+                MoneyFormatter.currencySymbol,
+                style: style.copyWith(
+                  color: amountMinor == null
+                      ? colors.textSecondary
+                      : colors.textPrimary,
+                ),
               ),
-            ),
+              Expanded(
+                child: TextFormField(
+                  controller: _controller,
+                  onChanged: (value) =>
+                      widget.onChanged(MoneyFormatter.parseMinor(value)),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [MoneyInputFormatter(decimals: decimals)],
+                  style: style.copyWith(color: colors.textPrimary),
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: _money.formatAmount(0, decimalDigits: decimals),
+                    hintStyle: style.copyWith(color: colors.textSecondary),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              BudgetCurrencyPill(
+                code: widget.currency,
+                onTap: widget.onCurrencyTap,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          BudgetCurrencyPill(
-            code: widget.currency,
-            onTap: widget.onCurrencyTap,
+        ),
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            errorText,
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.expense),
           ),
         ],
-      ),
+      ],
     );
   }
 }

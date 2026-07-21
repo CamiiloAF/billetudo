@@ -84,6 +84,7 @@ class _NewTagSheetState extends State<NewTagSheet> {
                   child: TextField(
                     controller: _controller,
                     autofocus: true,
+                    textCapitalization: TextCapitalization.sentences,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,

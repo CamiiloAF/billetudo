@@ -465,6 +465,45 @@ void main() {
       expect(find.text('Elige una categoría.'), findsOneWidget);
     });
 
+    testWidgets(
+        'monto en cero y falla de fieldAmountMinor, la zona de monto muestra '
+        'el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'the amount must be positive',
+            field: TransactionDraft.fieldAmountMinor,
+          ),
+        ),
+      );
+
+      expect(find.text('Ingresa un monto mayor a cero.'), findsOneWidget);
+    });
+
+    testWidgets(
+        'transferencia sin destino y falla de fieldTransferAccountId, el '
+        'selector de destino muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'a transfer requires a destination account',
+            field: TransactionDraft.fieldTransferAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige la cuenta de destino.'), findsOneWidget);
+    });
+
     testWidgets('sin fallas, ningún mensaje de error se muestra',
         (tester) async {
       await pumpForm(
@@ -474,6 +513,7 @@ void main() {
 
       expect(find.text('Elige una cuenta.'), findsNothing);
       expect(find.text('Elige una categoría.'), findsNothing);
+      expect(find.text('Ingresa un monto mayor a cero.'), findsNothing);
     });
   });
 }

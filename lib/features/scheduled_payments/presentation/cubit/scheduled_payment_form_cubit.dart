@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
@@ -26,6 +27,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     this._getScheduledPaymentDetail,
     this._setScheduledPaymentTags,
     this._deleteScheduledPayment,
+    this._watchAccounts,
   ) : super(ScheduledPaymentFormState());
 
   final CreateScheduledPayment _createScheduledPayment;
@@ -33,13 +35,30 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
   final GetScheduledPaymentDetail _getScheduledPaymentDetail;
   final SetScheduledPaymentTags _setScheduledPaymentTags;
   final DeleteScheduledPayment _deleteScheduledPayment;
+  final WatchAccounts _watchAccounts;
 
   /// Loads the template to edit, or prepares an empty form when [id] is null.
   Future<void> load(String? id) async {
     if (id == null) {
+      // No account chosen yet: preselect the first account by `sortOrder`, the
+      // same order the picker sheet shows, so a new template never opens with
+      // an empty account that would fail Guardar silently — same behaviour as
+      // `TransactionFormCubit.load`.
+      String? initialAccountId;
+      String? initialAccountName;
+      final result = await _watchAccounts().first;
+      if (isClosed) {
+        return;
+      }
+      if (result case Right(value: final accounts) when accounts.isNotEmpty) {
+        initialAccountId = accounts.first.account.id;
+        initialAccountName = accounts.first.account.name;
+      }
       emit(
         ScheduledPaymentFormState(
           status: ScheduledPaymentFormStatus.ready,
+          accountId: initialAccountId,
+          accountName: initialAccountName,
           nextDate: DateTime.now(),
         ),
       );
@@ -68,6 +87,16 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
             accountId: payment.accountId,
             accountName: detail.accountName,
             categoryId: payment.categoryId,
+            // `ScheduledPayment` never stores the category's `kind` (it is
+            // Categories' data); re-derive it from the template's own type so
+            // an edit of an already-categorized expense/income does not get
+            // rejected by `validated()` for a null kind — same fix as
+            // `TransactionFormCubit._formFor`.
+            categoryKind: payment.categoryId == null
+                ? null
+                : (payment.type == ScheduledPaymentType.expense
+                    ? CategoryKind.expense
+                    : CategoryKind.income),
             categoryName: detail.categoryName,
             amountText: const MoneyFormatter().formatAmount(
               payment.amountMinor,

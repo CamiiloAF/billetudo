@@ -36,6 +36,7 @@ class TransactionAmountFixedZone extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.errorText,
     super.key,
   });
 
@@ -54,9 +55,16 @@ class TransactionAmountFixedZone extends StatelessWidget {
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
 
+  /// Set when the amount failed validation (HU-01 criterion 8: a movement
+  /// needs a positive amount). Shown as a message anchored above the zone so
+  /// Guardar no longer feels like a silent no-op.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
+    final errorText = this.errorText;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -70,30 +78,45 @@ class TransactionAmountFixedZone extends StatelessWidget {
         duration: AppTheme.motionDuration,
         curve: AppTheme.motionCurve,
         alignment: Alignment.bottomCenter,
-        child: AnimatedSwitcher(
-          duration: AppTheme.motionDuration,
-          switchInCurve: AppTheme.motionCurve,
-          switchOutCurve: AppTheme.motionCurve,
-          child: expanded
-              ? TransactionAmountExpandedZone(
-                  key: const ValueKey('expanded'),
-                  type: type,
-                  amountMinor: amountMinor,
-                  currency: currency,
-                  onCollapse: onCollapse,
-                  onDigit: onDigit,
-                  onDecimal: onDecimal,
-                  onOperator: onOperator,
-                  onEquals: onEquals,
-                  onBackspace: onBackspace,
-                )
-              : TransactionAmountCollapsedBar(
-                  key: const ValueKey('collapsed'),
-                  type: type,
-                  amountMinor: amountMinor,
-                  currency: currency,
-                  onExpand: onExpand,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (errorText != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: Text(
+                  errorText,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.expense),
                 ),
+              ),
+            AnimatedSwitcher(
+              duration: AppTheme.motionDuration,
+              switchInCurve: AppTheme.motionCurve,
+              switchOutCurve: AppTheme.motionCurve,
+              child: expanded
+                  ? TransactionAmountExpandedZone(
+                      key: const ValueKey('expanded'),
+                      type: type,
+                      amountMinor: amountMinor,
+                      currency: currency,
+                      onCollapse: onCollapse,
+                      onDigit: onDigit,
+                      onDecimal: onDecimal,
+                      onOperator: onOperator,
+                      onEquals: onEquals,
+                      onBackspace: onBackspace,
+                    )
+                  : TransactionAmountCollapsedBar(
+                      key: const ValueKey('collapsed'),
+                      type: type,
+                      amountMinor: amountMinor,
+                      currency: currency,
+                      onExpand: onExpand,
+                    ),
+            ),
+          ],
         ),
       ),
     );

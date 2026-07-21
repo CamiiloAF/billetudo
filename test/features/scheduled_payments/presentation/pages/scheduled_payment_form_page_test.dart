@@ -1,10 +1,12 @@
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_tag_picker_cubit.dart';
@@ -278,5 +280,76 @@ void main() {
     expect(saveButton.background, AppColors.dark.primary);
     expect(saveButton.background, isNot(AppColors.light.primary));
     expect(saveButton.foreground, AppColors.dark.onPrimary);
+  });
+
+  group('feedback de validación visible al Guardar', () {
+    testWidgets('cuenta vacía muestra el error de cuenta', (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          failure: const ValidationFailure(
+            'account required',
+            field: ScheduledPaymentDraft.fieldAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una cuenta.'), findsOneWidget);
+    });
+
+    testWidgets('monto en cero muestra el error de monto', (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          failure: const ValidationFailure(
+            'amount must be positive',
+            field: ScheduledPaymentDraft.fieldAmountMinor,
+          ),
+        ),
+      );
+
+      expect(find.text('Ingresa un monto mayor a cero.'), findsOneWidget);
+    });
+
+    testWidgets('gasto sin categoría muestra el error de categoría',
+        (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          failure: const ValidationFailure(
+            'category required',
+            field: ScheduledPaymentDraft.fieldCategoryId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una categoría.'), findsOneWidget);
+    });
+
+    testWidgets('transferencia sin destino muestra el error de destino',
+        (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          type: ScheduledPaymentType.transfer,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          failure: const ValidationFailure(
+            'destination required',
+            field: ScheduledPaymentDraft.fieldTransferAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige la cuenta de destino.'), findsOneWidget);
+    });
   });
 }

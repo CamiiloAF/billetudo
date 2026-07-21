@@ -34,6 +34,15 @@ void main() {
       );
     });
 
+    test('rechaza un gasto sin categoría', () {
+      final result = buildExpenseDraft(categoryId: null).validated();
+
+      expect(
+        (result.getLeft().toNullable()! as ValidationFailure).field,
+        ScheduledPaymentDraft.fieldCategoryId,
+      );
+    });
+
     test('rechaza una categoría de kind income en un gasto', () {
       final result = ScheduledPaymentDraft(
         accountId: 'acc-1',

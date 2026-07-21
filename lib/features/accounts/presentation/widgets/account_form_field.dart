@@ -27,6 +27,7 @@ class AccountFormField extends StatelessWidget {
     this.inputFormatters,
     this.maxLength,
     this.obscureText = false,
+    this.textCapitalization = TextCapitalization.none,
     this.trailing,
     this.onChanged,
     super.key,
@@ -52,6 +53,7 @@ class AccountFormField extends StatelessWidget {
         inputFormatters = null,
         maxLength = null,
         obscureText = false,
+        textCapitalization = TextCapitalization.none,
         trailing = null,
         onChanged = null;
 
@@ -72,6 +74,10 @@ class AccountFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
   final bool obscureText;
+
+  /// How the keyboard auto-capitalizes typed text. Defaults to
+  /// [TextCapitalization.none]; name/institution fields opt into `.words`.
+  final TextCapitalization textCapitalization;
 
   /// Extra action inside the box (e.g. the reveal eye of the number field).
   final Widget? trailing;
@@ -120,6 +126,7 @@ class AccountFormField extends StatelessWidget {
             inputFormatters: inputFormatters,
             maxLength: maxLength,
             obscureText: obscureText,
+            textCapitalization: textCapitalization,
             style: theme.textTheme.bodyLarge,
             decoration: InputDecoration(
               hintText: hint,
