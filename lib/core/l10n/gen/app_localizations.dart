@@ -1061,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @transactionsErrorLocalFirst.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos siguen a salvo en este dispositivo.'**
+  /// **'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.'**
   String get transactionsErrorLocalFirst;
 
   /// No description provided for @transactionsAdd.

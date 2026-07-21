@@ -160,7 +160,7 @@
   "transactionsEmptyMessage": "No transactions recorded yet.",
   "transactionsEmptyPeriodMessage": "No transactions in this period.",
   "transactionsErrorTitle": "We couldn't load your transactions",
-  "transactionsErrorLocalFirst": "Your data is still safe on this device.",
+  "transactionsErrorLocalFirst": "Your data is still saved on your device. Try again.",
   "transactionsAdd": "Add transaction",
   "transactionsUndoDeletedMessage": "Transaction deleted.",
   "transactionsUndoAction": "Undo",

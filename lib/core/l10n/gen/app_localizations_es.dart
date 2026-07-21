@@ -569,7 +569,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsErrorLocalFirst =>
-      'Tus datos siguen a salvo en este dispositivo.';
+      'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.';
 
   @override
   String get transactionsAdd => 'Agregar movimiento';

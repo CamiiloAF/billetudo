@@ -449,7 +449,7 @@
   "@transactionsEmptyPeriodMessage": {},
   "transactionsErrorTitle": "No pudimos cargar tus movimientos",
   "@transactionsErrorTitle": {},
-  "transactionsErrorLocalFirst": "Tus datos siguen a salvo en este dispositivo.",
+  "transactionsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
   "@transactionsErrorLocalFirst": {},
   "transactionsAdd": "Agregar movimiento",
   "@transactionsAdd": {},

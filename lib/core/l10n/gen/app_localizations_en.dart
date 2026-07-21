@@ -567,7 +567,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsErrorLocalFirst =>
-      'Your data is still safe on this device.';
+      'Your data is still saved on your device. Try again.';
 
   @override
   String get transactionsAdd => 'Add transaction';
