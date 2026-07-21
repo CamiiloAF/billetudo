@@ -41,94 +41,7 @@
       "cornerRadius": 24,
       "stroke": "$border",
       "strokeWidth": 2,
-      "layout": "none",
-      "children": [
-        {
-          "type": "frame",
-          "id": "D0EoN",
-          "x": 4377,
-          "y": 96,
-          "name": "Presupuesto — Ajustar monto próximo período (Oscuro)",
-          "theme": {
-            "mode": "dark"
-          },
-          "clip": true,
-          "width": 390,
-          "height": 972,
-          "fill": "$background",
-          "cornerRadius": 40,
-          "layout": "vertical",
-          "children": [
-            {
-              "id": "aPfeL",
-              "type": "ref",
-              "ref": "vYZJT",
-              "name": "Status Bar",
-              "width": "fill_container"
-            },
-            {
-              "type": "frame",
-              "id": "eAIkd",
-              "name": "Sheet Overlay Mock",
-              "width": "fill_container",
-              "height": "fill_container",
-              "fill": "$scrim",
-              "layout": "vertical",
-              "justifyContent": "end",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "rmh4Y",
-                  "name": "Sheet",
-                  "width": "fill_container",
-                  "fill": "$surface",
-                  "cornerRadius": [
-                    28,
-                    28,
-                    0,
-                    0
-                  ],
-                  "layout": "vertical",
-                  "gap": 16,
-                  "padding": [
-                    12,
-                    20,
-                    28,
-                    20
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "wB6c0",
-                      "name": "Handle Wrap",
-                      "width": "fill_container",
-                      "justifyContent": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "DoFfg",
-                          "name": "Handle",
-                          "width": 40,
-                          "height": 4,
-                          "fill": "$border",
-                          "cornerRadius": 2
-                        }
-                      ]
-                    },
-                    {
-                      "id": "fo3H2",
-                      "type": "ref",
-                      "ref": "pkshL",
-                      "name": "Content",
-                      "width": "fill_container"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "layout": "none"
     },
     {
       "type": "frame",
@@ -93728,36 +93641,6 @@
       "content": "[APROBADO] Tipo Section (Cuentas - Agregar, Claro): fix correcto. Los 6 chips muestran color propio por tipo sobre fondo -soft (mint/sky/primary-on-soft/teal/indigo/peach). Banco seleccionado usa borde+fondo $primary-soft en el contenedor, icono se mantiene en $sky (correcto, no se recolorea a violeta). Sin problemas de layout ni contraste. Queda como referencia canonica para las demas instancias."
     },
     {
-      "type": "note",
-      "id": "G0KXkR",
-      "x": 2350,
-      "y": 3860,
-      "name": "Review Note - Edo4G fix",
-      "width": 370,
-      "height": 0,
-      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Editar (Claro) - Tipo Expandido: los 5 chips no seleccionados (Efectivo/Banco/Ahorros/Inversion/Otro) estaban monocromaticos ($text-secondary + $muted), desincronizados de E9jSG. Se aplico el mismo patron: icono a color propio + fondo -soft + pill exterior. El chip Tarjeta (seleccionado) ya estaba correcto, no se toco."
-    },
-    {
-      "type": "note",
-      "id": "Q1XFds",
-      "x": 5140,
-      "y": 3860,
-      "name": "Review Note - jpH4F fix",
-      "width": 370,
-      "height": 0,
-      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Agregar (Oscuro): contraparte oscura de E9jSG, tenia los 6 chips monocromaticos (ninguno seleccionado en este estado). Se aplico el mismo patron de color por tipo + fondo -soft. Copia congelada, no era instancia viva de un componente base, se corrigio manualmente."
-    },
-    {
-      "type": "note",
-      "id": "b69hP",
-      "x": 6040,
-      "y": 3860,
-      "name": "Review Note - kgcSM fix",
-      "width": 370,
-      "height": 0,
-      "content": "[CORREGIDO EN ESTA REVISION] Cuentas - Editar (Oscuro) - Tipo Expandido: contraparte oscura de Edo4G, mismo problema (5 chips monocromaticos, Tarjeta seleccionada ya correcta). Corregido con el mismo patron de color por tipo + fondo -soft."
-    },
-    {
       "type": "frame",
       "id": "HAPxy",
       "x": 60,
@@ -110506,105 +110389,11 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "s09qcC",
-                          "name": "Entry Row (Programado / Ajuste) — reusable",
-                          "reusable": true,
-                          "width": "fill_container",
-                          "fill": "$surface",
-                          "cornerRadius": 16,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 12,
-                          "padding": [
-                            14,
-                            16
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "SMqSM",
-                              "name": "Icon Wrap",
-                              "width": 40,
-                              "height": 40,
-                              "fill": "$primary-soft",
-                              "cornerRadius": 12,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "NOpwc",
-                                  "name": "Icon",
-                                  "width": 18,
-                                  "height": 18,
-                                  "icon": "calendar-clock",
-                                  "library": "lucide",
-                                  "fill": "$primary-on-soft"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "c98no",
-                              "name": "Mid",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 2,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "egjWU",
-                                  "name": "Label",
-                                  "fill": "$text-primary",
-                                  "content": "Programado",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 15,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "z1Msb",
-                                  "name": "Sub",
-                                  "fill": "$text-secondary",
-                                  "content": "2 pagos próximos",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "l0355",
-                              "name": "Right",
-                              "gap": 8,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "fJLRz",
-                                  "name": "Amount",
-                                  "fill": "$text-primary",
-                                  "content": "$60.000",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 16,
-                                  "fontWeight": "700"
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "M4kJIy",
-                                  "name": "Chevron",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "chevron-right",
-                                  "library": "lucide",
-                                  "fill": "$text-secondary"
-                                }
-                              ]
-                            }
-                          ]
+                          "id": "WFlYJ",
+                          "type": "ref",
+                          "ref": "s09qcC",
+                          "name": "Programado — Entry",
+                          "width": "fill_container"
                         },
                         {
                           "type": "frame",
@@ -116602,8 +116391,8 @@
     {
       "type": "frame",
       "id": "ujbZf",
-      "x": 10114,
-      "y": 30459,
+      "x": 10200,
+      "y": 16439,
       "name": "Presupuesto — Detalle (Ajuste programado, Oscuro)",
       "theme": {
         "mode": "dark"
@@ -119745,6 +119534,940 @@
       "width": 300,
       "height": 0,
       "content": "[MENOR] 'Revertir ajuste' (wB1hU/rVLrw): el fork aun NO se ejecuto, y el snackbar de exito dice 'Ajuste cancelado'. 'Revertir' connota deshacer algo ya aplicado -> leve friccion semantica con el resultado. Sugerencia: alinear verbo y confirmacion (p.ej. mantener 'Revertir' y que el snackbar diga 'Ajuste revertido', o usar 'Quitar/Cancelar ajuste'). No bloqueante."
+    },
+    {
+      "type": "frame",
+      "id": "s09qcC",
+      "x": 2714,
+      "y": 1525,
+      "name": "Entry Row (Programado / Ajuste) — reusable",
+      "reusable": true,
+      "width": 350,
+      "fill": "$surface",
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "gap": 12,
+      "padding": [
+        14,
+        16
+      ],
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "SMqSM",
+          "name": "Icon Wrap",
+          "width": 40,
+          "height": 40,
+          "fill": "$primary-soft",
+          "cornerRadius": 12,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "NOpwc",
+              "name": "Icon",
+              "width": 18,
+              "height": 18,
+              "icon": "calendar-clock",
+              "library": "lucide",
+              "fill": "$primary-on-soft"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "c98no",
+          "name": "Mid",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 2,
+          "children": [
+            {
+              "type": "text",
+              "id": "egjWU",
+              "name": "Label",
+              "fill": "$text-primary",
+              "content": "Programado",
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "z1Msb",
+              "name": "Sub",
+              "fill": "$text-secondary",
+              "content": "2 pagos próximos",
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "l0355",
+          "name": "Right",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "fJLRz",
+              "name": "Amount",
+              "fill": "$text-primary",
+              "content": "$60.000",
+              "fontFamily": "$font-body",
+              "fontSize": 16,
+              "fontWeight": "700"
+            },
+            {
+              "type": "icon",
+              "id": "M4kJIy",
+              "name": "Chevron",
+              "width": 16,
+              "height": 16,
+              "icon": "chevron-right",
+              "library": "lucide",
+              "fill": "$text-secondary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "D0EoN",
+      "x": 9750,
+      "y": 16439,
+      "name": "Presupuesto — Ajustar monto próximo período (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "aPfeL",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "type": "frame",
+          "id": "eAIkd",
+          "name": "Sheet Overlay Mock",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$scrim",
+          "layout": "vertical",
+          "justifyContent": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "rmh4Y",
+              "name": "Sheet",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": [
+                28,
+                28,
+                0,
+                0
+              ],
+              "layout": "vertical",
+              "gap": 16,
+              "padding": [
+                12,
+                20,
+                28,
+                20
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wB6c0",
+                  "name": "Handle Wrap",
+                  "width": "fill_container",
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DoFfg",
+                      "name": "Handle",
+                      "width": 40,
+                      "height": 4,
+                      "fill": "$border",
+                      "cornerRadius": 2
+                    }
+                  ]
+                },
+                {
+                  "id": "fo3H2",
+                  "type": "ref",
+                  "ref": "pkshL",
+                  "name": "Content",
+                  "width": "fill_container"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "PatSn",
+      "x": 11200,
+      "y": 23000,
+      "name": "PP Detalle — Omitidos VAR A (Intercalado)",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "TEpAV",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "h67N82",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Header",
+          "width": "fill_container",
+          "descendants": {
+            "oilB0": {
+              "icon": "arrow-left"
+            },
+            "QnxB2": {
+              "content": "Detalle"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "RJZQm",
+              "name": "Menu Button",
+              "width": 44,
+              "height": 44,
+              "fill": "$muted",
+              "cornerRadius": 22,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "b2gSOu",
+                  "name": "Icon",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "ellipsis-vertical",
+                  "library": "lucide",
+                  "fill": "$text-primary"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "wh7Yd",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            6,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "mjTXz",
+              "name": "Identity Strip",
+              "width": "fill_container",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Enf6P",
+                  "name": "Icon Wrap",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$indigo-soft",
+                  "cornerRadius": 14,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "VA04f",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "house",
+                      "library": "lucide",
+                      "fill": "$indigo"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yoed7",
+                  "name": "Mid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QhCDk",
+                      "name": "Name",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Arriendo apartamento",
+                      "fontFamily": "$font-body",
+                      "fontSize": 17,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mKye2",
+                      "name": "Sub",
+                      "fill": "$text-secondary",
+                      "content": "Vivienda · Gasto",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mnVnR",
+              "name": "Próximo Pago Hero",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xObS9",
+                  "name": "Label Row",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "E5Aerl",
+                      "name": "Label",
+                      "fill": "$text-secondary",
+                      "content": "PRÓXIMO PAGO",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UFpg9",
+                      "name": "Days Pill",
+                      "fill": "$primary-soft",
+                      "cornerRadius": 12,
+                      "padding": [
+                        6,
+                        10
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mFUUe",
+                          "name": "Days",
+                          "fill": "$primary-on-soft-strong",
+                          "content": "en 27 días",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "l0kXTq",
+                  "name": "Main",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hNEY5",
+                      "name": "Date",
+                      "fill": "$text-primary",
+                      "content": "13 de agosto, 2026",
+                      "fontFamily": "$font-body",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HlHDR",
+                      "name": "Amount",
+                      "fill": "$text-primary",
+                      "content": "$1.450.000",
+                      "fontFamily": "$font-body",
+                      "fontSize": 30,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "b0ot8A",
+                  "name": "Divider",
+                  "fill": "$border",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Q6dXO7",
+                  "name": "Phrase Row",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "m6ma8m",
+                      "name": "Freq Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "repeat",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IEQ0t",
+                      "name": "Phrase",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Se repite cada mes desde el 13 de julio, para siempre",
+                      "lineHeight": 1.35,
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ID8Nf",
+                  "name": "CTA Confirmar ahora",
+                  "width": "fill_container",
+                  "fill": "$primary-soft",
+                  "cornerRadius": 14,
+                  "gap": 8,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "z2wmOK",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "zap",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eHRGb",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "content": "Confirmar ahora",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Dp6ps",
+              "name": "Ficha Card",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 18,
+              "children": [
+                {
+                  "id": "Y3ciRD",
+                  "type": "ref",
+                  "ref": "myfAc",
+                  "name": "Field - Modo de registro",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Eau5e": {
+                      "content": "Modo de registro"
+                    },
+                    "JIG4w": {
+                      "content": "Automático"
+                    }
+                  }
+                },
+                {
+                  "type": "rectangle",
+                  "id": "BXt0U",
+                  "name": "Divider",
+                  "fill": "$border",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "id": "VWQWJ",
+                  "type": "ref",
+                  "ref": "myfAc",
+                  "name": "Field - Cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Eau5e": {
+                      "content": "Cuenta"
+                    },
+                    "JIG4w": {
+                      "content": "Bancolombia Ahorros"
+                    }
+                  }
+                },
+                {
+                  "type": "rectangle",
+                  "id": "ZQl5y",
+                  "name": "Divider",
+                  "fill": "$border",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "id": "f16Wi",
+                  "type": "ref",
+                  "ref": "myfAc",
+                  "name": "Field - Estado",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Eau5e": {
+                      "content": "Estado"
+                    },
+                    "JIG4w": {
+                      "content": "Activa"
+                    }
+                  }
+                },
+                {
+                  "type": "rectangle",
+                  "id": "bgLxR",
+                  "name": "Divider",
+                  "fill": "$border",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "KDjlW",
+                  "name": "Etiquetas Block",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Z8nN1",
+                      "name": "Label",
+                      "fill": "$text-secondary",
+                      "content": "Etiquetas",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AaBIH",
+                      "name": "Chips Row",
+                      "clip": true,
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "X4PoHf",
+                          "type": "ref",
+                          "ref": "nM9ea",
+                          "name": "Tag - viaje-cartagena-diciembre",
+                          "descendants": {
+                            "DENeb": {
+                              "content": "viaje-cartagena-diciembre",
+                              "fill": "$primary-on-soft-strong"
+                            },
+                            "nHJmd": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "u9NwI5",
+                          "type": "ref",
+                          "ref": "nM9ea",
+                          "name": "Tag - deducible",
+                          "descendants": {
+                            "DENeb": {
+                              "content": "deducible",
+                              "fill": "$primary-on-soft-strong"
+                            },
+                            "nHJmd": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QbY9P",
+              "name": "Historial Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "IapFX",
+                  "name": "Section Label",
+                  "fill": "$text-primary",
+                  "content": "Historial",
+                  "fontFamily": "$font-body",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "id": "R2Hna",
+                  "type": "ref",
+                  "ref": "DKJaf",
+                  "name": "Tx Bancolombia · 13 jul",
+                  "width": "fill_container",
+                  "descendants": {
+                    "v00D6": {
+                      "fill": "$indigo-soft"
+                    },
+                    "LcI2U": {
+                      "icon": "house",
+                      "fill": "$indigo"
+                    },
+                    "ua7j7": {
+                      "content": "Arriendo apartamento"
+                    },
+                    "pjX7P": {
+                      "content": "Bancolombia · 13 jul"
+                    },
+                    "a1Pwa": {
+                      "content": "$1.450.000",
+                      "fill": "$text-primary"
+                    }
+                  }
+                },
+                {
+                  "id": "JofY3",
+                  "type": "ref",
+                  "ref": "GPlOy",
+                  "name": "Skipped 13 jun",
+                  "width": "fill_container",
+                  "descendants": {
+                    "ZkAIS": {
+                      "content": "13 jun"
+                    }
+                  }
+                },
+                {
+                  "id": "w1F5R",
+                  "type": "ref",
+                  "ref": "DKJaf",
+                  "name": "Tx Bancolombia · 13 may",
+                  "width": "fill_container",
+                  "descendants": {
+                    "v00D6": {
+                      "fill": "$indigo-soft"
+                    },
+                    "LcI2U": {
+                      "icon": "house",
+                      "fill": "$indigo"
+                    },
+                    "ua7j7": {
+                      "content": "Arriendo apartamento"
+                    },
+                    "pjX7P": {
+                      "content": "Bancolombia · 13 may"
+                    },
+                    "a1Pwa": {
+                      "content": "$1.450.000",
+                      "fill": "$text-primary"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "DXxjv",
+                  "name": "Ver todos Link",
+                  "width": "fill_container",
+                  "height": 44,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eK8Mo",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "content": "Ver historial completo (7)",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "c7hok",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": "fill_container"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "W7gKos",
+      "x": 11200,
+      "y": 22950,
+      "name": "Title VAR A · Intercalado (Recuperar inline)",
+      "fill": "$text-primary",
+      "content": "VAR A · Intercalado (Recuperar inline)",
+      "fontFamily": "$font-body",
+      "fontSize": 16,
+      "fontWeight": "700"
+    },
+    {
+      "type": "frame",
+      "id": "GPlOy",
+      "x": 4042,
+      "y": 1215,
+      "name": "Skipped Entry Row",
+      "reusable": true,
+      "width": 350,
+      "gap": 12,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "wDTXN",
+          "name": "Icon Wrap",
+          "width": 44,
+          "height": 44,
+          "fill": "$muted",
+          "cornerRadius": 14,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "uIY8K",
+              "name": "Icon",
+              "width": 20,
+              "height": 20,
+              "icon": "calendar-x",
+              "library": "lucide",
+              "fill": "$text-secondary"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "soISj",
+          "name": "Mid",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 2,
+          "children": [
+            {
+              "type": "text",
+              "id": "L6zyx",
+              "name": "Name",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Arriendo apartamento",
+              "lineHeight": 1.3,
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "tfKdu",
+              "name": "Sub",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PimMl",
+                  "name": "Badge Omitido",
+                  "fill": "$muted",
+                  "cornerRadius": 8,
+                  "padding": [
+                    2,
+                    7
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CBFu8",
+                      "name": "Badge Label",
+                      "fill": "$text-primary",
+                      "content": "Omitido",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ZkAIS",
+                  "name": "Date",
+                  "fill": "$text-secondary",
+                  "content": "13 jun",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cgxBx",
+          "name": "Right",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "text",
+              "id": "m8O6Ha",
+              "name": "Amount",
+              "fill": "$text-secondary",
+              "content": "$1.450.000",
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "Xbmv3",
+              "name": "Recuperar",
+              "fill": "$primary-on-soft-strong",
+              "content": "Recuperar",
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "id": "NeHjS",
+      "x": 11640,
+      "y": 23690,
+      "name": "Review - Monto sin tachado",
+      "width": 250,
+      "height": 0,
+      "content": "[IMPORTANTE] El monto de la fila omitida (m8O6Ha) NO tiene strikethrough:true, pese a que el spec pide 'monto tachado'. Sin tachar, un monto gris se lee como 'pendiente/atenuado' en vez de 'no se cobro'. Agregar strikethrough:true al Amount del componente GPlOy (refuerza la senal no-color de 'Omitido', ademas del badge)."
+    },
+    {
+      "type": "note",
+      "id": "OZUBN",
+      "x": 11640,
+      "y": 23830,
+      "name": "Review - Tap target Recuperar",
+      "width": 250,
+      "height": 0,
+      "content": "[MENOR] Nota para Flutter: 'Recuperar' (Xbmv3) es texto 12/700 sin padding ni alto minimo (~15x61px). No llega a 44pt de tap target. Padear el area tocable a 44pt en implementacion (mismo fix que Tag Chip / AI Question Chip). En el .pen queda como nota, no bloquea el diseno."
+    },
+    {
+      "type": "note",
+      "id": "D6kLRb",
+      "x": 11640,
+      "y": 23970,
+      "name": "Review - Desalineacion vertical filas",
+      "width": 250,
+      "height": 0,
+      "content": "[MENOR] El Mid de la fila omitida (soISj) usa gap:3 y su sub mide 18px (badge), mientras la fila confirmada (Transaction Row) usa gap:2 y sub de 15px. Resultado: el nombre arranca ~2px mas arriba en la fila omitida que en las confirmadas que intercala. Nit de alineacion; unificar gap a 2 acerca los baselines."
     }
   ],
   "themes": {
