@@ -34,6 +34,10 @@
   },
   "commonApply": "Aplicar",
   "@commonApply": {},
+  "commonClear": "Limpiar",
+  "@commonClear": {},
+  "commonConfirm": "Confirmar",
+  "@commonConfirm": {},
   "commonDone": "Listo",
   "@commonDone": {},
   "commonCreate": "Crear",
@@ -599,6 +603,8 @@
   "@transactionFormKeypadDivide": {},
   "transactionFormKeypadEquals": "Calcular resultado",
   "@transactionFormKeypadEquals": {},
+  "transactionFormKeypadConfirm": "Confirmar",
+  "@transactionFormKeypadConfirm": {},
   "transactionFormKeypadDecimal": "Punto decimal",
   "@transactionFormKeypadDecimal": {},
   "transactionFormKeypadBackspace": "Borrar",
@@ -1651,18 +1657,21 @@
   },
   "budgetAdjustApplyCta": "Aplicar cambios",
   "@budgetAdjustApplyCta": {},
-  "budgetAdjustRemoveCta": "Quitar ajuste",
+  "budgetAdjustRemoveCta": "Revertir ajuste",
   "@budgetAdjustRemoveCta": {},
-  "budgetAdjustBannerLabel": "Ajuste de monto programado",
+  "budgetAdjustBannerLabel": "Ajuste de monto",
   "@budgetAdjustBannerLabel": {},
-  "budgetAdjustBannerSub": "{amount} este período",
+  "budgetAdjustBannerSub": "{amount} · {range}",
   "@budgetAdjustBannerSub": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": { "type": "String" },
+      "range": { "type": "String" }
+    }
   },
-  "budgetAdjustScheduledSnackbar": "Ajuste aplicado al período seleccionado.",
+  "budgetAdjustScheduledSnackbar": "Ajuste programado para el período seleccionado.",
   "@budgetAdjustScheduledSnackbar": {},
   "budgetAdjustUpdatedSnackbar": "Ajuste actualizado.",
   "@budgetAdjustUpdatedSnackbar": {},
-  "budgetAdjustCancelledSnackbar": "Ajuste cancelado — el período vuelve al monto habitual.",
+  "budgetAdjustCancelledSnackbar": "Ajuste revertido — el período vuelve al monto habitual.",
   "@budgetAdjustCancelledSnackbar": {}
 }

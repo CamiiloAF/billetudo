@@ -32,12 +32,18 @@ class ScheduledPaymentEditableAmountField extends StatefulWidget {
     this.label,
     this.valueColor,
     this.amountPrefix = '',
+    this.confirmEnabled = true,
     super.key,
   });
 
   final int amountMinor;
   final String currency;
   final ValueChanged<int> onChanged;
+
+  /// Shows the keypad's own Confirm key (which collapses this field). The
+  /// confirmation sheet passes `false`: it carries its own Confirmar button,
+  /// so the keypad's `=` spans the full width there instead.
+  final bool confirmEnabled;
 
   /// Already localized. `null` falls back to the form's generic "Monto"; the
   /// confirmation sheet passes "Monto a registrar"/"Monto a transferir".
@@ -111,6 +117,7 @@ class _ScheduledPaymentEditableAmountFieldState
                 label: widget.label,
                 valueColor: widget.valueColor,
                 amountPrefix: widget.amountPrefix,
+                confirmEnabled: widget.confirmEnabled,
                 onCollapse: _collapse,
                 onDigit: (digit) => _apply(
                     _buffer.digitPressed(digit, currency: widget.currency)),
@@ -151,6 +158,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
     this.label,
     this.valueColor,
     this.amountPrefix = '',
+    this.confirmEnabled = true,
     super.key,
   });
 
@@ -164,6 +172,10 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
   final Color? valueColor;
 
   final String amountPrefix;
+
+  /// Forwarded to [NumericKeypad.confirmEnabled].
+  final bool confirmEnabled;
+
   final VoidCallback onCollapse;
   final ValueChanged<int> onDigit;
   final VoidCallback onDecimal;
@@ -220,6 +232,10 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
           onOperator: onOperator,
           onEquals: onEquals,
           onBackspace: onBackspace,
+          // Confirm commits the amount by collapsing this field, mirroring the
+          // header chevron.
+          onConfirm: onCollapse,
+          confirmEnabled: confirmEnabled,
         ),
       ],
     );

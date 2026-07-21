@@ -12,6 +12,8 @@
   "commonBack": "Back",
   "commonMoreActions": "More options",
   "commonApply": "Apply",
+  "commonClear": "Clear",
+  "commonConfirm": "Confirm",
   "commonDone": "Done",
   "commonCreate": "Create",
   "errorUnexpected": "Something went wrong. Please try again.",
@@ -231,6 +233,7 @@
   "transactionFormKeypadMultiply": "Multiply",
   "transactionFormKeypadDivide": "Divide",
   "transactionFormKeypadEquals": "Calculate result",
+  "transactionFormKeypadConfirm": "Confirm",
   "transactionFormKeypadDecimal": "Decimal point",
   "transactionFormKeypadBackspace": "Delete",
   "transactionSourceManual": "Manual",
@@ -777,13 +780,16 @@
     }
   },
   "budgetAdjustApplyCta": "Apply changes",
-  "budgetAdjustRemoveCta": "Remove adjustment",
-  "budgetAdjustBannerLabel": "Scheduled amount adjustment",
-  "budgetAdjustBannerSub": "{amount} this period",
+  "budgetAdjustRemoveCta": "Revert adjustment",
+  "budgetAdjustBannerLabel": "Amount adjustment",
+  "budgetAdjustBannerSub": "{amount} · {range}",
   "@budgetAdjustBannerSub": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": { "type": "String" },
+      "range": { "type": "String" }
+    }
   },
-  "budgetAdjustScheduledSnackbar": "Adjustment applied to the selected period.",
+  "budgetAdjustScheduledSnackbar": "Adjustment scheduled for the selected period.",
   "budgetAdjustUpdatedSnackbar": "Adjustment updated.",
-  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — the period goes back to the usual amount."
+  "budgetAdjustCancelledSnackbar": "Adjustment reverted — the period goes back to the usual amount."
 }

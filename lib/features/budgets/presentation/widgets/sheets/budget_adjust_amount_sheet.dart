@@ -25,7 +25,7 @@ class BudgetAdjustAmountApplied extends BudgetAdjustAmountResult {
   final int newAmountMinor;
 }
 
-/// "Quitar ajuste": cancel the pending fork.
+/// "Revertir ajuste": cancel the pending fork.
 class BudgetAdjustAmountRemoved extends BudgetAdjustAmountResult {
   const BudgetAdjustAmountRemoved();
 }
@@ -39,7 +39,7 @@ class BudgetAdjustAmountRemoved extends BudgetAdjustAmountResult {
 /// one.
 ///
 /// [pendingAmountMinor] switches the CTA row: `null` renders the single
-/// primary "Aplicar cambios" (crear); non-null adds the secondary "Quitar
+/// primary "Aplicar cambios" (crear); non-null adds the secondary "Revertir
 /// ajuste" (editar/cancelar) and prefills the field with it instead of
 /// [currentAmountMinor].
 class BudgetAdjustAmountSheet extends StatefulWidget {

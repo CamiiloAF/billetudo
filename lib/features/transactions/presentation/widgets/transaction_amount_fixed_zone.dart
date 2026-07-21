@@ -196,6 +196,9 @@ class TransactionAmountExpandedZone extends StatelessWidget {
           onOperator: onOperator,
           onEquals: onEquals,
           onBackspace: onBackspace,
+          // Confirm commits the amount by collapsing the Zona Fija, the same
+          // action as the header chevron.
+          onConfirm: onCollapse,
         ),
       ],
     );

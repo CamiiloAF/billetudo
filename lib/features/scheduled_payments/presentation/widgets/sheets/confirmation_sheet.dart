@@ -717,6 +717,9 @@ class ConfirmationSheetFields extends StatelessWidget {
               // (same reasoning as the detail hero). The list rows carry the
               // expense '-'.
               amountPrefix: type == ScheduledPaymentType.income ? '+' : '',
+              // The sheet carries its own Confirmar button below, so the keypad
+              // omits its Confirm key and the `=` spans the full width.
+              confirmEnabled: false,
               onChanged: onAmountChanged,
             ),
           ),

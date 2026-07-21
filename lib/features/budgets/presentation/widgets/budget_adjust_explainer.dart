@@ -32,7 +32,7 @@ class BudgetAdjustExplainer extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: colors.primaryDeep,
+                color: colors.hintText,
               ),
             ),
           ),

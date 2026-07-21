@@ -170,6 +170,18 @@ abstract class AppLocalizations {
   /// **'Aplicar'**
   String get commonApply;
 
+  /// No description provided for @commonClear.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar'**
+  String get commonClear;
+
+  /// No description provided for @commonConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get commonConfirm;
+
   /// No description provided for @commonDone.
   ///
   /// In es, this message translates to:
@@ -1447,6 +1459,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Calcular resultado'**
   String get transactionFormKeypadEquals;
+
+  /// No description provided for @transactionFormKeypadConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get transactionFormKeypadConfirm;
 
   /// No description provided for @transactionFormKeypadDecimal.
   ///
@@ -3924,25 +3942,25 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustRemoveCta.
   ///
   /// In es, this message translates to:
-  /// **'Quitar ajuste'**
+  /// **'Revertir ajuste'**
   String get budgetAdjustRemoveCta;
 
   /// No description provided for @budgetAdjustBannerLabel.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste de monto programado'**
+  /// **'Ajuste de monto'**
   String get budgetAdjustBannerLabel;
 
   /// No description provided for @budgetAdjustBannerSub.
   ///
   /// In es, this message translates to:
-  /// **'{amount} este período'**
-  String budgetAdjustBannerSub(String amount);
+  /// **'{amount} · {range}'**
+  String budgetAdjustBannerSub(String amount, String range);
 
   /// No description provided for @budgetAdjustScheduledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste aplicado al período seleccionado.'**
+  /// **'Ajuste programado para el período seleccionado.'**
   String get budgetAdjustScheduledSnackbar;
 
   /// No description provided for @budgetAdjustUpdatedSnackbar.
@@ -3954,7 +3972,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustCancelledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste cancelado — el período vuelve al monto habitual.'**
+  /// **'Ajuste revertido — el período vuelve al monto habitual.'**
   String get budgetAdjustCancelledSnackbar;
 }
 

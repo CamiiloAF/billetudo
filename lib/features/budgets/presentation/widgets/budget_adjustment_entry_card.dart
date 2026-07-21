@@ -4,15 +4,14 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// "Ajuste de monto programado" banner (`AYsw7`/`s0ZlV`, within
-/// `reulY`/`ujbZf`): "Ajustar monto — solo el próximo período"'s pending
-/// override, shown under the hero, before "Movimientos del período". Instances
-/// the same `Entry Row` shape (`s09qcC`) as `BudgetScheduledEntryCard`
-/// (HU-12's "Programado"), but with `repeat-1` (not `calendar-clock`) and **no
-/// amount on the right** — the amount lives in [sub] instead ("$850.000 el
-/// próximo período"), the design's deliberate way to tell the two entries
-/// apart at a glance. Tapping it reopens the sheet in "editar/cancelar" mode,
-/// prefilled.
+/// "Ajuste de monto" banner (`AYsw7`/`s0ZlV`, within `reulY`/`ujbZf`): the
+/// pending amount override for the window the stepper is showing, under the
+/// hero, before "Movimientos del período". Instances the same `Entry Row`
+/// shape (`s09qcC`) as `BudgetScheduledEntryCard` (HU-12's "Programado"), but
+/// with `repeat-1` (not `calendar-clock`) and **no amount on the right** — the
+/// amount and range live in [sub] instead ("$850.000 · 21 ago – 20 sep"), the
+/// design's deliberate way to tell the two entries apart at a glance. Tapping
+/// it reopens the sheet in "editar/cancelar" mode, prefilled.
 class BudgetAdjustmentEntryCard extends StatelessWidget {
   const BudgetAdjustmentEntryCard({
     required this.label,
@@ -21,11 +20,10 @@ class BudgetAdjustmentEntryCard extends StatelessWidget {
     super.key,
   });
 
-  /// "Ajuste de monto programado" (`budgetAdjustBannerLabel`), already
-  /// localized.
+  /// "Ajuste de monto" (`budgetAdjustBannerLabel`), already localized.
   final String label;
 
-  /// "$850.000 el próximo período", already localized/formatted.
+  /// "$850.000 · 21 ago – 20 sep", already localized/formatted.
   final String sub;
   final VoidCallback onTap;
 

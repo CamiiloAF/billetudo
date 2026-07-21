@@ -5,39 +5,42 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_range_picker_sheet.dart';
+import '../../../../../core/widgets/sheet_buttons_row.dart';
 import '../../../../../core/widgets/sheet_head.dart';
 import '../../../domain/entities/date_period_filter.dart';
 import '../../cubit/date_filter_cubit.dart';
 import '../../utils/date_period_label.dart';
 
-/// HU-06b's date filter sheet: the granularity segmented control and stepper
-/// apply immediately (delegated straight to [DateFilterCubit]); a custom
-/// range only takes effect once the user confirms it in the native date range
-/// picker, and its "X" always lands back on "Este mes".
+/// HU-06b's date filter sheet: the granularity segmented control, stepper and
+/// custom range are edited against a local working copy ([DateFilterCubit]);
+/// nothing touches the list until the footer's "Aplicar" pops with the
+/// selection. "Limpiar" resets the working copy back to "Este mes".
 class DateFilterSheet extends StatelessWidget {
   const DateFilterSheet({required this.initial, super.key});
 
   final DatePeriodFilter initial;
 
-  /// Resolves to the applied [DatePeriodFilter] once the sheet is dismissed.
-  /// Never `null`: HU-06b has no "no filter" state to fall back to.
-  static Future<DatePeriodFilter> show(
+  /// Resolves to the [DatePeriodFilter] the user confirmed with "Aplicar", or
+  /// `null` when the sheet is dismissed/cancelled without applying (the caller
+  /// keeps its current filter).
+  static Future<DatePeriodFilter?> show(
     BuildContext context, {
     required DatePeriodFilter initial,
   }) async {
     final cubit = getIt<DateFilterCubit>()..start(initial);
-    await BottomSheetBase.show<void>(
+    final applied = await BottomSheetBase.show<DatePeriodFilter>(
       context,
       builder: (context) => BlocProvider.value(
         value: cubit,
         child: const DateFilterSheetBody(),
       ),
     );
-    final result = cubit.state.filter;
     await cubit.close();
-    return result;
+    return applied;
   }
 
   @override
@@ -59,72 +62,89 @@ class DateFilterSheetBody extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DateFilterCubit>();
         final filter = state.filter;
+        final isCustom = filter.isCustomRange;
+        // When a custom range is active the granularity block is inert: it
+        // stays visible but dimmed (0.4) and swallows taps, showing the "Este
+        // mes" defaults instead of the null granularity a custom filter holds.
+        final granularityView =
+            isCustom ? DatePeriodFilter.thisMonth() : filter;
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  // A sheet title is 17/700 in billetudo.pen (`ElVUc` in
-                  // `jpARf`), which is what `SheetHead` renders.
-                  child: SheetHead(title: l10n.dateFilterSheetTitle),
+            // A sheet title is 17/700 in billetudo.pen (`ElVUc` in `jpARf`),
+            // which is what `SheetHead` renders.
+            SheetHead(title: l10n.dateFilterSheetTitle),
+            const SizedBox(height: 16),
+            IgnorePointer(
+              ignoring: isCustom,
+              child: Opacity(
+                opacity: isCustom ? 0.4 : 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SegmentedButton<DateGranularity>(
+                      segments: [
+                        ButtonSegment(
+                          value: DateGranularity.week,
+                          label: Text(l10n.dateFilterWeek),
+                        ),
+                        ButtonSegment(
+                          value: DateGranularity.month,
+                          label: Text(l10n.dateFilterMonth),
+                        ),
+                        ButtonSegment(
+                          value: DateGranularity.year,
+                          label: Text(l10n.dateFilterYear),
+                        ),
+                      ],
+                      selected: {granularityView.granularity!},
+                      onSelectionChanged: (selection) =>
+                          cubit.granularitySelected(selection.first),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () => cubit.step(-1),
+                          icon: const Icon(LucideIcons.chevronLeft),
+                        ),
+                        Text(datePeriodLabel(granularityView)),
+                        IconButton(
+                          onPressed: () => cubit.step(1),
+                          icon: const Icon(LucideIcons.chevronRight),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                if (filter.isCustomRange)
-                  IconButton(
-                    onPressed: cubit.clearToThisMonth,
-                    icon: const Icon(LucideIcons.x),
-                  ),
-              ],
+              ),
             ),
-            if (!filter.isCustomRange) ...[
-              SegmentedButton<DateGranularity>(
-                segments: [
-                  ButtonSegment(
-                    value: DateGranularity.week,
-                    label: Text(l10n.dateFilterWeek),
-                  ),
-                  ButtonSegment(
-                    value: DateGranularity.month,
-                    label: Text(l10n.dateFilterMonth),
-                  ),
-                  ButtonSegment(
-                    value: DateGranularity.year,
-                    label: Text(l10n.dateFilterYear),
-                  ),
-                ],
-                selected: {filter.granularity!},
-                onSelectionChanged: (selection) =>
-                    cubit.granularitySelected(selection.first),
+            const SizedBox(height: 12),
+            DateFilterCustomRangeRow(
+              selected: isCustom,
+              label: isCustom
+                  ? l10n.dateFilterRangeLabel(
+                      DateFormat.yMMMd('es_CO').format(filter.start),
+                      DateFormat.yMMMd('es_CO').format(
+                        filter.endExclusive.subtract(const Duration(days: 1)),
+                      ),
+                    )
+                  : l10n.dateFilterCustomRange,
+              onTap: () => _pickCustomRange(context, cubit, filter),
+            ),
+            const SizedBox(height: 16),
+            SheetButtonsRow(
+              left: OutlinedButton(
+                onPressed: cubit.clearToThisMonth,
+                child: Text(l10n.commonClear),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () => cubit.step(-1),
-                    icon: const Icon(LucideIcons.chevronLeft),
-                  ),
-                  Text(datePeriodLabel(filter)),
-                  IconButton(
-                    onPressed: () => cubit.step(1),
-                    icon: const Icon(LucideIcons.chevronRight),
-                  ),
-                ],
+              right: FilledButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(cubit.state.filter),
+                child: Text(l10n.commonApply),
               ),
-            ] else
-              Text(
-                l10n.dateFilterRangeLabel(
-                  DateFormat.yMMMd('es_CO').format(filter.start),
-                  DateFormat.yMMMd('es_CO').format(
-                    filter.endExclusive.subtract(const Duration(days: 1)),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => _pickCustomRange(context, cubit, filter),
-              child: Text(l10n.dateFilterCustomRange),
             ),
           ],
         );
@@ -151,5 +171,71 @@ class DateFilterSheetBody extends StatelessWidget {
       return;
     }
     cubit.applyCustomRange(start: range.start, end: range.end);
+  }
+}
+
+/// The "Rango personalizado" row: a plain entry that opens the range picker
+/// when granularity is active, and — once a custom range is the working
+/// selection — the highlighted block (`$primary-soft` fill, `$primary` border,
+/// the range dates and a `check`) that reads as the chosen mode.
+class DateFilterCustomRangeRow extends StatelessWidget {
+  const DateFilterCustomRangeRow({
+    required this.selected,
+    required this.label,
+    required this.onTap,
+    super.key,
+  });
+
+  final bool selected;
+
+  /// "Rango personalizado" when unselected, or the formatted range dates when
+  /// selected. Already localized.
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final accent = selected ? colors.primary : colors.textSecondary;
+    return Material(
+      color: selected ? colors.primarySoft : Colors.transparent,
+      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            border: Border.all(
+              color: selected ? colors.primary : colors.border,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(LucideIcons.calendarRange, size: 18, color: accent),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (selected) ...[
+                const SizedBox(width: 10),
+                Icon(LucideIcons.check, size: 18, color: colors.primary),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

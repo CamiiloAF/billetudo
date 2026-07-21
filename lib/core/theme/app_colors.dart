@@ -20,6 +20,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.primarySoft,
     required this.primaryOnSoft,
     required this.primaryOnSoftStrong,
+    required this.hintText,
     required this.mint,
     required this.mintSoft,
     required this.sky,
@@ -58,6 +59,11 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color primarySoft;
   final Color primaryOnSoft;
   final Color primaryOnSoftStrong;
+
+  /// Text/icon tone for hint tiras over `$primary-soft`. In light it matches
+  /// [primaryDeep]; in dark it is a near-white lavender so it clears AA on the
+  /// dark `$primary-soft` fill, where `primaryDeep` read as lilac-on-lilac.
+  final Color hintText;
   final Color mint;
   final Color mintSoft;
   final Color sky;
@@ -108,6 +114,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFFEEECFB),
     primaryOnSoft: Color(0xFF6C5CE7),
     primaryOnSoftStrong: Color(0xFF5648C8),
+    hintText: Color(0xFF5648C8),
     mint: Color(0xFF059669),
     mintSoft: Color(0xFFE6F7EF),
     sky: Color(0xFF2563EB),
@@ -148,6 +155,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFF26243B),
     primaryOnSoft: Color(0xFFA78BFA),
     primaryOnSoftStrong: Color(0xFFA78BFA),
+    hintText: Color(0xFFE4DEFA),
     mint: Color(0xFF34D399),
     mintSoft: Color(0xFF16321F),
     sky: Color(0xFF4C9AFF),
@@ -188,6 +196,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? primarySoft,
     Color? primaryOnSoft,
     Color? primaryOnSoftStrong,
+    Color? hintText,
     Color? mint,
     Color? mintSoft,
     Color? sky,
@@ -226,6 +235,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primarySoft: primarySoft ?? this.primarySoft,
       primaryOnSoft: primaryOnSoft ?? this.primaryOnSoft,
       primaryOnSoftStrong: primaryOnSoftStrong ?? this.primaryOnSoftStrong,
+      hintText: hintText ?? this.hintText,
       mint: mint ?? this.mint,
       mintSoft: mintSoft ?? this.mintSoft,
       sky: sky ?? this.sky,
@@ -270,6 +280,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryOnSoft: Color.lerp(primaryOnSoft, other.primaryOnSoft, t)!,
       primaryOnSoftStrong:
           Color.lerp(primaryOnSoftStrong, other.primaryOnSoftStrong, t)!,
+      hintText: Color.lerp(hintText, other.hintText, t)!,
       mint: Color.lerp(mint, other.mint, t)!,
       mintSoft: Color.lerp(mintSoft, other.mintSoft, t)!,
       sky: Color.lerp(sky, other.sky, t)!,

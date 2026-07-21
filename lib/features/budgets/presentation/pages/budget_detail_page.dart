@@ -302,6 +302,10 @@ class BudgetDetailBody extends StatelessWidget {
                     adjustment.newAmountMinor,
                     currencyCode: budget.currency,
                   ),
+                  BudgetFormat.rangeLabel(
+                    view.window,
+                    Localizations.localeOf(context).toString(),
+                  ),
                 ),
                 onTap: onAdjustAmount,
               ),

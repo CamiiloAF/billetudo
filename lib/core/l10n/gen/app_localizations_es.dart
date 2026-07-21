@@ -46,6 +46,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonApply => 'Aplicar';
 
   @override
+  String get commonClear => 'Limpiar';
+
+  @override
+  String get commonConfirm => 'Confirmar';
+
+  @override
   String get commonDone => 'Listo';
 
   @override
@@ -783,6 +789,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionFormKeypadEquals => 'Calcular resultado';
+
+  @override
+  String get transactionFormKeypadConfirm => 'Confirmar';
 
   @override
   String get transactionFormKeypadDecimal => 'Punto decimal';
@@ -2264,24 +2273,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetAdjustApplyCta => 'Aplicar cambios';
 
   @override
-  String get budgetAdjustRemoveCta => 'Quitar ajuste';
+  String get budgetAdjustRemoveCta => 'Revertir ajuste';
 
   @override
-  String get budgetAdjustBannerLabel => 'Ajuste de monto programado';
+  String get budgetAdjustBannerLabel => 'Ajuste de monto';
 
   @override
-  String budgetAdjustBannerSub(String amount) {
-    return '$amount este período';
+  String budgetAdjustBannerSub(String amount, String range) {
+    return '$amount · $range';
   }
 
   @override
   String get budgetAdjustScheduledSnackbar =>
-      'Ajuste aplicado al período seleccionado.';
+      'Ajuste programado para el período seleccionado.';
 
   @override
   String get budgetAdjustUpdatedSnackbar => 'Ajuste actualizado.';
 
   @override
   String get budgetAdjustCancelledSnackbar =>
-      'Ajuste cancelado — el período vuelve al monto habitual.';
+      'Ajuste revertido — el período vuelve al monto habitual.';
 }

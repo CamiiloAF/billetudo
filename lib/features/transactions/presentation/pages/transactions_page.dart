@@ -240,7 +240,13 @@ class TransactionsFilterBar extends StatelessWidget {
                 context,
                 initial: filter.datePeriod,
               );
-              await cubit.updateFilter(filter.copyWith(datePeriod: applied));
+              // Null means the sheet was dismissed without "Aplicar" — keep
+              // the current filter.
+              if (applied != null) {
+                await cubit.updateFilter(
+                  filter.copyWith(datePeriod: applied),
+                );
+              }
             },
           ),
           const SizedBox(width: 8),
