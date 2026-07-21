@@ -74,6 +74,54 @@ flutter run --flavor dev --dart-define-from-file=.env.dev
 flutter run --flavor prod --dart-define-from-file=.env.prod
 ```
 
+### Publicar a Play Store (appbundle de release)
+
+Usa el script — hornea los dos flags que es fácil olvidar (`flutter build` **no**
+hereda los `--dart-define-from-file` de `launch.json`, y hay que limpiar el
+plugin registrant de dev-deps antes):
+
+```bash
+./scripts/build-release-android.sh
+```
+
+Genera `build/app/outputs/bundle/prodRelease/app-prod-release.aab`, firmado con
+la upload key (`android/key.properties`). Equivale a:
+
+```bash
+flutter pub get   # regenera GeneratedPluginRegistrant.java sin patrol/integration_test
+flutter build appbundle --flavor prod --release --dart-define-from-file=.env.prod
+```
+
+> **Si falta `--dart-define-from-file=.env.prod`**, `SUPABASE_URL`/`POWERSYNC_URL`
+> quedan vacíos y la app abre directo el gate offline ("Conéctate para
+> continuar") aunque haya internet. `flutter run` lo pasa vía `launch.json`;
+> `flutter build` no — por eso el script lo fija.
+>
+> Antes de cada subida a Play, **sube el `versionCode`** en `pubspec.yaml`
+> (`version: x.y.z+N` — el `+N` es el `versionCode`); Play rechaza un `.aab` con
+> uno ya publicado. Y registra en el OAuth client Android la **SHA-1 de la app
+> signing key de Google** (Play Console → Integridad de la app), o el login con
+> Google falla en la build de la tienda.
+
+### Publicar a App Store (IPA de release)
+
+```bash
+./scripts/build-release-ios.sh
+```
+
+Genera `build/ios/ipa/*.ipa` para subir con Transporter o el Organizer de Xcode.
+Equivale a `flutter build ipa --flavor prod --release --dart-define-from-file=.env.prod`.
+
+> **Trampa iOS:** `ios/Flutter/Generated.xcconfig` es autogenerado y refleja los
+> `DART_DEFINES` del último comando `flutter`. Si archivas desde Xcode
+> (Product → Archive) sin correr el build del CLI antes, el archive sale con env
+> viejo/vacío → mismo gate offline, sin aviso. Compila siempre por el CLI; si
+> necesitas archivar desde Xcode, corre primero
+> `flutter build ipa --config-only --flavor prod --release --dart-define-from-file=.env.prod`.
+>
+> El `CFBundleVersion` sale del `version: x.y.z+N` de `pubspec.yaml` — súbelo en
+> cada envío igual que el `versionCode` de Android.
+
 ## Generar el código de Drift
 
 ```bash
