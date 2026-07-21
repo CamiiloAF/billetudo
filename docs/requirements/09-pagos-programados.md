@@ -90,6 +90,19 @@ Como usuario quiero mover un pago próximo a una fecha posterior sin registrarlo
   - **Pago próximo aún no vencido** (automático o manual): se pospone **desde el detalle**, sobre "Próximo pago" — permite adelantarse a un cobro automático antes de que ocurra.
 - **Nota de dominio (implementación):** posponer una ocurrencia sin mover el ancla de la cadencia exige trackear la fecha pospuesta de *esa* ocurrencia sin recalcular las siguientes desde ella (el cómputo de las próximas ocurrencias debe partir del ancla original —`startDate`/`nextDate` natural—, no de la fecha pospuesta). Resolver el modelo de datos en implementación (posible columna de override de fecha por ocurrencia, o tabla de excepciones).
 
+### HU-08 — Recordatorios de vencimiento configurables (Fase 2)
+Como usuario quiero elegir con cuánta anticipación me avisan de un pago próximo, para acordarme a tiempo sin que la app decida por mí.
+
+**Fase:** 2 (captura sin fricción / notificaciones locales). No es Nivel 0 / Fase 1: mientras esta HU no exista, la app **no** promete recordatorios. Por eso el chip "Te avisamos" se **removió** de la tarjeta de pago programado (`Scheduled Card`, componente `tit0W` en `billetudo.pen`): mostrarlo sin poder cumplirlo daba una expectativa falsa. El chip se reintroduce solo cuando esta configuración exista y esté enlazada.
+
+**Criterios de aceptación:**
+- En el formulario de crear/editar (HU-01) el usuario elige **cuándo recordarle** cada pago: **el día del pago**, **1 día antes**, **3 días antes** o **una semana antes**. Debe existir además la opción **sin recordatorio** (el default mientras se valida el feature; no se asume que todos quieren push).
+- La preferencia se persiste por plantilla (nuevo campo en `ScheduledPayments`; requiere cambio de esquema y paridad Supabase/PowerSync — ver `/drift-schema-change`).
+- El recordatorio se entrega como **notificación local** (Fase 2, sin backend): se programa a partir de `nextDate` menos la anticipación elegida, y se reprograma cuando `nextDate` avanza (HU-02/HU-03) o cuando se pospone la ocurrencia (HU-07).
+- **Enlace con el chip de la tarjeta:** cuando la plantilla tiene recordatorio activo, la tarjeta vuelve a mostrar el chip (reintroducir `dIIG3` en `tit0W`), reflejando la anticipación elegida (ej. "Te avisamos 3 días antes"). Sin recordatorio, no hay chip.
+- El recordatorio **no registra ni afecta el saldo**: solo avisa. Confirmar/omitir/posponer siguen siendo acciones explícitas del usuario (HU-03, HU-07).
+- Respeta el permiso de notificaciones del sistema: si el usuario no lo concedió, la preferencia se guarda pero no se dispara, y la UI lo comunica sin bloquear el resto del feature.
+
 ## Reglas de negocio y edge cases
 
 - Un pago programado de `type = transfer` requiere `transferAccountId` igual que una transacción normal (ver `03-transacciones.md`).
