@@ -977,6 +977,8 @@
   "@settingsAppearanceLight": {},
   "settingsAppearanceDark": "Oscuro",
   "@settingsAppearanceDark": {},
+  "settingsAppearanceSystem": "Sistema",
+  "@settingsAppearanceSystem": {},
   "settingsCurrency": "Moneda",
   "@settingsCurrency": {},
   "settingsCurrencySubtitle": "Elige la moneda con la que registras tus movimientos",

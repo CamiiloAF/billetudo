@@ -386,6 +386,7 @@
   "settingsAppearance": "Appearance",
   "settingsAppearanceLight": "Light",
   "settingsAppearanceDark": "Dark",
+  "settingsAppearanceSystem": "System",
   "settingsCurrency": "Currency",
   "settingsCurrencySubtitle": "Choose the currency you log your transactions in",
   "settingsDeleteAccount": "Delete account",

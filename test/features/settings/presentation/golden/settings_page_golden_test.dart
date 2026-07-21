@@ -1,3 +1,4 @@
+import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -21,6 +22,8 @@ class MockSignOut extends Mock implements SignOut {}
 
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
+
+class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
 
 /// Ajustes, both business states named in `design-system/billetudo/pages/auth.md`:
 ///
@@ -62,12 +65,21 @@ void main() {
       initialState: const AppSettingsState(),
     );
 
+    final themeModeCubit = MockThemeModeCubit();
+    when(() => themeModeCubit.state).thenReturn(ThemeMode.system);
+    whenListen(
+      themeModeCubit,
+      const Stream<ThemeMode>.empty(),
+      initialState: ThemeMode.system,
+    );
+
     await pumpGolden(
       tester,
       MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => AuthCubit(watchAuthSession, signOut)),
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
+          BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
         ],
         child: SettingsPage(
           onOpenLogin: () {},

@@ -28,6 +28,8 @@ import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dar
     as _i102;
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart'
     as _i567;
+import 'package:billetudo/core/theme/theme_mode_cubit.dart' as _i407;
+import 'package:billetudo/core/theme/theme_preference_datasource.dart' as _i207;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
 import 'package:billetudo/features/accounts/data/datasources/account_number_local_datasource.dart'
     as _i612;
@@ -331,6 +333,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:powersync/powersync.dart' as _i433;
+import 'package:shared_preferences/shared_preferences.dart' as _i460;
 import 'package:supabase_flutter/supabase_flutter.dart' as _i454;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -358,6 +361,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i474.CrashReporter>(() => registerModule.crashReporter());
     gh.lazySingleton<_i454.SupabaseClient>(
         () => registerModule.supabaseClient());
+    gh.lazySingleton<_i460.SharedPreferencesAsync>(
+        () => registerModule.sharedPreferencesAsync());
     gh.lazySingleton<_i486.SecureClipboard>(() => _i486.SecureClipboard());
     gh.lazySingleton<_i731.MoneyFormatter>(() => const _i731.MoneyFormatter());
     gh.lazySingleton<_i22.AppleAuthDatasource>(
@@ -372,6 +377,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
         ));
+    gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
+        _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i872.PowerSyncConnector>(() => _i872.PowerSyncConnector(
           gh<_i454.SupabaseClient>(),
           gh<_i474.CrashReporter>(),
@@ -381,6 +388,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i407.ThemeModeCubit>(
+        () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
         () => _i718.LocalDataOwnershipDatasource(
               gh<_i249.AppDatabase>(),

@@ -2342,6 +2342,12 @@ abstract class AppLocalizations {
   /// **'Oscuro'**
   String get settingsAppearanceDark;
 
+  /// No description provided for @settingsAppearanceSystem.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get settingsAppearanceSystem;
+
   /// No description provided for @settingsCurrency.
   ///
   /// In es, this message translates to:

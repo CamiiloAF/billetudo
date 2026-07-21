@@ -104,6 +104,11 @@ dependencies:
   # vez de caer a Material Icons genéricos.
   lucide_icons_flutter: ^3.0.5
 
+  # --- Preferencias locales por dispositivo (decisión: Ajustes → Apariencia,
+  # 2026-07-20) --- no sincroniza por PowerSync: el tema es del aparato, no
+  # de la cuenta. Primer uso de este mecanismo en el proyecto.
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -131,9 +136,9 @@ dev_dependencies:
   patrol: ^4.7.1
   integration_test:
     sdk: flutter
-  # SharedPreferences.setMockInitialValues en di_test — transitiva vía
-  # otros paquetes, pero se usa directo así que hay que declararla.
-  shared_preferences: ^2.3.2
+  # `InMemorySharedPreferencesAsync`, usado en el test del datasource de
+  # preferencias de tema para ejercitar el codec real sin platform channel.
+  shared_preferences_platform_interface: ^2.4.2
 
   # Genera los mipmaps de Android y el AppIcon.appiconset de iOS a partir del
   # master de assets/branding/ (ver assets/branding/MARCA.md). Solo se corre

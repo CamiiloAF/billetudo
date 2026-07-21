@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:powersync/powersync.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
@@ -50,4 +51,11 @@ abstract class RegisterModule {
   /// is already set up, so this is just exposing it for injection.
   @lazySingleton
   SupabaseClient supabaseClient() => Supabase.instance.client;
+
+  /// Backs `ThemePreferenceDatasource` (Ajustes → "Apariencia", local-only,
+  /// per-device). The constructor itself is synchronous — only individual
+  /// reads/writes are async — so this needs no `@preResolve`, keeping
+  /// `configureDependencies()` synchronous like the rest of the graph.
+  @lazySingleton
+  SharedPreferencesAsync sharedPreferencesAsync() => SharedPreferencesAsync();
 }

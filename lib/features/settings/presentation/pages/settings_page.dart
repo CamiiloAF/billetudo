@@ -11,6 +11,7 @@ import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
+import '../widgets/appearance_field.dart';
 import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_field.dart';
 import '../widgets/settings_section_label.dart';
@@ -97,15 +98,8 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       SettingsSectionLabel(l10n.settingsPreferencesSection),
-                      SettingsField(
-                        icon: LucideIcons.palette,
-                        label: l10n.settingsAppearance,
-                        sublabel:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? l10n.settingsAppearanceDark
-                                : l10n.settingsAppearanceLight,
-                        onTap: () => onOpenComingSoon(l10n.settingsAppearance),
-                      ),
+                      const AppearanceField(),
+                      const SizedBox(height: 12),
                       SettingsField(
                         icon: LucideIcons.badgeDollarSign,
                         label: l10n.settingsCurrency,

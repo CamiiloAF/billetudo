@@ -5,6 +5,7 @@ import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart';
 import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
+import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
@@ -24,12 +25,15 @@ import 'package:billetudo/features/home/domain/usecases/watch_month_transactions
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
+
+class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
 
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
@@ -76,6 +80,22 @@ void main() {
     registerFallbackValue(LocalDataChoice.keep);
   });
 
+  // `BilletudoApp` resolves `ThemeModeCubit` from `getIt` directly (not
+  // through a provided widget tree), so it needs a fake registered here too
+  // — real `ThemeModeCubit` would reach for `SharedPreferencesAsync`'s
+  // platform channel, which never resolves under `flutter test`.
+  ThemeModeCubit fakeThemeModeCubit() {
+    final cubit = MockThemeModeCubit();
+    when(() => cubit.state).thenReturn(ThemeMode.system);
+    whenListen(
+      cubit,
+      const Stream<ThemeMode>.empty(),
+      initialState: ThemeMode.system,
+    );
+    when(cubit.load).thenAnswer((_) async {});
+    return cubit;
+  }
+
   setUp(() {
     final watchAccounts = MockWatchAccounts();
     final watchMonthTransactions = MockWatchMonthTransactions();
@@ -121,7 +141,8 @@ void main() {
           GetPendingUploadCount(FakeSyncStatusRepository()),
         ),
       )
-      ..registerFactory<SignOutWithLocalDataChoice>(() => signOutWithChoice);
+      ..registerFactory<SignOutWithLocalDataChoice>(() => signOutWithChoice)
+      ..registerFactory<ThemeModeCubit>(fakeThemeModeCubit);
   });
 
   tearDown(getIt.reset);

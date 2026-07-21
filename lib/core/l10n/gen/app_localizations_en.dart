@@ -1285,6 +1285,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppearanceDark => 'Dark';
 
   @override
+  String get settingsAppearanceSystem => 'System';
+
+  @override
   String get settingsCurrency => 'Currency';
 
   @override

@@ -1,3 +1,4 @@
+import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -23,16 +24,23 @@ class MockSignOut extends Mock implements SignOut {}
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
+class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+
 void main() {
   late MockWatchAuthSession watchAuthSession;
   late MockSignOut signOut;
   late MockAppSettingsCubit appSettingsCubit;
+  late MockThemeModeCubit themeModeCubit;
 
   const user = AuthUser(
     id: 'google-1',
     displayName: 'Camila Agudelo',
     provider: AuthProvider.google,
   );
+
+  setUpAll(() {
+    registerFallbackValue(ThemeMode.system);
+  });
 
   setUp(() {
     watchAuthSession = MockWatchAuthSession();
@@ -44,6 +52,14 @@ void main() {
       const Stream<AppSettingsState>.empty(),
       initialState: const AppSettingsState(),
     );
+    themeModeCubit = MockThemeModeCubit();
+    when(() => themeModeCubit.state).thenReturn(ThemeMode.system);
+    whenListen(
+      themeModeCubit,
+      const Stream<ThemeMode>.empty(),
+      initialState: ThemeMode.system,
+    );
+    when(() => themeModeCubit.setThemeMode(any())).thenAnswer((_) async {});
   });
 
   Future<void> pumpSettings(
@@ -61,6 +77,7 @@ void main() {
         providers: [
           BlocProvider(create: (_) => AuthCubit(watchAuthSession, signOut)),
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
+          BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
         ],
         child: SettingsPage(
           onOpenLogin: onOpenLogin ?? () {},
@@ -127,8 +144,14 @@ void main() {
       onOpenDeleteAccount: () => deleteOpened = true,
     );
 
+    // The new Apariencia card pushes this row past the ListView's default
+    // build cache extent, so it isn't realized until scrolled into view.
+    await tester.scrollUntilVisible(
+      find.text('Eliminar cuenta'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Eliminar cuenta'), findsOneWidget);
-    await tester.ensureVisible(find.text('Eliminar cuenta'));
     await tester.pump();
     await tester.tap(find.text('Eliminar cuenta'));
     await tester.pump();
@@ -136,7 +159,7 @@ void main() {
     expect(deleteOpened, isTrue);
   });
 
-  testWidgets('las filas de Preferencias abren el placeholder "Próximamente"',
+  testWidgets('"Moneda" sigue abriendo el placeholder "Próximamente"',
       (tester) async {
     final opened = <String>[];
     await pumpSettings(
@@ -145,15 +168,30 @@ void main() {
       onOpenComingSoon: opened.add,
     );
 
-    await tester.ensureVisible(find.text('Apariencia'));
-    await tester.pump();
-    await tester.tap(find.text('Apariencia'));
-    await tester.pump();
     await tester.ensureVisible(find.text('Moneda'));
     await tester.pump();
     await tester.tap(find.text('Moneda'));
     await tester.pump();
 
-    expect(opened, ['Apariencia', 'Moneda']);
+    expect(opened, ['Moneda']);
+  });
+
+  testWidgets(
+      'tocar "Oscuro" en la card de Apariencia cambia el tema, no abre '
+      'ningún sheet', (tester) async {
+    final opened = <String>[];
+    await pumpSettings(
+      tester,
+      session: const AuthSession.signedOut(),
+      onOpenComingSoon: opened.add,
+    );
+
+    await tester.ensureVisible(find.text('Oscuro'));
+    await tester.pump();
+    await tester.tap(find.text('Oscuro'));
+    await tester.pump();
+
+    verify(() => themeModeCubit.setThemeMode(ThemeMode.dark)).called(1);
+    expect(opened, isEmpty);
   });
 }
