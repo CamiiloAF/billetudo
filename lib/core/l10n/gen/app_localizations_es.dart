@@ -1504,6 +1504,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetActionDeleteBudget => 'Eliminar presupuesto';
 
   @override
+  String get budgetActionAdjustAmount => 'Ajustar monto — próximo período';
+
+  @override
   String get budgetDetailActionsSubtitle => 'Acciones del presupuesto';
 
   @override
@@ -2228,4 +2231,53 @@ class AppLocalizationsEs extends AppLocalizations {
   String scheduledSnoozeContextLine(String date) {
     return 'Vencía el $date · muévelo hacia adelante';
   }
+
+  @override
+  String get budgetAdjustSheetTitle =>
+      'Ajustar monto — solo el próximo período';
+
+  @override
+  String get budgetAdjustSheetHint =>
+      'El resto de tus períodos sigue igual, sin que tengas que hacer nada después.';
+
+  @override
+  String budgetAdjustCurrentAmountLabel(String range) {
+    return 'Monto actual ($range)';
+  }
+
+  @override
+  String budgetAdjustNewAmountLabel(String range) {
+    return 'Nuevo monto para el próximo período ($range)';
+  }
+
+  @override
+  String budgetAdjustExplainer(String effectiveDate, String newAmount,
+      String resumeDate, String originalAmount) {
+    return 'A partir del $effectiveDate tu presupuesto será de $newAmount. Desde $resumeDate vuelve automáticamente a $originalAmount — no tienes que hacer nada.';
+  }
+
+  @override
+  String get budgetAdjustApplyCta => 'Aplicar cambios';
+
+  @override
+  String get budgetAdjustRemoveCta => 'Quitar ajuste';
+
+  @override
+  String get budgetAdjustBannerLabel => 'Ajuste de monto próximo';
+
+  @override
+  String budgetAdjustBannerSub(String amount) {
+    return '$amount el próximo período';
+  }
+
+  @override
+  String get budgetAdjustScheduledSnackbar =>
+      'Ajuste programado para tu próximo período.';
+
+  @override
+  String get budgetAdjustUpdatedSnackbar => 'Ajuste actualizado.';
+
+  @override
+  String get budgetAdjustCancelledSnackbar =>
+      'Ajuste cancelado — tu próximo período vuelve al monto habitual.';
 }

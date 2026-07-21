@@ -11,7 +11,7 @@
 
 5) ~~Si el usuario está en el home y navega hacía atrás con gestos, debería mostrarle una alerta de confirmación para salir de la app, si lo hace en otra se las opciones del bottom nav bar, lo debe llevar al home~~ — ✅ hecho 2026-07-20
 
-6) Analiza la opción de editar un presupuesto para 1 sola vez, es decir, tal vez yo hice un trabajo extra y me gané 2 millones más y por consiguiente mi presupuesto para el proximo mes será mayor pero el resto de meses seguirá siendo igual. — 📋 analizado 2026-07-20, plan listo en `docs/dev-runs/presupuestos-ajuste-un-periodo.md`, pendiente de implementar
+6) ~~Analiza la opción de editar un presupuesto para 1 sola vez, es decir, tal vez yo hice un trabajo extra y me gané 2 millones más y por consiguiente mi presupuesto para el proximo mes será mayor pero el resto de meses seguirá siendo igual.~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/presupuestos-ajuste-un-periodo.md`. Enfoque fork-of-3-partes sin cambio de esquema Drift, verificado contra Pencil (`pencil-fidelity-reviewer` aprobó las 4 piezas nuevas), tests/goldens verdes y reviews finales sin hallazgos.
 
 7) ~~Node ID: oAM6Y no se muestra el snackbar cuando se elimina una transacción desde el home pero si se muestra si se elimina desde la pestaña de movimientos~~ — ✅ hecho 2026-07-20, mismo bug corregido también en Detalle de Presupuesto y Detalle de Pago Programado
 

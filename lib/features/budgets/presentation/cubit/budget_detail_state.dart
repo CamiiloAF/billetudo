@@ -5,6 +5,7 @@ import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_activity_item.dart';
 import '../../domain/entities/budget_period_view.dart';
 import '../../domain/entities/budget_scope.dart';
+import '../../domain/entities/pending_budget_adjustment.dart';
 
 enum BudgetDetailStatus { loading, ready, failure }
 
@@ -20,6 +21,7 @@ class BudgetDetailState extends Equatable {
     this.visibleActivityCount = activityPageSize,
     this.failure,
     this.pendingUndoId,
+    this.pendingAdjustment,
   });
 
   /// How many activity rows a "Cargar más" tap reveals.
@@ -36,6 +38,11 @@ class BudgetDetailState extends Equatable {
   /// after a delete triggered from the transaction detail page opened from
   /// this budget's activity. `null` once dismissed or undone.
   final String? pendingUndoId;
+
+  /// "Ajustar monto — solo el próximo período": the budget's pending fork, if
+  /// any — drives whether the banner shows and whether its sheet opens in
+  /// "crear" or "editar/cancelar" mode. `null` means nothing pending.
+  final PendingBudgetAdjustment? pendingAdjustment;
 
   bool get isLoading => status == BudgetDetailStatus.loading;
 
@@ -59,6 +66,8 @@ class BudgetDetailState extends Equatable {
     Failure? failure,
     String? pendingUndoId,
     bool clearPendingUndo = false,
+    PendingBudgetAdjustment? pendingAdjustment,
+    bool clearPendingAdjustment = false,
   }) =>
       BudgetDetailState(
         status: status ?? this.status,
@@ -69,6 +78,9 @@ class BudgetDetailState extends Equatable {
         failure: failure,
         pendingUndoId:
             clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
+        pendingAdjustment: clearPendingAdjustment
+            ? null
+            : (pendingAdjustment ?? this.pendingAdjustment),
       );
 
   @override
@@ -80,5 +92,6 @@ class BudgetDetailState extends Equatable {
         visibleActivityCount,
         failure,
         pendingUndoId,
+        pendingAdjustment,
       ];
 }

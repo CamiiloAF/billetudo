@@ -1117,6 +1117,8 @@
   "@budgetActionDelete": {},
   "budgetActionDeleteBudget": "Eliminar presupuesto",
   "@budgetActionDeleteBudget": {},
+  "budgetActionAdjustAmount": "Ajustar monto — próximo período",
+  "@budgetActionAdjustAmount": {},
   "budgetDetailActionsSubtitle": "Acciones del presupuesto",
   "@budgetDetailActionsSubtitle": {},
   "budgetDeleteConfirmMessage": "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.",
@@ -1623,5 +1625,42 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "budgetAdjustSheetTitle": "Ajustar monto — solo el próximo período",
+  "@budgetAdjustSheetTitle": {},
+  "budgetAdjustSheetHint": "El resto de tus períodos sigue igual, sin que tengas que hacer nada después.",
+  "@budgetAdjustSheetHint": {},
+  "budgetAdjustCurrentAmountLabel": "Monto actual ({range})",
+  "@budgetAdjustCurrentAmountLabel": {
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "budgetAdjustNewAmountLabel": "Nuevo monto para el próximo período ({range})",
+  "@budgetAdjustNewAmountLabel": {
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "budgetAdjustExplainer": "A partir del {effectiveDate} tu presupuesto será de {newAmount}. Desde {resumeDate} vuelve automáticamente a {originalAmount} — no tienes que hacer nada.",
+  "@budgetAdjustExplainer": {
+    "placeholders": {
+      "effectiveDate": { "type": "String" },
+      "newAmount": { "type": "String" },
+      "resumeDate": { "type": "String" },
+      "originalAmount": { "type": "String" }
+    }
+  },
+  "budgetAdjustApplyCta": "Aplicar cambios",
+  "@budgetAdjustApplyCta": {},
+  "budgetAdjustRemoveCta": "Quitar ajuste",
+  "@budgetAdjustRemoveCta": {},
+  "budgetAdjustBannerLabel": "Ajuste de monto próximo",
+  "@budgetAdjustBannerLabel": {},
+  "budgetAdjustBannerSub": "{amount} el próximo período",
+  "@budgetAdjustBannerSub": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAdjustScheduledSnackbar": "Ajuste programado para tu próximo período.",
+  "@budgetAdjustScheduledSnackbar": {},
+  "budgetAdjustUpdatedSnackbar": "Ajuste actualizado.",
+  "@budgetAdjustUpdatedSnackbar": {},
+  "budgetAdjustCancelledSnackbar": "Ajuste cancelado — tu próximo período vuelve al monto habitual.",
+  "@budgetAdjustCancelledSnackbar": {}
 }

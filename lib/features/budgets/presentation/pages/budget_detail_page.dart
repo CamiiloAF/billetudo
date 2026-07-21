@@ -12,14 +12,17 @@ import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
+import '../utils/budget_adjustment_windows.dart';
 import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
+import '../widgets/budget_adjustment_entry_card.dart';
 import '../widgets/budget_detail_skeleton_view.dart';
 import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
 import '../widgets/period_stepper_pill.dart';
+import '../widgets/sheets/budget_adjust_amount_sheet.dart';
 import '../widgets/sheets/budget_detail_actions_sheet.dart';
 import '../widgets/sheets/budget_scheduled_sheet.dart';
 import '../widgets/sheets/confirm_delete_budget_sheet.dart';
@@ -107,6 +110,7 @@ class BudgetDetailPage extends StatelessWidget {
                       state: state,
                       onOpenTransaction: (id) => _openTransaction(context, id),
                       onOpenScheduledPayment: onOpenScheduledPayment,
+                      onAdjustAmount: () => _openAdjustAmountSheet(context),
                     ),
                 },
               ),
@@ -134,6 +138,8 @@ class BudgetDetailPage extends StatelessWidget {
     switch (action) {
       case BudgetDetailAction.edit:
         onEdit(id);
+      case BudgetDetailAction.adjustAmount:
+        await _openAdjustAmountSheet(context);
       case BudgetDetailAction.close:
         await cubit.closeToHistory();
         onClosed();
@@ -145,6 +151,66 @@ class BudgetDetailPage extends StatelessWidget {
         }
     }
   }
+
+  /// "Ajustar monto — solo el próximo período": opens the sheet in "crear"
+  /// mode from the `⋮` entry point, or in "editar/cancelar" mode — reopened
+  /// prefilled — from the detail banner (HU-13).
+  Future<void> _openAdjustAmountSheet(BuildContext context) async {
+    final cubit = context.read<BudgetDetailCubit>();
+    final budget = cubit.state.budget;
+    if (budget == null) {
+      return;
+    }
+    final pending = cubit.state.pendingAdjustment;
+    final windows = BudgetAdjustmentWindows(budget, DateTime.now());
+    final result = await BudgetAdjustAmountSheet.show(
+      context,
+      currentAmountMinor: budget.amountMinor,
+      currency: budget.currency,
+      windows: windows,
+      pendingAmountMinor: pending?.newAmountMinor,
+    );
+    if (result == null || !context.mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    switch (result) {
+      case BudgetAdjustAmountApplied(:final newAmountMinor):
+        final isEditing = pending != null;
+        final actionResult = isEditing
+            ? await cubit.updateAmountAdjustment(newAmountMinor)
+            : await cubit.scheduleAmountAdjustment(newAmountMinor);
+        actionResult.fold(
+          (_) {},
+          (_) {
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isEditing
+                        ? l10n.budgetAdjustUpdatedSnackbar
+                        : l10n.budgetAdjustScheduledSnackbar,
+                  ),
+                ),
+              );
+          },
+        );
+      case BudgetAdjustAmountRemoved():
+        final actionResult = await cubit.cancelAmountAdjustment();
+        actionResult.fold(
+          (_) {},
+          (_) {
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text(l10n.budgetAdjustCancelledSnackbar)),
+              );
+          },
+        );
+    }
+  }
 }
 
 /// The detail content: a scrolling hero + activity under a floating stepper.
@@ -153,6 +219,7 @@ class BudgetDetailBody extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenScheduledPayment,
+    required this.onAdjustAmount,
     super.key,
   });
 
@@ -163,6 +230,10 @@ class BudgetDetailBody extends StatelessWidget {
 
   /// Called with a scheduled payment (template) id, from a scheduled row.
   final ValueChanged<String> onOpenScheduledPayment;
+
+  /// "Ajustar monto — próximo período": opens the sheet in "editar/cancelar"
+  /// mode, from the banner (HU-13).
+  final VoidCallback onAdjustAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -205,6 +276,22 @@ class BudgetDetailBody extends StatelessWidget {
                   currency: budget.currency,
                   onOpenScheduledPayment: onOpenScheduledPayment,
                 ),
+              ),
+            ],
+            // "Ajustar monto — próximo período": the pending-fork banner
+            // (`AYsw7`/`s0ZlV`), hidden entirely when nothing is scheduled —
+            // same convention as the "Programado" card above.
+            if (state.pendingAdjustment case final adjustment?) ...[
+              const SizedBox(height: 16),
+              BudgetAdjustmentEntryCard(
+                label: AppLocalizations.of(context).budgetAdjustBannerLabel,
+                sub: AppLocalizations.of(context).budgetAdjustBannerSub(
+                  const MoneyFormatter().formatSymbol(
+                    adjustment.newAmountMinor,
+                    currencyCode: budget.currency,
+                  ),
+                ),
+                onTap: onAdjustAmount,
               ),
             ],
             // `QWC08` spaces the hero and the activity by 16, not 24.

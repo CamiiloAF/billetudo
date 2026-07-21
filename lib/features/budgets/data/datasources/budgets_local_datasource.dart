@@ -542,6 +542,115 @@ class BudgetsLocalDatasource {
     ];
   }
 
+  // -- Amount adjustment ("fork de 3 partes") ---------------------------------
+  //
+  // No new column/table: the fork is inferred purely from the exact shape
+  // [applyAmountAdjustment] always writes — an alive budget whose `startDate`
+  // starts the day after another's `endDate`, mirroring its cadence/scope.
+  // See `BudgetRepositoryImpl` for the window math that produces those dates.
+
+  /// The pending "next period only" fork of [original], if any — the second
+  /// part of the fork [applyAmountAdjustment] creates.
+  Future<Budget?> findAdjustedFork(Budget original) async {
+    final closesAt = original.endDate;
+    if (closesAt == null) {
+      return null;
+    }
+    final nextStart = closesAt.add(const Duration(days: 1));
+    final rows = await (_db.select(_db.budgets)
+          ..where((b) => b.startDate.equals(nextStart) & _budgetAlive(b)))
+        .get();
+    for (final row in rows) {
+      if (_sameCadence(row, original)) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  /// The "resumes the original amount" third fork that follows [adjusted],
+  /// the same way [findAdjustedFork] finds the second part.
+  Future<Budget?> findResumeFork(Budget original, Budget adjusted) async {
+    final closesAt = adjusted.endDate;
+    if (closesAt == null) {
+      return null;
+    }
+    final nextStart = closesAt.add(const Duration(days: 1));
+    final rows = await (_db.select(_db.budgets)
+          ..where(
+            (b) =>
+                b.startDate.equals(nextStart) &
+                b.endDate.isNull() &
+                b.amountMinor.equals(original.amountMinor) &
+                _budgetAlive(b),
+          ))
+        .get();
+    for (final row in rows) {
+      if (_sameCadence(row, original)) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  bool _sameCadence(Budget row, Budget original) =>
+      row.id != original.id &&
+      row.name == original.name &&
+      row.icon == original.icon &&
+      row.currency == original.currency &&
+      row.period == original.period &&
+      row.rollover == original.rollover &&
+      row.alertThresholdPct == original.alertThresholdPct;
+
+  /// Applies the fork atomically: closes [originalId] with [closeCompanion],
+  /// inserts the adjusted (next-cycle-only) and resume (indefinite) budgets
+  /// with the same scope as the original.
+  Future<void> applyAmountAdjustment({
+    required String originalId,
+    required BudgetsCompanion closeCompanion,
+    required BudgetsCompanion adjustedCompanion,
+    required BudgetsCompanion resumeCompanion,
+    required Set<String> accountIds,
+    required Set<String> categoryIds,
+    required DateTime now,
+  }) =>
+      _db.transaction(() async {
+        await updateBudget(originalId, closeCompanion);
+        final adjusted = await insertBudget(adjustedCompanion);
+        await reconcileScope(
+          adjusted.id,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+          now: now,
+        );
+        final resumed = await insertBudget(resumeCompanion);
+        await reconcileScope(
+          resumed.id,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+          now: now,
+        );
+      });
+
+  /// Cancels a pending fork atomically: hard-deletes the not-yet-active
+  /// adjusted/resume budgets (never applied, so no trash needed) and reopens
+  /// the original with [reopenCompanion] (clears `endDate`). [resumeId] is
+  /// `null` only in an inconsistent state (the resume fork went missing);
+  /// still cancels what it can find.
+  Future<void> cancelAmountAdjustment({
+    required String originalId,
+    required String adjustedId,
+    required String? resumeId,
+    required BudgetsCompanion reopenCompanion,
+  }) =>
+      _db.transaction(() async {
+        await hardDeleteBudget(adjustedId);
+        if (resumeId != null) {
+          await hardDeleteBudget(resumeId);
+        }
+        await updateBudget(originalId, reopenCompanion);
+      });
+
   Expression<bool> _budgetAlive($BudgetsTable b) =>
       b.deletedAt.isNull() & b.tombstonedAt.isNull();
 }

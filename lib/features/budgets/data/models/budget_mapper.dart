@@ -84,6 +84,30 @@ abstract final class BudgetMapper {
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
+  /// "Ajustar monto — próximo período": closes/reopens a recurring budget's
+  /// `endDate` on its own, without touching any other field. `endDate: null`
+  /// reopens it (cancels a pending fork); a set value stops it renewing past
+  /// that day (applies a fork).
+  static db.BudgetsCompanion endDateCompanion({
+    required DateTime? endDate,
+    required DateTime now,
+  }) =>
+      db.BudgetsCompanion(
+        endDate: Value(endDate),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      );
+
+  /// "Ajustar monto — próximo período" (editar): rewrites only the pending
+  /// fork's amount.
+  static db.BudgetsCompanion amountCompanion({
+    required int amountMinor,
+    required DateTime now,
+  }) =>
+      db.BudgetsCompanion(
+        amountMinor: Value(amountMinor),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      );
+
   static db.BudgetPeriod _periodToDb(BudgetPeriod period) => switch (period) {
         BudgetPeriod.weekly => db.BudgetPeriod.weekly,
         BudgetPeriod.biweekly => db.BudgetPeriod.biweekly,

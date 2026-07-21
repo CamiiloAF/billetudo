@@ -7,7 +7,7 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_action_row.dart';
 
 /// What the detail overflow ("⋮") offers (`G26c4T`).
-enum BudgetDetailAction { edit, close, delete }
+enum BudgetDetailAction { edit, adjustAmount, close, delete }
 
 /// The detail actions sheet: a head with the budget's own name, then Editar /
 /// Cerrar (guardar en histórico) / Eliminar presupuesto (in `$expense-text`).
@@ -47,6 +47,12 @@ class BudgetDetailActionsSheet extends StatelessWidget {
           icon: LucideIcons.pencil,
           title: l10n.commonEdit,
           onTap: () => Navigator.of(context).pop(BudgetDetailAction.edit),
+        ),
+        SheetActionRow.bare(
+          icon: LucideIcons.repeat1,
+          title: l10n.budgetActionAdjustAmount,
+          onTap: () =>
+              Navigator.of(context).pop(BudgetDetailAction.adjustAmount),
         ),
         SheetActionRow.bare(
           icon: LucideIcons.archive,

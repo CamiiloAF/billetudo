@@ -1,6 +1,7 @@
 import 'package:billetudo/features/budgets/domain/entities/budget_period_view.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/domain/entities/pending_budget_adjustment.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_cubit.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_state.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budget_detail_page.dart';
@@ -97,6 +98,7 @@ void main() {
     int activityCount = 4,
     int visibleActivityCount = BudgetDetailState.activityPageSize,
     BudgetPeriodView? view,
+    PendingBudgetAdjustment? pendingAdjustment,
   }) =>
       BudgetDetailState(
         status: BudgetDetailStatus.ready,
@@ -104,6 +106,7 @@ void main() {
         scope: entry.scope,
         view: view ?? buildPeriodView(entry, activityCount: activityCount),
         visibleActivityCount: visibleActivityCount,
+        pendingAdjustment: pendingAdjustment,
       );
 
   for (final brightness in Brightness.values) {
@@ -188,6 +191,26 @@ void main() {
           ),
         ),
         'detail_scheduled_risk_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'detalle con ajuste de monto pendiente (banner "Ajuste de monto '
+        'próximo") ($suffix)', (tester) async {
+      await golden(
+        tester,
+        readyState(
+          healthyEntry,
+          activityCount: 3,
+          pendingAdjustment: PendingBudgetAdjustment(
+            newAmountMinor: 85000000,
+            effectiveFrom: DateTime(2025, 8, 21),
+            resumeAmountMinor: healthyEntry.budget.amountMinor,
+            resumeFrom: DateTime(2025, 9, 21),
+          ),
+        ),
+        'detail_adjustment_pending_$suffix',
         brightness: brightness,
       );
     });

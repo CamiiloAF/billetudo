@@ -16,6 +16,7 @@ import '../../domain/entities/budget_period_window.dart';
 import '../../domain/entities/budget_progress.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../../domain/entities/budget_with_progress.dart';
+import '../../domain/entities/pending_budget_adjustment.dart';
 import '../../domain/entities/period_income.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../../domain/repositories/budget_repository.dart';
@@ -353,6 +354,184 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (row == null) {
           return Left(NotFoundFailure('budget "$id" does not exist'));
         }
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<PendingBudgetAdjustment?> getPendingAdjustment(
+    String budgetId,
+  ) =>
+      _guard(() async {
+        final row = await _local.getBudget(budgetId);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$budgetId" does not exist'));
+        }
+        final adjusted = await _local.findAdjustedFork(row);
+        if (adjusted == null) {
+          return const Right(null);
+        }
+        final resume = await _local.findResumeFork(row, adjusted);
+        return Right(
+          PendingBudgetAdjustment(
+            newAmountMinor: adjusted.amountMinor,
+            effectiveFrom: adjusted.startDate,
+            resumeAmountMinor: resume?.amountMinor ?? row.amountMinor,
+            // Defensive fallback for an inconsistent state (resume fork
+            // missing): the day right after the adjusted fork closes.
+            resumeFrom: resume?.startDate ??
+                adjusted.endDate!.add(const Duration(days: 1)),
+          ),
+        );
+      });
+
+  @override
+  FutureResult<Unit> scheduleBudgetAdjustment(
+    String id, {
+    required int newAmountMinor,
+  }) =>
+      _guard(() async {
+        if (newAmountMinor <= 0) {
+          return const Left(
+            ValidationFailure(
+              'amount must be greater than 0',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final original = BudgetMapper.toEntity(row);
+        if (original.isOneOff) {
+          return const Left(
+            ValidationFailure(
+              'a one-off budget has no next period to adjust',
+              field: BudgetDraft.fieldEndDate,
+            ),
+          );
+        }
+        if (await _local.findAdjustedFork(row) != null) {
+          return const Left(
+            ValidationFailure(
+              'budget already has a pending adjustment',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+
+        final now = DateTime.now();
+        final calculator = BudgetPeriodCalculator(original);
+        final currentWindow = calculator.currentWindow(now);
+        final nextWindow = calculator.windowAt(currentWindow.index + 1, now);
+        final resumeWindow = calculator.windowAt(currentWindow.index + 2, now);
+
+        final accountIds = (await _local.accountScopeOf(id)).toSet();
+        final categoryIds = (await _local.categoryScopeOf(id)).toSet();
+
+        final adjustedDraft = BudgetDraft(
+          name: original.name,
+          icon: original.icon,
+          amountMinor: newAmountMinor,
+          currency: original.currency,
+          period: original.period,
+          startDate: nextWindow.start,
+          recurring: true,
+          // Stops renewing right after its own single cycle: the fork lasts
+          // exactly the next period, nothing more.
+          endDate: nextWindow.lastDay,
+          alertThresholdPct: original.alertThresholdPct,
+          rollover: original.rollover,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+        );
+        final resumeDraft = BudgetDraft(
+          name: original.name,
+          icon: original.icon,
+          amountMinor: original.amountMinor,
+          currency: original.currency,
+          period: original.period,
+          startDate: resumeWindow.start,
+          recurring: true,
+          alertThresholdPct: original.alertThresholdPct,
+          rollover: original.rollover,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+        );
+
+        await _local.applyAmountAdjustment(
+          originalId: id,
+          closeCompanion: BudgetMapper.endDateCompanion(
+            endDate: currentWindow.lastDay,
+            now: now,
+          ),
+          adjustedCompanion:
+              BudgetMapper.toInsertCompanion(adjustedDraft, now: now),
+          resumeCompanion:
+              BudgetMapper.toInsertCompanion(resumeDraft, now: now),
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+          now: now,
+        );
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Unit> updateBudgetAdjustment(
+    String id, {
+    required int newAmountMinor,
+  }) =>
+      _guard(() async {
+        if (newAmountMinor <= 0) {
+          return const Left(
+            ValidationFailure(
+              'amount must be greater than 0',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final adjusted = await _local.findAdjustedFork(row);
+        if (adjusted == null) {
+          return Left(
+            NotFoundFailure('budget "$id" has no pending adjustment'),
+          );
+        }
+        await _local.updateBudget(
+          adjusted.id,
+          BudgetMapper.amountCompanion(
+            amountMinor: newAmountMinor,
+            now: DateTime.now(),
+          ),
+        );
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Unit> cancelBudgetAdjustment(String id) => _guard(() async {
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final adjusted = await _local.findAdjustedFork(row);
+        if (adjusted == null) {
+          return Left(
+            NotFoundFailure('budget "$id" has no pending adjustment'),
+          );
+        }
+        final resume = await _local.findResumeFork(row, adjusted);
+        await _local.cancelAmountAdjustment(
+          originalId: id,
+          adjustedId: adjusted.id,
+          resumeId: resume?.id,
+          reopenCompanion: BudgetMapper.endDateCompanion(
+            endDate: null,
+            now: DateTime.now(),
+          ),
+        );
         return const Right(unit);
       });
 

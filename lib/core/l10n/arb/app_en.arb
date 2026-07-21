@@ -493,6 +493,7 @@
   "budgetActionClose": "Close (save to history)",
   "budgetActionDelete": "Delete",
   "budgetActionDeleteBudget": "Delete budget",
+  "budgetActionAdjustAmount": "Adjust amount — next period",
   "budgetDetailActionsSubtitle": "Budget actions",
   "budgetDeleteConfirmMessage": "This budget will be deleted. You can undo this right after deleting.",
   "budgetFormNewTitle": "New budget",
@@ -754,5 +755,34 @@
   "scheduledSnoozeSheetSave": "Snooze",
   "scheduledSnoozeSheetTitle": "Snooze payment",
   "scheduledUndoSkipMessage": "Payment skipped",
-  "scheduledUndoSnoozeMessage": "Payment snoozed"
+  "scheduledUndoSnoozeMessage": "Payment snoozed",
+  "budgetAdjustSheetTitle": "Adjust amount — just for the next period",
+  "budgetAdjustSheetHint": "The rest of your periods stay the same, with nothing else for you to do.",
+  "budgetAdjustCurrentAmountLabel": "Current amount ({range})",
+  "@budgetAdjustCurrentAmountLabel": {
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "budgetAdjustNewAmountLabel": "New amount for the next period ({range})",
+  "@budgetAdjustNewAmountLabel": {
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "budgetAdjustExplainer": "Starting {effectiveDate} your budget will be {newAmount}. From {resumeDate} it goes back to {originalAmount} automatically — nothing else for you to do.",
+  "@budgetAdjustExplainer": {
+    "placeholders": {
+      "effectiveDate": { "type": "String" },
+      "newAmount": { "type": "String" },
+      "resumeDate": { "type": "String" },
+      "originalAmount": { "type": "String" }
+    }
+  },
+  "budgetAdjustApplyCta": "Apply changes",
+  "budgetAdjustRemoveCta": "Remove adjustment",
+  "budgetAdjustBannerLabel": "Upcoming amount adjustment",
+  "budgetAdjustBannerSub": "{amount} next period",
+  "@budgetAdjustBannerSub": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAdjustScheduledSnackbar": "Adjustment scheduled for your next period.",
+  "budgetAdjustUpdatedSnackbar": "Adjustment updated.",
+  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — your next period goes back to the usual amount."
 }

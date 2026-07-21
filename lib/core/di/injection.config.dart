@@ -125,6 +125,8 @@ import 'package:billetudo/features/budgets/domain/services/budget_progress_calcu
     as _i685;
 import 'package:billetudo/features/budgets/domain/services/zero_based_summary_calculator.dart'
     as _i529;
+import 'package:billetudo/features/budgets/domain/usecases/cancel_budget_adjustment.dart'
+    as _i1054;
 import 'package:billetudo/features/budgets/domain/usecases/close_budget.dart'
     as _i1008;
 import 'package:billetudo/features/budgets/domain/usecases/create_budget.dart'
@@ -139,12 +141,18 @@ import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart
     as _i871;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart'
     as _i559;
+import 'package:billetudo/features/budgets/domain/usecases/get_pending_budget_adjustment.dart'
+    as _i641;
 import 'package:billetudo/features/budgets/domain/usecases/get_zero_based_summary.dart'
     as _i458;
 import 'package:billetudo/features/budgets/domain/usecases/reactivate_budget.dart'
     as _i405;
+import 'package:billetudo/features/budgets/domain/usecases/schedule_budget_adjustment.dart'
+    as _i919;
 import 'package:billetudo/features/budgets/domain/usecases/update_budget.dart'
     as _i857;
+import 'package:billetudo/features/budgets/domain/usecases/update_budget_adjustment.dart'
+    as _i990;
 import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart'
     as _i139;
 import 'package:billetudo/features/budgets/presentation/cubit/archived_budgets_cubit.dart'
@@ -531,6 +539,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
+    gh.factory<_i1054.CancelBudgetAdjustment>(
+        () => _i1054.CancelBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i1008.CloseBudget>(
         () => _i1008.CloseBudget(gh<_i1023.BudgetRepository>()));
     gh.factory<_i526.CreateBudget>(
@@ -543,12 +553,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i829.GetArchivedBudgets(gh<_i1023.BudgetRepository>()));
     gh.factory<_i871.GetBudgetById>(
         () => _i871.GetBudgetById(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i641.GetPendingBudgetAdjustment>(
+        () => _i641.GetPendingBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i458.GetZeroBasedSummary>(
         () => _i458.GetZeroBasedSummary(gh<_i1023.BudgetRepository>()));
     gh.factory<_i405.ReactivateBudget>(
         () => _i405.ReactivateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i919.ScheduleBudgetAdjustment>(
+        () => _i919.ScheduleBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i857.UpdateBudget>(
         () => _i857.UpdateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i990.UpdateBudgetAdjustment>(
+        () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
     gh.factory<_i1034.ConfirmScheduledOccurrence>(() =>
@@ -676,13 +692,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
-    gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
-          gh<_i1008.CloseBudget>(),
-          gh<_i210.DeleteBudget>(),
-          gh<_i177.RestoreTransaction>(),
-        ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
@@ -713,6 +722,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i604.GetTransactionEditImpact>(),
           gh<_i460.SetTransactionTags>(),
           gh<_i837.WatchAccounts>(),
+        ));
+    gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i1008.CloseBudget>(),
+          gh<_i210.DeleteBudget>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i641.GetPendingBudgetAdjustment>(),
+          gh<_i919.ScheduleBudgetAdjustment>(),
+          gh<_i990.UpdateBudgetAdjustment>(),
+          gh<_i1054.CancelBudgetAdjustment>(),
         ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),

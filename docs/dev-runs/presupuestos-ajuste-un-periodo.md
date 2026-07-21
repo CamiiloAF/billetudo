@@ -1,7 +1,7 @@
 # Presupuestos — ajustar el monto para un solo período
 
-Análisis del ítem 6 de `docs/bugfixes.md` (2026-07-20). Pendiente de implementar — plan para
-retomar en otra sesión, **no construido todavía**.
+Análisis del ítem 6 de `docs/bugfixes.md` (2026-07-20). Diseño completo (2 rondas) en Pencil,
+listo para construir en código.
 
 ## Problema
 
@@ -42,25 +42,64 @@ Pencil un flujo guiado de un toque ("Ajustar monto solo el próximo período") q
 el capó, y dejar claro en la lista que ahora son dos presupuestos relacionados (no uno con una
 excepción).
 
-## Plan para mañana (enfoque B)
+## Diseño (enfoque B, resuelto en Pencil — 2026-07-20)
 
-Tamaño estimado: **M**. No toca esquema Drift ni `deletedAt`/`tombstonedAt`. Sí requiere:
+`pencil-designer` construyó el flujo completo en `billetudo.pen`, claro + oscuro, documentado en
+`design-system/billetudo/pages/presupuestos.md` (sección "Ajustar monto — solo el próximo
+período"). Node IDs: sheet de acciones actualizado `JR1Xp`/`Z72OIH` (4ª fila "Ajustar monto —
+próximo período"), sheet de ajuste `A8ZfHd`/`D0EoN`, banner de detalle `reulY`/`ujbZf`.
 
-1. **`pencil-designer`**: diseñar el flujo "Ajustar monto solo el próximo período" — no existe
-   frame hoy en `billetudo.pen`/`design-system/billetudo/pages/presupuestos.md`. Definir:
-   - Punto de entrada (¿acción en el detalle del presupuesto? ¿en el menú de opciones?).
-   - Copy que explique claramente que se crean dos presupuestos relacionados (evitar confusión
-     al ver "de repente hay 2 presupuestos de Comida" en la lista).
-   - Si el usuario debe poder elegir "solo el próximo período" vs. "desde el próximo período en
-     adelante" (fork permanente) — el pedido original habla de "1 sola vez", así que el flujo
-     por defecto debería volver al monto original después de un ciclo, pero confirmar con el
-     usuario si hace falta un tercer presupuesto automático para eso o si el usuario reactiva
-     manualmente el original.
-2. **`ui-ux-reviewer`**: auditar el flujo antes de pasar a construir.
-3. **`flutter-dev`**: nuevo caso de uso (ej. `SplitBudgetForNextPeriod` en
+Decisiones tomadas en diseño:
+- Entrada en el `⋮` del detalle (no botón propio ni fila en la lista) — acción poco frecuente.
+- Un solo sheet con un campo (monto actual de solo lectura + monto nuevo), sin sheet de
+  confirmación aparte — mismo criterio que el sheet de Umbral de alerta, efecto reversible.
+- El copy explicita la mecánica completa ("vuelve solo") en una sola tira informativa, sin dejarlo
+  implícito.
+- El detalle gana un banner "Ajuste programado" (reusa el lenguaje visual de `Programado — Entry`
+  de HU-12) que, al tocarse, reabre el mismo sheet prefilled — no hay una acción de "cancelar"
+  separada, revertir el monto ahí alcanza.
+- La lista de presupuestos NO cambia mientras el período vigente sigue activo — el ajuste solo se
+  ve reflejado cuando el ciclo rueda al presupuesto siguiente.
+
+## Ronda 2 de diseño (resuelve los 3 hallazgos de `ui-ux-reviewer` — 2026-07-20)
+
+`ui-ux-reviewer` encontró 3 hallazgos IMPORTANTE en la ronda 1: sin forma de cancelar el ajuste
+programado, riesgo de confusión de copy con el banner "Programado" de HU-12, y duplicación de
+componente. Los 3 resueltos:
+
+1. **Cancelar**: el sheet gana una variante "editar/cancelar" (`k6fKsZ`/`PPzUv`), que se abre al
+   tocar el banner del detalle cuando ya hay un fork pendiente. Botón secundario "Quitar ajuste"
+   (icono `rotate-ccw`, neutral, no rojo) + primario "Aplicar cambios". Quitar ajuste cancela el
+   fork, el ciclo siguiente vuelve solo al monto original.
+2. **Confusión con HU-12**: el banner pasó de "Ajuste programado" a **"Ajuste de monto próximo"**
+   (sin la palabra "programado"), manteniendo el ícono ya distinto (`repeat-1` vs `calendar-clock`
+   de HU-12).
+3. **Duplicación**: el banner ya no copia la geometría de `Programado — Entry` a mano — ambos
+   instancian el mismo componente genérico `Entry Row` (`s09qcC`, ahora tratado como reusable
+   compartido entre HU-12 y este flujo).
+
+Documentado completo en `design-system/billetudo/pages/presupuestos.md`, sección "Ajustar monto —
+solo el próximo período". Node IDs finales: sheet crear `A8ZfHd`/`D0EoN`, sheet editar/cancelar
+`k6fKsZ`/`PPzUv`, banner `AYsw7`/`s0ZlV` (dentro de `reulY`/`ujbZf`).
+
+**Regla de negocio para un segundo ajuste sobre un fork ya pendiente**: resuelto en diseño como
+"editar el fork existente" (reabre prefilled, permite cambiar o quitar) — nunca acumula forks.
+`flutter-dev` debe implementar exactamente ese criterio: si ya existe un fork pendiente para el
+presupuesto, la acción del `⋮` reabre en modo editar; si no existe, en modo crear.
+
+## Plan para retomar (enfoque B)
+
+Tamaño estimado: **M**. No toca esquema Drift ni `deletedAt`/`tombstonedAt`.
+
+1. ~~`pencil-designer`: diseñar el flujo~~ — hecho, ver arriba (2 rondas).
+2. ~~`ui-ux-reviewer`: auditar el flujo~~ — hecho, los 3 hallazgos resueltos en ronda 2.
+3. `flutter-dev`: nuevo caso de uso (ej. `SplitBudgetForNextPeriod` en
    `lib/features/budgets/domain/usecases/`) que orqueste el cierre del presupuesto actual +
-   creación del nuevo, expuesto desde el cubit de detalle existente. Claves l10n nuevas.
-4. **`qa-automator`**: tests del caso de uso + goldens del flujo nuevo.
+   creación del nuevo (próximo período, ajustado) + creación del tercero (desde el período
+   siguiente, monto original, indefinido); caso de uso de cancelación que revierte el fork
+   pendiente; expuestos desde el cubit de detalle existente. Claves l10n nuevas. Mirar los frames
+   de Pencil arriba antes de implementar (gate obligatorio).
+4. `qa-automator`: tests del caso de uso + goldens del flujo nuevo.
 5. Reviews finales (finance-code-reviewer, ui-convention-reviewer, compliance-reviewer — Nivel 0
    sigue intacto, esto no debe quedar detrás de ningún gate).
 

@@ -2630,6 +2630,12 @@ abstract class AppLocalizations {
   /// **'Eliminar presupuesto'**
   String get budgetActionDeleteBudget;
 
+  /// No description provided for @budgetActionAdjustAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar monto — próximo período'**
+  String get budgetActionAdjustAmount;
+
   /// No description provided for @budgetDetailActionsSubtitle.
   ///
   /// In es, this message translates to:
@@ -3866,6 +3872,79 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Vencía el {date} · muévelo hacia adelante'**
   String scheduledSnoozeContextLine(String date);
+
+  /// No description provided for @budgetAdjustSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar monto — solo el próximo período'**
+  String get budgetAdjustSheetTitle;
+
+  /// No description provided for @budgetAdjustSheetHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El resto de tus períodos sigue igual, sin que tengas que hacer nada después.'**
+  String get budgetAdjustSheetHint;
+
+  /// No description provided for @budgetAdjustCurrentAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto actual ({range})'**
+  String budgetAdjustCurrentAmountLabel(String range);
+
+  /// No description provided for @budgetAdjustNewAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo monto para el próximo período ({range})'**
+  String budgetAdjustNewAmountLabel(String range);
+
+  /// No description provided for @budgetAdjustExplainer.
+  ///
+  /// In es, this message translates to:
+  /// **'A partir del {effectiveDate} tu presupuesto será de {newAmount}. Desde {resumeDate} vuelve automáticamente a {originalAmount} — no tienes que hacer nada.'**
+  String budgetAdjustExplainer(String effectiveDate, String newAmount,
+      String resumeDate, String originalAmount);
+
+  /// No description provided for @budgetAdjustApplyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar cambios'**
+  String get budgetAdjustApplyCta;
+
+  /// No description provided for @budgetAdjustRemoveCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar ajuste'**
+  String get budgetAdjustRemoveCta;
+
+  /// No description provided for @budgetAdjustBannerLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste de monto próximo'**
+  String get budgetAdjustBannerLabel;
+
+  /// No description provided for @budgetAdjustBannerSub.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} el próximo período'**
+  String budgetAdjustBannerSub(String amount);
+
+  /// No description provided for @budgetAdjustScheduledSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste programado para tu próximo período.'**
+  String get budgetAdjustScheduledSnackbar;
+
+  /// No description provided for @budgetAdjustUpdatedSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste actualizado.'**
+  String get budgetAdjustUpdatedSnackbar;
+
+  /// No description provided for @budgetAdjustCancelledSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste cancelado — tu próximo período vuelve al monto habitual.'**
+  String get budgetAdjustCancelledSnackbar;
 }
 
 class _AppLocalizationsDelegate

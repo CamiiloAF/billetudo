@@ -22,7 +22,10 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en una banda sepa
 | Histórico de presupuestos cerrados | `KfPyk` | `g2qP7` |
 | Histórico — carga (skeleton) | `rI2bL` | `swPIt` |
 | Modo sobres (base-cero) | `D1G5hl` | `YiBcF` |
-| Sheet — acciones del detalle (⋮) | `G26c4T` | `f1WviW` |
+| Sheet — acciones del detalle (⋮) | `JR1Xp` | `Z72OIH` |
+| Sheet — ajustar monto (crear ajuste) | `A8ZfHd` | `D0EoN` |
+| Sheet — ajustar monto (editar/cancelar ajuste ya programado) | `k6fKsZ` | `PPzUv` |
+| Detalle — ajuste programado (banner) | `reulY` | `ujbZf` |
 | Sheet — umbral de alerta | `m3jomu` | `GNQ49` |
 | Sheet — elegir ícono | `XsnnD` | `Al6tQ` |
 | Sheet — info "¿Qué es el modo sobres?" | `eBwb0` | `gAetG` |
@@ -42,6 +45,7 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en una banda sepa
 - `Archived Budget Row` (`Ote7d`) — fila del histórico. **Tarjeta de dos zonas**, no una fila plana: Body (icon-wrap + nombre + **alcance** + `"Cerrado <fecha>"` a la derecha, y debajo la fila de resultado con `circle-check-big` / `circle-minus` — el icono va en **ambos** resultados, no solo en sobregasto) y **Footer** separado por borde superior, alineado a la derecha, con `archive-restore` + "Reactivar".
 - `Archived Budget Skeleton Row` (`ktlIa`) — placeholder de carga del histórico, con la geometría de dos zonas de `Ote7d`. No reusar `iVri4`: es el placeholder de `FSL69` y tiene otra geometría.
 - `Budget Scheduled Row` (`j3b8Se`, "Variante A — Badge recurrencia") — fila de un pago programado dentro del sheet de HU-12 (ver más abajo). Icon-wrap con badge circular de recurrencia superpuesto (18×18 `$surface`+borde, ícono `repeat` 9px, mismo patrón del badge de edición de ícono del formulario), sub "Próximo: [fecha] · [cuenta]", monto en `$text-secondary`. Sin variante oscura separada (recolorea por tema).
+- `Entry Row` (`s09qcC`) — fila genérica icono + label/sub + monto opcional + chevron. La usa tanto `Programado — Entry` (HU-12: icono `calendar-clock`, con monto, ej. `H4HDen`) como el banner "Ajuste de monto próximo" (icono `repeat-1`, sin monto — el monto y el período van en el sub). El banner ya no duplica la geometría a mano: `IlrYo`/`D8QEQ` se reemplazaron por instancias `ref` de `s09qcC` (`AYsw7`/`s0ZlV`).
 
 ## Navegación
 
@@ -97,7 +101,7 @@ Orden vertical: `Page Header` (atrás + **"⋮"**) → **hero de progreso** → 
 - **Actividad del periodo — expandir INLINE (no redirigir):** transacciones que cuentan para el presupuesto (reusa `Transaction Row`), excluye transferencias. El "ver más" **expande la lista in-place** con **"Ver más"** (paginación perezosa) — **nunca** redirige a una lista global (rompería el contexto de periodo + alcance). El header de la sección es `"Movimientos del periodo"` + el **contador** `"N movimientos"` a la derecha (`Nv04I`: `K7yvL` + `qFH6T`).
 
 > **No hay acceso "Abrir en Movimientos ›".** El spec lo pidió en prosa, pero no está dibujado en ninguna de las seis variantes del detalle y ocupaba en código el lugar que el frame da al contador. Se retiró (2026-07-19): el "ver más" ya despliega la lista completa ahí mismo, que es el objetivo; y el motivo por el que este mismo párrafo prohíbe redirigir —romper el contexto de periodo + alcance— aplica igual a un acceso secundario. Además, traducir un alcance compuesto ("2 cuentas · 3 categorías" + ventana del periodo) a los filtros de Movimientos no siempre es fiel, y un enlace que lleva a una lista distinta es peor que no tenerlo. Si alguna vez se quiere, se diseña en Pencil primero.
-- **Acciones — en overflow "⋮" del header** (sheet `G26c4T`/`f1WviW`): **Editar** (→ form prellenado) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (→ papelera `deletedAt`, HU-11; sheet de confirmación `hxkUC` / `T7pTgh`). El sheet de confirmación usa tono **neutral `$primary`** (ícono `trash-2`), no rojo — es reversible vía papelera, mensaje: "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
+- **Acciones — en overflow "⋮" del header** (sheet `JR1Xp`/`Z72OIH`): **Editar** (→ form prellenado) · **Ajustar monto — próximo período** (ícono `repeat-1`, ver sección dedicada abajo) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (→ papelera `deletedAt`, HU-11; sheet de confirmación `hxkUC` / `T7pTgh`). El sheet de confirmación de eliminar usa tono **neutral `$primary`** (ícono `trash-2`), no rojo — es reversible vía papelera, mensaje: "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
 - **Variantes:** sobregasto (hero + caption en familia `expense`) y una única vez (ancla "termina el [fecha]", stepper acotado a `[startDate, endDate]`, chevron derecho deshabilitado en el último periodo).
 
 ## HU-12 — Pagos programados dentro del presupuesto
@@ -166,6 +170,26 @@ Nombre de UI: **"Modo sobres"** (no "base-cero"/"YNAB"/"zero-based" — jerga qu
 - **Vacío** (`Zqsi1`/`zIijv`): `Empty State` + copy neutral-positivo ("Aún no tienes presupuestos") + CTA "Crear presupuesto".
 - **Carga** (`L8A868`/`QiUJe`): 4× `Budget Skeleton Row` (`iVri4`), token `$skeleton`.
 - **Texto largo:** nombre/alcance a una línea con ellipsis (regla de contenido largo de MASTER).
+
+## Ajustar monto — solo el próximo período
+
+Mecanismo "fork de 3 partes" (invisible para el usuario): el presupuesto vigente se cierra al fin del período actual (`endDate` al cierre del ciclo en curso), se crea automáticamente un presupuesto con el monto ajustado que dura solo el próximo ciclo, y un tercero retoma el monto original desde el ciclo siguiente en adelante, indefinido — el usuario nunca tiene que "revertir" nada manualmente en la base de datos, pero SÍ puede cancelar el fork antes de que ruede (ver "Cancelar" abajo). Detalle de la decisión de producto/arquitectura en `docs/dev-runs/presupuestos-ajuste-un-periodo.md`.
+
+**Punto de entrada** (`JR1Xp`/`Z72OIH`, sheet "Acciones del presupuesto"): 4ª fila, entre Editar y Cerrar — ícono `repeat-1`, label "Ajustar monto — próximo período". Va en el `⋮` del detalle, no como botón propio: es una acción de gestión poco frecuente, no compite con el hero/CTA principal.
+
+**Sheet de ajuste — dos variantes según si ya hay un fork pendiente:**
+
+- **Crear** (`A8ZfHd`/`D0EoN`, primera vez que se ajusta): instancia de `Bottom Sheet Base`, un solo botón primario, sin confirmación aparte (mismo criterio que el sheet de Umbral de alerta `m3jomu` — efecto reversible, no lo amerita). Contenido: `Info Row` (`myfAc`) con el monto actual del período vigente (solo lectura) → campo de monto nuevo (mismo patrón de Input Box + pastilla de moneda que `a3gGPM/l0Esq`) → tira informativa `$primary-soft` con ícono `repeat-1` que explícita la mecánica completa en una sola oración: *"A partir del [próximo período] tu presupuesto será de $X. Desde [período siguiente] vuelve automáticamente a $Y — no tienes que hacer nada."* → botón primario **"Aplicar cambios"** (renombrado desde "Aplicar solo al próximo período" — el copy ahora es genérico porque el mismo sheet, en su variante editar, reusa el botón para guardar un cambio sobre un ajuste ya existente).
+- **Editar/cancelar** (`k6fKsZ`/`PPzUv`, se abre reprellenado al tocar el banner del detalle cuando ya hay un fork programado): mismo contenido que "Crear", pero el CTA único se reemplaza por `Sheet Buttons Row` (`Ot4yI`): botón secundario **"Quitar ajuste"** (icono `rotate-ccw`, estilo neutral `Button/Secondary` — no rojo/`$expense`, la acción es reversible y no punitiva) + botón primario **"Aplicar cambios"** (icono `repeat-1`, guarda un nuevo monto sobre el fork ya programado). Tocar "Quitar ajuste" cancela el fork pendiente: el ciclo siguiente vuelve a heredar el monto original sin intervención, como si nunca se hubiera programado el ajuste.
+
+**Reflejo en el detalle** (`reulY`/`ujbZf`): banner **"Ajuste de monto próximo"** bajo el Hero, antes de "Movimientos del período" — instancia de `Entry Row` (`s09qcC`, el mismo componente de `Programado — Entry` de HU-12) con icono `repeat-1` (distinto del `calendar-clock` de HU-12) y sin monto visible en el lado derecho (el monto va en el `Sub`, junto al período: "$850.000 el próximo período"). Instancias: `AYsw7` (claro) / `s0ZlV` (oscuro). Tocarlo reabre el sheet en modo **editar/cancelar** (arriba), prefilled — permite revisar/corregir el monto o cancelarlo desde el mismo lugar. **No** se tocó `Budget Line`/la lista: mientras el período vigente sigue activo, la fila de la lista no cambia (el ajuste solo se refleja cuando el ciclo rueda al presupuesto siguiente).
+
+**Por qué comparten componente pero no se confunden:** `Entry Row`/`s09qcC` es deliberadamente genérico (icono + label/sub + monto opcional + chevron) para no duplicar geometría entre HU-12 y este banner — la diferenciación vive en el **icono** (`calendar-clock` pagos programados vs. `repeat-1` ajuste de monto) y el **copy** ("Programado" vs. "Ajuste de monto próximo", deliberadamente sin la palabra "programado" para no repetir el término de HU-12).
+
+**Pendiente de implementación (no bloqueante para el diseño):**
+- Confirmación tras aplicar (crear o editar): reusar `Snackbar` (`zSTlU`) con mensaje tipo "Ajuste programado para tu próximo período." (crear) / "Ajuste actualizado." (editar) — no se instanció como frame nuevo, es reuso directo del componente.
+- Confirmación tras "Quitar ajuste": mensaje tipo "Ajuste cancelado — tu próximo período vuelve al monto habitual." vía `Snackbar`, no diseñado como frame.
+- Reglas de negocio para un segundo ajuste sobre un presupuesto que ya tiene uno pendiente: resuelto en el diseño como "editar el fork existente" (el sheet reabre prefilled con el monto ya programado y permite cambiarlo o quitarlo) — no acumula forks. Confirmar con `flutter-dev`/dominio que la implementación siga ese criterio (reemplazar el fork pendiente, no crear uno nuevo).
 
 ## Tema oscuro — notas de implementación
 
