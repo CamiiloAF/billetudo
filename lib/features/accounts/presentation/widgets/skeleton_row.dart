@@ -55,10 +55,16 @@ class SkeletonRow extends StatelessWidget {
 
 /// A single solid `$border` block standing in for text while it loads.
 class SkeletonBlock extends StatelessWidget {
-  const SkeletonBlock({required this.width, required this.height, super.key});
+  const SkeletonBlock({
+    required this.width,
+    required this.height,
+    this.borderRadius = 6,
+    super.key,
+  });
 
   final double width;
   final double height;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +73,7 @@ class SkeletonBlock extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: context.colors.border,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
     );
   }

@@ -12,6 +12,9 @@ import '../../../../../core/widgets/sheet_buttons_row.dart';
 /// Informative, not destructive: `info` icon, and the confirm button carries a
 /// `check` — an earlier version had a `trash` copied over from the delete flow,
 /// which read as if the change would erase something.
+///
+/// `SpjqW`'s `Sheet Icon Header` title (`lmN3k`) is `enabled:false` — there is
+/// only one narrative message, not a generic title plus a separate body.
 class ConfirmTypeOrCurrencyChangeSheet extends StatelessWidget {
   const ConfirmTypeOrCurrencyChangeSheet({super.key});
 
@@ -33,7 +36,6 @@ class ConfirmTypeOrCurrencyChangeSheet extends StatelessWidget {
           icon: LucideIcons.info,
           iconColor: colors.primaryOnSoft,
           iconBackground: colors.primarySoft,
-          title: l10n.accountChangeSheetTitle,
           message: l10n.accountChangeSheetMessage,
         ),
         const SizedBox(height: 24),

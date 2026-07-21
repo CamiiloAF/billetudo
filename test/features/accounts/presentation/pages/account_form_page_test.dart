@@ -259,7 +259,7 @@ void main() {
     expect(find.text('Elige el tipo de cuenta.'), findsOneWidget);
   });
 
-  testWidgets('guardar pide el submit al cubit', (tester) async {
+  testWidgets('guardar en el header pide el submit al cubit', (tester) async {
     when(() => cubit.submit(confirmed: any(named: 'confirmed')))
         .thenAnswer((_) async {});
     await pumpForm(
@@ -270,7 +270,32 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(LucideIcons.check));
+    // Dos íconos LucideIcons.check en pantalla: el del header y el del botón
+    // "Guardar cuenta" al final del cuerpo. Se distingue por el ancestro.
+    await tester.tap(
+      find.ancestor(
+        of: find.byIcon(LucideIcons.check),
+        matching: find.byType(PageHeaderCircleButton),
+      ),
+    );
+    verify(() => cubit.submit()).called(1);
+  });
+
+  testWidgets('guardar en el botón del cuerpo pide el submit al cubit',
+      (tester) async {
+    when(() => cubit.submit(confirmed: any(named: 'confirmed')))
+        .thenAnswer((_) async {});
+    await pumpForm(
+      tester,
+      const AccountFormState(
+        status: AccountFormStatus.ready,
+        type: AccountType.bank,
+      ),
+    );
+
+    expect(find.text('Guardar cuenta'), findsOneWidget);
+    await tester.ensureVisible(find.text('Guardar cuenta'));
+    await tester.tap(find.text('Guardar cuenta'));
     verify(() => cubit.submit()).called(1);
   });
 

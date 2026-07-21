@@ -13,6 +13,9 @@ import '../../../domain/entities/account_deletion_impact.dart';
 /// The only genuinely destructive sheet of the feature, so it is the only one
 /// wearing `$expense`. It states the impact plainly — how many transactions the
 /// account holds — without dressing it as a warning about the user's spending.
+///
+/// `oymM5`'s `Sheet Icon Header` title (`lmN3k`) is `enabled:false` — there is
+/// only one narrative message, not a generic title plus a separate body.
 class ConfirmDeleteAccountSheet extends StatelessWidget {
   const ConfirmDeleteAccountSheet({required this.impact, super.key});
 
@@ -44,7 +47,6 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
           icon: LucideIcons.triangleAlert,
           iconColor: colors.expense,
           iconBackground: colors.expenseSoft,
-          title: l10n.accountDeleteSheetTitle,
           message: message,
         ),
         BudgetUsageNotice(count: impact.budgetCount),

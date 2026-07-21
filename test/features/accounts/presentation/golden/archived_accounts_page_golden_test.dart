@@ -81,5 +81,16 @@ void main() {
         brightness: brightness,
       );
     });
+
+    testWidgets('failure ($suffix)', (tester) async {
+      // Shares the `AccountsErrorView`/`ErrorState` component fixed
+      // 2026-07-20 (docs/dev-runs/bug-fixes-pixel-audit.md follow-up).
+      await golden(
+        tester,
+        const ArchivedAccountsState(status: ArchivedAccountsStatus.failure),
+        'error_$suffix',
+        brightness: brightness,
+      );
+    });
   }
 }

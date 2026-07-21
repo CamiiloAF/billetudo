@@ -195,13 +195,23 @@ void main() {
     );
 
     blocTest<AccountFormCubit, AccountFormState>(
-      'solo una tarjeta pide tasa de interés',
+      'efectivo no pide tasa de interés: el dinero físico no genera interés',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.cash);
+      },
+      verify: (cubit) => expect(cubit.state.showInterestRateField, isFalse),
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'una cuenta bancaria también pide tasa de interés, no solo tarjetas',
       build: build,
       act: (cubit) async {
         await cubit.load(null);
         cubit.typeSelected(AccountType.bank);
       },
-      verify: (cubit) => expect(cubit.state.showInterestRateField, isFalse),
+      verify: (cubit) => expect(cubit.state.showInterestRateField, isTrue),
     );
 
     blocTest<AccountFormCubit, AccountFormState>(

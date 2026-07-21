@@ -274,10 +274,11 @@ class AccountDetailActions extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: OutlinedButton(
               onPressed: cubit.promptArchive,
-              icon: const Icon(LucideIcons.archive),
-              label: Text(l10n.accountArchiveAction),
+              // `Button/Secondary`'s icon (`d514i` in `ZCSCc`) is
+              // `enabled:false` here — text only, no `archive` glyph.
+              child: Text(l10n.accountArchiveAction),
             ),
           ),
           TextButton(

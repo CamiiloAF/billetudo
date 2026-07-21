@@ -40,7 +40,8 @@ class BalanceCardSimple extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            const MoneyFormatter().format(balanceMinor, currencyCode: currency),
+            const MoneyFormatter()
+                .formatSymbol(balanceMinor, currencyCode: currency),
             textAlign: TextAlign.center,
             style: theme.textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.w800,

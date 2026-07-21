@@ -13,6 +13,7 @@ import '../cubit/accounts_list_state.dart';
 import '../widgets/account_card.dart';
 import '../widgets/accounts_error_view.dart';
 import '../widgets/accounts_total_card.dart';
+import '../widgets/accounts_total_card_skeleton.dart';
 import '../widgets/credit_card_account_row.dart';
 import '../widgets/skeleton_row.dart';
 
@@ -101,14 +102,19 @@ class AccountsLoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: AppLocalizations.of(context).accountsLoading,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _nameWidths.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => SkeletonRow(
-          nameWidth: _nameWidths[index],
-          typeWidth: 60 + (index % 3) * 12,
-        ),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 6, 20, 20),
+        children: [
+          const AccountsTotalCardSkeleton(),
+          const SizedBox(height: 20),
+          for (var index = 0; index < _nameWidths.length; index++) ...[
+            if (index > 0) const SizedBox(height: 12),
+            SkeletonRow(
+              nameWidth: _nameWidths[index],
+              typeWidth: 60 + (index % 3) * 12,
+            ),
+          ],
+        ],
       ),
     );
   }

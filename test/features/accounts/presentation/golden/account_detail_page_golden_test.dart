@@ -1,3 +1,4 @@
+import 'package:billetudo/core/error/failure.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_state.dart';
@@ -133,6 +134,20 @@ void main() {
         tester,
         readyState(noInstitution, balanceMinor: 450050),
         'no_institution_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('failure ($suffix)', (tester) async {
+      // Shares the `AccountsErrorView`/`ErrorState` component fixed
+      // 2026-07-20 (docs/dev-runs/bug-fixes-pixel-audit.md follow-up).
+      await golden(
+        tester,
+        const AccountDetailState(
+          status: AccountDetailStatus.failure,
+          failure: DatabaseFailure('boom'),
+        ),
+        'failure_$suffix',
         brightness: brightness,
       );
     });

@@ -88,7 +88,7 @@ class _BalanceCardHeroState extends State<BalanceCardHero> {
                   label: l10n.accountAvailableCreditLabel,
                   // Floored at 0 by the domain: an overspent card shows $0
                   // available, never a negative "credit" (HU-02).
-                  amount: money.format(
+                  amount: money.formatSymbol(
                     balance.availableCreditMinor ?? 0,
                     currencyCode: widget.currency,
                   ),
@@ -97,7 +97,7 @@ class _BalanceCardHeroState extends State<BalanceCardHero> {
                 ),
                 BalanceHeroFigure(
                   label: l10n.accountDebtLabel,
-                  amount: money.format(
+                  amount: money.formatSymbol(
                     balance.debtMinor,
                     currencyCode: widget.currency,
                   ),
@@ -140,17 +140,17 @@ class _BalanceCardHeroState extends State<BalanceCardHero> {
           Text(
             balance.overLimit
                 ? l10n.accountOverLimitCaption(
-                    money.format(
+                    money.formatSymbol(
                       balance.excessMinor,
                       currencyCode: widget.currency,
                     ),
                   )
                 : l10n.accountCreditUsedCaption(
-                    money.format(
+                    money.formatSymbol(
                       balance.debtMinor,
                       currencyCode: widget.currency,
                     ),
-                    money.format(
+                    money.formatSymbol(
                       widget.creditLimitMinor,
                       currencyCode: widget.currency,
                     ),

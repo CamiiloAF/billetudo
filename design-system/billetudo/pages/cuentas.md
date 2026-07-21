@@ -38,7 +38,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 
 ## Lista de cuentas (`l055o`)
 
-1. `Page Header`: atras + titulo "Cuentas" + boton `+` (agregar cuenta).
+1. `Page Header`: atras + titulo "Cuentas" + boton "Archivadas" (icono `archive`, fondo `$muted`) + boton `+` (agregar cuenta). **El boton "Archivadas" esta SIEMPRE visible, en los 4 estados** (con datos, vacio, carga, error) — el usuario debe poder navegar a cuentas archivadas incluso si la carga actual fallo, esta vacia, o esta cargando.
 2. **Total Card**: gradiente `$primary-deep`→`$primary`, label "Patrimonio total" + monto grande + sub-linea "Deudas: -$X" (`$on-primary`, 13px/500) — distingue activos de pasivos sin necesitar agrupar la lista por tipo.
 3. Lista de cuentas, **orden lineal** (soporta HU-09, reordenar por arrastre, sin ambiguedad de grupos):
    - Cuentas normales: instancia de `Account Card`.
@@ -49,7 +49,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 ### Estados
 - **Vacio**: usa el componente `Empty State` (icono `landmark` + mensaje "Aun no has agregado ninguna cuenta" + CTA "Agregar cuenta").
 - **Carga**: 4 instancias de `Skeleton Row` con la misma geometria que el estado con datos (evita salto visual).
-- **Error**: tarjeta centrada, icono `triangle-alert` en tono NEUTRAL (`$muted`/`$text-secondary`, no `$expense` — no es alerta financiera, es error de carga), mensaje + recordatorio local-first ("Tus datos siguen guardados en tu dispositivo") + boton "Reintentar".
+- **Error**: tarjeta centrada, icono `triangle-alert` en tono NEUTRAL (`$muted`/`$text-secondary`, no `$expense` — no es alerta financiera, es error de carga), mensaje + recordatorio local-first ("Tus datos siguen guardados en tu dispositivo") + boton "Reintentar". En este estado el boton `+` del header queda atenuado (`opacity:0.4`, no se puede agregar mientras la carga fallo) pero el boton "Archivadas" se mantiene con opacidad completa y activo.
 
 ## Detalle de cuenta
 

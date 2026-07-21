@@ -29,7 +29,7 @@ void main() {
     await tester.pumpAppWidget(buildRow(-45000000));
 
     expect(find.text('Visa Oro'), findsOneWidget);
-    expect(find.text('Deuda actual'), findsOneWidget);
+    expect(find.text('Deuda'), findsOneWidget);
     expect(find.text('Cupo disponible'), findsOneWidget);
     // Deuda 450.000 y disponible 2.550.000.
     expect(find.textContaining('450.000'), findsWidgets);
@@ -62,8 +62,8 @@ void main() {
     expect(indicator.valueColor!.value, AppColors.light.expense);
 
     // El cupo disponible se muestra en 0, nunca en negativo (HU-02).
-    // COP sin decimales: "0 COP", no "0,00".
+    // COP sin decimales: "$0", no "$0,00".
     expect(find.textContaining('3.150.000'), findsWidgets);
-    expect(find.textContaining('0\u{00A0}COP'), findsWidgets);
+    expect(find.text('\$0'), findsOneWidget);
   });
 }

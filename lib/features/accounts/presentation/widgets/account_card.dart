@@ -62,7 +62,7 @@ class AccountCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 const MoneyFormatter()
-                    .format(balanceMinor, currencyCode: account.currency),
+                    .formatSymbol(balanceMinor, currencyCode: account.currency),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: balanceMinor < 0 ? colors.expense : colors.textPrimary,

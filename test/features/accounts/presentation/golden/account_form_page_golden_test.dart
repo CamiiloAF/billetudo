@@ -1,4 +1,6 @@
+import 'package:billetudo/core/error/failure.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_draft.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_state.dart';
 import 'package:billetudo/features/accounts/presentation/pages/account_form_page.dart';
@@ -87,6 +89,40 @@ void main() {
           last4: '4321',
         ),
         'card_section_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('validation error, name required ($suffix)', (tester) async {
+      await golden(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          type: AccountType.bank,
+          failure: ValidationFailure(
+            'account name is required',
+            field: AccountDraft.fieldName,
+          ),
+        ),
+        'validation_error_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('number field, read failed ($suffix)', (tester) async {
+      // Secure storage refused to return the stored number (Keystore
+      // decryption failure): the field says why instead of looking as if the
+      // number was deleted.
+      await golden(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          id: 'acc-1',
+          type: AccountType.bank,
+          name: 'Bancolombia',
+          numberReadFailed: true,
+        ),
+        'number_read_failed_$suffix',
         brightness: brightness,
       );
     });

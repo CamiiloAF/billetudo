@@ -67,7 +67,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    money.format(
+                    money.formatSymbol(
                       balance.balanceMinor,
                       currencyCode: account.currency,
                     ),
@@ -91,7 +91,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.accountDebtLabel,
+                      l10n.accountDebtShortLabel,
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: colors.textSecondary),
                     ),
@@ -107,7 +107,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      money.format(
+                      money.formatSymbol(
                         balance.debtMinor,
                         currencyCode: account.currency,
                       ),
@@ -115,7 +115,7 @@ class CreditCardAccountRow extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      money.format(
+                      money.formatSymbol(
                         // Floored at 0 by the domain: available credit is never
                         // shown negative (HU-02).
                         balance.availableCreditMinor ?? 0,

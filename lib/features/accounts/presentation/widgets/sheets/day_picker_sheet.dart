@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../domain/entities/account_draft.dart';
 import '../day_cell.dart';
@@ -10,7 +12,11 @@ import '../day_cell.dart';
 /// The title is whatever the field that opened it passes, so one sheet serves
 /// both. There is no note about months without a 31st: the system resolves that
 /// on its own and explaining it would only add noise.
-class DayPickerSheet extends StatelessWidget {
+///
+/// Tapping a day only stages it — `tYzxA`/`p6SGT` add a `Button/Primary`
+/// "Guardar" below the grid, an explicit confirmation step, instead of closing
+/// the sheet on the first tap.
+class DayPickerSheet extends StatefulWidget {
   const DayPickerSheet({
     required this.title,
     required this.selected,
@@ -34,13 +40,21 @@ class DayPickerSheet extends StatelessWidget {
       );
 
   @override
+  State<DayPickerSheet> createState() => _DayPickerSheetState();
+}
+
+class _DayPickerSheetState extends State<DayPickerSheet> {
+  late int? _selected = widget.selected;
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          widget.title,
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -59,10 +73,21 @@ class DayPickerSheet extends StatelessWidget {
                 day++)
               DayCell(
                 day: day,
-                isSelected: day == selected,
-                onTap: (value) => Navigator.of(context).pop(value),
+                isSelected: day == _selected,
+                onTap: (value) => setState(() => _selected = value),
               ),
           ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: _selected == null
+                ? null
+                : () => Navigator.of(context).pop(_selected),
+            icon: const Icon(LucideIcons.check),
+            label: Text(l10n.commonSave),
+          ),
         ),
       ],
     );

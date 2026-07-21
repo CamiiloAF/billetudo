@@ -53,6 +53,21 @@ void main() {
     isLastAccount: false,
   );
 
+  const impactNoTransactions = AccountDeletionImpact(
+    transactionCount: 0,
+    goalCount: 0,
+    debtCount: 0,
+    isLastAccount: false,
+  );
+
+  const impactWithBudgets = AccountDeletionImpact(
+    transactionCount: 3,
+    goalCount: 0,
+    debtCount: 0,
+    budgetCount: 2,
+    isLastAccount: false,
+  );
+
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
@@ -61,6 +76,30 @@ void main() {
         tester,
         (context) => ConfirmDeleteAccountSheet.show(context, impact: impact),
         'confirm_delete_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('confirm delete, no transactions ($suffix)', (tester) async {
+      await golden(
+        tester,
+        (context) => ConfirmDeleteAccountSheet.show(
+          context,
+          impact: impactNoTransactions,
+        ),
+        'confirm_delete_no_impact_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('confirm delete, with budgets ($suffix)', (tester) async {
+      await golden(
+        tester,
+        (context) => ConfirmDeleteAccountSheet.show(
+          context,
+          impact: impactWithBudgets,
+        ),
+        'confirm_delete_with_budgets_$suffix',
         brightness: brightness,
       );
     });

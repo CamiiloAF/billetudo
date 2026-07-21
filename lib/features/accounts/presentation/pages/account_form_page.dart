@@ -147,20 +147,23 @@ class AccountFormBody extends StatelessWidget {
           maxLength: AccountDraft.maxInstitutionLength,
           onChanged: cubit.institutionChanged,
         ),
-        const SizedBox(height: 16),
-        AccountMoneyField(
-          label: state.isCard
-              ? l10n.accountFormCurrentDebtLabel
-              : l10n.accountFormInitialBalanceLabel,
-          icon: LucideIcons.banknote,
-          hint: l10n.accountFormAmountHint,
-          currency: state.currency,
-          text: state.initialBalanceText,
-          errorText:
-              _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
-          allowNegative: true,
-          onChanged: cubit.initialBalanceChanged,
-        ),
+        // A card's debt lives only in "Datos de la tarjeta" (`Cupo máximo`
+        // et al.), not as a top-level money field — `xdLeB`/`jg9DA` go from
+        // Moneda straight into that section, with no field in between.
+        if (!state.isCard) ...[
+          const SizedBox(height: 16),
+          AccountMoneyField(
+            label: l10n.accountFormInitialBalanceLabel,
+            icon: LucideIcons.banknote,
+            hint: l10n.accountFormAmountHint,
+            currency: state.currency,
+            text: state.initialBalanceText,
+            errorText:
+                _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
+            allowNegative: true,
+            onChanged: cubit.initialBalanceChanged,
+          ),
+        ],
         const SizedBox(height: 16),
         AccountFormField.selector(
           label: l10n.accountFormCurrencyLabel,
@@ -230,6 +233,19 @@ class AccountFormBody extends StatelessWidget {
             ),
           ),
         ],
+        const SizedBox(height: 24),
+        // `Button/Primary` "Guardar cuenta" (`DuS3K`/`vR0Ex` in `CwiKu`/
+        // `xdLeB`), full-width at the end of the content — in addition to the
+        // check icon in the `Page Header`, not instead of it.
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed:
+                state.status == AccountFormStatus.saving ? null : cubit.submit,
+            icon: const Icon(LucideIcons.check),
+            label: Text(l10n.accountFormSaveCta),
+          ),
+        ),
       ],
     );
   }
