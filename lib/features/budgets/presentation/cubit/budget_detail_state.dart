@@ -39,9 +39,10 @@ class BudgetDetailState extends Equatable {
   /// this budget's activity. `null` once dismissed or undone.
   final String? pendingUndoId;
 
-  /// "Ajustar monto — solo el próximo período": the budget's pending fork, if
-  /// any — drives whether the banner shows and whether its sheet opens in
-  /// "crear" or "editar/cancelar" mode. `null` means nothing pending.
+  /// "Ajustar monto": the pending override for the window the stepper is
+  /// currently showing, if any — drives whether the banner shows and whether
+  /// its sheet opens in "crear" or "editar/cancelar" mode. `null` means the
+  /// visible window has nothing pending.
   final PendingBudgetAdjustment? pendingAdjustment;
 
   bool get isLoading => status == BudgetDetailStatus.loading;

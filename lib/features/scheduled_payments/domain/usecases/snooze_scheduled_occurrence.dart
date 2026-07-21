@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
-import '../entities/scheduled_payment_occurrence.dart';
+import '../entities/snooze_outcome.dart';
 import '../repositories/scheduled_payment_repository.dart';
 
 /// HU-07: moves a single occurrence to a later date chosen by the user,
@@ -19,7 +19,7 @@ class SnoozeScheduledOccurrence {
 
   static const String fieldNewDate = 'newDate';
 
-  FutureResult<ScheduledPaymentOccurrence> call({
+  FutureResult<SnoozeOutcome> call({
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
     required DateTime newDate,

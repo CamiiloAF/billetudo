@@ -71,6 +71,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(data);
+    registerFallbackValue(DateTime(2025));
   });
   final adjustment = PendingBudgetAdjustment(
     newAmountMinor: 50000,
@@ -103,7 +104,8 @@ void main() {
     ).thenReturn(view);
     // Every emission of detail data re-reads the pending fork; default to
     // "nothing pending" so tests that don't care about it stay quiet.
-    when(() => getPendingBudgetAdjustment(any()))
+    when(() => getPendingBudgetAdjustment(any(),
+            periodStart: any(named: 'periodStart')))
         .thenAnswer((_) async => const Right(null));
   });
 
@@ -201,7 +203,8 @@ void main() {
       act: (cubit) => cubit.start('bud-tarjeta'),
       verify: (cubit) {
         expect(cubit.state.pendingAdjustment, isNull);
-        verify(() => getPendingBudgetAdjustment('bud-tarjeta')).called(1);
+        verify(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart'))).called(1);
       },
     );
 
@@ -210,7 +213,8 @@ void main() {
       setUp: () {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
-        when(() => getPendingBudgetAdjustment('bud-tarjeta'))
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
       },
       build: build,
@@ -226,7 +230,8 @@ void main() {
       setUp: () {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
-        when(() => getPendingBudgetAdjustment('bud-tarjeta')).thenAnswer(
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart'))).thenAnswer(
           (_) async =>
               const Left(NotFoundFailure('budget "bud-tarjeta" not found')),
         );
@@ -251,6 +256,7 @@ void main() {
           () => scheduleBudgetAdjustment(
             any(),
             newAmountMinor: any(named: 'newAmountMinor'),
+            periodStart: any(named: 'periodStart'),
           ),
         );
       },
@@ -265,9 +271,11 @@ void main() {
           () => scheduleBudgetAdjustment(
             'bud-tarjeta',
             newAmountMinor: 50000,
+            periodStart: any(named: 'periodStart'),
           ),
         ).thenAnswer((_) async => const Right(unit));
-        when(() => getPendingBudgetAdjustment('bud-tarjeta'))
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
       },
       build: build,
@@ -285,6 +293,7 @@ void main() {
           () => scheduleBudgetAdjustment(
             'bud-tarjeta',
             newAmountMinor: 50000,
+            periodStart: any(named: 'periodStart'),
           ),
         ).called(1);
       },
@@ -299,6 +308,7 @@ void main() {
           () => scheduleBudgetAdjustment(
             'bud-tarjeta',
             newAmountMinor: 50000,
+            periodStart: any(named: 'periodStart'),
           ),
         ).thenAnswer(
           (_) async => const Left(
@@ -318,7 +328,8 @@ void main() {
         final result = await cubit.scheduleAmountAdjustment(50000);
         expect(result.isLeft(), isTrue);
       },
-      verify: (_) => verifyNever(() => getPendingBudgetAdjustment(any())),
+      verify: (_) => verifyNever(() => getPendingBudgetAdjustment(any(),
+          periodStart: any(named: 'periodStart'))),
     );
   });
 
@@ -333,6 +344,7 @@ void main() {
           () => updateBudgetAdjustment(
             any(),
             newAmountMinor: any(named: 'newAmountMinor'),
+            periodStart: any(named: 'periodStart'),
           ),
         );
       },
@@ -347,6 +359,7 @@ void main() {
           () => updateBudgetAdjustment(
             'bud-tarjeta',
             newAmountMinor: 75000,
+            periodStart: any(named: 'periodStart'),
           ),
         ).thenAnswer((_) async => const Right(unit));
         final edited = PendingBudgetAdjustment(
@@ -355,7 +368,8 @@ void main() {
           resumeAmountMinor: 450000000,
           resumeFrom: DateTime(2025, 9, 21),
         );
-        when(() => getPendingBudgetAdjustment('bud-tarjeta'))
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(edited));
       },
       build: build,
@@ -370,6 +384,7 @@ void main() {
           () => updateBudgetAdjustment(
             'bud-tarjeta',
             newAmountMinor: 75000,
+            periodStart: any(named: 'periodStart'),
           ),
         ).called(1);
       },
@@ -383,7 +398,8 @@ void main() {
       verify: (cubit) async {
         final result = await cubit.cancelAmountAdjustment();
         expect(result.getRight().toNullable(), unit);
-        verifyNever(() => cancelBudgetAdjustment(any()));
+        verifyNever(() => cancelBudgetAdjustment(any(),
+          periodStart: any(named: 'periodStart')));
       },
     );
 
@@ -392,9 +408,11 @@ void main() {
       setUp: () {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
-        when(() => getPendingBudgetAdjustment('bud-tarjeta'))
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
-        when(() => cancelBudgetAdjustment('bud-tarjeta'))
+        when(() => cancelBudgetAdjustment('bud-tarjeta',
+            periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => const Right(unit));
       },
       build: build,
@@ -403,13 +421,15 @@ void main() {
         await pumpEventQueue();
         expect(cubit.state.pendingAdjustment, adjustment);
         // From here on, the budget has no pending fork any more.
-        when(() => getPendingBudgetAdjustment('bud-tarjeta'))
+        when(() => getPendingBudgetAdjustment('bud-tarjeta',
+              periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => const Right(null));
         await cubit.cancelAmountAdjustment();
       },
       verify: (cubit) {
         expect(cubit.state.pendingAdjustment, isNull);
-        verify(() => cancelBudgetAdjustment('bud-tarjeta')).called(1);
+        verify(() => cancelBudgetAdjustment('bud-tarjeta',
+            periodStart: any(named: 'periodStart'))).called(1);
       },
     );
   });

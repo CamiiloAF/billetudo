@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
-import '../../domain/entities/scheduled_payment_occurrence.dart';
+import '../../domain/entities/snooze_outcome.dart';
 
 enum SnoozeSheetStatus { ready, saving, saved, failure }
 
@@ -20,9 +20,10 @@ class SnoozeSheetState extends Equatable {
   final DateTime selectedDate;
   final SnoozeSheetStatus status;
 
-  /// The occurrence as it stands after a successful save, so the caller can
-  /// offer "Deshacer" (criterion 10) by id.
-  final ScheduledPaymentOccurrence? saved;
+  /// The snooze result after a successful save — the resulting occurrence plus
+  /// the pre-snooze state — so the caller can offer "Deshacer" (criterion 10)
+  /// and reverse exactly one step.
+  final SnoozeOutcome? saved;
 
   final Failure? failure;
 
@@ -31,7 +32,7 @@ class SnoozeSheetState extends Equatable {
   SnoozeSheetState copyWith({
     DateTime? selectedDate,
     SnoozeSheetStatus? status,
-    ScheduledPaymentOccurrence? saved,
+    SnoozeOutcome? saved,
     Failure? failure,
   }) =>
       SnoozeSheetState(

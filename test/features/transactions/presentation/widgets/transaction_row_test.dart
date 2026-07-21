@@ -32,8 +32,9 @@ void main() {
       );
 
       final amount = tester.widget<Text>(find.textContaining('100'));
-      // Pencil prints an expense unsigned: only income is marked, with '+'.
-      expect(amount.data, isNot(startsWith('-')));
+      // An expense is signed with '-' (fix "signo del monto"), but stays in the
+      // neutral text-primary color — never red, never punitive.
+      expect(amount.data, startsWith('-'));
       expect(amount.style?.color, AppColors.light.textPrimary);
     },
   );

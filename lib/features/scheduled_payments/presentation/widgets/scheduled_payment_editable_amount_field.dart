@@ -109,6 +109,7 @@ class _ScheduledPaymentEditableAmountFieldState
                 amountMinor: _buffer.amountMinor,
                 currency: widget.currency,
                 label: widget.label,
+                valueColor: widget.valueColor,
                 amountPrefix: widget.amountPrefix,
                 onCollapse: _collapse,
                 onDigit: (digit) => _apply(
@@ -148,6 +149,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
     required this.onEquals,
     required this.onBackspace,
     this.label,
+    this.valueColor,
     this.amountPrefix = '',
     super.key,
   });
@@ -155,6 +157,12 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
   final int amountMinor;
   final String currency;
   final String? label;
+
+  /// The value's colour, kept identical to the collapsed state so the amount
+  /// never changes tone when expanded. `null` falls back to the brand
+  /// `primary`.
+  final Color? valueColor;
+
   final String amountPrefix;
   final VoidCallback onCollapse;
   final ValueChanged<int> onDigit;
@@ -200,7 +208,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
             '$amountPrefix${money.formatSymbol(amountMinor, currencyCode: currency)}',
             textAlign: TextAlign.center,
             style: theme.textTheme.displaySmall?.copyWith(
-              color: colors.primary,
+              color: valueColor ?? colors.primary,
               fontSize: 40,
               fontWeight: FontWeight.w800,
             ),

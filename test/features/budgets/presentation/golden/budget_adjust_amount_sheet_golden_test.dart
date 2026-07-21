@@ -24,6 +24,7 @@ void main() {
 
   final windows = BudgetAdjustmentWindows(
     healthyEntry.budget,
+    healthyEntry.window,
     DateTime(2025, 7, 25),
   );
 

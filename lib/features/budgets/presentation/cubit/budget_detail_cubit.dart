@@ -18,7 +18,8 @@ import 'budget_detail_state.dart';
 
 /// Drives the budget detail: reactive progress + activity for the selected
 /// period, period navigation (HU-05), the close/delete actions (HU-10/11) and
-/// "Ajustar monto — solo el próximo período" (crear/editar/cancelar).
+/// "Ajustar monto" — which targets the period the stepper is currently showing
+/// (crear/editar/cancelar).
 @injectable
 class BudgetDetailCubit extends Cubit<BudgetDetailState> {
   BudgetDetailCubit(
@@ -72,16 +73,25 @@ class BudgetDetailCubit extends Cubit<BudgetDetailState> {
 
   void _onData(BudgetDetailData data) {
     _data = data;
+    // Emits the view and refreshes the pending adjustment for the visible
+    // window (`_emitForIndex` triggers the refresh itself).
     _emitForIndex(resetActivity: false);
-    unawaited(_refreshPendingAdjustment(data.budget.id));
   }
 
-  /// "Ajustar monto — próximo período": re-reads whether [budgetId] has a
-  /// pending fork. Called on every detail emission (so it stays in sync when
-  /// the original budget's own row changes) and right after this cubit's own
-  /// schedule/update/cancel actions succeed.
-  Future<void> _refreshPendingAdjustment(String budgetId) async {
-    final result = await _getPendingBudgetAdjustment(budgetId);
+  /// The start of the window the stepper is currently showing — what every
+  /// "Ajustar monto" action targets. `null` before the first view is emitted.
+  DateTime? get _visiblePeriodStart => state.view?.window.start;
+
+  /// "Ajustar monto": re-reads whether the window starting at [periodStart]
+  /// (the one the stepper is showing) has a pending override. Called on every
+  /// detail emission and stepper navigation (so the banner tracks the visible
+  /// window) and right after this cubit's own schedule/update/cancel actions.
+  Future<void> _refreshPendingAdjustment(
+    String budgetId,
+    DateTime periodStart,
+  ) async {
+    final result =
+        await _getPendingBudgetAdjustment(budgetId, periodStart: periodStart);
     if (isClosed) {
       return;
     }
@@ -95,45 +105,54 @@ class BudgetDetailCubit extends Cubit<BudgetDetailState> {
     );
   }
 
-  /// "Ajustar monto — próximo período" (crear): applies the fork of 3 parts
-  /// for the first time.
+  /// "Ajustar monto" (crear): writes the per-period override for the visible
+  /// window for the first time.
   FutureResult<Unit> scheduleAmountAdjustment(int newAmountMinor) async {
     final id = _data?.budget.id;
-    if (id == null) {
+    final periodStart = _visiblePeriodStart;
+    if (id == null || periodStart == null) {
       return const Right(unit);
     }
-    final result =
-        await _scheduleBudgetAdjustment(id, newAmountMinor: newAmountMinor);
+    final result = await _scheduleBudgetAdjustment(
+      id,
+      newAmountMinor: newAmountMinor,
+      periodStart: periodStart,
+    );
     if (result.isRight()) {
-      await _refreshPendingAdjustment(id);
+      await _refreshPendingAdjustment(id, periodStart);
     }
     return result;
   }
 
-  /// "Ajustar monto — próximo período" (editar): changes the amount of an
-  /// already-pending fork.
+  /// "Ajustar monto" (editar): changes the amount of the override already
+  /// pending for the visible window.
   FutureResult<Unit> updateAmountAdjustment(int newAmountMinor) async {
     final id = _data?.budget.id;
-    if (id == null) {
+    final periodStart = _visiblePeriodStart;
+    if (id == null || periodStart == null) {
       return const Right(unit);
     }
-    final result =
-        await _updateBudgetAdjustment(id, newAmountMinor: newAmountMinor);
+    final result = await _updateBudgetAdjustment(
+      id,
+      newAmountMinor: newAmountMinor,
+      periodStart: periodStart,
+    );
     if (result.isRight()) {
-      await _refreshPendingAdjustment(id);
+      await _refreshPendingAdjustment(id, periodStart);
     }
     return result;
   }
 
-  /// "Quitar ajuste": cancels a pending fork.
+  /// "Quitar ajuste": cancels the override pending for the visible window.
   FutureResult<Unit> cancelAmountAdjustment() async {
     final id = _data?.budget.id;
-    if (id == null) {
+    final periodStart = _visiblePeriodStart;
+    if (id == null || periodStart == null) {
       return const Right(unit);
     }
-    final result = await _cancelBudgetAdjustment(id);
+    final result = await _cancelBudgetAdjustment(id, periodStart: periodStart);
     if (result.isRight()) {
-      await _refreshPendingAdjustment(id);
+      await _refreshPendingAdjustment(id, periodStart);
     }
     return result;
   }
@@ -231,6 +250,10 @@ class BudgetDetailCubit extends Cubit<BudgetDetailState> {
             resetActivity ? BudgetDetailState.activityPageSize : null,
       ),
     );
+    // The banner/sheet always reflect the window the stepper is showing, so the
+    // pending adjustment is re-read for the newly visible window on every emit
+    // (data change or navigation).
+    unawaited(_refreshPendingAdjustment(data.budget.id, view.window.start));
   }
 
   @override

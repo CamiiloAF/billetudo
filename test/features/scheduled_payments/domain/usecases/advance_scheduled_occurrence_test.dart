@@ -36,11 +36,11 @@ void main() {
     verifyNever(() => repository.advanceScheduledOccurrence(any()));
   });
 
-  test('reenvía la falla del repositorio (plantilla manual, endDate, etc.)',
+  test('reenvía la falla del repositorio (nada que confirmar, endDate, etc.)',
       () async {
     when(() => repository.advanceScheduledOccurrence('sp-1')).thenAnswer(
       (_) async => const Left(
-        ValidationFailure('only an automatic-mode template can be advanced'),
+        ValidationFailure('this scheduled payment has nothing left to confirm'),
       ),
     );
 

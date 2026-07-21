@@ -84,47 +84,6 @@ abstract final class BudgetMapper {
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
-  /// "Ajustar monto — este período": closes/reopens a recurring budget's
-  /// `endDate` on its own, without touching any other field. `endDate: null`
-  /// reopens it (cancels a pending fork); a set value stops it renewing past
-  /// that day (applies a fork).
-  static db.BudgetsCompanion endDateCompanion({
-    required DateTime? endDate,
-    required DateTime now,
-  }) =>
-      db.BudgetsCompanion(
-        endDate: Value(endDate),
-        updatedAt: Value(now.millisecondsSinceEpoch),
-      );
-
-  /// "Ajustar monto — este período" (editar): rewrites only the pending
-  /// fork's amount.
-  static db.BudgetsCompanion amountCompanion({
-    required int amountMinor,
-    required DateTime now,
-  }) =>
-      db.BudgetsCompanion(
-        amountMinor: Value(amountMinor),
-        updatedAt: Value(now.millisecondsSinceEpoch),
-      );
-
-  /// "Ajustar monto — este período" (`currentWindow.index == 0`): patches the
-  /// original row in place, both its amount and its `endDate`, in one write.
-  /// Used both to apply the in-place adjustment (a set `endDate`, the new
-  /// amount) and to cancel it (`endDate: null`, the original amount) — there
-  /// is no previous cycle to close, so there is no separate "adjusted" fork
-  /// row to touch instead.
-  static db.BudgetsCompanion amountAndEndDateCompanion({
-    required int amountMinor,
-    required DateTime? endDate,
-    required DateTime now,
-  }) =>
-      db.BudgetsCompanion(
-        amountMinor: Value(amountMinor),
-        endDate: Value(endDate),
-        updatedAt: Value(now.millisecondsSinceEpoch),
-      );
-
   static db.BudgetPeriod _periodToDb(BudgetPeriod period) => switch (period) {
         BudgetPeriod.weekly => db.BudgetPeriod.weekly,
         BudgetPeriod.biweekly => db.BudgetPeriod.biweekly,

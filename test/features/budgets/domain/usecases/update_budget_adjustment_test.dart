@@ -21,14 +21,16 @@ void main() {
       () => repository.updateBudgetAdjustment(
         'b1',
         newAmountMinor: 75000,
+        periodStart: DateTime(2026),
       ),
     ).thenAnswer((_) async => const Right(unit));
 
-    final result = await usecase('b1', newAmountMinor: 75000);
+    final result = await usecase('b1', newAmountMinor: 75000, periodStart: DateTime(2026));
 
     expect(result.getRight().toNullable(), unit);
     verify(
-      () => repository.updateBudgetAdjustment('b1', newAmountMinor: 75000),
+      () => repository.updateBudgetAdjustment('b1',
+          newAmountMinor: 75000, periodStart: DateTime(2026)),
     ).called(1);
   });
 
@@ -39,10 +41,11 @@ void main() {
       () => repository.updateBudgetAdjustment(
         'b1',
         newAmountMinor: 75000,
+        periodStart: DateTime(2026),
       ),
     ).thenAnswer((_) async => const Left(failure));
 
-    final result = await usecase('b1', newAmountMinor: 75000);
+    final result = await usecase('b1', newAmountMinor: 75000, periodStart: DateTime(2026));
 
     expect(result.getLeft().toNullable(), failure);
   });

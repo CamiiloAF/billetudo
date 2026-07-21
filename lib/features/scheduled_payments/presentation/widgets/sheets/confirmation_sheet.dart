@@ -58,16 +58,15 @@ class ConfirmationSheet extends StatelessWidget {
     required PendingScheduledOccurrence source,
     List<PendingScheduledOccurrence> allPending = const [],
   }) =>
-      // Not `BottomSheetBase.show`: this sheet is not dismissible/draggable
-      // (criterion 7, no shortcut past it), which the helper doesn't expose,
-      // and it renders its own chrome instead of `BottomSheetBase`'s.
-      // `useRootNavigator: true` still applies so it covers the bottom nav
-      // bar like every other sheet in the app.
+      // Dismissible and draggable like every other sheet in the app: tapping
+      // the scrim or dragging the handle down closes it. Dismissing is not a
+      // shortcut past the mandatory confirmation (criterion 7) — it simply does
+      // nothing (the occurrence stays awaiting); only the "Confirmar" button
+      // applies it. The body wraps its content in `BottomSheetBase`, so the
+      // chrome (handle, radius, scrim) matches the standard sheets.
       showModalBottomSheet<ConfirmationSheetResult>(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
-        enableDrag: false,
         useRootNavigator: true,
         builder: (context) =>
             ConfirmationSheet(source: source, allPending: allPending),
@@ -661,8 +660,14 @@ class ConfirmationSheetFields extends StatelessWidget {
           value: DateFormat.yMMMd(Localizations.localeOf(context).toString())
               .format(date),
           onTap: () async {
-            final picked =
-                await DatePickerSheet.show(context, initialDate: date);
+            // A payment can only be recorded up to today — never in the future.
+            // Confirming ahead of schedule records it now, not on its future
+            // due date.
+            final picked = await DatePickerSheet.show(
+              context,
+              initialDate: date,
+              disabledAfter: DateUtils.dateOnly(DateTime.now()),
+            );
             if (picked != null) {
               onDateChanged(picked);
             }
@@ -708,6 +713,9 @@ class ConfirmationSheetFields extends StatelessWidget {
                   ? l10n.scheduledConfirmationSheetTransferAmountLabel
                   : l10n.scheduledConfirmationSheetAmountLabel,
               valueColor: ScheduledPaymentFormat.amountColor(colors, type),
+              // Prominent single-amount display: only income carries a '+'
+              // (same reasoning as the detail hero). The list rows carry the
+              // expense '-'.
               amountPrefix: type == ScheduledPaymentType.income ? '+' : '',
               onChanged: onAmountChanged,
             ),

@@ -4,8 +4,8 @@ import '../entities/pending_scheduled_occurrence.dart';
 import '../entities/scheduled_payment.dart';
 import '../entities/scheduled_payment_detail.dart';
 import '../entities/scheduled_payment_draft.dart';
-import '../entities/scheduled_payment_occurrence.dart';
 import '../entities/scheduled_payment_summary.dart';
+import '../entities/snooze_outcome.dart';
 import '../entities/tag.dart';
 
 /// Contract the Pagos Programados feature depends on. Implemented in `data/`
@@ -120,34 +120,51 @@ abstract class ScheduledPaymentRepository {
   /// template's cadence. Works both for an already-pending (vencida, manual
   /// mode) occurrence and for a template's next occurrence that has not
   /// become due yet (detail screen) — creating the ledger row on demand in
-  /// the latter case. Returns the occurrence so the caller can offer
-  /// [undoSnoozeOccurrence] from the "Deshacer" snackbar.
-  FutureResult<ScheduledPaymentOccurrence> snoozeOccurrence({
+  /// the latter case. Returns a [SnoozeOutcome] carrying the resulting
+  /// occurrence plus the pre-snooze state ([SnoozeOutcome.wasCreated],
+  /// [SnoozeOutcome.previousSnoozedToDate]) the caller must hand back to
+  /// [undoSnoozeOccurrence] so the "Deshacer" snackbar reverses exactly one
+  /// step.
+  FutureResult<SnoozeOutcome> snoozeOccurrence({
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
     required DateTime newDate,
   });
 
-  /// Undo for [snoozeOccurrence]: clears `snoozedToDate` and returns the
-  /// occurrence to `pending`.
-  FutureResult<Unit> undoSnoozeOccurrence(String occurrenceId);
+  /// Undo for [snoozeOccurrence], reversing a single snooze step:
+  ///  - [wasCreated] true: the snooze materialized the row, so delete it.
+  ///  - [previousSnoozedToDate] non-null: restore that earlier snoozed date
+  ///    (a re-snooze steps back one date, not to the original).
+  ///  - both false/null: clear `snoozedToDate`, back to `pending`.
+  FutureResult<Unit> undoSnoozeOccurrence(
+    String occurrenceId, {
+    required bool wasCreated,
+    DateTime? previousSnoozedToDate,
+  });
 
-  /// HU-05 "Confirmar ahora": materializes a `pending` occurrence for an
-  /// automatic-mode template's [scheduledPaymentId] on demand, without
-  /// requiring `nextDate` to be due yet (`docs/bugfixes.md` point 1 — until
-  /// now, an automatic template could only be confirmed/registered manually
-  /// once its date had already passed). Only ever called explicitly from the
-  /// detail screen's CTA, never from a `watch` — materializing a pending
-  /// occurrence just because the detail screen is open would silently
-  /// advance every automatic template a user happens to look at.
+  /// HU-05 "Confirmar ahora": materializes a `pending` occurrence for a
+  /// template's [scheduledPaymentId] on demand — any mode — without requiring
+  /// `nextDate` to be due yet (`docs/bugfixes.md` point 1 — until now a
+  /// template could only be confirmed/registered once its date had already
+  /// passed). Only ever called explicitly from the detail screen's CTA, never
+  /// from a `watch` — materializing a pending occurrence just because the
+  /// detail screen is open would silently advance every template a user
+  /// happens to look at.
   ///
   /// Idempotent alongside the catch-up generator and the due-date branch of
   /// [watchScheduledPaymentDetail]: if an awaiting occurrence already exists
   /// for this template, it is reused instead of duplicated. Fails with
-  /// [ValidationFailure] for a manual-mode template (it already has its own
-  /// due-date path) or when the template has nothing left to confirm (past
+  /// [ValidationFailure] when the template has nothing left to confirm (past
   /// `endDate`, tombstoned, or a `once` template already fired).
   FutureResult<PendingScheduledOccurrence> advanceScheduledOccurrence(
     String scheduledPaymentId,
   );
+
+  /// Cleans up after "Confirmar ahora" when the user dismisses the confirmation
+  /// sheet without acting: deletes the occurrence [advanceScheduledOccurrence]
+  /// speculatively materialized, so merely opening and closing the sheet leaves
+  /// no phantom pending and never moves the cursor. A no-op — and safe — when
+  /// the occurrence was already confirmed/skipped/snoozed (the user acted) or
+  /// when it is a genuine catch-up occurrence sitting before the cursor.
+  FutureResult<Unit> discardUnconfirmedAdvanceOccurrence(String occurrenceId);
 }

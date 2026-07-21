@@ -1067,7 +1067,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moreDebtsDescription => 'Sigue tus deudas y pagos';
 
   @override
-  String get moreScheduledPayments => 'Recurrentes';
+  String get moreScheduledPayments => 'Pagos programados';
 
   @override
   String get moreScheduledPaymentsDescription => 'Pagos e ingresos automáticos';
@@ -2084,6 +2084,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduledPaymentDetailConfirmNowCta => 'Confirmar ahora';
 
   @override
+  String get scheduledPaymentDetailConfirmNowError =>
+      'No pudimos confirmar este pago ahora. Intenta de nuevo.';
+
+  @override
   String get scheduledPaymentDetailTagsLabel => 'Etiquetas';
 
   @override
@@ -2239,26 +2243,21 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get budgetAdjustSheetTitle => 'Ajustar monto — solo este período';
+  String get budgetAdjustSheetTitle => 'Ajustar monto';
 
   @override
-  String get budgetAdjustSheetHint =>
-      'El resto de tus períodos sigue igual, sin que tengas que hacer nada después.';
-
-  @override
-  String budgetAdjustCurrentAmountLabel(String range) {
-    return 'Monto actual ($range)';
+  String budgetAdjustCurrentAmountInline(String amount) {
+    return 'Actual $amount';
   }
 
   @override
   String budgetAdjustNewAmountLabel(String range) {
-    return 'Nuevo monto para este período ($range)';
+    return 'Nuevo monto · $range';
   }
 
   @override
-  String budgetAdjustExplainer(String effectiveDate, String newAmount,
-      String resumeDate, String originalAmount) {
-    return 'A partir del $effectiveDate tu presupuesto será de $newAmount. Desde $resumeDate vuelve automáticamente a $originalAmount — no tienes que hacer nada.';
+  String budgetAdjustExplainer(String resumeDate, String originalAmount) {
+    return 'El $resumeDate vuelve a $originalAmount automáticamente.';
   }
 
   @override
@@ -2268,7 +2267,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetAdjustRemoveCta => 'Quitar ajuste';
 
   @override
-  String get budgetAdjustBannerLabel => 'Ajuste de monto vigente';
+  String get budgetAdjustBannerLabel => 'Ajuste de monto programado';
 
   @override
   String budgetAdjustBannerSub(String amount) {
@@ -2277,12 +2276,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetAdjustScheduledSnackbar =>
-      'Ajuste aplicado a tu período actual.';
+      'Ajuste aplicado al período seleccionado.';
 
   @override
   String get budgetAdjustUpdatedSnackbar => 'Ajuste actualizado.';
 
   @override
   String get budgetAdjustCancelledSnackbar =>
-      'Ajuste cancelado — tu período actual vuelve al monto habitual.';
+      'Ajuste cancelado — el período vuelve al monto habitual.';
 }

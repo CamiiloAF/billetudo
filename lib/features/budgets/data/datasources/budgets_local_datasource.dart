@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../domain/entities/budget_period_override.dart';
+import '../models/budget_period_override_mapper.dart';
 
 /// One scope reference (account or category) of a budget, with whether its
 /// referent still exists. Data-layer type: never leaves `data/`.
@@ -158,19 +160,6 @@ class BudgetsLocalDatasource {
   /// write failed: the row is seconds old and nothing references it.
   Future<void> hardDeleteBudget(String id) =>
       (_db.delete(_db.budgets)..where((b) => b.id.equals(id))).go();
-
-  /// Hides the row from every read path (`_budgetAlive`) while keeping it in
-  /// the table, so `BudgetAccounts`/`BudgetCategories` rows whose FK already
-  /// points at it (written by `reconcileScope`) keep a live referent instead
-  /// of dangling. Used to cancel a not-yet-active adjustment/resume fork —
-  /// see `cancelAmountAdjustment`.
-  Future<void> tombstoneBudget(String id, DateTime now) =>
-      (_db.update(_db.budgets)..where((b) => b.id.equals(id))).write(
-        BudgetsCompanion(
-          tombstonedAt: Value(now),
-          updatedAt: Value(now.millisecondsSinceEpoch),
-        ),
-      );
 
   // -- Scope -----------------------------------------------------------------
 
@@ -555,178 +544,89 @@ class BudgetsLocalDatasource {
     ];
   }
 
-  // -- Amount adjustment ("fork de 2 o 3 partes") ------------------------------
+  // -- Per-period amount override (Wallet-style) -----------------------------
   //
-  // No new column/table: the fork is inferred purely from the exact shape
-  // [applyAmountAdjustment]/[applyAmountAdjustmentInPlace] always write — an
-  // alive budget whose `startDate` starts the day after another's `endDate`,
-  // mirroring its cadence/scope. See `BudgetRepositoryImpl` for the window
-  // math that produces those dates.
-  //
-  // Two shapes exist, both anchored on `currentWindow`:
-  //  - `currentWindow.index > 0`: the original closes at the end of the
-  //    *previous* cycle, a new "adjusted" row covers `currentWindow` with the
-  //    new amount, and a "resume" row picks the original amount back up at
-  //    `nextWindow`.
-  //  - `currentWindow.index == 0`: there is no previous cycle to close, so
-  //    the original row is patched in place (new amount, `endDate` at the end
-  //    of `currentWindow`) instead of being closed + forked — it plays the
-  //    "adjusted" role itself. Only the "resume" row is inserted.
+  // Replaces the old multi-row "fork" model: instead of inserting extra
+  // `Budgets` rows for the adjusted/resume periods (which surfaced as duplicate
+  // budgets), the budget stays a single row and a per-period amount lives in
+  // `BudgetPeriodOverrides`, one row per (budgetId, periodStart). See
+  // `BudgetRepositoryImpl` for which window `periodStart` targets (the next
+  // one). Cancelling an override is a HARD delete — no trash/undo, nothing
+  // references it by FK.
 
-  /// The pending "this period only" fork of [original], if any.
-  ///
-  /// Returns either a separate row (the `currentWindow.index > 0` shape) or
-  /// [original] itself, when [original]'s own `endDate` closes at the end of
-  /// the cycle it is still active in and a resume fork follows it directly
-  /// (the `currentWindow.index == 0` in-place shape).
-  Future<Budget?> findAdjustedFork(Budget original) async {
-    final closesAt = original.endDate;
-    if (closesAt == null) {
-      return null;
-    }
-    final nextStart = closesAt.add(const Duration(days: 1));
-    final rows = await (_db.select(_db.budgets)
-          ..where((b) => b.startDate.equals(nextStart) & _budgetAlive(b)))
-        .get();
-    for (final row in rows) {
-      if (_sameCadence(row, original)) {
-        // A forward row whose own cycle never ends is the resume fork: that
-        // makes `original` itself the adjusted fork, patched in place
-        // (currentWindow.index == 0, no previous period to close). A forward
-        // row that does have an endDate is a separate adjusted fork instead
-        // (currentWindow.index > 0).
-        return row.endDate == null ? original : row;
-      }
-    }
-    return null;
-  }
+  /// Every override row, mapped to the domain entity, for the list-progress
+  /// join. `periodStart` is normalized to date-only by the mapper so it indexes
+  /// by equality against `BudgetPeriodWindow.start`.
+  Stream<List<BudgetPeriodOverride>> watchBudgetPeriodOverrides() =>
+      _db.select(_db.budgetPeriodOverrides).watch().map(
+            (rows) => rows.map(BudgetPeriodOverrideMapper.toEntity).toList(),
+          );
 
-  /// The "resumes the original amount" fork that follows [adjusted], the
-  /// same way [findAdjustedFork] finds the adjusted part. [original] is only
-  /// used for its cadence fields (name/icon/currency/period/rollover/
-  /// threshold), which an adjustment never touches — its `amountMinor` may
-  /// already be the *new* amount when [adjusted] is [original] itself
-  /// (the in-place shape), so it is deliberately not used to filter here.
-  Future<Budget?> findResumeFork(Budget original, Budget adjusted) async {
-    final closesAt = adjusted.endDate;
-    if (closesAt == null) {
-      return null;
-    }
-    final nextStart = closesAt.add(const Duration(days: 1));
-    final rows = await (_db.select(_db.budgets)
+  /// The override for ([budgetId], [periodStart]) if one exists. [periodStart]
+  /// is matched date-only.
+  Future<BudgetPeriodOverride?> getPeriodOverride(
+    String budgetId,
+    DateTime periodStart,
+  ) async {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    final row = await (_db.select(_db.budgetPeriodOverrides)
           ..where(
-            (b) =>
-                b.startDate.equals(nextStart) &
-                b.endDate.isNull() &
-                _budgetAlive(b),
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
           ))
-        .get();
-    for (final row in rows) {
-      if (_sameCadence(row, original)) {
-        return row;
-      }
-    }
-    return null;
+        .getSingleOrNull();
+    return row == null ? null : BudgetPeriodOverrideMapper.toEntity(row);
   }
 
-  bool _sameCadence(Budget row, Budget original) =>
-      row.id != original.id &&
-      row.name == original.name &&
-      row.icon == original.icon &&
-      row.currency == original.currency &&
-      row.period == original.period &&
-      row.rollover == original.rollover &&
-      row.alertThresholdPct == original.alertThresholdPct;
-
-  /// Applies the `currentWindow.index > 0` fork atomically: closes
-  /// [originalId] at the end of the *previous* cycle with [closeCompanion],
-  /// inserts the adjusted (this-cycle-only) and resume (indefinite) budgets
-  /// with the same scope as the original.
-  Future<void> applyAmountAdjustment({
-    required String originalId,
-    required BudgetsCompanion closeCompanion,
-    required BudgetsCompanion adjustedCompanion,
-    required BudgetsCompanion resumeCompanion,
-    required Set<String> accountIds,
-    required Set<String> categoryIds,
+  /// Inserts a new override for ([budgetId], [periodStart]). The repository has
+  /// already checked no override exists for that window (uniqueness), so this
+  /// is a plain insert. [periodStart] is stored date-only.
+  Future<void> upsertPeriodOverride({
+    required String budgetId,
+    required DateTime periodStart,
+    required int amountMinor,
     required DateTime now,
   }) =>
-      _db.transaction(() async {
-        await updateBudget(originalId, closeCompanion);
-        final adjusted = await insertBudget(adjustedCompanion);
-        await reconcileScope(
-          adjusted.id,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-          now: now,
-        );
-        final resumed = await insertBudget(resumeCompanion);
-        await reconcileScope(
-          resumed.id,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-          now: now,
-        );
-      });
+      _db.into(_db.budgetPeriodOverrides).insert(
+            BudgetPeriodOverridesCompanion.insert(
+              budgetId: budgetId,
+              periodStart: BudgetPeriodOverrideMapper.dateOnly(periodStart),
+              amountMinor: amountMinor,
+              createdAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
+          );
 
-  /// Applies the `currentWindow.index == 0` fork atomically: there is no
-  /// previous cycle to close, so [originalId] is patched in place with
-  /// [adjustedCompanion] (new amount + `endDate` at the end of the current
-  /// cycle) instead of being closed and forked, and only the resume
-  /// (indefinite, original amount) budget is inserted, with the same scope.
-  Future<void> applyAmountAdjustmentInPlace({
-    required String originalId,
-    required BudgetsCompanion adjustedCompanion,
-    required BudgetsCompanion resumeCompanion,
-    required Set<String> accountIds,
-    required Set<String> categoryIds,
+  /// Rewrites the amount of the existing override for ([budgetId],
+  /// [periodStart]), stamping `updatedAt`.
+  Future<void> updatePeriodOverrideAmount({
+    required String budgetId,
+    required DateTime periodStart,
+    required int amountMinor,
     required DateTime now,
-  }) =>
-      _db.transaction(() async {
-        await updateBudget(originalId, adjustedCompanion);
-        final resumed = await insertBudget(resumeCompanion);
-        await reconcileScope(
-          resumed.id,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-          now: now,
-        );
-      });
+  }) {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    return (_db.update(_db.budgetPeriodOverrides)
+          ..where(
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
+          ))
+        .write(
+      BudgetPeriodOverridesCompanion(
+        amountMinor: Value(amountMinor),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      ),
+    );
+  }
 
-  /// Cancels a pending fork atomically, reversing whichever of the two shapes
-  /// [applyAmountAdjustment]/[applyAmountAdjustmentInPlace] wrote:
-  ///  - `currentWindow.index > 0` ([adjustedId] != [originalId]): tombstones
-  ///    the not-yet-active adjusted/resume budgets (never applied, so no
-  ///    undo-trash is needed — but `hardDeleteBudget` is not safe here: by
-  ///    the time this runs, `reconcileScope` has already written
-  ///    `BudgetAccounts`/`BudgetCategories` rows whose FK points at them, and
-  ///    physically deleting the referent would orphan those scope rows) and
-  ///    reopens the original with [reopenCompanion] (clears `endDate`,
-  ///    amount untouched — it was never changed).
-  ///  - `currentWindow.index == 0` ([adjustedId] == [originalId]): the
-  ///    "adjusted" row *is* the original, so it is left alone here and
-  ///    restored via [reopenCompanion] instead (original amount, `endDate:
-  ///    null`); only the resume fork is tombstoned.
-  /// [resumeId] is `null` only in an inconsistent state (the resume fork went
-  /// missing); still cancels what it can find. `_budgetAlive` excludes
-  /// tombstoned rows from every read path, so a cancelled fork disappears
-  /// from the UI exactly like a hard delete would, without breaking the FK.
-  Future<void> cancelAmountAdjustment({
-    required String originalId,
-    required String adjustedId,
-    required String? resumeId,
-    required BudgetsCompanion reopenCompanion,
-    required DateTime now,
-  }) =>
-      _db.transaction(() async {
-        if (adjustedId != originalId) {
-          await tombstoneBudget(adjustedId, now);
-        }
-        if (resumeId != null) {
-          await tombstoneBudget(resumeId, now);
-        }
-        await updateBudget(originalId, reopenCompanion);
-      });
+  /// HARD-deletes the override for ([budgetId], [periodStart]) — cancelling an
+  /// adjustment. Nothing references it, so there is no trash/undo.
+  Future<void> deletePeriodOverride(String budgetId, DateTime periodStart) {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    return (_db.delete(_db.budgetPeriodOverrides)
+          ..where(
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
+          ))
+        .go();
+  }
 
   Expression<bool> _budgetAlive($BudgetsTable b) =>
       b.deletedAt.isNull() & b.tombstonedAt.isNull();

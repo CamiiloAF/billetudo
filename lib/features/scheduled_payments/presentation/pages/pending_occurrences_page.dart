@@ -190,7 +190,10 @@ class PendingOccurrencesListView extends StatelessWidget {
       case ConfirmationSheetResult.skipped:
         cubit.notifySkipped(entry.occurrence.id);
       case ConfirmationSheetResult.snoozed:
-        cubit.notifySnoozed(entry.occurrence.id);
+        cubit.notifySnoozed(
+          entry.occurrence.id,
+          previousSnoozedToDate: entry.occurrence.snoozedToDate,
+        );
       case ConfirmationSheetResult.confirmed:
       case ConfirmationSheetResult.cancelled:
       case null:

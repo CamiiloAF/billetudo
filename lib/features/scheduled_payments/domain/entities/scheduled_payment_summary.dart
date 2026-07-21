@@ -18,6 +18,7 @@ class ScheduledPaymentSummary extends Equatable {
     this.categoryColor,
     this.transferAccountName,
     this.pendingOccurrenceCount = 0,
+    this.nextAwaitingDate,
     this.lastPaymentDate,
   });
 
@@ -39,6 +40,17 @@ class ScheduledPaymentSummary extends Equatable {
   /// shows it as a single row with a "×N" chip instead of repeating it
   /// (HU-04, criterion 11).
   final int pendingOccurrenceCount;
+
+  /// Effective date of the nearest occurrence still awaiting resolution — a
+  /// payment posponed ahead of its cadence. The card shows this instead of the
+  /// template cursor so a snoozed payment reads its new date. Null when nothing
+  /// is awaiting, in which case [nextPaymentDate] falls back to the cursor.
+  final DateTime? nextAwaitingDate;
+
+  /// The date the card shows as "próximo pago": the nearest awaiting
+  /// occurrence's effective date when one exists, else the template cursor.
+  DateTime get nextPaymentDate =>
+      nextAwaitingDate ?? scheduledPayment.nextDate;
 
   /// The effective date of the last occurrence this template actually
   /// generated (`confirmed` in the ledger), for the "Terminados" filter's
@@ -62,6 +74,7 @@ class ScheduledPaymentSummary extends Equatable {
         categoryColor,
         transferAccountName,
         pendingOccurrenceCount,
+        nextAwaitingDate,
         lastPaymentDate,
       ];
 }

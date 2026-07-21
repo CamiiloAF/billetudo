@@ -8,6 +8,7 @@ import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/usecases/advance_scheduled_occurrence.dart';
 import '../../domain/usecases/delete_scheduled_payment.dart';
+import '../../domain/usecases/discard_unconfirmed_advance_occurrence.dart';
 import '../../domain/usecases/get_scheduled_payment_detail.dart';
 import '../../domain/usecases/get_scheduled_payment_history.dart';
 import '../../domain/usecases/undo_snooze_scheduled_occurrence.dart';
@@ -25,6 +26,7 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     this._undoSnoozeOccurrence,
     this._restoreTransaction,
     this._advanceScheduledOccurrence,
+    this._discardUnconfirmedAdvanceOccurrence,
   ) : super(const ScheduledPaymentDetailState());
 
   final GetScheduledPaymentDetail _getScheduledPaymentDetail;
@@ -33,6 +35,7 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
   final UndoSnoozeScheduledOccurrence _undoSnoozeOccurrence;
   final RestoreTransaction _restoreTransaction;
   final AdvanceScheduledOccurrence _advanceScheduledOccurrence;
+  final DiscardUnconfirmedAdvanceOccurrence _discardUnconfirmedAdvanceOccurrence;
 
   StreamSubscription<Result<ScheduledPaymentDetail>>? _subscription;
   String? _id;
@@ -127,21 +130,44 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
   }
 
   /// Called after `SnoozeSheetCubit.save()` succeeds for this template's next
-  /// occurrence, so the page can offer "Deshacer" (criterion 10).
-  void notifySnoozed(String occurrenceId) =>
-      emit(state.copyWith(pendingUndoSnoozeOccurrenceId: occurrenceId));
+  /// occurrence, so the page can offer "Deshacer" (criterion 10). [wasCreated]
+  /// and [previousSnoozedToDate] carry the pre-snooze state so the undo
+  /// reverses exactly one step (a re-snooze steps back one date, not to the
+  /// original).
+  void notifySnoozed(
+    String occurrenceId, {
+    required bool wasCreated,
+    DateTime? previousSnoozedToDate,
+  }) =>
+      emit(
+        state.copyWith(
+          pendingUndoSnoozeOccurrenceId: occurrenceId,
+          pendingUndoSnoozeWasCreated: wasCreated,
+          pendingUndoSnoozePreviousDate: previousSnoozedToDate,
+        ),
+      );
 
   Future<void> undoSnooze() async {
     final occurrenceId = state.pendingUndoSnoozeOccurrenceId;
     if (occurrenceId == null) {
       return;
     }
+    final wasCreated = state.pendingUndoSnoozeWasCreated;
+    final previousSnoozedToDate = state.pendingUndoSnoozePreviousDate;
     emit(state.copyWith(clearPendingUndoSnooze: true));
-    await _undoSnoozeOccurrence(occurrenceId);
+    await _undoSnoozeOccurrence(
+      occurrenceId,
+      wasCreated: wasCreated,
+      previousSnoozedToDate: previousSnoozedToDate,
+    );
   }
 
-  void dismissUndoSnooze() =>
-      emit(state.copyWith(clearPendingUndoSnooze: true));
+  void dismissUndoSnooze() {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndoSnooze: true));
+  }
 
   /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the
   /// transaction detail page opened from this template's history. The
@@ -202,11 +228,17 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     }
   }
 
-  /// The page has opened (or given up opening) the `ConfirmationSheet` for
-  /// [confirmNow]'s result — clears the one-shot trigger so it does not
-  /// re-fire on the next unrelated state change.
-  void dismissConfirmNow() =>
-      emit(state.copyWith(clearConfirmNowOccurrence: true));
+  /// The page has closed the `ConfirmationSheet` opened for [confirmNow]'s
+  /// result. Clears the one-shot trigger and, if the user dismissed the sheet
+  /// without acting, discards the speculatively materialized occurrence so the
+  /// next payment date never moves just from opening and closing the sheet.
+  Future<void> dismissConfirmNow() async {
+    final occurrenceId = state.confirmNowOccurrence?.occurrence.id;
+    emit(state.copyWith(clearConfirmNowOccurrence: true));
+    if (occurrenceId != null) {
+      await _discardUnconfirmedAdvanceOccurrence(occurrenceId);
+    }
+  }
 
   @override
   Future<void> close() async {

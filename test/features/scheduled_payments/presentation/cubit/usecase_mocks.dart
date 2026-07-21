@@ -82,4 +82,6 @@ void registerScheduledPaymentPresentationFallbacks() {
     ),
   );
   registerFallbackValue(DateTime(2026));
+  // For `any(named: 'wasCreated')` on `UndoSnoozeScheduledOccurrence`.
+  registerFallbackValue(false);
 }

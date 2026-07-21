@@ -152,17 +152,19 @@ class BudgetDetailPage extends StatelessWidget {
     }
   }
 
-  /// "Ajustar monto — solo el próximo período": opens the sheet in "crear"
-  /// mode from the `⋮` entry point, or in "editar/cancelar" mode — reopened
-  /// prefilled — from the detail banner (HU-13).
+  /// "Ajustar monto": opens the sheet in "crear" mode from the `⋮` entry point,
+  /// or in "editar/cancelar" mode — reopened prefilled — from the detail
+  /// banner (HU-13). The adjustment targets the window the stepper is currently
+  /// showing, so the sheet's ranges come from the visible view.
   Future<void> _openAdjustAmountSheet(BuildContext context) async {
     final cubit = context.read<BudgetDetailCubit>();
     final budget = cubit.state.budget;
-    if (budget == null) {
+    final view = cubit.state.view;
+    if (budget == null || view == null) {
       return;
     }
     final pending = cubit.state.pendingAdjustment;
-    final windows = BudgetAdjustmentWindows(budget, DateTime.now());
+    final windows = BudgetAdjustmentWindows(budget, view.window, DateTime.now());
     final result = await BudgetAdjustAmountSheet.show(
       context,
       currentAmountMinor: budget.amountMinor,
@@ -193,6 +195,10 @@ class BudgetDetailPage extends StatelessWidget {
                         ? l10n.budgetAdjustUpdatedSnackbar
                         : l10n.budgetAdjustScheduledSnackbar,
                   ),
+                  // Float above the anchored period stepper (bottom: 0) so it
+                  // does not cover the ← / → CTA while it is visible.
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
                 ),
               );
           },
@@ -205,7 +211,12 @@ class BudgetDetailPage extends StatelessWidget {
             messenger
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(content: Text(l10n.budgetAdjustCancelledSnackbar)),
+                SnackBar(
+                  content: Text(l10n.budgetAdjustCancelledSnackbar),
+                  // Float above the anchored period stepper, same as above.
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
+                ),
               );
           },
         );
@@ -231,8 +242,8 @@ class BudgetDetailBody extends StatelessWidget {
   /// Called with a scheduled payment (template) id, from a scheduled row.
   final ValueChanged<String> onOpenScheduledPayment;
 
-  /// "Ajustar monto — próximo período": opens the sheet in "editar/cancelar"
-  /// mode, from the banner (HU-13).
+  /// "Ajustar monto": opens the sheet in "editar/cancelar" mode, from the
+  /// banner (HU-13).
   final VoidCallback onAdjustAmount;
 
   @override
@@ -278,9 +289,10 @@ class BudgetDetailBody extends StatelessWidget {
                 ),
               ),
             ],
-            // "Ajustar monto — próximo período": the pending-fork banner
-            // (`AYsw7`/`s0ZlV`), hidden entirely when nothing is scheduled —
-            // same convention as the "Programado" card above.
+            // "Ajustar monto": the pending-override banner (`s09qcC` instance),
+            // shown only when the window the stepper is showing has an
+            // override — hidden entirely otherwise, same convention as the
+            // "Programado" card above.
             if (state.pendingAdjustment case final adjustment?) ...[
               const SizedBox(height: 16),
               BudgetAdjustmentEntryCard(
@@ -368,7 +380,7 @@ class BudgetDetailHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  CategoryAppearance.iconFor(budget.icon),
+                  CategoryAppearance.iconForOrPlaceholder(budget.icon),
                   size: 20,
                   color: overspent ? colors.expense : colors.primaryOnSoft,
                 ),

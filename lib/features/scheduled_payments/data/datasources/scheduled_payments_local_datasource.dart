@@ -15,6 +15,7 @@ class ScheduledPaymentRowWithJoins {
     this.transferAccount,
     this.category,
     this.pendingOccurrenceCount = 0,
+    this.nextAwaitingDate,
     this.lastPaymentDate,
   });
 
@@ -23,6 +24,12 @@ class ScheduledPaymentRowWithJoins {
   final Account? transferAccount;
   final Category? category;
   final int pendingOccurrenceCount;
+
+  /// Effective date of the nearest occurrence still awaiting resolution
+  /// (`snoozedToDate ?? occurrenceDate`) — a payment posponed ahead, so the
+  /// active card shows this instead of the template cursor. Null when nothing
+  /// is awaiting. Only resolved for the "Activos" filter.
+  final DateTime? nextAwaitingDate;
 
   /// Effective date of the newest `confirmed` occurrence, only resolved for
   /// the "Terminados" filter (null everywhere else).
@@ -137,9 +144,27 @@ class ScheduledPaymentsLocalDatasource {
   /// resolution.
   Stream<List<ScheduledPaymentRowWithJoins>> watchActiveScheduledPayments() {
     final transferAccounts = _db.alias(_db.accounts, 'transfer_accounts');
+    // Only DUE awaiting occurrences hide a card and move it to "Por confirmar".
+    // Counting future ones here (a snooze always moves an occurrence forward;
+    // "Confirmar ahora" can materialize a future one) hid the card while "Por
+    // confirmar" — which filters by due date — never showed it, so the whole
+    // template vanished. This due filter mirrors `GetPendingOccurrences`
+    // (`isDueOn`) exactly, so a card hides only when it truly has something to
+    // confirm today.
+    final now = DateTime.now();
+    final startOfTomorrow = DateTime(now.year, now.month, now.day + 1);
+    final effectiveDate = coalesce<DateTime>([
+      _db.scheduledPaymentOccurrences.snoozedToDate,
+      _db.scheduledPaymentOccurrences.occurrenceDate,
+    ]);
     final pendingCount = _db.scheduledPaymentOccurrences.id.count(
-      filter: _awaitingResolution,
+      filter: _awaitingResolution &
+          effectiveDate.isSmallerThanValue(startOfTomorrow),
     );
+    // The nearest still-awaiting occurrence's effective date. When a card is
+    // shown (no DUE occurrence), this is a future one — e.g. a payment posponed
+    // ahead — so the card must display that date, not the template cursor.
+    final nextAwaitingDate = effectiveDate.min(filter: _awaitingResolution);
 
     final query = _db.select(_db.scheduledPayments).join([
       innerJoin(
@@ -160,7 +185,7 @@ class ScheduledPaymentsLocalDatasource {
             .equalsExp(_db.scheduledPayments.id),
       ),
     ])
-      ..addColumns([pendingCount])
+      ..addColumns([pendingCount, nextAwaitingDate])
       ..where(_activeExpr())
       ..groupBy([_db.scheduledPayments.id])
       ..orderBy([OrderingTerm.asc(_db.scheduledPayments.nextDate)]);
@@ -174,6 +199,7 @@ class ScheduledPaymentsLocalDatasource {
                 transferAccount: row.readTableOrNull(transferAccounts),
                 category: row.readTableOrNull(_db.categories),
                 pendingOccurrenceCount: row.read(pendingCount) ?? 0,
+                nextAwaitingDate: row.read(nextAwaitingDate),
               ),
           ],
         );
@@ -258,7 +284,23 @@ class ScheduledPaymentsLocalDatasource {
         _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
       ),
     ])
-      ..where(_db.scheduledPayments.id.equals(id));
+      ..where(_db.scheduledPayments.id.equals(id))
+      // Make the stream depend on THIS template's occurrences: snooze/confirm/
+      // skip write to `scheduledPaymentOccurrences`, not `scheduledPayments`,
+      // so without this the detail's próximo-pago date (which is derived from
+      // the nearest awaiting occurrence) would stay stale until the template
+      // row itself changed. This scalar `EXISTS` never adds a row; it only
+      // registers the occurrences table as a watched dependency.
+      ..addColumns([
+        existsQuery(
+          _db.selectOnly(_db.scheduledPaymentOccurrences)
+            ..addColumns([_db.scheduledPaymentOccurrences.id])
+            ..where(
+              _db.scheduledPaymentOccurrences.scheduledPaymentId
+                  .equalsExp(_db.scheduledPayments.id),
+            ),
+        ),
+      ]);
 
     return query.watchSingleOrNull().map((row) {
       if (row == null) {

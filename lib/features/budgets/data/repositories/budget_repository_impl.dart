@@ -12,6 +12,7 @@ import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/entities/budget_draft.dart';
 import '../../domain/entities/budget_expense.dart';
+import '../../domain/entities/budget_period_override.dart';
 import '../../domain/entities/budget_period_window.dart';
 import '../../domain/entities/budget_progress.dart';
 import '../../domain/entities/budget_scope.dart';
@@ -72,6 +73,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchAliveCategories(),
             _local.watchScheduledExpenseTemplates(),
             _local.watchPendingScheduledOccurrences(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final rows = values[0]! as List<db.Budget>;
@@ -81,6 +83,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categories = values[4]! as List<db.Category>;
             final templates = values[5]! as List<BudgetScheduledTemplateRow>;
             final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
+            final overrides = values[7]! as List<BudgetPeriodOverride>;
+            final overrideIndex = _overrideIndex(overrides);
             final children = _categoryChildren(categories);
             final now = DateTime.now();
             final domainExpenses = expenses.map(_toExpense).toList();
@@ -99,6 +103,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
                   children: children,
                   scheduledTemplates: scheduledTemplates,
                   pendingOccurrences: pendingOccurrences,
+                  overridesByBudget: overrideIndex,
                   reference: atClose ? (row.archivedAt ?? now) : now,
                   // A closed budget's window is history: it never projects
                   // future "programado" spend for a period that is over.
@@ -117,6 +122,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     required Map<String, List<String>> children,
     required List<BudgetScheduledTemplateDetail> scheduledTemplates,
     required List<PendingScheduledOccurrence> pendingOccurrences,
+    required Map<String, Map<DateTime, int>> overridesByBudget,
     required DateTime reference,
     required bool includeScheduled,
   }) {
@@ -128,6 +134,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
       window: window,
       expenses: expenses,
       now: reference,
+      amountMinorOverride: overridesByBudget[budget.id]?[window.start],
       categoryChildren: children,
     );
     final scheduledMinor =
@@ -192,6 +199,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchAliveCategories(),
             _local.watchScheduledExpenseTemplates(),
             _local.watchPendingScheduledOccurrences(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final row = values[0] as db.Budget?;
@@ -206,11 +214,16 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categories = values[4]! as List<db.Category>;
             final templates = values[5]! as List<BudgetScheduledTemplateRow>;
             final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
+            final overrides = values[7]! as List<BudgetPeriodOverride>;
 
             return Right<Failure, BudgetDetailData>(
               BudgetDetailData(
                 budget: BudgetMapper.toEntity(row),
                 scope: _scopeFor(id, accountScope, categoryScope),
+                periodOverrides: {
+                  for (final o in overrides)
+                    if (o.budgetId == id) o.periodStart: o.amountMinor,
+                },
                 expenses: [
                   for (final expense in expenses)
                     BudgetExpenseDetail(
@@ -239,13 +252,21 @@ class BudgetRepositoryImpl implements BudgetRepository {
           [
             _local.watchActiveBudgets(),
             _local.watchIncome(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final budgets = values[0]! as List<db.Budget>;
             final income = values[1]! as List<BudgetIncomeRow>;
+            final overrides = values[2]! as List<BudgetPeriodOverride>;
+            final overrideIndex = _overrideIndex(overrides);
+            final now = DateTime.now();
             return Right<Failure, ZeroBasedSummary?>(
               _zeroBased.summarize(
-                activeBudgets: budgets.map(BudgetMapper.toEntity).toList(),
+                activeBudgets: budgets
+                    .map(BudgetMapper.toEntity)
+                    .map((b) =>
+                        _withCurrentWindowOverride(b, overrideIndex, now))
+                    .toList(),
                 income: [
                   for (final row in income)
                     PeriodIncome(
@@ -254,7 +275,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
                       date: row.date,
                     ),
                 ],
-                now: DateTime.now(),
+                now: now,
               ),
             );
           },
@@ -359,31 +380,32 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
   @override
   FutureResult<PendingBudgetAdjustment?> getPendingAdjustment(
-    String budgetId,
-  ) =>
+    String budgetId, {
+    required DateTime periodStart,
+  }) =>
       _guard(() async {
         final row = await _local.getBudget(budgetId);
         if (row == null) {
           return Left(NotFoundFailure('budget "$budgetId" does not exist'));
         }
-        final adjusted = await _local.findAdjustedFork(row);
-        if (adjusted == null) {
+        final original = BudgetMapper.toEntity(row);
+        final calculator = BudgetPeriodCalculator(original);
+        final now = DateTime.now();
+        // The target is the window the stepper is showing; `periodStart` is its
+        // start. Resolve its index so the "resume" cycle (target + 1) can be
+        // computed for the read model.
+        final target = calculator.currentWindow(periodStart);
+
+        final override = await _local.getPeriodOverride(budgetId, target.start);
+        if (override == null) {
           return const Right(null);
         }
-        final resume = await _local.findResumeFork(row, adjusted);
-        // In the `currentWindow.index == 0` shape, `adjusted` is `row`
-        // itself (patched in place) and its `amountMinor` is already the
-        // *new* amount, so it cannot supply the resume amount fallback — only
-        // the resume fork itself carries the original amount at that point.
         return Right(
           PendingBudgetAdjustment(
-            newAmountMinor: adjusted.amountMinor,
-            effectiveFrom: adjusted.startDate,
-            resumeAmountMinor: resume?.amountMinor ?? row.amountMinor,
-            // Defensive fallback for an inconsistent state (resume fork
-            // missing): the day right after the adjusted fork closes.
-            resumeFrom: resume?.startDate ??
-                adjusted.endDate!.add(const Duration(days: 1)),
+            newAmountMinor: override.amountMinor,
+            effectiveFrom: target.start,
+            resumeAmountMinor: original.amountMinor,
+            resumeFrom: calculator.windowAt(target.index + 1, now).start,
           ),
         );
       });
@@ -392,6 +414,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   FutureResult<Unit> scheduleBudgetAdjustment(
     String id, {
     required int newAmountMinor,
+    required DateTime periodStart,
   }) =>
       _guard(() async {
         if (newAmountMinor <= 0) {
@@ -410,12 +433,31 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (original.isOneOff) {
           return const Left(
             ValidationFailure(
-              'a one-off budget has no next period to adjust',
+              'a one-off budget has no recurring period to adjust',
               field: BudgetDraft.fieldEndDate,
             ),
           );
         }
-        if (await _local.findAdjustedFork(row) != null) {
+
+        final now = DateTime.now();
+        final calculator = BudgetPeriodCalculator(original);
+        // The adjustment targets the window the stepper is showing
+        // (`periodStart`). Every other period keeps the base amount
+        // automatically. Resolve the window against the real clock so its
+        // status (past/current/future) is meaningful.
+        final index = calculator.currentWindow(periodStart).index;
+        final target = calculator.windowAt(index, now);
+
+        if (target.status == BudgetWindowStatus.past) {
+          return const Left(
+            ValidationFailure(
+              'a period that already ended cannot be adjusted',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+
+        if (await _local.getPeriodOverride(id, target.start) != null) {
           return const Left(
             ValidationFailure(
               'budget already has a pending adjustment',
@@ -424,79 +466,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
           );
         }
 
-        final now = DateTime.now();
-        final calculator = BudgetPeriodCalculator(original);
-        final currentWindow = calculator.currentWindow(now);
-        final nextWindow = calculator.windowAt(currentWindow.index + 1, now);
-
-        final accountIds = (await _local.accountScopeOf(id)).toSet();
-        final categoryIds = (await _local.categoryScopeOf(id)).toSet();
-
-        final resumeDraft = BudgetDraft(
-          name: original.name,
-          icon: original.icon,
-          amountMinor: original.amountMinor,
-          currency: original.currency,
-          period: original.period,
-          startDate: nextWindow.start,
-          recurring: true,
-          alertThresholdPct: original.alertThresholdPct,
-          rollover: original.rollover,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-        );
-        final resumeCompanion =
-            BudgetMapper.toInsertCompanion(resumeDraft, now: now);
-
-        if (currentWindow.index == 0) {
-          // No previous cycle to close: the original itself plays the
-          // "adjusted" role, patched in place for the rest of the current
-          // cycle. Its `startDate` never moves.
-          await _local.applyAmountAdjustmentInPlace(
-            originalId: id,
-            adjustedCompanion: BudgetMapper.amountAndEndDateCompanion(
-              amountMinor: newAmountMinor,
-              endDate: currentWindow.lastDay,
-              now: now,
-            ),
-            resumeCompanion: resumeCompanion,
-            accountIds: accountIds,
-            categoryIds: categoryIds,
-            now: now,
-          );
-          return const Right(unit);
-        }
-
-        final adjustedDraft = BudgetDraft(
-          name: original.name,
-          icon: original.icon,
+        await _local.upsertPeriodOverride(
+          budgetId: id,
+          periodStart: target.start,
           amountMinor: newAmountMinor,
-          currency: original.currency,
-          period: original.period,
-          startDate: currentWindow.start,
-          recurring: true,
-          // Stops renewing right after its own single cycle: the fork lasts
-          // exactly the current period, nothing more.
-          endDate: currentWindow.lastDay,
-          alertThresholdPct: original.alertThresholdPct,
-          rollover: original.rollover,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-        );
-
-        await _local.applyAmountAdjustment(
-          originalId: id,
-          closeCompanion: BudgetMapper.endDateCompanion(
-            // Closes at the end of the *previous* cycle, right before the
-            // adjusted fork's own currentWindow.start takes over.
-            endDate: currentWindow.start.subtract(const Duration(days: 1)),
-            now: now,
-          ),
-          adjustedCompanion:
-              BudgetMapper.toInsertCompanion(adjustedDraft, now: now),
-          resumeCompanion: resumeCompanion,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
           now: now,
         );
         return const Right(unit);
@@ -506,6 +479,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   FutureResult<Unit> updateBudgetAdjustment(
     String id, {
     required int newAmountMinor,
+    required DateTime periodStart,
   }) =>
       _guard(() async {
         if (newAmountMinor <= 0) {
@@ -520,57 +494,71 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (row == null) {
           return Left(NotFoundFailure('budget "$id" does not exist'));
         }
-        final adjusted = await _local.findAdjustedFork(row);
-        if (adjusted == null) {
+        final calculator = BudgetPeriodCalculator(BudgetMapper.toEntity(row));
+        final now = DateTime.now();
+        final target = calculator.currentWindow(periodStart);
+
+        if (await _local.getPeriodOverride(id, target.start) == null) {
           return Left(
             NotFoundFailure('budget "$id" has no pending adjustment'),
           );
         }
-        await _local.updateBudget(
-          adjusted.id,
-          BudgetMapper.amountCompanion(
-            amountMinor: newAmountMinor,
-            now: DateTime.now(),
-          ),
+        await _local.updatePeriodOverrideAmount(
+          budgetId: id,
+          periodStart: target.start,
+          amountMinor: newAmountMinor,
+          now: now,
         );
         return const Right(unit);
       });
 
   @override
-  FutureResult<Unit> cancelBudgetAdjustment(String id) => _guard(() async {
+  FutureResult<Unit> cancelBudgetAdjustment(
+    String id, {
+    required DateTime periodStart,
+  }) =>
+      _guard(() async {
         final row = await _local.getBudget(id);
         if (row == null) {
           return Left(NotFoundFailure('budget "$id" does not exist'));
         }
-        final adjusted = await _local.findAdjustedFork(row);
-        if (adjusted == null) {
+        final calculator = BudgetPeriodCalculator(BudgetMapper.toEntity(row));
+        final target = calculator.currentWindow(periodStart);
+
+        if (await _local.getPeriodOverride(id, target.start) == null) {
           return Left(
             NotFoundFailure('budget "$id" has no pending adjustment'),
           );
         }
-        final resume = await _local.findResumeFork(row, adjusted);
-        final now = DateTime.now();
-        // In the `currentWindow.index == 0` shape (adjusted.id == id), the
-        // original row already carries the *adjusted* amount, so restoring it
-        // also needs the pre-adjustment amount — which only the resume fork
-        // still knows. In the other shape the original's amount was never
-        // touched, so only `endDate` needs to be cleared.
-        final reopenCompanion = adjusted.id == id
-            ? BudgetMapper.amountAndEndDateCompanion(
-                amountMinor: resume?.amountMinor ?? adjusted.amountMinor,
-                endDate: null,
-                now: now,
-              )
-            : BudgetMapper.endDateCompanion(endDate: null, now: now);
-        await _local.cancelAmountAdjustment(
-          originalId: id,
-          adjustedId: adjusted.id,
-          resumeId: resume?.id,
-          reopenCompanion: reopenCompanion,
-          now: now,
-        );
+        await _local.deletePeriodOverride(id, target.start);
         return const Right(unit);
       });
+
+  /// Indexes every override by budget id and date-only window start, so the
+  /// progress join can resolve a window's target amount in O(1).
+  Map<String, Map<DateTime, int>> _overrideIndex(
+    List<BudgetPeriodOverride> overrides,
+  ) {
+    final index = <String, Map<DateTime, int>>{};
+    for (final override in overrides) {
+      index.putIfAbsent(override.budgetId, () => {})[override.periodStart] =
+          override.amountMinor;
+    }
+    return index;
+  }
+
+  /// Returns [budget] with its amount replaced by the override covering its
+  /// current window, if any — used so "Modo sobres" counts the effective
+  /// amount for the running period without mutating the stored row.
+  Budget _withCurrentWindowOverride(
+    Budget budget,
+    Map<String, Map<DateTime, int>> overridesByBudget,
+    DateTime now,
+  ) {
+    final window = BudgetPeriodCalculator(budget).currentWindow(now);
+    final override = overridesByBudget[budget.id]?[window.start];
+    return override == null ? budget : budget.withAmountMinor(override);
+  }
 
   BudgetScope _scopeFor(
     String budgetId,

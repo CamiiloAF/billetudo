@@ -26,6 +26,7 @@ class ScheduledPaymentDetail extends Equatable {
     this.transferAccountName,
     this.tags = const <Tag>[],
     this.pendingOccurrence,
+    this.nextAwaitingDate,
     this.history = const <tx.Transaction>[],
   });
 
@@ -45,6 +46,19 @@ class ScheduledPaymentDetail extends Equatable {
   /// next occurrence has not become due yet (still just
   /// `scheduledPayment.nextDate`) or the template is in automatic mode.
   final PendingScheduledOccurrence? pendingOccurrence;
+
+  /// Effective date (`snoozedToDate ?? occurrenceDate`) of the nearest
+  /// occurrence still awaiting resolution — including a snoozed one moved into
+  /// the future. It is the actual "próximo pago" the hero shows: a snoozed
+  /// payment must display its postponed date, not the template's cursor.
+  /// `null` when no occurrence is awaiting, in which case the cursor
+  /// (`scheduledPayment.nextDate`) is the next date.
+  final DateTime? nextAwaitingDate;
+
+  /// The date the hero shows as "próximo pago": the awaiting occurrence's
+  /// effective date when one exists, else the template's cursor.
+  DateTime get nextPaymentDate =>
+      nextAwaitingDate ?? scheduledPayment.nextDate;
 
   /// First page (up to 3 rows, criterion 13) of transactions generated from
   /// this template, most recent first.
@@ -79,6 +93,7 @@ class ScheduledPaymentDetail extends Equatable {
         transferAccountName,
         tags,
         pendingOccurrence,
+        nextAwaitingDate,
         history,
         historyTotalCount,
       ];

@@ -73,9 +73,8 @@ void main() {
     });
 
     testWidgets(
-        'ScheduledPaymentHeroCard: modo manual — nunca muestra "Confirmar '
-        'ahora" (tiene su propio camino por fecha vencida) ($suffix)',
-        (tester) async {
+        'ScheduledPaymentHeroCard: modo manual, no vencido, sin pendiente — '
+        'también muestra "Confirmar ahora" ($suffix)', (tester) async {
       await golden(
         tester,
         ScheduledPaymentHeroCard(
@@ -87,7 +86,7 @@ void main() {
           onTapPending: () {},
           onConfirmNow: () {},
         ),
-        'scheduled_payment_hero_card_confirm_now_hidden_manual_$suffix',
+        'scheduled_payment_hero_card_confirm_now_visible_manual_$suffix',
         brightness: brightness,
       );
     });
@@ -112,9 +111,8 @@ void main() {
     });
 
     testWidgets(
-        'ScheduledPaymentHeroCard: ya hay una ocurrencia pendiente — la '
-        'tarjeta entera ya es tappable, sin CTA duplicado ($suffix)',
-        (tester) async {
+        'ScheduledPaymentHeroCard: ya hay una ocurrencia pendiente — el CTA '
+        'sigue visible (confirma esa ocurrencia) ($suffix)', (tester) async {
       await golden(
         tester,
         ScheduledPaymentHeroCard(
@@ -123,7 +121,7 @@ void main() {
           onTapPending: () {},
           onConfirmNow: () {},
         ),
-        'scheduled_payment_hero_card_confirm_now_hidden_pending_$suffix',
+        'scheduled_payment_hero_card_confirm_now_visible_pending_$suffix',
         brightness: brightness,
       );
     });

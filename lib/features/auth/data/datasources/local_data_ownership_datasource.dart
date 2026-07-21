@@ -6,7 +6,7 @@ import '../../../../core/error/result.dart';
 import 'seed_category_ownership_remote_datasource.dart';
 
 /// Every table with `_SyncColumns.userId` (see `app_database.dart`) — the same
-/// 12 tables mirrored in `core/database/powersync_schema.dart`.
+/// tables mirrored in `core/database/powersync_schema.dart`.
 const _ownedTables = [
   'accounts',
   'categories',
@@ -19,6 +19,7 @@ const _ownedTables = [
   'transaction_tags',
   'budget_accounts',
   'budget_categories',
+  'budget_period_overrides',
   'app_settings',
 ];
 
@@ -37,7 +38,7 @@ const _seedIdPrefix = 'seed-';
 /// for upload — this UPDATE is what actually associates local data with the
 /// account; there is no separate "upload" call to make.
 ///
-/// Raw `customStatement` across all 12 tables, mirroring the loop already used
+/// Raw `customStatement` across every owned table, mirroring the loop already used
 /// for the `updatedAt` seconds->millis migration in `AppDatabase` (v4 -> v5):
 /// the statement shape is identical for every table, so a typed Drift
 /// `update(table).write(...)` per table would just repeat the same thing 12

@@ -170,6 +170,12 @@ const powerSyncSchema = Schema([
     Column.text('category_id'),
     ..._syncColumns,
   ]),
+  Table('budget_period_overrides', [
+    Column.text('budget_id'),
+    Column.integer('period_start'),
+    Column.integer('amount_minor'),
+    ..._syncColumns,
+  ]),
   Table('app_settings', [
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),

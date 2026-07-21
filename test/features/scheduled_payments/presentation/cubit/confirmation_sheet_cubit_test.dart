@@ -1,6 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/snooze_outcome.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/confirmation_sheet_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
@@ -149,7 +150,11 @@ void main() {
           occurrenceDate: any(named: 'occurrenceDate'),
           newDate: any(named: 'newDate'),
         ),
-      ).thenAnswer((_) async => Right(occurrence)),
+      ).thenAnswer(
+        (_) async => Right(
+          SnoozeOutcome(occurrence: occurrence, wasCreated: false),
+        ),
+      ),
       build: build,
       act: (cubit) async {
         cubit.load(source);

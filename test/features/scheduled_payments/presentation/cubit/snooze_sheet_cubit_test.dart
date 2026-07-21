@@ -1,4 +1,5 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/snooze_outcome.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/snooze_sheet_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/snooze_sheet_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -92,7 +93,14 @@ void main() {
         occurrenceDate: any(named: 'occurrenceDate'),
         newDate: any(named: 'newDate'),
       ),
-    ).thenAnswer((_) async => Right(buildOccurrence(id: 'occ-9'))),
+    ).thenAnswer(
+      (_) async => Right(
+        SnoozeOutcome(
+          occurrence: buildOccurrence(id: 'occ-9'),
+          wasCreated: false,
+        ),
+      ),
+    ),
     build: build,
     act: (cubit) async {
       cubit.start(
@@ -105,7 +113,7 @@ void main() {
     },
     verify: (cubit) {
       expect(cubit.state.status, SnoozeSheetStatus.saved);
-      expect(cubit.state.saved?.id, 'occ-9');
+      expect(cubit.state.saved?.occurrence.id, 'occ-9');
       verify(
         () => snoozeOccurrence(
           scheduledPaymentId: 'sp-1',

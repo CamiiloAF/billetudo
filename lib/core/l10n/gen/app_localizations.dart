@@ -1826,7 +1826,7 @@ abstract class AppLocalizations {
   /// **'Acceso rápido'**
   String get homeQuickAccessTitle;
 
-  /// Label del chip de acceso rápido a Pagos programados; distinto de moreScheduledPayments ("Recurrentes") que se usa en el hub Más.
+  /// Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más.
   ///
   /// In es, this message translates to:
   /// **'Pagos programados'**
@@ -1961,7 +1961,7 @@ abstract class AppLocalizations {
   /// No description provided for @moreScheduledPayments.
   ///
   /// In es, this message translates to:
-  /// **'Recurrentes'**
+  /// **'Pagos programados'**
   String get moreScheduledPayments;
 
   /// No description provided for @moreScheduledPaymentsDescription.
@@ -3657,6 +3657,12 @@ abstract class AppLocalizations {
   /// **'Confirmar ahora'**
   String get scheduledPaymentDetailConfirmNowCta;
 
+  /// No description provided for @scheduledPaymentDetailConfirmNowError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos confirmar este pago ahora. Intenta de nuevo.'**
+  String get scheduledPaymentDetailConfirmNowError;
+
   /// No description provided for @scheduledPaymentDetailTagsLabel.
   ///
   /// In es, this message translates to:
@@ -3888,33 +3894,26 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustSheetTitle.
   ///
   /// In es, this message translates to:
-  /// **'Ajustar monto — solo este período'**
+  /// **'Ajustar monto'**
   String get budgetAdjustSheetTitle;
 
-  /// No description provided for @budgetAdjustSheetHint.
+  /// No description provided for @budgetAdjustCurrentAmountInline.
   ///
   /// In es, this message translates to:
-  /// **'El resto de tus períodos sigue igual, sin que tengas que hacer nada después.'**
-  String get budgetAdjustSheetHint;
-
-  /// No description provided for @budgetAdjustCurrentAmountLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Monto actual ({range})'**
-  String budgetAdjustCurrentAmountLabel(String range);
+  /// **'Actual {amount}'**
+  String budgetAdjustCurrentAmountInline(String amount);
 
   /// No description provided for @budgetAdjustNewAmountLabel.
   ///
   /// In es, this message translates to:
-  /// **'Nuevo monto para este período ({range})'**
+  /// **'Nuevo monto · {range}'**
   String budgetAdjustNewAmountLabel(String range);
 
   /// No description provided for @budgetAdjustExplainer.
   ///
   /// In es, this message translates to:
-  /// **'A partir del {effectiveDate} tu presupuesto será de {newAmount}. Desde {resumeDate} vuelve automáticamente a {originalAmount} — no tienes que hacer nada.'**
-  String budgetAdjustExplainer(String effectiveDate, String newAmount,
-      String resumeDate, String originalAmount);
+  /// **'El {resumeDate} vuelve a {originalAmount} automáticamente.'**
+  String budgetAdjustExplainer(String resumeDate, String originalAmount);
 
   /// No description provided for @budgetAdjustApplyCta.
   ///
@@ -3931,7 +3930,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustBannerLabel.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste de monto vigente'**
+  /// **'Ajuste de monto programado'**
   String get budgetAdjustBannerLabel;
 
   /// No description provided for @budgetAdjustBannerSub.
@@ -3943,7 +3942,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustScheduledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste aplicado a tu período actual.'**
+  /// **'Ajuste aplicado al período seleccionado.'**
   String get budgetAdjustScheduledSnackbar;
 
   /// No description provided for @budgetAdjustUpdatedSnackbar.
@@ -3955,7 +3954,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustCancelledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste cancelado — tu período actual vuelve al monto habitual.'**
+  /// **'Ajuste cancelado — el período vuelve al monto habitual.'**
   String get budgetAdjustCancelledSnackbar;
 }
 

@@ -5,8 +5,8 @@ import '../entities/pending_scheduled_occurrence.dart';
 import '../repositories/scheduled_payment_repository.dart';
 
 /// HU-05 "Confirmar ahora" (`docs/bugfixes.md` point 1): lets the user
-/// register an automatic-mode template's next payment before its `nextDate`
-/// is due, instead of only once it is overdue.
+/// register any template's next payment before its `nextDate` is due,
+/// instead of only once it is overdue — automatic or manual mode alike.
 ///
 /// Only materializes the `pending` occurrence the mandatory
 /// `ConfirmScheduledOccurrence` flow then applies — it never itself moves

@@ -1,5 +1,6 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/snooze_outcome.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/snooze_scheduled_occurrence.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -29,7 +30,11 @@ void main() {
         occurrenceDate: any(named: 'occurrenceDate'),
         newDate: any(named: 'newDate'),
       ),
-    ).thenAnswer((_) async => Right(buildOccurrence()));
+    ).thenAnswer(
+      (_) async => Right(
+        SnoozeOutcome(occurrence: buildOccurrence(), wasCreated: false),
+      ),
+    );
   });
 
   test(

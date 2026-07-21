@@ -108,22 +108,28 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
 ///
 /// Also carries the "Confirmar ahora" CTA (`Ht24a` in `OY2Kj`,
 /// `docs/bugfixes.md` point 1): a full-width strip pinned to the bottom of
-/// the hero, below the recurrence phrase, shown only for an automatic-mode
-/// template whose next date is not due yet. Once it is due, [pending]
-/// becomes non-null and the whole hero is tappable instead — the CTA never
-/// shows alongside that, it would be a redundant second affordance.
+/// the hero, below the recurrence phrase, shown for any live template —
+/// automatic or manual, whether its next date is future, due today, or
+/// overdue. It is the always-available way to register the next payment now;
+/// when a due occurrence already exists it confirms that one.
 class ScheduledPaymentHeroCard extends StatelessWidget {
   const ScheduledPaymentHeroCard({
     required this.payment,
     required this.pending,
     required this.onTapPending,
     required this.onConfirmNow,
+    this.nextPaymentDate,
     this.executed = false,
     super.key,
   });
 
   final ScheduledPayment payment;
   final PendingScheduledOccurrence? pending;
+
+  /// The date shown as "próximo pago". Defaults to [ScheduledPayment.nextDate]
+  /// but is overridden with a snoozed occurrence's postponed date so the hero
+  /// reflects a posponed payment, not the template's cursor.
+  final DateTime? nextPaymentDate;
   final VoidCallback onTapPending;
 
   /// Invoked by the "Confirmar ahora" CTA. Only rendered when
@@ -133,14 +139,12 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
   /// True for `Eyold`: the one-off already fired, so the hero is history.
   final bool executed;
 
-  /// Automatic mode, not yet due (no [pending] materialized for it), still
-  /// active and not deleted — the one case the due-date tap does not already
-  /// cover.
-  bool get showConfirmNow =>
-      !executed &&
-      !payment.isDeleted &&
-      !payment.requiresConfirmation &&
-      pending == null;
+  /// Always offered while the template is still live — any mode, whether the
+  /// next date is future, due today, or overdue. "Confirmar ahora" reuses a
+  /// due occurrence's [pending] row when one exists, or materializes the next
+  /// one when it does not, so it is a valid action in every state except a
+  /// finished one-off ([executed]) or a deleted template.
+  bool get showConfirmNow => !executed && !payment.isDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +152,7 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final isPending = pending != null;
+    final displayDate = nextPaymentDate ?? payment.nextDate;
 
     return Material(
       color: colors.surface,
@@ -178,12 +183,12 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (!executed) ScheduledDueInChip(nextDate: payment.nextDate),
+                  if (!executed) ScheduledDueInChip(nextDate: displayDate),
                 ],
               ),
               const SizedBox(height: 10),
               Text(
-                ScheduledPaymentFormat.heroDateLabel(context, payment.nextDate),
+                ScheduledPaymentFormat.heroDateLabel(context, displayDate),
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: colors.textPrimary,
                   fontWeight: FontWeight.w700,
@@ -240,8 +245,10 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
     final formatted = const MoneyFormatter()
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
+      // Unsigned expense in this prominent hero: the "· Gasto" label above
+      // already states the type, so a '-' would be redundant weight here. The
+      // denser list card does carry the sign. Income keeps its '+'.
       ScheduledPaymentType.income => '+$formatted',
-      // Unsigned expense, per Pencil: only income carries a sign.
       ScheduledPaymentType.expense => formatted,
       ScheduledPaymentType.transfer => formatted,
     };

@@ -95,6 +95,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
     final cubit = context.read<BudgetFormCubit>();
     final state = context.watch<BudgetFormCubit>().state;
     final scopeCustom = _scopeCustom ??= state.isCustomScope;
@@ -246,7 +247,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         BudgetNavField(
           label: l10n.budgetFormStartLabel,
           icon: LucideIcons.calendar,
-          value: BudgetFormat.longDate(state.startDate),
+          value: BudgetFormat.longDate(state.startDate, locale),
           onTap: () => _pickStartDate(context, cubit, state),
         ),
         const SizedBox(height: 12),
@@ -258,7 +259,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             icon: LucideIcons.repeat,
             value: state.endDate == null
                 ? l10n.budgetFormForever
-                : BudgetFormat.longDate(state.endDate!),
+                : BudgetFormat.longDate(state.endDate!, locale),
             onTap: () => _pickEndDate(context, cubit, state),
             onCleared: state.endDate == null
                 ? null
@@ -270,7 +271,7 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             icon: LucideIcons.calendarCheck,
             value: state.endDate == null
                 ? l10n.budgetFormEndHint
-                : BudgetFormat.longDate(state.endDate!),
+                : BudgetFormat.longDate(state.endDate!, locale),
             onTap: () => _pickEndDate(context, cubit, state),
           ),
         const SizedBox(height: 12),

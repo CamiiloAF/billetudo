@@ -8,8 +8,11 @@ enum PendingOccurrencesStatus { loading, ready, failure }
 /// What the last resolved occurrence was, so the page can offer "Deshacer"
 /// (criterion 9/10). `null` once dismissed or undone.
 class PendingOccurrenceUndo extends Equatable {
-  const PendingOccurrenceUndo(
-      {required this.occurrenceId, required this.isSnooze});
+  const PendingOccurrenceUndo({
+    required this.occurrenceId,
+    required this.isSnooze,
+    this.previousSnoozedToDate,
+  });
 
   final String occurrenceId;
 
@@ -17,8 +20,13 @@ class PendingOccurrenceUndo extends Equatable {
   /// call different undo use cases.
   final bool isSnooze;
 
+  /// For a snooze of an already-materialized (vencida) occurrence: the snoozed
+  /// date the row held before this snooze (null when it was still `pending`),
+  /// so undo steps back exactly one date instead of jumping to the original.
+  final DateTime? previousSnoozedToDate;
+
   @override
-  List<Object?> get props => [occurrenceId, isSnooze];
+  List<Object?> get props => [occurrenceId, isSnooze, previousSnoozedToDate];
 }
 
 /// State of "Por confirmar" (HU-03/HU-04 overflow subpantalla): every pending

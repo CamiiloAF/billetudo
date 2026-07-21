@@ -316,7 +316,7 @@
   "moreCategoriesDescription": "Organize your income and expenses",
   "moreDebts": "Debts",
   "moreDebtsDescription": "Track your debts and payments",
-  "moreScheduledPayments": "Recurring",
+  "moreScheduledPayments": "Scheduled payments",
   "moreScheduledPaymentsDescription": "Automatic payments and income",
   "moreReports": "Charts and reports",
   "moreReportsDescription": "See your finances in charts",
@@ -627,6 +627,8 @@
   "scheduledPaymentDetailHeroLabel": "NEXT PAYMENT",
   "scheduledPaymentDetailHeroLabelExecuted": "PAYMENT MADE",
   "scheduledPaymentDetailConfirmNowCta": "Confirm now",
+  "scheduledPaymentDetailConfirmNowError": "We couldn't confirm this payment now. Please try again.",
+  "@scheduledPaymentDetailConfirmNowError": {},
   "scheduledPaymentDetailRecurrenceOnce": "Just once on {date}",
   "@scheduledPaymentDetailRecurrenceOnce": {
     "placeholders": { "date": { "type": "String" } }
@@ -758,33 +760,30 @@
   "scheduledSnoozeSheetTitle": "Snooze payment",
   "scheduledUndoSkipMessage": "Payment skipped",
   "scheduledUndoSnoozeMessage": "Payment snoozed",
-  "budgetAdjustSheetTitle": "Adjust amount — just for this period",
-  "budgetAdjustSheetHint": "The rest of your periods stay the same, with nothing else for you to do.",
-  "budgetAdjustCurrentAmountLabel": "Current amount ({range})",
-  "@budgetAdjustCurrentAmountLabel": {
-    "placeholders": { "range": { "type": "String" } }
+  "budgetAdjustSheetTitle": "Adjust amount",
+  "budgetAdjustCurrentAmountInline": "Current {amount}",
+  "@budgetAdjustCurrentAmountInline": {
+    "placeholders": { "amount": { "type": "String" } }
   },
-  "budgetAdjustNewAmountLabel": "New amount for this period ({range})",
+  "budgetAdjustNewAmountLabel": "New amount · {range}",
   "@budgetAdjustNewAmountLabel": {
     "placeholders": { "range": { "type": "String" } }
   },
-  "budgetAdjustExplainer": "Starting {effectiveDate} your budget will be {newAmount}. From {resumeDate} it goes back to {originalAmount} automatically — nothing else for you to do.",
+  "budgetAdjustExplainer": "On {resumeDate} it goes back to {originalAmount} automatically.",
   "@budgetAdjustExplainer": {
     "placeholders": {
-      "effectiveDate": { "type": "String" },
-      "newAmount": { "type": "String" },
       "resumeDate": { "type": "String" },
       "originalAmount": { "type": "String" }
     }
   },
   "budgetAdjustApplyCta": "Apply changes",
   "budgetAdjustRemoveCta": "Remove adjustment",
-  "budgetAdjustBannerLabel": "Active amount adjustment",
+  "budgetAdjustBannerLabel": "Scheduled amount adjustment",
   "budgetAdjustBannerSub": "{amount} this period",
   "@budgetAdjustBannerSub": {
     "placeholders": { "amount": { "type": "String" } }
   },
-  "budgetAdjustScheduledSnackbar": "Adjustment applied to your current period.",
+  "budgetAdjustScheduledSnackbar": "Adjustment applied to the selected period.",
   "budgetAdjustUpdatedSnackbar": "Adjustment updated.",
-  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — your current period goes back to the usual amount."
+  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — the period goes back to the usual amount."
 }

@@ -14,18 +14,36 @@ import 'month_calendar.dart';
 /// [DateTime] (patrón del formulario: sin botón "Aplicar"). Dismissing returns
 /// null.
 class DatePickerSheet extends StatefulWidget {
-  const DatePickerSheet({required this.initialDate, super.key});
+  const DatePickerSheet({
+    required this.initialDate,
+    this.disabledBefore,
+    this.disabledAfter,
+    super.key,
+  });
 
   final DateTime initialDate;
+
+  /// Days strictly before this render dimmed and ignore taps.
+  final DateTime? disabledBefore;
+
+  /// Days strictly after this render dimmed and ignore taps (e.g. capping the
+  /// confirmation sheet's date at today).
+  final DateTime? disabledAfter;
 
   /// Opens the sheet and resolves to the picked day, or null if dismissed.
   static Future<DateTime?> show(
     BuildContext context, {
     required DateTime initialDate,
+    DateTime? disabledBefore,
+    DateTime? disabledAfter,
   }) =>
       BottomSheetBase.show<DateTime>(
         context,
-        builder: (context) => DatePickerSheet(initialDate: initialDate),
+        builder: (context) => DatePickerSheet(
+          initialDate: initialDate,
+          disabledBefore: disabledBefore,
+          disabledAfter: disabledAfter,
+        ),
       );
 
   @override
@@ -86,6 +104,8 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
           onDaySelected: (date) => Navigator.of(context).pop(date),
           onPreviousMonth: _showPreviousMonth,
           onNextMonth: _showNextMonth,
+          disabledBefore: widget.disabledBefore,
+          disabledAfter: widget.disabledAfter,
         ),
       ],
     );

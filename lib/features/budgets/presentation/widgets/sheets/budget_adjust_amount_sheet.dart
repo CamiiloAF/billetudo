@@ -11,7 +11,6 @@ import '../../utils/budget_adjustment_windows.dart';
 import '../../utils/budget_format.dart';
 import '../budget_adjust_explainer.dart';
 import '../budget_amount_field.dart';
-import '../budget_info_row.dart';
 
 /// What [BudgetAdjustAmountSheet] resolves with when the user confirms an
 /// action. `null` (the sheet dismissed with no result) means "did nothing".
@@ -31,13 +30,13 @@ class BudgetAdjustAmountRemoved extends BudgetAdjustAmountResult {
   const BudgetAdjustAmountRemoved();
 }
 
-/// "Ajustar monto — solo el próximo período" (`A8ZfHd`/`D0EoN` crear,
-/// `k6fKsZ`/`PPzUv` editar/cancelar): one field (the next period's amount)
-/// over a read-only `Info Row` with the current one, and an explainer tira
-/// that always spells out the whole "fork de 3 partes" mechanic in one
-/// sentence — no separate confirmation sheet, same criterion as the
-/// threshold sheet (`m3jomu`): the effect is reversible, so it does not
-/// warrant one.
+/// "Ajustar monto" (`A8ZfHd`/`D0EoN` crear, `k6fKsZ`/`PPzUv` editar/cancelar,
+/// body `pkshL`): a single amount field for the window the stepper is showing
+/// — its label naming that window's range and the current base amount inline
+/// ("Actual $X") — over an explainer tira that spells out when the base resumes
+/// in one sentence. No separate confirmation sheet, same criterion as the
+/// threshold sheet (`m3jomu`): the effect is reversible, so it does not warrant
+/// one.
 ///
 /// [pendingAmountMinor] switches the CTA row: `null` renders the single
 /// primary "Aplicar cambios" (crear); non-null adds the secondary "Quitar
@@ -52,11 +51,12 @@ class BudgetAdjustAmountSheet extends StatefulWidget {
     super.key,
   });
 
-  /// The budget's amount for its still-running (vigente) cycle.
+  /// The budget's base amount — what "Actual" shows and what the period resumes
+  /// to after the adjusted window.
   final int currentAmountMinor;
   final String currency;
 
-  /// The three cycles the fork touches.
+  /// The cycles the adjustment touches, built from the visible window.
   final BudgetAdjustmentWindows windows;
 
   /// The already-scheduled amount, when reopened in "editar/cancelar" mode.
@@ -94,38 +94,53 @@ class _BudgetAdjustAmountSheetState extends State<BudgetAdjustAmountSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final locale = Localizations.localeOf(context).toString();
     const money = MoneyFormatter();
     final amountMinor = _amountMinor;
     final canApply = amountMinor != null && amountMinor > 0;
+
+    final baseAmount = money.formatSymbol(
+      widget.currentAmountMinor,
+      currencyCode: widget.currency,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SheetHead(
-          title: l10n.budgetAdjustSheetTitle,
-          hint: l10n.budgetAdjustSheetHint,
-        ),
+        SheetHead(title: l10n.budgetAdjustSheetTitle),
         const SizedBox(height: 16),
-        BudgetInfoRow(
-          label: l10n.budgetAdjustCurrentAmountLabel(
-            BudgetFormat.rangeLabel(widget.windows.current),
-          ),
-          value: money.formatSymbol(
-            widget.currentAmountMinor,
-            currencyCode: widget.currency,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.budgetAdjustNewAmountLabel(
-            BudgetFormat.rangeLabel(widget.windows.current),
-          ),
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: colors.textSecondary,
-          ),
+        // `pkshL/OeFVC`: the field's label names the visible window's range on
+        // the left ("Nuevo monto · 21 ago – 20 sep") and the base amount inline
+        // on the right ("Actual $X"), the amount the period returns to.
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.budgetAdjustNewAmountLabel(
+                  BudgetFormat.rangeLabel(widget.windows.target, locale),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.budgetAdjustCurrentAmountInline(baseAmount),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: colors.textSecondary,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         BudgetAmountField(
@@ -139,16 +154,8 @@ class _BudgetAdjustAmountSheetState extends State<BudgetAdjustAmountSheet> {
         const SizedBox(height: 16),
         BudgetAdjustExplainer(
           text: l10n.budgetAdjustExplainer(
-            BudgetFormat.dayMonth(widget.windows.current.start),
-            money.formatSymbol(
-              amountMinor ?? 0,
-              currencyCode: widget.currency,
-            ),
-            BudgetFormat.dayMonth(widget.windows.next.start),
-            money.formatSymbol(
-              widget.currentAmountMinor,
-              currencyCode: widget.currency,
-            ),
+            BudgetFormat.dayMonth(widget.windows.resume.start, locale),
+            baseAmount,
           ),
         ),
         const SizedBox(height: 16),

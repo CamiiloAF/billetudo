@@ -13,17 +13,18 @@ import '../../domain/entities/budget_scope.dart';
 abstract final class BudgetFormat {
   const BudgetFormat._();
 
-  static final DateFormat _dayMonth = DateFormat('d MMM', 'es_CO');
-  static final DateFormat _longDate = DateFormat("d 'de' MMMM y", 'es_CO');
+  /// The form's date rows spell the month out — locale-aware, so es renders
+  /// "21 de julio de 2026" and en "July 21, 2026" (`a3gGPM/cb5On`). The compact
+  /// [dayMonth] is for the dense list/detail meta lines, not for a field the
+  /// user is about to change. [locale] comes from
+  /// `Localizations.localeOf(context).toString()`.
+  static String longDate(DateTime date, String locale) =>
+      DateFormat.yMMMMd(locale).format(date);
 
-  /// The form's date rows spell the month out ("21 de julio 2026",
-  /// `a3gGPM/cb5On`) — the compact "21 jul" is for the dense list/detail meta
-  /// lines, not for a field the user is about to change.
-  static String longDate(DateTime date) => _longDate.format(date);
-
-  /// Compact "d MMM" ("30 jun"), as the history's "Cerrado <fecha>" (`qlbT0`)
-  /// and the meta lines spell it.
-  static String dayMonth(DateTime date) => _dayMonth.format(date);
+  /// Compact day + short month ("30 jun" / "Jun 30"), locale-aware, as the
+  /// history's "Cerrado <fecha>" (`qlbT0`) and the meta lines spell it.
+  static String dayMonth(DateTime date, String locale) =>
+      DateFormat.MMMd(locale).format(date);
 
   /// Short scope label for the list/detail meta line (HU-04). Warns when the
   /// scope was narrowed but every referent is gone.
@@ -49,20 +50,21 @@ abstract final class BudgetFormat {
     AppLocalizations l10n,
     Budget budget,
     BudgetPeriodWindow window,
+    String locale,
   ) =>
       budget.isOneOff
-          ? l10n.budgetEndsOn(_dayMonth.format(window.lastDay))
-          : l10n.budgetResetsOn(_dayMonth.format(window.endExclusive));
+          ? l10n.budgetEndsOn(dayMonth(window.lastDay, locale))
+          : l10n.budgetResetsOn(dayMonth(window.endExclusive, locale));
 
   /// The explicit cycle range for the period stepper, e.g. "1–31 jul" or
   /// "21 jul – 20 ago".
-  static String rangeLabel(BudgetPeriodWindow window) {
+  static String rangeLabel(BudgetPeriodWindow window, String locale) {
     final start = window.start;
     final last = window.lastDay;
     if (start.year == last.year && start.month == last.month) {
-      return '${start.day}–${_dayMonth.format(last)}';
+      return '${start.day}–${dayMonth(last, locale)}';
     }
-    return '${_dayMonth.format(start)} – ${_dayMonth.format(last)}';
+    return '${dayMonth(start, locale)} – ${dayMonth(last, locale)}';
   }
 
   /// The hero's 2-part left caption: "82% · $492.000 de $600.000".
@@ -131,8 +133,9 @@ abstract final class BudgetFormat {
     AppLocalizations l10n,
     Budget budget,
     BudgetPeriodWindow window,
+    String locale,
   ) =>
-      budget.isOneOff ? l10n.budgetOneOffWindow : rangeLabel(window);
+      budget.isOneOff ? l10n.budgetOneOffWindow : rangeLabel(window, locale);
 
   /// The stepper's trailing, secondary half ("· vigente", "· termina el
   /// 24 dic"). The bullet belongs to this text node in `NloPT/e6kYhx`.
@@ -140,9 +143,10 @@ abstract final class BudgetFormat {
     AppLocalizations l10n,
     Budget budget,
     BudgetPeriodWindow window,
+    String locale,
   ) =>
       budget.isOneOff
-          ? '· ${l10n.budgetEndsOn(_dayMonth.format(window.lastDay))}'
+          ? '· ${l10n.budgetEndsOn(dayMonth(window.lastDay, locale))}'
           : '· ${statusLabel(l10n, window.status)}';
 
   /// The hero's right caption: "Restan 18 días" while the cycle repeats,

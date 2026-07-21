@@ -39,16 +39,23 @@ class ConfirmationSheetState extends Equatable {
   factory ConfirmationSheetState.loaded(
     PendingScheduledOccurrence source, {
     int pendingCountForTemplate = 1,
-  }) =>
-      ConfirmationSheetState(
-        status: ConfirmationSheetStatus.ready,
-        source: source,
-        date: source.occurrence.effectiveDate,
-        accountId: source.scheduledPayment.accountId,
-        accountName: source.accountName,
-        amountMinor: source.scheduledPayment.amountMinor,
-        pendingCountForTemplate: pendingCountForTemplate,
-      );
+  }) {
+    // A payment is recorded no later than today: confirming ahead of schedule
+    // (a future due date) defaults to today, not that future date. Never lets
+    // the prefilled date sit in the future.
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final scheduled = source.occurrence.effectiveDate;
+    return ConfirmationSheetState(
+      status: ConfirmationSheetStatus.ready,
+      source: source,
+      date: scheduled.isAfter(today) ? today : scheduled,
+      accountId: source.scheduledPayment.accountId,
+      accountName: source.accountName,
+      amountMinor: source.scheduledPayment.amountMinor,
+      pendingCountForTemplate: pendingCountForTemplate,
+    );
+  }
 
   final ConfirmationSheetStatus status;
 

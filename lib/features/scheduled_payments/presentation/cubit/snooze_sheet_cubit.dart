@@ -57,9 +57,8 @@ class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
       case Left(value: final failure):
         emit(state.copyWith(
             status: SnoozeSheetStatus.failure, failure: failure));
-      case Right(value: final occurrence):
-        emit(
-            state.copyWith(status: SnoozeSheetStatus.saved, saved: occurrence));
+      case Right(value: final outcome):
+        emit(state.copyWith(status: SnoozeSheetStatus.saved, saved: outcome));
     }
   }
 

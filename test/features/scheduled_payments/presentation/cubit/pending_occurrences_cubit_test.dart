@@ -75,21 +75,35 @@ void main() {
       ],
       verify: (_) {
         verify(() => undoSkipOccurrence('occ-1')).called(1);
-        verifyNever(() => undoSnoozeOccurrence(any()));
+        verifyNever(
+          () => undoSnoozeOccurrence(
+            any(),
+            wasCreated: any(named: 'wasCreated'),
+          ),
+        );
       },
     );
 
     blocTest<PendingOccurrencesCubit, PendingOccurrencesState>(
       'notifySnoozed offers Deshacer, undo() calls UndoSnoozeScheduledOccurrence',
-      setUp: () => when(() => undoSnoozeOccurrence(any()))
-          .thenAnswer((_) async => const Right(unit)),
+      setUp: () => when(
+        () => undoSnoozeOccurrence(
+          any(),
+          wasCreated: any(named: 'wasCreated'),
+          previousSnoozedToDate: any(named: 'previousSnoozedToDate'),
+        ),
+      ).thenAnswer((_) async => const Right(unit)),
       build: build,
       act: (cubit) async {
         cubit.notifySnoozed('occ-1');
         await cubit.undo();
       },
       verify: (_) {
-        verify(() => undoSnoozeOccurrence('occ-1')).called(1);
+        // "Por confirmar" only snoozes already-materialized rows, so undo
+        // always reverses one step with wasCreated: false.
+        verify(
+          () => undoSnoozeOccurrence('occ-1', wasCreated: false),
+        ).called(1);
         verifyNever(() => undoSkipOccurrence(any()));
       },
     );

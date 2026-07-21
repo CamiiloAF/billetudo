@@ -61,10 +61,19 @@ class PendingOccurrencesCubit extends Cubit<PendingOccurrencesState> {
       );
 
   /// Same as [notifySkipped], for a snooze (criterion 10).
-  void notifySnoozed(String occurrenceId) => emit(
+  /// [previousSnoozedToDate] is the row's snoozed date before this snooze, so
+  /// the undo reverses exactly one step (a re-snooze steps back one date).
+  void notifySnoozed(
+    String occurrenceId, {
+    DateTime? previousSnoozedToDate,
+  }) =>
+      emit(
         state.copyWith(
-          pendingUndo:
-              PendingOccurrenceUndo(occurrenceId: occurrenceId, isSnooze: true),
+          pendingUndo: PendingOccurrenceUndo(
+            occurrenceId: occurrenceId,
+            isSnooze: true,
+            previousSnoozedToDate: previousSnoozedToDate,
+          ),
         ),
       );
 
@@ -75,7 +84,13 @@ class PendingOccurrencesCubit extends Cubit<PendingOccurrencesState> {
     }
     emit(state.copyWith(clearPendingUndo: true));
     if (pending.isSnooze) {
-      await _undoSnoozeOccurrence(pending.occurrenceId);
+      // "Por confirmar" only ever snoozes already-materialized occurrences, so
+      // the row is never created by the snooze (`wasCreated: false`).
+      await _undoSnoozeOccurrence(
+        pending.occurrenceId,
+        wasCreated: false,
+        previousSnoozedToDate: pending.previousSnoozedToDate,
+      );
     } else {
       await _undoSkipOccurrence(pending.occurrenceId);
     }

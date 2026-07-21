@@ -4,12 +4,11 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// "Ajustar monto — solo el próximo período" (fork de 3 partes): the link
-/// between the three budgets a fork creates has no column of its own —
-/// [BudgetsLocalDatasource.findAdjustedFork]/
-/// [BudgetsLocalDatasource.findResumeFork] infer it purely
-/// from shape (adjacent `startDate`/`endDate`, matching cadence). These tests
-/// exercise that inference directly against a real (in-memory) schema.
+/// "Ajustar monto — solo el próximo período" (Wallet-style per-period
+/// override): the amount for a single window lives in `BudgetPeriodOverrides`,
+/// one row per (budgetId, periodStart), and the budget itself stays a single
+/// row. These tests exercise the datasource's override CRUD directly against a
+/// real (in-memory) schema.
 void main() {
   late AppDatabase database;
   late BudgetsLocalDatasource datasource;
@@ -31,8 +30,6 @@ void main() {
     DateTime? endDate,
     bool rollover = false,
     int? alertThresholdPct = 80,
-    DateTime? deletedAt,
-    DateTime? tombstonedAt,
   }) =>
       database.into(database.budgets).insertReturning(
             BudgetsCompanion.insert(
@@ -45,432 +42,165 @@ void main() {
               endDate: Value(endDate),
               rollover: Value(rollover),
               alertThresholdPct: Value(alertThresholdPct),
-              deletedAt: Value(deletedAt),
-              tombstonedAt: Value(tombstonedAt),
               updatedAt: const Value(0),
             ),
           );
 
-  group('findAdjustedFork', () {
-    test('returns null when the original has no endDate (not yet forked)',
+  group('upsertPeriodOverride / getPeriodOverride', () {
+    test('inserts a single override and reads it back, budget stays one row',
         () async {
-      final original = await insertBudget(
+      final budget = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
       );
+      final periodStart = DateTime(2026, 8, 1);
 
-      final found = await datasource.findAdjustedFork(original);
-
-      expect(found, isNull);
-    });
-
-    test(
-        'returns null when nothing starts the day right after the original '
-        'closes', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      // Starts two days later, not one: not a match.
-      await insertBudget(
+      await datasource.upsertPeriodOverride(
+        budgetId: budget.id,
+        periodStart: periodStart,
         amountMinor: 50000,
-        startDate: DateTime(2026, 8, 2),
+        now: DateTime(2026, 7, 15),
       );
 
-      final found = await datasource.findAdjustedFork(original);
-
-      expect(found, isNull);
-    });
-
-    test(
-        'finds the budget starting the day after endDate with the same '
-        'name/icon/currency/period/rollover/threshold', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      final adjusted = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 31),
-      );
-
-      final found = await datasource.findAdjustedFork(original);
-
-      expect(found?.id, adjusted.id);
+      final found = await datasource.getPeriodOverride(budget.id, periodStart);
+      expect(found, isNotNull);
+      expect(found?.budgetId, budget.id);
+      expect(found?.periodStart, periodStart);
       expect(found?.amountMinor, 50000);
+
+      // The budget is still a single row — no fork was created.
+      final budgetRows = await database.select(database.budgets).get();
+      expect(budgetRows, hasLength(1));
+
+      final overrideRows =
+          await database.select(database.budgetPeriodOverrides).get();
+      expect(overrideRows, hasLength(1));
+      expect(overrideRows.single.updatedAt, isNot(0));
     });
 
-    test('ignores a same-start budget with a different cadence (name)',
+    test('matches periodStart date-only (ignores any time component)',
         () async {
-      final original = await insertBudget(
+      final budget = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
       );
-      // Same start date, but a coincidentally unrelated budget.
-      await insertBudget(
-        name: 'Otro presupuesto',
+
+      await datasource.upsertPeriodOverride(
+        budgetId: budget.id,
+        periodStart: DateTime(2026, 8, 1, 13, 45),
         amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-      );
-
-      final found = await datasource.findAdjustedFork(original);
-
-      expect(found, isNull);
-    });
-
-    test('ignores a matching-shape budget that was trashed', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-        deletedAt: DateTime(2026, 7, 15),
-      );
-
-      final found = await datasource.findAdjustedFork(original);
-
-      expect(found, isNull);
-    });
-
-    test(
-        'returns the original itself (currentWindow.index == 0, in-place) '
-        'when the row right after it is open-ended — that makes the forward '
-        'row the resume fork, not a separate adjusted fork', () async {
-      // `original` here already plays the "adjusted" role: patched in place
-      // to the new amount, `endDate` at the end of the cycle it is still
-      // active in, `startDate` untouched.
-      final patchedInPlace = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 8, 1),
-      );
-
-      final found = await datasource.findAdjustedFork(patchedInPlace);
-
-      expect(found?.id, patchedInPlace.id);
-    });
-  });
-
-  group('findResumeFork', () {
-    test(
-        'finds the budget that resumes the original amount the day after '
-        'the adjusted fork closes', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      final adjusted = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 31),
-      );
-      final resume = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 9, 1),
-      );
-
-      final found = await datasource.findResumeFork(original, adjusted);
-
-      expect(found?.id, resume.id);
-    });
-
-    test(
-        'matches by shape alone, not amount — the resume fork of an in-place '
-        'adjustment (currentWindow.index == 0) carries the pre-adjustment '
-        'amount, which is not visible on `original` once it has been '
-        'patched to the new amount', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      final adjusted = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 31),
-      );
-      // Does not match `original.amountMinor` (100000): still found, because
-      // the search is purely shape-based (startDate/endDate/cadence).
-      final resume = await insertBudget(
-        amountMinor: 75000,
-        startDate: DateTime(2026, 9, 1),
-      );
-
-      final found = await datasource.findResumeFork(original, adjusted);
-
-      expect(found?.id, resume.id);
-    });
-
-    test('returns null when the candidate is not open-ended', () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      final adjusted = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 31),
-      );
-      // Same amount and start, but itself has an endDate: not the indefinite
-      // resume fork (ambiguous with another adjusted fork's shape).
-      await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 9, 1),
-        endDate: DateTime(2026, 9, 30),
-      );
-
-      final found = await datasource.findResumeFork(original, adjusted);
-
-      expect(found, isNull);
-    });
-
-    test('returns null when the adjusted fork itself has no endDate',
-        () async {
-      final original = await insertBudget(
-        amountMinor: 100000,
-        startDate: DateTime(2026, 7, 1),
-        endDate: DateTime(2026, 7, 31),
-      );
-      final openEndedAdjusted = await insertBudget(
-        amountMinor: 50000,
-        startDate: DateTime(2026, 8, 1),
+        now: DateTime(2026, 7, 15),
       );
 
       final found =
-          await datasource.findResumeFork(original, openEndedAdjusted);
+          await datasource.getPeriodOverride(budget.id, DateTime(2026, 8, 1));
+      expect(found?.amountMinor, 50000);
+      expect(found?.periodStart, DateTime(2026, 8, 1));
+    });
 
+    test('returns null when there is no override for that window', () async {
+      final budget = await insertBudget(
+        amountMinor: 100000,
+        startDate: DateTime(2026, 7, 1),
+      );
+
+      final found =
+          await datasource.getPeriodOverride(budget.id, DateTime(2026, 8, 1));
       expect(found, isNull);
     });
   });
 
-  group('applyAmountAdjustment / cancelAmountAdjustment', () {
-    test('applies the fork atomically and cancel reverses it completely',
-        () async {
-      final original = await insertBudget(
+  group('updatePeriodOverrideAmount', () {
+    test('rewrites only the amount of the existing override', () async {
+      final budget = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
       );
-
-      await datasource.applyAmountAdjustment(
-        originalId: original.id,
-        closeCompanion: BudgetsCompanion(
-          endDate: Value(DateTime(2026, 7, 31)),
-          updatedAt: const Value(1),
-        ),
-        adjustedCompanion: BudgetsCompanion.insert(
-          name: original.name,
-          icon: Value(original.icon),
-          amountMinor: 50000,
-          currency: original.currency,
-          period: original.period,
-          startDate: DateTime(2026, 8, 1),
-          endDate: Value(DateTime(2026, 8, 31)),
-          updatedAt: const Value(1),
-        ),
-        resumeCompanion: BudgetsCompanion.insert(
-          name: original.name,
-          icon: Value(original.icon),
-          amountMinor: 100000,
-          currency: original.currency,
-          period: original.period,
-          startDate: DateTime(2026, 9, 1),
-          updatedAt: const Value(1),
-        ),
-        accountIds: const {},
-        categoryIds: const {},
+      final periodStart = DateTime(2026, 8, 1);
+      await datasource.upsertPeriodOverride(
+        budgetId: budget.id,
+        periodStart: periodStart,
+        amountMinor: 50000,
         now: DateTime(2026, 7, 15),
       );
 
-      final closedOriginal = await datasource.getBudget(original.id);
-      expect(closedOriginal?.endDate, DateTime(2026, 7, 31));
-
-      final adjusted = await datasource.findAdjustedFork(closedOriginal!);
-      expect(adjusted, isNotNull);
-      expect(adjusted?.amountMinor, 50000);
-
-      final resume = await datasource.findResumeFork(closedOriginal, adjusted!);
-      expect(resume, isNotNull);
-      expect(resume?.amountMinor, 100000);
-
-      await datasource.cancelAmountAdjustment(
-        originalId: original.id,
-        adjustedId: adjusted.id,
-        resumeId: resume?.id,
-        reopenCompanion: const BudgetsCompanion(
-          endDate: Value(null),
-          updatedAt: Value(2),
-        ),
+      await datasource.updatePeriodOverrideAmount(
+        budgetId: budget.id,
+        periodStart: periodStart,
+        amountMinor: 75000,
         now: DateTime(2026, 7, 16),
       );
 
-      final reopened = await datasource.getBudget(original.id);
-      expect(reopened?.endDate, isNull);
-      expect(await datasource.getBudget(adjusted.id), isNull);
-      expect(await datasource.getBudget(resume!.id), isNull);
+      final found = await datasource.getPeriodOverride(budget.id, periodStart);
+      expect(found?.amountMinor, 75000);
+      // Still exactly one override row.
+      final overrideRows =
+          await database.select(database.budgetPeriodOverrides).get();
+      expect(overrideRows, hasLength(1));
     });
   });
 
-  group(
-      'applyAmountAdjustmentInPlace / cancelAmountAdjustment '
-      '(currentWindow.index == 0)', () {
-    test(
-        'patches the original in place and cancel restores it without '
-        'touching its id', () async {
-      final original = await insertBudget(
+  group('deletePeriodOverride', () {
+    test('hard-deletes the override, leaving the budget untouched', () async {
+      final budget = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
       );
-
-      await datasource.applyAmountAdjustmentInPlace(
-        originalId: original.id,
-        adjustedCompanion: BudgetsCompanion(
-          amountMinor: const Value(50000),
-          endDate: Value(DateTime(2026, 7, 31)),
-          updatedAt: const Value(1),
-        ),
-        resumeCompanion: BudgetsCompanion.insert(
-          name: original.name,
-          icon: Value(original.icon),
-          amountMinor: 100000,
-          currency: original.currency,
-          period: original.period,
-          startDate: DateTime(2026, 8, 1),
-          updatedAt: const Value(1),
-        ),
-        accountIds: const {},
-        categoryIds: const {},
+      final periodStart = DateTime(2026, 8, 1);
+      await datasource.upsertPeriodOverride(
+        budgetId: budget.id,
+        periodStart: periodStart,
+        amountMinor: 50000,
         now: DateTime(2026, 7, 15),
       );
 
-      final patched = await datasource.getBudget(original.id);
-      expect(patched?.id, original.id);
-      expect(patched?.amountMinor, 50000);
-      expect(patched?.endDate, DateTime(2026, 7, 31));
+      await datasource.deletePeriodOverride(budget.id, periodStart);
 
-      final resume = await datasource.findResumeFork(patched!, patched);
-      expect(resume, isNotNull);
-      expect(resume?.amountMinor, 100000);
-
-      // Cancelling the in-place shape: `adjustedId == originalId`, so the
-      // original row is restored (not hard-deleted) and only the resume fork
-      // is removed.
-      await datasource.cancelAmountAdjustment(
-        originalId: original.id,
-        adjustedId: original.id,
-        resumeId: resume?.id,
-        reopenCompanion: const BudgetsCompanion(
-          amountMinor: Value(100000),
-          endDate: Value(null),
-          updatedAt: Value(2),
-        ),
-        now: DateTime(2026, 7, 16),
+      expect(
+        await datasource.getPeriodOverride(budget.id, periodStart),
+        isNull,
       );
-
-      final reopened = await datasource.getBudget(original.id);
-      expect(reopened, isNotNull);
-      expect(reopened?.id, original.id);
-      expect(reopened?.amountMinor, 100000);
-      expect(reopened?.endDate, isNull);
-      expect(await datasource.getBudget(resume!.id), isNull);
+      // Hard delete: the row is physically gone, not soft-deleted.
+      final overrideRows =
+          await database.select(database.budgetPeriodOverrides).get();
+      expect(overrideRows, isEmpty);
+      // Budget survives unchanged.
+      final reread = await datasource.getBudget(budget.id);
+      expect(reread?.amountMinor, 100000);
+      expect(reread?.endDate, isNull);
     });
+  });
 
-    test(
-        'cancelling a scoped fork tombstones the adjusted/resume rows '
-        'instead of hard-deleting them, so their BudgetAccounts scope rows '
-        'keep a live referent', () async {
-      final account = await database.into(database.accounts).insertReturning(
-            AccountsCompanion.insert(
-              name: 'Nu',
-              type: AccountType.bank,
-              currency: 'COP',
-              updatedAt: const Value(0),
-            ),
-          );
-      final original = await insertBudget(
+  group('watchBudgetPeriodOverrides', () {
+    test('emits every override across budgets', () async {
+      final a = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
       );
-
-      await datasource.applyAmountAdjustment(
-        originalId: original.id,
-        closeCompanion: BudgetsCompanion(
-          endDate: Value(DateTime(2026, 7, 31)),
-          updatedAt: const Value(1),
-        ),
-        adjustedCompanion: BudgetsCompanion.insert(
-          name: original.name,
-          icon: Value(original.icon),
-          amountMinor: 50000,
-          currency: original.currency,
-          period: original.period,
-          startDate: DateTime(2026, 8, 1),
-          endDate: Value(DateTime(2026, 8, 31)),
-          updatedAt: const Value(1),
-        ),
-        resumeCompanion: BudgetsCompanion.insert(
-          name: original.name,
-          icon: Value(original.icon),
-          amountMinor: 100000,
-          currency: original.currency,
-          period: original.period,
-          startDate: DateTime(2026, 9, 1),
-          updatedAt: const Value(1),
-        ),
-        accountIds: {account.id},
-        categoryIds: const {},
+      final b = await insertBudget(
+        name: 'Transporte',
+        amountMinor: 30000,
+        startDate: DateTime(2026, 7, 1),
+      );
+      await datasource.upsertPeriodOverride(
+        budgetId: a.id,
+        periodStart: DateTime(2026, 8, 1),
+        amountMinor: 50000,
+        now: DateTime(2026, 7, 15),
+      );
+      await datasource.upsertPeriodOverride(
+        budgetId: b.id,
+        periodStart: DateTime(2026, 8, 1),
+        amountMinor: 20000,
         now: DateTime(2026, 7, 15),
       );
 
-      final closedOriginal = await datasource.getBudget(original.id);
-      final adjusted = await datasource.findAdjustedFork(closedOriginal!);
-      final resume = await datasource.findResumeFork(closedOriginal, adjusted!);
-
-      await datasource.cancelAmountAdjustment(
-        originalId: original.id,
-        adjustedId: adjusted.id,
-        resumeId: resume?.id,
-        reopenCompanion: const BudgetsCompanion(
-          endDate: Value(null),
-          updatedAt: Value(2),
-        ),
-        now: DateTime(2026, 7, 16),
+      final emitted = await datasource.watchBudgetPeriodOverrides().first;
+      expect(emitted, hasLength(2));
+      expect(
+        emitted.map((o) => o.budgetId).toSet(),
+        {a.id, b.id},
       );
-
-      // Excluded from every alive-only read path, exactly like a hard
-      // delete would behave from the caller's point of view.
-      expect(await datasource.getBudget(adjusted.id), isNull);
-      expect(await datasource.getBudget(resume!.id), isNull);
-
-      // But the row itself still physically exists (tombstoned, not gone),
-      // so the BudgetAccounts row `reconcileScope` wrote for it during
-      // `applyAmountAdjustment` still points at a real budget.
-      final adjustedRaw = await (database.select(database.budgets)
-            ..where((b) => b.id.equals(adjusted.id)))
-          .getSingle();
-      expect(adjustedRaw.tombstonedAt, isNotNull);
-
-      final resumeRaw = await (database.select(database.budgets)
-            ..where((b) => b.id.equals(resume.id)))
-          .getSingle();
-      expect(resumeRaw.tombstonedAt, isNotNull);
-
-      final adjustedScopeRow = await (database.select(database.budgetAccounts)
-            ..where((r) => r.budgetId.equals(adjusted.id)))
-          .getSingle();
-      expect(adjustedScopeRow.accountId, account.id);
     });
   });
 }

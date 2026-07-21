@@ -15,16 +15,11 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/project_up
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// "Ajustar monto — este período" (fork de 2 o 3 partes): the business flow
-/// end-to-end against a real (in-memory) Drift schema.
-///
-/// Two shapes exist, both anchored on `currentWindow`:
-///  - `currentWindow.index > 0`: closes the original at the end of the
-///    *previous* cycle, forks a this-cycle-only "adjusted" budget and an
-///    indefinite "resume" one.
-///  - `currentWindow.index == 0` (no previous cycle to close): patches the
-///    original row in place (new amount, `endDate` at the end of the current
-///    cycle) and only inserts the "resume" fork.
+/// "Ajustar monto" (Wallet-style per-period override) against a real (in-memory)
+/// Drift schema. The adjustment writes a single `BudgetPeriodOverride` for the
+/// window the stepper is showing (the one containing `periodStart`); the budget
+/// itself always stays a single row (no fork), and every other period returns to
+/// the base amount automatically. A `past` visible window is rejected.
 void main() {
   late AppDatabase database;
   late BudgetsLocalDatasource datasource;
@@ -45,12 +40,10 @@ void main() {
 
   final now = DateTime.now();
   // Anchored to the 1st of the current month so `DateTime.now()` (which the
-  // repository reads internally, not injectable) always lands inside the
-  // budget's *current* monthly window (`currentWindow.index == 0`),
-  // regardless of what day the suite runs.
+  // repository reads internally, not injectable) lands inside the budget's
+  // *current* monthly window (`currentWindow.index == 0`).
   final anchorThisMonth = DateTime(now.year, now.month, 1);
-  // Anchored two months back so `currentWindow.index` is always >= 1 (there
-  // is a previous cycle to close), exercising the other shape.
+  // Anchored two months back so `currentWindow.index` is always >= 1.
   final anchorTwoMonthsAgo = DateTime(now.year, now.month - 2, 1);
 
   Future<Account> createAccount(String name) =>
@@ -83,7 +76,7 @@ void main() {
     return created.getRight().toNullable()!.id;
   }
 
-  BudgetPeriodWindow currentWindowOf(Budget row) => BudgetPeriodCalculator(
+  BudgetPeriodCalculator calculatorOf(Budget row) => BudgetPeriodCalculator(
         domain.Budget(
           id: row.id,
           name: row.name,
@@ -96,19 +89,29 @@ void main() {
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
         ),
-      ).currentWindow(now);
+      );
+
+  // The stepper's visible window is the current one by default; the override
+  // targets it (the window containing `periodStart`).
+  BudgetPeriodWindow visibleWindowOf(Budget row) =>
+      calculatorOf(row).currentWindow(now);
+  BudgetPeriodWindow resumeWindowOf(Budget row) =>
+      calculatorOf(row).windowAt(visibleWindowOf(row).index + 1, now);
+  BudgetPeriodWindow windowAtOf(Budget row, int index) =>
+      calculatorOf(row).windowAt(index, now);
 
   test('getPendingAdjustment is null before scheduling anything', () async {
     final id = await createRecurringBudget();
 
-    final result = await repository.getPendingAdjustment(id);
+    final result = await repository.getPendingAdjustment(id, periodStart: now);
 
     expect(result.getRight().toNullable(), isNull);
   });
 
   test('getPendingAdjustment on a non-existent budget fails not found',
       () async {
-    final result = await repository.getPendingAdjustment('missing');
+    final result =
+        await repository.getPendingAdjustment('missing', periodStart: now);
 
     expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
   });
@@ -128,8 +131,11 @@ void main() {
     );
     final id = created.getRight().toNullable()!.id;
 
-    final result =
-        await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
+    final result = await repository.scheduleBudgetAdjustment(
+      id,
+      newAmountMinor: 50000,
+      periodStart: anchorThisMonth,
+    );
 
     final failure = result.getLeft().toNullable();
     expect(failure, isA<ValidationFailure>());
@@ -139,8 +145,11 @@ void main() {
   test('scheduleBudgetAdjustment rejects a non-positive amount', () async {
     final id = await createRecurringBudget();
 
-    final result =
-        await repository.scheduleBudgetAdjustment(id, newAmountMinor: 0);
+    final result = await repository.scheduleBudgetAdjustment(
+      id,
+      newAmountMinor: 0,
+      periodStart: now,
+    );
 
     final failure = result.getLeft().toNullable();
     expect(failure, isA<ValidationFailure>());
@@ -152,265 +161,223 @@ void main() {
     final result = await repository.scheduleBudgetAdjustment(
       'missing',
       newAmountMinor: 50000,
+      periodStart: now,
     );
 
     expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
   });
 
-  group('currentWindow.index == 0 (in-place, no previous cycle to close)',
-      () {
-    test(
-        'schedules the fork of 2 parts: patches the original in place and '
-        'only inserts the resume fork', () async {
-      final account = await createAccount('Efectivo');
-      final id = await createRecurringBudget(accountIds: {account.id});
+  test('scheduleBudgetAdjustment rejects a past visible window', () async {
+    final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
+    final row = await datasource.getBudget(id);
+    // Window index 0 is two months back — a past cycle.
+    final past = windowAtOf(row!, 0);
+    expect(past.status, BudgetWindowStatus.past);
 
-      final originalBefore = await datasource.getBudget(id);
-      expect(originalBefore!.endDate, isNull);
-      final window = currentWindowOf(originalBefore);
-      expect(window.index, 0);
+    final result = await repository.scheduleBudgetAdjustment(
+      id,
+      newAmountMinor: 50000,
+      periodStart: past.start,
+    );
 
-      final scheduled = await repository.scheduleBudgetAdjustment(
-        id,
-        newAmountMinor: 50000,
-      );
-      expect(scheduled.getRight().toNullable(), unit);
-
-      // The original row is patched in place: same id, same `startDate`, new
-      // amount, `endDate` at the end of the current cycle. Its `updatedAt`
-      // moved forward (every write stamps it).
-      final patched = await datasource.getBudget(id);
-      expect(patched, isNotNull);
-      expect(patched!.id, id);
-      expect(patched.startDate, originalBefore.startDate);
-      expect(patched.amountMinor, 50000);
-      expect(patched.endDate, window.lastDay);
-      expect(patched.updatedAt, greaterThanOrEqualTo(originalBefore.updatedAt));
-
-      final adjustment = (await repository.getPendingAdjustment(id))
-          .getRight()
-          .toNullable();
-      expect(adjustment, isNotNull);
-      // Money stays in integer cents throughout the fork.
-      expect(adjustment!.newAmountMinor, 50000);
-      expect(adjustment.effectiveFrom, window.start);
-      expect(adjustment.resumeAmountMinor, 100000);
-      expect(adjustment.resumeFrom, window.lastDay.add(const Duration(days: 1)));
-
-      // No separate "adjusted" fork row exists — only one extra (resume) row.
-      final all = await database.select(database.budgets).get();
-      expect(all.length, 2);
-
-      // Scope is carried over to the resume fork.
-      final resumeRow =
-          all.firstWhere((row) => row.id != id && row.endDate == null);
-      final resumeScope = await datasource.accountScopeOf(resumeRow.id);
-      expect(resumeScope, [account.id]);
-    });
-
-    test('updateBudgetAdjustment rewrites only the patched-in-place amount',
-        () async {
-      final id = await createRecurringBudget();
-      await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
-
-      final updated = await repository.updateBudgetAdjustment(
-        id,
-        newAmountMinor: 75000,
-      );
-      expect(updated.getRight().toNullable(), unit);
-
-      final adjustment = (await repository.getPendingAdjustment(id))
-          .getRight()
-          .toNullable();
-      expect(adjustment!.newAmountMinor, 75000);
-      // Still resumes at the untouched original amount, which only the
-      // resume fork remembers once the original row is patched.
-      expect(adjustment.resumeAmountMinor, 100000);
-
-      final row = await datasource.getBudget(id);
-      expect(row!.amountMinor, 75000);
-    });
-
-    test(
-        'cancelBudgetAdjustment restores the original row and removes only '
-        'the resume fork', () async {
-      final id = await createRecurringBudget();
-      final originalBefore = await datasource.getBudget(id);
-      await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
-
-      final beforeCancel = await datasource.getBudget(id);
-      final resumeBefore =
-          await datasource.findResumeFork(beforeCancel!, beforeCancel);
-
-      final cancelled = await repository.cancelBudgetAdjustment(id);
-      expect(cancelled.getRight().toNullable(), unit);
-
-      final reopened = await datasource.getBudget(id);
-      expect(reopened!.id, id);
-      expect(reopened.endDate, isNull);
-      expect(reopened.amountMinor, originalBefore!.amountMinor);
-
-      final adjustment =
-          (await repository.getPendingAdjustment(id)).getRight().toNullable();
-      expect(adjustment, isNull);
-
-      // Only the never-applied resume fork is tombstoned (not hard-deleted:
-      // `reconcileScope` may already have written BudgetAccounts/
-      // BudgetCategories rows whose FK points at it); the original row
-      // (which played the adjusted role) survives under the same id.
-      expect(await datasource.getBudget(resumeBefore!.id), isNull);
-      final all = await database.select(database.budgets).get();
-      expect(all.length, 2);
-      final resumeRaw = all.singleWhere((b) => b.id == resumeBefore.id);
-      expect(resumeRaw.tombstonedAt, isNotNull);
-    });
+    expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+    // Nothing was written.
+    expect(await datasource.getPeriodOverride(id, past.start), isNull);
   });
 
-  group('currentWindow.index > 0 (closes a previous cycle, forks 3 parts)',
-      () {
-    test(
-        'schedules the fork of 3 parts: closes the original at the end of '
-        'the previous cycle and forks the adjusted + resume budgets',
-        () async {
-      final account = await createAccount('Efectivo');
-      final id = await createRecurringBudget(
-        accountIds: {account.id},
-        startDate: anchorTwoMonthsAgo,
-      );
+  // The override targets the visible window regardless of its index, so the two
+  // anchors (current index 0 vs >0) must behave identically.
+  for (final scenario in <({String label, DateTime? anchor})>[
+    (label: 'currentWindow.index == 0', anchor: null),
+    (label: 'currentWindow.index > 0', anchor: anchorTwoMonthsAgo),
+  ]) {
+    group(scenario.label, () {
+      test(
+          'schedules an override for the visible window without forking: the '
+          'budget stays one row, unchanged', () async {
+        final account = await createAccount('Efectivo');
+        final id = await createRecurringBudget(
+          accountIds: {account.id},
+          startDate: scenario.anchor,
+        );
 
-      final originalBefore = await datasource.getBudget(id);
-      expect(originalBefore!.endDate, isNull);
-      final window = currentWindowOf(originalBefore);
-      expect(window.index, greaterThan(0));
+        final originalBefore = await datasource.getBudget(id);
+        expect(originalBefore!.endDate, isNull);
+        final visible = visibleWindowOf(originalBefore);
 
-      final scheduled = await repository.scheduleBudgetAdjustment(
-        id,
-        newAmountMinor: 50000,
-      );
-      expect(scheduled.getRight().toNullable(), unit);
+        final scheduled = await repository.scheduleBudgetAdjustment(
+          id,
+          newAmountMinor: 50000,
+          periodStart: visible.start,
+        );
+        expect(scheduled.getRight().toNullable(), unit);
 
-      // The original closes at the end of the *previous* cycle — its own
-      // `startDate` and amount are untouched.
-      final closed = await datasource.getBudget(id);
-      expect(closed, isNotNull);
-      expect(closed!.startDate, originalBefore.startDate);
-      expect(closed.amountMinor, originalBefore.amountMinor);
-      expect(closed.endDate, window.start.subtract(const Duration(days: 1)));
-      expect(closed.updatedAt, greaterThanOrEqualTo(originalBefore.updatedAt));
+        // The budget row is completely untouched (no endDate, same amount).
+        final after = await datasource.getBudget(id);
+        expect(after!.id, id);
+        expect(after.startDate, originalBefore.startDate);
+        expect(after.amountMinor, originalBefore.amountMinor);
+        expect(after.endDate, isNull);
 
-      final adjustment = (await repository.getPendingAdjustment(id))
-          .getRight()
-          .toNullable();
-      expect(adjustment, isNotNull);
-      expect(adjustment!.newAmountMinor, 50000);
-      expect(adjustment.effectiveFrom, window.start);
-      expect(adjustment.resumeAmountMinor, 100000);
-      expect(adjustment.resumeFrom, window.lastDay.add(const Duration(days: 1)));
+        // Still exactly one budget row — no adjusted/resume fork.
+        final all = await database.select(database.budgets).get();
+        expect(all, hasLength(1));
 
-      // The adjusted fork is a separate row covering exactly the current
-      // cycle, and scope is carried over to it.
-      final adjustedRow = await datasource.findAdjustedFork(closed);
-      expect(adjustedRow, isNotNull);
-      expect(adjustedRow!.id, isNot(id));
-      expect(adjustedRow.startDate, window.start);
-      expect(adjustedRow.endDate, window.lastDay);
-      expect(adjustedRow.amountMinor, 50000);
-      final adjustedScope = await datasource.accountScopeOf(adjustedRow.id);
-      expect(adjustedScope, [account.id]);
+        // Exactly one override row, on the visible window's start.
+        final override = await datasource.getPeriodOverride(id, visible.start);
+        expect(override, isNotNull);
+        expect(override!.amountMinor, 50000);
+        expect(override.periodStart, visible.start);
 
-      final all = await database.select(database.budgets).get();
-      expect(all.length, 3);
+        // The read model reflects the visible-period adjustment.
+        final adjustment = (await repository.getPendingAdjustment(
+          id,
+          periodStart: visible.start,
+        ))
+            .getRight()
+            .toNullable();
+        expect(adjustment, isNotNull);
+        expect(adjustment!.newAmountMinor, 50000);
+        expect(adjustment.effectiveFrom, visible.start);
+        expect(adjustment.resumeAmountMinor, 100000);
+        expect(adjustment.resumeFrom, resumeWindowOf(originalBefore).start);
+      });
+
+      test('updateBudgetAdjustment rewrites only the override amount',
+          () async {
+        final id = await createRecurringBudget(startDate: scenario.anchor);
+        final row = await datasource.getBudget(id);
+        final visible = visibleWindowOf(row!);
+        await repository.scheduleBudgetAdjustment(
+          id,
+          newAmountMinor: 50000,
+          periodStart: visible.start,
+        );
+
+        final updated = await repository.updateBudgetAdjustment(
+          id,
+          newAmountMinor: 75000,
+          periodStart: visible.start,
+        );
+        expect(updated.getRight().toNullable(), unit);
+
+        final adjustment = (await repository.getPendingAdjustment(
+          id,
+          periodStart: visible.start,
+        ))
+            .getRight()
+            .toNullable();
+        expect(adjustment!.newAmountMinor, 75000);
+        expect(adjustment.resumeAmountMinor, 100000);
+
+        // The budget row itself is never touched by the edit.
+        final reread = await datasource.getBudget(id);
+        expect(reread!.amountMinor, 100000);
+        expect(reread.endDate, isNull);
+      });
+
+      test('updateBudgetAdjustment rejects a non-positive amount', () async {
+        final id = await createRecurringBudget(startDate: scenario.anchor);
+        final row = await datasource.getBudget(id);
+        final visible = visibleWindowOf(row!);
+        await repository.scheduleBudgetAdjustment(
+          id,
+          newAmountMinor: 50000,
+          periodStart: visible.start,
+        );
+
+        final result = await repository.updateBudgetAdjustment(
+          id,
+          newAmountMinor: -1,
+          periodStart: visible.start,
+        );
+
+        expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      });
+
+      test('updateBudgetAdjustment without a pending override fails not found',
+          () async {
+        final id = await createRecurringBudget(startDate: scenario.anchor);
+        final row = await datasource.getBudget(id);
+        final visible = visibleWindowOf(row!);
+
+        final result = await repository.updateBudgetAdjustment(
+          id,
+          newAmountMinor: 75000,
+          periodStart: visible.start,
+        );
+
+        expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
+      });
+
+      test(
+          'cancelBudgetAdjustment hard-deletes the override, leaving the '
+          'budget as a single untouched row', () async {
+        final id = await createRecurringBudget(startDate: scenario.anchor);
+        final originalBefore = await datasource.getBudget(id);
+        final visible = visibleWindowOf(originalBefore!);
+        await repository.scheduleBudgetAdjustment(
+          id,
+          newAmountMinor: 50000,
+          periodStart: visible.start,
+        );
+
+        final cancelled = await repository.cancelBudgetAdjustment(
+          id,
+          periodStart: visible.start,
+        );
+        expect(cancelled.getRight().toNullable(), unit);
+
+        final reopened = await datasource.getBudget(id);
+        expect(reopened!.id, id);
+        expect(reopened.endDate, isNull);
+        expect(reopened.amountMinor, originalBefore.amountMinor);
+
+        expect(
+          (await repository.getPendingAdjustment(id, periodStart: visible.start))
+              .getRight()
+              .toNullable(),
+          isNull,
+        );
+        // The override is physically gone, and the budget is still one row.
+        expect(await datasource.getPeriodOverride(id, visible.start), isNull);
+        final all = await database.select(database.budgets).get();
+        expect(all, hasLength(1));
+        final overrideRows =
+            await database.select(database.budgetPeriodOverrides).get();
+        expect(overrideRows, isEmpty);
+      });
+
+      test('cancelBudgetAdjustment without a pending override fails not found',
+          () async {
+        final id = await createRecurringBudget(startDate: scenario.anchor);
+        final row = await datasource.getBudget(id);
+        final visible = visibleWindowOf(row!);
+
+        final result = await repository.cancelBudgetAdjustment(
+          id,
+          periodStart: visible.start,
+        );
+
+        expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
+      });
     });
+  }
 
-    test('updateBudgetAdjustment rewrites only the adjusted fork amount',
-        () async {
-      final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
-      await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
-
-      final updated = await repository.updateBudgetAdjustment(
-        id,
-        newAmountMinor: 75000,
-      );
-      expect(updated.getRight().toNullable(), unit);
-
-      final adjustment = (await repository.getPendingAdjustment(id))
-          .getRight()
-          .toNullable();
-      expect(adjustment!.newAmountMinor, 75000);
-      expect(adjustment.resumeAmountMinor, 100000);
-
-      // The closed original is untouched by the edit.
-      final closed = await datasource.getBudget(id);
-      expect(closed!.amountMinor, 100000);
-    });
-
-    test('updateBudgetAdjustment rejects a non-positive amount', () async {
-      final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
-      await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
-
-      final result =
-          await repository.updateBudgetAdjustment(id, newAmountMinor: -1);
-
-      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
-    });
-
-    test('updateBudgetAdjustment without a pending fork fails not found',
-        () async {
-      final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
-
-      final result =
-          await repository.updateBudgetAdjustment(id, newAmountMinor: 75000);
-
-      expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
-    });
-
-    test(
-        'cancelBudgetAdjustment removes both forks and reopens the original '
-        'indefinitely', () async {
-      final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
-      await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
-      final adjustedBefore =
-          await datasource.findAdjustedFork((await datasource.getBudget(id))!);
-
-      final cancelled = await repository.cancelBudgetAdjustment(id);
-      expect(cancelled.getRight().toNullable(), unit);
-
-      final reopened = await datasource.getBudget(id);
-      expect(reopened!.endDate, isNull);
-      expect(reopened.amountMinor, 100000);
-
-      final adjustment =
-          (await repository.getPendingAdjustment(id)).getRight().toNullable();
-      expect(adjustment, isNull);
-
-      // The forks never applied, so they are tombstoned (excluded from every
-      // alive-only read), not hard-deleted: their BudgetAccounts/
-      // BudgetCategories scope rows may already reference them.
-      expect(await datasource.getBudget(adjustedBefore!.id), isNull);
-      final all = await database.select(database.budgets).get();
-      expect(all.length, 3);
-      final adjustedRaw = all.singleWhere((b) => b.id == adjustedBefore.id);
-      expect(adjustedRaw.tombstonedAt, isNotNull);
-    });
-
-    test('cancelBudgetAdjustment without a pending fork fails not found',
-        () async {
-      final id = await createRecurringBudget(startDate: anchorTwoMonthsAgo);
-
-      final result = await repository.cancelBudgetAdjustment(id);
-
-      expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
-    });
-  });
-
-  test('scheduling a second time on an already-forked budget fails',
-      () async {
+  test('scheduling a second time on the same visible window fails', () async {
     final id = await createRecurringBudget();
-    await repository.scheduleBudgetAdjustment(id, newAmountMinor: 50000);
+    final row = await datasource.getBudget(id);
+    final visible = visibleWindowOf(row!);
+    await repository.scheduleBudgetAdjustment(
+      id,
+      newAmountMinor: 50000,
+      periodStart: visible.start,
+    );
 
     final result = await repository.scheduleBudgetAdjustment(
       id,
       newAmountMinor: 60000,
+      periodStart: visible.start,
     );
 
     final failure = result.getLeft().toNullable();

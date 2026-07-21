@@ -143,9 +143,10 @@ class ScheduledPendingRow extends StatelessWidget {
     final formatted = const MoneyFormatter()
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
+      // Signed like the movements list: `+` income, `-` expense; a transfer
+      // is neither, so it stays neutral.
       ScheduledPaymentType.income => '+$formatted',
-      // Unsigned expense, per Pencil: only income carries a sign.
-      ScheduledPaymentType.expense => formatted,
+      ScheduledPaymentType.expense => '-$formatted',
       ScheduledPaymentType.transfer => formatted,
     };
   }

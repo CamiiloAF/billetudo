@@ -179,10 +179,12 @@ class ScheduledCard extends StatelessWidget {
     AppLocalizations l10n,
     ScheduledPayment payment,
   ) {
-    final date = ScheduledPaymentFormat.dateLabel(context, payment.nextDate);
+    // A posponed payment shows its new date, not the template cursor.
+    final nextDate = entry.nextPaymentDate;
+    final date = ScheduledPaymentFormat.dateLabel(context, nextDate);
     final dueIn = ScheduledPaymentFormat.dueInLabel(
       l10n,
-      payment.nextDate,
+      nextDate,
       today: DateTime.now(),
     );
     return '$date · $dueIn';
@@ -209,9 +211,10 @@ class ScheduledCard extends StatelessWidget {
     final formatted = const MoneyFormatter()
         .formatSymbol(payment.amountMinor, currencyCode: payment.currency);
     return switch (payment.type) {
+      // Signed like the movements list: `+` income, `-` expense; a transfer
+      // is neither, so it stays neutral.
       ScheduledPaymentType.income => '+$formatted',
-      // Unsigned expense, per Pencil: only income carries a sign.
-      ScheduledPaymentType.expense => formatted,
+      ScheduledPaymentType.expense => '-$formatted',
       ScheduledPaymentType.transfer => formatted,
     };
   }

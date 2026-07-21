@@ -33,6 +33,7 @@ class ArchivedBudgetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
     final colors = context.colors;
     final theme = Theme.of(context);
     final overspent = entry.progress.isOverspent;
@@ -64,7 +65,7 @@ class ArchivedBudgetRow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        CategoryAppearance.iconFor(entry.budget.icon),
+                        CategoryAppearance.iconForOrPlaceholder(entry.budget.icon),
                         size: 20,
                         color: colors.textSecondary,
                       ),
@@ -102,7 +103,7 @@ class ArchivedBudgetRow extends StatelessWidget {
                     if (closedAt != null) ...[
                       const SizedBox(width: 12),
                       Text(
-                        l10n.budgetClosedOn(BudgetFormat.dayMonth(closedAt)),
+                        l10n.budgetClosedOn(BudgetFormat.dayMonth(closedAt, locale)),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

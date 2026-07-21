@@ -33,8 +33,8 @@ void main() {
     );
 
     expect(find.text('Arriendo'), findsOneWidget);
-    // Expense: unsigned amount (Pencil), never a '-' prefix.
-    expect(find.textContaining(RegExp(r'^-')), findsNothing);
+    // Expense: signed with a '-' prefix, like the movements list.
+    expect(find.textContaining(RegExp(r'^-')), findsOneWidget);
     expect(find.byType(ScheduledPendingCountChip), findsNothing);
   });
 

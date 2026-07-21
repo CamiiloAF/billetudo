@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart' show Value;
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
 import '../../../transactions/data/models/transaction_mapper.dart';
@@ -13,6 +14,7 @@ import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
 import '../../domain/entities/scheduled_payment_occurrence.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
+import '../../domain/entities/snooze_outcome.dart';
 import '../../domain/entities/tag.dart';
 import '../../domain/repositories/scheduled_payment_repository.dart';
 import '../../domain/usecases/project_upcoming_occurrences.dart';
@@ -32,10 +34,11 @@ import '../models/scheduled_payment_occurrence_mapper.dart';
 /// same [_generateTransaction] helper).
 @LazySingleton(as: ScheduledPaymentRepository)
 class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
-  const ScheduledPaymentRepositoryImpl(this._local, this._tags);
+  const ScheduledPaymentRepositoryImpl(this._local, this._tags, this._crash);
 
   final ScheduledPaymentsLocalDatasource _local;
   final ScheduledPaymentTagsLocalDatasource _tags;
+  final CrashReporter _crash;
 
   static const List<db.ScheduledOccurrenceStatus> _awaitingStatuses = [
     db.ScheduledOccurrenceStatus.pending,
@@ -76,6 +79,11 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             row.scheduledPayment,
             DateTime.now(),
           );
+          // The nearest awaiting occurrence — due OR snoozed into the future —
+          // so the hero shows a snoozed payment's postponed date instead of the
+          // template's cursor.
+          final nextAwaiting =
+              await _local.getNextAwaitingOccurrence(id);
           final history = await _local.getHistory(
             id,
             offset: 0,
@@ -110,6 +118,9 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
                       transferAccountName: row.transferAccount?.name,
                       tagIds: tags.map((t) => t.id).toList(),
                     ),
+              nextAwaitingDate: nextAwaiting == null
+                  ? null
+                  : (nextAwaiting.snoozedToDate ?? nextAwaiting.occurrenceDate),
               history: history.map(TransactionMapper.toEntity).toList(),
               historyTotalCount: historyTotalCount,
             ),
@@ -394,6 +405,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             now: now,
           ),
         );
+        await _advanceCursorPast(template, occurrence.occurrenceDate, now);
         return Right(TransactionMapper.toEntity(generated));
       });
 
@@ -410,10 +422,19 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             ValidationFailure('this occurrence was already resolved'),
           );
         }
+        final now = DateTime.now();
         await _local.updateOccurrence(
           occurrenceId,
-          ScheduledPaymentOccurrenceMapper.skipCompanion(now: DateTime.now()),
+          ScheduledPaymentOccurrenceMapper.skipCompanion(now: now),
         );
+        // Skipping a "Confirmar ahora" occurrence still resolves that date, so
+        // move the cursor forward just like a confirm would. No-op for a
+        // catch-up occurrence (its date sits before the cursor already).
+        final template =
+            await _local.getScheduledPayment(occurrence.scheduledPaymentId);
+        if (template != null) {
+          await _advanceCursorPast(template, occurrence.occurrenceDate, now);
+        }
         return const Right(unit);
       });
 
@@ -441,7 +462,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       });
 
   @override
-  FutureResult<ScheduledPaymentOccurrence> snoozeOccurrence({
+  FutureResult<SnoozeOutcome> snoozeOccurrence({
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
     required DateTime newDate,
@@ -461,13 +482,23 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               now: now,
             ),
           );
-          return Right(ScheduledPaymentOccurrenceMapper.toEntity(created));
+          return Right(
+            SnoozeOutcome(
+              occurrence: ScheduledPaymentOccurrenceMapper.toEntity(created),
+              wasCreated: true,
+            ),
+          );
         }
         if (!_awaitingStatuses.contains(existing.status)) {
           return const Left(
             ValidationFailure('this occurrence was already resolved'),
           );
         }
+        // Captured before the write: the snoozed date the row held immediately
+        // before this snooze (null when it was still `pending`), so undo can
+        // step back exactly one date instead of jumping to the original due
+        // date.
+        final previousSnoozedToDate = existing.snoozedToDate;
         final updated = await _local.updateOccurrence(
           existing.id,
           ScheduledPaymentOccurrenceMapper.snoozeCompanion(
@@ -475,11 +506,21 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             now: now,
           ),
         );
-        return Right(ScheduledPaymentOccurrenceMapper.toEntity(updated!));
+        return Right(
+          SnoozeOutcome(
+            occurrence: ScheduledPaymentOccurrenceMapper.toEntity(updated!),
+            wasCreated: false,
+            previousSnoozedToDate: previousSnoozedToDate,
+          ),
+        );
       });
 
   @override
-  FutureResult<Unit> undoSnoozeOccurrence(String occurrenceId) =>
+  FutureResult<Unit> undoSnoozeOccurrence(
+    String occurrenceId, {
+    required bool wasCreated,
+    DateTime? previousSnoozedToDate,
+  }) =>
       _guard(() async {
         final occurrence = await _local.getOccurrence(occurrenceId);
         if (occurrence == null) {
@@ -494,18 +535,24 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         }
 
         final now = DateTime.now();
-        final today = DateTime(now.year, now.month, now.day);
-        final due = DateTime(
-          occurrence.occurrenceDate.year,
-          occurrence.occurrenceDate.month,
-          occurrence.occurrenceDate.day,
-        );
-        if (due.isAfter(today)) {
-          // It was not due yet before the snooze (detail screen, criterion
-          // 10): undo removes the ledger row entirely instead of leaving a
-          // premature `pending` behind.
+        if (wasCreated) {
+          // The snooze itself materialized this row (a not-yet-due next
+          // occurrence, detail screen, criterion 10): undo removes it entirely
+          // instead of leaving a premature occurrence behind.
           await _local.deleteOccurrence(occurrenceId);
+        } else if (previousSnoozedToDate != null) {
+          // A re-snooze: step back to the immediately previous snoozed date,
+          // reusing the snooze write so status stays `snoozed`.
+          await _local.updateOccurrence(
+            occurrenceId,
+            ScheduledPaymentOccurrenceMapper.snoozeCompanion(
+              newDate: previousSnoozedToDate,
+              now: now,
+            ),
+          );
         } else {
+          // First snooze of a due `pending` occurrence: clear the snooze,
+          // back to `pending`.
           await _local.updateOccurrence(
             occurrenceId,
             ScheduledPaymentOccurrenceMapper.undoSnoozeCompanion(now: now),
@@ -529,15 +576,18 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           );
         }
         final template = row.scheduledPayment;
-        if (template.requiresConfirmation) {
-          return const Left(
-            ValidationFailure(
-              'only an automatic-mode template can be advanced on demand — '
-              'a manual-mode template already surfaces its due occurrence '
-              'through the due-date path',
-            ),
-          );
-        }
+        // Any mode can be confirmed ahead of its date: `_ensureDuePendingOccurrence`
+        // with `force: true` materializes (or reuses) the same `pending` row the
+        // due-date path would, so the confirm/skip/snooze sheet works identically
+        // for automatic and manual templates alike.
+        //
+        // The cursor is NOT advanced here: materializing a speculative
+        // occurrence must not, by itself, move `nextDate` — otherwise merely
+        // opening (and dismissing) the sheet would shift the next payment date
+        // and leave a phantom pending. The advance happens only when the user
+        // actually confirms/skips (see `confirmOccurrence`/`skipOccurrence`),
+        // and a dismissed-without-action speculative occurrence is cleaned up
+        // by `discardUnconfirmedAdvanceOccurrence`.
         final pendingRow = await _ensureDuePendingOccurrence(
           template,
           DateTime.now(),
@@ -565,7 +615,63 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         );
       });
 
+  @override
+  FutureResult<Unit> discardUnconfirmedAdvanceOccurrence(String occurrenceId) =>
+      _guard(() async {
+        final occurrence = await _local.getOccurrence(occurrenceId);
+        // Already gone, or the user acted (confirmed/skipped/snoozed): nothing
+        // to clean up. Only a still-`pending` row is a candidate.
+        if (occurrence == null ||
+            occurrence.status != db.ScheduledOccurrenceStatus.pending) {
+          return const Right(unit);
+        }
+        final template =
+            await _local.getScheduledPayment(occurrence.scheduledPaymentId);
+        // Only delete a speculative "Confirmar ahora" occurrence — one sitting
+        // at or after the cursor. A genuine catch-up occurrence sits strictly
+        // before the cursor and must survive a dismissed sheet.
+        if (template != null &&
+            _dateOnly(occurrence.occurrenceDate)
+                .isBefore(_dateOnly(template.nextDate))) {
+          return const Right(unit);
+        }
+        await _local.deleteOccurrence(occurrenceId);
+        return const Right(unit);
+      });
+
   // -- Shared helpers ---------------------------------------------------------
+
+  static DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
+
+  /// Advances the template cursor (`nextDate`) one cadence past [occurrenceDate],
+  /// mirroring `_catchUpTemplate`, but only when that date is at or after the
+  /// current cursor. A catch-up occurrence sits strictly before `nextDate`
+  /// (catch-up already advanced past it), so this is a no-op for it and never
+  /// double-advances; a "Confirmar ahora" occurrence sits exactly at `nextDate`,
+  /// so confirming/skipping it moves the cursor forward. `once` never advances
+  /// (criterion 4).
+  Future<void> _advanceCursorPast(
+    db.ScheduledPayment template,
+    DateTime occurrenceDate,
+    DateTime now,
+  ) async {
+    if (template.frequency == db.ScheduleFrequency.once) {
+      return;
+    }
+    if (_dateOnly(occurrenceDate).isBefore(_dateOnly(template.nextDate))) {
+      return;
+    }
+    final advanced = ProjectUpcomingOccurrences.advance(
+      template.nextDate,
+      ScheduledPaymentMapper.frequencyToDomain(template.frequency),
+      template.interval,
+    );
+    await _local.updateScheduledPayment(
+      template.id,
+      ScheduledPaymentMapper.nextDateCompanion(nextDate: advanced, now: now),
+    );
+  }
 
   /// Resolves the occurrence the detail screen shows/acts on as "pendiente"
   /// (HU-03). A manual-mode template usually already has one from the
@@ -694,6 +800,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         categoryColor: row.category?.color,
         transferAccountName: row.transferAccount?.name,
         pendingOccurrenceCount: row.pendingOccurrenceCount,
+        nextAwaitingDate: row.nextAwaitingDate,
         lastPaymentDate: row.lastPaymentDate,
       );
 
@@ -711,6 +818,9 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     try {
       return await body();
     } catch (e, st) {
+      // Report so the failure is never silent: dev prints it (NoopCrashReporter
+      // in debug), prod ships it to Sentry (SentryCrashReporter).
+      await _crash.recordError(e, st, context: 'scheduled payments query');
       return Left(
         DatabaseFailure(
           'scheduled payments query failed',
@@ -728,15 +838,25 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'scheduled payments stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            // Same visibility as [_guard]: dev prints, prod ships to Sentry.
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'scheduled payments stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'scheduled payments stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

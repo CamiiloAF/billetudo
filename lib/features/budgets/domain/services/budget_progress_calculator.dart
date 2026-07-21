@@ -54,16 +54,21 @@ class BudgetProgressCalculator {
   }
 
   /// Convenience wrapper returning a full [BudgetProgress] for [now].
+  ///
+  /// [amountMinorOverride] is the per-period target amount for [window] when a
+  /// `BudgetPeriodOverride` (Wallet-style "adjust just the next period") covers
+  /// its start; `null` falls back to the budget's own amount.
   BudgetProgress progressIn({
     required Budget budget,
     required BudgetScope scope,
     required BudgetPeriodWindow window,
     required Iterable<BudgetExpense> expenses,
     required DateTime now,
+    int? amountMinorOverride,
     Map<String, List<String>> categoryChildren = const {},
   }) =>
       BudgetProgress(
-        amountMinor: budget.amountMinor,
+        amountMinor: amountMinorOverride ?? budget.amountMinor,
         spentMinor: spentIn(
           budget: budget,
           scope: scope,

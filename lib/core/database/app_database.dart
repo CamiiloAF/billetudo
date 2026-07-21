@@ -446,6 +446,35 @@ class BudgetCategories extends Table with _SyncColumns {
       ];
 }
 
+/// Per-period amount override for a recurring budget (Wallet-style). One row
+/// per (budgetId, periodStart): it replaces [Budgets.amountMinor] for exactly
+/// the window that starts on [periodStart], leaving every other period on the
+/// original amount.
+///
+/// This REPLACES the old "fork" model, which inserted extra `Budgets` rows
+/// (adjusted/resume) that surfaced as DUPLICATE budgets in the list. The budget
+/// now stays a single row and the per-period amount lives here.
+///
+/// `deletedAt` / `tombstonedAt` from `_SyncColumns` go UNUSED here: cancelling
+/// an adjustment HARD-deletes its row (there is no trash/undo, and nothing
+/// references it by FK). Keep parity with Supabase/Postgres: same table and
+/// column names once sync is wired.
+@DataClassName('BudgetPeriodOverrideRow')
+class BudgetPeriodOverrides extends Table with _SyncColumns {
+  TextColumn get budgetId => text().references(Budgets, #id)();
+
+  /// Date-only start of the overridden window — exactly
+  /// `BudgetPeriodWindow.start` for that period.
+  DateTimeColumn get periodStart => dateTime()();
+
+  IntColumn get amountMinor => integer()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {budgetId, periodStart},
+      ];
+}
+
 /// Account-level app settings that must sync across the user's devices
 /// (zero-based mode, default currency...). Device-local prefs like the
 /// light/dark theme do NOT belong here — they go in a separate local store.
@@ -491,6 +520,7 @@ class AppSettings extends Table with _SyncColumns {
     ScheduledPaymentOccurrences,
     BudgetAccounts,
     BudgetCategories,
+    BudgetPeriodOverrides,
     AppSettings,
   ],
 )
@@ -498,7 +528,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -751,6 +781,18 @@ class AppDatabase extends _$AppDatabase {
             await m.database.customStatement(
               'UPDATE scheduled_payments SET first_payment_date = next_date',
             );
+          }
+
+          // v12 -> v13: per-period budget amount override (Wallet-style),
+          // replacing the old multi-row "fork" adjustment model that surfaced
+          // adjusted/resume budgets as duplicate rows in the list. Additive
+          // table only — no existing data to migrate. NOTE: budgets a previous
+          // build already forked into extra `Budgets` rows are left as-is; they
+          // stay as separate budgets in the list until the user removes them
+          // (this migration cannot safely re-merge a past fork). Keep parity
+          // with Supabase/Postgres: same table/column names once sync is wired.
+          if (from < 13) {
+            await m.createTable(budgetPeriodOverrides);
           }
         },
       );

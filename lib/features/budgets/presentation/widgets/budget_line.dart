@@ -36,6 +36,7 @@ class BudgetLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
     final colors = context.colors;
     final theme = Theme.of(context);
     final progress = entry.progress;
@@ -82,7 +83,7 @@ class BudgetLine extends StatelessWidget {
     // edge of its own row (`vdyCS`), so a long scope can never truncate it.
     final meta = [
       BudgetFormat.scopeLabel(l10n, entry.scope),
-      BudgetFormat.temporalAnchor(l10n, entry.budget, entry.window),
+      BudgetFormat.temporalAnchor(l10n, entry.budget, entry.window, locale),
     ].join(' · ');
 
     return InkWell(
@@ -110,7 +111,7 @@ class BudgetLine extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    CategoryAppearance.iconFor(entry.budget.icon),
+                    CategoryAppearance.iconForOrPlaceholder(entry.budget.icon),
                     size: 20,
                     color: overspent ? colors.expense : colors.primaryOnSoft,
                   ),

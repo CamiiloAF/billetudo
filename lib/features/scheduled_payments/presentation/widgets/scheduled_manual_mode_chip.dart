@@ -26,13 +26,18 @@ class ScheduledManualModeChip extends StatelessWidget {
         children: [
           Icon(LucideIcons.bell, size: 12, color: colors.primaryOnSoftStrong),
           const SizedBox(width: 4),
-          Text(
-            l10n.scheduledManualNotifyChip,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: colors.primaryOnSoftStrong,
-              fontWeight: FontWeight.w700,
+          // Flexible so the label ellipsizes within a tight parent instead of
+          // overflowing: `overflow: ellipsis` alone does nothing while the Row
+          // is `MainAxisSize.min` and hands the text its full natural width.
+          Flexible(
+            child: Text(
+              l10n.scheduledManualNotifyChip,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.primaryOnSoftStrong,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

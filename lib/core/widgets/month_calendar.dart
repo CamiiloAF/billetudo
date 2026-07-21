@@ -22,6 +22,7 @@ class MonthCalendar extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     this.disabledBefore,
+    this.disabledAfter,
     this.rangeEnd,
     super.key,
   });
@@ -40,6 +41,11 @@ class MonthCalendar extends StatelessWidget {
   /// Days strictly before this floor render dimmed and ignore taps.
   final DateTime? disabledBefore;
 
+  /// Days strictly after this ceiling render dimmed and ignore taps — e.g. the
+  /// confirmation sheet caps its date at today so a payment can't be recorded
+  /// in the future.
+  final DateTime? disabledAfter;
+
   /// When set, switches the grid to range mode: [selected] and [rangeEnd]
   /// render as solid `primary` endpoints, and the days strictly between them
   /// render in `primary-soft` (`Sheet - Rango Personalizado` in
@@ -47,7 +53,13 @@ class MonthCalendar extends StatelessWidget {
   /// keeps the single-date behaviour used by `DatePickerSheet`/`SnoozeSheet`.
   final DateTime? rangeEnd;
 
+  /// Row height of a day cell, and the size of the month-nav buttons. The
+  /// grid spreads across the full width (7 equal `Expanded` columns); this is
+  /// only the vertical rhythm, not a fixed column width.
   static const double _cell = 44;
+
+  /// Diameter of the circular day marker centred in each column.
+  static const double _circle = 40;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +116,7 @@ class MonthCalendar extends StatelessWidget {
           selected: selected,
           onDaySelected: onDaySelected,
           disabledBefore: disabledBefore,
+          disabledAfter: disabledAfter,
           rangeEnd: rangeEnd,
         ),
       ],
@@ -156,19 +169,19 @@ class CalendarWeekdayHeader extends StatelessWidget {
       for (var i = 1; i <= 7; i++) narrow[i % 7],
     ];
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (final label in labels)
-          SizedBox(
-            width: MonthCalendar._cell,
-            height: 24,
-            child: Center(
-              child: Text(
-                toBeginningOfSentenceCase(label) ?? label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textSecondary,
+          Expanded(
+            child: SizedBox(
+              height: 24,
+              child: Center(
+                child: Text(
+                  toBeginningOfSentenceCase(label) ?? label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textSecondary,
+                  ),
                 ),
               ),
             ),
@@ -184,6 +197,7 @@ class CalendarMonthGrid extends StatelessWidget {
     required this.selected,
     required this.onDaySelected,
     this.disabledBefore,
+    this.disabledAfter,
     this.rangeEnd,
     super.key,
   });
@@ -192,6 +206,7 @@ class CalendarMonthGrid extends StatelessWidget {
   final DateTime selected;
   final ValueChanged<DateTime> onDaySelected;
   final DateTime? disabledBefore;
+  final DateTime? disabledAfter;
 
   /// See [MonthCalendar.rangeEnd].
   final DateTime? rangeEnd;
@@ -208,13 +223,12 @@ class CalendarMonthGrid extends StatelessWidget {
     final rangeEndDay = rangeEnd == null ? null : DateUtils.dateOnly(rangeEnd!);
     final floor =
         disabledBefore == null ? null : DateUtils.dateOnly(disabledBefore!);
+    final ceiling =
+        disabledAfter == null ? null : DateUtils.dateOnly(disabledAfter!);
 
+    const blank = SizedBox(height: MonthCalendar._cell);
     final cells = <Widget>[
-      for (var i = 0; i < leadingBlanks; i++)
-        const SizedBox(
-          width: MonthCalendar._cell,
-          height: MonthCalendar._cell,
-        ),
+      for (var i = 0; i < leadingBlanks; i++) blank,
       for (var day = 1; day <= daysInMonth; day++)
         CalendarDayCell(
           day: day,
@@ -231,27 +245,33 @@ class CalendarMonthGrid extends StatelessWidget {
                   .isBefore(rangeEndDay),
           isToday:
               DateTime(visibleMonth.year, visibleMonth.month, day) == today,
-          isDisabled: floor != null &&
-              DateTime(visibleMonth.year, visibleMonth.month, day)
-                  .isBefore(floor),
+          isDisabled: (floor != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day)
+                      .isBefore(floor)) ||
+              (ceiling != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day)
+                      .isAfter(ceiling)),
           onTap: onDaySelected,
         ),
     ];
 
-    // A plain `Wrap` sizes each row by how many 44px cells fit the sheet's
-    // full width, not by 7 — on wide phones that fits 8+ per row and drifts
-    // every row out from under `CalendarWeekdayHeader`'s fixed 7-column Row.
-    // Chunking into 7-wide rows pins each cell under its weekday column.
+    // Seven equal `Expanded` columns per row spread the grid across the full
+    // width, like a conventional calendar, and keep every cell under its
+    // weekday header (which uses the same 7 `Expanded` columns). The last row
+    // of a month rarely fills all 7 columns; pad it with blank cells so the
+    // real days keep their column instead of stretching to fill the gap.
     const columns = 7;
+    while (cells.length % columns != 0) {
+      cells.add(blank);
+    }
     return Column(
       children: [
         for (var i = 0; i < cells.length; i += columns)
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: cells.sublist(
-              i,
-              i + columns > cells.length ? cells.length : i + columns,
-            ),
+            children: [
+              for (final cell in cells.sublist(i, i + columns))
+                Expanded(child: cell),
+            ],
           ),
       ],
     );
@@ -315,30 +335,35 @@ class CalendarDayCell extends StatelessWidget {
 
     return Opacity(
       opacity: isDisabled ? 0.35 : 1,
+      // Row height fixed, width supplied by the parent's `Expanded` column;
+      // the circular marker is a fixed diameter centred in that column so it
+      // stays a perfect circle regardless of how wide the column gets.
       child: SizedBox(
-        width: MonthCalendar._cell,
         height: MonthCalendar._cell,
-        child: Padding(
-          padding: const EdgeInsets.all(2),
-          child: Material(
-            color: background,
-            shape: CircleBorder(
-              side: border == null
-                  ? BorderSide.none
-                  : BorderSide(color: colors.primary),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: isDisabled ? null : () => onTap(date),
-              customBorder: const CircleBorder(),
-              child: Center(
-                child: Text(
-                  // A bare day numeral, nothing to translate.
-                  day.toString(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    fontWeight: weight,
-                    color: foreground,
+        child: Center(
+          child: SizedBox(
+            width: MonthCalendar._circle,
+            height: MonthCalendar._circle,
+            child: Material(
+              color: background,
+              shape: CircleBorder(
+                side: border == null
+                    ? BorderSide.none
+                    : BorderSide(color: colors.primary),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: isDisabled ? null : () => onTap(date),
+                customBorder: const CircleBorder(),
+                child: Center(
+                  child: Text(
+                    // A bare day numeral, nothing to translate.
+                    day.toString(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      fontWeight: weight,
+                      color: foreground,
+                    ),
                   ),
                 ),
               ),

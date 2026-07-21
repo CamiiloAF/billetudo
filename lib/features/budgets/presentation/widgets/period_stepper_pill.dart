@@ -33,6 +33,7 @@ class PeriodStepperPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
     final colors = context.colors;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -66,7 +67,7 @@ class PeriodStepperPill extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      BudgetFormat.stepperRange(l10n, budget, window),
+                      BudgetFormat.stepperRange(l10n, budget, window, locale),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -79,7 +80,7 @@ class PeriodStepperPill extends StatelessWidget {
                   const SizedBox(width: 5),
                   Flexible(
                     child: Text(
-                      BudgetFormat.stepperState(l10n, budget, window),
+                      BudgetFormat.stepperState(l10n, budget, window, locale),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(

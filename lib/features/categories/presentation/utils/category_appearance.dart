@@ -121,6 +121,15 @@ abstract final class CategoryAppearance {
   static IconData iconFor(String? name) =>
       _icons[name] ?? _icons[defaultIconName]!;
 
+  /// Icon for an appearance slot that may be deliberately empty: the neutral
+  /// [placeholderIcon] when nothing was picked (`name == null`), the real glyph
+  /// otherwise. Unlike [iconFor], a null name reads as "nothing picked" and
+  /// shows the placeholder — so the value displayed after saving matches the
+  /// one shown in the form — instead of falling back to the `sparkles` default
+  /// (which is reserved for a saved-but-unknown name).
+  static IconData iconForOrPlaceholder(String? name) =>
+      name == null ? placeholderIcon : iconFor(name);
+
   /// The strong tone of [token] (e.g. the icon itself), falling back to
   /// [AppColors.textSecondary] when [token] is `null`/unknown — neutral, same
   /// treatment as an unpicked appearance.

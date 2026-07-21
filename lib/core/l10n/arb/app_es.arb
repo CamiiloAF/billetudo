@@ -782,7 +782,7 @@
   },
   "homeQuickAccessScheduledPayments": "Pagos programados",
   "@homeQuickAccessScheduledPayments": {
-    "description": "Label del chip de acceso rápido a Pagos programados; distinto de moreScheduledPayments (\"Recurrentes\") que se usa en el hub Más."
+    "description": "Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más."
   },
   "homeRecentTitle": "Movimientos recientes",
   "@homeRecentTitle": {},
@@ -826,7 +826,7 @@
   "@moreDebts": {},
   "moreDebtsDescription": "Sigue tus deudas y pagos",
   "@moreDebtsDescription": {},
-  "moreScheduledPayments": "Recurrentes",
+  "moreScheduledPayments": "Pagos programados",
   "@moreScheduledPayments": {},
   "moreScheduledPaymentsDescription": "Pagos e ingresos automáticos",
   "@moreScheduledPaymentsDescription": {},
@@ -1522,6 +1522,8 @@
   "@scheduledPaymentDetailHeroLabelExecuted": {},
   "scheduledPaymentDetailConfirmNowCta": "Confirmar ahora",
   "@scheduledPaymentDetailConfirmNowCta": {},
+  "scheduledPaymentDetailConfirmNowError": "No pudimos confirmar este pago ahora. Intenta de nuevo.",
+  "@scheduledPaymentDetailConfirmNowError": {},
   "scheduledPaymentDetailTagsLabel": "Etiquetas",
   "@scheduledPaymentDetailTagsLabel": {},
   "scheduledPaymentDetailTagsEmpty": "Sin etiquetas",
@@ -1630,23 +1632,19 @@
       "date": { "type": "String" }
     }
   },
-  "budgetAdjustSheetTitle": "Ajustar monto — solo este período",
+  "budgetAdjustSheetTitle": "Ajustar monto",
   "@budgetAdjustSheetTitle": {},
-  "budgetAdjustSheetHint": "El resto de tus períodos sigue igual, sin que tengas que hacer nada después.",
-  "@budgetAdjustSheetHint": {},
-  "budgetAdjustCurrentAmountLabel": "Monto actual ({range})",
-  "@budgetAdjustCurrentAmountLabel": {
-    "placeholders": { "range": { "type": "String" } }
+  "budgetAdjustCurrentAmountInline": "Actual {amount}",
+  "@budgetAdjustCurrentAmountInline": {
+    "placeholders": { "amount": { "type": "String" } }
   },
-  "budgetAdjustNewAmountLabel": "Nuevo monto para este período ({range})",
+  "budgetAdjustNewAmountLabel": "Nuevo monto · {range}",
   "@budgetAdjustNewAmountLabel": {
     "placeholders": { "range": { "type": "String" } }
   },
-  "budgetAdjustExplainer": "A partir del {effectiveDate} tu presupuesto será de {newAmount}. Desde {resumeDate} vuelve automáticamente a {originalAmount} — no tienes que hacer nada.",
+  "budgetAdjustExplainer": "El {resumeDate} vuelve a {originalAmount} automáticamente.",
   "@budgetAdjustExplainer": {
     "placeholders": {
-      "effectiveDate": { "type": "String" },
-      "newAmount": { "type": "String" },
       "resumeDate": { "type": "String" },
       "originalAmount": { "type": "String" }
     }
@@ -1655,16 +1653,16 @@
   "@budgetAdjustApplyCta": {},
   "budgetAdjustRemoveCta": "Quitar ajuste",
   "@budgetAdjustRemoveCta": {},
-  "budgetAdjustBannerLabel": "Ajuste de monto vigente",
+  "budgetAdjustBannerLabel": "Ajuste de monto programado",
   "@budgetAdjustBannerLabel": {},
   "budgetAdjustBannerSub": "{amount} este período",
   "@budgetAdjustBannerSub": {
     "placeholders": { "amount": { "type": "String" } }
   },
-  "budgetAdjustScheduledSnackbar": "Ajuste aplicado a tu período actual.",
+  "budgetAdjustScheduledSnackbar": "Ajuste aplicado al período seleccionado.",
   "@budgetAdjustScheduledSnackbar": {},
   "budgetAdjustUpdatedSnackbar": "Ajuste actualizado.",
   "@budgetAdjustUpdatedSnackbar": {},
-  "budgetAdjustCancelledSnackbar": "Ajuste cancelado — tu período actual vuelve al monto habitual.",
+  "budgetAdjustCancelledSnackbar": "Ajuste cancelado — el período vuelve al monto habitual.",
   "@budgetAdjustCancelledSnackbar": {}
 }

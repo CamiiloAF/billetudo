@@ -4,58 +4,57 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../domain/budget_fixtures.dart';
 
-/// Pins AC6 of "fix-budget-adjust-current-period": under the retargeted
-/// mechanism `windows.current` must be the window the adjusted fork covers
-/// (i.e. exactly `BudgetPeriodCalculator.currentWindow(now)`), and
-/// `windows.next` must be the window where the *original* amount resumes
-/// (i.e. `currentWindow.index + 1`) — never a window two cycles out. This is
-/// the contract `BudgetAdjustAmountSheet` and `BudgetAdjustmentEntryCard`
-/// build their copy on top of, so a regression here would silently mislabel
-/// every date in the sheet even if `scheduleBudgetAdjustment` itself is
-/// correct.
+/// Pins the retargeted override mechanism: `windows.target` must be exactly the
+/// *visible* window the stepper is showing (where the override amount applies),
+/// and `windows.resume` must be the window immediately after it (where the base
+/// amount resumes) — never a window two cycles out. This is the contract
+/// `BudgetAdjustAmountSheet` and `BudgetAdjustmentEntryCard` build their copy on
+/// top of, so a regression here would silently mislabel every date in the sheet
+/// even if `scheduleBudgetAdjustment` itself is correct.
 void main() {
   test(
-      'current is exactly currentWindow(now), and next is the immediately '
-      'following window (where the original amount resumes) — not two '
-      'cycles out', () {
+      'target is exactly the visible window, and resume is the immediately '
+      'following window (where the base amount resumes) — not two cycles out',
+      () {
     final budget = buildBudget(
       id: 'bud-1',
       startDate: DateTime(2025, 1, 21),
     );
     final now = DateTime(2025, 7, 25);
     final calculator = BudgetPeriodCalculator(budget);
-    final expectedCurrent = calculator.currentWindow(now);
-    final expectedResume = calculator.windowAt(expectedCurrent.index + 1, now);
+    final visible = calculator.currentWindow(now);
+    final expectedResume = calculator.windowAt(visible.index + 1, now);
 
-    final windows = BudgetAdjustmentWindows(budget, now);
+    final windows = BudgetAdjustmentWindows(budget, visible, now);
 
-    expect(windows.current.index, expectedCurrent.index);
-    expect(windows.current.start, expectedCurrent.start);
-    expect(windows.current.lastDay, expectedCurrent.lastDay);
-    expect(windows.next.index, expectedCurrent.index + 1);
-    expect(windows.next.start, expectedResume.start);
+    expect(windows.target.index, visible.index);
+    expect(windows.target.start, visible.start);
+    expect(windows.target.lastDay, visible.lastDay);
+    expect(windows.resume.index, visible.index + 1);
+    expect(windows.resume.start, expectedResume.start);
   });
 
   test(
-      'current.index == 0 case (no previous cycle): next is still the '
-      'immediate following window, not a window two cycles out', () {
-    // now falls inside the budget's very first monthly cycle.
+      'a future visible window: target follows it and resume is the next one, '
+      'not anchored to the current cycle', () {
     final budget = buildBudget(
       id: 'bud-2',
       startDate: DateTime(2025, 7, 1),
     );
     final now = DateTime(2025, 7, 10);
     final calculator = BudgetPeriodCalculator(budget);
-    final expectedCurrent = calculator.currentWindow(now);
-    expect(expectedCurrent.index, 0);
+    final current = calculator.currentWindow(now);
+    expect(current.index, 0);
 
-    final windows = BudgetAdjustmentWindows(budget, now);
+    // Stepper moved forward one cycle: the override targets that future window.
+    final visible = calculator.windowAt(current.index + 1, now);
+    final windows = BudgetAdjustmentWindows(budget, visible, now);
 
-    expect(windows.current.index, 0);
-    expect(windows.next.index, 1);
+    expect(windows.target.index, 1);
+    expect(windows.resume.index, 2);
     expect(
-      windows.next.start,
-      calculator.windowAt(1, now).start,
+      windows.resume.start,
+      calculator.windowAt(2, now).start,
     );
   });
 }

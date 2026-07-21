@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payment_tags_local_datasource.dart';
@@ -20,6 +21,7 @@ void main() {
     repository = ScheduledPaymentRepositoryImpl(
       ScheduledPaymentsLocalDatasource(database),
       ScheduledPaymentTagsLocalDatasource(database),
+      const NoopCrashReporter(),
     );
   });
 
@@ -502,9 +504,15 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      final occurrence = result.getRight().toNullable()!;
-      expect(occurrence.status, domain.ScheduledOccurrenceStatus.snoozed);
-      expect(occurrence.snoozedToDate, DateTime(2026, 7, 10));
+      final outcome = result.getRight().toNullable()!;
+      expect(
+        outcome.occurrence.status,
+        domain.ScheduledOccurrenceStatus.snoozed,
+      );
+      expect(outcome.occurrence.snoozedToDate, DateTime(2026, 7, 10));
+      // A brand-new occurrence: nothing existed at 2026-07-01 before.
+      expect(outcome.wasCreated, isTrue);
+      expect(outcome.previousSnoozedToDate, isNull);
 
       final templateRow = await rowOf(template.id);
       expect(templateRow.nextDate, DateTime(2026, 7, 1));
@@ -521,14 +529,107 @@ void main() {
         occurrenceDate: DateTime(2026, 8, 1),
         newDate: DateTime(2026, 8, 10),
       );
-      final occurrenceId = snoozeResult.getRight().toNullable()!.id;
+      final outcome = snoozeResult.getRight().toNullable()!;
+      expect(outcome.wasCreated, isTrue);
+      final occurrenceId = outcome.occurrence.id;
 
-      final undoResult = await repository.undoSnoozeOccurrence(occurrenceId);
+      final undoResult = await repository.undoSnoozeOccurrence(
+        occurrenceId,
+        wasCreated: true,
+      );
 
       expect(undoResult.isRight(), isTrue);
       final remaining =
           await database.select(database.scheduledPaymentOccurrences).get();
       expect(remaining, isEmpty);
+    });
+
+    test(
+        'deshacer un re-posponer restaura la fecha del snooze anterior '
+        '(23 -> 30 -> 31 -> undo = 30), un solo paso', () async {
+      // A due occurrence already exists (nextDate in the past), so the first
+      // snooze mutates an existing row rather than materializing a new one.
+      // Manual mode so the due occurrence materializes as `pending` (awaiting)
+      // instead of being auto-confirmed.
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 3, 23),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 3, 25),
+      );
+
+      final first = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 30),
+      );
+      final firstOutcome = first.getRight().toNullable()!;
+      // Pre-existing due occurrence, not materialized here.
+      expect(firstOutcome.wasCreated, isFalse);
+      expect(firstOutcome.previousSnoozedToDate, isNull);
+      final occurrenceId = firstOutcome.occurrence.id;
+
+      // The occurrence keeps its original date as identity; a re-snooze moves
+      // its snoozedToDate again, so it addresses the same 2026-03-23 row.
+      final second = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 31),
+      );
+      final secondOutcome = second.getRight().toNullable()!;
+      expect(secondOutcome.wasCreated, isFalse);
+      // The re-snooze must remember the date the row held right before it.
+      expect(secondOutcome.previousSnoozedToDate, DateTime(2026, 3, 30));
+
+      // Undo the re-snooze: it reverses ONE step, back to 2026-03-30.
+      final undo = await repository.undoSnoozeOccurrence(
+        occurrenceId,
+        wasCreated: false,
+        previousSnoozedToDate: DateTime(2026, 3, 30),
+      );
+      expect(undo.isRight(), isTrue);
+
+      final row = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.id.equals(occurrenceId)))
+          .getSingle();
+      expect(row.status, ScheduledOccurrenceStatus.snoozed);
+      expect(row.snoozedToDate, DateTime(2026, 3, 30));
+    });
+
+    test(
+        'deshacer el primer posponer de una ocurrencia vencida la vuelve a '
+        'pending (sin fecha previa)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 3, 23),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 3, 25),
+      );
+
+      final first = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 30),
+      );
+      final occurrenceId = first.getRight().toNullable()!.occurrence.id;
+
+      final undo = await repository.undoSnoozeOccurrence(
+        occurrenceId,
+        wasCreated: false,
+      );
+      expect(undo.isRight(), isTrue);
+
+      final row = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.id.equals(occurrenceId)))
+          .getSingle();
+      expect(row.status, ScheduledOccurrenceStatus.pending);
+      expect(row.snoozedToDate, isNull);
     });
   });
 
@@ -706,13 +807,99 @@ void main() {
       expect(occurrences.single.status, ScheduledOccurrenceStatus.pending);
       // No mueve dinero: solo materializa la ocurrencia a confirmar.
       expect(await database.select(database.transactions).get(), isEmpty);
-      // La plantilla queda intacta (su nextDate no avanza).
+      // El cursor NO se mueve al abrir el sheet: materializar la ocurrencia
+      // especulativa no debe avanzar `nextDate` (solo confirmar/omitir lo hace).
       final templateRow = await rowOf(template.id);
       expect(templateRow.nextDate, DateTime(2026, 12, 1));
     });
 
-    test('plantilla en modo manual se rechaza con ValidationFailure',
+    test(
+        'confirmar ahora y CONFIRMAR la ocurrencia avanza el próximo pago al '
+        'siguiente ciclo, no lo deja atascado en la fecha ya generada',
         () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 21),
+          requiresConfirmation: true,
+        ),
+      );
+
+      final advanced = await repository.advanceScheduledOccurrence(template.id);
+      final pending = advanced.getRight().toNullable()!;
+      final confirm = await repository.confirmOccurrence(
+        occurrenceId: pending.occurrence.id,
+        date: pending.occurrence.occurrenceDate,
+        accountId: template.accountId,
+        amountMinor: template.amountMinor,
+      );
+
+      expect(confirm.isRight(), isTrue);
+      // El próximo pago avanzó a agosto; no se queda en el 21 de julio ya
+      // generado (el bug que veía el usuario en el detalle).
+      final templateRow = await rowOf(template.id);
+      expect(templateRow.nextDate, DateTime(2026, 8, 21));
+      final occurrences = await (database.select(
+        database.scheduledPaymentOccurrences,
+      )..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(occurrences, hasLength(1));
+      expect(occurrences.single.status, ScheduledOccurrenceStatus.confirmed);
+    });
+
+    test(
+        'confirmar ahora y DESCARTAR (cerrar sin confirmar) borra la ocurrencia '
+        'especulativa y deja el próximo pago intacto', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 21),
+          requiresConfirmation: true,
+        ),
+      );
+
+      final advanced = await repository.advanceScheduledOccurrence(template.id);
+      final pending = advanced.getRight().toNullable()!;
+      final discard = await repository
+          .discardUnconfirmedAdvanceOccurrence(pending.occurrence.id);
+
+      expect(discard.isRight(), isTrue);
+      // El cursor no se movió y no quedó ninguna ocurrencia fantasma.
+      final templateRow = await rowOf(template.id);
+      expect(templateRow.nextDate, DateTime(2026, 7, 21));
+      final occurrences = await (database.select(
+        database.scheduledPaymentOccurrences,
+      )..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(occurrences, isEmpty);
+    });
+
+    test(
+        'descartar NO borra una ocurrencia ya confirmada ni una de catch-up '
+        'legítima (anterior al cursor)', () async {
+      await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 21),
+          requiresConfirmation: true,
+        ),
+      );
+      // Ocurrencia de catch-up: vencida y anterior al cursor tras avanzar.
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 21));
+      final catchUp =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(catchUp, hasLength(1));
+
+      final discard = await repository
+          .discardUnconfirmedAdvanceOccurrence(catchUp.single.id);
+
+      expect(discard.isRight(), isTrue);
+      // La ocurrencia de catch-up sobrevive: no es especulativa.
+      final after =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(after, hasLength(1));
+    });
+
+    test(
+        'plantilla en modo manual también materializa una ocurrencia pending '
+        'forzada (confirmar ahora aplica a cualquier modo)', () async {
       final template = await createTemplate(
         monthlyDraft(
           nextDate: DateTime(2026, 12, 1),
@@ -723,11 +910,18 @@ void main() {
       final result =
           await repository.advanceScheduledOccurrence(template.id);
 
-      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      expect(result.isRight(), isTrue);
+      final pending = result.getRight().toNullable()!;
       expect(
-        await database.select(database.scheduledPaymentOccurrences).get(),
-        isEmpty,
+        pending.occurrence.status,
+        domain.ScheduledOccurrenceStatus.pending,
       );
+      expect(pending.occurrence.occurrenceDate, DateTime(2026, 12, 1));
+      // No mueve dinero: solo materializa la ocurrencia a confirmar.
+      expect(await database.select(database.transactions).get(), isEmpty);
+      final occurrences =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(occurrences.single.status, ScheduledOccurrenceStatus.pending);
     });
 
     test('plantilla borrada (tombstonedAt) sigue bloqueando aun con force',

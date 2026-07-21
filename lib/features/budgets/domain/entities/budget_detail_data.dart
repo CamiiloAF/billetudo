@@ -82,6 +82,7 @@ class BudgetDetailData extends Equatable {
     required this.categoryChildren,
     required this.scheduledTemplates,
     required this.pendingScheduledOccurrences,
+    this.periodOverrides = const {},
   });
 
   final Budget budget;
@@ -91,6 +92,12 @@ class BudgetDetailData extends Equatable {
   final List<BudgetScheduledTemplateDetail> scheduledTemplates;
   final List<PendingScheduledOccurrence> pendingScheduledOccurrences;
 
+  /// Per-period amount overrides (Wallet-style "adjust just the next period"),
+  /// keyed by the date-only window start (`BudgetPeriodWindow.start`). Empty
+  /// when the budget has no scheduled adjustment. The detail use case resolves
+  /// the override for the navigated window from here.
+  final Map<DateTime, int> periodOverrides;
+
   @override
   List<Object?> get props => [
         budget,
@@ -99,5 +106,6 @@ class BudgetDetailData extends Equatable {
         categoryChildren,
         scheduledTemplates,
         pendingScheduledOccurrences,
+        periodOverrides,
       ];
 }

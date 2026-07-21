@@ -79,10 +79,15 @@ class GetBudgetProgress {
     final scheduled =
         scheduledItems.fold<int>(0, (sum, item) => sum + item.amountMinor);
 
+    // Wallet-style per-period override: for the navigated window, the target
+    // amount is the override covering its start, if any, else the budget's own.
+    final amountMinor =
+        data.periodOverrides[window.start] ?? data.budget.amountMinor;
+
     return BudgetPeriodView(
       window: window,
       progress: BudgetProgress(
-        amountMinor: data.budget.amountMinor,
+        amountMinor: amountMinor,
         spentMinor: spent,
         daysLeft: window.daysLeftFrom(now),
         scheduledMinor: scheduled,

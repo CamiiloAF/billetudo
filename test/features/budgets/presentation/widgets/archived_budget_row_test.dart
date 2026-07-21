@@ -1,6 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/budgets/presentation/utils/budget_format.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/archived_budget_row.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -19,10 +20,13 @@ void main() {
 
       final context = tester.element(find.byType(ArchivedBudgetRow));
       final l10n = AppLocalizations.of(context);
+      final locale = Localizations.localeOf(context).toString();
 
       expect(
         find.text(
-          l10n.budgetClosedOn(BudgetFormat.dayMonth(entry.budget.archivedAt!)),
+          l10n.budgetClosedOn(
+            BudgetFormat.dayMonth(entry.budget.archivedAt!, locale),
+          ),
         ),
         findsOneWidget,
       );

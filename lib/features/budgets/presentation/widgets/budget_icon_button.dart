@@ -38,10 +38,10 @@ class BudgetIconButton extends StatelessWidget {
               ),
               child: Icon(
                 // Nothing picked yet is its own state: the neutral
-                // placeholder, never `sparkles` (the AI/nudge glyph).
-                icon == null
-                    ? CategoryAppearance.placeholderIcon
-                    : CategoryAppearance.iconFor(icon),
+                // placeholder, never `sparkles` (the AI/nudge glyph). Same
+                // helper the saved budget uses, so the form and the list show
+                // the identical glyph when no icon was chosen.
+                CategoryAppearance.iconForOrPlaceholder(icon),
                 size: 22,
                 color: colors.primaryOnSoft,
               ),

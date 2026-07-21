@@ -25,6 +25,8 @@ class ScheduledPaymentDetailState extends Equatable {
     this.deletePrompt = false,
     this.snoozePrompt = false,
     this.pendingUndoSnoozeOccurrenceId,
+    this.pendingUndoSnoozeWasCreated = false,
+    this.pendingUndoSnoozePreviousDate,
     this.failure,
     this.pendingUndoDeleteTransactionId,
     this.confirmingNow = false,
@@ -51,6 +53,14 @@ class ScheduledPaymentDetailState extends Equatable {
   /// Set right after a successful snooze from this screen, so the page can
   /// offer "Deshacer".
   final String? pendingUndoSnoozeOccurrenceId;
+
+  /// The pre-snooze state carried into [pendingUndoSnoozeOccurrenceId]'s undo,
+  /// so "Deshacer" reverses exactly one snooze step (criterion 10): whether
+  /// the snooze materialized the row, and the immediately previous snoozed
+  /// date when it was a re-snooze. Only meaningful while
+  /// [pendingUndoSnoozeOccurrenceId] is non-null.
+  final bool pendingUndoSnoozeWasCreated;
+  final DateTime? pendingUndoSnoozePreviousDate;
 
   final Failure? failure;
 
@@ -82,6 +92,8 @@ class ScheduledPaymentDetailState extends Equatable {
     bool? deletePrompt,
     bool? snoozePrompt,
     String? pendingUndoSnoozeOccurrenceId,
+    bool? pendingUndoSnoozeWasCreated,
+    DateTime? pendingUndoSnoozePreviousDate,
     bool clearPendingUndoSnooze = false,
     Failure? failure,
     String? pendingUndoDeleteTransactionId,
@@ -102,6 +114,12 @@ class ScheduledPaymentDetailState extends Equatable {
             ? null
             : (pendingUndoSnoozeOccurrenceId ??
                 this.pendingUndoSnoozeOccurrenceId),
+        pendingUndoSnoozeWasCreated: !clearPendingUndoSnooze &&
+            (pendingUndoSnoozeWasCreated ?? this.pendingUndoSnoozeWasCreated),
+        pendingUndoSnoozePreviousDate: clearPendingUndoSnooze
+            ? null
+            : (pendingUndoSnoozePreviousDate ??
+                this.pendingUndoSnoozePreviousDate),
         failure: failure,
         pendingUndoDeleteTransactionId: clearPendingUndoDeleteTransaction
             ? null
@@ -123,6 +141,8 @@ class ScheduledPaymentDetailState extends Equatable {
         deletePrompt,
         snoozePrompt,
         pendingUndoSnoozeOccurrenceId,
+        pendingUndoSnoozeWasCreated,
+        pendingUndoSnoozePreviousDate,
         failure,
         pendingUndoDeleteTransactionId,
         confirmingNow,

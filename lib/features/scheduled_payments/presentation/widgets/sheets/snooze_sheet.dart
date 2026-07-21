@@ -7,7 +7,7 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/month_calendar.dart';
-import '../../../domain/entities/scheduled_payment_occurrence.dart';
+import '../../../domain/entities/snooze_outcome.dart';
 import '../../cubit/snooze_sheet_cubit.dart';
 import '../../cubit/snooze_sheet_state.dart';
 import 'scheduled_sheet_icon_header.dart';
@@ -39,9 +39,9 @@ class SnoozeSheet extends StatelessWidget {
   final String? categoryIcon;
   final String? categoryColor;
 
-  /// Returns the resulting occurrence on success (so the caller can offer
-  /// "Deshacer"), or `null` when dismissed/failed.
-  static Future<ScheduledPaymentOccurrence?> show(
+  /// Returns the [SnoozeOutcome] on success (so the caller can offer "Deshacer"
+  /// and reverse exactly one step), or `null` when dismissed/failed.
+  static Future<SnoozeOutcome?> show(
     BuildContext context, {
     required String scheduledPaymentId,
     required DateTime occurrenceDate,
@@ -53,7 +53,7 @@ class SnoozeSheet extends StatelessWidget {
       // Not `BottomSheetBase.show`: the body below already builds its own
       // `BottomSheetBase` wrapper directly, so this keeps
       // `showModalBottomSheet` as-is and just opts into the root navigator.
-      showModalBottomSheet<ScheduledPaymentOccurrence>(
+      showModalBottomSheet<SnoozeOutcome>(
         context: context,
         isScrollControlled: true,
         useRootNavigator: true,

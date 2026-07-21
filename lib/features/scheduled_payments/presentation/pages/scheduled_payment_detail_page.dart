@@ -60,44 +60,93 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           previous.status != current.status ||
           previous.pendingUndoSnoozeOccurrenceId !=
               current.pendingUndoSnoozeOccurrenceId ||
+          // A re-snooze of the *same* occurrence keeps the same id, so the id
+          // alone would not re-fire the "Deshacer" snackbar (the exact 30→31
+          // repro). The pre-snooze date strictly changes on every snooze, so
+          // comparing it guarantees each snooze re-triggers the listener.
+          previous.pendingUndoSnoozePreviousDate !=
+              current.pendingUndoSnoozePreviousDate ||
           (previous.pendingUndoDeleteTransactionId !=
                   current.pendingUndoDeleteTransactionId &&
               current.pendingUndoDeleteTransactionId != null) ||
           (previous.confirmNowOccurrence != current.confirmNowOccurrence &&
-              current.confirmNowOccurrence != null),
+              current.confirmNowOccurrence != null) ||
+          (previous.failure != current.failure &&
+              current.failure != null &&
+              current.status == ScheduledPaymentDetailStatus.ready),
       listener: (context, state) {
         if (state.status == ScheduledPaymentDetailStatus.closed) {
           Navigator.of(context).pop();
           return;
         }
         final cubit = context.read<ScheduledPaymentDetailCubit>();
+        // An action failure while the screen stays usable (e.g. "Confirmar
+        // ahora" had nothing left to confirm): surface it instead of failing
+        // silently. A load failure sets `status = failure` and is handled by
+        // the error screen in `builder`, not here.
+        if (state.failure != null &&
+            state.status == ScheduledPaymentDetailStatus.ready) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(l10n.scheduledPaymentDetailConfirmNowError),
+              ),
+            );
+          return;
+        }
         final confirmNowOccurrence = state.confirmNowOccurrence;
         if (confirmNowOccurrence != null) {
           // "Confirmar ahora" (`docs/bugfixes.md` point 1): hands the freshly
           // materialized occurrence straight to the same mandatory
           // `ConfirmationSheet` the due-date tap already opens — no separate
-          // one-tap shortcut, same HU-03 invariant.
+          // one-tap shortcut, same HU-03 invariant. If the user posponed it
+          // there, offer the same "Deshacer" the ⋮ → Posponer path does, so
+          // both entry points behave identically.
+          final occurrence = confirmNowOccurrence.occurrence;
           unawaited(
             ConfirmationSheet.show(context, source: confirmNowOccurrence)
-                .whenComplete(cubit.dismissConfirmNow),
+                .then((result) {
+              unawaited(cubit.dismissConfirmNow());
+              if (result == ConfirmationSheetResult.snoozed) {
+                // "Confirmar ahora" materialized this occurrence as a fresh
+                // `pending` row: the snooze updates it (never creates), so undo
+                // clears the snooze back to that pending state.
+                cubit.notifySnoozed(
+                  occurrence.id,
+                  wasCreated: false,
+                  previousSnoozedToDate: occurrence.snoozedToDate,
+                );
+              }
+            }),
           );
           return;
         }
         final undoSnoozeId = state.pendingUndoSnoozeOccurrenceId;
         if (undoSnoozeId != null) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(l10n.scheduledUndoSnoozeMessage),
-                action: SnackBarAction(
-                  label: l10n.transactionsUndoAction,
-                  onPressed: cubit.undoSnooze,
-                ),
-                duration: const Duration(seconds: 5),
-                persist: false,
+          final messenger = ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar();
+          final controller = messenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.scheduledUndoSnoozeMessage),
+              action: SnackBarAction(
+                label: l10n.transactionsUndoAction,
+                onPressed: cubit.undoSnooze,
               ),
-            );
+              duration: const Duration(seconds: 5),
+              persist: false,
+            ),
+          );
+          // Clear the one-shot trigger once the snackbar closes on its own, so
+          // a stale occurrence id never lingers in state (it would suppress the
+          // next snooze's snackbar, which keys off this field changing).
+          unawaited(
+            controller.closed.then((reason) {
+              if (reason != SnackBarClosedReason.action) {
+                cubit.dismissUndoSnooze();
+              }
+            }),
+          );
           return;
         }
         final undoDeleteId = state.pendingUndoDeleteTransactionId;
@@ -211,7 +260,14 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       categoryColor: detail.categoryColor,
     );
     if (result != null) {
-      cubit.notifySnoozed(result.id);
+      // The only path that can materialize a brand-new occurrence (the
+      // not-yet-due next payment): the repository reports `wasCreated` and the
+      // previous snoozed date so undo reverses exactly one step.
+      cubit.notifySnoozed(
+        result.occurrence.id,
+        wasCreated: result.wasCreated,
+        previousSnoozedToDate: result.previousSnoozedToDate,
+      );
     }
   }
 
@@ -262,8 +318,22 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
         ScheduledPaymentHeroCard(
           payment: payment,
           pending: pending,
+          nextPaymentDate: detail.nextPaymentDate,
           executed: detail.onceAlreadyGenerated,
-          onTapPending: () => ConfirmationSheet.show(context, source: pending!),
+          onTapPending: () async {
+            final result =
+                await ConfirmationSheet.show(context, source: pending!);
+            if (result == ConfirmationSheetResult.snoozed && context.mounted) {
+              // An existing (vencida) occurrence: the snooze updates it, so
+              // undo steps back to whatever snoozed date it held before (null
+              // when it was still `pending`).
+              context.read<ScheduledPaymentDetailCubit>().notifySnoozed(
+                    pending.occurrence.id,
+                    wasCreated: false,
+                    previousSnoozedToDate: pending.occurrence.snoozedToDate,
+                  );
+            }
+          },
           onConfirmNow: () =>
               context.read<ScheduledPaymentDetailCubit>().confirmNow(),
         ),

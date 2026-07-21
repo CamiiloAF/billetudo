@@ -1065,7 +1065,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreDebtsDescription => 'Track your debts and payments';
 
   @override
-  String get moreScheduledPayments => 'Recurring';
+  String get moreScheduledPayments => 'Scheduled payments';
 
   @override
   String get moreScheduledPaymentsDescription =>
@@ -2082,6 +2082,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledPaymentDetailConfirmNowCta => 'Confirm now';
 
   @override
+  String get scheduledPaymentDetailConfirmNowError =>
+      'We couldn\'t confirm this payment now. Please try again.';
+
+  @override
   String get scheduledPaymentDetailTagsLabel => 'Tags';
 
   @override
@@ -2238,26 +2242,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get budgetAdjustSheetTitle => 'Adjust amount — just for this period';
+  String get budgetAdjustSheetTitle => 'Adjust amount';
 
   @override
-  String get budgetAdjustSheetHint =>
-      'The rest of your periods stay the same, with nothing else for you to do.';
-
-  @override
-  String budgetAdjustCurrentAmountLabel(String range) {
-    return 'Current amount ($range)';
+  String budgetAdjustCurrentAmountInline(String amount) {
+    return 'Current $amount';
   }
 
   @override
   String budgetAdjustNewAmountLabel(String range) {
-    return 'New amount for this period ($range)';
+    return 'New amount · $range';
   }
 
   @override
-  String budgetAdjustExplainer(String effectiveDate, String newAmount,
-      String resumeDate, String originalAmount) {
-    return 'Starting $effectiveDate your budget will be $newAmount. From $resumeDate it goes back to $originalAmount automatically — nothing else for you to do.';
+  String budgetAdjustExplainer(String resumeDate, String originalAmount) {
+    return 'On $resumeDate it goes back to $originalAmount automatically.';
   }
 
   @override
@@ -2267,7 +2266,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetAdjustRemoveCta => 'Remove adjustment';
 
   @override
-  String get budgetAdjustBannerLabel => 'Active amount adjustment';
+  String get budgetAdjustBannerLabel => 'Scheduled amount adjustment';
 
   @override
   String budgetAdjustBannerSub(String amount) {
@@ -2276,12 +2275,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetAdjustScheduledSnackbar =>
-      'Adjustment applied to your current period.';
+      'Adjustment applied to the selected period.';
 
   @override
   String get budgetAdjustUpdatedSnackbar => 'Adjustment updated.';
 
   @override
   String get budgetAdjustCancelledSnackbar =>
-      'Adjustment cancelled — your current period goes back to the usual amount.';
+      'Adjustment cancelled — the period goes back to the usual amount.';
 }

@@ -17,7 +17,20 @@ void main() {
 
   setUpAll(() async {
     await initializeDateFormatting('es_CO');
+    await initializeDateFormatting('en');
     l10n = await AppLocalizations.delegate.load(const Locale('es'));
+  });
+
+  group('longDate is locale-aware (no fixed es_CO)', () {
+    final date = DateTime(2026, 7, 21);
+
+    test('English spells the month in English, not Spanish', () {
+      expect(BudgetFormat.longDate(date, 'en'), 'July 21, 2026');
+    });
+
+    test('Spanish keeps its own long form', () {
+      expect(BudgetFormat.longDate(date, 'es_CO'), '21 de julio de 2026');
+    });
   });
 
   final recurring = buildBudget(
@@ -40,14 +53,14 @@ void main() {
 
   group('stepper label', () {
     test('a recurring budget names the cycle range and its status', () {
-      expect(BudgetFormat.stepperRange(l10n, recurring, window), '1–24 dic');
-      expect(BudgetFormat.stepperState(l10n, recurring, window), '· vigente');
+      expect(BudgetFormat.stepperRange(l10n, recurring, window, 'es_CO'), '1–24 dic');
+      expect(BudgetFormat.stepperState(l10n, recurring, window, 'es_CO'), '· vigente');
     });
 
     test('a one-off names its single window and when it ends', () {
-      expect(BudgetFormat.stepperRange(l10n, oneOff, window), 'Ventana única');
+      expect(BudgetFormat.stepperRange(l10n, oneOff, window, 'es_CO'), 'Ventana única');
       expect(
-        BudgetFormat.stepperState(l10n, oneOff, window),
+        BudgetFormat.stepperState(l10n, oneOff, window, 'es_CO'),
         '· termina el 24 dic',
       );
     });

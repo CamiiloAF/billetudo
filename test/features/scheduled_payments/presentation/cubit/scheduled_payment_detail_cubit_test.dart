@@ -1,6 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/advance_scheduled_occurrence.dart';
+import 'package:billetudo/features/scheduled_payments/domain/usecases/discard_unconfirmed_advance_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
@@ -16,6 +17,9 @@ class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 class MockAdvanceScheduledOccurrence extends Mock
     implements AdvanceScheduledOccurrence {}
 
+class MockDiscardUnconfirmedAdvanceOccurrence extends Mock
+    implements DiscardUnconfirmedAdvanceOccurrence {}
+
 /// HU-05/HU-07: hybrid detail screen — load, error, in-place history
 /// pagination (criterion 13), delete flow (criterion 12), and the
 /// posponer/deshacer bridge (criterion 10).
@@ -26,6 +30,7 @@ void main() {
   late MockUndoSnoozeScheduledOccurrence undoSnoozeOccurrence;
   late MockRestoreTransaction restoreTransaction;
   late MockAdvanceScheduledOccurrence advanceScheduledOccurrence;
+  late MockDiscardUnconfirmedAdvanceOccurrence discardUnconfirmedAdvance;
 
   final detail = ScheduledPaymentDetail(
     scheduledPayment: buildScheduledPayment(),
@@ -42,6 +47,9 @@ void main() {
     undoSnoozeOccurrence = MockUndoSnoozeScheduledOccurrence();
     restoreTransaction = MockRestoreTransaction();
     advanceScheduledOccurrence = MockAdvanceScheduledOccurrence();
+    discardUnconfirmedAdvance = MockDiscardUnconfirmedAdvanceOccurrence();
+    when(() => discardUnconfirmedAdvance(any()))
+        .thenAnswer((_) async => const Right(unit));
   });
 
   ScheduledPaymentDetailCubit build() => ScheduledPaymentDetailCubit(
@@ -51,6 +59,7 @@ void main() {
         undoSnoozeOccurrence,
         restoreTransaction,
         advanceScheduledOccurrence,
+        discardUnconfirmedAdvance,
       );
 
   blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
@@ -194,28 +203,67 @@ void main() {
 
   group('snooze bridge (criterion 10)', () {
     blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
-      'notifySnoozed sets the pending undo id for the Snackbar',
+      'notifySnoozed carries the pre-snooze state for the Snackbar undo',
       build: build,
-      act: (cubit) => cubit.notifySnoozed('occ-1'),
+      act: (cubit) => cubit.notifySnoozed('occ-1', wasCreated: true),
       expect: () => [
         const ScheduledPaymentDetailState(
           pendingUndoSnoozeOccurrenceId: 'occ-1',
+          pendingUndoSnoozeWasCreated: true,
         ),
       ],
     );
 
     blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
-      'undoSnooze clears the pending id and calls the use case',
-      setUp: () => when(() => undoSnoozeOccurrence('occ-1'))
-          .thenAnswer((_) async => const Right(unit)),
+      'undoSnooze of a materialized occurrence deletes it (wasCreated: true)',
+      setUp: () => when(
+        () => undoSnoozeOccurrence(
+          'occ-1',
+          wasCreated: any(named: 'wasCreated'),
+          previousSnoozedToDate: any(named: 'previousSnoozedToDate'),
+        ),
+      ).thenAnswer((_) async => const Right(unit)),
       build: build,
       act: (cubit) async {
-        cubit.notifySnoozed('occ-1');
+        // Detail snoozes the not-yet-due next occurrence, materializing it.
+        cubit.notifySnoozed('occ-1', wasCreated: true);
         await cubit.undoSnooze();
       },
       verify: (cubit) {
         expect(cubit.state.pendingUndoSnoozeOccurrenceId, isNull);
-        verify(() => undoSnoozeOccurrence('occ-1')).called(1);
+        verify(
+          () => undoSnoozeOccurrence('occ-1', wasCreated: true),
+        ).called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'undoSnooze of a re-snooze restores the previous date, one step',
+      setUp: () => when(
+        () => undoSnoozeOccurrence(
+          'occ-1',
+          wasCreated: any(named: 'wasCreated'),
+          previousSnoozedToDate: any(named: 'previousSnoozedToDate'),
+        ),
+      ).thenAnswer((_) async => const Right(unit)),
+      build: build,
+      act: (cubit) async {
+        cubit.notifySnoozed(
+          'occ-1',
+          wasCreated: false,
+          previousSnoozedToDate: DateTime(2026, 3, 30),
+        );
+        await cubit.undoSnooze();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoSnoozeOccurrenceId, isNull);
+        verify(
+          () => undoSnoozeOccurrence(
+            'occ-1',
+            wasCreated: false,
+            previousSnoozedToDate: DateTime(2026, 3, 30),
+          ),
+        ).called(1);
       },
     );
 
@@ -223,11 +271,16 @@ void main() {
       'dismissUndoSnooze clears the pending id without calling the use case',
       build: build,
       act: (cubit) {
-        cubit.notifySnoozed('occ-1');
+        cubit.notifySnoozed('occ-1', wasCreated: true);
         cubit.dismissUndoSnooze();
       },
       verify: (_) {
-        verifyNever(() => undoSnoozeOccurrence(any()));
+        verifyNever(
+          () => undoSnoozeOccurrence(
+            any(),
+            wasCreated: any(named: 'wasCreated'),
+          ),
+        );
       },
     );
   });
@@ -357,22 +410,27 @@ void main() {
     );
 
     blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
-      'dismissConfirmNow limpia la ocurrencia materializada',
+      'dismissConfirmNow limpia el trigger y descarta la ocurrencia '
+      'especulativa (por si el usuario cerró sin confirmar)',
       setUp: () {
         when(() => getDetail('sp-1'))
             .thenAnswer((_) => Stream.value(Right(detail)));
         when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
-            .thenAnswer((_) async => Right(buildPendingOccurrence()));
+            .thenAnswer(
+          (_) async =>
+              Right(buildPendingOccurrence(occurrence: buildOccurrence(id: 'occ-9'))),
+        );
       },
       build: build,
       act: (cubit) async {
         await cubit.start('sp-1');
         await Future<void>.delayed(Duration.zero);
         await cubit.confirmNow();
-        cubit.dismissConfirmNow();
+        await cubit.dismissConfirmNow();
       },
       verify: (cubit) {
         expect(cubit.state.confirmNowOccurrence, isNull);
+        verify(() => discardUnconfirmedAdvance('occ-9')).called(1);
       },
     );
   });
