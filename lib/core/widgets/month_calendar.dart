@@ -156,6 +156,7 @@ class CalendarWeekdayHeader extends StatelessWidget {
       for (var i = 1; i <= 7; i++) narrow[i % 7],
     ];
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (final label in labels)
           SizedBox(
@@ -237,8 +238,22 @@ class CalendarMonthGrid extends StatelessWidget {
         ),
     ];
 
-    return Wrap(
-      children: cells,
+    // A plain `Wrap` sizes each row by how many 44px cells fit the sheet's
+    // full width, not by 7 — on wide phones that fits 8+ per row and drifts
+    // every row out from under `CalendarWeekdayHeader`'s fixed 7-column Row.
+    // Chunking into 7-wide rows pins each cell under its weekday column.
+    const columns = 7;
+    return Column(
+      children: [
+        for (var i = 0; i < cells.length; i += columns)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: cells.sublist(
+              i,
+              i + columns > cells.length ? cells.length : i + columns,
+            ),
+          ),
+      ],
     );
   }
 }
