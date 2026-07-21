@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
-import '../../../transactions/domain/entities/transaction.dart' as tx;
 import '../../domain/entities/pending_scheduled_occurrence.dart';
+import '../../domain/entities/scheduled_history_entry.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 
 enum ScheduledPaymentDetailStatus {
@@ -19,7 +19,7 @@ class ScheduledPaymentDetailState extends Equatable {
   const ScheduledPaymentDetailState({
     this.status = ScheduledPaymentDetailStatus.loading,
     this.detail,
-    this.history = const <tx.Transaction>[],
+    this.history = const <ScheduledHistoryEntry>[],
     this.historyExpanded = false,
     this.loadingMoreHistory = false,
     this.deletePrompt = false,
@@ -27,6 +27,7 @@ class ScheduledPaymentDetailState extends Equatable {
     this.pendingUndoSnoozeOccurrenceId,
     this.pendingUndoSnoozeWasCreated = false,
     this.pendingUndoSnoozePreviousDate,
+    this.pendingUndoRecoverOccurrenceId,
     this.failure,
     this.pendingUndoDeleteTransactionId,
     this.confirmingNow = false,
@@ -38,8 +39,9 @@ class ScheduledPaymentDetailState extends Equatable {
 
   /// The rows currently shown: starts as [ScheduledPaymentDetail.history]
   /// (up to 3, criterion 13) and grows in place as "Ver historial completo"
-  /// loads more — never a navigation to another screen.
-  final List<tx.Transaction> history;
+  /// loads more — never a navigation to another screen. Confirmed and skipped
+  /// occurrences interleaved (page spec "Historial con omitidos").
+  final List<ScheduledHistoryEntry> history;
 
   final bool historyExpanded;
   final bool loadingMoreHistory;
@@ -61,6 +63,11 @@ class ScheduledPaymentDetailState extends Equatable {
   /// [pendingUndoSnoozeOccurrenceId] is non-null.
   final bool pendingUndoSnoozeWasCreated;
   final DateTime? pendingUndoSnoozePreviousDate;
+
+  /// Set right after a skipped occurrence is recovered from the Historial
+  /// (page spec "Recuperar", Fase 2), so the page can offer the "Pago
+  /// recuperado · Deshacer" snackbar. `null` once dismissed or undone.
+  final String? pendingUndoRecoverOccurrenceId;
 
   final Failure? failure;
 
@@ -86,7 +93,7 @@ class ScheduledPaymentDetailState extends Equatable {
   ScheduledPaymentDetailState copyWith({
     ScheduledPaymentDetailStatus? status,
     ScheduledPaymentDetail? detail,
-    List<tx.Transaction>? history,
+    List<ScheduledHistoryEntry>? history,
     bool? historyExpanded,
     bool? loadingMoreHistory,
     bool? deletePrompt,
@@ -95,6 +102,8 @@ class ScheduledPaymentDetailState extends Equatable {
     bool? pendingUndoSnoozeWasCreated,
     DateTime? pendingUndoSnoozePreviousDate,
     bool clearPendingUndoSnooze = false,
+    String? pendingUndoRecoverOccurrenceId,
+    bool clearPendingUndoRecover = false,
     Failure? failure,
     String? pendingUndoDeleteTransactionId,
     bool clearPendingUndoDeleteTransaction = false,
@@ -120,6 +129,10 @@ class ScheduledPaymentDetailState extends Equatable {
             ? null
             : (pendingUndoSnoozePreviousDate ??
                 this.pendingUndoSnoozePreviousDate),
+        pendingUndoRecoverOccurrenceId: clearPendingUndoRecover
+            ? null
+            : (pendingUndoRecoverOccurrenceId ??
+                this.pendingUndoRecoverOccurrenceId),
         failure: failure,
         pendingUndoDeleteTransactionId: clearPendingUndoDeleteTransaction
             ? null
@@ -143,6 +156,7 @@ class ScheduledPaymentDetailState extends Equatable {
         pendingUndoSnoozeOccurrenceId,
         pendingUndoSnoozeWasCreated,
         pendingUndoSnoozePreviousDate,
+        pendingUndoRecoverOccurrenceId,
         failure,
         pendingUndoDeleteTransactionId,
         confirmingNow,

@@ -736,7 +736,7 @@
   "scheduledPaymentBridgeTitle": "Is this a scheduled payment?",
   "scheduledPaymentDetailHistoryEmpty": "No transaction has been generated for this scheduled payment yet.",
   "scheduledPaymentDetailHistorySeeAll": "See full history ({count})",
-  "scheduledPaymentDetailHistoryTitle": "Already generated",
+  "scheduledPaymentDetailHistoryTitle": "History",
   "scheduledPaymentDetailNextPayment": "Next payment: {date}",
   "scheduledPaymentDetailTitle": "Detail",
   "scheduledPaymentFormEditTitle": "Edit scheduled payment",
@@ -772,6 +772,9 @@
   "scheduledSnoozeSheetTitle": "Snooze payment",
   "scheduledUndoSkipMessage": "Payment skipped",
   "scheduledUndoSnoozeMessage": "Payment snoozed",
+  "scheduledSkippedBadge": "Skipped",
+  "scheduledRecoverAction": "Recover",
+  "scheduledRecoverMessage": "Payment recovered",
   "budgetAdjustSheetTitle": "Adjust amount",
   "budgetAdjustCurrentAmountInline": "Current {amount}",
   "@budgetAdjustCurrentAmountInline": {

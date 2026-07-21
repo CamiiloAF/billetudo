@@ -3587,7 +3587,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentDetailHistoryTitle.
   ///
   /// In es, this message translates to:
-  /// **'Ya generados'**
+  /// **'Historial'**
   String get scheduledPaymentDetailHistoryTitle;
 
   /// No description provided for @scheduledPaymentDetailHistoryEmpty.
@@ -3601,6 +3601,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver historial completo ({count})'**
   String scheduledPaymentDetailHistorySeeAll(int count);
+
+  /// No description provided for @scheduledSkippedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitido'**
+  String get scheduledSkippedBadge;
+
+  /// No description provided for @scheduledRecoverAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Recuperar'**
+  String get scheduledRecoverAction;
+
+  /// No description provided for @scheduledRecoverMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago recuperado'**
+  String get scheduledRecoverMessage;
 
   /// No description provided for @scheduledPaymentDetailHeroLabel.
   ///

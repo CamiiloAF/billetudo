@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../accounts/presentation/widgets/info_card.dart';
 import '../../../accounts/presentation/widgets/info_row.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
+import '../../domain/entities/scheduled_history_entry.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../cubit/scheduled_payment_detail_cubit.dart';
@@ -18,6 +19,7 @@ import '../widgets/scheduled_payment_detail_badge.dart';
 import '../widgets/scheduled_payment_detail_tags_row.dart';
 import '../widgets/scheduled_payment_hero_card.dart';
 import '../widgets/scheduled_payment_history_row.dart';
+import '../widgets/scheduled_payment_skipped_history_row.dart';
 import '../widgets/sheets/confirmation_sheet.dart';
 import '../widgets/sheets/delete_scheduled_payment_sheet.dart';
 import '../widgets/sheets/scheduled_payment_detail_actions_sheet.dart';
@@ -66,6 +68,9 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           // comparing it guarantees each snooze re-triggers the listener.
           previous.pendingUndoSnoozePreviousDate !=
               current.pendingUndoSnoozePreviousDate ||
+          (previous.pendingUndoRecoverOccurrenceId !=
+                  current.pendingUndoRecoverOccurrenceId &&
+              current.pendingUndoRecoverOccurrenceId != null) ||
           (previous.pendingUndoDeleteTransactionId !=
                   current.pendingUndoDeleteTransactionId &&
               current.pendingUndoDeleteTransactionId != null) ||
@@ -144,6 +149,33 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
             controller.closed.then((reason) {
               if (reason != SnackBarClosedReason.action) {
                 cubit.dismissUndoSnooze();
+              }
+            }),
+          );
+          return;
+        }
+        final undoRecoverId = state.pendingUndoRecoverOccurrenceId;
+        if (undoRecoverId != null) {
+          // "Recuperar" (page spec, Fase 2): the occurrence is already back to
+          // pending; offer the reversible "Pago recuperado · Deshacer" (which
+          // re-skips), same one-shot pattern as the snooze undo.
+          final messenger = ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar();
+          final controller = messenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.scheduledRecoverMessage),
+              action: SnackBarAction(
+                label: l10n.transactionsUndoAction,
+                onPressed: cubit.undoRecover,
+              ),
+              duration: const Duration(seconds: 5),
+              persist: false,
+            ),
+          );
+          unawaited(
+            controller.closed.then((reason) {
+              if (reason != SnackBarClosedReason.action) {
+                cubit.dismissUndoRecover();
               }
             }),
           );
@@ -300,6 +332,13 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
     final theme = Theme.of(context);
     final payment = detail.scheduledPayment;
     final pending = detail.pendingOccurrence;
+    final templateName = ScheduledPaymentFormat.templateName(
+      note: payment.note,
+      categoryName: detail.categoryName,
+      isTransfer: payment.isTransfer,
+      accountName: detail.accountName,
+      transferAccountName: detail.transferAccountName,
+    );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -386,21 +425,27 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
           )
         else
           for (final entry in state.history) ...[
-            ScheduledPaymentHistoryRow(
-              transaction: entry,
-              name: ScheduledPaymentFormat.templateName(
-                note: payment.note,
-                categoryName: detail.categoryName,
-                isTransfer: payment.isTransfer,
-                accountName: detail.accountName,
-                transferAccountName: detail.transferAccountName,
-              ),
-              accountName: detail.accountName,
-              isTransfer: payment.isTransfer,
-              categoryIcon: detail.categoryIcon,
-              categoryColor: detail.categoryColor,
-              onTap: () => onOpenTransaction(entry.id),
-            ),
+            switch (entry) {
+              ScheduledConfirmedHistoryEntry(:final transaction) =>
+                ScheduledPaymentHistoryRow(
+                  transaction: transaction,
+                  name: templateName,
+                  accountName: detail.accountName,
+                  isTransfer: payment.isTransfer,
+                  categoryIcon: detail.categoryIcon,
+                  categoryColor: detail.categoryColor,
+                  onTap: () => onOpenTransaction(transaction.id),
+                ),
+              ScheduledSkippedHistoryEntry() => ScheduledSkippedHistoryRow(
+                  name: templateName,
+                  date: entry.date,
+                  amountMinor: entry.amountMinor,
+                  currency: entry.currency,
+                  onRecover: () => context
+                      .read<ScheduledPaymentDetailCubit>()
+                      .recoverSkipped(entry.occurrenceId),
+                ),
+            },
             const SizedBox(height: 8),
           ],
         if (state.hasMoreHistory)

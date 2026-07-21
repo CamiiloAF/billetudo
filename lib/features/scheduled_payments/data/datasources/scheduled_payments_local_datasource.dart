@@ -300,6 +300,18 @@ class ScheduledPaymentsLocalDatasource {
                   .equalsExp(_db.scheduledPayments.id),
             ),
         ),
+        // Same reason for THIS template's transactions: deleting/restoring a
+        // generated transaction must refresh the combined "Historial" (it is
+        // read from the transactions table), else a trashed row lingers and
+        // reopening it fails to load.
+        existsQuery(
+          _db.selectOnly(_db.transactions)
+            ..addColumns([_db.transactions.id])
+            ..where(
+              _db.transactions.scheduledPaymentId
+                  .equalsExp(_db.scheduledPayments.id),
+            ),
+        ),
       ]);
 
     return query.watchSingleOrNull().map((row) {
@@ -464,32 +476,137 @@ class ScheduledPaymentsLocalDatasource {
     return query.map((row) => row.read(_db.scheduledPaymentTags.tagId)!).get();
   }
 
-  /// HU-05: first page / "cargar más" of a template's generated
-  /// transactions (`source: scheduled`), most recent first.
-  Future<List<Transaction>> getHistory(
+  /// HU-05 / page spec "Historial con omitidos": first page / "cargar más" of
+  /// a template's history, most recent first — confirmed transactions
+  /// (`source: scheduled`) and `skipped` occurrences interleaved by effective
+  /// date.
+  ///
+  /// Pagination spans BOTH sources: each is fetched up to `offset + limit`
+  /// rows (already ordered), merged, then sliced to the requested window. A
+  /// deterministic secondary sort by id keeps ties (same date) stable across
+  /// pages. Bounded work: at most `offset + limit` rows per source.
+  Future<List<ScheduledHistoryRow>> getHistory(
     String scheduledPaymentId, {
     required int offset,
     required int limit,
-  }) {
-    final query = _db.select(_db.transactions)
-      ..where(
-        (t) =>
-            t.scheduledPaymentId.equals(scheduledPaymentId) &
-            t.tombstonedAt.isNull(),
-      )
-      ..orderBy([(t) => OrderingTerm.desc(t.date)])
-      ..limit(limit, offset: offset);
-    return query.get();
+  }) async {
+    final window = offset + limit;
+    final skippedEffectiveDate = coalesce<DateTime>([
+      _db.scheduledPaymentOccurrences.snoozedToDate,
+      _db.scheduledPaymentOccurrences.occurrenceDate,
+    ]);
+
+    final txRows = await (_db.select(_db.transactions)
+          ..where(
+            (t) =>
+                t.scheduledPaymentId.equals(scheduledPaymentId) &
+                // `deletedAt` too, not just `tombstonedAt`: a trashed
+                // transaction is excluded from its own detail/list (their
+                // `_alive` guard), so showing it here would open a detail that
+                // can't load it ("We couldn't load your transactions").
+                t.deletedAt.isNull() &
+                t.tombstonedAt.isNull(),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.date)])
+          ..limit(window))
+        .get();
+
+    final skippedRows = await (_db.select(_db.scheduledPaymentOccurrences)
+          ..where(
+            (o) =>
+                o.scheduledPaymentId.equals(scheduledPaymentId) &
+                o.status.equalsValue(ScheduledOccurrenceStatus.skipped),
+          )
+          ..orderBy([(_) => OrderingTerm.desc(skippedEffectiveDate)])
+          ..limit(window))
+        .get();
+
+    final merged = <ScheduledHistoryRow>[
+      for (final t in txRows) ScheduledConfirmedHistoryRow(t),
+      for (final o in skippedRows) ScheduledSkippedHistoryRow(o),
+    ]..sort((a, b) {
+        final byDate = b.effectiveDate.compareTo(a.effectiveDate);
+        if (byDate != 0) {
+          return byDate;
+        }
+        return b.sortKey.compareTo(a.sortKey);
+      });
+
+    if (offset >= merged.length) {
+      return const <ScheduledHistoryRow>[];
+    }
+    final end = window > merged.length ? merged.length : window;
+    return merged.sublist(offset, end);
   }
 
+  /// Combined count for "Ver historial completo (N)": confirmed transactions
+  /// plus skipped occurrences.
   Future<int> countHistory(String scheduledPaymentId) async {
+    final confirmed = await countGeneratedTransactions(scheduledPaymentId);
+    final skippedCount = _db.scheduledPaymentOccurrences.id.count();
+    final skippedQuery = _db.selectOnly(_db.scheduledPaymentOccurrences)
+      ..addColumns([skippedCount])
+      ..where(
+        _db.scheduledPaymentOccurrences.scheduledPaymentId
+                .equals(scheduledPaymentId) &
+            _db.scheduledPaymentOccurrences.status
+                .equalsValue(ScheduledOccurrenceStatus.skipped),
+      );
+    final skippedRow = await skippedQuery.getSingle();
+    return confirmed + (skippedRow.read(skippedCount) ?? 0);
+  }
+
+  /// How many transactions this template has actually generated — the subset
+  /// of [countHistory] that drives `once`'s "already fired" fact, kept
+  /// separate so a skipped `once` (no transaction) never reads as executed.
+  Future<int> countGeneratedTransactions(String scheduledPaymentId) async {
+    final count = _db.transactions.id.count();
     final query = _db.selectOnly(_db.transactions)
-      ..addColumns([_db.transactions.id.count()])
+      ..addColumns([count])
       ..where(
         _db.transactions.scheduledPaymentId.equals(scheduledPaymentId) &
+            _db.transactions.deletedAt.isNull() &
             _db.transactions.tombstonedAt.isNull(),
       );
     final row = await query.getSingle();
-    return row.read(_db.transactions.id.count()) ?? 0;
+    return row.read(count) ?? 0;
   }
+}
+
+/// One row of the combined detail history (data layer only). A confirmed
+/// transaction or a skipped occurrence, both Drift rows — never leaves `data/`.
+sealed class ScheduledHistoryRow {
+  const ScheduledHistoryRow();
+
+  /// The date the row is sorted/displayed by.
+  DateTime get effectiveDate;
+
+  /// A stable secondary sort key so same-date rows keep a deterministic order
+  /// across paginated calls.
+  String get sortKey;
+}
+
+class ScheduledConfirmedHistoryRow extends ScheduledHistoryRow {
+  const ScheduledConfirmedHistoryRow(this.transaction);
+
+  final Transaction transaction;
+
+  @override
+  DateTime get effectiveDate => transaction.date;
+
+  @override
+  String get sortKey => transaction.id;
+}
+
+class ScheduledSkippedHistoryRow extends ScheduledHistoryRow {
+  const ScheduledSkippedHistoryRow(this.occurrence);
+
+  final ScheduledPaymentOccurrence occurrence;
+
+  @override
+  DateTime get effectiveDate =>
+      occurrence.snoozedToDate ?? occurrence.occurrenceDate;
+
+  @override
+  String get sortKey => occurrence.id;
 }

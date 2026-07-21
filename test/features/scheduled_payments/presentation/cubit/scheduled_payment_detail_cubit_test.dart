@@ -31,6 +31,8 @@ void main() {
   late MockRestoreTransaction restoreTransaction;
   late MockAdvanceScheduledOccurrence advanceScheduledOccurrence;
   late MockDiscardUnconfirmedAdvanceOccurrence discardUnconfirmedAdvance;
+  late MockUndoSkipScheduledOccurrence undoSkipOccurrence;
+  late MockSkipScheduledOccurrence skipOccurrence;
 
   final detail = ScheduledPaymentDetail(
     scheduledPayment: buildScheduledPayment(),
@@ -48,6 +50,8 @@ void main() {
     restoreTransaction = MockRestoreTransaction();
     advanceScheduledOccurrence = MockAdvanceScheduledOccurrence();
     discardUnconfirmedAdvance = MockDiscardUnconfirmedAdvanceOccurrence();
+    undoSkipOccurrence = MockUndoSkipScheduledOccurrence();
+    skipOccurrence = MockSkipScheduledOccurrence();
     when(() => discardUnconfirmedAdvance(any()))
         .thenAnswer((_) async => const Right(unit));
   });
@@ -60,6 +64,8 @@ void main() {
         restoreTransaction,
         advanceScheduledOccurrence,
         discardUnconfirmedAdvance,
+        undoSkipOccurrence,
+        skipOccurrence,
       );
 
   blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
@@ -281,6 +287,65 @@ void main() {
             wasCreated: any(named: 'wasCreated'),
           ),
         );
+      },
+    );
+  });
+
+  group('recuperar omitido y deshacer (Fase 2)', () {
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'recoverSkipped: en éxito ofrece deshacer con el id de la ocurrencia',
+      setUp: () => when(() => undoSkipOccurrence('occ-1'))
+          .thenAnswer((_) async => const Right(unit)),
+      build: build,
+      act: (cubit) => cubit.recoverSkipped('occ-1'),
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoRecoverOccurrenceId, 'occ-1');
+        verify(() => undoSkipOccurrence('occ-1')).called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'recoverSkipped: si falla no ofrece deshacer (silencioso)',
+      setUp: () => when(() => undoSkipOccurrence('occ-1'))
+          .thenAnswer((_) async => const Left(DatabaseFailure('boom'))),
+      build: build,
+      act: (cubit) => cubit.recoverSkipped('occ-1'),
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoRecoverOccurrenceId, isNull);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'undoRecover: re-omite la ocurrencia y limpia el pendiente',
+      setUp: () {
+        when(() => undoSkipOccurrence('occ-1'))
+            .thenAnswer((_) async => const Right(unit));
+        when(() => skipOccurrence('occ-1'))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.recoverSkipped('occ-1');
+        await cubit.undoRecover();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoRecoverOccurrenceId, isNull);
+        verify(() => skipOccurrence('occ-1')).called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'dismissUndoRecover limpia el pendiente sin re-omitir',
+      setUp: () => when(() => undoSkipOccurrence('occ-1'))
+          .thenAnswer((_) async => const Right(unit)),
+      build: build,
+      act: (cubit) async {
+        await cubit.recoverSkipped('occ-1');
+        cubit.dismissUndoRecover();
+      },
+      verify: (cubit) {
+        expect(cubit.state.pendingUndoRecoverOccurrenceId, isNull);
+        verifyNever(() => skipOccurrence(any()));
       },
     );
   });

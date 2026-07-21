@@ -1,3 +1,4 @@
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_history_entry.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/tag.dart';
@@ -74,6 +75,20 @@ void main() {
     ),
   ];
 
+  // Real interleaved content (page spec "Historial con omitidos"): a confirmed
+  // payment, a skipped occurrence between them, and another confirmed one —
+  // most recent first, so the new skipped row renders in the golden.
+  final historyEntries = <ScheduledHistoryEntry>[
+    ScheduledConfirmedHistoryEntry(history[0]),
+    ScheduledSkippedHistoryEntry(
+      occurrenceId: 'occ-skip-1',
+      date: DateTime(2026, 5, 20),
+      amountMinor: 10000,
+      currency: 'COP',
+    ),
+    ScheduledConfirmedHistoryEntry(history[1]),
+  ];
+
   ScheduledPaymentDetail buildDetail({
     ScheduledPaymentType type = ScheduledPaymentType.expense,
     ScheduledPaymentFrequency frequency = ScheduledPaymentFrequency.monthly,
@@ -83,7 +98,7 @@ void main() {
     DateTime? nextDate,
     bool hasEndDate = true,
     List<Tag> tags = const [],
-    List<tx.Transaction> historyRows = const [],
+    List<ScheduledHistoryEntry> historyRows = const [],
   }) =>
       ScheduledPaymentDetail(
         scheduledPayment: buildScheduledPayment(
@@ -105,6 +120,8 @@ void main() {
         categoryColor: type == ScheduledPaymentType.transfer ? null : 'indigo',
         tags: tags,
         historyTotalCount: historyRows.length,
+        generatedTransactionCount:
+            historyRows.whereType<ScheduledConfirmedHistoryEntry>().length,
         history: historyRows,
         pendingOccurrence: withPending
             ? buildPendingOccurrence(
@@ -161,8 +178,8 @@ void main() {
         tester,
         ScheduledPaymentDetailState(
           status: ScheduledPaymentDetailStatus.ready,
-          detail: buildDetail(historyRows: history),
-          history: history,
+          detail: buildDetail(historyRows: historyEntries),
+          history: historyEntries,
         ),
         'active_automatic_$suffix',
         brightness: brightness,
@@ -221,7 +238,7 @@ void main() {
     // "próximo pago". Distinct from `inactive_*`, which is a *tombstoned*
     // template (the "Inactivo" badge + "Inactivo" status row).
     testWidgets('pago único ya generado (histórico) ($suffix)', (tester) async {
-      final onceHistory = [history.first];
+      final onceHistory = [ScheduledConfirmedHistoryEntry(history.first)];
       await golden(
         tester,
         ScheduledPaymentDetailState(

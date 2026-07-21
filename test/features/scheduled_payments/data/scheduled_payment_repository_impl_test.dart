@@ -4,6 +4,7 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payment_tags_local_datasource.dart';
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payments_local_datasource.dart';
 import 'package:billetudo/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_history_entry.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart'
     as domain;
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
@@ -672,6 +673,94 @@ void main() {
           await repository.watchScheduledPaymentDetail('no-existe').first;
 
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
+    });
+  });
+
+  group('historial combinado con omitidos (page spec)', () {
+    Future<List<ScheduledPaymentOccurrence>> occurrencesOf(String id) async {
+      final rows = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.scheduledPaymentId.equals(id)))
+          .get();
+      rows.sort((a, b) => a.occurrenceDate.compareTo(b.occurrenceDate));
+      return rows;
+    }
+
+    // Manual template, catch-up materializes 5 pending (Jan..May); confirm the
+    // two oldest (→ transactions), skip the next two (→ skipped), leave May
+    // pending. History = 2 confirmed + 2 skipped, interleaved by effective
+    // date desc; the pending one never shows.
+    Future<domain.ScheduledPayment> seedMixedHistory() async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 1, 1), requiresConfirmation: true),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 5, 1));
+      final occ = await occurrencesOf(template.id);
+      for (final index in [0, 1]) {
+        final confirmed = await repository.confirmOccurrence(
+          occurrenceId: occ[index].id,
+          date: occ[index].occurrenceDate,
+          accountId: account.id,
+          amountMinor: 50000,
+        );
+        expect(confirmed.isRight(), isTrue);
+      }
+      for (final index in [2, 3]) {
+        expect(
+          (await repository.skipOccurrence(occ[index].id)).isRight(),
+          isTrue,
+        );
+      }
+      return template;
+    }
+
+    test('conteo total suma confirmados y omitidos, sin el pendiente',
+        () async {
+      final template = await seedMixedHistory();
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+
+      expect(detail.historyTotalCount, 4);
+      expect(detail.generatedTransactionCount, 2);
+    });
+
+    test('la primera página intercala por fecha efectiva, más reciente arriba',
+        () async {
+      final template = await seedMixedHistory();
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+
+      // Abr(omitido) · Mar(omitido) · Feb(confirmado): 3 filas.
+      expect(detail.history, hasLength(3));
+      final first = detail.history[0];
+      expect(first, isA<ScheduledSkippedHistoryEntry>());
+      first as ScheduledSkippedHistoryEntry;
+      expect(first.date, DateTime(2026, 4, 1));
+      // El monto del omitido es el de la plantilla al momento.
+      expect(first.amountMinor, 50000);
+      expect(detail.history[1], isA<ScheduledSkippedHistoryEntry>());
+      expect(detail.history[2], isA<ScheduledConfirmedHistoryEntry>());
+    });
+
+    test('"cargar más" pagina sobre ambas fuentes', () async {
+      final template = await seedMixedHistory();
+
+      final page = (await repository.getScheduledPaymentHistory(
+        template.id,
+        offset: 3,
+        limit: 3,
+      ))
+          .getRight()
+          .toNullable()!;
+
+      // La cuarta (y última) entrada: Ene, confirmada.
+      expect(page, hasLength(1));
+      expect(page.single, isA<ScheduledConfirmedHistoryEntry>());
     });
   });
 

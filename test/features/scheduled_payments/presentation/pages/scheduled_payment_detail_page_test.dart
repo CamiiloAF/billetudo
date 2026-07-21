@@ -1,11 +1,13 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_history_entry.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_card.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_skipped_history_row.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/scheduled_payment_detail_actions_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/transaction_header_button.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -46,6 +48,9 @@ void main() {
       accountName: 'Bancolombia',
       categoryName: 'Suscripciones',
       historyTotalCount: historyTotalCount,
+      // These tests treat the total as generated transactions (no skipped
+      // events), so `once`'s "already fired" fact keys off the same number.
+      generatedTransactionCount: historyTotalCount,
       pendingOccurrence:
           pending ? buildPendingOccurrence(scheduledPayment: payment) : null,
     );
@@ -55,6 +60,11 @@ void main() {
     WidgetTester tester,
     ScheduledPaymentDetailState state,
   ) async {
+    // A tall surface so the whole detail (hero + ficha + history) fits without
+    // the last rows landing below the default 600px viewport — otherwise a tap
+    // on the "Recuperar" link at the bottom would miss its hit test.
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     when(() => cubit.state).thenReturn(state);
     when(() => cubit.stream)
         .thenAnswer((_) => const Stream<ScheduledPaymentDetailState>.empty());
@@ -129,8 +139,7 @@ void main() {
     expect(find.textContaining('Una sola vez el 26 de julio'), findsOneWidget);
   });
 
-  testWidgets('la sección de historial se llama "Ya generados"',
-      (tester) async {
+  testWidgets('la sección de historial se llama "Historial"', (tester) async {
     await pumpDetail(
       tester,
       ScheduledPaymentDetailState(
@@ -139,12 +148,73 @@ void main() {
       ),
     );
     await tester.dragUntilVisible(
-      find.text('Ya generados'),
+      find.text('Historial'),
       find.byType(ListView),
       const Offset(0, -80),
     );
 
-    expect(find.text('Ya generados'), findsOneWidget);
+    expect(find.text('Historial'), findsOneWidget);
+  });
+
+  testWidgets(
+      'un evento omitido se pinta como fila de omitido con badge "Omitido", '
+      'monto tachado y enlace "Recuperar"', (tester) async {
+    await pumpDetail(
+      tester,
+      ScheduledPaymentDetailState(
+        status: ScheduledPaymentDetailStatus.ready,
+        detail: buildDetail(historyTotalCount: 1),
+        history: [
+          ScheduledSkippedHistoryEntry(
+            occurrenceId: 'occ-1',
+            date: DateTime(2026, 6, 13),
+            amountMinor: 145000000,
+            currency: 'COP',
+          ),
+        ],
+      ),
+    );
+    await tester.dragUntilVisible(
+      find.byType(ScheduledSkippedHistoryRow),
+      find.byType(ListView),
+      const Offset(0, -80),
+    );
+
+    expect(find.byType(ScheduledSkippedHistoryRow), findsOneWidget);
+    expect(find.text('Omitido'), findsOneWidget);
+    expect(find.text('Recuperar'), findsOneWidget);
+    final amount = tester.widget<Text>(find.textContaining('1.450.000'));
+    expect(amount.style?.decoration, TextDecoration.lineThrough);
+  });
+
+  testWidgets('tocar "Recuperar" dispara recoverSkipped con el id de la '
+      'ocurrencia', (tester) async {
+    when(() => cubit.recoverSkipped(any())).thenAnswer((_) async {});
+    await pumpDetail(
+      tester,
+      ScheduledPaymentDetailState(
+        status: ScheduledPaymentDetailStatus.ready,
+        detail: buildDetail(historyTotalCount: 1),
+        history: [
+          ScheduledSkippedHistoryEntry(
+            occurrenceId: 'occ-1',
+            date: DateTime(2026, 6, 13),
+            amountMinor: 145000000,
+            currency: 'COP',
+          ),
+        ],
+      ),
+    );
+    await tester.dragUntilVisible(
+      find.text('Recuperar'),
+      find.byType(ListView),
+      const Offset(0, -80),
+    );
+
+    await tester.tap(find.text('Recuperar'));
+    await tester.pump();
+
+    verify(() => cubit.recoverSkipped('occ-1')).called(1);
   });
 
   testWidgets('estado de carga muestra un spinner, no la data', (tester) async {

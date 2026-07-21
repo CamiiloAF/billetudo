@@ -561,16 +561,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i529.ZeroBasedSummaryCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
         ));
-    gh.factory<_i11.ScheduledPaymentDetailCubit>(
-        () => _i11.ScheduledPaymentDetailCubit(
-              gh<_i470.GetScheduledPaymentDetail>(),
-              gh<_i49.GetScheduledPaymentHistory>(),
-              gh<_i636.DeleteScheduledPayment>(),
-              gh<_i319.UndoSnoozeScheduledOccurrence>(),
-              gh<_i177.RestoreTransaction>(),
-              gh<_i325.AdvanceScheduledOccurrence>(),
-              gh<_i898.DiscardUnconfirmedAdvanceOccurrence>(),
-            ));
     gh.factory<_i79.ArchiveAccount>(
         () => _i79.ArchiveAccount(gh<_i1067.AccountRepository>()));
     gh.factory<_i703.CreateAccount>(
@@ -609,6 +599,18 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i802.CategoryRepository>(),
           gh<_i487.AppSettingsRepository>(),
         ));
+    gh.factory<_i11.ScheduledPaymentDetailCubit>(
+        () => _i11.ScheduledPaymentDetailCubit(
+              gh<_i470.GetScheduledPaymentDetail>(),
+              gh<_i49.GetScheduledPaymentHistory>(),
+              gh<_i636.DeleteScheduledPayment>(),
+              gh<_i319.UndoSnoozeScheduledOccurrence>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i325.AdvanceScheduledOccurrence>(),
+              gh<_i898.DiscardUnconfirmedAdvanceOccurrence>(),
+              gh<_i964.UndoSkipScheduledOccurrence>(),
+              gh<_i97.SkipScheduledOccurrence>(),
+            ));
     gh.factory<_i458.ScheduledPaymentsListCubit>(
         () => _i458.ScheduledPaymentsListCubit(
               gh<_i265.GetScheduledPayments>(),

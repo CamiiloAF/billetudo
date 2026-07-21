@@ -1475,7 +1475,7 @@
   "@scheduledPaymentDetailNextPayment": {
     "placeholders": { "date": { "type": "String" } }
   },
-  "scheduledPaymentDetailHistoryTitle": "Ya generados",
+  "scheduledPaymentDetailHistoryTitle": "Historial",
   "@scheduledPaymentDetailHistoryTitle": {},
   "scheduledPaymentDetailHistoryEmpty": "Todavía no se ha generado ningún movimiento de este pago programado.",
   "@scheduledPaymentDetailHistoryEmpty": {},
@@ -1483,6 +1483,12 @@
   "@scheduledPaymentDetailHistorySeeAll": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "scheduledSkippedBadge": "Omitido",
+  "@scheduledSkippedBadge": {},
+  "scheduledRecoverAction": "Recuperar",
+  "@scheduledRecoverAction": {},
+  "scheduledRecoverMessage": "Pago recuperado",
+  "@scheduledRecoverMessage": {},
   "scheduledPaymentDetailHeroLabel": "PRÓXIMO PAGO",
   "@scheduledPaymentDetailHeroLabel": {},
   "scheduledPaymentDetailRecurrenceOnce": "Una sola vez el {date}",

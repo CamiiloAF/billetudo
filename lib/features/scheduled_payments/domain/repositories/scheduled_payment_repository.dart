@@ -1,6 +1,7 @@
 import '../../../../core/error/result.dart';
 import '../../../transactions/domain/entities/transaction.dart' as tx;
 import '../entities/pending_scheduled_occurrence.dart';
+import '../entities/scheduled_history_entry.dart';
 import '../entities/scheduled_payment.dart';
 import '../entities/scheduled_payment_detail.dart';
 import '../entities/scheduled_payment_draft.dart';
@@ -40,9 +41,10 @@ abstract class ScheduledPaymentRepository {
     int historyPageSize = 3,
   });
 
-  /// Paginated "cargar más" for a template's generation history
-  /// (criterion 13), most recent first.
-  FutureResult<List<tx.Transaction>> getScheduledPaymentHistory(
+  /// Paginated "cargar más" for a template's history (criterion 13), most
+  /// recent first — confirmed transactions and skipped occurrences interleaved
+  /// (page spec "Historial con omitidos").
+  FutureResult<List<ScheduledHistoryEntry>> getScheduledPaymentHistory(
     String scheduledPaymentId, {
     required int offset,
     required int limit,

@@ -2032,7 +2032,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get scheduledPaymentDetailHistoryTitle => 'Ya generados';
+  String get scheduledPaymentDetailHistoryTitle => 'Historial';
 
   @override
   String get scheduledPaymentDetailHistoryEmpty =>
@@ -2042,6 +2042,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String scheduledPaymentDetailHistorySeeAll(int count) {
     return 'Ver historial completo ($count)';
   }
+
+  @override
+  String get scheduledSkippedBadge => 'Omitido';
+
+  @override
+  String get scheduledRecoverAction => 'Recuperar';
+
+  @override
+  String get scheduledRecoverMessage => 'Pago recuperado';
 
   @override
   String get scheduledPaymentDetailHeroLabel => 'PRÓXIMO PAGO';

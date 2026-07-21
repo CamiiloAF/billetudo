@@ -11,6 +11,8 @@ import '../../domain/usecases/delete_scheduled_payment.dart';
 import '../../domain/usecases/discard_unconfirmed_advance_occurrence.dart';
 import '../../domain/usecases/get_scheduled_payment_detail.dart';
 import '../../domain/usecases/get_scheduled_payment_history.dart';
+import '../../domain/usecases/skip_scheduled_occurrence.dart';
+import '../../domain/usecases/undo_skip_scheduled_occurrence.dart';
 import '../../domain/usecases/undo_snooze_scheduled_occurrence.dart';
 import 'scheduled_payment_detail_state.dart';
 
@@ -27,6 +29,8 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     this._restoreTransaction,
     this._advanceScheduledOccurrence,
     this._discardUnconfirmedAdvanceOccurrence,
+    this._undoSkipOccurrence,
+    this._skipOccurrence,
   ) : super(const ScheduledPaymentDetailState());
 
   final GetScheduledPaymentDetail _getScheduledPaymentDetail;
@@ -36,6 +40,8 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
   final RestoreTransaction _restoreTransaction;
   final AdvanceScheduledOccurrence _advanceScheduledOccurrence;
   final DiscardUnconfirmedAdvanceOccurrence _discardUnconfirmedAdvanceOccurrence;
+  final UndoSkipScheduledOccurrence _undoSkipOccurrence;
+  final SkipScheduledOccurrence _skipOccurrence;
 
   StreamSubscription<Result<ScheduledPaymentDetail>>? _subscription;
   String? _id;
@@ -167,6 +173,42 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
       return;
     }
     emit(state.copyWith(clearPendingUndoSnooze: true));
+  }
+
+  /// Page spec "Recuperar" (Fase 2): a direct, reversible action on a skipped
+  /// occurrence — returns it to `pending` (`undoSkipOccurrence`, no sheet). On
+  /// success the page offers the "Pago recuperado · Deshacer" snackbar; the
+  /// detail stream refreshes on its own (it watches the occurrences table), so
+  /// the recovered row leaves the Historial. A failure stays silent here (the
+  /// data layer already reported it): the confirm-now error copy would be
+  /// misleading, and the row simply remains skipped.
+  Future<void> recoverSkipped(String occurrenceId) async {
+    final result = await _undoSkipOccurrence(occurrenceId);
+    if (isClosed) {
+      return;
+    }
+    if (result.isRight()) {
+      emit(state.copyWith(pendingUndoRecoverOccurrenceId: occurrenceId));
+    }
+  }
+
+  /// "Deshacer" from the "Pago recuperado" snackbar: re-skips the occurrence
+  /// (`skipOccurrence`), same one-shot pattern as the snooze undo.
+  Future<void> undoRecover() async {
+    final occurrenceId = state.pendingUndoRecoverOccurrenceId;
+    if (occurrenceId == null) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndoRecover: true));
+    await _skipOccurrence(occurrenceId);
+  }
+
+  /// The "Pago recuperado" snackbar timed out or was dismissed without undoing.
+  void dismissUndoRecover() {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(clearPendingUndoRecover: true));
   }
 
   /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the

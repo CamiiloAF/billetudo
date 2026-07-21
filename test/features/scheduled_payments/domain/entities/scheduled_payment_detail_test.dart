@@ -21,6 +21,9 @@ void main() {
         ),
         accountName: 'Bancolombia',
         historyTotalCount: historyTotalCount,
+        // No skipped events in these cases, so the generated-transaction count
+        // equals the total; `onceAlreadyGenerated` keys off it.
+        generatedTransactionCount: historyTotalCount,
       );
 
   test('un `once` sin transacción generada sigue activo', () {

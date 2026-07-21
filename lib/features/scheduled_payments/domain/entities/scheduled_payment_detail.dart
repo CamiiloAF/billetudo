@@ -1,25 +1,23 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../transactions/domain/entities/transaction.dart' as tx;
 import 'pending_scheduled_occurrence.dart';
+import 'scheduled_history_entry.dart';
 import 'scheduled_payment.dart';
 import 'tag.dart';
 
 /// The hybrid "próximo pago + configuración" detail view of a template
 /// (HU-05): its own fields, display names, tags, its pending occurrence when
-/// one exists (HU-03), and the first page of its generation history
-/// (criterion 13).
+/// one exists (HU-03), and the first page of its history (criterion 13).
 ///
-/// Reuses the Transactions feature's own `Transaction` entity for [history]
-/// instead of duplicating a third mirror of it: those rows *are* real
-/// transactions (`source: scheduled`), and every generated transaction's
-/// detail page already renders a `Transaction` — same precedent as this
-/// project reusing `CategoryKind` across features.
+/// The [history] is a chronologically interleaved log of confirmed *and*
+/// skipped occurrences (page spec "Histórico → Historial con omitidos"), not
+/// just generated transactions — see [ScheduledHistoryEntry].
 class ScheduledPaymentDetail extends Equatable {
   const ScheduledPaymentDetail({
     required this.scheduledPayment,
     required this.accountName,
     required this.historyTotalCount,
+    this.generatedTransactionCount = 0,
     this.categoryName,
     this.categoryIcon,
     this.categoryColor,
@@ -27,7 +25,7 @@ class ScheduledPaymentDetail extends Equatable {
     this.tags = const <Tag>[],
     this.pendingOccurrence,
     this.nextAwaitingDate,
-    this.history = const <tx.Transaction>[],
+    this.history = const <ScheduledHistoryEntry>[],
   });
 
   final ScheduledPayment scheduledPayment;
@@ -60,22 +58,29 @@ class ScheduledPaymentDetail extends Equatable {
   DateTime get nextPaymentDate =>
       nextAwaitingDate ?? scheduledPayment.nextDate;
 
-  /// First page (up to 3 rows, criterion 13) of transactions generated from
-  /// this template, most recent first.
-  final List<tx.Transaction> history;
+  /// First page (up to 3 rows, criterion 13) of the template's history —
+  /// confirmed and skipped occurrences interleaved, most recent first.
+  final List<ScheduledHistoryEntry> history;
 
-  /// The total number of transactions ever generated from this template,
-  /// regardless of how many are loaded in [history] — feeds "Ver historial
-  /// completo (N)".
+  /// The total number of history events (confirmed transactions + skipped
+  /// occurrences) of this template, regardless of how many are loaded in
+  /// [history] — feeds "Ver historial completo (N)".
   final int historyTotalCount;
+
+  /// How many transactions this template has actually generated (`confirmed`
+  /// occurrences). A subset of [historyTotalCount], which also counts skipped
+  /// occurrences: [onceAlreadyGenerated] keys off this, not the combined
+  /// total, so a `once` template that was *skipped* (no transaction ever
+  /// generated) does not read as already fired.
+  final int generatedTransactionCount;
 
   /// Whether this is a `once` template whose single transaction has already
   /// been generated — the fact `ScheduledPayment.isActive` asks the caller
-  /// for, since the template itself has no column recording it fired. A
-  /// generated transaction is exactly what [historyTotalCount] counts.
+  /// for, since the template itself has no column recording it fired. Keyed
+  /// on [generatedTransactionCount], never the combined history total.
   bool get onceAlreadyGenerated =>
       scheduledPayment.frequency == ScheduledPaymentFrequency.once &&
-      historyTotalCount > 0;
+      generatedTransactionCount > 0;
 
   /// Whether the template still produces future occurrences: drives the
   /// hero's "PRÓXIMO PAGO" vs. "PAGO EJECUTADO" and the ficha's
@@ -96,5 +101,6 @@ class ScheduledPaymentDetail extends Equatable {
         nextAwaitingDate,
         history,
         historyTotalCount,
+        generatedTransactionCount,
       ];
 }

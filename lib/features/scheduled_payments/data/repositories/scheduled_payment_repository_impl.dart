@@ -9,6 +9,7 @@ import '../../../../core/error/result.dart';
 import '../../../transactions/data/models/transaction_mapper.dart';
 import '../../../transactions/domain/entities/transaction.dart' as tx;
 import '../../domain/entities/pending_scheduled_occurrence.dart';
+import '../../domain/entities/scheduled_history_entry.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
@@ -20,7 +21,12 @@ import '../../domain/repositories/scheduled_payment_repository.dart';
 import '../../domain/usecases/project_upcoming_occurrences.dart';
 import '../datasources/scheduled_payment_tags_local_datasource.dart';
 import '../datasources/scheduled_payments_local_datasource.dart'
-    show ScheduledPaymentRowWithJoins, ScheduledPaymentsLocalDatasource;
+    show
+        ScheduledConfirmedHistoryRow,
+        ScheduledHistoryRow,
+        ScheduledPaymentRowWithJoins,
+        ScheduledPaymentsLocalDatasource,
+        ScheduledSkippedHistoryRow;
 import '../models/scheduled_payment_mapper.dart';
 import '../models/scheduled_payment_occurrence_mapper.dart';
 
@@ -90,6 +96,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             limit: historyPageSize,
           );
           final historyTotalCount = await _local.countHistory(id);
+          final generatedTransactionCount =
+              await _local.countGeneratedTransactions(id);
 
           return Right(
             ScheduledPaymentDetail(
@@ -121,27 +129,60 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               nextAwaitingDate: nextAwaiting == null
                   ? null
                   : (nextAwaiting.snoozedToDate ?? nextAwaiting.occurrenceDate),
-              history: history.map(TransactionMapper.toEntity).toList(),
+              history: _toHistoryEntries(history, row.scheduledPayment),
               historyTotalCount: historyTotalCount,
+              generatedTransactionCount: generatedTransactionCount,
             ),
           );
         }),
       );
 
   @override
-  FutureResult<List<tx.Transaction>> getScheduledPaymentHistory(
+  FutureResult<List<ScheduledHistoryEntry>> getScheduledPaymentHistory(
     String scheduledPaymentId, {
     required int offset,
     required int limit,
   }) =>
       _guard(() async {
+        final template = await _local.getScheduledPayment(scheduledPaymentId);
+        if (template == null) {
+          return Left(
+            NotFoundFailure(
+              'scheduled payment "$scheduledPaymentId" does not exist',
+            ),
+          );
+        }
         final rows = await _local.getHistory(
           scheduledPaymentId,
           offset: offset,
           limit: limit,
         );
-        return Right(rows.map(TransactionMapper.toEntity).toList());
+        return Right(_toHistoryEntries(rows, template));
       });
+
+  /// Maps combined history rows to domain entries. A skipped occurrence
+  /// captured no transaction, so its amount/currency come from the template as
+  /// it stands now (same value the hero shows) — page spec.
+  List<ScheduledHistoryEntry> _toHistoryEntries(
+    List<ScheduledHistoryRow> rows,
+    db.ScheduledPayment template,
+  ) =>
+      [
+        for (final row in rows)
+          switch (row) {
+            ScheduledConfirmedHistoryRow(:final transaction) =>
+              ScheduledConfirmedHistoryEntry(
+                TransactionMapper.toEntity(transaction),
+              ),
+            ScheduledSkippedHistoryRow(:final occurrence) =>
+              ScheduledSkippedHistoryEntry(
+                occurrenceId: occurrence.id,
+                date: occurrence.snoozedToDate ?? occurrence.occurrenceDate,
+                amountMinor: template.amountMinor,
+                currency: template.currency,
+              ),
+          },
+      ];
 
   @override
   FutureResult<ScheduledPayment> getScheduledPayment(String id) =>
