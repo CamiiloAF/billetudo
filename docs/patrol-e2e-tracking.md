@@ -18,7 +18,7 @@ consolida el estado actual por feature.
 | Autenticación | ✅ Verde | 2026-07-20 | ✅ (`integration_test/auth_patrol_test.dart`) | corrida `qa-automator` de hoy tras arreglar el bloqueo | ✅ 5/5. Único fix: copy del sheet de eliminar cuenta cambió a "irreversible" (antes "no se puede deshacer"), el test seguía el texto viejo. |
 | Categorías | ✅ Verde | 2026-07-20 | ✅ (`integration_test/categories_patrol_test.dart`) | corrida `qa-automator` de hoy tras arreglar el bloqueo | ✅ 6/6 en 2 corridas consecutivas. Fix: navegación (`Ver mis categorías` muerto, la ruta real es la pestaña "Más" → `Categorías`, no hay chip en `QuickAccessRow` de Home), copy inexistente en el sheet de borrado simple (sin título), mensajes interpolados de los sheets de borrado con transacciones/subcategorías (`textContaining` en vez de string exacto), y una suposición de flujo incorrecta en HU-04 caso 2 (el radio por defecto es "Reasignar", no "Dejar sin categoría", y el botón de confirmar ahí dice "Continuar", no "Eliminar"). |
 | Inicio / Dashboard | ✅ Verde | 2026-07-20 | ✅ (`integration_test/home_patrol_test.dart`) | corrida `qa-automator` de hoy tras arreglar el bloqueo | ✅ 4/4 en 2 corridas consecutivas. Único fix: Presupuestos dejó de ser `ComingSoonPage` (la feature ya ships como `BudgetsPage`), el test seguía asumiendo el placeholder — se actualizó a `find.byType(BudgetsPage)`. Metas sigue en "Próximamente", sin cambios ahí. |
-| Transacciones | 🟡 En pausa | 2026-07-20 | ✅ (`integration_test/transactions_patrol_test.dart`) | `docs/dev-runs/patrol-e2e-findings-2026-07-20.md` (sección Transacciones) | Fixes extensos de locator ya aplicados y guardados sin commitear (llegó a 9/9 en una corrida). Bloqueada esta noche por un build roto de forma intermitente por trabajo en progreso ajeno en `lib/features/scheduled_payments/`/`lib/features/budgets/` — NO reintentar hasta confirmar que ese árbol compila limpio. Retomar mañana. |
+| Transacciones | 🟡 Parcial | 2026-07-21 | ✅ (`integration_test/transactions_patrol_test.dart`) | `docs/dev-runs/patrol-e2e-findings-2026-07-20.md` (sección Transacciones) | ✅ 8/9 estable en 2 corridas consecutivas. Fixes: categoría ahora obligatoria (antes ningún escenario la seleccionaba), teclado numérico sin desplazamiento de 2 decimales para COP, monto de fila de lista con signo (`-$X` gasto, `+$X` ingreso), locators de `AccountCard`/`AccountFormPage` actualizados tras una pasada de fidelidad visual concurrente. **1 bug real de producto encontrado y reportado** (no corregido desde aquí): `NewTagSheet` se desborda (`RenderFlex overflowed by 16 pixels`) con el teclado abierto en pantallas más bajas (Pixel 9a, reproducido 2/2). |
 | Presupuestos | ⬜️ N/A | — | ❌ | — | Sin `integration_test/budgets_patrol_test.dart` todavía. |
 | Pagos programados | ⬜️ N/A | — | ❌ | — | Sin `integration_test/scheduled_payments_patrol_test.dart` todavía — el dev-run (`docs/dev-runs/pagos-programados.md`) deja el e2e explícitamente en skip. |
 | Configuración (Settings) | ⬜️ N/A | — | ❌ | — | Sin `integration_test/settings_patrol_test.dart` todavía. |
@@ -40,14 +40,7 @@ Regresión introducida por `f5e10c8` ("cablear Google/Apple login, PowerSync+Sup
 ## Pendientes activos
 
 1. ~~Bloqueante: arreglar `integration_test/support/patrol_app.dart`~~ — corregido 2026-07-20 (ver `docs/dev-runs/patrol-e2e-findings-2026-07-20.md`).
-2. **Bloqueante nuevo (2026-07-20, noche):** el árbol de trabajo tiene cambios sin commitear en
-   `lib/features/scheduled_payments/` y `lib/features/budgets/` que rompen el build de forma
-   intermitente (`injection.config.dart` desincronizado con `ScheduledPaymentDetailCubit`/
-   `ScheduledPaymentHeroCard` — falta `build_runner` o el feature está a medio terminar). Ninguna
-   suite Patrol corre de forma confiable hasta que ese árbol compile limpio. Confirmar con quien
-   esté editando esos archivos antes de re-correr nada.
-3. Re-correr `transactions` una vez resuelto el punto 2 — los fixes de locator ya están aplicados
-   y guardados en `integration_test/transactions_patrol_test.dart` (llegó a 9/9 en una corrida),
-   así que no debería necesitar más cambios, solo confirmación con build estable. Detalle completo
-   en `docs/dev-runs/patrol-e2e-findings-2026-07-20.md`.
-4. Cuando `qa-automator` agregue suite Patrol a Presupuestos, Pagos programados o Settings, correrla con `patrol-e2e-runner` y mover la fila de `⬜️ N/A` a `⏳ Sin correr`.
+2. ~~Bloqueante: build inestable por trabajo concurrente sin commitear en `scheduled_payments`/`budgets`~~ — se resolvió solo (el otro trabajo avanzó); Transacciones ya corrió limpio 2 veces seguidas el 2026-07-21.
+3. **Bug real de producto pendiente de que `flutter-dev` lo corrija** (no bloquea Patrol, HU-07 falla determinísticamente en pantallas bajas): `NewTagSheet` (`lib/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart:50`) se desborda con el teclado abierto. Detalle en `docs/dev-runs/patrol-e2e-findings-2026-07-20.md`.
+4. Si se vuelve a tocar `AccountCard`/`AccountFormPage` (pasada de fidelidad visual en curso sobre Cuentas), revisar si `accounts_patrol_test.dart` necesita el mismo fix de `find.byTooltip('Guardar')` que ya se aplicó en `transactions_patrol_test.dart`'s `_addCashAccount` — no se tocó esa suite en esta sesión (fuera de alcance).
+5. Cuando `qa-automator` agregue suite Patrol a Presupuestos, Pagos programados o Settings, correrla con `patrol-e2e-runner` y mover la fila de `⬜️ N/A` a `⏳ Sin correr`.

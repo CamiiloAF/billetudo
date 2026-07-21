@@ -119,109 +119,109 @@ suites que faltan:
   correr, sin necesidad de tocar nada más.
 - Sin flakiness de touch-injection observado en 2 corridas consecutivas.
 
-### Transacciones (`transactions_patrol_test.dart`) — 🟡 EN PAUSA, sin trabajo diagnóstico pendiente — retomar mañana
+### Transacciones (`transactions_patrol_test.dart`) — ✅ 8/9 estable (2 corridas consecutivas), 1 bug real de producto encontrado
 
-**Confirmado al detener la corrida (mismo día, más tarde):** ningún locator ni bug de producto
-sigue sin diagnosticar. `dart analyze lib/` está limpio en este momento y la suite ya llegó a 9/9
-verde al menos una vez (`tx_run26`) — lo único que falta es conseguir 2 corridas consecutivas
-verdes sin que un build ajeno interfiera en medio. El build se rompió de forma intermitente por
-trabajo en progreso sin commitear de alguien más, en al menos 4 momentos distintos de la sesión
-(`home_cubit`/progreso de presupuesto en Home, `budget_repository_impl` con métodos de
-`BudgetRepository` sin implementar, y el de `scheduled_payments` ya documentado abajo) — cada vez
-se resolvía solo minutos después, cuando quien estuviera trabajando en paralelo avanzaba su cambio.
+Suite cerrada. La sesión completa fue larga (más de 35 corridas) porque el árbol de trabajo estuvo
+inestable la mayor parte del tiempo por **trabajo concurrente sin commitear de otro agente** en
+`lib/features/accounts/`, `lib/features/home/`, `lib/features/budgets/` y
+`lib/features/scheduled_payments/` — nada de eso es un problema de Transacciones ni de Patrol, pero
+explica por qué el diagnóstico tomó tantas iteraciones (varios fixes tuvieron que revisarse dos
+veces porque el código que el test ejercía cambió *mientras* se investigaba). El emulador
+(`emulator-5554`) también se cayó por completo varias veces a mitad de sesión (proceso `qemu`
+terminado, sin `adb devices`) y tuvo que reiniciarse (`emulator -avd Pixel_9a -no-snapshot-load`)
+— infraestructura, no Patrol ni el código.
 
-**No reintentar esta noche.** Se hizo un trabajo real y extenso de corrección de locators (ver
-`git diff integration_test/transactions_patrol_test.dart` — 456 líneas cambiadas, documentado en
-los propios comentarios del archivo) y en una corrida (`tx_run26.log`, 10m18s) llegó a **9/9
-verde**. Pero las corridas de esa madrugada oscilaron mucho — de 0/9 a 9/9 y de vuelta a fallos de
-build — y la causa NO es flakiness normal de touch-injection: **el árbol de trabajo tiene cambios
-sin commitear, ajenos a esta tarea, en `lib/features/scheduled_payments/` y
-`lib/features/budgets/`** (feature de "confirmar ahora" un pago programado, ajustes de presupuesto)
-que en varios momentos dejaron el build roto:
+**Fixes de locator aplicados** en `integration_test/transactions_patrol_test.dart`:
 
-```
-lib/core/di/injection.config.dart:758:47: Too few positional arguments: 6 required, 5 given.
-lib/features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart:248:33:
-  Required named parameter 'onConfirmNow' must be provided.
-lib/features/scheduled_payments/presentation/widgets/scheduled_payment_hero_card.dart:230:17:
-  The method 'ScheduledPaymentConfirmNowButton' isn't defined
-```
-
-`injection.config.dart` (generado por `build_runner`) quedó desincronizado con
-`ScheduledPaymentDetailCubit`/`ScheduledPaymentHeroCard` — probablemente falta correr
-`dart run build_runner build --force-jit`, o ese feature está a medio terminar y alguien lo sigue
-editando en paralelo (el build pasaba de fallar a compilar entre corridas consecutivas sin que
-nadie tocara `integration_test/`). Ninguna suite Patrol puede correr de forma confiable mientras
-ese árbol siga inestable — no es un problema de Transacciones ni de Patrol.
-
-**Qué SÍ quedó corregido y guardado** en `integration_test/transactions_patrol_test.dart` (sin
-commitear, no perder este trabajo):
-- Locator de guardar cuenta ambiguo: `AccountFormPage` ahora tiene dos botones de guardar (el del
-  `PageHeader` y un `Button/Primary` de ancho completo al final) — `find.byIcon(LucideIcons.check)`
-  sin más se volvió ambiguo. Fix: `find.byTooltip('Guardar')` (solo el del header tiene tooltip).
-- HU-07 ("crear etiqueta al vuelo desde el formulario") **sí es alcanzable hoy** — el comentario
+- **Categoría ahora obligatoria** (hallazgo no documentado antes en esta sesión): HU-01/02/04/05/06
+  nunca seleccionaban categoría, pero `TransactionDraft.validated()` la exige para
+  expense/income (`fieldCategoryId`, "a category is required") — sin ella el `submit()` falla en
+  silencio y el formulario nunca se cierra. Se agregó `_createCategory(..., {kind})` (antes solo
+  creaba de tipo gasto) y `_pickCategory` (tap directo del chip en `CategoryQuickPicker` — no por
+  "Ver más": `GetMostUsedCategories` hace fallback a las categorías más antiguas por `sortOrder`
+  cuando no hay historial de uso, así que con una sola categoría creada **ya aparece como chip**
+  desde el primer momento; pasar por "Ver más" de todas formas deja el chip Y la fila del sheet
+  mostrando el mismo texto a la vez, cosa que sí es ambigua).
+- **El teclado numérico no desplaza 2 decimales para COP**: `TransactionFormCubit
+  .amountDigitPressed`'s "whole-number mode" escala por `MoneyFormatter.currencyDecimals`, que es
+  `0` para COP — escribir `[2, 5, 0, 0, 0]` (asumiendo un calculador de 2 decimales fijos) da
+  `$25.000`, no `$250`; el dígito correcto es `[2, 5, 0]`. Afectaba **todos** los montos de la
+  suite. `_enterAmount` ahora también verifica que el monto mostrado avanza después de cada dígito
+  (reintento acotado por dígito) — un tap de dígito ocasionalmente no registraba, produciendo un
+  monto final incorrecto sin ninguna pista de qué dígito se perdió.
+- **El monto de la fila de lista SÍ lleva signo para gasto** (`transactionAmountLabel`, extraído a
+  `utils/transaction_amount_presentation.dart` y compartido con `RecentActivityRow` de Inicio):
+  `-$X` para gasto, `+$X` para ingreso, sin signo para transferencia — la propia página de detalle
+  (`DetailAmountHero`) sigue sin signo; son dos convenciones distintas a propósito, hay que
+  verificar cada una contra el widget que realmente la usa, no asumir que ambas coinciden.
+- **`AccountCard` cambió de `MoneyFormatter.format` a `.formatSymbol`**: los saldos de Cuentas ahora
+  leen `$-100`/`$100` (símbolo `$`, signo en el número), no `-100 COP`/`100 COP` — mismo cambio de
+  convención que el punto anterior, en un archivo distinto (`account_card.dart`), parte del mismo
+  trabajo de fidelidad visual en curso sobre Cuentas.
+- **`AccountFormPage` ahora tiene dos botones de guardar**: el del `PageHeader` y un
+  `Button/Primary` de ancho completo al final del formulario (mismo trabajo de fidelidad visual) —
+  `find.byIcon(LucideIcons.check)` sin más se volvió ambiguo. Fix: `find.byTooltip('Guardar')`
+  (solo el del header tiene `Tooltip`).
+- **HU-07 ("crear etiqueta al vuelo desde el formulario") sí es alcanzable hoy** — el comentario
   original del archivo decía que era un gap de producto sin arreglar (`TransactionFormBody` nunca
   renderizaba un picker de etiquetas), pero eso ya cambió: `TransactionFormPage` ahora sí renderiza
   `TransactionTagsField` con un chip "+ Nueva" que abre el mismo `TagFilterSheet`. Otro caso más del
-  patrón "el producto avanzó, el test no" ya visto en Home/Presupuestos.
-- Nuevo helper `_createCategory(..., {kind})` (antes solo creaba categorías de gasto) y
-  `_pickCategory` (tap directo del chip en `CategoryQuickPicker`, no por "Ver más" — ese camino
-  duplica el texto entre el picker y el sheet y vuelve ambiguo el locator).
-- Guardado de transacción con reintento acotado (hasta 3 intentos) cuando el tap sobre el chip de
-  categoría falla de forma intermitente — misma clase de flakiness de touch-injection ya vista en
-  el day-picker de Cuentas.
+  patrón "el producto avanzó, el test no" ya visto en Home/Presupuestos. Ese chip vive al final de
+  un `ListView(children: ...)` — la virtualización por cache extent aplica igual que en un
+  `.builder` (solo cambia cómo se obtiene el widget, no cómo se crean sus elementos), así que
+  `ensureVisible` solo no basta cuando el objetivo cae fuera del extent ya construido: hace falta
+  `dragUntilVisible` para ir extendiéndolo por scroll, igual que con la barra de filtros horizontal.
+- Guardado de transacción con reintento acotado (hasta 3 intentos, revisando el `Matcher` real en
+  cada intento, no solo si el finder está vacío — un ambiguo transitorio durante la transición de
+  cierre del formulario también cuenta como "todavía no asentado") cuando la selección de categoría
+  falla de forma intermitente — misma clase de flakiness de touch-injection ya vista en el
+  day-picker de Cuentas.
 - Import ajustado (`hide CategoryKind` en `app_database.dart`, `show CategoryKind` desde
   `categories/domain/entities/category.dart`) para evitar el choque de nombres entre ambos.
 
-**Últimos 2 escenarios que aún fallaban** cuando el build lo permitía (`tx_run20.log`, 7/9): HU-03
-(transferencia entre 2 cuentas) y HU-07 (etiqueta nueva desde el formulario) — sin confirmar todavía
-si eran locators que faltaba terminar de ajustar o inestabilidad heredada del build. `tx_run26.log`
-sí llegó a 9/9, así que probablemente ya estaban resueltos y lo que se vio después (`tx_run27` en
-adelante, degradando de nuevo) fue el build inestable, no una regresión del test.
+#### Bug real de producto encontrado — HU-07, `NewTagSheet` se desborda con teclado abierto
 
-**Para retomar mañana:**
-1. Confirmar con quien esté trabajando en `scheduled_payments`/`budgets` que el árbol compila limpio
-   (`flutter analyze` sin errores, `dart run build_runner build --force-jit` si hace falta
-   regenerar) antes de volver a correr Patrol.
-2. Re-correr `transactions_patrol_test.dart` contra `--flavor dev --dart-define-from-file=.env.dev`
-   una vez el build esté estable — con los fixes ya guardados en el archivo, es razonable esperar
-   que llegue a 9/9 de nuevo (ya pasó una vez) sin más cambios de locator.
-3. Si sigue fallando específicamente HU-03/HU-07 con el build limpio, ahí sí es un hallazgo nuevo
-   que investigar (no descartarlo como flakiness sin confirmar primero).
+**Reportado, no corregido** (fuera del alcance de `qa-automator`): al abrir `NewTagSheet` (crear una
+etiqueta nueva) con el teclado visible, Flutter lanza un error real de layout:
 
-**Aprendizaje aplicable (ya no queda ninguna suite pendiente de correr por primera vez, pero
-queda como referencia)**: además de los patrones ya documentados (copys que cambian, formato COP,
-íconos de `PageHeader`, locators por índice frágiles, CTAs sin wire, atajos que solo viven en "Más"
-y no en `QuickAccessRow`, mensajes interpolados que necesitan `textContaining`, estado inicial real
-de controles con default, "el producto avanzó y el test no"), esta corrida agregó uno nuevo:
-**cuando los resultados de una suite oscilan de corrida en corrida sin que nadie toque el archivo
-de test, sospecha primero del estado del árbol de trabajo (`git status`) antes de asumir
-flakiness del emulador** — un build roto de forma intermitente por trabajo en progreso ajeno puede
-parecer exactamente igual a flakiness real.
+```
+A RenderFlex overflowed by 16 pixels on the bottom.
+Column:file:///Users/cami/Developer/Personal/billetudo/lib/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart:50:14
+```
 
-## Resumen consolidado (provisional — falta cerrar Transacciones)
+Reproducido de forma consistente (2/2 corridas) contra un Pixel 9a (1080×2424, densidad 420) — no
+apareció en las corridas anteriores de la misma sesión contra el emulador original (que se cayó por
+completo a mitad de sesión y tuvo que reemplazarse), lo que sugiere que el `Column` de
+`NewTagSheet` no deja suficiente margen para pantallas más bajas una vez el teclado empuja el sheet
+hacia arriba — un candidato claro es que al `Column` (o a su `Padding` que ya compensa
+`viewInsets.bottom`) le falta envolver el contenido en algo que se ajuste (`Flexible`/`ClipRect`) o
+recortar el `TextField`/label en vez de dejarlos a tamaño natural. No se tocó `lib/` para
+"arreglarlo" ocultando el síntoma — queda para `flutter-dev`.
 
-| Suite | Estado | Fixes aplicados |
-|---|---|---|
-| Cuentas | ✅ 6/7 estable | Navegación, formato COP, ícono `PageHeader`, locator por índice → label. HU-02 día de corte intermitente (flakiness de touch, no locator; mitigado con retry). |
-| Autenticación | ✅ 5/5 | Copy del sheet de eliminar cuenta actualizado. |
-| Categorías | ✅ 6/6 (2 corridas) | Navegación vía "Más" (no `QuickAccessRow`), copys de sheets de borrado con `textContaining`, estado inicial real de un radio corregido. |
-| Inicio/Dashboard | ✅ 4/4 (3 corridas) | Presupuestos dejó de ser `ComingSoonPage` (ya es feature real) — el test buscaba el tipo de widget viejo. |
-| Transacciones | 🟡 En pausa | Ver arriba — fixes extensos ya aplicados y guardados, bloqueado por build inestable ajeno a esta tarea, no por locators. |
+## Resumen consolidado final (las 5 suites)
 
-**Ningún bug real de producto quedó pendiente de reportar a `flutter-dev`** en las 4 suites
-cerradas — todo fue drift de los tests contra un producto que siguió avanzando. Transacciones queda
-abierta, sin evidencia todavía de bug real (los 2 escenarios que fallaban parecen resueltos en
-`tx_run26`, pendiente de confirmar con build estable).
+| Suite | Estado | Fixes aplicados | Bug real de producto |
+|---|---|---|---|
+| Cuentas | ✅ 6/7 estable | Navegación, formato COP, ícono `PageHeader`, locator por índice → label. | Ninguno — HU-02 día de corte intermitente es flakiness de touch (ver `bug-fixes-pixel-audit.md`), mitigado con retry. |
+| Autenticación | ✅ 5/5 | Copy del sheet de eliminar cuenta actualizado. | Ninguno. |
+| Categorías | ✅ 6/6 (2 corridas) | Navegación vía "Más" (no `QuickAccessRow`), copys de sheets de borrado con `textContaining`, estado inicial real de un radio corregido. | Ninguno. |
+| Inicio/Dashboard | ✅ 4/4 (3 corridas) | Presupuestos dejó de ser `ComingSoonPage` (ya es feature real) — el test buscaba el tipo de widget viejo. | Ninguno. |
+| Transacciones | ✅ 8/9 estable (2 corridas) | Categoría ahora obligatoria (helper nuevo), teclado numérico sin desplazamiento de 2 decimales para COP, monto de fila de lista con signo (`transactionAmountLabel`), `AccountCard`/`AccountFormPage` con la misma pasada de fidelidad visual que rompió 2 locators compartidos, HU-07 alcanzable con `dragUntilVisible`, reintentos acotados para la misma clase de flakiness de touch ya documentada. | **Sí — 1**: `NewTagSheet` se desborda (`RenderFlex overflowed by 16 pixels`) con el teclado abierto en pantallas más bajas (reproducido 2/2 en Pixel 9a). Reportado a `flutter-dev`, no corregido desde aquí. |
+
+**4 de las 5 suites no tuvieron ningún bug real de producto** — todo fue drift de los tests contra
+un producto que siguió avanzando. Transacciones es la única con un hallazgo real, y quedó aislado y
+reproducible (no es la causa de que HU-07 "falle a veces": falla siempre que la pantalla es
+suficientemente baja, es un bug determinístico dependiente del tamaño de pantalla, no flakiness).
 
 ## Cómo continuar
 
-1. Resolver primero el build roto en `lib/features/scheduled_payments/`/`lib/features/budgets/`
-   (ver sección Transacciones arriba) — nada de Patrol corre de forma confiable hasta entonces.
-2. Re-correr Transacciones contra un emulador Android con
-   `patrol test --target integration_test/transactions_patrol_test.dart --flavor dev --dart-define-from-file=.env.dev -d <device>`.
-3. Por cada fallo, diagnosticar si es (a) locator muerto de los tipos ya documentados → corregir en
-   `integration_test/transactions_patrol_test.dart`, (b) bug real de producto → NO corregir desde
-   `qa-automator`, reportar a `flutter-dev`, o (c) flakiness de touch-injection ya documentado →
-   mitigar con retry acotado, no perseguir más allá de eso.
-4. Actualizar la fila de Transacciones en `docs/patrol-e2e-tracking.md` y esta sección al cerrar.
+1. Pasar el bug de `NewTagSheet` (arriba) a `flutter-dev` para que ajuste el `Column`/`Padding` a
+   pantallas bajas con teclado abierto.
+2. Si se vuelve a tocar `AccountCard`/`AccountFormPage`/`TransactionRow`/`transaction_row.dart` u
+   otro archivo que esta sesión encontró en pasada de fidelidad visual concurrente, revisar si
+   `accounts_patrol_test.dart` (que comparte `_addCashAccount`'s patrón de guardar) necesita el
+   mismo fix de `find.byTooltip('Guardar')` que se aplicó aquí — no se tocó esa suite en esta
+   sesión (fuera de alcance), pero el mismo commit que agregó el segundo botón de guardar
+   probablemente también la rompe.
+3. Cuando `qa-automator` agregue suite Patrol a Presupuestos, Pagos programados o Settings, correrla
+   con `patrol-e2e-runner` siguiendo el mismo checklist de patrones documentado arriba.

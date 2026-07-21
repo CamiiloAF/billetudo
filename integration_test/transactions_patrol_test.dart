@@ -377,26 +377,17 @@ void main() {
       await _saveNewTransaction($, categoryName: 'Comida');
 
       // Back on the list: the new expense, formatted from cents — never a
-      // double slipping through the pipe (see `MoneyFormatter`). Unsigned,
-      // no currency-code suffix: `TransactionRow._amountLabel` renders every
-      // expense through `formatSymbol` (leading `$`, COP's own 0 decimals),
-      // and lets the (neutral, never red) text color carry the meaning
-      // instead of a minus sign — only income gets an explicit `+`. No note
-      // was entered, so the row's title falls back to the category name
-      // (`Comida`), not the account (`_title` prefers category over account).
+      // double slipping through the pipe (see `MoneyFormatter`). No note was
+      // entered, so the row's title falls back to the category name
+      // (`Comida`), not the account (`_title` prefers category over
+      // account). The amount itself goes through `transactionAmountLabel`
+      // (shared with Inicio's `RecentActivityRow`): an expense gets an
+      // explicit `-` prefix here, in the list row — a different, neutral-
+      // colored-text convention from the detail page's own
+      // `DetailAmountHero`, which stays unsigned (see HU-04's own comments
+      // below).
       await _expectEventually($, find.byType(TransactionRow), findsOneWidget);
-      // TEMP DIAGNOSTIC (qa-automator): embed the row's actual amount into
-      // the failure message.
-      final rowAmount = $.tester
-          .widgetList<Text>(
-            find.descendant(
-              of: find.byType(TransactionRow),
-              matching: find.byType(Text),
-            ),
-          )
-          .map((t) => t.data)
-          .toList();
-      expect(find.text('\$250'), findsOneWidget, reason: 'rowAmount=$rowAmount');
+      expect(find.text('-\$250'), findsOneWidget);
     },
   );
 
@@ -508,7 +499,10 @@ void main() {
       await _pickCategory($, 'Comida');
       await _saveNewTransaction($, categoryName: 'Comida');
 
-      await _expectEventually($, find.text('\$100'), findsOneWidget);
+      // The list row's amount is signed (`-$100`, see HU-01's own comment on
+      // `transactionAmountLabel`) — only the detail page below stays
+      // unsigned.
+      await _expectEventually($, find.text('-\$100'), findsOneWidget);
 
       // Note is never set here, so `TransactionRow._title` falls back to the
       // category name (`Comida`), not the account — a category is now
@@ -650,7 +644,8 @@ void main() {
       await _pickCategory($, 'Comida');
       await _saveNewTransaction($, categoryName: 'Comida');
 
-      await _expectEventually($, find.text('\$50'), findsOneWidget);
+      // The list row's amount is signed (`-$50`, see HU-01's own comment).
+      await _expectEventually($, find.text('-\$50'), findsOneWidget);
 
       // No note, so the row's title falls back to the category name
       // (`Comida`), not the account — a category is now mandatory.
@@ -693,7 +688,7 @@ void main() {
 
       await $.tester.pumpAndSettle();
 
-      expect(find.text('\$50'), findsNothing);
+      expect(find.text('-\$50'), findsNothing);
 
       // Verified against the real database, not inferred from the UI: a
       // trash/undo delete must land on `deletedAt`, never `tombstonedAt`
@@ -731,8 +726,9 @@ void main() {
         await _saveNewTransaction($, categoryName: 'Comida');
       }
 
-      await _expectEventually($, find.text('\$10'), findsOneWidget);
-      expect(find.text('\$20'), findsOneWidget);
+      // Both list rows are signed (`-$10`/`-$20`, see HU-01's own comment).
+      await _expectEventually($, find.text('-\$10'), findsOneWidget);
+      expect(find.text('-\$20'), findsOneWidget);
 
       // HU-06a: the account filter chip. Its label defaults to "Todas"
       // (`accountFilterSelectAll`) whenever no account filter is active yet
@@ -755,8 +751,8 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // HU-06: filtered to Cuenta A only — Cuenta B's movement disappears.
-      expect(find.text('\$10'), findsOneWidget);
-      expect(find.text('\$20'), findsNothing);
+      expect(find.text('-\$10'), findsOneWidget);
+      expect(find.text('-\$20'), findsNothing);
     },
   );
 
