@@ -229,6 +229,22 @@ class TransactionsFilterBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           FilterChipPill(
+            // HU-06b: there is always a real date filter active (defaults to
+            // "Este mes"), so the Chip Fecha never renders as unset — always
+            // its own `calendar` icon plus the current period's label.
+            label: datePeriodLabel(filter.datePeriod),
+            active: true,
+            leadingIcon: LucideIcons.calendar,
+            onTap: () async {
+              final applied = await DateFilterSheet.show(
+                context,
+                initial: filter.datePeriod,
+              );
+              await cubit.updateFilter(filter.copyWith(datePeriod: applied));
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChipPill(
             label: l10n.transactionsFilterCategories,
             active: filter.hasCategoryFilter,
             onTap: () async {
@@ -254,22 +270,6 @@ class TransactionsFilterBar extends StatelessWidget {
               if (selected != null) {
                 await cubit.updateFilter(filter.copyWith(types: selected));
               }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            // HU-06b: there is always a real date filter active (defaults to
-            // "Este mes"), so the Chip Fecha never renders as unset — always
-            // its own `calendar` icon plus the current period's label.
-            label: datePeriodLabel(filter.datePeriod),
-            active: true,
-            leadingIcon: LucideIcons.calendar,
-            onTap: () async {
-              final applied = await DateFilterSheet.show(
-                context,
-                initial: filter.datePeriod,
-              );
-              await cubit.updateFilter(filter.copyWith(datePeriod: applied));
             },
           ),
           const SizedBox(width: 8),

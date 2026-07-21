@@ -3,10 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../../transactions/domain/entities/transaction.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
+import '../../../transactions/presentation/utils/transaction_amount_presentation.dart';
 
 /// A single flat row of the Home's recent-activity feed (HU-05): category
 /// icon + title + "account · date" + amount.
@@ -28,10 +28,7 @@ class RecentActivityRow extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final transaction = entry.transaction;
-    final title = entry.categoryName ??
-        (transaction.isTransfer
-            ? '${entry.accountName} → ${entry.transferAccountName ?? ''}'
-            : entry.accountName);
+    final title = _title(entry, transaction);
 
     return InkWell(
       onTap: onTap,
@@ -67,9 +64,9 @@ class RecentActivityRow extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              _amountLabel(transaction),
+              transactionAmountLabel(transaction),
               style: theme.textTheme.titleMedium?.copyWith(
-                color: _amountColor(colors, transaction.type),
+                color: transactionAmountColor(colors, transaction.type),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -79,34 +76,23 @@ class RecentActivityRow extends StatelessWidget {
     );
   }
 
+  /// Note first (matches `TransactionRow` on the Movimientos list), falling
+  /// back to the category name, then the account(s) involved.
+  String _title(TransactionWithDetails entry, Transaction transaction) {
+    final note = transaction.note;
+    if (note != null && note.isNotEmpty) return note;
+    return entry.categoryName ??
+        (transaction.isTransfer
+            ? '${entry.accountName} → ${entry.transferAccountName ?? ''}'
+            : entry.accountName);
+  }
+
   String _subtitle(BuildContext context, Transaction transaction) {
     final locale = Localizations.localeOf(context).toString();
     final date = DateFormat.MMMd(locale).format(transaction.date);
     return '${entry.accountName} · $date';
   }
 
-  String _amountLabel(Transaction transaction) {
-    final formatted = const MoneyFormatter().formatSymbol(
-      transaction.amountMinor,
-      currencyCode: transaction.currency,
-    );
-    // Both income and expense carry a sign in Pencil (`A9v7s`/`aOhoY`):
-    // '+$2.100.000' for income, '-$62.000' for expense. Transfers stay
-    // unsigned — they move money between the user's own accounts, so
-    // there is no gain or loss to signal.
-    return switch (transaction.type) {
-      TransactionType.income => '+$formatted',
-      TransactionType.expense => '-$formatted',
-      TransactionType.transfer => formatted,
-    };
-  }
-
-  // Expense stays `text-primary`, never red (brand tone, MASTER.md).
-  Color _amountColor(AppColors colors, TransactionType type) => switch (type) {
-        TransactionType.income => colors.incomeText,
-        TransactionType.expense => colors.textPrimary,
-        TransactionType.transfer => colors.textPrimary,
-      };
 }
 
 /// The 44x44 category circle at the start of a recent-activity row.

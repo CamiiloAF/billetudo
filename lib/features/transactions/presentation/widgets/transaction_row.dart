@@ -3,10 +3,10 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_with_details.dart';
+import '../utils/transaction_amount_presentation.dart';
 
 /// A single row of the transaction list (HU-06/`B3GGa`/`xAk6Y`): the
 /// category's icon-wrap, its note/description, "Cuenta · Fecha" and the
@@ -79,9 +79,9 @@ class TransactionRow extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              _amountLabel(transaction),
+              transactionAmountLabel(transaction),
               style: theme.textTheme.titleMedium?.copyWith(
-                color: _amountColor(colors, transaction.type),
+                color: transactionAmountColor(colors, transaction.type),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -113,27 +113,4 @@ class TransactionRow extends StatelessWidget {
     final date = DateFormat.yMMMd('es_CO').format(transaction.date);
     return transaction.isTransfer ? date : '${entry.accountName} · $date';
   }
-
-  String _amountLabel(Transaction transaction) {
-    final formatted = const MoneyFormatter().formatSymbol(
-      transaction.amountMinor,
-      currencyCode: transaction.currency,
-    );
-    return switch (transaction.type) {
-      TransactionType.income => '+$formatted',
-      // No minus sign on an expense: Pencil prints it unsigned and lets the
-      // colour carry the meaning (only income is marked, with `+`).
-      TransactionType.expense => formatted,
-      TransactionType.transfer => formatted,
-    };
-  }
-
-  /// An expense reads in `$text-primary`, not red — red is reserved for
-  /// destructive actions ("Eliminar"), never for a normal expense amount in
-  /// the list (`B3GGa`/`xAk6Y`).
-  Color _amountColor(AppColors colors, TransactionType type) => switch (type) {
-        TransactionType.income => colors.incomeText,
-        TransactionType.expense => colors.textPrimary,
-        TransactionType.transfer => colors.textPrimary,
-      };
 }
