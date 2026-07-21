@@ -42,11 +42,14 @@ class _NewTagSheetState extends State<NewTagSheet> {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final theme = Theme.of(context);
-    return Padding(
-      // Not redundant with BottomSheetBase's own padding: this keeps the
-      // field clear of the keyboard, which its static bottom inset can't do.
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+    // BottomSheetBase already pads its child by the live keyboard inset, so
+    // this sheet doesn't need (and must not add) a second one — doing both
+    // double-counts `viewInsets.bottom` and can push this fixed-size Column
+    // past the sheet's height budget while the keyboard animates in,
+    // overflowing on short screens. SingleChildScrollView is the remaining
+    // safety net: if the keyboard ever leaves less room than the content
+    // needs, it scrolls instead of overflowing.
+    return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
