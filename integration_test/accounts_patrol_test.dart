@@ -38,6 +38,30 @@ Future<void> _scrollUntilVisible(
   await $.tester.pumpAndSettle();
 }
 
+/// Types [text] into the `TextFormField` labeled [fieldLabel].
+///
+/// Not `find.byType(TextFormField).at(n)`: the form is a plain `ListView`
+/// (not `.builder`), but its underlying sliver still discards elements that
+/// scroll far enough outside the cache extent — so once the credit card
+/// fields further down are scrolled into view, an earlier field (e.g. the
+/// name field) can be missing from the tree entirely and every subsequent
+/// index shifts — verified against a real emulator run. Finding the field by
+/// its own label, the same way [_pickDay] finds a selector, survives that.
+Future<void> _enterTextByLabel(
+  PatrolIntegrationTester $,
+  String fieldLabel,
+  String text,
+) async {
+  final label = find.text(fieldLabel);
+  await _scrollUntilVisible($, label);
+  final field =
+      find.ancestor(of: label, matching: find.byType(AccountFormField)).first;
+  final textField =
+      find.descendant(of: field, matching: find.byType(TextFormField));
+  await $.tester.enterText(textField, text);
+  await $.tester.pumpAndSettle();
+}
+
 /// Opens the day picker sheet at [selectorLabel] and taps [day].
 ///
 /// Taps the selector's own tappable box, not its label: the label is a plain
@@ -55,9 +79,18 @@ Future<void> _pickDay(
       find.ancestor(of: label, matching: find.byType(AccountFormField)).first;
   final selectorBox =
       find.descendant(of: field, matching: find.byType(InkWell));
-  await $.tester.tap(selectorBox);
-  await $.tester.pumpAndSettle();
-  await $.tester.tap(find.text('$day'));
+
+  // The tap that opens the sheet is intermittently swallowed on a real
+  // device (a real touch-injection miss, not a slow animation: when the
+  // sheet does open, its day cell is hit-testable immediately, with no extra
+  // settling needed) — verified against a real emulator run. Retrying the
+  // tap itself, not just waiting longer, is what recovers from that.
+  final dayCell = find.text('$day');
+  for (var retry = 0; retry < 3 && dayCell.evaluate().isEmpty; retry++) {
+    await $.tester.tap(selectorBox);
+    await $.tester.pumpAndSettle();
+  }
+  await $.tester.tap(dayCell);
   await $.tester.pumpAndSettle();
 }
 
@@ -67,7 +100,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
@@ -88,6 +121,7 @@ void main() {
 
       // Back on the list: the new account and its initial balance, formatted
       // in cents-derived pesos — never a double slipping through the pipe.
+      // COP has no visible decimals (MoneyFormatter.currencyDecimals), and
       // NumberFormat.currency's es_CO output separates the amount from the
       // currency code with a non-breaking space (U+00A0), not a regular one
       // (verified against a real device render) — the literal below must use
@@ -96,7 +130,7 @@ void main() {
       // Renders twice by design: once in the account row and once in the
       // "Patrimonio total" hero card, which — with only one account — equals
       // that very same balance.
-      expect(find.text('500.000,00 COP'), findsNWidgets(2));
+      expect(find.text('500.000 COP'), findsNWidgets(2));
     },
   );
 
@@ -105,7 +139,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
@@ -116,11 +150,17 @@ void main() {
       await $.tester
           .enterText(find.byType(TextFormField).first, 'Visa Platino');
       await $.tester.pumpAndSettle();
-
-      final creditLimitField = find.text('Cupo máximo');
-      await _scrollUntilVisible($, creditLimitField);
-      await $.tester.enterText(find.byType(TextFormField).last, '3000000');
+      // Hides the on-screen keyboard before scrolling: on a real device its
+      // show/hide animation is not driven by the test's fake clock, so it can
+      // still be resizing the viewport after `pumpAndSettle` returns, shifting
+      // the list enough to make the credit-limit field drop out of the
+      // scroll's cache extent right after `_scrollUntilVisible` confirms it
+      // on screen — verified against a real emulator run (intermittent
+      // `Bad state: No element` from the field lookup below).
+      FocusManager.instance.primaryFocus?.unfocus();
       await $.tester.pumpAndSettle();
+
+      await _enterTextByLabel($, 'Cupo máximo', '3000000');
 
       await _pickDay($, 'Día de corte', 15);
       await _pickDay($, 'Día de pago', 5);
@@ -153,7 +193,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
@@ -192,7 +232,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
@@ -227,9 +267,10 @@ void main() {
 
       // Not `$.tester.pageBack()`: it only recognizes the back button by its
       // English "Back" tooltip or by `CupertinoNavigationBarBackButton`, and
-      // this app is Spanish-localized Material, so neither matches — verified
-      // against a real emulator run.
-      await $.tester.tap(find.byIcon(Icons.arrow_back));
+      // this page uses the custom `PageHeader` component (a Lucide
+      // `arrowLeft` circular button, not a Material `AppBar` back arrow) —
+      // verified against a real emulator run.
+      await $.tester.tap(find.byIcon(LucideIcons.arrowLeft));
       await $.tester.pumpAndSettle();
       expect(find.text('Cuenta vieja'), findsOneWidget);
     },
@@ -240,7 +281,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
@@ -274,7 +315,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
 
       for (final name in ['Cuenta A', 'Cuenta B']) {
@@ -319,7 +360,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis cuentas'));
+      await $.tester.tap(find.text('Cuentas'));
       await $.tester.pumpAndSettle();
 
       for (final name in ['Primera', 'Segunda']) {

@@ -12,38 +12,28 @@
 // like a deep link would, so navigation is deterministic regardless of which
 // tab or nested stack a previous scenario left active.
 //
-// Two real product gaps surfaced while writing this suite (both left
-// unfixed, per this role's scope — reported, not patched):
-//
-//  1. HU-07's "crear una etiqueta nueva al vuelo... desde el formulario de
-//     transacción" is not reachable from the transaction form at all.
-//     `TransactionFormState`/`TransactionFormCubit` fully support `tagIds`
-//     (`tagsChanged`, persisted via `SetTransactionTags` on submit — see
-//     `transaction_form_cubit_test.dart`), and the class doc comment on
-//     `TransactionFormPage` even lists "-> Etiquetas" as the last step of the
-//     form, but `TransactionFormBody.build` never renders a tag picker/
-//     creator. The only place `NewTagSheet` is actually wired up is
-//     `TagFilterSheet` (filtering, not assigning). The HU-07 scenario below
-//     only exercises what is reachable: creating a tag from the filter.
-//  2. (Fixed, 2026-07-16.) HU-05's "papelera/undo inmediato tipo snackbar" was
-//     unreachable in practice: the snackbar/undo logic lived in
-//     `TransactionsListCubit` (`deleteTransaction` sets `pendingUndoId`,
-//     `TransactionsPage`'s `BlocConsumer` listens for it), but the only
-//     delete affordance in the UI is the trash icon on
-//     `TransactionDetailPage`, which goes through
-//     `TransactionDetailCubit.confirmDelete` — a different cubit that never
-//     touched `pendingUndoId`. Fixed by having the detail page pop with the
-//     deleted id (`TransactionDetailPage`'s listener) and the router forward
-//     it to `TransactionsListCubit.notifyExternalDelete` (see
-//     `app_router.dart`'s `AppRoutes.transactions` route), which only
-//     surfaces the undo affordance without re-running the delete use case.
-//     The HU-05 scenario below now asserts the snackbar actually appears.
+// HU-07's "crear una etiqueta nueva al vuelo... desde el formulario de
+// transacción" *is* reachable today, unlike an earlier pass over this file
+// assumed: `TransactionFormPage` renders `TransactionTagsField` (see its
+// "Etiquetas" section, right after Nota), whose "+ Nueva" chip
+// (`transactionFormTagNew`) opens the very same `TagFilterSheet` HU-06's
+// filter reuses, just with its create action enabled (`title`/`confirmLabel`
+// passed) — this is exactly the "product moved on, the test didn't" pattern
+// documented in `home_patrol_test.dart`'s Presupuestos fix. The HU-07
+// scenario below now exercises the real in-form flow instead of the filter
+// workaround.
 import 'dart:async';
 
-import 'package:billetudo/core/database/app_database.dart';
+import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/info_row.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart'
+    show CategoryKind;
+import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,7 +64,15 @@ Future<void> _addCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
   await $.tester.enterText(find.byType(TextFormField).first, name);
   await $.tester.pumpAndSettle();
-  await $.tester.tap(find.byIcon(LucideIcons.check));
+  // `find.byIcon(LucideIcons.check)` alone is ambiguous on `AccountFormPage`:
+  // it now has two save affordances doing the same thing (`PageHeader`'s
+  // trailing circle button, and a full-width "Guardar cuenta" `Button/Primary`
+  // added at the bottom of the content — see that page's own doc comment,
+  // "in addition to the check icon in the Page Header, not instead of it").
+  // Only the header one carries a `Tooltip` (`PageHeaderCircleButton`); the
+  // bottom one is labelled by its own text ("Guardar cuenta"), never a bare
+  // icon lookup.
+  await $.tester.tap(find.byTooltip('Guardar'));
   await $.tester.pumpAndSettle();
 }
 
@@ -85,21 +83,92 @@ Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
   await _addCashAccount($, name);
 }
 
-/// Creates a root expense category from `/categorias` (default Tipo: Gasto),
-/// same flow as `categories_patrol_test.dart`'s HU-01 scenario. Navigates via
+/// Creates a root category of [kind] from `/categorias` (default Tipo:
+/// Gasto, switched to Ingreso first when [kind] is income), same flow as
+/// `categories_patrol_test.dart`'s HU-01 scenario. Navigates via
 /// `GoRouter.go`, same reasoning as `_goToAccountsList` — safe to call after
 /// another helper has already navigated the tester away from home.
-Future<void> _createExpenseCategory(
-    PatrolIntegrationTester $, String name) async {
+///
+/// Required before creating any expense/income transaction in this suite:
+/// `TransactionDraft.validated()` rejects a `null` `categoryId` for both
+/// types (`fieldCategoryId`, "a category is required") — a transfer is the
+/// only type that carries none, so only `HU-03`/`HU-07` (which never taps
+/// Guardar) skip this.
+Future<void> _createCategory(
+  PatrolIntegrationTester $,
+  String name, {
+  CategoryKind kind = CategoryKind.expense,
+}) async {
   final context = $.tester.element(find.byType(Scaffold).first);
   GoRouter.of(context).go(AppRoutes.categories);
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Crear categoría'));
   await $.tester.pumpAndSettle();
+  if (kind == CategoryKind.income) {
+    await $.tester.tap(find.text('Ingreso'));
+    await $.tester.pumpAndSettle();
+  }
   await $.tester.enterText(find.byType(TextFormField), name);
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byIcon(LucideIcons.check));
   await $.tester.pumpAndSettle();
+}
+
+/// Picks [name] directly from the `Category Quick Picker`'s chip row.
+///
+/// Not "Ver más" (`CategorySelectSheet`): `GetMostUsedCategories`'s own doc
+/// comment says a user with no usage history "falls back to the earliest
+/// categories by `sortOrder`" — so with only one category created (every
+/// scenario in this suite creates exactly one before reaching this point),
+/// it shows up as a quick chip immediately, before ever being picked once,
+/// not only after. Going through "Ver más" anyway does not fail outright,
+/// but it does make the sheet's own `CategorySelectRow` and the still-
+/// mounted quick chip underneath both read [name] at once, so tapping
+/// `find.text(name)` there is ambiguous (verified against a real emulator
+/// run) — tapping the chip directly, before any sheet opens, has no such
+/// duplicate.
+Future<void> _pickCategory(PatrolIntegrationTester $, String name) async {
+  await $.tester.tap(find.text(name));
+  await $.tester.pumpAndSettle();
+}
+
+/// Taps "Guardar" (`commonSave`) to submit a **new** expense/income
+/// transaction whose category was just picked via [_pickCategory] with
+/// [categoryName], retrying that pick (bounded, up to 3 attempts total) if
+/// the form is still showing afterward.
+///
+/// Not chasing a real validation bug: every attempt uses the exact same
+/// steps that do work reliably elsewhere in this suite (`_pickCategory`'s
+/// direct chip tap, confirmed correct against `CategoryQuickPicker`'s own
+/// selection wiring) — this is the same class of intermittent real-tap-miss
+/// flakiness already documented for `accounts_patrol_test.dart`'s day-picker
+/// (`docs/dev-runs/bug-fixes-pixel-audit.md`), here surfacing as an
+/// occasionally-missed tap on the category chip: when it misses,
+/// `categoryId` stays `null` and `TransactionDraft.validated()` rejects the
+/// save (`fieldCategoryId`), leaving the form open with the `Guardar`
+/// `AppBar` button (unique to the form, never the list) still present.
+///
+/// Checks the finder's own `evaluate()` before every `tap()` (never taps
+/// blind): `WidgetTester.tap()` throws immediately if its target vanished
+/// between the check and the call, which a bare bounded loop cannot recover
+/// from — this treats "Guardar not there this round" the same as "still on
+/// the form", just another reason to re-pick the category and retry.
+Future<void> _saveNewTransaction(
+  PatrolIntegrationTester $, {
+  required String categoryName,
+}) async {
+  for (var attempt = 0; attempt < 3; attempt++) {
+    final guardar = find.byTooltip('Guardar');
+    if (guardar.evaluate().isNotEmpty) {
+      await $.tester.tap(guardar);
+      await $.tester.pumpAndSettle();
+    }
+    if (find.byTooltip('Guardar').evaluate().isEmpty) {
+      return; // Saved: back on the list, no more form `AppBar`.
+    }
+    await _pickCategory($, categoryName);
+  }
+  fail('still on the transaction form after 3 Guardar attempts.');
 }
 
 /// Jumps straight to `/movimientos`: see the file comment above. `push`, not
@@ -122,44 +191,162 @@ void _goToTransactions(PatrolIntegrationTester $) {
   unawaited(GoRouter.of(context).push(AppRoutes.transactions));
 }
 
-/// Drags `TransactionsFilterBar`'s horizontal `SingleChildScrollView` until
-/// [finder] is on screen. The bar (Cuentas, Categorías, Tipo, Fecha,
-/// Etiqueta) does not fit on a typical phone width at once, so the last chip
-/// ('Etiqueta') is laid out past the right edge — still in the widget tree,
-/// but its center coordinate lands outside the visible viewport, so a plain
-/// `tap` on it silently hits nothing (no exception, the sheet just never
-/// opens) — verified against a real emulator run.
-Future<void> _scrollFilterBarUntilVisible(
-  PatrolIntegrationTester $,
-  Finder finder,
-) async {
-  await $.tester.dragUntilVisible(
-    finder,
-    find.byType(SingleChildScrollView).first,
-    const Offset(-250, 0),
+/// Taps the `AccountPickerField` whose *label* (the text above the tappable
+/// box, e.g. "Cuenta"/"Cuenta origen"/"Cuenta destino") matches [label].
+///
+/// Not `find.text(label)`: that label is a plain `Text`, a sibling of the
+/// actual tappable box inside `TransactionFormFieldButton` — never itself
+/// wrapped in the field's `InkWell` (see that widget's `build`) — so tapping
+/// it is a no-op. And the box's own text is no better a target: before a
+/// selection it just reads the shared placeholder ("Elegir cuenta") for
+/// every account field on screen, ambiguous the moment a transfer form shows
+/// two of them at once. Matching on the field's `label` instead sidesteps
+/// both problems and still resolves to the one real widget, verified
+/// against a real emulator run.
+Future<void> _tapAccountField(PatrolIntegrationTester $, String label) async {
+  final finder = find.byWidgetPredicate(
+    (widget) => widget is AccountPickerField && widget.label == label,
   );
+  await $.tester.tap(finder);
   await $.tester.pumpAndSettle();
 }
 
-Future<void> _enterAmount(PatrolIntegrationTester $, List<int> digits) async {
-  await $.tester.tap(find.text('0,00'));
+/// Picks [name] from an open `AccountPickerSheetBody`/`AccountFilterSheet`
+/// (both list `AccountSelectRow`s). Not `find.text(name)`, nor even
+/// `find.widgetWithText(AccountSelectRow, name)`: plenty of other mounted
+/// text can read the same account name at this point — the account field's
+/// *own* current value bleeds through from underneath the sheet (`Bottom
+/// Sheet Base` never unmounts the page below, and `TransactionFormCubit`
+/// preselects the first account by `sortOrder` for a brand-new transaction,
+/// so the very account being picked can already be showing as the field's
+/// current value while its own sheet is open), the accounts list page one
+/// route down (`AccountCard`, kept mounted by the `Navigator` under this
+/// push) repeats the name again, and an `AccountSelectRow` itself shows the
+/// name **and** the account type's own label as two separate `Text`s, which
+/// collide whenever an account is named after its type (e.g. a cash account
+/// named "Efectivo", same word as `AccountType.cash.label`). All of the
+/// above still found `text-ancestor`-composed finders ambiguous in practice
+/// (verified against a real emulator run), so this matches the
+/// `AccountSelectRow` widget itself by its actual `account.name` data
+/// instead of any rendered `Text` — the same robust approach
+/// `_tapAccountField` already uses for `AccountPickerField`.
+Future<void> _pickAccount(PatrolIntegrationTester $, String name) async {
+  final finder = find.byWidgetPredicate(
+    (widget) => widget is AccountSelectRow && widget.account.name == name,
+  );
+  await $.tester.tap(finder);
   await $.tester.pumpAndSettle();
+}
+
+/// Taps the only `TransactionRow` on screen, to open its detail page.
+///
+/// Not a match against the row's rendered title: `TransactionRow._title`'s
+/// own fallback chain (note, else category name, else the account(s)
+/// involved) is one more layer of indirection to get exactly right than the
+/// thing every scenario that calls this actually needs — each of them seeds
+/// or creates exactly one transaction before reaching this point, so the
+/// single row on screen unambiguously *is* the one to open.
+Future<void> _openOnlyTransaction(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.byType(TransactionRow));
+  await $.tester.pumpAndSettle();
+}
+
+/// Waits (bounded, up to 5 extra pumps) for [finder] to satisfy [matcher]
+/// before asserting it, instead of relying solely on the `pumpAndSettle()`
+/// already done by the caller.
+///
+/// `pumpAndSettle()` only waits for *scheduled frames*, not for an arbitrary
+/// Future/Stream to resolve — the reactive Drift query behind
+/// `TransactionsListCubit`/`GetTransactionEditImpact` occasionally finishes
+/// its requery a beat after the write that triggered it (a direct DB insert
+/// in `HU-04 caso 2`'s seed, or the Guardar submit in `HU-01`/`HU-03`/etc.),
+/// which does not always line up with a frame `pumpAndSettle()` is already
+/// waiting on. Verified against a real emulator run, in both directions:
+/// sometimes the finder is briefly empty (the row has not landed yet) and
+/// sometimes briefly ambiguous (the popping form's own big amount display
+/// and the list row underneath both still read the same value mid-
+/// transition) — checking the actual [matcher] on every attempt, not just
+/// non-emptiness, catches both.
+Future<void> _expectEventually(
+  PatrolIntegrationTester $,
+  Finder finder,
+  Matcher matcher,
+) async {
+  for (var attempt = 0; attempt < 5; attempt++) {
+    if (matcher.matches(finder, <dynamic, dynamic>{}) || attempt == 4) {
+      break;
+    }
+    await $.tester.pump(const Duration(milliseconds: 300));
+  }
+  expect(finder, matcher);
+}
+
+/// Types [digits] on the anchored keypad. Each digit is a **whole** peso
+/// place, not a cents-shifted calculator entry: `TransactionFormCubit
+/// .amountDigitPressed`'s "whole-number mode" scales by
+/// `MoneyFormatter.currencyDecimals(currency)`, which is `0` for COP — so
+/// `[2, 5, 0]` reads as literally "250", i.e. `$250`, never `$2,50` needing
+/// two extra trailing zeros the way a fixed-2-decimal calculator would
+/// (verified against a real emulator run: typing 5 digits for what was
+/// meant to be a 3-digit amount landed on a 100x-too-large total instead).
+///
+/// Verifies the displayed amount actually advanced after every single digit
+/// (bounded retry per digit, up to 3 attempts) instead of firing all the taps
+/// blind and only checking the final total: a digit tap occasionally not
+/// registering — the same class of intermittent real-tap flakiness already
+/// documented for `accounts_patrol_test.dart`'s day-picker — otherwise only
+/// surfaces much later, as a wrong final amount with no indication of which
+/// digit was actually dropped (verified against a real emulator run).
+Future<void> _enterAmount(PatrolIntegrationTester $, List<int> digits) async {
+  // `$0` (`MoneyFormatter.formatSymbol`), not `0,00`: COP shows no decimals
+  // (`MoneyFormatter.currencyDecimals`), and the amount is always prefixed
+  // with `$`, never suffixed with the currency code, in the form's Zona
+  // Fija (`TransactionAmountExpandedZone`) — the code suffix is a Cuentas/
+  // list-row-only convention (`MoneyFormatter.format`), not this widget's.
+  await $.tester.tap(find.text('\$0'));
+  await $.tester.pumpAndSettle();
+  var whole = 0;
   for (final digit in digits) {
-    await $.tester.tap(find.text('$digit').first);
-    await $.tester.pump();
+    whole = whole * 10 + digit;
+    final expected = find.text('\$$whole');
+    for (var attempt = 0; attempt < 3; attempt++) {
+      await $.tester.tap(find.text('$digit').first);
+      await $.tester.pump();
+      if (expected.evaluate().isNotEmpty) {
+        break;
+      }
+    }
   }
   await $.tester.pumpAndSettle();
 }
 
 /// Backspaces [count] digits off the amount field. Used when editing: the
-/// anchored keypad has no single "clear" key, only `⌫` (see
-/// `NumericKeypad`), so undoing a whole existing amount is one tap per digit.
+/// anchored keypad has no single "clear" key, only a backspace glyph
+/// rendered as `LucideIcons.delete` (see `NumericKeypad`'s `KeypadKey.icon`),
+/// never the `'⌫'` text glyph — undoing a whole existing amount is one tap
+/// per digit, [count] matching however many digits `_enterAmount` typed for
+/// it (see that helper's own doc comment on whole-number-mode entry).
 Future<void> _clearAmount(PatrolIntegrationTester $, int count) async {
   for (var i = 0; i < count; i++) {
-    await $.tester.tap(find.text('⌫'));
+    await $.tester.tap(find.byIcon(LucideIcons.delete));
     await $.tester.pump();
   }
   await $.tester.pumpAndSettle();
+}
+
+/// Asserts a `TransactionDetailInfoCard` row exists with exactly this
+/// [label]/[value] pair. Not `find.text('$label: $value')`: `InfoRow`
+/// renders the label and the value as two separate `Text` widgets (label
+/// above, value below), never joined into one string — so that combined
+/// literal never appears anywhere in the tree.
+void _expectInfoRow(String label, String value) {
+  expect(
+    find.byWidgetPredicate(
+      (widget) =>
+          widget is InfoRow && widget.label == label && widget.value == value,
+    ),
+    findsOneWidget,
+  );
 }
 
 void main() {
@@ -169,6 +356,7 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Comida');
 
       // Home has no button into Transacciones yet — go straight to the list,
       // right from the accounts list `Scaffold` we are already on.
@@ -181,22 +369,34 @@ void main() {
       // HU-01/criterion 11: Monto has focus and the anchored keypad is up as
       // soon as the form loads (no explicit tap needed to reveal it) — typing
       // digits straight away is exactly what a user would do.
-      await _enterAmount($, [2, 5, 0, 0, 0]); // $250,00 COP
+      await _enterAmount($, [2, 5, 0]); // $250 COP
 
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Comida');
+      await _saveNewTransaction($, categoryName: 'Comida');
 
-      await $.tester.tap(find.byTooltip('Guardar'));
-      await $.tester.pumpAndSettle();
-
-      // Back on the list: the new expense, negative and formatted from cents
-      // — never a double slipping through the pipe (see `MoneyFormatter`).
-      // The currency code is separated from the amount by a non-breaking
-      // space (U+00A0), same rendering quirk noted in accounts_patrol_test.
-      expect(find.text('Efectivo'), findsOneWidget);
-      expect(find.text('-250,00\u{00A0}COP'), findsOneWidget);
+      // Back on the list: the new expense, formatted from cents — never a
+      // double slipping through the pipe (see `MoneyFormatter`). Unsigned,
+      // no currency-code suffix: `TransactionRow._amountLabel` renders every
+      // expense through `formatSymbol` (leading `$`, COP's own 0 decimals),
+      // and lets the (neutral, never red) text color carry the meaning
+      // instead of a minus sign — only income gets an explicit `+`. No note
+      // was entered, so the row's title falls back to the category name
+      // (`Comida`), not the account (`_title` prefers category over account).
+      await _expectEventually($, find.byType(TransactionRow), findsOneWidget);
+      // TEMP DIAGNOSTIC (qa-automator): embed the row's actual amount into
+      // the failure message.
+      final rowAmount = $.tester
+          .widgetList<Text>(
+            find.descendant(
+              of: find.byType(TransactionRow),
+              matching: find.byType(Text),
+            ),
+          )
+          .map((t) => t.data)
+          .toList();
+      expect(find.text('\$250'), findsOneWidget, reason: 'rowAmount=$rowAmount');
     },
   );
 
@@ -205,6 +405,7 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Salario', kind: CategoryKind.income);
 
       _goToTransactions($);
       await $.tester.pumpAndSettle();
@@ -216,17 +417,14 @@ void main() {
       await $.tester.pumpAndSettle();
       expect(find.text('Nuevo ingreso'), findsOneWidget);
 
-      await _enterAmount($, [1, 5, 0, 0, 0]); // $150,00 COP
+      await _enterAmount($, [1, 5, 0]); // $150 COP
 
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Salario');
+      await _saveNewTransaction($, categoryName: 'Salario');
 
-      await $.tester.tap(find.byTooltip('Guardar'));
-      await $.tester.pumpAndSettle();
-
-      expect(find.text('+150,00\u{00A0}COP'), findsOneWidget);
+      await _expectEventually($, find.text('+\$150'), findsOneWidget);
     },
   );
 
@@ -248,29 +446,29 @@ void main() {
       await $.tester.pumpAndSettle();
       expect(find.text('Nueva transferencia'), findsOneWidget);
 
-      await _enterAmount($, [1, 0, 0, 0, 0]); // $100,00 COP
+      await _enterAmount($, [1, 0, 0]); // $100 COP
 
-      // HU-03: origin (`Cuenta`) and destination (`Cuenta destino`) are two
-      // separate pickers.
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Cuenta A'));
-      await $.tester.pumpAndSettle();
+      // HU-03: origin (`Cuenta origen`) and destination (`Cuenta destino`)
+      // are two separate `AccountPickerField`s.
+      await _tapAccountField($, 'Cuenta origen');
+      await _pickAccount($, 'Cuenta A');
 
-      await $.tester.tap(find.text('Cuenta destino'));
-      await $.tester.pumpAndSettle();
+      await _tapAccountField($, 'Cuenta destino');
       // Excludes the already-picked origin (HU-03 "distinct accounts"),
       // asserted implicitly: only 'Cuenta B' is offered as a tile to tap.
-      await $.tester.tap(find.text('Cuenta B'));
-      await $.tester.pumpAndSettle();
+      await _pickAccount($, 'Cuenta B');
 
       await $.tester.tap(find.byTooltip('Guardar'));
       await $.tester.pumpAndSettle();
 
       // The list row for a transfer shows no +/- sign and both account
       // names (`TransactionRow._amountLabel`/`_subtitle`... title).
-      expect(find.text('Cuenta A → Cuenta B'), findsOneWidget);
-      expect(find.text('100,00\u{00A0}COP'), findsOneWidget);
+      await _expectEventually(
+        $,
+        find.text('Cuenta A → Cuenta B'),
+        findsOneWidget,
+      );
+      await _expectEventually($, find.text('\$100'), findsOneWidget);
 
       // The actual balance effect (HU-03 criterion 3: "resta en origen, suma
       // en destino") is only visible on Cuentas, not on the transaction row
@@ -281,8 +479,13 @@ void main() {
       // for consistency with every other cross-feature jump in this file).
       await _goToAccountsList($);
 
-      expect(find.text('-100,00\u{00A0}COP'), findsOneWidget);
-      expect(find.text('100,00\u{00A0}COP'), findsOneWidget);
+      // `AccountCard` renders balances via `MoneyFormatter.formatSymbol`
+      // (leading `$`, sign baked into the number itself, no currency-code
+      // suffix) — the same convention `TransactionRow`/the detail hero use
+      // above, not `MoneyFormatter.format`'s "<number> COP" (verified
+      // against a real emulator run).
+      expect(find.text('\$-100'), findsOneWidget);
+      expect(find.text('\$100'), findsOneWidget);
     },
   );
 
@@ -292,34 +495,37 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Comida');
 
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
-      await _enterAmount($, [1, 0, 0, 0, 0]); // $100,00 COP
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byTooltip('Guardar'));
-      await $.tester.pumpAndSettle();
+      await _enterAmount($, [1, 0, 0]); // $100 COP
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Comida');
+      await _saveNewTransaction($, categoryName: 'Comida');
 
-      expect(find.text('-100,00\u{00A0}COP'), findsOneWidget);
+      await _expectEventually($, find.text('\$100'), findsOneWidget);
 
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
-      expect(find.text('Detalle del movimiento'), findsOneWidget);
+      // Note is never set here, so `TransactionRow._title` falls back to the
+      // category name (`Comida`), not the account — a category is now
+      // mandatory for every expense/income transaction.
+      await _openOnlyTransaction($);
+      expect(find.text('Detalle del gasto'), findsOneWidget);
 
-      await $.tester.tap(find.byTooltip('Editar'));
+      // `DetailActionsRow`'s Editar is a plain label inside its own tappable
+      // row, never an `IconButton`/`Tooltip` — `commonEdit` ("Editar").
+      await $.tester.tap(find.text('Editar'));
       await $.tester.pumpAndSettle();
       expect(find.text('Editar movimiento'), findsOneWidget);
 
-      await $.tester.tap(find.text('100,00'));
+      await $.tester.tap(find.text('\$100'));
       await $.tester.pumpAndSettle();
-      await _clearAmount($, 5); // '1','0','0','0','0'
-      await _enterAmount($, [2, 0, 0, 0, 0]); // $200,00 COP
+      await _clearAmount($, 3); // '1','0','0'
+      await _enterAmount($, [2, 0, 0]); // $200 COP
 
       await $.tester.tap(find.byTooltip('Guardar'));
       await $.tester.pumpAndSettle();
@@ -328,13 +534,13 @@ void main() {
       // the detail (`TransactionFormPage`'s single `Navigator.pop` on save
       // returns to whatever pushed it — the detail page here, since the edit
       // flow is List -> tap row -> Detail -> tap Editar -> Form, not List ->
-      // Form directly), no `EditImpactWarningSheet` in the way.
-      // `TransactionDetailBody` renders the amount unsigned (only
-      // `TransactionRow`, in the list, prefixes +/-), so the update is
-      // asserted against the reactive detail stream instead.
-      expect(find.text('Este movimiento está vinculado'), findsNothing);
-      expect(find.text('200,00\u{00A0}COP'), findsOneWidget);
-      expect(find.text('100,00\u{00A0}COP'), findsNothing);
+      // Form directly), no `EditImpactWarningSheet` in the way. Both the
+      // list row and the detail hero render the amount through
+      // `formatSymbol` (unsigned, `$`-prefixed, no code suffix), so the
+      // string itself does not change across the two screens.
+      expect(find.textContaining('vinculada a'), findsNothing);
+      expect(find.text('\$200'), findsOneWidget);
+      expect(find.text('\$100'), findsNothing);
     },
   );
 
@@ -344,6 +550,12 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      // A category is required (see `_createCategory`'s doc comment): the
+      // seeded transaction below needs a real `categoryId` too, or the edit
+      // this scenario drives (which re-submits the *whole* draft, category
+      // included) would fail `TransactionDraft.validated()` on save just
+      // like a fresh create would.
+      await _createCategory($, 'Comida');
 
       // There is no Pagos programados UI yet to create the link from (that feature
       // is still a blank canvas per CLAUDE.md), so the linked transaction is
@@ -357,9 +569,13 @@ void main() {
       final account = await (db.select(db.accounts)
             ..where((a) => a.name.equals('Efectivo')))
           .getSingle();
+      final category = await (db.select(db.categories)
+            ..where((c) => c.name.equals('Comida')))
+          .getSingle();
       await db.into(db.transactions).insert(
             TransactionsCompanion.insert(
               accountId: account.id,
+              categoryId: Value(category.id),
               amountMinor: 10000,
               currency: 'COP',
               type: EntryType.expense,
@@ -372,34 +588,47 @@ void main() {
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
-      expect(find.textContaining('Suscripción test'), findsOneWidget);
-      await $.tester.tap(find.text('Efectivo'));
+      // The seeded transaction has a note, so `TransactionRow._title` shows
+      // it instead of falling back to the account name — the whole row
+      // (note text included) is the tappable target, same as every other
+      // row in this suite.
+      await _expectEventually(
+        $,
+        find.textContaining('Suscripción test'),
+        findsOneWidget,
+      );
+      await $.tester.tap(find.textContaining('Suscripción test'));
       await $.tester.pumpAndSettle();
 
-      await $.tester.tap(find.byTooltip('Editar'));
+      await $.tester.tap(find.text('Editar'));
       await $.tester.pumpAndSettle();
 
-      await $.tester.tap(find.text('100,00'));
+      await $.tester.tap(find.text('\$100'));
       await $.tester.pumpAndSettle();
-      await _clearAmount($, 5);
-      await _enterAmount($, [3, 0, 0, 0, 0]); // $300,00 COP
+      await _clearAmount($, 3);
+      await _enterAmount($, [3, 0, 0]); // $300 COP
 
       await $.tester.tap(find.byTooltip('Guardar'));
       await $.tester.pumpAndSettle();
 
       // HU-04 criterion 3: changing the amount of a scheduled-payment-linked
-      // transaction must warn before it saves.
-      expect(find.text('Este movimiento está vinculado'), findsOneWidget);
-      expect(find.text('Afecta su pago programado asociado.'), findsOneWidget);
+      // transaction must warn before it saves. `EditImpactWarningSheet` has
+      // no separate title (`Sheet Icon Header`'s title is left disabled per
+      // its own doc comment) — only the interpolated message
+      // (`transactionEditImpactMessage`), and the confirm button reads
+      // `commonContinue` ("Continuar"), never a bespoke "Guardar de todas
+      // formas".
+      expect(find.textContaining('vinculada a tu pago programado'),
+          findsOneWidget);
 
-      await $.tester.tap(find.text('Guardar de todas formas'));
+      await $.tester.tap(find.text('Continuar'));
       await $.tester.pumpAndSettle();
 
       // Same landing spot and unsigned-amount caveat as HU-04 caso 1: the
       // form's `Navigator.pop` returns to the detail page it was pushed
-      // from, which renders the amount without the list's +/- sign.
-      expect(find.text('300,00\u{00A0}COP'), findsOneWidget);
-      expect(find.text('100,00\u{00A0}COP'), findsNothing);
+      // from.
+      expect(find.text('\$300'), findsOneWidget);
+      expect(find.text('\$100'), findsNothing);
     },
   );
 
@@ -409,27 +638,36 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Comida');
 
       _goToTransactions($);
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
-      await _enterAmount($, [5, 0, 0, 0]); // $50,00 COP
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byTooltip('Guardar'));
+      await _enterAmount($, [5, 0]); // $50 COP
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Comida');
+      await _saveNewTransaction($, categoryName: 'Comida');
+
+      await _expectEventually($, find.text('\$50'), findsOneWidget);
+
+      // No note, so the row's title falls back to the category name
+      // (`Comida`), not the account — a category is now mandatory.
+      await _openOnlyTransaction($);
+      // `DetailActionsRow`'s delete affordance is a text link
+      // (`transactionDetailDeleteLink`, "Eliminar movimiento"), not a
+      // tooltip'd icon button.
+      await $.tester.tap(find.text('Eliminar movimiento'));
       await $.tester.pumpAndSettle();
 
-      expect(find.text('-50,00\u{00A0}COP'), findsOneWidget);
-
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byTooltip('Eliminar'));
-      await $.tester.pumpAndSettle();
-
-      expect(find.text('¿Eliminar este movimiento?'), findsOneWidget);
+      // `ConfirmDeleteTransactionSheet` has no title either (same
+      // icon-header-disabled pattern as `EditImpactWarningSheet` above),
+      // only `transactionDeleteMessage`.
+      expect(
+        find.text('Podrás deshacerlo justo después de eliminar.'),
+        findsOneWidget,
+      );
       await $.tester.tap(find.text('Eliminar').last);
       // Deliberately bounded pumps, not `pumpAndSettle()`, all the way to the
       // snackbar assertion below: `pumpAndSettle()` keeps pumping frames
@@ -455,7 +693,7 @@ void main() {
 
       await $.tester.pumpAndSettle();
 
-      expect(find.text('-50,00\u{00A0}COP'), findsNothing);
+      expect(find.text('\$50'), findsNothing);
 
       // Verified against the real database, not inferred from the UI: a
       // trash/undo delete must land on `deletedAt`, never `tombstonedAt`
@@ -475,56 +713,56 @@ void main() {
       await _goToAccountsList($);
       await _addCashAccount($, 'Cuenta A');
       await _addCashAccount($, 'Cuenta B');
+      await _createCategory($, 'Comida');
 
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
       for (final (account, digits) in [
-        ('Cuenta A', [1, 0, 0, 0]),
-        ('Cuenta B', [2, 0, 0, 0])
+        ('Cuenta A', [1, 0]),
+        ('Cuenta B', [2, 0])
       ]) {
         await $.tester.tap(find.byTooltip('Agregar movimiento'));
         await $.tester.pumpAndSettle();
         await _enterAmount($, digits);
-        await $.tester.tap(find.text('Cuenta'));
-        await $.tester.pumpAndSettle();
-        await $.tester.tap(find.text(account));
-        await $.tester.pumpAndSettle();
-        await $.tester.tap(find.byTooltip('Guardar'));
-        await $.tester.pumpAndSettle();
+        await _tapAccountField($, 'Cuenta');
+        await _pickAccount($, account);
+        await _pickCategory($, 'Comida');
+        await _saveNewTransaction($, categoryName: 'Comida');
       }
 
-      expect(find.text('-10,00\u{00A0}COP'), findsOneWidget);
-      expect(find.text('-20,00\u{00A0}COP'), findsOneWidget);
+      await _expectEventually($, find.text('\$10'), findsOneWidget);
+      expect(find.text('\$20'), findsOneWidget);
 
-      // HU-06a: the account filter chip, one tap away.
-      await $.tester.tap(find.text('Cuentas'));
+      // HU-06a: the account filter chip. Its label defaults to "Todas"
+      // (`accountFilterSelectAll`) whenever no account filter is active yet
+      // — `TransactionsFilterBar._accountChipLabel` deliberately never reads
+      // "Cuentas" (see that method's own doc comment).
+      await $.tester.tap(find.text('Todas'));
       await $.tester.pumpAndSettle();
       expect(find.text('Filtrar por cuenta'), findsOneWidget);
 
-      // `find.text('Cuenta A')` alone is ambiguous here: the sheet is a
+      // `find.text('Cuenta A')` alone is ambiguous here (the sheet is a
       // modal overlaying the transaction list, which still has a row whose
-      // title is also 'Cuenta A' (`TransactionRow.title` falls back to the
-      // account name when the entry has no category). Scope the tap to the
-      // sheet's own `CheckboxListTile`.
-      await $.tester.tap(
-        find.descendant(
-          of: find.byType(CheckboxListTile),
-          matching: find.text('Cuenta A'),
-        ),
-      );
-      await $.tester.pumpAndSettle();
+      // title is also 'Cuenta A'), and this sheet's rows are `AccountSelectRow`
+      // (not a `CheckboxListTile` — this is a single-select-styled row
+      // toggled for multi-select) — see `_pickAccount`, used here directly
+      // since this is `AccountFilterSheet`, not the single-select
+      // `AccountPickerSheetBody` every other scenario opens through
+      // `_tapAccountField`.
+      await _pickAccount($, 'Cuenta A');
       await $.tester.tap(find.text('Aplicar'));
       await $.tester.pumpAndSettle();
 
       // HU-06: filtered to Cuenta A only — Cuenta B's movement disappears.
-      expect(find.text('-10,00\u{00A0}COP'), findsOneWidget);
-      expect(find.text('-20,00\u{00A0}COP'), findsNothing);
+      expect(find.text('\$10'), findsOneWidget);
+      expect(find.text('\$20'), findsNothing);
     },
   );
 
   patrolTest(
-    'HU-07: crear una etiqueta nueva al vuelo desde el filtro',
+    'HU-07: crear una etiqueta nueva al vuelo desde el formulario de '
+    'transacción',
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
@@ -532,28 +770,41 @@ void main() {
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
-      // See the file-level comment: the transaction form itself has no tag
-      // picker/creator wired up (a real gap, not fixed here), so the only
-      // reachable "create a tag on the fly" affordance today is the tag
-      // filter sheet's own "+" (`TagFilterSheetBody`), which is what HU-07's
-      // "puedo crear una etiqueta nueva al vuelo" is verified against.
-      // 'Etiqueta' is the last chip in the filter bar and starts off-screen
-      // (see `_scrollFilterBarUntilVisible`).
-      final tagChip = find.text('Etiqueta');
-      await _scrollFilterBarUntilVisible($, tagChip);
-      await $.tester.tap(tagChip);
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
-      expect(find.text('Filtrar por etiqueta'), findsOneWidget);
+
+      // The Etiquetas section's "+ Nueva" chip (`TransactionFormTagChip`,
+      // `transactionFormTagNew`) opens the same `TagFilterSheet` HU-06's
+      // filter reuses, but with its create action enabled (a `title` is
+      // passed here — see `TransactionTagsField`/`TagFilterSheetBody`'s
+      // `showCreateAction`). It sits near the bottom of the form's
+      // `ListView`, past Nota — not merely off the visible viewport but
+      // genuinely not yet *built* (`ListView(children: ...)` still lazily
+      // creates elements only within the estimated viewport/cache extent,
+      // the same virtualization a `.builder` list has), so `ensureVisible`
+      // alone cannot find it (verified against a real emulator run: the
+      // dumped widget tree stopped right after Nota's hint text). Drag the
+      // scroll view down step by step instead, same technique
+      // `_scrollFilterBarUntilVisible` used for the (removed) horizontal
+      // filter bar case.
+      final newTagChip = find.text('Nueva');
+      await $.tester.dragUntilVisible(
+        newTagChip,
+        find.byType(Scrollable).first,
+        const Offset(0, -200),
+      );
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(newTagChip);
+      await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.byTooltip('Agregar etiqueta'));
       await $.tester.pumpAndSettle();
       expect(find.text('Nueva etiqueta'), findsOneWidget);
 
       // `find.byType(TextField)` alone is ambiguous: `NewTagSheet`'s own
-      // field is the second match, the first being `TransactionsPage`'s
-      // search bar, still mounted underneath every sheet stacked on top of
-      // it (`showModalBottomSheet` never unmounts the page below) —
-      // verified against a real emulator run.
+      // field is not the only `TextField` mounted underneath every sheet
+      // stacked on top of the page below (`showModalBottomSheet` never
+      // unmounts it) — verified against a real emulator run.
       await $.tester.enterText(
         find.descendant(
           of: find.byType(NewTagSheet),
@@ -562,12 +813,14 @@ void main() {
         'viaje-test',
       );
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Guardar'));
+      // `NewTagSheet`'s confirm button reads `commonCreate` ("Crear"), not
+      // "Guardar" — it creates the tag directly, it does not save a form.
+      await $.tester.tap(find.text('Crear'));
       await $.tester.pumpAndSettle();
 
-      // Back on the (still open) tag filter sheet: the new tag is now in the
-      // live list, selectable like any other.
-      expect(find.text('viaje-test'), findsOneWidget);
+      // Back on the (still open) tag sheet: the new tag is now in the live
+      // list, selectable like any other.
+      await _expectEventually($, find.text('viaje-test'), findsOneWidget);
     },
   );
 
@@ -577,37 +830,41 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
-      await _createExpenseCategory($, 'Comida test');
+      await _createCategory($, 'Comida test');
 
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
       await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
-      await _enterAmount($, [7, 5, 0, 0]); // $75,00 COP
-      await $.tester.tap(find.text('Cuenta'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Efectivo'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Sin categoría'));
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(find.text('Comida test'));
-      await $.tester.pumpAndSettle();
+      await _enterAmount($, [7, 5]); // $75 COP
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      // No "Sin categoría" affordance exists at all (see `_pickCategory`'s
+      // doc comment) — a category is mandatory for expense/income.
+      await _pickCategory($, 'Comida test');
       await $.tester.enterText(find.byType(TextField), 'Almuerzo');
       await $.tester.pumpAndSettle();
-      await $.tester.tap(find.byTooltip('Guardar'));
-      await $.tester.pumpAndSettle();
+      await _saveNewTransaction($, categoryName: 'Comida test');
 
-      await $.tester.tap(find.text('Comida test'));
-      await $.tester.pumpAndSettle();
+      // The saved transaction has a note ("Almuerzo"), so `TransactionRow`
+      // shows that as its title instead of the category name (`_title`
+      // prefers the note whenever there is one) — tap that to open the
+      // detail.
+      await _openOnlyTransaction($);
 
-      expect(find.text('Detalle del movimiento'), findsOneWidget);
-      expect(find.text('Cuenta: Efectivo'), findsOneWidget);
-      expect(find.text('Categoría: Comida test'), findsOneWidget);
-      expect(find.text('Nota: Almuerzo'), findsOneWidget);
+      // `TransactionDetailPage._titleFor`: "Detalle del gasto" for an
+      // expense, never a type-agnostic "Detalle del movimiento".
+      expect(find.text('Detalle del gasto'), findsOneWidget);
+      // `TransactionDetailInfoCard` renders each field as an `InfoRow`
+      // (label above, value below, two separate `Text`s) — never a single
+      // "Label: value" string.
+      _expectInfoRow('Cuenta', 'Efectivo');
+      _expectInfoRow('Categoría', 'Comida test');
+      _expectInfoRow('Nota', 'Almuerzo');
       // HU-08 criterion 10: legible source label, `manual` being the only
       // one any Fase 0 capture flow can actually produce.
-      expect(find.text('Registrado como Manual'), findsOneWidget);
+      _expectInfoRow('Origen', 'Manual');
     },
   );
 }

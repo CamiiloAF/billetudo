@@ -23,6 +23,18 @@ import 'support/patrol_app.dart';
 /// The "add category" app bar action's tooltip (`categoriesAdd` in the arb).
 const _addCategoryTooltip = 'Crear categoría';
 
+/// Categorías is only reachable from the "Más" tab (`MorePage`'s
+/// `MoreRow(label: l10n.categoriesTitle)`) — unlike Cuentas, it has no
+/// `QuickAccessRow` chip on Home. `categoriesOpenAction` (`'Ver mis
+/// categorías'`) is a dead l10n key with no widget wired to it, same class
+/// of finding as `accountsOpenAction` in `accounts_patrol_test.dart`.
+Future<void> _openCategories(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.text('Más'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Categorías'));
+  await $.tester.pumpAndSettle();
+}
+
 void main() {
   patrolTest(
     // No slash in the scenario name: AndroidTestOrchestrator turns each Dart
@@ -34,8 +46,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       // HU-01: root category, default kind (Gasto).
       await $.tester.tap(find.byTooltip(_addCategoryTooltip));
@@ -83,8 +94,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       await $.tester.tap(find.byTooltip(_addCategoryTooltip));
       await $.tester.pumpAndSettle();
@@ -105,7 +115,14 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // No dependents: the neutral (non-destructive-styled) confirm sheet.
-      expect(find.text('¿Eliminar esta categoría?'), findsOneWidget);
+      // It has no title, only `categoryDeleteSimpleMessage` as its single
+      // message (`ConfirmDeleteSimpleSheet` deliberately has `enabled:false`
+      // on its `Sheet Icon Header` title, per its doc comment) — the test
+      // used to assert a title that was never rendered.
+      expect(
+        find.textContaining('se eliminará de tu lista'),
+        findsOneWidget,
+      );
       await $.tester.tap(find.text('Eliminar'));
       await $.tester.pumpAndSettle();
       // Same async-hop caveat as accounts_patrol_test.dart: the delete, the
@@ -122,8 +139,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       await $.tester.tap(find.byTooltip(_addCategoryTooltip));
       await $.tester.pumpAndSettle();
@@ -156,8 +172,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       await $.tester.tap(find.byTooltip(_addCategoryTooltip));
       await $.tester.pumpAndSettle();
@@ -204,11 +219,23 @@ void main() {
 
       // With an associated transaction, this is the "reasignar / dejar sin
       // categoría" sheet, distinguishable from the simple one by its count
-      // message.
-      expect(find.text('Tiene 1 movimiento asociado.'), findsOneWidget);
-      // "Dejar sin categoría" is already the default radio choice: no extra
-      // tap needed before confirming.
-      await $.tester.tap(find.text('Eliminar'));
+      // message (`categoryDeleteTransactionsMessage`, interpolates the real
+      // category name and count, so match on a stable substring instead of
+      // the full string).
+      expect(
+        find.textContaining('tiene 1 movimiento asociado'),
+        findsOneWidget,
+      );
+      // "Reasignar a otra categoría" is the default radio choice
+      // (`_ConfirmDeleteWithTransactionsSheetState._choice` starts as
+      // `.reassign`), not "Dejar sin categoría" as this test used to assume
+      // — tap it explicitly to switch. The confirm button also reads
+      // "Continuar" here (`commonContinue`), never "Eliminar": picking a
+      // resolution and confirming it (`CategoryFormPage._handlePrompt`)
+      // already commits the delete in one hop, there is no further prompt.
+      await $.tester.tap(find.text('Dejar sin categoría'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Continuar'));
       await $.tester.pumpAndSettle();
       await $.tester.pump(const Duration(milliseconds: 500));
       await $.tester.pumpAndSettle();
@@ -232,8 +259,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       await $.tester.tap(find.byTooltip(_addCategoryTooltip));
       await $.tester.pumpAndSettle();
@@ -260,8 +286,12 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // Active subcategories: the "system restriction" sheet, not the plain
-      // confirm one.
-      expect(find.text('Esta categoría tiene subcategorías'), findsOneWidget);
+      // confirm one (`categoryDeleteSubcategoriesMessage`, interpolates the
+      // real category name and count).
+      expect(
+        find.textContaining('tiene 1 subcategoría activa'),
+        findsOneWidget,
+      );
       await $.tester.tap(find.text('Eliminar todo en cascada'));
       await $.tester.pumpAndSettle();
 
@@ -286,8 +316,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Ver mis categorías'));
-      await $.tester.pumpAndSettle();
+      await _openCategories($);
 
       for (final name in ['Primera cat', 'Segunda cat']) {
         await $.tester.tap(find.byTooltip(_addCategoryTooltip));
