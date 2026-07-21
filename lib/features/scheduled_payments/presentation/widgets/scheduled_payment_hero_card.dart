@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -104,11 +105,19 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
 ///
 /// Tappable only when [pending] is not null: same "tap to confirm" affordance
 /// the previous single-line "Próximo pago" text already offered.
+///
+/// Also carries the "Confirmar ahora" CTA (`Ht24a` in `OY2Kj`,
+/// `docs/bugfixes.md` point 1): a full-width strip pinned to the bottom of
+/// the hero, below the recurrence phrase, shown only for an automatic-mode
+/// template whose next date is not due yet. Once it is due, [pending]
+/// becomes non-null and the whole hero is tappable instead — the CTA never
+/// shows alongside that, it would be a redundant second affordance.
 class ScheduledPaymentHeroCard extends StatelessWidget {
   const ScheduledPaymentHeroCard({
     required this.payment,
     required this.pending,
     required this.onTapPending,
+    required this.onConfirmNow,
     this.executed = false,
     super.key,
   });
@@ -117,8 +126,21 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
   final PendingScheduledOccurrence? pending;
   final VoidCallback onTapPending;
 
+  /// Invoked by the "Confirmar ahora" CTA. Only rendered when
+  /// [showConfirmNow] is true.
+  final VoidCallback onConfirmNow;
+
   /// True for `Eyold`: the one-off already fired, so the hero is history.
   final bool executed;
+
+  /// Automatic mode, not yet due (no [pending] materialized for it), still
+  /// active and not deleted — the one case the due-date tap does not already
+  /// cover.
+  bool get showConfirmNow =>
+      !executed &&
+      !payment.isDeleted &&
+      !payment.requiresConfirmation &&
+      pending == null;
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +225,10 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
               // pill of the same colour and weight in the same card would
               // read as the same affordance with a different meaning. The
               // pending state is expressed in the card's "Estado" row.
+              if (showConfirmNow) ...[
+                const SizedBox(height: 10),
+                ScheduledPaymentConfirmNowButton(onTap: onConfirmNow),
+              ],
             ],
           ),
         ),
@@ -219,5 +245,54 @@ class ScheduledPaymentHeroCard extends StatelessWidget {
       ScheduledPaymentType.expense => formatted,
       ScheduledPaymentType.transfer => formatted,
     };
+  }
+}
+
+/// "Confirmar ahora" (`Ht24a` in `OY2Kj`): full-width strip pinned to the
+/// bottom of [ScheduledPaymentHeroCard], `zap` + label in
+/// `$primary-on-soft-strong` over `$primary-soft`. `zap` was picked over
+/// `check-circle`/`circle-check-big` (already "Terminada"/pago ejecutado in
+/// this feature) and `calendar-check` (already "pago único"): it reads as
+/// "ahora, sin esperar" instead of "completado".
+class ScheduledPaymentConfirmNowButton extends StatelessWidget {
+  const ScheduledPaymentConfirmNowButton({required this.onTap, super.key});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    return Material(
+      color: colors.primarySoft,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                LucideIcons.zap,
+                size: 18,
+                color: colors.primaryOnSoftStrong,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.scheduledPaymentDetailConfirmNowCta,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.primaryOnSoftStrong,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -217,6 +217,8 @@ import 'package:billetudo/features/scheduled_payments/data/repositories/schedule
     as _i9;
 import 'package:billetudo/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart'
     as _i680;
+import 'package:billetudo/features/scheduled_payments/domain/usecases/advance_scheduled_occurrence.dart'
+    as _i325;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/confirm_scheduled_occurrence.dart'
     as _i1034;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/create_scheduled_payment.dart'
@@ -576,6 +578,9 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
+        _i325.AdvanceScheduledOccurrence(
+            gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i1034.ConfirmScheduledOccurrence>(() =>
         _i1034.ConfirmScheduledOccurrence(
             gh<_i680.ScheduledPaymentRepository>()));
@@ -761,6 +766,7 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i636.DeleteScheduledPayment>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
               gh<_i177.RestoreTransaction>(),
+              gh<_i325.AdvanceScheduledOccurrence>(),
             ));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),

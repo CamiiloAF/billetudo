@@ -1507,7 +1507,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetActionDeleteBudget => 'Eliminar presupuesto';
 
   @override
-  String get budgetActionAdjustAmount => 'Ajustar monto — próximo período';
+  String get budgetActionAdjustAmount => 'Ajustar monto — este período';
 
   @override
   String get budgetDetailActionsSubtitle => 'Acciones del presupuesto';
@@ -2081,6 +2081,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduledPaymentDetailHeroLabelExecuted => 'PAGO EJECUTADO';
 
   @override
+  String get scheduledPaymentDetailConfirmNowCta => 'Confirmar ahora';
+
+  @override
   String get scheduledPaymentDetailTagsLabel => 'Etiquetas';
 
   @override
@@ -2236,8 +2239,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get budgetAdjustSheetTitle =>
-      'Ajustar monto — solo el próximo período';
+  String get budgetAdjustSheetTitle => 'Ajustar monto — solo este período';
 
   @override
   String get budgetAdjustSheetHint =>
@@ -2250,7 +2252,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String budgetAdjustNewAmountLabel(String range) {
-    return 'Nuevo monto para el próximo período ($range)';
+    return 'Nuevo monto para este período ($range)';
   }
 
   @override
@@ -2266,21 +2268,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetAdjustRemoveCta => 'Quitar ajuste';
 
   @override
-  String get budgetAdjustBannerLabel => 'Ajuste de monto próximo';
+  String get budgetAdjustBannerLabel => 'Ajuste de monto vigente';
 
   @override
   String budgetAdjustBannerSub(String amount) {
-    return '$amount el próximo período';
+    return '$amount este período';
   }
 
   @override
   String get budgetAdjustScheduledSnackbar =>
-      'Ajuste programado para tu próximo período.';
+      'Ajuste aplicado a tu período actual.';
 
   @override
   String get budgetAdjustUpdatedSnackbar => 'Ajuste actualizado.';
 
   @override
   String get budgetAdjustCancelledSnackbar =>
-      'Ajuste cancelado — tu próximo período vuelve al monto habitual.';
+      'Ajuste cancelado — tu período actual vuelve al monto habitual.';
 }

@@ -494,7 +494,7 @@
   "budgetActionClose": "Close (save to history)",
   "budgetActionDelete": "Delete",
   "budgetActionDeleteBudget": "Delete budget",
-  "budgetActionAdjustAmount": "Adjust amount — next period",
+  "budgetActionAdjustAmount": "Adjust amount — this period",
   "budgetDetailActionsSubtitle": "Budget actions",
   "budgetDeleteConfirmMessage": "This budget will be deleted. You can undo this right after deleting.",
   "budgetFormNewTitle": "New budget",
@@ -626,6 +626,7 @@
   "scheduledFrequencyChipYearly": "Year",
   "scheduledPaymentDetailHeroLabel": "NEXT PAYMENT",
   "scheduledPaymentDetailHeroLabelExecuted": "PAYMENT MADE",
+  "scheduledPaymentDetailConfirmNowCta": "Confirm now",
   "scheduledPaymentDetailRecurrenceOnce": "Just once on {date}",
   "@scheduledPaymentDetailRecurrenceOnce": {
     "placeholders": { "date": { "type": "String" } }
@@ -757,13 +758,13 @@
   "scheduledSnoozeSheetTitle": "Snooze payment",
   "scheduledUndoSkipMessage": "Payment skipped",
   "scheduledUndoSnoozeMessage": "Payment snoozed",
-  "budgetAdjustSheetTitle": "Adjust amount — just for the next period",
+  "budgetAdjustSheetTitle": "Adjust amount — just for this period",
   "budgetAdjustSheetHint": "The rest of your periods stay the same, with nothing else for you to do.",
   "budgetAdjustCurrentAmountLabel": "Current amount ({range})",
   "@budgetAdjustCurrentAmountLabel": {
     "placeholders": { "range": { "type": "String" } }
   },
-  "budgetAdjustNewAmountLabel": "New amount for the next period ({range})",
+  "budgetAdjustNewAmountLabel": "New amount for this period ({range})",
   "@budgetAdjustNewAmountLabel": {
     "placeholders": { "range": { "type": "String" } }
   },
@@ -778,12 +779,12 @@
   },
   "budgetAdjustApplyCta": "Apply changes",
   "budgetAdjustRemoveCta": "Remove adjustment",
-  "budgetAdjustBannerLabel": "Upcoming amount adjustment",
-  "budgetAdjustBannerSub": "{amount} next period",
+  "budgetAdjustBannerLabel": "Active amount adjustment",
+  "budgetAdjustBannerSub": "{amount} this period",
   "@budgetAdjustBannerSub": {
     "placeholders": { "amount": { "type": "String" } }
   },
-  "budgetAdjustScheduledSnackbar": "Adjustment scheduled for your next period.",
+  "budgetAdjustScheduledSnackbar": "Adjustment applied to your current period.",
   "budgetAdjustUpdatedSnackbar": "Adjustment updated.",
-  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — your next period goes back to the usual amount."
+  "budgetAdjustCancelledSnackbar": "Adjustment cancelled — your current period goes back to the usual amount."
 }

@@ -1503,7 +1503,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetActionDeleteBudget => 'Delete budget';
 
   @override
-  String get budgetActionAdjustAmount => 'Adjust amount — next period';
+  String get budgetActionAdjustAmount => 'Adjust amount — this period';
 
   @override
   String get budgetDetailActionsSubtitle => 'Budget actions';
@@ -2079,6 +2079,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledPaymentDetailHeroLabelExecuted => 'PAYMENT MADE';
 
   @override
+  String get scheduledPaymentDetailConfirmNowCta => 'Confirm now';
+
+  @override
   String get scheduledPaymentDetailTagsLabel => 'Tags';
 
   @override
@@ -2235,8 +2238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get budgetAdjustSheetTitle =>
-      'Adjust amount — just for the next period';
+  String get budgetAdjustSheetTitle => 'Adjust amount — just for this period';
 
   @override
   String get budgetAdjustSheetHint =>
@@ -2249,7 +2251,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String budgetAdjustNewAmountLabel(String range) {
-    return 'New amount for the next period ($range)';
+    return 'New amount for this period ($range)';
   }
 
   @override
@@ -2265,21 +2267,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetAdjustRemoveCta => 'Remove adjustment';
 
   @override
-  String get budgetAdjustBannerLabel => 'Upcoming amount adjustment';
+  String get budgetAdjustBannerLabel => 'Active amount adjustment';
 
   @override
   String budgetAdjustBannerSub(String amount) {
-    return '$amount next period';
+    return '$amount this period';
   }
 
   @override
   String get budgetAdjustScheduledSnackbar =>
-      'Adjustment scheduled for your next period.';
+      'Adjustment applied to your current period.';
 
   @override
   String get budgetAdjustUpdatedSnackbar => 'Adjustment updated.';
 
   @override
   String get budgetAdjustCancelledSnackbar =>
-      'Adjustment cancelled — your next period goes back to the usual amount.';
+      'Adjustment cancelled — your current period goes back to the usual amount.';
 }

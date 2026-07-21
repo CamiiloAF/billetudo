@@ -514,6 +514,57 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         return const Right(unit);
       });
 
+  @override
+  FutureResult<PendingScheduledOccurrence> advanceScheduledOccurrence(
+    String scheduledPaymentId,
+  ) =>
+      _guard(() async {
+        final row =
+            await _local.watchScheduledPaymentRow(scheduledPaymentId).first;
+        if (row == null) {
+          return Left(
+            NotFoundFailure(
+              'scheduled payment "$scheduledPaymentId" does not exist',
+            ),
+          );
+        }
+        final template = row.scheduledPayment;
+        if (template.requiresConfirmation) {
+          return const Left(
+            ValidationFailure(
+              'only an automatic-mode template can be advanced on demand — '
+              'a manual-mode template already surfaces its due occurrence '
+              'through the due-date path',
+            ),
+          );
+        }
+        final pendingRow = await _ensureDuePendingOccurrence(
+          template,
+          DateTime.now(),
+          force: true,
+        );
+        if (pendingRow == null) {
+          return const Left(
+            ValidationFailure(
+              'this scheduled payment has nothing left to confirm',
+            ),
+          );
+        }
+        final tags = await _tags.tagsFor(scheduledPaymentId);
+        return Right(
+          PendingScheduledOccurrence(
+            occurrence: ScheduledPaymentOccurrenceMapper.toEntity(pendingRow),
+            scheduledPayment: ScheduledPaymentMapper.toEntity(template),
+            accountName: row.account.name,
+            categoryName: row.category?.name,
+            categoryIcon: row.category?.icon,
+            categoryColor: row.category?.color,
+            transferAccountName: row.transferAccount?.name,
+            tagIds: tags.map((tag) => tag.id).toList(),
+          ),
+        );
+      });
+
   // -- Shared helpers ---------------------------------------------------------
 
   /// Resolves the occurrence the detail screen shows/acts on as "pendiente"
@@ -531,12 +582,23 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   /// friends) works identically for both modes from the detail screen.
   /// Idempotent: a later call, or the next catch-up run, finds the row
   /// already there and leaves it alone.
+  ///
+  /// [force] lifts the due-date gate — used only by
+  /// [advanceScheduledOccurrence] ("Confirmar ahora", HU-05/`docs/bugfixes.md`
+  /// point 1), whose whole point is materializing the occurrence *before*
+  /// `nextDate` is due. It never lifts the other guards (tombstoned,
+  /// past `endDate`, already-resolved date): those describe "nothing left to
+  /// confirm", which forcing cannot change.
   Future<db.ScheduledPaymentOccurrence?> _ensureDuePendingOccurrence(
     db.ScheduledPayment template,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    bool force = false,
+  }) async {
     final existing = await _local.getNextAwaitingOccurrence(template.id);
     if (existing != null) {
+      if (force) {
+        return existing;
+      }
       final effectiveDate = existing.snoozedToDate ?? existing.occurrenceDate;
       return ScheduledPaymentOccurrence.dateIsDueOn(effectiveDate, now)
           ? existing
@@ -549,12 +611,15 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     if (endDate != null && template.nextDate.isAfter(endDate)) {
       return null;
     }
-    if (!ScheduledPaymentOccurrence.dateIsDueOn(template.nextDate, now)) {
+    if (!force &&
+        !ScheduledPaymentOccurrence.dateIsDueOn(template.nextDate, now)) {
       return null;
     }
     // Guards against a duplicate for an exact date already resolved (e.g. a
     // `once` template already `confirmed`, whose `nextDate` never advances
-    // and would otherwise look "due" forever).
+    // and would otherwise look "due" forever). Also applies under `force`:
+    // an already-resolved date means there is nothing left to confirm, not
+    // something to re-materialize.
     final alreadyRecorded = await _local.getOccurrenceForDate(
       template.id,
       template.nextDate,

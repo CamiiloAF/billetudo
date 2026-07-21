@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../transactions/domain/entities/transaction.dart' as tx;
+import '../../domain/entities/pending_scheduled_occurrence.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 
 enum ScheduledPaymentDetailStatus {
@@ -26,6 +27,8 @@ class ScheduledPaymentDetailState extends Equatable {
     this.pendingUndoSnoozeOccurrenceId,
     this.failure,
     this.pendingUndoDeleteTransactionId,
+    this.confirmingNow = false,
+    this.confirmNowOccurrence,
   });
 
   final ScheduledPaymentDetailStatus status;
@@ -56,6 +59,16 @@ class ScheduledPaymentDetailState extends Equatable {
   /// this template's history. `null` once dismissed or undone.
   final String? pendingUndoDeleteTransactionId;
 
+  /// Whether "Confirmar ahora" (HU-05, `docs/bugfixes.md` point 1) is
+  /// currently materializing the occurrence — disables the CTA against a
+  /// double tap while it runs.
+  final bool confirmingNow;
+
+  /// Set right after "Confirmar ahora" successfully materializes a pending
+  /// occurrence, so the page can open the mandatory `ConfirmationSheet` for
+  /// it. Cleared once the page has consumed it.
+  final PendingScheduledOccurrence? confirmNowOccurrence;
+
   int get historyTotalCount => detail?.historyTotalCount ?? 0;
 
   bool get hasMoreHistory => history.length < historyTotalCount;
@@ -73,6 +86,9 @@ class ScheduledPaymentDetailState extends Equatable {
     Failure? failure,
     String? pendingUndoDeleteTransactionId,
     bool clearPendingUndoDeleteTransaction = false,
+    bool? confirmingNow,
+    PendingScheduledOccurrence? confirmNowOccurrence,
+    bool clearConfirmNowOccurrence = false,
   }) =>
       ScheduledPaymentDetailState(
         status: status ?? this.status,
@@ -91,6 +107,10 @@ class ScheduledPaymentDetailState extends Equatable {
             ? null
             : (pendingUndoDeleteTransactionId ??
                 this.pendingUndoDeleteTransactionId),
+        confirmingNow: confirmingNow ?? this.confirmingNow,
+        confirmNowOccurrence: clearConfirmNowOccurrence
+            ? null
+            : (confirmNowOccurrence ?? this.confirmNowOccurrence),
       );
 
   @override
@@ -105,5 +125,7 @@ class ScheduledPaymentDetailState extends Equatable {
         pendingUndoSnoozeOccurrenceId,
         failure,
         pendingUndoDeleteTransactionId,
+        confirmingNow,
+        confirmNowOccurrence,
       ];
 }

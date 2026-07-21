@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
+import '../../domain/usecases/advance_scheduled_occurrence.dart';
 import '../../domain/usecases/delete_scheduled_payment.dart';
 import '../../domain/usecases/get_scheduled_payment_detail.dart';
 import '../../domain/usecases/get_scheduled_payment_history.dart';
@@ -23,6 +24,7 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     this._deleteScheduledPayment,
     this._undoSnoozeOccurrence,
     this._restoreTransaction,
+    this._advanceScheduledOccurrence,
   ) : super(const ScheduledPaymentDetailState());
 
   final GetScheduledPaymentDetail _getScheduledPaymentDetail;
@@ -30,6 +32,7 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
   final DeleteScheduledPayment _deleteScheduledPayment;
   final UndoSnoozeScheduledOccurrence _undoSnoozeOccurrence;
   final RestoreTransaction _restoreTransaction;
+  final AdvanceScheduledOccurrence _advanceScheduledOccurrence;
 
   StreamSubscription<Result<ScheduledPaymentDetail>>? _subscription;
   String? _id;
@@ -168,6 +171,42 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     }
     emit(state.copyWith(clearPendingUndoDeleteTransaction: true));
   }
+
+  /// HU-05 "Confirmar ahora" (`docs/bugfixes.md` point 1): materializes an
+  /// automatic-mode template's next occurrence on demand, ahead of its
+  /// `nextDate`, then hands it to the page so it can open the same mandatory
+  /// `ConfirmationSheet` every other confirm path already funnels through —
+  /// this never applies anything to the balance by itself.
+  Future<void> confirmNow() async {
+    final id = _id;
+    if (id == null || state.confirmingNow) {
+      return;
+    }
+    emit(state.copyWith(confirmingNow: true));
+    final result = await _advanceScheduledOccurrence(scheduledPaymentId: id);
+    if (isClosed) {
+      return;
+    }
+    switch (result) {
+      case Left(value: final failure):
+        emit(
+          state.copyWith(confirmingNow: false, failure: failure),
+        );
+      case Right(value: final pending):
+        emit(
+          state.copyWith(
+            confirmingNow: false,
+            confirmNowOccurrence: pending,
+          ),
+        );
+    }
+  }
+
+  /// The page has opened (or given up opening) the `ConfirmationSheet` for
+  /// [confirmNow]'s result — clears the one-shot trigger so it does not
+  /// re-fire on the next unrelated state change.
+  void dismissConfirmNow() =>
+      emit(state.copyWith(clearConfirmNowOccurrence: true));
 
   @override
   Future<void> close() async {

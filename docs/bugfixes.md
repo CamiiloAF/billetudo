@@ -1,7 +1,6 @@
-1)  - Un pago programado en modo automático también debe permitir crear el registro manual 
-    - Node ID: OY2Kj un usuario debería tener la opción de confirmar el pago programado desde el detalle en cualquier momento
-    - Node IDs: ie6BF, eswQN esto debería mostrarse si la fecha de pago es HOY o anterior
-    - Hay un bug, el campo "Primer pago" está cambiando solo. Tenía un pago programado para el 19 de julio y al llegar a esa fecha voy al formulario de edición y veo que el cmapo primer pago ahora dice "19 de Agosto"
+1) ~~Un pago programado en modo automático también debe permitir crear el registro manual~~ — ✅ hecho 2026-07-20. Tenía 2 partes con estados distintos, corregidas en sesiones separadas:
+    - Node IDs `ie6BF`/`eswQN` (mostrar la opción si la fecha es HOY o anterior) y el bug del campo "Primer pago" cambiando solo → cerrados en una sesión previa (commit `4659072`, mecanismo `_ensureDuePendingOccurrence`/`dateIsDueOn`).
+    - Node ID `OY2Kj` (confirmar desde el detalle **en cualquier momento**, no solo vencido) → quedó sin implementar pese a que el ítem no tenía tachado; detectado y corregido en esta sesión. Botón "Confirmar ahora" nuevo en el Hero del detalle (visible solo si automático + no vencido), diseñado en Pencil (2 variantes → elegida "CTA junto al Hero" → ícono `zap` decidido por `ui-ux-reviewer` tras descartar colisiones semánticas con otros íconos de la misma feature), claro + oscuro. Mecanismo: `_ensureDuePendingOccurrence` ganó un parámetro `force` que salta solo el chequeo de fecha vencida, conservando todas las demás guardas (tombstoned, `endDate`, ya resuelta); nuevo usecase `AdvanceScheduledOccurrence`, reusa el `ConfirmationSheet`/`ConfirmScheduledOccurrence` existente sin cambios. Verificado contra Pencil (1 hallazgo MENOR de gap 12px vs 10px, corregido), tests/goldens verdes y reviews finales sin hallazgos.
 
 2) ~~Ejecutar pasada de fidelidad en Transacciones~~ — ✅ hecho 2026-07-20, ver `docs/dev-runs/fidelidad-transacciones.md`
 

@@ -678,6 +678,145 @@ void main() {
     });
   });
 
+  group(
+      'advanceScheduledOccurrence (HU-05 "Confirmar ahora", '
+      'docs/bugfixes.md point 1)', () {
+    test(
+        'plantilla automática con nextDate futuro materializa una ocurrencia '
+        'pending forzada, sin generar transacción', () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 12, 1)),
+      );
+
+      final result =
+          await repository.advanceScheduledOccurrence(template.id);
+
+      expect(result.isRight(), isTrue);
+      final pending = result.getRight().toNullable()!;
+      expect(
+        pending.occurrence.status,
+        domain.ScheduledOccurrenceStatus.pending,
+      );
+      expect(pending.occurrence.occurrenceDate, DateTime(2026, 12, 1));
+      expect(pending.scheduledPayment.id, template.id);
+
+      final occurrences =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(occurrences.single.scheduledPaymentId, template.id);
+      expect(occurrences.single.status, ScheduledOccurrenceStatus.pending);
+      // No mueve dinero: solo materializa la ocurrencia a confirmar.
+      expect(await database.select(database.transactions).get(), isEmpty);
+      // La plantilla queda intacta (su nextDate no avanza).
+      final templateRow = await rowOf(template.id);
+      expect(templateRow.nextDate, DateTime(2026, 12, 1));
+    });
+
+    test('plantilla en modo manual se rechaza con ValidationFailure',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 12, 1),
+          requiresConfirmation: true,
+        ),
+      );
+
+      final result =
+          await repository.advanceScheduledOccurrence(template.id);
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+
+    test('plantilla borrada (tombstonedAt) sigue bloqueando aun con force',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 12, 1)),
+      );
+      await repository.deleteScheduledPayment(template.id);
+
+      final result =
+          await repository.advanceScheduledOccurrence(template.id);
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+
+    test('plantilla con endDate ya vencido sigue bloqueando aun con force',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 12, 1),
+          endDate: DateTime(2026, 11, 1),
+        ),
+      );
+
+      final result =
+          await repository.advanceScheduledOccurrence(template.id);
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      expect(
+        await database.select(database.scheduledPaymentOccurrences).get(),
+        isEmpty,
+      );
+    });
+
+    test(
+        'plantilla once ya confirmada (nada que confirmar) sigue bloqueando '
+        'aun con force', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          frequency: domain.ScheduledPaymentFrequency.once,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 7, 1),
+      );
+
+      final result =
+          await repository.advanceScheduledOccurrence(template.id);
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+      // No agrega una segunda ocurrencia junto a la ya confirmada.
+      final occurrences = await (database.select(
+        database.scheduledPaymentOccurrences,
+      )..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(occurrences, hasLength(1));
+      expect(occurrences.single.status, ScheduledOccurrenceStatus.confirmed);
+    });
+
+    test('llamar dos veces seguidas reutiliza la misma ocurrencia, sin duplicar',
+        () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 12, 1)),
+      );
+
+      final first = await repository.advanceScheduledOccurrence(template.id);
+      final second = await repository.advanceScheduledOccurrence(template.id);
+
+      expect(
+        first.getRight().toNullable()!.occurrence.id,
+        second.getRight().toNullable()!.occurrence.id,
+      );
+      final occurrences =
+          await database.select(database.scheduledPaymentOccurrences).get();
+      expect(occurrences, hasLength(1));
+    });
+
+    test('plantilla inexistente es NotFound', () async {
+      final result = await repository.advanceScheduledOccurrence('no-existe');
+
+      expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
+    });
+  });
+
   group('watchFinishedScheduledPayments (filtro "Terminados")', () {
     test(
         'expone la fecha del último pago realmente generado, no la de fin '

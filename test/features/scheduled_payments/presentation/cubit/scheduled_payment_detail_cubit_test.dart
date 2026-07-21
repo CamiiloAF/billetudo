@@ -1,5 +1,6 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
+import 'package:billetudo/features/scheduled_payments/domain/usecases/advance_scheduled_occurrence.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
@@ -12,6 +13,9 @@ import 'usecase_mocks.dart';
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
+class MockAdvanceScheduledOccurrence extends Mock
+    implements AdvanceScheduledOccurrence {}
+
 /// HU-05/HU-07: hybrid detail screen — load, error, in-place history
 /// pagination (criterion 13), delete flow (criterion 12), and the
 /// posponer/deshacer bridge (criterion 10).
@@ -21,6 +25,7 @@ void main() {
   late MockDeleteScheduledPayment deleteScheduledPayment;
   late MockUndoSnoozeScheduledOccurrence undoSnoozeOccurrence;
   late MockRestoreTransaction restoreTransaction;
+  late MockAdvanceScheduledOccurrence advanceScheduledOccurrence;
 
   final detail = ScheduledPaymentDetail(
     scheduledPayment: buildScheduledPayment(),
@@ -36,6 +41,7 @@ void main() {
     deleteScheduledPayment = MockDeleteScheduledPayment();
     undoSnoozeOccurrence = MockUndoSnoozeScheduledOccurrence();
     restoreTransaction = MockRestoreTransaction();
+    advanceScheduledOccurrence = MockAdvanceScheduledOccurrence();
   });
 
   ScheduledPaymentDetailCubit build() => ScheduledPaymentDetailCubit(
@@ -44,6 +50,7 @@ void main() {
         deleteScheduledPayment,
         undoSnoozeOccurrence,
         restoreTransaction,
+        advanceScheduledOccurrence,
       );
 
   blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
@@ -271,6 +278,102 @@ void main() {
       build: build,
       act: (cubit) => cubit.undoDelete(),
       verify: (_) => verifyNever(() => restoreTransaction(any())),
+    );
+  });
+
+  group(
+      'confirmNow / dismissConfirmNow (HU-05 "Confirmar ahora", '
+      'docs/bugfixes.md point 1)', () {
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'éxito: emite confirmingNow y luego la ocurrencia materializada',
+      setUp: () {
+        when(() => getDetail('sp-1'))
+            .thenAnswer((_) => Stream.value(Right(detail)));
+        when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .thenAnswer((_) async => Right(buildPendingOccurrence()));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('sp-1');
+        await Future<void>.delayed(Duration.zero);
+        await cubit.confirmNow();
+      },
+      verify: (cubit) {
+        expect(cubit.state.confirmingNow, isFalse);
+        expect(cubit.state.confirmNowOccurrence, buildPendingOccurrence());
+        verify(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'falla: limpia confirmingNow y guarda la falla, sin ocurrencia',
+      setUp: () {
+        when(() => getDetail('sp-1'))
+            .thenAnswer((_) => Stream.value(Right(detail)));
+        when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .thenAnswer(
+          (_) async => const Left(
+            ValidationFailure('only an automatic-mode template can be advanced'),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('sp-1');
+        await Future<void>.delayed(Duration.zero);
+        await cubit.confirmNow();
+      },
+      verify: (cubit) {
+        expect(cubit.state.confirmingNow, isFalse);
+        expect(cubit.state.confirmNowOccurrence, isNull);
+        expect(cubit.state.failure, isA<ValidationFailure>());
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'una segunda llamada mientras confirmingNow está en curso no reentra',
+      setUp: () {
+        when(() => getDetail('sp-1'))
+            .thenAnswer((_) => Stream.value(Right(detail)));
+        when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return Right(buildPendingOccurrence());
+        });
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('sp-1');
+        await Future<void>.delayed(Duration.zero);
+        final first = cubit.confirmNow();
+        final second = cubit.confirmNow();
+        await Future.wait([first, second]);
+      },
+      verify: (_) {
+        verify(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .called(1);
+      },
+    );
+
+    blocTest<ScheduledPaymentDetailCubit, ScheduledPaymentDetailState>(
+      'dismissConfirmNow limpia la ocurrencia materializada',
+      setUp: () {
+        when(() => getDetail('sp-1'))
+            .thenAnswer((_) => Stream.value(Right(detail)));
+        when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
+            .thenAnswer((_) async => Right(buildPendingOccurrence()));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('sp-1');
+        await Future<void>.delayed(Duration.zero);
+        await cubit.confirmNow();
+        cubit.dismissConfirmNow();
+      },
+      verify: (cubit) {
+        expect(cubit.state.confirmNowOccurrence, isNull);
+      },
     );
   });
 }

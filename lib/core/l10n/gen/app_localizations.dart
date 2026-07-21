@@ -2639,7 +2639,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetActionAdjustAmount.
   ///
   /// In es, this message translates to:
-  /// **'Ajustar monto — próximo período'**
+  /// **'Ajustar monto — este período'**
   String get budgetActionAdjustAmount;
 
   /// No description provided for @budgetDetailActionsSubtitle.
@@ -3651,6 +3651,12 @@ abstract class AppLocalizations {
   /// **'PAGO EJECUTADO'**
   String get scheduledPaymentDetailHeroLabelExecuted;
 
+  /// No description provided for @scheduledPaymentDetailConfirmNowCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar ahora'**
+  String get scheduledPaymentDetailConfirmNowCta;
+
   /// No description provided for @scheduledPaymentDetailTagsLabel.
   ///
   /// In es, this message translates to:
@@ -3882,7 +3888,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustSheetTitle.
   ///
   /// In es, this message translates to:
-  /// **'Ajustar monto — solo el próximo período'**
+  /// **'Ajustar monto — solo este período'**
   String get budgetAdjustSheetTitle;
 
   /// No description provided for @budgetAdjustSheetHint.
@@ -3900,7 +3906,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustNewAmountLabel.
   ///
   /// In es, this message translates to:
-  /// **'Nuevo monto para el próximo período ({range})'**
+  /// **'Nuevo monto para este período ({range})'**
   String budgetAdjustNewAmountLabel(String range);
 
   /// No description provided for @budgetAdjustExplainer.
@@ -3925,19 +3931,19 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustBannerLabel.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste de monto próximo'**
+  /// **'Ajuste de monto vigente'**
   String get budgetAdjustBannerLabel;
 
   /// No description provided for @budgetAdjustBannerSub.
   ///
   /// In es, this message translates to:
-  /// **'{amount} el próximo período'**
+  /// **'{amount} este período'**
   String budgetAdjustBannerSub(String amount);
 
   /// No description provided for @budgetAdjustScheduledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste programado para tu próximo período.'**
+  /// **'Ajuste aplicado a tu período actual.'**
   String get budgetAdjustScheduledSnackbar;
 
   /// No description provided for @budgetAdjustUpdatedSnackbar.
@@ -3949,7 +3955,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetAdjustCancelledSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Ajuste cancelado — tu próximo período vuelve al monto habitual.'**
+  /// **'Ajuste cancelado — tu período actual vuelve al monto habitual.'**
   String get budgetAdjustCancelledSnackbar;
 }
 

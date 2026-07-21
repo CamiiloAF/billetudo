@@ -62,13 +62,27 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
               current.pendingUndoSnoozeOccurrenceId ||
           (previous.pendingUndoDeleteTransactionId !=
                   current.pendingUndoDeleteTransactionId &&
-              current.pendingUndoDeleteTransactionId != null),
+              current.pendingUndoDeleteTransactionId != null) ||
+          (previous.confirmNowOccurrence != current.confirmNowOccurrence &&
+              current.confirmNowOccurrence != null),
       listener: (context, state) {
         if (state.status == ScheduledPaymentDetailStatus.closed) {
           Navigator.of(context).pop();
           return;
         }
         final cubit = context.read<ScheduledPaymentDetailCubit>();
+        final confirmNowOccurrence = state.confirmNowOccurrence;
+        if (confirmNowOccurrence != null) {
+          // "Confirmar ahora" (`docs/bugfixes.md` point 1): hands the freshly
+          // materialized occurrence straight to the same mandatory
+          // `ConfirmationSheet` the due-date tap already opens — no separate
+          // one-tap shortcut, same HU-03 invariant.
+          unawaited(
+            ConfirmationSheet.show(context, source: confirmNowOccurrence)
+                .whenComplete(cubit.dismissConfirmNow),
+          );
+          return;
+        }
         final undoSnoozeId = state.pendingUndoSnoozeOccurrenceId;
         if (undoSnoozeId != null) {
           ScaffoldMessenger.of(context)
@@ -250,6 +264,8 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
           pending: pending,
           executed: detail.onceAlreadyGenerated,
           onTapPending: () => ConfirmationSheet.show(context, source: pending!),
+          onConfirmNow: () =>
+              context.read<ScheduledPaymentDetailCubit>().confirmNow(),
         ),
         const SizedBox(height: 16),
         InfoCard(

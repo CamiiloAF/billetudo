@@ -131,4 +131,23 @@ abstract class ScheduledPaymentRepository {
   /// Undo for [snoozeOccurrence]: clears `snoozedToDate` and returns the
   /// occurrence to `pending`.
   FutureResult<Unit> undoSnoozeOccurrence(String occurrenceId);
+
+  /// HU-05 "Confirmar ahora": materializes a `pending` occurrence for an
+  /// automatic-mode template's [scheduledPaymentId] on demand, without
+  /// requiring `nextDate` to be due yet (`docs/bugfixes.md` point 1 — until
+  /// now, an automatic template could only be confirmed/registered manually
+  /// once its date had already passed). Only ever called explicitly from the
+  /// detail screen's CTA, never from a `watch` — materializing a pending
+  /// occurrence just because the detail screen is open would silently
+  /// advance every automatic template a user happens to look at.
+  ///
+  /// Idempotent alongside the catch-up generator and the due-date branch of
+  /// [watchScheduledPaymentDetail]: if an awaiting occurrence already exists
+  /// for this template, it is reused instead of duplicated. Fails with
+  /// [ValidationFailure] for a manual-mode template (it already has its own
+  /// due-date path) or when the template has nothing left to confirm (past
+  /// `endDate`, tombstoned, or a `once` template already fired).
+  FutureResult<PendingScheduledOccurrence> advanceScheduledOccurrence(
+    String scheduledPaymentId,
+  );
 }
