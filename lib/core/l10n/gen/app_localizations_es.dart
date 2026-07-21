@@ -130,6 +130,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountDebtLabel => 'Deuda actual';
 
   @override
+  String get accountDebtShortLabel => 'Deuda';
+
+  @override
   String get accountOverLimitBadge => 'Sobrecupo';
 
   @override
@@ -212,22 +215,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountFormTypeChange => 'Cambiar';
 
   @override
-  String get accountFormNameLabel => 'Nombre';
+  String get accountFormNameLabel => 'Nombre de la cuenta';
 
   @override
   String get accountFormNameHint => 'Ej. Cuenta de ahorros';
 
   @override
-  String get accountFormInstitutionLabel => 'Institución';
+  String get accountFormInstitutionLabel => 'Institución (opcional)';
 
   @override
-  String get accountFormInstitutionHint => 'Ej. Bancolombia';
+  String get accountFormInstitutionHint => 'Opcional';
 
   @override
   String get accountFormInitialBalanceLabel => 'Saldo inicial';
-
-  @override
-  String get accountFormCurrentDebtLabel => 'Deuda actual';
 
   @override
   String get accountFormCurrencyLabel => 'Moneda';
@@ -271,10 +271,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountFormPaymentDueDayLabel => 'Día de pago';
 
   @override
-  String get accountFormAmountHint => '0';
+  String get accountFormAmountHint => '\$0';
 
   @override
   String get accountFormSelectHint => 'Seleccionar';
+
+  @override
+  String get accountFormSaveCta => 'Guardar cuenta';
 
   @override
   String get accountErrorType => 'Elige el tipo de cuenta.';
@@ -313,19 +316,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountErrorPaymentDueDay => 'Elige un día entre 1 y 31.';
 
   @override
-  String get accountDeleteSheetTitle => '¿Eliminar esta cuenta?';
-
-  @override
   String get accountDeleteSheetMessage =>
-      'La cuenta dejará de aparecer en tus listas.';
+      'Esta cuenta no tiene movimientos asociados. Esta acción no se puede deshacer.';
 
   @override
   String accountDeleteSheetImpact(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiene $count movimientos asociados.',
-      one: 'Tiene 1 movimiento asociado.',
+      other:
+          'Esta cuenta tiene $count transacciones asociadas. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.',
+      one:
+          'Esta cuenta tiene 1 transacción asociada. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.',
     );
     return '$_temp0';
   }
@@ -338,11 +340,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Podrás recuperarla cuando quieras desde “Cuentas archivadas”.';
 
   @override
-  String get accountChangeSheetTitle => '¿Confirmas el cambio?';
-
-  @override
   String get accountChangeSheetMessage =>
-      'Esta cuenta ya tiene movimientos. Cambiar su tipo o su moneda cambia cómo se leen sus cifras.';
+      'Cambiar el tipo o la moneda de esta cuenta puede afectar cálculos y reportes de tus transacciones existentes. ¿Deseas continuar?';
 
   @override
   String get accountChangeConfirm => 'Confirmar';
@@ -976,6 +975,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeNoSpendingYet => 'Aún no hay gastos este mes';
+
+  @override
+  String homeHeroBudgetProgress(int pct, String amount) {
+    return '$pct% de $amount';
+  }
+
+  @override
+  String homeHeroBudgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'faltan $count días',
+      one: 'falta $count día',
+      zero: 'último día',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeQuickAccessTitle => 'Acceso rápido';

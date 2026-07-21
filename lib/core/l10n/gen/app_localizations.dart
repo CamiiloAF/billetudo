@@ -326,6 +326,12 @@ abstract class AppLocalizations {
   /// **'Deuda actual'**
   String get accountDebtLabel;
 
+  /// No description provided for @accountDebtShortLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get accountDebtShortLabel;
+
   /// No description provided for @accountOverLimitBadge.
   ///
   /// In es, this message translates to:
@@ -467,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountFormNameLabel.
   ///
   /// In es, this message translates to:
-  /// **'Nombre'**
+  /// **'Nombre de la cuenta'**
   String get accountFormNameLabel;
 
   /// No description provided for @accountFormNameHint.
@@ -479,13 +485,13 @@ abstract class AppLocalizations {
   /// No description provided for @accountFormInstitutionLabel.
   ///
   /// In es, this message translates to:
-  /// **'Institución'**
+  /// **'Institución (opcional)'**
   String get accountFormInstitutionLabel;
 
   /// No description provided for @accountFormInstitutionHint.
   ///
   /// In es, this message translates to:
-  /// **'Ej. Bancolombia'**
+  /// **'Opcional'**
   String get accountFormInstitutionHint;
 
   /// No description provided for @accountFormInitialBalanceLabel.
@@ -493,12 +499,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo inicial'**
   String get accountFormInitialBalanceLabel;
-
-  /// Reemplaza a accountFormInitialBalanceLabel cuando el tipo de cuenta es tarjeta de crédito: el monto que se escribe es la deuda actual, no un saldo.
-  ///
-  /// In es, this message translates to:
-  /// **'Deuda actual'**
-  String get accountFormCurrentDebtLabel;
 
   /// No description provided for @accountFormCurrencyLabel.
   ///
@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountFormAmountHint.
   ///
   /// In es, this message translates to:
-  /// **'0'**
+  /// **'\$0'**
   String get accountFormAmountHint;
 
   /// No description provided for @accountFormSelectHint.
@@ -589,6 +589,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Seleccionar'**
   String get accountFormSelectHint;
+
+  /// No description provided for @accountFormSaveCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cuenta'**
+  String get accountFormSaveCta;
 
   /// No description provided for @accountErrorType.
   ///
@@ -656,22 +662,16 @@ abstract class AppLocalizations {
   /// **'Elige un día entre 1 y 31.'**
   String get accountErrorPaymentDueDay;
 
-  /// No description provided for @accountDeleteSheetTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Eliminar esta cuenta?'**
-  String get accountDeleteSheetTitle;
-
   /// No description provided for @accountDeleteSheetMessage.
   ///
   /// In es, this message translates to:
-  /// **'La cuenta dejará de aparecer en tus listas.'**
+  /// **'Esta cuenta no tiene movimientos asociados. Esta acción no se puede deshacer.'**
   String get accountDeleteSheetMessage;
 
   /// HU-08: impacto en tono neutral, informa sin culpar.
   ///
   /// In es, this message translates to:
-  /// **'{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}'**
+  /// **'{count, plural, =1{Esta cuenta tiene 1 transacción asociada. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.} other{Esta cuenta tiene {count} transacciones asociadas. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.}}'**
   String accountDeleteSheetImpact(int count);
 
   /// No description provided for @accountArchiveSheetTitle.
@@ -686,16 +686,10 @@ abstract class AppLocalizations {
   /// **'Podrás recuperarla cuando quieras desde “Cuentas archivadas”.'**
   String get accountArchiveSheetMessage;
 
-  /// No description provided for @accountChangeSheetTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Confirmas el cambio?'**
-  String get accountChangeSheetTitle;
-
   /// No description provided for @accountChangeSheetMessage.
   ///
   /// In es, this message translates to:
-  /// **'Esta cuenta ya tiene movimientos. Cambiar su tipo o su moneda cambia cómo se leen sus cifras.'**
+  /// **'Cambiar el tipo o la moneda de esta cuenta puede afectar cálculos y reportes de tus transacciones existentes. ¿Deseas continuar?'**
   String get accountChangeSheetMessage;
 
   /// No description provided for @accountChangeConfirm.
@@ -1813,6 +1807,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aún no hay gastos este mes'**
   String get homeNoSpendingYet;
+
+  /// Caption izquierdo de la barra de progreso del hero con presupuesto (HU-03, aOhoY): porcentaje gastado del presupuesto global mensual y su monto total.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}% de {amount}'**
+  String homeHeroBudgetProgress(int pct, String amount);
+
+  /// Caption derecho de la barra de progreso del hero con presupuesto (HU-03, aOhoY): días que quedan del periodo mensual vigente.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{último día} one{falta {count} día} other{faltan {count} días}}'**
+  String homeHeroBudgetDaysLeft(int count);
 
   /// Caption de la fila de accesos directos del Home (HU-05b).
   ///

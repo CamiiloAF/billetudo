@@ -14,6 +14,7 @@ Budget buildBudget({
   bool rollover = false,
   String? icon,
   DateTime? archivedAt,
+  DateTime? createdAt,
 }) =>
     Budget(
       id: id,
@@ -28,6 +29,6 @@ Budget buildBudget({
       endDate: endDate,
       alertThresholdPct: alertThresholdPct,
       rollover: rollover,
-      createdAt: DateTime(2024),
+      createdAt: createdAt ?? DateTime(2024),
       updatedAt: 0,
     );

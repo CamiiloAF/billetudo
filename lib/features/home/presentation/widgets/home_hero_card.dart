@@ -5,26 +5,34 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../domain/entities/month_spending.dart';
+import 'home_hero_budget_progress.dart';
 
 /// The compact hero (HU-03): "Gastado en <mes>", the month total, a month
-/// selector chip and — in the "sin presupuesto" state — an invitation to
-/// budget.
+/// selector chip and one of three states below the amount — a budget progress
+/// bar, an invitation to budget, or "aún no hay gastos".
 ///
 /// It never invents a spending cap: without a budget the app knows no limit,
-/// so instead of a fake progress bar it nudges the budgeting habit. The
-/// with-budget progress bar is intentionally out of scope until Budgets exists;
-/// the layout leaves room for it below the amount.
+/// so instead of a fake progress bar it nudges the budgeting habit. With a
+/// qualifying budget (`aOhoY`), [budgetProgress] drives a real progress bar
+/// instead.
 class HomeHeroCard extends StatelessWidget {
   const HomeHeroCard({
     required this.spending,
     required this.monthLabel,
     required this.onMonthTap,
     required this.onCreateBudget,
+    this.budgetProgress,
     super.key,
   });
 
   final MonthSpending spending;
+
+  /// The active global-monthly budget's progress for the visible month
+  /// (HU-03, `aOhoY`), or `null` when none qualifies — see
+  /// `WatchGlobalMonthlyBudgetProgress`.
+  final BudgetWithProgress? budgetProgress;
 
   /// The visible month, already localized (e.g. "julio").
   final String monthLabel;
@@ -81,7 +89,12 @@ class HomeHeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          if (spending.hasExpenses)
+          if (budgetProgress case final progress?)
+            HomeHeroBudgetProgress(
+              progress: progress.progress,
+              currency: progress.budget.currency,
+            )
+          else if (spending.hasExpenses)
             BudgetInvitationLink(onTap: onCreateBudget)
           else
             Text(

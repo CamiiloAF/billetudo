@@ -184,6 +184,7 @@ class _HomePageState extends State<HomePage> {
                         ? const HomeHeroSkeleton()
                         : HomeHeroCard(
                             spending: state.spending!,
+                            budgetProgress: state.budgetProgress,
                             monthLabel: _monthLabel(context, state.month),
                             onMonthTap: () => _openMonthPicker(context, state),
                             onCreateBudget: widget.onCreateBudget,

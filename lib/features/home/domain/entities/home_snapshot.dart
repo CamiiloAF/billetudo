@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import 'month_spending.dart';
 
@@ -11,7 +12,11 @@ import 'month_spending.dart';
 /// Pure aggregation lives here (a `from` factory), so it is unit-testable
 /// without a cubit, a repository or Flutter.
 class HomeSnapshot extends Equatable {
-  const HomeSnapshot({required this.spending, required this.recentActivity});
+  const HomeSnapshot({
+    required this.spending,
+    required this.recentActivity,
+    this.budgetProgress,
+  });
 
   final MonthSpending spending;
 
@@ -20,6 +25,14 @@ class HomeSnapshot extends Equatable {
   /// at [recentActivityLimit]. Unlike [spending], it applies no expense-only
   /// exclusion.
   final List<TransactionWithDetails> recentActivity;
+
+  /// The active global (no account/category scope) monthly budget's progress
+  /// for the viewed month (HU-03, `aOhoY`), or `null` when none qualifies —
+  /// reuses `budgets/domain`'s own entity instead of duplicating it, same
+  /// pattern as depending on `accounts`/`transactions`. This is an independent
+  /// input (not derived from the transactions/accounts aggregation), passed
+  /// straight through by the caller.
+  final BudgetWithProgress? budgetProgress;
 
   /// How many rows the recent feed shows (HU-05: "~5 filas").
   static const int recentActivityLimit = 5;
@@ -33,6 +46,7 @@ class HomeSnapshot extends Equatable {
     required DateTime month,
     required Iterable<TransactionWithDetails> transactions,
     required Iterable<AccountWithBalance> accounts,
+    BudgetWithProgress? budgetProgress,
     String fallbackCurrency = 'COP',
   }) {
     final activeAccountIds = {
@@ -59,9 +73,10 @@ class HomeSnapshot extends Equatable {
         fallbackCurrency: currency,
       ),
       recentActivity: recent.take(recentActivityLimit).toList(),
+      budgetProgress: budgetProgress,
     );
   }
 
   @override
-  List<Object?> get props => [spending, recentActivity];
+  List<Object?> get props => [spending, recentActivity, budgetProgress];
 }

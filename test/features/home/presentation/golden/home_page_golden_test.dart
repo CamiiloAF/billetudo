@@ -1,5 +1,6 @@
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -25,6 +26,7 @@ void main() {
   HomeState readyWith(
     List<dynamic> transactions, {
     AuthUser? user,
+    BudgetWithProgress? budgetProgress,
   }) =>
       HomeState(
         month: month,
@@ -35,6 +37,7 @@ void main() {
           month: month,
           accounts: [buildActiveAccount()],
           transactions: transactions.cast(),
+          budgetProgress: budgetProgress,
         ),
       );
 
@@ -156,6 +159,31 @@ void main() {
           ),
         ),
         'with_data_signed_in_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('with budget progress (HU-03, aOhoY) ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        readyWith(
+          [
+            buildActivity(id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+            buildActivity(
+              id: 'tx-2',
+              categoryName: 'Transporte',
+              amountMinor: 8000,
+              date: DateTime(2026, 7, 10),
+            ),
+          ],
+          budgetProgress: buildHomeBudgetProgress(
+            amountMinor: 600000,
+            spentMinor: 300000,
+            daysLeft: 12,
+          ),
+        ),
+        'with_budget_progress_$suffix',
         brightness: brightness,
       );
     });

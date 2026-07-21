@@ -130,6 +130,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDebtLabel => 'Current debt';
 
   @override
+  String get accountDebtShortLabel => 'Debt';
+
+  @override
   String get accountOverLimitBadge => 'Over limit';
 
   @override
@@ -212,22 +215,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountFormTypeChange => 'Change';
 
   @override
-  String get accountFormNameLabel => 'Name';
+  String get accountFormNameLabel => 'Account name';
 
   @override
   String get accountFormNameHint => 'E.g. Savings account';
 
   @override
-  String get accountFormInstitutionLabel => 'Institution';
+  String get accountFormInstitutionLabel => 'Institution (optional)';
 
   @override
-  String get accountFormInstitutionHint => 'E.g. Bancolombia';
+  String get accountFormInstitutionHint => 'Optional';
 
   @override
   String get accountFormInitialBalanceLabel => 'Opening balance';
-
-  @override
-  String get accountFormCurrentDebtLabel => 'Current debt';
 
   @override
   String get accountFormCurrencyLabel => 'Currency';
@@ -271,10 +271,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountFormPaymentDueDayLabel => 'Payment due day';
 
   @override
-  String get accountFormAmountHint => '0';
+  String get accountFormAmountHint => '\$0';
 
   @override
   String get accountFormSelectHint => 'Select';
+
+  @override
+  String get accountFormSaveCta => 'Save account';
 
   @override
   String get accountErrorType => 'Pick the account type.';
@@ -312,19 +315,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountErrorPaymentDueDay => 'Pick a day between 1 and 31.';
 
   @override
-  String get accountDeleteSheetTitle => 'Delete this account?';
-
-  @override
   String get accountDeleteSheetMessage =>
-      'The account will no longer appear in your lists.';
+      'This account has no linked transactions. This action cannot be undone.';
 
   @override
   String accountDeleteSheetImpact(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'It has $count linked transactions.',
-      one: 'It has 1 linked transaction.',
+      other:
+          'This account has $count linked transactions. Deleting it will archive that history too. This action cannot be undone.',
+      one:
+          'This account has 1 linked transaction. Deleting it will archive that history too. This action cannot be undone.',
     );
     return '$_temp0';
   }
@@ -337,11 +339,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can bring it back any time from “Archived accounts”.';
 
   @override
-  String get accountChangeSheetTitle => 'Confirm the change?';
-
-  @override
   String get accountChangeSheetMessage =>
-      'This account already has transactions. Changing its type or currency changes how its figures read.';
+      'Changing this account\'s type or currency can affect calculations and reports on its existing transactions. Do you want to continue?';
 
   @override
   String get accountChangeConfirm => 'Confirm';
@@ -975,6 +974,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNoSpendingYet => 'No spending yet this month';
+
+  @override
+  String homeHeroBudgetProgress(int pct, String amount) {
+    return '$pct% of $amount';
+  }
+
+  @override
+  String homeHeroBudgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeQuickAccessTitle => 'Quick access';

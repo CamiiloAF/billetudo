@@ -10,6 +10,8 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -30,6 +32,9 @@ class _MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
 
 class _MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
+class _MockWatchGlobalMonthlyBudgetProgress extends Mock
+    implements WatchGlobalMonthlyBudgetProgress {}
+
 void main() {
   setUpAll(() {
     // Stops google_fonts from trying to download fonts during tests.
@@ -45,6 +50,8 @@ void main() {
     final watchAuthSession = _MockWatchAuthSession();
     final watchSyncStatus = _MockWatchSyncStatus();
     final restoreTransaction = _MockRestoreTransaction();
+    final watchGlobalMonthlyBudgetProgress =
+        _MockWatchGlobalMonthlyBudgetProgress();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -57,6 +64,9 @@ void main() {
     when(watchSyncStatus.call).thenAnswer(
       (_) => const Stream<SyncState>.empty(),
     );
+    when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
+      (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
+    );
     getIt.registerFactory<HomeCubit>(
       () => HomeCubit(
         watchAccounts,
@@ -64,6 +74,7 @@ void main() {
         watchAuthSession,
         watchSyncStatus,
         restoreTransaction,
+        watchGlobalMonthlyBudgetProgress,
       ),
     );
   });

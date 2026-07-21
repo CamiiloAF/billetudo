@@ -10,19 +10,22 @@ import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
+import '../../../budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
 import 'home_state.dart';
 
-/// Orchestrates the Home (HU-03/HU-04/HU-05): it watches the active accounts
-/// and the visible month's transactions, then folds both latest emissions into
-/// a [HomeSnapshot] (pure aggregation lives in the entity).
+/// Orchestrates the Home (HU-03/HU-04/HU-05): it watches the active accounts,
+/// the visible month's transactions and the qualifying global-monthly budget
+/// (`aOhoY`), then folds the latest emissions into a [HomeSnapshot] (pure
+/// aggregation lives in the entity).
 ///
 /// Talks only to use cases — never a repository or a DAO. The month is the
 /// Home's navigation unit (HU-04); changing it re-subscribes the transactions
-/// stream while the accounts stream stays put.
+/// stream while the accounts and budget-progress streams stay put.
 @injectable
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit(
@@ -31,6 +34,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchAuthSession,
     this._watchSyncStatus,
     this._restoreTransaction,
+    this._watchGlobalMonthlyBudgetProgress,
   ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
@@ -38,14 +42,17 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchAuthSession _watchAuthSession;
   final WatchSyncStatus _watchSyncStatus;
   final RestoreTransaction _restoreTransaction;
+  final WatchGlobalMonthlyBudgetProgress _watchGlobalMonthlyBudgetProgress;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
   StreamSubscription<AuthSession>? _authSub;
   StreamSubscription<SyncState>? _syncSub;
+  StreamSubscription<Result<BudgetWithProgress?>>? _budgetProgressSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastTransactions;
+  Result<BudgetWithProgress?>? _lastBudgetProgress;
 
   /// Subscribes with the current month. Safe to call again to retry after a
   /// failure.
@@ -53,9 +60,12 @@ class HomeCubit extends Cubit<HomeState> {
     await _accountsSub?.cancel();
     await _authSub?.cancel();
     await _syncSub?.cancel();
+    await _budgetProgressSub?.cancel();
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _authSub = _watchAuthSession().listen(_onAuthSession);
     _syncSub = _watchSyncStatus().listen(_onSyncState);
+    _budgetProgressSub =
+        _watchGlobalMonthlyBudgetProgress().listen(_onBudgetProgress);
     await _subscribeTransactions(state.month);
   }
 
@@ -111,27 +121,43 @@ class HomeCubit extends Cubit<HomeState> {
     _recompute();
   }
 
+  void _onBudgetProgress(Result<BudgetWithProgress?> result) {
+    _lastBudgetProgress = result;
+    _recompute();
+  }
+
   void _recompute() {
     if (isClosed) {
       return;
     }
     final accounts = _lastAccounts;
     final transactions = _lastTransactions;
-    if (accounts == null || transactions == null) {
+    final budgetProgress = _lastBudgetProgress;
+    if (accounts == null || transactions == null || budgetProgress == null) {
       return;
     }
 
-    final failure =
-        accounts.getLeft().toNullable() ?? transactions.getLeft().toNullable();
+    final failure = accounts.getLeft().toNullable() ??
+        transactions.getLeft().toNullable() ??
+        budgetProgress.getLeft().toNullable();
     if (failure != null) {
       emit(state.copyWith(status: HomeStatus.failure, failure: failure));
       return;
     }
 
+    // The budget's progress is always computed against its real current
+    // window (`now`), so it is only meaningful while viewing today's month —
+    // browsing a past month would otherwise show a stale "current" bar for a
+    // window that does not cover it (HU-03/HU-04 boundary; not a documented
+    // edge case, kept deterministic).
+    final isViewingCurrentMonth = state.month == state.currentMonth;
+
     final snapshot = HomeSnapshot.from(
       month: state.month,
       transactions: transactions.getRight().toNullable() ?? const [],
       accounts: accounts.getRight().toNullable() ?? const [],
+      budgetProgress:
+          isViewingCurrentMonth ? budgetProgress.getRight().toNullable() : null,
     );
     emit(state.copyWith(status: HomeStatus.ready, snapshot: snapshot));
   }
@@ -171,6 +197,7 @@ class HomeCubit extends Cubit<HomeState> {
     await _transactionsSub?.cancel();
     await _authSub?.cancel();
     await _syncSub?.cancel();
+    await _budgetProgressSub?.cancel();
     return super.close();
   }
 }

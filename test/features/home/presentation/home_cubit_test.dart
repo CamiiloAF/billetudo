@@ -9,6 +9,8 @@ import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -31,12 +33,16 @@ class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
+class MockWatchGlobalMonthlyBudgetProgress extends Mock
+    implements WatchGlobalMonthlyBudgetProgress {}
+
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
   late MockWatchAuthSession watchAuthSession;
   late MockWatchSyncStatus watchSyncStatus;
   late MockRestoreTransaction restoreTransaction;
+  late MockWatchGlobalMonthlyBudgetProgress watchGlobalMonthlyBudgetProgress;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -54,6 +60,7 @@ void main() {
     watchAuthSession = MockWatchAuthSession();
     watchSyncStatus = MockWatchSyncStatus();
     restoreTransaction = MockRestoreTransaction();
+    watchGlobalMonthlyBudgetProgress = MockWatchGlobalMonthlyBudgetProgress();
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
@@ -63,6 +70,10 @@ void main() {
         .thenAnswer((_) => const Stream<SyncState>.empty());
     when(() => restoreTransaction(any()))
         .thenAnswer((_) async => const Right(unit));
+    // Default: no qualifying budget; individual tests override.
+    when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+      (_) => Stream<Result<BudgetWithProgress?>>.value(const Right(null)),
+    );
   });
 
   HomeCubit build() => HomeCubit(
@@ -71,6 +82,7 @@ void main() {
         watchAuthSession,
         watchSyncStatus,
         restoreTransaction,
+        watchGlobalMonthlyBudgetProgress,
       );
 
   void stubReady() {
@@ -394,18 +406,22 @@ void main() {
     );
   });
 
-  test('cerrar el cubit cancela las cuatro suscripciones', () async {
+  test('cerrar el cubit cancela las cinco suscripciones', () async {
     final accountsController =
         StreamController<Result<List<AccountWithBalance>>>.broadcast();
     final txController =
         StreamController<Result<List<TransactionWithDetails>>>.broadcast();
     final authController = StreamController<AuthSession>.broadcast();
     final syncController = StreamController<SyncState>.broadcast();
+    final budgetProgressController =
+        StreamController<Result<BudgetWithProgress?>>.broadcast();
     when(() => watchAccounts()).thenAnswer((_) => accountsController.stream);
     when(() => watchMonthTransactions(any()))
         .thenAnswer((_) => txController.stream);
     when(() => watchAuthSession()).thenAnswer((_) => authController.stream);
     when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
+    when(() => watchGlobalMonthlyBudgetProgress())
+        .thenAnswer((_) => budgetProgressController.stream);
 
     final cubit = build();
     await cubit.start();
@@ -415,9 +431,73 @@ void main() {
     expect(txController.hasListener, isFalse);
     expect(authController.hasListener, isFalse);
     expect(syncController.hasListener, isFalse);
+    expect(budgetProgressController.hasListener, isFalse);
     await accountsController.close();
     await txController.close();
     await authController.close();
     await syncController.close();
+    await budgetProgressController.close();
+  });
+
+  group('presupuesto global mensual en el hero (HU-03, aOhoY)', () {
+    blocTest<HomeCubit, HomeState>(
+      'expone budgetProgress cuando hay un presupuesto global mensual vigente',
+      setUp: () {
+        stubReady();
+        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+          (_) => Stream<Result<BudgetWithProgress?>>.value(
+            Right(buildHomeBudgetProgress()),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (cubit) {
+        expect(cubit.state.status, HomeStatus.ready);
+        expect(cubit.state.snapshot?.budgetProgress, isNotNull);
+        expect(cubit.state.snapshot?.budgetProgress?.progress.amountMinor,
+            600000);
+        expect(
+            cubit.state.snapshot?.budgetProgress?.progress.spentMinor,
+            300000);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'deja budgetProgress en null cuando no hay presupuesto que califique',
+      setUp: stubReady, // default stub in setUp() answers Right(null).
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (cubit) {
+        expect(cubit.state.status, HomeStatus.ready);
+        expect(cubit.state.snapshot?.budgetProgress, isNull);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'al navegar a un mes pasado, budgetProgress queda en null aunque haya '
+      'un presupuesto vigente para el mes actual',
+      setUp: () {
+        stubReady();
+        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+          (_) => Stream<Result<BudgetWithProgress?>>.value(
+            Right(buildHomeBudgetProgress()),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        final past = DateTime(
+          cubit.state.currentMonth.year,
+          cubit.state.currentMonth.month - 1,
+        );
+        await cubit.selectMonth(past);
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, HomeStatus.ready);
+        expect(cubit.state.snapshot?.budgetProgress, isNull);
+      },
+    );
   });
 }

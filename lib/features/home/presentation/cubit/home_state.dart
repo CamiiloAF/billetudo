@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../auth/domain/entities/auth_user.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/entities/month_spending.dart';
@@ -61,6 +62,9 @@ class HomeState extends Equatable {
   final String? pendingUndoId;
 
   MonthSpending? get spending => snapshot?.spending;
+
+  /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`).
+  BudgetWithProgress? get budgetProgress => snapshot?.budgetProgress;
 
   List<TransactionWithDetails> get recentActivity =>
       snapshot?.recentActivity ?? const [];

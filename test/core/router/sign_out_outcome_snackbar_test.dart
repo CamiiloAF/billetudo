@@ -18,6 +18,8 @@ import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart'
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/sign_out_sheet_cubit.dart';
 import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_sign_out_sheet.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -37,6 +39,9 @@ class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
+
+class MockWatchGlobalMonthlyBudgetProgress extends Mock
+    implements WatchGlobalMonthlyBudgetProgress {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -77,6 +82,8 @@ void main() {
     final watchAuthSession = MockWatchAuthSession();
     final watchSyncStatus = MockWatchSyncStatus();
     final restoreTransaction = MockRestoreTransaction();
+    final watchGlobalMonthlyBudgetProgress =
+        MockWatchGlobalMonthlyBudgetProgress();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -89,6 +96,9 @@ void main() {
       (_) => const Stream<AuthSession>.empty(),
     );
     when(() => watchAuthSession.current).thenReturn(signedIn);
+    when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
+      (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
+    );
 
     signOutWithChoice = MockSignOutWithLocalDataChoice();
 
@@ -100,6 +110,7 @@ void main() {
           watchAuthSession,
           watchSyncStatus,
           restoreTransaction,
+          watchGlobalMonthlyBudgetProgress,
         ),
       )
       ..registerFactory<AuthCubit>(
