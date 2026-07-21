@@ -40,6 +40,12 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 /// proyectado: tramo `$amber` + caption "... excedería el presupuesto por
 /// $Y", entry point y card en la familia `amber`/`amberText`).
 ///
+/// `detail_scheduled_and_adjustment` → `reulY` / `ujbZf` (coexistencia: el
+/// período tiene pagos programados Y un ajuste de monto pendiente a la vez, de
+/// modo que el detalle apila las dos cards bajo el Hero — verifica el orden
+/// Hero → Programado → Ajuste → Movimientos, el hueco de cobertura MENOR del
+/// `pencil-fidelity-reviewer`).
+///
 /// States with **no row of their own in the spec table**, flagged for the
 /// audit: `detail_loading` (`BudgetDetailSkeletonView`, esqueleto con la
 /// geometría real del hero y de la actividad — no un spinner),
@@ -192,6 +198,33 @@ void main() {
         ),
         'detail_scheduled_risk_$suffix',
         brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'detalle con programado Y ajuste pendiente a la vez '
+        '(orden Hero → Programado → Ajuste → Movimientos) ($suffix)',
+        (tester) async {
+      final entry = scheduledHealthyEntry;
+      await golden(
+        tester,
+        readyState(
+          entry,
+          view: buildPeriodView(
+            entry,
+            activityCount: 3,
+            scheduledItems: buildScheduledItems(),
+          ),
+          pendingAdjustment: PendingBudgetAdjustment(
+            newAmountMinor: 85000000,
+            effectiveFrom: DateTime(2025, 8, 21),
+            resumeAmountMinor: entry.budget.amountMinor,
+            resumeFrom: DateTime(2025, 9, 21),
+          ),
+        ),
+        'detail_scheduled_and_adjustment_$suffix',
+        brightness: brightness,
+        height: 1200,
       );
     });
 
