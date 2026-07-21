@@ -138,6 +138,28 @@ void main() {
 
       expect(found, isNull);
     });
+
+    test(
+        'returns the original itself (currentWindow.index == 0, in-place) '
+        'when the row right after it is open-ended — that makes the forward '
+        'row the resume fork, not a separate adjusted fork', () async {
+      // `original` here already plays the "adjusted" role: patched in place
+      // to the new amount, `endDate` at the end of the cycle it is still
+      // active in, `startDate` untouched.
+      final patchedInPlace = await insertBudget(
+        amountMinor: 50000,
+        startDate: DateTime(2026, 7, 1),
+        endDate: DateTime(2026, 7, 31),
+      );
+      await insertBudget(
+        amountMinor: 100000,
+        startDate: DateTime(2026, 8, 1),
+      );
+
+      final found = await datasource.findAdjustedFork(patchedInPlace);
+
+      expect(found?.id, patchedInPlace.id);
+    });
   });
 
   group('findResumeFork', () {
@@ -164,8 +186,11 @@ void main() {
       expect(found?.id, resume.id);
     });
 
-    test('returns null when the candidate amount does not match the original',
-        () async {
+    test(
+        'matches by shape alone, not amount — the resume fork of an in-place '
+        'adjustment (currentWindow.index == 0) carries the pre-adjustment '
+        'amount, which is not visible on `original` once it has been '
+        'patched to the new amount', () async {
       final original = await insertBudget(
         amountMinor: 100000,
         startDate: DateTime(2026, 7, 1),
@@ -176,15 +201,16 @@ void main() {
         startDate: DateTime(2026, 8, 1),
         endDate: DateTime(2026, 8, 31),
       );
-      // Wrong amount: not the resume fork, even though the start date lines up.
-      await insertBudget(
+      // Does not match `original.amountMinor` (100000): still found, because
+      // the search is purely shape-based (startDate/endDate/cadence).
+      final resume = await insertBudget(
         amountMinor: 75000,
         startDate: DateTime(2026, 9, 1),
       );
 
       final found = await datasource.findResumeFork(original, adjusted);
 
-      expect(found, isNull);
+      expect(found?.id, resume.id);
     });
 
     test('returns null when the candidate is not open-ended', () async {
@@ -287,12 +313,164 @@ void main() {
           endDate: Value(null),
           updatedAt: Value(2),
         ),
+        now: DateTime(2026, 7, 16),
       );
 
       final reopened = await datasource.getBudget(original.id);
       expect(reopened?.endDate, isNull);
       expect(await datasource.getBudget(adjusted.id), isNull);
       expect(await datasource.getBudget(resume!.id), isNull);
+    });
+  });
+
+  group(
+      'applyAmountAdjustmentInPlace / cancelAmountAdjustment '
+      '(currentWindow.index == 0)', () {
+    test(
+        'patches the original in place and cancel restores it without '
+        'touching its id', () async {
+      final original = await insertBudget(
+        amountMinor: 100000,
+        startDate: DateTime(2026, 7, 1),
+      );
+
+      await datasource.applyAmountAdjustmentInPlace(
+        originalId: original.id,
+        adjustedCompanion: BudgetsCompanion(
+          amountMinor: const Value(50000),
+          endDate: Value(DateTime(2026, 7, 31)),
+          updatedAt: const Value(1),
+        ),
+        resumeCompanion: BudgetsCompanion.insert(
+          name: original.name,
+          icon: Value(original.icon),
+          amountMinor: 100000,
+          currency: original.currency,
+          period: original.period,
+          startDate: DateTime(2026, 8, 1),
+          updatedAt: const Value(1),
+        ),
+        accountIds: const {},
+        categoryIds: const {},
+        now: DateTime(2026, 7, 15),
+      );
+
+      final patched = await datasource.getBudget(original.id);
+      expect(patched?.id, original.id);
+      expect(patched?.amountMinor, 50000);
+      expect(patched?.endDate, DateTime(2026, 7, 31));
+
+      final resume = await datasource.findResumeFork(patched!, patched);
+      expect(resume, isNotNull);
+      expect(resume?.amountMinor, 100000);
+
+      // Cancelling the in-place shape: `adjustedId == originalId`, so the
+      // original row is restored (not hard-deleted) and only the resume fork
+      // is removed.
+      await datasource.cancelAmountAdjustment(
+        originalId: original.id,
+        adjustedId: original.id,
+        resumeId: resume?.id,
+        reopenCompanion: const BudgetsCompanion(
+          amountMinor: Value(100000),
+          endDate: Value(null),
+          updatedAt: Value(2),
+        ),
+        now: DateTime(2026, 7, 16),
+      );
+
+      final reopened = await datasource.getBudget(original.id);
+      expect(reopened, isNotNull);
+      expect(reopened?.id, original.id);
+      expect(reopened?.amountMinor, 100000);
+      expect(reopened?.endDate, isNull);
+      expect(await datasource.getBudget(resume!.id), isNull);
+    });
+
+    test(
+        'cancelling a scoped fork tombstones the adjusted/resume rows '
+        'instead of hard-deleting them, so their BudgetAccounts scope rows '
+        'keep a live referent', () async {
+      final account = await database.into(database.accounts).insertReturning(
+            AccountsCompanion.insert(
+              name: 'Nu',
+              type: AccountType.bank,
+              currency: 'COP',
+              updatedAt: const Value(0),
+            ),
+          );
+      final original = await insertBudget(
+        amountMinor: 100000,
+        startDate: DateTime(2026, 7, 1),
+      );
+
+      await datasource.applyAmountAdjustment(
+        originalId: original.id,
+        closeCompanion: BudgetsCompanion(
+          endDate: Value(DateTime(2026, 7, 31)),
+          updatedAt: const Value(1),
+        ),
+        adjustedCompanion: BudgetsCompanion.insert(
+          name: original.name,
+          icon: Value(original.icon),
+          amountMinor: 50000,
+          currency: original.currency,
+          period: original.period,
+          startDate: DateTime(2026, 8, 1),
+          endDate: Value(DateTime(2026, 8, 31)),
+          updatedAt: const Value(1),
+        ),
+        resumeCompanion: BudgetsCompanion.insert(
+          name: original.name,
+          icon: Value(original.icon),
+          amountMinor: 100000,
+          currency: original.currency,
+          period: original.period,
+          startDate: DateTime(2026, 9, 1),
+          updatedAt: const Value(1),
+        ),
+        accountIds: {account.id},
+        categoryIds: const {},
+        now: DateTime(2026, 7, 15),
+      );
+
+      final closedOriginal = await datasource.getBudget(original.id);
+      final adjusted = await datasource.findAdjustedFork(closedOriginal!);
+      final resume = await datasource.findResumeFork(closedOriginal, adjusted!);
+
+      await datasource.cancelAmountAdjustment(
+        originalId: original.id,
+        adjustedId: adjusted.id,
+        resumeId: resume?.id,
+        reopenCompanion: const BudgetsCompanion(
+          endDate: Value(null),
+          updatedAt: Value(2),
+        ),
+        now: DateTime(2026, 7, 16),
+      );
+
+      // Excluded from every alive-only read path, exactly like a hard
+      // delete would behave from the caller's point of view.
+      expect(await datasource.getBudget(adjusted.id), isNull);
+      expect(await datasource.getBudget(resume!.id), isNull);
+
+      // But the row itself still physically exists (tombstoned, not gone),
+      // so the BudgetAccounts row `reconcileScope` wrote for it during
+      // `applyAmountAdjustment` still points at a real budget.
+      final adjustedRaw = await (database.select(database.budgets)
+            ..where((b) => b.id.equals(adjusted.id)))
+          .getSingle();
+      expect(adjustedRaw.tombstonedAt, isNotNull);
+
+      final resumeRaw = await (database.select(database.budgets)
+            ..where((b) => b.id.equals(resume.id)))
+          .getSingle();
+      expect(resumeRaw.tombstonedAt, isNotNull);
+
+      final adjustedScopeRow = await (database.select(database.budgetAccounts)
+            ..where((r) => r.budgetId.equals(adjusted.id)))
+          .getSingle();
+      expect(adjustedScopeRow.accountId, account.id);
     });
   });
 }

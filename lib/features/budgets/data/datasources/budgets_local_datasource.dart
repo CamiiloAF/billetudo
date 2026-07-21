@@ -159,6 +159,19 @@ class BudgetsLocalDatasource {
   Future<void> hardDeleteBudget(String id) =>
       (_db.delete(_db.budgets)..where((b) => b.id.equals(id))).go();
 
+  /// Hides the row from every read path (`_budgetAlive`) while keeping it in
+  /// the table, so `BudgetAccounts`/`BudgetCategories` rows whose FK already
+  /// points at it (written by `reconcileScope`) keep a live referent instead
+  /// of dangling. Used to cancel a not-yet-active adjustment/resume fork —
+  /// see `cancelAmountAdjustment`.
+  Future<void> tombstoneBudget(String id, DateTime now) =>
+      (_db.update(_db.budgets)..where((b) => b.id.equals(id))).write(
+        BudgetsCompanion(
+          tombstonedAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   // -- Scope -----------------------------------------------------------------
 
   /// Account scope rows of every budget (alive join rows), with a `referentAlive`
@@ -542,15 +555,30 @@ class BudgetsLocalDatasource {
     ];
   }
 
-  // -- Amount adjustment ("fork de 3 partes") ---------------------------------
+  // -- Amount adjustment ("fork de 2 o 3 partes") ------------------------------
   //
   // No new column/table: the fork is inferred purely from the exact shape
-  // [applyAmountAdjustment] always writes — an alive budget whose `startDate`
-  // starts the day after another's `endDate`, mirroring its cadence/scope.
-  // See `BudgetRepositoryImpl` for the window math that produces those dates.
+  // [applyAmountAdjustment]/[applyAmountAdjustmentInPlace] always write — an
+  // alive budget whose `startDate` starts the day after another's `endDate`,
+  // mirroring its cadence/scope. See `BudgetRepositoryImpl` for the window
+  // math that produces those dates.
+  //
+  // Two shapes exist, both anchored on `currentWindow`:
+  //  - `currentWindow.index > 0`: the original closes at the end of the
+  //    *previous* cycle, a new "adjusted" row covers `currentWindow` with the
+  //    new amount, and a "resume" row picks the original amount back up at
+  //    `nextWindow`.
+  //  - `currentWindow.index == 0`: there is no previous cycle to close, so
+  //    the original row is patched in place (new amount, `endDate` at the end
+  //    of `currentWindow`) instead of being closed + forked — it plays the
+  //    "adjusted" role itself. Only the "resume" row is inserted.
 
-  /// The pending "next period only" fork of [original], if any — the second
-  /// part of the fork [applyAmountAdjustment] creates.
+  /// The pending "this period only" fork of [original], if any.
+  ///
+  /// Returns either a separate row (the `currentWindow.index > 0` shape) or
+  /// [original] itself, when [original]'s own `endDate` closes at the end of
+  /// the cycle it is still active in and a resume fork follows it directly
+  /// (the `currentWindow.index == 0` in-place shape).
   Future<Budget?> findAdjustedFork(Budget original) async {
     final closesAt = original.endDate;
     if (closesAt == null) {
@@ -562,14 +590,23 @@ class BudgetsLocalDatasource {
         .get();
     for (final row in rows) {
       if (_sameCadence(row, original)) {
-        return row;
+        // A forward row whose own cycle never ends is the resume fork: that
+        // makes `original` itself the adjusted fork, patched in place
+        // (currentWindow.index == 0, no previous period to close). A forward
+        // row that does have an endDate is a separate adjusted fork instead
+        // (currentWindow.index > 0).
+        return row.endDate == null ? original : row;
       }
     }
     return null;
   }
 
-  /// The "resumes the original amount" third fork that follows [adjusted],
-  /// the same way [findAdjustedFork] finds the second part.
+  /// The "resumes the original amount" fork that follows [adjusted], the
+  /// same way [findAdjustedFork] finds the adjusted part. [original] is only
+  /// used for its cadence fields (name/icon/currency/period/rollover/
+  /// threshold), which an adjustment never touches — its `amountMinor` may
+  /// already be the *new* amount when [adjusted] is [original] itself
+  /// (the in-place shape), so it is deliberately not used to filter here.
   Future<Budget?> findResumeFork(Budget original, Budget adjusted) async {
     final closesAt = adjusted.endDate;
     if (closesAt == null) {
@@ -581,7 +618,6 @@ class BudgetsLocalDatasource {
             (b) =>
                 b.startDate.equals(nextStart) &
                 b.endDate.isNull() &
-                b.amountMinor.equals(original.amountMinor) &
                 _budgetAlive(b),
           ))
         .get();
@@ -602,8 +638,9 @@ class BudgetsLocalDatasource {
       row.rollover == original.rollover &&
       row.alertThresholdPct == original.alertThresholdPct;
 
-  /// Applies the fork atomically: closes [originalId] with [closeCompanion],
-  /// inserts the adjusted (next-cycle-only) and resume (indefinite) budgets
+  /// Applies the `currentWindow.index > 0` fork atomically: closes
+  /// [originalId] at the end of the *previous* cycle with [closeCompanion],
+  /// inserts the adjusted (this-cycle-only) and resume (indefinite) budgets
   /// with the same scope as the original.
   Future<void> applyAmountAdjustment({
     required String originalId,
@@ -632,21 +669,61 @@ class BudgetsLocalDatasource {
         );
       });
 
-  /// Cancels a pending fork atomically: hard-deletes the not-yet-active
-  /// adjusted/resume budgets (never applied, so no trash needed) and reopens
-  /// the original with [reopenCompanion] (clears `endDate`). [resumeId] is
-  /// `null` only in an inconsistent state (the resume fork went missing);
-  /// still cancels what it can find.
+  /// Applies the `currentWindow.index == 0` fork atomically: there is no
+  /// previous cycle to close, so [originalId] is patched in place with
+  /// [adjustedCompanion] (new amount + `endDate` at the end of the current
+  /// cycle) instead of being closed and forked, and only the resume
+  /// (indefinite, original amount) budget is inserted, with the same scope.
+  Future<void> applyAmountAdjustmentInPlace({
+    required String originalId,
+    required BudgetsCompanion adjustedCompanion,
+    required BudgetsCompanion resumeCompanion,
+    required Set<String> accountIds,
+    required Set<String> categoryIds,
+    required DateTime now,
+  }) =>
+      _db.transaction(() async {
+        await updateBudget(originalId, adjustedCompanion);
+        final resumed = await insertBudget(resumeCompanion);
+        await reconcileScope(
+          resumed.id,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+          now: now,
+        );
+      });
+
+  /// Cancels a pending fork atomically, reversing whichever of the two shapes
+  /// [applyAmountAdjustment]/[applyAmountAdjustmentInPlace] wrote:
+  ///  - `currentWindow.index > 0` ([adjustedId] != [originalId]): tombstones
+  ///    the not-yet-active adjusted/resume budgets (never applied, so no
+  ///    undo-trash is needed — but `hardDeleteBudget` is not safe here: by
+  ///    the time this runs, `reconcileScope` has already written
+  ///    `BudgetAccounts`/`BudgetCategories` rows whose FK points at them, and
+  ///    physically deleting the referent would orphan those scope rows) and
+  ///    reopens the original with [reopenCompanion] (clears `endDate`,
+  ///    amount untouched — it was never changed).
+  ///  - `currentWindow.index == 0` ([adjustedId] == [originalId]): the
+  ///    "adjusted" row *is* the original, so it is left alone here and
+  ///    restored via [reopenCompanion] instead (original amount, `endDate:
+  ///    null`); only the resume fork is tombstoned.
+  /// [resumeId] is `null` only in an inconsistent state (the resume fork went
+  /// missing); still cancels what it can find. `_budgetAlive` excludes
+  /// tombstoned rows from every read path, so a cancelled fork disappears
+  /// from the UI exactly like a hard delete would, without breaking the FK.
   Future<void> cancelAmountAdjustment({
     required String originalId,
     required String adjustedId,
     required String? resumeId,
     required BudgetsCompanion reopenCompanion,
+    required DateTime now,
   }) =>
       _db.transaction(() async {
-        await hardDeleteBudget(adjustedId);
+        if (adjustedId != originalId) {
+          await tombstoneBudget(adjustedId, now);
+        }
         if (resumeId != null) {
-          await hardDeleteBudget(resumeId);
+          await tombstoneBudget(resumeId, now);
         }
         await updateBudget(originalId, reopenCompanion);
       });

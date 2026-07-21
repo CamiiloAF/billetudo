@@ -119,7 +119,7 @@ class _BudgetAdjustAmountSheetState extends State<BudgetAdjustAmountSheet> {
         const SizedBox(height: 16),
         Text(
           l10n.budgetAdjustNewAmountLabel(
-            BudgetFormat.rangeLabel(widget.windows.next),
+            BudgetFormat.rangeLabel(widget.windows.current),
           ),
           style: TextStyle(
             fontSize: 13,
@@ -139,12 +139,12 @@ class _BudgetAdjustAmountSheetState extends State<BudgetAdjustAmountSheet> {
         const SizedBox(height: 16),
         BudgetAdjustExplainer(
           text: l10n.budgetAdjustExplainer(
-            BudgetFormat.dayMonth(widget.windows.next.start),
+            BudgetFormat.dayMonth(widget.windows.current.start),
             money.formatSymbol(
               amountMinor ?? 0,
               currencyCode: widget.currency,
             ),
-            BudgetFormat.dayMonth(widget.windows.resume.start),
+            BudgetFormat.dayMonth(widget.windows.next.start),
             money.formatSymbol(
               widget.currentAmountMinor,
               currencyCode: widget.currency,

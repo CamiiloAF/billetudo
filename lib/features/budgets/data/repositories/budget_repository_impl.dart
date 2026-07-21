@@ -371,6 +371,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
           return const Right(null);
         }
         final resume = await _local.findResumeFork(row, adjusted);
+        // In the `currentWindow.index == 0` shape, `adjusted` is `row`
+        // itself (patched in place) and its `amountMinor` is already the
+        // *new* amount, so it cannot supply the resume amount fallback — only
+        // the resume fork itself carries the original amount at that point.
         return Right(
           PendingBudgetAdjustment(
             newAmountMinor: adjusted.amountMinor,
@@ -424,10 +428,44 @@ class BudgetRepositoryImpl implements BudgetRepository {
         final calculator = BudgetPeriodCalculator(original);
         final currentWindow = calculator.currentWindow(now);
         final nextWindow = calculator.windowAt(currentWindow.index + 1, now);
-        final resumeWindow = calculator.windowAt(currentWindow.index + 2, now);
 
         final accountIds = (await _local.accountScopeOf(id)).toSet();
         final categoryIds = (await _local.categoryScopeOf(id)).toSet();
+
+        final resumeDraft = BudgetDraft(
+          name: original.name,
+          icon: original.icon,
+          amountMinor: original.amountMinor,
+          currency: original.currency,
+          period: original.period,
+          startDate: nextWindow.start,
+          recurring: true,
+          alertThresholdPct: original.alertThresholdPct,
+          rollover: original.rollover,
+          accountIds: accountIds,
+          categoryIds: categoryIds,
+        );
+        final resumeCompanion =
+            BudgetMapper.toInsertCompanion(resumeDraft, now: now);
+
+        if (currentWindow.index == 0) {
+          // No previous cycle to close: the original itself plays the
+          // "adjusted" role, patched in place for the rest of the current
+          // cycle. Its `startDate` never moves.
+          await _local.applyAmountAdjustmentInPlace(
+            originalId: id,
+            adjustedCompanion: BudgetMapper.amountAndEndDateCompanion(
+              amountMinor: newAmountMinor,
+              endDate: currentWindow.lastDay,
+              now: now,
+            ),
+            resumeCompanion: resumeCompanion,
+            accountIds: accountIds,
+            categoryIds: categoryIds,
+            now: now,
+          );
+          return const Right(unit);
+        }
 
         final adjustedDraft = BudgetDraft(
           name: original.name,
@@ -435,24 +473,11 @@ class BudgetRepositoryImpl implements BudgetRepository {
           amountMinor: newAmountMinor,
           currency: original.currency,
           period: original.period,
-          startDate: nextWindow.start,
+          startDate: currentWindow.start,
           recurring: true,
           // Stops renewing right after its own single cycle: the fork lasts
-          // exactly the next period, nothing more.
-          endDate: nextWindow.lastDay,
-          alertThresholdPct: original.alertThresholdPct,
-          rollover: original.rollover,
-          accountIds: accountIds,
-          categoryIds: categoryIds,
-        );
-        final resumeDraft = BudgetDraft(
-          name: original.name,
-          icon: original.icon,
-          amountMinor: original.amountMinor,
-          currency: original.currency,
-          period: original.period,
-          startDate: resumeWindow.start,
-          recurring: true,
+          // exactly the current period, nothing more.
+          endDate: currentWindow.lastDay,
           alertThresholdPct: original.alertThresholdPct,
           rollover: original.rollover,
           accountIds: accountIds,
@@ -462,13 +487,14 @@ class BudgetRepositoryImpl implements BudgetRepository {
         await _local.applyAmountAdjustment(
           originalId: id,
           closeCompanion: BudgetMapper.endDateCompanion(
-            endDate: currentWindow.lastDay,
+            // Closes at the end of the *previous* cycle, right before the
+            // adjusted fork's own currentWindow.start takes over.
+            endDate: currentWindow.start.subtract(const Duration(days: 1)),
             now: now,
           ),
           adjustedCompanion:
               BudgetMapper.toInsertCompanion(adjustedDraft, now: now),
-          resumeCompanion:
-              BudgetMapper.toInsertCompanion(resumeDraft, now: now),
+          resumeCompanion: resumeCompanion,
           accountIds: accountIds,
           categoryIds: categoryIds,
           now: now,
@@ -523,14 +549,25 @@ class BudgetRepositoryImpl implements BudgetRepository {
           );
         }
         final resume = await _local.findResumeFork(row, adjusted);
+        final now = DateTime.now();
+        // In the `currentWindow.index == 0` shape (adjusted.id == id), the
+        // original row already carries the *adjusted* amount, so restoring it
+        // also needs the pre-adjustment amount — which only the resume fork
+        // still knows. In the other shape the original's amount was never
+        // touched, so only `endDate` needs to be cleared.
+        final reopenCompanion = adjusted.id == id
+            ? BudgetMapper.amountAndEndDateCompanion(
+                amountMinor: resume?.amountMinor ?? adjusted.amountMinor,
+                endDate: null,
+                now: now,
+              )
+            : BudgetMapper.endDateCompanion(endDate: null, now: now);
         await _local.cancelAmountAdjustment(
           originalId: id,
           adjustedId: adjusted.id,
           resumeId: resume?.id,
-          reopenCompanion: BudgetMapper.endDateCompanion(
-            endDate: null,
-            now: DateTime.now(),
-          ),
+          reopenCompanion: reopenCompanion,
+          now: now,
         );
         return const Right(unit);
       });
