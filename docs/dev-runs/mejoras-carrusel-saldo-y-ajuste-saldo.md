@@ -129,10 +129,10 @@ Edición controlada del saldo: se elimina la edición libre del "Saldo inicial" 
 9. **Commit del cierre de diseño** (`.pen` con oscuro + badges limpios + fix `expenseText` en código) — pendiente de hacer.
 10. **scheduled_payments** (17 tests): ✅ resuelto por qa-automator (cambio de copy intencional, goldens + finder actualizados; 371 verdes). Ya commiteado.
 11. `.github/`, `ios/ExportOptionsProd.plist`, `integration_test/test_bundle.dart`: ajenos, sin commitear a propósito.
-12. **Fidelidad — pendientes (post-auditoría 2026-07-21):**
-    - **Orden de chips (Fecha 2º):** el usuario confirmó que Fecha va en 2º lugar (él lo pidió). Código ✅ y spec §3 ✅ ya lo reflejan. **Falta sincronizar los frames de Pencil** (mover Chip Fecha al índice 1 en los frames de Movimientos con Chips Row, claro+oscuro) — BLOQUEADO: Pencil se desconectó otra vez ("transport not connected to app: desktop"). Retomar cuando vuelva. No bloquea código.
-    - **Títulos raíz a la izquierda (consistencia):** Movimientos y Más pasan de `AppBar` centrado a header izquierdo (patrón `BudgetsPageHeader`), como Presupuestos/Inicio/Pencil. 🔄 flutter-dev en curso.
-    - **Goldens faltantes:** estados colapsado + tarjeta-activa del carrusel → qa-automator (en cola tras el título).
+12. **Fidelidad — pendientes (post-auditoría 2026-07-21) — ✅ TODOS CERRADOS:**
+    - **Orden de chips (Fecha 2º):** ✅ código y spec §3 ya lo tenían; **Pencil sincronizado** (26 frames de Movimientos reordenados a `Cuenta → Fecha → Categoría → Tipo → Etiqueta`, claro+oscuro, base+variantes+estados+carrusel). Cambios del `.pen` sin guardar a disco hasta un Cmd+S del usuario.
+    - **Títulos raíz a la izquierda (consistencia):** ✅ nuevo `lib/core/widgets/root_tab_header.dart` (widget compartido), Movimientos y Más migrados de `AppBar` centrado a header izquierdo. Committeado (`c014742` + fix del test de Más en `24c8c61`).
+    - **Goldens faltantes:** ✅ `test/features/transactions/presentation/golden/movements_balance_carousel_golden_test.dart` (nuevo, widget-level) con 4 goldens: colapsado + tarjeta-activa, claro/oscuro. Sin commitear (árbol en flujo, el usuario maneja git).
 
 ## Relacionado (fuera de estas mejoras)
 - Pre-selección de la cuenta filtrada al tocar el FAB "+" en Movimientos (cambio previo de esta sesión, también sin commitear).
