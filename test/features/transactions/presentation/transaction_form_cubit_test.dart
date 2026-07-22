@@ -267,16 +267,40 @@ void main() {
     );
 
     blocTest<TransactionFormCubit, TransactionFormState>(
-      'load(null, accountId: ...) respeta la cuenta del llamador y no consulta',
+      'load(null, accountId: ...) preselecciona esa cuenta con su nombre',
       setUp: () => when(() => watchAccounts()).thenAnswer(
         (_) => Stream.value(
-            Right([_accountWithBalance(id: 'acc-2', name: 'Nequi')])),
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
       ),
       build: build,
-      act: (cubit) => cubit.load(null, accountId: 'acc-caller'),
+      act: (cubit) => cubit.load(null, accountId: 'acc-2'),
       verify: (cubit) {
-        expect(cubit.state.accountId, 'acc-caller');
-        verifyNever(() => watchAccounts());
+        expect(cubit.state.accountId, 'acc-2');
+        // Resolved from the live list, not left null for the caller to know.
+        expect(cubit.state.accountName, 'Nequi');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null, accountId: ...) inexistente cae a la primera cuenta',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      // The filtered account was deleted between filtering and tapping "+".
+      act: (cubit) => cubit.load(null, accountId: 'acc-borrada'),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-1');
+        expect(cubit.state.accountName, 'Bancolombia');
       },
     );
   });

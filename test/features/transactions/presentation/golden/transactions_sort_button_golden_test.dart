@@ -70,8 +70,9 @@ void main() {
       BlocProvider<TransactionsListCubit>.value(
         value: cubit,
         child: TransactionsPage(
-          onAddTransaction: () {},
+          onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
+          onOpenAccount: (_) {},
         ),
       ),
       brightness: brightness,

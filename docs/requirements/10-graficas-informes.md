@@ -15,7 +15,7 @@ Como usuario quiero ver una gráfica de ingresos vs. gastos a lo largo del tiemp
 
 **Criterios de aceptación:**
 - Excluye transacciones `type = transfer` del cálculo (no son ni ingreso ni gasto real).
-- Excluye también transacciones con `debtId` asignado (prestar/cobrar un préstamo o abonar una deuda no es ingreso ni gasto real — ver `08-deudas.md`).
+- **Transacciones con `debtId` asignado: cuentan por defecto, pero se pueden separar (toggle "movimientos de deuda").** Cambia la regla previa que las excluía siempre como `transfer`: por decisión de producto (ver `08-deudas.md`, sección "Estadísticas"), un desembolso/abono de deuda **sí** afecta saldos y presupuestos. El único riesgo es este gráfico de flujo —un préstamo entra como "ingreso" que no se ganó, y las cuotas suman más que el préstamo por los intereses—, así que la vista ofrece un **toggle opcional** para segregarlas como "movimientos de deuda" y no distorsionar el "¿gané más de lo que gasté?". Los asientos de **interés** de una deuda no son transacciones (son solo-deuda, tabla `DebtEntries`), así que quedan fuera de este cálculo por construcción.
 - Periodo por defecto: últimos 6 o 12 meses, agregado por mes; el usuario puede acotar el rango.
 - Es parte del **set esencial gratis** (Nivel 0), sin límite de vistas ni de rango de fechas.
 

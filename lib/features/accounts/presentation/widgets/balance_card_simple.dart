@@ -3,17 +3,23 @@ import 'package:flutter/material.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import 'balance_edit_button.dart';
 
-/// Balance Card of a non-card account (`ZCSCc`): one label, one figure.
+/// Balance Card of a non-card account (`ZCSCc`): one label, one figure, and the
+/// subtle "Ajustar saldo" pencil to the right of the figure (Mejora #1).
 class BalanceCardSimple extends StatelessWidget {
   const BalanceCardSimple({
     required this.balanceMinor,
     required this.currency,
+    this.onEditBalance,
     super.key,
   });
 
   final int balanceMinor;
   final String currency;
+
+  /// Opens "Ajustar saldo" when set. `null` hides the pencil.
+  final VoidCallback? onEditBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +35,7 @@ class BalanceCardSimple extends StatelessWidget {
         border: Border.all(color: colors.border),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             AppLocalizations.of(context).accountBalanceLabel,
@@ -39,14 +46,26 @@ class BalanceCardSimple extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            const MoneyFormatter()
-                .formatSymbol(balanceMinor, currencyCode: currency),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: balanceMinor < 0 ? colors.expense : colors.textPrimary,
-            ),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  const MoneyFormatter()
+                      .formatSymbol(balanceMinor, currencyCode: currency),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color:
+                        balanceMinor < 0 ? colors.expense : colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (onEditBalance != null) ...[
+                const SizedBox(width: 4),
+                BalanceEditButton(onPressed: onEditBalance!),
+              ],
+            ],
           ),
         ],
       ),

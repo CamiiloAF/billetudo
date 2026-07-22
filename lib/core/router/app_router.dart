@@ -62,6 +62,7 @@ import '../../features/transactions/presentation/pages/transaction_form_page.dar
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../preferences/balance_carousel_cubit.dart';
 import '../widgets/coming_soon_page.dart';
 
 /// App routes. Each feature registers its own here. Paths stay in Spanish
@@ -95,6 +96,12 @@ abstract final class AppRoutes {
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
+
+  /// The new-movement form preselecting [accountId] — used when the movements
+  /// list is filtered down to a single account (HU-06a). The form still lets
+  /// the user change it.
+  static String newTransactionForAccount(String accountId) =>
+      '$newTransaction?accountId=${Uri.encodeQueryComponent(accountId)}';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -249,12 +256,22 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
           builder: (context, state) {
             final listCubit =
                 _started(getIt<TransactionsListCubit>(), (c) => c.start());
-            return BlocProvider.value(
-              value: listCubit,
+            final carouselCubit =
+                _started(getIt<BalanceCarouselCubit>(), (c) => c.load());
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: listCubit),
+                BlocProvider.value(value: carouselCubit),
+              ],
               child: TransactionsPage(
-                onAddTransaction: () => context.push(AppRoutes.newTransaction),
+                onAddTransaction: (accountId) => context.push(
+                  accountId == null
+                      ? AppRoutes.newTransaction
+                      : AppRoutes.newTransactionForAccount(accountId),
+                ),
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
+                onOpenAccount: (id) => context.push(AppRoutes.account(id)),
               ),
             );
           },
@@ -266,7 +283,11 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
               builder: (context, state) => BlocProvider(
                 create: (context) => _started(
                   getIt<TransactionFormCubit>(),
-                  (c) => c.load(null, type: _typeFromQuery(state.uri)),
+                  (c) => c.load(
+                    null,
+                    type: _typeFromQuery(state.uri),
+                    accountId: state.uri.queryParameters['accountId'],
+                  ),
                 ),
                 child: TransactionFormPage(
                   onConvertToScheduledPayment: (formState) => context.push(

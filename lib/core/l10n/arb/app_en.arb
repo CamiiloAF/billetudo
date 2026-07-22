@@ -40,6 +40,28 @@
   "accountBalanceLabel": "Current balance",
   "accountAvailableCreditLabel": "Available credit",
   "accountDebtLabel": "Current debt",
+  "accountBalanceAdjustTitle": "Adjust balance",
+  "accountBalanceAdjustCurrent": "Current balance: {amount}",
+  "@accountBalanceAdjustCurrent": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustCurrentDebt": "Current debt: {amount}",
+  "@accountBalanceAdjustCurrentDebt": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustNewLabel": "New desired balance",
+  "accountBalanceAdjustNewDebtLabel": "New debt",
+  "accountBalanceAdjustHowLabel": "How do you want to apply it?",
+  "accountBalanceAdjustRegisterTitle": "Register adjustment",
+  "accountBalanceAdjustRegisterBody": "We create a movement dated today for the difference ({diff}). It counts toward your reports and budgets.",
+  "@accountBalanceAdjustRegisterBody": {
+    "placeholders": { "diff": { "type": "String" } }
+  },
+  "accountBalanceAdjustCorrectTitle": "Correct opening balance",
+  "accountBalanceAdjustCorrectBody": "We adjust your starting balance so it matches. No movement is created.",
+  "accountBalanceAdjustApplyCta": "Apply",
+  "accountBalanceAdjustError": "We couldn't adjust the balance. Try again.",
+  "accountBalanceAdjustNote": "Balance adjustment",
   "accountDebtShortLabel": "Debt",
   "accountOverLimitBadge": "Over limit",
   "accountOverLimitCaption": "Exceeded by {amount}",
@@ -179,6 +201,9 @@
   "transactionsSortActiveByDate": "Sorted by date",
   "transactionsSortActiveByAmount": "Sorted by amount",
   "transactionsFilterAccountsSelected": "{count, plural, =1{1 account} other{{count} accounts}}",
+  "transactionsBalanceTotalLabel": "Total balance",
+  "transactionsBalanceCarouselCollapse": "Hide balances",
+  "transactionsBalanceCarouselExpand": "Show balances",
   "transactionsGroupToday": "Today",
   "transactionsGroupYesterday": "Yesterday",
   "transactionsGroupCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
@@ -625,7 +650,7 @@
   "scheduledPaymentFormModeAutomaticTitle": "Automatic",
   "scheduledPaymentFormModeAutomaticSubtitle": "Records itself when the date arrives",
   "scheduledPaymentFormModeManualTitle": "Manual",
-  "scheduledPaymentFormModeManualSubtitle": "We'll ask you to confirm before it affects your balance",
+  "scheduledPaymentFormModeManualSubtitle": "For now, you'll need to confirm it yourself",
   "scheduledPaymentFormDeleteAction": "Delete scheduled payment",
   "scheduledFrequencyChipOnce": "Once",
   "scheduledFrequencyChipDaily": "Day",

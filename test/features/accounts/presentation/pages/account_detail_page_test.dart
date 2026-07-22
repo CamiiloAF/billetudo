@@ -6,6 +6,7 @@ import 'package:billetudo/features/accounts/presentation/cubit/account_detail_cu
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_state.dart';
 import 'package:billetudo/features/accounts/presentation/pages/account_detail_page.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_number_row.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/balance_edit_button.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -100,7 +101,11 @@ void main() {
         find.byType(PageHeaderCircleButton),
         findsNWidgets(2),
       ); // volver + "Editar", nada de acciones sobre el número
-      expect(find.byIcon(LucideIcons.pencil), findsOneWidget);
+      // Dos lápices esperados (Mejora #1): el violeta del header que edita la
+      // cuenta y el gris sutil de "Ajustar saldo" junto a la cifra. Ninguno
+      // toca el PAN.
+      expect(find.byIcon(LucideIcons.pencil), findsNWidgets(2));
+      expect(find.byType(BalanceEditButton), findsOneWidget);
       verifyNever(cubit.revealNumber);
       verifyNever(cubit.copyNumber);
     });

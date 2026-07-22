@@ -136,6 +136,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDebtLabel => 'Current debt';
 
   @override
+  String get accountBalanceAdjustTitle => 'Adjust balance';
+
+  @override
+  String accountBalanceAdjustCurrent(String amount) {
+    return 'Current balance: $amount';
+  }
+
+  @override
+  String accountBalanceAdjustCurrentDebt(String amount) {
+    return 'Current debt: $amount';
+  }
+
+  @override
+  String get accountBalanceAdjustNewLabel => 'New desired balance';
+
+  @override
+  String get accountBalanceAdjustNewDebtLabel => 'New debt';
+
+  @override
+  String get accountBalanceAdjustHowLabel => 'How do you want to apply it?';
+
+  @override
+  String get accountBalanceAdjustRegisterTitle => 'Register adjustment';
+
+  @override
+  String accountBalanceAdjustRegisterBody(String diff) {
+    return 'We create a movement dated today for the difference ($diff). It counts toward your reports and budgets.';
+  }
+
+  @override
+  String get accountBalanceAdjustCorrectTitle => 'Correct opening balance';
+
+  @override
+  String get accountBalanceAdjustCorrectBody =>
+      'We adjust your starting balance so it matches. No movement is created.';
+
+  @override
+  String get accountBalanceAdjustApplyCta => 'Apply';
+
+  @override
+  String get accountBalanceAdjustError =>
+      'We couldn\'t adjust the balance. Try again.';
+
+  @override
+  String get accountBalanceAdjustNote => 'Balance adjustment';
+
+  @override
   String get accountDebtShortLabel => 'Debt';
 
   @override
@@ -632,6 +679,15 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get transactionsBalanceTotalLabel => 'Total balance';
+
+  @override
+  String get transactionsBalanceCarouselCollapse => 'Hide balances';
+
+  @override
+  String get transactionsBalanceCarouselExpand => 'Show balances';
 
   @override
   String get transactionsGroupToday => 'Today';
@@ -1987,7 +2043,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentFormModeManualSubtitle =>
-      'We\'ll ask you to confirm before it affects your balance';
+      'For now, you\'ll need to confirm it yourself';
 
   @override
   String get scheduledPaymentFormDeleteAction => 'Delete scheduled payment';

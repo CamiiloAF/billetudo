@@ -35,6 +35,14 @@ No deduzcas estilos por analogia ni inventes colores/espaciados. El proyecto YA 
 3. Verifica: `mcp__pencil__snapshot_layout({problemsOnly:true})` a profundidad suficiente para llegar a tarjetas anidadas (detecta overflow/clipping/colapsos), y `mcp__pencil__get_screenshot` para revisar visualmente DESPUES de leer la estructura. Prueba con contenido largo real (nombres largos, montos grandes) antes de dar un componente por terminado.
 4. Aplica el "Checklist antes de dar una pantalla por terminada" de MASTER.
 
+## Marca de revision (OBLIGATORIA en todo frame nuevo)
+
+El canvas ya tiene decenas de frames; encontrar los recien creados a ojo es imposible. Por eso **cada frame raiz nuevo o duplicado que crees para revision lleva una marca visible**, y esa marca se retira a medida que el diseno se aprueba.
+
+- **Que es:** un frame-badge en el canvas, colocado JUSTO ARRIBA del frame nuevo (fuera de la pantalla, no dentro — nunca contamines el diseno), llamativo para ubicarlo con zoom out. Fill de un color vivo de andamiaje (ej. `#FF3B30` literal — es scaffolding, NO parte del diseno, asi que aca SI va hex literal para que NO se mezcle con la paleta), texto corto en blanco: `🔖 EN REVISION — <nombre corto> (<nodeId>)`. Nombra el nodo del badge `🔖 REVIEW MARKER — <nombre>` para que tambien salte en la lista de capas.
+- **Cuando se retira:** apenas el usuario aprueba ese frame/variante. Al aprobar, borra su marca (y si era una de varias variantes, las variantes descartadas se borran enteras — regla de higiene ya existente). Un frame sin marca = aprobado/estable; un frame con marca = pendiente de revision.
+- **En tu reporte final**, ademas de los node IDs, lista que frames quedaron marcados (pendientes) y cuales ya sin marca (aprobados), para que el usuario y `ui-ux-reviewer` sepan de un vistazo el estado.
+
 ## Como entregar
 
 En tu respuesta final: que pantallas/frames creaste o modificaste (con node IDs), que componentes reutilizaste o creaste, que variables aplicaste, y como quedaron los estados (default/vacio/carga/error) y ambos temas. Lista explicitamente los pendientes/decisiones abiertas (ej. interacciones no disenadas como pickers o bottom sheets) para que `ui-ux-reviewer` y `flutter-dev` los conozcan. Si detectaste que una regla de MASTER/pages quedo desactualizada frente al `.pen`, dilo — se corrige el `.md`, no el `.pen`.

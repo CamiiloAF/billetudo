@@ -230,6 +230,69 @@ void main() {
     });
   });
 
+  group('saldo inicial / deuda actual (Mejora #1)', () {
+    testWidgets('alta de banco: aparece "Saldo inicial"', (tester) async {
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          type: AccountType.bank,
+        ),
+      );
+
+      expect(find.text('Saldo inicial'), findsOneWidget);
+    });
+
+    testWidgets('edición de banco: NO aparece "Saldo inicial"', (tester) async {
+      // Al editar, el saldo ya no se teclea a mano: se reconcilia con
+      // "Ajustar saldo" desde el detalle.
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          id: 'acc-1',
+          type: AccountType.bank,
+          name: 'Bancolombia',
+          initialBalanceText: '450050',
+        ),
+      );
+
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+
+    testWidgets('alta de tarjeta: aparece "Deuda actual", no "Saldo inicial"', (
+      tester,
+    ) async {
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          type: AccountType.card,
+        ),
+      );
+
+      expect(find.text('Deuda actual'), findsOneWidget);
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+
+    testWidgets('edición de tarjeta: NO aparece "Deuda actual"', (tester) async {
+      // En una tarjeta existente la deuda es derivada; solo se ajusta desde el
+      // detalle, nunca se reescribe en el formulario.
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          id: 'card-1',
+          type: AccountType.card,
+          name: 'Visa Oro',
+        ),
+      );
+
+      expect(find.text('Deuda actual'), findsNothing);
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+  });
+
   testWidgets('el error del dominio se muestra en su campo', (tester) async {
     await pumpForm(
       tester,

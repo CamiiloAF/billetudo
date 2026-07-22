@@ -136,6 +136,53 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountDebtLabel => 'Deuda actual';
 
   @override
+  String get accountBalanceAdjustTitle => 'Ajustar saldo';
+
+  @override
+  String accountBalanceAdjustCurrent(String amount) {
+    return 'Saldo actual: $amount';
+  }
+
+  @override
+  String accountBalanceAdjustCurrentDebt(String amount) {
+    return 'Deuda actual: $amount';
+  }
+
+  @override
+  String get accountBalanceAdjustNewLabel => 'Nuevo saldo deseado';
+
+  @override
+  String get accountBalanceAdjustNewDebtLabel => 'Nueva deuda';
+
+  @override
+  String get accountBalanceAdjustHowLabel => '¿Cómo quieres aplicarlo?';
+
+  @override
+  String get accountBalanceAdjustRegisterTitle => 'Registrar ajuste';
+
+  @override
+  String accountBalanceAdjustRegisterBody(String diff) {
+    return 'Creamos un movimiento con fecha de hoy por la diferencia ($diff). Suma a tus reportes y presupuestos.';
+  }
+
+  @override
+  String get accountBalanceAdjustCorrectTitle => 'Corregir saldo inicial';
+
+  @override
+  String get accountBalanceAdjustCorrectBody =>
+      'Ajustamos tu saldo de arranque para que cuadre. No crea ningún movimiento.';
+
+  @override
+  String get accountBalanceAdjustApplyCta => 'Aplicar';
+
+  @override
+  String get accountBalanceAdjustError =>
+      'No pudimos ajustar el saldo. Intenta de nuevo.';
+
+  @override
+  String get accountBalanceAdjustNote => 'Ajuste de saldo';
+
+  @override
   String get accountDebtShortLabel => 'Deuda';
 
   @override
@@ -634,6 +681,15 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get transactionsBalanceTotalLabel => 'Saldo total';
+
+  @override
+  String get transactionsBalanceCarouselCollapse => 'Ocultar saldos';
+
+  @override
+  String get transactionsBalanceCarouselExpand => 'Mostrar saldos';
 
   @override
   String get transactionsGroupToday => 'Hoy';
@@ -1988,7 +2044,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaymentFormModeManualSubtitle =>
-      'Te avisamos para que confirmes antes de afectar tu saldo';
+      'Por ahora deberás confirmarlo tú mismo';
 
   @override
   String get scheduledPaymentFormDeleteAction => 'Eliminar pago programado';

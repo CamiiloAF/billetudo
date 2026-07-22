@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../accounts/domain/entities/account.dart';
@@ -16,6 +17,7 @@ import '../utils/date_period_label.dart';
 import '../utils/transaction_date_grouping.dart';
 import '../utils/transaction_sort_label.dart';
 import '../widgets/filter_chip_pill.dart';
+import '../widgets/movements_balance_carousel.dart';
 import '../widgets/sheets/account_filter_sheet.dart';
 import '../widgets/sheets/category_filter_sheet.dart';
 import '../widgets/sheets/date_filter_sheet.dart';
@@ -35,14 +37,39 @@ class TransactionsPage extends StatelessWidget {
   const TransactionsPage({
     required this.onAddTransaction,
     required this.onOpenTransaction,
+    required this.onOpenAccount,
     super.key,
   });
 
-  final VoidCallback onAddTransaction;
+  /// Opens the new-movement form. Receives the account to preselect, or null
+  /// for none: the account of the balance carousel's active card (Mejora #2)
+  /// is preselected as a convenience — the form still lets the user change it.
+  final void Function(String? accountId) onAddTransaction;
 
   /// Navigates to the detail page and resolves with whatever it popped with
   /// (the deleted transaction's id, or `null`).
   final Future<String?> Function(String id) onOpenTransaction;
+
+  /// Opens an account's detail page: fired when a balance carousel card is
+  /// tapped (Mejora #2).
+  final void Function(String accountId) onOpenAccount;
+
+  /// The account to preselect in the new-movement form: the account of the
+  /// balance carousel's active card (Mejora #2), which covers all three filter
+  /// states — one account, several, or "Todas" — since the carousel always
+  /// shows a card per displayed account. Read at tap time from the carousel
+  /// cubit's remembered page, clamped in case the filter shrank the set, and
+  /// null only when no account is shown.
+  static String? _preselectedAccountId(BuildContext context) {
+    final displayed =
+        context.read<TransactionsListCubit>().state.displayedAccounts;
+    if (displayed.isEmpty) {
+      return null;
+    }
+    final page = context.read<BalanceCarouselCubit>().state.currentPage;
+    final index = page.clamp(0, displayed.length - 1);
+    return displayed[index].account.id;
+  }
 
   /// Awaits the detail page's navigation, then — if it deleted something —
   /// offers HU-05's "Deshacer" snackbar via [TransactionsListCubit]. This
@@ -66,7 +93,7 @@ class TransactionsPage extends StatelessWidget {
       floatingActionButton: AppFab(
         icon: LucideIcons.plus,
         tooltip: l10n.transactionsAdd,
-        onPressed: onAddTransaction,
+        onPressed: () => onAddTransaction(_preselectedAccountId(context)),
       ),
       body: SafeArea(
         child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
@@ -89,6 +116,9 @@ class TransactionsPage extends StatelessWidget {
               );
           },
           builder: (context, state) {
+            // Search and filters stay pinned; everything below — including the
+            // balance carousel (Mejora #2) — lives inside the scrollable body
+            // so it scrolls away with the list.
             return Column(
               children: [
                 TransactionsSearchRow(state: state),
@@ -102,16 +132,30 @@ class TransactionsPage extends StatelessWidget {
                     TransactionsListStatus.failure => TransactionsErrorView(
                         onRetry: context.read<TransactionsListCubit>().start,
                       ),
+                    // Empty period: the carousel is pinned above the message
+                    // (there is nothing to scroll here) so the balances stay
+                    // visible when there are accounts but no movements yet.
                     TransactionsListStatus.ready when state.items.isEmpty =>
-                      TransactionsEmptyState(
-                        message: _isUnfiltered(state.filter)
-                            ? l10n.transactionsEmptyMessage
-                            : l10n.transactionsEmptyPeriodMessage,
+                      Column(
+                        children: [
+                          MovementsBalanceCarousel(
+                            state: state,
+                            onOpenAccount: onOpenAccount,
+                          ),
+                          Expanded(
+                            child: TransactionsEmptyState(
+                              message: _isUnfiltered(state.filter)
+                                  ? l10n.transactionsEmptyMessage
+                                  : l10n.transactionsEmptyPeriodMessage,
+                            ),
+                          ),
+                        ],
                       ),
                     TransactionsListStatus.ready => TransactionsListView(
                         state: state,
                         onOpenTransaction: (id) =>
                             _openTransaction(context, id),
+                        onOpenAccount: onOpenAccount,
                       ),
                   },
                 ),
@@ -371,24 +415,36 @@ class TransactionsListView extends StatelessWidget {
   const TransactionsListView({
     required this.state,
     required this.onOpenTransaction,
+    required this.onOpenAccount,
     super.key,
   });
 
   final TransactionsListState state;
   final ValueChanged<String> onOpenTransaction;
 
+  /// Forwarded to the balance carousel header: tapping a card opens that
+  /// account's detail page (Mejora #2).
+  final ValueChanged<String> onOpenAccount;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final sortOrder = state.filter.sortOrder;
 
+    // The carousel (Mejora #2) is the first scrollable item in both modes, so
+    // it scrolls away with the list while the search/chips stay pinned. It
+    // spans the full width (its own cards manage the 20px inset and the peek),
+    // so the list's horizontal padding drops to 0 and each row/header carries
+    // its own 20px instead.
     // HU-06 (`tigaH`/`Q8gSaB`): sorting by amount drops chronological order,
     // so the `Date Head` grouping stops making sense — the list flattens
     // into one plain run of `Transaction Row`, with a `Sort Label` above it
     // for context since the date headers are gone.
     if (transactionSortIsByAmount(sortOrder)) {
-      return Column(
+      return ListView(
+        padding: const EdgeInsets.only(bottom: 28),
         children: [
+          MovementsBalanceCarousel(state: state, onOpenAccount: onOpenAccount),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -403,18 +459,16 @@ class TransactionsListView extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-              itemCount: state.items.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) => TransactionRow(
-                entry: state.items[index],
-                onTap: () =>
-                    onOpenTransaction(state.items[index].transaction.id),
+          for (var i = 0; i < state.items.length; i++) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TransactionRow(
+                entry: state.items[i],
+                onTap: () => onOpenTransaction(state.items[i].transaction.id),
               ),
             ),
-          ),
+            if (i != state.items.length - 1) const SizedBox(height: 16),
+          ],
         ],
       );
     }
@@ -422,12 +476,19 @@ class TransactionsListView extends StatelessWidget {
     final groups = groupTransactionsByDate(state.items);
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-      itemCount: groups.length,
+      padding: const EdgeInsets.only(bottom: 28),
+      // +1 for the carousel header at index 0.
+      itemCount: groups.length + 1,
       itemBuilder: (context, index) {
-        final group = groups[index];
+        if (index == 0) {
+          return MovementsBalanceCarousel(
+            state: state,
+            onOpenAccount: onOpenAccount,
+          );
+        }
+        final group = groups[index - 1];
         return Padding(
-          padding: EdgeInsets.only(top: index == 0 ? 0 : 24),
+          padding: EdgeInsets.fromLTRB(20, index == 1 ? 0 : 24, 20, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

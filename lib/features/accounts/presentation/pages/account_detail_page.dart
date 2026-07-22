@@ -20,6 +20,7 @@ import '../widgets/balance_card_hero.dart';
 import '../widgets/balance_card_simple.dart';
 import '../widgets/info_card.dart';
 import '../widgets/info_row.dart';
+import '../widgets/sheets/adjust_balance_sheet.dart';
 import '../widgets/sheets/cannot_delete_last_account_sheet.dart';
 import '../widgets/sheets/confirm_archive_account_sheet.dart';
 import '../widgets/sheets/confirm_delete_account_sheet.dart';
@@ -163,11 +164,13 @@ class AccountDetailBody extends StatelessWidget {
                     view: account.cardBalancePrimary ?? CardBalanceView.debt,
                     onViewChanged:
                         context.read<AccountDetailCubit>().cardViewChanged,
+                    onEditBalance: () => _adjustBalance(context, entry),
                   )
                 else
                   BalanceCardSimple(
                     balanceMinor: entry.balance.balanceMinor,
                     currency: account.currency,
+                    onEditBalance: () => _adjustBalance(context, entry),
                   ),
                 const SizedBox(height: 18),
                 AccountInfoSection(
@@ -180,6 +183,18 @@ class AccountDetailBody extends StatelessWidget {
         ),
         AccountDetailActions(account: account),
       ],
+    );
+  }
+
+  /// Opens "Ajustar saldo" for this account. The detail refreshes on its own
+  /// once the write commits — Drift's reactive stream re-emits.
+  void _adjustBalance(BuildContext context, AccountWithBalance entry) {
+    unawaited(
+      AdjustBalanceSheet.show(
+        context,
+        account: entry.account,
+        currentBalanceMinor: entry.balance.balanceMinor,
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
+import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -18,6 +20,28 @@ import '../../transaction_fixtures.dart';
 
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
+
+/// In-memory prefs so the balance carousel (Mejora #2) renders in its default
+/// expanded state without touching `shared_preferences`.
+class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
+  @override
+  Future<bool> readCollapsed() async => false;
+
+  @override
+  Future<void> writeCollapsed({required bool collapsed}) async {}
+}
+
+/// Wraps [page] with the two cubits the transactions page reads.
+Widget _withProviders(TransactionsListCubit cubit, Widget page) =>
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<TransactionsListCubit>.value(value: cubit),
+        BlocProvider<BalanceCarouselCubit>(
+          create: (_) => BalanceCarouselCubit(_FakeCarouselPrefs()),
+        ),
+      ],
+      child: page,
+    );
 
 final DateTime _instant = DateTime(2026, 7, 15);
 final int _instantMillis = _instant.millisecondsSinceEpoch;
@@ -64,11 +88,12 @@ void main() {
     when(() => cubit.state).thenReturn(state);
     await pumpGolden(
       tester,
-      BlocProvider<TransactionsListCubit>.value(
-        value: cubit,
-        child: TransactionsPage(
-          onAddTransaction: () {},
+      _withProviders(
+        cubit,
+        TransactionsPage(
+          onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
+          onOpenAccount: (_) {},
         ),
       ),
       brightness: brightness,
@@ -307,11 +332,12 @@ void main() {
 
       await pumpGolden(
         tester,
-        BlocProvider<TransactionsListCubit>.value(
-          value: cubit,
-          child: TransactionsPage(
-            onAddTransaction: () {},
+        _withProviders(
+          cubit,
+          TransactionsPage(
+            onAddTransaction: (_) {},
             onOpenTransaction: (_) async => null,
+            onOpenAccount: (_) {},
           ),
         ),
         brightness: brightness,

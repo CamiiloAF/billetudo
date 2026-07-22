@@ -14,6 +14,9 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart'
 import 'package:billetudo/core/crash/crash_reporter.dart' as _i474;
 import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
+import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
+import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart'
+    as _i345;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
 import 'package:billetudo/core/security/secure_storage_service.dart' as _i1034;
 import 'package:billetudo/core/sync/data/datasources/power_sync_status_source.dart'
@@ -39,6 +42,8 @@ import 'package:billetudo/features/accounts/data/repositories/account_repository
     as _i304;
 import 'package:billetudo/features/accounts/domain/repositories/account_repository.dart'
     as _i1067;
+import 'package:billetudo/features/accounts/domain/usecases/adjust_account_balance.dart'
+    as _i230;
 import 'package:billetudo/features/accounts/domain/usecases/archive_account.dart'
     as _i79;
 import 'package:billetudo/features/accounts/domain/usecases/create_account.dart'
@@ -71,6 +76,8 @@ import 'package:billetudo/features/accounts/presentation/cubit/account_form_cubi
     as _i1070;
 import 'package:billetudo/features/accounts/presentation/cubit/accounts_list_cubit.dart'
     as _i531;
+import 'package:billetudo/features/accounts/presentation/cubit/adjust_balance_cubit.dart'
+    as _i1059;
 import 'package:billetudo/features/accounts/presentation/cubit/archived_accounts_cubit.dart'
     as _i958;
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
@@ -381,6 +388,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
         ));
+    gh.lazySingleton<_i345.BalanceCarouselPreferenceDatasource>(() =>
+        _i345.BalanceCarouselPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i872.PowerSyncConnector>(() => _i872.PowerSyncConnector(
@@ -429,6 +439,8 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i173.LocalDataWipeDatasource>(
         () => _i173.LocalDataWipeDatasource(gh<_i433.PowerSyncDatabase>()));
+    gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
+        gh<_i345.BalanceCarouselPreferenceDatasource>()));
     gh.lazySingleton<_i654.TransactionRepository>(
         () => _i10.TransactionRepositoryImpl(
               gh<_i556.TransactionsLocalDatasource>(),
@@ -623,6 +635,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i545.WatchArchivedAccounts>(),
           gh<_i536.UnarchiveAccount>(),
         ));
+    gh.factory<_i230.AdjustAccountBalance>(() => _i230.AdjustAccountBalance(
+          gh<_i990.CreateTransaction>(),
+          gh<_i724.UpdateAccount>(),
+        ));
     gh.factory<_i1070.AccountFormCubit>(() => _i1070.AccountFormCubit(
           gh<_i703.CreateAccount>(),
           gh<_i724.UpdateAccount>(),
@@ -727,6 +743,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i315.CategoryFilterCubit>(
         () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
+    gh.factory<_i1059.AdjustBalanceCubit>(
+        () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i304.CategoryQuickPickerCubit>(
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),

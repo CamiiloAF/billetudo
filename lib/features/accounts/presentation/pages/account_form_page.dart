@@ -149,10 +149,15 @@ class AccountFormBody extends StatelessWidget {
           textCapitalization: TextCapitalization.words,
           onChanged: cubit.institutionChanged,
         ),
-        // A card's debt lives only in "Datos de la tarjeta" (`Cupo máximo`
-        // et al.), not as a top-level money field — `xdLeB`/`jg9DA` go from
-        // Moneda straight into that section, with no field in between.
-        if (!state.isCard) ...[
+        // A card's debt lives only in "Datos de la tarjeta" (`Deuda actual`),
+        // not as a top-level money field — `xdLeB`/`jg9DA` go from Moneda
+        // straight into that section, with no field in between.
+        //
+        // Mejora #1: the opening balance is only editable while **creating**.
+        // On an existing account the balance is derived, and moving it now
+        // goes through "Ajustar saldo" on the detail (controlled), never a
+        // silent rewrite of the opening figure here.
+        if (!state.isCard && !state.isEditing) ...[
           const SizedBox(height: 16),
           AccountMoneyField(
             label: l10n.accountFormInitialBalanceLabel,
@@ -212,6 +217,14 @@ class AccountFormBody extends StatelessWidget {
           CardDetailsSection(
             currency: state.currency,
             creditLimitText: state.creditLimitText,
+            // Mejora #1: a new card names its starting debt here; on an
+            // existing card the debt is derived and only "Ajustar saldo"
+            // changes it, so the field is hidden when editing.
+            showDebtField: !state.isEditing,
+            debtText: state.initialBalanceText,
+            debtError:
+                _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
+            onDebtChanged: cubit.initialBalanceChanged,
             statementDay: state.statementDay,
             paymentDueDay: state.paymentDueDay,
             creditLimitError:

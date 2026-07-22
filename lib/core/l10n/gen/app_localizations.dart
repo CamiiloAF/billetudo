@@ -338,6 +338,84 @@ abstract class AppLocalizations {
   /// **'Deuda actual'**
   String get accountDebtLabel;
 
+  /// No description provided for @accountBalanceAdjustTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar saldo'**
+  String get accountBalanceAdjustTitle;
+
+  /// No description provided for @accountBalanceAdjustCurrent.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo actual: {amount}'**
+  String accountBalanceAdjustCurrent(String amount);
+
+  /// No description provided for @accountBalanceAdjustCurrentDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda actual: {amount}'**
+  String accountBalanceAdjustCurrentDebt(String amount);
+
+  /// No description provided for @accountBalanceAdjustNewLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo saldo deseado'**
+  String get accountBalanceAdjustNewLabel;
+
+  /// No description provided for @accountBalanceAdjustNewDebtLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva deuda'**
+  String get accountBalanceAdjustNewDebtLabel;
+
+  /// No description provided for @accountBalanceAdjustHowLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo quieres aplicarlo?'**
+  String get accountBalanceAdjustHowLabel;
+
+  /// No description provided for @accountBalanceAdjustRegisterTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar ajuste'**
+  String get accountBalanceAdjustRegisterTitle;
+
+  /// No description provided for @accountBalanceAdjustRegisterBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Creamos un movimiento con fecha de hoy por la diferencia ({diff}). Suma a tus reportes y presupuestos.'**
+  String accountBalanceAdjustRegisterBody(String diff);
+
+  /// No description provided for @accountBalanceAdjustCorrectTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Corregir saldo inicial'**
+  String get accountBalanceAdjustCorrectTitle;
+
+  /// No description provided for @accountBalanceAdjustCorrectBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustamos tu saldo de arranque para que cuadre. No crea ningún movimiento.'**
+  String get accountBalanceAdjustCorrectBody;
+
+  /// No description provided for @accountBalanceAdjustApplyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar'**
+  String get accountBalanceAdjustApplyCta;
+
+  /// No description provided for @accountBalanceAdjustError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos ajustar el saldo. Intenta de nuevo.'**
+  String get accountBalanceAdjustError;
+
+  /// No description provided for @accountBalanceAdjustNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste de saldo'**
+  String get accountBalanceAdjustNote;
+
   /// No description provided for @accountDebtShortLabel.
   ///
   /// In es, this message translates to:
@@ -1171,6 +1249,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
   String transactionsFilterAccountsSelected(int count);
+
+  /// Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2).
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo total'**
+  String get transactionsBalanceTotalLabel;
+
+  /// Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2).
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar saldos'**
+  String get transactionsBalanceCarouselCollapse;
+
+  /// Semántica de la barra compacta que reexpande el carrusel de saldo en Movimientos (Mejora #2).
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar saldos'**
+  String get transactionsBalanceCarouselExpand;
 
   /// No description provided for @transactionsGroupToday.
   ///
@@ -3500,10 +3596,10 @@ abstract class AppLocalizations {
   /// **'Manual'**
   String get scheduledPaymentFormModeManualTitle;
 
-  /// No description provided for @scheduledPaymentFormModeManualSubtitle.
+  /// TEMPORAL (2026-07-21): aún no existen notificaciones/recordatorios. Revertir a un texto que prometa un aviso automático (ej. 'Te avisamos para que confirmes antes de afectar tu saldo') cuando se implemente el sistema de notificaciones.
   ///
   /// In es, this message translates to:
-  /// **'Te avisamos para que confirmes antes de afectar tu saldo'**
+  /// **'Por ahora deberás confirmarlo tú mismo'**
   String get scheduledPaymentFormModeManualSubtitle;
 
   /// No description provided for @scheduledPaymentFormDeleteAction.

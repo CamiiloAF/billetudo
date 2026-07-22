@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/transaction.dart';
@@ -53,21 +54,24 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   }) async {
     if (id == null) {
       _original = null;
-      var initialAccountId = accountId;
+      // Resolve against the live account list so the preselected account
+      // carries its name for the account chip and a stale id degrades
+      // gracefully. [accountId] is the caller's preference — the account the
+      // movements list was filtered by (HU-06a). When it is null or no longer
+      // exists, fall back to the first account by `sortOrder` (the account
+      // picker sheet's own order), so the form never opens with no account.
+      final result = await _watchAccounts().first;
+      if (isClosed) {
+        return;
+      }
+      String? initialAccountId;
       String? initialAccountName;
-      if (initialAccountId == null) {
-        // No caller-supplied account (e.g. the puente from a scheduled
-        // payment): preselect the first account by `sortOrder`, the same
-        // order the account picker sheet shows, so the form never opens with
-        // no account chosen.
-        final result = await _watchAccounts().first;
-        if (isClosed) {
-          return;
-        }
-        if (result case Right(value: final accounts) when accounts.isNotEmpty) {
-          initialAccountId = accounts.first.account.id;
-          initialAccountName = accounts.first.account.name;
-        }
+      if (result case Right(value: final accounts) when accounts.isNotEmpty) {
+        final preferred =
+            accountId == null ? null : _accountById(accounts, accountId);
+        final chosen = preferred ?? accounts.first;
+        initialAccountId = chosen.account.id;
+        initialAccountName = chosen.account.name;
       }
       emit(
         TransactionFormState(
@@ -100,6 +104,18 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         _original = entry.transaction;
         emit(_formFor(entry));
     }
+  }
+
+  AccountWithBalance? _accountById(
+    List<AccountWithBalance> accounts,
+    String id,
+  ) {
+    for (final entry in accounts) {
+      if (entry.account.id == id) {
+        return entry;
+      }
+    }
+    return null;
   }
 
   TransactionFormState _formFor(TransactionWithDetails entry) {

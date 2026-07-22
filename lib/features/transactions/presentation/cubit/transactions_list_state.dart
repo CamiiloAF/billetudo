@@ -44,6 +44,34 @@ class TransactionsListState extends Equatable {
 
   bool get isEmpty => status == TransactionsListStatus.ready && items.isEmpty;
 
+  /// The accounts the balance carousel (Mejora #2) shows: the ones the account
+  /// filter narrows to, or every active account when there is no account
+  /// filter ("Todas"). Preserves [accounts]' order (the account list order).
+  List<AccountWithBalance> get displayedAccounts {
+    final ids = filter.accountIds;
+    if (ids.isEmpty) {
+      return accounts;
+    }
+    return accounts
+        .where((entry) => ids.contains(entry.account.id))
+        .toList(growable: false);
+  }
+
+  /// Sum of the shown accounts' balances, for the collapsed bar's "Saldo
+  /// total" (Mejora #2). A plain sum of `balanceMinor` in cents: the app is
+  /// single-currency in practice today, so — unlike Cuentas' Total Card — this
+  /// does not split per currency (see `displayedCurrency`).
+  int get displayedBalanceTotalMinor => displayedAccounts.fold(
+        0,
+        (total, entry) => total + entry.balance.balanceMinor,
+      );
+
+  /// Currency the collapsed total renders in: the first shown account's, or
+  /// `'COP'` when none is shown. Mixed-currency reconciliation is out of scope
+  /// for Mejora #2 (see `displayedBalanceTotalMinor`).
+  String get displayedCurrency =>
+      displayedAccounts.isEmpty ? 'COP' : displayedAccounts.first.account.currency;
+
   TransactionsListState copyWith({
     TransactionsListStatus? status,
     List<TransactionWithDetails>? items,

@@ -214,7 +214,7 @@ void main() {
     expect(find.text('Al llegar la fecha'), findsOneWidget);
     expect(find.text('Se registra solo al llegar la fecha'), findsOneWidget);
     expect(
-      find.text('Te avisamos para que confirmes antes de afectar tu saldo'),
+      find.text('Por ahora deberás confirmarlo tú mismo'),
       findsOneWidget,
     );
   });

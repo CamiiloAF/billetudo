@@ -111,3 +111,37 @@ Documentados en detalle (estructura + overrides) en `design-system/billetudo/MAS
 - **Acceso definitivo desde Home**: hoy es un link temporal en el Hero de Inicio, pendiente de reubicar cuando se diseñe esa feature.
 - **HU-05** (selector multi-cuenta / vista combinada de transacciones): vive en la feature de Transacciones, no en Cuentas — fuera de alcance de este documento.
 - Confirmacion visual "Copiado" al copiar numero de cuenta + limpieza de portapapeles a 60s (HU-03): interaccion, no diseño estatico.
+
+## Adición 2026-07-21 — Ajuste controlado del saldo (Mejora #1)
+
+> **Estado:** tema CLARO aprobado por el usuario e **implementado en código** (verde). **Tema oscuro PENDIENTE** — bloqueado porque el servidor de render de Pencil está caído; los frames oscuros no se generaron aún, y los badges `🔖 EN REVISIÓN` de los frames claros siguen en el canvas hasta poder limpiarlos. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+
+El saldo de una cuenta **ya no se edita libremente** en el formulario. Se ajusta desde el **detalle**, con dos opciones explícitas; y las tarjetas fijan su deuda inicial al crear.
+
+**Frames (solo claro por ahora):**
+| Pieza | Node ID (Claro) |
+|---|---|
+| Detalle de cuenta (normal) — lápiz "Ajustar saldo" en la Balance Card | `c2jrG` |
+| Detalle de tarjeta — lápiz "Ajustar saldo" en el Balance Card Hero | `Uk8DL` |
+| Hoja "Ajustar saldo" (Var 1 — opciones radio + Aplicar) | `s0c82` |
+| Agregar tarjeta — campo "Deuda actual" en "Datos de la tarjeta" | `XcEBG` |
+
+**Componentes nuevos:** `P0pSKV` "Balance Adjust Option" (tarjeta-radio con título + microcopy; seleccionada = `$primary-soft` + borde `$primary` + `circle-dot`, no solo color → cumple WCAG 1.4.1). En código: `BalanceEditButton` (lápiz sutil reusable) y `BalanceAdjustModeOption`.
+
+**Lápiz sutil "Ajustar saldo":** ícono `pencil` gris (`$text-secondary`, ~18px, área táctil ~40px) **a la derecha de la cifra** de la Balance Card (simple `c2jrG` y Hero `Uk8DL`) — deliberadamente distinto del lápiz violeta del `Page Header` (que edita la cuenta). Se ubicó pegado al monto (no en la esquina) para que lea "editar este saldo" y no compita con el lápiz del header.
+
+**Hoja "Ajustar saldo" (`s0c82`):** `Bottom Sheet Base` + saldo actual de referencia + `Form Field` "Nuevo saldo deseado" (o "Nueva deuda" en tarjeta) + dos `Balance Adjust Option` con microcopy que muestra la diferencia con signo + `Button/Primary` "Aplicar":
+- **Registrar ajuste** (default): crea una transacción con fecha de hoy por la diferencia (ingreso si el saldo sube, gasto si baja), con **nota "Ajuste de saldo"** y **categoría "Otros gastos"/"Otros ingresos"** según la dirección. Cuenta como transacción normal (afecta presupuestos/reportes).
+- **Corregir saldo inicial**: mueve `initialBalanceMinor` para que el saldo derivado dé el valor ingresado; no crea transacción.
+
+**"Deuda actual" al crear tarjeta (`XcEBG`):** money field en "Datos de la tarjeta" (label `accountDebtLabel`, ícono `banknote`), consecutivo con "Cupo máximo". Solo al **crear** tarjeta (la deuda se guarda como saldo negativo). Reemplaza el hueco previo (una tarjeta nueva no tenía forma de fijar deuda inicial).
+
+**"Saldo inicial" fuera de la edición:** el campo de saldo solo aparece al **crear** (cuenta normal → "Saldo inicial"; tarjeta → "Deuda actual"). Al **editar**, ninguna cuenta muestra campo de saldo — los cambios van por "Ajustar saldo". Corrige la sección "Campos y iconos" de arriba: "Saldo inicial" ya no es editable en `xdLeB`.
+
+**Decisión (caso tarjeta):** en tarjetas la cifra visible es la deuda; el copy dice "Nueva deuda" y el signo se maneja en dominio (deuda positiva tecleada → saldo real negativo).
+
+**Variante descartada** (borrada del canvas): hoja "Ajustar saldo" con dos botones de acción directos (`LuSBL`); ganó la de opciones radio + Aplicar.
+
+**Código:** `AccountBalanceAdjustment` / `AdjustAccountBalance` (dominio de accounts; la lógica de signo y del diff vive aquí), `AdjustBalanceSheet` / `AdjustBalanceCubit` (presentación).
+
+**Pendiente:** tema oscuro (Pencil down), limpiar los 4 badges de revisión, y fidelidad visual (`pencil-fidelity-reviewer`) cuando Pencil recupere el render.

@@ -19,6 +19,10 @@ class CardDetailsSection extends StatelessWidget {
     required this.onCreditLimitChanged,
     required this.onStatementDayTap,
     required this.onPaymentDueDayTap,
+    this.showDebtField = false,
+    this.debtText = '',
+    this.debtError,
+    this.onDebtChanged,
     this.creditLimitError,
     this.statementDayError,
     this.paymentDueDayError,
@@ -31,6 +35,14 @@ class CardDetailsSection extends StatelessWidget {
   final String currency;
 
   final String creditLimitText;
+
+  /// Mejora #1: the "Deuda actual" field, shown only while creating a card.
+  /// Bound to the same `initialBalanceText` the cubit negates on save.
+  final bool showDebtField;
+  final String debtText;
+  final String? debtError;
+  final ValueChanged<String>? onDebtChanged;
+
   final int? statementDay;
   final int? paymentDueDay;
   final ValueChanged<String> onCreditLimitChanged;
@@ -63,6 +75,18 @@ class CardDetailsSection extends StatelessWidget {
           errorText: creditLimitError,
           onChanged: onCreditLimitChanged,
         ),
+        if (showDebtField && onDebtChanged != null) ...[
+          const SizedBox(height: 16),
+          AccountMoneyField(
+            label: l10n.accountDebtLabel,
+            icon: LucideIcons.banknote,
+            hint: l10n.accountFormAmountHint,
+            currency: currency,
+            text: debtText,
+            errorText: debtError,
+            onChanged: onDebtChanged!,
+          ),
+        ],
         const SizedBox(height: 16),
         AccountFormField.selector(
           label: l10n.accountFormStatementDayLabel,

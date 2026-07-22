@@ -31,6 +31,7 @@ class TransactionDraft extends Equatable {
     this.scheduledPaymentId,
     this.goalId,
     this.debtId,
+    this.isBalanceAdjustment = false,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -68,6 +69,13 @@ class TransactionDraft extends Equatable {
   final String? scheduledPaymentId;
   final String? goalId;
   final String? debtId;
+
+  /// Marks a balance reconciliation (Accounts' "Ajustar saldo"). Not
+  /// persisted: it only relaxes the "a category is required" rule, because a
+  /// balance adjustment is category-less by nature — like a transfer leg — and
+  /// its sheet offers no picker. The transaction form never sets it, so its
+  /// mandatory-category rule is untouched.
+  final bool isBalanceAdjustment;
 
   /// Validates every business rule of HU-01/HU-02/HU-03/HU-04 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
@@ -136,6 +144,7 @@ class TransactionDraft extends Equatable {
         scheduledPaymentId: scheduledPaymentId,
         goalId: goalId,
         debtId: debtId,
+        isBalanceAdjustment: isBalanceAdjustment,
       ),
     );
   }
@@ -172,6 +181,10 @@ class TransactionDraft extends Equatable {
         final expectedKind = type == TransactionType.expense
             ? CategoryKind.expense
             : CategoryKind.income;
+        // A balance reconciliation has no category, on purpose.
+        if (categoryId == null && isBalanceAdjustment) {
+          return const Right((null, null, null));
+        }
         if (categoryId == null) {
           return const Left(
             ValidationFailure(
@@ -213,5 +226,6 @@ class TransactionDraft extends Equatable {
         scheduledPaymentId,
         goalId,
         debtId,
+        isBalanceAdjustment,
       ];
 }

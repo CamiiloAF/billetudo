@@ -311,3 +311,30 @@ Solo quedan 2 huecos reales contra `docs/requirements/03-transacciones.md` (todo
 - **"Info Card" del Detalle** (`n1PgQ`/`P0qZJ3`/`BGgi4`): sin componentizar a propósito — solo 3 instancias con contenido variable, decisión explícita del reviewer de dejarlo ad-hoc.
 - **Interacción real de mostrar/ocultar la Zona Fija**: la animación de colapso ya está definida en código (`AnimatedSize`+`AnimatedSwitcher`, 220ms `easeInOut`, ver "Animaciones de la Zona Fija"); queda por especificar el detalle de cómo se dispara el foco de "Nota" en Flutter (aún solo representada como 2 estados estáticos en Pencil).
 - **Tema oscuro**: cerrado para toda la feature. Las 24 pantallas del resto (Lista + estados, 6 formularios, Detalle, Eliminar/Snackbar, Filtros y sheet de fecha) viven en la zona "TRANSACCIONES — OSCURO" (label `h6URn`) y fueron generadas con `Copy()` + `theme:{mode:"dark"}` desde cada frame claro y auditadas (ver "Auditoría de tema oscuro" arriba). Los **tres selectores del formulario** (categoría `BobKK`/`fz53P`, cuenta `Zsrnf`, fecha `nYFOZ`) tienen su copia oscura en la zona aparte `HXy6n`, también auditada. El recoloreo salió 100% por variables (cero hex hardcodeado), porque toda la estructura repetida está componentizada y las pantallas oscuras instancian los mismos componentes `reusable:true` que las claras — así el rework del formulario (teclado, selectores, Zona Fija) se propaga solo a ambos temas.
+
+## Adición 2026-07-21 — Carrusel de saldo en Movimientos (Mejora #2)
+
+> **Estado:** tema CLARO aprobado por el usuario e **implementado en código** (verde). **Tema oscuro PENDIENTE** — bloqueado porque el servidor de render de Pencil está caído; los frames oscuros no se generaron aún. Los frames claros conservan su badge `🔖 EN REVISIÓN` en el canvas hasta poder limpiarlos con Pencil operativo. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+
+Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de chips de filtro** y arriba de la lista. **No es fijo**: scrollea verticalmente con la lista (el buscador y los chips sí quedan fijos, el carrusel se va con el contenido).
+
+**Frames (solo claro por ahora):**
+| Pieza | Node ID (Claro) |
+|---|---|
+| Movimientos · Var A — carrusel expandido (cuenta activa) | `cgasM` |
+| Movimientos · Var A — carrusel colapsado (barra compacta) | `rGVw1` |
+| Movimientos · Var A — carrusel con tarjeta de crédito activa | `Ljf8l` |
+
+**Componentes nuevos:** `C2g9cA` "Balance Card (Movimientos)" (altura uniforme; variante cuenta normal = avatar + nombre + tipo + saldo; variante tarjeta = deuda `$expense` + cupo disponible + barra de cupo, a la misma altura). `d2TX3` "Balance Bar Colapsada" (barra fina `$surface` + borde: `layers` + "N cuentas" + "Saldo total $X" + `chevron-down`, toda tocable para reexpandir).
+
+**Comportamiento:**
+- Refleja el filtro de cuenta: **1 cuenta** → esa card centrada (sin peek, sin dots); **2+ o "Todas"** → `PageView` con peek (~28px) + dots.
+- **Colapsable:** control = manija (`$muted`) + `chevron-up` centrado arriba del carrusel → colapsa a la barra compacta `d2TX3` (`chevron-down` para reexpandir; toda la barra es tocable). Estado persistido per-device (default expandido). El colapso **unificó** la variante compacta que se había explorado como opción propia.
+- **Tap en una card → detalle de esa cuenta** (`/cuentas/<id>`).
+- Saldos negativos (deuda de tarjeta) en `$expense`; positivos en `$text-primary`. 100% tokens.
+
+**Variantes exploradas y descartadas** (borradas del canvas): hero de saldo (`eP3uk`) y barra compacta como variante independiente (`ddypA` — su barra se reusó como el estado colapsado).
+
+**Código:** `MovementsBalanceCarousel` / `MovementsBalanceCard` (`lib/features/transactions/presentation/widgets/`), `BalanceCarouselCubit` (`lib/core/preferences/`, colapso + página activa, SharedPreferences per-device). El dato de saldo ya venía en `TransactionsListCubit` (`state.accounts` = `List<AccountWithBalance>`).
+
+**Pendiente:** tema oscuro (Pencil down), limpiar los 3 badges de revisión, y fidelidad visual (`pencil-fidelity-reviewer`) cuando Pencil recupere el render.

@@ -112,6 +112,38 @@
   "@accountAvailableCreditLabel": {},
   "accountDebtLabel": "Deuda actual",
   "@accountDebtLabel": {},
+  "accountBalanceAdjustTitle": "Ajustar saldo",
+  "@accountBalanceAdjustTitle": {},
+  "accountBalanceAdjustCurrent": "Saldo actual: {amount}",
+  "@accountBalanceAdjustCurrent": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustCurrentDebt": "Deuda actual: {amount}",
+  "@accountBalanceAdjustCurrentDebt": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustNewLabel": "Nuevo saldo deseado",
+  "@accountBalanceAdjustNewLabel": {},
+  "accountBalanceAdjustNewDebtLabel": "Nueva deuda",
+  "@accountBalanceAdjustNewDebtLabel": {},
+  "accountBalanceAdjustHowLabel": "¿Cómo quieres aplicarlo?",
+  "@accountBalanceAdjustHowLabel": {},
+  "accountBalanceAdjustRegisterTitle": "Registrar ajuste",
+  "@accountBalanceAdjustRegisterTitle": {},
+  "accountBalanceAdjustRegisterBody": "Creamos un movimiento con fecha de hoy por la diferencia ({diff}). Suma a tus reportes y presupuestos.",
+  "@accountBalanceAdjustRegisterBody": {
+    "placeholders": { "diff": { "type": "String" } }
+  },
+  "accountBalanceAdjustCorrectTitle": "Corregir saldo inicial",
+  "@accountBalanceAdjustCorrectTitle": {},
+  "accountBalanceAdjustCorrectBody": "Ajustamos tu saldo de arranque para que cuadre. No crea ningún movimiento.",
+  "@accountBalanceAdjustCorrectBody": {},
+  "accountBalanceAdjustApplyCta": "Aplicar",
+  "@accountBalanceAdjustApplyCta": {},
+  "accountBalanceAdjustError": "No pudimos ajustar el saldo. Intenta de nuevo.",
+  "@accountBalanceAdjustError": {},
+  "accountBalanceAdjustNote": "Ajuste de saldo",
+  "@accountBalanceAdjustNote": {},
   "accountDebtShortLabel": "Deuda",
   "@accountDebtShortLabel": {},
   "accountOverLimitBadge": "Sobrecupo",
@@ -491,6 +523,18 @@
         "type": "int"
       }
     }
+  },
+  "transactionsBalanceTotalLabel": "Saldo total",
+  "@transactionsBalanceTotalLabel": {
+    "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
+  },
+  "transactionsBalanceCarouselCollapse": "Ocultar saldos",
+  "@transactionsBalanceCarouselCollapse": {
+    "description": "Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2)."
+  },
+  "transactionsBalanceCarouselExpand": "Mostrar saldos",
+  "@transactionsBalanceCarouselExpand": {
+    "description": "Semántica de la barra compacta que reexpande el carrusel de saldo en Movimientos (Mejora #2)."
   },
   "transactionsGroupToday": "Hoy",
   "@transactionsGroupToday": {},
@@ -1445,8 +1489,10 @@
   "@scheduledPaymentFormModeAutomaticSubtitle": {},
   "scheduledPaymentFormModeManualTitle": "Manual",
   "@scheduledPaymentFormModeManualTitle": {},
-  "scheduledPaymentFormModeManualSubtitle": "Te avisamos para que confirmes antes de afectar tu saldo",
-  "@scheduledPaymentFormModeManualSubtitle": {},
+  "scheduledPaymentFormModeManualSubtitle": "Por ahora deberás confirmarlo tú mismo",
+  "@scheduledPaymentFormModeManualSubtitle": {
+    "description": "TEMPORAL (2026-07-21): aún no existen notificaciones/recordatorios. Revertir a un texto que prometa un aviso automático (ej. 'Te avisamos para que confirmes antes de afectar tu saldo') cuando se implemente el sistema de notificaciones."
+  },
   "scheduledPaymentFormDeleteAction": "Eliminar pago programado",
   "@scheduledPaymentFormDeleteAction": {},
   "scheduledFrequencyOnce": "Solo una vez",
