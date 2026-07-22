@@ -459,7 +459,19 @@ void main() {
         find.text('Cuenta A → Cuenta B'),
         findsOneWidget,
       );
-      await _expectEventually($, find.text('\$100'), findsOneWidget);
+      // Not a bare find.text('\$100'): the Movimientos balance carousel
+      // (Mejora #2, `MovementsBalanceCard`) now shows "Cuenta B"'s own
+      // balance figure right above the list, so the same string also renders
+      // there. Scope the finder to the transfer's `TransactionRow` — the
+      // widget this assertion actually cares about.
+      await _expectEventually(
+        $,
+        find.descendant(
+          of: find.byType(TransactionRow),
+          matching: find.text('\$100'),
+        ),
+        findsOneWidget,
+      );
 
       // The actual balance effect (HU-03 criterion 3: "resta en origen, suma
       // en destino") is only visible on Cuentas, not on the transaction row
