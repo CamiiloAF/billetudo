@@ -1,3 +1,4 @@
+import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
@@ -44,6 +45,9 @@ class MockWatchTags extends Mock implements WatchTags {}
 class MockWatchAccounts extends Mock implements WatchAccounts {}
 
 class MockWatchCategories extends Mock implements WatchCategories {}
+
+class MockAccountFilterPreferenceDatasource extends Mock
+    implements AccountFilterPreferenceDatasource {}
 
 /// Fallbacks mocktail needs for `any()` on the feature's own types.
 void registerPresentationFallbacks() {

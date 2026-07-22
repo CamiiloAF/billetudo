@@ -14,6 +14,8 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart'
 import 'package:billetudo/core/crash/crash_reporter.dart' as _i474;
 import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
+import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart'
+    as _i248;
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart'
     as _i345;
@@ -388,6 +390,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
         ));
+    gh.lazySingleton<_i248.AccountFilterPreferenceDatasource>(() =>
+        _i248.AccountFilterPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i345.BalanceCarouselPreferenceDatasource>(() =>
         _i345.BalanceCarouselPreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
@@ -648,6 +653,13 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
+    gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
+          gh<_i832.WatchTransactions>(),
+          gh<_i612.DeleteTransaction>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i248.AccountFilterPreferenceDatasource>(),
+        ));
     gh.factory<_i1054.CancelBudgetAdjustment>(
         () => _i1054.CancelBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i1008.CloseBudget>(
@@ -761,12 +773,6 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
-    gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
-          gh<_i832.WatchTransactions>(),
-          gh<_i612.DeleteTransaction>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i837.WatchAccounts>(),
-        ));
     gh.factory<_i635.ArchivedBudgetsCubit>(() => _i635.ArchivedBudgetsCubit(
           gh<_i829.GetArchivedBudgets>(),
           gh<_i405.ReactivateBudget>(),
