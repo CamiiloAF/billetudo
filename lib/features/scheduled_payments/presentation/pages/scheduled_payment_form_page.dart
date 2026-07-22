@@ -177,6 +177,7 @@ class ScheduledPaymentFormBody extends StatelessWidget {
                 ? CategoryKind.income
                 : CategoryKind.expense,
             selectedId: state.categoryId,
+            accountId: state.accountId,
             showLabel: false,
             moreLabel: l10n.scheduledPaymentFormCategoryMoreLabel,
             onSelected: (category) => cubit.categorySelected(

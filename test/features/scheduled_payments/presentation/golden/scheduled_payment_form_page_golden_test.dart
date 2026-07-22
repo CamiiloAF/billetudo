@@ -57,8 +57,11 @@ void main() {
       () => categoryQuickPickerCubit.start(
         kind: any(named: 'kind'),
         selectedId: any(named: 'selectedId'),
+        accountId: any(named: 'accountId'),
       ),
     ).thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.setAccount(any()))
+        .thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.state).thenReturn(
       const CategoryQuickPickerState(status: CategoryQuickPickerStatus.ready),
     );

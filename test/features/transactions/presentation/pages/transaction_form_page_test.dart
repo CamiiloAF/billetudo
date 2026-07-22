@@ -141,6 +141,7 @@ void main() {
       () => categoryQuickPickerCubit.start(
         kind: any(named: 'kind'),
         selectedId: any(named: 'selectedId'),
+        accountId: any(named: 'accountId'),
       ),
     ).thenAnswer((_) async {});
     when(
@@ -150,6 +151,8 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.syncSelection(any()))
+        .thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.setAccount(any()))
         .thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.state).thenReturn(
       const CategoryQuickPickerState(
@@ -314,6 +317,81 @@ void main() {
       verify(
         () => cubit.categorySelected('cat-1', CategoryKind.expense, 'Comida'),
       ).called(1);
+    });
+  });
+
+  group('quick picker filtrado por cuenta (HU quick-picker-most-used)', () {
+    testWidgets('el accountId del estado se propaga al arrancar el picker',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+        ),
+      );
+
+      verify(
+        () => categoryQuickPickerCubit.start(
+          kind: CategoryKind.expense,
+          selectedId: null,
+          accountId: 'acc-1',
+        ),
+      ).called(1);
+    });
+
+    testWidgets(
+        'cambiar de cuenta en el formulario le propaga el nuevo accountId '
+        'al picker sin perder la categoría elegida en el widget',
+        (tester) async {
+      final initial = TransactionFormState(
+        status: TransactionFormStatus.ready,
+        accountId: 'acc-1',
+        accountName: 'Efectivo',
+        categoryId: 'cat-1',
+      );
+      final afterAccountSwitch = initial.copyWith(
+        accountId: 'acc-2',
+        accountName: 'Bancolombia',
+      );
+      whenListen(
+        cubit,
+        Stream<TransactionFormState>.fromIterable([afterAccountSwitch]),
+        initialState: initial,
+      );
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+          selected: _buildCategory(),
+        ),
+      );
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<TransactionFormCubit>.value(
+            value: cubit,
+            child: const TransactionFormPage(),
+          ),
+        ),
+      );
+      // Lets the stream's single emission (the account switch) reach the
+      // widget tree.
+      await tester.pump();
+
+      verify(() => categoryQuickPickerCubit.setAccount('acc-2')).called(1);
+      // The chip for the already-selected category ("Comida") is still
+      // shown — the account switch never cleared it.
+      expect(find.text('Comida'), findsOneWidget);
     });
   });
 

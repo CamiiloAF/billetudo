@@ -64,11 +64,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
   FutureResult<List<Category>> getMostUsedCategories(
     CategoryKind kind, {
     int limit = 3,
+    String? accountId,
   }) =>
       _guard(() async {
         final rows = await _local.mostUsedCategories(
           CategoryMapper.kindToDb(kind),
           limit,
+          accountId: accountId,
         );
         return Right(rows.map(CategoryMapper.toEntity).toList());
       });

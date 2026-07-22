@@ -3,8 +3,7 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
-import 'package:billetudo/features/categories/domain/entities/category.dart'
-    show CategoryKind;
+import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
@@ -32,6 +31,22 @@ class MockScheduledPaymentTagPickerCubit
     extends MockCubit<ScheduledPaymentTagPickerState>
     implements ScheduledPaymentTagPickerCubit {}
 
+final DateTime _instant = DateTime(2026, 7, 15);
+
+Category _buildCategory({
+  String id = 'cat-1',
+  String name = 'Comida',
+  CategoryKind kind = CategoryKind.expense,
+}) =>
+    Category(
+      id: id,
+      name: name,
+      kind: kind,
+      sortOrder: 0,
+      createdAt: _instant,
+      updatedAt: _instant.millisecondsSinceEpoch,
+    );
+
 void main() {
   late MockScheduledPaymentFormCubit cubit;
   late MockCategoryQuickPickerCubit categoryQuickPickerCubit;
@@ -54,8 +69,11 @@ void main() {
       () => categoryQuickPickerCubit.start(
         kind: any(named: 'kind'),
         selectedId: any(named: 'selectedId'),
+        accountId: any(named: 'accountId'),
       ),
     ).thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.setAccount(any()))
+        .thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.state).thenReturn(
       const CategoryQuickPickerState(status: CategoryQuickPickerStatus.ready),
     );
@@ -350,6 +368,82 @@ void main() {
       );
 
       expect(find.text('Elige la cuenta de destino.'), findsOneWidget);
+    });
+  });
+
+  group('quick picker filtrado por cuenta (HU quick-picker-most-used)', () {
+    testWidgets('el accountId del estado se propaga al arrancar el picker',
+        (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+        ),
+      );
+
+      verify(
+        () => categoryQuickPickerCubit.start(
+          kind: CategoryKind.expense,
+          selectedId: null,
+          accountId: 'acc-1',
+        ),
+      ).called(1);
+    });
+
+    testWidgets(
+        'cambiar de cuenta en el formulario le propaga el nuevo accountId '
+        'al picker sin perder la categoría elegida en el widget',
+        (tester) async {
+      tester.view.physicalSize = const Size(1170, 4000);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final initial = ScheduledPaymentFormState(
+        status: ScheduledPaymentFormStatus.ready,
+        accountId: 'acc-1',
+        accountName: 'Bancolombia',
+        categoryId: 'cat-1',
+      );
+      final afterAccountSwitch = initial.copyWith(
+        accountId: 'acc-2',
+        accountName: 'Nequi',
+      );
+      when(() => cubit.state).thenReturn(initial);
+      when(() => cubit.stream).thenAnswer(
+        (_) => Stream<ScheduledPaymentFormState>.fromIterable(
+          [afterAccountSwitch],
+        ),
+      );
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+          selected: _buildCategory(),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<ScheduledPaymentFormCubit>.value(
+            value: cubit,
+            child: const ScheduledPaymentFormPage(),
+          ),
+        ),
+      );
+      when(() => cubit.state).thenReturn(afterAccountSwitch);
+      await tester.pump();
+
+      verify(() => categoryQuickPickerCubit.setAccount('acc-2')).called(1);
+      // The chip for the already-selected category ("Comida") is still
+      // shown — the account switch never cleared it.
+      expect(find.text('Comida'), findsOneWidget);
     });
   });
 }

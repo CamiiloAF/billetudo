@@ -46,8 +46,13 @@ void main() {
   blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
     'start carga las más usadas y queda en ready',
     setUp: () {
-      when(() => getMostUsedCategories(any(), limit: any(named: 'limit')))
-          .thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          any(),
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
     },
     build: build,
     act: (cubit) => cubit.start(kind: CategoryKind.expense),
@@ -62,8 +67,13 @@ void main() {
     'start resuelve una selección que ya está entre las más usadas sin '
     'llamar a getCategory',
     setUp: () {
-      when(() => getMostUsedCategories(any(), limit: any(named: 'limit')))
-          .thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          any(),
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
     },
     build: build,
     act: (cubit) =>
@@ -78,8 +88,13 @@ void main() {
     'caso borde: una selección fuera del top-3 se resuelve vía getCategory '
     'y se muestra como chip adicional',
     setUp: () {
-      when(() => getMostUsedCategories(any(), limit: any(named: 'limit')))
-          .thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          any(),
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
       when(() => getCategory('cat-99')).thenAnswer(
         (_) async => Right(_category(id: 'cat-99', name: 'Regalos')),
       );
@@ -101,8 +116,13 @@ void main() {
   blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
     'select fija la categoría elegida',
     setUp: () {
-      when(() => getMostUsedCategories(any(), limit: any(named: 'limit')))
-          .thenAnswer((_) async => const Right(<Category>[]));
+      when(
+        () => getMostUsedCategories(
+          any(),
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => const Right(<Category>[]));
     },
     build: build,
     act: (cubit) async {
@@ -115,11 +135,20 @@ void main() {
   blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
     'setKind recarga las más usadas del nuevo kind',
     setUp: () {
-      when(() => getMostUsedCategories(CategoryKind.expense,
-              limit: any(named: 'limit')))
-          .thenAnswer((_) async => Right([_category()]));
-      when(() => getMostUsedCategories(CategoryKind.income,
-          limit: any(named: 'limit'))).thenAnswer(
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.income,
+          limit: any(named: 'limit'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer(
         (_) async => Right([_category(id: 'inc-1', name: 'Salario')]),
       );
     },
@@ -129,5 +158,101 @@ void main() {
       await cubit.setKind(CategoryKind.income);
     },
     verify: (cubit) => expect(cubit.state.mostUsed.map((c) => c.id), ['inc-1']),
+  );
+
+  blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
+    'setAccount recarga las más usadas cuando el accountId cambió',
+    setUp: () {
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: null,
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: 'account-2',
+        ),
+      ).thenAnswer(
+        (_) async => Right([_category(id: 'cat-2', name: 'Transporte')]),
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.start(kind: CategoryKind.expense);
+      await cubit.setAccount('account-2');
+    },
+    verify: (cubit) {
+      expect(cubit.state.mostUsed.map((c) => c.id), ['cat-2']);
+      verify(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: 'account-2',
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
+    'setAccount es un no-op cuando el accountId no cambió',
+    setUp: () {
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: 'account-1',
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.start(kind: CategoryKind.expense, accountId: 'account-1');
+      await cubit.setAccount('account-1');
+    },
+    verify: (cubit) {
+      verify(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: 'account-1',
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<CategoryQuickPickerCubit, CategoryQuickPickerState>(
+    'la selección sobrevive a un cambio de cuenta vía setAccount',
+    setUp: () {
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: null,
+        ),
+      ).thenAnswer((_) async => Right([_category()]));
+      when(
+        () => getMostUsedCategories(
+          CategoryKind.expense,
+          limit: any(named: 'limit'),
+          accountId: 'account-2',
+        ),
+      ).thenAnswer(
+        (_) async => Right([_category(id: 'cat-2', name: 'Transporte')]),
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.start(kind: CategoryKind.expense);
+      cubit.select(_category(id: 'cat-7', name: 'Café'));
+      await cubit.setAccount('account-2');
+    },
+    verify: (cubit) {
+      expect(cubit.state.selected?.id, 'cat-7');
+      expect(cubit.state.mostUsed.map((c) => c.id), ['cat-2']);
+    },
   );
 }

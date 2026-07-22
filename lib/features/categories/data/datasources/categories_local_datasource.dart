@@ -55,18 +55,27 @@ class CategoriesLocalDatasource {
   /// The [limit] most-used categories of [kind] by active-transaction count,
   /// for the transaction form's Category Quick Picker (HU-01/02). Counts
   /// transactions still alive (`deletedAt`/`tombstonedAt` null) that reference
-  /// each alive category. Ties — and the whole result for a user with no
-  /// history, where every count is zero — fall back to the earliest root
-  /// categories first, then by `sortOrder`, so a fresh user still gets a
-  /// sensible default set.
-  Future<List<Category>> mostUsedCategories(CategoryKind kind, int limit) {
+  /// each alive category. When [accountId] is given, only transactions on
+  /// that account count towards the usage — used to give each account its
+  /// own top-3, e.g. when the user switches accounts mid-form. Ties — and the
+  /// whole result for a user (or account) with no history, where every count
+  /// is zero — fall back to the earliest root categories first, then by
+  /// `sortOrder`, so a fresh user still gets a sensible default set.
+  Future<List<Category>> mostUsedCategories(
+    CategoryKind kind,
+    int limit, {
+    String? accountId,
+  }) {
     final usageCount = _db.transactions.id.count();
     final query = _db.select(_db.categories).join([
       leftOuterJoin(
         _db.transactions,
         _db.transactions.categoryId.equalsExp(_db.categories.id) &
             _db.transactions.deletedAt.isNull() &
-            _db.transactions.tombstonedAt.isNull(),
+            _db.transactions.tombstonedAt.isNull() &
+            (accountId == null
+                ? const Constant(true)
+                : _db.transactions.accountId.equals(accountId)),
       ),
     ])
       ..where(_db.categories.kind.equalsValue(kind) & _alive)

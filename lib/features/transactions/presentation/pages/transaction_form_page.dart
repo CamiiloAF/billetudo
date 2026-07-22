@@ -226,6 +226,7 @@ class TransactionFormScrollZone extends StatelessWidget {
                 ? CategoryKind.income
                 : CategoryKind.expense,
             selectedId: state.categoryId,
+            accountId: state.accountId,
             onSelected: (category) => cubit.categorySelected(
               category.id,
               category.kind,

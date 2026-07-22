@@ -30,6 +30,7 @@ class CategoryQuickPicker extends StatefulWidget {
     required this.kind,
     required this.selectedId,
     required this.onSelected,
+    this.accountId,
     this.errorText,
     this.showLabel = true,
     this.moreLabel,
@@ -38,6 +39,11 @@ class CategoryQuickPicker extends StatefulWidget {
 
   final CategoryKind kind;
   final String? selectedId;
+
+  /// Scopes the most-used set to this account (e.g. the form's currently
+  /// selected account), so switching accounts recomputes its own top-3.
+  /// `null` keeps the unscoped, kind-only usage count.
+  final String? accountId;
 
   /// Reports the category the user picked (chip or sheet) back to the form.
   final ValueChanged<Category> onSelected;
@@ -68,7 +74,13 @@ class _CategoryQuickPickerState extends State<CategoryQuickPicker> {
   void initState() {
     super.initState();
     _cubit = getIt<CategoryQuickPickerCubit>();
-    unawaited(_cubit.start(kind: widget.kind, selectedId: widget.selectedId));
+    unawaited(
+      _cubit.start(
+        kind: widget.kind,
+        selectedId: widget.selectedId,
+        accountId: widget.accountId,
+      ),
+    );
   }
 
   @override
@@ -78,6 +90,9 @@ class _CategoryQuickPickerState extends State<CategoryQuickPicker> {
       unawaited(_cubit.setKind(widget.kind, selectedId: widget.selectedId));
     } else if (widget.selectedId != oldWidget.selectedId) {
       unawaited(_cubit.syncSelection(widget.selectedId));
+    }
+    if (widget.accountId != oldWidget.accountId) {
+      unawaited(_cubit.setAccount(widget.accountId));
     }
   }
 

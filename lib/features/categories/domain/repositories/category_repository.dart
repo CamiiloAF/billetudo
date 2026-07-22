@@ -32,12 +32,16 @@ abstract class CategoryRepository {
   FutureResult<Category> getCategory(String id);
 
   /// The [limit] most-used categories of [kind] by active-transaction count,
-  /// for the transaction form's Category Quick Picker (HU-01/02). Ties — and
-  /// a user with no history at all — fall back to the earliest root
-  /// categories by `sortOrder`, so the picker always has something to show.
+  /// for the transaction form's Category Quick Picker (HU-01/02). When
+  /// [accountId] is given, usage is counted only among that account's
+  /// transactions, so switching accounts in the form recomputes its own
+  /// top-3. Ties — and a user (or account) with no history at all — fall
+  /// back to the earliest root categories by `sortOrder`, so the picker
+  /// always has something to show.
   FutureResult<List<Category>> getMostUsedCategories(
     CategoryKind kind, {
     int limit = 3,
+    String? accountId,
   });
 
   /// Persists a new category. `sortOrder` is assigned at the end of its

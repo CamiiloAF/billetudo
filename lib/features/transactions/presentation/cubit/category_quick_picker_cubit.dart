@@ -25,13 +25,17 @@ class CategoryQuickPickerCubit extends Cubit<CategoryQuickPickerState> {
   final GetCategory _getCategory;
 
   CategoryKind _kind = CategoryKind.expense;
+  String? _accountId;
 
-  /// Loads the most-used categories for [kind] and resolves [selectedId].
+  /// Loads the most-used categories for [kind]/[accountId] and resolves
+  /// [selectedId].
   Future<void> start({
     required CategoryKind kind,
     String? selectedId,
+    String? accountId,
   }) async {
     _kind = kind;
+    _accountId = accountId;
     emit(const CategoryQuickPickerState());
     await _loadMostUsed();
     await syncSelection(selectedId);
@@ -43,7 +47,20 @@ class CategoryQuickPickerCubit extends Cubit<CategoryQuickPickerState> {
     if (kind == _kind) {
       return;
     }
-    await start(kind: kind, selectedId: selectedId);
+    await start(kind: kind, selectedId: selectedId, accountId: _accountId);
+  }
+
+  /// Reacts to the form's account switching: reloads the most-used set scoped
+  /// to the new account, without touching the current selection — a category
+  /// already picked stays selected (as the extra chip, via [syncSelection]'s
+  /// existing fallback) even if it isn't in the new account's top-3. A no-op
+  /// when the account is unchanged.
+  Future<void> setAccount(String? accountId) async {
+    if (accountId == _accountId) {
+      return;
+    }
+    _accountId = accountId;
+    await _loadMostUsed();
   }
 
   /// The user picked a category we already hold (a chip, or the select sheet's
@@ -80,7 +97,7 @@ class CategoryQuickPickerCubit extends Cubit<CategoryQuickPickerState> {
   }
 
   Future<void> _loadMostUsed() async {
-    final result = await _getMostUsedCategories(_kind);
+    final result = await _getMostUsedCategories(_kind, accountId: _accountId);
     if (isClosed) {
       return;
     }

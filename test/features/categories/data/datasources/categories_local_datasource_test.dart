@@ -492,6 +492,72 @@ void main() {
 
       expect(result.map((c) => c.id), [comida.id]);
     });
+
+    test('con accountId, cuentas distintas producen top-3 distintos',
+        () async {
+      final accountA = await _insertAccount(db);
+      final accountB = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      final ocio = await insertCategory(name: 'Ocio', sortOrder: 2);
+
+      // Cuenta A: Comida (2), Transporte (0), Ocio (0).
+      await addTransaction(accountA, comida.id);
+      await addTransaction(accountA, comida.id);
+      // Cuenta B: Transporte (2), Comida (0), Ocio (0).
+      await addTransaction(accountB, transporte.id);
+      await addTransaction(accountB, transporte.id);
+
+      final resultA = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+        accountId: accountA,
+      );
+      final resultB = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+        accountId: accountB,
+      );
+
+      expect(resultA.map((c) => c.id), [comida.id, transporte.id, ocio.id]);
+      expect(resultB.map((c) => c.id), [transporte.id, comida.id, ocio.id]);
+    });
+
+    test('con accountId sin historial, cae en el mismo fallback por raíz',
+        () async {
+      final accountA = await _insertAccount(db);
+      final otherAccount = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      // El historial completo pertenece a otra cuenta -> accountA no tiene usos.
+      await addTransaction(otherAccount, transporte.id);
+      await addTransaction(otherAccount, transporte.id);
+
+      final result = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        2,
+        accountId: accountA,
+      );
+
+      expect(result.map((c) => c.id), [comida.id, transporte.id]);
+    });
+
+    test('accountId null se comporta igual que antes (sin regresión)',
+        () async {
+      final accountId = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, comida.id);
+
+      final result = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+      );
+
+      expect(result.map((c) => c.id), [transporte.id, comida.id]);
+    });
   });
 
   group('countReferencingBudgets', () {
