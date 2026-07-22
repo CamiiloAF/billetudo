@@ -79,6 +79,16 @@ void main() {
     var settings = 0;
     await pumpMore(tester, onSettings: () => settings++);
 
+    // The left-aligned root-tab header pushes the last rows below the fold in
+    // the test viewport — scroll "Ajustes" into view before tapping.
+    await tester.scrollUntilVisible(
+      find.text('Ajustes'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.ensureVisible(find.text('Ajustes'));
+    await tester.pump();
+
     await tester.tap(find.text('Ajustes'));
     await tester.pump();
 
