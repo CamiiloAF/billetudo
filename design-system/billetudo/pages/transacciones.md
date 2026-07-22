@@ -76,8 +76,9 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
      - **2+ cuentas seleccionadas**: icono genérico `layers` + "N cuentas" — instanciado en `XlXA8`/`idmDe` con ejemplo "3 cuentas".
      - **Todas seleccionadas (sin filtro)**: icono genérico `wallet` + "Todas" — instanciado en `s8uIq`/`H3bGO`.
      - El frame de referencia que documentaba los 3 estados aislados (`GSVWn`) fue eliminado tras quedar redundante frente a estas 6 pantallas reales.
-   - **Chip Categoria** / **Chip Tipo** / **Chip Etiqueta**: pill simple `$surface` + stroke `$border`, label `$text-secondary` 12/700, sin icono. El chip de Etiqueta se agregó tras la auditoría (faltaba, HU-06 exige poder filtrar por etiqueta).
-   - **Chip Fecha**: igual que los anteriores + icono `calendar`, label **"Este mes"** (refleja el nuevo default de HU-06b, antes decía genéricamente "Fecha"). Es el chip que abre el bottom sheet de selector de fecha (`P5fSkK`, ver sección propia).
+   - **Orden de la fila (DEFINITIVO, decisión del usuario 2026-07-21):** `Cuenta → Fecha → Categoría → Tipo → Etiqueta`. El chip de **Fecha va en 2º lugar** (justo después del Account Chip) — el usuario lo pidió así. Reemplaza cualquier mención previa de "Fecha al final"; el código ya lo tiene en 2º y es lo correcto. Los frames de Pencil se corrigieron para reflejarlo.
+   - **Chip Fecha** (2º): igual que los demás + icono `calendar`, label **"Este mes"** (refleja el default de HU-06b, antes decía genéricamente "Fecha"). Es el chip que abre el bottom sheet de selector de fecha (`P5fSkK`, ver sección propia).
+   - **Chip Categoria** / **Chip Tipo** / **Chip Etiqueta** (3º/4º/5º): pill simple `$surface` + stroke `$border`, label `$text-secondary` 12/700, sin icono. El chip de Etiqueta se agregó tras la auditoría (faltaba, HU-06 exige poder filtrar por etiqueta).
    - **Control de orden (HU-06, "ordenar por monto") — construido.** `Search Bar` pasó a vivir dentro de una fila `Search Row` (`gap:8`) junto a un botón nuevo `Sort Button` (44x48, `cornerRadius:16`, icono `arrow-up-down` 20px `$text-secondary`, `fill:$surface`/`stroke:$border` en estado inactivo/default — mismo tratamiento que un chip de filtro sin seleccionar). Instanciado en las 6 pantallas de Lista con datos reales (los estados vacío/carga/error no lo llevan, no hay filas que ordenar):
 
      | Pantalla | Sort Button |
@@ -314,16 +315,16 @@ Solo quedan 2 huecos reales contra `docs/requirements/03-transacciones.md` (todo
 
 ## Adición 2026-07-21 — Carrusel de saldo en Movimientos (Mejora #2)
 
-> **Estado:** tema CLARO aprobado por el usuario e **implementado en código** (verde). **Tema oscuro PENDIENTE** — bloqueado porque el servidor de render de Pencil está caído; los frames oscuros no se generaron aún. Los frames claros conservan su badge `🔖 EN REVISIÓN` en el canvas hasta poder limpiarlos con Pencil operativo. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+> **Estado:** aprobado e **implementado en código** (verde). **Tema oscuro generado** (2026-07-21, tras recuperarse el render de Pencil) y **badges de revisión eliminados**. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
 
 Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de chips de filtro** y arriba de la lista. **No es fijo**: scrollea verticalmente con la lista (el buscador y los chips sí quedan fijos, el carrusel se va con el contenido).
 
-**Frames (solo claro por ahora):**
-| Pieza | Node ID (Claro) |
-|---|---|
-| Movimientos · Var A — carrusel expandido (cuenta activa) | `cgasM` |
-| Movimientos · Var A — carrusel colapsado (barra compacta) | `rGVw1` |
-| Movimientos · Var A — carrusel con tarjeta de crédito activa | `Ljf8l` |
+**Frames:**
+| Pieza | Node ID (Claro) | Node ID (Oscuro) |
+|---|---|---|
+| Movimientos · Var A — carrusel expandido (cuenta activa) | `cgasM` | `Y0lWi` |
+| Movimientos · Var A — carrusel colapsado (barra compacta) | `rGVw1` | `uxIps` |
+| Movimientos · Var A — carrusel con tarjeta de crédito activa | `Ljf8l` | `RdbCG` |
 
 **Componentes nuevos:** `C2g9cA` "Balance Card (Movimientos)" (altura uniforme; variante cuenta normal = avatar + nombre + tipo + saldo; variante tarjeta = deuda `$expense` + cupo disponible + barra de cupo, a la misma altura). `d2TX3` "Balance Bar Colapsada" (barra fina `$surface` + borde: `layers` + "N cuentas" + "Saldo total $X" + `chevron-down`, toda tocable para reexpandir).
 
@@ -337,4 +338,4 @@ Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de ch
 
 **Código:** `MovementsBalanceCarousel` / `MovementsBalanceCard` (`lib/features/transactions/presentation/widgets/`), `BalanceCarouselCubit` (`lib/core/preferences/`, colapso + página activa, SharedPreferences per-device). El dato de saldo ya venía en `TransactionsListCubit` (`state.accounts` = `List<AccountWithBalance>`).
 
-**Pendiente:** tema oscuro (Pencil down), limpiar los 3 badges de revisión, y fidelidad visual (`pencil-fidelity-reviewer`) cuando Pencil recupere el render.
+**Fidelidad visual (2026-07-21):** el componente del carrusel (`C2g9cA`) es **fiel en claro y oscuro** contra `cgasM`/`Y0lWi`. Fix de contraste aplicado: la deuda pasó de `$expense` a `$expense-text` (16px falla 4.5:1 en oscuro). Hallazgos IMPORTANTES del reviewer son del **chrome compartido de la pantalla, no del carrusel** y son **pre-existentes** (no los introduce esta mejora): título "Movimientos" centrado en el golden vs izquierda en Pencil, y el chip de Fecha en 2º lugar (código) vs último (spec §3). **Gaps de cobertura:** los estados colapsado (`rGVw1`) y tarjeta-activa (`Ljf8l`) no tienen golden propio (los goldens de página fuerzan `collapsed:false` y cuenta activa normal).

@@ -1,0 +1,42 @@
+name: CI — Flutter Analyze & Test
+
+on:
+  push:
+    branches: ['main', 'dev']
+  pull_request:
+    branches: ['main', 'dev']
+
+jobs:
+  analyze-and-test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      # --force-jit es obligatorio en este proyecto (ver CLAUDE.md / README):
+      # build_runner precompila su script con `dart compile`, que no soporta los
+      # build hooks que traen sqlite3/powersync/objective_c. `--delete-conflicting-outputs`
+      # ya no existe en build_runner 2.15.
+      - name: Generate code (Drift + injectable)
+        run: dart run build_runner build --force-jit
+
+      - name: Analyze
+        run: flutter analyze
+
+      # Se excluyen los golden tests (*_golden_test.dart): sus PNG de referencia
+      # se generaron en macOS y el render de fuentes en Linux difiere lo
+      # suficiente para producir diffs falsos. La fidelidad visual se valida
+      # aparte con /design-fidelity-check contra Pencil.
+      - name: Test (sin goldens)
+        run: flutter test $(find test -name '*_test.dart' -not -name '*_golden_test.dart')

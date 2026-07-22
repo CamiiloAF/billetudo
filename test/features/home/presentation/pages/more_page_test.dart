@@ -37,7 +37,7 @@ void main() {
       'Cuentas',
       'Categorías',
       'Deudas',
-      'Recurrentes',
+      'Pagos programados',
       'Gráficas e informes',
       'Importar y exportar',
       'Ajustes',
@@ -47,7 +47,7 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías, Recurrentes y Ajustes están vivas (sin badge Próximamente)',
+      'Cuentas, Categorías, Pagos programados y Ajustes están vivas (sin badge Próximamente)',
       (tester) async {
     await pumpMore(tester);
 
@@ -70,7 +70,7 @@ void main() {
 
     expect(badgeOf('Cuentas'), isNull);
     expect(badgeOf('Categorías'), isNull);
-    expect(badgeOf('Recurrentes'), isNull);
+    expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Ajustes'), isNull);
     expect(badgeOf('Deudas'), isNotNull);
   });
@@ -115,7 +115,7 @@ void main() {
   });
 
   testWidgets(
-      'tocar Cuentas, Categorías y Recurrentes enruta a sus destinos vivos',
+      'tocar Cuentas, Categorías y Pagos programados enruta a sus destinos vivos',
       (tester) async {
     var accounts = 0;
     var categories = 0;
@@ -131,7 +131,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Categorías'));
     await tester.pump();
-    await tester.tap(find.text('Recurrentes'));
+    await tester.tap(find.text('Pagos programados'));
     await tester.pump();
 
     expect(accounts, 1);

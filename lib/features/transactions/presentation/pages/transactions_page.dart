@@ -6,6 +6,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
+import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
@@ -89,7 +90,6 @@ class TransactionsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.transactionsTitle)),
       floatingActionButton: AppFab(
         icon: LucideIcons.plus,
         tooltip: l10n.transactionsAdd,
@@ -121,6 +121,7 @@ class TransactionsPage extends StatelessWidget {
             // so it scrolls away with the list.
             return Column(
               children: [
+                RootTabHeader(title: l10n.transactionsTitle),
                 TransactionsSearchRow(state: state),
                 const SizedBox(height: 8),
                 TransactionsFilterBar(state: state),

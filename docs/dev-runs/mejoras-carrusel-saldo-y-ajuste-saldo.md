@@ -123,9 +123,16 @@ Edición controlada del saldo: se elimina la edición libre del "Saldo inicial" 
    - **Nota "Ajuste de saldo":** key l10n `accountBalanceAdjustNote` (es "Ajuste de saldo" / en "Balance adjustment"); leída en `AdjustBalanceSheet` (presentación) → `AdjustBalanceCubit.apply(note:)` → `AdjustAccountBalance.call(note:)` → `TransactionDraft.note`.
    - **Categoría "Otros" por dirección:** constantes en `AdjustAccountBalance` (`seed-other-income` / `seed-other-expenses`, del catálogo `category_seeds`). Ingreso → "Otros ingresos" (kind income); gasto → "Otros gastos" (kind expense). El draft pasa "categoría obligatoria" por la vía normal; `isBalanceAdjustment` queda como fallback defensivo. Sin cambio visual → sin regen de goldens.
 5. ~~**Tap en card del carrusel → detalle de cuenta**~~ ✅ hecho (callback `onOpenAccount` desde `app_router` → `TransactionsPage` → `TransactionsListView` → carrusel → `MovementsBalanceCard.onTap`; `context.push(AppRoutes.account(id))`. No afecta swipe ni barra colapsada. +359 tests verdes).
-6. **Tema oscuro + limpieza de badges** en Pencil cuando el render vuelva.
-4. **Specs por pantalla** (post-aprobación): adición del carrusel en `design-system/billetudo/pages/transacciones.md` y del lápiz/hoja/deuda-actual en `pages/cuentas.md`.
-5. Nada está commiteado.
+6. ~~**Tema oscuro + limpieza de badges** en Pencil~~ ✅ hecho (render recuperado). 7 frames oscuros generados: `Y0lWi`/`uxIps`/`RdbCG` (Movimientos), `r0hXJd`/`bT7Ga`/`t42NgN`/`Dyfwj` (Mejora #1). 7 badges borrados. Barra colapsada sincronizada con el código (sin "Saldo total", monto con prioridad). **Fix de contraste:** la deuda de `C2g9cA` (Balance Card Movimientos) estaba en `$expense` (falla 4.5:1 en oscuro para texto de 16px) → cambiado a `$expense-text` en Pencil Y en código (`movements_balance_card.dart` línea de la variante tarjeta), goldens sin cambio.
+7. ~~**Specs por pantalla**~~ ✅ hecho: carrusel en `design-system/billetudo/pages/transacciones.md`, lápiz/hoja/deuda-actual en `pages/cuentas.md` (ambas marcan el oscuro; actualizar esa nota a "hecho").
+8. **Fidelidad visual** (`/design-fidelity-check`): pendiente/opcional.
+9. **Commit del cierre de diseño** (`.pen` con oscuro + badges limpios + fix `expenseText` en código) — pendiente de hacer.
+10. **scheduled_payments** (17 tests): ✅ resuelto por qa-automator (cambio de copy intencional, goldens + finder actualizados; 371 verdes). Ya commiteado.
+11. `.github/`, `ios/ExportOptionsProd.plist`, `integration_test/test_bundle.dart`: ajenos, sin commitear a propósito.
+12. **Fidelidad — pendientes (post-auditoría 2026-07-21):**
+    - **Orden de chips (Fecha 2º):** el usuario confirmó que Fecha va en 2º lugar (él lo pidió). Código ✅ y spec §3 ✅ ya lo reflejan. **Falta sincronizar los frames de Pencil** (mover Chip Fecha al índice 1 en los frames de Movimientos con Chips Row, claro+oscuro) — BLOQUEADO: Pencil se desconectó otra vez ("transport not connected to app: desktop"). Retomar cuando vuelva. No bloquea código.
+    - **Títulos raíz a la izquierda (consistencia):** Movimientos y Más pasan de `AppBar` centrado a header izquierdo (patrón `BudgetsPageHeader`), como Presupuestos/Inicio/Pencil. 🔄 flutter-dev en curso.
+    - **Goldens faltantes:** estados colapsado + tarjeta-activa del carrusel → qa-automator (en cola tras el título).
 
 ## Relacionado (fuera de estas mejoras)
 - Pre-selección de la cuenta filtrada al tocar el FAB "+" en Movimientos (cambio previo de esta sesión, también sin commitear).

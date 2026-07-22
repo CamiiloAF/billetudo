@@ -261,7 +261,12 @@ void main() {
       await $.tester.tap(find.text('Bolsillo'));
       await $.tester.pumpAndSettle();
 
-      await $.tester.tap(find.byIcon(LucideIcons.pencil));
+      // Not find.byIcon(LucideIcons.pencil): account detail also shows a
+      // second pencil next to the balance figure ("Ajustar saldo",
+      // Mejora #1) that edits only the balance, not the whole account. The
+      // header pencil that opens the full edit form is the one tagged with
+      // the "Editar" tooltip (l10n `commonEdit`).
+      await $.tester.tap(find.byTooltip('Editar'));
       await $.tester.pumpAndSettle();
       expect(find.text('Editar cuenta'), findsOneWidget);
 

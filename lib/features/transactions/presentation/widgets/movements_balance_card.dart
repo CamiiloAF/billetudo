@@ -189,7 +189,10 @@ class MovementsBalanceCardCredit extends StatelessWidget {
                   balance.debtMinor,
                   currencyCode: account.currency,
                 ),
-                color: colors.expense,
+                // Small (16px) red text needs `expenseText` for 4.5:1 — plain
+                // `$expense` only clears the 3:1 large-text bar and fails on the
+                // dark surface (MASTER's expense vs expense-text rule).
+                color: colors.expenseText,
                 alignEnd: false,
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/root_tab_header.dart';
 import '../widgets/more_row.dart';
 
 /// The "Más" hub (HU-01): the entry point to every other Nivel 0 destination.
@@ -39,68 +40,74 @@ class MorePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.moreTitle)),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
           children: [
-            MoreRow(
-              icon: LucideIcons.wallet,
-              label: l10n.accountsTitle,
-              description: l10n.moreAccountsDescription,
-              onTap: onOpenAccounts,
-            ),
-            MoreRow(
-              icon: LucideIcons.shapes,
-              label: l10n.categoriesTitle,
-              description: l10n.moreCategoriesDescription,
-              onTap: onOpenCategories,
-            ),
-            MoreRow(
-              icon: LucideIcons.handCoins,
-              label: l10n.moreDebts,
-              description: l10n.moreDebtsDescription,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreDebts),
-            ),
-            MoreRow(
-              icon: LucideIcons.repeat,
-              label: l10n.moreScheduledPayments,
-              description: l10n.moreScheduledPaymentsDescription,
-              onTap: onOpenScheduledPayments,
-            ),
-            // Design debt: Pencil frame `gXcHt` only defines 6 rows and
-            // omits "Gráficas e informes" — kept here because it's a real
-            // roadmap feature (fl_chart, see CLAUDE.md); the `.pen` needs
-            // to be updated to reflect it.
-            MoreRow(
-              icon: LucideIcons.chartLine,
-              label: l10n.moreReports,
-              description: l10n.moreReportsDescription,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreReports),
-            ),
-            MoreRow(
-              icon: LucideIcons.arrowUpDown,
-              label: l10n.moreImportExport,
-              description: l10n.moreImportExportDescription,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreImportExport),
-            ),
-            MoreRow(
-              icon: LucideIcons.settings,
-              label: l10n.moreSettings,
-              description: l10n.moreSettingsDescription,
-              onTap: onOpenSettings,
-            ),
-            if (isSignedIn) ...[
-              const SizedBox(height: 16),
-              MoreRow(
-                icon: LucideIcons.logOut,
-                label: l10n.moreSignOut,
-                onTap: onSignOut,
+            RootTabHeader(title: l10n.moreTitle),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: [
+                  MoreRow(
+                    icon: LucideIcons.wallet,
+                    label: l10n.accountsTitle,
+                    description: l10n.moreAccountsDescription,
+                    onTap: onOpenAccounts,
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.shapes,
+                    label: l10n.categoriesTitle,
+                    description: l10n.moreCategoriesDescription,
+                    onTap: onOpenCategories,
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.handCoins,
+                    label: l10n.moreDebts,
+                    description: l10n.moreDebtsDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreDebts),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.repeat,
+                    label: l10n.moreScheduledPayments,
+                    description: l10n.moreScheduledPaymentsDescription,
+                    onTap: onOpenScheduledPayments,
+                  ),
+                  // Design debt: Pencil frame `gXcHt` only defines 6 rows and
+                  // omits "Gráficas e informes" — kept here because it's a real
+                  // roadmap feature (fl_chart, see CLAUDE.md); the `.pen` needs
+                  // to be updated to reflect it.
+                  MoreRow(
+                    icon: LucideIcons.chartLine,
+                    label: l10n.moreReports,
+                    description: l10n.moreReportsDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreReports),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.arrowUpDown,
+                    label: l10n.moreImportExport,
+                    description: l10n.moreImportExportDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreImportExport),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.settings,
+                    label: l10n.moreSettings,
+                    description: l10n.moreSettingsDescription,
+                    onTap: onOpenSettings,
+                  ),
+                  if (isSignedIn) ...[
+                    const SizedBox(height: 16),
+                    MoreRow(
+                      icon: LucideIcons.logOut,
+                      label: l10n.moreSignOut,
+                      onTap: onSignOut,
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
           ],
         ),
       ),

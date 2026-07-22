@@ -114,17 +114,17 @@ Documentados en detalle (estructura + overrides) en `design-system/billetudo/MAS
 
 ## Adición 2026-07-21 — Ajuste controlado del saldo (Mejora #1)
 
-> **Estado:** tema CLARO aprobado por el usuario e **implementado en código** (verde). **Tema oscuro PENDIENTE** — bloqueado porque el servidor de render de Pencil está caído; los frames oscuros no se generaron aún, y los badges `🔖 EN REVISIÓN` de los frames claros siguen en el canvas hasta poder limpiarlos. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+> **Estado:** aprobado e **implementado en código** (verde). **Tema oscuro generado** (2026-07-21, tras recuperarse el render de Pencil) y **badges de revisión eliminados**. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
 
 El saldo de una cuenta **ya no se edita libremente** en el formulario. Se ajusta desde el **detalle**, con dos opciones explícitas; y las tarjetas fijan su deuda inicial al crear.
 
-**Frames (solo claro por ahora):**
-| Pieza | Node ID (Claro) |
-|---|---|
-| Detalle de cuenta (normal) — lápiz "Ajustar saldo" en la Balance Card | `c2jrG` |
-| Detalle de tarjeta — lápiz "Ajustar saldo" en el Balance Card Hero | `Uk8DL` |
-| Hoja "Ajustar saldo" (Var 1 — opciones radio + Aplicar) | `s0c82` |
-| Agregar tarjeta — campo "Deuda actual" en "Datos de la tarjeta" | `XcEBG` |
+**Frames:**
+| Pieza | Node ID (Claro) | Node ID (Oscuro) |
+|---|---|---|
+| Detalle de cuenta (normal) — lápiz "Ajustar saldo" en la Balance Card | `c2jrG` | `r0hXJd` |
+| Detalle de tarjeta — lápiz "Ajustar saldo" en el Balance Card Hero | `Uk8DL` | `bT7Ga` |
+| Hoja "Ajustar saldo" (Var 1 — opciones radio + Aplicar) | `s0c82` | `t42NgN` |
+| Agregar tarjeta — campo "Deuda actual" en "Datos de la tarjeta" | `XcEBG` | `Dyfwj` |
 
 **Componentes nuevos:** `P0pSKV` "Balance Adjust Option" (tarjeta-radio con título + microcopy; seleccionada = `$primary-soft` + borde `$primary` + `circle-dot`, no solo color → cumple WCAG 1.4.1). En código: `BalanceEditButton` (lápiz sutil reusable) y `BalanceAdjustModeOption`.
 
@@ -144,4 +144,4 @@ El saldo de una cuenta **ya no se edita libremente** en el formulario. Se ajusta
 
 **Código:** `AccountBalanceAdjustment` / `AdjustAccountBalance` (dominio de accounts; la lógica de signo y del diff vive aquí), `AdjustBalanceSheet` / `AdjustBalanceCubit` (presentación).
 
-**Pendiente:** tema oscuro (Pencil down), limpiar los 4 badges de revisión, y fidelidad visual (`pencil-fidelity-reviewer`) cuando Pencil recupere el render.
+**Fidelidad visual (2026-07-21):** el lápiz de ajuste (detalle normal `c2jrG`/`r0hXJd` y tarjeta `Uk8DL`/`bT7Ga`), el campo "Deuda actual" (`XcEBG`/`Dyfwj`) y la ausencia de "Saldo inicial" al editar son **fieles** en claro y oscuro. La hoja "Ajustar saldo" (`s0c82`/`t42NgN`) tiene 6 goldens verdes. Hallazgos MENORES pre-existentes: label "Número de cuenta" vs "Número de tarjeta" en el detalle de tarjeta (no lo toca esta mejora). Diferencias de orden de campos entre el mock `XcEBG` y el formulario canónico son esperadas (el golden sigue el form real de creación).

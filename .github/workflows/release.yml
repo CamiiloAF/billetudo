@@ -1,0 +1,235 @@
+name: Release — Play Store AAB & App Store IPA
+
+# Se dispara con un tag `release-x.y.z`. Bumpea la versión en pubspec.yaml,
+# compila y sube: Android → Play (track internal), iOS → TestFlight.
+on:
+  push:
+    tags:
+      - 'release-[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  bump-version:
+    name: Bump version in pubspec.yaml
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build: ${{ steps.version.outputs.build }}
+      full: ${{ steps.version.outputs.full }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump version in pubspec.yaml
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"          # e.g. release-1.2.3
+          VERSION="${TAG#release-}"         # strip prefix → 1.2.3
+
+          CURRENT=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}')
+          CURRENT_BUILD=$(echo "$CURRENT" | cut -d'+' -f2)
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          NEW_VERSION="${VERSION}+${NEW_BUILD}"
+
+          sed -i "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
+
+          echo "version=${VERSION}"  >> "$GITHUB_OUTPUT"
+          echo "build=${NEW_BUILD}"  >> "$GITHUB_OUTPUT"
+          echo "full=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated pubspec.yaml
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${{ steps.version.outputs.full }} [skip ci]"
+          git push origin HEAD:main
+
+  build-aab:
+    name: Build & upload AAB
+    needs: bump-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      # .env.prod está gitignored; se reconstruye desde secrets. Sin él,
+      # SUPABASE_URL/POWERSYNC_URL quedan vacíos y la app arranca al gate offline.
+      - name: Create .env.prod
+        run: |
+          cat > .env.prod << EOF
+          ENVIRONMENT=prod
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+          POWERSYNC_URL=${{ secrets.POWERSYNC_URL }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EOF
+
+      # storeFile se resuelve con file() relativo a android/app (ver build.gradle.kts),
+      # así que el .jks va justo ahí y key.properties lo referencia por nombre.
+      - name: Decode release keystore & key.properties
+        if: env.RELEASE_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          cat > android/key.properties << EOF
+          storePassword=$RELEASE_KEYSTORE_PASSWORD
+          keyPassword=$RELEASE_KEY_PASSWORD
+          keyAlias=$RELEASE_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Warn if release keystore is missing
+        if: env.RELEASE_KEYSTORE_BASE64 == ''
+        run: echo "::warning::RELEASE_KEYSTORE_BASE64 no está configurado — el AAB se firmaría con debug y no sirve para Play."
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code (Drift + injectable)
+        run: dart run build_runner build --force-jit
+
+      - name: Build AAB
+        run: flutter build appbundle --release --flavor prod --dart-define-from-file=.env.prod
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: billetudo-${{ needs.bump-version.outputs.full }}.aab
+          path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          retention-days: 60
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "release-${{ needs.bump-version.outputs.version }} (build ${{ needs.bump-version.outputs.build }})"
+          files: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          generate_release_notes: true
+
+      - name: Upload to Play Store (Internal Test)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}
+          packageName: com.billetudo.app
+          releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          track: internal
+          status: completed
+
+  build-ipa:
+    name: Build & upload IPA
+    needs: bump-version
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      # Checkout de main tras el bump (needs ordena la ejecución) para no
+      # reusar un build number ya subido a TestFlight (409 duplicate CFBundleVersion).
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      - name: Create .env.prod
+        run: |
+          cat > .env.prod << EOF
+          ENVIRONMENT=prod
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+          POWERSYNC_URL=${{ secrets.POWERSYNC_URL }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EOF
+
+      - name: Import distribution certificate
+        env:
+          DIST_CERT_P12_BASE64: ${{ secrets.DIST_CERT_P12_BASE64 }}
+          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 20)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo "$DIST_CERT_P12_BASE64" | base64 -d > /tmp/distribution.p12
+          security import /tmp/distribution.p12 -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Install provisioning profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
+            > ~/Library/MobileDevice/Provisioning\ Profiles/billetudo_appstore.mobileprovision
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        run: cd ios && pod install --repo-update
+
+      - name: Generate code (Drift + injectable)
+        run: dart run build_runner build --force-jit
+
+      # El nombre del profile ("Billetudo App Store") debe coincidir con el que
+      # crees en el portal y con ios/ExportOptionsProd.plist.
+      - name: Force manual signing in Xcode project
+        run: |
+          PBXPROJ=ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' "$PBXPROJ"
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "";/PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/CODE_SIGN_IDENTITY = "Apple Distribution"/g' "$PBXPROJ"
+
+      - name: Build IPA
+        run: |
+          flutter build ipa --release \
+            --flavor prod \
+            --dart-define-from-file=.env.prod \
+            --export-options-plist=ios/ExportOptionsProd.plist
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: billetudo-${{ needs.bump-version.outputs.full }}.ipa
+          path: build/ios/ipa/*.ipa
+          retention-days: 60
+
+      - name: Find IPA path
+        id: find_ipa
+        run: echo "IPA_PATH=$(find build/ios/ipa -name '*.ipa' | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ${{ steps.find_ipa.outputs.IPA_PATH }}
+          issuer-id: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
