@@ -17,9 +17,10 @@
   <key>provisioningProfiles</key>
   <dict>
     <!-- El VALOR debe ser el NOMBRE EXACTO del provisioning profile de App Store
-         que crees en developer.apple.com para com.billetudo.app. Si le pones otro
-         nombre, cámbialo aquí y en el paso "Force manual signing" del release.yml. -->
-    <key>com.billetudo.app</key>
+         que crees en developer.apple.com para com.camiloagudelo.billetudo. Si le
+         pones otro nombre, cámbialo aquí y en el paso "Force manual signing" del
+         release.yml. -->
+    <key>com.camiloagudelo.billetudo</key>
     <string>Billetudo App Store</string>
   </dict>
 </dict>

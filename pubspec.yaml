@@ -154,7 +154,7 @@ patrol:
   android:
     package_name: com.billetudo.app
   ios:
-    bundle_id: com.billetudo.app
+    bundle_id: com.camiloagudelo.billetudo
 
 # Ícono de app (billetudo, ver assets/branding/MARCA.md). No incluye
 # variantes por flavor (dev/prod) todavía — ambos flavors comparten master.
