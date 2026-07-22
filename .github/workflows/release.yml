@@ -2,10 +2,17 @@ name: Release — Play Store AAB & App Store IPA
 
 # Se dispara con un tag `release-x.y.z`. Bumpea la versión en pubspec.yaml,
 # compila y sube: Android → Play (track internal), iOS → TestFlight.
+#
+# DESHABILITADO temporalmente: solo se dispara a mano (workflow_dispatch) hasta
+# que estén cargados TODOS los secrets (Play: GOOGLE_PLAY_SERVICE_ACCOUNT_KEY;
+# iOS: DIST_CERT_P12_BASE64, DIST_CERT_PASSWORD, PROVISIONING_PROFILE_BASE64,
+# APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_ID, APPSTORE_API_PRIVATE_KEY).
+# Para REACTIVAR, descomenta el trigger `push.tags` de abajo.
 on:
-  push:
-    tags:
-      - 'release-[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - 'release-[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   bump-version:

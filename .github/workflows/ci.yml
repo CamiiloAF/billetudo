@@ -1,10 +1,14 @@
 name: CI — Flutter Analyze & Test
 
+# DESHABILITADO temporalmente: solo se dispara a mano (workflow_dispatch) hasta
+# terminar el setup de CI/CD. Para REACTIVAR, descomenta los triggers push/PR de
+# abajo (y puedes quitar workflow_dispatch si no lo quieres).
 on:
-  push:
-    branches: ['main', 'dev']
-  pull_request:
-    branches: ['main', 'dev']
+  workflow_dispatch:
+  # push:
+  #   branches: ['main', 'dev']
+  # pull_request:
+  #   branches: ['main', 'dev']
 
 jobs:
   analyze-and-test:
