@@ -34,6 +34,7 @@ class Debt extends Equatable {
     this.dueDate,
     this.interestRateBps,
     this.deletedAt,
+    this.initialTransactionId,
   });
 
   /// UUID as text.
@@ -70,7 +71,18 @@ class Debt extends Equatable {
   /// `RestoreDebt`; never `tombstonedAt` (the debt is restorable by design).
   final DateTime? deletedAt;
 
+  /// When set, the debt's opening balance is not [principalMinor] (which is 0)
+  /// but a real `Transaction` — the "registro inicial" (item 2): a disbursement
+  /// carrying this debt's id that moved the chosen account. The outstanding
+  /// balance is derived from that movement, so it is never double-counted with
+  /// [principalMinor]. `null` = classic debt whose opening lives in
+  /// [principalMinor] with no linked movement.
+  final String? initialTransactionId;
+
   bool get isTrashed => deletedAt != null;
+
+  /// Whether the opening balance is backed by a linked `Transaction`.
+  bool get hasInitialMovement => initialTransactionId != null;
 
   @override
   List<Object?> get props => [
@@ -86,5 +98,6 @@ class Debt extends Equatable {
         createdAt,
         updatedAt,
         deletedAt,
+        initialTransactionId,
       ];
 }

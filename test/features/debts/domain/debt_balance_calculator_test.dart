@@ -25,6 +25,32 @@ void main() {
       expect(balance.outstandingMinor, 50000);
     });
 
+    test(
+      'registro inicial (principal 0 + desembolso \$X) deriva \$X, no 2X',
+      () {
+        // The anti-double-count invariant (item 2): a registro debt stores a 0
+        // principal and its opening lives in the linked disbursement, so the
+        // opening figure is counted exactly once.
+        final balance = calc.calculate(
+          debt: buildDebt(
+            direction: DebtDirection.iOwe,
+            principalMinor: 0,
+            initialTransactionId: 't-open',
+          ),
+          entries: const [],
+          cashEvents: [
+            buildCashEvent(
+              transactionId: 't-open',
+              type: TransactionType.income,
+              amountMinor: 4200000,
+            ),
+          ],
+        );
+
+        expect(balance.outstandingMinor, 4200000);
+      },
+    );
+
     test('iOwe + expense = abono (reduces)', () {
       final balance = calc.calculate(
         debt: buildDebt(direction: DebtDirection.iOwe, principalMinor: 50000),

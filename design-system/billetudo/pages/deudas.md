@@ -87,7 +87,11 @@ Variante C. **Hero Compact** (`E7TQkJ`): pill direccion + chip moneda, saldo pen
 
 ## Form crear/editar deuda (`dUryC` Yo debo / `B36jV` Me deben)
 
-Variante B ("Monto heroe"). Saldo de apertura como **heroe** + caret + pill de moneda (`$primary-on-soft-strong` para contraste). Toggle de direccion `qCUup`. Campos: **"Nombre de la deuda"**, contraparte con **label direccional** ("Yo debo" → **"Le debo a"**; "Me deben" → **"Me debe"** — variante `B36jV`), **vencimiento con "×" para limpiar la fecha** (cuando hay fecha; sin "×" muestra "Sin fecha"), tasa de interes (%) y modo de interes (Manual/Automatico, `hFu41`) revelado. CTA "Crear deuda" fijo abajo (zona del pulgar).
+Variante B ("Monto heroe"). Saldo de apertura como **heroe** + caret + pill de moneda (`$primary-on-soft-strong` para contraste). Toggle de direccion `qCUup`. Campos: **"Nombre de la deuda"**, contraparte con **label direccional** ("Yo debo" → **"Le debo a"**; "Me deben" → **"Me debe"** — variante `B36jV`), y **DOS campos de fecha**:
+- **"Fecha"** (fecha inicial: cuándo empezó la deuda) — **requerida, default "Hoy", sin "×"** (no admite "Sin fecha"). Semánticamente **≤ hoy, nunca futuro** (validacion de codigo). Es el **piso** de las fechas de abonos/ajustes (nada anterior a esta fecha) y la fecha del registro inicial. Filas: `UiDmq` (`dUryC`) / `RqP11` (`B36jV`).
+- **"Fecha de vencimiento"** (cuándo se debe pagar) — **opcional, con "×" para limpiar** (placeholder "Sin fecha"), **puede ser futura**. (Antes se llamaba solo "Vencimiento".)
+
+Luego tasa de interes (%) y modo de interes (Manual/Automatico, `hFu41`) revelado. CTA "Crear deuda" fijo abajo (zona del pulgar).
 
 **El form NO lleva toggle de caja inline.** La decision de registrar el saldo de apertura en una cuenta (item 2, "registro inicial") NO vive en el form: se pregunta en un **sheet post-crear** al pulsar "Crear deuda" (ver abajo). Esto se decidio asi para no saturar el form.
 

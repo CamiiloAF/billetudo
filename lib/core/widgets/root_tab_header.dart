@@ -18,6 +18,7 @@ class RootTabHeader extends StatelessWidget {
   const RootTabHeader({
     required this.title,
     this.actions = const <Widget>[],
+    this.leading,
     super.key,
   });
 
@@ -28,13 +29,23 @@ class RootTabHeader extends StatelessWidget {
   /// out at the end of the row, after the title.
   final List<Widget> actions;
 
+  /// Optional left-side widget before the title (e.g. a back button). A tab
+  /// root has none; a screen reusing this header in a stacked mode (Movimientos
+  /// in Deudas link mode) passes a back button so it is never a dead end.
+  final Widget? leading;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final leading = this.leading;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         children: [
+          if (leading != null) ...[
+            leading,
+            const SizedBox(width: 12),
+          ],
           Expanded(
             child: Text(
               title,

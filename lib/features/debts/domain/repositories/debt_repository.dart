@@ -41,6 +41,40 @@ abstract class DebtRepository {
   /// Creates a debt (HU-01). The draft must already be `validated()`.
   FutureResult<Debt> createDebt(DebtDraft draft);
 
+  /// Item 2: creates a debt **with an opening movement** (registro inicial),
+  /// atomically. The debt is stored with `principalMinor == 0` and its opening
+  /// balance is persisted as a single `disbursement` `Transaction` carrying the
+  /// debt id (moving [accountId] on [date]); `initialTransactionId` then points
+  /// at that movement. This keeps the derived balance equal to the opening
+  /// figure — never twice it. [draft] carries the opening magnitude in its
+  /// `principalMinor`; the repository forces the stored principal to 0.
+  FutureResult<Debt> createDebtWithOpeningMovement({
+    required DebtDraft draft,
+    required String accountId,
+    required DateTime date,
+  });
+
+  /// Item 2b: keeps a debt's linked opening movement in sync when its opening
+  /// figure (or direction) changed on edit. Updates the movement's amount and,
+  /// when the direction flipped, its [type] (`income`↔`expense`), stamping
+  /// `updatedAt`. Only ever called for a debt with an `initialTransactionId`.
+  FutureResult<Unit> updateInitialMovementAmount({
+    required String transactionId,
+    required int amountMinor,
+    required TransactionType type,
+  });
+
+  /// Item 2 (retro-link): attributes an existing debt's opening balance to an
+  /// account, atomically. Moves the opening figure out of `principalMinor`
+  /// (set to 0) into a new `disbursement` `Transaction` on [accountId], dated
+  /// at the debt's `createdAt`, and points `initialTransactionId` at it. The
+  /// derived balance does not change (principal $X → movement $X); only the
+  /// account moves.
+  FutureResult<Debt> attributeOpeningToAccount({
+    required String debtId,
+    required String accountId,
+  });
+
   /// Updates a debt (HU-05). Requires `draft.id`. Editing the opening balance
   /// never touches the ledger.
   FutureResult<Debt> updateDebt(DebtDraft draft);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/keyboard_done_toolbar.dart';
@@ -28,7 +29,8 @@ class DebtFormField extends StatelessWidget {
     this.onChanged,
     super.key,
   })  : onTap = null,
-        value = null;
+        value = null,
+        onClear = null;
 
   const DebtFormField.selector({
     required this.label,
@@ -37,6 +39,7 @@ class DebtFormField extends StatelessWidget {
     this.icon,
     this.hint,
     this.errorText,
+    this.onClear,
     super.key,
   })  : initialValue = null,
         keyboardType = null,
@@ -62,6 +65,10 @@ class DebtFormField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final String? value;
+
+  /// A selector-only affordance to clear the current [value] (item 1e): the
+  /// "×" only shows when there is a value to clear.
+  final VoidCallback? onClear;
 
   bool get _isSelector => onTap != null;
 
@@ -126,6 +133,7 @@ class DebtFormField extends StatelessWidget {
             hint: hint,
             hasError: errorText != null,
             onTap: onTap!,
+            onClear: value == null ? null : onClear,
           )
         else if (_usesSystemNumberKeyboard)
           KeyboardDoneToolbar(child: input)
@@ -152,6 +160,7 @@ class DebtFormSelectorBox extends StatelessWidget {
     required this.hasError,
     required this.onTap,
     this.icon,
+    this.onClear,
     super.key,
   });
 
@@ -160,6 +169,10 @@ class DebtFormSelectorBox extends StatelessWidget {
   final bool hasError;
   final VoidCallback onTap;
   final IconData? icon;
+
+  /// When set, a trailing "×" clears the value (item 1e) instead of opening the
+  /// picker; shown only when there is a value.
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -196,12 +209,56 @@ class DebtFormSelectorBox extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
-              LucideIcons.chevronDown,
-              color: colors.textSecondary,
-              size: 16,
-            ),
+            if (onClear case final onClear?)
+              DebtSelectorClearButton(onClear: onClear)
+            else
+              Icon(
+                LucideIcons.chevronDown,
+                color: colors.textSecondary,
+                size: 16,
+              ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The "×" that clears a selector's value (item 1e): a `$primary-soft` circle
+/// with a 44x44 tap target (the visible circle stays 30x30, matching `B1f66`).
+class DebtSelectorClearButton extends StatelessWidget {
+  const DebtSelectorClearButton({required this.onClear, super.key});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      label: l10n.commonClear,
+      child: InkResponse(
+        onTap: onClear,
+        radius: 22,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                LucideIcons.x,
+                color: colors.textSecondary,
+                size: 16,
+              ),
+            ),
+          ),
         ),
       ),
     );

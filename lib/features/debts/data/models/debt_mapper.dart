@@ -24,6 +24,7 @@ abstract final class DebtMapper {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         deletedAt: row.deletedAt,
+        initialTransactionId: row.initialTransactionId,
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).

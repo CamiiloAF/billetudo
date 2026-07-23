@@ -336,6 +336,19 @@ class Debts extends Table with _SyncColumns {
   TextColumn get accrualMode => textEnum<DebtAccrualMode>().clientDefault(
         () => DebtAccrualMode.manual.name,
       )();
+
+  /// The disbursement [Transactions] row that represents the opening balance
+  /// when the user chose to record it against an account on debt creation.
+  /// null = the debt has no opening entry, so the opening balance lives in
+  /// [principalMinor] as before. This is the stable link the "edit balance ->
+  /// update the entry" flow (item 2b) uses.
+  ///
+  /// Deliberately a bare `text().nullable()` (soft UUID FK, PowerSync-style),
+  /// NOT `.references(Transactions, #id)`: `Transactions.debtId` already
+  /// references `Debts`, so a Drift FK back the other way would form a
+  /// reference cycle (ReferenceName / generation-order conflicts). Referential
+  /// integrity for this link is by UUID convention, not a Drift constraint.
+  TextColumn get initialTransactionId => text().nullable()();
 }
 
 /// Ledger entries against a [Debts] row. The debt's outstanding balance is
@@ -588,7 +601,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -871,6 +884,17 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(debts, debts.accrualMode);
             await m.createTable(debtEntries);
             await m.addColumn(scheduledPayments, scheduledPayments.debtId);
+          }
+
+          // v14 -> v15: Debts gains `initialTransactionId`, a nullable soft
+          // UUID FK to the disbursement `Transactions` row that holds the
+          // opening balance when the user records it against an account
+          // ("registro inicial al crear deuda", item 2). Additive nullable
+          // column -> no backfill needed. Keep parity with Supabase/Postgres:
+          // replicate `debts.initial_transaction_id text` (nullable) once sync
+          // is wired.
+          if (from < 15) {
+            await m.addColumn(debts, debts.initialTransactionId);
           }
         },
       );

@@ -2423,7 +2423,7 @@ abstract class AppLocalizations {
   /// No description provided for @debtFormNameLabel.
   ///
   /// In es, this message translates to:
-  /// **'Nombre'**
+  /// **'Nombre de la deuda'**
   String get debtFormNameLabel;
 
   /// No description provided for @debtFormNameHint.
@@ -2443,6 +2443,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Contraparte'**
   String get debtFormCounterpartyLabel;
+
+  /// No description provided for @debtFormCounterpartyLabelIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Le debo a'**
+  String get debtFormCounterpartyLabelIOwe;
+
+  /// No description provided for @debtFormCounterpartyLabelOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'Me debe'**
+  String get debtFormCounterpartyLabelOwedToMe;
 
   /// No description provided for @debtFormCounterpartyHint.
   ///
@@ -2705,20 +2717,68 @@ abstract class AppLocalizations {
   /// No description provided for @debtLinkBannerBody.
   ///
   /// In es, this message translates to:
-  /// **'Elegí un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.'**
+  /// **'Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.'**
   String get debtLinkBannerBody;
-
-  /// No description provided for @debtLinkCancelTooltip.
-  ///
-  /// In es, this message translates to:
-  /// **'Cancelar enlace'**
-  String get debtLinkCancelTooltip;
 
   /// No description provided for @debtLinkError.
   ///
   /// In es, this message translates to:
   /// **'No pudimos enlazar el movimiento. Intenta de nuevo.'**
   String get debtLinkError;
+
+  /// No description provided for @debtInitialRegistroTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quieres crear un registro inicial para esta deuda?'**
+  String get debtInitialRegistroTitle;
+
+  /// No description provided for @debtInitialRegistroMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Si lo creas, cambiará el saldo de la cuenta que elijas.'**
+  String get debtInitialRegistroMessage;
+
+  /// No description provided for @debtInitialRegistroSoloDeuda.
+  ///
+  /// In es, this message translates to:
+  /// **'No, solo la deuda'**
+  String get debtInitialRegistroSoloDeuda;
+
+  /// No description provided for @debtInitialRegistroChooseAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, elegir cuenta'**
+  String get debtInitialRegistroChooseAccount;
+
+  /// No description provided for @debtUpdateRegistroTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Actualizar también el registro?'**
+  String get debtUpdateRegistroTitle;
+
+  /// No description provided for @debtUpdateRegistroMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar el saldo de apertura actualizará el registro inicial de {from} a {to}.'**
+  String debtUpdateRegistroMessage(String from, String to);
+
+  /// No description provided for @debtUpdateRegistroConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get debtUpdateRegistroConfirm;
+
+  /// No description provided for @debtOpeningLinkSnackbar.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo inicial · sin cuenta enlazada'**
+  String get debtOpeningLinkSnackbar;
+
+  /// No description provided for @debtOpeningLinkAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar'**
+  String get debtOpeningLinkAction;
 
   /// No description provided for @moreScheduledPayments.
   ///

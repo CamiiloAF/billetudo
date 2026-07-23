@@ -20,7 +20,10 @@ import '../widgets/debt_amount_hero_field.dart';
 import '../widgets/debt_direction_toggle.dart';
 import '../widgets/debt_form_field.dart';
 import '../widgets/sheets/confirm_delete_debt_sheet.dart';
+import '../widgets/sheets/debt_account_picker_sheet.dart';
 import '../widgets/sheets/debt_currency_picker_sheet.dart';
+import '../widgets/sheets/debt_initial_registro_sheet.dart';
+import '../widgets/sheets/debt_update_registro_sheet.dart';
 
 /// Crear / editar deuda (`dUryC`, variante B "monto héroe", HU-01/HU-05): the
 /// opening balance as the héroe, the direction toggle, name, optional
@@ -36,8 +39,15 @@ class DebtFormPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DebtFormCubit, DebtFormState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) =>
+          previous.status != current.status ||
+          previous.prompt != current.prompt,
       listener: (context, state) {
+        // A pending prompt (item 2 / 2b) takes precedence: open its sheet.
+        if (state.prompt != null) {
+          unawaited(_handlePrompt(context, state));
+          return;
+        }
         switch (state.status) {
           case DebtFormStatus.saved:
             Navigator.of(context).pop();
@@ -68,6 +78,60 @@ class DebtFormPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Opens the sheet a pending [DebtFormState.prompt] asks for (item 2 / 2b) and
+  /// routes the user's answer back into the cubit. Dismissing any sheet aborts
+  /// without creating or changing anything.
+  Future<void> _handlePrompt(BuildContext context, DebtFormState state) async {
+    final cubit = context.read<DebtFormCubit>();
+    final prompt = state.prompt;
+
+    switch (prompt) {
+      case DebtChooseRegistroPrompt():
+        final choice = await DebtInitialRegistroSheet.show(context);
+        if (!context.mounted) {
+          return;
+        }
+        switch (choice) {
+          case null:
+            cubit.cancelPrompt();
+          case DebtInitialRegistroChoice.soloDeuda:
+            unawaited(cubit.chooseSoloDeuda());
+          case DebtInitialRegistroChoice.chooseAccount:
+            final accountId = await DebtAccountPickerSheet.show(
+              context,
+              accounts: state.accounts,
+              selectedId: state.accounts.isEmpty
+                  ? null
+                  : state.accounts.first.account.id,
+            );
+            if (!context.mounted) {
+              return;
+            }
+            if (accountId == null) {
+              cubit.cancelPrompt();
+            } else {
+              unawaited(cubit.createWithOpeningMovement(accountId));
+            }
+        }
+      case DebtConfirmUpdateRegistroPrompt(:final fromMinor, :final toMinor):
+        final confirmed = await DebtUpdateRegistroSheet.show(
+          context,
+          fromLabel: DebtFormat.amount(fromMinor, state.currency),
+          toLabel: DebtFormat.amount(toMinor, state.currency),
+        );
+        if (!context.mounted) {
+          return;
+        }
+        if (confirmed ?? false) {
+          unawaited(cubit.confirmUpdateRegistro());
+        } else {
+          cubit.dismissUpdateRegistro();
+        }
+      case null:
+        break;
+    }
   }
 }
 
@@ -174,10 +238,12 @@ class DebtFormBody extends StatelessWidget {
           onChanged: cubit.nameChanged,
         ),
         const SizedBox(height: 14),
-        // Contraparte.
+        // Contraparte (label is directional: "Le debo a" / "Me debe").
         DebtFormField.text(
           key: ValueKey('counterparty-${state.id ?? 'new'}'),
-          label: l10n.debtFormCounterpartyLabel,
+          label: state.direction == DebtDirection.iOwe
+              ? l10n.debtFormCounterpartyLabelIOwe
+              : l10n.debtFormCounterpartyLabelOwedToMe,
           icon: LucideIcons.building2,
           hint: l10n.debtFormCounterpartyHint,
           initialValue: state.counterparty,
@@ -195,6 +261,8 @@ class DebtFormBody extends StatelessWidget {
               ? null
               : DebtFormat.dateLong(context, dueDate),
           onTap: () => _pickDueDate(context, cubit, dueDate),
+          // A cleared due date returns the debt to "Sin fecha" (item 1e).
+          onClear: dueDate == null ? null : () => cubit.dueDateChanged(null),
         ),
         const SizedBox(height: 14),
         // Card Interés.

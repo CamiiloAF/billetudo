@@ -120,6 +120,9 @@ const powerSyncSchema = Schema([
     Column.text('counterparty'),
     Column.integer('due_date'),
     Column.text('accrual_mode'),
+    // Soft UUID FK to the disbursement transaction holding the opening balance
+    // (schemaVersion 15). Nullable; see Debts.initialTransactionId.
+    Column.text('initial_transaction_id'),
     ..._syncColumns,
   ]),
   // Solo-deuda ledger entries (schemaVersion 14). The outstanding balance is

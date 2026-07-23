@@ -8,12 +8,11 @@ import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_cash_event.dart';
 import '../../domain/services/debt_event_rules.dart';
 import '../cubit/debt_link_cubit.dart';
-import '../utils/debt_format.dart';
 
 /// Renders Movimientos in link mode (`g0x859`, HU-02) by reusing the existing
 /// [TransactionsPage] with a [TransactionsLinkMode] — never a copy of the
 /// screen. A row tap links the movement to [debt] through [DebtLinkCubit] and
-/// pops back to the debt; the banner's "x" just pops.
+/// pops back to the debt; the header back button just pops.
 class DebtLinkModePage extends StatelessWidget {
   const DebtLinkModePage({required this.debt, super.key});
 
@@ -21,7 +20,6 @@ class DebtLinkModePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     return TransactionsPage(
       // The FAB is hidden and the row/account taps below are unused in link
       // mode, so these are inert stubs.
@@ -29,7 +27,9 @@ class DebtLinkModePage extends StatelessWidget {
       onOpenTransaction: (_) async => null,
       onOpenAccount: (_) {},
       linkMode: TransactionsLinkMode(
-        debtLabel: DebtFormat.context(l10n, debt.name, debt.direction),
+        // Just the name: the direction ("· Yo debo") confuses more than it
+        // helps while picking a movement to attribute.
+        debtLabel: debt.name,
         onCancel: () => Navigator.of(context).pop(),
         onLinkTransaction: (transactionId) =>
             _link(context, transactionId),

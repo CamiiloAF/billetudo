@@ -16,6 +16,7 @@ Debt buildDebt({
   DateTime? dueDate,
   DateTime? createdAt,
   DateTime? deletedAt,
+  String? initialTransactionId,
 }) =>
     Debt(
       id: id,
@@ -30,6 +31,7 @@ Debt buildDebt({
       createdAt: createdAt ?? DateTime(2026, 1, 1),
       updatedAt: (createdAt ?? DateTime(2026, 1, 1)).millisecondsSinceEpoch,
       deletedAt: deletedAt,
+      initialTransactionId: initialTransactionId,
     );
 
 DebtEntry buildEntry({

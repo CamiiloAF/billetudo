@@ -19,6 +19,8 @@ class DebtLedgerRow extends StatelessWidget {
     required this.runningMinor,
     required this.currency,
     this.onOpenTransaction,
+    this.onLinkOpening,
+    this.initialTransactionId,
     super.key,
   });
 
@@ -30,6 +32,22 @@ class DebtLedgerRow extends StatelessWidget {
   /// Opens the underlying `Transaction`'s detail (HU-04). Only cash rows carry
   /// a `transactionId`; solo-deuda rows (interest/adjustment) are not tappable.
   final ValueChanged<String>? onOpenTransaction;
+
+  /// Item 2 (retro-link): tapped on the synthetic opening row (a `principal`
+  /// with no linked account) to attribute it to an account. `null` leaves the
+  /// row inert.
+  final VoidCallback? onLinkOpening;
+
+  /// The debt's `initialTransactionId`, so the linked opening movement's row is
+  /// titled "Saldo de apertura" instead of a generic "Desembolso".
+  final String? initialTransactionId;
+
+  /// Whether this row is the debt's opening: either the synthetic principal row
+  /// or the linked opening movement.
+  bool get _isOpening =>
+      entry.kind == DebtLedgerKind.opening ||
+      (entry.transactionId != null &&
+          entry.transactionId == initialTransactionId);
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +61,20 @@ class DebtLedgerRow extends StatelessWidget {
         ? '${DebtFormat.dateShort(context, entry.date)} · $note'
         : DebtFormat.dateShort(context, entry.date);
 
-    // A cash row deep-links into its movement's detail; a solo-deuda row has no
-    // movement behind it, so it stays inert.
+    // A cash row deep-links into its movement's detail; the synthetic opening
+    // row (no movement) offers to link an account (retro-link); other solo-deuda
+    // rows stay inert.
     final transactionId = entry.transactionId;
     final onOpenTransaction = this.onOpenTransaction;
-    final onTap = isCash && transactionId != null && onOpenTransaction != null
-        ? () => onOpenTransaction(transactionId)
-        : null;
+    final onLinkOpening = this.onLinkOpening;
+    final VoidCallback? onTap;
+    if (isCash && transactionId != null && onOpenTransaction != null) {
+      onTap = () => onOpenTransaction(transactionId);
+    } else if (entry.kind == DebtLedgerKind.opening && onLinkOpening != null) {
+      onTap = onLinkOpening;
+    } else {
+      onTap = null;
+    }
 
     final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
@@ -74,7 +99,9 @@ class DebtLedgerRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  DebtFormat.ledgerTitle(l10n, entry, direction),
+                  _isOpening
+                      ? l10n.debtLedgerOpening
+                      : DebtFormat.ledgerTitle(l10n, entry, direction),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyLarge?.copyWith(

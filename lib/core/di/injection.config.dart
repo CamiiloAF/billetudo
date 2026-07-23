@@ -232,8 +232,12 @@ import 'package:billetudo/features/debts/domain/services/debt_interest_calculato
     as _i255;
 import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart'
     as _i103;
+import 'package:billetudo/features/debts/domain/usecases/attribute_opening_to_account.dart'
+    as _i89;
 import 'package:billetudo/features/debts/domain/usecases/create_debt.dart'
     as _i247;
+import 'package:billetudo/features/debts/domain/usecases/create_debt_with_opening_movement.dart'
+    as _i398;
 import 'package:billetudo/features/debts/domain/usecases/delete_debt.dart'
     as _i644;
 import 'package:billetudo/features/debts/domain/usecases/link_transaction_to_debt.dart'
@@ -248,6 +252,8 @@ import 'package:billetudo/features/debts/domain/usecases/update_debt.dart'
     as _i779;
 import 'package:billetudo/features/debts/domain/usecases/update_debt_balance.dart'
     as _i309;
+import 'package:billetudo/features/debts/domain/usecases/update_initial_movement.dart'
+    as _i425;
 import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart'
     as _i1003;
 import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart'
@@ -761,8 +767,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i89.AttributeOpeningToAccount>(
+        () => _i89.AttributeOpeningToAccount(gh<_i932.DebtRepository>()));
     gh.factory<_i247.CreateDebt>(
         () => _i247.CreateDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i398.CreateDebtWithOpeningMovement>(
+        () => _i398.CreateDebtWithOpeningMovement(gh<_i932.DebtRepository>()));
     gh.factory<_i644.DeleteDebt>(
         () => _i644.DeleteDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i980.LinkTransactionToDebt>(
@@ -777,6 +787,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i779.UpdateDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i309.UpdateDebtBalance>(
         () => _i309.UpdateDebtBalance(gh<_i932.DebtRepository>()));
+    gh.factory<_i425.UpdateInitialMovement>(
+        () => _i425.UpdateInitialMovement(gh<_i932.DebtRepository>()));
     gh.factory<_i1003.WatchDebtDetail>(
         () => _i1003.WatchDebtDetail(gh<_i932.DebtRepository>()));
     gh.factory<_i42.WatchDebts>(
@@ -857,6 +869,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
+    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i255.DebtInterestCalculator>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i89.AttributeOpeningToAccount>(),
+        ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(
               gh<_i242.CreateScheduledPayment>(),
@@ -890,16 +908,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
-        ));
-    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
-          gh<_i1003.WatchDebtDetail>(),
-          gh<_i255.DebtInterestCalculator>(),
-        ));
-    gh.factory<_i457.DebtFormCubit>(() => _i457.DebtFormCubit(
-          gh<_i247.CreateDebt>(),
-          gh<_i779.UpdateDebt>(),
-          gh<_i644.DeleteDebt>(),
-          gh<_i1003.WatchDebtDetail>(),
         ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
@@ -961,6 +969,15 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.factory<_i916.DebtLinkCubit>(
         () => _i916.DebtLinkCubit(gh<_i980.LinkTransactionToDebt>()));
+    gh.factory<_i457.DebtFormCubit>(() => _i457.DebtFormCubit(
+          gh<_i247.CreateDebt>(),
+          gh<_i398.CreateDebtWithOpeningMovement>(),
+          gh<_i779.UpdateDebt>(),
+          gh<_i425.UpdateInitialMovement>(),
+          gh<_i644.DeleteDebt>(),
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i837.WatchAccounts>(),
+        ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),

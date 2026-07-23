@@ -80,7 +80,7 @@ void main() {
     expect(find.byIcon(LucideIcons.plus), findsNothing);
   });
 
-  testWidgets('la "x" del banner cancela el modo enlazar', (tester) async {
+  testWidgets('el back del header cancela el modo enlazar', (tester) async {
     var cancelled = false;
     await pump(
       tester,
@@ -93,7 +93,10 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(LucideIcons.x));
+    // The banner no longer carries an "x"; the only exit is the header back
+    // button (item add-on 3), which must still cancel link mode.
+    expect(find.byIcon(LucideIcons.x), findsNothing);
+    await tester.tap(find.byIcon(LucideIcons.arrowLeft));
     expect(cancelled, isTrue);
   });
 

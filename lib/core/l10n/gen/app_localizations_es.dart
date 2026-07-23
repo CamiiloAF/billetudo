@@ -1328,7 +1328,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtFormOpeningBalanceLabel => 'Saldo de apertura';
 
   @override
-  String get debtFormNameLabel => 'Nombre';
+  String get debtFormNameLabel => 'Nombre de la deuda';
 
   @override
   String get debtFormNameHint => 'Crédito vehicular, préstamo a Andrés…';
@@ -1338,6 +1338,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get debtFormCounterpartyLabel => 'Contraparte';
+
+  @override
+  String get debtFormCounterpartyLabelIOwe => 'Le debo a';
+
+  @override
+  String get debtFormCounterpartyLabelOwedToMe => 'Me debe';
 
   @override
   String get debtFormCounterpartyHint => 'Banco, persona…';
@@ -1485,14 +1491,42 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get debtLinkBannerBody =>
-      'Elegí un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.';
-
-  @override
-  String get debtLinkCancelTooltip => 'Cancelar enlace';
+      'Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.';
 
   @override
   String get debtLinkError =>
       'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
+  String get debtInitialRegistroTitle =>
+      '¿Quieres crear un registro inicial para esta deuda?';
+
+  @override
+  String get debtInitialRegistroMessage =>
+      'Si lo creas, cambiará el saldo de la cuenta que elijas.';
+
+  @override
+  String get debtInitialRegistroSoloDeuda => 'No, solo la deuda';
+
+  @override
+  String get debtInitialRegistroChooseAccount => 'Sí, elegir cuenta';
+
+  @override
+  String get debtUpdateRegistroTitle => '¿Actualizar también el registro?';
+
+  @override
+  String debtUpdateRegistroMessage(String from, String to) {
+    return 'Cambiar el saldo de apertura actualizará el registro inicial de $from a $to.';
+  }
+
+  @override
+  String get debtUpdateRegistroConfirm => 'Actualizar';
+
+  @override
+  String get debtOpeningLinkSnackbar => 'Saldo inicial · sin cuenta enlazada';
+
+  @override
+  String get debtOpeningLinkAction => 'Enlazar';
 
   @override
   String get moreScheduledPayments => 'Pagos programados';

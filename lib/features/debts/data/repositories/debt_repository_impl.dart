@@ -21,6 +21,7 @@ import '../../domain/entities/debt_with_balance.dart';
 import '../../domain/entities/debts_summary.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../../domain/services/debt_balance_calculator.dart';
+import '../../domain/services/debt_event_rules.dart';
 import '../datasources/debts_local_datasource.dart';
 import '../models/debt_cash_event_mapper.dart';
 import '../models/debt_entry_mapper.dart';
@@ -190,6 +191,111 @@ class DebtRepositoryImpl implements DebtRepository {
         final row = await _local.insertDebt(
           DebtMapper.toInsertCompanion(draft, now: now),
         );
+        return Right(DebtMapper.toEntity(row));
+      });
+
+  @override
+  FutureResult<Debt> createDebtWithOpeningMovement({
+    required DebtDraft draft,
+    required String accountId,
+    required DateTime date,
+  }) =>
+      _guard(() async {
+        final now = DateTime.now();
+        final type = DebtEventRules.cashEventType(
+          direction: draft.direction,
+          kind: DebtCashEventKind.disbursement,
+        );
+        // The debt stores a 0 principal; the opening figure lives entirely in
+        // the linked movement, so the derived balance is the opening once (not
+        // twice).
+        final debtCompanion = DebtMapper.toInsertCompanion(draft, now: now)
+            .copyWith(principalMinor: const Value(0));
+        final movementCompanion = db.TransactionsCompanion.insert(
+          accountId: accountId,
+          amountMinor: draft.principalMinor,
+          currency: draft.currency,
+          type: TransactionMapper.typeToDb(type),
+          date: date,
+          source: const Value(db.TxSource.manual),
+          createdAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        );
+        final row = await _local.createDebtWithOpeningMovement(
+          debtCompanion: debtCompanion,
+          movementCompanion: movementCompanion,
+          updatedAt: now.millisecondsSinceEpoch,
+        );
+        return Right(DebtMapper.toEntity(row));
+      });
+
+  @override
+  FutureResult<Unit> updateInitialMovementAmount({
+    required String transactionId,
+    required int amountMinor,
+    required TransactionType type,
+  }) =>
+      _guard(() async {
+        final now = DateTime.now();
+        final updated = await _local.updateTransactionAmountAndType(
+          transactionId: transactionId,
+          amountMinor: amountMinor,
+          type: TransactionMapper.typeToDb(type),
+          updatedAt: now.millisecondsSinceEpoch,
+        );
+        if (updated == null) {
+          return Left(
+            NotFoundFailure('transaction "$transactionId" does not exist'),
+          );
+        }
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Debt> attributeOpeningToAccount({
+    required String debtId,
+    required String accountId,
+  }) =>
+      _guard(() async {
+        final debtRow = await _local.getDebt(debtId);
+        if (debtRow == null) {
+          return Left(NotFoundFailure('debt "$debtId" does not exist'));
+        }
+        final debt = DebtMapper.toEntity(debtRow);
+        if (debt.principalMinor <= 0) {
+          return const Left(
+            ValidationFailure(
+              'the debt has no opening principal to attribute',
+              field: DebtDraft.fieldPrincipalMinor,
+            ),
+          );
+        }
+        final now = DateTime.now();
+        final type = DebtEventRules.cashEventType(
+          direction: debt.direction,
+          kind: DebtCashEventKind.disbursement,
+        );
+        final movementCompanion = db.TransactionsCompanion.insert(
+          accountId: accountId,
+          amountMinor: debt.principalMinor,
+          currency: debt.currency,
+          type: TransactionMapper.typeToDb(type),
+          // The opening movement is dated at the debt's birth, so it heads the
+          // ledger exactly where the synthetic opening row used to sit.
+          date: debt.createdAt,
+          source: const Value(db.TxSource.manual),
+          debtId: Value(debt.id),
+          createdAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        );
+        final row = await _local.attributeOpeningToAccount(
+          debtId: debtId,
+          movementCompanion: movementCompanion,
+          updatedAt: now.millisecondsSinceEpoch,
+        );
+        if (row == null) {
+          return Left(NotFoundFailure('debt "$debtId" does not exist'));
+        }
         return Right(DebtMapper.toEntity(row));
       });
 

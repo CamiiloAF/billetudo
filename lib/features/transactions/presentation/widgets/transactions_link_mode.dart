@@ -26,7 +26,7 @@ class TransactionsLinkMode {
   /// Already localized debt context, e.g. "Crédito vehicular · Yo debo".
   final String debtLabel;
 
-  /// Cancels link mode (the banner's "x").
+  /// Cancels link mode (the header back button).
   final VoidCallback onCancel;
 
   /// Attributes the tapped transaction to the debt and returns once done.
@@ -61,7 +61,8 @@ class TransactionsLinkMode {
 }
 
 /// The `$primary-soft` banner (`Y71NB`) shown at the top of the list in link
-/// mode: a `link-2` glyph, the "Enlazar a …" prompt, and an "x" to cancel.
+/// mode: a `link-2` glyph and the "Enlazar a …" prompt. Cancelling is the
+/// header back button, so the banner carries no "x".
 class TransactionsLinkBanner extends StatelessWidget {
   const TransactionsLinkBanner({required this.linkMode, super.key});
 
@@ -116,15 +117,6 @@ class TransactionsLinkBanner extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 6),
-            IconButton(
-              onPressed: linkMode.onCancel,
-              tooltip: l10n.debtLinkCancelTooltip,
-              iconSize: 20,
-              color: colors.primaryOnSoftStrong,
-              constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-              icon: const Icon(LucideIcons.x),
             ),
           ],
         ),

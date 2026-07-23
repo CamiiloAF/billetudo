@@ -6,6 +6,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
@@ -153,7 +154,21 @@ class TransactionsPage extends StatelessWidget {
             final showCarousel = linkMode == null;
             return Column(
               children: [
-                RootTabHeader(title: l10n.transactionsTitle),
+                RootTabHeader(
+                  title: l10n.transactionsTitle,
+                  // Link mode is a stacked screen with no other visible exit
+                  // (the banner no longer carries an "x"), so it gets a back
+                  // button here to never trap the user.
+                  leading: linkMode == null
+                      ? null
+                      : PageHeaderCircleButton(
+                          icon: LucideIcons.arrowLeft,
+                          background: context.colors.muted,
+                          foreground: context.colors.textPrimary,
+                          tooltip: l10n.commonBack,
+                          onPressed: linkMode.onCancel,
+                        ),
+                ),
                 TransactionsSearchRow(state: state),
                 const SizedBox(height: 8),
                 TransactionsFilterBar(state: state),

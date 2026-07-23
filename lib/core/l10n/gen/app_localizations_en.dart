@@ -1326,7 +1326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtFormOpeningBalanceLabel => 'Opening balance';
 
   @override
-  String get debtFormNameLabel => 'Name';
+  String get debtFormNameLabel => 'Debt name';
 
   @override
   String get debtFormNameHint => 'Car loan, loan to Andrés…';
@@ -1336,6 +1336,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtFormCounterpartyLabel => 'Counterparty';
+
+  @override
+  String get debtFormCounterpartyLabelIOwe => 'I owe';
+
+  @override
+  String get debtFormCounterpartyLabelOwedToMe => 'Owed by';
 
   @override
   String get debtFormCounterpartyHint => 'Bank, person…';
@@ -1485,10 +1491,38 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose a movement you already recorded; we attribute it to this debt instead of creating a new one.';
 
   @override
-  String get debtLinkCancelTooltip => 'Cancel link';
+  String get debtLinkError => 'We couldn\'t link the movement. Try again.';
 
   @override
-  String get debtLinkError => 'We couldn\'t link the movement. Try again.';
+  String get debtInitialRegistroTitle =>
+      'Create an initial record for this debt?';
+
+  @override
+  String get debtInitialRegistroMessage =>
+      'If you create it, the balance of the account you pick will change.';
+
+  @override
+  String get debtInitialRegistroSoloDeuda => 'No, just the debt';
+
+  @override
+  String get debtInitialRegistroChooseAccount => 'Yes, pick account';
+
+  @override
+  String get debtUpdateRegistroTitle => 'Update the record too?';
+
+  @override
+  String debtUpdateRegistroMessage(String from, String to) {
+    return 'Changing the opening balance will update the initial record from $from to $to.';
+  }
+
+  @override
+  String get debtUpdateRegistroConfirm => 'Update';
+
+  @override
+  String get debtOpeningLinkSnackbar => 'Initial balance · no account linked';
+
+  @override
+  String get debtOpeningLinkAction => 'Link';
 
   @override
   String get moreScheduledPayments => 'Scheduled payments';

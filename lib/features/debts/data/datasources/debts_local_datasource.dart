@@ -183,4 +183,80 @@ class DebtsLocalDatasource {
             ))
           .writeReturning(companion)
           .then((rows) => rows.isEmpty ? null : rows.first);
+
+  /// Item 2: inserts the debt (with `principalMinor == 0`) and its opening
+  /// `disbursement` movement in a single transaction, then points the debt's
+  /// `initialTransactionId` at that movement. Atomic — the composite only
+  /// exists all-at-once, so the derived balance can never observe a debt
+  /// without its opening movement (or vice-versa). [movementCompanion] must not
+  /// carry a `debtId`; it is stamped here with the just-created debt's id.
+  Future<Debt> createDebtWithOpeningMovement({
+    required DebtsCompanion debtCompanion,
+    required TransactionsCompanion movementCompanion,
+    required int updatedAt,
+  }) =>
+      _db.transaction(() async {
+        final debt = await _db.into(_db.debts).insertReturning(debtCompanion);
+        final movement = await _db.into(_db.transactions).insertReturning(
+              movementCompanion.copyWith(debtId: Value(debt.id)),
+            );
+        final rows = await (_db.update(_db.debts)
+              ..where((d) => d.id.equals(debt.id)))
+            .writeReturning(
+          DebtsCompanion(
+            initialTransactionId: Value(movement.id),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+        return rows.first;
+      });
+
+  /// Item 2 (retro-link): inserts the opening `disbursement` movement (which
+  /// already carries the debt id) and, in the same transaction, moves the debt
+  /// to `principalMinor == 0` with `initialTransactionId` pointing at it. The
+  /// "alive" guard mirrors [updateDebt]. No match returns null.
+  Future<Debt?> attributeOpeningToAccount({
+    required String debtId,
+    required TransactionsCompanion movementCompanion,
+    required int updatedAt,
+  }) =>
+      _db.transaction(() async {
+        final movement =
+            await _db.into(_db.transactions).insertReturning(movementCompanion);
+        final rows = await (_db.update(_db.debts)
+              ..where((d) => d.id.equals(debtId) & _aliveDebt(d)))
+            .writeReturning(
+          DebtsCompanion(
+            principalMinor: const Value(0),
+            initialTransactionId: Value(movement.id),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+        return rows.isEmpty ? null : rows.first;
+      });
+
+  /// Item 2b: updates a linked opening movement's amount and type (the type
+  /// changes only when the debt's direction flipped). Same "alive" guard as
+  /// [linkTransaction]. No match returns null.
+  Future<Transaction?> updateTransactionAmountAndType({
+    required String transactionId,
+    required int amountMinor,
+    required EntryType type,
+    required int updatedAt,
+  }) =>
+      (_db.update(_db.transactions)
+            ..where(
+              (t) =>
+                  t.id.equals(transactionId) &
+                  t.deletedAt.isNull() &
+                  t.tombstonedAt.isNull(),
+            ))
+          .writeReturning(
+            TransactionsCompanion(
+              amountMinor: Value(amountMinor),
+              type: Value(type),
+              updatedAt: Value(updatedAt),
+            ),
+          )
+          .then((rows) => rows.isEmpty ? null : rows.first);
 }
