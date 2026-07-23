@@ -28,6 +28,7 @@ import 'dart:async';
 import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/debts/presentation/widgets/debt_amount_hero_field.dart';
@@ -125,15 +126,17 @@ Future<void> _enterHeroAmount(PatrolIntegrationTester $, String value) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Types [name] into the crear/editar form's "Nombre" field. Matches by the
-/// field's own label rather than a `ValueKey` (which embeds the debt id, unknown
-/// when editing) or a bare `TextFormField` index (the form has several): find
-/// the label `Text`, then its `DebtFormField` ancestor, then the input inside.
+/// Types [name] into the crear/editar form's "Nombre de la deuda" field.
+/// Matches by the field's own label rather than a `ValueKey` (which embeds the
+/// debt id, unknown when editing) or a bare `TextFormField` index (the form has
+/// several): find the label `Text`, then its `DebtFormField` ancestor, then the
+/// input inside. The label was renamed from "Nombre" to "Nombre de la deuda"
+/// (feat: labels/fecha del form), so the exact text must match the new copy.
 Future<void> _enterDebtName(PatrolIntegrationTester $, String name) async {
   final field = find.descendant(
     of: find
         .ancestor(
-          of: find.text('Nombre'),
+          of: find.text('Nombre de la deuda'),
           matching: find.byType(DebtFormField),
         )
         .first,
@@ -153,12 +156,27 @@ Future<void> _selectDirection(PatrolIntegrationTester $, String label) async {
 
 /// Submits the crear/editar form via its fixed bottom CTA. "Crear deuda" when
 /// creating, "Guardar cambios" when editing — each unique on its page.
+///
+/// Since the registro-inicial feature landed, "Crear deuda" no longer saves
+/// directly when there is a positive opening figure AND at least one account:
+/// it opens the registro-inicial sheet (item 2). Scenarios here that don't care
+/// about the registro dismiss it by choosing "No, solo la deuda", which creates
+/// the debt with its opening figure as the stored principal and NO movement —
+/// leaving the transaction count exactly as those scenarios expect (their abono
+/// / link assertions still count only the movement they create). Scenarios that
+/// DO exercise the registro tap the CTA directly and drive the sheet
+/// themselves, so they never route through this helper.
 Future<void> _submitDebtForm(
   PatrolIntegrationTester $, {
   required bool editing,
 }) async {
   await $.tester.tap(find.text(editing ? 'Guardar cambios' : 'Crear deuda'));
   await $.tester.pumpAndSettle();
+  if (!editing && find.text('No, solo la deuda').evaluate().isNotEmpty) {
+    await $.tester.tap(find.text('No, solo la deuda'));
+    await $.tester.pump(const Duration(milliseconds: 500));
+    await $.tester.pumpAndSettle();
+  }
 }
 
 /// Opens the only `DebtCard` on the list to its detail. Every scenario creates
@@ -175,6 +193,47 @@ Future<void> _openOnlyDebt(PatrolIntegrationTester $) async {
 /// sheet's own header + CTA once open, so this must run before those exist.
 Future<void> _openAbonoSheet(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Registrar abono'));
+  await $.tester.pumpAndSettle();
+}
+
+/// Opens the editar form from the detail header's pencil (`Editar deuda`).
+Future<void> _openEditForm(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.byTooltip('Editar deuda'));
+  await $.tester.pumpAndSettle();
+}
+
+/// Handles the registro-inicial sheet (item 2, `EXQfv`) that "Crear deuda" now
+/// opens whenever there is a positive opening figure AND at least one account:
+/// picks "No, solo la deuda" so the debt is created with its opening figure as
+/// the stored principal and no `Transaction`. When no account exists the sheet
+/// never appears, so callers with no account must NOT use this.
+Future<void> _chooseSoloDeuda(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.text('No, solo la deuda'));
+  // The create (`CreateDebt`), the form pop and the list stream refreshing are
+  // separate async hops; bound the pump like the abono/delete flows.
+  await $.tester.pump(const Duration(milliseconds: 500));
+  await $.tester.pumpAndSettle();
+}
+
+/// Handles the registro-inicial sheet by choosing "Sí, elegir cuenta", then
+/// taps [accountName] in the account picker that follows. The debt is created
+/// with a 0 stored principal plus an opening `Transaction` (registro) that moves
+/// the chosen account; the derived balance is the opening once (never doubled).
+Future<void> _chooseRegistroAccount(
+  PatrolIntegrationTester $,
+  String accountName,
+) async {
+  await $.tester.tap(find.text('Sí, elegir cuenta'));
+  await $.tester.pumpAndSettle();
+  // The account picker reuses the accounts feature's row; match by its account
+  // data so the tap is unambiguous regardless of balance formatting.
+  final row = find.byWidgetPredicate(
+    (widget) =>
+        widget is AccountSelectRow && widget.account.name == accountName,
+  );
+  await $.tester.tap(row);
+  // The create-with-opening-movement write + the form pop + the list stream.
+  await $.tester.pump(const Duration(milliseconds: 500));
   await $.tester.pumpAndSettle();
 }
 
@@ -719,6 +778,341 @@ void main() {
       // an accrual row existed.)
       expect(find.textContaining('Crece'), findsOneWidget);
       expect(find.text('estimado'), findsOneWidget);
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // Registro inicial (item 2) + edición del registro (item 2b). These flows
+  // did not exist when the suite was first written: "Crear deuda" now offers a
+  // registro inicial whenever there is a positive opening figure AND at least
+  // one account. Every assertion that matters lands against the real Drift DB
+  // — the load-bearing invariant is that a debt with a registro derives to its
+  // opening ONCE (never doubled), backed by a single `Transaction`.
+  // -------------------------------------------------------------------------
+
+  patrolTest(
+    'item 2: crear con "Sí, elegir cuenta" añade un registro inicial; el saldo '
+    'derivado es la apertura (no 2x), con UNA tx que mueve la cuenta',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600'); // $600 COP
+      await _enterDebtName($, 'Crédito carro');
+      // With an account present the CTA no longer saves directly: it opens the
+      // registro-inicial sheet (item 2).
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      expect(
+        find.text('¿Quieres crear un registro inicial para esta deuda?'),
+        findsOneWidget,
+      );
+      await _chooseRegistroAccount($, 'Efectivo');
+
+      // Back on the list: the derived balance is the opening once ($600).
+      expect(find.text('Crédito carro'), findsOneWidget);
+      expect(find.text(r'$600'), findsWidgets);
+
+      final db = getIt<AppDatabase>();
+      final debt = await db.select(db.debts).getSingle();
+      // The registro debt stores a 0 principal — the figure lives entirely in
+      // the linked movement, so the balance is counted once, not twice.
+      expect(debt.principalMinor, 0);
+      expect(debt.initialTransactionId, isNotNull);
+
+      final txns = await db.select(db.transactions).get();
+      expect(txns.length, 1);
+      expect(txns.single.id, debt.initialTransactionId);
+      expect(txns.single.debtId, debt.id);
+      // $600 COP -> 60000 minor, counted once.
+      expect(txns.single.amountMinor, 60000);
+      // "Yo debo" opening is an income (took the loan).
+      expect(txns.single.type, EntryType.income);
+    },
+  );
+
+  patrolTest(
+    'item 2: crear con "No, solo la deuda" guarda el principal = apertura y sin '
+    'ningún movimiento',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600'); // $600 COP
+      await _enterDebtName($, 'Deuda sola');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseSoloDeuda($);
+
+      expect(find.text('Deuda sola'), findsOneWidget);
+      expect(find.text(r'$600'), findsWidgets);
+
+      final db = getIt<AppDatabase>();
+      final debt = await db.select(db.debts).getSingle();
+      // No registro: the opening figure is the stored principal, no movement.
+      expect(debt.principalMinor, 60000);
+      expect(debt.initialTransactionId, isNull);
+      expect(await db.select(db.transactions).get(), isEmpty);
+    },
+  );
+
+  patrolTest(
+    'item 2b: editar el saldo de apertura de una deuda con registro y confirmar '
+    '"Actualizar" sincroniza el monto del movimiento',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600');
+      await _enterDebtName($, 'Crédito carro');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseRegistroAccount($, 'Efectivo');
+
+      await _openOnlyDebt($);
+      await _openEditForm($);
+      // The héroe on the edit form prefills the registro's amount; change it.
+      await _enterHeroAmount($, '750'); // $600 -> $750
+      await _submitDebtForm($, editing: true);
+
+      // Changing the opening figure of a registro debt is a money decision, so
+      // the 2b sheet asks before touching the linked movement.
+      expect(find.text('¿Actualizar también el registro?'), findsOneWidget);
+      await $.tester.tap(find.text('Actualizar'));
+      await $.tester.pump(const Duration(milliseconds: 500));
+      await $.tester.pumpAndSettle();
+
+      final db = getIt<AppDatabase>();
+      final txns = await db.select(db.transactions).get();
+      expect(txns.length, 1);
+      // The registro movement followed the edit: $750 -> 75000 minor.
+      expect(txns.single.amountMinor, 75000);
+    },
+  );
+
+  patrolTest(
+    'item 2b: editar el saldo pero "Cancelar" la hoja deja el movimiento '
+    'intacto (la deuda igual se guardó)',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600');
+      await _enterDebtName($, 'Crédito carro');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseRegistroAccount($, 'Efectivo');
+
+      await _openOnlyDebt($);
+      await _openEditForm($);
+      await _enterHeroAmount($, '750');
+      await _submitDebtForm($, editing: true);
+
+      expect(find.text('¿Actualizar también el registro?'), findsOneWidget);
+      // Cancel: the debt row is already saved, but the linked movement keeps
+      // its previous amount.
+      await $.tester.tap(find.text('Cancelar'));
+      await $.tester.pump(const Duration(milliseconds: 500));
+      await $.tester.pumpAndSettle();
+
+      final db = getIt<AppDatabase>();
+      final txns = await db.select(db.transactions).get();
+      expect(txns.length, 1);
+      // Untouched at the original $600 -> 60000 minor.
+      expect(txns.single.amountMinor, 60000);
+    },
+  );
+
+  patrolTest(
+    'item 2b: cambiar SOLO la dirección de una deuda con registro re-sincroniza '
+    'el tipo del movimiento en silencio (sin hoja de confirmación)',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600');
+      await _enterDebtName($, 'Crédito carro');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseRegistroAccount($, 'Efectivo');
+
+      final db = getIt<AppDatabase>();
+      var txns = await db.select(db.transactions).get();
+      // "Yo debo" opening is an income.
+      expect(txns.single.type, EntryType.income);
+
+      await _openOnlyDebt($);
+      await _openEditForm($);
+      // Flip direction to "Me deben" WITHOUT touching the opening figure.
+      await _selectDirection($, 'Me deben');
+      await _submitDebtForm($, editing: true);
+      await $.tester.pump(const Duration(milliseconds: 500));
+      await $.tester.pumpAndSettle();
+
+      // No money sheet: the type is derived from the direction, re-synced
+      // silently — the form just pops back to the detail.
+      expect(find.text('¿Actualizar también el registro?'), findsNothing);
+
+      txns = await db.select(db.transactions).get();
+      // income -> expense (now "Me deben": lent the money); amount unchanged.
+      expect(txns.single.type, EntryType.expense);
+      expect(txns.single.amountMinor, 60000);
+    },
+  );
+
+  patrolTest(
+    'validación: crear con saldo de apertura 0 muestra el error en el héroe y '
+    'no crea la deuda',
+    ($) async {
+      await startApp($);
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      // Leave the opening at 0; only fill the name.
+      await _enterDebtName($, 'Sin monto');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+
+      // The héroe shows the "> 0" error and we stay on the form; no debt was
+      // created (validation runs before the registro prompt).
+      expect(
+        find.text('El saldo de apertura debe ser mayor a 0'),
+        findsOneWidget,
+      );
+      expect(find.text('Nueva deuda'), findsOneWidget);
+
+      final db = getIt<AppDatabase>();
+      expect(await db.select(db.debts).get(), isEmpty);
+    },
+  );
+
+  patrolTest(
+    '#4: el modo enlazar excluye un movimiento que ya está asociado a otra '
+    'deuda (nunca se re-enlaza)',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Cuotas');
+
+      final db = getIt<AppDatabase>();
+      final account = await (db.select(db.accounts)
+            ..where((a) => a.name.equals('Efectivo')))
+          .getSingle();
+      final category = await (db.select(db.categories)
+            ..where((c) => c.name.equals('Cuotas')))
+          .getSingle();
+
+      // Debt A owns the "asociado" movement. Create it via UI, choosing "No,
+      // solo la deuda" so no opening `Transaction` is generated — the only
+      // movements in play are the two we seed next.
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '900');
+      await _enterDebtName($, 'Deuda A');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseSoloDeuda($);
+      final debtA = await db.select(db.debts).getSingle();
+
+      // Two expenses (both linkable by type/date to an iOwe debt): one free,
+      // one already carrying Debt A's id.
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: account.id,
+              categoryId: Value(category.id),
+              amountMinor: 20000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime.now(),
+              note: const Value('Pago libre'),
+            ),
+          );
+      await db.into(db.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: account.id,
+              categoryId: Value(category.id),
+              amountMinor: 30000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime.now(),
+              note: const Value('Pago asociado'),
+              debtId: Value(debtA.id),
+            ),
+          );
+
+      // Debt B is where we enter link mode.
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600');
+      await _enterDebtName($, 'Deuda B');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseSoloDeuda($);
+
+      // Open Debt B specifically (two cards on the list now).
+      await $.tester.tap(
+        find.ancestor(
+          of: find.text('Deuda B'),
+          matching: find.byType(DebtCard),
+        ),
+      );
+      await $.tester.pumpAndSettle();
+      await _openAbonoSheet($);
+      await $.tester.tap(find.byType(DebtLinkExistingButton));
+      await $.tester.pumpAndSettle();
+
+      // In link mode the free movement is selectable and shows; the one already
+      // attributed to Debt A is hidden entirely (#4), never re-linkable.
+      expect(find.textContaining('Enlazar a'), findsOneWidget);
+      expect(find.textContaining('Pago libre'), findsOneWidget);
+      expect(find.textContaining('Pago asociado'), findsNothing);
+    },
+  );
+
+  patrolTest(
+    'banner de enlazar: el título es "Enlazar a <deuda>" (sin la dirección) y '
+    'el cuerpo es el prompt "Elige…"',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToDebts($);
+      await $.tester.pumpAndSettle();
+      await _openNewDebtForm($);
+      await _enterHeroAmount($, '600');
+      await _enterDebtName($, 'Crédito vehicular');
+      await $.tester.tap(find.text('Crear deuda'));
+      await $.tester.pumpAndSettle();
+      await _chooseSoloDeuda($);
+
+      await _openOnlyDebt($);
+      await _openAbonoSheet($);
+      await $.tester.tap(find.byType(DebtLinkExistingButton));
+      await $.tester.pumpAndSettle();
+
+      // Title names the debt WITHOUT the "· Yo debo" suffix (banner uses
+      // `debt.name`, not the debtContext), and the body is the "Elige…" prompt.
+      expect(find.text('Enlazar a Crédito vehicular'), findsOneWidget);
+      expect(
+        find.textContaining('Elige un movimiento que ya registraste'),
+        findsOneWidget,
+      );
     },
   );
 }
