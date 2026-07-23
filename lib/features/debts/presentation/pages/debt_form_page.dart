@@ -188,13 +188,38 @@ class DebtFormHeader extends StatelessWidget {
   }
 }
 
-class DebtFormBody extends StatelessWidget {
+class DebtFormBody extends StatefulWidget {
   const DebtFormBody({required this.state, super.key});
 
   final DebtFormState state;
 
   @override
+  State<DebtFormBody> createState() => _DebtFormBodyState();
+}
+
+class _DebtFormBodyState extends State<DebtFormBody> {
+  // Focus is chained explicitly across the text fields, in visual order:
+  // opening balance → name → counterparty → interest. The selector fields
+  // (start/due date) sit between counterparty and interest, so traversal is
+  // done by hand to skip them instead of `nextFocus()`, which would land on a
+  // focusable selector.
+  final FocusNode _openingFocus = FocusNode();
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _counterpartyFocus = FocusNode();
+  final FocusNode _interestFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _openingFocus.dispose();
+    _nameFocus.dispose();
+    _counterpartyFocus.dispose();
+    _interestFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = widget.state;
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final cubit = context.read<DebtFormCubit>();
@@ -235,6 +260,9 @@ class DebtFormBody extends StatelessWidget {
             _currencyName(l10n, state.currency),
           ),
           onTapCurrency: () => _pickCurrency(context, cubit, state.currency),
+          focusNode: _openingFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: _nameFocus.requestFocus,
         ),
         const SizedBox(height: 14),
         // Nombre.
@@ -249,6 +277,9 @@ class DebtFormBody extends StatelessWidget {
               ? l10n.debtFormNameRequired
               : null,
           onChanged: cubit.nameChanged,
+          focusNode: _nameFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: _counterpartyFocus.requestFocus,
         ),
         const SizedBox(height: 14),
         // Contraparte (label is directional: "Le debo a" / "Me debe").
@@ -263,6 +294,9 @@ class DebtFormBody extends StatelessWidget {
           textCapitalization: TextCapitalization.words,
           maxLength: DebtDraft.maxCounterpartyLength,
           onChanged: cubit.counterpartyChanged,
+          focusNode: _counterpartyFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: _interestFocus.requestFocus,
         ),
         const SizedBox(height: 14),
         // Fecha (start date): required, defaults to today, never in the future
@@ -293,7 +327,13 @@ class DebtFormBody extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         // Card Interés.
-        DebtInterestCard(state: state, cubit: cubit),
+        DebtInterestCard(
+          state: state,
+          cubit: cubit,
+          rateFocusNode: _interestFocus,
+          // Last text field: "listo" dismisses the keyboard instead of chaining.
+          onRateSubmitted: () => FocusScope.of(context).unfocus(),
+        ),
         if (state.isEditing) ...[
           const SizedBox(height: 20),
           Center(
@@ -365,10 +405,24 @@ class DebtFormBody extends StatelessWidget {
 /// The interest card (`Ulfjr`): the optional annual rate, the Manual/Automático
 /// accrual mode (`hFu41`), and a hint explaining what each mode does.
 class DebtInterestCard extends StatelessWidget {
-  const DebtInterestCard({required this.state, required this.cubit, super.key});
+  const DebtInterestCard({
+    required this.state,
+    required this.cubit,
+    this.rateFocusNode,
+    this.onRateSubmitted,
+    super.key,
+  });
 
   final DebtFormState state;
   final DebtFormCubit cubit;
+
+  /// The focus node of the annual rate field, so the form can chain focus into
+  /// it from the counterparty field.
+  final FocusNode? rateFocusNode;
+
+  /// Fired when the rate field's "listo" action is confirmed (dismisses the
+  /// keyboard, as it is the form's last text field).
+  final VoidCallback? onRateSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -403,6 +457,9 @@ class DebtInterestCard extends StatelessWidget {
                 ? l10n.debtFormInterestError
                 : null,
             onChanged: cubit.rateChanged,
+            focusNode: rateFocusNode,
+            textInputAction: TextInputAction.done,
+            onSubmitted: onRateSubmitted,
           ),
           const SizedBox(height: 14),
           Text(

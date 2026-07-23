@@ -27,6 +27,9 @@ class DebtFormField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.trailingText,
     this.onChanged,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   })  : onTap = null,
         value = null,
@@ -47,7 +50,10 @@ class DebtFormField extends StatelessWidget {
         maxLength = null,
         textCapitalization = TextCapitalization.none,
         trailingText = null,
-        onChanged = null;
+        onChanged = null,
+        focusNode = null,
+        textInputAction = null,
+        onSubmitted = null;
 
   final String label;
   final IconData? icon;
@@ -63,6 +69,19 @@ class DebtFormField extends StatelessWidget {
   final String? trailingText;
 
   final ValueChanged<String>? onChanged;
+
+  /// The field's own focus node, so a form can chain focus explicitly (skipping
+  /// the selector fields between text inputs) instead of relying on traversal.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente" / "listo"). `null` keeps Flutter's
+  /// default so existing single-field usages are unchanged.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to move focus to the next
+  /// text field, or to dismiss the keyboard on the last one).
+  final VoidCallback? onSubmitted;
+
   final VoidCallback? onTap;
   final String? value;
 
@@ -86,11 +105,15 @@ class DebtFormField extends StatelessWidget {
 
     final Widget input = TextFormField(
       initialValue: initialValue,
+      focusNode: focusNode,
       onChanged: onChanged,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       maxLength: maxLength,
       textCapitalization: textCapitalization,
+      textInputAction: textInputAction,
+      onFieldSubmitted:
+          onSubmitted == null ? null : (_) => onSubmitted!.call(),
       style: theme.textTheme.bodyLarge,
       decoration: InputDecoration(
         hintText: hint,

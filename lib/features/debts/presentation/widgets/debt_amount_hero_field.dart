@@ -31,6 +31,9 @@ class DebtAmountHeroField extends StatefulWidget {
     this.autofocus = false,
     this.fieldKey,
     this.errorText,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   });
 
@@ -59,6 +62,18 @@ class DebtAmountHeroField extends StatefulWidget {
   /// A discreet, already-localized error line shown under the héroe (e.g. the
   /// opening balance must be greater than 0). `null` hides it.
   final String? errorText;
+
+  /// The field's own focus node, so a form can chain focus to the next text
+  /// field from the numeric héroe.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente"). `null` keeps Flutter's default,
+  /// so the abono / actualizar-saldo sheets stay unchanged.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to move focus to the next
+  /// text field of the form).
+  final VoidCallback? onSubmitted;
 
   @override
   State<DebtAmountHeroField> createState() => _DebtAmountHeroFieldState();
@@ -130,9 +145,14 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
           child: TextField(
             key: widget.fieldKey,
             controller: _controller,
+            focusNode: widget.focusNode,
             autofocus: widget.autofocus,
             textAlign: TextAlign.center,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textInputAction: widget.textInputAction,
+            onSubmitted: widget.onSubmitted == null
+                ? null
+                : (_) => widget.onSubmitted!.call(),
             // The hero mimics a display value; the native selection handle
             // (a violet teardrop) is off-brand under the amount, so drag
             // selection is disabled while the cursor stays visible.
