@@ -868,6 +868,8 @@
   "scheduledConfirmationSheetTitle": "Confirm payment",
   "scheduledDeleteSheetMessage": "Future payments stop being generated. The transactions it already generated stay in your history.",
   "scheduledDeleteSheetTitle": "Delete this scheduled payment?",
+  "scheduledDeleteSheetTitleInstallment": "Delete this installment?",
+  "scheduledDeleteSheetMessageInstallment": "The installment stops being scheduled. The debt and the payments it already recorded stay in your history.",
   "scheduledDueInDays": "in {count} days",
   "scheduledDueInOneDay": "in 1 day",
   "scheduledDueToday": "Due today",

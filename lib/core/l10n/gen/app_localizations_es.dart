@@ -2358,6 +2358,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.';
 
   @override
+  String get scheduledDeleteSheetTitleInstallment => '¿Eliminar esta cuota?';
+
+  @override
+  String get scheduledDeleteSheetMessageInstallment =>
+      'Se deja de agendar la cuota. La deuda y los abonos que ya registró se conservan en tu historial.';
+
+  @override
   String get scheduledPaymentFormNewTitle => 'Nuevo pago programado';
 
   @override

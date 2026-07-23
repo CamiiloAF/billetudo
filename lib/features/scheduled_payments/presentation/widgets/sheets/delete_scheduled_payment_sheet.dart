@@ -14,15 +14,23 @@ class DeleteScheduledPaymentSheet extends StatelessWidget {
   const DeleteScheduledPaymentSheet({
     required this.onConfirm,
     required this.onCancel,
+    this.isInstallment = false,
     super.key,
   });
 
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
+  /// When this template is a debt's cuota (`debtId != null`, HU-03), the
+  /// confirmation copy talks about the cuota and its debt instead of a plain
+  /// scheduled payment — matching the "Eliminar cuota" wording of the action
+  /// that opened it.
+  final bool isInstallment;
+
   static Future<void> show(
     BuildContext context, {
     required VoidCallback onConfirm,
+    bool isInstallment = false,
   }) =>
       BottomSheetBase.show<void>(
         context,
@@ -32,6 +40,7 @@ class DeleteScheduledPaymentSheet extends StatelessWidget {
             onConfirm();
           },
           onCancel: Navigator.of(context).pop,
+          isInstallment: isInstallment,
         ),
       );
 
@@ -49,8 +58,12 @@ class DeleteScheduledPaymentSheet extends StatelessWidget {
           icon: LucideIcons.triangleAlert,
           iconColor: colors.expense,
           iconBackground: colors.expenseSoft,
-          title: l10n.scheduledDeleteSheetTitle,
-          message: l10n.scheduledDeleteSheetMessage,
+          title: isInstallment
+              ? l10n.scheduledDeleteSheetTitleInstallment
+              : l10n.scheduledDeleteSheetTitle,
+          message: isInstallment
+              ? l10n.scheduledDeleteSheetMessageInstallment
+              : l10n.scheduledDeleteSheetMessage,
         ),
         const SizedBox(height: 20),
         SheetButtonsRow(

@@ -294,8 +294,11 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
         }
       },
       onDelete: () => unawaited(
-        DeleteScheduledPaymentSheet.show(context,
-            onConfirm: cubit.confirmDelete),
+        DeleteScheduledPaymentSheet.show(
+          context,
+          onConfirm: cubit.confirmDelete,
+          isInstallment: detail.scheduledPayment.debtId != null,
+        ),
       ),
     );
   }

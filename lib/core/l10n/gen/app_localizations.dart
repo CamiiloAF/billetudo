@@ -4148,6 +4148,18 @@ abstract class AppLocalizations {
   /// **'Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.'**
   String get scheduledDeleteSheetMessage;
 
+  /// No description provided for @scheduledDeleteSheetTitleInstallment.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta cuota?'**
+  String get scheduledDeleteSheetTitleInstallment;
+
+  /// No description provided for @scheduledDeleteSheetMessageInstallment.
+  ///
+  /// In es, this message translates to:
+  /// **'Se deja de agendar la cuota. La deuda y los abonos que ya registró se conservan en tu historial.'**
+  String get scheduledDeleteSheetMessageInstallment;
+
   /// No description provided for @scheduledPaymentFormNewTitle.
   ///
   /// In es, this message translates to:

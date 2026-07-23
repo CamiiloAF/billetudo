@@ -2353,6 +2353,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Future payments stop being generated. The transactions it already generated stay in your history.';
 
   @override
+  String get scheduledDeleteSheetTitleInstallment => 'Delete this installment?';
+
+  @override
+  String get scheduledDeleteSheetMessageInstallment =>
+      'The installment stops being scheduled. The debt and the payments it already recorded stay in your history.';
+
+  @override
   String get scheduledPaymentFormNewTitle => 'New scheduled payment';
 
   @override

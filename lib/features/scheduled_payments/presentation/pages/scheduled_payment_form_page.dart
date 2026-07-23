@@ -361,8 +361,11 @@ class ScheduledPaymentFormBody extends StatelessWidget {
                 ? l10n.scheduledPaymentInstallmentDeleteAction
                 : l10n.scheduledPaymentFormDeleteAction,
             onTap: () => unawaited(
-              DeleteScheduledPaymentSheet.show(context,
-                  onConfirm: cubit.delete),
+              DeleteScheduledPaymentSheet.show(
+                context,
+                onConfirm: cubit.delete,
+                isInstallment: state.isDebtInstallment,
+              ),
             ),
           ),
         ],
