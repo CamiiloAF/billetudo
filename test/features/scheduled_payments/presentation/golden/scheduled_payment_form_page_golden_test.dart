@@ -49,6 +49,12 @@ void main() {
     registerFallbackValue(CategoryKind.expense);
   });
 
+  // Fixed "Primer pago" date so every state renders a deterministic default
+  // instead of one derived from `DateTime.now()` (which drifts day to day and
+  // breaks the committed baseline on any later run). Same technique the debt
+  // form goldens use with their `startDate`.
+  final firstPaymentDate = DateTime(2026, 7, 5);
+
   setUp(() {
     cubit = MockScheduledPaymentFormCubit();
 
@@ -128,6 +134,7 @@ void main() {
           categoryKind: CategoryKind.expense,
           categoryName: 'Suscripciones',
           amountText: '10000',
+          nextDate: firstPaymentDate,
         ),
         'create_expense_automatic_$suffix',
         brightness: brightness,
@@ -147,6 +154,7 @@ void main() {
           categoryName: 'Salario',
           amountText: '250000',
           frequency: ScheduledPaymentFrequency.once,
+          nextDate: firstPaymentDate,
         ),
         'create_income_once_$suffix',
         brightness: brightness,
@@ -165,6 +173,7 @@ void main() {
           transferAccountId: 'acc-2',
           transferAccountName: 'Nequi',
           amountText: '50000',
+          nextDate: firstPaymentDate,
         ),
         'create_transfer_$suffix',
         brightness: brightness,
@@ -183,6 +192,7 @@ void main() {
           categoryName: 'Suscripciones',
           amountText: '10000',
           requiresConfirmation: true,
+          nextDate: firstPaymentDate,
         ),
         'create_manual_mode_$suffix',
         brightness: brightness,
@@ -205,6 +215,7 @@ void main() {
           amountText: '10000',
           note: 'Netflix + Spotify',
           tagIds: const {'t-1'},
+          nextDate: firstPaymentDate,
         ),
         'edit_expense_$suffix',
         brightness: brightness,
@@ -229,6 +240,7 @@ void main() {
           categoryKind: CategoryKind.expense,
           categoryName: 'Cuota crédito',
           amountText: '680000',
+          nextDate: firstPaymentDate,
         ),
         'installment_create_$suffix',
         brightness: brightness,
@@ -250,6 +262,7 @@ void main() {
           categoryKind: CategoryKind.expense,
           categoryName: 'Cuota crédito',
           amountText: '680000',
+          nextDate: firstPaymentDate,
         ),
         'installment_edit_$suffix',
         brightness: brightness,

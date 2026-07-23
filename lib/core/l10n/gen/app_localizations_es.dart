@@ -1460,10 +1460,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtPaymentCategoryNone => 'Sin categoría';
 
   @override
-  String get debtPaymentSelectAccount => 'Elegí una cuenta';
+  String get debtPaymentSelectAccount => 'Elige una cuenta';
 
   @override
-  String get debtPaymentAccountPickerTitle => 'Elegí una cuenta';
+  String get debtPaymentAccountPickerTitle => 'Elige una cuenta';
 
   @override
   String get debtPaymentCta => 'Registrar abono';

@@ -2663,13 +2663,13 @@ abstract class AppLocalizations {
   /// No description provided for @debtPaymentSelectAccount.
   ///
   /// In es, this message translates to:
-  /// **'Elegí una cuenta'**
+  /// **'Elige una cuenta'**
   String get debtPaymentSelectAccount;
 
   /// No description provided for @debtPaymentAccountPickerTitle.
   ///
   /// In es, this message translates to:
-  /// **'Elegí una cuenta'**
+  /// **'Elige una cuenta'**
   String get debtPaymentAccountPickerTitle;
 
   /// No description provided for @debtPaymentCta.
