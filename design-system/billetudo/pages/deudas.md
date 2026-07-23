@@ -17,13 +17,16 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Detalle de deuda | `cUzp6` | `ruler` |
 | Detalle — carga (skeleton) | `ZQIPe` | `wstnU` |
 | Detalle — error (local-first) | `tVUoU` | `wvoMB` |
-| Form crear/editar deuda | `dUryC` | `q5T1Kc` |
+| Form crear/editar deuda (Yo debo) | `dUryC` | `qEkJE` |
+| Form crear deuda — variante "Me deben" | `B36jV` | `pn5Qx` |
+| Sheet "registro inicial" post-crear | `EXQfv` | `gcOj9` |
+| Hoja confirmar actualizar registro (2b) | `hLe9z` | `G9qHX` |
 | Hoja registrar abono — toggle Si | `xbsY3` | `TOlMJ` |
 | Hoja registrar abono — toggle No | `V6Z9ln` | `qfZiZ` |
 | Hoja actualizar saldo (reconciliacion) | `DEWMf` | `NBuGV` |
 | Config de cuota | `P1kiP` | `fn49Q` |
-| Hoja registrar abono — con enlace "Enlazar un movimiento" | `olYUm` | _(oscuro pendiente)_ |
-| Movimientos · modo enlazar (banner + tap=enlazar) | `g0x859` | _(oscuro pendiente)_ |
+| Hoja registrar abono — con enlace "Enlazar un movimiento" | `olYUm` | `Q95HyJ` |
+| Movimientos · modo enlazar (banner + tap=enlazar) | `g0x859` | `V4OiMq` |
 | **Cross-link:** PP Detalle con card de deuda | `nDmnf` | `Y5D7c` |
 | **Cross-link:** Scheduled Card con badge "Deuda" (demo) | `F3srst` | `Jlosw` |
 
@@ -32,7 +35,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 - **Detalle saldada** (100% pagado, $0): variación de dato de `cUzp6` (barra llena), sin frame dedicado.
 - **Sheet confirmar borrado** de deuda: reusa el patrón destructivo del sistema (icono `trash-2` rojo + Cancelar/Eliminar), sin frame propio en `deudas.md`.
 - **Pickers de cuenta y moneda** de las hojas: reusan `Account Select Sheet`/`Currency Row` genéricos.
-- **Modo enlazar / abono con enlace** (`g0x859`/`olYUm`): diseñados en claro; falta generar su copia oscura.
+- **Modo enlazar / abono con enlace** (`g0x859`/`olYUm`): banner del modo enlazar dice **"Enlazar a Crédito vehicular"** (sin "· Yo debo", que confundía) + cuerpo **"Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo."** (imperativo, era "Elegí"). Tema oscuro en generación (`V4OiMq`/`Q95HyJ`, sincronizados con este copy).
 
 **Navegacion:** la Lista y el Detalle usan `Page Header` (boton atras) SIN `Tab Bar` — Deudas es una subseccion apilada. Las hojas (abono, actualizar saldo) son bottom sheets (`Bottom Sheet Base`). El Form y la Config de cuota son pantallas apiladas con `Page Header`.
 
@@ -82,9 +85,22 @@ Variante C. **Hero Compact** (`E7TQkJ`): pill direccion + chip moneda, saldo pen
 - **Carga** (`ZQIPe`): skeleton del hero + meta card + cuota card + `Debt Ledger Skeleton Row` + skeleton del CTA.
 - **Error** (`tVUoU`): `Error State` con el header del detalle. (No hay "ledger vacio": una deuda siempre tiene al menos el asiento de apertura.)
 
-## Form crear/editar deuda (`dUryC`)
+## Form crear/editar deuda (`dUryC` Yo debo / `B36jV` Me deben)
 
-Variante B ("Monto heroe"). Saldo de apertura como **heroe** + caret + pill de moneda (`$primary-on-soft-strong` para contraste). Toggle de direccion `qCUup` con label "¿Debes o te deben?". Nombre, contraparte, vencimiento, tasa de interes (%), y modo de interes (Manual/Automatico, `hFu41`) revelado. CTA "Crear deuda" fijo abajo (zona del pulgar; se prefirio sobre el check en el header).
+Variante B ("Monto heroe"). Saldo de apertura como **heroe** + caret + pill de moneda (`$primary-on-soft-strong` para contraste). Toggle de direccion `qCUup`. Campos: **"Nombre de la deuda"**, contraparte con **label direccional** ("Yo debo" → **"Le debo a"**; "Me deben" → **"Me debe"** — variante `B36jV`), **vencimiento con "×" para limpiar la fecha** (cuando hay fecha; sin "×" muestra "Sin fecha"), tasa de interes (%) y modo de interes (Manual/Automatico, `hFu41`) revelado. CTA "Crear deuda" fijo abajo (zona del pulgar).
+
+**El form NO lleva toggle de caja inline.** La decision de registrar el saldo de apertura en una cuenta (item 2, "registro inicial") NO vive en el form: se pregunta en un **sheet post-crear** al pulsar "Crear deuda" (ver abajo). Esto se decidio asi para no saturar el form.
+
+## Sheet "registro inicial" post-crear (`EXQfv`)
+
+Al pulsar **"Crear deuda"** se levanta este sheet (`PqTUt` Bottom Sheet Base + `XPjIZ` Sheet Icon Header con icono `wallet`):
+- Titulo **"¿Quieres crear un registro inicial para esta deuda?"**, cuerpo **"Si lo creas, cambiara el saldo de la cuenta que elijas."** (copy **direccional-agnostico** → un solo sheet, no dos variantes).
+- Acciones: **"No, solo la deuda"** (secundario) crea la deuda sin mover cuentas; **"Si, elegir cuenta"** (primario) abre el **selector de cuentas existente** (`fcVZN` Account Select Sheet) para elegir a que cuenta se atribuye el registro.
+- Comportamiento (direccional en codigo, no en copy): el registro mueve la cuenta por el saldo de apertura — **ingreso** si "Yo debo" (recibiste el dinero), **egreso** si "Me deben" (prestaste el dinero). El modelo de datos que evita el doble-conteo del saldo de la deuda lo define el plan de implementacion (architect) — ver `docs/fixes/improvements_debts.md` item 2.
+
+## Sheet confirmar actualizar registro (`hLe9z`)
+
+Item 2b. Al **editar** una deuda que ya tiene un registro inicial enlazado y cambiar el saldo de apertura, se levanta esta hoja de confirmacion (`PqTUt` + `Ot4yI` Sheet Buttons Row): titulo **"¿Actualizar tambien el registro?"**, mensaje con los montos ("... de $X a $Y"), acciones Cancelar / Actualizar. Tono informativo, no punitivo.
 
 ## Hoja registrar abono (`xbsY3` Si / `V6Z9ln` No)
 
