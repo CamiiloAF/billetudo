@@ -19,6 +19,9 @@ class DebtCashSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Semantics(
+      // A stable identifier + the on/off value so an e2e test can read the
+      // Sí/No state without depending on the pill's geometry.
+      identifier: 'debt-cash-switch',
       toggled: value,
       child: GestureDetector(
         onTap: () => onChanged(!value),

@@ -25,10 +25,12 @@ DebtBalance buildBalance({
 DebtWithBalance buildDebtWithBalance({
   Debt? debt,
   DebtBalance? balance,
+  DebtInstallment? installment,
 }) =>
     DebtWithBalance(
       debt: debt ?? buildDebt(),
       balance: balance ?? buildBalance(),
+      installment: installment,
     );
 
 DebtLedgerEntry buildLedgerEntry({

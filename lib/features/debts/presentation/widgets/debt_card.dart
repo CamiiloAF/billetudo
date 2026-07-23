@@ -6,15 +6,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/debt_with_balance.dart';
 import '../utils/debt_format.dart';
 import 'debt_direction_pill.dart';
+import 'debt_installment_badge.dart';
 import 'debt_progress_bar.dart';
 
 /// One row of the debts list (`xSpw7`): icon-wrap, name + direction pill,
-/// counterparty, outstanding balance over the original, progress bar, and a
-/// "Vence …" line with the percentage paid/collected.
-///
-/// The cuota badge the mockup also shows (`tHLtM`) needs the debt's linked
-/// scheduled payment, which `WatchDebts` does not expose — so this row shows
-/// only the due date for now.
+/// counterparty, outstanding balance over the original, progress bar, and — on
+/// the meta row — the percentage paid/collected next to either the "Cuota ·
+/// <fecha>" badge (`tHLtM`, when the debt has a linked cuota) or the "Vence …"
+/// line (when it only has a `dueDate`).
 class DebtCard extends StatelessWidget {
   const DebtCard({required this.entry, this.onTap, super.key});
 
@@ -30,6 +29,7 @@ class DebtCard extends StatelessWidget {
     final balance = entry.balance;
     final pct = (balance.progress * 100).round();
     final dueDate = debt.dueDate;
+    final installment = entry.installment;
 
     return Material(
       color: colors.surface,
@@ -142,18 +142,32 @@ class DebtCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: dueDate != null
-                        ? Text(
-                            l10n.debtDueOn(DebtFormat.dateShort(context, dueDate)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: colors.textSecondary,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: installment != null
+                          ? DebtInstallmentBadge(
+                              label: l10n.debtInstallmentBadge(
+                                DebtFormat.dateShort(
+                                  context,
+                                  installment.nextDate,
+                                ),
+                              ),
+                            )
+                          : dueDate != null
+                              ? Text(
+                                  l10n.debtDueOn(
+                                    DebtFormat.dateShort(context, dueDate),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: colors.textSecondary,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(

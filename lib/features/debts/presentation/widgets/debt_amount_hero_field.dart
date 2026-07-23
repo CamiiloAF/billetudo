@@ -29,6 +29,7 @@ class DebtAmountHeroField extends StatefulWidget {
     this.currencyLabel,
     this.onTapCurrency,
     this.autofocus = false,
+    this.fieldKey,
     super.key,
   });
 
@@ -48,6 +49,11 @@ class DebtAmountHeroField extends StatefulWidget {
   final VoidCallback? onTapCurrency;
 
   final bool autofocus;
+
+  /// A stable key placed on the inner [TextField] so an e2e test can enter the
+  /// amount by context (`opening` / `abono` / `nuevoSaldo`) instead of assuming
+  /// a single hero is mounted.
+  final Key? fieldKey;
 
   @override
   State<DebtAmountHeroField> createState() => _DebtAmountHeroFieldState();
@@ -114,10 +120,15 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
         const SizedBox(height: 6),
         KeyboardDoneToolbar(
           child: TextField(
+            key: widget.fieldKey,
             controller: _controller,
             autofocus: widget.autofocus,
             textAlign: TextAlign.center,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            // The hero mimics a display value; the native selection handle
+            // (a violet teardrop) is off-brand under the amount, so drag
+            // selection is disabled while the cursor stays visible.
+            enableInteractiveSelection: false,
             inputFormatters: [
               MoneyInputFormatter(
                 decimals: MoneyFormatter.currencyDecimals(widget.currency),

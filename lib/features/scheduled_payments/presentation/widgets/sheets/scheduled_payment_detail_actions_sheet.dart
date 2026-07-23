@@ -17,10 +17,16 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onSnooze,
+    this.isInstallment = false,
     super.key,
   });
 
   final bool canSnooze;
+
+  /// When this template is a debt's cuota (`debtId != null`, HU-03), the delete
+  /// row reads "Eliminar cuota" instead of "Eliminar pago programado" — the
+  /// same wording as the edit form's delete link.
+  final bool isInstallment;
 
   /// The template's display name, shown as the sheet's title so the user
   /// knows which scheduled payment these actions apply to.
@@ -36,6 +42,7 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
     VoidCallback? onSnooze,
+    bool isInstallment = false,
   }) =>
       BottomSheetBase.show<void>(
         context,
@@ -45,6 +52,7 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
           onEdit: onEdit,
           onDelete: onDelete,
           onSnooze: onSnooze,
+          isInstallment: isInstallment,
         ),
       );
 
@@ -98,7 +106,9 @@ class ScheduledPaymentDetailActionsSheet extends StatelessWidget {
         ),
         ScheduledPaymentDetailActionTile(
           icon: LucideIcons.trash2,
-          label: l10n.scheduledDetailActionsDelete,
+          label: isInstallment
+              ? l10n.scheduledDetailActionsDeleteInstallment
+              : l10n.scheduledDetailActionsDelete,
           destructive: true,
           onTap: () {
             Navigator.of(context).pop();

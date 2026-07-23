@@ -48,14 +48,17 @@ class DebtRepositoryImpl implements DebtRepository {
             _local.watchActiveDebts(),
             _local.watchActiveDebtEntries(),
             _local.watchActiveDebtCashEvents(),
+            _local.watchActiveLinkedInstallments(),
           ],
           (values) {
             final debts = values[0]! as List<db.Debt>;
             final entries = values[1]! as List<db.DebtEntry>;
             final cashEvents = values[2]! as List<db.Transaction>;
+            final installments = values[3]! as List<db.ScheduledPayment>;
 
             final entriesByDebt = _groupEntries(entries);
             final cashByDebt = _groupCashEvents(cashEvents);
+            final installmentByDebt = _groupInstallments(installments);
 
             final withBalances = debts.map((row) {
               final debt = DebtMapper.toEntity(row);
@@ -64,7 +67,11 @@ class DebtRepositoryImpl implements DebtRepository {
                 entries: entriesByDebt[debt.id] ?? const [],
                 cashEvents: cashByDebt[debt.id] ?? const [],
               );
-              return DebtWithBalance(debt: debt, balance: balance);
+              return DebtWithBalance(
+                debt: debt,
+                balance: balance,
+                installment: installmentByDebt[debt.id],
+              );
             }).toList();
 
             return Right<Failure, DebtsSummary>(
@@ -315,6 +322,29 @@ class DebtRepositoryImpl implements DebtRepository {
     final byDebt = <String, List<DebtEntry>>{};
     for (final row in rows) {
       (byDebt[row.debtId] ??= []).add(DebtEntryMapper.toEntity(row));
+    }
+    return byDebt;
+  }
+
+  /// The nearest upcoming cuota per debt. Rows arrive ordered by `nextDate`
+  /// ascending, so the first one seen for a `debtId` is the earliest — mirrors
+  /// the detail's `watchLinkedInstallment` (earliest wins). A debt should carry
+  /// a single cuota, but this stays defensive if more than one is linked.
+  Map<String, DebtInstallment> _groupInstallments(
+    List<db.ScheduledPayment> rows,
+  ) {
+    final byDebt = <String, DebtInstallment>{};
+    for (final row in rows) {
+      final debtId = row.debtId;
+      if (debtId == null || byDebt.containsKey(debtId)) {
+        continue;
+      }
+      byDebt[debtId] = DebtInstallment(
+        scheduledPaymentId: row.id,
+        amountMinor: row.amountMinor,
+        nextDate: row.nextDate,
+        currency: row.currency,
+      );
     }
     return byDebt;
   }

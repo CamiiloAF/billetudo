@@ -1269,6 +1269,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtInstallmentTitle => 'Próxima cuota';
 
   @override
+  String debtInstallmentBadge(String date) {
+    return 'Cuota · $date';
+  }
+
+  @override
   String get debtInstallmentScheduledBadge => 'Pago programado';
 
   @override
@@ -2712,6 +2717,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledDetailActionsDelete => 'Eliminar pago programado';
+
+  @override
+  String get scheduledDetailActionsDeleteInstallment => 'Eliminar cuota';
 
   @override
   String get scheduledSnoozeSheetSectionTitle => 'Elige la nueva fecha';

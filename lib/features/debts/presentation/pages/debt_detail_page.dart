@@ -311,6 +311,47 @@ class DebtDetailLoadingView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              // Cuota card placeholder (`jsdH9`): icon wrap, a name/amount top
+              // row over a meta + badge sub row, and a chevron.
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: const Row(
+                  children: [
+                    DebtSkeletonBox(width: 40, height: 40, radius: 12),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              DebtSkeletonBox(width: 120, height: 14),
+                              DebtSkeletonBox(width: 90, height: 14),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              DebtSkeletonBox(width: 50, height: 11),
+                              SizedBox(width: 6),
+                              DebtSkeletonBox(width: 80, height: 16, radius: 6),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    DebtSkeletonBox(width: 16, height: 16),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
               const DebtSkeletonBox(width: 90, height: 14),
               const SizedBox(height: 8),
               for (final row in const [

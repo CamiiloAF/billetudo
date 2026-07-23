@@ -48,6 +48,17 @@ class DebtsLocalDatasource {
   Stream<List<Transaction>> watchActiveDebtCashEvents() =>
       (_db.select(_db.transactions)..where(_aliveCashEvent)).watch();
 
+  /// Every non-tombstoned scheduled payment linked to some debt as its cuota
+  /// (HU-03), across all debts, ordered by `nextDate` ascending so the list can
+  /// group by `debtId` keeping the nearest upcoming cuota per debt. The
+  /// list-wide sibling of [watchLinkedInstallment]; same table and filter, so
+  /// the card badge matches what the detail shows.
+  Stream<List<ScheduledPayment>> watchActiveLinkedInstallments() =>
+      (_db.select(_db.scheduledPayments)
+            ..where((s) => s.debtId.isNotNull() & s.tombstonedAt.isNull())
+            ..orderBy([(s) => OrderingTerm.asc(s.nextDate)]))
+          .watch();
+
   // -- Detail streams (one debt) --
 
   Stream<Debt?> watchDebt(String id) =>

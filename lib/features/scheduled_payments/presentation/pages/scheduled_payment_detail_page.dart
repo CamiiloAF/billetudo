@@ -279,6 +279,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
     return ScheduledPaymentDetailActionsSheet.show(
       context,
       canSnooze: canSnooze,
+      isInstallment: detail.scheduledPayment.debtId != null,
       templateName: _templateName(context, detail),
       onSnooze:
           canSnooze ? () => unawaited(_openSnooze(context, detail)) : null,

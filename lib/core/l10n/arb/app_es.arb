@@ -978,6 +978,10 @@
   "@debtDetailRegisterPayment": {},
   "debtInstallmentTitle": "Próxima cuota",
   "@debtInstallmentTitle": {},
+  "debtInstallmentBadge": "Cuota · {date}",
+  "@debtInstallmentBadge": {
+    "placeholders": { "date": { "type": "String" } }
+  },
   "debtInstallmentScheduledBadge": "Pago programado",
   "@debtInstallmentScheduledBadge": {},
   "debtConfigureInstallmentTitle": "Configurar cuota",
@@ -1971,6 +1975,8 @@
   "@scheduledDetailActionsSnooze": {},
   "scheduledDetailActionsDelete": "Eliminar pago programado",
   "@scheduledDetailActionsDelete": {},
+  "scheduledDetailActionsDeleteInstallment": "Eliminar cuota",
+  "@scheduledDetailActionsDeleteInstallment": {},
   "scheduledSnoozeSheetSectionTitle": "Elige la nueva fecha",
   "@scheduledSnoozeSheetSectionTitle": {},
   "scheduledConfirmationSheetEditTooltip": "Editar plantilla",

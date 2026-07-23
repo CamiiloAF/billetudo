@@ -147,6 +147,7 @@ class DebtFormBody extends StatelessWidget {
         // Amount héroe (opening balance) + currency pill.
         DebtAmountHeroField(
           key: ValueKey('opening-${state.id ?? 'new'}'),
+          fieldKey: const ValueKey('debt-amount-opening'),
           label: l10n.debtFormOpeningBalanceLabel,
           currency: state.currency,
           initialAmountMinor: state.amountMinor,

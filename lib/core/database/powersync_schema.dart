@@ -1,6 +1,6 @@
 // PowerSync's client-side schema (decision #6, docs/requirements/05-auth-sync.md).
 //
-// This mirrors the 14 tables in `app_database.dart` that carry `_SyncColumns`
+// This mirrors the 15 tables in `app_database.dart` that carry `_SyncColumns`
 // — same table and column names (snake_case), matching the Postgres schema
 // created for HU-04/HU-05 sync. There is no codegen deriving one schema from
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
@@ -119,6 +119,18 @@ const powerSyncSchema = Schema([
     Column.integer('interest_rate_bps'),
     Column.text('counterparty'),
     Column.integer('due_date'),
+    Column.text('accrual_mode'),
+    ..._syncColumns,
+  ]),
+  // Solo-deuda ledger entries (schemaVersion 14). The outstanding balance is
+  // derived, so there is no balance column here or in Postgres.
+  Table('debt_entries', [
+    Column.text('debt_id'),
+    Column.text('kind'),
+    Column.integer('amount_minor'),
+    Column.integer('entry_date'),
+    Column.text('note'),
+    Column.integer('rate_bps_snapshot'),
     ..._syncColumns,
   ]),
   Table('scheduled_payments', [
@@ -135,6 +147,7 @@ const powerSyncSchema = Schema([
     Column.integer('next_date'),
     Column.integer('end_date'),
     Column.integer('requires_confirmation'),
+    Column.text('debt_id'),
     ..._syncColumns,
   ]),
   Table('tags', [

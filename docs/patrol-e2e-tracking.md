@@ -23,7 +23,8 @@ consolida el estado actual por feature.
 | Pagos programados | ✅ Verde | 2026-07-21 | ✅ (`integration_test/scheduled_payments_patrol_test.dart`) | corrida `qa-automator` de hoy, 2 corridas consecutivas | ✅ 5/5 estable en 2 corridas seguidas. Cubre HU-01 (crear y verlo en el listado), HU-05 (editar nombre+monto — refleja en el detalle, no en el listado, porque el `AppBar` de esta página es el título fijo "Detalle"), la CTA "Confirmar ahora" (fix `81cb943`: confirmar un pago manual antes de su `nextDate`), historial de pagos omitidos + "Recuperar" (`6d15e61`), y eliminar con confirmación (incluida la ruta de "Cancelar"). Todas las plantillas usan cuenta/categoría propias creadas en el mismo escenario, sin depender del catálogo remoto de categorías. Navega a `/pagos-programados` con `GoRouter.push` en vez de un tap de UI: la feature no tiene pestaña propia en `HomeTabBar` (solo Inicio/Movimientos/Presupuestos/Metas/Más), a diferencia de Presupuestos. Dos hallazgos de infraestructura de test corregidos durante la escritura (no bugs de `lib/`): (1) un `SnackBar` con su propio timer de auto-dismiss (`Pago recuperado`) hace que `pumpAndSettle()` corra el reloj hasta el final de su ventana visible antes de devolver el control — se resolvió con pumps acotados (`_expectSnackbar`, mismo patrón que la HU-05 de `transactions_patrol_test.dart`); (2) `find.text(...)` puede matchear un widget que ya no está en pantalla (el detalle es un `ListView` plano) y el tap subsiguiente cae en lo que sí es visible en esa coordenada — el link "Recuperar" del historial necesitó `dragUntilVisible` antes de tocarlo. |
 | Configuración (Settings) | ✅ Verde | 2026-07-21 | ✅ (`integration_test/settings_patrol_test.dart`) | corrida `qa-automator` de hoy, 2 corridas consecutivas | ✅ 4/4 estable en 2 corridas seguidas. Cubre el Segmented Control de "Apariencia" (Claro/Oscuro/Sistema, aplicado de inmediato, `MaterialApp.themeMode` reflejándolo), "Modo sobres" (switch directo y desde la hoja "¿Qué es?", persistiendo al salir de Ajustes y volver — `AppSettingsCubit` no es singleton de DI, se reconstruye por visita, así que esto sí prueba un round-trip real por Drift) y el punto de entrada de "Eliminar cuenta" (abre/cancela la hoja; el flujo completo de HU-07 ya lo cubre `auth_patrol_test.dart`, no se duplicó). "Moneda" quedó fuera a propósito: hoy es un placeholder "Próximamente" (`onOpenComingSoon`), no un toggle real. Hallazgo de infraestructura de test (no bug de `lib/`): `Supabase.initialize` solo puede llamarse una vez por proceso (assertion propia de `supabase_flutter`) — llamar `startApp($)` una segunda vez dentro del mismo test para simular un "reinicio real" de la app cuelga el intento y deja el árbol de widgets congelado en la pantalla anterior (`find.text('Más')` no encuentra nada después). La persistencia real de "Apariencia" en `SharedPreferences` se verificó en cambio leyendo `getIt<ThemePreferenceDatasource>().read()` directamente tras el cambio, más navegar fuera/volver a Ajustes dentro del mismo proceso. |
 | Splash | ⬜️ N/A | — | ❌ | — | Sin suite propia, pero es solo una pantalla de transición (1 archivo) ya cubierta indirectamente por `startApp` en las otras 5 suites — baja prioridad. |
-| Deudas, Metas, Reportes, Captura, Improvement | ⬜️ N/A | — | ❌ | — | Sin implementación en `lib/features/` (solo `.gitkeep`) — lienzo en blanco, no aplica escribir suite Patrol todavía. |
+| Deudas | ⏳ Sin correr | 2026-07-22 | ✅ (`integration_test/debts_patrol_test.dart` + `integration_test/debts_installment_patrol_test.dart`) | escritura `qa-automator` 2026-07-22 (Deudas Fase 0 ya implementada en `lib/features/debts/`) | Dos suites escritas y compilando (`flutter analyze integration_test/` limpio). **No corridas en device todavía** — pendiente de `patrol-e2e-runner` con emulador. Ver "Deudas: suites nuevas 2026-07-22" abajo para el desglose caso→flujo, resultados esperados y los `Key`s que convendría agregar en `lib/`. |
+| Metas, Reportes, Captura, Improvement | ⬜️ N/A | — | ❌ | — | Sin implementación en `lib/features/` (solo `.gitkeep`) — lienzo en blanco, no aplica escribir suite Patrol todavía. |
 
 ## Bloqueo del 2026-07-20 (YA CORREGIDO): las 5 suites fallaban por un bug de infraestructura, no por las features
 
@@ -46,3 +47,71 @@ Regresión introducida por `f5e10c8` ("cablear Google/Apple login, PowerSync+Sup
 4. ~~Si se vuelve a tocar `AccountCard`/`AccountFormPage`... revisar si `accounts_patrol_test.dart` necesita el mismo fix~~ — corregido 2026-07-21 (ver fila Cuentas arriba).
 5. ~~Cuando `qa-automator` agregue suite Patrol a Presupuestos, Pagos programados o Settings, correrla con `patrol-e2e-runner`~~ — las 3 ya tienen suite y quedaron en ✅ Verde (ver filas arriba). Con esto, las 8 features implementadas (`lib/features/` sin `.gitkeep`) tienen cobertura Patrol completa; solo Splash queda sin suite propia a propósito (baja prioridad, ver su fila).
 6. **Posible edge case de `MoneyInputFormatter` a evaluar por `flutter-dev`** (hallado escribiendo `budgets_patrol_test.dart`, 2026-07-21): al reemplazar de una sola vez el valor ya escrito de un campo de monto (`BudgetAmountField`, y probablemente cualquier otro campo que use `MoneyInputFormatter`) por un valor cuya longitud formateada es exactamente un carácter más corta que la anterior (ej. `'500.000'` (7) → raw `'750000'` (6)), el formateador interpreta la operación como "borrar el dígito antes del separador" (su guarda de `backspacing onto a separator`, pensada para un borrado real de un solo carácter con selección colapsada) y descarta un dígito (`$750.000` termina guardado como `$75.000`). Verificado reproduciendo el escenario en un emulador real. **No confirmado que sea un bug real de usuario**: con tecleo carácter por carácter la selección al reemplazar no queda colapsada (no dispara la guarda); el camino que sí lo dispara es más parecido a "seleccionar todo + pegar/autocompletar" que a escritura manual. `qa-automator` lo evitó en el test limpiando el campo (`enterText` a `''`) antes de escribir el valor nuevo, en vez de "arreglarlo" tocando `lib/`. Vale que `flutter-dev` decida si amerita un fix (ej. no tratar como backspace un reemplazo completo del texto) o si se documenta como comportamiento aceptado.
+
+## Deudas: suites nuevas 2026-07-22 (escritas, sin correr en device)
+
+Dos suites Patrol para Deudas Fase 0, contra el flavor `dev`. Ambas compilan
+(`flutter analyze integration_test/` → *No issues found*). **Ninguna se ha
+corrido en emulador todavía**: eso es de `patrol-e2e-runner`. Los resultados de
+abajo son los *esperados*, no confirmados en device.
+
+Convención de montos: el héroe de deuda/abono/actualizar-saldo (`DebtAmountHeroField`)
+es un `TextField` + `MoneyInputFormatter` (teclado del sistema), así que se
+escribe con `enterText` (ej. `'600'` → `$600`, almacenado `60000` minor —
+storage siempre 1/100, COP se muestra sin decimales). La cuota reusa el form de
+Pagos programados, cuyo monto se teclea en el keypad anclado (`NumericKeypad`),
+igual que `scheduled_payments_patrol_test.dart` — montos < 1.000.
+
+### `debts_patrol_test.dart` (flujos núcleo de Deudas)
+
+| Escenario | Flujo | Assert principal |
+|---|---|---|
+| HU-01 crear "Yo debo" | lista vacía → form → nombre + saldo apertura → Crear deuda | card con nombre, `$600` y `0% pagado` |
+| HU-01 crear "Me deben" | dirección inversa | `0% cobrado` (copy cambia por dirección, no color) |
+| HU-02 abono con caja (Sí) | detalle → Registrar abono → monto + cuenta preseleccionada → Registrar abono | saldo `$600`→`$400`, ledger "Abono a la deuda", **1** `Transaction` con `debtId` y `amountMinor==20000` |
+| HU-02 abono sin caja (No) | toggle No → abono cash-less | saldo baja a `$450`, tag "No afecta cuentas", tabla `transactions` **vacía** |
+| HU-02 abono "Me deben" | reduce en dirección inversa | saldo `$900`→`$600`, ledger "Pago recibido" |
+| HU-02 enlazar movimiento | seed de `Transaction` real → hoja abono → "Enlaza un movimiento" → Movimientos link mode → tocar fila | vuelve a la deuda, `$600`→`$400`, sigue **1** transacción ahora con `debtId` |
+| HU-06 actualizar saldo | meta card "Actualizar saldo" → nuevo saldo `520` → Guardar saldo | saldo `$520`, ledger "Saldo actualizado" |
+| HU-07 deuda saldada | abono total ($500 sobre $500) | saldo `$0`, hero `100%` (`DebtBalance.settled`) |
+| HU-05 editar | detalle → lápiz → nombre + apertura nuevos → Guardar cambios | vuelve al detalle con nombre y `$750` nuevos |
+| HU-05 eliminar | editar → Eliminar deuda → (Cancelar y) confirmar | sale de la vista activa; DB `deletedAt` no nulo, `tombstonedAt` nulo |
+| Ledger completo | apertura + abono caja + abono sin caja + ajuste | 4 filas `DebtLedgerRow`, "Saldo de apertura"/"Abono a la deuda"×2/"Saldo actualizado", saldo corrido `$650` |
+| Interés automático | tasa 24% + modo Automático | meta card muestra "Crece …" + tag "estimado" (`dailyGrowthMinor`) |
+
+### `debts_installment_patrol_test.dart` (integración con Pagos Programados, HU-03)
+
+| Escenario | Flujo | Assert principal |
+|---|---|---|
+| Configurar cuota → aparece | detalle → Configurar cuota → form cuota (monto/cuenta/categoría/manual) → guardar | `DebtInstallmentCard` "Próxima cuota" en la deuda; en PP el template lleva `ScheduledDebtChip` ("Deuda") |
+| Cuota generada reduce la deuda | cross-link a PP → "Confirmar ahora" → Confirmar | `Transaction` con `debtId`; al reabrir la deuda saldo `$600`→`$100` |
+| Cross-link ambos sentidos | deuda→PP (card "Próxima cuota" → "Cuota de …") y PP→deuda (card enlazada → detalle de la deuda) | ambos `*LinkedDebtCard`/`DebtInstallmentCard` navegan bien |
+| Editar cuota deep-linkea | PP detalle → ⋮ Editar | header "Editar cuota" (no "Editar pago programado"), subtítulo con la deuda |
+| Eliminar cuota | Editar cuota → "Eliminar cuota" → confirmar | fuera de PP (sin `ScheduledDebtChip`); la deuda vuelve a `DebtConfigureInstallmentCard` |
+
+### `Key`s / finders que convendría agregar en `lib/` (pendiente para `flutter-dev`, no tocados por `qa-automator`)
+
+Todos los flujos arriba se resolvieron con finders por texto/l10n o por tipo de
+widget, pero varios son frágiles y un `Key` estable los haría robustos:
+
+1. **Botón de submit de cada hoja de abono / actualizar-saldo.** El CTA "Registrar
+   abono" (`debtPaymentCta`) es idéntico al del bottom bar del detalle
+   (`debtDetailRegisterPayment`) y al header de la propia hoja → hoy se
+   desambigua tapeando el `LucideIcons.check` dentro de `DebtPaymentSheetBody`.
+   Un `Key('debtAbonoSubmit')` / `Key('debtUpdateBalanceSubmit')` sería directo.
+2. **`DebtCashSwitch` y su fila de cuenta revelada.** El toggle Sí/No se lee hoy
+   por la presencia de `DebtSelectedAccountRow`; un `Key('debtCashToggle')` con
+   estado semántico legible evitaría inferir el estado por el árbol.
+3. **`DebtAmountHeroField`.** Se comparte entre form, hoja de abono y hoja de
+   actualizar-saldo; hoy se asume que solo hay uno montado a la vez. Un `Key`
+   por contexto (`opening`/`abono`/`nuevoSaldo`) haría el `enterText` explícito.
+4. **Estado "saldada" sin distintivo textual.** `DebtBalance.settled` no pinta
+   ningún badge "Saldada" — el escenario HU-07 lo verifica indirectamente por
+   `$0` + `100%`. Si el diseño espera un sello de "saldada", hoy no existe en
+   `lib/` (posible gap de UI a revisar contra Pencil, no solo de test).
+5. **Inconsistencia de copy al eliminar una cuota.** La hoja de acciones del
+   detalle de PP usa siempre `scheduledDetailActionsDelete` ("Eliminar pago
+   programado") aun para una cuota, mientras el link del form de edición sí usa
+   `scheduledPaymentInstallmentDeleteAction` ("Eliminar cuota"). La suite borra
+   la cuota por el camino del form ("Eliminar cuota"); si se espera que la hoja
+   de acciones también diga "Eliminar cuota" para cuotas, es un ajuste de `lib/`.

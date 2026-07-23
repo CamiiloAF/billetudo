@@ -210,5 +210,48 @@ void main() {
         brightness: brightness,
       );
     });
+
+    // Deudas HU-03, "Configurar cuota" (`s9gXs`): the same form driven with a
+    // `debtId` → the type segmented control is hidden, the header carries the
+    // "Crédito vehicular · Yo debo" context subtitle, and the cross-link
+    // installment banner shows below the mode cards.
+    testWidgets('config de cuota de deuda, crear ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          debtId: 'd1',
+          debtName: 'Crédito vehicular',
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Cuota crédito',
+          amountText: '680000',
+        ),
+        'installment_create_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('config de cuota de deuda, editar ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          id: 'sp-9',
+          debtId: 'd1',
+          debtName: 'Crédito vehicular',
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Cuota crédito',
+          amountText: '680000',
+        ),
+        'installment_edit_$suffix',
+        brightness: brightness,
+      );
+    });
   }
 }

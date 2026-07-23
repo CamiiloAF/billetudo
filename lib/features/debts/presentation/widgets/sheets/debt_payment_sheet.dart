@@ -124,6 +124,7 @@ class DebtPaymentSheetBody extends StatelessWidget {
           const SizedBox(height: 10),
           // Amount héroe.
           DebtAmountHeroField(
+            fieldKey: const ValueKey('debt-amount-abono'),
             label: l10n.debtPaymentAmountLabel,
             currency: debt.currency,
             initialAmountMinor: state.amountMinor,
@@ -190,6 +191,7 @@ class DebtPaymentSheetBody extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
+              key: const ValueKey('debt-abono-submit'),
               onPressed: state.canSubmit ? cubit.submit : null,
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),

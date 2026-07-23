@@ -1267,6 +1267,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtInstallmentTitle => 'Next installment';
 
   @override
+  String debtInstallmentBadge(String date) {
+    return 'Installment · $date';
+  }
+
+  @override
   String get debtInstallmentScheduledBadge => 'Scheduled payment';
 
   @override
@@ -2709,6 +2714,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledDetailActionsDelete => 'Delete scheduled payment';
+
+  @override
+  String get scheduledDetailActionsDeleteInstallment => 'Delete installment';
 
   @override
   String get scheduledSnoozeSheetSectionTitle => 'Pick the new date';

@@ -2312,6 +2312,12 @@ abstract class AppLocalizations {
   /// **'Próxima cuota'**
   String get debtInstallmentTitle;
 
+  /// No description provided for @debtInstallmentBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuota · {date}'**
+  String debtInstallmentBadge(String date);
+
   /// No description provided for @debtInstallmentScheduledBadge.
   ///
   /// In es, this message translates to:
@@ -4736,6 +4742,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Eliminar pago programado'**
   String get scheduledDetailActionsDelete;
+
+  /// No description provided for @scheduledDetailActionsDeleteInstallment.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuota'**
+  String get scheduledDetailActionsDeleteInstallment;
 
   /// No description provided for @scheduledSnoozeSheetSectionTitle.
   ///

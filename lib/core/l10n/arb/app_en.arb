@@ -402,6 +402,10 @@
   "debtDetailMovementsTitle": "Movements",
   "debtDetailRegisterPayment": "Record payment",
   "debtInstallmentTitle": "Next installment",
+  "debtInstallmentBadge": "Installment · {date}",
+  "@debtInstallmentBadge": {
+    "placeholders": { "date": { "type": "String" } }
+  },
   "debtInstallmentScheduledBadge": "Scheduled payment",
   "debtConfigureInstallmentTitle": "Set up installment",
   "debtConfigureInstallmentSubtitle": "Schedule this debt's installment",
@@ -854,6 +858,7 @@
   "scheduledDetailActionsSheetSubtitle": "Scheduled payment actions",
   "scheduledDetailActionsSnooze": "Snooze this payment",
   "scheduledDetailActionsDelete": "Delete scheduled payment",
+  "scheduledDetailActionsDeleteInstallment": "Delete installment",
   "scheduledSnoozeSheetSectionTitle": "Pick the new date",
   "scheduledConfirmationSheetConfirm": "Confirm",
   "scheduledConfirmationSheetEditTooltip": "Edit template",

@@ -93,6 +93,7 @@ class DebtUpdateBalanceSheetBody extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           DebtAmountHeroField(
+            fieldKey: const ValueKey('debt-amount-nuevoSaldo'),
             label: l10n.debtUpdateBalanceNewLabel,
             currency: debt.currency,
             initialAmountMinor: state.targetMinor,
@@ -122,6 +123,7 @@ class DebtUpdateBalanceSheetBody extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
+              key: const ValueKey('debt-nuevo-saldo-submit'),
               onPressed: state.canSubmit ? cubit.submit : null,
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
