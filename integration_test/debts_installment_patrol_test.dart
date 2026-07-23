@@ -30,7 +30,9 @@ import 'package:billetudo/features/debts/presentation/widgets/debt_card.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_configure_installment_card.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_form_field.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_installment_card.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_card.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_debt_chip.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_date_field.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_linked_debt_card.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart'
     show AccountPickerField;
@@ -232,6 +234,31 @@ Future<void> _selectManualMode(PatrolIntegrationTester $) async {
   await $.tester.pumpAndSettle();
 }
 
+/// Sets the cuota's "Primer pago" to a day in the *next* calendar month via the
+/// form's `ScheduledPaymentDateField` — a deterministic future date regardless
+/// of today's day-of-month. Same technique (and same "Mes siguiente"/day 20
+/// picker flow) as `scheduled_payments_patrol_test.dart`'s `_pickFutureDate`.
+/// The cuota reuses the PP form with recurrence on (monthly default), so the
+/// date field's label is "Primer pago" (`scheduledPaymentFormNextDateLabel`).
+Future<void> _pickFutureFirstPayment(
+  PatrolIntegrationTester $, {
+  int day = 20,
+}) async {
+  final field = find.byWidgetPredicate(
+    (widget) =>
+        widget is ScheduledPaymentDateField && widget.label == 'Primer pago',
+  );
+  await _scrollUntilVisible($, field);
+  await $.tester.tap(field);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Mes siguiente'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('$day'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Confirmar'));
+  await $.tester.pumpAndSettle();
+}
+
 Future<void> _submitCuotaForm(PatrolIntegrationTester $) async {
   await $.tester.tap(find.byTooltip('Guardar'));
   await $.tester.pumpAndSettle();
@@ -240,11 +267,19 @@ Future<void> _submitCuotaForm(PatrolIntegrationTester $) async {
 /// From the debt detail, opens the Configurar-cuota form, fills it (amount,
 /// account, category, manual mode) and saves — landing back on the debt detail
 /// with a "Próxima cuota" card.
+///
+/// [futureFirstPayment] pushes the first payment to next month. Default `false`
+/// keeps the existing behavior — a Manual cuota whose first occurrence is due
+/// now, which the confirmar/eliminar scenarios rely on ("Confirmar ahora" needs
+/// a due occurrence). Set it `true` only when the cuota must surface as an
+/// active `ScheduledCard` in Pagos programados (no due occurrence, so it is not
+/// folded into "Por confirmar" — see `scheduled_payments_list_view.dart`).
 Future<void> _configureCuota(
   PatrolIntegrationTester $, {
   required String accountName,
   required String categoryName,
   required List<int> amountDigits,
+  bool futureFirstPayment = false,
 }) async {
   await $.tester.tap(find.text('Configurar cuota'));
   await $.tester.pumpAndSettle();
@@ -254,6 +289,9 @@ Future<void> _configureCuota(
   await _enterKeypadAmount($, amountDigits);
   await _pickAccountField($, 'Cuenta', accountName);
   await _pickCategory($, categoryName);
+  if (futureFirstPayment) {
+    await _pickFutureFirstPayment($);
+  }
   await _selectManualMode($);
   await _submitCuotaForm($);
 }
@@ -278,11 +316,17 @@ void main() {
       expect(find.text('Configurar cuota'), findsOneWidget);
       expect(find.byType(DebtInstallmentCard), findsNothing);
 
+      // First payment set to next month so the cuota surfaces as an ACTIVE card
+      // in Pagos programados (a Manual cuota due now would instead be folded
+      // into "Por confirmar", where there is no `ScheduledCard` and thus no
+      // chip — see `_configureCuota`'s `futureFirstPayment` doc and
+      // `scheduled_payments_list_view.dart`).
       await _configureCuota(
         $,
         accountName: 'Efectivo',
         categoryName: 'Cuota crédito',
         amountDigits: [5, 0, 0], // $500 COP
+        futureFirstPayment: true,
       );
 
       // Back on the debt detail: the slot is now the linked "Próxima cuota"
@@ -293,10 +337,14 @@ void main() {
       expect(find.text('Pago programado'), findsOneWidget);
       expect(find.byType(DebtConfigureInstallmentCard), findsNothing);
 
-      // And it surfaces in Pagos programados as a template wearing the "Deuda"
-      // chip (`ScheduledDebtChip`, `scheduledPayment.debtId != null`).
+      // And it surfaces in Pagos programados as an active template card wearing
+      // the "Deuda" chip (`ScheduledDebtChip`, `scheduledPayment.debtId !=
+      // null`). With a future first payment there is no due occurrence, so the
+      // template renders as a `ScheduledCard` (not folded into "Por confirmar"),
+      // and the chip lives inside that card.
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      expect(find.byType(ScheduledCard), findsOneWidget);
       expect(find.byType(ScheduledDebtChip), findsOneWidget);
       expect(find.text('Deuda'), findsWidgets);
     },
@@ -409,7 +457,11 @@ void main() {
       // programado". The linked-debt context subtitle is present too.
       expect(find.text('Editar cuota'), findsOneWidget);
       expect(find.text('Editar pago programado'), findsNothing);
-      expect(find.text('Crédito moto'), findsWidgets);
+      // The linked-debt context subtitle renders the debt name and direction in
+      // ONE `Text` via `l10n.debtContext` ("Crédito moto · Yo debo"), so an
+      // exact `find.text('Crédito moto')` matches 0. `textContaining` asserts
+      // the debt name is present within that combined subtitle.
+      expect(find.textContaining('Crédito moto'), findsWidgets);
     },
   );
 

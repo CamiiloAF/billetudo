@@ -204,6 +204,14 @@ Future<void> _submitAbono(PatrolIntegrationTester $) async {
       matching: find.byIcon(LucideIcons.check),
     ),
   );
+  // The submit (the cash `Transaction`/`DebtEntry` write), the sheet pop, and
+  // the detail's Drift stream re-emitting the new balance are separate async
+  // hops; `pumpAndSettle` alone races the DB round trip (the abono lands but the
+  // rebuilt detail lags a frame). Same bounded pump the delete flow and
+  // `accounts_patrol_test.dart`'s HU-08 already use before asserting a
+  // stream-driven change.
+  await $.tester.pumpAndSettle();
+  await $.tester.pump(const Duration(milliseconds: 500));
   await $.tester.pumpAndSettle();
 }
 
@@ -339,11 +347,29 @@ void main() {
       expect(find.byType(DebtSelectedAccountRow), findsNothing);
       await _submitAbono($);
 
-      // Outstanding still drops $600 -> $450, and the ledger row wears the "No
-      // afecta cuentas" tag.
+      // Outstanding still drops $600 -> $450, and the cash-less abono row wears
+      // the "No afecta cuentas" tag.
       expect(find.text(r'$450'), findsWidgets);
-      await _scrollUntilVisible($, find.text('No afecta cuentas'));
-      expect(find.text('No afecta cuentas'), findsOneWidget);
+      // Scroll to the abono row by its (unique) title, NOT by the tag: the
+      // opening row is also a solo-deuda entry (`isCashEvent == false`), so
+      // `DebtFormat.ledgerTag` gives it the SAME "No afecta cuentas" tag — a
+      // bare `find.text('No afecta cuentas')` matches BOTH rows, which is what
+      // tripped `dragUntilVisible` with "Too many elements". "Abono a la deuda"
+      // names only this one row.
+      await _scrollUntilVisible($, find.text('Abono a la deuda'));
+      expect(find.text('Abono a la deuda'), findsOneWidget);
+      // Assert the tag scoped to the abono's own `DebtLedgerRow` so the check
+      // stays a true, unique statement about the abono without pretending the
+      // opening row does not also carry it (it legitimately does — an opening
+      // balance moves no account either).
+      final abonoRow = find.ancestor(
+        of: find.text('Abono a la deuda'),
+        matching: find.byType(DebtLedgerRow),
+      );
+      expect(
+        find.descendant(of: abonoRow, matching: find.text('No afecta cuentas')),
+        findsOneWidget,
+      );
 
       // No `Transaction` was created — that is the whole point of "sin caja".
       final db = getIt<AppDatabase>();
@@ -648,16 +674,23 @@ void main() {
 
       // Interés anual + modo Automático (the accrual estimates a daily growth
       // over a positive balance).
+      //
+      // Scroll by the field's `ValueKey` (`rate-new` while creating — see
+      // `debt_form_page.dart`), never by a compound finder ending in `.first`:
+      // the rate row is below the fold and outside the cache extent at first, so
+      // `find.text('Interés anual (opcional)')` matches 0 elements, and
+      // `find.ancestor(...).first` THROWS "No element" instead of returning
+      // empty — which killed `dragUntilVisible` on its first iteration before it
+      // could drag the row into existence. `find.byKey` returns empty (never
+      // throws) when the row is not built yet, so the drag iterates until it is.
+      final rateFieldRow = find.byKey(const ValueKey('rate-new'));
+      await _scrollUntilVisible($, rateFieldRow);
+      // Now that the row is built and on screen, resolve the inner input for
+      // `enterText`.
       final rateField = find.descendant(
-        of: find
-            .ancestor(
-              of: find.text('Interés anual (opcional)'),
-              matching: find.byType(DebtFormField),
-            )
-            .first,
+        of: rateFieldRow,
         matching: find.byType(TextFormField),
       );
-      await _scrollUntilVisible($, rateField);
       await $.tester.enterText(rateField, '24'); // 24% annual
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Automático'));
@@ -670,7 +703,20 @@ void main() {
       // The meta card's growth line only renders when the debt accrues
       // automatically over a positive balance (`DebtDetailState
       // .dailyGrowthMinor`): "Crece ~$X/día" with an "estimado" tag.
-      await _scrollUntilVisible($, find.text('estimado'));
+      //
+      // No scroll here. The meta card is the SECOND item of the detail's
+      // `ListView` (right under the hero) and, with no counterparty/due date,
+      // the growth row is its first row — it sits near the top, well inside the
+      // sliver's build area at offset 0, so both `Text`s are built at page
+      // load. The old `_scrollUntilVisible($, find.text('estimado'))` dragged
+      // the content UP (`Offset(0, -220)` reveals what is BELOW the fold),
+      // pushing this top-of-page tag off the top edge and never bringing it
+      // back, so `dragUntilVisible` exhausted its iterations and threw
+      // "No element". A `findsOneWidget` needs the widget built, not
+      // pixel-visible, so the direct assertion is both correct and robust.
+      // (`debtDetailEstimated` is lowercase "estimado"; the ledger interest tag
+      // `debtLedgerTagEstimated` is "Estimado", so there is no collision even if
+      // an accrual row existed.)
       expect(find.textContaining('Crece'), findsOneWidget);
       expect(find.text('estimado'), findsOneWidget);
     },

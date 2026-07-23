@@ -48,8 +48,7 @@ class DebtUpdateBalanceSheet extends StatelessWidget {
           Navigator.of(context).pop();
         }
       },
-      builder: (context, state) =>
-          DebtUpdateBalanceSheetBody(state: state),
+      builder: (context, state) => DebtUpdateBalanceSheetBody(state: state),
     );
   }
 }
@@ -67,73 +66,88 @@ class DebtUpdateBalanceSheetBody extends StatelessWidget {
     final cubit = context.read<DebtUpdateBalanceCubit>();
     final debt = state.debt;
 
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.debtUpdateBalanceTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
+    // The submit CTA is pinned as a footer below a scrolling field area, not
+    // the last child of one big scroll view — same reasoning as the abono sheet
+    // (`debt_payment_sheet.dart`): on a phone-sized screen the héroe autofocuses
+    // the soft keyboard, `BottomSheetBase` lifts the whole sheet by that inset,
+    // and a bottom-of-scroll CTA would slip under the fold out of reach. A
+    // pinned footer sits right above the keyboard and stays reachable at any
+    // sheet height.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.debtUpdateBalanceTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: colors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  DebtFormat.context(l10n, debt.name, debt.direction),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DebtAmountHeroField(
+                  fieldKey: const ValueKey('debt-amount-nuevoSaldo'),
+                  label: l10n.debtUpdateBalanceNewLabel,
+                  currency: debt.currency,
+                  initialAmountMinor: state.targetMinor,
+                  onChanged: cubit.targetChanged,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                DebtReconciliationCard(state: state),
+                const SizedBox(height: 16),
+                DebtNoAccountStrip(text: l10n.debtUpdateBalanceHint),
+                const SizedBox(height: 16),
+                DebtFormField.selector(
+                  label: l10n.debtUpdateBalanceDateLabel,
+                  icon: LucideIcons.calendar,
+                  value: DebtFormat.relativeDate(context, l10n, state.date),
+                  onTap: () => unawaited(_pickDate(context, cubit, state.date)),
+                ),
+                if (state.failure != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.debtUpdateBalanceError,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colors.expenseText),
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            DebtFormat.context(l10n, debt.name, debt.direction),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: colors.textSecondary,
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            key: const ValueKey('debt-nuevo-saldo-submit'),
+            onPressed: state.canSubmit ? cubit.submit : null,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
             ),
+            icon: const Icon(LucideIcons.check, size: 18),
+            label: Text(l10n.debtUpdateBalanceCta),
           ),
-          const SizedBox(height: 10),
-          DebtAmountHeroField(
-            fieldKey: const ValueKey('debt-amount-nuevoSaldo'),
-            label: l10n.debtUpdateBalanceNewLabel,
-            currency: debt.currency,
-            initialAmountMinor: state.targetMinor,
-            onChanged: cubit.targetChanged,
-            autofocus: true,
-          ),
-          const SizedBox(height: 16),
-          DebtReconciliationCard(state: state),
-          const SizedBox(height: 16),
-          DebtNoAccountStrip(text: l10n.debtUpdateBalanceHint),
-          const SizedBox(height: 16),
-          DebtFormField.selector(
-            label: l10n.debtUpdateBalanceDateLabel,
-            icon: LucideIcons.calendar,
-            value: DebtFormat.relativeDate(context, l10n, state.date),
-            onTap: () => unawaited(_pickDate(context, cubit, state.date)),
-          ),
-          if (state.failure != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              l10n.debtUpdateBalanceError,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colors.expenseText),
-            ),
-          ],
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              key: const ValueKey('debt-nuevo-saldo-submit'),
-              onPressed: state.canSubmit ? cubit.submit : null,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
-              icon: const Icon(LucideIcons.check, size: 18),
-              label: Text(l10n.debtUpdateBalanceCta),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -244,7 +258,8 @@ class DebtReconciliationCard extends StatelessWidget {
 
   /// "−$180.000" / "+$180.000" / "$0", with the unicode minus that matches the
   /// mockup (never the thin hyphen next to the `$`).
-  static String _signedAmount(MoneyFormatter money, int minor, String currency) {
+  static String _signedAmount(
+      MoneyFormatter money, int minor, String currency) {
     final magnitude = money.formatSymbol(minor.abs(), currencyCode: currency);
     if (minor > 0) {
       return '+$magnitude';

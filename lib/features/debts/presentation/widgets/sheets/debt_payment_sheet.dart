@@ -96,112 +96,129 @@ class DebtPaymentSheetBody extends StatelessWidget {
     final cubit = context.read<DebtPaymentCubit>();
     final debt = state.debt;
 
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header.
-          Text(
-            l10n.debtPaymentTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
+    // The submit CTA is pinned as a footer below a scrolling field area, not
+    // the last child of one big scroll view: on a phone-sized screen the "Sí"
+    // sheet is tall enough that, once the héroe autofocuses the soft keyboard,
+    // a bottom-of-scroll CTA slips under the fold and can neither be seen nor
+    // tapped without scrolling (the shorter "No"/actualizar-saldo sheets keep
+    // it visible, which is why only the cash abono broke). `BottomSheetBase`
+    // already lifts the whole sheet by the keyboard inset, so a pinned footer
+    // sits right above the keyboard and stays reachable at any sheet height.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header.
+                Text(
+                  l10n.debtPaymentTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: colors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  DebtFormat.context(l10n, debt.name, debt.direction),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Amount héroe.
+                DebtAmountHeroField(
+                  fieldKey: const ValueKey('debt-amount-abono'),
+                  label: l10n.debtPaymentAmountLabel,
+                  currency: debt.currency,
+                  initialAmountMinor: state.amountMinor,
+                  onChanged: cubit.amountChanged,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 6),
+                Center(
+                  child: DebtLinkExistingButton(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onLinkExisting();
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Switch row.
+                DebtAddToAccountRow(state: state, cubit: cubit),
+                if (state.addToAccount) ...[
+                  const SizedBox(height: 10),
+                  DebtSelectedAccountRow(
+                    account: state.selectedAccount,
+                    onTap: () => unawaited(_pickAccount(context, cubit, state)),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                // Fecha.
+                DebtFormField.selector(
+                  label: l10n.debtPaymentDateLabel,
+                  icon: LucideIcons.calendar,
+                  value: DebtFormat.relativeDate(context, l10n, state.date),
+                  onTap: () => unawaited(_pickDate(context, cubit, state.date)),
+                ),
+                const SizedBox(height: 14),
+                // Nota.
+                DebtFormField.text(
+                  key: const ValueKey('abono-note'),
+                  label: l10n.debtPaymentNoteLabel,
+                  icon: LucideIcons.pencil,
+                  hint: l10n.debtPaymentNoteHint,
+                  initialValue: state.note,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: cubit.noteChanged,
+                ),
+                if (state.addToAccount) ...[
+                  const SizedBox(height: 14),
+                  DebtFormField.selector(
+                    label: l10n.debtPaymentCategoryLabel,
+                    icon: LucideIcons.tag,
+                    value: state.categoryName,
+                    hint: l10n.debtPaymentCategoryNone,
+                    onTap: () =>
+                        unawaited(_pickCategory(context, cubit, state)),
+                  ),
+                ],
+                if (state.failure != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.debtPaymentError,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colors.expenseText),
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            DebtFormat.context(l10n, debt.name, debt.direction),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: colors.textSecondary,
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            key: const ValueKey('debt-abono-submit'),
+            onPressed: state.canSubmit ? cubit.submit : null,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
             ),
+            icon: const Icon(LucideIcons.check, size: 18),
+            label: Text(l10n.debtPaymentCta),
           ),
-          const SizedBox(height: 10),
-          // Amount héroe.
-          DebtAmountHeroField(
-            fieldKey: const ValueKey('debt-amount-abono'),
-            label: l10n.debtPaymentAmountLabel,
-            currency: debt.currency,
-            initialAmountMinor: state.amountMinor,
-            onChanged: cubit.amountChanged,
-            autofocus: true,
-          ),
-          const SizedBox(height: 6),
-          Center(
-            child: DebtLinkExistingButton(
-              onTap: () {
-                Navigator.of(context).pop();
-                onLinkExisting();
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Switch row.
-          DebtAddToAccountRow(state: state, cubit: cubit),
-          if (state.addToAccount) ...[
-            const SizedBox(height: 10),
-            DebtSelectedAccountRow(
-              account: state.selectedAccount,
-              onTap: () => unawaited(_pickAccount(context, cubit, state)),
-            ),
-          ],
-          const SizedBox(height: 16),
-          // Fecha.
-          DebtFormField.selector(
-            label: l10n.debtPaymentDateLabel,
-            icon: LucideIcons.calendar,
-            value: DebtFormat.relativeDate(context, l10n, state.date),
-            onTap: () => unawaited(_pickDate(context, cubit, state.date)),
-          ),
-          const SizedBox(height: 14),
-          // Nota.
-          DebtFormField.text(
-            key: const ValueKey('abono-note'),
-            label: l10n.debtPaymentNoteLabel,
-            icon: LucideIcons.pencil,
-            hint: l10n.debtPaymentNoteHint,
-            initialValue: state.note,
-            textCapitalization: TextCapitalization.sentences,
-            onChanged: cubit.noteChanged,
-          ),
-          if (state.addToAccount) ...[
-            const SizedBox(height: 14),
-            DebtFormField.selector(
-              label: l10n.debtPaymentCategoryLabel,
-              icon: LucideIcons.tag,
-              value: state.categoryName,
-              hint: l10n.debtPaymentCategoryNone,
-              onTap: () => unawaited(_pickCategory(context, cubit, state)),
-            ),
-          ],
-          if (state.failure != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              l10n.debtPaymentError,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colors.expenseText),
-            ),
-          ],
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              key: const ValueKey('debt-abono-submit'),
-              onPressed: state.canSubmit ? cubit.submit : null,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
-              icon: const Icon(LucideIcons.check, size: 18),
-              label: Text(l10n.debtPaymentCta),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -259,7 +276,8 @@ class DebtPaymentSheetBody extends StatelessWidget {
 /// The "¿Agregar a una cuenta?" row: label + consequence hint + the switch.
 /// The hint text swaps with the state; both are 13/`$text-secondary`.
 class DebtAddToAccountRow extends StatelessWidget {
-  const DebtAddToAccountRow({required this.state, required this.cubit, super.key});
+  const DebtAddToAccountRow(
+      {required this.state, required this.cubit, super.key});
 
   final DebtPaymentState state;
   final DebtPaymentCubit cubit;
