@@ -44,6 +44,8 @@ class ScheduledPaymentFormState extends Equatable {
     this.debtId,
     this.debtName,
     this.debtIsIOwe = false,
+    this.debtCreatedAt,
+    this.debtOutstandingMinor,
     this.failure,
   }) : nextDate = nextDate ?? DateTime.now();
 
@@ -106,6 +108,15 @@ class ScheduledPaymentFormState extends Equatable {
   final String? debtName;
   final bool debtIsIOwe;
 
+  /// Bounds carried in from the debt detail when configuring a cuota (HU-03,
+  /// fix 4a), null for an ordinary template or when editing a cuota from a Pago
+  /// Programado detail (where the derived outstanding is not available):
+  ///  - [debtCreatedAt]: the first payment cannot be dated before it.
+  ///  - [debtOutstandingMinor]: the cuota amount cannot exceed it.
+  /// Presentation-only, never persisted on the draft.
+  final DateTime? debtCreatedAt;
+  final int? debtOutstandingMinor;
+
   final Failure? failure;
 
   bool get isEditing => id != null;
@@ -154,6 +165,8 @@ class ScheduledPaymentFormState extends Equatable {
     String? debtId,
     String? debtName,
     bool? debtIsIOwe,
+    DateTime? debtCreatedAt,
+    int? debtOutstandingMinor,
     Failure? failure,
   }) =>
       ScheduledPaymentFormState(
@@ -193,6 +206,8 @@ class ScheduledPaymentFormState extends Equatable {
         debtId: debtId ?? this.debtId,
         debtName: debtName ?? this.debtName,
         debtIsIOwe: debtIsIOwe ?? this.debtIsIOwe,
+        debtCreatedAt: debtCreatedAt ?? this.debtCreatedAt,
+        debtOutstandingMinor: debtOutstandingMinor ?? this.debtOutstandingMinor,
         failure: failure,
       );
 
@@ -222,6 +237,8 @@ class ScheduledPaymentFormState extends Equatable {
         debtId,
         debtName,
         debtIsIOwe,
+        debtCreatedAt,
+        debtOutstandingMinor,
         failure,
       ];
 }

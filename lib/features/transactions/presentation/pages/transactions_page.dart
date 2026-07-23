@@ -128,12 +128,25 @@ class TransactionsPage extends StatelessWidget {
                 ),
               );
           },
-          builder: (context, state) {
+          builder: (context, rawState) {
             // Search and filters stay pinned; everything below — including the
             // balance carousel (Mejora #2) — lives inside the scrollable body
             // so it scrolls away with the list.
             // In link mode a row tap attributes the movement to the debt; the
             // carousel is dropped so the focus is the list to pick from.
+            // Link mode also restricts the list to the movements that may be
+            // an abono of this debt: only the required type and dated on/after
+            // the debt's creation (Deudas HU-02). Linking a movement of the
+            // wrong type or an older date would push the balance the wrong way,
+            // so those are dropped from the list entirely rather than shown and
+            // rejected on tap.
+            final state = linkMode == null
+                ? rawState
+                : rawState.copyWith(
+                    items: rawState.items
+                        .where((item) => linkMode.accepts(item.transaction))
+                        .toList(),
+                  );
             final onRowTap = linkMode != null
                 ? linkMode.onLinkTransaction
                 : (String id) => _openTransaction(context, id);

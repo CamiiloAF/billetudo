@@ -21,6 +21,7 @@ class ScheduledPaymentDateField extends StatelessWidget {
     required this.onChanged,
     this.placeholder,
     this.onCleared,
+    this.minDate,
     super.key,
   });
 
@@ -29,6 +30,10 @@ class ScheduledPaymentDateField extends StatelessWidget {
   final String? placeholder;
   final ValueChanged<DateTime> onChanged;
   final VoidCallback? onCleared;
+
+  /// The earliest selectable day, when set: a debt cuota's first payment cannot
+  /// be dated before the debt was created (HU-03, fix 4a-i).
+  final DateTime? minDate;
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +49,12 @@ class ScheduledPaymentDateField extends StatelessWidget {
           onCleared != null ? LucideIcons.infinity : LucideIcons.calendar,
       onCleared: onCleared,
       onTap: () async {
+        final minDate = this.minDate;
         final picked = await DatePickerSheet.show(
           context,
           initialDate: date ?? DateTime.now(),
+          disabledBefore:
+              minDate == null ? null : DateUtils.dateOnly(minDate),
         );
         if (picked != null) {
           onChanged(picked);

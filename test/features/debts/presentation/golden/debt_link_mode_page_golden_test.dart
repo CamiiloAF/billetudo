@@ -1,5 +1,6 @@
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_state.dart';
@@ -72,6 +73,8 @@ void main() {
     debtLabel: 'Crédito vehicular · Yo debo',
     onCancel: () {},
     onLinkTransaction: (_) async {},
+    requiredType: TransactionType.expense,
+    notBefore: DateTime(2026),
   );
 
   Future<void> golden(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
@@ -444,6 +446,105 @@ void main() {
       // The chip for the already-selected category ("Comida") is still
       // shown — the account switch never cleared it.
       expect(find.text('Comida'), findsOneWidget);
+    });
+  });
+
+  group('HU-03: cuota de deuda (fixes 4a/4b)', () {
+    testWidgets(
+        '4a-ii: el error de cuota mayor al saldo se muestra en la zona de monto',
+        (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Cuota',
+          amountText: '600.000',
+          debtId: 'd1',
+          debtName: 'Crédito vehicular',
+          debtIsIOwe: true,
+          debtOutstandingMinor: 5000000,
+          failure: const ValidationFailure(
+            'the cuota cannot exceed the debt balance',
+            field: ScheduledPaymentFormCubit.fieldAmountExceedsDebt,
+          ),
+        ),
+      );
+
+      expect(
+        find.text('La cuota no puede superar el saldo de la deuda.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('4b: al emitir saved el formulario se cierra (pop)',
+        (tester) async {
+      // A cuota save must give feedback: the reported bug was a successful save
+      // that left the screen open. Here the form is pushed on top of a first
+      // route, the cubit emits `saved`, and the form must pop back.
+      final controller =
+          StreamController<ScheduledPaymentFormState>.broadcast();
+      addTearDown(controller.close);
+      final ready = ScheduledPaymentFormState(
+        status: ScheduledPaymentFormStatus.ready,
+        accountId: 'acc-1',
+        debtId: 'd1',
+      );
+      when(() => cubit.state).thenReturn(ready);
+      when(() => cubit.stream).thenAnswer((_) => controller.stream);
+
+      final navKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navKey,
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => navKey.currentState!.push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BlocProvider<ScheduledPaymentFormCubit>.value(
+                      value: cubit,
+                      child: const ScheduledPaymentFormPage(),
+                    ),
+                  ),
+                ),
+                child: const Text('abrir'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      // The form is on screen (its header title renders).
+      expect(find.text('Configurar cuota'), findsOneWidget);
+
+      // The save succeeds: `saved` arrives and the listener pops the form.
+      when(() => cubit.state).thenReturn(
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.saved,
+          accountId: 'acc-1',
+          debtId: 'd1',
+        ),
+      );
+      controller.add(
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.saved,
+          accountId: 'acc-1',
+          debtId: 'd1',
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Configurar cuota'), findsNothing);
+      expect(find.text('abrir'), findsOneWidget);
     });
   });
 }

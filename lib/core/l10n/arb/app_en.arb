@@ -915,6 +915,7 @@
   "scheduledPaymentErrorAmount": "Enter an amount greater than zero.",
   "scheduledPaymentErrorTransferAccount": "Choose the destination account.",
   "scheduledPaymentErrorCategory": "Choose a category.",
+  "scheduledPaymentInstallmentAmountExceedsError": "The installment can't be larger than the debt balance.",
   "scheduledPaymentFormNewTitle": "New scheduled payment",
   "scheduledPaymentFormNextDateLabel": "First payment",
   "scheduledPaymentFormOnceDateLabel": "Payment date",

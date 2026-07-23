@@ -112,8 +112,9 @@ void main() {
           child: DebtDetailPage(
             onEdit: (_) {},
             onOpenInstallment: (_) {},
-            onConfigureInstallment: (_) {},
+            onConfigureInstallment: (_, __) {},
             onLinkExisting: (_) {},
+            onOpenTransaction: (_) {},
           ),
         ),
       ),
@@ -203,8 +204,9 @@ void main() {
           child: DebtDetailPage(
             onEdit: (_) {},
             onOpenInstallment: (_) {},
-            onConfigureInstallment: (_) {},
+            onConfigureInstallment: (_, __) {},
             onLinkExisting: (_) {},
+            onOpenTransaction: (_) {},
           ),
         ),
       ),

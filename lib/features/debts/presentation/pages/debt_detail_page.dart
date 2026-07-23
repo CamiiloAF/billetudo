@@ -37,6 +37,7 @@ class DebtDetailPage extends StatelessWidget {
     required this.onOpenInstallment,
     required this.onConfigureInstallment,
     required this.onLinkExisting,
+    required this.onOpenTransaction,
     super.key,
   });
 
@@ -45,9 +46,14 @@ class DebtDetailPage extends StatelessWidget {
   /// Cross-link into Pagos programados for the linked cuota (HU-03).
   final ValueChanged<String> onOpenInstallment;
 
+  /// Opens a cash ledger row's underlying `Transaction` detail (HU-04). Only
+  /// rows with a `transactionId` navigate; solo-deuda rows stay inert.
+  final ValueChanged<String> onOpenTransaction;
+
   /// Opens the Configurar-cuota screen for this debt (HU-03), shown when the
-  /// debt has no cuota configured yet.
-  final ValueChanged<Debt> onConfigureInstallment;
+  /// debt has no cuota configured yet. Carries the current outstanding so the
+  /// cuota form can cap the cuota amount to it (fix 4a-ii).
+  final void Function(Debt debt, int outstandingMinor) onConfigureInstallment;
 
   /// Jumps into Movimientos link mode to attribute an existing movement to the
   /// debt (HU-02); the router wires the navigation.
@@ -91,6 +97,7 @@ class DebtDetailPage extends StatelessWidget {
                         onOpenInstallment: onOpenInstallment,
                         onConfigureInstallment: onConfigureInstallment,
                         onLinkExisting: onLinkExisting,
+                        onOpenTransaction: onOpenTransaction,
                       ),
                     DebtDetailStatus.ready => const SizedBox.shrink(),
                   },
@@ -110,13 +117,15 @@ class DebtDetailReadyView extends StatelessWidget {
     required this.onOpenInstallment,
     required this.onConfigureInstallment,
     required this.onLinkExisting,
+    required this.onOpenTransaction,
     super.key,
   });
 
   final DebtDetailState state;
   final ValueChanged<String> onOpenInstallment;
-  final ValueChanged<Debt> onConfigureInstallment;
+  final void Function(Debt debt, int outstandingMinor) onConfigureInstallment;
   final ValueChanged<Debt> onLinkExisting;
+  final ValueChanged<String> onOpenTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +165,10 @@ class DebtDetailReadyView extends StatelessWidget {
                 )
               else
                 DebtConfigureInstallmentCard(
-                  onTap: () => onConfigureInstallment(debt),
+                  onTap: () => onConfigureInstallment(
+                    debt,
+                    detail.balance.outstandingMinor,
+                  ),
                 ),
               const SizedBox(height: 12),
               Text(
@@ -177,6 +189,7 @@ class DebtDetailReadyView extends StatelessWidget {
                       ? state.runningBalances[index]
                       : 0,
                   currency: debt.currency,
+                  onOpenTransaction: onOpenTransaction,
                 ),
               ],
             ],

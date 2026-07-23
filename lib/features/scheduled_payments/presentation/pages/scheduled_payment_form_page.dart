@@ -154,10 +154,13 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                             MoneyFormatter.parseMinor(state.amountText) ?? 0,
                         currency: state.currency,
                         onChanged: cubit.amountChanged,
-                        errorText: state.failedField ==
-                                ScheduledPaymentDraft.fieldAmountMinor
-                            ? l10n.scheduledPaymentErrorAmount
-                            : null,
+                        errorText: switch (state.failedField) {
+                          ScheduledPaymentDraft.fieldAmountMinor =>
+                            l10n.scheduledPaymentErrorAmount,
+                          ScheduledPaymentFormCubit.fieldAmountExceedsDebt =>
+                            l10n.scheduledPaymentInstallmentAmountExceedsError,
+                          _ => null,
+                        },
                       ),
                     ],
                   ),
@@ -291,6 +294,8 @@ class ScheduledPaymentFormBody extends StatelessWidget {
               : l10n.scheduledPaymentFormOnceDateLabel,
           date: state.nextDate,
           onChanged: cubit.nextDateChanged,
+          // In cuota mode the first payment cannot predate the debt (fix 4a-i).
+          minDate: state.isDebtInstallment ? state.debtCreatedAt : null,
         ),
         if (state.showRecurrenceOptions) ...[
           const SizedBox(height: 8),

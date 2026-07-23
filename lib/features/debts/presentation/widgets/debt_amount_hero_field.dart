@@ -70,9 +70,12 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
     if (amountMinor <= 0) {
       return '';
     }
+    // Seed with "cents only when they exist" (mirror of Transacciones): a whole
+    // COP amount shows no decimals, one carrying cents shows them — the field
+    // still accepts two decimals for every currency (see the formatter below).
     return _money.formatAmount(
       amountMinor,
-      decimalDigits: MoneyFormatter.currencyDecimals(currency),
+      decimalDigits: MoneyFormatter.displayDecimals(amountMinor, currency),
     );
   }
 
@@ -130,8 +133,11 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
             // selection is disabled while the cursor stays visible.
             enableInteractiveSelection: false,
             inputFormatters: [
+              // Always allow two decimals for every currency (COP included),
+              // shown only once the user presses the "," — the same money entry
+              // pattern Transacciones uses (`MoneyFormatter.inputDecimals`).
               MoneyInputFormatter(
-                decimals: MoneyFormatter.currencyDecimals(widget.currency),
+                decimals: MoneyFormatter.inputDecimals(widget.currency),
               ),
             ],
             onChanged: _onChanged,
@@ -153,7 +159,9 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
                 fontSize: 38,
                 fontWeight: FontWeight.w800,
               ),
-              hintText: '${MoneyFormatter.currencySymbol}0',
+              // The `$` already comes from `prefixText`; the hint must not
+              // repeat it, or focusing the field shows a doubled "$$0".
+              hintText: '0',
               hintStyle: theme.textTheme.displaySmall?.copyWith(
                 color: colors.textSecondary,
                 fontSize: 38,

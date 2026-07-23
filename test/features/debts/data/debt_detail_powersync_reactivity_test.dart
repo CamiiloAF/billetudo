@@ -120,6 +120,82 @@ void main() {
     );
   });
 
+  test('editar un movimiento enlazado re-emite el saldo (fix 3c)', () async {
+    final debt = await createDebt();
+    final account = await createAccount();
+    final live = liveOutstanding(debt.id);
+    addTearDown(live.cancel);
+
+    await repository.registerCashEvent(
+      debtId: debt.id,
+      accountId: account.id,
+      amountMinor: 40000,
+      type: TransactionType.expense,
+      currency: 'COP',
+      date: DateTime.now(),
+    );
+    await pumpUntil(() => live.seen.contains(60000));
+
+    // Editing the linked movement's amount must flow into the debt's derived
+    // balance through the same Drift stream — no manual refresh.
+    final tx = await (database.select(database.transactions)
+          ..where((t) => t.debtId.equals(debt.id)))
+        .getSingle();
+    await (database.update(database.transactions)
+          ..where((t) => t.id.equals(tx.id)))
+        .write(
+      TransactionsCompanion(
+        amountMinor: const Value(70000),
+        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      ),
+    );
+
+    await pumpUntil(() => live.seen.contains(30000));
+    expect(
+      live.seen,
+      contains(30000),
+      reason: 'editing the linked movement must re-emit the new balance',
+    );
+  });
+
+  test('borrar un movimiento enlazado re-emite el saldo (fix 3c)', () async {
+    final debt = await createDebt();
+    final account = await createAccount();
+    final live = liveOutstanding(debt.id);
+    addTearDown(live.cancel);
+
+    await repository.registerCashEvent(
+      debtId: debt.id,
+      accountId: account.id,
+      amountMinor: 40000,
+      type: TransactionType.expense,
+      currency: 'COP',
+      date: DateTime.now(),
+    );
+    await pumpUntil(() => live.seen.contains(60000));
+
+    // Soft-deleting the movement drops it from the debt's cash events, so the
+    // balance climbs back to the opening figure.
+    final tx = await (database.select(database.transactions)
+          ..where((t) => t.debtId.equals(debt.id)))
+        .getSingle();
+    await (database.update(database.transactions)
+          ..where((t) => t.id.equals(tx.id)))
+        .write(
+      TransactionsCompanion(
+        deletedAt: Value(DateTime.now()),
+        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      ),
+    );
+
+    await pumpUntil(() => live.seen.lastOrNull == 100000);
+    expect(
+      live.seen.last,
+      100000,
+      reason: 'deleting the linked movement must restore the opening balance',
+    );
+  });
+
   test('ledger abono (DebtEntry) re-emits the live detail', () async {
     final debt = await createDebt();
     final live = liveOutstanding(debt.id);

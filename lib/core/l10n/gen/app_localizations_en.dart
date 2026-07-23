@@ -2398,6 +2398,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledPaymentErrorCategory => 'Choose a category.';
 
   @override
+  String get scheduledPaymentInstallmentAmountExceedsError =>
+      'The installment can\'t be larger than the debt balance.';
+
+  @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';
 
   @override

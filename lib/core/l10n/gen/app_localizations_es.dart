@@ -2402,6 +2402,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduledPaymentErrorCategory => 'Elige una categoría.';
 
   @override
+  String get scheduledPaymentInstallmentAmountExceedsError =>
+      'La cuota no puede superar el saldo de la deuda.';
+
+  @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repetir cada';
 
   @override

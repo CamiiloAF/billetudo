@@ -18,6 +18,7 @@ class DebtLedgerRow extends StatelessWidget {
     required this.direction,
     required this.runningMinor,
     required this.currency,
+    this.onOpenTransaction,
     super.key,
   });
 
@@ -25,6 +26,10 @@ class DebtLedgerRow extends StatelessWidget {
   final DebtDirection direction;
   final int runningMinor;
   final String currency;
+
+  /// Opens the underlying `Transaction`'s detail (HU-04). Only cash rows carry
+  /// a `transactionId`; solo-deuda rows (interest/adjustment) are not tappable.
+  final ValueChanged<String>? onOpenTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,15 @@ class DebtLedgerRow extends StatelessWidget {
         ? '${DebtFormat.dateShort(context, entry.date)} · $note'
         : DebtFormat.dateShort(context, entry.date);
 
-    return Padding(
+    // A cash row deep-links into its movement's detail; a solo-deuda row has no
+    // movement behind it, so it stays inert.
+    final transactionId = entry.transactionId;
+    final onOpenTransaction = this.onOpenTransaction;
+    final onTap = isCash && transactionId != null && onOpenTransaction != null
+        ? () => onOpenTransaction(transactionId)
+        : null;
+
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
       child: Row(
         children: [
@@ -137,6 +150,19 @@ class DebtLedgerRow extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) {
+      return row;
+    }
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: row,
       ),
     );
   }

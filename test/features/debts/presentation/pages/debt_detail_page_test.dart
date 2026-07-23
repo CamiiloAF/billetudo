@@ -62,8 +62,9 @@ void main() {
   Future<void> pump(
     WidgetTester tester,
     DebtDetailState state, {
-    ValueChanged<Debt>? onConfigureInstallment,
+    void Function(Debt debt, int outstandingMinor)? onConfigureInstallment,
     ValueChanged<String>? onOpenInstallment,
+    ValueChanged<String>? onOpenTransaction,
   }) async {
     await tester.binding.setSurfaceSize(const Size(420, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -79,8 +80,9 @@ void main() {
           child: DebtDetailPage(
             onEdit: (_) {},
             onOpenInstallment: onOpenInstallment ?? (_) {},
-            onConfigureInstallment: onConfigureInstallment ?? (_) {},
+            onConfigureInstallment: onConfigureInstallment ?? (_, __) {},
             onLinkExisting: (_) {},
+            onOpenTransaction: onOpenTransaction ?? (_) {},
           ),
         ),
       ),
@@ -117,7 +119,7 @@ void main() {
       await pump(
         tester,
         readyState,
-        onConfigureInstallment: (debt) => configuredDebt = debt,
+        onConfigureInstallment: (debt, _) => configuredDebt = debt,
       );
 
       expect(find.byType(DebtConfigureInstallmentCard), findsOneWidget);
@@ -153,6 +155,38 @@ void main() {
       await tester.tap(find.byType(DebtInstallmentCard));
       await tester.pumpAndSettle();
       expect(openedSpId, 'sp-9');
+    });
+  });
+
+  group('HU-04: ver el movimiento desde el ledger (3c)', () {
+    testWidgets('tocar una fila cash abre el detalle de su movimiento',
+        (tester) async {
+      String? openedTx;
+      await pump(
+        tester,
+        readyState,
+        onOpenTransaction: (id) => openedTx = id,
+      );
+
+      // The first ledger row is the cash payment (transactionId 't1').
+      await tester.tap(find.byType(DebtLedgerRow).first);
+      await tester.pumpAndSettle();
+      expect(openedTx, 't1');
+    });
+
+    testWidgets('la fila de apertura (sin transactionId) no navega',
+        (tester) async {
+      var opened = false;
+      await pump(
+        tester,
+        readyState,
+        onOpenTransaction: (_) => opened = true,
+      );
+
+      // The second ledger row is the opening balance: no movement behind it.
+      await tester.tap(find.byType(DebtLedgerRow).at(1));
+      await tester.pumpAndSettle();
+      expect(opened, isFalse);
     });
   });
 }

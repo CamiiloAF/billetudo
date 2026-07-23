@@ -37,6 +37,12 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
   final DeleteScheduledPayment _deleteScheduledPayment;
   final WatchAccounts _watchAccounts;
 
+  /// `ValidationFailure.field` used when a debt cuota's amount exceeds the
+  /// debt's outstanding balance (fix 4a-ii). Distinct from
+  /// `ScheduledPaymentDraft.fieldAmountMinor` (the "> 0" rule) so the form can
+  /// show a specific message in the amount zone.
+  static const String fieldAmountExceedsDebt = 'amountExceedsDebt';
+
   /// Loads the template to edit, or prepares an empty form when [id] is null.
   Future<void> load(String? id) async {
     if (id == null) {
@@ -144,6 +150,8 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     // ignore: avoid_positional_boolean_parameters
     required bool debtIsIOwe,
     String? scheduledPaymentId,
+    DateTime? debtCreatedAt,
+    int? debtOutstandingMinor,
   }) async {
     await load(scheduledPaymentId);
     if (isClosed || state.status != ScheduledPaymentFormStatus.ready) {
@@ -157,6 +165,8 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
         debtId: debtId,
         debtName: debtName,
         debtIsIOwe: debtIsIOwe,
+        debtCreatedAt: debtCreatedAt,
+        debtOutstandingMinor: debtOutstandingMinor,
       ),
     );
   }
@@ -303,6 +313,13 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
   }
 
   Future<void> submit() async {
+    // Re-entrancy guard (fix 4b): a second tap while the first save is still in
+    // flight would create a duplicate cuota and race the success emit. The
+    // header CTA is disabled on `isSaving`, but two taps can land in the same
+    // frame before the rebuild, so the cubit is the safe place to enforce it.
+    if (state.isSaving) {
+      return;
+    }
     final Result<ScheduledPaymentDraft> validated = _buildDraft();
     final ScheduledPaymentDraft draft;
     switch (validated) {
@@ -311,6 +328,21 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
         return;
       case Right(value: final built):
         draft = built;
+    }
+
+    // Fix 4a-ii: a debt cuota cannot be larger than what is still owed. Only
+    // enforced when the outstanding travelled in from the debt detail.
+    final outstanding = state.debtOutstandingMinor;
+    if (outstanding != null && draft.amountMinor > outstanding) {
+      emit(
+        state.copyWith(
+          failure: const ValidationFailure(
+            'the cuota cannot exceed the debt balance',
+            field: fieldAmountExceedsDebt,
+          ),
+        ),
+      );
+      return;
     }
 
     emit(state.copyWith(status: ScheduledPaymentFormStatus.saving));

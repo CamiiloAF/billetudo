@@ -5,6 +5,8 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../transactions/presentation/pages/transactions_page.dart';
 import '../../../transactions/presentation/widgets/transactions_link_mode.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/debt_cash_event.dart';
+import '../../domain/services/debt_event_rules.dart';
 import '../cubit/debt_link_cubit.dart';
 import '../utils/debt_format.dart';
 
@@ -31,6 +33,14 @@ class DebtLinkModePage extends StatelessWidget {
         onCancel: () => Navigator.of(context).pop(),
         onLinkTransaction: (transactionId) =>
             _link(context, transactionId),
+        // Only the movements that can be an abono of this debt are linkable:
+        // "Yo debo" → gastos, "Me deben" → ingresos (HU-02), and never one
+        // dated before the debt existed.
+        requiredType: DebtEventRules.cashEventType(
+          direction: debt.direction,
+          kind: DebtCashEventKind.payment,
+        ),
+        notBefore: debt.createdAt,
       ),
     );
   }

@@ -228,6 +228,8 @@ class DebtInstallmentContext {
     required this.debtId,
     required this.debtName,
     required this.iOwe,
+    this.debtCreatedAt,
+    this.debtOutstandingMinor,
   });
 
   final String debtId;
@@ -235,6 +237,17 @@ class DebtInstallmentContext {
 
   /// `DebtDirection.iOwe` → the cuota is an expense; `owedToMe` → income.
   final bool iOwe;
+
+  /// The debt's creation date, when the flow starts from the debt detail
+  /// (Deudas fix 4a-i): the cuota's first payment cannot be dated before it.
+  /// Null on the secondary entry (editing from a Pago Programado detail), where
+  /// the derived outstanding is not cheaply available — the bounds are simply
+  /// not enforced there.
+  final DateTime? debtCreatedAt;
+
+  /// The debt's current derived outstanding balance (Deudas fix 4a-ii): the
+  /// cuota amount cannot exceed it. Null on the secondary entry (see above).
+  final int? debtOutstandingMinor;
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -760,13 +773,18 @@ GoRoute _debtsRoute() => GoRoute(
               onOpenInstallment: (id) =>
                   context.push(AppRoutes.scheduledPayment(id)),
               // Configure the debt's cuota (HU-03): reuses the Pagos Programados
-              // form in cuota mode; the debt context rides in `extra`.
-              onConfigureInstallment: (debt) => context.push(
+              // form in cuota mode; the debt context rides in `extra`. The
+              // debt's creation date and current outstanding travel with it so
+              // the cuota form can bound the first-payment date and the cuota
+              // amount (Deudas fixes 4a).
+              onConfigureInstallment: (debt, outstandingMinor) => context.push(
                 AppRoutes.debtInstallment(debt.id),
                 extra: DebtInstallmentContext(
                   debtId: debt.id,
                   debtName: debt.name,
                   iOwe: debt.direction == DebtDirection.iOwe,
+                  debtCreatedAt: debt.createdAt,
+                  debtOutstandingMinor: outstandingMinor,
                 ),
               ),
               // Attribute an existing movement to the debt (HU-02): the debt
@@ -775,6 +793,9 @@ GoRoute _debtsRoute() => GoRoute(
                 AppRoutes.linkTransactionToDebt(debt.id),
                 extra: debt,
               ),
+              // Open a cash ledger row's movement detail (HU-04).
+              onOpenTransaction: (id) =>
+                  context.push<String>(AppRoutes.transaction(id)),
             ),
           ),
           routes: [
@@ -827,6 +848,8 @@ ScheduledPaymentFormCubit _startedDebtInstallmentForm(
       debtName: debtContext.debtName,
       debtIsIOwe: debtContext.iOwe,
       scheduledPaymentId: scheduledPaymentId,
+      debtCreatedAt: debtContext.debtCreatedAt,
+      debtOutstandingMinor: debtContext.debtOutstandingMinor,
     ),
   );
   return cubit;

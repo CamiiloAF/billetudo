@@ -4232,6 +4232,12 @@ abstract class AppLocalizations {
   /// **'Elige una categoría.'**
   String get scheduledPaymentErrorCategory;
 
+  /// No description provided for @scheduledPaymentInstallmentAmountExceedsError.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuota no puede superar el saldo de la deuda.'**
+  String get scheduledPaymentInstallmentAmountExceedsError;
+
   /// No description provided for @scheduledPaymentFormIntervalStepperLabel.
   ///
   /// In es, this message translates to:

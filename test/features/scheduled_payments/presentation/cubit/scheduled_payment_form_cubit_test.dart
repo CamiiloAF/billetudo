@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
@@ -483,5 +485,120 @@ void main() {
         expect(cubit.state.status, ScheduledPaymentFormStatus.ready);
       },
     );
+  });
+
+  group('HU-03: cuota de deuda (fixes 4a/4b)', () {
+    void stubAccount() {
+      when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right(<AccountWithBalance>[_accountWithBalance(id: 'acc-1')]),
+        ),
+      );
+    }
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      '4a: loadForDebtCuota guarda los límites del contexto de la deuda',
+      setUp: stubAccount,
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        debtId: 'd1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+        debtCreatedAt: DateTime(2026, 3, 10),
+        debtOutstandingMinor: 5000000,
+      ),
+      verify: (cubit) {
+        expect(cubit.state.debtId, 'd1');
+        expect(cubit.state.debtCreatedAt, DateTime(2026, 3, 10));
+        expect(cubit.state.debtOutstandingMinor, 5000000);
+        expect(cubit.state.type, ScheduledPaymentType.expense);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      '4a-ii: una cuota mayor al saldo falla sin crear nada',
+      setUp: stubAccount,
+      build: build,
+      act: (cubit) async {
+        await cubit.loadForDebtCuota(
+          debtId: 'd1',
+          debtName: 'Crédito vehicular',
+          debtIsIOwe: true,
+          debtCreatedAt: DateTime(2026, 3, 10),
+          debtOutstandingMinor: 5000000,
+        );
+        cubit.categorySelected('cat-1', CategoryKind.expense, 'Cuota');
+        // 600.000 en centavos = 60.000.000, muy por encima del saldo.
+        cubit.amountTextChanged('600000');
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(
+          cubit.state.failedField,
+          ScheduledPaymentFormCubit.fieldAmountExceedsDebt,
+        );
+        verifyNever(() => createScheduledPayment(any()));
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      '4a-ii: una cuota dentro del saldo sí se crea',
+      setUp: () {
+        stubAccount();
+        when(() => createScheduledPayment(any()))
+            .thenAnswer((_) async => Right(buildScheduledPayment()));
+        when(() => setScheduledPaymentTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.loadForDebtCuota(
+          debtId: 'd1',
+          debtName: 'Crédito vehicular',
+          debtIsIOwe: true,
+          debtCreatedAt: DateTime(2026, 3, 10),
+          debtOutstandingMinor: 60000000,
+        );
+        cubit.categorySelected('cat-1', CategoryKind.expense, 'Cuota');
+        cubit.amountTextChanged('600000');
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, ScheduledPaymentFormStatus.saved);
+        verify(() => createScheduledPayment(any())).called(1);
+      },
+    );
+
+    test('4b: un segundo submit mientras guarda no crea una cuota duplicada',
+        () async {
+      stubAccount();
+      final completer = Completer<Result<ScheduledPayment>>();
+      when(() => createScheduledPayment(any()))
+          .thenAnswer((_) => completer.future);
+      when(() => setScheduledPaymentTags(any(), any()))
+          .thenAnswer((_) async => const Right(unit));
+
+      final cubit = build();
+      await cubit.loadForDebtCuota(
+        debtId: 'd1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+        debtOutstandingMinor: 60000000,
+      );
+      cubit.categorySelected('cat-1', CategoryKind.expense, 'Cuota');
+      cubit.amountTextChanged('600000');
+
+      // First submit is in flight (create not yet resolved); a second tap must
+      // be ignored so no duplicate cuota is created.
+      final first = cubit.submit();
+      expect(cubit.state.isSaving, isTrue);
+      await cubit.submit();
+      completer.complete(Right(buildScheduledPayment()));
+      await first;
+
+      expect(cubit.state.status, ScheduledPaymentFormStatus.saved);
+      verify(() => createScheduledPayment(any())).called(1);
+      await cubit.close();
+    });
   });
 }

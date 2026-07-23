@@ -1750,6 +1750,8 @@
   "@scheduledPaymentErrorTransferAccount": {},
   "scheduledPaymentErrorCategory": "Elige una categoría.",
   "@scheduledPaymentErrorCategory": {},
+  "scheduledPaymentInstallmentAmountExceedsError": "La cuota no puede superar el saldo de la deuda.",
+  "@scheduledPaymentInstallmentAmountExceedsError": {},
   "scheduledPaymentFormIntervalStepperLabel": "Repetir cada",
   "@scheduledPaymentFormIntervalStepperLabel": {},
   "scheduledPaymentFormEndDateLabel": "Termina",
