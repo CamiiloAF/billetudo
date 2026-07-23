@@ -218,6 +218,38 @@ import 'package:billetudo/features/categories/presentation/cubit/category_form_c
     as _i99;
 import 'package:billetudo/features/categories/presentation/cubit/parent_category_picker_cubit.dart'
     as _i141;
+import 'package:billetudo/features/debts/data/datasources/debts_local_datasource.dart'
+    as _i907;
+import 'package:billetudo/features/debts/data/repositories/debt_repository_impl.dart'
+    as _i454;
+import 'package:billetudo/features/debts/domain/repositories/debt_repository.dart'
+    as _i932;
+import 'package:billetudo/features/debts/domain/services/debt_balance_calculator.dart'
+    as _i1013;
+import 'package:billetudo/features/debts/domain/services/debt_interest_calculator.dart'
+    as _i255;
+import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart'
+    as _i103;
+import 'package:billetudo/features/debts/domain/usecases/create_debt.dart'
+    as _i247;
+import 'package:billetudo/features/debts/domain/usecases/delete_debt.dart'
+    as _i644;
+import 'package:billetudo/features/debts/domain/usecases/link_transaction_to_debt.dart'
+    as _i980;
+import 'package:billetudo/features/debts/domain/usecases/register_debt_cash_event.dart'
+    as _i135;
+import 'package:billetudo/features/debts/domain/usecases/register_debt_ledger_event.dart'
+    as _i62;
+import 'package:billetudo/features/debts/domain/usecases/restore_debt.dart'
+    as _i108;
+import 'package:billetudo/features/debts/domain/usecases/update_debt.dart'
+    as _i779;
+import 'package:billetudo/features/debts/domain/usecases/update_debt_balance.dart'
+    as _i309;
+import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart'
+    as _i1003;
+import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart'
+    as _i42;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
     as _i426;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
@@ -392,6 +424,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i685.BudgetProgressCalculator());
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
         () => const _i529.ZeroBasedSummaryCalculator());
+    gh.lazySingleton<_i1013.DebtBalanceCalculator>(
+        () => const _i1013.DebtBalanceCalculator());
+    gh.lazySingleton<_i255.DebtInterestCalculator>(
+        () => const _i255.DebtInterestCalculator());
     gh.factory<_i559.GetBudgetProgress>(() => _i559.GetBudgetProgress(
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
@@ -430,6 +466,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i99.BudgetsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i907.DebtsLocalDatasource>(
+        () => _i907.DebtsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i276.ScheduledPaymentTagsLocalDatasource>(() =>
         _i276.ScheduledPaymentTagsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i928.ScheduledPaymentsLocalDatasource>(
@@ -553,6 +591,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i433.PowerSyncDatabase>(),
           gh<_i872.PowerSyncConnector>(),
         ));
+    gh.lazySingleton<_i932.DebtRepository>(() => _i454.DebtRepositoryImpl(
+          gh<_i907.DebtsLocalDatasource>(),
+          gh<_i1013.DebtBalanceCalculator>(),
+        ));
     gh.lazySingleton<_i716.TagRepository>(
         () => _i672.TagRepositoryImpl(gh<_i1008.TagsLocalDatasource>()));
     gh.lazySingleton<_i802.CategoryRepository>(
@@ -614,6 +656,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
           gh<_i121.WatchTags>(),
           gh<_i281.CreateTag>(),
+        ));
+    gh.factory<_i103.AccrueInterest>(() => _i103.AccrueInterest(
+          gh<_i932.DebtRepository>(),
+          gh<_i255.DebtInterestCalculator>(),
         ));
     gh.factory<_i102.GetPendingUploadCount>(
         () => _i102.GetPendingUploadCount(gh<_i691.SyncStatusRepository>()));
@@ -698,6 +744,26 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i247.CreateDebt>(
+        () => _i247.CreateDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i644.DeleteDebt>(
+        () => _i644.DeleteDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i980.LinkTransactionToDebt>(
+        () => _i980.LinkTransactionToDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i135.RegisterDebtCashEvent>(
+        () => _i135.RegisterDebtCashEvent(gh<_i932.DebtRepository>()));
+    gh.factory<_i62.RegisterDebtLedgerEvent>(
+        () => _i62.RegisterDebtLedgerEvent(gh<_i932.DebtRepository>()));
+    gh.factory<_i108.RestoreDebt>(
+        () => _i108.RestoreDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i779.UpdateDebt>(
+        () => _i779.UpdateDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i309.UpdateDebtBalance>(
+        () => _i309.UpdateDebtBalance(gh<_i932.DebtRepository>()));
+    gh.factory<_i1003.WatchDebtDetail>(
+        () => _i1003.WatchDebtDetail(gh<_i932.DebtRepository>()));
+    gh.factory<_i42.WatchDebts>(
+        () => _i42.WatchDebts(gh<_i932.DebtRepository>()));
     gh.factory<_i385.ConfirmationSheetCubit>(() => _i385.ConfirmationSheetCubit(
           gh<_i1034.ConfirmScheduledOccurrence>(),
           gh<_i97.SkipScheduledOccurrence>(),
