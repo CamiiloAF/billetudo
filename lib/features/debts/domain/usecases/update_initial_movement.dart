@@ -11,6 +11,12 @@ import '../services/debt_event_rules.dart';
 /// new) `direction` — a disbursement stays a disbursement, so an edit that
 /// flipped the debt's direction flips the movement's type too, keeping the
 /// derived balance an increase.
+///
+/// When `date` is provided the movement's date is re-synced to it as well: the
+/// registro inicial IS the debt's opening event, so its date must always equal
+/// the debt's `startDate`. Moving that date changes no account balance, so it
+/// is applied silently — analogous to the silent `type` re-sync on a direction
+/// change.
 @injectable
 class UpdateInitialMovement {
   const UpdateInitialMovement(this._repository);
@@ -21,6 +27,7 @@ class UpdateInitialMovement {
     required String transactionId,
     required int amountMinor,
     required DebtDirection direction,
+    DateTime? date,
   }) {
     if (amountMinor <= 0) {
       return Future.value(
@@ -39,6 +46,7 @@ class UpdateInitialMovement {
         direction: direction,
         kind: DebtCashEventKind.disbursement,
       ),
+      date: date,
     );
   }
 }

@@ -490,6 +490,125 @@ void main() {
   );
 
   blocTest<DebtFormCubit, DebtFormState>(
+    'editar con registro cambiando SOLO la fecha de inicio re-sincroniza la '
+    'fecha del movimiento en silencio, sin hoja (2b)',
+    setUp: () {
+      when(() => updateDebt.call(any()))
+          .thenAnswer((_) async => Right(buildDebt()));
+      when(
+        () => updateInitialMovement.call(
+          transactionId: any(named: 'transactionId'),
+          amountMinor: any(named: 'amountMinor'),
+          direction: any(named: 'direction'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+    },
+    build: build,
+    // Start date moved (2026-01-01 → 2026-03-15); amount and direction stay.
+    seed: () => DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      amountMinor: 100,
+      openingBaselineMinor: 100,
+      startDate: DateTime(2026, 3, 15),
+      startDateBaseline: DateTime(2026, 1, 1),
+      initialTransactionId: 't-open',
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saving),
+      // No confirmation prompt: moving the registro's date is pure consistency.
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saved)
+          .having((s) => s.prompt, 'prompt', isNull),
+    ],
+    verify: (_) => verify(
+      () => updateInitialMovement.call(
+        transactionId: 't-open',
+        // Amount stays the baseline; only the date is re-synced.
+        amountMinor: 100,
+        direction: DebtDirection.iOwe,
+        date: DateTime(2026, 3, 15),
+      ),
+    ).called(1),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'editar con registro cambiando monto Y fecha: al confirmar la hoja el '
+    'movimiento queda con el nuevo monto y la nueva fecha (2b)',
+    setUp: () {
+      when(() => updateDebt.call(any()))
+          .thenAnswer((_) async => Right(buildDebt()));
+      when(
+        () => updateInitialMovement.call(
+          transactionId: any(named: 'transactionId'),
+          amountMinor: any(named: 'amountMinor'),
+          direction: any(named: 'direction'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+    },
+    build: build,
+    seed: () => DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      amountMinor: 200,
+      openingBaselineMinor: 100,
+      startDate: DateTime(2026, 3, 15),
+      startDateBaseline: DateTime(2026, 1, 1),
+      initialTransactionId: 't-open',
+    ),
+    act: (cubit) async {
+      await cubit.submit();
+      await cubit.confirmUpdateRegistro();
+    },
+    verify: (_) => verify(
+      () => updateInitialMovement.call(
+        transactionId: 't-open',
+        amountMinor: 200,
+        direction: DebtDirection.iOwe,
+        date: DateTime(2026, 3, 15),
+      ),
+    ).called(1),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'editar SIN registro cambiando la fecha no toca ningún movimiento (2b)',
+    setUp: () => when(() => updateDebt.call(any()))
+        .thenAnswer((_) async => Right(buildDebt())),
+    build: build,
+    seed: () => DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      amountMinor: 100,
+      openingBaselineMinor: 100,
+      startDate: DateTime(2026, 3, 15),
+      startDateBaseline: DateTime(2026, 1, 1),
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saving),
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saved)
+          .having((s) => s.prompt, 'prompt', isNull),
+    ],
+    verify: (_) => verifyNever(
+      () => updateInitialMovement.call(
+        transactionId: any(named: 'transactionId'),
+        amountMinor: any(named: 'amountMinor'),
+        direction: any(named: 'direction'),
+        date: any(named: 'date'),
+      ),
+    ),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
     'load(null) arranca con startDate = hoy',
     build: build,
     act: (cubit) => cubit.load(null),

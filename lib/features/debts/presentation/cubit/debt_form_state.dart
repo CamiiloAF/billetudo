@@ -54,6 +54,7 @@ class DebtFormState extends Equatable {
     this.counterparty = '',
     this.currency = 'COP',
     this.startDate,
+    this.startDateBaseline,
     this.dueDate,
     this.rateText = '',
     this.accrualMode = DebtAccrualMode.manual,
@@ -85,6 +86,12 @@ class DebtFormState extends Equatable {
   /// The day the debt started (HU-01). Required, defaults to today for a new
   /// debt, never in the future. Never cleared by the user.
   final DateTime? startDate;
+
+  /// The debt's start date as it was loaded (edit only). Used to detect a
+  /// start-date change so the linked opening movement's date is re-synced
+  /// silently (item 2b) — the registro inicial IS the debt's opening event, so
+  /// its date always follows `startDate`. `null` when creating.
+  final DateTime? startDateBaseline;
 
   final DateTime? dueDate;
   final String rateText;
@@ -125,6 +132,7 @@ class DebtFormState extends Equatable {
     String? counterparty,
     String? currency,
     DateTime? startDate,
+    DateTime? startDateBaseline,
     DateTime? Function()? dueDate,
     String? rateText,
     DebtAccrualMode? accrualMode,
@@ -145,6 +153,7 @@ class DebtFormState extends Equatable {
         counterparty: counterparty ?? this.counterparty,
         currency: currency ?? this.currency,
         startDate: startDate ?? this.startDate,
+        startDateBaseline: startDateBaseline ?? this.startDateBaseline,
         dueDate: dueDate == null ? this.dueDate : dueDate(),
         rateText: rateText ?? this.rateText,
         accrualMode: accrualMode ?? this.accrualMode,
@@ -169,6 +178,7 @@ class DebtFormState extends Equatable {
         counterparty,
         currency,
         startDate,
+        startDateBaseline,
         dueDate,
         rateText,
         accrualMode,

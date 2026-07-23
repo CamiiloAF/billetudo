@@ -234,6 +234,7 @@ class DebtRepositoryImpl implements DebtRepository {
     required String transactionId,
     required int amountMinor,
     required TransactionType type,
+    DateTime? date,
   }) =>
       _guard(() async {
         final now = DateTime.now();
@@ -241,6 +242,7 @@ class DebtRepositoryImpl implements DebtRepository {
           transactionId: transactionId,
           amountMinor: amountMinor,
           type: TransactionMapper.typeToDb(type),
+          date: date,
           updatedAt: now.millisecondsSinceEpoch,
         );
         if (updated == null) {

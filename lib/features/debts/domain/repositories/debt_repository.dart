@@ -57,11 +57,16 @@ abstract class DebtRepository {
   /// Item 2b: keeps a debt's linked opening movement in sync when its opening
   /// figure (or direction) changed on edit. Updates the movement's amount and,
   /// when the direction flipped, its [type] (`income`↔`expense`), stamping
-  /// `updatedAt`. Only ever called for a debt with an `initialTransactionId`.
+  /// `updatedAt`. When [date] is provided, the movement's date is re-synced to
+  /// it too — the registro inicial IS the debt's opening event, so its date must
+  /// follow the debt's `startDate` (a silent consistency sync, it moves no
+  /// account balance). Only ever called for a debt with an
+  /// `initialTransactionId`.
   FutureResult<Unit> updateInitialMovementAmount({
     required String transactionId,
     required int amountMinor,
     required TransactionType type,
+    DateTime? date,
   });
 
   /// Updates a debt (HU-05). Requires `draft.id`. Editing the opening balance

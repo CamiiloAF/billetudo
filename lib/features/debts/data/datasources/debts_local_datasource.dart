@@ -212,13 +212,17 @@ class DebtsLocalDatasource {
       });
 
   /// Item 2b: updates a linked opening movement's amount and type (the type
-  /// changes only when the debt's direction flipped). Same "alive" guard as
-  /// [linkTransaction]. No match returns null.
+  /// changes only when the debt's direction flipped) and, when [date] is
+  /// provided, its date too — the registro inicial IS the debt's opening event,
+  /// so its date must follow the debt's `startDate` (a silent consistency sync,
+  /// it moves no account balance). Same "alive" guard as [linkTransaction]. No
+  /// match returns null.
   Future<Transaction?> updateTransactionAmountAndType({
     required String transactionId,
     required int amountMinor,
     required EntryType type,
     required int updatedAt,
+    DateTime? date,
   }) =>
       (_db.update(_db.transactions)
             ..where(
@@ -231,6 +235,7 @@ class DebtsLocalDatasource {
             TransactionsCompanion(
               amountMinor: Value(amountMinor),
               type: Value(type),
+              date: date == null ? const Value.absent() : Value(date),
               updatedAt: Value(updatedAt),
             ),
           )

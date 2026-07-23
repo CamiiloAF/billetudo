@@ -174,6 +174,76 @@ void main() {
     expect(row.startDate, newStart);
   });
 
+  test(
+    'update inicial con date re-sincroniza la fecha del movimiento (sin tocar '
+    'monto ni tipo)',
+    () async {
+      final account = await createAccount();
+      final created = await repository.createDebtWithOpeningMovement(
+        draft: draft(principalMinor: 4200000, startDate: DateTime(2026, 1, 1)),
+        accountId: account.id,
+        date: DateTime(2026, 1, 1),
+      );
+      final debt = created.getOrElse((_) => throw StateError('debt'));
+      final txId = debt.initialTransactionId!;
+
+      // Start-date-only edit: same amount, same (derived) type, new date.
+      final newDate = DateTime(2026, 3, 15);
+      final result = await repository.updateInitialMovementAmount(
+        transactionId: txId,
+        amountMinor: 4200000,
+        type: TransactionType.income,
+        date: newDate,
+      );
+      expect(result.isRight(), isTrue);
+
+      final tx = await (db.select(db.transactions)
+            ..where((t) => t.id.equals(txId)))
+          .getSingle();
+      expect(tx.date, newDate);
+      expect(tx.amountMinor, 4200000);
+      expect(tx.type, EntryType.income);
+    },
+  );
+
+  test(
+    'editar startDate + re-sync deja el piso de abonos y la fecha del registro '
+    'coherentes',
+    () async {
+      final account = await createAccount();
+      final created = await repository.createDebtWithOpeningMovement(
+        draft: draft(principalMinor: 4200000, startDate: DateTime(2026, 1, 1)),
+        accountId: account.id,
+        date: DateTime(2026, 1, 1),
+      );
+      final debt = created.getOrElse((_) => throw StateError('debt'));
+      final txId = debt.initialTransactionId!;
+
+      final newStart = DateTime(2025, 6, 15);
+      // The debt row keeps its startDate (persisted via updateDebt) …
+      await repository.updateDebt(draft(id: debt.id, startDate: newStart));
+      // … and the linked movement is re-synced to the same date.
+      await repository.updateInitialMovementAmount(
+        transactionId: txId,
+        amountMinor: 4200000,
+        type: TransactionType.income,
+        date: newStart,
+      );
+
+      final updatedDebt =
+          await repository.getDebt(debt.id).then((r) => r.getOrElse((_) {
+                throw StateError('debt');
+              }));
+      final tx = await (db.select(db.transactions)
+            ..where((t) => t.id.equals(txId)))
+          .getSingle();
+      // The backdate floor (debt.effectiveStartDate) and the registro's date
+      // are the same day.
+      expect(updatedDebt.effectiveStartDate, newStart);
+      expect(tx.date, newStart);
+    },
+  );
+
   test('crear con registro "Me deben": el desembolso es un gasto', () async {
     final account = await createAccount();
     final result = await repository.createDebtWithOpeningMovement(

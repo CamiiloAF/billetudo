@@ -111,6 +111,7 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       counterparty: debt.counterparty ?? '',
       currency: debt.currency,
       startDate: debt.effectiveStartDate,
+      startDateBaseline: debt.effectiveStartDate,
       dueDate: debt.dueDate,
       rateText: debt.interestRateBps == null
           ? ''
@@ -257,18 +258,20 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       ),
       (_) {
         // The debt row is saved. The linked opening movement (item 2b) may need
-        // to follow the edit in one of two ways:
+        // to follow the edit in one of three ways:
         final amountChanged = state.hasInitialMovement &&
             state.amountMinor > 0 &&
             state.amountMinor != state.openingBaselineMinor;
-        final directionChanged =
-            state.hasInitialMovement && state.direction != state.directionBaseline;
+        final directionChanged = state.hasInitialMovement &&
+            state.direction != state.directionBaseline;
+        final startDateChanged = _startDateChanged();
 
         if (amountChanged) {
           // The opening figure moved: this is a money decision, so we ask
-          // before touching the linked movement. `confirmUpdateRegistro` also
-          // re-syncs the type from the current direction, so a combined
-          // amount+direction edit is covered by this path too.
+          // before touching the linked movement. `confirmUpdateRegistro`
+          // re-syncs the type from the current direction and the date from the
+          // current start date too, so a combined amount+direction+date edit is
+          // covered by this single path.
           emit(
             state.copyWith(
               status: DebtFormStatus.ready,
@@ -278,13 +281,14 @@ class DebtFormCubit extends Cubit<DebtFormState> {
               ),
             ),
           );
-        } else if (directionChanged) {
-          // Only the direction flipped (Yo debo ↔ Me deben) with the opening
-          // figure untouched: the movement's `type` (income↔expense) is a
-          // derived value, not a user money decision, so re-sync it silently —
-          // no sheet — or its sign would invert without the linked movement
-          // following (edge case 2b).
-          unawaited(_resyncInitialMovementType());
+        } else if (directionChanged || startDateChanged) {
+          // The opening figure is untouched, but the direction and/or the start
+          // date changed. Neither is a money decision — the movement's `type`
+          // (income↔expense) is derived from the direction, and its date IS the
+          // debt's opening event date — so re-sync both silently, no sheet
+          // (edge case 2b). Otherwise the movement's sign or its date would
+          // drift from the debt.
+          unawaited(_resyncInitialMovementSilently());
         } else {
           emit(state.copyWith(status: DebtFormStatus.saved));
         }
@@ -367,6 +371,9 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       transactionId: transactionId,
       amountMinor: state.amountMinor,
       direction: state.direction,
+      // A combined amount+date edit syncs the date on this same confirm, so the
+      // money sheet never leaves the registro's date behind.
+      date: _startDateChanged() ? state.startDate : null,
     );
     if (isClosed) {
       return;
@@ -382,12 +389,13 @@ class DebtFormCubit extends Cubit<DebtFormState> {
     );
   }
 
-  /// Edge case 2b: after a direction-only edit, re-sync the linked opening
-  /// movement's type silently (the amount is unchanged, so it stays the
-  /// baseline). No sheet — the type is derived from the direction, not a money
-  /// decision. On failure the debt is still saved, so we surface the failure but
-  /// leave the form.
-  Future<void> _resyncInitialMovementType() async {
+  /// Edge case 2b: after a direction-only and/or start-date-only edit, re-sync
+  /// the linked opening movement silently (the amount is unchanged, so it stays
+  /// the baseline). No sheet — the type is derived from the direction and the
+  /// date IS the debt's opening event date, neither is a money decision. On
+  /// failure the debt is still saved, so we surface the failure but leave the
+  /// form.
+  Future<void> _resyncInitialMovementSilently() async {
     final transactionId = state.initialTransactionId;
     if (transactionId == null) {
       emit(state.copyWith(status: DebtFormStatus.saved));
@@ -397,6 +405,7 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       transactionId: transactionId,
       amountMinor: state.openingBaselineMinor,
       direction: state.direction,
+      date: _startDateChanged() ? state.startDate : null,
     );
     if (isClosed) {
       return;
@@ -410,6 +419,21 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       ),
       (_) => emit(state.copyWith(status: DebtFormStatus.saved)),
     );
+  }
+
+  /// Whether the debt's start date moved (at day precision) from what the form
+  /// loaded — only meaningful for a debt with a linked opening movement. The
+  /// registro inicial's date must always equal the debt's `startDate`, so a
+  /// change here triggers a silent date re-sync of that movement (item 2b).
+  bool _startDateChanged() {
+    final current = state.startDate;
+    final baseline = state.startDateBaseline;
+    if (!state.hasInitialMovement || current == null || baseline == null) {
+      return false;
+    }
+    return current.year != baseline.year ||
+        current.month != baseline.month ||
+        current.day != baseline.day;
   }
 
   /// Today at day precision — a new debt's default start date.
