@@ -488,7 +488,7 @@
   "debtUpdateRegistroMessage": "Changing the opening balance will update the initial record from {from} to {to}.",
   "debtUpdateRegistroConfirm": "Update",
   "debtOpeningLinkSnackbar": "Initial balance · no account linked",
-  "debtOpeningLinkAction": "Link",
+  "debtLedgerAbonoNoAccountSnackbar": "This payment didn't move any account",
   "moreScheduledPayments": "Scheduled payments",
   "moreScheduledPaymentsDescription": "Automatic payments and income",
   "moreReports": "Charts and reports",

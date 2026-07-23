@@ -19,7 +19,6 @@ import '../widgets/debt_ledger_row.dart';
 import '../widgets/debt_ledger_skeleton_row.dart';
 import '../widgets/debt_meta_card.dart';
 import '../widgets/debt_skeleton_box.dart';
-import '../widgets/sheets/debt_account_picker_sheet.dart';
 import '../widgets/sheets/debt_payment_sheet.dart';
 import '../widgets/sheets/debt_update_balance_sheet.dart';
 
@@ -193,6 +192,8 @@ class DebtDetailReadyView extends StatelessWidget {
                   onOpenTransaction: onOpenTransaction,
                   initialTransactionId: debt.initialTransactionId,
                   onLinkOpening: () => _showOpeningLinkSnackbar(context),
+                  onLedgerPaymentNoAccount: () =>
+                      _showLedgerPaymentNoAccountSnackbar(context),
                 ),
               ],
             ],
@@ -211,9 +212,9 @@ class DebtDetailReadyView extends StatelessWidget {
     );
   }
 
-  /// Item 2 (retro-link): the synthetic opening row was tapped. It looks like a
-  /// dead row today, so we explain it and offer to link an account. Neutral
-  /// snackbar (no guilt): "Saldo inicial · sin cuenta enlazada" + "Enlazar".
+  /// The synthetic opening row (no linked account) was tapped. It looks like a
+  /// dead row otherwise, so a neutral feedback snackbar explains it — no action,
+  /// auto-dismiss: "Saldo inicial · sin cuenta enlazada".
   void _showOpeningLinkSnackbar(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context)
@@ -221,33 +222,24 @@ class DebtDetailReadyView extends StatelessWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(l10n.debtOpeningLinkSnackbar),
-          action: SnackBarAction(
-            label: l10n.debtOpeningLinkAction,
-            onPressed: () => unawaited(_pickAccountForOpening(context)),
-          ),
+          duration: const Duration(seconds: 3),
         ),
       );
   }
 
-  Future<void> _pickAccountForOpening(BuildContext context) async {
-    final cubit = context.read<DebtDetailCubit>();
-    final accounts = cubit.state.accounts;
-    final accountId = await DebtAccountPickerSheet.show(
-      context,
-      accounts: accounts,
-      selectedId: accounts.isEmpty ? null : accounts.first.account.id,
-    );
-    if (accountId == null || !context.mounted) {
-      return;
-    }
-    final linked = await cubit.attributeOpeningToAccount(accountId);
-    if (!linked && context.mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).debtLinkError)),
-        );
-    }
+  /// A cash-less abono row (toggle "No") was tapped. It has no underlying
+  /// movement to open, so a neutral feedback snackbar explains it — no action,
+  /// auto-dismiss: "Este abono no movió ninguna cuenta".
+  void _showLedgerPaymentNoAccountSnackbar(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.debtLedgerAbonoNoAccountSnackbar),
+          duration: const Duration(seconds: 3),
+        ),
+      );
   }
 }
 

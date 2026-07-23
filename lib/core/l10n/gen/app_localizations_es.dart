@@ -1537,7 +1537,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtOpeningLinkSnackbar => 'Saldo inicial · sin cuenta enlazada';
 
   @override
-  String get debtOpeningLinkAction => 'Enlazar';
+  String get debtLedgerAbonoNoAccountSnackbar =>
+      'Este abono no movió ninguna cuenta';
 
   @override
   String get moreScheduledPayments => 'Pagos programados';

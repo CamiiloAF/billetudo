@@ -1,11 +1,8 @@
 import 'package:billetudo/core/error/result.dart';
-import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
-import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_detail.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
 import 'package:billetudo/features/debts/domain/services/debt_interest_calculator.dart';
-import 'package:billetudo/features/debts/domain/usecases/attribute_opening_to_account.dart';
 import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_state.dart';
@@ -17,15 +14,8 @@ import 'debts_presentation_fixtures.dart';
 
 class MockWatchDebtDetail extends Mock implements WatchDebtDetail {}
 
-class MockWatchAccounts extends Mock implements WatchAccounts {}
-
-class MockAttributeOpeningToAccount extends Mock
-    implements AttributeOpeningToAccount {}
-
 void main() {
   late MockWatchDebtDetail watchDebtDetail;
-  late MockWatchAccounts watchAccounts;
-  late MockAttributeOpeningToAccount attributeOpening;
 
   const calculator = DebtInterestCalculator();
 
@@ -55,19 +45,9 @@ void main() {
 
   setUp(() {
     watchDebtDetail = MockWatchDebtDetail();
-    watchAccounts = MockWatchAccounts();
-    attributeOpening = MockAttributeOpeningToAccount();
-    when(watchAccounts.call).thenAnswer(
-      (_) => Stream.value(const Right(<AccountWithBalance>[])),
-    );
   });
 
-  DebtDetailCubit build() => DebtDetailCubit(
-        watchDebtDetail,
-        calculator,
-        watchAccounts,
-        attributeOpening,
-      );
+  DebtDetailCubit build() => DebtDetailCubit(watchDebtDetail, calculator);
 
   blocTest<DebtDetailCubit, DebtDetailState>(
     'ready: expone el saldo corrido por fila, del más nuevo al más viejo',

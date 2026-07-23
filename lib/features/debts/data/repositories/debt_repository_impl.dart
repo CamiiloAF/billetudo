@@ -252,55 +252,6 @@ class DebtRepositoryImpl implements DebtRepository {
       });
 
   @override
-  FutureResult<Debt> attributeOpeningToAccount({
-    required String debtId,
-    required String accountId,
-  }) =>
-      _guard(() async {
-        final debtRow = await _local.getDebt(debtId);
-        if (debtRow == null) {
-          return Left(NotFoundFailure('debt "$debtId" does not exist'));
-        }
-        final debt = DebtMapper.toEntity(debtRow);
-        if (debt.principalMinor <= 0) {
-          return const Left(
-            ValidationFailure(
-              'the debt has no opening principal to attribute',
-              field: DebtDraft.fieldPrincipalMinor,
-            ),
-          );
-        }
-        final now = DateTime.now();
-        final type = DebtEventRules.cashEventType(
-          direction: debt.direction,
-          kind: DebtCashEventKind.disbursement,
-        );
-        final movementCompanion = db.TransactionsCompanion.insert(
-          accountId: accountId,
-          amountMinor: debt.principalMinor,
-          currency: debt.currency,
-          type: TransactionMapper.typeToDb(type),
-          // The opening movement is dated at the debt's start date, so it heads
-          // the ledger exactly where the synthetic opening row used to sit and
-          // the abono/adjust floor (which is `startDate`) can backdate onto it.
-          date: debt.effectiveStartDate,
-          source: const Value(db.TxSource.manual),
-          debtId: Value(debt.id),
-          createdAt: Value(now),
-          updatedAt: Value(now.millisecondsSinceEpoch),
-        );
-        final row = await _local.attributeOpeningToAccount(
-          debtId: debtId,
-          movementCompanion: movementCompanion,
-          updatedAt: now.millisecondsSinceEpoch,
-        );
-        if (row == null) {
-          return Left(NotFoundFailure('debt "$debtId" does not exist'));
-        }
-        return Right(DebtMapper.toEntity(row));
-      });
-
-  @override
   FutureResult<Debt> updateDebt(DebtDraft draft) => _guard(() async {
         final id = draft.id;
         if (id == null) {

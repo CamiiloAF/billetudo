@@ -2792,11 +2792,11 @@ abstract class AppLocalizations {
   /// **'Saldo inicial · sin cuenta enlazada'**
   String get debtOpeningLinkSnackbar;
 
-  /// No description provided for @debtOpeningLinkAction.
+  /// No description provided for @debtLedgerAbonoNoAccountSnackbar.
   ///
   /// In es, this message translates to:
-  /// **'Enlazar'**
-  String get debtOpeningLinkAction;
+  /// **'Este abono no movió ninguna cuenta'**
+  String get debtLedgerAbonoNoAccountSnackbar;
 
   /// No description provided for @moreScheduledPayments.
   ///

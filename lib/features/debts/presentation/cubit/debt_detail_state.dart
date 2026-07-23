@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
-import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../domain/entities/debt_detail.dart';
 
 /// The three states the debt detail renders (frames `cUzp6`/`ZQIPe`/`tVUoU`).
@@ -36,7 +35,6 @@ class DebtDetailState extends Equatable {
     this.runningBalances = const [],
     this.dailyGrowthMinor,
     this.installment,
-    this.accounts = const [],
     this.failure,
   });
 
@@ -59,10 +57,6 @@ class DebtDetailState extends Equatable {
   /// linkage is not wired yet — see [DebtInstallmentView]).
   final DebtInstallmentView? installment;
 
-  /// Active accounts, for the retro-link account picker (item 2). Loaded once
-  /// when the detail cubit starts.
-  final List<AccountWithBalance> accounts;
-
   final Failure? failure;
 
   bool get isLoading => status == DebtDetailStatus.loading;
@@ -73,7 +67,6 @@ class DebtDetailState extends Equatable {
     List<int>? runningBalances,
     int? dailyGrowthMinor,
     DebtInstallmentView? installment,
-    List<AccountWithBalance>? accounts,
     Failure? failure,
   }) =>
       DebtDetailState(
@@ -82,7 +75,6 @@ class DebtDetailState extends Equatable {
         runningBalances: runningBalances ?? this.runningBalances,
         dailyGrowthMinor: dailyGrowthMinor,
         installment: installment,
-        accounts: accounts ?? this.accounts,
         failure: failure,
       );
 
@@ -93,7 +85,6 @@ class DebtDetailState extends Equatable {
         runningBalances,
         dailyGrowthMinor,
         installment,
-        accounts,
         failure,
       ];
 }

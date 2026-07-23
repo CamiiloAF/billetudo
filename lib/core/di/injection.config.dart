@@ -232,8 +232,6 @@ import 'package:billetudo/features/debts/domain/services/debt_interest_calculato
     as _i255;
 import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart'
     as _i103;
-import 'package:billetudo/features/debts/domain/usecases/attribute_opening_to_account.dart'
-    as _i89;
 import 'package:billetudo/features/debts/domain/usecases/create_debt.dart'
     as _i247;
 import 'package:billetudo/features/debts/domain/usecases/create_debt_with_opening_movement.dart'
@@ -767,8 +765,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
-    gh.factory<_i89.AttributeOpeningToAccount>(
-        () => _i89.AttributeOpeningToAccount(gh<_i932.DebtRepository>()));
     gh.factory<_i247.CreateDebt>(
         () => _i247.CreateDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i398.CreateDebtWithOpeningMovement>(
@@ -869,12 +865,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
-    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
-          gh<_i1003.WatchDebtDetail>(),
-          gh<_i255.DebtInterestCalculator>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i89.AttributeOpeningToAccount>(),
-        ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(
               gh<_i242.CreateScheduledPayment>(),
@@ -908,6 +898,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
+        ));
+    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i255.DebtInterestCalculator>(),
         ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),

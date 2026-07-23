@@ -64,17 +64,6 @@ abstract class DebtRepository {
     required TransactionType type,
   });
 
-  /// Item 2 (retro-link): attributes an existing debt's opening balance to an
-  /// account, atomically. Moves the opening figure out of `principalMinor`
-  /// (set to 0) into a new `disbursement` `Transaction` on [accountId], dated
-  /// at the debt's `createdAt`, and points `initialTransactionId` at it. The
-  /// derived balance does not change (principal $X → movement $X); only the
-  /// account moves.
-  FutureResult<Debt> attributeOpeningToAccount({
-    required String debtId,
-    required String accountId,
-  });
-
   /// Updates a debt (HU-05). Requires `draft.id`. Editing the opening balance
   /// never touches the ledger.
   FutureResult<Debt> updateDebt(DebtDraft draft);

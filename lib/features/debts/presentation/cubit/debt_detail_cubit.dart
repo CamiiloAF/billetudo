@@ -4,13 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
-import '../../../accounts/domain/entities/account_with_balance.dart';
-import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_balance.dart';
 import '../../domain/entities/debt_detail.dart';
 import '../../domain/services/debt_interest_calculator.dart';
-import '../../domain/usecases/attribute_opening_to_account.dart';
 import '../../domain/usecases/watch_debt_detail.dart';
 import 'debt_detail_state.dart';
 
@@ -25,50 +22,20 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
   DebtDetailCubit(
     this._watchDebtDetail,
     this._interestCalculator,
-    this._watchAccounts,
-    this._attributeOpeningToAccount,
   ) : super(const DebtDetailState());
 
   final WatchDebtDetail _watchDebtDetail;
   final DebtInterestCalculator _interestCalculator;
-  final WatchAccounts _watchAccounts;
-  final AttributeOpeningToAccount _attributeOpeningToAccount;
 
   StreamSubscription<Result<DebtDetail>>? _subscription;
   String? _debtId;
 
-  /// Subscribes to the debt's detail stream, and loads the active accounts for
-  /// the retro-link picker (item 2). Safe to call again to retry.
+  /// Subscribes to the debt's detail stream. Safe to call again to retry.
   Future<void> start(String debtId) async {
     _debtId = debtId;
     await _subscription?.cancel();
     emit(const DebtDetailState());
-    final accounts = await _loadAccounts();
-    if (isClosed) {
-      return;
-    }
-    emit(state.copyWith(accounts: accounts));
     _subscription = _watchDebtDetail(debtId).listen(_onDetail);
-  }
-
-  Future<List<AccountWithBalance>> _loadAccounts() async {
-    final result = await _watchAccounts().first;
-    return result.fold((_) => const <AccountWithBalance>[], (list) => list);
-  }
-
-  /// Item 2 (retro-link): attributes the debt's opening balance to [accountId].
-  /// The detail stream re-emits on its own once the movement lands, so nothing
-  /// is refreshed by hand. Returns whether it succeeded.
-  Future<bool> attributeOpeningToAccount(String accountId) async {
-    final debtId = _debtId;
-    if (debtId == null) {
-      return false;
-    }
-    final result = await _attributeOpeningToAccount(
-      debtId: debtId,
-      accountId: accountId,
-    );
-    return result.fold((_) => false, (_) => true);
   }
 
   /// Retries the last load after a failure. The debt id lives in the route, not

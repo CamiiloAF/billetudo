@@ -9,7 +9,7 @@ import 'package:billetudo/features/transactions/domain/entities/transaction.dart
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Data-layer coverage of the registro-inicial model (item 2 / 2b / retro-link).
+/// Data-layer coverage of the registro-inicial model (item 2 / 2b).
 ///
 /// The load-bearing invariant: a debt of $X with an opening movement derives to
 /// exactly $X (never $2X), backed by a single `Transaction` that moved the
@@ -102,44 +102,6 @@ void main() {
     );
   });
 
-  test(
-    'retro-link: principal \$X → 0 + una tx, derivado sigue \$X, cuenta movida',
-    () async {
-      final account = await createAccount();
-      final created =
-          await repository.createDebt(draft(principalMinor: 4200000));
-      final debt = created.getOrElse((_) => throw StateError('debt'));
-
-      final before = await repository.getBalance(debt.id);
-      expect(
-        before.getOrElse((_) => throw StateError('b')).outstandingMinor,
-        4200000,
-      );
-
-      final result = await repository.attributeOpeningToAccount(
-        debtId: debt.id,
-        accountId: account.id,
-      );
-      final linked = result.getOrElse((_) => throw StateError('linked'));
-
-      expect(linked.principalMinor, 0);
-      expect(linked.initialTransactionId, isNotNull);
-
-      final txs = await debtTransactions(debt.id);
-      expect(txs, hasLength(1));
-      expect(txs.single.amountMinor, 4200000);
-      expect(txs.single.accountId, account.id);
-      expect(txs.single.type, EntryType.income);
-
-      final after = await repository.getBalance(debt.id);
-      expect(
-        after.getOrElse((_) => throw StateError('a')).outstandingMinor,
-        4200000,
-        reason: 'the derived balance does not change; only the account moves',
-      );
-    },
-  );
-
   test('update inicial: cambia monto y tipo cuando cambia la dirección',
       () async {
     final account = await createAccount();
@@ -211,34 +173,6 @@ void main() {
         await (db.select(db.debts)..where((d) => d.id.equals(debt.id))).getSingle();
     expect(row.startDate, newStart);
   });
-
-  test(
-    'retro-link: el movimiento inicial se fecha en startDate, no en createdAt',
-    () async {
-      final account = await createAccount();
-      // A debt that started well before it was recorded today.
-      final start = DateTime(2025, 1, 10);
-      final created = await repository.createDebt(draft(startDate: start));
-      final debt = created.getOrElse((_) => throw StateError('debt'));
-      expect(
-        debt.createdAt.isAfter(start),
-        isTrue,
-        reason: 'createdAt is "now", after the past start date',
-      );
-
-      await repository.attributeOpeningToAccount(
-        debtId: debt.id,
-        accountId: account.id,
-      );
-
-      final txs = await debtTransactions(debt.id);
-      expect(
-        txs.single.date,
-        start,
-        reason: 'the opening movement heads the ledger at the start date',
-      );
-    },
-  );
 
   test('crear con registro "Me deben": el desembolso es un gasto', () async {
     final account = await createAccount();

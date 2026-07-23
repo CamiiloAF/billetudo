@@ -188,5 +188,54 @@ void main() {
       await tester.pumpAndSettle();
       expect(opened, isFalse);
     });
+
+    testWidgets(
+        'la fila de apertura muestra el snackbar de feedback sin acción '
+        '"Enlazar"', (tester) async {
+      await pump(tester, readyState);
+
+      // The second ledger row is the synthetic opening balance.
+      await tester.tap(find.byType(DebtLedgerRow).at(1));
+      await tester.pump();
+      expect(find.text('Saldo inicial · sin cuenta enlazada'), findsOneWidget);
+      expect(find.text('Enlazar'), findsNothing);
+      expect(find.byType(SnackBarAction), findsNothing);
+    });
+  });
+
+  testWidgets(
+      'tocar un abono sin caja (ledgerPayment sin tx) muestra el snackbar de '
+      'feedback', (tester) async {
+    final abonoState = DebtDetailState(
+      status: DebtDetailStatus.ready,
+      detail: buildDebtDetail(
+        debt: buildDebt(id: 'd1', name: 'Préstamo a Ana'),
+        balance: buildBalance(
+          principalMinor: 100000,
+          totalIncreasesMinor: 100000,
+          totalDecreasesMinor: 20000,
+        ),
+        ledger: [
+          buildLedgerEntry(
+            id: 'abono',
+            kind: DebtLedgerKind.ledgerPayment,
+            effectMinor: -20000,
+          ),
+          buildLedgerEntry(
+            id: 'open',
+            kind: DebtLedgerKind.opening,
+            effectMinor: 100000,
+          ),
+        ],
+      ),
+      runningBalances: const [80000, 100000],
+    );
+
+    await pump(tester, abonoState);
+
+    // The first row is the cash-less abono: no movement behind it.
+    await tester.tap(find.byType(DebtLedgerRow).first);
+    await tester.pump();
+    expect(find.text('Este abono no movió ninguna cuenta'), findsOneWidget);
   });
 }

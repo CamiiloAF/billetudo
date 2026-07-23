@@ -1533,7 +1533,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtOpeningLinkSnackbar => 'Initial balance · no account linked';
 
   @override
-  String get debtOpeningLinkAction => 'Link';
+  String get debtLedgerAbonoNoAccountSnackbar =>
+      'This payment didn\'t move any account';
 
   @override
   String get moreScheduledPayments => 'Scheduled payments';

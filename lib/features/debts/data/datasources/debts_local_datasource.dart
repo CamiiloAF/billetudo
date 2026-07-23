@@ -211,30 +211,6 @@ class DebtsLocalDatasource {
         return rows.first;
       });
 
-  /// Item 2 (retro-link): inserts the opening `disbursement` movement (which
-  /// already carries the debt id) and, in the same transaction, moves the debt
-  /// to `principalMinor == 0` with `initialTransactionId` pointing at it. The
-  /// "alive" guard mirrors [updateDebt]. No match returns null.
-  Future<Debt?> attributeOpeningToAccount({
-    required String debtId,
-    required TransactionsCompanion movementCompanion,
-    required int updatedAt,
-  }) =>
-      _db.transaction(() async {
-        final movement =
-            await _db.into(_db.transactions).insertReturning(movementCompanion);
-        final rows = await (_db.update(_db.debts)
-              ..where((d) => d.id.equals(debtId) & _aliveDebt(d)))
-            .writeReturning(
-          DebtsCompanion(
-            principalMinor: const Value(0),
-            initialTransactionId: Value(movement.id),
-            updatedAt: Value(updatedAt),
-          ),
-        );
-        return rows.isEmpty ? null : rows.first;
-      });
-
   /// Item 2b: updates a linked opening movement's amount and type (the type
   /// changes only when the debt's direction flipped). Same "alive" guard as
   /// [linkTransaction]. No match returns null.
