@@ -203,7 +203,7 @@ class AccountFormSelectorBox extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 52,
+        constraints: const BoxConstraints(minHeight: 52),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: colors.surface,
@@ -219,6 +219,8 @@ class AccountFormSelectorBox extends StatelessWidget {
             Expanded(
               child: Text(
                 value ?? hint ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color:
                       value == null ? colors.textSecondary : colors.textPrimary,

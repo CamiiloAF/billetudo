@@ -75,7 +75,7 @@ class _KeyboardDoneToolbarState extends State<KeyboardDoneToolbar> {
         color: colors.surface,
         elevation: 8,
         child: Container(
-          height: 44,
+          constraints: const BoxConstraints(minHeight: 44),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
@@ -83,7 +83,11 @@ class _KeyboardDoneToolbarState extends State<KeyboardDoneToolbar> {
           ),
           child: TextButton(
             onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: Text(l10n.commonDone),
+            child: Text(
+              l10n.commonDone,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ),

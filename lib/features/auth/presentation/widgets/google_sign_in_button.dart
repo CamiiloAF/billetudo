@@ -39,48 +39,55 @@ class GoogleSignInButton extends StatelessWidget {
     // and bumps the label to 700; the resting button stays `$text-primary`/600.
     final contentColor = isLoading ? colors.textSecondary : colors.textPrimary;
 
-    return SizedBox(
-      height: 50,
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: colors.surface,
-          foregroundColor: colors.textPrimary,
-          side: BorderSide(color: colors.border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: contentColor,
-                ),
-              )
-            else
-              const GoogleLogoMark(),
-            const SizedBox(width: 12),
-            Text(
-              isLoading ? loadingLabel : label,
-              // 'Roboto' isn't bundled in assets/fonts/ (only Plus Jakarta
-              // Sans is, see pubspec.yaml) — this falls back to the platform
-              // default, which is Roboto on Android anyway. Both brand
-              // guidelines forbid the app's own typeface here regardless.
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 15,
-                fontWeight: isLoading ? FontWeight.w700 : FontWeight.w600,
-                color: contentColor,
-              ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 50),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: colors.surface,
+            foregroundColor: colors.textPrimary,
+            side: BorderSide(color: colors.border),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: contentColor,
+                  ),
+                )
+              else
+                const GoogleLogoMark(),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  isLoading ? loadingLabel : label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  // 'Roboto' isn't bundled in assets/fonts/ (only Plus Jakarta
+                  // Sans is, see pubspec.yaml) — this falls back to the
+                  // platform default, which is Roboto on Android anyway. Both
+                  // brand guidelines forbid the app's own typeface here
+                  // regardless.
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 15,
+                    fontWeight: isLoading ? FontWeight.w700 : FontWeight.w600,
+                    color: contentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

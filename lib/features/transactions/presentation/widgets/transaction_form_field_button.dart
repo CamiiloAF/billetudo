@@ -80,7 +80,7 @@ class TransactionFormFieldButton extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppTheme.radiusField),
             child: Container(
-              height: 50,
+              constraints: const BoxConstraints(minHeight: 50),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusField),

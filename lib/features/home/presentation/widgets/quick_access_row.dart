@@ -115,7 +115,7 @@ class QuickAccessChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          height: 44,
+          constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
           alignment: Alignment.center,
           child: Row(

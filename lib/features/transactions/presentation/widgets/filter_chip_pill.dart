@@ -43,7 +43,7 @@ class FilterChipPill extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          height: 44,
+          constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           alignment: Alignment.center,
           child: Row(
@@ -55,6 +55,8 @@ class FilterChipPill extends StatelessWidget {
               ],
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontSize: active ? 13 : 12,
                   fontWeight: FontWeight.w700,
