@@ -1,6 +1,9 @@
 import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/debts/data/datasources/debts_local_datasource.dart';
+import 'package:billetudo/features/debts/data/repositories/debt_repository_impl.dart';
+import 'package:billetudo/features/debts/domain/services/debt_balance_calculator.dart';
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payment_tags_local_datasource.dart';
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payments_local_datasource.dart';
 import 'package:billetudo/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
@@ -58,6 +61,7 @@ void main() {
     domain.ScheduledPaymentFrequency frequency =
         domain.ScheduledPaymentFrequency.monthly,
     List<String> tagIds = const <String>[],
+    String? debtId,
   }) =>
       ScheduledPaymentDraft(
         id: id,
@@ -72,6 +76,7 @@ void main() {
         endDate: endDate,
         requiresConfirmation: requiresConfirmation,
         tagIds: tagIds,
+        debtId: debtId,
       );
 
   Future<domain.ScheduledPayment> createTemplate(
@@ -1191,6 +1196,125 @@ void main() {
       final result = await repository.advanceScheduledOccurrence('no-existe');
 
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
+    });
+  });
+
+  group('cuota ↔ deuda: la transacción generada hereda debtId (HU-03 deudas)',
+      () {
+    Future<Debt> createDebt({
+      required DebtDirection direction,
+      int principalMinor = 200000,
+    }) =>
+        database.into(database.debts).insertReturning(
+              DebtsCompanion.insert(
+                name: 'Préstamo',
+                direction: direction,
+                principalMinor: principalMinor,
+                currency: 'COP',
+              ),
+            );
+
+    Future<ScheduledPaymentOccurrence> pendingOccurrenceFor(
+      String templateId,
+    ) =>
+        (database.select(database.scheduledPaymentOccurrences)
+              ..where((o) => o.scheduledPaymentId.equals(templateId)))
+            .getSingle();
+
+    test(
+        'modo automático: la cuota generada al vencer lleva el debtId de la '
+        'plantilla', () async {
+      final debt = await createDebt(direction: DebtDirection.iOwe);
+      await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final generated = await database.select(database.transactions).get();
+      expect(generated, hasLength(1));
+      expect(generated.single.debtId, debt.id);
+    });
+
+    test(
+        'catch-up de vencidas: cada cuota generada lleva el debtId de la '
+        'plantilla', () async {
+      final debt = await createDebt(direction: DebtDirection.iOwe);
+      await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 5, 1), debtId: debt.id),
+      );
+
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 15));
+
+      final generated = await database.select(database.transactions).get();
+      // Mayo, junio y julio: 3 cuotas vencidas, todas con debtId.
+      expect(generated, hasLength(3));
+      expect(generated.every((t) => t.debtId == debt.id), isTrue);
+    });
+
+    test(
+        'confirmación manual: la cuota confirmada lleva el debtId de la '
+        'plantilla', () async {
+      final debt = await createDebt(direction: DebtDirection.iOwe);
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+          debtId: debt.id,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final result = await repository.confirmOccurrence(
+        occurrenceId: occurrence.id,
+        date: DateTime(2026, 7, 2),
+        accountId: account.id,
+        amountMinor: 60000,
+      );
+
+      expect(result.isRight(), isTrue);
+      expect(result.getRight().toNullable()!.debtId, debt.id);
+      final generated = await database.select(database.transactions).get();
+      expect(generated.single.debtId, debt.id);
+    });
+
+    test('un pago programado sin deuda genera una transacción con debtId null',
+        () async {
+      await createTemplate(monthlyDraft(nextDate: DateTime(2026, 7, 1)));
+
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final generated = await database.select(database.transactions).get();
+      expect(generated.single.debtId, isNull);
+    });
+
+    test(
+        'integración: una cuota (iOwe, gasto) reduce el saldo pendiente de la '
+        'deuda tras generarse', () async {
+      final debtRepository = DebtRepositoryImpl(
+        DebtsLocalDatasource(database),
+        const DebtBalanceCalculator(),
+      );
+      final debt = await createDebt(
+        direction: DebtDirection.iOwe,
+        principalMinor: 200000,
+      );
+      await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+
+      // Antes de la cuota: el saldo pendiente es el principal completo.
+      final before = await debtRepository.getBalance(debt.id);
+      expect(before.getRight().toNullable()!.outstandingMinor, 200000);
+
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      // Un gasto de 50000 sobre una deuda iOwe es un abono: reduce la deuda.
+      final after = await debtRepository.getBalance(debt.id);
+      final balance = after.getRight().toNullable()!;
+      expect(balance.totalDecreasesMinor, 50000);
+      expect(balance.outstandingMinor, 150000);
     });
   });
 

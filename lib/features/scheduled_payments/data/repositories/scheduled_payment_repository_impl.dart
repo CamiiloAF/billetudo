@@ -846,9 +846,16 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
 
   /// Generates the transaction a due/confirmed occurrence produces. `date`/
   /// `accountId`/`amountMinor` are the (possibly edited, HU-03) final
-  /// values; `categoryId`/`note`/`currency`/`type`/`transferAccountId` are
-  /// always read from the template as it stands right now (criterion 7/8 —
+  /// values; `categoryId`/`note`/`currency`/`type`/`transferAccountId`/`debtId`
+  /// are always read from the template as it stands right now (criterion 7/8 —
   /// never editable at confirmation time).
+  ///
+  /// `debtId` (HU-03 of `docs/requirements/08-deudas.md`) is inherited from the
+  /// template so an installment (cuota, a `ScheduledPayment` linked to a debt)
+  /// both lowers the account AND reduces the debt: the generated transaction
+  /// lands in the debt ledger, where `DebtBalanceCalculator` counts it by
+  /// `direction × type`. A plain scheduled payment has a null `debtId` and this
+  /// stays null, unchanged.
   Future<db.Transaction> _generateTransaction(
     db.ScheduledPayment template, {
     required DateTime date,
@@ -866,6 +873,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       note: Value(template.note),
       source: const Value(db.TxSource.scheduled),
       transferAccountId: Value(template.transferAccountId),
+      debtId: Value(template.debtId),
       scheduledPaymentId: Value(template.id),
       createdAt: Value(now),
       updatedAt: Value(now.millisecondsSinceEpoch),
