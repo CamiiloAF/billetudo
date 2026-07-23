@@ -2318,6 +2318,18 @@ abstract class AppLocalizations {
   /// **'Pago programado'**
   String get debtInstallmentScheduledBadge;
 
+  /// No description provided for @debtConfigureInstallmentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Configurar cuota'**
+  String get debtConfigureInstallmentTitle;
+
+  /// No description provided for @debtConfigureInstallmentSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Programa la cuota de esta deuda'**
+  String get debtConfigureInstallmentSubtitle;
+
   /// No description provided for @debtLedgerOpening.
   ///
   /// In es, this message translates to:
@@ -4249,6 +4261,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Eliminar pago programado'**
   String get scheduledPaymentFormDeleteAction;
+
+  /// No description provided for @scheduledPaymentInstallmentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Configurar cuota'**
+  String get scheduledPaymentInstallmentTitle;
+
+  /// No description provided for @scheduledPaymentInstallmentEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar cuota'**
+  String get scheduledPaymentInstallmentEditTitle;
+
+  /// No description provided for @scheduledPaymentInstallmentDeleteAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuota'**
+  String get scheduledPaymentInstallmentDeleteAction;
+
+  /// No description provided for @scheduledPaymentInstallmentBanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea un pago programado enlazado a esta deuda. Confírmalo o pospónlo en Pagos programados.'**
+  String get scheduledPaymentInstallmentBanner;
+
+  /// No description provided for @scheduledPaymentDetailLinkedDebtLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuota de'**
+  String get scheduledPaymentDetailLinkedDebtLabel;
+
+  /// No description provided for @scheduledDebtChipLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get scheduledDebtChipLabel;
 
   /// No description provided for @scheduledFrequencyOnce.
   ///

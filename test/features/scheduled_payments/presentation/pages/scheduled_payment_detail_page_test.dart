@@ -3,6 +3,7 @@ import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_history_entry.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_linked_debt.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
@@ -36,6 +37,7 @@ void main() {
     int historyTotalCount = 0,
     DateTime? nextDate,
     bool pending = false,
+    ScheduledPaymentLinkedDebt? linkedDebt,
   }) {
     final payment = buildScheduledPayment(
       frequency: frequency,
@@ -53,13 +55,17 @@ void main() {
       generatedTransactionCount: historyTotalCount,
       pendingOccurrence:
           pending ? buildPendingOccurrence(scheduledPayment: payment) : null,
+      linkedDebt: linkedDebt,
     );
   }
 
   Future<void> pumpDetail(
     WidgetTester tester,
-    ScheduledPaymentDetailState state,
-  ) async {
+    ScheduledPaymentDetailState state, {
+    ValueChanged<String>? onOpenDebt,
+    void Function(ScheduledPaymentLinkedDebt debt, String spId)?
+        onEditInstallment,
+  }) async {
     // A tall surface so the whole detail (hero + ficha + history) fits without
     // the last rows landing below the default 600px viewport — otherwise a tap
     // on the "Recuperar" link at the bottom would miss its hit test.
@@ -79,6 +85,8 @@ void main() {
           child: ScheduledPaymentDetailPage(
             onEdit: (_) {},
             onOpenTransaction: (_) async => null,
+            onOpenDebt: onOpenDebt ?? (_) {},
+            onEditInstallment: onEditInstallment ?? (_, __) {},
           ),
         ),
       ),
@@ -349,5 +357,74 @@ void main() {
     expect(find.text('Activa'), findsNothing);
     // The hero keeps exactly one pill: the countdown.
     expect(find.byType(ScheduledDueInChip), findsOneWidget);
+  });
+
+  group('HU-03: cross-link con la deuda', () {
+    const linkedDebt = ScheduledPaymentLinkedDebt(
+      id: 'debt-1',
+      name: 'Crédito vehicular',
+      iOwe: true,
+    );
+
+    testWidgets(
+        'una cuota muestra la card "Cuota de <deuda> · <dirección>" y navega '
+        'al detalle de la deuda al tocarla', (tester) async {
+      String? openedDebtId;
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(linkedDebt: linkedDebt),
+        ),
+        onOpenDebt: (id) => openedDebtId = id,
+      );
+
+      expect(find.text('Cuota de'), findsOneWidget);
+      expect(find.text('Crédito vehicular · Yo debo'), findsOneWidget);
+
+      await tester.tap(find.text('Crédito vehicular · Yo debo'));
+      await tester.pumpAndSettle();
+      expect(openedDebtId, 'debt-1');
+    });
+
+    testWidgets(
+        'una plantilla ordinaria (sin deuda) no muestra la card de cuota',
+        (tester) async {
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(),
+        ),
+      );
+
+      expect(find.text('Cuota de'), findsNothing);
+    });
+
+    testWidgets(
+        'editar una cuota hace deep-link a Configurar cuota de la deuda, no al '
+        'formulario suelto', (tester) async {
+      ScheduledPaymentLinkedDebt? editedDebt;
+      String? editedSpId;
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(linkedDebt: linkedDebt),
+        ),
+        onEditInstallment: (debt, spId) {
+          editedDebt = debt;
+          editedSpId = spId;
+        },
+      );
+
+      await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar'));
+      await tester.pumpAndSettle();
+
+      expect(editedDebt, linkedDebt);
+      expect(editedSpId, 'sp-1');
+    });
   });
 }

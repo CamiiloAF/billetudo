@@ -347,6 +347,116 @@ void main() {
     );
   });
 
+  group('HU-03: modo cuota de deuda', () {
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'crear cuota de "Yo debo" deriva tipo gasto, fija debtId y entra en modo '
+      'cuota',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right(<AccountWithBalance>[_accountWithBalance(id: 'acc-1')]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        debtId: 'debt-1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+      ),
+      verify: (cubit) {
+        expect(cubit.state.isDebtInstallment, isTrue);
+        expect(cubit.state.debtId, 'debt-1');
+        expect(cubit.state.debtName, 'Crédito vehicular');
+        expect(cubit.state.debtIsIOwe, isTrue);
+        expect(cubit.state.type, ScheduledPaymentType.expense);
+        expect(cubit.state.status, ScheduledPaymentFormStatus.ready);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'crear cuota de "Me deben" deriva tipo ingreso',
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        debtId: 'debt-2',
+        debtName: 'Préstamo a Juan',
+        debtIsIOwe: false,
+      ),
+      verify: (cubit) {
+        expect(cubit.state.type, ScheduledPaymentType.income);
+        expect(cubit.state.debtIsIOwe, isFalse);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'submit persiste el debtId en el draft de la cuota',
+      setUp: () {
+        when(() => watchAccounts()).thenAnswer(
+          (_) => Stream.value(
+            Right(<AccountWithBalance>[_accountWithBalance(id: 'acc-1')]),
+          ),
+        );
+        when(() => createScheduledPayment(any()))
+            .thenAnswer((_) async => Right(buildScheduledPayment()));
+        when(() => setScheduledPaymentTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.loadForDebtCuota(
+          debtId: 'debt-1',
+          debtName: 'Crédito vehicular',
+          debtIsIOwe: true,
+        );
+        cubit.categorySelected('cat-1', CategoryKind.expense, 'Transporte');
+        cubit.amountTextChanged('1250000');
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, ScheduledPaymentFormStatus.saved);
+        final draft = verify(() => createScheduledPayment(captureAny()))
+            .captured
+            .single as ScheduledPaymentDraft;
+        expect(draft.debtId, 'debt-1');
+        expect(draft.type, ScheduledPaymentType.expense);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'editar una cuota existente carga sus campos y superpone el contexto de '
+      'la deuda',
+      setUp: () {
+        when(() => getScheduledPaymentDetail('sp-1')).thenAnswer(
+          (_) => Stream.value(
+            Right(
+              ScheduledPaymentDetail(
+                scheduledPayment: buildScheduledPayment(
+                  id: 'sp-1',
+                  categoryId: 'cat-1',
+                  debtId: 'debt-1',
+                ),
+                accountName: 'Bancolombia',
+                historyTotalCount: 0,
+              ),
+            ),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        scheduledPaymentId: 'sp-1',
+        debtId: 'debt-1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+      ),
+      verify: (cubit) {
+        expect(cubit.state.isEditing, isTrue);
+        expect(cubit.state.isDebtInstallment, isTrue);
+        expect(cubit.state.debtId, 'debt-1');
+        expect(cubit.state.debtName, 'Crédito vehicular');
+        expect(cubit.state.categoryId, 'cat-1');
+      },
+    );
+  });
+
   group('HU-06/criterion 14: puente desde Transacciones', () {
     blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
       'loadFromBridge prellena cuenta/monto/categoría/nota y frequency=once',

@@ -1272,6 +1272,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtInstallmentScheduledBadge => 'Pago programado';
 
   @override
+  String get debtConfigureInstallmentTitle => 'Configurar cuota';
+
+  @override
+  String get debtConfigureInstallmentSubtitle =>
+      'Programa la cuota de esta deuda';
+
+  @override
   String get debtLedgerOpening => 'Saldo de apertura';
 
   @override
@@ -2407,6 +2414,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaymentFormDeleteAction => 'Eliminar pago programado';
+
+  @override
+  String get scheduledPaymentInstallmentTitle => 'Configurar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentEditTitle => 'Editar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentDeleteAction => 'Eliminar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentBanner =>
+      'Se crea un pago programado enlazado a esta deuda. Confírmalo o pospónlo en Pagos programados.';
+
+  @override
+  String get scheduledPaymentDetailLinkedDebtLabel => 'Cuota de';
+
+  @override
+  String get scheduledDebtChipLabel => 'Deuda';
 
   @override
   String get scheduledFrequencyOnce => 'Solo una vez';

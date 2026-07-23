@@ -37,6 +37,7 @@ class ScheduledPayment extends Equatable {
     this.transferAccountId,
     this.endDate,
     this.tombstonedAt,
+    this.debtId,
   });
 
   /// UUID as text.
@@ -104,8 +105,17 @@ class ScheduledPayment extends Equatable {
   /// tombstone — never `deletedAt`, which this feature does not use).
   final DateTime? tombstonedAt;
 
+  /// Links this template to a `Debt` when it is that debt's installment
+  /// (HU-03, `docs/requirements/08-deudas.md`). Null for an ordinary scheduled
+  /// payment (rent, subscription); a cuota sets it and derives its [type] from
+  /// the debt's direction (Yo debo → expense, Me deben → income). The template
+  /// engine treats a cuota exactly like any other template — this is only the
+  /// cross-link back to its owning debt.
+  final String? debtId;
+
   bool get isTransfer => type == ScheduledPaymentType.transfer;
   bool get isDeleted => tombstonedAt != null;
+  bool get isDebtInstallment => debtId != null;
 
   /// Whether the template still generates future occurrences (feeds HU-04's
   /// "Activos · N" and the active list).
@@ -147,5 +157,6 @@ class ScheduledPayment extends Equatable {
         createdAt,
         updatedAt,
         tombstonedAt,
+        debtId,
       ];
 }

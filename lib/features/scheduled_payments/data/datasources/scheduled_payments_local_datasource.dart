@@ -14,6 +14,7 @@ class ScheduledPaymentRowWithJoins {
     required this.account,
     this.transferAccount,
     this.category,
+    this.debt,
     this.pendingOccurrenceCount = 0,
     this.nextAwaitingDate,
     this.lastPaymentDate,
@@ -23,6 +24,13 @@ class ScheduledPaymentRowWithJoins {
   final Account account;
   final Account? transferAccount;
   final Category? category;
+
+  /// The owning debt when this template is a cuota (`scheduledPayment.debtId`
+  /// is set, HU-03). Only resolved by [ScheduledPaymentsLocalDatasource.watchScheduledPaymentRow]
+  /// (the detail query); null in the list queries, which do not render the
+  /// cross-link.
+  final Debt? debt;
+
   final int pendingOccurrenceCount;
 
   /// Effective date of the nearest occurrence still awaiting resolution
@@ -283,6 +291,12 @@ class ScheduledPaymentsLocalDatasource {
         _db.categories,
         _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
       ),
+      // The owning debt when this template is a cuota (HU-03 cross-link). A
+      // left join: an ordinary template has a null `debtId` and reads no row.
+      leftOuterJoin(
+        _db.debts,
+        _db.debts.id.equalsExp(_db.scheduledPayments.debtId),
+      ),
     ])
       ..where(_db.scheduledPayments.id.equals(id))
       // Make the stream depend on THIS template's occurrences: snooze/confirm/
@@ -323,6 +337,7 @@ class ScheduledPaymentsLocalDatasource {
         account: row.readTable(_db.accounts),
         transferAccount: row.readTableOrNull(transferAccounts),
         category: row.readTableOrNull(_db.categories),
+        debt: row.readTableOrNull(_db.debts),
       );
     });
   }

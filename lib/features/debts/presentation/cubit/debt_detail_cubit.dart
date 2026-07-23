@@ -60,6 +60,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
           detail: detail,
           runningBalances: _runningBalances(detail),
           dailyGrowthMinor: _dailyGrowth(detail.debt, detail.balance),
+          installment: _installmentView(detail),
         ),
       ),
     );
@@ -76,6 +77,22 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
       carry -= entry.effectMinor;
     }
     return running;
+  }
+
+  /// The linked cuota's presentation view (HU-03), or null when the debt has
+  /// no cuota configured. Only a projection of the domain's `DebtInstallment`;
+  /// the cubit derives nothing new.
+  DebtInstallmentView? _installmentView(DebtDetail detail) {
+    final installment = detail.installment;
+    if (installment == null) {
+      return null;
+    }
+    return DebtInstallmentView(
+      scheduledPaymentId: installment.scheduledPaymentId,
+      amountMinor: installment.amountMinor,
+      date: installment.nextDate,
+      currency: installment.currency,
+    );
   }
 
   /// The estimated interest one more day adds, shown only for a debt that

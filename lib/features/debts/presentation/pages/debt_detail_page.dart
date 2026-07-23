@@ -12,6 +12,7 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/debt.dart';
 import '../cubit/debt_detail_cubit.dart';
 import '../cubit/debt_detail_state.dart';
+import '../widgets/debt_configure_installment_card.dart';
 import '../widgets/debt_hero_card.dart';
 import '../widgets/debt_installment_card.dart';
 import '../widgets/debt_ledger_row.dart';
@@ -34,6 +35,7 @@ class DebtDetailPage extends StatelessWidget {
   const DebtDetailPage({
     required this.onEdit,
     required this.onOpenInstallment,
+    required this.onConfigureInstallment,
     required this.onLinkExisting,
     super.key,
   });
@@ -42,6 +44,10 @@ class DebtDetailPage extends StatelessWidget {
 
   /// Cross-link into Pagos programados for the linked cuota (HU-03).
   final ValueChanged<String> onOpenInstallment;
+
+  /// Opens the Configurar-cuota screen for this debt (HU-03), shown when the
+  /// debt has no cuota configured yet.
+  final ValueChanged<Debt> onConfigureInstallment;
 
   /// Jumps into Movimientos link mode to attribute an existing movement to the
   /// debt (HU-02); the router wires the navigation.
@@ -83,6 +89,7 @@ class DebtDetailPage extends StatelessWidget {
                       DebtDetailReadyView(
                         state: state,
                         onOpenInstallment: onOpenInstallment,
+                        onConfigureInstallment: onConfigureInstallment,
                         onLinkExisting: onLinkExisting,
                       ),
                     DebtDetailStatus.ready => const SizedBox.shrink(),
@@ -101,12 +108,14 @@ class DebtDetailReadyView extends StatelessWidget {
   const DebtDetailReadyView({
     required this.state,
     required this.onOpenInstallment,
+    required this.onConfigureInstallment,
     required this.onLinkExisting,
     super.key,
   });
 
   final DebtDetailState state;
   final ValueChanged<String> onOpenInstallment;
+  final ValueChanged<Debt> onConfigureInstallment;
   final ValueChanged<Debt> onLinkExisting;
 
   @override
@@ -138,14 +147,17 @@ class DebtDetailReadyView extends StatelessWidget {
                   ),
                 ),
               ),
-              if (installment != null) ...[
-                const SizedBox(height: 12),
+              const SizedBox(height: 12),
+              if (installment != null)
                 DebtInstallmentCard(
                   installment: installment,
                   onTap: () =>
                       onOpenInstallment(installment.scheduledPaymentId),
+                )
+              else
+                DebtConfigureInstallmentCard(
+                  onTap: () => onConfigureInstallment(debt),
                 ),
-              ],
               const SizedBox(height: 12),
               Text(
                 l10n.debtDetailMovementsTitle,

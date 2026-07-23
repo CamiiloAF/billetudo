@@ -117,9 +117,48 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
             endDate: payment.endDate,
             requiresConfirmation: payment.requiresConfirmation,
             tagIds: {for (final tag in detail.tags) tag.id},
+            // Preserve the cuota link across an edit: even a plain-form edit
+            // resubmits it so the debt installment never gets silently
+            // unlinked (mapper writes `debtId` explicitly). The cuota chrome
+            // (subtitle/banner/hidden segmented) is added on top by
+            // [loadForDebtCuota], which supplies the debt's name/direction.
+            debtId: payment.debtId,
           ),
         );
     }
+  }
+
+  /// HU-03: opens the form in "cuota de deuda" mode. The type is derived from
+  /// the debt's direction (`debtIsIOwe` → expense, otherwise income) and the
+  /// segmented control is hidden; a cross-link banner and the "<debt> ·
+  /// <direction>" subtitle are shown; the saved template carries `debtId`.
+  ///
+  /// Reuses [load] for both create ([scheduledPaymentId] null → an empty,
+  /// account-preselected form) and edit ([scheduledPaymentId] set → the
+  /// existing cuota's fields), then overlays the debt context. Keeps this
+  /// feature debt-agnostic: the caller (the router) hands over plain values,
+  /// exactly like [loadFromBridge].
+  Future<void> loadForDebtCuota({
+    required String debtId,
+    required String debtName,
+    // ignore: avoid_positional_boolean_parameters
+    required bool debtIsIOwe,
+    String? scheduledPaymentId,
+  }) async {
+    await load(scheduledPaymentId);
+    if (isClosed || state.status != ScheduledPaymentFormStatus.ready) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        type: debtIsIOwe
+            ? ScheduledPaymentType.expense
+            : ScheduledPaymentType.income,
+        debtId: debtId,
+        debtName: debtName,
+        debtIsIOwe: debtIsIOwe,
+      ),
+    );
   }
 
   /// HU-06/criterion 14: prefills a brand-new `once` template from a
@@ -350,6 +389,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
       endDate: state.endDate,
       requiresConfirmation: state.requiresConfirmation,
       tagIds: state.tagIds.toList(),
+      debtId: state.debtId,
     ).validated();
   }
 }

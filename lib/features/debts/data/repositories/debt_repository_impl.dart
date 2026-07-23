@@ -16,6 +16,7 @@ import '../../domain/entities/debt_detail.dart';
 import '../../domain/entities/debt_draft.dart';
 import '../../domain/entities/debt_entry.dart';
 import '../../domain/entities/debt_entry_draft.dart';
+import '../../domain/entities/debt_installment.dart';
 import '../../domain/entities/debt_with_balance.dart';
 import '../../domain/entities/debts_summary.dart';
 import '../../domain/repositories/debt_repository.dart';
@@ -80,6 +81,7 @@ class DebtRepositoryImpl implements DebtRepository {
             _local.watchDebt(debtId),
             _local.watchDebtEntries(debtId),
             _local.watchDebtCashEvents(debtId),
+            _local.watchLinkedInstallment(debtId),
           ],
           (values) {
             final debtRow = values[0] as db.Debt?;
@@ -93,6 +95,7 @@ class DebtRepositoryImpl implements DebtRepository {
             final cashEvents = (values[2]! as List<db.Transaction>)
                 .map(DebtCashEventMapper.toEntity)
                 .toList();
+            final installmentRow = values[3] as db.ScheduledPayment?;
             final debt = DebtMapper.toEntity(debtRow);
 
             return Right<Failure, DebtDetail>(
@@ -108,6 +111,14 @@ class DebtRepositoryImpl implements DebtRepository {
                   entries: entries,
                   cashEvents: cashEvents,
                 ),
+                installment: installmentRow == null
+                    ? null
+                    : DebtInstallment(
+                        scheduledPaymentId: installmentRow.id,
+                        amountMinor: installmentRow.amountMinor,
+                        nextDate: installmentRow.nextDate,
+                        currency: installmentRow.currency,
+                      ),
               ),
             );
           },

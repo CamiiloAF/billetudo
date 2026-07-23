@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'pending_scheduled_occurrence.dart';
 import 'scheduled_history_entry.dart';
 import 'scheduled_payment.dart';
+import 'scheduled_payment_linked_debt.dart';
 import 'tag.dart';
 
 /// The hybrid "próximo pago + configuración" detail view of a template
@@ -26,6 +27,7 @@ class ScheduledPaymentDetail extends Equatable {
     this.pendingOccurrence,
     this.nextAwaitingDate,
     this.history = const <ScheduledHistoryEntry>[],
+    this.linkedDebt,
   });
 
   final ScheduledPayment scheduledPayment;
@@ -66,6 +68,12 @@ class ScheduledPaymentDetail extends Equatable {
   /// [history] — feeds "Ver historial completo (N)".
   final int historyTotalCount;
 
+  /// Non-null when this template is a debt's cuota
+  /// (`scheduledPayment.debtId != null`): the debt it belongs to, for the
+  /// "Cuota de …" cross-link card and the edit deep-link back to the debt's
+  /// Configurar-cuota screen (HU-03).
+  final ScheduledPaymentLinkedDebt? linkedDebt;
+
   /// How many transactions this template has actually generated (`confirmed`
   /// occurrences). A subset of [historyTotalCount], which also counts skipped
   /// occurrences: [onceAlreadyGenerated] keys off this, not the combined
@@ -101,5 +109,6 @@ class ScheduledPaymentDetail extends Equatable {
         history,
         historyTotalCount,
         generatedTransactionCount,
+        linkedDebt,
       ];
 }

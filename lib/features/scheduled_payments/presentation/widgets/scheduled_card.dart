@@ -7,6 +7,7 @@ import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
 import '../utils/scheduled_payment_format.dart';
 import 'scheduled_category_icon_wrap.dart';
+import 'scheduled_debt_chip.dart';
 import 'scheduled_finished_chip.dart';
 import 'scheduled_manual_mode_chip.dart';
 
@@ -147,6 +148,10 @@ class ScheduledCard extends StatelessWidget {
                         if (!isFinished && payment.requiresConfirmation) ...[
                           const SizedBox(width: 6),
                           const Flexible(child: ScheduledManualModeChip()),
+                        ],
+                        if (payment.isDebtInstallment) ...[
+                          const SizedBox(width: 6),
+                          const Flexible(child: ScheduledDebtChip()),
                         ],
                       ],
                     ),

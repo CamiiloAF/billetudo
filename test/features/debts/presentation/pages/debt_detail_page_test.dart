@@ -1,11 +1,14 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/error_state.dart';
+import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_state.dart';
 import 'package:billetudo/features/debts/presentation/pages/debt_detail_page.dart';
+import 'package:billetudo/features/debts/presentation/widgets/debt_configure_installment_card.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_hero_card.dart';
+import 'package:billetudo/features/debts/presentation/widgets/debt_installment_card.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_ledger_row.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_meta_card.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -58,8 +61,10 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester,
-    DebtDetailState state,
-  ) async {
+    DebtDetailState state, {
+    ValueChanged<Debt>? onConfigureInstallment,
+    ValueChanged<String>? onOpenInstallment,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(420, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     when(() => cubit.state).thenReturn(state);
@@ -73,7 +78,8 @@ void main() {
           value: cubit,
           child: DebtDetailPage(
             onEdit: (_) {},
-            onOpenInstallment: (_) {},
+            onOpenInstallment: onOpenInstallment ?? (_) {},
+            onConfigureInstallment: onConfigureInstallment ?? (_) {},
             onLinkExisting: (_) {},
           ),
         ),
@@ -101,5 +107,52 @@ void main() {
     await pump(tester, const DebtDetailState(status: DebtDetailStatus.failure));
     expect(find.byType(ErrorState), findsOneWidget);
     expect(find.text('No pudimos cargar esta deuda'), findsOneWidget);
+  });
+
+  group('HU-03: cuota en el detalle', () {
+    testWidgets(
+        'sin cuota configurada muestra la card "Configurar cuota" y la abre al '
+        'tocarla', (tester) async {
+      Debt? configuredDebt;
+      await pump(
+        tester,
+        readyState,
+        onConfigureInstallment: (debt) => configuredDebt = debt,
+      );
+
+      expect(find.byType(DebtConfigureInstallmentCard), findsOneWidget);
+      expect(find.byType(DebtInstallmentCard), findsNothing);
+      expect(find.text('Configurar cuota'), findsOneWidget);
+
+      await tester.tap(find.byType(DebtConfigureInstallmentCard));
+      await tester.pumpAndSettle();
+      expect(configuredDebt?.id, 'd1');
+    });
+
+    testWidgets(
+        'con cuota configurada muestra la card de próxima cuota y cross-linkea '
+        'a Pagos programados', (tester) async {
+      String? openedSpId;
+      await pump(
+        tester,
+        readyState.copyWith(
+          installment: DebtInstallmentView(
+            scheduledPaymentId: 'sp-9',
+            amountMinor: 68000000,
+            date: DateTime(2026, 8, 13),
+            currency: 'COP',
+          ),
+        ),
+        onOpenInstallment: (id) => openedSpId = id,
+      );
+
+      expect(find.byType(DebtInstallmentCard), findsOneWidget);
+      expect(find.byType(DebtConfigureInstallmentCard), findsNothing);
+      expect(find.text('Próxima cuota'), findsOneWidget);
+
+      await tester.tap(find.byType(DebtInstallmentCard));
+      await tester.pumpAndSettle();
+      expect(openedSpId, 'sp-9');
+    });
   });
 }

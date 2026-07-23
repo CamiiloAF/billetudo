@@ -24,6 +24,7 @@ import '../cubit/scheduled_payment_form_state.dart';
 import '../widgets/scheduled_payment_amount_fixed_zone.dart';
 import '../widgets/scheduled_payment_date_field.dart';
 import '../widgets/scheduled_payment_frequency_unit_chips.dart';
+import '../widgets/scheduled_payment_installment_banner.dart';
 import '../widgets/scheduled_payment_interval_stepper.dart';
 import '../widgets/scheduled_payment_mode_radio_card.dart';
 import '../widgets/scheduled_payment_tags_field.dart';
@@ -80,16 +81,49 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                 onPressed: Navigator.of(context).pop,
               ),
             ),
-            title: Text(
-              state.isEditing
-                  ? l10n.scheduledPaymentFormEditTitle
-                  : l10n.scheduledPaymentFormNewTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: colors.textPrimary,
+            // In cuota mode the header carries a context subtitle ("Crédito
+            // vehicular · Yo debo", design `s9gXs`); an ordinary template keeps
+            // the plain single-line title unchanged.
+            title: state.isDebtInstallment
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        state.isEditing
+                            ? l10n.scheduledPaymentInstallmentEditTitle
+                            : l10n.scheduledPaymentInstallmentTitle,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: colors.textPrimary,
+                            ),
+                      ),
+                      if (state.debtName != null)
+                        Text(
+                          l10n.debtContext(
+                            state.debtName!,
+                            state.debtIsIOwe
+                                ? l10n.debtDirectionIOwe
+                                : l10n.debtDirectionOwedToMe,
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: colors.textSecondary,
+                              ),
+                        ),
+                    ],
+                  )
+                : Text(
+                    state.isEditing
+                        ? l10n.scheduledPaymentFormEditTitle
+                        : l10n.scheduledPaymentFormNewTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: colors.textPrimary,
+                        ),
                   ),
-            ),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -154,11 +188,15 @@ class ScheduledPaymentFormBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
-        ScheduledPaymentTypeSegmentedControl(
-          type: state.type,
-          onChanged: cubit.typeSelected,
-        ),
-        const SizedBox(height: 12),
+        // The type segmented is hidden in cuota mode (HU-03): the type is
+        // derived from the debt's direction, not chosen by the user.
+        if (!state.isDebtInstallment) ...[
+          ScheduledPaymentTypeSegmentedControl(
+            type: state.type,
+            onChanged: cubit.typeSelected,
+          ),
+          const SizedBox(height: 12),
+        ],
         KeyedSubtree(
           key: errorScroll.keyFor(ScheduledPaymentDraft.fieldAccountId),
           child: AccountPickerField(
@@ -289,6 +327,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           subtitle: l10n.scheduledPaymentFormModeManualSubtitle,
           onTap: () => cubit.requiresConfirmationChanged(true),
         ),
+        if (state.isDebtInstallment) ...[
+          const SizedBox(height: 16),
+          const ScheduledPaymentInstallmentBanner(),
+        ],
         const SizedBox(height: 16),
         Text(
           l10n.transactionFormNoteLabel,
@@ -315,7 +357,9 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         if (state.isEditing) ...[
           const SizedBox(height: 28),
           DeleteLink(
-            label: l10n.scheduledPaymentFormDeleteAction,
+            label: state.isDebtInstallment
+                ? l10n.scheduledPaymentInstallmentDeleteAction
+                : l10n.scheduledPaymentFormDeleteAction,
             onTap: () => unawaited(
               DeleteScheduledPaymentSheet.show(context,
                   onConfirm: cubit.delete),

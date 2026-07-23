@@ -41,6 +41,9 @@ class ScheduledPaymentFormState extends Equatable {
     this.endDate,
     this.requiresConfirmation = false,
     this.tagIds = const <String>{},
+    this.debtId,
+    this.debtName,
+    this.debtIsIOwe = false,
     this.failure,
   }) : nextDate = nextDate ?? DateTime.now();
 
@@ -93,12 +96,28 @@ class ScheduledPaymentFormState extends Equatable {
   final bool requiresConfirmation;
   final Set<String> tagIds;
 
+  /// The owning debt id when the form is in "cuota de deuda" mode (HU-03),
+  /// null for an ordinary scheduled payment. Persisted on the draft so the
+  /// cuota keeps its link across edits (see `ScheduledPaymentFormCubit.load`).
+  final String? debtId;
+
+  /// The owning debt's display name and direction, only for rendering the
+  /// cuota header subtitle ("Crédito vehicular · Yo debo") — never persisted.
+  final String? debtName;
+  final bool debtIsIOwe;
+
   final Failure? failure;
 
   bool get isEditing => id != null;
   bool get isTransfer => type == ScheduledPaymentType.transfer;
   bool get isOnce => frequency == ScheduledPaymentFrequency.once;
   bool get isSaving => status == ScheduledPaymentFormStatus.saving;
+
+  /// Whether the form is configuring a debt's cuota (HU-03): the type segmented
+  /// control is hidden (the type is derived from the debt's direction), a
+  /// cross-link banner and a context subtitle are shown, and the saved template
+  /// carries [debtId].
+  bool get isDebtInstallment => debtId != null;
 
   /// The interval/endDate disclosure only makes sense for a repeating
   /// template.
@@ -132,6 +151,9 @@ class ScheduledPaymentFormState extends Equatable {
     bool clearEndDate = false,
     bool? requiresConfirmation,
     Set<String>? tagIds,
+    String? debtId,
+    String? debtName,
+    bool? debtIsIOwe,
     Failure? failure,
   }) =>
       ScheduledPaymentFormState(
@@ -168,6 +190,9 @@ class ScheduledPaymentFormState extends Equatable {
         tagIds: type == ScheduledPaymentType.transfer
             ? const <String>{}
             : (tagIds ?? this.tagIds),
+        debtId: debtId ?? this.debtId,
+        debtName: debtName ?? this.debtName,
+        debtIsIOwe: debtIsIOwe ?? this.debtIsIOwe,
         failure: failure,
       );
 
@@ -194,6 +219,9 @@ class ScheduledPaymentFormState extends Equatable {
         endDate,
         requiresConfirmation,
         tagIds,
+        debtId,
+        debtName,
+        debtIsIOwe,
         failure,
       ];
 }

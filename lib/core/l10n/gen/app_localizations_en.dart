@@ -1270,6 +1270,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtInstallmentScheduledBadge => 'Scheduled payment';
 
   @override
+  String get debtConfigureInstallmentTitle => 'Set up installment';
+
+  @override
+  String get debtConfigureInstallmentSubtitle =>
+      'Schedule this debt\'s installment';
+
+  @override
   String get debtLedgerOpening => 'Opening balance';
 
   @override
@@ -2403,6 +2410,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentFormDeleteAction => 'Delete scheduled payment';
+
+  @override
+  String get scheduledPaymentInstallmentTitle => 'Set up installment';
+
+  @override
+  String get scheduledPaymentInstallmentEditTitle => 'Edit installment';
+
+  @override
+  String get scheduledPaymentInstallmentDeleteAction => 'Delete installment';
+
+  @override
+  String get scheduledPaymentInstallmentBanner =>
+      'This creates a scheduled payment linked to this debt. Confirm or postpone it in Scheduled payments.';
+
+  @override
+  String get scheduledPaymentDetailLinkedDebtLabel => 'Installment of';
+
+  @override
+  String get scheduledDebtChipLabel => 'Debt';
 
   @override
   String get scheduledFrequencyOnce => 'Once only';

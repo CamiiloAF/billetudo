@@ -31,6 +31,7 @@ abstract final class ScheduledPaymentMapper {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         tombstonedAt: row.tombstonedAt,
+        debtId: row.debtId,
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).
@@ -59,6 +60,7 @@ abstract final class ScheduledPaymentMapper {
         nextDate: draft.nextDate,
         endDate: Value(draft.endDate),
         requiresConfirmation: Value(draft.requiresConfirmation),
+        debtId: Value(draft.debtId),
         createdAt: Value(now),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
@@ -98,6 +100,11 @@ abstract final class ScheduledPaymentMapper {
         nextDate: Value(draft.nextDate),
         endDate: Value(draft.endDate),
         requiresConfirmation: Value(draft.requiresConfirmation),
+        // Preserved on every edit: the form always resubmits the loaded
+        // `debtId` (see `ScheduledPaymentFormCubit.load`), so a cuota keeps its
+        // link and an ordinary template keeps its null — an edit never silently
+        // unlinks or links a template.
+        debtId: Value(draft.debtId),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 

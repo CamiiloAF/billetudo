@@ -131,6 +131,17 @@ abstract final class AppRoutes {
   /// Edit form of one debt: `/deudas/<id>/editar`.
   static String editDebt(String id) => '$debts/$id/editar';
 
+  /// Configurar cuota of one debt (HU-03): `/deudas/<id>/cuota`, optionally
+  /// editing the existing linked template via `?spId=`. Reuses the Pagos
+  /// Programados form in cuota mode; the debt context rides in `extra` as a
+  /// [DebtInstallmentContext].
+  static String debtInstallment(String debtId, {String? spId}) {
+    final base = '$debts/$debtId/cuota';
+    return spId == null
+        ? base
+        : '$base?spId=${Uri.encodeQueryComponent(spId)}';
+  }
+
   /// Movimientos in Deudas link mode: `/movimientos/enlazar-deuda/<debtId>`
   /// (HU-02). The `Debt` itself rides in the route's `extra` for the banner.
   static String linkTransactionToDebt(String debtId) =>
@@ -204,6 +215,26 @@ abstract final class AppRoutes {
         .join('&');
     return '$newScheduledPayment?$query';
   }
+}
+
+/// The debt context the Configurar-cuota route needs (HU-03), passed as
+/// `extra`. Built by whichever screen launches the flow — the debt detail
+/// (from its `Debt`) or the Pagos Programados detail (from its
+/// `ScheduledPaymentLinkedDebt`) — so the reused Pagos Programados form gets
+/// the debt's name and direction without this feature's domains depending on
+/// each other. The router is the only layer that assembles it.
+class DebtInstallmentContext {
+  const DebtInstallmentContext({
+    required this.debtId,
+    required this.debtName,
+    required this.iOwe,
+  });
+
+  final String debtId;
+  final String debtName;
+
+  /// `DebtDirection.iOwe` → the cuota is an expense; `owedToMe` → income.
+  final bool iOwe;
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -728,6 +759,16 @@ GoRoute _debtsRoute() => GoRoute(
               // Cross-link into Pagos programados for the linked cuota (HU-03).
               onOpenInstallment: (id) =>
                   context.push(AppRoutes.scheduledPayment(id)),
+              // Configure the debt's cuota (HU-03): reuses the Pagos Programados
+              // form in cuota mode; the debt context rides in `extra`.
+              onConfigureInstallment: (debt) => context.push(
+                AppRoutes.debtInstallment(debt.id),
+                extra: DebtInstallmentContext(
+                  debtId: debt.id,
+                  debtName: debt.name,
+                  iOwe: debt.direction == DebtDirection.iOwe,
+                ),
+              ),
               // Attribute an existing movement to the debt (HU-02): the debt
               // rides in `extra` so the banner needs no extra fetch.
               onLinkExisting: (debt) => context.push(
@@ -748,10 +789,48 @@ GoRoute _debtsRoute() => GoRoute(
                 child: const DebtFormPage(),
               ),
             ),
+            // Configurar cuota (HU-03): the Pagos Programados form reused in
+            // cuota mode. The debt context arrives in `extra`; `?spId=` is set
+            // when editing an existing cuota (deep-link from its PP detail).
+            GoRoute(
+              path: 'cuota',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) {
+                final debtContext = state.extra! as DebtInstallmentContext;
+                final spId = state.uri.queryParameters['spId'];
+                return BlocProvider(
+                  create: (context) => _startedDebtInstallmentForm(
+                    debtContext,
+                    spId,
+                  ),
+                  child: const ScheduledPaymentFormPage(),
+                );
+              },
+            ),
           ],
         ),
       ],
     );
+
+/// HU-03: opens the Pagos Programados form in cuota mode for [debtContext],
+/// editing [scheduledPaymentId] when set (deep-link back from a cuota's PP
+/// detail) or creating a fresh cuota otherwise. Keeps the two features'
+/// domains decoupled: only plain values cross here.
+ScheduledPaymentFormCubit _startedDebtInstallmentForm(
+  DebtInstallmentContext debtContext,
+  String? scheduledPaymentId,
+) {
+  final cubit = getIt<ScheduledPaymentFormCubit>();
+  unawaited(
+    cubit.loadForDebtCuota(
+      debtId: debtContext.debtId,
+      debtName: debtContext.debtName,
+      debtIsIOwe: debtContext.iOwe,
+      scheduledPaymentId: scheduledPaymentId,
+    ),
+  );
+  return cubit;
+}
 
 // Movimientos in Deudas link mode (HU-02): the existing Movimientos list reused
 // with a `TransactionsLinkMode` — a banner, no FAB, no carousel, and row taps
@@ -916,6 +995,19 @@ StatefulShellBranch _pagosProgramadosBranch() => StatefulShellBranch(
                       context.push(AppRoutes.editScheduledPayment(id)),
                   onOpenTransaction: (id) =>
                       context.push<String>(AppRoutes.transaction(id)),
+                  // Cross-link into the owning debt's detail (HU-03).
+                  onOpenDebt: (debtId) =>
+                      context.push(AppRoutes.debt(debtId)),
+                  // Editing a cuota deep-links back to the debt's
+                  // Configurar-cuota screen (its home), not the plain form.
+                  onEditInstallment: (debt, spId) => context.push(
+                    AppRoutes.debtInstallment(debt.id, spId: spId),
+                    extra: DebtInstallmentContext(
+                      debtId: debt.id,
+                      debtName: debt.name,
+                      iOwe: debt.iOwe,
+                    ),
+                  ),
                 ),
               ),
               routes: [

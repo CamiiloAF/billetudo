@@ -13,6 +13,7 @@ import '../../domain/entities/scheduled_history_entry.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
+import '../../domain/entities/scheduled_payment_linked_debt.dart';
 import '../../domain/entities/scheduled_payment_occurrence.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
 import '../../domain/entities/snooze_outcome.dart';
@@ -131,10 +132,25 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               history: _toHistoryEntries(history, row.scheduledPayment),
               historyTotalCount: historyTotalCount,
               generatedTransactionCount: generatedTransactionCount,
+              linkedDebt: _toLinkedDebt(row.debt),
             ),
           );
         }),
       );
+
+  /// The cuota cross-link (HU-03), only when the owning debt is still alive: a
+  /// trashed (`deletedAt`) debt has no live detail to link into, so the card is
+  /// dropped rather than pointing at a screen that would fail to load.
+  ScheduledPaymentLinkedDebt? _toLinkedDebt(db.Debt? debt) {
+    if (debt == null || debt.deletedAt != null || debt.tombstonedAt != null) {
+      return null;
+    }
+    return ScheduledPaymentLinkedDebt(
+      id: debt.id,
+      name: debt.name,
+      iOwe: debt.direction == db.DebtDirection.iOwe,
+    );
+  }
 
   @override
   FutureResult<List<ScheduledHistoryEntry>> getScheduledPaymentHistory(

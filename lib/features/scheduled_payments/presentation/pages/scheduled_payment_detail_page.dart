@@ -12,6 +12,7 @@ import '../../../transactions/presentation/widgets/transaction_header_button.dar
 import '../../domain/entities/scheduled_history_entry.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
+import '../../domain/entities/scheduled_payment_linked_debt.dart';
 import '../cubit/scheduled_payment_detail_cubit.dart';
 import '../cubit/scheduled_payment_detail_state.dart';
 import '../utils/scheduled_payment_format.dart';
@@ -19,6 +20,7 @@ import '../widgets/scheduled_payment_detail_badge.dart';
 import '../widgets/scheduled_payment_detail_tags_row.dart';
 import '../widgets/scheduled_payment_hero_card.dart';
 import '../widgets/scheduled_payment_history_row.dart';
+import '../widgets/scheduled_payment_linked_debt_card.dart';
 import '../widgets/scheduled_payment_skipped_history_row.dart';
 import '../widgets/sheets/confirmation_sheet.dart';
 import '../widgets/sheets/delete_scheduled_payment_sheet.dart';
@@ -32,6 +34,8 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
   const ScheduledPaymentDetailPage({
     required this.onEdit,
     required this.onOpenTransaction,
+    required this.onOpenDebt,
+    required this.onEditInstallment,
     super.key,
   });
 
@@ -41,6 +45,15 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
   /// resolves with whatever it popped with (the deleted transaction's id, or
   /// `null`).
   final Future<String?> Function(String id) onOpenTransaction;
+
+  /// Cross-link into the owning debt's detail from the "Cuota de …" card
+  /// (HU-03), when this template is a cuota.
+  final ValueChanged<String> onOpenDebt;
+
+  /// Editing a cuota deep-links back to the debt's Configurar-cuota screen (its
+  /// home), never the plain template form (HU-03).
+  final void Function(ScheduledPaymentLinkedDebt debt, String scheduledPaymentId)
+      onEditInstallment;
 
   /// Awaits the detail page's navigation, then — if it deleted something —
   /// offers HU-05's "Deshacer" snackbar via [ScheduledPaymentDetailCubit].
@@ -242,6 +255,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
                   detail: detail,
                   state: state,
                   onOpenTransaction: (id) => _openTransaction(context, id),
+                  onOpenDebt: onOpenDebt,
                 ),
               ScheduledPaymentDetailStatus.ready => const SizedBox.shrink(),
             },
@@ -268,7 +282,16 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       templateName: _templateName(context, detail),
       onSnooze:
           canSnooze ? () => unawaited(_openSnooze(context, detail)) : null,
-      onEdit: () => onEdit(detail.scheduledPayment.id),
+      onEdit: () {
+        // A cuota is edited from its home (the debt's Configurar-cuota screen),
+        // not as a loose template (HU-03).
+        final linkedDebt = detail.linkedDebt;
+        if (linkedDebt != null) {
+          onEditInstallment(linkedDebt, detail.scheduledPayment.id);
+        } else {
+          onEdit(detail.scheduledPayment.id);
+        }
+      },
       onDelete: () => unawaited(
         DeleteScheduledPaymentSheet.show(context,
             onConfirm: cubit.confirmDelete),
@@ -318,12 +341,14 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
     required this.detail,
     required this.state,
     required this.onOpenTransaction,
+    required this.onOpenDebt,
     super.key,
   });
 
   final ScheduledPaymentDetail detail;
   final ScheduledPaymentDetailState state;
   final ValueChanged<String> onOpenTransaction;
+  final ValueChanged<String> onOpenDebt;
 
   @override
   Widget build(BuildContext context) {
@@ -410,6 +435,13 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
               ScheduledPaymentDetailTagsRow(tags: detail.tags),
           ],
         ),
+        if (detail.linkedDebt != null) ...[
+          const SizedBox(height: 16),
+          ScheduledPaymentLinkedDebtCard(
+            debt: detail.linkedDebt!,
+            onTap: () => onOpenDebt(detail.linkedDebt!.id),
+          ),
+        ],
         const SizedBox(height: 24),
         Text(
           l10n.scheduledPaymentDetailHistoryTitle,

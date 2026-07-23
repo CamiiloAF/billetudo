@@ -64,6 +64,21 @@ class DebtsLocalDatasource {
             ..where((t) => t.debtId.equals(debtId) & _aliveCashEvent(t)))
           .watch();
 
+  /// The scheduled payment linked to [debtId] as its cuota (HU-03), if any.
+  /// Reads the shared `ScheduledPayments` table directly — same pattern as the
+  /// cash-event query over `Transactions`, no new table is declared here.
+  /// Excludes tombstoned templates; when more than one is linked (should not
+  /// happen — a debt configures a single cuota), the earliest `nextDate` wins,
+  /// so the card shows the nearest upcoming cuota.
+  Stream<ScheduledPayment?> watchLinkedInstallment(String debtId) =>
+      (_db.select(_db.scheduledPayments)
+            ..where(
+              (s) => s.debtId.equals(debtId) & s.tombstonedAt.isNull(),
+            )
+            ..orderBy([(s) => OrderingTerm.asc(s.nextDate)])
+            ..limit(1))
+          .watchSingleOrNull();
+
   // -- One-shot reads --
 
   Future<Debt?> getDebt(String id) =>

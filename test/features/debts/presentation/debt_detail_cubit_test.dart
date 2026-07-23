@@ -92,6 +92,63 @@ void main() {
   );
 
   blocTest<DebtDetailCubit, DebtDetailState>(
+    'HU-03: expone la cuota enlazada como installment view',
+    setUp: () => when(() => watchDebtDetail.call(any())).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          buildDebtDetail(
+            debt: buildDebt(),
+            balance: buildBalance(principalMinor: 100000),
+            ledger: ledger,
+            installment: buildDebtInstallment(
+              scheduledPaymentId: 'sp-9',
+              amountMinor: 68000000,
+              nextDate: DateTime(2026, 8, 13),
+            ),
+          ),
+        ),
+      ),
+    ),
+    build: build,
+    act: (cubit) => cubit.start('d1'),
+    skip: 1,
+    expect: () => [
+      isA<DebtDetailState>()
+          .having((s) => s.status, 'status', DebtDetailStatus.ready)
+          .having(
+            (s) => s.installment?.scheduledPaymentId,
+            'installment sp id',
+            'sp-9',
+          )
+          .having(
+            (s) => s.installment?.amountMinor,
+            'installment amount',
+            68000000,
+          )
+          .having(
+            (s) => s.installment?.date,
+            'installment date',
+            DateTime(2026, 8, 13),
+          ),
+    ],
+  );
+
+  blocTest<DebtDetailCubit, DebtDetailState>(
+    'sin cuota configurada, installment queda en null',
+    setUp: () => when(() => watchDebtDetail.call(any())).thenAnswer(
+      (_) => Stream.value(Right(detailWith(buildDebt()))),
+    ),
+    build: build,
+    act: (cubit) => cubit.start('d1'),
+    skip: 1,
+    expect: () => [
+      isA<DebtDetailState>()
+          .having((s) => s.status, 'status', DebtDetailStatus.ready)
+          .having((s) => s.installment, 'installment', isNull),
+    ],
+  );
+
+  blocTest<DebtDetailCubit, DebtDetailState>(
     'un error del stream lleva a failure',
     setUp: () => when(() => watchDebtDetail.call(any())).thenAnswer(
       (_) => Stream.value(const Left(NotFoundFailure('missing'))),

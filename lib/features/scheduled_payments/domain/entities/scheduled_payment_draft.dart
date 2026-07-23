@@ -32,6 +32,7 @@ class ScheduledPaymentDraft extends Equatable {
     this.endDate,
     this.requiresConfirmation = false,
     this.tagIds = const <String>[],
+    this.debtId,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -75,6 +76,11 @@ class ScheduledPaymentDraft extends Equatable {
   final DateTime? endDate;
   final bool requiresConfirmation;
   final List<String> tagIds;
+
+  /// The owning `Debt` id when this template is a cuota (HU-03); null for an
+  /// ordinary scheduled payment. Carried through untouched by [validated] —
+  /// it is a cross-link, not a business rule the draft enforces.
+  final String? debtId;
 
   /// Validates every business rule of HU-01/HU-05/criterion 16 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
@@ -166,6 +172,7 @@ class ScheduledPaymentDraft extends Equatable {
         endDate: endDate,
         requiresConfirmation: requiresConfirmation,
         tagIds: tagIds,
+        debtId: debtId,
       ),
     );
   }
@@ -246,5 +253,6 @@ class ScheduledPaymentDraft extends Equatable {
         endDate,
         requiresConfirmation,
         tagIds,
+        debtId,
       ];
 }

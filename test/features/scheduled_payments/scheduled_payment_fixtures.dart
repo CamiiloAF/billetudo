@@ -28,6 +28,7 @@ ScheduledPayment buildScheduledPayment({
   bool requiresConfirmation = false,
   DateTime? tombstonedAt,
   int? updatedAt,
+  String? debtId,
 }) =>
     ScheduledPayment(
       id: id,
@@ -40,6 +41,7 @@ ScheduledPayment buildScheduledPayment({
       transferAccountId: transferAccountId,
       frequency: frequency,
       interval: interval,
+      debtId: debtId,
       // Defaults to the same value as `nextDate` (or `testInstant`) so
       // existing fixtures that never touched the recurrence cursor stay
       // coherent: the immutable "first payment" and the live cursor start

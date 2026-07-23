@@ -4,6 +4,7 @@ import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_summary.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_card.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_debt_chip.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_finished_chip.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_manual_mode_chip.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_pending_count_chip.dart';
@@ -144,6 +145,28 @@ void main() {
     expect(amountFinder, findsOneWidget);
     final amountText = tester.widget<Text>(amountFinder);
     expect(amountText.style?.color, AppColors.light.incomeText);
+  });
+
+  testWidgets(
+      'HU-03: el chip "Deuda" solo aparece cuando la plantilla es una cuota',
+      (tester) async {
+    ScheduledPaymentSummary entryWith({String? debtId}) =>
+        ScheduledPaymentSummary(
+          scheduledPayment: buildScheduledPayment(debtId: debtId),
+          accountName: 'Bancolombia',
+          categoryName: 'Transporte',
+        );
+
+    await tester.pumpWidget(
+      appWith(ScheduledCard(entry: entryWith(), onTap: () {})),
+    );
+    expect(find.byType(ScheduledDebtChip), findsNothing);
+
+    await tester.pumpWidget(
+      appWith(ScheduledCard(entry: entryWith(debtId: 'debt-1'), onTap: () {})),
+    );
+    expect(find.byType(ScheduledDebtChip), findsOneWidget);
+    expect(find.text('Deuda'), findsOneWidget);
   });
 
   testWidgets('tapping the card triggers onTap once', (tester) async {

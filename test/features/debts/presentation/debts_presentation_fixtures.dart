@@ -1,6 +1,7 @@
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_balance.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_detail.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_installment.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_with_balance.dart';
 
@@ -53,9 +54,24 @@ DebtDetail buildDebtDetail({
   Debt? debt,
   DebtBalance? balance,
   List<DebtLedgerEntry>? ledger,
+  DebtInstallment? installment,
 }) =>
     DebtDetail(
       debt: debt ?? buildDebt(),
       balance: balance ?? buildBalance(),
       ledger: ledger ?? const [],
+      installment: installment,
+    );
+
+DebtInstallment buildDebtInstallment({
+  String scheduledPaymentId = 'sp-1',
+  int amountMinor = 100000000,
+  DateTime? nextDate,
+  String currency = 'COP',
+}) =>
+    DebtInstallment(
+      scheduledPaymentId: scheduledPaymentId,
+      amountMinor: amountMinor,
+      nextDate: nextDate ?? DateTime(2026, 8, 13),
+      currency: currency,
     );
