@@ -12,6 +12,16 @@
 >
 > **Pendientes conocidos:** (1) **sync rules de PowerSync** (dashboard, lado usuario) — agregar `debt_entries`. (2) **Tema oscuro** de modo enlazar (`g0x859`) y abono con enlace (`olYUm`) en Pencil. (3) **UI de papelera/restaurar** deuda (`RestoreDebt` existe en domain, sin pantalla). (4) Distintivo visual de "deuda saldada" (a validar con diseño). (5) Copy "Eliminar cuota" en la hoja de acciones ⋮ del PP (el link del form ya es consistente).
 
+## ⚠️ RETOMAR MAÑANA — fallas del Patrol e2e (corrida 2026-07-22, emulator-5554: 9/17 pasan)
+
+La primera corrida real en device surfaceó cosas que los unit/widget tests NO atraparon. Ver detalle en `docs/patrol-e2e-tracking.md` (fila Deudas). Orden de ataque sugerido:
+
+1. **[ALTA — probable bug real] El abono desde la hoja no reduce el saldo.** Los 3 flujos de abono vía `DebtPaymentSheet` (`_submitAbono`: con caja, sin caja, "Me deben") fallan el assert del saldo nuevo (`debts_patrol_test.dart:303/216/379`). **Pero "enlazar movimiento existente" SÍ baja el saldo** — misma stream del detalle, distinta ruta de escritura. Sospecha: el submit de `DebtPaymentCubit` (`RegisterDebtCashEvent`/`RegisterDebtLedgerEvent`) no se refleja en el detalle, o el saldo no se recalcula tras cerrar la hoja. Arrastra HU-07 saldada (`:500`) y Ledger completo (`:609`). **Empezar acá** — los unit tests del use case pasan, así que revisar el cableado presentation (cubit del abono → repo → stream del detalle) y si la hoja emite antes de cerrarse. Confirmar si es bug de app o de timing del test.
+2. **[cuotas/PP] Chip "Deuda" no aparece en PP tras configurar cuota** (`ScheduledDebtChip`, `:300`) y **deep-link de editar cuota no muestra el nombre de la deuda** (`:412`). El cross-link inverso y la confirmación de ocurrencia SÍ pasan, así que el cableado base funciona — falta el render del chip en la lista de PP y el destino del deep-link de edición. Puede ser `Key`/tipo faltante o bug de integración.
+3. **[test, para qa-automator] Finders de scroll ambiguos** en `_scrollUntilVisible` (`:216`): "Too many elements" (abono sin caja) y "No element" (interés auto). El segundo puede ser que la estimación de interés no se renderice — verificar.
+
+Todo lo demás de Deudas quedó commiteado y verde en la suite unit/widget/golden. El emulador se cerró al terminar la corrida.
+
 ---
 
 ## 1. Decisiones de producto/requisitos — CERRADAS
