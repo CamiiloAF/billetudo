@@ -311,10 +311,19 @@ class DebtRepositoryImpl implements DebtRepository {
             ),
           );
         }
-        final row = await _local.updateDebt(
-          id,
-          DebtMapper.toUpdateCompanion(draft, now: DateTime.now()),
-        );
+        // A registro-inicial debt keeps its stored principal at 0 — the opening
+        // figure lives entirely in the linked movement, so the derived balance
+        // is not double-counted. The form validated the user's héroe input
+        // (> 0); here we collapse it back for persistence.
+        final existing = await _local.getDebt(id);
+        if (existing == null) {
+          return Left(NotFoundFailure('debt "$id" does not exist'));
+        }
+        var companion = DebtMapper.toUpdateCompanion(draft, now: DateTime.now());
+        if (existing.initialTransactionId != null) {
+          companion = companion.copyWith(principalMinor: const Value(0));
+        }
+        final row = await _local.updateDebt(id, companion);
         if (row == null) {
           return Left(NotFoundFailure('debt "$id" does not exist'));
         }

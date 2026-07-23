@@ -2420,6 +2420,12 @@ abstract class AppLocalizations {
   /// **'Saldo de apertura'**
   String get debtFormOpeningBalanceLabel;
 
+  /// No description provided for @debtFormErrorAmountZero.
+  ///
+  /// In es, this message translates to:
+  /// **'El saldo de apertura debe ser mayor a 0'**
+  String get debtFormErrorAmountZero;
+
   /// No description provided for @debtFormNameLabel.
   ///
   /// In es, this message translates to:
@@ -2479,6 +2485,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin fecha'**
   String get debtFormDueDateHint;
+
+  /// No description provided for @debtFormErrorDueBeforeStart.
+  ///
+  /// In es, this message translates to:
+  /// **'La fecha de vencimiento debe ser posterior a la fecha de inicio'**
+  String get debtFormErrorDueBeforeStart;
 
   /// No description provided for @debtFormInterestLabel.
   ///

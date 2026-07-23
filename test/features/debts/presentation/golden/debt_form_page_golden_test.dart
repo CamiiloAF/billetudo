@@ -107,5 +107,36 @@ void main() {
         brightness: brightness,
       );
     });
+
+    testWidgets('crear: error de saldo en 0 ($suffix)', (tester) async {
+      await golden(
+        tester,
+        DebtFormState(
+          status: DebtFormStatus.ready,
+          name: 'Préstamo',
+          startDate: DateTime(2026, 7, 5),
+          failedField: DebtDraft.fieldPrincipalMinor,
+        ),
+        'amount_error_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('crear: error de vencimiento anterior al inicio ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        DebtFormState(
+          status: DebtFormStatus.ready,
+          name: 'Préstamo',
+          amountMinor: 500000,
+          startDate: DateTime(2026, 7, 5),
+          dueDate: DateTime(2026, 7, 1),
+          failedField: DebtDraft.fieldDueDate,
+        ),
+        'due_date_error_$suffix',
+        brightness: brightness,
+      );
+    });
   }
 }

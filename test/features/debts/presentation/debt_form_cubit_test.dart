@@ -281,6 +281,46 @@ void main() {
   );
 
   blocTest<DebtFormCubit, DebtFormState>(
+    'submit con saldo 0 marca el héroe y no crea la deuda',
+    build: build,
+    seed: () => const DebtFormState(
+      status: DebtFormStatus.ready,
+      name: 'Préstamo',
+      amountMinor: 0,
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.ready)
+          .having(
+            (s) => s.failedField,
+            'failedField',
+            DebtDraft.fieldPrincipalMinor,
+          ),
+    ],
+    verify: (_) => verifyNever(() => createDebt.call(any())),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'submit con vencimiento anterior al inicio marca la fecha y no crea',
+    build: build,
+    seed: () => DebtFormState(
+      status: DebtFormStatus.ready,
+      name: 'Préstamo',
+      amountMinor: 500000,
+      startDate: DateTime(2025, 6, 15),
+      dueDate: DateTime(2025, 6, 15),
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.ready)
+          .having((s) => s.failedField, 'failedField', DebtDraft.fieldDueDate),
+    ],
+    verify: (_) => verifyNever(() => createDebt.call(any())),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
     'editar con registro y cambiar el saldo pide confirmar el registro (2b)',
     setUp: () => when(() => updateDebt.call(any()))
         .thenAnswer((_) async => Right(buildDebt())),

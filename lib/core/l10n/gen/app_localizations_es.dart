@@ -1328,6 +1328,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtFormOpeningBalanceLabel => 'Saldo de apertura';
 
   @override
+  String get debtFormErrorAmountZero =>
+      'El saldo de apertura debe ser mayor a 0';
+
+  @override
   String get debtFormNameLabel => 'Nombre de la deuda';
 
   @override
@@ -1356,6 +1360,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get debtFormDueDateHint => 'Sin fecha';
+
+  @override
+  String get debtFormErrorDueBeforeStart =>
+      'La fecha de vencimiento debe ser posterior a la fecha de inicio';
 
   @override
   String get debtFormInterestLabel => 'Interés anual (opcional)';

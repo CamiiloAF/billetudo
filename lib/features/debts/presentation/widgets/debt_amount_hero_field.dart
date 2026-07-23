@@ -30,6 +30,7 @@ class DebtAmountHeroField extends StatefulWidget {
     this.onTapCurrency,
     this.autofocus = false,
     this.fieldKey,
+    this.errorText,
     super.key,
   });
 
@@ -54,6 +55,10 @@ class DebtAmountHeroField extends StatefulWidget {
   /// amount by context (`opening` / `abono` / `nuevoSaldo`) instead of assuming
   /// a single hero is mounted.
   final Key? fieldKey;
+
+  /// A discreet, already-localized error line shown under the héroe (e.g. the
+  /// opening balance must be greater than 0). `null` hides it.
+  final String? errorText;
 
   @override
   State<DebtAmountHeroField> createState() => _DebtAmountHeroFieldState();
@@ -180,18 +185,37 @@ class _DebtAmountHeroFieldState extends State<DebtAmountHeroField> {
       ],
     );
 
-    if (!widget.boxed) {
-      return content;
+    final error = widget.errorText;
+    final Widget hero = !widget.boxed
+        ? content
+        : Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              // A failed opening balance tints the héroe's border, mirroring the
+              // form field's error box.
+              border: Border.all(
+                color: error == null ? colors.border : colors.expense,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: content,
+          );
+
+    if (error == null) {
+      return hero;
     }
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: colors.border),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      child: content,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        hero,
+        const SizedBox(height: 6),
+        Text(
+          error,
+          style: theme.textTheme.bodySmall?.copyWith(color: colors.expenseText),
+        ),
+      ],
     );
   }
 }

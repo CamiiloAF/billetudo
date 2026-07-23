@@ -28,6 +28,7 @@ class DebtDraft extends Equatable {
   static const String fieldCurrency = 'currency';
   static const String fieldInterestRateBps = 'interestRateBps';
   static const String fieldStartDate = 'startDate';
+  static const String fieldDueDate = 'dueDate';
 
   static const int maxNameLength = 100;
   static const int maxCounterpartyLength = 100;
@@ -69,12 +70,13 @@ class DebtDraft extends Equatable {
       );
     }
 
-    // The opening balance may be 0 (the balance is built from ledger events)
-    // but never negative.
-    if (principalMinor < 0) {
+    // The opening balance the user typed into the héroe must be greater than 0.
+    // (The repository later collapses it to 0 for a registro-inicial debt, but
+    // that happens after this validation, on the user's own input.)
+    if (principalMinor <= 0) {
       return const Left(
         ValidationFailure(
-          'the opening balance cannot be negative',
+          'the opening balance must be greater than zero',
           field: fieldPrincipalMinor,
         ),
       );
@@ -112,6 +114,26 @@ class DebtDraft extends Equatable {
           ValidationFailure(
             'the start date cannot be in the future',
             field: fieldStartDate,
+          ),
+        );
+      }
+    }
+
+    // An optional due date must land strictly after the start day (compared by
+    // calendar day, so "same day" is rejected). A null due date means "Sin
+    // fecha" and is left untouched. When the start date is absent the check
+    // falls back to today defensively.
+    final dueDate = this.dueDate;
+    if (dueDate != null) {
+      final baseStart = startDate ?? DateTime.now();
+      final startDay =
+          DateTime(baseStart.year, baseStart.month, baseStart.day);
+      final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
+      if (!dueDay.isAfter(startDay)) {
+        return const Left(
+          ValidationFailure(
+            'the due date must be after the start date',
+            field: fieldDueDate,
           ),
         );
       }

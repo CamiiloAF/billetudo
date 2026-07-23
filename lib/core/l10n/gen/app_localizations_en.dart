@@ -1326,6 +1326,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtFormOpeningBalanceLabel => 'Opening balance';
 
   @override
+  String get debtFormErrorAmountZero =>
+      'The opening balance must be greater than zero';
+
+  @override
   String get debtFormNameLabel => 'Debt name';
 
   @override
@@ -1354,6 +1358,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtFormDueDateHint => 'No date';
+
+  @override
+  String get debtFormErrorDueBeforeStart =>
+      'The due date must be after the start date';
 
   @override
   String get debtFormInterestLabel => 'Annual interest (optional)';

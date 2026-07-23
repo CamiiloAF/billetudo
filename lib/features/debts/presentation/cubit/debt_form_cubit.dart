@@ -143,8 +143,14 @@ class DebtFormCubit extends Cubit<DebtFormState> {
   void directionChanged(DebtDirection direction) =>
       emit(state.copyWith(direction: direction));
 
-  void amountChanged(int amountMinor) =>
-      emit(state.copyWith(amountMinor: amountMinor));
+  void amountChanged(int amountMinor) => emit(
+        state.copyWith(
+          amountMinor: amountMinor,
+          failedField: state.failedField == DebtDraft.fieldPrincipalMinor
+              ? () => null
+              : null,
+        ),
+      );
 
   void nameChanged(String name) => emit(
         state.copyWith(
@@ -163,8 +169,14 @@ class DebtFormCubit extends Cubit<DebtFormState> {
   void startDateChanged(DateTime startDate) =>
       emit(state.copyWith(startDate: startDate));
 
-  void dueDateChanged(DateTime? dueDate) =>
-      emit(state.copyWith(dueDate: () => dueDate));
+  void dueDateChanged(DateTime? dueDate) => emit(
+        state.copyWith(
+          dueDate: () => dueDate,
+          failedField: state.failedField == DebtDraft.fieldDueDate
+              ? () => null
+              : null,
+        ),
+      );
 
   void rateChanged(String rateText) => emit(
         state.copyWith(
@@ -187,11 +199,11 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       return;
     }
 
-    // A registro debt keeps its stored principal at 0 (the opening figure lives
-    // in the linked movement); a classic debt stores the héroe as principal.
-    final principalMinor =
-        state.isEditing && state.hasInitialMovement ? 0 : state.amountMinor;
-    final draft = _buildDraft(principalMinor);
+    // Validate against what the user actually typed into the héroe (must be
+    // > 0). A registro debt keeps its stored principal at 0, but that collapse
+    // is a persistence detail the repository applies on update — the draft the
+    // form validates always carries the user's opening figure.
+    final draft = _buildDraft(state.amountMinor);
 
     final validation = draft.validated();
     final invalidField = validation.fold(

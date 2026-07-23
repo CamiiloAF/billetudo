@@ -224,6 +224,9 @@ class DebtFormBody extends StatelessWidget {
           currency: state.currency,
           initialAmountMinor: state.amountMinor,
           onChanged: cubit.amountChanged,
+          errorText: state.failedField == DebtDraft.fieldPrincipalMinor
+              ? l10n.debtFormErrorAmountZero
+              : null,
           boxed: true,
           currencyLabel: l10n.debtCurrencyPill(
             state.currency,
@@ -279,6 +282,9 @@ class DebtFormBody extends StatelessWidget {
           value: dueDate == null
               ? null
               : DebtFormat.dateLong(context, dueDate),
+          errorText: state.failedField == DebtDraft.fieldDueDate
+              ? l10n.debtFormErrorDueBeforeStart
+              : null,
           onTap: () => _pickDueDate(context, cubit, dueDate),
           // A cleared due date returns the debt to "Sin fecha" (item 1e).
           onClear: dueDate == null ? null : () => cubit.dueDateChanged(null),
