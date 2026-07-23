@@ -40,12 +40,16 @@ void main() {
   DebtDraft draft({
     int principalMinor = 4200000,
     DebtDirection direction = DebtDirection.iOwe,
+    DateTime? startDate,
+    String? id,
   }) =>
       DebtDraft(
+        id: id,
         name: 'Crédito carro',
         direction: direction,
         principalMinor: principalMinor,
         currency: 'COP',
+        startDate: startDate,
       );
 
   Future<List<Transaction>> debtTransactions(String debtId) =>
@@ -162,6 +166,79 @@ void main() {
     expect(tx.amountMinor, 5000000);
     expect(tx.type, EntryType.expense);
   });
+
+  test('crear sin registro estampa el startDate del draft', () async {
+    final start = DateTime(2025, 12, 1);
+    final result = await repository.createDebt(draft(startDate: start));
+    final debt = result.getOrElse((_) => throw StateError('debt'));
+
+    expect(debt.startDate, start);
+    final row =
+        await (db.select(db.debts)..where((d) => d.id.equals(debt.id))).getSingle();
+    expect(row.startDate, start);
+  });
+
+  test('crear con registro estampa el startDate del draft', () async {
+    final account = await createAccount();
+    final start = DateTime(2025, 12, 1);
+    final result = await repository.createDebtWithOpeningMovement(
+      draft: draft(startDate: start),
+      accountId: account.id,
+      date: start,
+    );
+    final debt = result.getOrElse((_) => throw StateError('debt'));
+
+    expect(debt.startDate, start);
+    // The opening movement is dated at the start date passed by the cubit.
+    final txs = await debtTransactions(debt.id);
+    expect(txs.single.date, start);
+  });
+
+  test('editar persiste el nuevo startDate', () async {
+    final created = await repository.createDebt(
+      draft(startDate: DateTime(2026, 1, 1)),
+    );
+    final debt = created.getOrElse((_) => throw StateError('debt'));
+
+    final newStart = DateTime(2025, 6, 15);
+    final result = await repository.updateDebt(
+      draft(id: debt.id, startDate: newStart),
+    );
+    final updated = result.getOrElse((_) => throw StateError('updated'));
+
+    expect(updated.startDate, newStart);
+    final row =
+        await (db.select(db.debts)..where((d) => d.id.equals(debt.id))).getSingle();
+    expect(row.startDate, newStart);
+  });
+
+  test(
+    'retro-link: el movimiento inicial se fecha en startDate, no en createdAt',
+    () async {
+      final account = await createAccount();
+      // A debt that started well before it was recorded today.
+      final start = DateTime(2025, 1, 10);
+      final created = await repository.createDebt(draft(startDate: start));
+      final debt = created.getOrElse((_) => throw StateError('debt'));
+      expect(
+        debt.createdAt.isAfter(start),
+        isTrue,
+        reason: 'createdAt is "now", after the past start date',
+      );
+
+      await repository.attributeOpeningToAccount(
+        debtId: debt.id,
+        accountId: account.id,
+      );
+
+      final txs = await debtTransactions(debt.id);
+      expect(
+        txs.single.date,
+        start,
+        reason: 'the opening movement heads the ledger at the start date',
+      );
+    },
+  );
 
   test('crear con registro "Me deben": el desembolso es un gasto', () async {
     final account = await createAccount();

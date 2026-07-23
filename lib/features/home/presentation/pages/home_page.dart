@@ -235,7 +235,6 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                     child: QuickAccessRow(
-                      onOpenAccounts: widget.onOpenAccounts,
                       onOpenScheduledPayments: widget.onOpenScheduledPayments,
                       onOpenDebts: widget.onOpenDebts,
                       onOpenReports: widget.onOpenReports,

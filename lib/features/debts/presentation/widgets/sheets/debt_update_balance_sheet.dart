@@ -121,7 +121,7 @@ class DebtUpdateBalanceSheetBody extends StatelessWidget {
                   icon: LucideIcons.calendar,
                   value: DebtFormat.relativeDate(context, l10n, state.date),
                   onTap: () => unawaited(
-                    _pickDate(context, cubit, state.date, debt.createdAt),
+                    _pickDate(context, cubit, state.date, debt.effectiveStartDate),
                   ),
                 ),
                 if (state.failure != null) ...[
@@ -157,14 +157,14 @@ class DebtUpdateBalanceSheetBody extends StatelessWidget {
     BuildContext context,
     DebtUpdateBalanceCubit cubit,
     DateTime current,
-    DateTime debtCreatedAt,
+    DateTime floorDate,
   ) async {
     final picked = await DatePickerSheet.show(
       context,
       initialDate: current,
-      // A reconciliation cannot be dated before the debt existed (HU-06),
+      // A reconciliation cannot be dated before the debt's start date (HU-06),
       // mirroring the abono sheet.
-      disabledBefore: DateUtils.dateOnly(debtCreatedAt),
+      disabledBefore: DateUtils.dateOnly(floorDate),
       disabledAfter: DateTime.now(),
     );
     if (picked != null) {

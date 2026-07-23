@@ -64,7 +64,10 @@ void main() {
     testWidgets('crear: vacío ($suffix)', (tester) async {
       await golden(
         tester,
-        const DebtFormState(status: DebtFormStatus.ready),
+        DebtFormState(
+          status: DebtFormStatus.ready,
+          startDate: DateTime(2026, 7, 5),
+        ),
         'create_$suffix',
         brightness: brightness,
       );
@@ -74,13 +77,15 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        const DebtFormState(
+        DebtFormState(
           status: DebtFormStatus.ready,
           id: 'd1',
           direction: DebtDirection.iOwe,
+          directionBaseline: DebtDirection.iOwe,
           amountMinor: 4200000000,
           name: 'Crédito vehicular',
           counterparty: 'Banco de Bogotá',
+          startDate: DateTime(2026, 7, 5),
           rateText: '24',
           accrualMode: DebtAccrualMode.auto,
         ),
@@ -92,9 +97,10 @@ void main() {
     testWidgets('crear: error de nombre requerido ($suffix)', (tester) async {
       await golden(
         tester,
-        const DebtFormState(
+        DebtFormState(
           status: DebtFormStatus.ready,
           amountMinor: 500000,
+          startDate: DateTime(2026, 7, 5),
           failedField: DebtDraft.fieldName,
         ),
         'name_error_$suffix',

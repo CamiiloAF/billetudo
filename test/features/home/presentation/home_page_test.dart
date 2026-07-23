@@ -169,7 +169,7 @@ void main() {
     await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(5));
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
   });
 
   testWidgets(
@@ -178,13 +178,12 @@ void main() {
     await pumpHome(tester, HomeState.initial(month));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(5));
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
   });
 
   testWidgets(
       'tocar cada chip de QuickAccessRow invoca su callback propio '
       '(HU-05b)', (tester) async {
-    var accountsTapped = 0;
     var scheduledTapped = 0;
     var debtsTapped = 0;
     var reportsTapped = 0;
@@ -193,7 +192,6 @@ void main() {
     await pumpHome(
       tester,
       readyWith([buildActivity(categoryName: 'Mercado')]),
-      onOpenAccounts: () => accountsTapped++,
       onOpenScheduledPayments: () => scheduledTapped++,
       onOpenDebts: () => debtsTapped++,
       onOpenReports: () => reportsTapped++,
@@ -202,14 +200,13 @@ void main() {
 
     final chips =
         tester.widgetList<QuickAccessChip>(find.byType(QuickAccessChip));
-    expect(chips.length, 5);
+    expect(chips.length, 4);
 
     for (final chip in chips) {
       await tester.tap(find.byWidget(chip));
       await tester.pump();
     }
 
-    expect(accountsTapped, 1);
     expect(scheduledTapped, 1);
     expect(debtsTapped, 1);
     expect(reportsTapped, 1);

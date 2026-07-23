@@ -433,6 +433,7 @@
   "debtFormCounterpartyLabelIOwe": "I owe",
   "debtFormCounterpartyLabelOwedToMe": "Owed by",
   "debtFormCounterpartyHint": "Bank, person…",
+  "debtFormStartDateLabel": "Date",
   "debtFormDueDateLabel": "Due date",
   "debtFormDueDateHint": "No date",
   "debtFormInterestLabel": "Annual interest (optional)",

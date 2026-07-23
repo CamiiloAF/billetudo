@@ -99,6 +99,14 @@ class DebtFormPage extends StatelessWidget {
           case DebtInitialRegistroChoice.soloDeuda:
             unawaited(cubit.chooseSoloDeuda());
           case DebtInitialRegistroChoice.chooseAccount:
+            // Defensive (edge case E): the registro prompt is only offered when
+            // there is at least one account (see `DebtFormCubit.submit`), so
+            // "elegir cuenta" can never reach an empty picker. If the set became
+            // empty meanwhile, abort instead of opening a blank picker.
+            if (state.accounts.isEmpty) {
+              cubit.cancelPrompt();
+              return;
+            }
             final accountId = await DebtAccountPickerSheet.show(
               context,
               accounts: state.accounts,
@@ -252,7 +260,18 @@ class DebtFormBody extends StatelessWidget {
           onChanged: cubit.counterpartyChanged,
         ),
         const SizedBox(height: 14),
-        // Vencimiento.
+        // Fecha (start date): required, defaults to today, never in the future
+        // and never cleared (no "×"), so it always shows a value.
+        DebtFormField.selector(
+          label: l10n.debtFormStartDateLabel,
+          icon: LucideIcons.calendar,
+          value: state.startDate == null
+              ? null
+              : DebtFormat.relativeDate(context, l10n, state.startDate!),
+          onTap: () => _pickStartDate(context, cubit, state.startDate),
+        ),
+        const SizedBox(height: 14),
+        // Fecha de vencimiento (optional, clearable, may be in the future).
         DebtFormField.selector(
           label: l10n.debtFormDueDateLabel,
           icon: LucideIcons.calendar,
@@ -294,6 +313,22 @@ class DebtFormBody extends StatelessWidget {
         await DebtCurrencyPickerSheet.show(context, selected: current);
     if (picked != null) {
       cubit.currencyChanged(picked);
+    }
+  }
+
+  Future<void> _pickStartDate(
+    BuildContext context,
+    DebtFormCubit cubit,
+    DateTime? current,
+  ) async {
+    final picked = await DatePickerSheet.show(
+      context,
+      initialDate: current ?? DateTime.now(),
+      // A debt cannot start in the future; no lower bound.
+      disabledAfter: DateTime.now(),
+    );
+    if (picked != null) {
+      cubit.startDateChanged(picked);
     }
   }
 

@@ -18,6 +18,7 @@ abstract final class DebtMapper {
         principalMinor: row.principalMinor,
         currency: row.currency,
         accrualMode: accrualModeToDomain(row.accrualMode),
+        startDate: row.startDate,
         counterparty: row.counterparty,
         dueDate: row.dueDate,
         interestRateBps: row.interestRateBps,
@@ -38,6 +39,10 @@ abstract final class DebtMapper {
         principalMinor: draft.principalMinor,
         currency: draft.currency,
         accrualMode: Value(accrualModeToDb(draft.accrualMode)),
+        // `startDate` has no Drift default (the PowerSync view constraint,
+        // decision #14), so it is stamped explicitly on every insert; a draft
+        // without one falls back to the insert timestamp (the row's birthday).
+        startDate: Value(draft.startDate ?? now),
         counterparty: Value(draft.counterparty),
         dueDate: Value(draft.dueDate),
         interestRateBps: Value(draft.interestRateBps),
@@ -58,6 +63,10 @@ abstract final class DebtMapper {
         principalMinor: Value(draft.principalMinor),
         currency: Value(draft.currency),
         accrualMode: Value(accrualModeToDb(draft.accrualMode)),
+        // `startDate` is required in the form (never cleared), so it is left
+        // untouched when a caller omits it rather than wiped to null.
+        startDate:
+            draft.startDate == null ? const Value.absent() : Value(draft.startDate),
         counterparty: Value(draft.counterparty),
         dueDate: Value(draft.dueDate),
         interestRateBps: Value(draft.interestRateBps),

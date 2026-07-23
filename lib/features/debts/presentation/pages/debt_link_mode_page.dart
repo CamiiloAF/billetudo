@@ -40,7 +40,7 @@ class DebtLinkModePage extends StatelessWidget {
           direction: debt.direction,
           kind: DebtCashEventKind.payment,
         ),
-        notBefore: debt.createdAt,
+        notBefore: debt.effectiveStartDate,
       ),
     );
   }

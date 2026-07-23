@@ -170,7 +170,7 @@ class DebtPaymentSheetBody extends StatelessWidget {
                   icon: LucideIcons.calendar,
                   value: DebtFormat.relativeDate(context, l10n, state.date),
                   onTap: () => unawaited(
-                    _pickDate(context, cubit, state.date, debt.createdAt),
+                    _pickDate(context, cubit, state.date, debt.effectiveStartDate),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -243,14 +243,14 @@ class DebtPaymentSheetBody extends StatelessWidget {
     BuildContext context,
     DebtPaymentCubit cubit,
     DateTime current,
-    DateTime debtCreatedAt,
+    DateTime floorDate,
   ) async {
     final picked = await DatePickerSheet.show(
       context,
       initialDate: current,
-      // An abono can never predate the debt it pays (HU-02): the loan did not
-      // exist before it was created.
-      disabledBefore: DateUtils.dateOnly(debtCreatedAt),
+      // An abono can never predate the debt's start date (HU-02): the loan did
+      // not exist before it started.
+      disabledBefore: DateUtils.dateOnly(floorDate),
       disabledAfter: DateTime.now(),
     );
     if (picked != null) {

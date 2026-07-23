@@ -30,6 +30,7 @@ class Debt extends Equatable {
     required this.accrualMode,
     required this.createdAt,
     required this.updatedAt,
+    this.startDate,
     this.counterparty,
     this.dueDate,
     this.interestRateBps,
@@ -52,6 +53,16 @@ class Debt extends Equatable {
   final String currency;
 
   final DebtAccrualMode accrualMode;
+
+  /// The date the debt started (its first day), distinct from [createdAt] (when
+  /// the row was recorded). It floors every backdated event: an abono, a
+  /// balance reconciliation or a linked movement can be dated on or after this
+  /// day but never before it, and it is the date the opening `registro inicial`
+  /// movement carries. Nullable only because the PowerSync view constraint
+  /// forbids a Drift default (decision #14); the repository stamps it on every
+  /// insert and old rows were backfilled to `createdAt`, so treat a `null` as
+  /// [createdAt] via [effectiveStartDate].
+  final DateTime? startDate;
 
   /// Optional label for the other party ('Banco Bogotá', 'Juan Pérez').
   final String? counterparty;
@@ -79,6 +90,10 @@ class Debt extends Equatable {
   /// [principalMinor] with no linked movement.
   final String? initialTransactionId;
 
+  /// The debt's floor date, defaulting defensively to [createdAt] when
+  /// [startDate] is `null` (an unbackfilled legacy row).
+  DateTime get effectiveStartDate => startDate ?? createdAt;
+
   bool get isTrashed => deletedAt != null;
 
   /// Whether the opening balance is backed by a linked `Transaction`.
@@ -92,6 +107,7 @@ class Debt extends Equatable {
         principalMinor,
         currency,
         accrualMode,
+        startDate,
         counterparty,
         dueDate,
         interestRateBps,

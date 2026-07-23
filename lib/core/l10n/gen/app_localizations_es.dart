@@ -1349,7 +1349,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtFormCounterpartyHint => 'Banco, persona…';
 
   @override
-  String get debtFormDueDateLabel => 'Vencimiento';
+  String get debtFormStartDateLabel => 'Fecha';
+
+  @override
+  String get debtFormDueDateLabel => 'Fecha de vencimiento';
 
   @override
   String get debtFormDueDateHint => 'Sin fecha';

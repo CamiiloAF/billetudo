@@ -4,16 +4,16 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// HU-05b: fixed chrome row of navigation shortcuts (Cuentas, Pagos
-/// programados, Deudas, Gráficas e informes, Metas) shown right below the Hero
-/// Card in every Home state (loading/ready/empty/failure). Purely a navigation
-/// aid to sections otherwise buried in "Más" — no selected/active chip, and
-/// the order is fixed for now (configurable reordering is a future feature,
-/// see `docs/requirements/04-inicio.md` § Pendiente). Metas is last: it lost
-/// its bottom-nav tab to Pagos Programados (bugfix item 7).
+/// HU-05b: fixed chrome row of navigation shortcuts (Pagos programados,
+/// Deudas, Gráficas e informes, Metas) shown right below the Hero Card in
+/// every Home state (loading/ready/empty/failure). Purely a navigation aid to
+/// sections otherwise buried in "Más" — no selected/active chip, and the
+/// order is fixed for now (configurable reordering is a future feature, see
+/// `docs/requirements/04-inicio.md` § Pendiente). Metas is last: it lost its
+/// bottom-nav tab to Pagos Programados (bugfix item 7). Cuentas is not here:
+/// the "Mis cuentas" strip right below already covers that shortcut.
 class QuickAccessRow extends StatelessWidget {
   const QuickAccessRow({
-    required this.onOpenAccounts,
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
@@ -21,7 +21,6 @@ class QuickAccessRow extends StatelessWidget {
     super.key,
   });
 
-  final VoidCallback onOpenAccounts;
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
@@ -49,12 +48,6 @@ class QuickAccessRow extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              QuickAccessChip(
-                icon: LucideIcons.wallet,
-                label: l10n.accountsTitle,
-                onTap: onOpenAccounts,
-              ),
-              const SizedBox(width: 8),
               QuickAccessChip(
                 icon: LucideIcons.calendarClock,
                 label: l10n.homeQuickAccessScheduledPayments,

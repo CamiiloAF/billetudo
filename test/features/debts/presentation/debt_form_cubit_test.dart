@@ -405,6 +405,93 @@ void main() {
   );
 
   blocTest<DebtFormCubit, DebtFormState>(
+    'editar solo la dirección (sin tocar el saldo) re-sincroniza el tipo del '
+    'movimiento en silencio, sin hoja (2b edge case)',
+    setUp: () {
+      when(() => updateDebt.call(any()))
+          .thenAnswer((_) async => Right(buildDebt()));
+      when(
+        () => updateInitialMovement.call(
+          transactionId: any(named: 'transactionId'),
+          amountMinor: any(named: 'amountMinor'),
+          direction: any(named: 'direction'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+    },
+    build: build,
+    // Direction flipped (iOwe → owedToMe) but the opening figure is unchanged.
+    seed: () => const DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      direction: DebtDirection.owedToMe,
+      directionBaseline: DebtDirection.iOwe,
+      amountMinor: 100,
+      openingBaselineMinor: 100,
+      initialTransactionId: 't-open',
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saving),
+      // No confirmation prompt: the type is derived, not a money decision.
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saved)
+          .having((s) => s.prompt, 'prompt', isNull),
+    ],
+    verify: (_) => verify(
+      () => updateInitialMovement.call(
+        transactionId: 't-open',
+        // Amount stays the baseline; only the direction (→ type) changed.
+        amountMinor: 100,
+        direction: DebtDirection.owedToMe,
+      ),
+    ).called(1),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'load(null) arranca con startDate = hoy',
+    build: build,
+    act: (cubit) => cubit.load(null),
+    verify: (cubit) {
+      final now = DateTime.now();
+      final start = cubit.state.startDate;
+      expect(start, isNotNull);
+      expect(start!.year, now.year);
+      expect(start.month, now.month);
+      expect(start.day, now.day);
+    },
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'createWithOpeningMovement fecha el desembolso en el startDate del form',
+    setUp: () => when(
+      () => createWithOpening.call(
+        draft: any(named: 'draft'),
+        accountId: any(named: 'accountId'),
+        date: any(named: 'date'),
+      ),
+    ).thenAnswer((_) async => Right(buildDebt())),
+    build: build,
+    seed: () => DebtFormState(
+      status: DebtFormStatus.ready,
+      name: 'Préstamo',
+      amountMinor: 500000,
+      startDate: DateTime(2025, 6, 15),
+      accounts: [account],
+      prompt: const DebtChooseRegistroPrompt(),
+    ),
+    act: (cubit) => cubit.createWithOpeningMovement('a1'),
+    verify: (_) => verify(
+      () => createWithOpening.call(
+        draft: any(named: 'draft'),
+        accountId: 'a1',
+        date: DateTime(2025, 6, 15),
+      ),
+    ).called(1),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
     'delete borra lógicamente y llega a deleted',
     setUp: () => when(() => deleteDebt.call('d1'))
         .thenAnswer((_) async => const Right(unit)),

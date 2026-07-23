@@ -123,6 +123,10 @@ const powerSyncSchema = Schema([
     // Soft UUID FK to the disbursement transaction holding the opening balance
     // (schemaVersion 15). Nullable; see Debts.initialTransactionId.
     Column.text('initial_transaction_id'),
+    // The date the debt started (schemaVersion 16). Epoch seconds like every
+    // DateTimeColumn (see the type comment above / due_date). Nullable; see
+    // Debts.startDate.
+    Column.integer('start_date'),
     ..._syncColumns,
   ]),
   // Solo-deuda ledger entries (schemaVersion 14). The outstanding balance is

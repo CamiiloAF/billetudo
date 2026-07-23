@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -56,7 +58,15 @@ class DebtFormCubit extends Cubit<DebtFormState> {
     }
 
     if (id == null) {
-      emit(DebtFormState(status: DebtFormStatus.ready, accounts: accounts));
+      emit(
+        DebtFormState(
+          status: DebtFormStatus.ready,
+          accounts: accounts,
+          // A new debt starts today by default; the picker never allows a
+          // future date.
+          startDate: _today(),
+        ),
+      );
       return;
     }
 
@@ -95,10 +105,12 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       status: DebtFormStatus.ready,
       id: debt.id,
       direction: debt.direction,
+      directionBaseline: debt.direction,
       amountMinor: openingMinor,
       name: debt.name,
       counterparty: debt.counterparty ?? '',
       currency: debt.currency,
+      startDate: debt.effectiveStartDate,
       dueDate: debt.dueDate,
       rateText: debt.interestRateBps == null
           ? ''
@@ -147,6 +159,9 @@ class DebtFormCubit extends Cubit<DebtFormState> {
 
   void currencyChanged(String currency) =>
       emit(state.copyWith(currency: currency));
+
+  void startDateChanged(DateTime startDate) =>
+      emit(state.copyWith(startDate: startDate));
 
   void dueDateChanged(DateTime? dueDate) =>
       emit(state.copyWith(dueDate: () => dueDate));
@@ -229,12 +244,19 @@ class DebtFormCubit extends Cubit<DebtFormState> {
         ),
       ),
       (_) {
-        // The debt row is saved. If it carries a registro and its opening
-        // figure moved, offer to sync the linked movement (item 2b); otherwise
-        // we are done.
-        if (state.hasInitialMovement &&
+        // The debt row is saved. The linked opening movement (item 2b) may need
+        // to follow the edit in one of two ways:
+        final amountChanged = state.hasInitialMovement &&
             state.amountMinor > 0 &&
-            state.amountMinor != state.openingBaselineMinor) {
+            state.amountMinor != state.openingBaselineMinor;
+        final directionChanged =
+            state.hasInitialMovement && state.direction != state.directionBaseline;
+
+        if (amountChanged) {
+          // The opening figure moved: this is a money decision, so we ask
+          // before touching the linked movement. `confirmUpdateRegistro` also
+          // re-syncs the type from the current direction, so a combined
+          // amount+direction edit is covered by this path too.
           emit(
             state.copyWith(
               status: DebtFormStatus.ready,
@@ -244,6 +266,13 @@ class DebtFormCubit extends Cubit<DebtFormState> {
               ),
             ),
           );
+        } else if (directionChanged) {
+          // Only the direction flipped (Yo debo ↔ Me deben) with the opening
+          // figure untouched: the movement's `type` (income↔expense) is a
+          // derived value, not a user money decision, so re-sync it silently —
+          // no sheet — or its sign would invert without the linked movement
+          // following (edge case 2b).
+          unawaited(_resyncInitialMovementType());
         } else {
           emit(state.copyWith(status: DebtFormStatus.saved));
         }
@@ -289,7 +318,10 @@ class DebtFormCubit extends Cubit<DebtFormState> {
     final result = await _createDebtWithOpeningMovement(
       draft: _buildDraft(state.amountMinor),
       accountId: accountId,
-      date: DateTime.now(),
+      // The opening movement is dated on the debt's start date (not "now"), so
+      // a debt that began in the past keeps its registro — and therefore the
+      // backdate floor — on that day.
+      date: state.startDate ?? _today(),
     );
     if (isClosed) {
       return;
@@ -338,6 +370,42 @@ class DebtFormCubit extends Cubit<DebtFormState> {
     );
   }
 
+  /// Edge case 2b: after a direction-only edit, re-sync the linked opening
+  /// movement's type silently (the amount is unchanged, so it stays the
+  /// baseline). No sheet — the type is derived from the direction, not a money
+  /// decision. On failure the debt is still saved, so we surface the failure but
+  /// leave the form.
+  Future<void> _resyncInitialMovementType() async {
+    final transactionId = state.initialTransactionId;
+    if (transactionId == null) {
+      emit(state.copyWith(status: DebtFormStatus.saved));
+      return;
+    }
+    final result = await _updateInitialMovement(
+      transactionId: transactionId,
+      amountMinor: state.openingBaselineMinor,
+      direction: state.direction,
+    );
+    if (isClosed) {
+      return;
+    }
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: DebtFormStatus.ready,
+          failure: () => failure,
+        ),
+      ),
+      (_) => emit(state.copyWith(status: DebtFormStatus.saved)),
+    );
+  }
+
+  /// Today at day precision — a new debt's default start date.
+  static DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   /// Item 2b cancel: the debt was already saved, so just leave (the movement
   /// keeps its previous amount).
   void dismissUpdateRegistro() =>
@@ -357,6 +425,7 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       direction: state.direction,
       principalMinor: principalMinor,
       currency: state.currency,
+      startDate: state.startDate,
       counterparty: state.counterparty,
       dueDate: state.dueDate,
       interestRateBps:

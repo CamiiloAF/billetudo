@@ -39,15 +39,23 @@ class TransactionsLinkMode {
   /// everything else in link mode.
   final TransactionType requiredType;
 
-  /// Movements dated before the debt was created cannot be linked (HU-02): the
-  /// loan did not exist yet. This is the debt's `createdAt`.
+  /// Movements dated before the debt started cannot be linked (HU-02): the loan
+  /// did not exist yet. This is the debt's start date (`startDate`, falling back
+  /// to `createdAt`).
   final DateTime notBefore;
 
   /// Whether [transaction] is eligible to be linked as an abono: it must be
-  /// [requiredType] and not predate [notBefore] (compared by calendar day, so a
-  /// same-day movement with an earlier time still qualifies).
+  /// [requiredType], not already carry a debt (#4 — a movement already
+  /// attributed to a debt must not be re-linked), and not predate [notBefore]
+  /// (compared by calendar day, so a same-day movement with an earlier time
+  /// still qualifies).
   bool accepts(Transaction transaction) {
     if (transaction.type != requiredType) {
+      return false;
+    }
+    // #4: a movement already attributed to a debt is not selectable and never
+    // shows in link mode.
+    if (transaction.debtId != null) {
       return false;
     }
     final day = DateTime(

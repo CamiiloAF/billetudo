@@ -48,10 +48,12 @@ class DebtFormState extends Equatable {
     this.status = DebtFormStatus.loading,
     this.id,
     this.direction = DebtDirection.iOwe,
+    this.directionBaseline = DebtDirection.iOwe,
     this.amountMinor = 0,
     this.name = '',
     this.counterparty = '',
     this.currency = 'COP',
+    this.startDate,
     this.dueDate,
     this.rateText = '',
     this.accrualMode = DebtAccrualMode.manual,
@@ -69,10 +71,21 @@ class DebtFormState extends Equatable {
   final String? id;
 
   final DebtDirection direction;
+
+  /// The debt's direction as it was loaded (edit only). Used to detect a
+  /// direction-only change so the linked opening movement's type is re-synced
+  /// silently (item 2b), without a money-decision sheet.
+  final DebtDirection directionBaseline;
+
   final int amountMinor;
   final String name;
   final String counterparty;
   final String currency;
+
+  /// The day the debt started (HU-01). Required, defaults to today for a new
+  /// debt, never in the future. Never cleared by the user.
+  final DateTime? startDate;
+
   final DateTime? dueDate;
   final String rateText;
   final DebtAccrualMode accrualMode;
@@ -106,10 +119,12 @@ class DebtFormState extends Equatable {
     DebtFormStatus? status,
     String? id,
     DebtDirection? direction,
+    DebtDirection? directionBaseline,
     int? amountMinor,
     String? name,
     String? counterparty,
     String? currency,
+    DateTime? startDate,
     DateTime? Function()? dueDate,
     String? rateText,
     DebtAccrualMode? accrualMode,
@@ -124,10 +139,12 @@ class DebtFormState extends Equatable {
         status: status ?? this.status,
         id: id ?? this.id,
         direction: direction ?? this.direction,
+        directionBaseline: directionBaseline ?? this.directionBaseline,
         amountMinor: amountMinor ?? this.amountMinor,
         name: name ?? this.name,
         counterparty: counterparty ?? this.counterparty,
         currency: currency ?? this.currency,
+        startDate: startDate ?? this.startDate,
         dueDate: dueDate == null ? this.dueDate : dueDate(),
         rateText: rateText ?? this.rateText,
         accrualMode: accrualMode ?? this.accrualMode,
@@ -146,10 +163,12 @@ class DebtFormState extends Equatable {
         status,
         id,
         direction,
+        directionBaseline,
         amountMinor,
         name,
         counterparty,
         currency,
+        startDate,
         dueDate,
         rateText,
         accrualMode,

@@ -2462,10 +2462,16 @@ abstract class AppLocalizations {
   /// **'Banco, persona…'**
   String get debtFormCounterpartyHint;
 
+  /// No description provided for @debtFormStartDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get debtFormStartDateLabel;
+
   /// No description provided for @debtFormDueDateLabel.
   ///
   /// In es, this message translates to:
-  /// **'Vencimiento'**
+  /// **'Fecha de vencimiento'**
   String get debtFormDueDateLabel;
 
   /// No description provided for @debtFormDueDateHint.

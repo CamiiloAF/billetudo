@@ -7,14 +7,12 @@ import 'pump_widget.dart';
 
 void main() {
   Widget row({
-    VoidCallback? onOpenAccounts,
     VoidCallback? onOpenScheduledPayments,
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
     VoidCallback? onOpenGoals,
   }) =>
       QuickAccessRow(
-        onOpenAccounts: onOpenAccounts ?? () {},
         onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
         onOpenDebts: onOpenDebts ?? () {},
         onOpenReports: onOpenReports ?? () {},
@@ -31,8 +29,7 @@ void main() {
     final l10n = l10nOf(tester);
 
     expect(find.text(l10n.homeQuickAccessTitle), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(5));
-    expect(find.text(l10n.accountsTitle), findsOneWidget);
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
     expect(
       find.text(l10n.homeQuickAccessScheduledPayments),
       findsOneWidget,
@@ -40,18 +37,6 @@ void main() {
     expect(find.text(l10n.moreDebts), findsOneWidget);
     expect(find.text(l10n.moreReports), findsOneWidget);
     expect(find.text(l10n.navGoals), findsOneWidget);
-  });
-
-  testWidgets('tocar el chip de cuentas dispara onOpenAccounts',
-      (tester) async {
-    var tapped = 0;
-    await tester.pumpHomeWidget(row(onOpenAccounts: () => tapped++));
-    final l10n = l10nOf(tester);
-
-    await tester.tap(find.text(l10n.accountsTitle));
-    await tester.pump();
-
-    expect(tapped, 1);
   });
 
   testWidgets(
@@ -103,11 +88,11 @@ void main() {
     expect(tapped, 1);
   });
 
-  testWidgets('tema oscuro: renderiza los 5 chips sin excepción (HU-11)',
+  testWidgets('tema oscuro: renderiza los 4 chips sin excepción (HU-11)',
       (tester) async {
     await tester.pumpHomeWidget(row(), brightness: Brightness.dark);
 
-    expect(find.byType(QuickAccessChip), findsNWidgets(5));
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
     expect(tester.takeException(), isNull);
   });
 }

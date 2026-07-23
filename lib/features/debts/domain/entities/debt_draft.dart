@@ -15,6 +15,7 @@ class DebtDraft extends Equatable {
     required this.principalMinor,
     required this.currency,
     this.id,
+    this.startDate,
     this.counterparty,
     this.dueDate,
     this.interestRateBps,
@@ -26,6 +27,7 @@ class DebtDraft extends Equatable {
   static const String fieldPrincipalMinor = 'principalMinor';
   static const String fieldCurrency = 'currency';
   static const String fieldInterestRateBps = 'interestRateBps';
+  static const String fieldStartDate = 'startDate';
 
   static const int maxNameLength = 100;
   static const int maxCounterpartyLength = 100;
@@ -39,6 +41,13 @@ class DebtDraft extends Equatable {
   final DebtDirection direction;
   final int principalMinor;
   final String currency;
+
+  /// The day the debt started (HU-01). Required in the form (defaults to today
+  /// for a new debt) and never in the future. Nullable here only so legacy
+  /// callers/tests can omit it; the repository then falls back to the insert's
+  /// timestamp. Its calendar day floors every backdated event.
+  final DateTime? startDate;
+
   final String? counterparty;
   final DateTime? dueDate;
   final int? interestRateBps;
@@ -90,6 +99,24 @@ class DebtDraft extends Equatable {
       );
     }
 
+    // The start date can never be in the future: a debt cannot begin on a day
+    // that has not happened yet. Compared by calendar day so "today" always
+    // passes regardless of the time component.
+    final startDate = this.startDate;
+    if (startDate != null) {
+      final startDay = DateTime(startDate.year, startDate.month, startDate.day);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      if (startDay.isAfter(today)) {
+        return const Left(
+          ValidationFailure(
+            'the start date cannot be in the future',
+            field: fieldStartDate,
+          ),
+        );
+      }
+    }
+
     final counterparty = _blankToNull(this.counterparty);
     if (counterparty != null && counterparty.length > maxCounterpartyLength) {
       return const Left(
@@ -107,6 +134,7 @@ class DebtDraft extends Equatable {
         direction: direction,
         principalMinor: principalMinor,
         currency: currency,
+        startDate: startDate,
         counterparty: counterparty,
         dueDate: dueDate,
         interestRateBps: interestRateBps,
@@ -127,6 +155,7 @@ class DebtDraft extends Equatable {
         direction,
         principalMinor,
         currency,
+        startDate,
         counterparty,
         dueDate,
         interestRateBps,

@@ -280,9 +280,10 @@ class DebtRepositoryImpl implements DebtRepository {
           amountMinor: debt.principalMinor,
           currency: debt.currency,
           type: TransactionMapper.typeToDb(type),
-          // The opening movement is dated at the debt's birth, so it heads the
-          // ledger exactly where the synthetic opening row used to sit.
-          date: debt.createdAt,
+          // The opening movement is dated at the debt's start date, so it heads
+          // the ledger exactly where the synthetic opening row used to sit and
+          // the abono/adjust floor (which is `startDate`) can backdate onto it.
+          date: debt.effectiveStartDate,
           source: const Value(db.TxSource.manual),
           debtId: Value(debt.id),
           createdAt: Value(now),

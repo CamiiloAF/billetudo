@@ -112,9 +112,11 @@ void main() {
       required String id,
       required TransactionType type,
       required DateTime date,
+      String? debtId,
     }) =>
         TransactionWithDetails(
-          transaction: buildTransaction(id: id, type: type, date: date),
+          transaction:
+              buildTransaction(id: id, type: type, date: date, debtId: debtId),
           accountName: 'Bancolombia',
         );
 
@@ -195,6 +197,32 @@ void main() {
             id: 'same-day',
             type: TransactionType.expense,
             date: DateTime(2026, 3, 10, 23, 59),
+          ),
+        ],
+      );
+
+      expect(find.byType(TransactionRow), findsOneWidget);
+    });
+
+    testWidgets('#4: un movimiento que ya tiene deuda no es enlazable', (
+      tester,
+    ) async {
+      await pumpWithItems(
+        tester,
+        requiredType: TransactionType.expense,
+        items: [
+          // Visible: gasto elegible sin deuda.
+          item(
+            id: 'free',
+            type: TransactionType.expense,
+            date: DateTime(2026, 4, 1),
+          ),
+          // Oculto: gasto correcto y en fecha, pero ya atribuido a otra deuda.
+          item(
+            id: 'already-linked',
+            type: TransactionType.expense,
+            date: DateTime(2026, 4, 1),
+            debtId: 'otra-deuda',
           ),
         ],
       );

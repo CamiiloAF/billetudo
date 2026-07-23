@@ -330,6 +330,20 @@ class Debts extends Table with _SyncColumns {
   TextColumn get counterparty => text().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
 
+  /// The date the debt started (when it was acquired/incurred). It is the
+  /// FLOOR of every payment/adjustment date (nothing may predate it) and the
+  /// date the initial ledger/disbursement record is stamped with. Always <=
+  /// today (enforced in code, not by the schema).
+  ///
+  /// `nullable()` is a `_SyncColumns`/PowerSync constraint, not the domain
+  /// intent: every `_SyncColumns` table is a PowerSync-managed view with no SQL
+  /// column defaults (decision #14, docs/requirements/05-auth-sync.md), so a
+  /// `clientDefault`/`.withDefault(...)` here would silently be ignored and
+  /// come back NULL. The repository stamps `startDate` explicitly on every
+  /// insert (like the other columns). Nullable also lets the `addColumn`
+  /// migration land safely on existing rows and backfill them.
+  DateTimeColumn get startDate => dateTime().nullable()();
+
   /// How the outstanding balance grows: `manual` (user records every change)
   /// or `auto` (the app posts interest accrual entries). Defaults to `manual`.
   /// Stored as text via textEnum for parity with Postgres.
@@ -601,7 +615,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -895,6 +909,23 @@ class AppDatabase extends _$AppDatabase {
           // is wired.
           if (from < 15) {
             await m.addColumn(debts, debts.initialTransactionId);
+          }
+
+          // v15 -> v16: Debts gains `startDate`, the date the debt started
+          // (when it was acquired). It is the floor of every payment/adjustment
+          // date and the date the initial record is stamped with. Added as a
+          // nullable column so it lands safely on existing rows, then backfilled
+          // to `created_at` — a sensible floor for pre-existing debts. Raw SQL
+          // for the backfill (a Drift `update(...).write(...)` cannot set a
+          // column from another column). Keep parity with Supabase/Postgres:
+          // replicate `debts.start_date bigint` (epoch seconds, nullable) once
+          // sync is wired.
+          if (from < 16) {
+            await m.addColumn(debts, debts.startDate);
+            await customStatement(
+              'UPDATE debts SET start_date = created_at '
+              'WHERE start_date IS NULL',
+            );
           }
         },
       );

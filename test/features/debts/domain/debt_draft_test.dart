@@ -10,6 +10,7 @@ void main() {
     String currency = 'COP',
     String? counterparty,
     int? interestRateBps,
+    DateTime? startDate,
   }) =>
       DebtDraft(
         name: name,
@@ -18,6 +19,7 @@ void main() {
         currency: currency,
         counterparty: counterparty,
         interestRateBps: interestRateBps,
+        startDate: startDate,
       );
 
   test('normalizes name, currency and blank counterparty', () {
@@ -51,5 +53,24 @@ void main() {
       (result.getLeft().toNullable()! as ValidationFailure).field,
       DebtDraft.fieldInterestRateBps,
     );
+  });
+
+  test('rejects a start date in the future', () {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final result = draft(startDate: tomorrow).validated();
+    expect(
+      (result.getLeft().toNullable()! as ValidationFailure).field,
+      DebtDraft.fieldStartDate,
+    );
+  });
+
+  test('accepts today as a start date', () {
+    expect(draft(startDate: DateTime.now()).validated().isRight(), isTrue);
+  });
+
+  test('accepts a past start date and carries it through', () {
+    final past = DateTime(2025, 1, 1);
+    final value = draft(startDate: past).validated().getRight().toNullable()!;
+    expect(value.startDate, past);
   });
 }
