@@ -13,6 +13,7 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_occurrence.dart'
     as domain;
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -1315,6 +1316,123 @@ void main() {
       final balance = after.getRight().toNullable()!;
       expect(balance.totalDecreasesMinor, 50000);
       expect(balance.outstandingMinor, 150000);
+    });
+  });
+
+  group('piso de fecha de una cuota al confirmar (bugfix)', () {
+    Future<Debt> createDebtWithStart(DateTime startDate) =>
+        database.into(database.debts).insertReturning(
+              DebtsCompanion.insert(
+                name: 'Préstamo',
+                direction: DebtDirection.iOwe,
+                principalMinor: 200000,
+                currency: 'COP',
+                startDate: Value(startDate),
+              ),
+            );
+
+    Future<ScheduledPaymentOccurrence> pendingOccurrenceFor(
+      String templateId,
+    ) =>
+        (database.select(database.scheduledPaymentOccurrences)
+              ..where((o) => o.scheduledPaymentId.equals(templateId)))
+            .getSingle();
+
+    test(
+        'confirmar una cuota con fecha anterior al startDate de la deuda se '
+        'rechaza y no genera transacción', () async {
+      final debt = await createDebtWithStart(DateTime(2026, 7, 1));
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+          debtId: debt.id,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final result = await repository.confirmOccurrence(
+        occurrenceId: occurrence.id,
+        date: DateTime(2026, 6, 15),
+        accountId: account.id,
+        amountMinor: 60000,
+      );
+
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<ValidationFailure>());
+      expect((failure! as ValidationFailure).field, 'date');
+      // La ocurrencia sigue pendiente y no se movió dinero.
+      final row = await pendingOccurrenceFor(template.id);
+      expect(row.status, ScheduledOccurrenceStatus.pending);
+      expect(await database.select(database.transactions).get(), isEmpty);
+    });
+
+    test(
+        'confirmar una cuota en la fecha exacta del startDate se acepta',
+        () async {
+      final debt = await createDebtWithStart(DateTime(2026, 7, 1));
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+          debtId: debt.id,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final result = await repository.confirmOccurrence(
+        occurrenceId: occurrence.id,
+        date: DateTime(2026, 7, 1),
+        accountId: account.id,
+        amountMinor: 60000,
+      );
+
+      expect(result.isRight(), isTrue);
+      expect(await database.select(database.transactions).get(), hasLength(1));
+    });
+
+    test(
+        'watchPendingOccurrences expone el startDate de la deuda para una '
+        'cuota (minDate del picker)', () async {
+      final debt = await createDebtWithStart(DateTime(2026, 7, 1));
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+          debtId: debt.id,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final items =
+          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final item = items.firstWhere(
+        (i) => i.scheduledPayment.id == template.id,
+      );
+      expect(item.debtStartDate, DateTime(2026, 7, 1));
+      expect(item.confirmationMinDate, DateTime(2026, 7, 1));
+    });
+
+    test(
+        'watchPendingOccurrences no impone piso a un pago sin deuda '
+        '(confirmationMinDate null)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final items =
+          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final item = items.firstWhere(
+        (i) => i.scheduledPayment.id == template.id,
+      );
+      expect(item.debtStartDate, isNull);
+      expect(item.confirmationMinDate, isNull);
     });
   });
 

@@ -83,6 +83,12 @@ class ConfirmationSheetState extends Equatable {
   String? get transferAccountName => source!.transferAccountName;
   bool get isTransfer => source!.scheduledPayment.isTransfer;
 
+  /// The earliest date this occurrence may be confirmed on: the owning debt's
+  /// `startDate` when it is a cuota (bugfix — a cuota cannot record a movement
+  /// before the debt began), `null` (no floor) otherwise. Feeds the date
+  /// picker's `disabledBefore`.
+  DateTime? get minDate => source?.confirmationMinDate;
+
   bool get isReady =>
       status != ConfirmationSheetStatus.loading && source != null;
   bool get isSaving => status == ConfirmationSheetStatus.saving;

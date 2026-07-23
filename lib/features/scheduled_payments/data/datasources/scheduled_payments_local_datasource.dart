@@ -53,6 +53,7 @@ class OccurrenceRowWithJoins {
     required this.account,
     this.transferAccount,
     this.category,
+    this.debt,
   });
 
   final ScheduledPaymentOccurrence occurrence;
@@ -60,6 +61,11 @@ class OccurrenceRowWithJoins {
   final Account account;
   final Account? transferAccount;
   final Category? category;
+
+  /// The owning debt when the template is a cuota (`scheduledPayment.debtId`
+  /// is set, HU-03) — carries `startDate`, the floor the confirmation sheet's
+  /// date picker enforces. Null (via the left join) for an ordinary payment.
+  final Debt? debt;
 }
 
 /// Drift queries for the Pagos Programados feature: template CRUD, the
@@ -120,6 +126,19 @@ class ScheduledPaymentsLocalDatasource {
   Future<ScheduledPayment?> getScheduledPayment(String id) =>
       (_db.select(_db.scheduledPayments)..where((s) => s.id.equals(id)))
           .getSingleOrNull();
+
+  /// The owning debt's `startDate` (nullable, see `Debts.startDate`), for the
+  /// confirmation floor of a cuota (HU-03): a confirmed occurrence must never
+  /// generate a movement dated before the debt began. Returns null when the
+  /// debt has no recorded start or the id does not resolve.
+  Future<DateTime?> getDebtStartDate(String debtId) {
+    final query = _db.selectOnly(_db.debts)
+      ..addColumns([_db.debts.startDate])
+      ..where(_db.debts.id.equals(debtId));
+    return query
+        .map((row) => row.read(_db.debts.startDate))
+        .getSingleOrNull();
+  }
 
   /// Only guards `tombstonedAt IS NULL`: a deleted template cannot be
   /// edited (HU-05).
@@ -442,6 +461,13 @@ class ScheduledPaymentsLocalDatasource {
         _db.categories,
         _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
       ),
+      // The owning debt when the template is a cuota (HU-03): its `startDate`
+      // is the floor the confirmation sheet must not let the date fall below.
+      // A left join — an ordinary template has a null `debtId` and reads no row.
+      leftOuterJoin(
+        _db.debts,
+        _db.debts.id.equalsExp(_db.scheduledPayments.debtId),
+      ),
     ])
       ..where(_awaitingResolution)
       ..orderBy([
@@ -462,6 +488,7 @@ class ScheduledPaymentsLocalDatasource {
                 account: row.readTable(_db.accounts),
                 transferAccount: row.readTableOrNull(transferAccounts),
                 category: row.readTableOrNull(_db.categories),
+                debt: row.readTableOrNull(_db.debts),
               ),
           ],
         );

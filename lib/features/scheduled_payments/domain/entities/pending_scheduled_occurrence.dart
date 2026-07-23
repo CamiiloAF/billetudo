@@ -26,6 +26,7 @@ class PendingScheduledOccurrence extends Equatable {
     this.categoryColor,
     this.transferAccountName,
     this.tagIds = const <String>[],
+    this.debtStartDate,
   });
 
   final ScheduledPaymentOccurrence occurrence;
@@ -42,6 +43,20 @@ class PendingScheduledOccurrence extends Equatable {
 
   final List<String> tagIds;
 
+  /// The owning debt's `startDate`, resolved only when this occurrence belongs
+  /// to a cuota (`scheduledPayment.debtId != null`) and the debt still records
+  /// one — null for an ordinary scheduled payment. It is the floor the
+  /// confirmation sheet's date picker enforces: a cuota can never record a
+  /// movement dated before the debt began.
+  final DateTime? debtStartDate;
+
+  /// The earliest date this occurrence may be confirmed on: the owning debt's
+  /// `startDate` for a cuota, `null` (no floor) for an ordinary scheduled
+  /// payment. Gated on `debtId` so a stray `debtStartDate` on a non-cuota can
+  /// never impose a floor.
+  DateTime? get confirmationMinDate =>
+      scheduledPayment.debtId != null ? debtStartDate : null;
+
   @override
   List<Object?> get props => [
         occurrence,
@@ -52,5 +67,6 @@ class PendingScheduledOccurrence extends Equatable {
         categoryColor,
         transferAccountName,
         tagIds,
+        debtStartDate,
       ];
 }

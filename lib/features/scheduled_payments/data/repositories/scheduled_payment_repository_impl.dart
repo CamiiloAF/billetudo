@@ -125,6 +125,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
                       categoryColor: row.category?.color,
                       transferAccountName: row.transferAccount?.name,
                       tagIds: tags.map((t) => t.id).toList(),
+                      debtStartDate: row.debt?.startDate,
                     ),
               nextAwaitingDate: nextAwaiting == null
                   ? null
@@ -359,6 +360,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
                 categoryColor: row.category?.color,
                 transferAccountName: row.transferAccount?.name,
                 tagIds: tagIds,
+                debtStartDate: row.debt?.startDate,
               );
             }),
           );
@@ -470,6 +472,24 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               'scheduled payment "${occurrence.scheduledPaymentId}" does not exist',
             ),
           );
+        }
+
+        // Defensive floor for a cuota (HU-03): the picker already blocks a date
+        // before the debt's `startDate`, but never persist a movement dated
+        // before the debt began even if that guard is bypassed — it would land
+        // in the debt ledger with an impossible date.
+        final debtId = template.debtId;
+        if (debtId != null) {
+          final startDate = await _local.getDebtStartDate(debtId);
+          if (startDate != null &&
+              _dateOnly(date).isBefore(_dateOnly(startDate))) {
+            return const Left(
+              ValidationFailure(
+                'a cuota cannot be recorded before its debt started',
+                field: 'date',
+              ),
+            );
+          }
         }
 
         final now = DateTime.now();
@@ -693,6 +713,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             categoryColor: row.category?.color,
             transferAccountName: row.transferAccount?.name,
             tagIds: tags.map((tag) => tag.id).toList(),
+            debtStartDate: row.debt?.startDate,
           ),
         );
       });

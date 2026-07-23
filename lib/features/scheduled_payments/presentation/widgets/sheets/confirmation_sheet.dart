@@ -132,6 +132,7 @@ class ConfirmationSheetBody extends StatelessWidget {
             isSaving: state.isSaving,
             pendingCountForTemplate: state.pendingCountForTemplate,
             oldestPendingDate: source.occurrence.effectiveDate,
+            minDate: state.minDate,
             onDateChanged: cubit.dateChanged,
             onAccountSelected: cubit.accountSelected,
             onAmountChanged: cubit.amountChanged,
@@ -279,6 +280,7 @@ class GuidedReviewSheetBody extends StatelessWidget {
                 isSaving: state.isSaving,
                 pendingCountForTemplate: state.pendingCountForTemplate,
                 oldestPendingDate: current.occurrence.effectiveDate,
+                minDate: state.minDate,
                 isGuided: true,
                 onDateChanged: cubit.dateChanged,
                 onAccountSelected: cubit.accountSelected,
@@ -560,6 +562,7 @@ class ConfirmationSheetFields extends StatelessWidget {
     required this.isSaving,
     required this.pendingCountForTemplate,
     required this.oldestPendingDate,
+    this.minDate,
     required this.onDateChanged,
     required this.onAccountSelected,
     required this.onAmountChanged,
@@ -608,6 +611,11 @@ class ConfirmationSheetFields extends StatelessWidget {
   /// "Acumuladas" strip when 2+.
   final int pendingCountForTemplate;
   final DateTime oldestPendingDate;
+
+  /// The floor the date picker enforces (`disabledBefore`): the owning debt's
+  /// `startDate` when this is a cuota, `null` (no floor) for an ordinary
+  /// scheduled payment. A cuota must never be recorded before its debt began.
+  final DateTime? minDate;
 
   final ValueChanged<DateTime> onDateChanged;
   final void Function(String id, String name) onAccountSelected;
@@ -668,6 +676,11 @@ class ConfirmationSheetFields extends StatelessWidget {
             final picked = await DatePickerSheet.show(
               context,
               initialDate: date,
+              // A cuota can never be recorded before its debt started: the
+              // owning debt's `startDate` is the floor. Non-cuota payments pass
+              // `null` here and keep no lower bound.
+              disabledBefore:
+                  minDate == null ? null : DateUtils.dateOnly(minDate!),
               disabledAfter: DateUtils.dateOnly(DateTime.now()),
             );
             if (picked != null) {

@@ -59,6 +59,11 @@ class GuidedReviewState extends Equatable {
   /// 1-based, for "N de M".
   int get position => index + 1;
 
+  /// The earliest date the current occurrence may be confirmed on — the owning
+  /// debt's `startDate` for a cuota, `null` otherwise. Feeds the date picker's
+  /// `disabledBefore`, same floor as the standalone confirmation sheet.
+  DateTime? get minDate => current?.confirmationMinDate;
+
   ScheduledPaymentType? get type => current?.scheduledPayment.type;
   String? get currency => current?.scheduledPayment.currency;
   String? get categoryName => current?.categoryName;
