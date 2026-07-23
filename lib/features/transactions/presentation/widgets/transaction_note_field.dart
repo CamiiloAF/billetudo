@@ -17,6 +17,8 @@ class TransactionNoteField extends StatefulWidget {
     required this.amountHasFocus,
     required this.onChanged,
     required this.onFocused,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   });
 
@@ -30,6 +32,15 @@ class TransactionNoteField extends StatefulWidget {
 
   final ValueChanged<String> onChanged;
   final VoidCallback onFocused;
+
+  /// The keyboard action button ("listo"). `null` keeps Flutter's default; the
+  /// form passes [TextInputAction.done] since Nota is its only system-keyboard
+  /// text field.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed — the form dismisses the
+  /// keyboard on it.
+  final VoidCallback? onSubmitted;
 
   @override
   State<TransactionNoteField> createState() => _TransactionNoteFieldState();
@@ -110,6 +121,10 @@ class _TransactionNoteFieldState extends State<TransactionNoteField> {
             controller: _controller,
             focusNode: _focusNode,
             onChanged: widget.onChanged,
+            textInputAction: widget.textInputAction,
+            onSubmitted: widget.onSubmitted == null
+                ? null
+                : (_) => widget.onSubmitted!.call(),
             textCapitalization: TextCapitalization.sentences,
             style: theme.textTheme.titleMedium?.copyWith(
               color: colors.textPrimary,

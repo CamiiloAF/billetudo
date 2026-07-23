@@ -13,6 +13,9 @@ class BudgetNameField extends StatelessWidget {
     required this.hint,
     required this.onChanged,
     this.errorText,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   });
 
@@ -27,6 +30,18 @@ class BudgetNameField extends StatelessWidget {
   /// Switches the box border to `$expense` and shows a message below it —
   /// same pattern as `AccountFormField`.
   final String? errorText;
+
+  /// The field's own focus node, so the form can chain focus from here to the
+  /// next text input. `null` keeps Flutter's default.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente" / "listo"). `null` keeps the
+  /// default so any other usage is unchanged.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to move focus to the
+  /// next text field, or to dismiss the keyboard on the last one).
+  final VoidCallback? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +69,11 @@ class BudgetNameField extends StatelessWidget {
           alignment: Alignment.center,
           child: TextFormField(
             initialValue: initialValue,
+            focusNode: focusNode,
             onChanged: onChanged,
+            textInputAction: textInputAction,
+            onFieldSubmitted:
+                onSubmitted == null ? null : (_) => onSubmitted!.call(),
             maxLength: BudgetDraft.maxNameLength,
             textCapitalization: TextCapitalization.sentences,
             style: textStyle?.copyWith(color: colors.textPrimary),

@@ -196,7 +196,12 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         if (!state.isDebtInstallment) ...[
           ScheduledPaymentTypeSegmentedControl(
             type: state.type,
-            onChanged: cubit.typeSelected,
+            onChanged: (type) {
+              // Tapping the type pill dismisses the system keyboard (e.g. if
+              // the user was in Nota) so it does not linger over the form.
+              FocusScope.of(context).unfocus();
+              cubit.typeSelected(type);
+            },
           ),
           const SizedBox(height: 12),
         ],
@@ -275,13 +280,19 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         const SizedBox(height: 8),
         ScheduledPaymentFrequencyUnitChips(
           frequency: state.frequency,
-          onChanged: cubit.frequencyChanged,
+          onChanged: (frequency) {
+            FocusScope.of(context).unfocus();
+            cubit.frequencyChanged(frequency);
+          },
         ),
         if (state.showRecurrenceOptions) ...[
           const SizedBox(height: 12),
           ScheduledPaymentIntervalStepper(
             interval: state.interval,
-            onChanged: cubit.intervalChanged,
+            onChanged: (interval) {
+              FocusScope.of(context).unfocus();
+              cubit.intervalChanged(interval);
+            },
           ),
         ],
         const SizedBox(height: 8),
@@ -322,7 +333,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           icon: LucideIcons.zap,
           title: l10n.scheduledPaymentFormModeAutomaticTitle,
           subtitle: l10n.scheduledPaymentFormModeAutomaticSubtitle,
-          onTap: () => cubit.requiresConfirmationChanged(false),
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            cubit.requiresConfirmationChanged(false);
+          },
         ),
         const SizedBox(height: 8),
         ScheduledPaymentModeRadioCard(
@@ -330,7 +344,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           icon: LucideIcons.bell,
           title: l10n.scheduledPaymentFormModeManualTitle,
           subtitle: l10n.scheduledPaymentFormModeManualSubtitle,
-          onTap: () => cubit.requiresConfirmationChanged(true),
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            cubit.requiresConfirmationChanged(true);
+          },
         ),
         if (state.isDebtInstallment) ...[
           const SizedBox(height: 16),
@@ -351,6 +368,10 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(hintText: l10n.transactionFormNoteLabel),
           onChanged: cubit.noteChanged,
+          // Nota is the form's only system-keyboard text field, so its action
+          // is "listo": confirming it just dismisses the keyboard.
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
         ),
         if (!state.isTransfer) ...[
           const SizedBox(height: 8),

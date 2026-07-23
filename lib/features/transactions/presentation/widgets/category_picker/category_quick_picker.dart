@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/forms/keyboard.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../categories/domain/entities/category.dart';
@@ -103,11 +104,20 @@ class _CategoryQuickPickerState extends State<CategoryQuickPicker> {
   }
 
   void _pick(Category category) {
+    // Selecting a chip is a selector action: drop the system keyboard so a
+    // note the user was typing does not keep it up.
+    FocusScope.of(context).unfocus();
     _cubit.select(category);
     widget.onSelected(category);
   }
 
   Future<void> _openSheet() async {
+    // Drop the system keyboard before opening the sheet so it does not spring
+    // back when the sheet closes.
+    await dismissSystemKeyboard(context);
+    if (!mounted) {
+      return;
+    }
     final picked = await CategorySelectSheet.show(
       context,
       kind: widget.kind,

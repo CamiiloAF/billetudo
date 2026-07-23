@@ -30,6 +30,12 @@ class CardDetailsSection extends StatelessWidget {
     this.creditLimitError,
     this.statementDayError,
     this.paymentDueDayError,
+    this.creditLimitFocusNode,
+    this.creditLimitTextInputAction,
+    this.onCreditLimitSubmitted,
+    this.debtFocusNode,
+    this.debtTextInputAction,
+    this.onDebtSubmitted,
     super.key,
   });
 
@@ -59,6 +65,15 @@ class CardDetailsSection extends StatelessWidget {
   final String? statementDayError;
   final String? paymentDueDayError;
 
+  /// Focus wiring for the two money fields, so the form can chain the keyboard
+  /// "siguiente"/"listo" action across them like the top-level text fields.
+  final FocusNode? creditLimitFocusNode;
+  final TextInputAction? creditLimitTextInputAction;
+  final VoidCallback? onCreditLimitSubmitted;
+  final FocusNode? debtFocusNode;
+  final TextInputAction? debtTextInputAction;
+  final VoidCallback? onDebtSubmitted;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -82,6 +97,9 @@ class CardDetailsSection extends StatelessWidget {
             currency: currency,
             text: creditLimitText,
             errorText: creditLimitError,
+            focusNode: creditLimitFocusNode,
+            textInputAction: creditLimitTextInputAction,
+            onSubmitted: onCreditLimitSubmitted,
             onChanged: onCreditLimitChanged,
           ),
         ),
@@ -96,6 +114,9 @@ class CardDetailsSection extends StatelessWidget {
               currency: currency,
               text: debtText,
               errorText: debtError,
+              focusNode: debtFocusNode,
+              textInputAction: debtTextInputAction,
+              onSubmitted: onDebtSubmitted,
               onChanged: onDebtChanged!,
             ),
           ),

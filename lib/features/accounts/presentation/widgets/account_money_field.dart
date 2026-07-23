@@ -26,6 +26,9 @@ class AccountMoneyField extends StatefulWidget {
     this.hint,
     this.errorText,
     this.allowNegative = false,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   });
 
@@ -43,6 +46,16 @@ class AccountMoneyField extends StatefulWidget {
   final String? errorText;
   final bool allowNegative;
   final ValueChanged<String> onChanged;
+
+  /// The field's own focus node, so the form can chain focus into and out of a
+  /// money field like any other text input.
+  final FocusNode? focusNode;
+
+  /// The keyboard action ("siguiente" / "listo"). `null` keeps the default.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (chain focus or dismiss).
+  final VoidCallback? onSubmitted;
 
   @override
   State<AccountMoneyField> createState() => _AccountMoneyFieldState();
@@ -81,6 +94,9 @@ class _AccountMoneyFieldState extends State<AccountMoneyField> {
       hint: widget.hint,
       controller: _controller,
       errorText: widget.errorText,
+      focusNode: widget.focusNode,
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
       keyboardType: TextInputType.numberWithOptions(
         decimal: true,
         signed: widget.allowNegative,

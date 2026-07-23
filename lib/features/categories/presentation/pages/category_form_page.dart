@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/forms/form_error_scroll_controller.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -182,6 +183,10 @@ class CategoryFormBody extends StatelessWidget {
           iconName: state.icon,
           colorToken: state.color,
           onTap: () async {
+            await dismissSystemKeyboard(context);
+            if (!context.mounted) {
+              return;
+            }
             final picked = await IconColorPickerSheet.show(
               context,
               initialIcon: state.icon,
@@ -208,6 +213,9 @@ class CategoryFormBody extends StatelessWidget {
             initialValue: state.name,
             maxLength: CategoryDraft.maxNameLength,
             textCapitalization: TextCapitalization.sentences,
+            // The only text field of the form: "listo" dismisses the keyboard.
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
               hintText: l10n.categoryFormNameHint,
               counterText: '',
@@ -240,6 +248,10 @@ class CategoryFormBody extends StatelessWidget {
             state: state,
             onTap: state.isEditing
                 ? () async {
+                    await dismissSystemKeyboard(context);
+                    if (!context.mounted) {
+                      return;
+                    }
                     final picked = await ParentCategoryPickerSheet.show(
                       context,
                       kind: state.kind,

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/forms/form_error_scroll_controller.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -104,7 +105,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
 
 /// The form's fields. Which ones exist depends on the type: only a card asks for
 /// a credit limit, only an account that may keep a number asks for one.
-class AccountFormBody extends StatelessWidget {
+class AccountFormBody extends StatefulWidget {
   const AccountFormBody({
     required this.state,
     required this.errorScroll,
@@ -115,10 +116,74 @@ class AccountFormBody extends StatelessWidget {
   final FormErrorScrollController errorScroll;
 
   @override
+  State<AccountFormBody> createState() => _AccountFormBodyState();
+}
+
+class _AccountFormBodyState extends State<AccountFormBody> {
+  // Focus is chained explicitly across the text fields, in VISIBLE order, so
+  // "siguiente" jumps to the next text input while skipping the selectors
+  // (currency, statement/payment day) that sit between them — traversal would
+  // otherwise land on a focusable selector. Which nodes are live depends on the
+  // type, so the chain is recomputed on every build (see [_textFieldChain]).
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _institutionFocus = FocusNode();
+  final FocusNode _initialBalanceFocus = FocusNode();
+  final FocusNode _fullNumberFocus = FocusNode();
+  final FocusNode _last4Focus = FocusNode();
+  final FocusNode _interestRateFocus = FocusNode();
+  final FocusNode _creditLimitFocus = FocusNode();
+  final FocusNode _cardDebtFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _nameFocus.dispose();
+    _institutionFocus.dispose();
+    _initialBalanceFocus.dispose();
+    _fullNumberFocus.dispose();
+    _last4Focus.dispose();
+    _interestRateFocus.dispose();
+    _creditLimitFocus.dispose();
+    _cardDebtFocus.dispose();
+    super.dispose();
+  }
+
+  /// The focus nodes of the currently visible text fields, in the order they
+  /// appear on screen. Conditional fields (initial balance, full number, last
+  /// 4, interest rate, card credit limit / debt) are included only when their
+  /// state predicate says they are rendered — matching [build] exactly.
+  List<FocusNode> _textFieldChain(AccountFormState state) => <FocusNode>[
+        _nameFocus,
+        _institutionFocus,
+        if (!state.isCard && !state.isEditing) _initialBalanceFocus,
+        if (state.showFullNumberField) _fullNumberFocus,
+        if (state.showLast4Field) _last4Focus,
+        if (state.showInterestRateField) _interestRateFocus,
+        if (state.isCard) _creditLimitFocus,
+        if (state.isCard && !state.isEditing) _cardDebtFocus,
+      ];
+
+  /// "listo" on the last visible text field, "siguiente" on the rest.
+  TextInputAction _actionFor(FocusNode node, List<FocusNode> chain) =>
+      node == chain.last ? TextInputAction.done : TextInputAction.next;
+
+  /// What confirming the keyboard action does: move to the next visible text
+  /// field, or dismiss the keyboard when this is the last one.
+  VoidCallback _submitFor(FocusNode node, List<FocusNode> chain) {
+    final index = chain.indexOf(node);
+    if (index == chain.length - 1) {
+      return () => FocusScope.of(context).unfocus();
+    }
+    return chain[index + 1].requestFocus;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = widget.state;
+    final errorScroll = widget.errorScroll;
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<AccountFormCubit>();
     final type = state.type;
+    final chain = _textFieldChain(state);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -141,8 +206,19 @@ class AccountFormBody extends StatelessWidget {
             alignment: Alignment.topCenter,
             child: state.showTypeGrid || type == null
                 ? AccountTypeGrid(
-                    selected: type, onSelected: cubit.typeSelected)
-                : AccountTypePill(type: type, onChange: cubit.toggleTypePicker),
+                    selected: type,
+                    onSelected: (selected) {
+                      FocusScope.of(context).unfocus();
+                      cubit.typeSelected(selected);
+                    },
+                  )
+                : AccountTypePill(
+                    type: type,
+                    onChange: () {
+                      FocusScope.of(context).unfocus();
+                      cubit.toggleTypePicker();
+                    },
+                  ),
           ),
         ),
         if (state.failedField == AccountFormState.fieldType) ...[
@@ -161,6 +237,9 @@ class AccountFormBody extends StatelessWidget {
             maxLength: AccountDraft.maxNameLength,
             textCapitalization: TextCapitalization.words,
             onChanged: cubit.nameChanged,
+            focusNode: _nameFocus,
+            textInputAction: _actionFor(_nameFocus, chain),
+            onSubmitted: _submitFor(_nameFocus, chain),
           ),
         ),
         const SizedBox(height: 16),
@@ -175,6 +254,9 @@ class AccountFormBody extends StatelessWidget {
             maxLength: AccountDraft.maxInstitutionLength,
             textCapitalization: TextCapitalization.words,
             onChanged: cubit.institutionChanged,
+            focusNode: _institutionFocus,
+            textInputAction: _actionFor(_institutionFocus, chain),
+            onSubmitted: _submitFor(_institutionFocus, chain),
           ),
         ),
         // A card's debt lives only in "Datos de la tarjeta" (`Deuda actual`),
@@ -199,6 +281,9 @@ class AccountFormBody extends StatelessWidget {
                   _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
               allowNegative: true,
               onChanged: cubit.initialBalanceChanged,
+              focusNode: _initialBalanceFocus,
+              textInputAction: _actionFor(_initialBalanceFocus, chain),
+              onSubmitted: _submitFor(_initialBalanceFocus, chain),
             ),
           ),
         ],
@@ -217,7 +302,12 @@ class AccountFormBody extends StatelessWidget {
           const SizedBox(height: 16),
           KeyedSubtree(
             key: errorScroll.keyFor(AccountDraft.fieldFullAccountNumber),
-            child: AccountNumberField(state: state),
+            child: AccountNumberField(
+              state: state,
+              focusNode: _fullNumberFocus,
+              textInputAction: _actionFor(_fullNumberFocus, chain),
+              onSubmitted: _submitFor(_fullNumberFocus, chain),
+            ),
           ),
         ],
         if (state.showLast4Field) ...[
@@ -234,6 +324,9 @@ class AccountFormBody extends StatelessWidget {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               maxLength: 4,
               onChanged: cubit.last4Changed,
+              focusNode: _last4Focus,
+              textInputAction: _actionFor(_last4Focus, chain),
+              onSubmitted: _submitFor(_last4Focus, chain),
             ),
           ),
         ],
@@ -253,6 +346,9 @@ class AccountFormBody extends StatelessWidget {
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
               ],
               onChanged: cubit.interestRateChanged,
+              focusNode: _interestRateFocus,
+              textInputAction: _actionFor(_interestRateFocus, chain),
+              onSubmitted: _submitFor(_interestRateFocus, chain),
             ),
           ),
         ],
@@ -278,6 +374,12 @@ class AccountFormBody extends StatelessWidget {
                 _errorFor(l10n, state, AccountDraft.fieldStatementDay),
             paymentDueDayError:
                 _errorFor(l10n, state, AccountDraft.fieldPaymentDueDay),
+            creditLimitFocusNode: _creditLimitFocus,
+            creditLimitTextInputAction: _actionFor(_creditLimitFocus, chain),
+            onCreditLimitSubmitted: _submitFor(_creditLimitFocus, chain),
+            debtFocusNode: _cardDebtFocus,
+            debtTextInputAction: _actionFor(_cardDebtFocus, chain),
+            onDebtSubmitted: _submitFor(_cardDebtFocus, chain),
             onCreditLimitChanged: cubit.creditLimitChanged,
             onStatementDayTap: () => _pickDay(
               context,
@@ -311,9 +413,17 @@ class AccountFormBody extends StatelessWidget {
   }
 
   Future<void> _pickCurrency(BuildContext context) async {
+    // A selector must not leave a text field focused behind the sheet, or the
+    // keyboard springs back the moment the sheet closes.
     final cubit = context.read<AccountFormCubit>();
-    final picked =
-        await CurrencyPickerSheet.show(context, selected: state.currency);
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
+    final picked = await CurrencyPickerSheet.show(
+      context,
+      selected: widget.state.currency,
+    );
     if (picked != null) {
       cubit.currencySelected(picked);
     }
@@ -325,6 +435,11 @@ class AccountFormBody extends StatelessWidget {
     required int? selected,
     required ValueChanged<int> onPicked,
   }) async {
+    // Same as the currency selector: drop the keyboard before the sheet opens.
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked =
         await DayPickerSheet.show(context, title: title, selected: selected);
     if (picked != null) {
@@ -344,9 +459,21 @@ class AccountFormBody extends StatelessWidget {
 /// number" — so it says out loud why, instead of letting the user assume their
 /// number is gone.
 class AccountNumberField extends StatelessWidget {
-  const AccountNumberField({required this.state, super.key});
+  const AccountNumberField({
+    required this.state,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
+    super.key,
+  });
 
   final AccountFormState state;
+
+  /// Focus wiring so the form can chain the keyboard action into and out of the
+  /// number field like any other text input.
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final VoidCallback? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -365,6 +492,9 @@ class AccountNumberField extends StatelessWidget {
           errorText:
               _errorFor(l10n, state, AccountDraft.fieldFullAccountNumber),
           keyboardType: TextInputType.number,
+          focusNode: focusNode,
+          textInputAction: textInputAction,
+          onSubmitted: onSubmitted,
           obscureText: !state.numberVisible,
           trailing: IconButton(
             onPressed: cubit.toggleNumberVisibility,

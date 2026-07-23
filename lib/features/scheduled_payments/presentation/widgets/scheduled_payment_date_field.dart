@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import '../../../transactions/presentation/widgets/transaction_form_field_button.dart';
 
@@ -49,6 +50,12 @@ class ScheduledPaymentDateField extends StatelessWidget {
           onCleared != null ? LucideIcons.infinity : LucideIcons.calendar,
       onCleared: onCleared,
       onTap: () async {
+        // Drop the system keyboard before opening the picker so it does not
+        // spring back when the sheet closes (device keyboard-UX fix).
+        await dismissSystemKeyboard(context);
+        if (!context.mounted) {
+          return;
+        }
         final minDate = this.minDate;
         final picked = await DatePickerSheet.show(
           context,

@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/forms/form_error_scroll_controller.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
@@ -236,7 +237,12 @@ class TransactionFormScrollZone extends StatelessWidget {
       children: [
         TransactionTypeSegmentedControl(
           type: state.type,
-          onChanged: cubit.typeSelected,
+          onChanged: (type) {
+            // Tapping the type pill dismisses the system keyboard (e.g. if the
+            // user was in Nota) so it does not linger over the form.
+            FocusScope.of(context).unfocus();
+            cubit.typeSelected(type);
+          },
         ),
         const SizedBox(height: 8),
         if (state.isTransfer) ...[
@@ -284,6 +290,10 @@ class TransactionFormScrollZone extends StatelessWidget {
           amountHasFocus: state.isKeypadVisible,
           onChanged: cubit.noteChanged,
           onFocused: cubit.noteFocused,
+          // Nota is the form's only system-keyboard text field, so its action
+          // is "listo": confirming it just dismisses the keyboard.
+          textInputAction: TextInputAction.done,
+          onSubmitted: () => FocusScope.of(context).unfocus(),
         ),
         if (!state.isTransfer) ...[
           const SizedBox(height: 8),
@@ -369,6 +379,9 @@ class TransferAccountsGroupBody extends StatelessWidget {
               child: TransactionSwapButton(
                 enabled: canSwap,
                 onSwap: () {
+                  // Swapping accounts is a selector action: dismiss the system
+                  // keyboard if it was up.
+                  FocusScope.of(context).unfocus();
                   final fromId = state.accountId!;
                   final fromName = state.accountName!;
                   final toId = state.transferAccountId!;
@@ -486,6 +499,12 @@ class AccountPickerField extends StatelessWidget {
       inlineIcon: inlineIcon ?? LucideIcons.wallet,
       errorText: errorText,
       onTap: () async {
+        // Drop the system keyboard before opening the sheet so it does not
+        // spring back when the picker closes (device keyboard-UX fix).
+        await dismissSystemKeyboard(context);
+        if (!context.mounted) {
+          return;
+        }
         final account = await BottomSheetBase.show<Account>(
           context,
           builder: (context) => BlocProvider(

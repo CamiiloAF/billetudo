@@ -258,8 +258,9 @@ void main() {
       reason: 'start-date field showing today',
     );
     await tester.tap(find.textContaining('Hoy,').first);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350)); // sheet slide-in
+    // The selector defers opening by one tick (it unfocuses the keyboard before
+    // pushing the sheet), so settle instead of a fixed slide-in pump.
+    await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithIcon(IconButton, LucideIcons.chevronLeft));
     await tester.pump();
@@ -363,8 +364,9 @@ void main() {
             w.value!.contains(_monthShort(originalDate.month)),
       ),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
+    // The selector defers opening by one tick (it unfocuses the keyboard before
+    // pushing the sheet), so settle instead of a fixed slide-in pump.
+    await tester.pumpAndSettle();
     await tester.tap(find.text('15'));
     await tester.pump();
     await tester.tap(find.text('Confirmar'));

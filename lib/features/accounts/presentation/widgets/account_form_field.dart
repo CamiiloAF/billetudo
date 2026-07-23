@@ -31,6 +31,9 @@ class AccountFormField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.trailing,
     this.onChanged,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   })  : onTap = null,
         value = null,
@@ -56,7 +59,10 @@ class AccountFormField extends StatelessWidget {
         obscureText = false,
         textCapitalization = TextCapitalization.none,
         trailing = null,
-        onChanged = null;
+        onChanged = null,
+        focusNode = null,
+        textInputAction = null,
+        onSubmitted = null;
 
   /// Already localized.
   final String label;
@@ -84,6 +90,18 @@ class AccountFormField extends StatelessWidget {
   final Widget? trailing;
 
   final ValueChanged<String>? onChanged;
+
+  /// The field's own focus node, so a form can chain focus explicitly (skipping
+  /// the selector fields between text inputs) instead of relying on traversal.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente" / "listo"). `null` keeps Flutter's
+  /// default so existing single-field usages are unchanged.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to move focus to the next
+  /// text field, or to dismiss the keyboard on the last one).
+  final VoidCallback? onSubmitted;
 
   /// Non-null only on a selector field.
   final VoidCallback? onTap;
@@ -114,12 +132,16 @@ class AccountFormField extends StatelessWidget {
     final Widget input = TextFormField(
       initialValue: initialValue,
       controller: controller,
+      focusNode: focusNode,
       onChanged: onChanged,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       maxLength: maxLength,
       obscureText: obscureText,
       textCapitalization: textCapitalization,
+      textInputAction: textInputAction,
+      onFieldSubmitted:
+          onSubmitted == null ? null : (_) => onSubmitted!.call(),
       style: theme.textTheme.bodyLarge,
       decoration: InputDecoration(
         hintText: hint,

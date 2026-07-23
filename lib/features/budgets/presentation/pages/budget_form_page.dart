@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/forms/form_error_scroll_controller.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -109,6 +110,20 @@ class BudgetFormBody extends StatefulWidget {
 class _BudgetFormBodyState extends State<BudgetFormBody> {
   bool? _scopeCustom;
 
+  // Focus is chained explicitly across the two system-keyboard text inputs, in
+  // visual order: name → amount. The selectors in between (icon, currency,
+  // scope, dates, threshold) never take focus; tapping any of them unfocuses
+  // first so the keyboard does not reopen when their sheet closes.
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _amountFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _nameFocus.dispose();
+    _amountFocus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -134,6 +149,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             BudgetIconButton(
               icon: state.icon,
               onTap: () async {
+                await dismissSystemKeyboard(context);
+                if (!context.mounted) {
+                  return;
+                }
                 final picked =
                     await BudgetIconSheet.show(context, selected: state.icon);
                 if (picked != null) {
@@ -150,6 +169,9 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                   hint: l10n.budgetFormNameHint,
                   onChanged: cubit.nameChanged,
                   errorText: _errorFor(l10n, state, BudgetDraft.fieldName),
+                  focusNode: _nameFocus,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: _amountFocus.requestFocus,
                 ),
               ),
             ),
@@ -167,7 +189,15 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             currency: state.currency,
             errorText: _errorFor(l10n, state, BudgetDraft.fieldAmount),
             onChanged: cubit.amountChanged,
+            // Last text field of the form: "listo" dismisses the keyboard.
+            focusNode: _amountFocus,
+            textInputAction: TextInputAction.done,
+            onSubmitted: () => FocusScope.of(context).unfocus(),
             onCurrencyTap: () async {
+              await dismissSystemKeyboard(context);
+              if (!context.mounted) {
+                return;
+              }
               final picked = await CurrencyPickerSheet.show(
                 context,
                 selected: state.currency,
@@ -213,6 +243,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                 ? l10n.budgetScopeAllAccounts
                 : l10n.budgetScopeAccounts(state.accountIds.length),
             onTap: () async {
+              await dismissSystemKeyboard(context);
+              if (!context.mounted) {
+                return;
+              }
               final picked = await AccountFilterSheet.show(
                 context,
                 initialSelected: state.accountIds,
@@ -230,6 +264,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                 ? l10n.budgetScopeAllCategories
                 : l10n.budgetScopeCategories(state.categoryIds.length),
             onTap: () async {
+              await dismissSystemKeyboard(context);
+              if (!context.mounted) {
+                return;
+              }
               // The picker speaks in materialized ids; the budget stores the
               // canonical scope ("Todas" = empty, a root = its id alone), so a
               // new category joins a "Todas" or whole-root budget automatically
@@ -330,6 +368,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
               ? l10n.budgetFormThresholdOff
               : l10n.budgetFormThresholdRow(state.alertThresholdPct!),
           onTap: () async {
+            await dismissSystemKeyboard(context);
+            if (!context.mounted) {
+              return;
+            }
             final choice = await BudgetThresholdSheet.show(
               context,
               selected: state.alertThresholdPct,
@@ -348,6 +390,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
     BudgetFormCubit cubit,
     BudgetFormState state,
   ) async {
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked = await DatePickerSheet.show(
       context,
       initialDate: state.startDate,
@@ -362,6 +408,10 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
     BudgetFormCubit cubit,
     BudgetFormState state,
   ) async {
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked = await DatePickerSheet.show(
       context,
       initialDate: state.endDate ?? state.startDate,

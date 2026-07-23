@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../cubit/tag_filter_cubit.dart';
@@ -88,6 +89,12 @@ class TransactionTagsFieldBody extends StatelessWidget {
                   removable: false,
                   neutral: true,
                   onTap: () async {
+                    // Drop the system keyboard before opening the sheet so it
+                    // does not spring back when the sheet closes.
+                    await dismissSystemKeyboard(context);
+                    if (!context.mounted) {
+                      return;
+                    }
                     final result = await TagFilterSheet.show(
                       context,
                       initialSelected: selectedIds,

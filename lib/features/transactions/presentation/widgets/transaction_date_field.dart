@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import 'transaction_form_field_button.dart';
@@ -27,6 +28,12 @@ class TransactionDateField extends StatelessWidget {
       value: _label(context, l10n),
       inlineIcon: LucideIcons.calendar,
       onTap: () async {
+        // Drop the system keyboard before opening the picker so it does not
+        // spring back when the sheet closes (device keyboard-UX fix).
+        await dismissSystemKeyboard(context);
+        if (!context.mounted) {
+          return;
+        }
         final picked = await DatePickerSheet.show(context, initialDate: date);
         if (picked != null) {
           onChanged(picked);

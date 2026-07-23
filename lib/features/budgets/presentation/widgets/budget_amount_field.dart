@@ -41,6 +41,9 @@ class BudgetAmountField extends StatefulWidget {
     required this.onChanged,
     required this.onCurrencyTap,
     this.errorText,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   });
 
@@ -52,6 +55,18 @@ class BudgetAmountField extends StatefulWidget {
   /// Set when the amount failed validation (HU-01: a budget needs a positive
   /// amount). Switches the box border to `$expense` and shows a message below.
   final String? errorText;
+
+  /// The field's own focus node, so the form can chain focus into this input
+  /// from the name field. `null` keeps Flutter's default.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente" / "listo") on the system keyboard.
+  /// `null` keeps the default.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to dismiss the keyboard
+  /// on the last text field of the form).
+  final VoidCallback? onSubmitted;
 
   @override
   State<BudgetAmountField> createState() => _BudgetAmountFieldState();
@@ -135,10 +150,15 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
                 child: KeyboardDoneToolbar(
                   child: TextFormField(
                     controller: _controller,
+                    focusNode: widget.focusNode,
                     onChanged: (value) =>
                         widget.onChanged(MoneyFormatter.parseMinor(value)),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
+                    textInputAction: widget.textInputAction,
+                    onFieldSubmitted: widget.onSubmitted == null
+                        ? null
+                        : (_) => widget.onSubmitted!.call(),
                     inputFormatters: [MoneyInputFormatter(decimals: decimals)],
                     style: style.copyWith(color: colors.textPrimary),
                     decoration: InputDecoration(

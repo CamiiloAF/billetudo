@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -357,6 +358,12 @@ class _DebtFormBodyState extends State<DebtFormBody> {
     DebtFormCubit cubit,
     String current,
   ) async {
+    // Drop the keyboard before the sheet opens, or it reappears on close (the
+    // route restores focus to the field the user was typing in).
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked =
         await DebtCurrencyPickerSheet.show(context, selected: current);
     if (picked != null) {
@@ -369,6 +376,10 @@ class _DebtFormBodyState extends State<DebtFormBody> {
     DebtFormCubit cubit,
     DateTime? current,
   ) async {
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked = await DatePickerSheet.show(
       context,
       initialDate: current ?? DateTime.now(),
@@ -385,6 +396,10 @@ class _DebtFormBodyState extends State<DebtFormBody> {
     DebtFormCubit cubit,
     DateTime? current,
   ) async {
+    await dismissSystemKeyboard(context);
+    if (!context.mounted) {
+      return;
+    }
     final picked = await DatePickerSheet.show(
       context,
       initialDate: current ?? DateTime.now(),
