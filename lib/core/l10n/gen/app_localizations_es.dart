@@ -1316,6 +1316,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtEditTooltip => 'Editar deuda';
 
   @override
+  String get debtDetailTitleFallback => 'Deuda';
+
+  @override
   String get debtFormNewTitle => 'Nueva deuda';
 
   @override

@@ -1314,6 +1314,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtEditTooltip => 'Edit debt';
 
   @override
+  String get debtDetailTitleFallback => 'Debt';
+
+  @override
   String get debtFormNewTitle => 'New debt';
 
   @override

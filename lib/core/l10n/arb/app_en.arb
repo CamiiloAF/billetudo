@@ -422,6 +422,7 @@
   "debtLedgerTagEstimated": "Estimated",
   "debtLedgerTagNoAccount": "Doesn't affect accounts",
   "debtEditTooltip": "Edit debt",
+  "debtDetailTitleFallback": "Debt",
   "debtFormNewTitle": "New debt",
   "debtFormEditTitle": "Edit debt",
   "debtFormDirectionLabel": "Do you owe or are you owed?",

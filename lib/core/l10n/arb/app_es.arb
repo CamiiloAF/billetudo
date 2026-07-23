@@ -1011,6 +1011,8 @@
   "@debtLedgerTagNoAccount": {},
   "debtEditTooltip": "Editar deuda",
   "@debtEditTooltip": {},
+  "debtDetailTitleFallback": "Deuda",
+  "@debtDetailTitleFallback": {},
   "debtFormNewTitle": "Nueva deuda",
   "@debtFormNewTitle": {},
   "debtFormEditTitle": "Editar deuda",

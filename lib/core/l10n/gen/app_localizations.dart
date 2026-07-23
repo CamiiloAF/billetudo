@@ -2396,6 +2396,12 @@ abstract class AppLocalizations {
   /// **'Editar deuda'**
   String get debtEditTooltip;
 
+  /// No description provided for @debtDetailTitleFallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get debtDetailTitleFallback;
+
   /// No description provided for @debtFormNewTitle.
   ///
   /// In es, this message translates to:

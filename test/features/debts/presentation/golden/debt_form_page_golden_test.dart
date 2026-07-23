@@ -94,6 +94,27 @@ void main() {
       );
     });
 
+    // Direction "Me deben" (`B36jV`/`pn5Qx`): the same form, but the
+    // counterparty field is labelled "Me debe" (vs. "Le debo a" for "Yo debo"),
+    // verifying the directional copy flips with the toggle.
+    testWidgets('crear: dirección "Me deben" (label "Me debe") ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        DebtFormState(
+          status: DebtFormStatus.ready,
+          direction: DebtDirection.owedToMe,
+          directionBaseline: DebtDirection.owedToMe,
+          amountMinor: 40000000,
+          name: 'Le presté a Andrés',
+          counterparty: 'Andrés',
+          startDate: DateTime(2026, 7, 5),
+        ),
+        'create_owed_to_me_$suffix',
+        brightness: brightness,
+      );
+    });
+
     testWidgets('crear: error de nombre requerido ($suffix)', (tester) async {
       await golden(
         tester,

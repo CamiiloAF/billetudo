@@ -70,7 +70,7 @@ void main() {
   ];
 
   final linkMode = TransactionsLinkMode(
-    debtLabel: 'Crédito vehicular · Yo debo',
+    debtLabel: 'Crédito vehicular',
     onCancel: () {},
     onLinkTransaction: (_) async {},
     requiredType: TransactionType.expense,

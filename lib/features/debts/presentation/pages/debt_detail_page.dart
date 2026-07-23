@@ -72,13 +72,13 @@ class DebtDetailPage extends StatelessWidget {
             return Column(
               children: [
                 PageHeader(
-                  title: detail?.debt.name ?? '',
+                  title: detail?.debt.name ?? l10n.debtDetailTitleFallback,
                   trailing: detail == null
                       ? null
                       : PageHeaderCircleButton(
                           icon: LucideIcons.pencil,
-                          background: colors.muted,
-                          foreground: colors.textPrimary,
+                          background: colors.primary,
+                          foreground: colors.onPrimary,
                           tooltip: l10n.debtEditTooltip,
                           onPressed: () => onEdit(detail.debt.id),
                         ),

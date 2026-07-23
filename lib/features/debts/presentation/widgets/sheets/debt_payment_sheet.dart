@@ -144,15 +144,22 @@ class DebtPaymentSheetBody extends StatelessWidget {
                   onChanged: cubit.amountChanged,
                   autofocus: true,
                 ),
-                const SizedBox(height: 6),
-                Center(
-                  child: DebtLinkExistingButton(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onLinkExisting();
-                    },
+                // The "Enlaza un movimiento" escape hatch only makes sense when
+                // the abono hits an account: linking an existing movement means
+                // the money already moved in a cuenta, which contradicts the
+                // sin-caja mode (switch off). Frame `olYUm` shows it only with
+                // the toggle on; `V6Z9ln` (off) hides it.
+                if (state.addToAccount) ...[
+                  const SizedBox(height: 6),
+                  Center(
+                    child: DebtLinkExistingButton(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onLinkExisting();
+                      },
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 16),
                 // Switch row.
                 DebtAddToAccountRow(state: state, cubit: cubit),
