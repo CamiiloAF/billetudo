@@ -273,6 +273,52 @@ void main() {
     });
 
     test(
+      'the synthetic opening row is dated on the start date, not createdAt',
+      () {
+        // Solo-deuda: the opening figure is synthetic (no backing Transaction),
+        // so its ledger date is derived. It must follow the debt's start date
+        // (the "Fecha" the user picked), NOT `createdAt` (≈ today). This is the
+        // device bug: a debt started in the past showed its "Saldo de apertura"
+        // dated today, and editing "Fecha" never moved it.
+        final debt = buildDebt(
+          principalMinor: 100000,
+          startDate: DateTime(2026, 2, 10),
+          createdAt: DateTime(2026, 5, 30),
+        );
+        final ledger = calc.buildLedger(
+          debt: debt,
+          entries: const [],
+          cashEvents: const [],
+        );
+
+        expect(ledger.single.kind, DebtLedgerKind.opening);
+        expect(ledger.single.date, DateTime(2026, 2, 10));
+        // createdAt stays the ordering key (unchanged).
+        expect(ledger.single.createdAt, DateTime(2026, 5, 30));
+      },
+    );
+
+    test(
+      'the synthetic opening row falls back to createdAt when start date is null',
+      () {
+        // Legacy/unbackfilled rows carry a null startDate; effectiveStartDate
+        // defends by falling back to createdAt.
+        final debt = buildDebt(
+          principalMinor: 100000,
+          createdAt: DateTime(2026, 5, 30),
+        );
+        final ledger = calc.buildLedger(
+          debt: debt,
+          entries: const [],
+          cashEvents: const [],
+        );
+
+        expect(ledger.single.kind, DebtLedgerKind.opening);
+        expect(ledger.single.date, DateTime(2026, 5, 30));
+      },
+    );
+
+    test(
       'same-day rows break ties by createdAt desc, sinking the opening to the '
       'bottom of its day',
       () {

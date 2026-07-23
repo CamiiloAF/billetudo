@@ -110,9 +110,11 @@ class DebtFormPage extends StatelessWidget {
             final accountId = await DebtAccountPickerSheet.show(
               context,
               accounts: state.accounts,
-              selectedId: state.accounts.isEmpty
-                  ? null
-                  : state.accounts.first.account.id,
+              // Creating a debt must not pre-select an account: the opening
+              // movement lands real money on whichever account the user picks,
+              // so that choice is explicit (unlike the abono sheet, which may
+              // remember a previous account).
+              selectedId: null,
             );
             if (!context.mounted) {
               return;

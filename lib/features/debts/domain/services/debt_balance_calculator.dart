@@ -91,7 +91,13 @@ class DebtBalanceCalculator {
         DebtLedgerEntry(
           id: 'opening',
           kind: DebtLedgerKind.opening,
-          date: debt.createdAt,
+          // The synthetic opening row is dated on the debt's start date (its
+          // first day), not on `createdAt` (when the row was written). A
+          // solo-deuda opening has no backing `Transaction`, so this derived
+          // date is the only date the user sees for it — it must follow the
+          // "Fecha" field and move when that is edited. `createdAt` stays the
+          // ordering key (see the same-day tiebreak in `sort`).
+          date: debt.effectiveStartDate,
           createdAt: debt.createdAt,
           effectMinor: debt.principalMinor,
         ),
