@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../domain/entities/debt.dart';
 import '../cubit/debt_detail_cubit.dart';
 import '../cubit/debt_detail_state.dart';
 import '../widgets/debt_hero_card.dart';
@@ -17,30 +18,34 @@ import '../widgets/debt_ledger_row.dart';
 import '../widgets/debt_ledger_skeleton_row.dart';
 import '../widgets/debt_meta_card.dart';
 import '../widgets/debt_skeleton_box.dart';
+import '../widgets/sheets/debt_payment_sheet.dart';
+import '../widgets/sheets/debt_update_balance_sheet.dart';
 
 /// One debt's detail (`cUzp6`/`ZQIPe`/`tVUoU`): hero, meta card, the linked
 /// installment (when any), the running-balance ledger, and a fixed "Registrar
 /// abono" button. A stacked screen with a `Page Header` and no `Tab Bar`.
 ///
-/// The write actions the design offers are not implemented yet, so their
-/// callbacks are wired from the router to no-ops for now (see `AppRoutes`):
-/// registering a payment, updating the balance and editing the debt all open
-/// sheets/forms that land in a later phase.
+/// The write flows open from here: the fixed CTA opens the abono sheet, the
+/// meta card's "Actualizar saldo" row opens the reconciliation sheet, and the
+/// pencil opens the crear/editar form. Navigation intents (edit, the linked
+/// cuota, and Movimientos link mode) are delegated to the router; the sheets
+/// are shown in place, the same pattern the rest of the app uses.
 class DebtDetailPage extends StatelessWidget {
   const DebtDetailPage({
     required this.onEdit,
-    required this.onRegisterPayment,
-    required this.onUpdateBalance,
     required this.onOpenInstallment,
+    required this.onLinkExisting,
     super.key,
   });
 
   final ValueChanged<String> onEdit;
-  final VoidCallback onRegisterPayment;
-  final VoidCallback onUpdateBalance;
 
   /// Cross-link into Pagos programados for the linked cuota (HU-03).
   final ValueChanged<String> onOpenInstallment;
+
+  /// Jumps into Movimientos link mode to attribute an existing movement to the
+  /// debt (HU-02); the router wires the navigation.
+  final ValueChanged<Debt> onLinkExisting;
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +82,8 @@ class DebtDetailPage extends StatelessWidget {
                     DebtDetailStatus.ready when detail != null =>
                       DebtDetailReadyView(
                         state: state,
-                        onRegisterPayment: onRegisterPayment,
-                        onUpdateBalance: onUpdateBalance,
                         onOpenInstallment: onOpenInstallment,
+                        onLinkExisting: onLinkExisting,
                       ),
                     DebtDetailStatus.ready => const SizedBox.shrink(),
                   },
@@ -96,16 +100,14 @@ class DebtDetailPage extends StatelessWidget {
 class DebtDetailReadyView extends StatelessWidget {
   const DebtDetailReadyView({
     required this.state,
-    required this.onRegisterPayment,
-    required this.onUpdateBalance,
     required this.onOpenInstallment,
+    required this.onLinkExisting,
     super.key,
   });
 
   final DebtDetailState state;
-  final VoidCallback onRegisterPayment;
-  final VoidCallback onUpdateBalance;
   final ValueChanged<String> onOpenInstallment;
+  final ValueChanged<Debt> onLinkExisting;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +130,13 @@ class DebtDetailReadyView extends StatelessWidget {
               DebtMetaCard(
                 debt: debt,
                 dailyGrowthMinor: state.dailyGrowthMinor,
-                onUpdateBalance: onUpdateBalance,
+                onUpdateBalance: () => unawaited(
+                  DebtUpdateBalanceSheet.show(
+                    context,
+                    debt: debt,
+                    outstandingMinor: detail.balance.outstandingMinor,
+                  ),
+                ),
               ),
               if (installment != null) ...[
                 const SizedBox(height: 12),
@@ -162,7 +170,15 @@ class DebtDetailReadyView extends StatelessWidget {
             ],
           ),
         ),
-        DebtDetailBottomBar(onRegisterPayment: onRegisterPayment),
+        DebtDetailBottomBar(
+          onRegisterPayment: () => unawaited(
+            DebtPaymentSheet.show(
+              context,
+              debt: debt,
+              onLinkExisting: () => onLinkExisting(debt),
+            ),
+          ),
+        ),
       ],
     );
   }

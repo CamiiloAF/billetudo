@@ -2378,6 +2378,330 @@ abstract class AppLocalizations {
   /// **'Editar deuda'**
   String get debtEditTooltip;
 
+  /// No description provided for @debtFormNewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva deuda'**
+  String get debtFormNewTitle;
+
+  /// No description provided for @debtFormEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar deuda'**
+  String get debtFormEditTitle;
+
+  /// No description provided for @debtFormDirectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Debes o te deben?'**
+  String get debtFormDirectionLabel;
+
+  /// No description provided for @debtFormOpeningBalanceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo de apertura'**
+  String get debtFormOpeningBalanceLabel;
+
+  /// No description provided for @debtFormNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get debtFormNameLabel;
+
+  /// No description provided for @debtFormNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Crédito vehicular, préstamo a Andrés…'**
+  String get debtFormNameHint;
+
+  /// No description provided for @debtFormNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Ponle un nombre a la deuda'**
+  String get debtFormNameRequired;
+
+  /// No description provided for @debtFormCounterpartyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraparte'**
+  String get debtFormCounterpartyLabel;
+
+  /// No description provided for @debtFormCounterpartyHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Banco, persona…'**
+  String get debtFormCounterpartyHint;
+
+  /// No description provided for @debtFormDueDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Vencimiento'**
+  String get debtFormDueDateLabel;
+
+  /// No description provided for @debtFormDueDateHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha'**
+  String get debtFormDueDateHint;
+
+  /// No description provided for @debtFormInterestLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Interés anual (opcional)'**
+  String get debtFormInterestLabel;
+
+  /// No description provided for @debtFormInterestHint.
+  ///
+  /// In es, this message translates to:
+  /// **'0'**
+  String get debtFormInterestHint;
+
+  /// No description provided for @debtFormInterestError.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa la tasa de interés'**
+  String get debtFormInterestError;
+
+  /// No description provided for @debtFormAccrualModeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo de interés'**
+  String get debtFormAccrualModeLabel;
+
+  /// No description provided for @debtFormAccrualManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get debtFormAccrualManual;
+
+  /// No description provided for @debtFormAccrualAuto.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get debtFormAccrualAuto;
+
+  /// No description provided for @debtFormAccrualHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual: tú pones la cifra del banco. Automático estima el crecimiento diario (estimado).'**
+  String get debtFormAccrualHint;
+
+  /// No description provided for @debtFormCreateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear deuda'**
+  String get debtFormCreateCta;
+
+  /// No description provided for @debtFormSaveCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get debtFormSaveCta;
+
+  /// No description provided for @debtFormDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar deuda'**
+  String get debtFormDelete;
+
+  /// No description provided for @debtCurrencySheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda'**
+  String get debtCurrencySheetTitle;
+
+  /// No description provided for @debtCurrencyPill.
+  ///
+  /// In es, this message translates to:
+  /// **'{code} · {name}'**
+  String debtCurrencyPill(String code, String name);
+
+  /// No description provided for @debtDeleteSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta deuda?'**
+  String get debtDeleteSheetTitle;
+
+  /// No description provided for @debtDeleteSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrás recuperarla desde la papelera.'**
+  String get debtDeleteSheetMessage;
+
+  /// Subtítulo de contexto: nombre de la deuda y su dirección.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} · {direction}'**
+  String debtContext(String name, String direction);
+
+  /// No description provided for @debtDateToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy, {date}'**
+  String debtDateToday(String date);
+
+  /// No description provided for @debtPaymentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar abono'**
+  String get debtPaymentTitle;
+
+  /// No description provided for @debtPaymentAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Abono'**
+  String get debtPaymentAmountLabel;
+
+  /// No description provided for @debtPaymentAddToAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Agregar a una cuenta?'**
+  String get debtPaymentAddToAccountLabel;
+
+  /// No description provided for @debtPaymentAddToAccountHintYes.
+  ///
+  /// In es, this message translates to:
+  /// **'Moverá el saldo y contará en tus estadísticas'**
+  String get debtPaymentAddToAccountHintYes;
+
+  /// No description provided for @debtPaymentAddToAccountHintNo.
+  ///
+  /// In es, this message translates to:
+  /// **'Este abono baja el saldo de la deuda pero no moverá ninguna cuenta.'**
+  String get debtPaymentAddToAccountHintNo;
+
+  /// No description provided for @debtPaymentLinkExisting.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya lo registraste? Enlaza un movimiento'**
+  String get debtPaymentLinkExisting;
+
+  /// No description provided for @debtPaymentDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get debtPaymentDateLabel;
+
+  /// No description provided for @debtPaymentNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota (opcional)'**
+  String get debtPaymentNoteLabel;
+
+  /// No description provided for @debtPaymentNoteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar una nota'**
+  String get debtPaymentNoteHint;
+
+  /// No description provided for @debtPaymentCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría (opcional)'**
+  String get debtPaymentCategoryLabel;
+
+  /// No description provided for @debtPaymentCategoryNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get debtPaymentCategoryNone;
+
+  /// No description provided for @debtPaymentSelectAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegí una cuenta'**
+  String get debtPaymentSelectAccount;
+
+  /// No description provided for @debtPaymentAccountPickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegí una cuenta'**
+  String get debtPaymentAccountPickerTitle;
+
+  /// No description provided for @debtPaymentCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar abono'**
+  String get debtPaymentCta;
+
+  /// No description provided for @debtPaymentError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos registrar el abono. Intenta de nuevo.'**
+  String get debtPaymentError;
+
+  /// No description provided for @debtUpdateBalanceTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar saldo'**
+  String get debtUpdateBalanceTitle;
+
+  /// No description provided for @debtUpdateBalanceNewLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo saldo'**
+  String get debtUpdateBalanceNewLabel;
+
+  /// No description provided for @debtUpdateBalanceEstimatedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo estimado hoy'**
+  String get debtUpdateBalanceEstimatedLabel;
+
+  /// No description provided for @debtUpdateBalanceAdjustLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste que se registra'**
+  String get debtUpdateBalanceAdjustLabel;
+
+  /// No description provided for @debtUpdateBalanceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra un ajuste en la deuda para igualar la cifra del banco. No mueve ninguna cuenta.'**
+  String get debtUpdateBalanceHint;
+
+  /// No description provided for @debtUpdateBalanceDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha del ajuste'**
+  String get debtUpdateBalanceDateLabel;
+
+  /// No description provided for @debtUpdateBalanceCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar saldo'**
+  String get debtUpdateBalanceCta;
+
+  /// No description provided for @debtUpdateBalanceError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos actualizar el saldo. Intenta de nuevo.'**
+  String get debtUpdateBalanceError;
+
+  /// No description provided for @debtLinkBannerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar a {debt}'**
+  String debtLinkBannerTitle(String debt);
+
+  /// No description provided for @debtLinkBannerBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegí un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.'**
+  String get debtLinkBannerBody;
+
+  /// No description provided for @debtLinkCancelTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar enlace'**
+  String get debtLinkCancelTooltip;
+
+  /// No description provided for @debtLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enlazar el movimiento. Intenta de nuevo.'**
+  String get debtLinkError;
+
   /// No description provided for @moreScheduledPayments.
   ///
   /// In es, this message translates to:

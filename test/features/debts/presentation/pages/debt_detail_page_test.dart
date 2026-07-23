@@ -58,9 +58,8 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester,
-    DebtDetailState state, {
-    VoidCallback? onRegisterPayment,
-  }) async {
+    DebtDetailState state,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(420, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     when(() => cubit.state).thenReturn(state);
@@ -74,9 +73,8 @@ void main() {
           value: cubit,
           child: DebtDetailPage(
             onEdit: (_) {},
-            onRegisterPayment: onRegisterPayment ?? () {},
-            onUpdateBalance: () {},
             onOpenInstallment: (_) {},
+            onLinkExisting: (_) {},
           ),
         ),
       ),
@@ -91,13 +89,6 @@ void main() {
     expect(find.byType(DebtLedgerRow), findsNWidgets(2));
     expect(find.text('Registrar abono'), findsOneWidget);
     expect(find.text('Crédito vehicular'), findsOneWidget);
-  });
-
-  testWidgets('el CTA "Registrar abono" dispara el callback', (tester) async {
-    var tapped = false;
-    await pump(tester, readyState, onRegisterPayment: () => tapped = true);
-    await tester.tap(find.text('Registrar abono'));
-    expect(tapped, isTrue);
   });
 
   testWidgets('carga: no muestra hero ni error', (tester) async {

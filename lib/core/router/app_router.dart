@@ -38,9 +38,14 @@ import '../../features/categories/presentation/cubit/categories_list_cubit.dart'
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
 import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/categories/presentation/pages/category_form_page.dart';
+import '../../features/debts/domain/entities/debt.dart';
 import '../../features/debts/presentation/cubit/debt_detail_cubit.dart';
+import '../../features/debts/presentation/cubit/debt_form_cubit.dart';
+import '../../features/debts/presentation/cubit/debt_link_cubit.dart';
 import '../../features/debts/presentation/cubit/debts_list_cubit.dart';
 import '../../features/debts/presentation/pages/debt_detail_page.dart';
+import '../../features/debts/presentation/pages/debt_form_page.dart';
+import '../../features/debts/presentation/pages/debt_link_mode_page.dart';
 import '../../features/debts/presentation/pages/debts_list_page.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -98,6 +103,7 @@ abstract final class AppRoutes {
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String accountDeleted = '/mas/cuenta-eliminada';
   static const String debts = '/deudas';
+  static const String newDebt = '/deudas/nueva';
   static const String scheduledPayments = '/pagos-programados';
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String pendingScheduledPayments =
@@ -121,6 +127,14 @@ abstract final class AppRoutes {
 
   /// Detail of one debt: `/deudas/<id>`.
   static String debt(String id) => '$debts/$id';
+
+  /// Edit form of one debt: `/deudas/<id>/editar`.
+  static String editDebt(String id) => '$debts/$id/editar';
+
+  /// Movimientos in Deudas link mode: `/movimientos/enlazar-deuda/<debtId>`
+  /// (HU-02). The `Debt` itself rides in the route's `extra` for the banner.
+  static String linkTransactionToDebt(String debtId) =>
+      '$transactions/enlazar-deuda/$debtId';
 
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
@@ -226,6 +240,7 @@ GoRouter createAppRouter() {
       _categoriesRoute(),
       _goalsRoute(),
       _debtsRoute(),
+      _debtLinkModeRoute(),
     ],
   );
 }
@@ -667,9 +682,9 @@ GoRoute _accountsRoute() => GoRoute(
 
 // Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
 // rendered as a stacked screen on the root navigator — a `Page Header` with a
-// back button, no `Tab Bar`. Only the read screens (list + detail) exist yet;
-// the write flows (crear/editar, abono, actualizar saldo, configurar cuota) are
-// a later phase, so their entry points are wired to no-ops for now.
+// back button, no `Tab Bar`. The read screens (list + detail) plus the write
+// flows (crear/editar, abono, actualizar saldo) live here; configurar cuota is
+// a later phase.
 GoRoute _debtsRoute() => GoRoute(
       path: AppRoutes.debts,
       parentNavigatorKey: _rootNavigatorKey,
@@ -677,12 +692,21 @@ GoRoute _debtsRoute() => GoRoute(
         create: (context) =>
             _started(getIt<DebtsListCubit>(), (c) => c.start()),
         child: DebtsListPage(
-          // TODO(deudas): open the crear/editar deuda form (next phase).
-          onAddDebt: () {},
+          onAddDebt: () => context.push(AppRoutes.newDebt),
           onOpenDebt: (id) => context.push(AppRoutes.debt(id)),
         ),
       ),
       routes: [
+        // Declared before ':id' so "nueva" is never read as an id.
+        GoRoute(
+          path: 'nueva',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<DebtFormCubit>(), (c) => c.load(null)),
+            child: const DebtFormPage(),
+          ),
+        ),
         GoRoute(
           path: ':id',
           parentNavigatorKey: _rootNavigatorKey,
@@ -692,20 +716,68 @@ GoRoute _debtsRoute() => GoRoute(
               (c) => c.start(state.pathParameters['id']!),
             ),
             child: DebtDetailPage(
-              // TODO(deudas): open the crear/editar deuda form (next phase).
-              onEdit: (_) {},
-              // TODO(deudas): open the "registrar abono" sheet (next phase).
-              onRegisterPayment: () {},
-              // TODO(deudas): open the "actualizar saldo" sheet (next phase).
-              onUpdateBalance: () {},
+              // Editing pops with `true` when the debt was deleted, so the
+              // detail closes back to the list behind it.
+              onEdit: (id) async {
+                final deleted =
+                    await context.push<bool>(AppRoutes.editDebt(id));
+                if ((deleted ?? false) && context.mounted) {
+                  context.pop();
+                }
+              },
               // Cross-link into Pagos programados for the linked cuota (HU-03).
-              // Real wiring; the card only appears once the linkage is exposed.
               onOpenInstallment: (id) =>
                   context.push(AppRoutes.scheduledPayment(id)),
+              // Attribute an existing movement to the debt (HU-02): the debt
+              // rides in `extra` so the banner needs no extra fetch.
+              onLinkExisting: (debt) => context.push(
+                AppRoutes.linkTransactionToDebt(debt.id),
+                extra: debt,
+              ),
             ),
           ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<DebtFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
+                child: const DebtFormPage(),
+              ),
+            ),
+          ],
         ),
       ],
+    );
+
+// Movimientos in Deudas link mode (HU-02): the existing Movimientos list reused
+// with a `TransactionsLinkMode` — a banner, no FAB, no carousel, and row taps
+// that attribute the movement to the debt. Stacked on the root navigator above
+// the tab bar. The `Debt` arrives in `state.extra`.
+GoRoute _debtLinkModeRoute() => GoRoute(
+      path: AppRoutes.linkTransactionToDebt(':debtId'),
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final debt = state.extra! as Debt;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: _started(
+                getIt<TransactionsListCubit>(),
+                (c) => c.start(),
+              ),
+            ),
+            BlocProvider.value(
+              value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+            ),
+            BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
+          ],
+          child: DebtLinkModePage(debt: debt),
+        );
+      },
     );
 
 GoRoute _categoriesRoute() => GoRoute(

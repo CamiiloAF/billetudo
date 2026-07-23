@@ -19,6 +19,8 @@ import 'package:billetudo/core/preferences/account_filter_preference_datasource.
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart'
     as _i345;
+import 'package:billetudo/core/preferences/debt_payment_toggle_preference_datasource.dart'
+    as _i554;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
 import 'package:billetudo/core/security/secure_storage_service.dart' as _i1034;
 import 'package:billetudo/core/sync/data/datasources/power_sync_status_source.dart'
@@ -252,6 +254,14 @@ import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart'
     as _i42;
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart'
     as _i428;
+import 'package:billetudo/features/debts/presentation/cubit/debt_form_cubit.dart'
+    as _i457;
+import 'package:billetudo/features/debts/presentation/cubit/debt_link_cubit.dart'
+    as _i916;
+import 'package:billetudo/features/debts/presentation/cubit/debt_payment_cubit.dart'
+    as _i414;
+import 'package:billetudo/features/debts/presentation/cubit/debt_update_balance_cubit.dart'
+    as _i170;
 import 'package:billetudo/features/debts/presentation/cubit/debts_list_cubit.dart'
     as _i481;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
@@ -441,6 +451,9 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i345.BalanceCarouselPreferenceDatasource>(() =>
         _i345.BalanceCarouselPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i554.DebtPaymentTogglePreferenceDatasource>(() =>
+        _i554.DebtPaymentTogglePreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
@@ -861,6 +874,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i829.GetArchivedBudgets>(),
           gh<_i405.ReactivateBudget>(),
         ));
+    gh.factory<_i170.DebtUpdateBalanceCubit>(
+        () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
     gh.factory<_i502.AccountDetailCubit>(() => _i502.AccountDetailCubit(
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
@@ -880,6 +895,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1003.WatchDebtDetail>(),
           gh<_i255.DebtInterestCalculator>(),
         ));
+    gh.factory<_i457.DebtFormCubit>(() => _i457.DebtFormCubit(
+          gh<_i247.CreateDebt>(),
+          gh<_i779.UpdateDebt>(),
+          gh<_i644.DeleteDebt>(),
+          gh<_i1003.WatchDebtDetail>(),
+        ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),
@@ -887,6 +908,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i604.GetTransactionEditImpact>(),
           gh<_i460.SetTransactionTags>(),
           gh<_i837.WatchAccounts>(),
+        ));
+    gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
+          gh<_i135.RegisterDebtCashEvent>(),
+          gh<_i62.RegisterDebtLedgerEvent>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
         ));
     gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
           gh<_i871.GetBudgetById>(),
@@ -932,6 +959,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i172.WatchParentCandidates>(),
               gh<_i722.WatchCategories>(),
             ));
+    gh.factory<_i916.DebtLinkCubit>(
+        () => _i916.DebtLinkCubit(gh<_i980.LinkTransactionToDebt>()));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),

@@ -29,6 +29,7 @@ import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
 import '../widgets/transactions_empty_state.dart';
 import '../widgets/transactions_error_view.dart';
+import '../widgets/transactions_link_mode.dart';
 import '../widgets/transactions_sort_button.dart';
 
 /// The transaction list (HU-06/`B3GGa`/`xAk6Y`): search, every combinable
@@ -39,8 +40,15 @@ class TransactionsPage extends StatelessWidget {
     required this.onAddTransaction,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.linkMode,
     super.key,
   });
+
+  /// When set, the page is in Deudas link mode (`g0x859`): a banner naming the
+  /// debt, no FAB, no balance carousel, and every row tap attributes that
+  /// movement to the debt instead of opening its detail. Null is the ordinary
+  /// list.
+  final TransactionsLinkMode? linkMode;
 
   /// Opens the new-movement form. Receives the account to preselect, or null
   /// for none: the account of the balance carousel's active card (Mejora #2)
@@ -89,12 +97,17 @@ class TransactionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    final linkMode = this.linkMode;
     return Scaffold(
-      floatingActionButton: AppFab(
-        icon: LucideIcons.plus,
-        tooltip: l10n.transactionsAdd,
-        onPressed: () => onAddTransaction(_preselectedAccountId(context)),
-      ),
+      // Link mode hides the FAB: the task there is to pick an existing
+      // movement, not to create one (`g0x859`).
+      floatingActionButton: linkMode != null
+          ? null
+          : AppFab(
+              icon: LucideIcons.plus,
+              tooltip: l10n.transactionsAdd,
+              onPressed: () => onAddTransaction(_preselectedAccountId(context)),
+            ),
       body: SafeArea(
         child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
           listenWhen: (previous, current) =>
@@ -119,6 +132,12 @@ class TransactionsPage extends StatelessWidget {
             // Search and filters stay pinned; everything below — including the
             // balance carousel (Mejora #2) — lives inside the scrollable body
             // so it scrolls away with the list.
+            // In link mode a row tap attributes the movement to the debt; the
+            // carousel is dropped so the focus is the list to pick from.
+            final onRowTap = linkMode != null
+                ? linkMode.onLinkTransaction
+                : (String id) => _openTransaction(context, id);
+            final showCarousel = linkMode == null;
             return Column(
               children: [
                 RootTabHeader(title: l10n.transactionsTitle),
@@ -126,6 +145,8 @@ class TransactionsPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 TransactionsFilterBar(state: state),
                 const SizedBox(height: 8),
+                if (linkMode != null)
+                  TransactionsLinkBanner(linkMode: linkMode),
                 Expanded(
                   child: switch (state.status) {
                     TransactionsListStatus.loading =>
@@ -139,10 +160,11 @@ class TransactionsPage extends StatelessWidget {
                     TransactionsListStatus.ready when state.items.isEmpty =>
                       Column(
                         children: [
-                          MovementsBalanceCarousel(
-                            state: state,
-                            onOpenAccount: onOpenAccount,
-                          ),
+                          if (showCarousel)
+                            MovementsBalanceCarousel(
+                              state: state,
+                              onOpenAccount: onOpenAccount,
+                            ),
                           Expanded(
                             child: TransactionsEmptyState(
                               message: _isUnfiltered(state.filter)
@@ -154,9 +176,9 @@ class TransactionsPage extends StatelessWidget {
                       ),
                     TransactionsListStatus.ready => TransactionsListView(
                         state: state,
-                        onOpenTransaction: (id) =>
-                            _openTransaction(context, id),
+                        onOpenTransaction: onRowTap,
                         onOpenAccount: onOpenAccount,
+                        showCarousel: showCarousel,
                       ),
                   },
                 ),
@@ -417,6 +439,7 @@ class TransactionsListView extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.showCarousel = true,
     super.key,
   });
 
@@ -426,6 +449,10 @@ class TransactionsListView extends StatelessWidget {
   /// Forwarded to the balance carousel header: tapping a card opens that
   /// account's detail page (Mejora #2).
   final ValueChanged<String> onOpenAccount;
+
+  /// The balance carousel is the list's first scrollable item, but link mode
+  /// drops it to keep the focus on picking a movement (`g0x859`).
+  final bool showCarousel;
 
   @override
   Widget build(BuildContext context) {
@@ -445,7 +472,11 @@ class TransactionsListView extends StatelessWidget {
       return ListView(
         padding: const EdgeInsets.only(bottom: 28),
         children: [
-          MovementsBalanceCarousel(state: state, onOpenAccount: onOpenAccount),
+          if (showCarousel)
+            MovementsBalanceCarousel(
+              state: state,
+              onOpenAccount: onOpenAccount,
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -475,21 +506,24 @@ class TransactionsListView extends StatelessWidget {
     }
 
     final groups = groupTransactionsByDate(state.items);
+    // The carousel occupies index 0 when shown; link mode drops it, so the
+    // group indices shift back by one.
+    final carouselSlots = showCarousel ? 1 : 0;
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 28),
-      // +1 for the carousel header at index 0.
-      itemCount: groups.length + 1,
+      itemCount: groups.length + carouselSlots,
       itemBuilder: (context, index) {
-        if (index == 0) {
+        if (showCarousel && index == 0) {
           return MovementsBalanceCarousel(
             state: state,
             onOpenAccount: onOpenAccount,
           );
         }
-        final group = groups[index - 1];
+        final groupIndex = index - carouselSlots;
+        final group = groups[groupIndex];
         return Padding(
-          padding: EdgeInsets.fromLTRB(20, index == 1 ? 0 : 24, 20, 0),
+          padding: EdgeInsets.fromLTRB(20, groupIndex == 0 ? 0 : 24, 20, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -89,6 +89,29 @@ abstract final class DebtFormat {
     return DateFormat.yMMMd(locale).format(date);
   }
 
+  /// The date-field label of the sheets: "Hoy, 22 jul" when [date] is today,
+  /// the plain "22 jul" otherwise.
+  static String relativeDate(
+    BuildContext context,
+    AppLocalizations l10n,
+    DateTime date,
+  ) {
+    final now = DateTime.now();
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+    final short = dateShort(context, date);
+    return isToday ? l10n.debtDateToday(short) : short;
+  }
+
+  /// "Crédito vehicular · Yo debo": the debt name + its direction, the context
+  /// subtitle of the abono / actualizar-saldo sheets and the link banner.
+  static String context(
+    AppLocalizations l10n,
+    String name,
+    DebtDirection direction,
+  ) =>
+      l10n.debtContext(name, directionLabel(l10n, direction));
+
   /// The ledger row's title, derived from its kind and the debt's direction
   /// (an owedToMe reduction is a "Pago recibido", not an "Abono").
   static String ledgerTitle(

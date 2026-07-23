@@ -1304,6 +1304,185 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtEditTooltip => 'Editar deuda';
 
   @override
+  String get debtFormNewTitle => 'Nueva deuda';
+
+  @override
+  String get debtFormEditTitle => 'Editar deuda';
+
+  @override
+  String get debtFormDirectionLabel => '¿Debes o te deben?';
+
+  @override
+  String get debtFormOpeningBalanceLabel => 'Saldo de apertura';
+
+  @override
+  String get debtFormNameLabel => 'Nombre';
+
+  @override
+  String get debtFormNameHint => 'Crédito vehicular, préstamo a Andrés…';
+
+  @override
+  String get debtFormNameRequired => 'Ponle un nombre a la deuda';
+
+  @override
+  String get debtFormCounterpartyLabel => 'Contraparte';
+
+  @override
+  String get debtFormCounterpartyHint => 'Banco, persona…';
+
+  @override
+  String get debtFormDueDateLabel => 'Vencimiento';
+
+  @override
+  String get debtFormDueDateHint => 'Sin fecha';
+
+  @override
+  String get debtFormInterestLabel => 'Interés anual (opcional)';
+
+  @override
+  String get debtFormInterestHint => '0';
+
+  @override
+  String get debtFormInterestError => 'Revisa la tasa de interés';
+
+  @override
+  String get debtFormAccrualModeLabel => 'Modo de interés';
+
+  @override
+  String get debtFormAccrualManual => 'Manual';
+
+  @override
+  String get debtFormAccrualAuto => 'Automático';
+
+  @override
+  String get debtFormAccrualHint =>
+      'Manual: tú pones la cifra del banco. Automático estima el crecimiento diario (estimado).';
+
+  @override
+  String get debtFormCreateCta => 'Crear deuda';
+
+  @override
+  String get debtFormSaveCta => 'Guardar cambios';
+
+  @override
+  String get debtFormDelete => 'Eliminar deuda';
+
+  @override
+  String get debtCurrencySheetTitle => 'Moneda';
+
+  @override
+  String debtCurrencyPill(String code, String name) {
+    return '$code · $name';
+  }
+
+  @override
+  String get debtDeleteSheetTitle => '¿Eliminar esta deuda?';
+
+  @override
+  String get debtDeleteSheetMessage => 'Podrás recuperarla desde la papelera.';
+
+  @override
+  String debtContext(String name, String direction) {
+    return '$name · $direction';
+  }
+
+  @override
+  String debtDateToday(String date) {
+    return 'Hoy, $date';
+  }
+
+  @override
+  String get debtPaymentTitle => 'Registrar abono';
+
+  @override
+  String get debtPaymentAmountLabel => 'Abono';
+
+  @override
+  String get debtPaymentAddToAccountLabel => '¿Agregar a una cuenta?';
+
+  @override
+  String get debtPaymentAddToAccountHintYes =>
+      'Moverá el saldo y contará en tus estadísticas';
+
+  @override
+  String get debtPaymentAddToAccountHintNo =>
+      'Este abono baja el saldo de la deuda pero no moverá ninguna cuenta.';
+
+  @override
+  String get debtPaymentLinkExisting =>
+      '¿Ya lo registraste? Enlaza un movimiento';
+
+  @override
+  String get debtPaymentDateLabel => 'Fecha';
+
+  @override
+  String get debtPaymentNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get debtPaymentNoteHint => 'Agregar una nota';
+
+  @override
+  String get debtPaymentCategoryLabel => 'Categoría (opcional)';
+
+  @override
+  String get debtPaymentCategoryNone => 'Sin categoría';
+
+  @override
+  String get debtPaymentSelectAccount => 'Elegí una cuenta';
+
+  @override
+  String get debtPaymentAccountPickerTitle => 'Elegí una cuenta';
+
+  @override
+  String get debtPaymentCta => 'Registrar abono';
+
+  @override
+  String get debtPaymentError =>
+      'No pudimos registrar el abono. Intenta de nuevo.';
+
+  @override
+  String get debtUpdateBalanceTitle => 'Actualizar saldo';
+
+  @override
+  String get debtUpdateBalanceNewLabel => 'Nuevo saldo';
+
+  @override
+  String get debtUpdateBalanceEstimatedLabel => 'Saldo estimado hoy';
+
+  @override
+  String get debtUpdateBalanceAdjustLabel => 'Ajuste que se registra';
+
+  @override
+  String get debtUpdateBalanceHint =>
+      'Registra un ajuste en la deuda para igualar la cifra del banco. No mueve ninguna cuenta.';
+
+  @override
+  String get debtUpdateBalanceDateLabel => 'Fecha del ajuste';
+
+  @override
+  String get debtUpdateBalanceCta => 'Guardar saldo';
+
+  @override
+  String get debtUpdateBalanceError =>
+      'No pudimos actualizar el saldo. Intenta de nuevo.';
+
+  @override
+  String debtLinkBannerTitle(String debt) {
+    return 'Enlazar a $debt';
+  }
+
+  @override
+  String get debtLinkBannerBody =>
+      'Elegí un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.';
+
+  @override
+  String get debtLinkCancelTooltip => 'Cancelar enlace';
+
+  @override
+  String get debtLinkError =>
+      'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
   String get moreScheduledPayments => 'Pagos programados';
 
   @override
