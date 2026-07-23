@@ -22,8 +22,17 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Hoja registrar abono — toggle No | `V6Z9ln` | `qfZiZ` |
 | Hoja actualizar saldo (reconciliacion) | `DEWMf` | `NBuGV` |
 | Config de cuota | `P1kiP` | `fn49Q` |
+| Hoja registrar abono — con enlace "Enlazar un movimiento" | `olYUm` | _(oscuro pendiente)_ |
+| Movimientos · modo enlazar (banner + tap=enlazar) | `g0x859` | _(oscuro pendiente)_ |
 | **Cross-link:** PP Detalle con card de deuda | `nDmnf` | `Y5D7c` |
 | **Cross-link:** Scheduled Card con badge "Deuda" (demo) | `F3srst` | `Jlosw` |
+
+**Estados/piezas sin frame propio en el `.pen` (por diseño o reusables genéricos):**
+- **Detalle sin cuota** (`DebtConfigureInstallmentCard`): no tiene frame — solo se diseñó el estado *con* cuota (`cUzp6`). El widget reusa la geometría de la card de cuota. Gap de cobertura conocido, no deriva.
+- **Detalle saldada** (100% pagado, $0): variación de dato de `cUzp6` (barra llena), sin frame dedicado.
+- **Sheet confirmar borrado** de deuda: reusa el patrón destructivo del sistema (icono `trash-2` rojo + Cancelar/Eliminar), sin frame propio en `deudas.md`.
+- **Pickers de cuenta y moneda** de las hojas: reusan `Account Select Sheet`/`Currency Row` genéricos.
+- **Modo enlazar / abono con enlace** (`g0x859`/`olYUm`): diseñados en claro; falta generar su copia oscura.
 
 **Navegacion:** la Lista y el Detalle usan `Page Header` (boton atras) SIN `Tab Bar` — Deudas es una subseccion apilada. Las hojas (abono, actualizar saldo) son bottom sheets (`Bottom Sheet Base`). El Form y la Config de cuota son pantallas apiladas con `Page Header`.
 

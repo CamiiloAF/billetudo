@@ -1,8 +1,16 @@
 # Deudas — progreso de refinamiento + diseño (handoff)
 
-> **Estado:** ✅ **DISEÑO CERRADO** (2026-07-22). Todas las pantallas aprobadas en claro + oscuro, sin marcadores. `pages/deudas.md` **escrito** (spec completa). **Retomar por: la IMPLEMENTACIÓN** (ver "Lo que falta" → sección Implementación).
-> **Requisitos cerrados** en `08-deudas.md` (+ `09`, `10`, `plan-cuentas`). Diseño en `pages/deudas.md` + `billetudo.pen`.
-> **Feature NO construida** en `lib/` (`lib/features/debts/` vacío); la tabla `Debts` ya existe.
+> **Estado:** ✅ **DISEÑO CERRADO** + ✅ **IMPLEMENTADA** (2026-07-22). Diseño en `pages/deudas.md` + `billetudo.pen` (claro+oscuro). Requisitos en `08-deudas.md` (+ `09`, `10`, `plan-cuentas`).
+>
+> **Implementación (commiteada en `dev`):**
+> - **Esquema v14** (`bc6f607`): `DebtEntries` (kinds `interestAccrual`/`manualAdjustment`/`payment`/`disbursement`), `Debts.accrualMode`, `ScheduledPayments.debtId`. Supabase-dev **migrado** (RLS + grants + publicación FOR ALL TABLES); `powersync_schema.dart` (mirror) actualizado.
+> - **Domain + data** (`e206c2a`): ledger derivado (`DebtBalanceCalculator`), interés (`DebtInterestCalculator`), 11 casos de uso, repo. Revisado por `finance-code-reviewer` (sólido, sin críticos).
+> - **Presentación** (`65046e3`/`4b413b0`/`5808ab2`): lista, detalle, form crear/editar, hoja de abono (Sí/No + **enlazar movimiento existente** vía Movimientos en modo selección), actualizar saldo, config de cuota (reusa el motor de PP), cross-link con Pagos Programados en ambos sentidos.
+> - **Fix** (`c405237`): la `Transaction` generada por una cuota hereda `debtId` (la cuota reduce la deuda).
+> - **Fidelidad** (`6b1bb08`, `/design-fidelity-check deudas`): fidelidad alta, cero crítico; 1 IMPORTANTE (badge cuota/vence en la lista) corregido. Ver `docs/fidelidad-visual-tracking.md`.
+> - **Golden** 40+ (claro/oscuro). **Patrol e2e** 17 escenarios (2 suites) escritos; corrida en emulador `dev` en curso.
+>
+> **Pendientes conocidos:** (1) **sync rules de PowerSync** (dashboard, lado usuario) — agregar `debt_entries`. (2) **Tema oscuro** de modo enlazar (`g0x859`) y abono con enlace (`olYUm`) en Pencil. (3) **UI de papelera/restaurar** deuda (`RestoreDebt` existe en domain, sin pantalla). (4) Distintivo visual de "deuda saldada" (a validar con diseño). (5) Copy "Eliminar cuota" en la hoja de acciones ⋮ del PP (el link del form ya es consistente).
 
 ---
 
