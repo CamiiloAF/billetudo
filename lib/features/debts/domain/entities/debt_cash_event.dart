@@ -17,6 +17,7 @@ class DebtCashEvent extends Equatable {
     required this.type,
     required this.amountMinor,
     required this.date,
+    required this.createdAt,
     this.note,
   });
 
@@ -31,10 +32,23 @@ class DebtCashEvent extends Equatable {
   final int amountMinor;
 
   final DateTime date;
+
+  /// When the underlying `Transaction` row was created. Used only as a
+  /// same-day tiebreak when ordering the unified ledger (newest-created first),
+  /// so the opening row sinks to the bottom of its day. Not shown in the UI.
+  final DateTime createdAt;
+
   final String? note;
 
   @override
-  List<Object?> get props => [transactionId, type, amountMinor, date, note];
+  List<Object?> get props => [
+        transactionId,
+        type,
+        amountMinor,
+        date,
+        createdAt,
+        note,
+      ];
 }
 
 /// Which kind of cash event the user is registering from a debt sheet, before

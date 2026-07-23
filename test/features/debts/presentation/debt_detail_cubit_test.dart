@@ -1,7 +1,9 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_detail.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_entry.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
+import 'package:billetudo/features/debts/domain/services/debt_balance_calculator.dart';
 import 'package:billetudo/features/debts/domain/services/debt_interest_calculator.dart';
 import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
@@ -161,6 +163,69 @@ void main() {
     expect: () => [
       isA<DebtDetailState>()
           .having((s) => s.status, 'status', DebtDetailStatus.failure),
+    ],
+  );
+
+  // Reproduces the device capture end-to-end: the ledger is built by the real
+  // DebtBalanceCalculator (opening +50k created first, then abono and ajuste
+  // the SAME day) and the running balance must stay coherent — the opening row
+  // sits at the bottom showing its real 50k, not an intermediate figure.
+  blocTest<DebtDetailCubit, DebtDetailState>(
+    'saldo corrido coherente con movimientos del mismo día (captura)',
+    setUp: () {
+      const balanceCalc = DebtBalanceCalculator();
+      final day = DateTime(2026, 7, 20);
+      final debt = buildDebt(
+        principalMinor: 50000,
+        createdAt: day.add(const Duration(hours: 8)),
+      );
+      final entries = [
+        buildEntry(
+          id: 'abono',
+          kind: DebtEntryKind.payment,
+          amountMinor: -10000,
+          entryDate: day.add(const Duration(hours: 8)),
+          createdAt: day.add(const Duration(hours: 9)),
+        ),
+        buildEntry(
+          id: 'ajuste',
+          kind: DebtEntryKind.manualAdjustment,
+          amountMinor: 3000,
+          entryDate: day.add(const Duration(hours: 8)),
+          createdAt: day.add(const Duration(hours: 10)),
+        ),
+      ];
+      final detail = buildDebtDetail(
+        debt: debt,
+        balance: balanceCalc.calculate(
+          debt: debt,
+          entries: entries,
+          cashEvents: const [],
+        ),
+        ledger: balanceCalc.buildLedger(
+          debt: debt,
+          entries: entries,
+          cashEvents: const [],
+        ),
+      );
+      when(() => watchDebtDetail.call(any())).thenAnswer(
+        (_) => Stream.value(Right(detail)),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start('d1'),
+    skip: 1,
+    expect: () => [
+      isA<DebtDetailState>()
+          .having((s) => s.status, 'status', DebtDetailStatus.ready)
+          // rows: ajuste(+3k), abono(-10k), opening(+50k)
+          .having(
+            (s) => s.detail?.ledger.map((e) => e.id).toList(),
+            'order',
+            ['ajuste', 'abono', 'opening'],
+          )
+          // raw outstanding = 50k - 10k + 3k = 43k; opening shows its real 50k
+          .having((s) => s.runningBalances, 'running', [43000, 40000, 50000]),
     ],
   );
 }

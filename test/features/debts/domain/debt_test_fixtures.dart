@@ -40,6 +40,7 @@ DebtEntry buildEntry({
   DebtEntryKind kind = DebtEntryKind.manualAdjustment,
   int amountMinor = 0,
   DateTime? entryDate,
+  DateTime? createdAt,
   int? rateBpsSnapshot,
 }) =>
     DebtEntry(
@@ -49,8 +50,8 @@ DebtEntry buildEntry({
       amountMinor: amountMinor,
       entryDate: entryDate ?? DateTime(2026, 2, 1),
       rateBpsSnapshot: rateBpsSnapshot,
-      createdAt: DateTime(2026, 2, 1),
-      updatedAt: DateTime(2026, 2, 1).millisecondsSinceEpoch,
+      createdAt: createdAt ?? DateTime(2026, 2, 1),
+      updatedAt: (createdAt ?? DateTime(2026, 2, 1)).millisecondsSinceEpoch,
     );
 
 DebtCashEvent buildCashEvent({
@@ -58,10 +59,12 @@ DebtCashEvent buildCashEvent({
   TransactionType type = TransactionType.expense,
   int amountMinor = 0,
   DateTime? date,
+  DateTime? createdAt,
 }) =>
     DebtCashEvent(
       transactionId: transactionId,
       type: type,
       amountMinor: amountMinor,
       date: date ?? DateTime(2026, 3, 1),
+      createdAt: createdAt ?? DateTime(2026, 3, 1),
     );

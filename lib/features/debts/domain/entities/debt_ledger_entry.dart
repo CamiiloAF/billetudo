@@ -33,6 +33,7 @@ class DebtLedgerEntry extends Equatable {
     required this.id,
     required this.kind,
     required this.date,
+    required this.createdAt,
     required this.effectMinor,
     this.note,
     this.transactionId,
@@ -43,7 +44,14 @@ class DebtLedgerEntry extends Equatable {
   final String id;
 
   final DebtLedgerKind kind;
+
+  /// The event date — what the row displays and the primary sort key
+  /// (newest first).
   final DateTime date;
+
+  /// When the underlying row was created. Same-day tiebreak (newest-created
+  /// first) so the opening row sinks to the bottom of its day. Not displayed.
+  final DateTime createdAt;
 
   /// Signed effect on the debt: + increased it, − reduced it.
   final int effectMinor;
@@ -63,6 +71,7 @@ class DebtLedgerEntry extends Equatable {
         id,
         kind,
         date,
+        createdAt,
         effectMinor,
         note,
         transactionId,

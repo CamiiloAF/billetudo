@@ -12,6 +12,7 @@ abstract final class DebtCashEventMapper {
         type: TransactionMapper.typeToDomain(row.type),
         amountMinor: row.amountMinor,
         date: row.date,
+        createdAt: row.createdAt,
         note: row.note,
       );
 }

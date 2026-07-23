@@ -272,6 +272,73 @@ void main() {
       expect(ledger[2].effectMinor, 100000);
     });
 
+    test(
+      'same-day rows break ties by createdAt desc, sinking the opening to the '
+      'bottom of its day',
+      () {
+        // Reproduces the device capture: opening +50k created first, then two
+        // solo-deuda movements the SAME day, created afterwards. The event
+        // dates all fall on the same day (date-picker values), so they tie on
+        // `date` and createdAt breaks it — the opening must land at the bottom.
+        final day = DateTime(2026, 7, 20);
+        final debt = buildDebt(
+          principalMinor: 50000,
+          createdAt: day.add(const Duration(hours: 8)),
+        );
+        final ledger = calc.buildLedger(
+          debt: debt,
+          entries: [
+            buildEntry(
+              id: 'abono',
+              kind: DebtEntryKind.payment,
+              amountMinor: -10000,
+              entryDate: day.add(const Duration(hours: 8)),
+              createdAt: day.add(const Duration(hours: 9)),
+            ),
+            buildEntry(
+              id: 'ajuste',
+              kind: DebtEntryKind.manualAdjustment,
+              amountMinor: 3000,
+              entryDate: day.add(const Duration(hours: 8)),
+              createdAt: day.add(const Duration(hours: 10)),
+            ),
+          ],
+          cashEvents: const [],
+        );
+
+        expect(ledger.length, 3);
+        // newest-created first within the day; opening (earliest createdAt) last
+        expect(ledger[0].entryId, 'ajuste');
+        expect(ledger[1].entryId, 'abono');
+        expect(ledger[2].kind, DebtLedgerKind.opening);
+        expect(ledger[2].effectMinor, 50000);
+      },
+    );
+
+    test('same-day tie falls back to id when createdAt is identical', () {
+      final day = DateTime(2026, 7, 20);
+      final ledger = calc.buildLedger(
+        debt: buildDebt(principalMinor: 0),
+        entries: [
+          buildEntry(
+            id: 'bbb',
+            amountMinor: 100,
+            entryDate: day,
+            createdAt: day,
+          ),
+          buildEntry(
+            id: 'aaa',
+            amountMinor: 200,
+            entryDate: day,
+            createdAt: day,
+          ),
+        ],
+        cashEvents: const [],
+      );
+
+      expect(ledger.map((e) => e.entryId).toList(), ['aaa', 'bbb']);
+    });
+
     test('omits the opening row when the principal is 0', () {
       final ledger = calc.buildLedger(
         debt: buildDebt(principalMinor: 0),

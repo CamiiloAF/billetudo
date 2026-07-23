@@ -92,6 +92,7 @@ class DebtBalanceCalculator {
           id: 'opening',
           kind: DebtLedgerKind.opening,
           date: debt.createdAt,
+          createdAt: debt.createdAt,
           effectMinor: debt.principalMinor,
         ),
       );
@@ -110,6 +111,7 @@ class DebtBalanceCalculator {
               ? DebtLedgerKind.cashDisbursement
               : DebtLedgerKind.cashPayment,
           date: event.date,
+          createdAt: event.createdAt,
           effectMinor: effect,
           note: event.note,
           transactionId: event.transactionId,
@@ -123,6 +125,7 @@ class DebtBalanceCalculator {
           id: entry.id,
           kind: _ledgerKindOf(entry),
           date: entry.entryDate,
+          createdAt: entry.createdAt,
           effectMinor: entry.amountMinor,
           note: entry.note,
           entryId: entry.id,
@@ -130,11 +133,26 @@ class DebtBalanceCalculator {
       );
     }
 
-    // Newest first; a stable id tiebreak keeps the order deterministic when two
-    // events share a date.
+    // Newest first by event date. On the same day, break ties by creation time
+    // (newest-created first) so the opening/initial row — created before any
+    // abono — sinks to the bottom of its day and the running balance stays
+    // consistent. A final id tiebreak keeps the order deterministic.
     items.sort((a, b) {
-      final byDate = b.date.compareTo(a.date);
-      return byDate != 0 ? byDate : a.id.compareTo(b.id);
+      // Primary order is by the event's calendar DAY (not the raw timestamp),
+      // so any two movements on the same day fall through to the creation-time
+      // tiebreak below — the rule is "same day → order by creation", which must
+      // hold even if an event's `date` ever carries a time component.
+      final aDay = DateTime(a.date.year, a.date.month, a.date.day);
+      final bDay = DateTime(b.date.year, b.date.month, b.date.day);
+      final byDate = bDay.compareTo(aDay);
+      if (byDate != 0) {
+        return byDate;
+      }
+      final byCreatedAt = b.createdAt.compareTo(a.createdAt);
+      if (byCreatedAt != 0) {
+        return byCreatedAt;
+      }
+      return a.id.compareTo(b.id);
     });
     return items;
   }
