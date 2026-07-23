@@ -67,13 +67,21 @@ abstract final class ScheduledPaymentMapper {
   /// (`Value(null)` rather than `absent()`) so clearing one in the form
   /// actually clears its old data instead of silently keeping it.
   ///
-  /// Deliberately does NOT set `firstPaymentDate`: it is written once, at
-  /// creation, in [toInsertCompanion], and must never be rewritten — see that
-  /// doc comment. Leaving it absent here keeps the column untouched by every
-  /// update.
+  /// `firstPaymentDate` (the "Primer pago" field the edit form binds to) is
+  /// the schedule *anchor*, and its handling depends on WHO moved the date:
+  /// the catch-up generator advances only [db.ScheduledPaymentsCompanion.nextDate]
+  /// (via `nextDateCompanion`) and must NEVER touch the anchor — otherwise
+  /// "Primer pago" would appear to drift on its own. An explicit user edit of
+  /// the date, however, IS a re-anchor: it must persist to `firstPaymentDate`
+  /// too, or the form (bound to `firstPaymentDate`) would keep showing the old
+  /// date on re-open even though the next payment moved — item 18. The repo
+  /// sets [rescheduleAnchor] only when it detected a real user date change, so
+  /// this rewrites the anchor exclusively in that case; a normal edit (or the
+  /// no-op resubmit of the untouched cursor) leaves it absent and untouched.
   static db.ScheduledPaymentsCompanion toUpdateCompanion(
     ScheduledPaymentDraft draft, {
     required DateTime now,
+    bool rescheduleAnchor = false,
   }) =>
       db.ScheduledPaymentsCompanion(
         accountId: Value(draft.accountId),
@@ -85,6 +93,8 @@ abstract final class ScheduledPaymentMapper {
         transferAccountId: Value(draft.transferAccountId),
         frequency: Value(frequencyToDb(draft.frequency)),
         interval: Value(draft.interval),
+        firstPaymentDate:
+            rescheduleAnchor ? Value(draft.nextDate) : const Value.absent(),
         nextDate: Value(draft.nextDate),
         endDate: Value(draft.endDate),
         requiresConfirmation: Value(draft.requiresConfirmation),

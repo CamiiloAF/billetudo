@@ -68,7 +68,8 @@ import '../widgets/coming_soon_page.dart';
 /// App routes. Each feature registers its own here. Paths stay in Spanish
 /// because they are user-visible URLs.
 ///
-/// The app is a five-tab shell (Inicio, Movimientos, Presupuestos, Metas, Más).
+/// The app is a five-tab shell (Inicio, Movimientos, Presupuestos, Pagos
+/// programados, Más).
 /// List/hub pages live inside their tab branch (the tab bar stays visible);
 /// stacked forms and detail pages render on the root navigator, above the tab
 /// bar (MASTER: a `Page Header` and the `Tab Bar` are mutually exclusive).
@@ -198,7 +199,7 @@ GoRouter createAppRouter() {
           _inicioBranch(),
           _movimientosBranch(),
           _presupuestosBranch(),
-          _metasBranch(),
+          _pagosProgramadosBranch(),
           _masBranch(),
         ],
       ),
@@ -210,10 +211,12 @@ GoRouter createAppRouter() {
       // level deeper, e.g. Ajustes under `more`, see `_settingsRoute()`).
       // Declaring these as siblings of the shell route itself is the
       // documented go_router pattern for screens that must render without
-      // the tab bar regardless of which tab launched them.
+      // the tab bar regardless of which tab launched them. Metas is here (not a
+      // tab anymore): Pagos Programados took its tab slot; Metas is reached from
+      // Inicio's quick access and the "Más" hub as a stacked screen.
       _accountsRoute(),
       _categoriesRoute(),
-      _scheduledPaymentsRoute(),
+      _goalsRoute(),
     ],
   );
 }
@@ -231,8 +234,24 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                   context.push<String>(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
               onOpenAccounts: () => context.push(AppRoutes.accounts),
+              // Bugfix item 8: tapping an account's mini-card pins the
+              // Movimientos account filter (HU-06a) to just that account —
+              // reusing the list cubit's own `updateFilter`, which persists it
+              // — then switches to the Movimientos tab so it arrives filtered.
+              // `TransactionsListCubit` is a lazySingleton, so this reaches the
+              // same live instance the tab holds, whether or not it was opened
+              // yet this session.
+              onOpenAccountMovements: (accountId) {
+                unawaited(
+                  getIt<TransactionsListCubit>().filterByAccount(accountId),
+                );
+                context.go(AppRoutes.transactions);
+              },
+              // Pagos Programados is a tab now: switch to its branch instead of
+              // stacking it on the root navigator.
               onOpenScheduledPayments: () =>
-                  context.push(AppRoutes.scheduledPayments),
+                  context.go(AppRoutes.scheduledPayments),
+              onOpenGoals: () => context.push(AppRoutes.goals),
               onOpenDebts: () => context.push(
                 AppRoutes.comingSoonTitled(
                   AppLocalizations.of(context).moreDebts,
@@ -243,6 +262,8 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                   AppLocalizations.of(context).moreReports,
                 ),
               ),
+              // Bugfix item 6: offline with no session → back up / sign in.
+              onOpenLogin: () => context.push(AppRoutes.login),
             ),
           ),
         ),
@@ -290,7 +311,13 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                   ),
                 ),
                 child: TransactionFormPage(
-                  onConvertToScheduledPayment: (formState) => context.push(
+                  // pushReplacement, not push: the transaction form must leave
+                  // the stack as the scheduled-payment form opens, so popping
+                  // the PP form (after saving it) returns to the movements
+                  // list — the origin — instead of reappearing on the
+                  // now-abandoned transaction form (bugfix item 2-iii).
+                  onConvertToScheduledPayment: (formState) =>
+                      context.pushReplacement(
                     AppRoutes.newScheduledPaymentFromTransaction(
                       accountId: formState.accountId ?? '',
                       accountName: formState.accountName ?? '',
@@ -401,6 +428,9 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                       context.push<String>(AppRoutes.transaction(id)),
                   onOpenScheduledPayment: (id) =>
                       context.push(AppRoutes.scheduledPayment(id)),
+                  // Pagos Programados is a tab root: switch to its branch.
+                  onSeeAllScheduled: () =>
+                      context.go(AppRoutes.scheduledPayments),
                 ),
               ),
               routes: [
@@ -422,16 +452,17 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
       ],
     );
 
-StatefulShellBranch _metasBranch() => StatefulShellBranch(
-      routes: [
-        GoRoute(
-          path: AppRoutes.goals,
-          builder: (context, state) => ComingSoonPage(
-            title: AppLocalizations.of(context).navGoals,
-            showAppBar: false,
-          ),
-        ),
-      ],
+// Metas is no longer a tab (Pagos Programados took its slot). It stays a real
+// Nivel 0 destination reachable from Inicio's quick access and the "Más" hub,
+// rendered as a stacked screen on the root navigator — hence its own
+// `Page Header` with a back button (`showAppBar` default), unlike when it was a
+// tab root.
+GoRoute _goalsRoute() => GoRoute(
+      path: AppRoutes.goals,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => ComingSoonPage(
+        title: AppLocalizations.of(context).navGoals,
+      ),
     );
 
 StatefulShellBranch _masBranch() => StatefulShellBranch(
@@ -444,8 +475,10 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
               builder: (context, session) => MorePage(
                 onOpenAccounts: () => context.push(AppRoutes.accounts),
                 onOpenCategories: () => context.push(AppRoutes.categories),
+                // Pagos Programados is a tab now: switch to its branch.
                 onOpenScheduledPayments: () =>
-                    context.push(AppRoutes.scheduledPayments),
+                    context.go(AppRoutes.scheduledPayments),
+                onOpenGoals: () => context.push(AppRoutes.goals),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -691,81 +724,93 @@ GoRoute _categoriesRoute() => GoRoute(
       ],
     );
 
-// Pagos Programados (HU-01/02/03/04/05/06/07): list, "por confirmar",
-// create/edit and detail, apiladas bajo Más — same pattern as Cuentas and
-// Categorías (`parentNavigatorKey: _rootNavigatorKey` for everything stacked
-// above the tab shell).
-GoRoute _scheduledPaymentsRoute() => GoRoute(
-      path: AppRoutes.scheduledPayments,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => _started(
-              getIt<ScheduledPaymentsListCubit>(),
-              (c) => c.start(),
-            ),
-          ),
-          BlocProvider(
-            create: (context) => _started(
-              getIt<PendingOccurrencesCubit>(),
-              (c) => c.start(),
-            ),
-          ),
-        ],
-        child: ScheduledPaymentsPage(
-          onAddScheduledPayment: () =>
-              context.push(AppRoutes.newScheduledPayment),
-          onOpenScheduledPayment: (id) =>
-              context.push(AppRoutes.scheduledPayment(id)),
-          onOpenPending: () => context.push(AppRoutes.pendingScheduledPayments),
-        ),
-      ),
+// Pagos Programados (HU-01/02/03/04/05/06/07): now a bottom-nav tab (it took
+// Metas' slot). The list is the branch root, so it renders inside the shell
+// with the `Tab Bar` and — crucially — **without** `parentNavigatorKey`
+// (a branch-root route can only use its own branch's navigator; go_router
+// asserts this at construction time). Its stacked children ("nuevo",
+// "por-confirmar", ":id" and their sub-forms) keep
+// `parentNavigatorKey: _rootNavigatorKey` so they still push above the tab bar
+// on the root navigator — same pattern as Movimientos/Presupuestos.
+StatefulShellBranch _pagosProgramadosBranch() => StatefulShellBranch(
       routes: [
-        // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
-        // ids.
         GoRoute(
-          path: 'nuevo',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _startedScheduledPaymentForm(state.uri),
-            child: const ScheduledPaymentFormPage(),
-          ),
-        ),
-        GoRoute(
-          path: 'por-confirmar',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) =>
-                _started(getIt<PendingOccurrencesCubit>(), (c) => c.start()),
-            child: const PendingOccurrencesPage(),
-          ),
-        ),
-        GoRoute(
-          path: ':id',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _started(
-              getIt<ScheduledPaymentDetailCubit>(),
-              (c) => c.start(state.pathParameters['id']!),
-            ),
-            child: ScheduledPaymentDetailPage(
-              onEdit: (id) => context.push(AppRoutes.editScheduledPayment(id)),
-              onOpenTransaction: (id) =>
-                  context.push<String>(AppRoutes.transaction(id)),
+          path: AppRoutes.scheduledPayments,
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => _started(
+                  getIt<ScheduledPaymentsListCubit>(),
+                  (c) => c.start(),
+                ),
+              ),
+              BlocProvider(
+                create: (context) => _started(
+                  getIt<PendingOccurrencesCubit>(),
+                  (c) => c.start(),
+                ),
+              ),
+            ],
+            child: ScheduledPaymentsPage(
+              // As a tab root there is nothing to pop to, so no back button —
+              // it uses the left-aligned tab-root header instead.
+              showBackButton: false,
+              onAddScheduledPayment: () =>
+                  context.push(AppRoutes.newScheduledPayment),
+              onOpenScheduledPayment: (id) =>
+                  context.push(AppRoutes.scheduledPayment(id)),
+              onOpenPending: () =>
+                  context.push(AppRoutes.pendingScheduledPayments),
             ),
           ),
           routes: [
+            // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
+            // ids.
             GoRoute(
-              path: 'editar',
+              path: 'nuevo',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _startedScheduledPaymentForm(state.uri),
+                child: const ScheduledPaymentFormPage(),
+              ),
+            ),
+            GoRoute(
+              path: 'por-confirmar',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (context, state) => BlocProvider(
                 create: (context) => _started(
-                  getIt<ScheduledPaymentFormCubit>(),
-                  (c) => c.load(state.pathParameters['id']),
-                ),
-                child: const ScheduledPaymentFormPage(),
+                    getIt<PendingOccurrencesCubit>(), (c) => c.start()),
+                child: const PendingOccurrencesPage(),
               ),
+            ),
+            GoRoute(
+              path: ':id',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<ScheduledPaymentDetailCubit>(),
+                  (c) => c.start(state.pathParameters['id']!),
+                ),
+                child: ScheduledPaymentDetailPage(
+                  onEdit: (id) =>
+                      context.push(AppRoutes.editScheduledPayment(id)),
+                  onOpenTransaction: (id) =>
+                      context.push<String>(AppRoutes.transaction(id)),
+                ),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'editar',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => _started(
+                      getIt<ScheduledPaymentFormCubit>(),
+                      (c) => c.load(state.pathParameters['id']),
+                    ),
+                    child: const ScheduledPaymentFormPage(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

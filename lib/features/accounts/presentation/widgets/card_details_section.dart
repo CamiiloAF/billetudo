@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../domain/entities/account_draft.dart';
+import '../cubit/account_form_state.dart';
 import 'account_form_field.dart';
 import 'account_money_field.dart';
 
@@ -12,6 +15,7 @@ import 'account_money_field.dart';
 /// there, and the draft nulls them out for any other type.
 class CardDetailsSection extends StatelessWidget {
   const CardDetailsSection({
+    required this.errorScroll,
     required this.currency,
     required this.creditLimitText,
     required this.statementDay,
@@ -28,6 +32,9 @@ class CardDetailsSection extends StatelessWidget {
     this.paymentDueDayError,
     super.key,
   });
+
+  /// Registers each card field so a validation error scrolls it into view.
+  final FormErrorScrollController errorScroll;
 
   /// The selected currency's ISO code, so the limit is grouped as that
   /// currency is typed — COP takes no cents — and re-rendered when the user
@@ -66,48 +73,60 @@ class CardDetailsSection extends StatelessWidget {
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AccountMoneyField(
-          label: l10n.accountFormCreditLimitLabel,
-          icon: LucideIcons.creditCard,
-          hint: l10n.accountFormAmountHint,
-          currency: currency,
-          text: creditLimitText,
-          errorText: creditLimitError,
-          onChanged: onCreditLimitChanged,
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldCreditLimitMinor),
+          child: AccountMoneyField(
+            label: l10n.accountFormCreditLimitLabel,
+            icon: LucideIcons.creditCard,
+            hint: l10n.accountFormAmountHint,
+            currency: currency,
+            text: creditLimitText,
+            errorText: creditLimitError,
+            onChanged: onCreditLimitChanged,
+          ),
         ),
         if (showDebtField && onDebtChanged != null) ...[
           const SizedBox(height: 16),
-          AccountMoneyField(
-            label: l10n.accountDebtLabel,
-            icon: LucideIcons.banknote,
-            hint: l10n.accountFormAmountHint,
-            currency: currency,
-            text: debtText,
-            errorText: debtError,
-            onChanged: onDebtChanged!,
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountFormState.fieldInitialBalance),
+            child: AccountMoneyField(
+              label: l10n.accountDebtLabel,
+              icon: LucideIcons.banknote,
+              hint: l10n.accountFormAmountHint,
+              currency: currency,
+              text: debtText,
+              errorText: debtError,
+              onChanged: onDebtChanged!,
+            ),
           ),
         ],
         const SizedBox(height: 16),
-        AccountFormField.selector(
-          label: l10n.accountFormStatementDayLabel,
-          icon: LucideIcons.calendar,
-          hint: l10n.accountFormSelectHint,
-          value: statementDay == null
-              ? null
-              : l10n.accountDayOfMonthValue(statementDay!),
-          errorText: statementDayError,
-          onTap: onStatementDayTap,
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldStatementDay),
+          child: AccountFormField.selector(
+            label: l10n.accountFormStatementDayLabel,
+            icon: LucideIcons.calendar,
+            hint: l10n.accountFormSelectHint,
+            value: statementDay == null
+                ? null
+                : l10n.accountDayOfMonthValue(statementDay!),
+            errorText: statementDayError,
+            onTap: onStatementDayTap,
+          ),
         ),
         const SizedBox(height: 16),
-        AccountFormField.selector(
-          label: l10n.accountFormPaymentDueDayLabel,
-          icon: LucideIcons.calendarCheck,
-          hint: l10n.accountFormSelectHint,
-          value: paymentDueDay == null
-              ? null
-              : l10n.accountDayOfMonthValue(paymentDueDay!),
-          errorText: paymentDueDayError,
-          onTap: onPaymentDueDayTap,
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldPaymentDueDay),
+          child: AccountFormField.selector(
+            label: l10n.accountFormPaymentDueDayLabel,
+            icon: LucideIcons.calendarCheck,
+            hint: l10n.accountFormSelectHint,
+            value: paymentDueDay == null
+                ? null
+                : l10n.accountDayOfMonthValue(paymentDueDay!),
+            errorText: paymentDueDayError,
+            onTap: onPaymentDueDayTap,
+          ),
         ),
       ],
     );

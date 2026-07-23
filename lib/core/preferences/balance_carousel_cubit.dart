@@ -16,8 +16,7 @@ import 'balance_carousel_state.dart';
 /// and for reopening the carousel on the last-swiped card.
 @lazySingleton
 class BalanceCarouselCubit extends Cubit<BalanceCarouselState> {
-  BalanceCarouselCubit(this._datasource)
-      : super(const BalanceCarouselState());
+  BalanceCarouselCubit(this._datasource) : super(const BalanceCarouselState());
 
   final BalanceCarouselPreferenceDatasource _datasource;
 

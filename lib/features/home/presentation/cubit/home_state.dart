@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../auth/domain/entities/auth_user.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
@@ -68,6 +69,10 @@ class HomeState extends Equatable {
 
   List<TransactionWithDetails> get recentActivity =>
       snapshot?.recentActivity ?? const [];
+
+  /// The active accounts with balances for the "Mis cuentas" strip (bugfix
+  /// item 8). Empty until the first snapshot lands.
+  List<AccountWithBalance> get accounts => snapshot?.accounts ?? const [];
 
   bool get isLoading => status == HomeStatus.loading;
 

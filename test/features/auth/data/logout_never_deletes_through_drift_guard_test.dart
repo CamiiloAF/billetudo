@@ -92,7 +92,8 @@ void main() {
           continue;
         }
         final code = codeOnly(file.readAsStringSync());
-        if (code.contains('app_database.dart') || code.contains('AppDatabase')) {
+        if (code.contains('app_database.dart') ||
+            code.contains('AppDatabase')) {
           usingDrift.add(file.uri.pathSegments.last);
         }
       }

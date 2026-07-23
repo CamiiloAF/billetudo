@@ -455,11 +455,10 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.status, HomeStatus.ready);
         expect(cubit.state.snapshot?.budgetProgress, isNotNull);
-        expect(cubit.state.snapshot?.budgetProgress?.progress.amountMinor,
-            600000);
         expect(
-            cubit.state.snapshot?.budgetProgress?.progress.spentMinor,
-            300000);
+            cubit.state.snapshot?.budgetProgress?.progress.amountMinor, 600000);
+        expect(
+            cubit.state.snapshot?.budgetProgress?.progress.spentMinor, 300000);
       },
     );
 

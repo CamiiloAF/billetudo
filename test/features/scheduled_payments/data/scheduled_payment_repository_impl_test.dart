@@ -167,6 +167,108 @@ void main() {
 
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
     });
+
+    test(
+        'item 18: editar la fecha de un PP que vence hoy persiste el nextDate '
+        'nuevo y limpia la ocurrencia pendiente que lo enmascaraba', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 10),
+          requiresConfirmation: true,
+        ),
+      );
+      // "Vence hoy": el catch-up materializa una ocurrencia pendiente para el
+      // 10 de julio y avanza el cursor un mes.
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 10));
+      final before = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(before, hasLength(1));
+
+      // El usuario cambia la fecha al 20 de julio (edición explícita).
+      await repository.updateScheduledPayment(
+        monthlyDraft(
+          id: template.id,
+          nextDate: DateTime(2026, 7, 20),
+          requiresConfirmation: true,
+        ),
+      );
+
+      final row = await rowOf(template.id);
+      expect(row.nextDate, DateTime(2026, 7, 20));
+      // La edición reancla el ancla "Primer pago" al nuevo pago, de modo que el
+      // formulario (que se bindea a firstPaymentDate) refleje la fecha nueva al
+      // reabrir — la mitad de item 18 que el fix anterior no cubría.
+      expect(row.firstPaymentDate, DateTime(2026, 7, 20));
+      final after = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      // La ocurrencia stale del 10 ya no existe, así que nada enmascara la
+      // fecha nueva en el detalle/lista.
+      expect(after, isEmpty);
+    });
+
+    test(
+        'item 18: guardar sin cambiar la fecha conserva la ocurrencia '
+        'pendiente (no dispara el catch-up destructivo)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 10),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 10));
+      final stored = await rowOf(template.id);
+
+      // El formulario reenvía el cursor sin tocar la fecha; solo cambia el
+      // monto.
+      await repository.updateScheduledPayment(
+        monthlyDraft(
+          id: template.id,
+          nextDate: stored.nextDate,
+          requiresConfirmation: true,
+        ).copyWithAmount(77777),
+      );
+
+      final after = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.scheduledPaymentId.equals(template.id)))
+          .get();
+      expect(after, hasLength(1));
+      // Sin edición de fecha, el ancla "Primer pago" queda intacto (nunca lo
+      // pisa el cursor ya avanzado por el catch-up).
+      final row = await rowOf(template.id);
+      expect(row.firstPaymentDate, DateTime(2026, 7, 10));
+    });
+  });
+
+  group('item 16: la lista global incluye todos los tipos', () {
+    test('watchActiveScheduledPayments incluye pagos de tipo ingreso',
+        () async {
+      final incomeCategory =
+          await createCategory('Salario', kind: CategoryKind.income);
+      await repository.createScheduledPayment(
+        ScheduledPaymentDraft(
+          accountId: account.id,
+          categoryId: incomeCategory.id,
+          amountMinor: 300000,
+          currency: 'COP',
+          type: domain.ScheduledPaymentType.income,
+          note: 'Nómina',
+          frequency: domain.ScheduledPaymentFrequency.monthly,
+          nextDate: DateTime(2026, 8, 1),
+        ),
+      );
+
+      final result = await repository.watchActiveScheduledPayments().first;
+      final items = result.getRight().toNullable()!;
+      expect(
+        items.any(
+          (i) =>
+              i.scheduledPayment.type == domain.ScheduledPaymentType.income,
+        ),
+        isTrue,
+      );
+    });
   });
 
   group('deleteScheduledPayment (HU-05)', () {
@@ -691,7 +793,8 @@ void main() {
     // date desc; the pending one never shows.
     Future<domain.ScheduledPayment> seedMixedHistory() async {
       final template = await createTemplate(
-        monthlyDraft(nextDate: DateTime(2026, 1, 1), requiresConfirmation: true),
+        monthlyDraft(
+            nextDate: DateTime(2026, 1, 1), requiresConfirmation: true),
       );
       await repository.generateDueScheduledPayments(now: DateTime(2026, 5, 1));
       final occ = await occurrencesOf(template.id);
@@ -774,9 +877,8 @@ void main() {
         monthlyDraft(nextDate: DateTime(2026, 7, 1)),
       );
 
-      final result = await repository
-          .watchScheduledPaymentDetail(template.id)
-          .first;
+      final result =
+          await repository.watchScheduledPaymentDetail(template.id).first;
 
       final detail = result.getRight().toNullable()!;
       expect(detail.pendingOccurrence, isNotNull);
@@ -803,9 +905,8 @@ void main() {
         monthlyDraft(nextDate: DateTime(2026, 12, 1)),
       );
 
-      final result = await repository
-          .watchScheduledPaymentDetail(template.id)
-          .first;
+      final result =
+          await repository.watchScheduledPaymentDetail(template.id).first;
 
       expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
       expect(
@@ -838,9 +939,8 @@ void main() {
         ),
       );
 
-      final result = await repository
-          .watchScheduledPaymentDetail(template.id)
-          .first;
+      final result =
+          await repository.watchScheduledPaymentDetail(template.id).first;
 
       expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
       expect(
@@ -849,16 +949,14 @@ void main() {
       );
     });
 
-    test('una plantilla borrada (tombstonedAt) no materializa nada',
-        () async {
+    test('una plantilla borrada (tombstonedAt) no materializa nada', () async {
       final template = await createTemplate(
         monthlyDraft(nextDate: DateTime(2026, 7, 1)),
       );
       await repository.deleteScheduledPayment(template.id);
 
-      final result = await repository
-          .watchScheduledPaymentDetail(template.id)
-          .first;
+      final result =
+          await repository.watchScheduledPaymentDetail(template.id).first;
 
       expect(result.getRight().toNullable()!.pendingOccurrence, isNull);
       expect(
@@ -878,8 +976,7 @@ void main() {
         monthlyDraft(nextDate: DateTime(2026, 12, 1)),
       );
 
-      final result =
-          await repository.advanceScheduledOccurrence(template.id);
+      final result = await repository.advanceScheduledOccurrence(template.id);
 
       expect(result.isRight(), isTrue);
       final pending = result.getRight().toNullable()!;
@@ -996,8 +1093,7 @@ void main() {
         ),
       );
 
-      final result =
-          await repository.advanceScheduledOccurrence(template.id);
+      final result = await repository.advanceScheduledOccurrence(template.id);
 
       expect(result.isRight(), isTrue);
       final pending = result.getRight().toNullable()!;
@@ -1020,8 +1116,7 @@ void main() {
       );
       await repository.deleteScheduledPayment(template.id);
 
-      final result =
-          await repository.advanceScheduledOccurrence(template.id);
+      final result = await repository.advanceScheduledOccurrence(template.id);
 
       expect(result.getLeft().toNullable(), isA<ValidationFailure>());
       expect(
@@ -1039,8 +1134,7 @@ void main() {
         ),
       );
 
-      final result =
-          await repository.advanceScheduledOccurrence(template.id);
+      final result = await repository.advanceScheduledOccurrence(template.id);
 
       expect(result.getLeft().toNullable(), isA<ValidationFailure>());
       expect(
@@ -1062,8 +1156,7 @@ void main() {
         now: DateTime(2026, 7, 1),
       );
 
-      final result =
-          await repository.advanceScheduledOccurrence(template.id);
+      final result = await repository.advanceScheduledOccurrence(template.id);
 
       expect(result.getLeft().toNullable(), isA<ValidationFailure>());
       // No agrega una segunda ocurrencia junto a la ya confirmada.
@@ -1075,7 +1168,8 @@ void main() {
       expect(occurrences.single.status, ScheduledOccurrenceStatus.confirmed);
     });
 
-    test('llamar dos veces seguidas reutiliza la misma ocurrencia, sin duplicar',
+    test(
+        'llamar dos veces seguidas reutiliza la misma ocurrencia, sin duplicar',
         () async {
       final template = await createTemplate(
         monthlyDraft(nextDate: DateTime(2026, 12, 1)),

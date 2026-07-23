@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../categories/domain/entities/category.dart';
+import '../../../categories/domain/entities/category_node.dart';
+import '../../../categories/domain/usecases/watch_categories.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
+import '../../domain/services/budget_category_scope_resolver.dart';
 import '../../domain/usecases/create_budget.dart';
 import '../../domain/usecases/get_budget_by_id.dart';
 import '../../domain/usecases/update_budget.dart';
@@ -21,14 +27,31 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
     this._createBudget,
     this._updateBudget,
     this._getBudgetById,
+    this._watchCategories,
+    this._scopeResolver,
   ) : super(BudgetFormState.loading());
 
   final CreateBudget _createBudget;
   final UpdateBudget _updateBudget;
   final GetBudgetById _getBudgetById;
+  final WatchCategories _watchCategories;
+  final BudgetCategoryScopeResolver _scopeResolver;
+
+  // The live category tree, kept only to translate between the picker's
+  // materialized selection and the canonical scope stored on the budget (fix
+  // #14). Not in the form state: it never renders here — the picker loads its
+  // own copy — it only feeds [categoryScopeForPicker] / [categoriesPicked].
+  List<CategoryNode> _expenseNodes = const [];
+  List<CategoryNode> _incomeNodes = const [];
+  StreamSubscription<Result<List<CategoryNode>>>? _expenseSubscription;
+  StreamSubscription<Result<List<CategoryNode>>>? _incomeSubscription;
+  var _expenseSeen = false;
+  var _incomeSeen = false;
+  final _categoriesReady = Completer<void>();
 
   /// Loads the budget to edit, or prepares an empty form when [id] is null.
   Future<void> load(String? id) async {
+    _watchCategoryTree();
     if (id == null) {
       emit(BudgetFormState.initial(DateTime.now()));
       return;
@@ -47,6 +70,53 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
         emit(_formFor(data));
     }
   }
+
+  void _watchCategoryTree() {
+    _expenseSubscription ??=
+        _watchCategories(CategoryKind.expense).listen((result) {
+      if (result case Right(value: final nodes)) {
+        _expenseNodes = nodes;
+      }
+      _expenseSeen = true;
+      _maybeCompleteCategories();
+    });
+    _incomeSubscription ??=
+        _watchCategories(CategoryKind.income).listen((result) {
+      if (result case Right(value: final nodes)) {
+        _incomeNodes = nodes;
+      }
+      _incomeSeen = true;
+      _maybeCompleteCategories();
+    });
+  }
+
+  void _maybeCompleteCategories() {
+    if (_expenseSeen && _incomeSeen && !_categoriesReady.isCompleted) {
+      _categoriesReady.complete();
+    }
+  }
+
+  /// Every root id -> its direct children ids, across both trees. The single
+  /// input both [BudgetCategoryScopeResolver] methods need.
+  Map<String, List<String>> get _childrenByRoot => {
+        for (final node in [..._expenseNodes, ..._incomeNodes])
+          node.root.id: [for (final child in node.subcategories) child.id],
+      };
+
+  /// The **materialized** selection to seed the shared category picker with,
+  /// so a root-only or global ("Todas") budget shows the right rows checked.
+  /// Awaits the live tree (loaded once, fast and local) so the expansion is
+  /// never computed against an empty tree.
+  Future<Set<String>> categoryScopeForPicker() async {
+    await _categoriesReady.future;
+    return _scopeResolver.expand(state.categoryIds, _childrenByRoot);
+  }
+
+  /// Collapses what the picker returned back into the canonical scope before
+  /// storing it: "Todas" -> `{}`, a whole root -> just its id. The tree is
+  /// already loaded here (the picker was shown via [categoryScopeForPicker]).
+  void categoriesPicked(Set<String> materialized) => categoriesSelected(
+      _scopeResolver.collapse(materialized, _childrenByRoot));
 
   BudgetFormState _formFor(BudgetDetailData data) {
     final budget = data.budget;
@@ -160,5 +230,12 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
         (budget) => state.copyWith(submitting: false, savedId: budget.id),
       ),
     );
+  }
+
+  @override
+  Future<void> close() async {
+    await _expenseSubscription?.cancel();
+    await _incomeSubscription?.cancel();
+    return super.close();
   }
 }

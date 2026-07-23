@@ -144,10 +144,11 @@ class ConfirmationSheetBody extends StatelessWidget {
                 occurrenceDate: source.occurrence.occurrenceDate,
                 templateName: ScheduledPaymentFormat.templateName(
                   note: state.note,
-                  categoryName: state.categoryName,
                   isTransfer: state.isTransfer,
                   accountName: state.accountName ?? '',
                   transferAccountName: state.transferAccountName,
+                  fallback:
+                      AppLocalizations.of(context).scheduledPaymentUntitled,
                 ),
                 isTransfer: state.isTransfer,
                 categoryIcon: source.categoryIcon,
@@ -291,10 +292,11 @@ class GuidedReviewSheetBody extends StatelessWidget {
                     occurrenceDate: current.occurrence.occurrenceDate,
                     templateName: ScheduledPaymentFormat.templateName(
                       note: current.scheduledPayment.note,
-                      categoryName: current.categoryName,
                       isTransfer: current.scheduledPayment.isTransfer,
                       accountName: current.accountName,
                       transferAccountName: current.transferAccountName,
+                      fallback:
+                          AppLocalizations.of(context).scheduledPaymentUntitled,
                     ),
                     isTransfer: current.scheduledPayment.isTransfer,
                     categoryIcon: current.categoryIcon,
@@ -408,10 +410,10 @@ class ConfirmationSheetHead extends StatelessWidget {
     final theme = Theme.of(context);
     final title = ScheduledPaymentFormat.templateName(
       note: note,
-      categoryName: categoryName,
       isTransfer: isTransfer,
       accountName: accountName,
       transferAccountName: transferAccountName,
+      fallback: l10n.scheduledPaymentUntitled,
     );
     final subtitleParts = [
       if (categoryName != null && categoryName!.isNotEmpty) categoryName!,
@@ -624,10 +626,10 @@ class ConfirmationSheetFields extends StatelessWidget {
     final resolvedAccountName = accountName ?? transferAccountName ?? '';
     final templateName = ScheduledPaymentFormat.templateName(
       note: note,
-      categoryName: categoryName,
       isTransfer: isTransfer,
       accountName: resolvedAccountName,
       transferAccountName: transferAccountName,
+      fallback: l10n.scheduledPaymentUntitled,
     );
     final divider = Divider(height: 1, thickness: 1, color: colors.border);
     return Column(

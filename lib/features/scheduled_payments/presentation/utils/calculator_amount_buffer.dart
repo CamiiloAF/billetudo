@@ -53,7 +53,7 @@ class CalculatorAmountBuffer {
       return this;
     }
     final base = _startFreshOperandIfNeeded();
-    final decimals = MoneyFormatter.currencyDecimals(currency);
+    final decimals = MoneyFormatter.inputDecimals(currency);
 
     final int next;
     final int nextFraction;
@@ -75,7 +75,7 @@ class CalculatorAmountBuffer {
   }
 
   CalculatorAmountBuffer decimalPressed({required String currency}) {
-    if (MoneyFormatter.currencyDecimals(currency) == 0) {
+    if (MoneyFormatter.inputDecimals(currency) == 0) {
       return this;
     }
     final base = _startFreshOperandIfNeeded();
@@ -117,6 +117,11 @@ class CalculatorAmountBuffer {
       clearCalc: true,
     );
   }
+
+  /// Clears the whole amount at once (long-press on backspace, item 5),
+  /// mirroring `TransactionFormCubit.amountCleared`: back to 0 with no pending
+  /// operator, operand or fraction.
+  CalculatorAmountBuffer cleared() => const CalculatorAmountBuffer();
 
   CalculatorAmountBuffer backspacePressed() {
     var base = this;

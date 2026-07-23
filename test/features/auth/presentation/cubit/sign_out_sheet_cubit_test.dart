@@ -68,8 +68,7 @@ void main() {
 
     test('un start() que resuelve después de close() no explota', () async {
       final completer = Completer<Result<int>>();
-      when(() => getPendingUploadCount())
-          .thenAnswer((_) => completer.future);
+      when(() => getPendingUploadCount()).thenAnswer((_) => completer.future);
 
       final cubit = build();
       final pending = cubit.start();

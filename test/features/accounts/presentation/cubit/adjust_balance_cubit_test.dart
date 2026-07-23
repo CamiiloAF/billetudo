@@ -37,8 +37,7 @@ void main() {
   final account = buildAccount(initialBalanceMinor: 0);
 
   test('start fija cuenta y saldo actual, estado editing', () async {
-    final cubit = build()
-      ..start(account: account, currentBalanceMinor: 100000);
+    final cubit = build()..start(account: account, currentBalanceMinor: 100000);
     addTearDown(cubit.close);
 
     expect(cubit.state.status, AdjustBalanceStatus.editing);

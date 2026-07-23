@@ -21,6 +21,7 @@ import '../../domain/entities/pending_budget_adjustment.dart';
 import '../../domain/entities/period_income.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../../domain/repositories/budget_repository.dart';
+import '../../domain/services/budget_category_scope_resolver.dart';
 import '../../domain/services/budget_period_calculator.dart';
 import '../../domain/services/budget_progress_calculator.dart';
 import '../../domain/services/zero_based_summary_calculator.dart';
@@ -40,12 +41,14 @@ class BudgetRepositoryImpl implements BudgetRepository {
     this._progress,
     this._zeroBased,
     this._projectOccurrences,
+    this._scopeResolver,
   );
 
   final BudgetsLocalDatasource _local;
   final BudgetProgressCalculator _progress;
   final ZeroBasedSummaryCalculator _zeroBased;
   final ProjectUpcomingOccurrences _projectOccurrences;
+  final BudgetCategoryScopeResolver _scopeResolver;
 
   @override
   Stream<Result<List<BudgetWithProgress>>> watchActiveBudgets() =>
@@ -377,6 +380,57 @@ class BudgetRepositoryImpl implements BudgetRepository {
         }
         return const Right(unit);
       });
+
+  @override
+  FutureResult<Unit> reconcileMaterializedCategoryScopes() => _guard(() async {
+        final categories = await _local.getAliveCategories();
+        final childrenByRoot = _childrenByRoot(categories);
+        final now = DateTime.now();
+
+        for (final budgetId in await _local.reconcilableBudgetIds()) {
+          final current = (await _local.categoryScopeOf(budgetId)).toSet();
+          // A global (empty) scope is already canonical: nothing to collapse.
+          if (current.isEmpty) {
+            continue;
+          }
+          final canonical = _scopeResolver.collapse(current, childrenByRoot);
+          // Idempotent: only rewrite when the scope actually changes, so a
+          // budget already canonical (or a genuinely partial pick) is untouched.
+          if (_sameIds(canonical, current)) {
+            continue;
+          }
+          // Only the category dimension changes; the account scope (including
+          // rows whose referent was deleted elsewhere) is left exactly as it is.
+          await _local.reconcileCategoryScope(
+            budgetId,
+            categoryIds: canonical,
+            now: now,
+          );
+        }
+        return const Right(unit);
+      });
+
+  /// Every root category id -> its direct (alive) children ids, including an
+  /// empty list for a childless root — the shape
+  /// [BudgetCategoryScopeResolver] needs to tell roots from subcategories.
+  Map<String, List<String>> _childrenByRoot(List<db.Category> categories) {
+    final result = <String, List<String>>{};
+    for (final category in categories) {
+      if (category.parentId == null) {
+        result.putIfAbsent(category.id, () => []);
+      }
+    }
+    for (final category in categories) {
+      final parentId = category.parentId;
+      if (parentId != null) {
+        result.putIfAbsent(parentId, () => []).add(category.id);
+      }
+    }
+    return result;
+  }
+
+  bool _sameIds(Set<String> a, Set<String> b) =>
+      a.length == b.length && a.containsAll(b);
 
   @override
   FutureResult<PendingBudgetAdjustment?> getPendingAdjustment(

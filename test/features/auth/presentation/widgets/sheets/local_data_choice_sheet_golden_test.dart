@@ -31,7 +31,8 @@ void main() {
   setUp(() => cubit = MockDeleteAccountCubit());
 
   DeleteAccountState choiceState({LocalDataChoice? choice}) =>
-      DeleteAccountState(step: DeleteAccountStep.localDataChoice, choice: choice);
+      DeleteAccountState(
+          step: DeleteAccountStep.localDataChoice, choice: choice);
 
   Future<void> golden(
     WidgetTester tester,

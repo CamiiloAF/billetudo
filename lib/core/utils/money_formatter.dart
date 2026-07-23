@@ -36,14 +36,37 @@ class MoneyFormatter {
   /// design shows.
   static const String currencySymbol = r'$';
 
-  /// How many decimals a currency shows to the user. Storage always keeps two
-  /// (minor unit = 1/100, see [_minorPerMajor]); this is only about *display*.
-  /// COP has no cents in practice, so it reads as a whole number (`$45.000`),
-  /// while USD keeps its two (`$12.34`). The full app-wide reconciliation of
-  /// per-currency minor units lives in `12-multi-moneda.md`; this covers the
-  /// two currencies the app handles today.
+  /// A currency's **default** number of shown decimals. COP reads as a whole
+  /// number by convention (`$45.000`), USD keeps its two (`$12,34`). This is
+  /// the *baseline*: [displayDecimals] still reveals real cents when a COP
+  /// amount happens to carry them (item 4), and [inputDecimals] governs how
+  /// many the user may *type* (always two). The full app-wide reconciliation
+  /// of per-currency minor units lives in `12-multi-moneda.md`.
   static int currencyDecimals(String currencyCode) =>
-      currencyCode == 'COP' ? 0 : 2;
+      currencyCode == 'COP' ? 0 : _storedDecimals;
+
+  /// How many decimals the user may **type** into a money field, for every
+  /// currency. Storage keeps two (minor unit = 1/100), so entry allows two
+  /// too — COP included: a COP purchase can carry cents and the keypad must
+  /// let the user enter them (item 4). Decoupled from [currencyDecimals] on
+  /// purpose: COP *accepts* cents on input but only *shows* them when they are
+  /// non-zero (see [displayDecimals]).
+  static int inputDecimals(String currencyCode) => _storedDecimals;
+
+  /// How many decimals to actually **show** for [amountMinor] in
+  /// [currencyCode]: the currency's [currencyDecimals] baseline, but revealing
+  /// the stored cents when the amount genuinely carries them. So COP renders a
+  /// whole amount as `$45.000` (no forced `,00`) and only `$45.000,50` once it
+  /// has cents; USD always shows its two. A whole amount is detected by value
+  /// (`amountMinor % 100 == 0`), which holds for negatives too since Dart's
+  /// `%` is non-negative for a positive divisor.
+  static int displayDecimals(int amountMinor, String currencyCode) {
+    final base = currencyDecimals(currencyCode);
+    if (base >= _storedDecimals) {
+      return base;
+    }
+    return amountMinor % _minorPerMajor == 0 ? base : _storedDecimals;
+  }
 
   /// `1234, currencyCode: 'COP'` → `"$1.234"` (per [locale]).
   ///
@@ -61,7 +84,8 @@ class MoneyFormatter {
     final formatter = NumberFormat.currency(
       locale: locale,
       name: currencyCode,
-      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+      decimalDigits:
+          decimalDigits ?? displayDecimals(amountMinor, currencyCode),
     );
     return formatter.format(amountMinor / _minorPerMajor);
   }
@@ -87,10 +111,62 @@ class MoneyFormatter {
     final digits = formatAmount(
       amountMinor,
       locale: locale,
-      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+      decimalDigits:
+          decimalDigits ?? displayDecimals(amountMinor, currencyCode),
     );
     return '$currencySymbol$digits';
   }
+
+  /// Formats [amountMinor] the way an **active** money-entry field must read
+  /// it, honoring how many fraction digits the user has typed so far
+  /// ([entryFractionDigits], the counter the keypad's cubit and
+  /// `CalculatorAmountBuffer` keep):
+  ///
+  /// - `-1` (whole-number entry, no decimal key pressed yet): renders like
+  ///   [formatSymbol] — the currency's own decimals, so COP keeps "solo cuando
+  ///   existen" and never forces `,00` (item 4).
+  /// - `0` (decimal key just pressed, no fraction digit yet): the integer part
+  ///   followed by a **pending** decimal separator, so tapping the comma shows
+  ///   "$45," at once instead of waiting for the next digit (item 20).
+  /// - `1..2`: exactly that many fraction digits, so what the user typed is
+  ///   what they see ("$45,0" then "$45,05").
+  ///
+  /// Entry-time only. Read-only display (the collapsed bar, lists, detail)
+  /// keeps [formatSymbol]'s "cents only when they exist" rule, so this must not
+  /// be used outside an actively-focused amount field.
+  String formatSymbolEntry(
+    int amountMinor, {
+    required String currencyCode,
+    required int entryFractionDigits,
+    String locale = 'es_CO',
+  }) {
+    if (entryFractionDigits <= 0) {
+      final base =
+          formatSymbol(amountMinor, currencyCode: currencyCode, locale: locale);
+      if (entryFractionDigits < 0) {
+        return base;
+      }
+      // A whole amount already carrying a decimal separator (e.g. USD's forced
+      // two decimals, "$45,00") must not gain a second one; only append the
+      // pending separator when the value is still shown without one (COP).
+      final separator = decimalSeparatorFor(locale);
+      return base.contains(separator) ? base : '$base$separator';
+    }
+    final digits = formatAmount(
+      amountMinor,
+      locale: locale,
+      decimalDigits: entryFractionDigits,
+    );
+    return '$currencySymbol$digits';
+  }
+
+  /// The single character [formatSymbol]/[formatAmount] use to separate the
+  /// fraction for [locale] (es_CO → `,`). Exposed so [formatSymbolEntry] can
+  /// render a *pending* decimal separator without hard-coding it.
+  static String decimalSeparatorFor(String locale) =>
+      NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1)
+          .symbols
+          .DECIMAL_SEP;
 
   /// Same as [format] but without the currency code/symbol (digits only).
   ///

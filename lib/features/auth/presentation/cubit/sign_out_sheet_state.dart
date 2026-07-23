@@ -22,7 +22,8 @@ class SignOutSheetState extends Equatable {
   /// opt-in off nothing local is lost, queued or not.
   bool get showsUnsyncedWarning => deleteLocalData && pendingUploadCount > 0;
 
-  SignOutSheetState copyWith({bool? deleteLocalData, int? pendingUploadCount}) =>
+  SignOutSheetState copyWith(
+          {bool? deleteLocalData, int? pendingUploadCount}) =>
       SignOutSheetState(
         deleteLocalData: deleteLocalData ?? this.deleteLocalData,
         pendingUploadCount: pendingUploadCount ?? this.pendingUploadCount,

@@ -26,6 +26,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionFormCubit extends MockCubit<TransactionFormState>
@@ -504,6 +505,26 @@ void main() {
 
       verify(() => cubit.noteFocused()).called(1);
     });
+
+    testWidgets(
+        'dejar presionada la tecla borrar limpia todo el monto (item 5)',
+        (tester) async {
+      when(() => cubit.amountCleared()).thenReturn(null);
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          amountMinor: 123400,
+          focusedField: TransactionFormFocusedField.amount,
+        ),
+      );
+
+      await tester.longPress(find.byIcon(LucideIcons.delete));
+      await tester.pump();
+
+      verify(() => cubit.amountCleared()).called(1);
+      verifyNever(() => cubit.amountBackspace());
+    });
   });
 
   group('errores de validación (bug fixes 8 y 11a)', () {
@@ -592,6 +613,85 @@ void main() {
       expect(find.text('Elige una cuenta.'), findsNothing);
       expect(find.text('Elige una categoría.'), findsNothing);
       expect(find.text('Ingresa un monto mayor a cero.'), findsNothing);
+    });
+  });
+
+  group('puente a pago programado por fecha futura (bugfix item 2)', () {
+    Future<void> pumpFutureForm(
+      WidgetTester tester, {
+      required ValueChanged<TransactionFormState>? onConvert,
+    }) async {
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      when(() => cubit.state).thenReturn(
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Comida',
+          amountMinor: 5000,
+          // A month ahead: `isFutureDate` is true for a brand-new movement.
+          date: DateTime.now().add(const Duration(days: 30)),
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<TransactionFormCubit>.value(
+            value: cubit,
+            child: TransactionFormPage(onConvertToScheduledPayment: onConvert),
+          ),
+        ),
+      );
+    }
+
+    testWidgets(
+        'una fecha futura abre el sheet-puente en vez de guardar directo',
+        (tester) async {
+      await pumpFutureForm(tester, onConvert: (_) {});
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Es un pago programado?'), findsOneWidget);
+      verifyNever(() => cubit.submit());
+    });
+
+    testWidgets('descartar el puente (Cambiar la fecha) NO guarda la tx futura',
+        (tester) async {
+      TransactionFormState? converted;
+      await pumpFutureForm(tester, onConvert: (state) => converted = state);
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cambiar la fecha'));
+      await tester.pumpAndSettle();
+
+      // Ni se convirtió a PP ni se persistió como movimiento normal.
+      expect(converted, isNull);
+      verifyNever(() => cubit.submit());
+    });
+
+    testWidgets('aceptar el puente convierte a PP y no guarda como normal',
+        (tester) async {
+      TransactionFormState? converted;
+      await pumpFutureForm(tester, onConvert: (state) => converted = state);
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sí, programarlo'));
+      await tester.pumpAndSettle();
+
+      expect(converted, isNotNull);
+      expect(converted!.amountMinor, 5000);
+      verifyNever(() => cubit.submit());
     });
   });
 }

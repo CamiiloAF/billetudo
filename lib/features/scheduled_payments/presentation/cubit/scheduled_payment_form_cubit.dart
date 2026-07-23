@@ -160,13 +160,23 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     );
   }
 
-  void typeSelected(ScheduledPaymentType type) => emit(
-        state.copyWith(
-          type: type,
-          clearCategory: type == ScheduledPaymentType.transfer,
-          clearTransferAccount: type != ScheduledPaymentType.transfer,
-        ),
-      );
+  void typeSelected(ScheduledPaymentType type) {
+    if (type == state.type) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        type: type,
+        // Income and expense have distinct category sets (`CategoryKind`), and
+        // a transfer carries none — so any real type change must drop the
+        // previously picked category, or an expense category would linger on an
+        // income (item 17). Switching away from a transfer also drops a
+        // destination account that no longer applies.
+        clearCategory: true,
+        clearTransferAccount: type != ScheduledPaymentType.transfer,
+      ),
+    );
+  }
 
   void accountSelected(String id, String name) =>
       emit(state.copyWith(accountId: id, accountName: name));

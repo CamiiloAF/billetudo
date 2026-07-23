@@ -21,21 +21,45 @@ void main() {
         home: Scaffold(body: child),
       );
 
-  testWidgets('renders category/account, amount and next date', (tester) async {
+  testWidgets(
+      'item 3/19: the title is the payment name (note), category in the '
+      'sub-line', (tester) async {
     final entry = ScheduledPaymentSummary(
-      scheduledPayment: buildScheduledPayment(amountMinor: 25000),
+      scheduledPayment: buildScheduledPayment(amountMinor: 25000, note: 'Gym'),
       accountName: 'Bancolombia',
-      categoryName: 'Arriendo',
+      categoryName: 'Salud',
     );
 
     await tester.pumpWidget(
       appWith(ScheduledCard(entry: entry, onTap: () {})),
     );
 
-    expect(find.text('Arriendo'), findsOneWidget);
+    // Title is the note, never the category.
+    expect(find.text('Gym'), findsOneWidget);
+    // Category still shows, but only in the "Cuenta · Categoría" sub-line.
+    expect(find.text('Bancolombia · Salud'), findsOneWidget);
     // Expense: signed with a '-' prefix, like the movements list.
     expect(find.textContaining(RegExp(r'^-')), findsOneWidget);
     expect(find.byType(ScheduledPendingCountChip), findsNothing);
+  });
+
+  testWidgets(
+      'item 3/19: with no note the title is the generic label, never the '
+      'category', (tester) async {
+    final entry = ScheduledPaymentSummary(
+      scheduledPayment: buildScheduledPayment(amountMinor: 25000),
+      accountName: 'Bancolombia',
+      categoryName: 'Salud',
+    );
+
+    await tester.pumpWidget(
+      appWith(ScheduledCard(entry: entry, onTap: () {})),
+    );
+
+    expect(find.text('Pago programado'), findsOneWidget);
+    // The category is not promoted to the big title.
+    expect(find.text('Salud'), findsNothing);
+    expect(find.text('Bancolombia · Salud'), findsOneWidget);
   });
 
   testWidgets('the ×N chip belongs to the pending row, never to the card',

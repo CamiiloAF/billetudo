@@ -39,6 +39,7 @@ void main() {
               totalMinor: 27000000,
               currency: 'COP',
               onOpenScheduledPayment: (_) {},
+              onSeeAllScheduled: () {},
             ),
             child: const Text('open'),
           ),

@@ -17,9 +17,11 @@ import 'package:flutter/services.dart';
 /// `.` groups, `,` separates decimals), so a field's `onChanged` keeps parsing
 /// straight into minor units and never goes through a `double`.
 ///
-/// Pair it with the currency's own decimals
-/// (`MoneyFormatter.currencyDecimals`): COP takes none, so the separator is
-/// refused outright instead of inventing cents the currency does not have.
+/// Pair it with the decimals the field should accept: text-money fields use
+/// the currency's default (`MoneyFormatter.currencyDecimals`, COP takes none,
+/// so the separator is refused); the calculator keypad (transactions / pagos
+/// programados) uses `MoneyFormatter.inputDecimals`, which allows two for
+/// every currency so COP can carry typed cents (item 4).
 class MoneyInputFormatter extends TextInputFormatter {
   const MoneyInputFormatter({
     required this.decimals,

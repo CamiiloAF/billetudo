@@ -82,8 +82,7 @@ void main() {
     expect(result.getRight().toNullable(), isEmpty);
   });
 
-  test(
-      'mezcla de fechas: solo pasan las vencidas, en el mismo orden recibido',
+  test('mezcla de fechas: solo pasan las vencidas, en el mismo orden recibido',
       () async {
     when(() => repository.watchPendingOccurrences()).thenAnswer(
       (_) => Stream.value(

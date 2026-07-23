@@ -275,7 +275,8 @@ void main() {
       expect(find.text('Saldo inicial'), findsNothing);
     });
 
-    testWidgets('edición de tarjeta: NO aparece "Deuda actual"', (tester) async {
+    testWidgets('edición de tarjeta: NO aparece "Deuda actual"',
+        (tester) async {
       // En una tarjeta existente la deuda es derivada; solo se ajusta desde el
       // detalle, nunca se reescribe en el formulario.
       await pumpForm(
@@ -293,7 +294,9 @@ void main() {
     });
   });
 
-  testWidgets('el error del dominio se muestra en su campo', (tester) async {
+  testWidgets(
+      'un nombre vacío muestra el error de obligatorio, no el de longitud '
+      '(fix #15b)', (tester) async {
     await pumpForm(
       tester,
       const AccountFormState(
@@ -303,10 +306,30 @@ void main() {
       ),
     );
 
+    expect(find.text('Ingresa un nombre para la cuenta.'), findsOneWidget);
+    expect(
+      find.text('Escribe un nombre de hasta 100 caracteres.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('un nombre que excede el límite muestra el error de longitud',
+      (tester) async {
+    await pumpForm(
+      tester,
+      AccountFormState(
+        status: AccountFormStatus.ready,
+        type: AccountType.bank,
+        name: 'a' * 101,
+        failure: const ValidationFailure('nope', field: 'name'),
+      ),
+    );
+
     expect(
       find.text('Escribe un nombre de hasta 100 caracteres.'),
       findsOneWidget,
     );
+    expect(find.text('Ingresa un nombre para la cuenta.'), findsNothing);
   });
 
   testWidgets('sin tipo elegido, el error apunta al selector de tipo',

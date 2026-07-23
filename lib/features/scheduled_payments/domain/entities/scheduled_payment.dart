@@ -67,12 +67,14 @@ class ScheduledPayment extends Equatable {
   /// when [frequency] is `once`.
   final int interval;
 
-  /// The date the user originally picked as the first payment when the
-  /// template was created. IMMUTABLE: unlike [nextDate], it is set once at
-  /// creation and never rewritten afterwards — it is not a cursor, it is a
-  /// historical fact. This is what the UI must show for "Primer pago" so it
-  /// never appears to change on its own as the catch-up generator advances
-  /// [nextDate].
+  /// The schedule anchor — the date shown for "Primer pago" in the edit form.
+  /// Unlike [nextDate], the catch-up generator NEVER advances it, so it never
+  /// appears to drift on its own as the cursor moves forward. It changes only
+  /// when the user explicitly edits the date (HU-05), which re-anchors the
+  /// schedule (both this and [nextDate] move); a plain edit of other fields
+  /// leaves it untouched. Because the form binds to this column, persisting an
+  /// explicit date edit here is what lets the new date survive a re-open
+  /// (item 18).
   final DateTime firstPaymentDate;
 
   /// The next due date the catch-up generator (HU-02) has not yet processed.

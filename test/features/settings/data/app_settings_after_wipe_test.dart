@@ -132,7 +132,8 @@ void main() {
     setUp(() {
       categories = MockCategoryRepository();
       seed = SeedDefaultCategories(categories, settingsRepository);
-      when(categories.hasAnyCategory).thenAnswer((_) async => const Right(false));
+      when(categories.hasAnyCategory)
+          .thenAnswer((_) async => const Right(false));
       when(categories.seedDefaultCategories)
           .thenAnswer((_) async => const Right(unit));
     });

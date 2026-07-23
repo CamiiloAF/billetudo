@@ -1,7 +1,7 @@
 # Deudas — progreso de refinamiento + diseño (handoff)
 
-> **Estado:** en curso. Requisitos cerrados; diseño Pencil a mitad (2 de ~6 pantallas aprobadas, sin estados ni tema oscuro). **No** existe `pages/deudas.md` todavía (se documenta recién cuando el diseño esté 100% aprobado — ver memoria "aprobar-diseño-antes-de-documentar").
-> **Última sesión:** 2026-07-21. **Retomar por:** el form de crear/editar deuda (ver "Lo que falta").
+> **Estado:** ✅ **DISEÑO CERRADO** (2026-07-22). Todas las pantallas aprobadas en claro + oscuro, sin marcadores. `pages/deudas.md` **escrito** (spec completa). **Retomar por: la IMPLEMENTACIÓN** (ver "Lo que falta" → sección Implementación).
+> **Requisitos cerrados** en `08-deudas.md` (+ `09`, `10`, `plan-cuentas`). Diseño en `pages/deudas.md` + `billetudo.pen`.
 > **Feature NO construida** en `lib/` (`lib/features/debts/` vacío); la tabla `Debts` ya existe.
 
 ---
@@ -33,9 +33,38 @@ Resumen de lo decidido (el detalle vive en esos docs):
 | **Lista / resumen** | `rPgbX` | Variante A ("Resumen + lista plana"). Summary card (`u2Xje`, Yo debo/Me deben + chip COP), lista plana de `Debt Card` con pill de dirección, barra de avance, badge de cuota o "Vence …". |
 | **Detalle de deuda** | `cUzp6` | Variante C. Hero compacto `E7TQkJ`, meta card (contraparte, vencimiento, "Crece ~$/día · estimado", "Actualizar saldo"), card de próxima cuota (badge "Pago programado", cross-link), **botón "Registrar abono" fijo abajo**, ledger con **saldo corrido por fila**. |
 
+### Pantallas EN REVISIÓN del usuario (tema claro, con marcador — falta aprobación explícita)
+| Pantalla | nodeId | Notas |
+|---|---|---|
+| **Form crear/editar deuda** | `dUryC` | Variante B ("Monto héroe"). Saldo de apertura como héroe ~38px/800 + caret de edición, pill de moneda `$primary-on-soft-strong`, toggle de dirección `qCUup` con label "¿Debes o te deben?", contraparte/vencimiento/tasa+modo interés. CTA "Crear deuda" fijo abajo. Fixes de auditoría ya aplicados. |
+| **Hoja de registrar abono** | `xbsY3` (Sí) / `V6Z9ln` (No) | Variante A ("Switch + revelación inline"), HU-02. Héroe de monto + caret. Toggle switch "¿Agregar a una cuenta?": **Sí** revela fila de cuenta (`X3tZG`) + afecta estadísticas; **No** oculta cuenta y muestra copy "no moverá ninguna cuenta". Categoría **solo en Sí** (en No no hay dónde persistir `categoryId` — no es `Transaction`). Fixes de auditoría aplicados (knob OFF con sombra iOS, hints unificados 13px). Switch componentizado → `bWezV` (`reusable:true`). |
+
 ### Componentes reusables creados para Deudas
 - `xSpw7` — **Debt Card** (usado por la lista, 5 instancias).
 - `JAmxJ` — **Debt Ledger Row · Running** (fila de asiento con saldo corrido, usado por el detalle). Distingue caja (icon-wrap `$primary-soft` + monto `$text-primary` + cuenta) vs solo-deuda (`$muted` + monto atenuado + tag "estimado").
+- `qCUup` — **Debt Direction Toggle** (Yo debo / Me deben; texto+ícono direccional+forma, sin color de alarma). Usado por el form.
+- `bWezV` — **Switch** (`reusable:true`, ON/OFF por override; knob con stroke `$border` + sombra iOS para contraste en OFF). Usado por la hoja de abono; reusable en ajustes.
+- `s9gXs` — **Page Header · Con subtítulo** (`reusable:true`, título + subtítulo de contexto). Creado para el header de config de cuota; se creó aparte (no como slot en `Dtm0X`) por la regla de no reestructurar componentes con overrides — ver `MASTER.md`.
+- ~~`eYSlI` (Cadence Selector)~~ — BORRADO: era un duplicado incorrecto de las Freq Chips del PP form. La config de cuota reusa el form real de Pagos Programados, no un selector propio.
+
+### Regla del sistema: monto-héroe (criterio de 3 condiciones) — DECIDIDA
+Al diseñar el form de crear/editar deuda se eligió la variante **B** (monto de apertura elevado a **héroe** centrado grande, ~38px/800, igual que el form de transacción). Eso abrió la pregunta de si "form cuyo dato central es un monto → héroe" debe ser regla global. Se probó aplicando el mismo héroe al form de **Presupuesto** (preview `evhnj`, ya borrado) y **empeoró** el UX. Conclusión, auditada por `ui-ux-reviewer`:
+
+> **El monto sube a héroe SOLO si se cumplen las tres condiciones:**
+> - **(a) Único** — es el único dato definitorio, no co-central con un alcance/scope.
+> - **(b) Sujeto** — es lo que el usuario *vino a registrar*, no un parámetro de configuración entre varios.
+> - **(c) Corto** — el form es corto, así el héroe no obliga a comprimir el resto.
+>
+> Si el monto compite con un alcance o es un parámetro entre varios → **Form Field enfatizado (~22px/800)**, no héroe.
+
+| Form | (a) único | (b) sujeto | (c) corto | Héroe |
+|---|---|---|---|---|
+| Transacción | ✓ | ✓ | ✓ | Sí |
+| **Deuda** | ✓ | ✓ | ✓ | **Sí (variante B)** |
+| Presupuesto | ✗ (compite con alcance) | ✗ (es config) | ✗ (denso) | No — se queda como `a3gGPM`, monto 22px/800 |
+| **Meta** | probable ✓ | probable ✓ | probable ✓ | **← EVALUAR contra las 3 condiciones al diseñar Meta** |
+
+**NO se comprometió como regla global** (a pedido del usuario: "solo toquemos deuda"). El criterio se documenta acá para **revisarlo en Meta** cuando le toque su turno de diseño. La redacción final va a `pages/deudas.md` + nota en `MASTER.md` recién cuando el diseño de Deudas esté aprobado (ver memoria "aprobar-diseño-antes-de-documentar").
 
 ### Decisiones de diseño tomadas (para no re-litigar)
 - **Lista:** se eligió variante A sobre B (tabs), C (secciones por dirección) y D (resumen+avance con pill). La A da el doble total de un vistazo + pills + badge de cuota, sin saturar.
@@ -53,16 +82,29 @@ Resumen de lo decidido (el detalle vive en esos docs):
 
 ## 3. Lo que FALTA (orden sugerido para retomar)
 
-### Diseño (tema claro primero)
-1. **Form crear/editar deuda** ← **empezar acá.** Campos: nombre, dirección (Yo debo/Me deben), principal, moneda, contraparte, vencimiento, tasa (`interestRateBps`), modo de interés (manual/auto, `accrualMode`). Reusar `Form Field`, selectores como componentes.
-2. **Hoja de registrar abono** — con el toggle "¿agregar a una cuenta?" (HU-02) + selector de cuenta. Reusar `Bottom Sheet Base`, `Account Select Sheet`.
-3. **Hoja de actualizar saldo** (reconciliación) — teclea la cifra real → asiento de ajuste solo-deuda. Simple.
-4. **Config de cuota** — reusar patrón de Pagos Programados (frecuencia, monto, auto/manual, cuenta).
+### Diseño (tema claro primero) — ✅ HAPPY PATH COMPLETO
+1. ~~**Form crear/editar deuda**~~ ✅ APROBADO (variante B `dUryC`).
+2. ~~**Hoja de registrar abono**~~ ✅ APROBADO (variante A, estados Sí `xbsY3` / No `V6Z9ln`).
+3. ~~**Hoja de actualizar saldo**~~ ✅ HECHO (reconciliación `DEWMf`, reviewer la marcó lista; en revisión del usuario). Héroe de monto + tarjeta de reconciliación (saldo estimado vs. ajuste) + "no mueve ninguna cuenta". Asiento de ajuste solo-deuda.
+4. ~~**Config de cuota**~~ ✅ HECHO (`P1kiP`, en revisión del usuario). **Clon del form real de Pagos Programados** (`J0DSIm`, "PP Form V3 — Resumen natural"), NO una pantalla inventada: reusa sus componentes tal cual (Freq Chips inline Único/Día/Semana/Mes/Año, Interval Stepper, Modo Block radio auto/manual, `ofg07` Zona Fija de monto abajo, `EIoVx` categoría chips, `wOlOA` fields). **Adaptaciones de deuda:** (a) segmented de tipo OCULTO — el tipo se deriva de `Debt.direction` (Yo debo→expense, Me deben→income); (b) banner cross-link "se crea un pago programado enlazado a esta deuda"; (c) header con subtítulo "Crédito vehicular · Yo debo" vía componente nuevo `s9gXs`.
+   - **Decisión de modelo (cerrada):** **cuota = pago programado** (opcional por deuda). Configurar cuota SIEMPRE crea un `ScheduledPayment`; la proyección de payoff (HU-06) lee la cuota de ahí. NO se soporta "cuota solo informativa sin pago programado" (pagar sin agendar = abono ad-hoc, otra hoja). Default Auto = coincide con `requiresConfirmation=false` del motor.
+   - **Lección aplicada:** el primer intento (`UMk8F`) inventó componentes (`eYSlI` "Cadence Selector" con "Quincenal" inexistente, monto como field, segmented auto/manual) en vez de reusar el form real → BORRADO. Regla: la config de cuota debe ser IGUAL al form de Pagos Programados.
 
-### Cierre de diseño
-5. **Estados** por pantalla: vacío/onboarding, carga (skeleton), error local-first.
-6. **Tema oscuro** (al final, componentizando lo repetido). Verificar los contrastes que el reviewer marcó como marginales en oscuro: pill "Me deben" y badge de cuota (lila-sobre-lila).
-7. **`pages/deudas.md`** — documentar la spec recién cuando todo lo anterior esté aprobado.
+**Estados de ajuste inverso pendiente:** en actualizar saldo, cuando el saldo real es MAYOR → ajuste "+$X" (la deuda sube); renderizar también en `$text-primary` neutral, nunca `$expense`. Va en la fase de estados.
+
+### Cross-link PP → Deuda (definido, NO diseñado) — pendiente
+Definido en `08-deudas.md` HU-03 y `09-pagos-programados.md` línea 111, pero **falta en las pantallas de Pagos Programados** (viven fuera del cluster de Deudas):
+- **Detalle del PP** (`OY2Kj` "Híbrido A+C" y las demás variantes de "PP Detalle"): añadir un **card de deuda enlazada** ("Cuota de: Crédito vehicular") que al tocarlo navega al detalle de la deuda (`cUzp6`). Hoy el contenido es Identity Strip → Próximo Pago Hero → Ficha Card → Historial, sin card de deuda.
+- **Lista de PP + tarjeta** (`tit0W` Scheduled Card): añadir un **badge/banner** que identifique que ese pago corresponde a una deuda.
+- Editar la plantilla de una cuota debe **deep-linkear de vuelta a la deuda** (su hogar), no editarse como plantilla suelta.
+- Solo cuando el detalle del PP tiene `debtId`. Reusar componentes existentes; tocar las pantallas de PP con cuidado (muchas variantes claro/oscuro). Hacer como paso aparte de los estados de Deudas.
+
+### Cierre de diseño — ✅ COMPLETO
+5. ~~**Estados**~~ ✅ HECHO (lista vacío/carga/error, detalle carga/error).
+6. ~~**Tema oscuro**~~ ✅ HECHO (14 frames, contrastes marginales verificados y pasan; auditado por `ui-ux-reviewer`).
+7. ~~**`pages/deudas.md`**~~ ✅ ESCRITO (spec completa con todos los nodeIds claro/oscuro, componentes, decisiones y notas de implementación).
+
+**Fixes de sistema aplicados de paso:** texto de error del `Form Field` → `$expense-text` (afectaba todas las features, ver `MASTER.md`). **Tracked como tema de sistema (no bloquea):** contraste de la barra de avance en oscuro (~2.75:1, sistémico en todas las features — nota en `MASTER.md`).
 
 ### Implementación (después del diseño)
 8. **`/drift-schema-change`:** tabla nueva `DebtEntries` (asientos solo-deuda: kind interestAccrual/manualAdjustment, amountMinor con signo, entryDate) + `Debts.accrualMode` + `ScheduledPayments.debtId` + bump de `schemaVersion` (**coordinar el número**: CLAUDE.md dice 9, `09-pagos` reclama 10→11; secuenciar). Paridad Supabase/PowerSync.

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -32,13 +33,23 @@ import '../widgets/sheets/delete_scheduled_payment_sheet.dart';
 /// (frequency/interval/endDate collapse away), the confirmation-mode radio
 /// cards (criterion 6), and a transfer that drops category/tags entirely
 /// (criterion 16).
-class ScheduledPaymentFormPage extends StatelessWidget {
+class ScheduledPaymentFormPage extends StatefulWidget {
   const ScheduledPaymentFormPage({super.key});
+
+  @override
+  State<ScheduledPaymentFormPage> createState() =>
+      _ScheduledPaymentFormPageState();
+}
+
+class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
+  final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) =>
+          previous.status != current.status ||
+          previous.failedField != current.failedField,
       listener: (context, state) {
         if (state.status == ScheduledPaymentFormStatus.saved) {
           Navigator.of(context).pop();
@@ -48,6 +59,7 @@ class ScheduledPaymentFormPage extends StatelessWidget {
           // popping back into a detail screen with nothing left to show.
           GoRouter.of(context).go(AppRoutes.scheduledPayments);
         }
+        _errorScroll.scrollToField(state.failedField);
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
@@ -97,7 +109,12 @@ class ScheduledPaymentFormPage extends StatelessWidget {
                   bottom: false,
                   child: Column(
                     children: [
-                      Expanded(child: ScheduledPaymentFormBody(state: state)),
+                      Expanded(
+                        child: ScheduledPaymentFormBody(
+                          state: state,
+                          errorScroll: _errorScroll,
+                        ),
+                      ),
                       ScheduledPaymentAmountFixedZone(
                         amountMinor:
                             MoneyFormatter.parseMinor(state.amountText) ?? 0,
@@ -118,9 +135,14 @@ class ScheduledPaymentFormPage extends StatelessWidget {
 }
 
 class ScheduledPaymentFormBody extends StatelessWidget {
-  const ScheduledPaymentFormBody({required this.state, super.key});
+  const ScheduledPaymentFormBody({
+    required this.state,
+    required this.errorScroll,
+    super.key,
+  });
 
   final ScheduledPaymentFormState state;
+  final FormErrorScrollController errorScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -137,29 +159,35 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           onChanged: cubit.typeSelected,
         ),
         const SizedBox(height: 12),
-        AccountPickerField(
-          label: l10n.transactionFormAccountLabel,
-          selectedId: state.accountId,
-          selectedName: state.accountName,
-          onSelected: cubit.accountSelected,
-          excludingId: state.transferAccountId,
-          errorText:
-              state.failedField == ScheduledPaymentDraft.fieldAccountId
-                  ? l10n.scheduledPaymentErrorAccount
-                  : null,
+        KeyedSubtree(
+          key: errorScroll.keyFor(ScheduledPaymentDraft.fieldAccountId),
+          child: AccountPickerField(
+            label: l10n.transactionFormAccountLabel,
+            selectedId: state.accountId,
+            selectedName: state.accountName,
+            onSelected: cubit.accountSelected,
+            excludingId: state.transferAccountId,
+            errorText: state.failedField == ScheduledPaymentDraft.fieldAccountId
+                ? l10n.scheduledPaymentErrorAccount
+                : null,
+          ),
         ),
         if (state.isTransfer) ...[
           const SizedBox(height: 8),
-          AccountPickerField(
-            label: l10n.transactionFormTransferAccountLabel,
-            selectedId: state.transferAccountId,
-            selectedName: state.transferAccountName,
-            onSelected: cubit.transferAccountSelected,
-            excludingId: state.accountId,
-            errorText: state.failedField ==
-                    ScheduledPaymentDraft.fieldTransferAccountId
-                ? l10n.scheduledPaymentErrorTransferAccount
-                : null,
+          KeyedSubtree(
+            key: errorScroll
+                .keyFor(ScheduledPaymentDraft.fieldTransferAccountId),
+            child: AccountPickerField(
+              label: l10n.transactionFormTransferAccountLabel,
+              selectedId: state.transferAccountId,
+              selectedName: state.transferAccountName,
+              onSelected: cubit.transferAccountSelected,
+              excludingId: state.accountId,
+              errorText: state.failedField ==
+                      ScheduledPaymentDraft.fieldTransferAccountId
+                  ? l10n.scheduledPaymentErrorTransferAccount
+                  : null,
+            ),
           ),
         ] else ...[
           const SizedBox(height: 8),
@@ -172,23 +200,26 @@ class ScheduledPaymentFormBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          CategoryQuickPicker(
-            kind: state.type == ScheduledPaymentType.income
-                ? CategoryKind.income
-                : CategoryKind.expense,
-            selectedId: state.categoryId,
-            accountId: state.accountId,
-            showLabel: false,
-            moreLabel: l10n.scheduledPaymentFormCategoryMoreLabel,
-            onSelected: (category) => cubit.categorySelected(
-              category.id,
-              category.kind,
-              category.name,
+          KeyedSubtree(
+            key: errorScroll.keyFor(ScheduledPaymentDraft.fieldCategoryId),
+            child: CategoryQuickPicker(
+              kind: state.type == ScheduledPaymentType.income
+                  ? CategoryKind.income
+                  : CategoryKind.expense,
+              selectedId: state.categoryId,
+              accountId: state.accountId,
+              showLabel: false,
+              moreLabel: l10n.scheduledPaymentFormCategoryMoreLabel,
+              onSelected: (category) => cubit.categorySelected(
+                category.id,
+                category.kind,
+                category.name,
+              ),
+              errorText:
+                  state.failedField == ScheduledPaymentDraft.fieldCategoryId
+                      ? l10n.scheduledPaymentErrorCategory
+                      : null,
             ),
-            errorText:
-                state.failedField == ScheduledPaymentDraft.fieldCategoryId
-                    ? l10n.scheduledPaymentErrorCategory
-                    : null,
           ),
         ],
         const SizedBox(height: 16),

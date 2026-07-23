@@ -39,7 +39,8 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
   final UndoSnoozeScheduledOccurrence _undoSnoozeOccurrence;
   final RestoreTransaction _restoreTransaction;
   final AdvanceScheduledOccurrence _advanceScheduledOccurrence;
-  final DiscardUnconfirmedAdvanceOccurrence _discardUnconfirmedAdvanceOccurrence;
+  final DiscardUnconfirmedAdvanceOccurrence
+      _discardUnconfirmedAdvanceOccurrence;
   final UndoSkipScheduledOccurrence _undoSkipOccurrence;
   final SkipScheduledOccurrence _skipOccurrence;
 

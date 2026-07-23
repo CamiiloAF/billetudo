@@ -88,8 +88,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           // The nearest awaiting occurrence — due OR snoozed into the future —
           // so the hero shows a snoozed payment's postponed date instead of the
           // template's cursor.
-          final nextAwaiting =
-              await _local.getNextAwaitingOccurrence(id);
+          final nextAwaiting = await _local.getNextAwaitingOccurrence(id);
           final history = await _local.getHistory(
             id,
             offset: 0,
@@ -225,13 +224,39 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           );
         }
         final now = DateTime.now();
+        // Captured before the write so the update can tell whether the user
+        // actually moved the date (item 18): the form resubmits the untouched
+        // cursor when the date was not edited, so a real change here means the
+        // user rescheduled. `nextDate` (cursor) may have been advanced past the
+        // anchor by the catch-up generator, so comparing it against the draft's
+        // date is what distinguishes a real edit from a no-op resubmit.
+        final previous = await _local.getScheduledPayment(id);
+        final dateChanged =
+            previous != null && !_sameDate(previous.nextDate, draft.nextDate);
         final row = await _local.updateScheduledPayment(
           id,
-          ScheduledPaymentMapper.toUpdateCompanion(draft, now: now),
+          ScheduledPaymentMapper.toUpdateCompanion(
+            draft,
+            now: now,
+            // A real date edit re-anchors the schedule: persist it to
+            // `firstPaymentDate` too, or the form (bound to that column) would
+            // keep showing the old date on re-open even though "próximo pago"
+            // moved (item 18 — the half the previous fix missed).
+            rescheduleAnchor: dateChanged,
+          ),
         );
         if (row == null) {
           return Left(
               NotFoundFailure('scheduled payment "$id" does not exist'));
+        }
+        // A manual date edit must win over the occurrence ledger: an
+        // outstanding awaiting occurrence sitting at the OLD due date (the
+        // "vence hoy" pending row the detail/list materialized) would keep
+        // driving "próximo pago", masking the new `nextDate` (item 18). Clearing
+        // it lets the edited cursor govern — the next catch-up run re-creates a
+        // due occurrence at the new date when appropriate.
+        if (dateChanged) {
+          await _local.deleteAwaitingOccurrences(id);
         }
         await _tags.replaceTags(id, draft.tagIds, now);
         return Right(ScheduledPaymentMapper.toEntity(row));
@@ -684,6 +709,12 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
 
   static DateTime _dateOnly(DateTime date) =>
       DateTime(date.year, date.month, date.day);
+
+  /// Whether two dates fall on the same calendar day — the granularity a
+  /// scheduled-payment date carries, so a time component never reads as a
+  /// reschedule (item 18).
+  static bool _sameDate(DateTime a, DateTime b) =>
+      _dateOnly(a) == _dateOnly(b);
 
   /// Advances the template cursor (`nextDate`) one cadence past [occurrenceDate],
   /// mirroring `_catchUpTemplate`, but only when that date is at or after the

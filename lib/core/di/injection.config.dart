@@ -132,6 +132,8 @@ import 'package:billetudo/features/budgets/data/repositories/budget_repository_i
     as _i308;
 import 'package:billetudo/features/budgets/domain/repositories/budget_repository.dart'
     as _i1023;
+import 'package:billetudo/features/budgets/domain/services/budget_category_scope_resolver.dart'
+    as _i795;
 import 'package:billetudo/features/budgets/domain/services/budget_progress_calculator.dart'
     as _i685;
 import 'package:billetudo/features/budgets/domain/services/zero_based_summary_calculator.dart'
@@ -158,6 +160,8 @@ import 'package:billetudo/features/budgets/domain/usecases/get_zero_based_summar
     as _i458;
 import 'package:billetudo/features/budgets/domain/usecases/reactivate_budget.dart'
     as _i405;
+import 'package:billetudo/features/budgets/domain/usecases/reconcile_budget_scopes.dart'
+    as _i613;
 import 'package:billetudo/features/budgets/domain/usecases/schedule_budget_adjustment.dart'
     as _i919;
 import 'package:billetudo/features/budgets/domain/usecases/update_budget.dart'
@@ -382,6 +386,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i22.AppleAuthDatasource());
     gh.lazySingleton<_i235.GoogleAuthDatasource>(
         () => _i235.GoogleAuthDatasource());
+    gh.lazySingleton<_i795.BudgetCategoryScopeResolver>(
+        () => const _i795.BudgetCategoryScopeResolver());
     gh.lazySingleton<_i685.BudgetProgressCalculator>(
         () => const _i685.BudgetProgressCalculator());
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
@@ -577,6 +583,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i529.ZeroBasedSummaryCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
+          gh<_i795.BudgetCategoryScopeResolver>(),
         ));
     gh.factory<_i79.ArchiveAccount>(
         () => _i79.ArchiveAccount(gh<_i1067.AccountRepository>()));
@@ -653,13 +660,14 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
-    gh.factory<_i536.TransactionsListCubit>(() => _i536.TransactionsListCubit(
-          gh<_i832.WatchTransactions>(),
-          gh<_i612.DeleteTransaction>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i248.AccountFilterPreferenceDatasource>(),
-        ));
+    gh.lazySingleton<_i536.TransactionsListCubit>(
+        () => _i536.TransactionsListCubit(
+              gh<_i832.WatchTransactions>(),
+              gh<_i612.DeleteTransaction>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i248.AccountFilterPreferenceDatasource>(),
+            ));
     gh.factory<_i1054.CancelBudgetAdjustment>(
         () => _i1054.CancelBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i1008.CloseBudget>(
@@ -680,6 +688,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i458.GetZeroBasedSummary(gh<_i1023.BudgetRepository>()));
     gh.factory<_i405.ReactivateBudget>(
         () => _i405.ReactivateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i613.ReconcileBudgetScopes>(
+        () => _i613.ReconcileBudgetScopes(gh<_i1023.BudgetRepository>()));
     gh.factory<_i919.ScheduleBudgetAdjustment>(
         () => _i919.ScheduleBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i857.UpdateBudget>(
@@ -712,11 +722,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i716.WatchAuthSession(gh<_i913.AuthRepository>()));
     gh.factory<_i537.WipeLocalData>(
         () => _i537.WipeLocalData(gh<_i913.AuthRepository>()));
-    gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
-          gh<_i526.CreateBudget>(),
-          gh<_i857.UpdateBudget>(),
-          gh<_i871.GetBudgetById>(),
-        ));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
     gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
@@ -757,6 +762,13 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
+    gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
+          gh<_i526.CreateBudget>(),
+          gh<_i857.UpdateBudget>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i722.WatchCategories>(),
+          gh<_i795.BudgetCategoryScopeResolver>(),
+        ));
     gh.factory<_i304.CategoryQuickPickerCubit>(
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),
@@ -788,6 +800,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i843.ZeroBasedSummaryCubit>(
         () => _i843.ZeroBasedSummaryCubit(gh<_i458.GetZeroBasedSummary>()));
+    gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i613.ReconcileBudgetScopes>(),
+        ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),
@@ -812,8 +828,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i902.WatchAccountsOverview>(),
           gh<_i787.ReorderAccounts>(),
         ));
-    gh.factory<_i244.BudgetsListCubit>(
-        () => _i244.BudgetsListCubit(gh<_i674.GetActiveBudgets>()));
     gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
           gh<_i498.DeleteAccount>(),
           gh<_i537.WipeLocalData>(),

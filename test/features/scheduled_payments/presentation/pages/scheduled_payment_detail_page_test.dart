@@ -95,7 +95,10 @@ void main() {
       ),
     );
 
-    expect(find.text('Suscripciones'), findsOneWidget);
+    // The category name now lives in the identity strip subtitle joined with
+    // the type ("Suscripciones · Gasto"), so it is no longer an exact-match
+    // Text — it moved out of the title as of the category→subtitle change.
+    expect(find.textContaining('Suscripciones'), findsOneWidget);
     expect(find.textContaining('Bancolombia'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
@@ -187,7 +190,8 @@ void main() {
     expect(amount.style?.decoration, TextDecoration.lineThrough);
   });
 
-  testWidgets('tocar "Recuperar" dispara recoverSkipped con el id de la '
+  testWidgets(
+      'tocar "Recuperar" dispara recoverSkipped con el id de la '
       'ocurrencia', (tester) async {
     when(() => cubit.recoverSkipped(any())).thenAnswer((_) async {});
     await pumpDetail(

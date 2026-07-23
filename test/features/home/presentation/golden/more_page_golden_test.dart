@@ -22,6 +22,7 @@ void main() {
         onOpenAccounts: () {},
         onOpenCategories: () {},
         onOpenScheduledPayments: () {},
+        onOpenGoals: () {},
         onOpenComingSoon: (_) {},
         onOpenSettings: () {},
         isSignedIn: isSignedIn,
@@ -38,8 +39,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('signed out, no "Cerrar sesión" row ($suffix)',
-        (tester) async {
+    testWidgets('signed out, no "Cerrar sesión" row ($suffix)', (tester) async {
       await golden(
         tester,
         'signed_out_$suffix',

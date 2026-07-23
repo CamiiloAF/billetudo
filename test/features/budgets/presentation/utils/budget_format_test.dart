@@ -53,12 +53,15 @@ void main() {
 
   group('stepper label', () {
     test('a recurring budget names the cycle range and its status', () {
-      expect(BudgetFormat.stepperRange(l10n, recurring, window, 'es_CO'), '1–24 dic');
-      expect(BudgetFormat.stepperState(l10n, recurring, window, 'es_CO'), '· vigente');
+      expect(BudgetFormat.stepperRange(l10n, recurring, window, 'es_CO'),
+          '1–24 dic');
+      expect(BudgetFormat.stepperState(l10n, recurring, window, 'es_CO'),
+          '· vigente');
     });
 
     test('a one-off names its single window and when it ends', () {
-      expect(BudgetFormat.stepperRange(l10n, oneOff, window, 'es_CO'), 'Ventana única');
+      expect(BudgetFormat.stepperRange(l10n, oneOff, window, 'es_CO'),
+          'Ventana única');
       expect(
         BudgetFormat.stepperState(l10n, oneOff, window, 'es_CO'),
         '· termina el 24 dic',
@@ -144,6 +147,63 @@ void main() {
       expect(
         BudgetFormat.scheduledCaption(l10n, progress, 'COP'),
         '+ \$270.000 programado — excedería el presupuesto por \$90.000',
+      );
+    });
+  });
+
+  group('freeAfterScheduledCaption (item 10)', () {
+    test('is null when nothing is scheduled', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 49200000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.freeAfterScheduledCaption(l10n, progress, 'COP'),
+        isNull,
+      );
+    });
+
+    test('positivo: names what would stay free (restante − programado)', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 49200000,
+        scheduledMinor: 6000000,
+        daysLeft: 18,
+      );
+      // remaining = 10.800.000; free = 10.800.000 − 6.000.000 = 4.800.000.
+      expect(
+        BudgetFormat.freeAfterScheduledCaption(l10n, progress, 'COP'),
+        '\$48.000 quedarían libres si apruebas los programados',
+      );
+    });
+
+    test('is null on overspend risk: that case owns the "excedería" line', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 42000000,
+        scheduledMinor: 27000000,
+        daysLeft: 18,
+      );
+      // spent + scheduled = 69.000.000 > 60.000.000 → free is negative, so the
+      // "libre" caption never shows; scheduledCaption's risk line does instead.
+      expect(progress.isScheduledOverspendRisk, isTrue);
+      expect(
+        BudgetFormat.freeAfterScheduledCaption(l10n, progress, 'COP'),
+        isNull,
+      );
+    });
+
+    test('exactly at the limit still counts as free (zero)', () {
+      const progress = BudgetProgress(
+        amountMinor: 60000000,
+        spentMinor: 40000000,
+        scheduledMinor: 20000000,
+        daysLeft: 18,
+      );
+      expect(
+        BudgetFormat.freeAfterScheduledCaption(l10n, progress, 'COP'),
+        '\$0 quedarían libres si apruebas los programados',
       );
     });
   });

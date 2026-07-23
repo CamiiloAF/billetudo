@@ -4,6 +4,7 @@ import 'package:billetudo/features/budgets/data/repositories/budget_repository_i
 import 'package:billetudo/features/budgets/domain/entities/budget.dart'
     show BudgetPeriod;
 import 'package:billetudo/features/budgets/domain/entities/budget_draft.dart';
+import 'package:billetudo/features/budgets/domain/services/budget_category_scope_resolver.dart';
 import 'package:billetudo/features/budgets/domain/services/budget_progress_calculator.dart';
 import 'package:billetudo/features/budgets/domain/services/zero_based_summary_calculator.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
@@ -25,6 +26,7 @@ void main() {
       const BudgetProgressCalculator(),
       const ZeroBasedSummaryCalculator(),
       const ProjectUpcomingOccurrences(),
+      const BudgetCategoryScopeResolver(),
     );
   });
 

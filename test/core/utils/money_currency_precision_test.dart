@@ -59,4 +59,40 @@ void main() {
       expect(MoneyFormatter.parseMinor(text), 123500);
     });
   });
+
+  group('item 4: entrada vs display de decimales en COP', () {
+    test('inputDecimals permite teclear centavos en toda moneda, COP incluido',
+        () {
+      expect(MoneyFormatter.inputDecimals('COP'), 2);
+      expect(MoneyFormatter.inputDecimals('USD'), 2);
+    });
+
+    test('displayDecimals: COP entero no muestra decimales, con centavos si',
+        () {
+      expect(MoneyFormatter.displayDecimals(45000, 'COP'), 0); // $450 exacto
+      expect(MoneyFormatter.displayDecimals(4550, 'COP'), 2); // $45,50
+      expect(MoneyFormatter.displayDecimals(-4550, 'COP'), 2); // negativo
+      expect(MoneyFormatter.displayDecimals(0, 'COP'), 0);
+    });
+
+    test('displayDecimals: USD siempre muestra sus dos decimales', () {
+      expect(MoneyFormatter.displayDecimals(1200, 'USD'), 2);
+      expect(MoneyFormatter.displayDecimals(1234, 'USD'), 2);
+    });
+
+    test('formatSymbol: COP entero se ve como antes (sin ",00")', () {
+      expect(money.formatSymbol(123400, currencyCode: 'COP'), r'$1.234');
+    });
+
+    test('formatSymbol: COP con centavos revela los decimales', () {
+      expect(money.formatSymbol(123450, currencyCode: 'COP'), r'$1.234,50');
+    });
+
+    test('format: COP entero sin coma decimal; con centavos la incluye', () {
+      // Se evita fijar el codigo/espacio no-separable de intl; basta con que
+      // el entero no lleve parte decimal y el monto con centavos si.
+      expect(money.format(45000, currencyCode: 'COP'), isNot(contains(',')));
+      expect(money.format(45050, currencyCode: 'COP'), contains(',50'));
+    });
+  });
 }

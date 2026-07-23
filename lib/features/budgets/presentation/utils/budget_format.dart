@@ -106,6 +106,28 @@ abstract final class BudgetFormat {
         scheduledAmount, progress.committedPercent);
   }
 
+  /// The hero's sub-line under [scheduledCaption] (bugfix item 10, `rzssO`):
+  /// how much would stay free after approving every scheduled payment in the
+  /// window. `null` unless something is scheduled and the projection still
+  /// leaves a non-negative margin — the overspend case is already stated by
+  /// [scheduledCaption]'s risk line (HU-12), so this never duplicates it.
+  static String? freeAfterScheduledCaption(
+    AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+  ) {
+    if (progress.scheduledMinor <= 0 || progress.freeAfterScheduledMinor < 0) {
+      return null;
+    }
+    const money = MoneyFormatter();
+    return l10n.budgetScheduledFreeCaption(
+      money.formatSymbol(
+        progress.freeAfterScheduledMinor,
+        currencyCode: currency,
+      ),
+    );
+  }
+
   /// The "Programado" entry card's sub line (HU-12): the risk's overage takes
   /// over the plain "N pagos próximos" count, same reasoning as
   /// [scheduledCaption].

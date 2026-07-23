@@ -43,7 +43,8 @@ class AdjustBalanceCubit extends Cubit<AdjustBalanceState> {
       return;
     }
 
-    emit(state.copyWith(status: AdjustBalanceStatus.saving, clearFailure: true));
+    emit(
+        state.copyWith(status: AdjustBalanceStatus.saving, clearFailure: true));
     final result = await _adjustAccountBalance(
       account: account,
       currentBalanceMinor: state.currentBalanceMinor,

@@ -25,6 +25,7 @@ class NumericKeypad extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.onBackspaceLongPress,
     this.onConfirm,
     this.confirmEnabled = true,
     super.key,
@@ -35,6 +36,10 @@ class NumericKeypad extends StatelessWidget {
   final ValueChanged<CalcOperator> onOperator;
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
+
+  /// Long-pressing the backspace key clears the whole amount at once. Null
+  /// leaves the key with just its per-tap delete.
+  final VoidCallback? onBackspaceLongPress;
 
   /// Commits the amount and collapses/closes the amount zone. Null where the
   /// keypad has no Confirm key of its own.
@@ -112,6 +117,7 @@ class NumericKeypad extends StatelessWidget {
                   icon: LucideIcons.delete,
                   semanticLabel: l10n.transactionFormKeypadBackspace,
                   onTap: onBackspace,
+                  onLongPress: onBackspaceLongPress,
                 ),
                 KeypadKey.icon(
                   icon: LucideIcons.plus,
@@ -225,6 +231,7 @@ class KeypadKey extends StatelessWidget {
     this.isDecimal = false,
     this.icon,
     this.semanticLabel,
+    this.onLongPress,
   });
 
   /// A digit key (`0`–`9`).
@@ -238,17 +245,27 @@ class KeypadKey extends StatelessWidget {
   }) : this._(isDecimal: true, semanticLabel: semanticLabel, onTap: onTap);
 
   /// An operator / action key rendered as a lucide icon, with a spoken label.
+  /// [onLongPress] is optional — only the backspace key uses it (clear-all).
   const KeypadKey.icon({
     required IconData icon,
     required String semanticLabel,
     required VoidCallback onTap,
-  }) : this._(icon: icon, semanticLabel: semanticLabel, onTap: onTap);
+    VoidCallback? onLongPress,
+  }) : this._(
+          icon: icon,
+          semanticLabel: semanticLabel,
+          onTap: onTap,
+          onLongPress: onLongPress,
+        );
 
   final int? digit;
   final bool isDecimal;
   final IconData? icon;
   final String? semanticLabel;
   final VoidCallback onTap;
+
+  /// Fired on a long-press instead of a tap. Only the backspace key sets it.
+  final VoidCallback? onLongPress;
 
   static const double _height = 44;
   static const String _decimalGlyph = '.';
@@ -279,6 +296,7 @@ class KeypadKey extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: SizedBox(
             height: _height,

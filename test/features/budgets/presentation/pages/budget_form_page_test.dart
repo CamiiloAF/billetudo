@@ -1,12 +1,16 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/keyboard_done_toolbar.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_draft.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_form_cubit.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_form_state.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budget_form_page.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_form_bottom_bar.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/budget_icon_button.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/budget_name_field.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -127,6 +131,70 @@ void main() {
         findsNothing,
       );
       expect(find.text('Ingresa un monto mayor a cero.'), findsNothing);
+    });
+  });
+
+  group('alineación ícono + nombre en estado de error (item 15a)', () {
+    testWidgets(
+        'el ícono queda anclado al tope de la caja del nombre, no descentrado '
+        'por el texto de error', (tester) async {
+      await pumpForm(
+        tester,
+        ready(
+          failure: const ValidationFailure(
+            'name required',
+            field: BudgetDraft.fieldName,
+          ),
+        ),
+      );
+
+      // The row that holds the icon must top-align its children, so the error
+      // text growing the name column can't shove the icon off the box top.
+      final row = tester.widget<Row>(
+        find.ancestor(
+          of: find.byType(BudgetIconButton),
+          matching: find.byType(Row),
+        ),
+      );
+      expect(row.crossAxisAlignment, CrossAxisAlignment.start);
+
+      // And it actually reads as aligned: the icon top matches the name box
+      // top even with the error text present below it.
+      // BudgetNameField is a top-aligned Column whose first child is the box,
+      // so its top-left is the box top.
+      final iconTop = tester.getTopLeft(find.byType(BudgetIconButton)).dy;
+      final boxTop = tester.getTopLeft(find.byType(BudgetNameField)).dy;
+      expect(iconTop, moreOrLessEquals(boxTop, epsilon: 0.5));
+    });
+  });
+
+  group('toolbar "Listo" del teclado numérico (item 9b)', () {
+    testWidgets(
+        'en iOS, enfocar el monto muestra "Listo" y tocarlo baja '
+        'el teclado', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        await pumpForm(tester, ready());
+
+        expect(find.text('Listo'), findsNothing);
+
+        // The amount field is the input wrapped in the accessory (the name
+        // field is a plain single-line input and is not); focusing it must
+        // surface "Listo".
+        final amountField = find.descendant(
+          of: find.byType(KeyboardDoneToolbar),
+          matching: find.byType(TextField),
+        );
+        await tester.tap(amountField);
+        await tester.pump();
+        expect(find.text('Listo'), findsOneWidget);
+
+        await tester.tap(find.text('Listo'));
+        await tester.pump();
+        expect(find.text('Listo'), findsNothing);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
   });
 }

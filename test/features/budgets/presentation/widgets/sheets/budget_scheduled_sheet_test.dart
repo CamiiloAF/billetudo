@@ -7,6 +7,7 @@ import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_sc
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
   setUpAll(() async {
@@ -17,7 +18,7 @@ void main() {
     BudgetScheduledItem(
       id: 'sp-1@2025-07-05T00:00:00.000',
       scheduledPaymentId: 'sp-1',
-      title: 'Netflix',
+      note: 'Netflix',
       accountName: 'Bancolombia',
       amountMinor: 4500000,
       currency: 'COP',
@@ -26,7 +27,7 @@ void main() {
     BudgetScheduledItem(
       id: 'sp-1@2025-08-05T00:00:00.000',
       scheduledPaymentId: 'sp-1',
-      title: 'Netflix',
+      note: 'Netflix',
       accountName: 'Bancolombia',
       amountMinor: 4500000,
       currency: 'COP',
@@ -38,6 +39,7 @@ void main() {
     WidgetTester tester, {
     List<BudgetScheduledItem>? items,
     ValueChanged<String>? onOpenScheduledPayment,
+    VoidCallback? onSeeAllScheduled,
   }) =>
       tester.pumpWidget(
         MaterialApp(
@@ -51,6 +53,7 @@ void main() {
               totalMinor: 9000000,
               currency: 'COP',
               onOpenScheduledPayment: onOpenScheduledPayment ?? (_) {},
+              onSeeAllScheduled: onSeeAllScheduled ?? () {},
             ),
           ),
         ),
@@ -94,6 +97,76 @@ void main() {
     expect(find.textContaining('reservado'), findsNothing);
   });
 
+  testWidgets('renders the "Ver todos los pagos programados" footer (item 11)',
+      (tester) async {
+    await pump(tester, items: items);
+
+    final context = tester.element(find.byType(BudgetScheduledSheet));
+    expect(
+      find.text(AppLocalizations.of(context).budgetScheduledSheetSeeAll),
+      findsOneWidget,
+    );
+    expect(find.byIcon(LucideIcons.calendarClock), findsOneWidget);
+    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
+  });
+
+  testWidgets(
+      'the footer is present even when the period has no scheduled payments',
+      (tester) async {
+    await pump(tester, items: const []);
+
+    final context = tester.element(find.byType(BudgetScheduledSheet));
+    expect(
+      find.text(AppLocalizations.of(context).budgetScheduledSheetSeeAll),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+      'tapping the footer closes the sheet and defers onSeeAllScheduled to the '
+      'next frame (item 11)', (tester) async {
+    final callOrder = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => BudgetScheduledSheet.show(
+                context,
+                items: items,
+                totalMinor: 9000000,
+                currency: 'COP',
+                onOpenScheduledPayment: (id) => callOrder.add('opened:$id'),
+                onSeeAllScheduled: () => callOrder.add('seeAll'),
+              ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(BudgetScheduledSheet));
+    await tester.tap(
+        find.text(AppLocalizations.of(context).budgetScheduledSheetSeeAll));
+
+    // Not yet — deferred to the next frame, same as a row tap.
+    expect(callOrder, isEmpty);
+    await tester.pump();
+    expect(callOrder, ['seeAll']);
+
+    await tester.pumpAndSettle();
+    expect(find.byType(BudgetScheduledSheet), findsNothing);
+    expect(callOrder, ['seeAll']);
+  });
+
   testWidgets(
       'tapping a row opens its template detail via scheduledPaymentId, not '
       "the occurrence's synthetic id", (tester) async {
@@ -131,6 +204,7 @@ void main() {
                 totalMinor: 9000000,
                 currency: 'COP',
                 onOpenScheduledPayment: (id) => callOrder.add('opened:$id'),
+                onSeeAllScheduled: () => callOrder.add('seeAll'),
               ),
               child: const Text('abrir'),
             ),

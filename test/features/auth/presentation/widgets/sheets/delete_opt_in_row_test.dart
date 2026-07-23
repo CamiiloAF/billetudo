@@ -69,8 +69,7 @@ void main() {
     expect(size.height, greaterThanOrEqualTo(44));
   });
 
-  testWidgets(
-      'marcada muestra el glifo `check`, no solo color (WCAG 1.4.1)',
+  testWidgets('marcada muestra el glifo `check`, no solo color (WCAG 1.4.1)',
       (tester) async {
     await pumpRow(tester, selected: true);
 

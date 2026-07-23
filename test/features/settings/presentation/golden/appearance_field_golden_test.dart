@@ -8,7 +8,8 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
 
-class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+class MockThemeModeCubit extends MockCubit<ThemeMode>
+    implements ThemeModeCubit {}
 
 /// The "Apariencia" card in Ajustes (Pencil `h4jCV`/`B0uqd` light theme,
 /// `onPZR`/`eabgk` dark): its only distinguishable business state is which

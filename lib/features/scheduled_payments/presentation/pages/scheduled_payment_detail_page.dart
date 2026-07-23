@@ -265,7 +265,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
     return ScheduledPaymentDetailActionsSheet.show(
       context,
       canSnooze: canSnooze,
-      templateName: _templateName(detail),
+      templateName: _templateName(context, detail),
       onSnooze:
           canSnooze ? () => unawaited(_openSnooze(context, detail)) : null,
       onEdit: () => onEdit(detail.scheduledPayment.id),
@@ -286,7 +286,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
       scheduledPaymentId: detail.scheduledPayment.id,
       occurrenceDate: detail.pendingOccurrence?.occurrence.occurrenceDate ??
           detail.scheduledPayment.nextDate,
-      templateName: _templateName(detail),
+      templateName: _templateName(context, detail),
       isTransfer: detail.scheduledPayment.isTransfer,
       categoryIcon: detail.categoryIcon,
       categoryColor: detail.categoryColor,
@@ -303,13 +303,13 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
     }
   }
 
-  String _templateName(ScheduledPaymentDetail detail) =>
+  String _templateName(BuildContext context, ScheduledPaymentDetail detail) =>
       ScheduledPaymentFormat.templateName(
         note: detail.scheduledPayment.note,
-        categoryName: detail.categoryName,
         isTransfer: detail.scheduledPayment.isTransfer,
         accountName: detail.accountName,
         transferAccountName: detail.transferAccountName,
+        fallback: AppLocalizations.of(context).scheduledPaymentUntitled,
       );
 }
 
@@ -334,10 +334,10 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
     final pending = detail.pendingOccurrence;
     final templateName = ScheduledPaymentFormat.templateName(
       note: payment.note,
-      categoryName: detail.categoryName,
       isTransfer: payment.isTransfer,
       accountName: detail.accountName,
       transferAccountName: detail.transferAccountName,
+      fallback: l10n.scheduledPaymentUntitled,
     );
 
     return ListView(

@@ -169,41 +169,31 @@ abstract final class ScheduledPaymentFormat {
             : l10n.scheduledRecurrenceUnitYearlyInterval(interval),
       };
 
-  /// A template has no `name` field of its own (see `ScheduledPayment`): its
-  /// display name is the category, falling back to the account(s) involved —
-  /// same fallback `ScheduledCard` uses for its title, reused here so the
-  /// confirmation sheet's head and the Posponer context line read identically.
-  static String templateTitle({
-    required String? categoryName,
-    required bool isTransfer,
-    required String accountName,
-    String? transferAccountName,
-  }) =>
-      categoryName ??
-      (isTransfer
-          ? '$accountName → ${transferAccountName ?? ''}'
-          : accountName);
-
-  /// The display name of a template in the list and in the "por confirmar"
-  /// rows: the user-written [note] when there is one (the design's "Arriendo",
-  /// "Ahorro mensual"), falling back to [templateTitle] otherwise.
+  /// The display name of a template in the list card, the "por confirmar"
+  /// rows, the detail identity strip and the confirmation/snooze sheets: the
+  /// user-written [note] when there is one (the design's "Netflix", "Arriendo"),
+  /// else a transfer's "origen → destino" route, else the generic [fallback]
+  /// label (`l10n.scheduledPaymentUntitled`).
+  ///
+  /// Deliberately never falls back to the **category** name: a template has no
+  /// `name` field of its own, but showing the category as the big title read as
+  /// "Food & drink" where the user expected the payment's name (bugfix items
+  /// 3/19). The category stays the row's *subtitle* ([accountCategoryLine]).
   static String templateName({
     required String? note,
-    required String? categoryName,
     required bool isTransfer,
     required String accountName,
+    required String fallback,
     String? transferAccountName,
   }) {
     final trimmed = note?.trim();
     if (trimmed != null && trimmed.isNotEmpty) {
       return trimmed;
     }
-    return templateTitle(
-      categoryName: categoryName,
-      isTransfer: isTransfer,
-      accountName: accountName,
-      transferAccountName: transferAccountName,
-    );
+    if (isTransfer) {
+      return '$accountName → ${transferAccountName ?? ''}';
+    }
+    return fallback;
   }
 
   /// The sub-line of a card/row: "Cuenta · Categoría", or "origen → destino"

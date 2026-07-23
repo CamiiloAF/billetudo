@@ -174,6 +174,36 @@ void main() {
       // $10 / 3 = $3.333… → 333 minor units (round half-up).
       verify: (cubit) => expect(cubit.state.amountMinor, 333),
     );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'el punto decimal ahora también construye centavos en COP (item 4)',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null); // moneda por defecto: COP
+        cubit
+          ..amountDigitPressed(4)
+          ..amountDigitPressed(5)
+          ..amountDecimalPressed()
+          ..amountDigitPressed(5)
+          ..amountDigitPressed(0);
+      },
+      // 45,50 COP → 4550 minor units; el almacenamiento sigue en centavos.
+      verify: (cubit) => expect(cubit.state.amountMinor, 4550),
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'limpiar (long-press borrar) vuelve el monto a 0',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..amountDigitPressed(1)
+          ..amountDigitPressed(2)
+          ..amountDigitPressed(3)
+          ..amountCleared();
+      },
+      verify: (cubit) => expect(cubit.state.amountMinor, 0),
+    );
   });
 
   group('crear (HU-01/02/03)', () {
@@ -460,6 +490,56 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.categoryId, 'cat-2');
         expect(cubit.state.categoryName, 'Transporte');
+      },
+    );
+  });
+
+  group('item 17: cambiar tipo reinicia la categoría', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'gasto → ingreso limpia la categoría de gasto seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Comida')
+          ..typeSelected(TransactionType.income);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.income);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+        expect(cubit.state.categoryName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'ingreso → gasto limpia la categoría de ingreso seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.income)
+          ..categorySelected('cat-inc', CategoryKind.income, 'Salario')
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.expense);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'reelegir el mismo tipo no borra la categoría',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Comida')
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.categoryId, 'cat-exp');
       },
     );
   });

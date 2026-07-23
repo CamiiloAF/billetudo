@@ -225,6 +225,22 @@ class BudgetsLocalDatasource {
         ..where((c) => c.deletedAt.isNull() & c.tombstonedAt.isNull()))
       .watch();
 
+  /// One-shot alive categories — the fix #14 scope reconciliation needs the
+  /// current tree once, not a stream.
+  Future<List<Category>> getAliveCategories() => (_db.select(_db.categories)
+        ..where((c) => c.deletedAt.isNull() & c.tombstonedAt.isNull()))
+      .get();
+
+  /// Ids of the budgets the fix #14 reconciliation should inspect: everything
+  /// not tombstoned (active, archived and trashed budgets alike — all could
+  /// carry a frozen materialized scope).
+  Future<List<String>> reconcilableBudgetIds() async {
+    final rows = await (_db.select(_db.budgets)
+          ..where((b) => b.tombstonedAt.isNull()))
+        .get();
+    return [for (final row in rows) row.id];
+  }
+
   // -- Expenses --------------------------------------------------------------
 
   /// Every expense that could feed a budget: `type = expense`, not trashed nor
@@ -455,6 +471,19 @@ class BudgetsLocalDatasource {
       }
     }
   }
+
+  /// Rewrites only the **category** dimension of a budget's scope to exactly
+  /// [categoryIds], leaving the account rows untouched — the fix #14
+  /// reconciliation only ever changes categories, and must not disturb an
+  /// account scope row whose referent was deleted elsewhere.
+  Future<void> reconcileCategoryScope(
+    String budgetId, {
+    required Set<String> categoryIds,
+    required DateTime now,
+  }) =>
+      _db.transaction(
+        () => _reconcileCategories(budgetId, categoryIds, now),
+      );
 
   Future<void> _reconcileCategories(
     String budgetId,

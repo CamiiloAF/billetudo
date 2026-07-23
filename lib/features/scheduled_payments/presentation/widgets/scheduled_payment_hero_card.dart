@@ -41,10 +41,10 @@ class ScheduledPaymentIdentityStrip extends StatelessWidget {
     final isTransfer = payment.isTransfer;
     final title = ScheduledPaymentFormat.templateName(
       note: payment.note,
-      categoryName: categoryName,
       isTransfer: isTransfer,
       accountName: accountName,
       transferAccountName: transferAccountName,
+      fallback: l10n.scheduledPaymentUntitled,
     );
     final subtitleParts = [
       if (categoryName != null && categoryName!.isNotEmpty) categoryName!,

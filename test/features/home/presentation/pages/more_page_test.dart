@@ -12,6 +12,7 @@ void main() {
     VoidCallback? onAccounts,
     VoidCallback? onCategories,
     VoidCallback? onScheduledPayments,
+    VoidCallback? onGoals,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -22,6 +23,7 @@ void main() {
           onOpenAccounts: onAccounts ?? () {},
           onOpenCategories: onCategories ?? () {},
           onOpenScheduledPayments: onScheduledPayments ?? () {},
+          onOpenGoals: onGoals ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -33,15 +35,23 @@ void main() {
   testWidgets('lista todos los destinos de Nivel 0 (HU-01)', (tester) async {
     await pumpMore(tester);
 
+    // Eight rows no longer fit the test viewport, so the ListView lazily
+    // builds them — scroll each label into view before asserting it exists.
     for (final label in [
       'Cuentas',
       'Categorías',
       'Deudas',
       'Pagos programados',
+      'Metas',
       'Gráficas e informes',
       'Importar y exportar',
       'Ajustes',
     ]) {
+      await tester.scrollUntilVisible(
+        find.text(label),
+        100,
+        scrollable: find.byType(Scrollable),
+      );
       expect(find.text(label), findsOneWidget);
     }
   });
@@ -51,8 +61,9 @@ void main() {
       (tester) async {
     await pumpMore(tester);
 
-    // Four live rows, three not-yet-built ones carrying the badge.
-    expect(find.byType(ComingSoonBadge), findsNWidgets(3));
+    // Four live rows, four not-yet-built ones carrying the badge (Deudas,
+    // Metas, Gráficas e informes, Importar y exportar).
+    expect(find.byType(ComingSoonBadge), findsNWidgets(4));
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -73,6 +84,7 @@ void main() {
     expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Ajustes'), isNull);
     expect(badgeOf('Deudas'), isNotNull);
+    expect(badgeOf('Metas'), isNotNull);
   });
 
   testWidgets('tocar Ajustes enruta a Ajustes', (tester) async {

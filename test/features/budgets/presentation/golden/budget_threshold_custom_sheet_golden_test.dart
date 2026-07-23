@@ -57,7 +57,8 @@ void main() {
       );
     });
 
-    testWidgets('umbral personalizado: stepper en mínimo 5% (menos deshabilitado) ($suffix)',
+    testWidgets(
+        'umbral personalizado: stepper en mínimo 5% (menos deshabilitado) ($suffix)',
         (tester) async {
       await golden(
         tester,
@@ -67,7 +68,8 @@ void main() {
       );
     });
 
-    testWidgets('umbral personalizado: stepper en máximo 100% (más deshabilitado) ($suffix)',
+    testWidgets(
+        'umbral personalizado: stepper en máximo 100% (más deshabilitado) ($suffix)',
         (tester) async {
       await golden(
         tester,

@@ -26,7 +26,8 @@ void main() {
       ),
     ).thenAnswer((_) async => const Right(unit));
 
-    final result = await usecase('b1', newAmountMinor: 50000, periodStart: DateTime(2026));
+    final result =
+        await usecase('b1', newAmountMinor: 50000, periodStart: DateTime(2026));
 
     expect(result.getRight().toNullable(), unit);
     verify(
@@ -49,7 +50,8 @@ void main() {
       ),
     ).thenAnswer((_) async => const Left(failure));
 
-    final result = await usecase('b1', newAmountMinor: 50000, periodStart: DateTime(2026));
+    final result =
+        await usecase('b1', newAmountMinor: 50000, periodStart: DateTime(2026));
 
     expect(result.getLeft().toNullable(), failure);
   });

@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/router/app_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
@@ -24,8 +26,13 @@ import 'category_select_row.dart';
 /// [Category] and closes the sheet (no "Aplicar", unlike the multi-select
 /// filter sheet). Dismissing the sheet returns `null`.
 class CategorySelectSheet extends StatelessWidget {
-  const CategorySelectSheet({required this.selectedId, super.key});
+  const CategorySelectSheet({
+    required this.kind,
+    required this.selectedId,
+    super.key,
+  });
 
+  final CategoryKind kind;
   final String? selectedId;
 
   /// Opens the sheet for [kind] and resolves the chosen category, or `null`
@@ -43,18 +50,26 @@ class CategorySelectSheet extends StatelessWidget {
             unawaited(cubit.start(kind: kind));
             return cubit;
           },
-          child: CategorySelectSheet(selectedId: selectedId),
+          child: CategorySelectSheet(kind: kind, selectedId: selectedId),
         ),
       );
 
   @override
   Widget build(BuildContext context) =>
-      CategorySelectSheetBody(selectedId: selectedId);
+      CategorySelectSheetBody(kind: kind, selectedId: selectedId);
 }
 
 class CategorySelectSheetBody extends StatefulWidget {
-  const CategorySelectSheetBody({required this.selectedId, super.key});
+  const CategorySelectSheetBody({
+    required this.kind,
+    required this.selectedId,
+    super.key,
+  });
 
+  /// The kind the sheet lists — and the kind a category created via the
+  /// inline "+" is born with (bugfix item 13). The picker is expense- or
+  /// income-scoped depending on the movement/scheduled-payment type.
+  final CategoryKind kind;
   final String? selectedId;
 
   @override
@@ -70,6 +85,21 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  /// Bugfix item 13: pushes the full create-category flow (`CategoryFormPage`
+  /// via the `newCategory` route) started on the sheet's [CategoryKind], so the
+  /// user gets icon, color and — if they want — a parent, not just a name. When
+  /// the form saves it pops with the created [Category]; this sheet then pops
+  /// with it too, so the picker leaves it selected on return.
+  Future<void> _createCategory(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final created = await context.push<Category>(
+      AppRoutes.newCategory(kind: widget.kind),
+    );
+    if (created != null) {
+      navigator.pop(created);
+    }
   }
 
   /// Filters the tree by name: a root is kept when it or any of its
@@ -110,8 +140,25 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // The title (`yHRaI` in `SfSln`) is 17/700 and left aligned,
-            // not the theme's 22/500 `titleLarge` centred.
-            SheetHead(title: l10n.categorySelectTitle),
+            // not the theme's 22/500 `titleLarge` centred. The trailing "+"
+            // (bugfix item 13) opens the full create-category flow
+            // (`CategoryFormPage` / `PZvWF`), mirroring the tag filter sheet's
+            // header action but with icon/color/parent, not just a name.
+            Row(
+              children: [
+                Expanded(child: SheetHead(title: l10n.categorySelectTitle)),
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: IconButton(
+                    onPressed: () => _createCategory(context),
+                    icon: const Icon(LucideIcons.plus, size: 18),
+                    color: colors.primaryOnSoft,
+                    tooltip: l10n.categoryFormNewTitle,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,

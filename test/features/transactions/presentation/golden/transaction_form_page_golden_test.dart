@@ -297,7 +297,8 @@ void main() {
       await tester.pumpAndSettle();
       await expectLater(
         find.byType(TransactionFormPage),
-        matchesGoldenFile('goldens/transaction_form_page_note_active_$suffix.png'),
+        matchesGoldenFile(
+            'goldens/transaction_form_page_note_active_$suffix.png'),
       );
     });
   }

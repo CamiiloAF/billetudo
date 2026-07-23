@@ -114,6 +114,7 @@ class _ScheduledPaymentEditableAmountFieldState
                 key: const ValueKey('expanded'),
                 amountMinor: _buffer.amountMinor,
                 currency: widget.currency,
+                entryFractionDigits: _buffer.entryFractionDigits,
                 label: widget.label,
                 valueColor: widget.valueColor,
                 amountPrefix: widget.amountPrefix,
@@ -127,6 +128,7 @@ class _ScheduledPaymentEditableAmountFieldState
                     _apply(_buffer.operatorPressed(operator)),
                 onEquals: () => _apply(_buffer.equalsPressed()),
                 onBackspace: () => _apply(_buffer.backspacePressed()),
+                onBackspaceLongPress: () => _apply(_buffer.cleared()),
               )
             : ScheduledPaymentAmountCollapsed(
                 key: const ValueKey('collapsed'),
@@ -155,6 +157,8 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    required this.onBackspaceLongPress,
+    this.entryFractionDigits = -1,
     this.label,
     this.valueColor,
     this.amountPrefix = '',
@@ -164,6 +168,10 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
 
   final int amountMinor;
   final String currency;
+
+  /// The active buffer's `entryFractionDigits`: `0` renders the pending decimal
+  /// separator so the comma shows the instant it is pressed (item 20).
+  final int entryFractionDigits;
   final String? label;
 
   /// The value's colour, kept identical to the collapsed state so the amount
@@ -182,6 +190,9 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
   final ValueChanged<CalcOperator> onOperator;
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
+
+  /// Long-pressing backspace clears the whole amount (item 5).
+  final VoidCallback onBackspaceLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +228,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
-            '$amountPrefix${money.formatSymbol(amountMinor, currencyCode: currency)}',
+            '$amountPrefix${money.formatSymbolEntry(amountMinor, currencyCode: currency, entryFractionDigits: entryFractionDigits)}',
             textAlign: TextAlign.center,
             style: theme.textTheme.displaySmall?.copyWith(
               color: valueColor ?? colors.primary,
@@ -232,6 +243,7 @@ class ScheduledPaymentAmountExpanded extends StatelessWidget {
           onOperator: onOperator,
           onEquals: onEquals,
           onBackspace: onBackspace,
+          onBackspaceLongPress: onBackspaceLongPress,
           // Confirm commits the amount by collapsing this field, mirroring the
           // header chevron.
           onConfirm: onCollapse,

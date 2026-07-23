@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -32,17 +33,28 @@ import '../widgets/sheets/budget_threshold_sheet.dart';
 /// with the CTA pinned in its own bottom bar. "Repetir" conditions
 /// "Periodicidad" (HU-03) and the scope reveals its rows only in
 /// "Personalizado"; the CTA is gated on a valid name and a positive amount.
-class BudgetFormPage extends StatelessWidget {
+class BudgetFormPage extends StatefulWidget {
   const BudgetFormPage({super.key});
+
+  @override
+  State<BudgetFormPage> createState() => _BudgetFormPageState();
+}
+
+class _BudgetFormPageState extends State<BudgetFormPage> {
+  final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<BudgetFormCubit, BudgetFormState>(
-      listenWhen: (previous, current) => previous.savedId != current.savedId,
+      listenWhen: (previous, current) =>
+          previous.savedId != current.savedId ||
+          previous.failedField != current.failedField,
       listener: (context, state) {
         if (state.savedId != null) {
           Navigator.of(context).pop(state.savedId);
+          return;
         }
+        _errorScroll.scrollToField(state.failedField);
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
@@ -60,7 +72,7 @@ class BudgetFormPage extends StatelessWidget {
                 Expanded(
                   child: loading
                       ? const BudgetFormSkeletonView()
-                      : const BudgetFormBody(),
+                      : BudgetFormBody(errorScroll: _errorScroll),
                 ),
                 if (!loading)
                   BudgetFormBottomBar(
@@ -86,7 +98,9 @@ class BudgetFormPage extends StatelessWidget {
 /// "Personalizado"), which cannot be derived from the selection alone (a custom
 /// scope with nothing picked is still global).
 class BudgetFormBody extends StatefulWidget {
-  const BudgetFormBody({super.key});
+  const BudgetFormBody({required this.errorScroll, super.key});
+
+  final FormErrorScrollController errorScroll;
 
   @override
   State<BudgetFormBody> createState() => _BudgetFormBodyState();
@@ -110,6 +124,12 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         BudgetFieldLabel(text: l10n.budgetFormIconNameLabel),
         const SizedBox(height: 6),
         Row(
+          // Anchor the icon to the top of the input box, not the vertical
+          // center of the box+error column: when the name fails validation the
+          // error text grows the column and a centered Row would shove the
+          // 52pt icon down, out of line with the box (fix #15a). Top-aligned,
+          // the icon and the box top stay flush in both states.
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             BudgetIconButton(
               icon: state.icon,
@@ -123,11 +143,14 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: BudgetNameField(
-                initialValue: state.name,
-                hint: l10n.budgetFormNameHint,
-                onChanged: cubit.nameChanged,
-                errorText: _errorFor(l10n, state, BudgetDraft.fieldName),
+              child: KeyedSubtree(
+                key: widget.errorScroll.keyFor(BudgetDraft.fieldName),
+                child: BudgetNameField(
+                  initialValue: state.name,
+                  hint: l10n.budgetFormNameHint,
+                  onChanged: cubit.nameChanged,
+                  errorText: _errorFor(l10n, state, BudgetDraft.fieldName),
+                ),
               ),
             ),
           ],
@@ -137,20 +160,23 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
         // -- Amount (with the currency pill anchored inside the box) --
         BudgetFieldLabel(text: l10n.budgetFormAmountLabel),
         const SizedBox(height: 6),
-        BudgetAmountField(
-          amountMinor: state.amountMinor,
-          currency: state.currency,
-          errorText: _errorFor(l10n, state, BudgetDraft.fieldAmount),
-          onChanged: cubit.amountChanged,
-          onCurrencyTap: () async {
-            final picked = await CurrencyPickerSheet.show(
-              context,
-              selected: state.currency,
-            );
-            if (picked != null) {
-              cubit.currencyChanged(picked);
-            }
-          },
+        KeyedSubtree(
+          key: widget.errorScroll.keyFor(BudgetDraft.fieldAmount),
+          child: BudgetAmountField(
+            amountMinor: state.amountMinor,
+            currency: state.currency,
+            errorText: _errorFor(l10n, state, BudgetDraft.fieldAmount),
+            onChanged: cubit.amountChanged,
+            onCurrencyTap: () async {
+              final picked = await CurrencyPickerSheet.show(
+                context,
+                selected: state.currency,
+              );
+              if (picked != null) {
+                cubit.currencyChanged(picked);
+              }
+            },
+          ),
         ),
         const SizedBox(height: 12),
 
@@ -204,12 +230,20 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
                 ? l10n.budgetScopeAllCategories
                 : l10n.budgetScopeCategories(state.categoryIds.length),
             onTap: () async {
+              // The picker speaks in materialized ids; the budget stores the
+              // canonical scope ("Todas" = empty, a root = its id alone), so a
+              // new category joins a "Todas" or whole-root budget automatically
+              // (fix #14). Expand on the way in, collapse on the way out.
+              final initial = await cubit.categoryScopeForPicker();
+              if (!context.mounted) {
+                return;
+              }
               final picked = await CategoryFilterSheet.show(
                 context,
-                initialSelected: state.categoryIds,
+                initialSelected: initial,
               );
               if (picked != null) {
-                cubit.categoriesSelected(picked);
+                cubit.categoriesPicked(picked);
               }
             },
           ),
@@ -259,27 +293,33 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
 
         // -- "Repetir hasta" (periodic) / "Fin" (one-off) --
         if (state.recurring)
-          BudgetNavField(
-            label: l10n.budgetFormRepeatUntilLabel,
-            icon: LucideIcons.repeat,
-            value: state.endDate == null
-                ? l10n.budgetFormForever
-                : BudgetFormat.longDate(state.endDate!, locale),
-            errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
-            onTap: () => _pickEndDate(context, cubit, state),
-            onCleared: state.endDate == null
-                ? null
-                : () => cubit.endDateSelected(null),
+          KeyedSubtree(
+            key: widget.errorScroll.keyFor(BudgetDraft.fieldEndDate),
+            child: BudgetNavField(
+              label: l10n.budgetFormRepeatUntilLabel,
+              icon: LucideIcons.repeat,
+              value: state.endDate == null
+                  ? l10n.budgetFormForever
+                  : BudgetFormat.longDate(state.endDate!, locale),
+              errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
+              onTap: () => _pickEndDate(context, cubit, state),
+              onCleared: state.endDate == null
+                  ? null
+                  : () => cubit.endDateSelected(null),
+            ),
           )
         else
-          BudgetNavField(
-            label: l10n.budgetFormEndLabel,
-            icon: LucideIcons.calendarCheck,
-            value: state.endDate == null
-                ? l10n.budgetFormEndHint
-                : BudgetFormat.longDate(state.endDate!, locale),
-            errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
-            onTap: () => _pickEndDate(context, cubit, state),
+          KeyedSubtree(
+            key: widget.errorScroll.keyFor(BudgetDraft.fieldEndDate),
+            child: BudgetNavField(
+              label: l10n.budgetFormEndLabel,
+              icon: LucideIcons.calendarCheck,
+              value: state.endDate == null
+                  ? l10n.budgetFormEndHint
+                  : BudgetFormat.longDate(state.endDate!, locale),
+              errorText: _errorFor(l10n, state, BudgetDraft.fieldEndDate),
+              onTap: () => _pickEndDate(context, cubit, state),
+            ),
           ),
         const SizedBox(height: 12),
 
@@ -334,7 +374,8 @@ class _BudgetFormBodyState extends State<BudgetFormBody> {
   /// Maps the failing field the domain named to the localized message for that
   /// field, shown only on the input that actually failed (mirrors
   /// `AccountFormPage._errorFor`).
-  String? _errorFor(AppLocalizations l10n, BudgetFormState state, String field) {
+  String? _errorFor(
+      AppLocalizations l10n, BudgetFormState state, String field) {
     if (state.failedField != field) {
       return null;
     }

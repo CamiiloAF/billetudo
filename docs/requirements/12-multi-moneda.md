@@ -50,5 +50,6 @@ Como usuario quiero elegir la moneda de cada cuenta de forma independiente, para
 ## Reglas de negocio y edge cases
 
 - Nunca usar `double` para montos ni para tasas de conversión aplicadas a montos: el monto convertido resultante se guarda como entero en centavos; la tasa en sí puede ser un factor decimal pero el cálculo final se redondea a entero antes de persistir.
+- **Decimales en la entrada y visualización (fix item 4, `docs/fixes/bugfixes-0.0.1.md`):** todos los inputs de monto **permiten teclear decimales**, también en COP (antes COP estaba fijado a 0 decimales de entrada). El **almacenamiento sigue en centavos enteros** (`amountMinor`, ×100 — regla intacta). En la **visualización**, COP muestra los decimales **solo cuando existen** (`$1.234` si es entero, `$1.234,50` si hay centavos) — no se fuerza `,00` en montos enteros, respetando la convención colombiana. Las monedas que convencionalmente usan 2 decimales (USD, EUR, …) los muestran siempre.
 - La llamada a la fuente de tasas FX es una sola por día para toda la base de usuarios (no por usuario), manteniendo el costo marginal en cero — detalle de arquitectura de `Plan_Monetizacion_y_Tecnico.md` Cubo A.
 - Sin conexión, la app debe seguir funcionando con la última tasa cacheada (o pedir la tasa manual) — coherente con el principio offline-first.

@@ -46,7 +46,8 @@ void main() {
     final cubit = AdjustBalanceCubit(adjust)
       ..start(
         account: card
-            ? buildCard(creditLimitMinor: 300000000, initialBalanceMinor: -100000)
+            ? buildCard(
+                creditLimitMinor: 300000000, initialBalanceMinor: -100000)
             : buildAccount(initialBalanceMinor: 0),
         currentBalanceMinor: currentBalanceMinor,
       );

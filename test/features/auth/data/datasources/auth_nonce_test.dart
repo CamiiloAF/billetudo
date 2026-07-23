@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AuthNonce.generate', () {
-    test('hashed is the lowercase hex SHA-256 of raw (what the provider gets '
+    test(
+        'hashed is the lowercase hex SHA-256 of raw (what the provider gets '
         'vs. what Supabase re-hashes)', () {
       final nonce = AuthNonce.generate();
 

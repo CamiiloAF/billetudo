@@ -1,8 +1,13 @@
+import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/budgets/domain/services/budget_category_scope_resolver.dart';
 import 'package:billetudo/features/budgets/domain/usecases/create_budget.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/update_budget.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_form_cubit.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_form_state.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart';
+import 'package:billetudo/features/categories/domain/entities/category_node.dart';
+import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -13,6 +18,8 @@ class MockUpdateBudget extends Mock implements UpdateBudget {}
 
 class MockGetBudgetById extends Mock implements GetBudgetById {}
 
+class MockWatchCategories extends Mock implements WatchCategories {}
+
 /// The currency pill of the amount field (`a3gGPM/EA3R5`) needs a seam on the
 /// cubit. The amount stays in minor units and is never converted — switching
 /// currency only re-cuts its precision, because COP shows no cents and the
@@ -20,11 +27,23 @@ class MockGetBudgetById extends Mock implements GetBudgetById {}
 void main() {
   late BudgetFormCubit cubit;
 
-  BudgetFormCubit build() => BudgetFormCubit(
-        MockCreateBudget(),
-        MockUpdateBudget(),
-        MockGetBudgetById(),
-      );
+  BudgetFormCubit build() {
+    final watchCategories = MockWatchCategories();
+    when(() => watchCategories(any())).thenAnswer(
+      (_) => Stream<Result<List<CategoryNode>>>.value(
+        const Right(<CategoryNode>[]),
+      ),
+    );
+    return BudgetFormCubit(
+      MockCreateBudget(),
+      MockUpdateBudget(),
+      MockGetBudgetById(),
+      watchCategories,
+      const BudgetCategoryScopeResolver(),
+    );
+  }
+
+  setUpAll(() => registerFallbackValue(CategoryKind.expense));
 
   blocTest<BudgetFormCubit, BudgetFormState>(
     'currencyChanged to a currency with cents keeps the whole amount',

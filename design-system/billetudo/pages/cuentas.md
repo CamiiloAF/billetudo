@@ -44,6 +44,8 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
    - Cuentas normales: instancia de `Account Card`.
    - Tarjeta de credito: instancia de `Credit Card Account Row` (icono + nombre/tipo + deuda `$expense` + barra de cupo usado + cifras Deuda/Cupo disponible).
 
+**Nombre de cuenta a 2 líneas (fix item 12, `bugfixes-0.0.1.md`):** el `Account Card` (`Q1ynM`) permite que el `Name` envuelva **hasta 2 líneas** (`Name`: `textGrowth:"fixed-width"` + `width:"fill_container"`) en vez de truncar a 1. El saldo permanece a la derecha, alineado al borde **superior** cuando el nombre ocupa 2 líneas. Las tarjetas pueden quedar con **altura despareja** (1 vs 2 líneas) — es por diseño, aceptado por el usuario, no corregir. En Flutter: `maxLines: 2` + `overflow: TextOverflow.ellipsis` en el nombre.
+
 **Decision de diseño (variante ganadora):** se exploraron una lista plana y una agrupada por tipo. Se eligio la **plana** porque HU-09 mapea 1:1 a una lista lineal y se rompe conceptualmente al agrupar. La ganancia informativa de la agrupada (separar deuda de activos) se logro sin agrupar, con la sub-linea de deuda en el Total Card. Variantes descartadas eliminadas del `.pen` (regla: al elegir, se borran las demas de inmediato).
 
 ### Estados

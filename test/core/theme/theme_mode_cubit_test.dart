@@ -30,7 +30,8 @@ void main() {
 
     blocTest<ThemeModeCubit, ThemeMode>(
       'load() emits the persisted mode',
-      setUp: () => when(datasource.read).thenAnswer((_) async => ThemeMode.dark),
+      setUp: () =>
+          when(datasource.read).thenAnswer((_) async => ThemeMode.dark),
       build: () => ThemeModeCubit(datasource),
       act: (cubit) => cubit.load(),
       expect: () => [ThemeMode.dark],
@@ -47,8 +48,7 @@ void main() {
 
     blocTest<ThemeModeCubit, ThemeMode>(
       'setThemeMode() emits the new mode immediately',
-      setUp: () => when(() => datasource.write(any()))
-          .thenAnswer((_) async {}),
+      setUp: () => when(() => datasource.write(any())).thenAnswer((_) async {}),
       build: () => ThemeModeCubit(datasource),
       act: (cubit) => cubit.setThemeMode(ThemeMode.light),
       expect: () => [ThemeMode.light],
@@ -56,8 +56,7 @@ void main() {
 
     blocTest<ThemeModeCubit, ThemeMode>(
       'setThemeMode() persists the new mode through the datasource',
-      setUp: () => when(() => datasource.write(any()))
-          .thenAnswer((_) async {}),
+      setUp: () => when(() => datasource.write(any())).thenAnswer((_) async {}),
       build: () => ThemeModeCubit(datasource),
       act: (cubit) => cubit.setThemeMode(ThemeMode.dark),
       verify: (_) => verify(() => datasource.write(ThemeMode.dark)).called(1),

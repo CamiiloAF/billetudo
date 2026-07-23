@@ -33,7 +33,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
 
-class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+class MockThemeModeCubit extends MockCubit<ThemeMode>
+    implements ThemeModeCubit {}
 
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
@@ -110,7 +111,8 @@ void main() {
     when(() => watchMonthTransactions(any())).thenAnswer(
       (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
     );
-    when(watchSyncStatus.call).thenAnswer((_) => const Stream<SyncState>.empty());
+    when(watchSyncStatus.call)
+        .thenAnswer((_) => const Stream<SyncState>.empty());
     // La fila "Cerrar sesión" de Más solo existe con sesión iniciada.
     when(watchAuthSession.call).thenAnswer(
       (_) => const Stream<AuthSession>.empty(),

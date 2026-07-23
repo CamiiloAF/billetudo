@@ -167,7 +167,8 @@ void main() {
   /// A repository whose constructor found a persisted Supabase session, i.e.
   /// the signed-in starting point every sign-out test needs.
   AuthRepositoryImpl buildSignedInRepository({String id = 'user-7'}) {
-    when(() => auth.currentSession).thenReturn(sessionFor(supabaseUser(id: id)));
+    when(() => auth.currentSession)
+        .thenReturn(sessionFor(supabaseUser(id: id)));
     return buildRepository();
   }
 
@@ -653,7 +654,8 @@ void main() {
       () async {
         await repository.dispose();
         when(() => auth.currentSession).thenReturn(
-          sessionFor(supabaseUser(id: 'user-1', email: 'sin.nombre@example.com')),
+          sessionFor(
+              supabaseUser(id: 'user-1', email: 'sin.nombre@example.com')),
         );
 
         final restored = buildRepository();
@@ -670,7 +672,8 @@ void main() {
       'with neither name nor email',
       () async {
         await repository.dispose();
-        when(() => auth.currentSession).thenReturn(sessionFor(supabaseUser(id: 'user-1')));
+        when(() => auth.currentSession)
+            .thenReturn(sessionFor(supabaseUser(id: 'user-1')));
 
         final restored = buildRepository();
 
@@ -839,7 +842,8 @@ void main() {
       builtRepositories.remove(repository);
 
       authStateChanges.add(
-        AuthState(AuthChangeEvent.signedIn, sessionFor(supabaseUser(id: 'user-1'))),
+        AuthState(
+            AuthChangeEvent.signedIn, sessionFor(supabaseUser(id: 'user-1'))),
       );
       await pumpEventQueue();
 

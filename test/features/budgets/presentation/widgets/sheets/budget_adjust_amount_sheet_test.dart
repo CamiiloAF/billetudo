@@ -43,8 +43,7 @@ void main() {
         ),
       );
 
-  testWidgets(
-      'labels the new amount with the TARGET (visible) period range', (
+  testWidgets('labels the new amount with the TARGET (visible) period range', (
     tester,
   ) async {
     await pump(tester);

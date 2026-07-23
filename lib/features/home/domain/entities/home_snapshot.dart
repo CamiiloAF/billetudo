@@ -15,10 +15,16 @@ class HomeSnapshot extends Equatable {
   const HomeSnapshot({
     required this.spending,
     required this.recentActivity,
+    required this.accounts,
     this.budgetProgress,
   });
 
   final MonthSpending spending;
+
+  /// The active accounts with their balances (HU-01), in the repository's
+  /// order. Feeds the "Mis cuentas" balance strip (bugfix item 8); kept as the
+  /// full list because the strip scrolls horizontally rather than capping.
+  final List<AccountWithBalance> accounts;
 
   /// The most recent movements of active accounts (HU-05): a literal activity
   /// feed — income, expense **and** transfer — ordered newest first and capped
@@ -49,14 +55,15 @@ class HomeSnapshot extends Equatable {
     BudgetWithProgress? budgetProgress,
     String fallbackCurrency = 'COP',
   }) {
+    final accountList = accounts.toList();
     final activeAccountIds = {
-      for (final entry in accounts) entry.account.id,
+      for (final entry in accountList) entry.account.id,
     };
 
     // The hero's currency, when the month has no expenses, follows the active
     // accounts so a `$0` still reads in the user's money.
-    final currency = accounts.isNotEmpty
-        ? accounts.first.account.currency
+    final currency = accountList.isNotEmpty
+        ? accountList.first.account.currency
         : fallbackCurrency;
 
     final recent = transactions
@@ -73,10 +80,12 @@ class HomeSnapshot extends Equatable {
         fallbackCurrency: currency,
       ),
       recentActivity: recent.take(recentActivityLimit).toList(),
+      accounts: accountList,
       budgetProgress: budgetProgress,
     );
   }
 
   @override
-  List<Object?> get props => [spending, recentActivity, budgetProgress];
+  List<Object?> get props =>
+      [spending, recentActivity, accounts, budgetProgress];
 }

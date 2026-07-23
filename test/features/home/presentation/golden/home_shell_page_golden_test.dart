@@ -103,11 +103,13 @@ void main() {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
     testWidgets('Inicio active (índice 0) ($suffix)', (tester) async {
-      await golden(tester, '/', 'inicio_active_$suffix', brightness: brightness);
+      await golden(tester, '/', 'inicio_active_$suffix',
+          brightness: brightness);
     });
 
     testWidgets('Más active (índice 4) ($suffix)', (tester) async {
-      await golden(tester, '/mas', 'mas_active_$suffix', brightness: brightness);
+      await golden(tester, '/mas', 'mas_active_$suffix',
+          brightness: brightness);
     });
   }
 }

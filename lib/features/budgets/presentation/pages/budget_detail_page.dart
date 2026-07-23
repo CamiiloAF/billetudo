@@ -35,6 +35,7 @@ class BudgetDetailPage extends StatelessWidget {
     required this.onClosed,
     required this.onOpenTransaction,
     required this.onOpenScheduledPayment,
+    required this.onSeeAllScheduled,
     super.key,
   });
 
@@ -51,6 +52,10 @@ class BudgetDetailPage extends StatelessWidget {
   /// Called with a scheduled payment (template) id, from a scheduled row, to
   /// open its detail.
   final ValueChanged<String> onOpenScheduledPayment;
+
+  /// Navigates to the global Pagos Programados list from the period sheet's
+  /// footer (bugfix item 11). A tab-root destination, so this must `go`.
+  final VoidCallback onSeeAllScheduled;
 
   /// Awaits the detail page's navigation, then — if it deleted something —
   /// offers HU-05's "Deshacer" snackbar via [BudgetDetailCubit].
@@ -110,6 +115,7 @@ class BudgetDetailPage extends StatelessWidget {
                       state: state,
                       onOpenTransaction: (id) => _openTransaction(context, id),
                       onOpenScheduledPayment: onOpenScheduledPayment,
+                      onSeeAllScheduled: onSeeAllScheduled,
                       onAdjustAmount: () => _openAdjustAmountSheet(context),
                     ),
                 },
@@ -164,7 +170,8 @@ class BudgetDetailPage extends StatelessWidget {
       return;
     }
     final pending = cubit.state.pendingAdjustment;
-    final windows = BudgetAdjustmentWindows(budget, view.window, DateTime.now());
+    final windows =
+        BudgetAdjustmentWindows(budget, view.window, DateTime.now());
     final result = await BudgetAdjustAmountSheet.show(
       context,
       currentAmountMinor: budget.amountMinor,
@@ -230,6 +237,7 @@ class BudgetDetailBody extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenScheduledPayment,
+    required this.onSeeAllScheduled,
     required this.onAdjustAmount,
     super.key,
   });
@@ -241,6 +249,9 @@ class BudgetDetailBody extends StatelessWidget {
 
   /// Called with a scheduled payment (template) id, from a scheduled row.
   final ValueChanged<String> onOpenScheduledPayment;
+
+  /// Navigates to the global Pagos Programados list (bugfix item 11).
+  final VoidCallback onSeeAllScheduled;
 
   /// "Ajustar monto": opens the sheet in "editar/cancelar" mode, from the
   /// banner (HU-13).
@@ -286,6 +297,7 @@ class BudgetDetailBody extends StatelessWidget {
                   totalMinor: progress.scheduledMinor,
                   currency: budget.currency,
                   onOpenScheduledPayment: onOpenScheduledPayment,
+                  onSeeAllScheduled: onSeeAllScheduled,
                 ),
               ),
             ],
@@ -496,6 +508,23 @@ class BudgetDetailHero extends StatelessWidget {
                 color: progress.isScheduledOverspendRisk
                     ? colors.amberText
                     : colors.textSecondary,
+              ),
+            ),
+          ],
+          // Bugfix item 10 (`rzssO`): how much would stay free after approving
+          // every scheduled payment. Only in the healthy case — when the
+          // projection overshoots, `scheduledCaption` above already carries the
+          // "excedería" line, so this stays absent to avoid duplicating it.
+          if (BudgetFormat.freeAfterScheduledCaption(
+                  l10n, progress, budget.currency)
+              case final freeCaption?) ...[
+            const SizedBox(height: 8),
+            Text(
+              freeCaption,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: colors.textSecondary,
               ),
             ),
           ],

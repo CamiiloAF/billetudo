@@ -50,10 +50,10 @@ class ScheduledCard extends StatelessWidget {
     final isTransfer = payment.isTransfer;
     final title = ScheduledPaymentFormat.templateName(
       note: payment.note,
-      categoryName: entry.categoryName,
       isTransfer: isTransfer,
       accountName: entry.accountName,
       transferAccountName: entry.transferAccountName,
+      fallback: l10n.scheduledPaymentUntitled,
     );
 
     return Material(

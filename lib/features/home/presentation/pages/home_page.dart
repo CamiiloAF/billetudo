@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,7 @@ import '../../../../core/widgets/empty_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
+import '../widgets/home_balances_strip.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/home_hero_skeleton.dart';
@@ -19,6 +22,7 @@ import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
 import '../widgets/sheets/month_picker_sheet.dart';
+import '../widgets/sheets/sync_status_sheet.dart';
 
 /// The Inicio tab (feature 04): header, hero, quick access, recent activity,
 /// AI banner and a scroll-aware FAB. It only reads and aggregates data
@@ -31,9 +35,12 @@ class HomePage extends StatefulWidget {
     required this.onOpenTransaction,
     required this.onCreateBudget,
     required this.onOpenAccounts,
+    required this.onOpenAccountMovements,
     required this.onOpenScheduledPayments,
+    required this.onOpenGoals,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onOpenLogin,
     super.key,
   });
 
@@ -47,9 +54,22 @@ class HomePage extends StatefulWidget {
 
   /// HU-05b: quick-access chip destinations.
   final VoidCallback onOpenAccounts;
+
+  /// Bugfix item 8: tapping an account's mini-card in the "Mis cuentas" strip
+  /// opens Movimientos filtered to that account only.
+  final ValueChanged<String> onOpenAccountMovements;
+
   final VoidCallback onOpenScheduledPayments;
+
+  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable as
+  /// the last quick-access chip and from the "Más" hub.
+  final VoidCallback onOpenGoals;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+
+  /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
+  /// when the app is offline with no session, so the user can back up.
+  final VoidCallback onOpenLogin;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -111,6 +131,23 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  /// Bugfix item 6: the cloud icon's tap. "Estado real + reassurance":
+  ///
+  /// - offline *with no session* → routes to login so the user can back up
+  ///   (there is nothing to sync to yet). The session — not just the coarse
+  ///   [HomeSyncStatus.offline] — is what tells "no account" apart from "signed
+  ///   in but temporarily offline".
+  /// - any other case (synced, syncing, or offline *with* a session) → opens
+  ///   the reactive [SyncStatusSheet], which keeps tracking the live status.
+  void _onSyncTap(BuildContext context, HomeState state) {
+    final signedIn = state.user != null;
+    if (state.syncStatus == HomeSyncStatus.offline && !signedIn) {
+      widget.onOpenLogin();
+      return;
+    }
+    unawaited(SyncStatusSheet.show(context, context.read<HomeCubit>()));
+  }
+
   Future<void> _openAiSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -170,6 +207,7 @@ class _HomePageState extends State<HomePage> {
                       syncStatus: state.syncStatus,
                       user: state.user,
                       onBellTap: () => _openBellSheet(context),
+                      onSyncTap: () => _onSyncTap(context, state),
                     ),
                   ),
                 ),
@@ -191,6 +229,8 @@ class _HomePageState extends State<HomePage> {
                           ),
                   ),
                 ),
+                // Acceso rápido (shortcuts) goes right under the hero, ABOVE the
+                // "Mis cuentas" strip (user preference: shortcuts first).
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -199,9 +239,25 @@ class _HomePageState extends State<HomePage> {
                       onOpenScheduledPayments: widget.onOpenScheduledPayments,
                       onOpenDebts: widget.onOpenDebts,
                       onOpenReports: widget.onOpenReports,
+                      onOpenGoals: widget.onOpenGoals,
                     ),
                   ),
                 ),
+                // "Mis cuentas" balance strip (bugfix item 8): below Acceso
+                // rápido, only once accounts exist. No outer horizontal padding —
+                // the strip pads its own header and lets the mini-card row
+                // scroll edge to edge.
+                if (state.accounts.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: HomeBalancesStrip(
+                        accounts: state.accounts,
+                        onSeeAll: widget.onOpenAccounts,
+                        onOpenAccountMovements: widget.onOpenAccountMovements,
+                      ),
+                    ),
+                  ),
                 // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
                 // from "Acceso rápido" to the loading/empty state: the
                 // "Movimientos recientes" header only exists once there is

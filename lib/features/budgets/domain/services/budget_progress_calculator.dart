@@ -218,7 +218,7 @@ class BudgetProgressCalculator {
           id: '${occurrence.scheduledPaymentId}@'
               '${occurrence.date.toIso8601String()}',
           scheduledPaymentId: occurrence.scheduledPaymentId,
-          title: detail.title,
+          note: detail.template.note,
           accountName: detail.accountName,
           categoryIcon: detail.categoryIcon,
           categoryColor: detail.categoryColor,
@@ -243,7 +243,7 @@ class BudgetProgressCalculator {
         BudgetScheduledItem(
           id: pending.occurrence.id,
           scheduledPaymentId: pending.scheduledPayment.id,
-          title: pending.categoryName ?? pending.accountName,
+          note: pending.scheduledPayment.note,
           accountName: pending.accountName,
           categoryIcon: pending.categoryIcon,
           categoryColor: pending.categoryColor,

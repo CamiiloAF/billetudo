@@ -9,9 +9,10 @@ import '../../../../../core/widgets/sheet_buttons_row.dart';
 /// HU-06/criterion 14: asked right before persisting a movement whose date
 /// is in the future — "¿Es un pago programado?". Lives in Transacciones'
 /// own presentation, with no import of anything from Pagos Programados: the
-/// caller only learns whether the user accepted or declined, and decides
-/// what to do about it (navigate to the scheduled-payment form prefilled, or
-/// save the movement as usual).
+/// caller only learns whether the user accepted, and decides what to do about
+/// it (navigate to the scheduled-payment form prefilled). A future-dated
+/// movement is never saved as a normal transaction, so declining/dismissing
+/// just closes the sheet and leaves the user on the form to change the date.
 class FutureDateScheduledPaymentPromptSheet extends StatelessWidget {
   const FutureDateScheduledPaymentPromptSheet({
     required this.onAccept,
@@ -23,15 +24,11 @@ class FutureDateScheduledPaymentPromptSheet extends StatelessWidget {
   final VoidCallback onDecline;
 
   /// Returns `true` when the user accepted turning the movement into a
-  /// scheduled payment, `false` when they declined, `null` if dismissed.
-  // Not `BottomSheetBase.show`: this widget's `build` returns its content
-  // unwrapped (no `BottomSheetBase` padding/handle chrome around it), so
-  // this keeps `showModalBottomSheet` as-is and just opts into the root
-  // navigator.
-  static Future<bool?> show(BuildContext context) => showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        useRootNavigator: true,
+  /// scheduled payment, `false`/`null` otherwise (declined or dismissed).
+  /// Opened through the shared [BottomSheetBase] so it carries the system's
+  /// handle, margins and padding like every other confirmation sheet.
+  static Future<bool?> show(BuildContext context) => BottomSheetBase.show<bool>(
+        context,
         builder: (context) => FutureDateScheduledPaymentPromptSheet(
           onAccept: () => Navigator.of(context).pop(true),
           onDecline: () => Navigator.of(context).pop(false),

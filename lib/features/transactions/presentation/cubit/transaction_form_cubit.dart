@@ -152,15 +152,23 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     );
   }
 
-  void typeSelected(TransactionType type) => emit(
-        state.copyWith(
-          type: type,
-          // HU-03: a transfer carries no category; switching away from one
-          // must drop a destination account that no longer applies.
-          clearCategory: type == TransactionType.transfer,
-          clearTransferAccount: type != TransactionType.transfer,
-        ),
-      );
+  void typeSelected(TransactionType type) {
+    if (type == state.type) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        type: type,
+        // Income and expense have distinct category sets (`CategoryKind`), and
+        // a transfer carries none — so any real type change must drop the
+        // previously picked category, or an expense category would linger on an
+        // income (item 17). Switching away from a transfer also drops a
+        // destination account that no longer applies.
+        clearCategory: true,
+        clearTransferAccount: type != TransactionType.transfer,
+      ),
+    );
+  }
 
   void accountSelected(String id, String name) =>
       emit(state.copyWith(accountId: id, accountName: name));
@@ -200,7 +208,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       return;
     }
     final base = _startFreshOperandIfNeeded(state);
-    final decimals = MoneyFormatter.currencyDecimals(base.currency);
+    final decimals = MoneyFormatter.inputDecimals(base.currency);
 
     final int next;
     final int nextFraction;
@@ -223,10 +231,11 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     emit(base.copyWith(amountMinor: next, entryFractionDigits: nextFraction));
   }
 
-  /// The decimal-point key. Only meaningful for currencies with minor units
-  /// (USD); for COP it is a no-op since amounts are whole pesos.
+  /// The decimal-point key. Every currency the app handles accepts typed cents
+  /// (item 4), so this is only a no-op for a hypothetical zero-decimal
+  /// [MoneyFormatter.inputDecimals] currency.
   void amountDecimalPressed() {
-    if (MoneyFormatter.currencyDecimals(state.currency) == 0) {
+    if (MoneyFormatter.inputDecimals(state.currency) == 0) {
       return;
     }
     final base = _startFreshOperandIfNeeded(state);

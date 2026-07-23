@@ -493,8 +493,7 @@ void main() {
       expect(result.map((c) => c.id), [comida.id]);
     });
 
-    test('con accountId, cuentas distintas producen top-3 distintos',
-        () async {
+    test('con accountId, cuentas distintas producen top-3 distintos', () async {
       final accountA = await _insertAccount(db);
       final accountB = await _insertAccount(db);
       final comida = await insertCategory(name: 'Comida');

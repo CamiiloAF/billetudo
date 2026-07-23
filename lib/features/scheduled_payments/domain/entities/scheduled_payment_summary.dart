@@ -49,8 +49,7 @@ class ScheduledPaymentSummary extends Equatable {
 
   /// The date the card shows as "próximo pago": the nearest awaiting
   /// occurrence's effective date when one exists, else the template cursor.
-  DateTime get nextPaymentDate =>
-      nextAwaitingDate ?? scheduledPayment.nextDate;
+  DateTime get nextPaymentDate => nextAwaitingDate ?? scheduledPayment.nextDate;
 
   /// The effective date of the last occurrence this template actually
   /// generated (`confirmed` in the ledger), for the "Terminados" filter's

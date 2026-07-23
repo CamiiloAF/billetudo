@@ -16,7 +16,7 @@ void main() {
   final item = BudgetScheduledItem(
     id: 'sp-1@2025-07-28T00:00:00.000',
     scheduledPaymentId: 'sp-1',
-    title: 'Netflix',
+    note: 'Netflix',
     accountName: 'Bancolombia',
     amountMinor: 4500000,
     currency: 'COP',
@@ -50,6 +50,35 @@ void main() {
     expect(find.textContaining('-\$45.000'), findsNothing);
   });
 
+  testWidgets(
+      'item 19: with no note the title is the generic label, never the '
+      'category', (tester) async {
+    final noNote = BudgetScheduledItem(
+      id: 'sp-2@2025-07-28T00:00:00.000',
+      scheduledPaymentId: 'sp-2',
+      note: null,
+      accountName: 'Bancolombia',
+      amountMinor: 4500000,
+      currency: 'COP',
+      date: DateTime(2025, 7, 28),
+      categoryIcon: 'tv',
+      categoryColor: 'sky',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: BudgetScheduledRow(item: noNote, onTap: (_) {}),
+        ),
+      ),
+    );
+
+    expect(find.text('Pago programado'), findsOneWidget);
+  });
+
   testWidgets('the amount renders in the secondary text color, not primary',
       (tester) async {
     await pump(tester);
@@ -75,8 +104,7 @@ void main() {
     expect(data, contains('jul'));
   });
 
-  testWidgets(
-      'shows the recurrence badge overlaid on the category icon wrap',
+  testWidgets('shows the recurrence badge overlaid on the category icon wrap',
       (tester) async {
     await pump(tester);
 

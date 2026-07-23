@@ -166,6 +166,27 @@ void main() {
     );
 
     blocTest<TransactionsListCubit, TransactionsListState>(
+      'filterByAccount fija el filtro a solo esa cuenta y lo persiste '
+      '(bugfix item 8)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(accountIds: {'acc-1', 'acc-2'}),
+        );
+        await cubit.filterByAccount('acc-9');
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.accountIds, {'acc-9'});
+        verify(
+          () => accountFilterPreferences.writeAccountIds({'acc-9'}),
+        ).called(1);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
       'updateFilter que solo cambia otro campo no persiste accountIds',
       setUp: () => when(() => watchTransactions(any()))
           .thenAnswer((_) => Stream.value(Right([entry]))),

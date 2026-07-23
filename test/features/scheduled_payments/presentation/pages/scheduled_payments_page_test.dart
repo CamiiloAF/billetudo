@@ -1,6 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/app_fab.dart';
+import 'package:billetudo/core/widgets/root_tab_header.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_summary.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/pending_occurrences_state.dart';
@@ -51,6 +52,7 @@ void main() {
       status: PendingOccurrencesStatus.ready,
     ),
     ValueChanged<String>? onOpenScheduledPayment,
+    bool showBackButton = true,
   }) async {
     when(() => listCubit.state).thenReturn(listState);
     when(() => listCubit.stream)
@@ -73,11 +75,36 @@ void main() {
             onAddScheduledPayment: () {},
             onOpenScheduledPayment: onOpenScheduledPayment ?? (_) {},
             onOpenPending: () {},
+            showBackButton: showBackButton,
           ),
         ),
       ),
     );
   }
+
+  group('header variants (bugfix item 7)', () {
+    testWidgets('stacked: AppBar with a back button, no tab-root header',
+        (tester) async {
+      await pumpPage(tester, const ScheduledPaymentsListState());
+
+      expect(find.byType(AppBar), findsOneWidget);
+      expect(find.byType(RootTabHeader), findsNothing);
+      expect(find.byTooltip('Atrás'), findsOneWidget);
+    });
+
+    testWidgets('tab root: RootTabHeader, no AppBar and no back button',
+        (tester) async {
+      await pumpPage(
+        tester,
+        const ScheduledPaymentsListState(),
+        showBackButton: false,
+      );
+
+      expect(find.byType(RootTabHeader), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.byTooltip('Atrás'), findsNothing);
+    });
+  });
 
   testWidgets('loading: renders 5 skeleton cards, not a spinner',
       (tester) async {

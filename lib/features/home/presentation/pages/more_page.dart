@@ -13,6 +13,7 @@ class MorePage extends StatelessWidget {
     required this.onOpenAccounts,
     required this.onOpenCategories,
     required this.onOpenScheduledPayments,
+    required this.onOpenGoals,
     required this.onOpenComingSoon,
     required this.onOpenSettings,
     required this.isSignedIn,
@@ -23,6 +24,10 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenAccounts;
   final VoidCallback onOpenCategories;
   final VoidCallback onOpenScheduledPayments;
+
+  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable from
+  /// here and from Inicio's quick access. Today it lands on `ComingSoonPage`.
+  final VoidCallback onOpenGoals;
 
   /// Opens a stacked "Próximamente" page titled with the destination's name.
   final ValueChanged<String> onOpenComingSoon;
@@ -72,6 +77,16 @@ class MorePage extends StatelessWidget {
                     label: l10n.moreScheduledPayments,
                     description: l10n.moreScheduledPaymentsDescription,
                     onTap: onOpenScheduledPayments,
+                  ),
+                  // Metas lost its bottom-nav tab to Pagos Programados (bugfix
+                  // item 7); it lives here and in Inicio's quick access. Still
+                  // `Próximamente` until the Metas lote ships.
+                  MoreRow(
+                    icon: LucideIcons.target,
+                    label: l10n.navGoals,
+                    description: l10n.moreGoalsDescription,
+                    comingSoon: true,
+                    onTap: onOpenGoals,
                   ),
                   // Design debt: Pencil frame `gXcHt` only defines 6 rows and
                   // omits "Gráficas e informes" — kept here because it's a real

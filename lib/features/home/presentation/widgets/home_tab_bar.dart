@@ -16,8 +16,10 @@ class HomeTabItem {
 }
 
 /// The five-destination bottom tab bar (HU-01): Inicio, Movimientos,
-/// Presupuestos, Metas, Más. The active destination is highlighted in the
-/// brand color; the rest use `text-secondary`.
+/// Presupuestos, Pagos programados, Más. The active destination is highlighted
+/// in the brand color; the rest use `text-secondary`. Pagos Programados took
+/// Metas' slot (bugfix item 7); Metas now lives in Inicio's quick access and
+/// the "Más" hub.
 class HomeTabBar extends StatelessWidget {
   const HomeTabBar({
     required this.currentIndex,
@@ -39,7 +41,10 @@ class HomeTabBar extends StatelessWidget {
         label: l10n.transactionsTitle,
       ),
       HomeTabItem(icon: LucideIcons.chartPie, label: l10n.navBudgets),
-      HomeTabItem(icon: LucideIcons.target, label: l10n.navGoals),
+      HomeTabItem(
+        icon: LucideIcons.calendarClock,
+        label: l10n.navScheduledPayments,
+      ),
       HomeTabItem(icon: LucideIcons.ellipsis, label: l10n.navMore),
     ];
 

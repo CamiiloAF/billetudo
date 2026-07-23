@@ -62,8 +62,8 @@ AccountWithBalance _buildAccountWithBalance({
   );
   return AccountWithBalance(
     account: account,
-    balance:
-        AccountBalance.fromBalance(account: account, balanceMinor: balanceMinor),
+    balance: AccountBalance.fromBalance(
+        account: account, balanceMinor: balanceMinor),
   );
 }
 
@@ -234,8 +234,7 @@ void main() {
 
         await golden(
           tester,
-          (context) =>
-              TagFilterSheet.show(context, initialSelected: const {}),
+          (context) => TagFilterSheet.show(context, initialSelected: const {}),
           'tag_filter_list_$suffix',
           brightness: brightness,
         );
@@ -277,8 +276,7 @@ void main() {
 
         await golden(
           tester,
-          (context) =>
-              TagFilterSheet.show(context, initialSelected: const {}),
+          (context) => TagFilterSheet.show(context, initialSelected: const {}),
           'tag_filter_empty_$suffix',
           brightness: brightness,
         );
@@ -348,8 +346,7 @@ void main() {
       testWidgets('none selected', (tester) async {
         await golden(
           tester,
-          (context) =>
-              TypeFilterSheet.show(context, initialSelected: const {}),
+          (context) => TypeFilterSheet.show(context, initialSelected: const {}),
           'type_filter_none_$suffix',
           brightness: brightness,
         );

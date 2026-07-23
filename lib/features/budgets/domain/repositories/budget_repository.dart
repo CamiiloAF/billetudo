@@ -52,6 +52,14 @@ abstract class BudgetRepository {
   /// HU-11: stamps `deletedAt` (reversible trash).
   FutureResult<Unit> deleteBudget(String id);
 
+  /// One-shot reconciliation for fix #14: rewrites any budget whose category
+  /// scope was persisted **materialized** (every id of "Todas", or a root plus
+  /// all its children) into the canonical form ("Todas" -> empty/global, a
+  /// whole root -> just the root id), so categories created later are picked up
+  /// automatically. Idempotent: a budget already canonical (or a genuinely
+  /// partial selection) is left untouched, so it is safe to run on every launch.
+  FutureResult<Unit> reconcileMaterializedCategoryScopes();
+
   /// "Ajustar monto": the pending amount override for the period starting at
   /// [periodStart] (the window the stepper is currently showing), if
   /// [scheduleBudgetAdjustment] created one. `null` when that window has nothing

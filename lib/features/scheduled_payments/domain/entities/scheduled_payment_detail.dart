@@ -55,8 +55,7 @@ class ScheduledPaymentDetail extends Equatable {
 
   /// The date the hero shows as "próximo pago": the awaiting occurrence's
   /// effective date when one exists, else the template's cursor.
-  DateTime get nextPaymentDate =>
-      nextAwaitingDate ?? scheduledPayment.nextDate;
+  DateTime get nextPaymentDate => nextAwaitingDate ?? scheduledPayment.nextDate;
 
   /// First page (up to 3 rows, criterion 13) of the template's history —
   /// confirmed and skipped occurrences interleaved, most recent first.

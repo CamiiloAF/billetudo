@@ -141,8 +141,7 @@ class DateFilterSheetBody extends StatelessWidget {
                 child: Text(l10n.commonClear),
               ),
               right: FilledButton(
-                onPressed: () =>
-                    Navigator.of(context).pop(cubit.state.filter),
+                onPressed: () => Navigator.of(context).pop(cubit.state.filter),
                 child: Text(l10n.commonApply),
               ),
             ),

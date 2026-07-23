@@ -23,7 +23,8 @@ class MockSignOut extends Mock implements SignOut {}
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
-class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+class MockThemeModeCubit extends MockCubit<ThemeMode>
+    implements ThemeModeCubit {}
 
 /// Ajustes, both business states named in `design-system/billetudo/pages/auth.md`:
 ///

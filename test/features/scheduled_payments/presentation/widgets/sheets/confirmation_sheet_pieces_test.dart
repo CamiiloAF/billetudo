@@ -55,7 +55,8 @@ void main() {
       expect(find.text('Bancolombia → Nequi'), findsOneWidget);
     });
 
-    testWidgets('sin nota: el título cae a la categoría, no a la cuenta',
+    testWidgets(
+        'sin nota: el título es el genérico, nunca la categoría (item 3/19)',
         (tester) async {
       await tester.pumpWidget(
         appWith(
@@ -69,7 +70,11 @@ void main() {
         ),
       );
 
-      expect(find.text('Suscripciones'), findsOneWidget);
+      // The big title falls back to the generic name, not the category — the
+      // category stays in the sub-line ("Suscripciones · cada mes").
+      expect(find.text('Pago programado'), findsOneWidget);
+      expect(find.text('Suscripciones'), findsNothing);
+      expect(find.text('Suscripciones · cada mes'), findsOneWidget);
     });
 
     testWidgets(

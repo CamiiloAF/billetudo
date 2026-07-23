@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -25,15 +26,23 @@ import '../widgets/sheets/day_picker_sheet.dart';
 ///
 /// One page, two shapes: creating shows the neutral type grid outright, editing
 /// collapses the type into a pill that expands the same grid inline.
-class AccountFormPage extends StatelessWidget {
+class AccountFormPage extends StatefulWidget {
   const AccountFormPage({super.key});
+
+  @override
+  State<AccountFormPage> createState() => _AccountFormPageState();
+}
+
+class _AccountFormPageState extends State<AccountFormPage> {
+  final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AccountFormCubit, AccountFormState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
-          previous.needsConfirmation != current.needsConfirmation,
+          previous.needsConfirmation != current.needsConfirmation ||
+          previous.failedField != current.failedField,
       listener: (context, state) {
         if (state.status == AccountFormStatus.saved) {
           Navigator.of(context).pop();
@@ -42,6 +51,7 @@ class AccountFormPage extends StatelessWidget {
         if (state.needsConfirmation) {
           unawaited(_confirmChange(context));
         }
+        _errorScroll.scrollToField(state.failedField);
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
@@ -68,7 +78,10 @@ class AccountFormPage extends StatelessWidget {
                 Expanded(
                   child: state.status == AccountFormStatus.loading
                       ? const Center(child: CircularProgressIndicator())
-                      : AccountFormBody(state: state),
+                      : AccountFormBody(
+                          state: state,
+                          errorScroll: _errorScroll,
+                        ),
                 ),
               ],
             ),
@@ -92,9 +105,14 @@ class AccountFormPage extends StatelessWidget {
 /// The form's fields. Which ones exist depends on the type: only a card asks for
 /// a credit limit, only an account that may keep a number asks for one.
 class AccountFormBody extends StatelessWidget {
-  const AccountFormBody({required this.state, super.key});
+  const AccountFormBody({
+    required this.state,
+    required this.errorScroll,
+    super.key,
+  });
 
   final AccountFormState state;
+  final FormErrorScrollController errorScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -115,39 +133,49 @@ class AccountFormBody extends StatelessWidget {
         const SizedBox(height: 8),
         // The pill/grid swap animates its own height, so the fields below slide
         // instead of jumping.
-        AnimatedSize(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: Alignment.topCenter,
-          child: state.showTypeGrid || type == null
-              ? AccountTypeGrid(selected: type, onSelected: cubit.typeSelected)
-              : AccountTypePill(type: type, onChange: cubit.toggleTypePicker),
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountFormState.fieldType),
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: Alignment.topCenter,
+            child: state.showTypeGrid || type == null
+                ? AccountTypeGrid(
+                    selected: type, onSelected: cubit.typeSelected)
+                : AccountTypePill(type: type, onChange: cubit.toggleTypePicker),
+          ),
         ),
         if (state.failedField == AccountFormState.fieldType) ...[
           const SizedBox(height: 8),
           FormFieldError(message: l10n.accountErrorType),
         ],
         const SizedBox(height: 18),
-        AccountFormField.text(
-          label: l10n.accountFormNameLabel,
-          icon: LucideIcons.pencilLine,
-          hint: l10n.accountFormNameHint,
-          initialValue: state.name,
-          errorText: _errorFor(l10n, state, AccountDraft.fieldName),
-          maxLength: AccountDraft.maxNameLength,
-          textCapitalization: TextCapitalization.words,
-          onChanged: cubit.nameChanged,
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldName),
+          child: AccountFormField.text(
+            label: l10n.accountFormNameLabel,
+            icon: LucideIcons.pencilLine,
+            hint: l10n.accountFormNameHint,
+            initialValue: state.name,
+            errorText: _errorFor(l10n, state, AccountDraft.fieldName),
+            maxLength: AccountDraft.maxNameLength,
+            textCapitalization: TextCapitalization.words,
+            onChanged: cubit.nameChanged,
+          ),
         ),
         const SizedBox(height: 16),
-        AccountFormField.text(
-          label: l10n.accountFormInstitutionLabel,
-          icon: LucideIcons.landmark,
-          hint: l10n.accountFormInstitutionHint,
-          initialValue: state.institution,
-          errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
-          maxLength: AccountDraft.maxInstitutionLength,
-          textCapitalization: TextCapitalization.words,
-          onChanged: cubit.institutionChanged,
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldInstitution),
+          child: AccountFormField.text(
+            label: l10n.accountFormInstitutionLabel,
+            icon: LucideIcons.landmark,
+            hint: l10n.accountFormInstitutionHint,
+            initialValue: state.institution,
+            errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
+            maxLength: AccountDraft.maxInstitutionLength,
+            textCapitalization: TextCapitalization.words,
+            onChanged: cubit.institutionChanged,
+          ),
         ),
         // A card's debt lives only in "Datos de la tarjeta" (`Deuda actual`),
         // not as a top-level money field — `xdLeB`/`jg9DA` go from Moneda
@@ -159,62 +187,79 @@ class AccountFormBody extends StatelessWidget {
         // silent rewrite of the opening figure here.
         if (!state.isCard && !state.isEditing) ...[
           const SizedBox(height: 16),
-          AccountMoneyField(
-            label: l10n.accountFormInitialBalanceLabel,
-            icon: LucideIcons.banknote,
-            hint: l10n.accountFormAmountHint,
-            currency: state.currency,
-            text: state.initialBalanceText,
-            errorText:
-                _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
-            allowNegative: true,
-            onChanged: cubit.initialBalanceChanged,
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountFormState.fieldInitialBalance),
+            child: AccountMoneyField(
+              label: l10n.accountFormInitialBalanceLabel,
+              icon: LucideIcons.banknote,
+              hint: l10n.accountFormAmountHint,
+              currency: state.currency,
+              text: state.initialBalanceText,
+              errorText:
+                  _errorFor(l10n, state, AccountFormState.fieldInitialBalance),
+              allowNegative: true,
+              onChanged: cubit.initialBalanceChanged,
+            ),
           ),
         ],
         const SizedBox(height: 16),
-        AccountFormField.selector(
-          label: l10n.accountFormCurrencyLabel,
-          icon: LucideIcons.circleDollarSign,
-          value: state.currency,
-          errorText: _errorFor(l10n, state, AccountDraft.fieldCurrency),
-          onTap: () => _pickCurrency(context),
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldCurrency),
+          child: AccountFormField.selector(
+            label: l10n.accountFormCurrencyLabel,
+            icon: LucideIcons.circleDollarSign,
+            value: state.currency,
+            errorText: _errorFor(l10n, state, AccountDraft.fieldCurrency),
+            onTap: () => _pickCurrency(context),
+          ),
         ),
         if (state.showFullNumberField) ...[
           const SizedBox(height: 16),
-          AccountNumberField(state: state),
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountDraft.fieldFullAccountNumber),
+            child: AccountNumberField(state: state),
+          ),
         ],
         if (state.showLast4Field) ...[
           const SizedBox(height: 16),
-          AccountFormField.text(
-            label: l10n.accountFormLast4Label,
-            icon: LucideIcons.tag,
-            hint: l10n.accountFormLast4Hint,
-            initialValue: state.last4,
-            errorText: _errorFor(l10n, state, AccountDraft.fieldLast4),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 4,
-            onChanged: cubit.last4Changed,
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountDraft.fieldLast4),
+            child: AccountFormField.text(
+              label: l10n.accountFormLast4Label,
+              icon: LucideIcons.tag,
+              hint: l10n.accountFormLast4Hint,
+              initialValue: state.last4,
+              errorText: _errorFor(l10n, state, AccountDraft.fieldLast4),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: 4,
+              onChanged: cubit.last4Changed,
+            ),
           ),
         ],
         if (state.showInterestRateField) ...[
           const SizedBox(height: 16),
-          AccountFormField.text(
-            label: l10n.accountFormInterestRateLabel,
-            hint: l10n.accountFormInterestRateHint,
-            initialValue: state.interestRateText,
-            errorText:
-                _errorFor(l10n, state, AccountDraft.fieldInterestRateBps),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-            ],
-            onChanged: cubit.interestRateChanged,
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountDraft.fieldInterestRateBps),
+            child: AccountFormField.text(
+              label: l10n.accountFormInterestRateLabel,
+              hint: l10n.accountFormInterestRateHint,
+              initialValue: state.interestRateText,
+              errorText:
+                  _errorFor(l10n, state, AccountDraft.fieldInterestRateBps),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+              ],
+              onChanged: cubit.interestRateChanged,
+            ),
           ),
         ],
         if (state.isCard) ...[
           const SizedBox(height: 24),
           CardDetailsSection(
+            errorScroll: errorScroll,
             currency: state.currency,
             creditLimitText: state.creditLimitText,
             // Mejora #1: a new card names its starting debt here; on an
@@ -367,7 +412,11 @@ String? _errorFor(AppLocalizations l10n, AccountFormState state, String field) {
     return null;
   }
   return switch (field) {
-    AccountDraft.fieldName => l10n.accountErrorName,
+    // Empty -> required, over the limit -> too long (validated in that
+    // order): an empty field must not show the length copy (fix #15b).
+    AccountDraft.fieldName => state.name.trim().isEmpty
+        ? l10n.accountErrorNameRequired
+        : l10n.accountErrorName,
     AccountDraft.fieldCurrency => l10n.accountErrorCurrency,
     AccountDraft.fieldInstitution => l10n.accountErrorInstitution,
     AccountDraft.fieldFullAccountNumber => l10n.accountErrorFullNumber,

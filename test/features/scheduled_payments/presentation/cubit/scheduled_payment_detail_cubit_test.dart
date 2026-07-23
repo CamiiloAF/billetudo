@@ -432,7 +432,8 @@ void main() {
         when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
             .thenAnswer(
           (_) async => const Left(
-            ValidationFailure('only an automatic-mode template can be advanced'),
+            ValidationFailure(
+                'only an automatic-mode template can be advanced'),
           ),
         );
       },
@@ -482,8 +483,8 @@ void main() {
             .thenAnswer((_) => Stream.value(Right(detail)));
         when(() => advanceScheduledOccurrence(scheduledPaymentId: 'sp-1'))
             .thenAnswer(
-          (_) async =>
-              Right(buildPendingOccurrence(occurrence: buildOccurrence(id: 'occ-9'))),
+          (_) async => Right(
+              buildPendingOccurrence(occurrence: buildOccurrence(id: 'occ-9'))),
         );
       },
       build: build,

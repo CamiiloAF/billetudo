@@ -386,6 +386,24 @@ class ScheduledPaymentsLocalDatasource {
       )..where((o) => o.id.equals(id)))
           .go();
 
+  /// Removes every occurrence of [scheduledPaymentId] still awaiting
+  /// resolution (`pending` or `snoozed`). Used when the user manually edits a
+  /// template's date (HU-05): the outstanding occurrence materialized for the
+  /// old due date (e.g. a "vence hoy" pending one) would otherwise keep driving
+  /// the "próximo pago" the detail/list show, masking the freshly edited
+  /// `nextDate` (item 18). Only unresolved rows are touched — `confirmed` and
+  /// `skipped` occurrences are history and never removed.
+  Future<void> deleteAwaitingOccurrences(String scheduledPaymentId) =>
+      (_db.delete(_db.scheduledPaymentOccurrences)
+            ..where(
+              (o) =>
+                  o.scheduledPaymentId.equals(scheduledPaymentId) &
+                  (o.status.equalsValue(ScheduledOccurrenceStatus.pending) |
+                      o.status
+                          .equalsValue(ScheduledOccurrenceStatus.snoozed)),
+            ))
+          .go();
+
   /// HU-03/HU-04: every occurrence still awaiting resolution, across every
   /// template, ordered by effective due date ascending.
   Stream<List<OccurrenceRowWithJoins>> watchPendingOccurrences() {

@@ -69,8 +69,9 @@ class TransactionsListState extends Equatable {
   /// Currency the collapsed total renders in: the first shown account's, or
   /// `'COP'` when none is shown. Mixed-currency reconciliation is out of scope
   /// for Mejora #2 (see `displayedBalanceTotalMinor`).
-  String get displayedCurrency =>
-      displayedAccounts.isEmpty ? 'COP' : displayedAccounts.first.account.currency;
+  String get displayedCurrency => displayedAccounts.isEmpty
+      ? 'COP'
+      : displayedAccounts.first.account.currency;
 
   TransactionsListState copyWith({
     TransactionsListStatus? status,

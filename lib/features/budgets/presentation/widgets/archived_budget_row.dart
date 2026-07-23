@@ -65,7 +65,8 @@ class ArchivedBudgetRow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        CategoryAppearance.iconForOrPlaceholder(entry.budget.icon),
+                        CategoryAppearance.iconForOrPlaceholder(
+                            entry.budget.icon),
                         size: 20,
                         color: colors.textSecondary,
                       ),
@@ -103,7 +104,8 @@ class ArchivedBudgetRow extends StatelessWidget {
                     if (closedAt != null) ...[
                       const SizedBox(width: 12),
                       Text(
-                        l10n.budgetClosedOn(BudgetFormat.dayMonth(closedAt, locale)),
+                        l10n.budgetClosedOn(
+                            BudgetFormat.dayMonth(closedAt, locale)),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

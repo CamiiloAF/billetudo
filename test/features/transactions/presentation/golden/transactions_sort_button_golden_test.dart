@@ -124,7 +124,8 @@ void main() {
 
       await expectLater(
         find.byType(TransactionsPage),
-        matchesGoldenFile('goldens/transactions_sort_button_active_$suffix.png'),
+        matchesGoldenFile(
+            'goldens/transactions_sort_button_active_$suffix.png'),
       );
     });
   }

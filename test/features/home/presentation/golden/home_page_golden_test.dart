@@ -67,9 +67,12 @@ void main() {
           onOpenTransaction: (_) async => null,
           onCreateBudget: () {},
           onOpenAccounts: () {},
+          onOpenAccountMovements: (_) {},
           onOpenScheduledPayments: () {},
+          onOpenGoals: () {},
           onOpenDebts: () {},
           onOpenReports: () {},
+          onOpenLogin: () {},
         ),
       ),
       brightness: brightness,
@@ -110,7 +113,8 @@ void main() {
       await golden(
         tester,
         readyWith([
-          buildActivity(id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+          buildActivity(
+              id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
           buildActivity(
             id: 'tx-2',
             categoryName: 'Transporte',
@@ -143,7 +147,8 @@ void main() {
         tester,
         readyWith(
           [
-            buildActivity(id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+            buildActivity(
+                id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
             buildActivity(
               id: 'tx-2',
               categoryName: 'Transporte',
@@ -169,7 +174,8 @@ void main() {
         tester,
         readyWith(
           [
-            buildActivity(id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+            buildActivity(
+                id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
             buildActivity(
               id: 'tx-2',
               categoryName: 'Transporte',

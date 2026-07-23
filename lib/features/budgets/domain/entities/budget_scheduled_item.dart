@@ -12,7 +12,7 @@ class BudgetScheduledItem extends Equatable {
   const BudgetScheduledItem({
     required this.id,
     required this.scheduledPaymentId,
-    required this.title,
+    required this.note,
     required this.accountName,
     required this.amountMinor,
     required this.currency,
@@ -30,8 +30,11 @@ class BudgetScheduledItem extends Equatable {
   /// The template this occurrence belongs to (for navigation to its detail).
   final String scheduledPaymentId;
 
-  /// Category name when categorized, otherwise the account name.
-  final String title;
+  /// The template's raw note (its user-written name), or null when it has
+  /// none. The row resolves the displayed title from it (note-first, generic
+  /// fallback) via `ScheduledPaymentFormat.templateName` — never the category
+  /// name (bugfix items 3/19).
+  final String? note;
 
   /// Account the occurrence would be paid from; the row's subtitle leads with
   /// it, same convention as `BudgetActivityItem`.
@@ -49,7 +52,7 @@ class BudgetScheduledItem extends Equatable {
   List<Object?> get props => [
         id,
         scheduledPaymentId,
-        title,
+        note,
         accountName,
         categoryIcon,
         categoryColor,

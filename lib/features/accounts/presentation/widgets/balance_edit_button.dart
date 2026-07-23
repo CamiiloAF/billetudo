@@ -24,7 +24,8 @@ class BalanceEditButton extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 40, height: 40),
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
-      style: IconButton.styleFrom(foregroundColor: context.colors.textSecondary),
+      style:
+          IconButton.styleFrom(foregroundColor: context.colors.textSecondary),
       icon: const Icon(LucideIcons.pencil),
     );
   }

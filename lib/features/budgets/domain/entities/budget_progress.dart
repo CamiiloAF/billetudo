@@ -90,6 +90,12 @@ class BudgetProgress extends Equatable {
   /// ejecuta" caption (HU-12).
   int get committedPercent => (committedFraction * 100).round();
 
+  /// What would still be free after approving every scheduled occurrence in
+  /// the window (bugfix item 10): `remainingMinor - scheduledMinor`, in cents.
+  /// Negative when the projection overshoots the budget — that case is the
+  /// [isScheduledOverspendRisk] territory, never shown as "free".
+  int get freeAfterScheduledMinor => remainingMinor - scheduledMinor;
+
   @override
   List<Object?> get props =>
       [amountMinor, spentMinor, daysLeft, scheduledMinor];

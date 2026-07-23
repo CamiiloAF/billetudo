@@ -27,12 +27,35 @@ void main() {
       expect(result.amountMinor, 150);
     });
 
-    test('una moneda sin decimales ignora el punto decimal', () {
-      const buffer = CalculatorAmountBuffer(amountMinor: 100);
-      final result = buffer.decimalPressed(currency: 'COP');
+    test('COP también acepta centavos (bugfix item 4)', () {
+      // El almacenamiento sigue en centavos enteros; solo se habilita la
+      // entrada de decimales para COP, antes bloqueada.
+      final result = const CalculatorAmountBuffer()
+          .digitPressed(4, currency: 'COP')
+          .digitPressed(5, currency: 'COP')
+          .decimalPressed(currency: 'COP')
+          .digitPressed(5, currency: 'COP')
+          .digitPressed(0, currency: 'COP');
 
-      expect(result.amountMinor, 100);
+      expect(result.amountMinor, 4550);
+      expect(result.entryFractionDigits, 2);
+      expect(result.amountMinor, isA<int>());
+    });
+  });
+
+  group('CalculatorAmountBuffer: limpiar (long-press borrar)', () {
+    test('cleared() vuelve a 0 y descarta operador, operando y fracción', () {
+      final buffer = const CalculatorAmountBuffer(amountMinor: 12300)
+          .operatorPressed(CalcOperator.add)
+          .digitPressed(5, currency: 'COP');
+      final result = buffer.cleared();
+
+      expect(result.amountMinor, 0);
       expect(result.entryFractionDigits, -1);
+      expect(result.calcOperator, isNull);
+      expect(result.calcOperand, isNull);
+      expect(result.startNewOperand, isFalse);
+      expect(result.justEvaluated, isFalse);
     });
   });
 

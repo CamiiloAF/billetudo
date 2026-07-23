@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -25,20 +26,32 @@ import '../widgets/sheets/confirm_delete_with_transactions_sheet.dart';
 /// Guardar/Eliminar. Which pieces show and whether Tipo is locked depends on
 /// [CategoryFormState], not on which of the 4 cases the caller thinks it is
 /// building — the state already encodes that.
-class CategoryFormPage extends StatelessWidget {
+class CategoryFormPage extends StatefulWidget {
   const CategoryFormPage({super.key});
+
+  @override
+  State<CategoryFormPage> createState() => _CategoryFormPageState();
+}
+
+class _CategoryFormPageState extends State<CategoryFormPage> {
+  final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CategoryFormCubit, CategoryFormState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
-          previous.deletePrompt != current.deletePrompt,
+          previous.deletePrompt != current.deletePrompt ||
+          previous.failedField != current.failedField,
       listener: (context, state) async {
         if (state.status == CategoryFormStatus.saved) {
-          Navigator.of(context).pop();
+          // Pop with the persisted category (null after a delete). Callers that
+          // don't await the push ignore it; the `Category Select Sheet`'s "+"
+          // (bugfix item 13) uses it to leave the new category selected.
+          Navigator.of(context).pop(state.savedCategory);
           return;
         }
+        _errorScroll.scrollToField(state.failedField);
         await _handlePrompt(context, state);
       },
       builder: (context, state) {
@@ -63,7 +76,10 @@ class CategoryFormPage extends StatelessWidget {
                 Expanded(
                   child: state.status == CategoryFormStatus.loading
                       ? const Center(child: CircularProgressIndicator())
-                      : CategoryFormBody(state: state),
+                      : CategoryFormBody(
+                          state: state,
+                          errorScroll: _errorScroll,
+                        ),
                 ),
               ],
             ),
@@ -139,9 +155,14 @@ class CategoryFormPage extends StatelessWidget {
 /// The form's fields: Apariencia, Nombre, Tipo (locked or not) and, only for
 /// a subcategory, Categoría padre.
 class CategoryFormBody extends StatelessWidget {
-  const CategoryFormBody({required this.state, super.key});
+  const CategoryFormBody({
+    required this.state,
+    required this.errorScroll,
+    super.key,
+  });
 
   final CategoryFormState state;
+  final FormErrorScrollController errorScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -181,16 +202,19 @@ class CategoryFormBody extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          initialValue: state.name,
-          maxLength: CategoryDraft.maxNameLength,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-            hintText: l10n.categoryFormNameHint,
-            counterText: '',
-            errorText: _errorFor(l10n, state, CategoryDraft.fieldName),
+        KeyedSubtree(
+          key: errorScroll.keyFor(CategoryDraft.fieldName),
+          child: TextFormField(
+            initialValue: state.name,
+            maxLength: CategoryDraft.maxNameLength,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: l10n.categoryFormNameHint,
+              counterText: '',
+              errorText: _errorFor(l10n, state, CategoryDraft.fieldName),
+            ),
+            onChanged: cubit.nameChanged,
           ),
-          onChanged: cubit.nameChanged,
         ),
         const SizedBox(height: 18),
         Text(
@@ -250,9 +274,15 @@ class CategoryFormBody extends StatelessWidget {
     if (state.failedField != field) {
       return null;
     }
-    return field == CategoryDraft.fieldName
-        ? l10n.categoryErrorName
-        : l10n.errorUnexpected;
+    if (field != CategoryDraft.fieldName) {
+      return l10n.errorUnexpected;
+    }
+    // The name failed one of two rules (validated in that order): empty ->
+    // required, or over the limit -> too long. Reconstruct which from the
+    // current value so an empty field never shows the length copy (fix #15b).
+    return state.name.trim().isEmpty
+        ? l10n.categoryErrorNameRequired
+        : l10n.categoryErrorName;
   }
 }
 

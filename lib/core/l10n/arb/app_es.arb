@@ -290,6 +290,8 @@
   "@accountFormSaveCta": {},
   "accountErrorType": "Elige el tipo de cuenta.",
   "@accountErrorType": {},
+  "accountErrorNameRequired": "Ingresa un nombre para la cuenta.",
+  "@accountErrorNameRequired": {},
   "accountErrorName": "Escribe un nombre de hasta 100 caracteres.",
   "@accountErrorName": {},
   "accountErrorCurrency": "Elige una moneda.",
@@ -401,6 +403,8 @@
   "@categoryFormKindLabel": {},
   "categoryFormParentLabel": "Categoría padre",
   "@categoryFormParentLabel": {},
+  "categoryErrorNameRequired": "Ingresa un nombre para la categoría.",
+  "@categoryErrorNameRequired": {},
   "categoryErrorName": "Escribe un nombre de hasta 100 caracteres.",
   "@categoryErrorName": {},
   "categoryKindLockedSubcategory": "Hereda el tipo de la categoría padre — no se puede cambiar en subcategorías.",
@@ -527,6 +531,10 @@
   "transactionsBalanceTotalLabel": "Saldo total",
   "@transactionsBalanceTotalLabel": {
     "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
+  },
+  "transactionsBalanceCardBalanceLabel": "Saldo",
+  "@transactionsBalanceCardBalanceLabel": {
+    "description": "Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta."
   },
   "transactionsBalanceCarouselCollapse": "Ocultar saldos",
   "@transactionsBalanceCarouselCollapse": {
@@ -775,6 +783,10 @@
   "@navBudgets": {},
   "navGoals": "Metas",
   "@navGoals": {},
+  "navScheduledPayments": "Pagos",
+  "@navScheduledPayments": {
+    "description": "Etiqueta corta de la pestaña de Pagos programados en la barra inferior."
+  },
   "navMore": "Más",
   "@navMore": {},
   "homeGreeting": "Hola de nuevo",
@@ -798,6 +810,20 @@
   "@homeSyncSyncing": {},
   "homeSyncOffline": "Sin conexión",
   "@homeSyncOffline": {},
+  "homeSyncSheetSyncedTitle": "Todo a salvo",
+  "@homeSyncSheetSyncedTitle": {},
+  "homeSyncSheetSyncedMessage": "Tu información está a salvo y sincronizada.",
+  "@homeSyncSheetSyncedMessage": {},
+  "homeSyncSheetSyncingTitle": "Sincronizando…",
+  "@homeSyncSheetSyncingTitle": {},
+  "homeSyncSheetSyncingMessage": "Estamos guardando tus cambios en la nube.",
+  "@homeSyncSheetSyncingMessage": {},
+  "homeSyncSheetOfflineTitle": "Sin conexión",
+  "@homeSyncSheetOfflineTitle": {},
+  "homeSyncSheetOfflineMessage": "Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.",
+  "@homeSyncSheetOfflineMessage": {},
+  "homeSyncSheetDismiss": "Entendido",
+  "@homeSyncSheetDismiss": {},
   "homeSpentInMonth": "Gastado en {month}",
   "@homeSpentInMonth": {
     "description": "Etiqueta del hero con el mes visible.",
@@ -842,6 +868,14 @@
   "@homeRecentTitle": {},
   "homeSeeAll": "Ver todos",
   "@homeSeeAll": {},
+  "homeBalancesTitle": "Mis cuentas",
+  "@homeBalancesTitle": {
+    "description": "Encabezado de la tira de saldos por cuenta en Inicio."
+  },
+  "homeBalancesSeeAll": "Ver todas",
+  "@homeBalancesSeeAll": {
+    "description": "Enlace de la tira de saldos que abre la lista de Cuentas."
+  },
   "homeEmptyMovements": "Aún no registras movimientos",
   "@homeEmptyMovements": {},
   "homeLoading": "Cargando inicio",
@@ -888,6 +922,8 @@
   "@moreReports": {},
   "moreReportsDescription": "Visualiza tus finanzas con gráficas",
   "@moreReportsDescription": {},
+  "moreGoalsDescription": "Ahorra para tus metas y objetivos",
+  "@moreGoalsDescription": {},
   "moreImportExport": "Importar y exportar",
   "@moreImportExport": {},
   "moreImportExportDescription": "Respalda o trae tus datos",
@@ -1137,8 +1173,19 @@
       "overage": { "type": "String" }
     }
   },
+  "budgetScheduledFreeCaption": "{amount} quedarían libres si apruebas los programados",
+  "@budgetScheduledFreeCaption": {
+    "description": "Sublínea del hero del detalle de presupuesto: cuánto quedaría libre tras aprobar los pagos programados del período. Solo cuando el margen es no negativo.",
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
   "budgetScheduledSheetTitle": "Pagos programados del período",
   "@budgetScheduledSheetTitle": {},
+  "budgetScheduledSheetSeeAll": "Ver todos los pagos programados",
+  "@budgetScheduledSheetSeeAll": {
+    "description": "Enlace al pie del sheet de pagos programados del presupuesto que abre la lista global de Pagos programados."
+  },
   "budgetScheduledSheetHint": "Suman {amount} de lo reservado este período.",
   "@budgetScheduledSheetHint": {
     "placeholders": { "amount": { "type": "String" } }
@@ -1404,6 +1451,8 @@
   "@scheduledPaymentsAdd": {},
   "scheduledPaymentsLoading": "Cargando tus pagos programados",
   "@scheduledPaymentsLoading": {},
+  "scheduledPaymentUntitled": "Pago programado",
+  "@scheduledPaymentUntitled": {},
   "scheduledPaymentsEmptyMessage": "Aún no tienes pagos programados",
   "@scheduledPaymentsEmptyMessage": {},
   "scheduledPaymentsErrorTitle": "No pudimos cargar tus pagos programados",
@@ -1606,11 +1655,11 @@
   "@scheduledPaymentDetailTagsEmpty": {},
   "scheduledPaymentBridgeTitle": "¿Es un pago programado?",
   "@scheduledPaymentBridgeTitle": {},
-  "scheduledPaymentBridgeMessage": "Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.",
+  "scheduledPaymentBridgeMessage": "Elegiste una fecha futura. Un movimiento con fecha futura se registra como pago programado; así se aplica solo cuando llegue el día.",
   "@scheduledPaymentBridgeMessage": {},
   "scheduledPaymentBridgeAccept": "Sí, programarlo",
   "@scheduledPaymentBridgeAccept": {},
-  "scheduledPaymentBridgeDecline": "No, guardar como siempre",
+  "scheduledPaymentBridgeDecline": "Cambiar la fecha",
   "@scheduledPaymentBridgeDecline": {},
   "scheduledFinishedCount": "Terminados · {count}",
   "@scheduledFinishedCount": {

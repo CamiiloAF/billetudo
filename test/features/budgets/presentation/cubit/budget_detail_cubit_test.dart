@@ -204,7 +204,7 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.pendingAdjustment, isNull);
         verify(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart'))).called(1);
+            periodStart: any(named: 'periodStart'))).called(1);
       },
     );
 
@@ -214,7 +214,7 @@ void main() {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
       },
       build: build,
@@ -231,7 +231,7 @@ void main() {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart'))).thenAnswer(
+            periodStart: any(named: 'periodStart'))).thenAnswer(
           (_) async =>
               const Left(NotFoundFailure('budget "bud-tarjeta" not found')),
         );
@@ -275,7 +275,7 @@ void main() {
           ),
         ).thenAnswer((_) async => const Right(unit));
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
       },
       build: build,
@@ -369,7 +369,7 @@ void main() {
           resumeFrom: DateTime(2025, 9, 21),
         );
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(edited));
       },
       build: build,
@@ -399,7 +399,7 @@ void main() {
         final result = await cubit.cancelAmountAdjustment();
         expect(result.getRight().toNullable(), unit);
         verifyNever(() => cancelBudgetAdjustment(any(),
-          periodStart: any(named: 'periodStart')));
+            periodStart: any(named: 'periodStart')));
       },
     );
 
@@ -409,10 +409,10 @@ void main() {
         when(() => getBudgetById('bud-tarjeta'))
             .thenAnswer((_) => Stream.value(Right(data)));
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => Right(adjustment));
         when(() => cancelBudgetAdjustment('bud-tarjeta',
-            periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => const Right(unit));
       },
       build: build,
@@ -422,7 +422,7 @@ void main() {
         expect(cubit.state.pendingAdjustment, adjustment);
         // From here on, the budget has no pending fork any more.
         when(() => getPendingBudgetAdjustment('bud-tarjeta',
-              periodStart: any(named: 'periodStart')))
+                periodStart: any(named: 'periodStart')))
             .thenAnswer((_) async => const Right(null));
         await cubit.cancelAmountAdjustment();
       },

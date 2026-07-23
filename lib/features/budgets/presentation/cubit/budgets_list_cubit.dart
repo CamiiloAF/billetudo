@@ -6,14 +6,19 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/budget_with_progress.dart';
 import '../../domain/usecases/get_active_budgets.dart';
+import '../../domain/usecases/reconcile_budget_scopes.dart';
 import 'budgets_list_state.dart';
 
 /// Drives the active budgets list (HU-04). Talks only to use cases.
 @injectable
 class BudgetsListCubit extends Cubit<BudgetsListState> {
-  BudgetsListCubit(this._getActiveBudgets) : super(const BudgetsListState());
+  BudgetsListCubit(
+    this._getActiveBudgets,
+    this._reconcileBudgetScopes,
+  ) : super(const BudgetsListState());
 
   final GetActiveBudgets _getActiveBudgets;
+  final ReconcileBudgetScopes _reconcileBudgetScopes;
 
   StreamSubscription<Result<List<BudgetWithProgress>>>? _subscription;
 
@@ -21,6 +26,12 @@ class BudgetsListCubit extends Cubit<BudgetsListState> {
   Future<void> start() async {
     await _subscription?.cancel();
     emit(const BudgetsListState());
+    // Fix #14: un-freeze any budget saved with a materialized "Todas"/whole-root
+    // scope before the list reads it. Idempotent, so it is safe every open.
+    await _reconcileBudgetScopes();
+    if (isClosed) {
+      return;
+    }
     _subscription = _getActiveBudgets().listen((result) {
       if (isClosed) {
         return;

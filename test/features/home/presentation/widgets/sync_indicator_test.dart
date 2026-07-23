@@ -104,4 +104,49 @@ void main() {
     // The icon freezes, but the screen reader still gets the progress label.
     expect(semanticsLabelOf(tester), 'Sincronizando…');
   });
+
+  testWidgets('con onTap: invoca el callback al tocar (bugfix item 6)',
+      (tester) async {
+    var tapped = 0;
+    await tester.pumpHomeWidget(
+      SyncIndicator(
+        status: HomeSyncStatus.synced,
+        onTap: () => tapped++,
+      ),
+    );
+
+    await tester.tap(find.byType(SyncIndicator));
+    expect(tapped, 1);
+  });
+
+  testWidgets('con onTap: área de toque ≥44pt y semántica de botón',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      SyncIndicator(status: HomeSyncStatus.synced, onTap: () {}),
+    );
+
+    final size = tester.getSize(
+      find.descendant(
+        of: find.byType(SyncIndicator),
+        matching: find.byType(InkResponse),
+      ),
+    );
+    expect(size.width, greaterThanOrEqualTo(44));
+    expect(size.height, greaterThanOrEqualTo(44));
+
+    final semantics = tester.widgetList<Semantics>(
+      find.descendant(
+        of: find.byType(SyncIndicator),
+        matching: find.byType(Semantics),
+      ),
+    );
+    expect(semantics.any((s) => s.properties.button ?? false), isTrue);
+  });
+
+  testWidgets('sin onTap: pasivo, sin gesto de toque', (tester) async {
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.synced));
+
+    expect(find.byType(InkResponse), findsNothing);
+  });
 }

@@ -17,7 +17,8 @@ void main() {
   });
 
   group('AccountFilterPreferenceDatasource', () {
-    test('readAccountIds() defaults to an empty set ("todas las cuentas") '
+    test(
+        'readAccountIds() defaults to an empty set ("todas las cuentas") '
         'when nothing was saved', () async {
       expect(await datasource.readAccountIds(), isEmpty);
     });
@@ -29,7 +30,8 @@ void main() {
       expect(await datasource.readAccountIds(), {'acc-1', 'acc-2'});
     });
 
-    test('writeAccountIds() with an empty set clears the saved key instead '
+    test(
+        'writeAccountIds() with an empty set clears the saved key instead '
         'of storing an empty list', () async {
       await datasource.writeAccountIds({'acc-1'});
       expect(await datasource.readAccountIds(), {'acc-1'});

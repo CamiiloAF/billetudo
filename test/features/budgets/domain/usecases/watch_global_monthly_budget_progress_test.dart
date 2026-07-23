@@ -114,8 +114,7 @@ void main() {
     expect(result.getRight().toNullable(), isNull);
   });
 
-  test('breaks ties by the most recently created qualifying budget',
-      () async {
+  test('breaks ties by the most recently created qualifying budget', () async {
     final older = entry(id: 'older', createdAt: DateTime(2026, 1, 1));
     final newer = entry(id: 'newer', createdAt: DateTime(2026, 6, 15));
     final middle = entry(id: 'middle', createdAt: DateTime(2026, 3, 1));

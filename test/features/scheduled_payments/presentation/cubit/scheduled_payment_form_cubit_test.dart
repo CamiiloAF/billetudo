@@ -192,6 +192,53 @@ void main() {
     );
   });
 
+  group('item 17: cambiar tipo reinicia la categoría', () {
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'gasto → ingreso limpia la categoría de gasto seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.categorySelected('cat-exp', CategoryKind.expense, 'Comida');
+        cubit.typeSelected(ScheduledPaymentType.income);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, ScheduledPaymentType.income);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+        expect(cubit.state.categoryName, isNull);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'ingreso → gasto limpia la categoría de ingreso seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(ScheduledPaymentType.income);
+        cubit.categorySelected('cat-inc', CategoryKind.income, 'Salario');
+        cubit.typeSelected(ScheduledPaymentType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, ScheduledPaymentType.expense);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'reelegir el mismo tipo no borra la categoría',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.categorySelected('cat-exp', CategoryKind.expense, 'Comida');
+        cubit.typeSelected(ScheduledPaymentType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.categoryId, 'cat-exp');
+      },
+    );
+  });
+
   group('Fix: "Primer pago" no cambia solo (firstPaymentDate vs. nextDate)',
       () {
     // The cursor has already advanced past the immutable first payment date

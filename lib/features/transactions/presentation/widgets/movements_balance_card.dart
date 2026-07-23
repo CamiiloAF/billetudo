@@ -9,10 +9,13 @@ import '../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../accounts/presentation/widgets/credit_usage_bar.dart';
 
 /// One page of the Movimientos balance carousel (Mejora #2): an account's
-/// balance at a glance. A non-card account shows its name, type and a single
-/// balance figure; a credit card swaps the figure for a usage bar plus a
-/// Deuda/Cupo disponible pair. Both variants share [height] so the
-/// carousel's cards never jump in size as the user swipes between accounts.
+/// balance at a glance. Both variants mirror the same structure (variant A2):
+/// a full-width identity on top (avatar + name + type) and a labelled figure
+/// block below. A non-card account's block is a single "Saldo" figure; a credit
+/// card's block is a usage bar plus a Deuda/Cupo disponible pair. Because the
+/// name owns the full width — never competing with a hero amount on its row —
+/// it can wrap to two lines instead of truncating. Both variants share [height]
+/// so the carousel's cards never jump in size as the user swipes.
 class MovementsBalanceCard extends StatelessWidget {
   const MovementsBalanceCard({
     required this.entry,
@@ -30,7 +33,14 @@ class MovementsBalanceCard extends StatelessWidget {
   /// Fixed so the credit-card variant (bar + two figures) and the plain
   /// variant (one figure) line up in the same [PageView] without resizing it.
   /// Exposed so the carousel's [PageView] can bound itself to the same height.
-  static const double height = 160;
+  ///
+  /// Sized to hold a two-line name in the *taller* (credit) variant without
+  /// clipping: the A2 mock reads ~124px, but Flutter's real line metrics (the
+  /// brand text theme is bigger than the mock's compact type, and Pencil does
+  /// not render line-height the same way) push a two-line credit card past
+  /// that. This is the value verified not to overflow with a long name in
+  /// either variant — see `movements_balance_card_test.dart`.
+  static const double height = 150;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +57,7 @@ class MovementsBalanceCard extends StatelessWidget {
           onTap: () => onOpenAccount(account.id),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
               border: Border.all(color: colors.border),
@@ -84,11 +94,16 @@ class MovementsBalanceCardIdentity extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // The name owns the full card width here (no hero amount shares
+              // its row), so it wraps to a second line instead of truncating.
+              // Only a name longer than two lines ellipsizes (A2).
               Text(
                 account.name,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 15,
+                  height: 1.25,
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,
                 ),
@@ -99,6 +114,8 @@ class MovementsBalanceCardIdentity extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                   color: colors.textSecondary,
                 ),
               ),
@@ -110,8 +127,10 @@ class MovementsBalanceCardIdentity extends StatelessWidget {
   }
 }
 
-/// Non-card variant: identity on the left, one balance figure on the right,
-/// centred in the fixed card height.
+/// Non-card variant: identity on top, then a single labelled "Saldo" figure —
+/// the same [MovementsBalanceCardFigure] the credit variant uses for its
+/// Deuda/Cupo pair, so the two cards read as one family when swiped (A2). No
+/// usage bar: a plain account has no credit limit.
 class MovementsBalanceCardSimple extends StatelessWidget {
   const MovementsBalanceCardSimple({required this.entry, super.key});
 
@@ -119,35 +138,27 @@ class MovementsBalanceCardSimple extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final account = entry.account;
     final balanceMinor = entry.balance.balanceMinor;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(child: MovementsBalanceCardIdentity(entry: entry)),
-        const SizedBox(width: 12),
-        // A long figure (e.g. `$12.400.000`) would otherwise squeeze the name
-        // out: `FittedBox` scales the amount down to fit its share instead of
-        // truncating money, and never upscales the short common case.
-        Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text(
-              const MoneyFormatter()
-                  .formatSymbol(balanceMinor, currencyCode: account.currency),
-              maxLines: 1,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                // Negative reads as a debt/overdraft in `$expense`; anything
-                // else stays neutral (never green — positive is the baseline,
-                // HU-04).
-                color: balanceMinor < 0 ? colors.expense : colors.textPrimary,
-              ),
-            ),
-          ),
+        MovementsBalanceCardIdentity(entry: entry),
+        const SizedBox(height: 10),
+        MovementsBalanceCardFigure(
+          label: l10n.transactionsBalanceCardBalanceLabel,
+          amount: const MoneyFormatter()
+              .formatSymbol(balanceMinor, currencyCode: account.currency),
+          // A negative balance reads as a debt/overdraft in red; anything else
+          // stays neutral (never green — positive is the baseline, HU-04).
+          // Small text needs `expenseText` for 4.5:1, matching the credit
+          // Deuda figure.
+          color: balanceMinor < 0 ? colors.expenseText : colors.textPrimary,
+          alignEnd: false,
         ),
       ],
     );
@@ -171,14 +182,15 @@ class MovementsBalanceCardCredit extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         MovementsBalanceCardIdentity(entry: entry),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         CreditUsageBar(
           balance: balance,
           creditLimitMinor: account.creditLimitMinor ?? 0,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -236,8 +248,7 @@ class MovementsBalanceCardFigure extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.colors;
-    final cross =
-        alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final cross = alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start;
     final textAlign = alignEnd ? TextAlign.end : TextAlign.start;
 
     return Column(
@@ -250,17 +261,20 @@ class MovementsBalanceCardFigure extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: textAlign,
           style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
             color: colors.textSecondary,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Text(
           amount,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: textAlign,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
             color: color,
           ),
         ),

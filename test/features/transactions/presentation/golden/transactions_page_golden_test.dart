@@ -64,8 +64,8 @@ AccountWithBalance _buildAccountWithBalance({
   );
   return AccountWithBalance(
     account: account,
-    balance:
-        AccountBalance.fromBalance(account: account, balanceMinor: balanceMinor),
+    balance: AccountBalance.fromBalance(
+        account: account, balanceMinor: balanceMinor),
   );
 }
 
@@ -257,8 +257,7 @@ void main() {
     // HU-06a's Account Chip, "2+ selected" state (`XlXA8`/`idmDe`): a
     // generic `layers` leading icon and the "N cuentas" count label instead
     // of either account's own name.
-    testWidgets('account chip: 2+ accounts selected ($suffix)',
-        (tester) async {
+    testWidgets('account chip: 2+ accounts selected ($suffix)', (tester) async {
       await golden(
         tester,
         TransactionsListState(
@@ -316,8 +315,7 @@ void main() {
     // transition (previous `pendingUndoId` null -> non-null) through
     // `BlocConsumer.listenWhen`, not a static mocked state — a plain
     // `when(() => cubit.state)` never fires the listener.
-    testWidgets('undo snackbar visible after delete ($suffix)',
-        (tester) async {
+    testWidgets('undo snackbar visible after delete ($suffix)', (tester) async {
       final baseState = TransactionsListState(
         status: TransactionsListStatus.ready,
         items: items,
@@ -344,7 +342,8 @@ void main() {
       );
       await expectLater(
         find.byType(TransactionsPage),
-        matchesGoldenFile('goldens/transactions_page_undo_snackbar_$suffix.png'),
+        matchesGoldenFile(
+            'goldens/transactions_page_undo_snackbar_$suffix.png'),
       );
     });
   }

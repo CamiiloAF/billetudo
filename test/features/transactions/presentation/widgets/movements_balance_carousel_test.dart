@@ -35,11 +35,13 @@ void main() {
     balanceMinor: 124000000,
   );
   final bancolombia = buildAccountWithBalance(
-    account: buildAccount(id: 'a2', name: 'Bancolombia', type: AccountType.bank),
+    account:
+        buildAccount(id: 'a2', name: 'Bancolombia', type: AccountType.bank),
     balanceMinor: 300000000,
   );
   final visa = buildAccountWithBalance(
-    account: buildCard(id: 'a3', name: 'Tarjeta Visa', creditLimitMinor: 300000000),
+    account:
+        buildCard(id: 'a3', name: 'Tarjeta Visa', creditLimitMinor: 300000000),
     balanceMinor: -68000000,
   );
 
@@ -247,7 +249,8 @@ void main() {
       // Limit 3.000.000, debt 3.500.000: the card is 500k over its limit, so
       // "Cupo disponible" is floored at $0, never a negative figure (HU-04).
       final overLimit = buildAccountWithBalance(
-        account: buildCard(id: 'ol', name: 'Visa Sobrecupo', creditLimitMinor: 300000000),
+        account: buildCard(
+            id: 'ol', name: 'Visa Sobrecupo', creditLimitMinor: 300000000),
         balanceMinor: -350000000,
       );
       await pumpCarousel(

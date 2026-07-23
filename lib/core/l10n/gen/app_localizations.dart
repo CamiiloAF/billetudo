@@ -692,6 +692,12 @@ abstract class AppLocalizations {
   /// **'Elige el tipo de cuenta.'**
   String get accountErrorType;
 
+  /// No description provided for @accountErrorNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un nombre para la cuenta.'**
+  String get accountErrorNameRequired;
+
   /// No description provided for @accountErrorName.
   ///
   /// In es, this message translates to:
@@ -961,6 +967,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Categoría padre'**
   String get categoryFormParentLabel;
+
+  /// No description provided for @categoryErrorNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un nombre para la categoría.'**
+  String get categoryErrorNameRequired;
 
   /// No description provided for @categoryErrorName.
   ///
@@ -1255,6 +1267,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo total'**
   String get transactionsBalanceTotalLabel;
+
+  /// Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo'**
+  String get transactionsBalanceCardBalanceLabel;
 
   /// Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2).
   ///
@@ -1874,6 +1892,12 @@ abstract class AppLocalizations {
   /// **'Metas'**
   String get navGoals;
 
+  /// Etiqueta corta de la pestaña de Pagos programados en la barra inferior.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos'**
+  String get navScheduledPayments;
+
   /// No description provided for @navMore.
   ///
   /// In es, this message translates to:
@@ -1915,6 +1939,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin conexión'**
   String get homeSyncOffline;
+
+  /// No description provided for @homeSyncSheetSyncedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo a salvo'**
+  String get homeSyncSheetSyncedTitle;
+
+  /// No description provided for @homeSyncSheetSyncedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu información está a salvo y sincronizada.'**
+  String get homeSyncSheetSyncedMessage;
+
+  /// No description provided for @homeSyncSheetSyncingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizando…'**
+  String get homeSyncSheetSyncingTitle;
+
+  /// No description provided for @homeSyncSheetSyncingMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Estamos guardando tus cambios en la nube.'**
+  String get homeSyncSheetSyncingMessage;
+
+  /// No description provided for @homeSyncSheetOfflineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get homeSyncSheetOfflineTitle;
+
+  /// No description provided for @homeSyncSheetOfflineMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.'**
+  String get homeSyncSheetOfflineMessage;
+
+  /// No description provided for @homeSyncSheetDismiss.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get homeSyncSheetDismiss;
 
   /// Etiqueta del hero con el mes visible.
   ///
@@ -1969,6 +2035,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver todos'**
   String get homeSeeAll;
+
+  /// Encabezado de la tira de saldos por cuenta en Inicio.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis cuentas'**
+  String get homeBalancesTitle;
+
+  /// Enlace de la tira de saldos que abre la lista de Cuentas.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todas'**
+  String get homeBalancesSeeAll;
 
   /// No description provided for @homeEmptyMovements.
   ///
@@ -2107,6 +2185,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Visualiza tus finanzas con gráficas'**
   String get moreReportsDescription;
+
+  /// No description provided for @moreGoalsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorra para tus metas y objetivos'**
+  String get moreGoalsDescription;
 
   /// No description provided for @moreImportExport.
   ///
@@ -2678,11 +2762,23 @@ abstract class AppLocalizations {
   /// **'+ {amount} programado — excedería el presupuesto por {overage}'**
   String budgetScheduledCaptionRisk(String amount, String overage);
 
+  /// Sublínea del hero del detalle de presupuesto: cuánto quedaría libre tras aprobar los pagos programados del período. Solo cuando el margen es no negativo.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} quedarían libres si apruebas los programados'**
+  String budgetScheduledFreeCaption(String amount);
+
   /// No description provided for @budgetScheduledSheetTitle.
   ///
   /// In es, this message translates to:
   /// **'Pagos programados del período'**
   String get budgetScheduledSheetTitle;
+
+  /// Enlace al pie del sheet de pagos programados del presupuesto que abre la lista global de Pagos programados.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todos los pagos programados'**
+  String get budgetScheduledSheetSeeAll;
 
   /// No description provided for @budgetScheduledSheetHint.
   ///
@@ -3362,6 +3458,12 @@ abstract class AppLocalizations {
   /// **'Cargando tus pagos programados'**
   String get scheduledPaymentsLoading;
 
+  /// No description provided for @scheduledPaymentUntitled.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago programado'**
+  String get scheduledPaymentUntitled;
+
   /// No description provided for @scheduledPaymentsEmptyMessage.
   ///
   /// In es, this message translates to:
@@ -3870,7 +3972,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentBridgeMessage.
   ///
   /// In es, this message translates to:
-  /// **'Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.'**
+  /// **'Elegiste una fecha futura. Un movimiento con fecha futura se registra como pago programado; así se aplica solo cuando llegue el día.'**
   String get scheduledPaymentBridgeMessage;
 
   /// No description provided for @scheduledPaymentBridgeAccept.
@@ -3882,7 +3984,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduledPaymentBridgeDecline.
   ///
   /// In es, this message translates to:
-  /// **'No, guardar como siempre'**
+  /// **'Cambiar la fecha'**
   String get scheduledPaymentBridgeDecline;
 
   /// No description provided for @scheduledFinishedCount.

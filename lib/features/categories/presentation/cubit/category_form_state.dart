@@ -53,6 +53,7 @@ class CategoryFormState extends Equatable {
     this.deletionImpact,
     this.deletePrompt = CategoryDeletePrompt.none,
     this.pendingTransactionResolution,
+    this.savedCategory,
     this.failure,
   });
 
@@ -86,6 +87,12 @@ class CategoryFormState extends Equatable {
   /// a combined delete (HU-04, both conditions on the same root).
   final TransactionResolution? pendingTransactionResolution;
 
+  /// The category persisted by a successful [CategoryFormStatus.saved] create
+  /// or update, so the page can pop with it. This is what lets the inline "+"
+  /// of the `Category Select Sheet` (bugfix item 13) receive the freshly
+  /// created category and leave it selected on return. `null` after a delete.
+  final Category? savedCategory;
+
   final Failure? failure;
 
   bool get isEditing => id != null;
@@ -111,6 +118,7 @@ class CategoryFormState extends Equatable {
     CategoryDeletePrompt? deletePrompt,
     TransactionResolution? pendingTransactionResolution,
     bool clearPendingTransactionResolution = false,
+    Category? savedCategory,
     Failure? failure,
   }) =>
       CategoryFormState(
@@ -128,6 +136,7 @@ class CategoryFormState extends Equatable {
         pendingTransactionResolution: clearPendingTransactionResolution
             ? null
             : pendingTransactionResolution ?? this.pendingTransactionResolution,
+        savedCategory: savedCategory ?? this.savedCategory,
         // A new state carrying data is a state without an error: the caller
         // clears the failure by simply not passing one.
         failure: failure,
@@ -147,6 +156,7 @@ class CategoryFormState extends Equatable {
         deletionImpact,
         deletePrompt,
         pendingTransactionResolution,
+        savedCategory,
         failure,
       ];
 }

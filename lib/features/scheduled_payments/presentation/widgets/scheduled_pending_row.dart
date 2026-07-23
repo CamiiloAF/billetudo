@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/pending_scheduled_occurrence.dart';
@@ -42,10 +43,10 @@ class ScheduledPendingRow extends StatelessWidget {
     final isTransfer = payment.isTransfer;
     final name = ScheduledPaymentFormat.templateName(
       note: payment.note,
-      categoryName: entry.categoryName,
       isTransfer: isTransfer,
       accountName: entry.accountName,
       transferAccountName: entry.transferAccountName,
+      fallback: AppLocalizations.of(context).scheduledPaymentUntitled,
     );
     final subtitle = ScheduledPaymentFormat.accountCategoryLine(
       accountName: entry.accountName,

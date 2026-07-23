@@ -79,7 +79,11 @@ Todos los estados comparten estos valores **para que ninguno mueva el contenido 
 
 ## Navegación
 
-Pantalla **apilada**: `Page Header` (atrás) + **sin `Tab Bar`** (se llega desde Más → Pagos programados). Crear = **FAB**. La subpantalla "Por confirmar" también es apilada, con scroll real (`ListView`); la lista **no** tiene scroll interno anidado.
+**Actualización (fix item 7, `bugfixes-0.0.1.md`, 2026-07-22):** Pagos Programados pasó a ser un **destino del `Tab Bar`** (reemplazó a Metas en el bottom nav; slot 3, ícono `calendar-clock`, label "Pagos"). Como tab-root usa el header de destino de tab (patrón `RootTabHeader`, **sin** botón atrás), NO `Page Header` apilado. Metas salió del tab y quedó accesible desde **Más** + un chip al final de los **accesos rápidos** del Home. Las subpantallas de PP (`nuevo`, `por-confirmar`, `:id`, `:id/editar`) siguen siendo **apiladas** sobre el navigator raíz (por encima del tab bar), con su `Page Header` (atrás). Crear = **FAB**. La subpantalla "Por confirmar" es apilada, con scroll real (`ListView`), sin scroll interno anidado.
+
+<!-- Histórico (antes del fix item 7): "Pantalla apilada: Page Header (atrás) + sin Tab Bar (se llega desde Más → Pagos programados)". Ya no aplica: ahora es tab-root. -->
+
+Falta actualizar el **Tab Bar** en `billetudo.pen` (`u3b5s9`) para reflejar el slot Pagos Programados (`calendar-clock`/"Pagos") en vez de Metas — pendiente de `pencil-designer`.
 
 **Los chips Activos/Terminados NO navegan** — filtran en sitio (ver "Terminados: filtro en sitio" arriba). La única navegación desde la lista es: fila de desbordamiento → "Por confirmar", tarjeta → detalle, FAB → formulario.
 

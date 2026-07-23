@@ -8,6 +8,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget.dart'
     as domain show Budget;
 import 'package:billetudo/features/budgets/domain/entities/budget_draft.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
+import 'package:billetudo/features/budgets/domain/services/budget_category_scope_resolver.dart';
 import 'package:billetudo/features/budgets/domain/services/budget_period_calculator.dart';
 import 'package:billetudo/features/budgets/domain/services/budget_progress_calculator.dart';
 import 'package:billetudo/features/budgets/domain/services/zero_based_summary_calculator.dart';
@@ -33,6 +34,7 @@ void main() {
       const BudgetProgressCalculator(),
       const ZeroBasedSummaryCalculator(),
       const ProjectUpcomingOccurrences(),
+      const BudgetCategoryScopeResolver(),
     );
   });
 
@@ -334,7 +336,8 @@ void main() {
         expect(reopened.amountMinor, originalBefore.amountMinor);
 
         expect(
-          (await repository.getPendingAdjustment(id, periodStart: visible.start))
+          (await repository.getPendingAdjustment(id,
+                  periodStart: visible.start))
               .getRight()
               .toNullable(),
           isNull,

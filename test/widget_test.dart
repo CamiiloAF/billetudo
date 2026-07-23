@@ -25,7 +25,8 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockWatchAccounts extends Mock implements WatchAccounts {}
 
-class _MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+class _MockThemeModeCubit extends MockCubit<ThemeMode>
+    implements ThemeModeCubit {}
 
 class _MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}

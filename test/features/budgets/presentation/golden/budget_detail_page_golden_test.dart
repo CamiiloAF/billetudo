@@ -87,6 +87,7 @@ void main() {
           onClosed: () {},
           onOpenTransaction: (_) async => null,
           onOpenScheduledPayment: (_) {},
+            onSeeAllScheduled: () {},
         ),
       ),
       brightness: brightness,

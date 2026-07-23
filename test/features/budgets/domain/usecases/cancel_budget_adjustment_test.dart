@@ -17,19 +17,22 @@ void main() {
   });
 
   test('forwards the budget id', () async {
-    when(() => repository.cancelBudgetAdjustment('b1', periodStart: DateTime(2026)))
+    when(() => repository.cancelBudgetAdjustment('b1',
+            periodStart: DateTime(2026)))
         .thenAnswer((_) async => const Right(unit));
 
     final result = await usecase('b1', periodStart: DateTime(2026));
 
     expect(result.getRight().toNullable(), unit);
-    verify(() => repository.cancelBudgetAdjustment('b1', periodStart: DateTime(2026))).called(1);
+    verify(() => repository.cancelBudgetAdjustment('b1',
+        periodStart: DateTime(2026))).called(1);
   });
 
   test('forwards a NotFoundFailure when there is no pending fork to cancel',
       () async {
     const failure = NotFoundFailure('budget "b1" has no pending adjustment');
-    when(() => repository.cancelBudgetAdjustment('b1', periodStart: DateTime(2026)))
+    when(() => repository.cancelBudgetAdjustment('b1',
+            periodStart: DateTime(2026)))
         .thenAnswer((_) async => const Left(failure));
 
     final result = await usecase('b1', periodStart: DateTime(2026));

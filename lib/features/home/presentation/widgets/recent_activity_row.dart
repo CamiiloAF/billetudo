@@ -92,7 +92,6 @@ class RecentActivityRow extends StatelessWidget {
     final date = DateFormat.MMMd(locale).format(transaction.date);
     return '${entry.accountName} · $date';
   }
-
 }
 
 /// The 44x44 category circle at the start of a recent-activity row.

@@ -219,8 +219,13 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
       case Left(value: final failure):
         emit(
             state.copyWith(status: CategoryFormStatus.ready, failure: failure));
-      case Right():
-        emit(state.copyWith(status: CategoryFormStatus.saved));
+      case Right(value: final category):
+        emit(
+          state.copyWith(
+            status: CategoryFormStatus.saved,
+            savedCategory: category,
+          ),
+        );
     }
   }
 

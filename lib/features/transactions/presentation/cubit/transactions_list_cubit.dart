@@ -19,7 +19,13 @@ import 'transactions_list_state.dart';
 ///
 /// Talks only to use cases. Every filter change re-subscribes to
 /// `watchTransactions`, since the filter itself is part of the query.
-@injectable
+///
+/// Registered as a `@lazySingleton` (behaviour-equivalent to the previous
+/// factory, since the Movimientos branch already holds its single instance
+/// alive for the whole app session inside the shell's `IndexedStack`): this
+/// lets Inicio reach the live filter through DI and set it before switching to
+/// the tab (bugfix item 8, [filterByAccount]).
+@lazySingleton
 class TransactionsListCubit extends Cubit<TransactionsListState> {
   TransactionsListCubit(
     this._watchTransactions,
@@ -56,7 +62,8 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
     _prunedStaleAccountFilter = false;
-    final persistedAccountIds = await _accountFilterPreferences.readAccountIds();
+    final persistedAccountIds =
+        await _accountFilterPreferences.readAccountIds();
     emit(
       TransactionsListState(
         filter: state.filter.copyWith(accountIds: persistedAccountIds),
@@ -101,6 +108,14 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     }
   }
 
+  /// Bugfix item 8: pins the account filter to exactly [accountId] (dropping
+  /// every other selected account), used when the user taps that account's
+  /// mini-card in Inicio's "Mis cuentas" strip. Routes through [updateFilter]
+  /// so the HU-06a persisted preference and the live stream stay a single
+  /// source of truth — no duplicated filter state.
+  Future<void> filterByAccount(String accountId) =>
+      updateFilter(state.filter.copyWith(accountIds: {accountId}));
+
   /// HU-06: free-text search over note and category name.
   Future<void> searchChanged(String text) =>
       updateFilter(state.filter.copyWith(searchText: text));
@@ -116,9 +131,9 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     await _subscription?.cancel();
     emit(state.copyWith(filter: filter));
     _subscribe();
-    final accountIdsChanged = filter.accountIds.length !=
-            previous.accountIds.length ||
-        !filter.accountIds.containsAll(previous.accountIds);
+    final accountIdsChanged =
+        filter.accountIds.length != previous.accountIds.length ||
+            !filter.accountIds.containsAll(previous.accountIds);
     if (accountIdsChanged) {
       unawaited(_accountFilterPreferences.writeAccountIds(filter.accountIds));
     }

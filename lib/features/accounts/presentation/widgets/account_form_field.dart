@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/keyboard_done_toolbar.dart';
 
 /// The `Form Field` component: label + input box (optional icon) + optional
 /// error text.
@@ -92,11 +93,43 @@ class AccountFormField extends StatelessWidget {
 
   bool get isSelector => onTap != null;
 
+  /// Whether this field opens the system number keyboard, which on iOS lacks a
+  /// return key — the case that needs a "Listo" accessory to dismiss.
+  bool get _usesSystemNumberKeyboard {
+    final type = keyboardType;
+    return type == TextInputType.number ||
+        type == TextInputType.phone ||
+        type == const TextInputType.numberWithOptions(decimal: true) ||
+        type == const TextInputType.numberWithOptions(signed: true) ||
+        type ==
+            const TextInputType.numberWithOptions(decimal: true, signed: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final icon = this.icon;
+
+    final Widget input = TextFormField(
+      initialValue: initialValue,
+      controller: controller,
+      onChanged: onChanged,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLength: maxLength,
+      obscureText: obscureText,
+      textCapitalization: textCapitalization,
+      style: theme.textTheme.bodyLarge,
+      decoration: InputDecoration(
+        hintText: hint,
+        counterText: '',
+        errorText: errorText,
+        prefixIcon:
+            icon == null ? null : Icon(icon, color: colors.textSecondary),
+        suffixIcon: trailing,
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,26 +150,10 @@ class AccountFormField extends StatelessWidget {
             hasError: errorText != null,
             onTap: onTap!,
           )
+        else if (_usesSystemNumberKeyboard)
+          KeyboardDoneToolbar(child: input)
         else
-          TextFormField(
-            initialValue: initialValue,
-            controller: controller,
-            onChanged: onChanged,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            maxLength: maxLength,
-            obscureText: obscureText,
-            textCapitalization: textCapitalization,
-            style: theme.textTheme.bodyLarge,
-            decoration: InputDecoration(
-              hintText: hint,
-              counterText: '',
-              errorText: errorText,
-              prefixIcon:
-                  icon == null ? null : Icon(icon, color: colors.textSecondary),
-              suffixIcon: trailing,
-            ),
-          ),
+          input,
         if (helperText != null) ...[
           const SizedBox(height: 6),
           Text(

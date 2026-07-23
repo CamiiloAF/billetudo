@@ -336,6 +336,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountErrorType => 'Elige el tipo de cuenta.';
 
   @override
+  String get accountErrorNameRequired => 'Ingresa un nombre para la cuenta.';
+
+  @override
   String get accountErrorName => 'Escribe un nombre de hasta 100 caracteres.';
 
   @override
@@ -496,6 +499,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryFormParentLabel => 'Categoría padre';
+
+  @override
+  String get categoryErrorNameRequired =>
+      'Ingresa un nombre para la categoría.';
 
   @override
   String get categoryErrorName => 'Escribe un nombre de hasta 100 caracteres.';
@@ -684,6 +691,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsBalanceTotalLabel => 'Saldo total';
+
+  @override
+  String get transactionsBalanceCardBalanceLabel => 'Saldo';
 
   @override
   String get transactionsBalanceCarouselCollapse => 'Ocultar saldos';
@@ -1013,6 +1023,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navGoals => 'Metas';
 
   @override
+  String get navScheduledPayments => 'Pagos';
+
+  @override
   String get navMore => 'Más';
 
   @override
@@ -1034,6 +1047,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSyncOffline => 'Sin conexión';
+
+  @override
+  String get homeSyncSheetSyncedTitle => 'Todo a salvo';
+
+  @override
+  String get homeSyncSheetSyncedMessage =>
+      'Tu información está a salvo y sincronizada.';
+
+  @override
+  String get homeSyncSheetSyncingTitle => 'Sincronizando…';
+
+  @override
+  String get homeSyncSheetSyncingMessage =>
+      'Estamos guardando tus cambios en la nube.';
+
+  @override
+  String get homeSyncSheetOfflineTitle => 'Sin conexión';
+
+  @override
+  String get homeSyncSheetOfflineMessage =>
+      'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.';
+
+  @override
+  String get homeSyncSheetDismiss => 'Entendido';
 
   @override
   String homeSpentInMonth(String month) {
@@ -1075,6 +1112,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSeeAll => 'Ver todos';
+
+  @override
+  String get homeBalancesTitle => 'Mis cuentas';
+
+  @override
+  String get homeBalancesSeeAll => 'Ver todas';
 
   @override
   String get homeEmptyMovements => 'Aún no registras movimientos';
@@ -1148,6 +1191,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moreReportsDescription => 'Visualiza tus finanzas con gráficas';
+
+  @override
+  String get moreGoalsDescription => 'Ahorra para tus metas y objetivos';
 
   @override
   String get moreImportExport => 'Importar y exportar';
@@ -1531,7 +1577,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String budgetScheduledFreeCaption(String amount) {
+    return '$amount quedarían libres si apruebas los programados';
+  }
+
+  @override
   String get budgetScheduledSheetTitle => 'Pagos programados del período';
+
+  @override
+  String get budgetScheduledSheetSeeAll => 'Ver todos los pagos programados';
 
   @override
   String budgetScheduledSheetHint(String amount) {
@@ -1917,6 +1971,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduledPaymentsLoading => 'Cargando tus pagos programados';
 
   @override
+  String get scheduledPaymentUntitled => 'Pago programado';
+
+  @override
   String get scheduledPaymentsEmptyMessage => 'Aún no tienes pagos programados';
 
   @override
@@ -2201,13 +2258,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaymentBridgeMessage =>
-      'Elegiste una fecha futura. Puedes convertir este movimiento en un pago programado para no tener que registrarlo de nuevo.';
+      'Elegiste una fecha futura. Un movimiento con fecha futura se registra como pago programado; así se aplica solo cuando llegue el día.';
 
   @override
   String get scheduledPaymentBridgeAccept => 'Sí, programarlo';
 
   @override
-  String get scheduledPaymentBridgeDecline => 'No, guardar como siempre';
+  String get scheduledPaymentBridgeDecline => 'Cambiar la fecha';
 
   @override
   String scheduledFinishedCount(int count) {

@@ -24,7 +24,8 @@ class MockSignOut extends Mock implements SignOut {}
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
-class MockThemeModeCubit extends MockCubit<ThemeMode> implements ThemeModeCubit {}
+class MockThemeModeCubit extends MockCubit<ThemeMode>
+    implements ThemeModeCubit {}
 
 void main() {
   late MockWatchAuthSession watchAuthSession;

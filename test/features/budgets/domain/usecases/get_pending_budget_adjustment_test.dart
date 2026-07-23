@@ -19,13 +19,16 @@ void main() {
   });
 
   test('returns Right(null) when the budget has no pending fork', () async {
-    when(() => repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
+    when(() =>
+            repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
         .thenAnswer((_) async => const Right(null));
 
     final result = await usecase('b1', periodStart: DateTime(2026));
 
     expect(result.getRight().toNullable(), isNull);
-    verify(() => repository.getPendingAdjustment('b1', periodStart: DateTime(2026))).called(1);
+    verify(() =>
+            repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
+        .called(1);
   });
 
   test('returns Right(adjustment) when the budget has a pending fork',
@@ -36,7 +39,8 @@ void main() {
       resumeAmountMinor: 100000,
       resumeFrom: DateTime(2026, 9, 1),
     );
-    when(() => repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
+    when(() =>
+            repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
         .thenAnswer((_) async => Right(adjustment));
 
     final result = await usecase('b1', periodStart: DateTime(2026));
@@ -49,7 +53,8 @@ void main() {
 
   test('forwards a repository failure unchanged', () async {
     const failure = NotFoundFailure('budget "b1" does not exist');
-    when(() => repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
+    when(() =>
+            repository.getPendingAdjustment('b1', periodStart: DateTime(2026)))
         .thenAnswer((_) async => const Left(failure));
 
     final result = await usecase('b1', periodStart: DateTime(2026));

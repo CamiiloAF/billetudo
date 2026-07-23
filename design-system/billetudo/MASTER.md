@@ -18,7 +18,7 @@
 
 ### Paleta de color
 
-34 variables definidas en `billetudo.pen` (`get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
+35 variables definidas en `billetudo.pen` (`get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
 
 | Token | Claro | Oscuro | Uso |
 |-------|-------|--------|-----|
@@ -49,6 +49,7 @@
 | `skeleton` | `#ECEBF3` | `#45455F` | **Relleno de bloques placeholder de skeleton (estados de carga).** Claro = idéntico a `border` (el skeleton claro no cambia); oscuro deliberadamente más luminoso que `border` (`#2A2A3D`) para que el skeleton se lea sin gritar (~1.9:1 sobre `background`, ~1.77:1 sobre `surface`) — `border` oscuro daba ~1.25:1, casi invisible. Usar SOLO para rellenos placeholder de skeleton, nunca para bordes/divisores reales (esos siguen en `border`). Disponible para reusar en skeletons de otras features (Cuentas/Categorías/Movimientos). |
 | `text-primary` | `#1C1B29` | `#F4F3FA` | Texto principal. |
 | `text-secondary` | `#6B6980` | `#9A98B5` | Texto secundario/metadatos. |
+| `segment-inactive-text` | `#5F5D73` | `#9A98B5` (= `text-secondary` oscuro) | Label del segmento **INACTIVO** del `Segmented Control` (`hFu41`). `text-secondary` sobre `muted` daba ~4.4:1 en claro (falla AA 4.5); este token calibrado sube a ~5.3:1 en claro manteniéndose más tenue que el activo (`text-primary` ~13:1). En oscuro reusa el valor de `text-secondary` (~6:1, ya pasaba → cero cambio visual). Mismo patrón que `expense-text`/`income-text`. Usar solo para labels inactivos de segmented controls. |
 | `on-primary` | `#FFFFFF` (fijo) | — | Texto/iconos sobre superficies `primary`. Usar SIEMPRE solido, nunca traslucido (ver Accesibilidad). |
 | `income` | `#22C55E` | `#34D399` | Semantica: monto positivo/ingreso. Usado en Cuentas (deuda de tarjeta ya saldada, saldos positivos) ademas de Transacciones. |
 | `income-text` | `#166534` | `#34D399` (sin cambio) | **Usar en vez de `income` para texto de tamaño normal/mediano** (ej. `Amount Value` del formulario de Ingreso, 36-40px pero no calificando como "texto grande" por debajo de ~800 weight en algunos casos limite). Motivo: `income` (`#22C55E`) sobre `background` da solo ~2.07:1 en claro, muy por debajo de cualquier umbral WCAG. `income-text` calibrado a ~6.46:1 en claro; en oscuro `income` (`#34D399`) ya pasa por si solo asi que `income-text` reusa el mismo valor sin cambio. Mismo patron que `expense`/`expense-text`. |
@@ -137,6 +138,7 @@ Header de subpantalla (no es un destino de tab): boton "atras" (o "x" para modal
 - **Overrides tipicos:** icono del boton de atras (`arrow-left` para volver, `x` para cerrar un modal/formulario), titulo, icono del boton de accion (`plus` para agregar, `check` para guardar).
 - **Regla de navegacion:** toda pantalla con `Page Header` (boton atras/cerrar) NO lleva `Tab Bar` — son pantallas apiladas (push/modal), no destinos de tab. Solo Inicio, Transacciones/Movimientos, Presupuestos y Metas (los 5 items del Tab Bar) usan su propio header custom + `Tab Bar`.
 - **Centrado real del titulo:** boton de atras y boton de accion miden AMBOS 44x44 (antes el de atras media 40x40, descentraba el titulo en pantallas con texto largo — corregido). El `Title` usa `textGrowth:"fixed-width"` + `width:"fill_container"` + `textAlign:"center"`, nunca `textGrowth:"auto"` — asi se centra en el espacio real entre botones en vez de depender solo de que ambos lados midan igual. Si un lado no tiene accion (ej. pantallas sin boton `+`), usar un spacer `enabled:false` de 44x44 en su lugar, nunca quitar el nodo — si se quita, el titulo se descentra.
+- **Variante con subtitulo (`s9gXs`, "Page Header · Con subtitulo"):** cuando la pantalla necesita una segunda linea de contexto bajo el titulo (ej. "Configurar cuota" + "Credito vehicular · Yo debo" en Deudas), usar este componente aparte — mismo chrome que `Dtm0X` pero con un `Title Group` (Title + Subtitle 13/500 `$text-secondary`, centrados, `gap:2`). Se creo como componente separado a proposito (no como slot opcional dentro de `Dtm0X`) por la regla tecnica de reestructuracion de arriba. En Flutter es el mismo Page Header con una segunda linea de texto, no un widget distinto.
 
 ### Button/Primary y Button/Secondary
 CTA principal (fill `$primary`) y secundario (outline, `$surface` + `$border`). Icono opcional a la izquierda (`enabled:false` para ocultarlo, ej. en `Button/Secondary` de "Cancelar").
@@ -150,7 +152,9 @@ Barra de estado simulada (hora + iconos de senal/wifi/bateria) que corona cada m
 - Convertido a componente reusable (antes duplicado a mano en ~65 frames) — todas las instancias existentes usan `Status Bar/Android`; `Status Bar/iOS` queda disponible sin usar todavia, para cuando se quiera mostrar contexto iOS especificamente.
 
 ### Form Field
-Campo de formulario: label + caja de input (icono opcional + valor/placeholder) + texto de error opcional (`enabled:false` por defecto, fill `$expense`).
+Campo de formulario: label + caja de input (icono opcional + valor/placeholder) + texto de error opcional (`enabled:false` por defecto, fill **`$expense-text`**).
+
+- **Texto de error usa `$expense-text`, no `$expense`.** El `$expense` crudo (rojo saturado) sobre `$surface` da ~3.4:1 en oscuro para texto de 12px — falla 4.5:1 (WCAG 1.4.3). `$expense-text` (más claro en oscuro, `#F87171`) sí pasa. Regla general: `$expense` para rellenos/decoración; **`$expense-text` para TEXTO de error/negativo** sobre superficies. (Corregido 2026-07-22 en el componente compartido, afectaba todas las features.)
 
 - **Overrides tipicos:** label, icono (`enabled:true/false`), contenido del valor, y activar `Error` con su mensaje cuando la validacion falla — no crear una variante de componente separada para el estado de error, es el mismo Form Field con ese nodo habilitado.
 
@@ -215,6 +219,11 @@ Fila de selector de moneda: Icon Wrap (codigo de 3 letras) + Label + Check (visi
 ### Regla tecnica de Pencil: overrides anidados en instancias
 Al hacer `descendants` sobre una instancia que a su vez contiene otra instancia anidada (ej. `Sheet Buttons Row` conteniendo un `Button/Primary`), un `descendants` anidado dos niveles (`descendants:{"hijoId":{descendants:{...}}}`) NO se aplica sobre nodos ya existentes. Usar en su lugar `Update("instancia/hijoId/nietoId", {...})` con el path explicito completo. Los overrides anidados en un solo nivel SOLO funcionan cuando van dentro de un reemplazo completo de `type` (ej. cambiar que componente referencia un slot), no para modificar props de un descendant ya instanciado.
 
+### Regla tecnica de Pencil: NUNCA reestructurar un nodo de un componente reusable que ya tiene overrides
+Mover, anidar o envolver un nodo dentro de la definicion de un componente `reusable` **purga globalmente los overrides que las instancias tenian sobre ese nodo**, y revertir la estructura NO los restaura. Ejemplo real (2026-07-22): al intentar envolver el `Title` (`QnxB2`) de `Page Header` (`Dtm0X`) en un sub-frame para meterle un subtitulo opcional, Pencil borro el override `content` de `QnxB2` en las **142 instancias** del componente — todos los titulos ("Nueva transaccion", "Nuevo presupuesto", "Meta", etc.) se perdieron de golpe. Se recuperaron restaurando cada uno via `Update("<instancia>/QnxB2", {content})`, pero es un incidente evitable.
+- **Para añadir un slot/variante a un componente muy instanciado, crea un COMPONENTE NUEVO** que replique la estructura y agregue lo nuevo, en vez de reestructurar el base. Ej.: `s9gXs` ("Page Header · Con subtitulo") se creo aparte en vez de tocar `Dtm0X`.
+- Cambiar props de un nodo existente (fill, content, enabled, padding) es seguro; **reestructurar el arbol (mover/anidar/envolver/reordenar) no lo es** cuando hay instancias con overrides.
+
 ### Segmented Control (`hFu41`)
 Selector de 3 opciones tipo iOS (usado para Gasto/Ingreso/Transferencia en el formulario de transaccion). El segmento activo tiene fondo `$surface` y texto en su color semantico (`$text-primary` gasto neutral / `$income` ingreso / `$primary` transferencia — nunca `$expense` rojo, mismo criterio que `Transaction Row`); los inactivos son transparentes con texto `$text-secondary`.
 
@@ -265,6 +274,8 @@ Una revision UX adversarial (agente `ui-ux-reviewer`) encontro y se corrigieron 
 5. **Cuidado con las dos formas de romper el alto de pantalla, son opuestas:** (a) un alto fijo demasiado chico para el contenido real causa **clipping silencioso** que `snapshot_layout` no siempre detecta si `problemsOnly` corre a poca profundidad; (b) dejar que el frame de pantalla use `fit_content` sin mas hace que **cada pantalla/estado tenga un "dispositivo" de tamaño distinto** (un estado con poco contenido, ej. Error, se ve mas corto que el resto), lo cual confunde al comparar mockups. La solucion que se uso: altura fija de 972px en el frame de pantalla (igual en TODAS), con el wrapper `Content` en `height:"fill_container"` para que el Tab Bar siempre quede anclado al fondo real sin importar cuanto contenido tenga esa pantalla especifica. Ver seccion "Radios y espaciado".
 6. **No asumir que un "no layout problems" de una sola pasada es suficiente** — probar con contenido largo/real (nombres largos, montos grandes) antes de dar un componente por terminado.
 7. **`Page Header` (boton atras/cerrar) y `Tab Bar` son mutuamente excluyentes en una misma pantalla.** Mezclarlos confunde el modelo mental de navegacion (¿esto es un destino de tab o una pantalla apilada?). Decidir esto ANTES de construir la pantalla, no despues.
+
+**Tema sistémico pendiente (barra de avance en oscuro):** las barras de progreso (`$primary` sobre track `$muted`) dan ~2.75:1 en oscuro, apenas bajo el 3:1 de objeto gráfico (WCAG 1.4.11). Es sistémico — mismo patrón en Presupuestos/Metas/Cuentas/Deudas, no de una feature. El segmento lleno contra la `$surface` de la card sí da ~3:1, así que el avance se percibe. Si se quiere subir a 3:1 sin tocar `$primary`, evaluar un token de "track de barra en oscuro" más claro. Decisión de sistema, no bloquea features. (Detectado 2026-07-22 en el oscuro de Deudas.)
 
 ### Delete Opt-in Row (`S533j9`)
 

@@ -73,8 +73,7 @@ class AdjustBalanceState extends Equatable {
 
   /// Whether "Aplicar" can run: a valid figure that actually changes something.
   bool get canApply =>
-      status != AdjustBalanceStatus.saving &&
-      (adjustment?.hasChange ?? false);
+      status != AdjustBalanceStatus.saving && (adjustment?.hasChange ?? false);
 
   AdjustBalanceState copyWith({
     AdjustBalanceStatus? status,

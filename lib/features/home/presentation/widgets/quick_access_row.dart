@@ -4,18 +4,20 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// HU-05b: fixed chrome row of 4 navigation shortcuts (Cuentas, Pagos
-/// programados, Deudas, Gráficas e informes) shown right below the Hero Card
-/// in every Home state (loading/ready/empty/failure). Purely a navigation
+/// HU-05b: fixed chrome row of navigation shortcuts (Cuentas, Pagos
+/// programados, Deudas, Gráficas e informes, Metas) shown right below the Hero
+/// Card in every Home state (loading/ready/empty/failure). Purely a navigation
 /// aid to sections otherwise buried in "Más" — no selected/active chip, and
 /// the order is fixed for now (configurable reordering is a future feature,
-/// see `docs/requirements/04-inicio.md` § Pendiente).
+/// see `docs/requirements/04-inicio.md` § Pendiente). Metas is last: it lost
+/// its bottom-nav tab to Pagos Programados (bugfix item 7).
 class QuickAccessRow extends StatelessWidget {
   const QuickAccessRow({
     required this.onOpenAccounts,
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onOpenGoals,
     super.key,
   });
 
@@ -23,6 +25,7 @@ class QuickAccessRow extends StatelessWidget {
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+  final VoidCallback onOpenGoals;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +71,12 @@ class QuickAccessRow extends StatelessWidget {
                 icon: LucideIcons.chartColumn,
                 label: l10n.moreReports,
                 onTap: onOpenReports,
+              ),
+              const SizedBox(width: 8),
+              QuickAccessChip(
+                icon: LucideIcons.target,
+                label: l10n.navGoals,
+                onTap: onOpenGoals,
               ),
             ],
           ),

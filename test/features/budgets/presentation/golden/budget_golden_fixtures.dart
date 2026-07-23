@@ -367,7 +367,7 @@ List<BudgetScheduledItem> buildScheduledItems({int count = 2}) {
       BudgetScheduledItem(
         id: 'sp-$index@2025-07-${10 + index}',
         scheduledPaymentId: 'sp-$index',
-        title: titles[index % titles.length],
+        note: titles[index % titles.length],
         accountName: 'Bancolombia',
         categoryIcon: icons[index % icons.length],
         categoryColor: colors[index % colors.length],

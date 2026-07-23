@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/money_formatter.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/empty_state.dart';
@@ -20,6 +21,7 @@ class BudgetScheduledSheet extends StatelessWidget {
     required this.totalMinor,
     required this.currency,
     required this.onOpenScheduledPayment,
+    required this.onSeeAllScheduled,
     super.key,
   });
 
@@ -34,12 +36,17 @@ class BudgetScheduledSheet extends StatelessWidget {
   /// Called with a row's `scheduledPaymentId` to open the template's detail.
   final ValueChanged<String> onOpenScheduledPayment;
 
+  /// Opens the global Pagos Programados list (bugfix item 11). The footer pops
+  /// this sheet before invoking it, so the caller only navigates.
+  final VoidCallback onSeeAllScheduled;
+
   static Future<void> show(
     BuildContext context, {
     required List<BudgetScheduledItem> items,
     required int totalMinor,
     required String currency,
     required ValueChanged<String> onOpenScheduledPayment,
+    required VoidCallback onSeeAllScheduled,
   }) =>
       BottomSheetBase.show<void>(
         context,
@@ -48,6 +55,7 @@ class BudgetScheduledSheet extends StatelessWidget {
           totalMinor: totalMinor,
           currency: currency,
           onOpenScheduledPayment: onOpenScheduledPayment,
+          onSeeAllScheduled: onSeeAllScheduled,
         ),
       );
 
@@ -105,7 +113,64 @@ class BudgetScheduledSheet extends StatelessWidget {
                   ),
                 ),
         ),
+        const SizedBox(height: 16),
+        Divider(height: 1, thickness: 1, color: context.colors.border),
+        const SizedBox(height: 16),
+        BudgetScheduledSeeAllFooter(
+          onTap: () {
+            Navigator.of(context).pop();
+            // Deferred past this frame for the same reason as the row's push
+            // above: firing navigation while the sheet route pops makes both
+            // Navigator transitions compete and drop frames.
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => onSeeAllScheduled());
+          },
+        ),
       ],
+    );
+  }
+}
+
+/// The sheet's footer link (`V2xIK`): a calendar-clock + label + chevron row
+/// that leaves for the global Pagos Programados list (bugfix item 11).
+class BudgetScheduledSeeAllFooter extends StatelessWidget {
+  const BudgetScheduledSeeAllFooter({required this.onTap, super.key});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(LucideIcons.calendarClock,
+                size: 18, color: colors.primaryOnSoftStrong),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.budgetScheduledSheetSeeAll,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: colors.primaryOnSoftStrong,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(LucideIcons.chevronRight,
+                size: 18, color: colors.primaryOnSoftStrong),
+          ],
+        ),
+      ),
     );
   }
 }

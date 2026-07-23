@@ -46,6 +46,7 @@ void main() {
             onClosed: () {},
             onOpenTransaction: (_) async => null,
             onOpenScheduledPayment: (_) {},
+            onSeeAllScheduled: () {},
           ),
         ),
       ),
@@ -57,7 +58,7 @@ void main() {
     BudgetScheduledItem(
       id: 'sp-1@2025-08-05T00:00:00.000',
       scheduledPaymentId: 'sp-1',
-      title: 'Netflix',
+      note: 'Netflix',
       accountName: 'Bancolombia',
       amountMinor: 4500000,
       currency: 'COP',

@@ -6,6 +6,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../../scheduled_payments/presentation/utils/scheduled_payment_format.dart';
 import '../../domain/entities/budget_scheduled_item.dart';
 
 /// One row of a budget's "programado" list (HU-12): mirror of
@@ -34,6 +35,15 @@ class BudgetScheduledRow extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    // Title is the payment's own name (its note), never the category — the
+    // category shows only in the subtitle, if at all (bugfix items 3/19).
+    // Budgets track expense, so a scheduled item is never a transfer here.
+    final title = ScheduledPaymentFormat.templateName(
+      note: item.note,
+      isTransfer: false,
+      accountName: item.accountName,
+      fallback: l10n.scheduledPaymentUntitled,
+    );
 
     return InkWell(
       onTap: () => onTap(item.scheduledPaymentId),
@@ -91,7 +101,7 @@ class BudgetScheduledRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleSmall?.copyWith(

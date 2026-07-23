@@ -76,7 +76,9 @@ void main() {
     expect(find.byIcon(LucideIcons.banknote), findsOneWidget);
   });
 
-  testWidgets('un nombre largo no desborda: se recorta', (tester) async {
+  testWidgets(
+      'un nombre largo envuelve hasta 2 líneas y luego recorta (item 12)',
+      (tester) async {
     await tester.pumpAppWidget(
       AccountCard(
         entry: buildAccountWithBalance(
@@ -93,7 +95,30 @@ void main() {
       find.text('Cuenta de ahorros programado para la casa en la playa'),
     );
     expect(name.overflow, TextOverflow.ellipsis);
-    expect(name.maxLines, 1);
+    expect(name.maxLines, 2);
+  });
+
+  testWidgets(
+      'con nombre a 2 líneas, el saldo se ancla al borde superior '
+      '(CrossAxisAlignment.start) (item 12)', (tester) async {
+    await tester.pumpAppWidget(
+      AccountCard(
+        entry: buildAccountWithBalance(
+          account: buildAccount(
+            name: 'Cuenta de ahorros programado para la casa en la playa',
+          ),
+          balanceMinor: 100,
+        ),
+      ),
+    );
+
+    final row = tester.widget<Row>(
+      find.descendant(
+        of: find.byType(AccountCard),
+        matching: find.byType(Row),
+      ),
+    );
+    expect(row.crossAxisAlignment, CrossAxisAlignment.start);
   });
 
   testWidgets('al tocarla, abre la cuenta', (tester) async {

@@ -41,7 +41,8 @@ void main() {
     balanceMinor: 124000000,
   );
   final bancolombia = buildAccountWithBalance(
-    account: buildAccount(id: 'a2', name: 'Bancolombia', type: AccountType.bank),
+    account:
+        buildAccount(id: 'a2', name: 'Bancolombia', type: AccountType.bank),
     balanceMinor: 300000000,
   );
   final visa = buildAccountWithBalance(

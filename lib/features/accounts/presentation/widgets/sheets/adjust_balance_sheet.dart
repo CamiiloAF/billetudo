@@ -154,8 +154,7 @@ class AdjustBalanceSheet extends StatelessWidget {
 
   /// A signed money figure: `+$320.000` / `-$120.000`, or `$0` when unchanged.
   String _signedAmount(MoneyFormatter money, int minor, String currency) {
-    final formatted =
-        money.formatSymbol(minor.abs(), currencyCode: currency);
+    final formatted = money.formatSymbol(minor.abs(), currencyCode: currency);
     if (minor > 0) {
       return '+$formatted';
     }

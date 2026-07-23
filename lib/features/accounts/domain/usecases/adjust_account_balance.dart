@@ -68,8 +68,7 @@ class AdjustAccountBalance {
           note: note,
           // Categorized in the matching "Otros" bucket by direction, so the
           // adjustment shows up in reports/budgets under a real category.
-          categoryId:
-              isIncome ? otherIncomeCategoryId : otherExpenseCategoryId,
+          categoryId: isIncome ? otherIncomeCategoryId : otherExpenseCategoryId,
           categoryKind: isIncome ? CategoryKind.income : CategoryKind.expense,
           // `source` defaults to `TransactionSource.manual`.
           // Defensive fallback only: with the category set above the draft

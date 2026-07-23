@@ -200,8 +200,8 @@ void main() {
     test('mapea el conteo del source tal cual en un Right', () async {
       source.pendingCount = 4;
 
-      final result = await SyncStatusRepositoryImpl(source)
-          .pendingUploadCount();
+      final result =
+          await SyncStatusRepositoryImpl(source).pendingUploadCount();
 
       expect(result, const Right<Failure, int>(4));
     });
@@ -220,8 +220,8 @@ void main() {
       // base de datos, no de red.
       source.pendingUploadError = StateError('ps_crud unavailable');
 
-      final result = await SyncStatusRepositoryImpl(source)
-          .pendingUploadCount();
+      final result =
+          await SyncStatusRepositoryImpl(source).pendingUploadCount();
 
       final failure = result.getLeft().toNullable();
       expect(failure, isA<DatabaseFailure>());

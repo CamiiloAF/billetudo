@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../../core/utils/money_input_formatter.dart';
+import '../../../../core/widgets/keyboard_done_toolbar.dart';
 
 /// The amount input of the budget form (`a3gGPM/k9OW4h`): a 52pt box holding
 /// the figure at 22/800 and, anchored inside it, the currency pill
@@ -131,23 +132,25 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
                 ),
               ),
               Expanded(
-                child: TextFormField(
-                  controller: _controller,
-                  onChanged: (value) =>
-                      widget.onChanged(MoneyFormatter.parseMinor(value)),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [MoneyInputFormatter(decimals: decimals)],
-                  style: style.copyWith(color: colors.textPrimary),
-                  decoration: InputDecoration(
-                    isCollapsed: true,
-                    filled: false,
-                    contentPadding: EdgeInsets.zero,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    hintText: _money.formatAmount(0, decimalDigits: decimals),
-                    hintStyle: style.copyWith(color: colors.textSecondary),
+                child: KeyboardDoneToolbar(
+                  child: TextFormField(
+                    controller: _controller,
+                    onChanged: (value) =>
+                        widget.onChanged(MoneyFormatter.parseMinor(value)),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [MoneyInputFormatter(decimals: decimals)],
+                    style: style.copyWith(color: colors.textPrimary),
+                    decoration: InputDecoration(
+                      isCollapsed: true,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      hintText: _money.formatAmount(0, decimalDigits: decimals),
+                      hintStyle: style.copyWith(color: colors.textSecondary),
+                    ),
                   ),
                 ),
               ),
