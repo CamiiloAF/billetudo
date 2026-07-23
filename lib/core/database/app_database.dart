@@ -51,6 +51,33 @@ enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
+/// How a debt's outstanding balance grows over time. `manual` = the user
+/// records every change by hand; `auto` = the app periodically posts interest
+/// accrual entries from the debt's rate. Stored as text for parity with
+/// Postgres. See docs/requirements Debts (Fase 0).
+enum DebtAccrualMode { manual, auto }
+
+/// The nature of a single ledger entry against a debt. The outstanding balance
+/// is DERIVED by summing entries (plus the principal), so there is no stored
+/// balance column. `amountMinor` is signed: **+ increases** the debt, **−
+/// reduces** it. Stored as text for parity with Postgres.
+///  - `interestAccrual`: interest posted, manually or by the auto accrual (+).
+///  - `manualAdjustment`: reconciliation to the bank's figure via "actualizar
+///    saldo" — absorbs the difference, signed either way.
+///  - `payment`: a cash-less abono (HU-02 toggle "No"): reduces the debt (−)
+///    without moving any account — "someone else paid / cash / off my books".
+///  - `disbursement`: a cash-less desembolso (HU-02 toggle "No"): increases the
+///    debt (+) without moving any account.
+///
+/// Cash abonos/desembolsos are NOT here — those are a `Transaction` with a
+/// `debtId` (they move an account). These four are the solo-deuda entries.
+enum DebtEntryKind {
+  interestAccrual,
+  manualAdjustment,
+  payment,
+  disbursement,
+}
+
 /// How often a scheduled payment repeats. `once` is a one-time future payment
 /// (no repetition): it generates a single transaction on its date and then
 /// goes inactive. See docs/requirements/09-pagos-programados.md.
@@ -302,6 +329,33 @@ class Debts extends Table with _SyncColumns {
   IntColumn get interestRateBps => integer().nullable()();
   TextColumn get counterparty => text().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
+
+  /// How the outstanding balance grows: `manual` (user records every change)
+  /// or `auto` (the app posts interest accrual entries). Defaults to `manual`.
+  /// Stored as text via textEnum for parity with Postgres.
+  TextColumn get accrualMode => textEnum<DebtAccrualMode>().clientDefault(
+        () => DebtAccrualMode.manual.name,
+      )();
+}
+
+/// Ledger entries against a [Debts] row. The debt's outstanding balance is
+/// DERIVED by summing these entries (together with the principal), so there is
+/// deliberately no stored balance column. Interest accrual and manual
+/// adjustments both live here as signed amounts.
+class DebtEntries extends Table with _SyncColumns {
+  TextColumn get debtId => text().references(Debts, #id)();
+  TextColumn get kind => textEnum<DebtEntryKind>()();
+
+  /// Signed amount in cents: positive increases the debt, negative reduces it.
+  /// Never double, same money rule as everywhere else.
+  IntColumn get amountMinor => integer()();
+
+  DateTimeColumn get entryDate => dateTime()();
+  TextColumn get note => text().nullable()();
+
+  /// The interest rate (whole basis points) used to compute this entry, when
+  /// it is an accrual. Optional snapshot for audit/display; null otherwise.
+  IntColumn get rateBpsSnapshot => integer().nullable()();
 }
 
 /// Templates for scheduled payments: one-time or repeating planned
@@ -343,6 +397,11 @@ class ScheduledPayments extends Table with _SyncColumns {
   /// confirm before it applies to the balance, instead of applying it
   /// automatically (HU-03). Lets variable amounts (utilities) be adjusted.
   BoolColumn get requiresConfirmation => boolean().clientDefault(() => false)();
+
+  /// Links this template to a [Debts] row when it is a debt installment
+  /// (HU-03, docs/requirements/08-deudas.md). Nullable: an ordinary scheduled
+  /// payment (rent, subscription) has no debt; only installments set it.
+  TextColumn get debtId => text().nullable().references(Debts, #id)();
 }
 
 /// Free-form tags (a complement to categories).
@@ -513,6 +572,7 @@ class AppSettings extends Table with _SyncColumns {
     Budgets,
     Goals,
     Debts,
+    DebtEntries,
     ScheduledPayments,
     Tags,
     TransactionTags,
@@ -528,7 +588,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -793,6 +853,24 @@ class AppDatabase extends _$AppDatabase {
           // with Supabase/Postgres: same table/column names once sync is wired.
           if (from < 13) {
             await m.createTable(budgetPeriodOverrides);
+          }
+
+          // v13 -> v14: Debts feature (Fase 0). Both changes are additive, no
+          // existing data to migrate:
+          //  - `Debts.accrualMode`: how the balance grows (`manual`/`auto`),
+          //    stored as text, defaults to `manual`.
+          //  - `DebtEntries`: signed ledger of interest accrual and manual
+          //    adjustments. The outstanding balance is DERIVED from these, so
+          //    there is no stored balance column.
+          //  - `ScheduledPayments.debtId`: nullable FK linking an installment
+          //    template to its debt (HU-03, docs/requirements/08-deudas.md).
+          // Keep parity with Supabase/Postgres: replicate the `debts.accrual_mode`
+          // column, the `debt_entries` table (same columns + sync columns) and
+          // the `scheduled_payments.debt_id` column once sync is wired.
+          if (from < 14) {
+            await m.addColumn(debts, debts.accrualMode);
+            await m.createTable(debtEntries);
+            await m.addColumn(scheduledPayments, scheduledPayments.debtId);
           }
         },
       );
