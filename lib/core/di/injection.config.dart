@@ -250,6 +250,10 @@ import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart'
     as _i1003;
 import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart'
     as _i42;
+import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart'
+    as _i428;
+import 'package:billetudo/features/debts/presentation/cubit/debts_list_cubit.dart'
+    as _i481;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
     as _i426;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
@@ -851,6 +855,8 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
+    gh.factory<_i481.DebtsListCubit>(
+        () => _i481.DebtsListCubit(gh<_i42.WatchDebts>()));
     gh.factory<_i635.ArchivedBudgetsCubit>(() => _i635.ArchivedBudgetsCubit(
           gh<_i829.GetArchivedBudgets>(),
           gh<_i405.ReactivateBudget>(),
@@ -869,6 +875,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
+        ));
+    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i255.DebtInterestCalculator>(),
         ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),

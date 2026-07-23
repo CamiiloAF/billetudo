@@ -1,0 +1,315 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/error_state.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
+import '../cubit/debt_detail_cubit.dart';
+import '../cubit/debt_detail_state.dart';
+import '../widgets/debt_hero_card.dart';
+import '../widgets/debt_installment_card.dart';
+import '../widgets/debt_ledger_row.dart';
+import '../widgets/debt_ledger_skeleton_row.dart';
+import '../widgets/debt_meta_card.dart';
+import '../widgets/debt_skeleton_box.dart';
+
+/// One debt's detail (`cUzp6`/`ZQIPe`/`tVUoU`): hero, meta card, the linked
+/// installment (when any), the running-balance ledger, and a fixed "Registrar
+/// abono" button. A stacked screen with a `Page Header` and no `Tab Bar`.
+///
+/// The write actions the design offers are not implemented yet, so their
+/// callbacks are wired from the router to no-ops for now (see `AppRoutes`):
+/// registering a payment, updating the balance and editing the debt all open
+/// sheets/forms that land in a later phase.
+class DebtDetailPage extends StatelessWidget {
+  const DebtDetailPage({
+    required this.onEdit,
+    required this.onRegisterPayment,
+    required this.onUpdateBalance,
+    required this.onOpenInstallment,
+    super.key,
+  });
+
+  final ValueChanged<String> onEdit;
+  final VoidCallback onRegisterPayment;
+  final VoidCallback onUpdateBalance;
+
+  /// Cross-link into Pagos programados for the linked cuota (HU-03).
+  final ValueChanged<String> onOpenInstallment;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+
+    return Scaffold(
+      body: SafeArea(
+        child: BlocBuilder<DebtDetailCubit, DebtDetailState>(
+          builder: (context, state) {
+            final detail = state.detail;
+            return Column(
+              children: [
+                PageHeader(
+                  title: detail?.debt.name ?? '',
+                  trailing: detail == null
+                      ? null
+                      : PageHeaderCircleButton(
+                          icon: LucideIcons.pencil,
+                          background: colors.muted,
+                          foreground: colors.textPrimary,
+                          tooltip: l10n.debtEditTooltip,
+                          onPressed: () => onEdit(detail.debt.id),
+                        ),
+                ),
+                Expanded(
+                  child: switch (state.status) {
+                    DebtDetailStatus.loading => const DebtDetailLoadingView(),
+                    DebtDetailStatus.failure => DebtDetailErrorView(
+                        onRetry: () => unawaited(
+                          context.read<DebtDetailCubit>().retry(),
+                        ),
+                      ),
+                    DebtDetailStatus.ready when detail != null =>
+                      DebtDetailReadyView(
+                        state: state,
+                        onRegisterPayment: onRegisterPayment,
+                        onUpdateBalance: onUpdateBalance,
+                        onOpenInstallment: onOpenInstallment,
+                      ),
+                    DebtDetailStatus.ready => const SizedBox.shrink(),
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class DebtDetailReadyView extends StatelessWidget {
+  const DebtDetailReadyView({
+    required this.state,
+    required this.onRegisterPayment,
+    required this.onUpdateBalance,
+    required this.onOpenInstallment,
+    super.key,
+  });
+
+  final DebtDetailState state;
+  final VoidCallback onRegisterPayment;
+  final VoidCallback onUpdateBalance;
+  final ValueChanged<String> onOpenInstallment;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = context.colors;
+    final detail = state.detail!;
+    final debt = detail.debt;
+    final ledger = detail.ledger;
+    final installment = state.installment;
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+            children: [
+              DebtHeroCard(debt: debt, balance: detail.balance),
+              const SizedBox(height: 12),
+              DebtMetaCard(
+                debt: debt,
+                dailyGrowthMinor: state.dailyGrowthMinor,
+                onUpdateBalance: onUpdateBalance,
+              ),
+              if (installment != null) ...[
+                const SizedBox(height: 12),
+                DebtInstallmentCard(
+                  installment: installment,
+                  onTap: () =>
+                      onOpenInstallment(installment.scheduledPaymentId),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(
+                l10n.debtDetailMovementsTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (var index = 0; index < ledger.length; index++) ...[
+                if (index > 0) const SizedBox(height: 4),
+                DebtLedgerRow(
+                  entry: ledger[index],
+                  direction: debt.direction,
+                  runningMinor: index < state.runningBalances.length
+                      ? state.runningBalances[index]
+                      : 0,
+                  currency: debt.currency,
+                ),
+              ],
+            ],
+          ),
+        ),
+        DebtDetailBottomBar(onRegisterPayment: onRegisterPayment),
+      ],
+    );
+  }
+}
+
+/// The fixed "Registrar abono" button at the thumb zone (`wubqC`).
+class DebtDetailBottomBar extends StatelessWidget {
+  const DebtDetailBottomBar({required this.onRegisterPayment, super.key});
+
+  final VoidCallback onRegisterPayment;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.border)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      child: FilledButton.icon(
+        onPressed: onRegisterPayment,
+        style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+        icon: const Icon(LucideIcons.plus, size: 18),
+        label: Text(l10n.debtDetailRegisterPayment),
+      ),
+    );
+  }
+}
+
+class DebtDetailErrorView extends StatelessWidget {
+  const DebtDetailErrorView({required this.onRetry, super.key});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return ErrorState(
+      title: AppLocalizations.of(context).debtDetailErrorTitle,
+      onRetry: onRetry,
+    );
+  }
+}
+
+/// Loading: skeletons for the hero, meta card, cuota card, the ledger rows and
+/// the CTA (`ZQIPe`).
+class DebtDetailLoadingView extends StatelessWidget {
+  const DebtDetailLoadingView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: colors.border),
+                ),
+                padding: const EdgeInsets.all(18),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DebtSkeletonBox(width: 70, height: 20, radius: 8),
+                        DebtSkeletonBox(width: 40, height: 18, radius: 8),
+                      ],
+                    ),
+                    SizedBox(height: 14),
+                    DebtSkeletonBox(width: 130, height: 13),
+                    SizedBox(height: 8),
+                    DebtSkeletonBox(width: 180, height: 28),
+                    SizedBox(height: 14),
+                    DebtSkeletonBox(height: 14, radius: 7),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: colors.border),
+                ),
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final width in const [130.0, 160.0, 150.0]) ...[
+                      Row(
+                        children: [
+                          const DebtSkeletonBox(width: 18, height: 18),
+                          const SizedBox(width: 10),
+                          DebtSkeletonBox(width: width, height: 12),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    Container(height: 1, color: colors.border),
+                    const SizedBox(height: 10),
+                    const Row(
+                      children: [
+                        DebtSkeletonBox(width: 18, height: 18),
+                        SizedBox(width: 10),
+                        DebtSkeletonBox(width: 120, height: 12),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const DebtSkeletonBox(width: 90, height: 14),
+              const SizedBox(height: 8),
+              for (final row in const [
+                [130.0, 90.0, 80.0, 60.0],
+                [150.0, 100.0, 70.0, 56.0],
+                [110.0, 80.0, 90.0, 66.0],
+                [140.0, 85.0, 78.0, 58.0],
+              ])
+                DebtLedgerSkeletonRow(
+                  nameWidth: row[0],
+                  metaWidth: row[1],
+                  amountWidth: row[2],
+                  runningWidth: row[3],
+                ),
+            ],
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border(top: BorderSide(color: colors.border)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: const DebtSkeletonBox(height: 49, radius: 16),
+        ),
+      ],
+    );
+  }
+}

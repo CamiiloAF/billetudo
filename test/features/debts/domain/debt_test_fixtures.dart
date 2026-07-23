@@ -12,6 +12,8 @@ Debt buildDebt({
   String currency = 'COP',
   DebtAccrualMode accrualMode = DebtAccrualMode.manual,
   int? interestRateBps,
+  String? counterparty,
+  DateTime? dueDate,
   DateTime? createdAt,
   DateTime? deletedAt,
 }) =>
@@ -23,6 +25,8 @@ Debt buildDebt({
       currency: currency,
       accrualMode: accrualMode,
       interestRateBps: interestRateBps,
+      counterparty: counterparty,
+      dueDate: dueDate,
       createdAt: createdAt ?? DateTime(2026, 1, 1),
       updatedAt: (createdAt ?? DateTime(2026, 1, 1)).millisecondsSinceEpoch,
       deletedAt: deletedAt,

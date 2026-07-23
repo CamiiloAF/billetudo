@@ -359,6 +359,63 @@
   "moreCategoriesDescription": "Organize your income and expenses",
   "moreDebts": "Debts",
   "moreDebtsDescription": "Track your debts and payments",
+  "debtsTitle": "Debts",
+  "debtsAdd": "Add debt",
+  "debtsLoading": "Loading your debts",
+  "debtsSummaryTitle": "Summary",
+  "debtsSectionTitle": "Your debts",
+  "debtsEmptyMessage": "You don't have any debts yet",
+  "debtsEmptyDescription": "Track what you owe or what you're owed to follow your payoff progress in one place.",
+  "debtsErrorTitle": "We couldn't load your debts",
+  "debtDetailErrorTitle": "We couldn't load this debt",
+  "debtDirectionIOwe": "I owe",
+  "debtDirectionOwedToMe": "Owed to me",
+  "debtProgressPaid": "{pct}% paid",
+  "@debtProgressPaid": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtProgressCollected": "{pct}% collected",
+  "@debtProgressCollected": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtAmountOf": "of {amount}",
+  "@debtAmountOf": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtDueOn": "Due {date}",
+  "@debtDueOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtPercentValue": "{pct}%",
+  "@debtPercentValue": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtDetailBalanceLabel": "Outstanding balance",
+  "debtDetailPaidLabel": "paid",
+  "debtDetailCollectedLabel": "collected",
+  "debtDetailGrowth": "Grows ~{amount}/day",
+  "@debtDetailGrowth": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtDetailEstimated": "estimated",
+  "debtDetailUpdateBalance": "Update balance",
+  "debtDetailMovementsTitle": "Movements",
+  "debtDetailRegisterPayment": "Record payment",
+  "debtInstallmentTitle": "Next installment",
+  "debtInstallmentScheduledBadge": "Scheduled payment",
+  "debtLedgerOpening": "Opening balance",
+  "debtLedgerDisbursement": "Disbursement",
+  "debtLedgerPaymentOwe": "Payment on the debt",
+  "debtLedgerPaymentOwed": "Payment received",
+  "debtLedgerInterest": "Interest",
+  "debtLedgerAdjustment": "Balance updated",
+  "debtLedgerRunning": "Balance {amount}",
+  "@debtLedgerRunning": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtLedgerTagEstimated": "Estimated",
+  "debtLedgerTagNoAccount": "Doesn't affect accounts",
+  "debtEditTooltip": "Edit debt",
   "moreScheduledPayments": "Scheduled payments",
   "moreScheduledPaymentsDescription": "Automatic payments and income",
   "moreReports": "Charts and reports",

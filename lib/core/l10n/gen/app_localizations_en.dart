@@ -1179,6 +1179,129 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreDebtsDescription => 'Track your debts and payments';
 
   @override
+  String get debtsTitle => 'Debts';
+
+  @override
+  String get debtsAdd => 'Add debt';
+
+  @override
+  String get debtsLoading => 'Loading your debts';
+
+  @override
+  String get debtsSummaryTitle => 'Summary';
+
+  @override
+  String get debtsSectionTitle => 'Your debts';
+
+  @override
+  String get debtsEmptyMessage => 'You don\'t have any debts yet';
+
+  @override
+  String get debtsEmptyDescription =>
+      'Track what you owe or what you\'re owed to follow your payoff progress in one place.';
+
+  @override
+  String get debtsErrorTitle => 'We couldn\'t load your debts';
+
+  @override
+  String get debtDetailErrorTitle => 'We couldn\'t load this debt';
+
+  @override
+  String get debtDirectionIOwe => 'I owe';
+
+  @override
+  String get debtDirectionOwedToMe => 'Owed to me';
+
+  @override
+  String debtProgressPaid(int pct) {
+    return '$pct% paid';
+  }
+
+  @override
+  String debtProgressCollected(int pct) {
+    return '$pct% collected';
+  }
+
+  @override
+  String debtAmountOf(String amount) {
+    return 'of $amount';
+  }
+
+  @override
+  String debtDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String debtPercentValue(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String get debtDetailBalanceLabel => 'Outstanding balance';
+
+  @override
+  String get debtDetailPaidLabel => 'paid';
+
+  @override
+  String get debtDetailCollectedLabel => 'collected';
+
+  @override
+  String debtDetailGrowth(String amount) {
+    return 'Grows ~$amount/day';
+  }
+
+  @override
+  String get debtDetailEstimated => 'estimated';
+
+  @override
+  String get debtDetailUpdateBalance => 'Update balance';
+
+  @override
+  String get debtDetailMovementsTitle => 'Movements';
+
+  @override
+  String get debtDetailRegisterPayment => 'Record payment';
+
+  @override
+  String get debtInstallmentTitle => 'Next installment';
+
+  @override
+  String get debtInstallmentScheduledBadge => 'Scheduled payment';
+
+  @override
+  String get debtLedgerOpening => 'Opening balance';
+
+  @override
+  String get debtLedgerDisbursement => 'Disbursement';
+
+  @override
+  String get debtLedgerPaymentOwe => 'Payment on the debt';
+
+  @override
+  String get debtLedgerPaymentOwed => 'Payment received';
+
+  @override
+  String get debtLedgerInterest => 'Interest';
+
+  @override
+  String get debtLedgerAdjustment => 'Balance updated';
+
+  @override
+  String debtLedgerRunning(String amount) {
+    return 'Balance $amount';
+  }
+
+  @override
+  String get debtLedgerTagEstimated => 'Estimated';
+
+  @override
+  String get debtLedgerTagNoAccount => 'Doesn\'t affect accounts';
+
+  @override
+  String get debtEditTooltip => 'Edit debt';
+
+  @override
   String get moreScheduledPayments => 'Scheduled payments';
 
   @override

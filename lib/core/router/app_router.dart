@@ -38,6 +38,10 @@ import '../../features/categories/presentation/cubit/categories_list_cubit.dart'
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
 import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/categories/presentation/pages/category_form_page.dart';
+import '../../features/debts/presentation/cubit/debt_detail_cubit.dart';
+import '../../features/debts/presentation/cubit/debts_list_cubit.dart';
+import '../../features/debts/presentation/pages/debt_detail_page.dart';
+import '../../features/debts/presentation/pages/debts_list_page.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
@@ -93,6 +97,7 @@ abstract final class AppRoutes {
   static const String login = '/mas/ajustes/respaldar';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String accountDeleted = '/mas/cuenta-eliminada';
+  static const String debts = '/deudas';
   static const String scheduledPayments = '/pagos-programados';
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String pendingScheduledPayments =
@@ -113,6 +118,9 @@ abstract final class AppRoutes {
 
   /// Edit form of one budget: `/presupuestos/<id>/editar`.
   static String editBudget(String id) => '$budgets/$id/editar';
+
+  /// Detail of one debt: `/deudas/<id>`.
+  static String debt(String id) => '$debts/$id';
 
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
@@ -217,6 +225,7 @@ GoRouter createAppRouter() {
       _accountsRoute(),
       _categoriesRoute(),
       _goalsRoute(),
+      _debtsRoute(),
     ],
   );
 }
@@ -252,11 +261,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onOpenScheduledPayments: () =>
                   context.go(AppRoutes.scheduledPayments),
               onOpenGoals: () => context.push(AppRoutes.goals),
-              onOpenDebts: () => context.push(
-                AppRoutes.comingSoonTitled(
-                  AppLocalizations.of(context).moreDebts,
-                ),
-              ),
+              onOpenDebts: () => context.push(AppRoutes.debts),
               onOpenReports: () => context.push(
                 AppRoutes.comingSoonTitled(
                   AppLocalizations.of(context).moreReports,
@@ -656,6 +661,49 @@ GoRoute _accountsRoute() => GoRoute(
               ),
             ),
           ],
+        ),
+      ],
+    );
+
+// Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
+// rendered as a stacked screen on the root navigator — a `Page Header` with a
+// back button, no `Tab Bar`. Only the read screens (list + detail) exist yet;
+// the write flows (crear/editar, abono, actualizar saldo, configurar cuota) are
+// a later phase, so their entry points are wired to no-ops for now.
+GoRoute _debtsRoute() => GoRoute(
+      path: AppRoutes.debts,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<DebtsListCubit>(), (c) => c.start()),
+        child: DebtsListPage(
+          // TODO(deudas): open the crear/editar deuda form (next phase).
+          onAddDebt: () {},
+          onOpenDebt: (id) => context.push(AppRoutes.debt(id)),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<DebtDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: DebtDetailPage(
+              // TODO(deudas): open the crear/editar deuda form (next phase).
+              onEdit: (_) {},
+              // TODO(deudas): open the "registrar abono" sheet (next phase).
+              onRegisterPayment: () {},
+              // TODO(deudas): open the "actualizar saldo" sheet (next phase).
+              onUpdateBalance: () {},
+              // Cross-link into Pagos programados for the linked cuota (HU-03).
+              // Real wiring; the card only appears once the linkage is exposed.
+              onOpenInstallment: (id) =>
+                  context.push(AppRoutes.scheduledPayment(id)),
+            ),
+          ),
         ),
       ],
     );

@@ -2162,6 +2162,222 @@ abstract class AppLocalizations {
   /// **'Sigue tus deudas y pagos'**
   String get moreDebtsDescription;
 
+  /// No description provided for @debtsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Deudas'**
+  String get debtsTitle;
+
+  /// No description provided for @debtsAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar deuda'**
+  String get debtsAdd;
+
+  /// No description provided for @debtsLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando tus deudas'**
+  String get debtsLoading;
+
+  /// No description provided for @debtsSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get debtsSummaryTitle;
+
+  /// No description provided for @debtsSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus deudas'**
+  String get debtsSectionTitle;
+
+  /// No description provided for @debtsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes deudas registradas'**
+  String get debtsEmptyMessage;
+
+  /// No description provided for @debtsEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra lo que debes o lo que te deben para seguir tu progreso de pago en un solo lugar.'**
+  String get debtsEmptyDescription;
+
+  /// No description provided for @debtsErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus deudas'**
+  String get debtsErrorTitle;
+
+  /// No description provided for @debtDetailErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar esta deuda'**
+  String get debtDetailErrorTitle;
+
+  /// No description provided for @debtDirectionIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Yo debo'**
+  String get debtDirectionIOwe;
+
+  /// No description provided for @debtDirectionOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'Me deben'**
+  String get debtDirectionOwedToMe;
+
+  /// No description provided for @debtProgressPaid.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}% pagado'**
+  String debtProgressPaid(int pct);
+
+  /// No description provided for @debtProgressCollected.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}% cobrado'**
+  String debtProgressCollected(int pct);
+
+  /// Monto original de la deuda bajo el saldo pendiente. El monto llega ya formateado.
+  ///
+  /// In es, this message translates to:
+  /// **'de {amount}'**
+  String debtAmountOf(String amount);
+
+  /// No description provided for @debtDueOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence {date}'**
+  String debtDueOn(String date);
+
+  /// No description provided for @debtPercentValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}%'**
+  String debtPercentValue(int pct);
+
+  /// No description provided for @debtDetailBalanceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo pendiente'**
+  String get debtDetailBalanceLabel;
+
+  /// No description provided for @debtDetailPaidLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'pagado'**
+  String get debtDetailPaidLabel;
+
+  /// No description provided for @debtDetailCollectedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'cobrado'**
+  String get debtDetailCollectedLabel;
+
+  /// Interés diario estimado de la deuda. El monto llega ya formateado.
+  ///
+  /// In es, this message translates to:
+  /// **'Crece ~{amount}/día'**
+  String debtDetailGrowth(String amount);
+
+  /// No description provided for @debtDetailEstimated.
+  ///
+  /// In es, this message translates to:
+  /// **'estimado'**
+  String get debtDetailEstimated;
+
+  /// No description provided for @debtDetailUpdateBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar saldo'**
+  String get debtDetailUpdateBalance;
+
+  /// No description provided for @debtDetailMovementsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get debtDetailMovementsTitle;
+
+  /// No description provided for @debtDetailRegisterPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar abono'**
+  String get debtDetailRegisterPayment;
+
+  /// No description provided for @debtInstallmentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Próxima cuota'**
+  String get debtInstallmentTitle;
+
+  /// No description provided for @debtInstallmentScheduledBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago programado'**
+  String get debtInstallmentScheduledBadge;
+
+  /// No description provided for @debtLedgerOpening.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo de apertura'**
+  String get debtLedgerOpening;
+
+  /// No description provided for @debtLedgerDisbursement.
+  ///
+  /// In es, this message translates to:
+  /// **'Desembolso'**
+  String get debtLedgerDisbursement;
+
+  /// No description provided for @debtLedgerPaymentOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Abono a la deuda'**
+  String get debtLedgerPaymentOwe;
+
+  /// No description provided for @debtLedgerPaymentOwed.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago recibido'**
+  String get debtLedgerPaymentOwed;
+
+  /// No description provided for @debtLedgerInterest.
+  ///
+  /// In es, this message translates to:
+  /// **'Interés'**
+  String get debtLedgerInterest;
+
+  /// No description provided for @debtLedgerAdjustment.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo actualizado'**
+  String get debtLedgerAdjustment;
+
+  /// Saldo corrido de la deuda tras un asiento. El monto llega ya formateado.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo {amount}'**
+  String debtLedgerRunning(String amount);
+
+  /// No description provided for @debtLedgerTagEstimated.
+  ///
+  /// In es, this message translates to:
+  /// **'Estimado'**
+  String get debtLedgerTagEstimated;
+
+  /// No description provided for @debtLedgerTagNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'No afecta cuentas'**
+  String get debtLedgerTagNoAccount;
+
+  /// No description provided for @debtEditTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar deuda'**
+  String get debtEditTooltip;
+
   /// No description provided for @moreScheduledPayments.
   ///
   /// In es, this message translates to:

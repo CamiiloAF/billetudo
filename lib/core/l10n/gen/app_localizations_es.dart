@@ -1181,6 +1181,129 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moreDebtsDescription => 'Sigue tus deudas y pagos';
 
   @override
+  String get debtsTitle => 'Deudas';
+
+  @override
+  String get debtsAdd => 'Agregar deuda';
+
+  @override
+  String get debtsLoading => 'Cargando tus deudas';
+
+  @override
+  String get debtsSummaryTitle => 'Resumen';
+
+  @override
+  String get debtsSectionTitle => 'Tus deudas';
+
+  @override
+  String get debtsEmptyMessage => 'Aún no tienes deudas registradas';
+
+  @override
+  String get debtsEmptyDescription =>
+      'Registra lo que debes o lo que te deben para seguir tu progreso de pago en un solo lugar.';
+
+  @override
+  String get debtsErrorTitle => 'No pudimos cargar tus deudas';
+
+  @override
+  String get debtDetailErrorTitle => 'No pudimos cargar esta deuda';
+
+  @override
+  String get debtDirectionIOwe => 'Yo debo';
+
+  @override
+  String get debtDirectionOwedToMe => 'Me deben';
+
+  @override
+  String debtProgressPaid(int pct) {
+    return '$pct% pagado';
+  }
+
+  @override
+  String debtProgressCollected(int pct) {
+    return '$pct% cobrado';
+  }
+
+  @override
+  String debtAmountOf(String amount) {
+    return 'de $amount';
+  }
+
+  @override
+  String debtDueOn(String date) {
+    return 'Vence $date';
+  }
+
+  @override
+  String debtPercentValue(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String get debtDetailBalanceLabel => 'Saldo pendiente';
+
+  @override
+  String get debtDetailPaidLabel => 'pagado';
+
+  @override
+  String get debtDetailCollectedLabel => 'cobrado';
+
+  @override
+  String debtDetailGrowth(String amount) {
+    return 'Crece ~$amount/día';
+  }
+
+  @override
+  String get debtDetailEstimated => 'estimado';
+
+  @override
+  String get debtDetailUpdateBalance => 'Actualizar saldo';
+
+  @override
+  String get debtDetailMovementsTitle => 'Movimientos';
+
+  @override
+  String get debtDetailRegisterPayment => 'Registrar abono';
+
+  @override
+  String get debtInstallmentTitle => 'Próxima cuota';
+
+  @override
+  String get debtInstallmentScheduledBadge => 'Pago programado';
+
+  @override
+  String get debtLedgerOpening => 'Saldo de apertura';
+
+  @override
+  String get debtLedgerDisbursement => 'Desembolso';
+
+  @override
+  String get debtLedgerPaymentOwe => 'Abono a la deuda';
+
+  @override
+  String get debtLedgerPaymentOwed => 'Pago recibido';
+
+  @override
+  String get debtLedgerInterest => 'Interés';
+
+  @override
+  String get debtLedgerAdjustment => 'Saldo actualizado';
+
+  @override
+  String debtLedgerRunning(String amount) {
+    return 'Saldo $amount';
+  }
+
+  @override
+  String get debtLedgerTagEstimated => 'Estimado';
+
+  @override
+  String get debtLedgerTagNoAccount => 'No afecta cuentas';
+
+  @override
+  String get debtEditTooltip => 'Editar deuda';
+
+  @override
   String get moreScheduledPayments => 'Pagos programados';
 
   @override
