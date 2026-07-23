@@ -96,7 +96,6 @@ class DebtDetailPage extends StatelessWidget {
                         state: state,
                         onOpenInstallment: onOpenInstallment,
                         onConfigureInstallment: onConfigureInstallment,
-                        onLinkExisting: onLinkExisting,
                         onOpenTransaction: onOpenTransaction,
                       ),
                     DebtDetailStatus.ready => const SizedBox.shrink(),
@@ -107,6 +106,30 @@ class DebtDetailPage extends StatelessWidget {
           },
         ),
       ),
+      // The fixed CTA lives in `bottomNavigationBar` (not inside the body) so a
+      // floating snackbar sits above it automatically. It exists only in the
+      // ready state, where the `debt` the abono sheet needs is resolved.
+      bottomNavigationBar: BlocBuilder<DebtDetailCubit, DebtDetailState>(
+        builder: (context, state) {
+          final detail = state.detail;
+          if (state.status != DebtDetailStatus.ready || detail == null) {
+            return const SizedBox.shrink();
+          }
+          final debt = detail.debt;
+          return SafeArea(
+            top: false,
+            child: DebtDetailBottomBar(
+              onRegisterPayment: () => unawaited(
+                DebtPaymentSheet.show(
+                  context,
+                  debt: debt,
+                  onLinkExisting: () => onLinkExisting(debt),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -116,7 +139,6 @@ class DebtDetailReadyView extends StatelessWidget {
     required this.state,
     required this.onOpenInstallment,
     required this.onConfigureInstallment,
-    required this.onLinkExisting,
     required this.onOpenTransaction,
     super.key,
   });
@@ -124,7 +146,6 @@ class DebtDetailReadyView extends StatelessWidget {
   final DebtDetailState state;
   final ValueChanged<String> onOpenInstallment;
   final void Function(Debt debt, int outstandingMinor) onConfigureInstallment;
-  final ValueChanged<Debt> onLinkExisting;
   final ValueChanged<String> onOpenTransaction;
 
   @override
@@ -137,77 +158,61 @@ class DebtDetailReadyView extends StatelessWidget {
     final ledger = detail.ledger;
     final installment = state.installment;
 
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
       children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-            children: [
-              DebtHeroCard(debt: debt, balance: detail.balance),
-              const SizedBox(height: 12),
-              DebtMetaCard(
-                debt: debt,
-                dailyGrowthMinor: state.dailyGrowthMinor,
-                onUpdateBalance: () => unawaited(
-                  DebtUpdateBalanceSheet.show(
-                    context,
-                    debt: debt,
-                    outstandingMinor: detail.balance.outstandingMinor,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (installment != null)
-                DebtInstallmentCard(
-                  installment: installment,
-                  onTap: () =>
-                      onOpenInstallment(installment.scheduledPaymentId),
-                )
-              else
-                DebtConfigureInstallmentCard(
-                  onTap: () => onConfigureInstallment(
-                    debt,
-                    detail.balance.outstandingMinor,
-                  ),
-                ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.debtDetailMovementsTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: colors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              for (var index = 0; index < ledger.length; index++) ...[
-                if (index > 0) const SizedBox(height: 4),
-                DebtLedgerRow(
-                  entry: ledger[index],
-                  direction: debt.direction,
-                  runningMinor: index < state.runningBalances.length
-                      ? state.runningBalances[index]
-                      : 0,
-                  currency: debt.currency,
-                  onOpenTransaction: onOpenTransaction,
-                  initialTransactionId: debt.initialTransactionId,
-                  onLinkOpening: () => _showOpeningLinkSnackbar(context),
-                  onLedgerPaymentNoAccount: () =>
-                      _showLedgerPaymentNoAccountSnackbar(context),
-                ),
-              ],
-            ],
-          ),
-        ),
-        DebtDetailBottomBar(
-          onRegisterPayment: () => unawaited(
-            DebtPaymentSheet.show(
+        DebtHeroCard(debt: debt, balance: detail.balance),
+        const SizedBox(height: 12),
+        DebtMetaCard(
+          debt: debt,
+          dailyGrowthMinor: state.dailyGrowthMinor,
+          onUpdateBalance: () => unawaited(
+            DebtUpdateBalanceSheet.show(
               context,
               debt: debt,
-              onLinkExisting: () => onLinkExisting(debt),
+              outstandingMinor: detail.balance.outstandingMinor,
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        if (installment != null)
+          DebtInstallmentCard(
+            installment: installment,
+            onTap: () => onOpenInstallment(installment.scheduledPaymentId),
+          )
+        else
+          DebtConfigureInstallmentCard(
+            onTap: () => onConfigureInstallment(
+              debt,
+              detail.balance.outstandingMinor,
+            ),
+          ),
+        const SizedBox(height: 12),
+        Text(
+          l10n.debtDetailMovementsTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        for (var index = 0; index < ledger.length; index++) ...[
+          if (index > 0) const SizedBox(height: 4),
+          DebtLedgerRow(
+            entry: ledger[index],
+            direction: debt.direction,
+            runningMinor: index < state.runningBalances.length
+                ? state.runningBalances[index]
+                : 0,
+            currency: debt.currency,
+            onOpenTransaction: onOpenTransaction,
+            initialTransactionId: debt.initialTransactionId,
+            onLinkOpening: () => _showOpeningLinkSnackbar(context),
+            onLedgerPaymentNoAccount: () =>
+                _showLedgerPaymentNoAccountSnackbar(context),
+          ),
+        ],
       ],
     );
   }
@@ -223,6 +228,7 @@ class DebtDetailReadyView extends StatelessWidget {
         SnackBar(
           content: Text(l10n.debtOpeningLinkSnackbar),
           duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
         ),
       );
   }
@@ -238,6 +244,7 @@ class DebtDetailReadyView extends StatelessWidget {
         SnackBar(
           content: Text(l10n.debtLedgerAbonoNoAccountSnackbar),
           duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
         ),
       );
   }
