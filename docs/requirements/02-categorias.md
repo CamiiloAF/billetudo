@@ -85,11 +85,14 @@ Set semilla ofrecido en el onboarding (`13-onboarding.md` HU-03). Diferenciadore
 | Educación | Matrícula y pensión, Cursos y libros |
 | Familia y mascotas | Hijos, Mascotas |
 | Deudas | Pago tarjeta de crédito, Pago de préstamos, Intereses |
+| Ahorros | — |
 | Comisiones y cargos bancarios | — |
 | Impuestos y trámites | — |
 | Remesas enviadas | — |
 | Regalos y donaciones | — |
 | Otros gastos | — |
+
+> **"Ahorros" (`kind = expense`)** es la categoría por defecto de los **aportes presupuestables a metas** (ver `07-metas.md` HU-03): un ahorro que sale de tu espacio presupuestado cuenta como egreso cuando la transferencia se marca presupuestable (flag `countsInBudget` + alcance por cuenta, `plan-cuentas-tipos-y-transferencias-presupuestables.md`). Es `expense` a propósito — no ensucia reportes de gasto porque el aporte sigue siendo un `transfer` con una capa de clasificación, no una transacción `type = expense`. `id` semilla sugerido: `seed-savings`.
 
 ### Ingresos (`kind = income`)
 

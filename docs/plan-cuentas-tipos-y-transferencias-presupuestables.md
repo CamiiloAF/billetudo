@@ -71,38 +71,50 @@ La costura correcta **no es formal vs. informal** —el gota a gota es informal 
 ## 3. Sub-feature B — Transferencias presupuestables (el cambio de fondo)
 
 ### Qué pide el usuario
-Que una transferencia (ej. ahorrar, o pagar un préstamo) **opcionalmente** cuente como:
-- **Gasto** en la cuenta origen → afecta presupuestos y reportes.
-- **Ingreso** en la cuenta destino → registrado en reportes, afecta saldo (ya ocurre) y presupuestos.
-- Con un **toggle** en el formulario de transferencia.
-- Con una **sugerencia** automática para ciertos tipos (préstamo, hipoteca…) que incentive marcarla como gasto.
+Que una transferencia (ej. ahorrar, o pagar un préstamo) **opcionalmente** cuente en presupuestos y reportes, con un **toggle** en el formulario de transferencia.
 
 ### Aclaración crítica (evitar doble conteo)
-El **saldo ya se mueve** en ambas cuentas hoy. B **no** cambia el saldo: es una **capa de clasificación** para presupuestos y reportes. Marcar "cuenta como gasto" NO debe volver a sumar/restar al saldo, o se contaría doble.
+El **saldo ya se mueve** en ambas cuentas hoy. B **no** cambia el saldo: es una **capa de clasificación** para presupuestos y reportes. Marcar la transferencia como presupuestable NO debe volver a sumar/restar al saldo, o se contaría doble.
 
-Y ojo con el neto: si entre **dos cuentas on-budget** el origen cuenta como gasto **y** el destino como ingreso a la vez, el efecto en el presupuesto es cero (se anulan) y no aporta nada. El caso que el usuario quiere (pagar préstamo / ahorrar afuera) es cuando el dinero **sale del espacio presupuestado**.
+### Modelo — on/off-budget por cuenta: **DESCARTADO (usuario, 2026-07-24)**
 
-### Modelo recomendado — on-budget / off-budget (estándar tipo YNAB)
-Marcar cada cuenta como **on-budget** (dentro del presupuesto) u **off-budget** (préstamos, inversiones, externo). La clasificación de la transferencia se **deriva** y el toggle es un **override**:
-- on-budget → on-budget: **neutral** (comportamiento actual). El saldo se mueve, presupuesto intacto.
-- on-budget → **off-budget** (pagar préstamo/hipoteca, fondear inversión): cuenta como **gasto/egreso** del presupuesto y del reporte. Sin ingreso fantasma.
-- off-budget → on-budget: cuenta como **ingreso** a presupuestar.
+> Se había decidido inicialmente marcar cada **cuenta** como on-budget/off-budget, derivando de ahí la clasificación de la transferencia. Al diseñar la pantalla en Pencil, el usuario notó el conflicto real: los presupuestos **ya tienen su propio alcance por cuenta** (`BudgetAccounts`, `docs/requirements/06-presupuestos.md` HU-01 — 0..N cuentas elegidas al crear el presupuesto, 0 = todas). Un atributo global "esta cuenta es on-budget" sería un **segundo eje de alcance compitiendo con el primero** — confuso y redundante, no complementario. Se descarta por completo: **no se añade ninguna columna a `Accounts`**. El switch ya diseñado en Pencil (`dFOnJ`/`Ydf4N`) se retira del canvas.
 
-Ventajas: da la **sugerencia gratis** (los tipos `loan/mortgage/investment/...` nacen off-budget → el toggle viene sugerido/activado), no doble-cuenta, y escala a metas/ahorro. El toggle por transferencia permite excepciones manuales.
+### Modelo elegido — flag único simétrico por transferencia
 
-### Alternativa simple (si se quiere menos alcance)
-Un flag por transferencia `countsAsExpense` (bool) + permitir **categoría** en la transferencia cuando está activo. Los presupuestos amplían su filtro a `type = expense OR (type = transfer AND countsAsExpense)`. Menos robusto (el usuario decide cada vez, sin inferencia), pero es el mínimo viable y no necesita el atributo on/off-budget en cuentas.
+Un solo flag booleano en la transferencia (ej. `countsInBudget`) + una sola **categoría** que se habilita cuando está activo:
+- **Sin marcar (default):** comportamiento actual, neutral. El saldo se mueve, ninguna transferencia entra a presupuestos ni reportes.
+- **Marcada:** la transferencia se trata en presupuestos/reportes **igual que una transacción normal categorizada**, con efecto en ambos extremos según el alcance que ya tiene cada presupuesto — sin flags ni categorías separadas por lado:
+  - Para cualquier presupuesto cuyo alcance (por cuenta) incluya la cuenta **origen**: cuenta como **gasto/egreso** de esa categoría.
+  - Para cualquier presupuesto cuyo alcance incluya la cuenta **destino** (si el usuario llegó a crear uno ahí, ej. un presupuesto de ahorro): cuenta como **ingreso** de esa categoría.
+- Es **el mismo mecanismo de alcance que ya usan los gastos/ingresos normales** (`BudgetAccounts`/`BudgetCategories`) — no se inventa un concepto nuevo, la transferencia presupuestable simplemente deja de estar excluida por `type = transfer` cuando el flag está activo, y aporta su categoría como cualquier otra transacción.
+- **Caso borde aceptado, no un bug:** si ambas cuentas caen en el alcance del **mismo** presupuesto, el efecto se anula (gasto + ingreso de la misma categoría en el mismo presupuesto). Es correcto: ese presupuesto ve ambos lados del movimiento, así que "netea" — no hay dinero saliendo de *su* alcance. No hace falta lógica especial para evitarlo, es una consecuencia natural del alcance ya existente.
+- Sin sugerencia automática por tipo de cuenta (ya no aplica, no hay tipos especiales que la habiliten tras el recorte de la Sub-feature A).
 
 ### Cambios de datos (B)
-- **`Accounts`:** columna `onBudget` (bool) — o derivar de `AccountType.defaultOffBudget` con override por cuenta. (Modelo recomendado.)
-- **`Transactions`:** para que una transferencia entre a un presupuesto necesita **categoría** (hoy es null en transfers). Añadir soporte de `categoryId` en transfers presupuestables + un `budgetImpact`/`countsAsExpense` (o derivarlo de on/off-budget). Bump `schemaVersion`.
-- **Presupuestos:** ampliar el datasource que hoy filtra `type = expense` para incluir las transferencias que cuentan como egreso, mapeándolas a `BudgetExpense` con su categoría/monto del **lado origen**. Revisar `budget_expense.dart` y el datasource de presupuestos.
-- **Reportes (futuro):** cuando se construya `lib/features/reports/`, tratar estas transferencias como gasto/ingreso según el modelo. Dejar el requisito escrito en `docs/requirements/10-graficas-informes.md`.
+- **`Transactions`:** para que una transferencia entre a un presupuesto necesita **categoría** (hoy es `null` en transfers). Añadir `categoryId` habilitado en transfers + un flag `countsInBudget` (bool, default `false`). Bump `schemaVersion`. **Sin cambios en `Accounts`.**
+- **Presupuestos:** ampliar el datasource que hoy filtra `type = expense` para incluir transferencias con `countsInBudget = true`: lado origen entra como `BudgetExpense` si la cuenta origen está en el alcance del presupuesto; lado destino entra como ingreso si la cuenta destino está en el alcance. Revisar `budget_expense.dart` y el datasource de presupuestos.
+- **Reportes (futuro):** requisito ya escrito y **precisado** en `docs/requirements/10-graficas-informes.md` §Reglas de conteo (2026-07-24). La simetría origen/destino **no** se traslada tal cual: un reporte es global, no tiene alcance por cuenta, así que ve **siempre** ambos lados y aplicar la regla simétrica inflaría ingreso y gasto del mismo mes neteando a cero. En reportes cuenta **solo el lado origen, como gasto** de su categoría.
 
-### Cambios de UI (B) — requieren Pencil
-- **Toggle "Esta transferencia cuenta como gasto"** en el formulario de transferencia (`transaction_form_page`/`transaction_form_cubit`). Al activarlo, **habilitar selector de categoría** (para que pegue al presupuesto correcto). Reusar el selector de categoría existente como componente.
-- **Nudge/sugerencia:** cuando el destino (u origen) es un tipo off-budget (préstamo/hipoteca/inversión), pre-activar el toggle o mostrar un hint positivo ("Pagar tu préstamo puede contar en tu presupuesto"). Tono positivo, nunca punitivo (MASTER/brand).
-- Diseñar en `billetudo.pen` (pantalla de transferencia) antes de implementar.
+### Cambios de UI (B) — diseño en Pencil, EN CURSO (2026-07-24)
+
+- **Toggle "¿Incluir en tu presupuesto?"** en el formulario de transferencia, reusando el componente `Toggle Field` (`gZyEC`, creado originalmente para el intento descartado de Cuentas). (Copy unificado el 2026-07-24 con el mismo toggle de los sheets de Metas; antes era "Cuenta en tu presupuesto", cambiado por ambiguo en un form lleno de "Cuenta origen/destino".) Al activarlo, se habilita el selector de categoría (`Category Quick Picker`, una sola, aplica a ambos lados del flag simétrico). Sin nudge/sugerencia automática (ya no aplica, ver arriba).
+- **Posición final (decisión del usuario, no la solicitud original):** Cuenta → Fecha → Nota → Toggle → Categoría — al final del formulario, no justo tras la cuenta. Motivo: con el toggle inmediatamente después de la cuenta, Fecha y Nota quedaban tapadas por el teclado/zona de monto expandida (regresión frente al patrón ya aprobado en el form de Gasto). Con el toggle al final, solo el bloque opcional nuevo puede requerir scroll — igual que ya pasa con `Tags Row` en Gasto.
+- **Se retiró el `Info Box` estático** ("las transferencias no cuentan como gasto ni ingreso") — quedaba redundante en OFF y directamente falso en ON. El propio hint del toggle cubre esa explicación.
+- **Zona Fija de monto colapsada** (`ofg07`, mismo patrón que "Nota activa") en los estados con toggle ON, para que la categoría no quede tapada.
+- **Hallazgo de accesibilidad corregido de paso:** primera instancia del componente `Switch` (`bWezV`) en estado OFF en todo el sistema — su color por defecto (`$border`) no cumplía 3:1 WCAG contra `$surface` en ningún tema. Corregido a `$text-secondary` a nivel de instancia (no se tocó el componente base). Pendiente de anotar en `MASTER.md` cuando se documente esta pieza.
+
+**Estado del diseño — tema claro APROBADO (3 estados), tema oscuro en revisión:**
+
+| Estado | Claro (aprobado) | Oscuro (en revisión) |
+|---|---|---|
+| Toggle OFF | `l4nR7l` | `L8bqAX` |
+| Toggle ON | `S5Tjj` | `IRuP2` |
+| Toggle ON + nota activa | `BmCFj` | `fmWeI` |
+
+No se diseñó el 4to cruce (nota activa + toggle OFF) — decisión del usuario: no aporta nada nuevo sobre el patrón de nota activa ya existente.
+
+**Falta:** auditoría de `ui-ux-reviewer` sobre el tema oscuro → aprobación del usuario → documentar `design-system/billetudo/pages/transacciones.md` (recién ahí, según la regla de "aprobar antes de documentar").
 
 ---
 
@@ -110,24 +122,23 @@ Un flag por transferencia `countsAsExpense` (bool) + permitir **categoría** en 
 
 1. ~~**A-1** Préstamo/Hipoteca: cuenta vs deuda~~ → **REABIERTA y RE-RESUELTA:** solo la **tarjeta** es cuenta; **toda** la demás deuda (informal + formal/institucional) vive en la feature Deudas. `loan`/`mortgage` retirados del mapeo. Ver §2 y `docs/requirements/08-deudas.md`.
 2. ~~**A-2** Renombres: ¿`bank`→"Cuenta corriente" y `other`→"Cuenta general", o agregar `checking`/`general` como tipos nuevos y conservar los actuales?~~ → **DECIDIDO (usuario, 2026-07-24): renombrar.** `bank`→"Cuenta corriente", `other`→"Cuenta general". Solo cambia el label l10n (`accountTypeBank`/`accountTypeOther` en `app_es.arb`/`app_en.arb`); el valor del enum y las filas existentes no se tocan — es aditivo en dato, no en significado.
-3. ~~**B-1** Modelo: **on/off-budget por cuenta** (recomendado, robusto) vs **flag simple `countsAsExpense` por transferencia** (mínimo viable).~~ → **DECIDIDO (usuario, 2026-07-24): on/off-budget por cuenta**, sin perder el flag. La cuenta fija el comportamiento por defecto (menos fricción, sin error silencioso si el usuario olvida marcar algo); el toggle por transferencia se conserva como **override manual** para la excepción puntual, tal como ya lo describe el modelo recomendado en §3 — no es un modelo aparte, es la combinación de ambos.
-4. ~~**B-2** El "ingreso en el destino": ¿se registra como ingreso a presupuestar solo cuando entra a una cuenta on-budget desde una off-budget, o siempre que el usuario lo marque?~~ → **DECIDIDO (usuario, 2026-07-24): las dos, mismo patrón que B-1.** Por defecto se **deriva** (off-budget → on-budget = ingreso a presupuestar automático, sin que el usuario tenga que marcar nada). El toggle de la transferencia se conserva como **override manual** para la excepción puntual (ej. el usuario no quiere que ese ingreso puntual cuente, o sí quiere marcarlo aunque el par de cuentas no lo derive). Simetría exacta con B-1: la cuenta fija el default, el flag cubre la excepción — en ningún punto el usuario tiene que decidir a mano el caso común.
+3. ~~**B-1** Modelo: **on/off-budget por cuenta** (recomendado, robusto) vs **flag simple `countsAsExpense` por transferencia** (mínimo viable).~~ → **REABIERTA y RE-DECIDIDA (usuario, 2026-07-24, tras diseñar en Pencil):** el modelo on/off-budget por cuenta se descarta — choca con el alcance por cuenta que **ya tienen los presupuestos** (`BudgetAccounts`), sería un segundo eje de configuración redundante. Se adopta el **flag único simétrico por transferencia** (`countsInBudget` + categoría), sin tocar `Accounts`. Ver §3 para el detalle completo del modelo final.
+4. ~~**B-2** El "ingreso en el destino": ¿se registra como ingreso a presupuestar solo cuando entra a una cuenta on-budget desde una off-budget, o siempre que el usuario lo marque?~~ → **REABIERTA y RE-DECIDIDA junto con B-1 (usuario, 2026-07-24): un mismo flag cubre ambos lados.** No hay flags ni categorías separadas por lado. Con el flag activo, la transferencia entra a **cualquier** presupuesto cuya cuenta esté en su alcance — como gasto si es la cuenta origen, como ingreso si es la cuenta destino — usando la misma categoría y el mismo mecanismo de alcance que ya usan las transacciones normales. Sin derivación por tipo de cuenta (ya no existe ese concepto).
 5. ~~**B-3** ¿La transferencia presupuestable exige **categoría** obligatoria?~~ → **DECIDIDO (usuario, 2026-07-24): sí, obligatoria** cuando la transferencia cuenta como gasto (derivado u override). Sin categoría no pega a ningún sobre — mismo comportamiento que un gasto normal.
 
 ---
 
 ## 5. Dimensionamiento y plan por fases
 
-Esfuerzo estimado: **A = XS** (alcance recortado a renombre), **B = L** (toca datos + presupuestos + UI + reportes futuros). Sugerido en fases independientes y desplegables:
+Esfuerzo estimado: **A = XS** (alcance recortado a renombre), **B = M** (bajó de L: sin columna nueva en `Accounts`, sin sugerencia automática). Sugerido en fases independientes y desplegables:
 
-1. **Fase A — Renombre de tipos de cuenta.** l10n (`accountTypeBank`/`accountTypeOther`) + labels de los 2 chips existentes en Pencil (`CwiKu`/`xdLeB`). Sin cambios de esquema ni de enum. Se puede hacer en cualquier momento, sin bloquear B.
-2. **Fase B1 — Atributo on/off-budget en cuentas** (columna + default por tipo + override). Schema + UI mínima (un switch en el form/detalle de cuenta).
-3. **Fase B2 — Transferencia presupuestable (motor).** `Transactions`: categoría + clasificación en transfers; ampliar presupuestos para consumirlas; casos de uso y tests (el saldo NO se toca; verificar no-doble-conteo).
-4. **Fase B3 — UI de transferencia + nudge.** Diseño Pencil (toggle + categoría + sugerencia por tipo) → implementación. Golden + Patrol.
-5. **Fase B4 — Reportes (cuando exista la feature).** Requisito anotado en `10-graficas-informes.md`.
+1. **Fase A — Renombre de tipos de cuenta.** l10n (`accountTypeBank`/`accountTypeOther`) + labels de los 2 chips existentes en Pencil (`CwiKu`/`xdLeB`). Sin cambios de esquema ni de enum. Se puede hacer en cualquier momento, sin bloquear B. **✅ Implementada y commiteada.**
+2. **Fase B1 — Transferencia presupuestable (motor).** `/drift-schema-change`: `categoryId` habilitado + `countsInBudget` (bool) en `Transactions`; ampliar presupuestos para consumirlas (gasto si la cuenta origen está en su alcance, ingreso si es la destino); casos de uso y tests (el saldo NO se toca; verificar el caso borde de neteo cuando ambas cuentas caen en el mismo alcance).
+3. **Fase B2 — UI de transferencia.** Diseño Pencil (toggle `countsInBudget` reusando `Toggle Field` `gZyEC` + selector de categoría) → implementación. Golden + Patrol.
+4. **Fase B3 — Reportes (cuando exista la feature).** Requisito anotado en `10-graficas-informes.md`.
 
 ## 6. Cumplimiento (Nivel 0 / legal / tono)
 - Todo esto es **Nivel 0 gratis**: registro manual, presupuestos, categorías. **Nada** de esto puede quedar tras anuncio o Premium.
 - Dinero siempre en **centavos** (enteros); IDs UUID; `updatedAt` en cada escritura; borrado con `deletedAt`/`tombstonedAt` según corresponda.
-- Tono **positivo** en el nudge — nunca avergonzar por pagar/deber.
+- Tono **positivo** — nunca avergonzar por pagar/deber.
 - Actualizar los requirements afectados al implementar: `01-cuentas.md`, `03-transacciones.md`, `06-presupuestos.md`, `08-deudas.md`, `10-graficas-informes.md`.

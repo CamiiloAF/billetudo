@@ -27,6 +27,8 @@ Como usuario quiero una barra inferior siempre visible para moverme entre las se
 - Reemplaza por completo a `BootstrapHomePage`; las rutas actuales (`/cuentas`, `/categorias`, …) se cuelgan del shell.
 - Ninguna feature de Nivel 0 puede quedar inaccesible desde el shell (regla de Nivel 0).
 
+> **Nota de navegación (2026-07-24).** El 4º destino es **Metas**, no Pagos programados. Hubo un flip-flop: el "bugfix item 7" (2026-07-22, `docs/fixes/bugfixes-0.0.1.md`) sacó a Metas del nav y puso Pagos, por una instrucción rápida anterior al rediseño de Metas. Tras reconcebir Metas como feature de re-enganche (momentum/racha/celebración de hitos), se reanalizó la IA: un slot del bottom nav se gana con **frecuencia de retorno + centralidad a la tesis (cambio de hábito) + audiencia amplia**, y ahí **Metas > Pagos** (Pagos es "configurar y olvidar", con buenas superficies secundarias: chip de acceso rápido en Inicio (HU-05b), cross-link desde Deudas, resumen en el sheet de Presupuesto). Decisión: **Metas al slot 4; Pagos programados vuelve a "Más" + conserva su chip en Inicio.** Se evaluó darle a Pagos su propio tab liberando el slot de "Más" con un drawer lateral, y se descartó: un drawer superior es *menos* alcanzable que "Más" para una mano; solo serviría para liberar slot, y Pagos no justifica un tab para la audiencia general. En cambio, **"Más" se rediseña como menú estilo Mercado Libre** (header de marca + cards de CTA + secciones de lista agrupadas) para que Pagos y el resto de destinos de gestión se alcancen mejor sin inflar el bottom nav.
+
 ### HU-02 — FAB para agregar transacción
 Como usuario quiero un acceso rápido y siempre a mano para registrar un movimiento nuevo.
 
@@ -42,7 +44,7 @@ Como usuario quiero ver de inmediato cuánto he gastado en el mes, funcione o no
 **Criterios de aceptación:**
 - **Métrica principal (siempre presente):** "Gastado en `<mes>`" + monto total del **gasto** del mes en curso. Se calcula solo con transacciones, así que **no depende de que exista ningún presupuesto**.
 - Monto en **centavos** (`amountMinor`), formateado en la moneda del usuario.
-- El total **excluye** transferencias (`transfer`) y los movimientos ligados a deuda (`debtId`) que no son gasto real — coherente con `10-graficas-informes.md`.
+- El total **excluye** transferencias (`transfer`) salvo las marcadas `countsInBudget`, que suman como gasto en la cuenta origen. **Sí incluye** los movimientos de gasto ligados a deuda (`debtId`): pagar la cuota del carro es gasto real del mes y desaparecerlo del hero sería engañoso. *Corrige la regla anterior, que los excluía.* El hero **no** tiene el toggle de "movimientos de deuda" (eso es exclusivo del reporte de flujo). Reglas completas en `10-graficas-informes.md` §Reglas de conteo.
 - **Con presupuesto (estado `aOhoY`):** si existe un presupuesto **global** (`categoryId = null`) mensual vigente para el mes visto, se añade una barra de progreso "X% de tu presupuesto" + "faltan Y días".
 - **Sin presupuesto (estado aprobado `A9v7s`):** en lugar de la barra, el hero **no inventa un tope**. Muestra una invitación a crear presupuesto: "Define un presupuesto para ver cuánto te queda este mes →". Racional: sin presupuesto la app no conoce un límite de gasto, así que no se finge uno; en su lugar se empuja suavemente el hábito de presupuestar (diferenciador de billetudo). El destino del enlace (formulario o bottom-sheet de Presupuestos) se define con `06-presupuestos.md`.
 - Presupuestos globales no mensuales (semanal/anual/custom) y presupuestos por categoría **no** se representan en el hero; su progreso vive en la sección Presupuestos (`06`). Esto evita prorrateos engañosos en la tarjeta.
@@ -133,7 +135,7 @@ Como usuario quiero que el Home respete el tema del sistema/app.
 - **Movimientos recientes = todas las cuentas activas:** el feed agrega transacciones de todas las cuentas no archivadas / sin lápida (HU-05). No se filtra por cuenta en el Home.
 - **El desglose por categoría NO vive en el Home:** decisión de composición (variante A). Se accede desde Gráficas e informes (`10`).
 - **Dinero siempre en centavos** (`amountMinor`), nunca `double`.
-- **Coherencia de totales con `10-graficas-informes.md`:** el **total de gasto del hero** excluye `transfer` y movimientos con `debtId`; el Home y las gráficas deben dar el mismo número para el mismo mes. (El feed de movimientos recientes, en cambio, es actividad literal e incluye transfers.)
+- **Coherencia de totales con `10-graficas-informes.md`:** el **total de gasto del hero** excluye `transfer` (salvo `countsInBudget`) e **incluye** los gastos con `debtId`; el Home y las gráficas deben dar el mismo número para el mismo mes, con el toggle de deuda de la gráfica en su posición por defecto (integrados). Las reglas viven en `10-graficas-informes.md` §Reglas de conteo — si este doc y aquel difieren, manda aquel. (El feed de movimientos recientes, en cambio, es actividad literal e incluye transfers.)
 - **Nivel 0 intacto:** todos los bloques funcionan sin anuncio ni pago. El bloque de IA está en "próximamente" y no ejecuta nada. Nada de banners ni interstitials ambientales.
 - **Tono:** positivo y de progreso; jamás avergonzar por el gasto, incluso al superar el presupuesto.
 - **Textos solo desde `AppLocalizations`** (es + en); prohibido hardcodear strings de UI (`avoid_hardcoded_ui_strings`).
