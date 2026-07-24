@@ -1,15 +1,15 @@
 # Plan — Tipos de cuenta ampliados + transferencias presupuestables
 
-> **Estado:** Propuesta (corto plazo, **no** en ejecución). Solo análisis y plan.
+> **Estado:** Propuesta con **todas las decisiones abiertas cerradas** (2026-07-24) — lista para dimensionar/agendar, **aún no** en ejecución.
 > **Fecha:** 2026-07-21 · **Alcance:** Cuentas, Transacciones, Presupuestos, Reportes (y roce con Deudas).
 > Cuando se implemente, seguir el flujo de diseño (Pencil primero) y `/drift-schema-change` para el esquema.
 
 Este documento cubre tres cambios que el usuario pidió documentar juntos:
 
-- **A.** Ampliar la lista de **tipos de cuenta** (a ~11, estilo el mockup adjunto) y cambiar el **selector** a un scroll horizontal de dos filas.
-- **B.** Permitir que una **transferencia** cuente opcionalmente como **gasto** (origen) e **ingreso** (destino) que afecte **reportes y presupuestos**, con un **toggle** por transferencia y una **sugerencia** según el tipo de cuenta (ej. préstamo).
+- **A.** Renombrar 2 tipos de cuenta existentes para mayor claridad (`bank`→"Cuenta corriente", `other`→"Cuenta general"). **Alcance recortado el 2026-07-24** — ver §2: se descartó ampliar a ~11 tipos y rediseñar el selector, sin caso de uso que lo justificara.
+- **B.** Permitir que una **transferencia** cuente opcionalmente como **gasto** (origen) e **ingreso** (destino) que afecte **reportes y presupuestos**, con un **toggle** por transferencia y una **sugerencia** según el tipo de cuenta (ej. inversión).
 
-B es el cambio de fondo; A es el habilitador (los nuevos tipos de cuenta alimentan la sugerencia de B).
+B es el cambio de fondo; A es un renombre de claridad, sin relación de dependencia con B (la sugerencia de B usa `defaultOffBudget` de los tipos ya existentes, ej. `investment`).
 
 ---
 
@@ -39,37 +39,18 @@ B es el cambio de fondo; A es el habilitador (los nuevos tipos de cuenta aliment
 
 ---
 
-## 2. Sub-feature A — Tipos de cuenta ampliados + selector 2 filas
+## 2. Sub-feature A — Tipos de cuenta: SOLO renombres (alcance reducido, 2026-07-24)
 
-### Mapeo propuesto (mockup → dominio)
-El mockup adjunto lista 11 tipos: *Cuenta general, Efectivo, Cuenta corriente, Tarjeta de crédito, Cuenta de ahorros, Bono, Seguro, Inversión, Préstamo, Hipoteca, Cuenta con sobregiro.* Mapeo sugerido sobre el enum actual (aditivo, sin romper filas existentes):
+> **Recorte de alcance (usuario, 2026-07-24).** El mockup de 11 tipos era una referencia visual, no una validación de mercado (ver memoria del proyecto "datos de mockup no son especificación"). `Bono`, `Seguro` y `Cuenta con sobregiro` se **descartan**: un bono ya cabe en `investment`; un seguro no es una cuenta con saldo derivado de transacciones, es una póliza — forzarlo al modelo de `Accounts` no encaja; sobregiro es un comportamiento de `bank/checking` (puede ir a negativo), no un tipo aparte, y ya estaba anotado así en §3. El propio usuario, que es el primer usuario real de la app, confirmó que se limita a los tipos ya existentes — señal directa de que no hay caso de uso que justifique la superficie nueva (3 íconos, 1 token de color, selector rediseñado).
+>
+> **Alcance final de Sub-feature A: solo A-2, el renombre.** `bank`→"Cuenta corriente", `other`→"Cuenta general" (labels en `.arb`, el valor del enum no cambia). Sigue siendo **6 tipos** (`cash`, `bank`, `card`, `savings`, `investment`, `other`), que el `AccountTypeGrid` actual (`GridView.count(crossAxisCount: 3)`, 2 filas) ya acomoda sin cambios — **la Fase A2 (selector de 2 filas + scroll horizontal) deja de ser necesaria** y se retira del plan de fases (§5).
+>
+> Las 3 variantes del selector diseñadas en Pencil (`zaQKJ`/`y0VBP`/`Kfrqc`) y el token `slate`/`slate-soft` (para el ícono de Seguro que ya no se usa) se limpian del canvas por no tener caso de uso.
 
-| Mockup | Enum | Nota |
-|---|---|---|
-| Cuenta general | `other` (relabel "General") | o nuevo `general` |
-| Efectivo | `cash` | — |
-| Cuenta corriente | `bank` (relabel) o nuevo `checking` | hoy `bank`="Banco" |
-| Tarjeta de crédito | `card` | saldo negativo (deuda) |
-| Cuenta de ahorros | `savings` | — |
-| Bono | **nuevo** `bond` | activo |
-| Seguro | **nuevo** `insurance` | activo |
-| Inversión | `investment` | — |
-| ~~Préstamo~~ | ~~`loan`~~ | **retirado** → feature Deudas (ver A-1 reabierta) |
-| ~~Hipoteca~~ | ~~`mortgage`~~ | **retirado** → feature Deudas (ver A-1 reabierta) |
-| Cuenta con sobregiro | **nuevo** `overdraft` | puede ir a negativo sin ser tarjeta |
-
-### Implicaciones por tipo (a definir para cada uno)
-Cada tipo debe declarar: ¿permite número completo? ¿tasa de interés? ¿es "tipo deuda" (saldo negativo, como tarjeta)? ¿es **on-budget u off-budget** (clave para B)? Propuesta (sin `loan`/`mortgage`, retirados a Deudas en A-1):
-- **Tipo deuda (saldo negativo):** solo `card`. `overdraft` puede ir a negativo pero es on-budget.
-- **Off-budget por defecto (sugieren "cuenta como gasto" en B):** `investment`, `bond`, `insurance`.
-- **On-budget:** `cash`, `bank/checking`, `savings`, `card`, `overdraft`, `general`.
-
-### Cambios técnicos (A)
-1. **Drift/dominio:** añadir valores al enum `AccountType` (dominio + `db.AccountType`) y al mapper (`account_mapper.dart`). Añadir valores a un enum **texto es aditivo**: las filas actuales conservan su valor, no requiere migración de datos, pero **sí regenerar** con `build_runner` y considerar bump de `schemaVersion` si se agregan columnas nuevas (ver B). Usar `/drift-schema-change`.
-2. **Presentación:** extender `AccountTypePresentation` (icono Lucide, color, color-soft, label) para cada tipo nuevo — `account_type_avatar.dart`. Requiere elegir 5 iconos/colores nuevos del sistema (tokens `$`, nunca hex).
-3. **l10n:** nuevas keys `accountType*` en `app_es.arb` + `app_en.arb`, `flutter gen-l10n`.
-4. **Reglas por tipo:** centralizar en el propio enum (getters `isDebtLike`, `defaultOffBudget`, `allowsFullAccountNumber`, `allowsInterestRate`) en vez de dispersarlas en `account_form_state`; migrar los `if (type == ...)` actuales.
-5. **Selector 2 filas + scroll horizontal:** reemplazar `AccountTypeGrid` (`GridView.count` 3 col, no scrollable) por un `SingleChildScrollView(horizontal)` con **dos filas** de chips (`AccountTypeChip` se reusa tal cual). Mantener el patrón inline (no bottom sheet) para no romper el flujo del form; el mockup usa modal pero el sistema de diseño ya decidió grid inline + pill al editar (`cuentas.md`). **Requiere pasar por Pencil** (modifica `CwiKu`/`xdLeB`).
+### Cambio técnico (A, alcance reducido)
+1. **l10n:** actualizar `accountTypeBank`→"Cuenta corriente" y `accountTypeOther`→"Cuenta general" en `app_es.arb`/`app_en.arb`, `flutter gen-l10n`. El valor del enum (`bank`/`other`) no cambia — es aditivo en dato, no en significado.
+2. **Pencil:** actualizar el label de los 2 chips existentes en `CwiKu`/`xdLeB` ("Banco"→"Cuenta corriente", "Otro"→"Cuenta general"). Sin selector nuevo, sin íconos nuevos.
+3. Sin cambios de esquema Drift, sin `/drift-schema-change`, sin bump de `schemaVersion` para esta sub-feature.
 
 ### Decisión A-1 — dónde vive la deuda → **REABIERTA y RE-RESUELTA (usuario, 2026-07-21)**
 
@@ -128,23 +109,22 @@ Un flag por transferencia `countsAsExpense` (bool) + permitir **categoría** en 
 ## 4. Decisiones abiertas (para el usuario)
 
 1. ~~**A-1** Préstamo/Hipoteca: cuenta vs deuda~~ → **REABIERTA y RE-RESUELTA:** solo la **tarjeta** es cuenta; **toda** la demás deuda (informal + formal/institucional) vive en la feature Deudas. `loan`/`mortgage` retirados del mapeo. Ver §2 y `docs/requirements/08-deudas.md`.
-2. **A-2** Renombres: ¿`bank`→"Cuenta corriente" y `other`→"Cuenta general", o agregar `checking`/`general` como tipos nuevos y conservar los actuales?
-3. **B-1** Modelo: **on/off-budget por cuenta** (recomendado, robusto) vs **flag simple `countsAsExpense` por transferencia** (mínimo viable).
-4. **B-2** El "ingreso en el destino": ¿se registra como ingreso a presupuestar solo cuando entra a una cuenta on-budget desde una off-budget, o siempre que el usuario lo marque? (Recomendado: derivado, para no doble-contar.)
-5. **B-3** ¿La transferencia presupuestable exige **categoría** obligatoria? (Recomendado: sí, si cuenta como gasto — sin categoría no pega a ningún sobre.)
+2. ~~**A-2** Renombres: ¿`bank`→"Cuenta corriente" y `other`→"Cuenta general", o agregar `checking`/`general` como tipos nuevos y conservar los actuales?~~ → **DECIDIDO (usuario, 2026-07-24): renombrar.** `bank`→"Cuenta corriente", `other`→"Cuenta general". Solo cambia el label l10n (`accountTypeBank`/`accountTypeOther` en `app_es.arb`/`app_en.arb`); el valor del enum y las filas existentes no se tocan — es aditivo en dato, no en significado.
+3. ~~**B-1** Modelo: **on/off-budget por cuenta** (recomendado, robusto) vs **flag simple `countsAsExpense` por transferencia** (mínimo viable).~~ → **DECIDIDO (usuario, 2026-07-24): on/off-budget por cuenta**, sin perder el flag. La cuenta fija el comportamiento por defecto (menos fricción, sin error silencioso si el usuario olvida marcar algo); el toggle por transferencia se conserva como **override manual** para la excepción puntual, tal como ya lo describe el modelo recomendado en §3 — no es un modelo aparte, es la combinación de ambos.
+4. ~~**B-2** El "ingreso en el destino": ¿se registra como ingreso a presupuestar solo cuando entra a una cuenta on-budget desde una off-budget, o siempre que el usuario lo marque?~~ → **DECIDIDO (usuario, 2026-07-24): las dos, mismo patrón que B-1.** Por defecto se **deriva** (off-budget → on-budget = ingreso a presupuestar automático, sin que el usuario tenga que marcar nada). El toggle de la transferencia se conserva como **override manual** para la excepción puntual (ej. el usuario no quiere que ese ingreso puntual cuente, o sí quiere marcarlo aunque el par de cuentas no lo derive). Simetría exacta con B-1: la cuenta fija el default, el flag cubre la excepción — en ningún punto el usuario tiene que decidir a mano el caso común.
+5. ~~**B-3** ¿La transferencia presupuestable exige **categoría** obligatoria?~~ → **DECIDIDO (usuario, 2026-07-24): sí, obligatoria** cuando la transferencia cuenta como gasto (derivado u override). Sin categoría no pega a ningún sobre — mismo comportamiento que un gasto normal.
 
 ---
 
 ## 5. Dimensionamiento y plan por fases
 
-Esfuerzo estimado: **A = M**, **B = L** (toca datos + presupuestos + UI + reportes futuros). Sugerido en fases independientes y desplegables:
+Esfuerzo estimado: **A = XS** (alcance recortado a renombre), **B = L** (toca datos + presupuestos + UI + reportes futuros). Sugerido en fases independientes y desplegables:
 
-1. **Fase A1 — Tipos de cuenta (datos + presentación).** Enum, mapper, presentación, l10n, reglas por tipo centralizadas. `/drift-schema-change`. Sin UI nueva de selector todavía. Tests unit del mapper/enum.
-2. **Fase A2 — Selector 2 filas.** Diseño Pencil → `AccountTypeGrid` a scroll horizontal de 2 filas. Golden tests. `/design-fidelity-check cuentas`.
-3. **Fase B1 — Atributo on/off-budget en cuentas** (columna + default por tipo + override). Schema + UI mínima (un switch en el form/detalle de cuenta). 
-4. **Fase B2 — Transferencia presupuestable (motor).** `Transactions`: categoría + clasificación en transfers; ampliar presupuestos para consumirlas; casos de uso y tests (el saldo NO se toca; verificar no-doble-conteo).
-5. **Fase B3 — UI de transferencia + nudge.** Diseño Pencil (toggle + categoría + sugerencia por tipo) → implementación. Golden + Patrol.
-6. **Fase B4 — Reportes (cuando exista la feature).** Requisito anotado en `10-graficas-informes.md`.
+1. **Fase A — Renombre de tipos de cuenta.** l10n (`accountTypeBank`/`accountTypeOther`) + labels de los 2 chips existentes en Pencil (`CwiKu`/`xdLeB`). Sin cambios de esquema ni de enum. Se puede hacer en cualquier momento, sin bloquear B.
+2. **Fase B1 — Atributo on/off-budget en cuentas** (columna + default por tipo + override). Schema + UI mínima (un switch en el form/detalle de cuenta).
+3. **Fase B2 — Transferencia presupuestable (motor).** `Transactions`: categoría + clasificación en transfers; ampliar presupuestos para consumirlas; casos de uso y tests (el saldo NO se toca; verificar no-doble-conteo).
+4. **Fase B3 — UI de transferencia + nudge.** Diseño Pencil (toggle + categoría + sugerencia por tipo) → implementación. Golden + Patrol.
+5. **Fase B4 — Reportes (cuando exista la feature).** Requisito anotado en `10-graficas-informes.md`.
 
 ## 6. Cumplimiento (Nivel 0 / legal / tono)
 - Todo esto es **Nivel 0 gratis**: registro manual, presupuestos, categorías. **Nada** de esto puede quedar tras anuncio o Premium.

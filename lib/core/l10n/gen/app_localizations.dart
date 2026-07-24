@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountTypeBank.
   ///
   /// In es, this message translates to:
-  /// **'Banco'**
+  /// **'Cuenta corriente'**
   String get accountTypeBank;
 
   /// No description provided for @accountTypeCard.
@@ -317,7 +317,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountTypeOther.
   ///
   /// In es, this message translates to:
-  /// **'Otra'**
+  /// **'Cuenta general'**
   String get accountTypeOther;
 
   /// No description provided for @accountBalanceLabel.

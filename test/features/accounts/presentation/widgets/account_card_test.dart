@@ -23,7 +23,7 @@ void main() {
     );
 
     expect(find.text('Bancolombia'), findsOneWidget);
-    expect(find.text('Banco'), findsOneWidget);
+    expect(find.text('Cuenta corriente'), findsOneWidget);
     expect(find.textContaining('4.500'), findsOneWidget);
   });
 

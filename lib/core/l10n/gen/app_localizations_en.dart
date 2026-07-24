@@ -112,7 +112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountTypeCash => 'Cash';
 
   @override
-  String get accountTypeBank => 'Bank';
+  String get accountTypeBank => 'Checking account';
 
   @override
   String get accountTypeCard => 'Credit card';
@@ -124,7 +124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountTypeInvestment => 'Investment';
 
   @override
-  String get accountTypeOther => 'Other';
+  String get accountTypeOther => 'General account';
 
   @override
   String get accountBalanceLabel => 'Current balance';
