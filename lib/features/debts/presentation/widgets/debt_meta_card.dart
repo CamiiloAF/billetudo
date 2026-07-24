@@ -24,7 +24,10 @@ class DebtMetaCard extends StatelessWidget {
   /// automatically — the growth line is then omitted.
   final int? dailyGrowthMinor;
 
-  final VoidCallback onUpdateBalance;
+  /// `null` disables the row (extension, HU-07: a closed debt accepts no
+  /// reconciliation) instead of hiding it, so the user still sees the row —
+  /// just dimmed and inert.
+  final VoidCallback? onUpdateBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +95,9 @@ class DebtMetaCard extends StatelessWidget {
                 Icon(
                   LucideIcons.slidersHorizontal,
                   size: 17,
-                  color: colors.primaryOnSoft,
+                  color: onUpdateBalance == null
+                      ? colors.textSecondary
+                      : colors.primaryOnSoft,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -101,15 +106,18 @@ class DebtMetaCard extends StatelessWidget {
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: colors.primaryOnSoft,
+                      color: onUpdateBalance == null
+                          ? colors.textSecondary
+                          : colors.primaryOnSoft,
                     ),
                   ),
                 ),
-                Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: colors.textSecondary,
-                ),
+                if (onUpdateBalance != null)
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 16,
+                    color: colors.textSecondary,
+                  ),
               ],
             ),
           ),

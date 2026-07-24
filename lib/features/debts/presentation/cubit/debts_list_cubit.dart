@@ -27,6 +27,11 @@ class DebtsListCubit extends Cubit<DebtsListState> {
     _subscription = _watchDebts().listen(_onSummary);
   }
 
+  /// Switches the "Activas"/"Cerradas" tab (extension, HU-07). Local UI state
+  /// only — the summary is already fully loaded, this just picks which half
+  /// of it to render.
+  void tabChanged(DebtsListTab tab) => emit(state.copyWith(tab: tab));
+
   void _onSummary(Result<DebtsSummary> result) {
     if (isClosed) {
       return;

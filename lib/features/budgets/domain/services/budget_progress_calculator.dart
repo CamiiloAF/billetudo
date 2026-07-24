@@ -196,11 +196,37 @@ class BudgetProgressCalculator {
       for (final detail in templates) detail.template.id: detail,
     };
 
+    // Templates with a real, still-unresolved (`pending`) occurrence that is
+    // OVERDUE relative to the *current* window (its real date sits before
+    // `window.start`, in what would otherwise read as a closed previous
+    // window). That occurrence represents the actual obligation the user owes
+    // right now, so it must win over the template's still-future cadence
+    // projection instead of showing alongside it. A pending occurrence that
+    // already sits inside the window is a different case (criterion 4): it
+    // coexists with the template's own next projection, since the two are
+    // genuinely different dates, not a duplicate.
+    final overduePendingTemplateIds = <String>{
+      for (final pending in pendingOccurrences)
+        if (window.status == BudgetWindowStatus.current &&
+            pending.occurrence.isPending &&
+            pending.occurrence.effectiveDate.isBefore(window.start) &&
+            matchesTemplateScope(
+              budget: budget,
+              scope: scope,
+              expandedCategories: expanded,
+              template: pending.scheduledPayment,
+            ))
+          pending.scheduledPayment.id,
+    };
+
     final items = <BudgetScheduledItem>[];
 
     for (final occurrence in projected) {
       final detail = detailById[occurrence.scheduledPaymentId];
       if (detail == null) {
+        continue;
+      }
+      if (overduePendingTemplateIds.contains(occurrence.scheduledPaymentId)) {
         continue;
       }
       if (!matchesProjectedOccurrence(
@@ -230,13 +256,24 @@ class BudgetProgressCalculator {
     }
 
     for (final pending in pendingOccurrences) {
-      if (!matchesPendingScheduledOccurrence(
+      final inWindow = matchesPendingScheduledOccurrence(
         budget: budget,
         scope: scope,
         expandedCategories: expanded,
         window: window,
         pending: pending,
-      )) {
+      );
+      final overdueInCurrentWindow = !inWindow &&
+          window.status == BudgetWindowStatus.current &&
+          pending.occurrence.isPending &&
+          pending.occurrence.effectiveDate.isBefore(window.start) &&
+          matchesTemplateScope(
+            budget: budget,
+            scope: scope,
+            expandedCategories: expanded,
+            template: pending.scheduledPayment,
+          );
+      if (!inWindow && !overdueInCurrentWindow) {
         continue;
       }
       items.add(

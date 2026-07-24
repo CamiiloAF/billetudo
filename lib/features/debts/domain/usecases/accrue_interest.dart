@@ -30,6 +30,14 @@ class AccrueInterest {
       (failure) async => Left(failure),
       (context) async {
         final debt = context.debt;
+        if (debt.isClosed) {
+          return const Left(
+            ValidationFailure(
+              'a closed debt no longer accrues interest',
+              field: 'closedAt',
+            ),
+          );
+        }
         if (debt.accrualMode != DebtAccrualMode.auto) {
           return const Left(
             ValidationFailure(

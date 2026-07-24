@@ -726,6 +726,14 @@
   "@transactionDetailNoNote": {},
   "transactionDetailSourceLabel": "Origen",
   "@transactionDetailSourceLabel": {},
+  "transactionDetailDebtLinkedLabel": "Enlazada a deuda: {debtName}",
+  "@transactionDetailDebtLinkedLabel": {
+    "placeholders": {
+      "debtName": {
+        "type": "String"
+      }
+    }
+  },
   "transactionDetailTagsLabel": "Etiquetas",
   "@transactionDetailTagsLabel": {},
   "transactionDetailTransferSubtitle": "Transferencia",
@@ -1116,6 +1124,13 @@
   "@debtPaymentSelectAccount": {},
   "debtPaymentAccountPickerTitle": "Elige una cuenta",
   "@debtPaymentAccountPickerTitle": {},
+  "debtOpeningMovementNote": "Deuda: {debtName}",
+  "@debtOpeningMovementNote": {
+    "description": "Nota autogenerada del movimiento de apertura de una deuda, cuando el usuario elige registrarlo en una cuenta. No editable por widgets: se resuelve sin BuildContext (AppLocale.resolveLanguageCode) porque se escribe desde data/.",
+    "placeholders": {
+      "debtName": { "type": "String" }
+    }
+  },
   "debtPaymentCta": "Registrar abono",
   "@debtPaymentCta": {},
   "debtPaymentError": "No pudimos registrar el abono. Intenta de nuevo.",
@@ -1167,6 +1182,102 @@
   "@debtOpeningLinkSnackbar": {},
   "debtLedgerAbonoNoAccountSnackbar": "Este abono no movió ninguna cuenta",
   "@debtLedgerAbonoNoAccountSnackbar": {},
+  "debtMenuTooltip": "Más opciones",
+  "@debtMenuTooltip": {},
+  "debtActionClose": "Cerrar deuda",
+  "@debtActionClose": {},
+  "debtActionError": "No pudimos completar la acción. Intenta de nuevo.",
+  "@debtActionError": {},
+  "debtCloseSheetTitle": "¿Cerrar esta deuda?",
+  "@debtCloseSheetTitle": {},
+  "debtCloseSheetMessageIOwe": "Le debes {amount} a {counterparty}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
+  "@debtCloseSheetMessageIOwe": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "counterparty": { "type": "String" }
+    }
+  },
+  "debtCloseSheetMessageIOweNoCounterparty": "Debes {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
+  "@debtCloseSheetMessageIOweNoCounterparty": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtCloseSheetMessageOwedToMe": "{counterparty} te debe {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
+  "@debtCloseSheetMessageOwedToMe": {
+    "placeholders": {
+      "counterparty": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "debtCloseSheetMessageOwedToMeNoCounterparty": "Te deben {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
+  "@debtCloseSheetMessageOwedToMeNoCounterparty": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtCloseInfoLabel": "Saldo pendiente al cerrar",
+  "@debtCloseInfoLabel": {},
+  "debtCloseCta": "Cerrar deuda",
+  "@debtCloseCta": {},
+  "debtCelebrationTitleIOwe": "¡Felicidades! Ya no debes nada",
+  "@debtCelebrationTitleIOwe": {},
+  "debtCelebrationTitleOwedToMe": "¡Felicidades! Ya no te deben nada",
+  "@debtCelebrationTitleOwedToMe": {},
+  "debtCelebrationMessageIOwe": "Terminaste de pagar {name}. En total pagaste {amount} en {duration}.",
+  "@debtCelebrationMessageIOwe": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "amount": { "type": "String" },
+      "duration": { "type": "String" }
+    }
+  },
+  "debtCelebrationMessageOwedToMe": "Terminaste de cobrar {name}. En total cobraste {amount} en {duration}.",
+  "@debtCelebrationMessageOwedToMe": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "amount": { "type": "String" },
+      "duration": { "type": "String" }
+    }
+  },
+  "debtCelebrationStatTotalPaidIOwe": "Total pagado",
+  "@debtCelebrationStatTotalPaidIOwe": {},
+  "debtCelebrationStatTotalPaidOwedToMe": "Total cobrado",
+  "@debtCelebrationStatTotalPaidOwedToMe": {},
+  "debtCelebrationStatDuration": "Duración",
+  "@debtCelebrationStatDuration": {},
+  "debtCelebrationDismiss": "Ahora no",
+  "@debtCelebrationDismiss": {},
+  "debtCelebrationComplete": "Completar",
+  "@debtCelebrationComplete": {},
+  "debtDurationMonths": "{count, plural, =1{1 mes} other{{count} meses}}",
+  "@debtDurationMonths": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "debtDurationDays": "{count, plural, =1{1 día} other{{count} días}}",
+  "@debtDurationDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "debtDirectionIOwePast": "Debía",
+  "@debtDirectionIOwePast": {},
+  "debtDirectionOwedToMePast": "Me debían",
+  "@debtDirectionOwedToMePast": {},
+  "debtCardStatusPaid": "Pagada · {date}",
+  "@debtCardStatusPaid": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtCardStatusClosed": "Cerrada · {date}",
+  "@debtCardStatusClosed": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtsTabActive": "Activas",
+  "@debtsTabActive": {},
+  "debtsTabClosed": "Cerradas",
+  "@debtsTabClosed": {},
+  "debtsClosedPaidLabel": "Pagué",
+  "@debtsClosedPaidLabel": {},
+  "debtsClosedCollectedLabel": "Me pagaron",
+  "@debtsClosedCollectedLabel": {},
+  "debtsClosedEmptyMessage": "Aún no has cerrado ninguna deuda",
+  "@debtsClosedEmptyMessage": {},
+  "debtsActiveEmptyMessage": "No tienes deudas activas",
+  "@debtsActiveEmptyMessage": {},
   "moreScheduledPayments": "Pagos programados",
   "@moreScheduledPayments": {},
   "moreScheduledPaymentsDescription": "Pagos e ingresos automáticos",

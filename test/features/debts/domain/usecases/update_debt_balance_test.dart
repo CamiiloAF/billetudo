@@ -6,6 +6,7 @@ import 'package:billetudo/features/debts/domain/usecases/update_debt_balance.dar
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../debt_test_fixtures.dart';
 import 'debt_repository_mock.dart';
 
 void main() {
@@ -17,6 +18,8 @@ void main() {
   setUp(() {
     repository = MockDebtRepository();
     usecase = UpdateDebtBalance(repository);
+    when(() => repository.getDebt('d1'))
+        .thenAnswer((_) async => Right(buildDebt()));
   });
 
   DebtEntry anyEntry() => DebtEntry(
@@ -51,9 +54,9 @@ void main() {
       date: DateTime(2026, 6, 1),
     );
 
-    final captured =
-        verify(() => repository.addDebtEntry(captureAny())).captured.single
-            as DebtEntryDraft;
+    final captured = verify(() => repository.addDebtEntry(captureAny()))
+        .captured
+        .single as DebtEntryDraft;
     expect(captured.kind, DebtEntryKind.manualAdjustment);
     expect(captured.amountMinor, 12000);
   });
@@ -78,9 +81,9 @@ void main() {
       date: DateTime(2026, 6, 1),
     );
 
-    final captured =
-        verify(() => repository.addDebtEntry(captureAny())).captured.single
-            as DebtEntryDraft;
+    final captured = verify(() => repository.addDebtEntry(captureAny()))
+        .captured
+        .single as DebtEntryDraft;
     expect(captured.amountMinor, -10000);
   });
 
@@ -115,5 +118,23 @@ void main() {
 
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
     verifyNever(() => repository.getBalance(any()));
+  });
+
+  test('rejects a reconciliation on a closed debt', () async {
+    when(() => repository.getDebt('d1')).thenAnswer(
+      (_) async => Right(buildDebt(closedAt: DateTime(2026, 6, 1))),
+    );
+
+    final result = await usecase(
+      debtId: 'd1',
+      targetOutstandingMinor: 112000,
+      date: DateTime(2026, 6, 1),
+    );
+
+    final failure = result.getLeft().toNullable();
+    expect(failure, isA<ValidationFailure>());
+    expect((failure! as ValidationFailure).field, 'closedAt');
+    verifyNever(() => repository.getBalance(any()));
+    verifyNever(() => repository.addDebtEntry(any()));
   });
 }

@@ -8,10 +8,12 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../../core/widgets/segmented_control.dart';
 import '../cubit/debts_list_cubit.dart';
 import '../cubit/debts_list_state.dart';
 import '../widgets/debt_card.dart';
 import '../widgets/debt_card_skeleton.dart';
+import '../widgets/debt_closed_summary_card.dart';
 import '../widgets/debt_skeleton_box.dart';
 import '../widgets/debt_summary_card.dart';
 import '../widgets/debt_summary_card_skeleton.dart';
@@ -60,6 +62,7 @@ class DebtsListPage extends StatelessWidget {
                   DebtsListStatus.ready => DebtsListView(
                       state: state,
                       onOpenDebt: onOpenDebt,
+                      onTabChanged: context.read<DebtsListCubit>().tabChanged,
                     ),
                 },
               ),
@@ -139,48 +142,95 @@ class DebtsErrorView extends StatelessWidget {
   }
 }
 
-/// The list with data: one summary card per currency, then the debts.
+/// The list with data: the "Activas"/"Cerradas" tabs (extension, HU-07,
+/// `vaNHd`), one summary card per currency for the selected tab, then its
+/// debts.
 class DebtsListView extends StatelessWidget {
   const DebtsListView({
     required this.state,
     required this.onOpenDebt,
+    required this.onTabChanged,
     super.key,
   });
 
   final DebtsListState state;
   final ValueChanged<String> onOpenDebt;
+  final ValueChanged<DebtsListTab> onTabChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colors = context.colors;
-    final totals = state.summary.totals;
-    final debts = state.summary.debts;
+    final isClosedTab = state.tab == DebtsListTab.closed;
+    final debts = state.tabDebts;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       children: [
-        for (var index = 0; index < totals.length; index++) ...[
-          if (index > 0) const SizedBox(height: 12),
-          DebtSummaryCard(total: totals[index]),
-        ],
-        const SizedBox(height: 16),
-        Text(
-          l10n.debtsSectionTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
+        SegmentedControl<DebtsListTab>(
+          selected: state.tab,
+          onChanged: onTabChanged,
+          segments: [
+            SegmentedControlOption(
+              value: DebtsListTab.active,
+              label: l10n.debtsTabActive,
+              inactiveColor: colors.segmentInactiveText,
+            ),
+            SegmentedControlOption(
+              value: DebtsListTab.closed,
+              label: l10n.debtsTabClosed,
+              inactiveColor: colors.segmentInactiveText,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        for (var index = 0; index < debts.length; index++) ...[
-          if (index > 0) const SizedBox(height: 12),
-          DebtCard(
-            entry: debts[index],
-            onTap: () => onOpenDebt(debts[index].debt.id),
+        const SizedBox(height: 16),
+        if (isClosedTab)
+          for (var index = 0;
+              index < state.summary.closedTotals.length;
+              index++) ...[
+            if (index > 0) const SizedBox(height: 12),
+            DebtClosedSummaryCard(total: state.summary.closedTotals[index]),
+          ]
+        else
+          for (var index = 0; index < state.summary.totals.length; index++) ...[
+            if (index > 0) const SizedBox(height: 12),
+            DebtSummaryCard(total: state.summary.totals[index]),
+          ],
+        const SizedBox(height: 16),
+        if (debts.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Text(
+              isClosedTab
+                  ? l10n.debtsClosedEmptyMessage
+                  : l10n.debtsActiveEmptyMessage,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colors.textSecondary,
+              ),
+            ),
+          )
+        else ...[
+          Text(
+            l10n.debtsSectionTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: colors.textPrimary,
+            ),
           ),
+          const SizedBox(height: 12),
+          for (var index = 0; index < debts.length; index++) ...[
+            if (index > 0) const SizedBox(height: 12),
+            DebtCard(
+              entry: debts[index],
+              closed: isClosedTab,
+              onTap: () => onOpenDebt(debts[index].debt.id),
+            ),
+          ],
         ],
       ],
     );

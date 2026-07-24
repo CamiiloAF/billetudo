@@ -1748,6 +1748,12 @@ abstract class AppLocalizations {
   /// **'Origen'**
   String get transactionDetailSourceLabel;
 
+  /// No description provided for @transactionDetailDebtLinkedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazada a deuda: {debtName}'**
+  String transactionDetailDebtLinkedLabel(String debtName);
+
   /// No description provided for @transactionDetailTagsLabel.
   ///
   /// In es, this message translates to:
@@ -2672,6 +2678,12 @@ abstract class AppLocalizations {
   /// **'Elige una cuenta'**
   String get debtPaymentAccountPickerTitle;
 
+  /// Nota autogenerada del movimiento de apertura de una deuda, cuando el usuario elige registrarlo en una cuenta. No editable por widgets: se resuelve sin BuildContext (AppLocale.resolveLanguageCode) porque se escribe desde data/.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda: {debtName}'**
+  String debtOpeningMovementNote(String debtName);
+
   /// No description provided for @debtPaymentCta.
   ///
   /// In es, this message translates to:
@@ -2803,6 +2815,194 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Este abono no movió ninguna cuenta'**
   String get debtLedgerAbonoNoAccountSnackbar;
+
+  /// No description provided for @debtMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get debtMenuTooltip;
+
+  /// No description provided for @debtActionClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar deuda'**
+  String get debtActionClose;
+
+  /// No description provided for @debtActionError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos completar la acción. Intenta de nuevo.'**
+  String get debtActionError;
+
+  /// No description provided for @debtCloseSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cerrar esta deuda?'**
+  String get debtCloseSheetTitle;
+
+  /// No description provided for @debtCloseSheetMessageIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Le debes {amount} a {counterparty}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.'**
+  String debtCloseSheetMessageIOwe(String amount, String counterparty);
+
+  /// No description provided for @debtCloseSheetMessageIOweNoCounterparty.
+  ///
+  /// In es, this message translates to:
+  /// **'Debes {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.'**
+  String debtCloseSheetMessageIOweNoCounterparty(String amount);
+
+  /// No description provided for @debtCloseSheetMessageOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'{counterparty} te debe {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.'**
+  String debtCloseSheetMessageOwedToMe(String counterparty, String amount);
+
+  /// No description provided for @debtCloseSheetMessageOwedToMeNoCounterparty.
+  ///
+  /// In es, this message translates to:
+  /// **'Te deben {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.'**
+  String debtCloseSheetMessageOwedToMeNoCounterparty(String amount);
+
+  /// No description provided for @debtCloseInfoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo pendiente al cerrar'**
+  String get debtCloseInfoLabel;
+
+  /// No description provided for @debtCloseCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar deuda'**
+  String get debtCloseCta;
+
+  /// No description provided for @debtCelebrationTitleIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Felicidades! Ya no debes nada'**
+  String get debtCelebrationTitleIOwe;
+
+  /// No description provided for @debtCelebrationTitleOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Felicidades! Ya no te deben nada'**
+  String get debtCelebrationTitleOwedToMe;
+
+  /// No description provided for @debtCelebrationMessageIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminaste de pagar {name}. En total pagaste {amount} en {duration}.'**
+  String debtCelebrationMessageIOwe(
+      String name, String amount, String duration);
+
+  /// No description provided for @debtCelebrationMessageOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminaste de cobrar {name}. En total cobraste {amount} en {duration}.'**
+  String debtCelebrationMessageOwedToMe(
+      String name, String amount, String duration);
+
+  /// No description provided for @debtCelebrationStatTotalPaidIOwe.
+  ///
+  /// In es, this message translates to:
+  /// **'Total pagado'**
+  String get debtCelebrationStatTotalPaidIOwe;
+
+  /// No description provided for @debtCelebrationStatTotalPaidOwedToMe.
+  ///
+  /// In es, this message translates to:
+  /// **'Total cobrado'**
+  String get debtCelebrationStatTotalPaidOwedToMe;
+
+  /// No description provided for @debtCelebrationStatDuration.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración'**
+  String get debtCelebrationStatDuration;
+
+  /// No description provided for @debtCelebrationDismiss.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get debtCelebrationDismiss;
+
+  /// No description provided for @debtCelebrationComplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar'**
+  String get debtCelebrationComplete;
+
+  /// No description provided for @debtDurationMonths.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 mes} other{{count} meses}}'**
+  String debtDurationMonths(int count);
+
+  /// No description provided for @debtDurationDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String debtDurationDays(int count);
+
+  /// No description provided for @debtDirectionIOwePast.
+  ///
+  /// In es, this message translates to:
+  /// **'Debía'**
+  String get debtDirectionIOwePast;
+
+  /// No description provided for @debtDirectionOwedToMePast.
+  ///
+  /// In es, this message translates to:
+  /// **'Me debían'**
+  String get debtDirectionOwedToMePast;
+
+  /// No description provided for @debtCardStatusPaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagada · {date}'**
+  String debtCardStatusPaid(String date);
+
+  /// No description provided for @debtCardStatusClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrada · {date}'**
+  String debtCardStatusClosed(String date);
+
+  /// No description provided for @debtsTabActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activas'**
+  String get debtsTabActive;
+
+  /// No description provided for @debtsTabClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerradas'**
+  String get debtsTabClosed;
+
+  /// No description provided for @debtsClosedPaidLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagué'**
+  String get debtsClosedPaidLabel;
+
+  /// No description provided for @debtsClosedCollectedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Me pagaron'**
+  String get debtsClosedCollectedLabel;
+
+  /// No description provided for @debtsClosedEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has cerrado ninguna deuda'**
+  String get debtsClosedEmptyMessage;
+
+  /// No description provided for @debtsActiveEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes deudas activas'**
+  String get debtsActiveEmptyMessage;
 
   /// No description provided for @moreScheduledPayments.
   ///

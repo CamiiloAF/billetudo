@@ -75,4 +75,95 @@ void main() {
           .having((s) => s.failure, 'failure', isNotNull),
     ],
   );
+
+  group('tabChanged (extension, HU-07)', () {
+    final mixedSummary = DebtsSummary.from([
+      buildDebtWithBalance(
+        debt: buildDebt(id: 'open-1', direction: DebtDirection.iOwe),
+        balance:
+            buildBalance(totalIncreasesMinor: 100000, totalDecreasesMinor: 32000),
+      ),
+      buildDebtWithBalance(
+        debt: buildDebt(
+          id: 'closed-1',
+          direction: DebtDirection.iOwe,
+          closedAt: DateTime(2026, 6, 1),
+        ),
+        balance:
+            buildBalance(totalIncreasesMinor: 80000, totalDecreasesMinor: 80000),
+      ),
+      buildDebtWithBalance(
+        debt: buildDebt(
+          id: 'closed-2',
+          direction: DebtDirection.owedToMe,
+          closedAt: DateTime(2026, 6, 2),
+        ),
+        balance:
+            buildBalance(totalIncreasesMinor: 20000, totalDecreasesMinor: 20000),
+      ),
+    ]);
+
+    blocTest<DebtsListCubit, DebtsListState>(
+      'defaults to Activas and shows only open debts',
+      setUp: () => when(watchDebts.call)
+          .thenAnswer((_) => Stream.value(Right(mixedSummary))),
+      build: build,
+      act: (cubit) => cubit.start(),
+      skip: 1,
+      expect: () => [
+        isA<DebtsListState>()
+            .having((s) => s.tab, 'tab', DebtsListTab.active)
+            .having(
+              (s) => s.tabDebts.map((d) => d.debt.id).toList(),
+              'tabDebts',
+              ['open-1'],
+            ),
+      ],
+    );
+
+    blocTest<DebtsListCubit, DebtsListState>(
+      'switching to Cerradas shows only closed debts and their own totals, '
+      'not the Activas totals',
+      setUp: () => when(watchDebts.call)
+          .thenAnswer((_) => Stream.value(Right(mixedSummary))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        cubit.tabChanged(DebtsListTab.closed);
+      },
+      skip: 2,
+      expect: () => [
+        isA<DebtsListState>()
+            .having((s) => s.tab, 'tab', DebtsListTab.closed)
+            .having(
+              (s) => s.tabDebts.map((d) => d.debt.id).toList()..sort(),
+              'tabDebts',
+              ['closed-1', 'closed-2'],
+            )
+            .having(
+              (s) => s.summary.closedTotals
+                  .firstWhere((t) => t.currency == 'COP')
+                  .iOwePaidMinor,
+              'closed iOwePaidMinor',
+              80000,
+            )
+            .having(
+              (s) => s.summary.closedTotals
+                  .firstWhere((t) => t.currency == 'COP')
+                  .owedToMeCollectedMinor,
+              'closed owedToMeCollectedMinor',
+              20000,
+            )
+            .having(
+              (s) => s.summary.totals
+                  .firstWhere((t) => t.currency == 'COP')
+                  .iOweOutstandingMinor,
+              // Activas total (68000 outstanding on open-1) must not leak
+              // into what the Cerradas tab reads.
+              'Activas total stays separate',
+              68000,
+            ),
+      ],
+    );
+  });
 }

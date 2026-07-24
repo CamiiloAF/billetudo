@@ -34,23 +34,38 @@ class UpdateDebtBalance {
       );
     }
 
-    final balanceResult = await _repository.getBalance(debtId);
-    return balanceResult.fold<FutureResult<DebtEntry?>>(
+    final debtResult = await _repository.getDebt(debtId);
+    return debtResult.fold<FutureResult<DebtEntry?>>(
       (failure) async => Left(failure),
-      (balance) async {
-        final diff = targetOutstandingMinor - balance.rawOutstandingMinor;
-        if (diff == 0) return const Right(null);
+      (debt) async {
+        if (debt.isClosed) {
+          return const Left(
+            ValidationFailure(
+              'a closed debt accepts no balance reconciliation',
+              field: 'closedAt',
+            ),
+          );
+        }
 
-        final entryResult = await _repository.addDebtEntry(
-          DebtEntryDraft(
-            debtId: debtId,
-            kind: DebtEntryKind.manualAdjustment,
-            amountMinor: diff,
-            entryDate: date,
-            note: note,
-          ),
+        final balanceResult = await _repository.getBalance(debtId);
+        return balanceResult.fold<FutureResult<DebtEntry?>>(
+          (failure) async => Left(failure),
+          (balance) async {
+            final diff = targetOutstandingMinor - balance.rawOutstandingMinor;
+            if (diff == 0) return const Right(null);
+
+            final entryResult = await _repository.addDebtEntry(
+              DebtEntryDraft(
+                debtId: debtId,
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: diff,
+                entryDate: date,
+                note: note,
+              ),
+            );
+            return entryResult.map<DebtEntry?>((entry) => entry);
+          },
         );
-        return entryResult.map<DebtEntry?>((entry) => entry);
       },
     );
   }

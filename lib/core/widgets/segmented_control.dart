@@ -51,6 +51,7 @@ class SegmentedControl<T> extends StatelessWidget {
                 label: segments[i].label,
                 selected: segments[i].value == selected,
                 activeColor: segments[i].activeColor,
+                inactiveColor: segments[i].inactiveColor,
                 onTap: enabled ? () => onChanged(segments[i].value) : null,
               ),
             ),
@@ -67,6 +68,7 @@ class SegmentedControlOption<T> {
     required this.value,
     required this.label,
     this.activeColor,
+    this.inactiveColor,
   });
 
   final T value;
@@ -76,6 +78,12 @@ class SegmentedControlOption<T> {
 
   /// Label color when this segment is active. Defaults to `textPrimary`.
   final Color? activeColor;
+
+  /// Label color when this segment is inactive. Defaults to `textSecondary`
+  /// (every existing segmented control in the app). Deudas' "Activas"/
+  /// "Cerradas" tabs (`vaNHd`) is the one instance the `.pen` calls out a
+  /// dedicated `$segment-inactive-text` token for.
+  final Color? inactiveColor;
 }
 
 /// A single pill segment of [SegmentedControl].
@@ -85,12 +93,14 @@ class SegmentedControlSegment extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.activeColor,
+    this.inactiveColor,
     super.key,
   });
 
   final String label;
   final bool selected;
   final Color? activeColor;
+  final Color? inactiveColor;
 
   /// `null` renders the segment visually the same but disables taps.
   final VoidCallback? onTap;
@@ -113,7 +123,7 @@ class SegmentedControlSegment extends StatelessWidget {
             style: theme.textTheme.labelLarge?.copyWith(
               color: selected
                   ? (activeColor ?? colors.textPrimary)
-                  : colors.textSecondary,
+                  : (inactiveColor ?? colors.textSecondary),
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),

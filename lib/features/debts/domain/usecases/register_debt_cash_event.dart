@@ -36,19 +36,31 @@ class RegisterDebtCashEvent {
     final debtResult = await _repository.getDebt(draft.debtId);
     return debtResult.fold(
       (failure) async => Left(failure),
-      (debt) => _repository.registerCashEvent(
-        debtId: debt.id,
-        accountId: draft.accountId,
-        amountMinor: draft.amountMinor,
-        type: DebtEventRules.cashEventType(
-          direction: debt.direction,
-          kind: draft.kind,
-        ),
-        currency: debt.currency,
-        date: draft.date,
-        note: draft.note,
-        categoryId: draft.categoryId,
-      ),
+      (debt) {
+        if (debt.isClosed) {
+          return Future.value(
+            const Left(
+              ValidationFailure(
+                'a closed debt accepts no new abonos',
+                field: 'closedAt',
+              ),
+            ),
+          );
+        }
+        return _repository.registerCashEvent(
+          debtId: debt.id,
+          accountId: draft.accountId,
+          amountMinor: draft.amountMinor,
+          type: DebtEventRules.cashEventType(
+            direction: debt.direction,
+            kind: draft.kind,
+          ),
+          currency: debt.currency,
+          date: draft.date,
+          note: draft.note,
+          categoryId: draft.categoryId,
+        );
+      },
     );
   }
 }

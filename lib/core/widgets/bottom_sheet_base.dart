@@ -39,6 +39,33 @@ class BottomSheetBase extends StatelessWidget {
         builder: (context) => BottomSheetBase(child: builder(context)),
       );
 
+  /// Closes a sheet opened with [show] once its own write finishes, safely
+  /// even when another sheet was pushed on top of it in the meantime.
+  ///
+  /// A save that settles a race with another sheet is not hypothetical: a
+  /// sheet's own save can trigger a Drift stream re-emission elsewhere in the
+  /// tree that opens a *second* modal sheet on the same root navigator (e.g.
+  /// `DebtCelebrationSheet` opening right after an abono/actualizar-saldo
+  /// settles a debt, `debt_detail_page.dart`'s `_handleSideEffects`). On a
+  /// real device the two triggers can race, landing the second sheet on top
+  /// of the navigator stack before this one's own "saved" listener runs.
+  /// A plain `Navigator.of(context).pop()` always pops whatever route is
+  /// currently on top — in that ordering it would silently pop the *other*
+  /// sheet instead of this one, so the other sheet would never be seen even
+  /// though it opened successfully. Removing this sheet's own route by
+  /// reference (`Navigator.removeRoute`) is safe under either ordering.
+  static void dismiss(BuildContext context) {
+    final route = ModalRoute.of(context);
+    if (route == null) {
+      return;
+    }
+    if (route.isCurrent) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).removeRoute(route);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // The keyboard inset lifts the whole sheet instead of covering it, so the

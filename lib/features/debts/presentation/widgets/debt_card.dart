@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/debt_with_balance.dart';
 import '../utils/debt_format.dart';
+import 'debt_closed_status_badge.dart';
 import 'debt_direction_pill.dart';
 import 'debt_installment_badge.dart';
 import 'debt_progress_bar.dart';
@@ -14,11 +15,22 @@ import 'debt_progress_bar.dart';
 /// the meta row — the percentage paid/collected next to either the "Cuota ·
 /// <fecha>" badge (`tHLtM`, when the debt has a linked cuota) or the "Vence …"
 /// line (when it only has a `dueDate`).
+///
+/// [closed] (extension, HU-07) swaps the direction pill and the meta badge for
+/// their closed-tab treatment (`vaNHd`): a past-tense neutral pill, a
+/// "Pagada"/"Cerrada" status badge instead of the cuota/vencimiento one, and a
+/// dimmed progress bar when the debt closed with a balance still pending.
 class DebtCard extends StatelessWidget {
-  const DebtCard({required this.entry, this.onTap, super.key});
+  const DebtCard({
+    required this.entry,
+    this.onTap,
+    this.closed = false,
+    super.key,
+  });
 
   final DebtWithBalance entry;
   final VoidCallback? onTap;
+  final bool closed;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +42,7 @@ class DebtCard extends StatelessWidget {
     final pct = (balance.progress * 100).round();
     final dueDate = debt.dueDate;
     final installment = entry.installment;
+    final closedAt = debt.closedAt;
 
     return Material(
       color: colors.surface,
@@ -53,7 +66,7 @@ class DebtCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: colors.primarySoft,
+                      color: closed ? colors.muted : colors.primarySoft,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -82,7 +95,10 @@ class DebtCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            DebtDirectionPill(direction: debt.direction),
+                            DebtDirectionPill(
+                              direction: debt.direction,
+                              closed: closed,
+                            ),
                           ],
                         ),
                         if (debt.counterparty != null) ...[
@@ -109,7 +125,8 @@ class DebtCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      DebtFormat.amount(balance.outstandingMinor, debt.currency),
+                      DebtFormat.amount(
+                          balance.outstandingMinor, debt.currency),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -137,36 +154,51 @@ class DebtCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              DebtProgressBar(value: balance.progress),
+              DebtProgressBar(
+                value: balance.progress,
+                color: closed && !balance.settled ? colors.textSecondary : null,
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: installment != null
-                          ? DebtInstallmentBadge(
-                              label: l10n.debtInstallmentBadge(
-                                DebtFormat.dateShort(
-                                  context,
-                                  installment.nextDate,
-                                ),
-                              ),
+                      child: closed && closedAt != null
+                          ? DebtClosedStatusBadge(
+                              settled: balance.settled,
+                              label: balance.settled
+                                  ? l10n.debtCardStatusPaid(
+                                      DebtFormat.dateShort(context, closedAt),
+                                    )
+                                  : l10n.debtCardStatusClosed(
+                                      DebtFormat.dateShort(context, closedAt),
+                                    ),
                             )
-                          : dueDate != null
-                              ? Text(
-                                  l10n.debtDueOn(
-                                    DebtFormat.dateShort(context, dueDate),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: colors.textSecondary,
+                          : installment != null
+                              ? DebtInstallmentBadge(
+                                  label: l10n.debtInstallmentBadge(
+                                    DebtFormat.dateShort(
+                                      context,
+                                      installment.nextDate,
+                                    ),
                                   ),
                                 )
-                              : const SizedBox.shrink(),
+                              : dueDate != null
+                                  ? Text(
+                                      l10n.debtDueOn(
+                                        DebtFormat.dateShort(context, dueDate),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: colors.textSecondary,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
                     ),
                   ),
                   const SizedBox(width: 8),

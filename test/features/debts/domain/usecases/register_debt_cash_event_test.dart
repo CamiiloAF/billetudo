@@ -20,7 +20,7 @@ void main() {
     usecase = RegisterDebtCashEvent(repository);
   });
 
-  Debt debt(DebtDirection direction) => Debt(
+  Debt debt(DebtDirection direction, {DateTime? closedAt}) => Debt(
         id: 'd1',
         name: 'Deuda',
         direction: direction,
@@ -29,6 +29,7 @@ void main() {
         accrualMode: DebtAccrualMode.manual,
         createdAt: DateTime(2026),
         updatedAt: 0,
+        closedAt: closedAt,
       );
 
   test('an iOwe abono resolves to an expense in the debts currency', () async {
@@ -124,5 +125,39 @@ void main() {
 
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
     verifyNever(() => repository.getDebt(any()));
+  });
+
+  test('rejects a cash event on a closed debt', () async {
+    when(() => repository.getDebt('d1')).thenAnswer(
+      (_) async => Right(
+        debt(DebtDirection.iOwe, closedAt: DateTime(2026, 6, 1)),
+      ),
+    );
+
+    final result = await usecase(
+      DebtCashEventDraft(
+        debtId: 'd1',
+        accountId: 'a1',
+        amountMinor: 20000,
+        kind: DebtCashEventKind.payment,
+        date: DateTime(2026, 5, 1),
+      ),
+    );
+
+    final failure = result.getLeft().toNullable();
+    expect(failure, isA<ValidationFailure>());
+    expect((failure! as ValidationFailure).field, 'closedAt');
+    verifyNever(
+      () => repository.registerCashEvent(
+        debtId: any(named: 'debtId'),
+        accountId: any(named: 'accountId'),
+        amountMinor: any(named: 'amountMinor'),
+        type: any(named: 'type'),
+        currency: any(named: 'currency'),
+        date: any(named: 'date'),
+        note: any(named: 'note'),
+        categoryId: any(named: 'categoryId'),
+      ),
+    );
   });
 }

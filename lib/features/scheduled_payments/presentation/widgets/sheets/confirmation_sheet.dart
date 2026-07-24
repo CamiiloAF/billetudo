@@ -261,57 +261,66 @@ class GuidedReviewSheetBody extends StatelessWidget {
                 total: state.total,
               ),
               const SizedBox(height: 12),
-              ConfirmationSheetFields(
-                scheduledPaymentId: current.scheduledPayment.id,
-                type: current.scheduledPayment.type,
-                currency: current.scheduledPayment.currency,
-                note: current.scheduledPayment.note,
-                categoryName: current.categoryName,
-                categoryIcon: current.categoryIcon,
-                categoryColor: current.categoryColor,
-                frequency: current.scheduledPayment.frequency,
-                transferAccountName: current.transferAccountName,
-                isTransfer: current.scheduledPayment.isTransfer,
-                date: state.date!,
-                accountId: state.accountId,
-                accountName: state.accountName,
-                amountMinor: state.amountMinor!,
-                templateAmountMinor: current.scheduledPayment.amountMinor,
-                isSaving: state.isSaving,
-                pendingCountForTemplate: state.pendingCountForTemplate,
-                oldestPendingDate: current.occurrence.effectiveDate,
-                minDate: state.minDate,
-                isGuided: true,
-                onDateChanged: cubit.dateChanged,
-                onAccountSelected: cubit.accountSelected,
-                onAmountChanged: cubit.amountChanged,
-                onConfirm: cubit.confirmCurrent,
-                onSkip: cubit.skipCurrent,
-                onSnooze: () async {
-                  final result = await SnoozeSheet.show(
-                    context,
-                    scheduledPaymentId: current.scheduledPayment.id,
-                    occurrenceDate: current.occurrence.occurrenceDate,
-                    templateName: ScheduledPaymentFormat.templateName(
-                      note: current.scheduledPayment.note,
+              // `ConfirmationSheetFields` scrolls its own field area
+              // internally (its editable amount field can expand into a
+              // custom keypad, see the comment there); `Flexible` gives that
+              // inner `Flexible`/`SingleChildScrollView` the bounded height it
+              // needs instead of the unbounded main-axis constraint a `Column`
+              // otherwise hands an ordinary (non-flex) child.
+              Flexible(
+                child: ConfirmationSheetFields(
+                  scheduledPaymentId: current.scheduledPayment.id,
+                  type: current.scheduledPayment.type,
+                  currency: current.scheduledPayment.currency,
+                  note: current.scheduledPayment.note,
+                  categoryName: current.categoryName,
+                  categoryIcon: current.categoryIcon,
+                  categoryColor: current.categoryColor,
+                  frequency: current.scheduledPayment.frequency,
+                  transferAccountName: current.transferAccountName,
+                  isTransfer: current.scheduledPayment.isTransfer,
+                  date: state.date!,
+                  accountId: state.accountId,
+                  accountName: state.accountName,
+                  amountMinor: state.amountMinor!,
+                  templateAmountMinor: current.scheduledPayment.amountMinor,
+                  isSaving: state.isSaving,
+                  pendingCountForTemplate: state.pendingCountForTemplate,
+                  oldestPendingDate: current.occurrence.effectiveDate,
+                  minDate: state.minDate,
+                  isGuided: true,
+                  onDateChanged: cubit.dateChanged,
+                  onAccountSelected: cubit.accountSelected,
+                  onAmountChanged: cubit.amountChanged,
+                  onConfirm: cubit.confirmCurrent,
+                  onSkip: cubit.skipCurrent,
+                  onSnooze: () async {
+                    final result = await SnoozeSheet.show(
+                      context,
+                      scheduledPaymentId: current.scheduledPayment.id,
+                      occurrenceDate: current.occurrence.occurrenceDate,
+                      templateName: ScheduledPaymentFormat.templateName(
+                        note: current.scheduledPayment.note,
+                        isTransfer: current.scheduledPayment.isTransfer,
+                        accountName: current.accountName,
+                        transferAccountName: current.transferAccountName,
+                        fallback: AppLocalizations.of(context)
+                            .scheduledPaymentUntitled,
+                      ),
                       isTransfer: current.scheduledPayment.isTransfer,
-                      accountName: current.accountName,
-                      transferAccountName: current.transferAccountName,
-                      fallback:
-                          AppLocalizations.of(context).scheduledPaymentUntitled,
-                    ),
-                    isTransfer: current.scheduledPayment.isTransfer,
-                    categoryIcon: current.categoryIcon,
-                    categoryColor: current.categoryColor,
-                  );
-                  if (result != null) {
-                    await cubit.skipCurrent();
-                  }
-                },
-                // Guided review never offers the "editar plantilla" shortcut
-                // (see `ConfirmationSheetHead.onEdit`): tapping it would
-                // navigate out of the flow and abort the batch review.
-                onEdit: null,
+                      categoryIcon: current.categoryIcon,
+                      categoryColor: current.categoryColor,
+                    );
+                    if (result != null) {
+                      await cubit.skipCurrent();
+                    }
+                  },
+                  // Guided review never offers the "editar plantilla"
+                  // shortcut (see `ConfirmationSheetHead.onEdit`): tapping it
+                  // would navigate out of the flow and abort the batch
+                  // review.
+                  onEdit: null,
+                ),
               ),
             ],
           ),
@@ -640,102 +649,123 @@ class ConfirmationSheetFields extends StatelessWidget {
       fallback: l10n.scheduledPaymentUntitled,
     );
     final divider = Divider(height: 1, thickness: 1, color: colors.border);
+    // The field area scrolls independently of the Posponer/Omitir + Confirmar
+    // footer, same pattern as `DebtPaymentSheetBody`: the editable amount
+    // field expands into a custom `NumericKeypad` (an `AnimatedSize`, not the
+    // system keyboard, so `MediaQuery.viewInsets.bottom` never reflects it).
+    // Without a scroll boundary here, that expansion pushes the footer clean
+    // off the bottom of a single `Column`, overflowing instead of scrolling.
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ConfirmationSheetHead(
-          isTransfer: isTransfer,
-          isIncome: type == ScheduledPaymentType.income,
-          accountName: resolvedAccountName,
-          transferAccountName: transferAccountName,
-          note: note,
-          categoryName: categoryName,
-          categoryIcon: categoryIcon,
-          categoryColor: categoryColor,
-          frequency: frequency,
-          onEdit: isGuided ? null : onEdit,
-        ),
-        if (pendingCountForTemplate >= 2) ...[
-          const SizedBox(height: 12),
-          ScheduledAccumulatedStrip(
-            count: pendingCountForTemplate,
-            templateTitle: templateName,
-            oldestDate: oldestPendingDate,
-          ),
-        ],
-        const SizedBox(height: 8),
-        ConfirmationSheetFieldRow(
-          label: l10n.transactionFormDateLabel,
-          value: DateFormat.yMMMd(Localizations.localeOf(context).toString())
-              .format(date),
-          onTap: () async {
-            // A payment can only be recorded up to today — never in the future.
-            // Confirming ahead of schedule records it now, not on its future
-            // due date.
-            final picked = await DatePickerSheet.show(
-              context,
-              initialDate: date,
-              // A cuota can never be recorded before its debt started: the
-              // owning debt's `startDate` is the floor. Non-cuota payments pass
-              // `null` here and keep no lower bound.
-              disabledBefore:
-                  minDate == null ? null : DateUtils.dateOnly(minDate!),
-              disabledAfter: DateUtils.dateOnly(DateTime.now()),
-            );
-            if (picked != null) {
-              onDateChanged(picked);
-            }
-          },
-        ),
-        divider,
-        ConfirmationSheetFieldRow(
-          label: isTransfer
-              ? l10n.scheduledConfirmationSheetSourceAccountLabel
-              : l10n.transactionFormAccountLabel,
-          value: accountName ?? '',
-          onTap: () => unawaited(_pickAccount(context)),
-        ),
-        // A transfer's destination account (HU-04) is shown but not
-        // selectable here: the confirmation sheet only ever edits
-        // `date`/`accountId`/`amountMinor` (HU-03), so it carries no chevron.
-        if (isTransfer) ...[
-          divider,
-          ConfirmationSheetFieldRow(
-            label: l10n.scheduledConfirmationSheetTargetAccountLabel,
-            value: transferAccountName ?? '',
-          ),
-        ],
-        const SizedBox(height: 12),
-        // Omitted for a `once` template: there is no future occurrence whose
-        // scope needs clarifying (page spec, "Scope Note").
-        if (frequency != ScheduledPaymentFrequency.once)
-          ScheduledScopeNote(
-            templateAmountMinor: templateAmountMinor,
-            currency: currency,
-          ),
-        const SizedBox(height: 12),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: colors.border)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: ScheduledPaymentEditableAmountField(
-              amountMinor: amountMinor,
-              currency: currency,
-              label: isTransfer
-                  ? l10n.scheduledConfirmationSheetTransferAmountLabel
-                  : l10n.scheduledConfirmationSheetAmountLabel,
-              valueColor: ScheduledPaymentFormat.amountColor(colors, type),
-              // Prominent single-amount display: only income carries a '+'
-              // (same reasoning as the detail hero). The list rows carry the
-              // expense '-'.
-              amountPrefix: type == ScheduledPaymentType.income ? '+' : '',
-              // The sheet carries its own Confirmar button below, so the keypad
-              // omits its Confirm key and the `=` spans the full width.
-              confirmEnabled: false,
-              onChanged: onAmountChanged,
+        Flexible(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ConfirmationSheetHead(
+                  isTransfer: isTransfer,
+                  isIncome: type == ScheduledPaymentType.income,
+                  accountName: resolvedAccountName,
+                  transferAccountName: transferAccountName,
+                  note: note,
+                  categoryName: categoryName,
+                  categoryIcon: categoryIcon,
+                  categoryColor: categoryColor,
+                  frequency: frequency,
+                  onEdit: isGuided ? null : onEdit,
+                ),
+                if (pendingCountForTemplate >= 2) ...[
+                  const SizedBox(height: 12),
+                  ScheduledAccumulatedStrip(
+                    count: pendingCountForTemplate,
+                    templateTitle: templateName,
+                    oldestDate: oldestPendingDate,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                ConfirmationSheetFieldRow(
+                  label: l10n.transactionFormDateLabel,
+                  value: DateFormat.yMMMd(
+                    Localizations.localeOf(context).toString(),
+                  ).format(date),
+                  onTap: () async {
+                    // A payment can only be recorded up to today — never in the
+                    // future. Confirming ahead of schedule records it now, not
+                    // on its future due date.
+                    final picked = await DatePickerSheet.show(
+                      context,
+                      initialDate: date,
+                      // A cuota can never be recorded before its debt started:
+                      // the owning debt's `startDate` is the floor. Non-cuota
+                      // payments pass `null` here and keep no lower bound.
+                      disabledBefore:
+                          minDate == null ? null : DateUtils.dateOnly(minDate!),
+                      disabledAfter: DateUtils.dateOnly(DateTime.now()),
+                    );
+                    if (picked != null) {
+                      onDateChanged(picked);
+                    }
+                  },
+                ),
+                divider,
+                ConfirmationSheetFieldRow(
+                  label: isTransfer
+                      ? l10n.scheduledConfirmationSheetSourceAccountLabel
+                      : l10n.transactionFormAccountLabel,
+                  value: accountName ?? '',
+                  onTap: () => unawaited(_pickAccount(context)),
+                ),
+                // A transfer's destination account (HU-04) is shown but not
+                // selectable here: the confirmation sheet only ever edits
+                // `date`/`accountId`/`amountMinor` (HU-03), so it carries no
+                // chevron.
+                if (isTransfer) ...[
+                  divider,
+                  ConfirmationSheetFieldRow(
+                    label: l10n.scheduledConfirmationSheetTargetAccountLabel,
+                    value: transferAccountName ?? '',
+                  ),
+                ],
+                const SizedBox(height: 12),
+                // Omitted for a `once` template: there is no future occurrence
+                // whose scope needs clarifying (page spec, "Scope Note").
+                if (frequency != ScheduledPaymentFrequency.once)
+                  ScheduledScopeNote(
+                    templateAmountMinor: templateAmountMinor,
+                    currency: currency,
+                  ),
+                const SizedBox(height: 12),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: colors.border)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ScheduledPaymentEditableAmountField(
+                      amountMinor: amountMinor,
+                      currency: currency,
+                      label: isTransfer
+                          ? l10n.scheduledConfirmationSheetTransferAmountLabel
+                          : l10n.scheduledConfirmationSheetAmountLabel,
+                      valueColor:
+                          ScheduledPaymentFormat.amountColor(colors, type),
+                      // Prominent single-amount display: only income carries a
+                      // '+' (same reasoning as the detail hero). The list rows
+                      // carry the expense '-'.
+                      amountPrefix:
+                          type == ScheduledPaymentType.income ? '+' : '',
+                      // The sheet carries its own Confirmar button below, so
+                      // the keypad omits its Confirm key and the `=` spans the
+                      // full width.
+                      confirmEnabled: false,
+                      onChanged: onAmountChanged,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

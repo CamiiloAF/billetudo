@@ -19,6 +19,10 @@ import '../widgets/debt_ledger_row.dart';
 import '../widgets/debt_ledger_skeleton_row.dart';
 import '../widgets/debt_meta_card.dart';
 import '../widgets/debt_skeleton_box.dart';
+import '../widgets/sheets/confirm_delete_debt_sheet.dart';
+import '../widgets/sheets/debt_actions_sheet.dart';
+import '../widgets/sheets/debt_celebration_sheet.dart';
+import '../widgets/sheets/debt_close_confirm_sheet.dart';
 import '../widgets/sheets/debt_payment_sheet.dart';
 import '../widgets/sheets/debt_update_balance_sheet.dart';
 
@@ -28,9 +32,15 @@ import '../widgets/sheets/debt_update_balance_sheet.dart';
 ///
 /// The write flows open from here: the fixed CTA opens the abono sheet, the
 /// meta card's "Actualizar saldo" row opens the reconciliation sheet, and the
-/// pencil opens the crear/editar form. Navigation intents (edit, the linked
-/// cuota, and Movimientos link mode) are delegated to the router; the sheets
-/// are shown in place, the same pattern the rest of the app uses.
+/// header's overflow (`⋮`, extension HU-07, `Tt2e7`) opens `DebtActionsSheet`
+/// — Editar/Cerrar/Eliminar deuda. Navigation intents (edit, the linked cuota,
+/// and Movimientos link mode) are delegated to the router; the sheets are
+/// shown in place, the same pattern the rest of the app uses.
+///
+/// A closed debt (`debt.isClosed`) hides the fixed "Registrar abono" CTA and
+/// disables the meta card's "Actualizar saldo" row — no frame designed a
+/// dedicated closed-detail state, so this is the minimal, defensible read of
+/// "accepts no further writes" (also enforced in domain, defense in depth).
 class DebtDetailPage extends StatelessWidget {
   const DebtDetailPage({
     required this.onEdit,
@@ -64,73 +74,147 @@ class DebtDetailPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
-    return Scaffold(
-      body: SafeArea(
-        child: BlocBuilder<DebtDetailCubit, DebtDetailState>(
+    return BlocListener<DebtDetailCubit, DebtDetailState>(
+      listenWhen: (previous, current) =>
+          previous.status != current.status ||
+          previous.actionFailure != current.actionFailure ||
+          previous.celebration != current.celebration,
+      listener: (context, state) => unawaited(
+        _handleSideEffects(context, state, l10n),
+      ),
+      child: Scaffold(
+        body: SafeArea(
+          child: BlocBuilder<DebtDetailCubit, DebtDetailState>(
+            builder: (context, state) {
+              final detail = state.detail;
+              return Column(
+                children: [
+                  PageHeader(
+                    title: detail?.debt.name ?? l10n.debtDetailTitleFallback,
+                    trailing: detail == null
+                        ? null
+                        : PageHeaderCircleButton(
+                            icon: LucideIcons.ellipsisVertical,
+                            background: colors.muted,
+                            foreground: colors.textPrimary,
+                            tooltip: l10n.debtMenuTooltip,
+                            onPressed: () => unawaited(
+                              _openActionsSheet(context, detail.debt),
+                            ),
+                          ),
+                  ),
+                  Expanded(
+                    child: switch (state.status) {
+                      DebtDetailStatus.loading => const DebtDetailLoadingView(),
+                      DebtDetailStatus.failure => DebtDetailErrorView(
+                          onRetry: () => unawaited(
+                            context.read<DebtDetailCubit>().retry(),
+                          ),
+                        ),
+                      DebtDetailStatus.ready when detail != null =>
+                        DebtDetailReadyView(
+                          state: state,
+                          onOpenInstallment: onOpenInstallment,
+                          onConfigureInstallment: onConfigureInstallment,
+                          onOpenTransaction: onOpenTransaction,
+                        ),
+                      DebtDetailStatus.ready => const SizedBox.shrink(),
+                      DebtDetailStatus.deleted => const SizedBox.shrink(),
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        // The fixed CTA lives in `bottomNavigationBar` (not inside the body) so
+        // a floating snackbar sits above it automatically. It exists only in
+        // the ready state for a still-open debt, where the `debt` the abono
+        // sheet needs is resolved.
+        bottomNavigationBar: BlocBuilder<DebtDetailCubit, DebtDetailState>(
           builder: (context, state) {
             final detail = state.detail;
-            return Column(
-              children: [
-                PageHeader(
-                  title: detail?.debt.name ?? l10n.debtDetailTitleFallback,
-                  trailing: detail == null
-                      ? null
-                      : PageHeaderCircleButton(
-                          icon: LucideIcons.pencil,
-                          background: colors.primary,
-                          foreground: colors.onPrimary,
-                          tooltip: l10n.debtEditTooltip,
-                          onPressed: () => onEdit(detail.debt.id),
-                        ),
+            if (state.status != DebtDetailStatus.ready ||
+                detail == null ||
+                detail.debt.isClosed) {
+              return const SizedBox.shrink();
+            }
+            final debt = detail.debt;
+            return SafeArea(
+              top: false,
+              child: DebtDetailBottomBar(
+                onRegisterPayment: () => unawaited(
+                  DebtPaymentSheet.show(
+                    context,
+                    debt: debt,
+                    onLinkExisting: () => onLinkExisting(debt),
+                  ),
                 ),
-                Expanded(
-                  child: switch (state.status) {
-                    DebtDetailStatus.loading => const DebtDetailLoadingView(),
-                    DebtDetailStatus.failure => DebtDetailErrorView(
-                        onRetry: () => unawaited(
-                          context.read<DebtDetailCubit>().retry(),
-                        ),
-                      ),
-                    DebtDetailStatus.ready when detail != null =>
-                      DebtDetailReadyView(
-                        state: state,
-                        onOpenInstallment: onOpenInstallment,
-                        onConfigureInstallment: onConfigureInstallment,
-                        onOpenTransaction: onOpenTransaction,
-                      ),
-                    DebtDetailStatus.ready => const SizedBox.shrink(),
-                  },
-                ),
-              ],
+              ),
             );
           },
         ),
       ),
-      // The fixed CTA lives in `bottomNavigationBar` (not inside the body) so a
-      // floating snackbar sits above it automatically. It exists only in the
-      // ready state, where the `debt` the abono sheet needs is resolved.
-      bottomNavigationBar: BlocBuilder<DebtDetailCubit, DebtDetailState>(
-        builder: (context, state) {
-          final detail = state.detail;
-          if (state.status != DebtDetailStatus.ready || detail == null) {
-            return const SizedBox.shrink();
-          }
-          final debt = detail.debt;
-          return SafeArea(
-            top: false,
-            child: DebtDetailBottomBar(
-              onRegisterPayment: () => unawaited(
-                DebtPaymentSheet.show(
-                  context,
-                  debt: debt,
-                  onLinkExisting: () => onLinkExisting(debt),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
     );
+  }
+
+  /// Reacts to the three one-shot signals `DebtDetailCubit` can raise: pop on
+  /// a successful delete, snackbar an action failure, or open the
+  /// felicitación sheet the instant the balance crosses to settled.
+  Future<void> _handleSideEffects(
+    BuildContext context,
+    DebtDetailState state,
+    AppLocalizations l10n,
+  ) async {
+    if (state.status == DebtDetailStatus.deleted) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final cubit = context.read<DebtDetailCubit>();
+    if (state.actionFailure != null) {
+      cubit.dismissActionFailure();
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.debtActionError)));
+      return;
+    }
+    final celebration = state.celebration;
+    if (celebration != null) {
+      cubit.dismissCelebration();
+      final complete = await DebtCelebrationSheet.show(
+        context,
+        celebration: celebration,
+      );
+      if ((complete ?? false) && context.mounted) {
+        await cubit.closeDebt();
+      }
+    }
+  }
+
+  Future<void> _openActionsSheet(BuildContext context, Debt debt) async {
+    final action = await DebtActionsSheet.show(context, debtName: debt.name);
+    if (!context.mounted || action == null) {
+      return;
+    }
+    final cubit = context.read<DebtDetailCubit>();
+    switch (action) {
+      case DebtActionsSheetAction.edit:
+        onEdit(debt.id);
+      case DebtActionsSheetAction.close:
+        final confirmed = await DebtCloseConfirmSheet.show(
+          context,
+          debt: debt,
+          outstandingMinor: cubit.state.detail?.balance.outstandingMinor ?? 0,
+        );
+        if ((confirmed ?? false) && context.mounted) {
+          await cubit.closeDebt();
+        }
+      case DebtActionsSheetAction.delete:
+        final confirmed = await ConfirmDeleteDebtSheet.show(context);
+        if ((confirmed ?? false) && context.mounted) {
+          await cubit.delete();
+        }
+    }
   }
 }
 
@@ -166,13 +250,15 @@ class DebtDetailReadyView extends StatelessWidget {
         DebtMetaCard(
           debt: debt,
           dailyGrowthMinor: state.dailyGrowthMinor,
-          onUpdateBalance: () => unawaited(
-            DebtUpdateBalanceSheet.show(
-              context,
-              debt: debt,
-              outstandingMinor: detail.balance.outstandingMinor,
-            ),
-          ),
+          onUpdateBalance: debt.isClosed
+              ? null
+              : () => unawaited(
+                    DebtUpdateBalanceSheet.show(
+                      context,
+                      debt: debt,
+                      outstandingMinor: detail.balance.outstandingMinor,
+                    ),
+                  ),
         ),
         const SizedBox(height: 12),
         if (installment != null)
@@ -373,7 +459,8 @@ class DebtDetailLoadingView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: colors.border),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 child: const Row(
                   children: [
                     DebtSkeletonBox(width: 40, height: 40, radius: 12),

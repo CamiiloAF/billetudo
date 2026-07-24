@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Requisitos en `docs/requirements/08-deudas.md`. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
+**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Incluye la extension de cierre/completar deuda (menu overflow, sheet de acciones, cierre manual, felicitacion al 100%, tab "Cerradas") aprobada 2026-07-24. Requisitos en `docs/requirements/08-deudas.md` HU-02/HU-07. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
 
 ## Frames
 
@@ -29,6 +29,11 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Movimientos · modo enlazar (banner + tap=enlazar) | `g0x859` | `V4OiMq` |
 | **Cross-link:** PP Detalle con card de deuda | `nDmnf` | `Y5D7c` |
 | **Cross-link:** Scheduled Card con badge "Deuda" (demo) | `F3srst` | `Jlosw` |
+| Detalle — entry point cierre (menu overflow) | `Tt2e7` | `ulorV` |
+| Sheet Acciones de la deuda (Editar/Cerrar/Eliminar) | `g57hEW` | `TjCfr` |
+| Sheet Confirmar cierre manual | `R97gF` | `WLz5x` |
+| Sheet Felicitacion al 100% | `C28Zt` | `h0zie` |
+| Lista — tab Activas/Cerradas, viendo Cerradas | `vaNHd` | `nusfh` |
 
 **Estados/piezas sin frame propio en el `.pen` (por diseño o reusables genéricos):**
 - **Detalle sin cuota** (`DebtConfigureInstallmentCard`): no tiene frame — solo se diseñó el estado *con* cuota (`cUzp6`). El widget reusa la geometría de la card de cuota. Gap de cobertura conocido, no deriva.
@@ -127,6 +132,53 @@ Reconciliacion (HU-06). Heroe de monto ("Nuevo saldo") + caret. **Tarjeta de rec
 3. **Header con subtitulo** (`s9gXs`): "Configurar cuota" + "Credito vehicular · Yo debo".
 
 **Decision de modelo (cerrada): cuota = pago programado** (opcional por deuda). Configurar cuota SIEMPRE crea un `ScheduledPayment`; la proyeccion de payoff (HU-06) lee la cuota de ahi. NO se soporta "cuota solo informativa sin pago programado" (pagar sin agendar = abono ad-hoc, otra hoja). Default Automatico = coincide con `requiresConfirmation=false` del motor (`09-pagos-programados.md`).
+
+## Cierre / completar deuda (extension, aprobada 2026-07-24)
+
+Cubre HU-02 (felicitacion al saldar) y HU-07 (cierre manual con saldo pendiente). Todas las piezas en Claro; Oscuro generado por `Copy()+theme:{mode:"dark"}` tras aprobacion explicita, sin ajustes manuales de color.
+
+### Entry point: menu overflow (`Tt2e7`/`pWKji`)
+
+El acceso a cerrar/eliminar una deuda vive en el **menu overflow (⋮)** del header del Detalle, **NO** en un boton de accion visible permanentemente. Usa el patron "Menu Button" ya establecido en ~20 instancias del resto de la app (fondo `$muted`, icono `$text-primary`, `ellipsis-vertical`) — deliberadamente **no** el `Action Button` violeta solido que usa el FAB de otras pantallas, para no sugerir que cerrar/eliminar es la accion primaria de la pantalla (esa sigue siendo "Registrar abono").
+
+Al pulsar, abre **`g57hEW`** — Sheet Acciones de la deuda, 3 filas `Menu Row` (`hIbs3` instanciado):
+- **Editar deuda** (icono `pencil`, neutral) → Form crear/editar deuda.
+- **Cerrar deuda** (icono `flag`, neutral) → abre `R97gF`.
+- **Eliminar deuda** (icono `trash-2`, `$expense-text`/`$expense-soft`, **sin chevron**) → reusa el patron destructivo del sistema.
+
+### Sheet confirmar cierre manual (`R97gF`)
+
+Bottom Sheet Base (`PqTUt`) con `Sheet Icon Header` (icono `flag`, neutral) + Info Card (`$primary-soft`, saldo pendiente en `$primary-on-soft-strong` — NO `$primary-on-soft`, falla AA a 12px/600) + `Sheet Buttons Row` (Cancelar / Cerrar deuda).
+
+Copy final: **"¿Cerrar esta deuda?"** / **"Le debes {monto} a {contraparte}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla."**
+
+**Decision de producto explicita: cerrar una deuda manualmente con saldo pendiente NO genera ningun asiento contable.** No se crea un `DebtEntry` de condonacion/ajuste — el saldo residual simplemente se congela, la deuda cambia de estado/visibilidad (pasa a la lista de Cerradas), nada mas se mueve. El % mostrado en el historial de esa deuda queda congelado al momento del cierre. Para dominio: esto sugiere un campo tipo `closedAt`/`archivedAt` en la entidad `Debt` (no un evento de `DebtEntries`); la query de lista filtra Activas/Cerradas por ese campo.
+
+CTA "Cerrar deuda" en **violeta** (`Button/Primary`), no destructivo — cerrar una deuda no es lo mismo que eliminarla; el copy y el color comunican una accion neutral/de progreso, coherente con el tono de marca.
+
+### Sheet Felicitacion al 100% (`C28Zt`)
+
+Se dispara cuando el saldo pendiente de una deuda llega a 0 o menos (ver HU-02/HU-07 en `docs/requirements/08-deudas.md`), tipicamente tras registrar un abono que salda el total. Bottom Sheet Base con `Sheet Icon Header` (icono `party-popper`, icon-wrap 72px violeta) + fila de 2 stats (`$primary-soft` + texto `$primary-on-soft-strong`, no `$primary-on-soft` — a este tamaño no alcanza 4.5:1) + `Sheet Buttons Row`.
+
+Copy diseñado en el `.pen` para direccion `iOwe`: **"¡Felicidades! Ya no debes nada"** / **"Terminaste de pagar {nombre}. En total pagaste {monto} en {duración}."** Stats: "Total pagado" y "Duración". **Para direccion `owedToMe` el copy cambia de verbo** (misma pieza visual, texto por l10n segun direccion): "Terminaste de cobrar {nombre}. En total cobraste {monto} en {duración}." — no se disena una segunda variante visual, solo el string cambia por parametro de direccion (a resolver en `flutter-dev` via l10n, no en Pencil).
+
+Botones: **"Ahora no"** (dismiss, secundario) / **"Completar"** (primario, icono `check`) — archiva la deuda ahi mismo, sin navegacion adicional ni pantalla de confirmacion extra.
+
+### Tab "Activas"/"Cerradas" en la Lista (`vaNHd`)
+
+Reusa **`qCUup`** (Debt Direction Toggle) relabeleado como segmented control generico de 2 opciones ("Activas"/"Cerradas") en vez de direccion de deuda — mismo componente, contenido distinto por override. **Reemplaza al `Section Header`** que tenia la lista de activas (se borro, no se dejo deshabilitado/oculto).
+
+**Summary card** (`v49eY6`) cambia sus labels a tiempo pasado: **"Pagué"** / **"Me pagaron"**, con valores recalculados sobre el conjunto de deudas cerradas — **no reusa los totales de la vista Activas**. Tratamiento de color con **asimetria intencional** (decision explicita del usuario, no "corregir" sin preguntar):
+- **"Pagué"**: neutro, `$text-secondary`.
+- **"Me pagaron"**: se mantiene en verde vivo, `$income-text`.
+
+**Debt Card en estado cerrado**: pill de direccion **neutro** (`$muted`/`$text-primary`, labels en pasado — "Debía"/"Me debían" en vez de "Yo debo"/"Me deben"). Barra de progreso:
+- **Atenuada** (`$text-secondary`) cuando queda saldo remanente sin cobrar/pagar (perdon parcial) — la barra NO llega al 100%, y el atenuado comunica que quedo un residuo sin resolver.
+- **Llena en `$primary`** cuando la deuda se cerro al 100% pagada — esa si es la lectura correcta de "completado", se mantiene el tratamiento normal de `xSpw7`.
+
+### Regla de negocio para dominio (resumen)
+
+Cerrar una deuda manualmente con saldo pendiente es un **cambio de estado puro**, nunca un evento contable. No crea `DebtEntry`. El % historico se congela. Cerrar ≠ eliminar ≠ saldar automaticamente al 100% — son 3 flujos distintos con 3 entry points distintos (menu overflow → Cerrar deuda / menu overflow → Eliminar deuda / abono que llega a 0 → sheet de felicitacion → Completar).
 
 ## Cross-link Pago Programado → Deuda
 

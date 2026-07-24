@@ -21,7 +21,7 @@ void main() {
     usecase = AccrueInterest(repository, const DebtInterestCalculator());
   });
 
-  Debt autoDebt({int? rateBps = 3650}) => Debt(
+  Debt autoDebt({int? rateBps = 3650, DateTime? closedAt}) => Debt(
         id: 'd1',
         name: 'Crédito',
         direction: DebtDirection.iOwe,
@@ -31,6 +31,7 @@ void main() {
         interestRateBps: rateBps,
         createdAt: DateTime(2026, 1, 1),
         updatedAt: 0,
+        closedAt: closedAt,
       );
 
   DebtEntry anyEntry() => DebtEntry(
@@ -122,5 +123,24 @@ void main() {
     final result = await usecase(debtId: 'd1', upTo: DateTime(2026, 2, 1));
 
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+  });
+
+  test('rejects accrual on a closed debt', () async {
+    when(() => repository.getAccrualContext('d1')).thenAnswer(
+      (_) async => Right(
+        DebtAccrualContext(
+          debt: autoDebt(closedAt: DateTime(2026, 1, 15)),
+          rawOutstandingMinor: 1000000,
+          lastAccrualDate: DateTime(2026, 1, 1),
+        ),
+      ),
+    );
+
+    final result = await usecase(debtId: 'd1', upTo: DateTime(2026, 1, 20));
+
+    final failure = result.getLeft().toNullable();
+    expect(failure, isA<ValidationFailure>());
+    expect((failure! as ValidationFailure).field, 'closedAt');
+    verifyNever(() => repository.addDebtEntry(any()));
   });
 }

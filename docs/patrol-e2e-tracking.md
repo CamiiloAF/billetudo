@@ -23,7 +23,7 @@ consolida el estado actual por feature.
 | Pagos programados | ✅ Verde | 2026-07-21 | ✅ (`integration_test/scheduled_payments_patrol_test.dart`) | corrida `qa-automator` de hoy, 2 corridas consecutivas | ✅ 5/5 estable en 2 corridas seguidas. Cubre HU-01 (crear y verlo en el listado), HU-05 (editar nombre+monto — refleja en el detalle, no en el listado, porque el `AppBar` de esta página es el título fijo "Detalle"), la CTA "Confirmar ahora" (fix `81cb943`: confirmar un pago manual antes de su `nextDate`), historial de pagos omitidos + "Recuperar" (`6d15e61`), y eliminar con confirmación (incluida la ruta de "Cancelar"). Todas las plantillas usan cuenta/categoría propias creadas en el mismo escenario, sin depender del catálogo remoto de categorías. Navega a `/pagos-programados` con `GoRouter.push` en vez de un tap de UI: la feature no tiene pestaña propia en `HomeTabBar` (solo Inicio/Movimientos/Presupuestos/Metas/Más), a diferencia de Presupuestos. Dos hallazgos de infraestructura de test corregidos durante la escritura (no bugs de `lib/`): (1) un `SnackBar` con su propio timer de auto-dismiss (`Pago recuperado`) hace que `pumpAndSettle()` corra el reloj hasta el final de su ventana visible antes de devolver el control — se resolvió con pumps acotados (`_expectSnackbar`, mismo patrón que la HU-05 de `transactions_patrol_test.dart`); (2) `find.text(...)` puede matchear un widget que ya no está en pantalla (el detalle es un `ListView` plano) y el tap subsiguiente cae en lo que sí es visible en esa coordenada — el link "Recuperar" del historial necesitó `dragUntilVisible` antes de tocarlo. |
 | Configuración (Settings) | ✅ Verde | 2026-07-21 | ✅ (`integration_test/settings_patrol_test.dart`) | corrida `qa-automator` de hoy, 2 corridas consecutivas | ✅ 4/4 estable en 2 corridas seguidas. Cubre el Segmented Control de "Apariencia" (Claro/Oscuro/Sistema, aplicado de inmediato, `MaterialApp.themeMode` reflejándolo), "Modo sobres" (switch directo y desde la hoja "¿Qué es?", persistiendo al salir de Ajustes y volver — `AppSettingsCubit` no es singleton de DI, se reconstruye por visita, así que esto sí prueba un round-trip real por Drift) y el punto de entrada de "Eliminar cuenta" (abre/cancela la hoja; el flujo completo de HU-07 ya lo cubre `auth_patrol_test.dart`, no se duplicó). "Moneda" quedó fuera a propósito: hoy es un placeholder "Próximamente" (`onOpenComingSoon`), no un toggle real. Hallazgo de infraestructura de test (no bug de `lib/`): `Supabase.initialize` solo puede llamarse una vez por proceso (assertion propia de `supabase_flutter`) — llamar `startApp($)` una segunda vez dentro del mismo test para simular un "reinicio real" de la app cuelga el intento y deja el árbol de widgets congelado en la pantalla anterior (`find.text('Más')` no encuentra nada después). La persistencia real de "Apariencia" en `SharedPreferences` se verificó en cambio leyendo `getIt<ThemePreferenceDatasource>().read()` directamente tras el cambio, más navegar fuera/volver a Ajustes dentro del mismo proceso. |
 | Splash | ⬜️ N/A | — | ❌ | — | Sin suite propia, pero es solo una pantalla de transición (1 archivo) ya cubierta indirectamente por `startApp` en las otras 5 suites — baja prioridad. |
-| Deudas | ✅ Verde | 2026-07-23 | ✅ (`integration_test/debts_patrol_test.dart` + `integration_test/debts_installment_patrol_test.dart`) | corrida `patrol-e2e-runner` 2026-07-23 (emulator-5554, flavor `dev`) | ✅ **26/26**: `debts_patrol_test` **20/20** (7m20s) + `debts_installment_patrol_test` **6/6** (3m39s). El cluster de 3 fallos restantes de finder/test quedó **resuelto** — los tres eran bugs de test, no de `lib/`: (a) interés-auto — se scrollea al `find.text` plano en vez del finder compuesto `rateField` con `.first`; (b) deep-link editar cuota — el subtítulo es `debtContext`="{name} · {direction}" en un solo `Text`, se cambió a `find.textContaining`; (c) chip "Deuda" en PP — poll acotado en vez de aserción inmediata tras navegar (era race del 1er emit del stream de la lista, no bug de app). Antes de esto: **BUG DE APP DEL ABONO — RESUELTO (flutter-dev):** el CTA de la hoja de abono (`debt_payment_sheet.dart`) estaba DENTRO del `SingleChildScrollView`; con el toggle "Sí" (default, hoja más alta) + el teclado que levanta el héroe autofocus, el botón quedaba bajo el fold → el tap de submit no aterrizaba → el abono nunca se escribía. Fix: CTA como footer fijo fuera del scroll; mismo patrón aplicado al `debt_update_balance_sheet.dart` (latente); 2 tests de regresión con teclado simulado. |
+| Deudas | ✅ Verde | 2026-07-24 | ✅ (`integration_test/debts_patrol_test.dart` + `integration_test/debts_installment_patrol_test.dart` + `integration_test/debts_lifecycle_patrol_test.dart`) | corrida `patrol-e2e-runner` 2026-07-24, segunda pasada tras aplicar 3 fixes (Pixel_9a/emulator-5554, flavor `dev`) | ✅ **32/32** (`debts_patrol_test.dart` 20/20, 4m30s + `debts_installment_patrol_test.dart` 6/6, 2m55s + `debts_lifecycle_patrol_test.dart` 6/6, 2m1s — este último con su 6to escenario corriendo por primera vez). Recupera los 9 escenarios rotos en la corrida inmediatamente anterior del mismo día (ver sección "Deudas: resultado real en device de la corrida 2026-07-24" abajo, con los 3 fixes que lo lograron): (1) `qa-automator` portó `_openEditForm` de `debts_patrol_test.dart` al patrón de menú ⋮ (5 escenarios recuperados); (2) `qa-automator` quitó el `/` literal del nombre del escenario "tab Cerradas" que crasheaba `AndroidTestOrchestrator` (1 escenario, nunca había corrido); (3) `flutter-dev` corrigió una carrera real entre `DebtPaymentSheet`/`DebtUpdateBalanceSheet` y `DebtCelebrationSheet` — dos hojas modales disparadas por la misma escritura podían pisarse (`pop()` cerraba la hoja equivocada); nuevo `BottomSheetBase.dismiss(context)` resuelve el pop por referencia de ruta (3 escenarios de felicitación recuperados). Sin bugs abiertos ni bloqueos de infraestructura pendientes en Deudas. Histórico: **BUG DE APP DEL ABONO — RESUELTO (flutter-dev, previo):** el CTA de la hoja de abono estaba DENTRO del `SingleChildScrollView`; con el toggle "Sí" + teclado con héroe autofocus, el botón quedaba bajo el fold → el tap de submit no aterrizaba. Fix: CTA como footer fijo fuera del scroll. |
 | Metas, Reportes, Captura, Improvement | ⬜️ N/A | — | ❌ | — | Sin implementación en `lib/features/` (solo `.gitkeep`) — lienzo en blanco, no aplica escribir suite Patrol todavía. |
 
 ## Bloqueo del 2026-07-20 (YA CORREGIDO): las 5 suites fallaban por un bug de infraestructura, no por las features
@@ -115,3 +115,103 @@ widget, pero varios son frágiles y un `Key` estable los haría robustos:
    `scheduledPaymentInstallmentDeleteAction` ("Eliminar cuota"). La suite borra
    la cuota por el camino del form ("Eliminar cuota"); si se espera que la hoja
    de acciones también diga "Eliminar cuota" para cuotas, es un ajuste de `lib/`.
+
+## Deudas: suite nueva 2026-07-24 — cerrar/completar deuda (extensión HU-07)
+
+`integration_test/debts_lifecycle_patrol_test.dart`, escrita por `qa-automator`
+contra el flavor `dev`. Compila (`dart analyze
+integration_test/debts_lifecycle_patrol_test.dart` → *No issues found*).
+**Ninguno de los 6 escenarios se ha corrido en emulador todavía** — eso es
+tarea de `patrol-e2e-runner`; los resultados de la tabla de abajo son los
+*esperados*, no confirmados en device.
+
+Ninguno de los escenarios crea una cuenta de efectivo: todos los abonos son
+cash-less (`DebtCashSwitch` apagado), porque lo que se ejercita es el ciclo de
+vida cerrar/completar, no el movimiento de caja (ya cubierto por
+`debts_patrol_test.dart`). Los helpers están deliberadamente duplicados de
+`debts_patrol_test.dart` en vez de compartidos — mismo patrón que
+`debts_installment_patrol_test.dart`, no existe un módulo de soporte común
+para Deudas en este proyecto.
+
+| Escenario | Flujo | Assert principal |
+|---|---|---|
+| Cerrar manualmente con saldo pendiente | crear deuda → detalle → ⋮ → "Cerrar deuda" → confirmar | sale de "Activas", aparece en "Cerradas" con badge "Cerrada · fecha" (no "Pagada") y el saldo `$600` congelado; DB `closedAt` no nulo, `deletedAt`/`tombstonedAt` nulos |
+| Felicitación automática (iOwe) | abono que salda por completo | sheet con "¡Felicidades! Ya no debes nada", stats "Total pagado"/"Duración"; "Completar" cierra la deuda (pasa a "Cerradas" con badge "Pagada · fecha") |
+| Felicitación automática (owedToMe) | mismo flujo, dirección "Me deben" | copy distinto: "¡Felicidades! Ya no te deben nada", "Total cobrado" (nunca "Total pagado") |
+| "Ahora no" en la felicitación | dismissar en vez de completar | saldo `$0`/`100%` pero la deuda sigue en "Activas" (CTA "Registrar abono" sigue visible); DB `closedAt` nulo |
+| Bloqueo de escritura en deuda cerrada | cerrar manualmente → detalle | "Registrar abono" ausente (CTA fija oculta); "Actualizar saldo" visible pero inerte (tocarlo no abre la hoja "Nuevo saldo"); el menú ⋮ sigue ofreciendo Editar/Eliminar |
+| Tab "Cerradas" con varias deudas | 2 deudas iOwe cerradas ($200+$300 pagado) + 1 owedToMe cerrada ($250 cobrado) + 1 iOwe activa ($1.000, no debe filtrarse) | `DebtClosedSummaryCard` muestra "Pagué" `$500` y "Me pagaron" `$250`, nunca `$1.000`; DB: 3 deudas con `closedAt`, 1 sin él |
+
+## Deudas: resultado real en device de la corrida 2026-07-24 (patrol-e2e-runner)
+
+> ✅ **RESUELTO** — segunda pasada el mismo día, 32/32 (ver fila "Deudas" arriba). Los 3
+> fixes que lo lograron: finder `_openEditForm` portado al menú ⋮ (`qa-automator`),
+> nombre de escenario sin `/` (`qa-automator`), y `BottomSheetBase.dismiss(context)`
+> para la carrera de hojas modales (`flutter-dev`). Se deja el detalle original abajo
+> como registro histórico de la investigación.
+
+Corrida completa contra `emulator-5554` (AVD `Pixel_9a`), flavor `dev`. El emulador se
+cerró accidentalmente a mitad de la primera corrida de `debts_patrol_test.dart`; se
+relanzó el mismo AVD y las 3 suites se corrieron completas desde cero.
+
+**`debts_patrol_test.dart`: 15/20** (regresión frente al 20/20 confirmado el 2026-07-23).
+Los 5 fallos son la MISMA causa: `_openEditForm` (línea 201) sigue usando
+`find.byTooltip('Editar deuda')`, pero el header de `debt_detail_page.dart` cambió a un
+único ícono `⋮` (`tooltip: l10n.debtMenuTooltip`, "Más opciones") que abre
+`DebtActionsSheet` — cambio real de UI de la extensión HU-07 (cerrar/completar deuda),
+mismo que `debts_lifecycle_patrol_test.dart` ya usa correctamente vía su propio
+`_openActionsMenu`. No es bug de `lib/`: `debts_patrol_test.dart` quedó desactualizado.
+Pendiente para `qa-automator`: portar `_openEditForm`/el flujo de eliminar al patrón
+`_openActionsMenu` → tap "Editar deuda"/"Eliminar deuda" dentro de la hoja.
+Escenarios afectados: HU-05 editar, HU-05 eliminar, item 2b editar+Actualizar,
+item 2b editar+Cancelar, item 2b cambiar dirección.
+
+**`debts_installment_patrol_test.dart`: 6/6**, 2m53s, sin novedad.
+
+**`debts_lifecycle_patrol_test.dart`: 2/6 exitosos, 3 fallos, 1 nunca ejecutado.**
+- ✅ "cerrar una deuda manualmente con saldo pendiente..." (6s)
+- ❌ "felicitación automática al saldar por completo (iOwe)" — `Found 0 widgets with text "¡Felicidades! Ya no debes nada"` en debts_lifecycle_patrol_test.dart:268
+- ❌ "felicitación al saldar en dirección Me deben" — mismo patrón, `"¡Felicidades! Ya no te deben nada"` no aparece, línea 315
+- ❌ ""Ahora no" en la felicitación..." — mismo patrón, línea 339 (depende de que la felicitación aparezca primero)
+- ✅ "una deuda cerrada bloquea Registrar abono y Actualizar saldo" (7s)
+- **⚠️ NO EJECUTADO**: "el tab Cerradas con varias deudas suma Pagué/Me pagaron..." —
+  `AndroidTestOrchestrator` crasheó (`IllegalArgumentException: ... contains a path
+  separator`) porque el nombre del escenario tiene un `/` literal
+  (`"Pagué"/"Me pagaron"`), que Android no permite en nombres de archivo de salida del
+  test. Bug de infraestructura del harness, no de `lib/`. Pendiente para
+  `qa-automator`: renombrar la descripción del escenario para quitar el `/`
+  (p.ej. `"Pagué" y "Me pagaron"`), sin tocar el assert.
+
+**Bug real de app, sin confirmar causa raíz — pendiente `flutter-dev`:** el sheet
+`DebtCelebrationSheet` nunca se monta en device real tras un abono que salda por
+completo, en ninguna de las 3 direcciones probadas, pese a que la lógica de
+`DebtDetailCubit._celebrationFor`/`_wasSettled` y el render del sheet en aislado ya
+están confirmados por tests de widget/cubit. Sin excepción de Flutter ni crash — la
+hoja simplemente no aparece ("0 widgets found"), lo que apunta a un problema de
+disparo/timing end-to-end, no de lógica. Hipótesis no confirmada: carrera entre el
+`Navigator.pop()` propio de `DebtPaymentSheet` al guardar (`debt_payment_sheet.dart:62`)
+y el `DebtCelebrationSheet.show(context)` que dispara casi simultáneamente
+`DebtDetailPage._handleSideEffects` (`debt_detail_page.dart:181-188`) sobre el mismo
+contexto de detalle — dos hojas modales encadenadas por la misma escritura async, sin
+precedente documentado en `docs/dev-runs/*.md`. Bloquea la validación completa de la
+felicitación automática (HU-07 extensión) hasta que se resuelva.
+
+**Actualización 2026-07-24 (qa-automator): los 2 problemas de infraestructura ya se
+corrigieron, pendiente RE-correr para confirmar.**
+- `debts_patrol_test.dart`: `_openEditForm` ahora abre el menú ⋮ (`find.byTooltip('Más
+  opciones')` → tap "Editar deuda") antes de tocar el form, portado del patrón de
+  `_openActionsMenu` de `debts_lifecycle_patrol_test.dart`. Los dos usos inline
+  (`byTooltip('Editar deuda')` en HU-05 editar y HU-05 eliminar) también se movieron a
+  este helper. Debería recuperar los 5 escenarios que fallaban.
+- `debts_lifecycle_patrol_test.dart`: el nombre del escenario con el `/` literal se
+  renombró a `'el tab "Cerradas" con varias deudas suma "Pagué" y "Me pagaron" solo
+  sobre las cerradas, nunca sobre la que sigue activa'` (mismo assert, sin tocar
+  lógica). Se revisó el resto de `integration_test/` (las 11 suites) por el mismo
+  patrón y no se encontró ningún otro `/` literal en nombres de escenario.
+- Ninguno de los dos fixes toca `lib/`; el bug real de `DebtCelebrationSheet` descrito
+  arriba sigue sin resolver y sigue siendo responsabilidad de `flutter-dev`.
+- `dart analyze integration_test/` → *No issues found!* tras el cambio. **Pendiente:**
+  `patrol-e2e-runner` debe volver a correr `debts_patrol_test.dart` y
+  `debts_lifecycle_patrol_test.dart` completas en device para confirmar que los 5 + 1
+  escenarios afectados ahora pasan (el escenario del `/` renombrado sigue sin
+  ejecutarse nunca en device real, más allá de compilar).

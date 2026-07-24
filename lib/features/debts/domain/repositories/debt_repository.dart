@@ -79,6 +79,11 @@ abstract class DebtRepository {
   /// HU-05: undo from the trash. Clears `deletedAt`.
   FutureResult<Unit> restoreDebt(String id);
 
+  /// Extension (HU-07): manual closure — a pure status change (`closedAt`),
+  /// never a `DebtEntry`. `CloseDebt` guards the "already closed" rule before
+  /// calling this.
+  FutureResult<Unit> closeDebt(String id);
+
   /// HU-02 (toggle "Sí"): creates a `Transaction` carrying the debt id, which
   /// moves [accountId] and enters the derived balance. [type]/[currency] are
   /// resolved by the caller from the debt's direction.

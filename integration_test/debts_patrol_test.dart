@@ -196,9 +196,20 @@ Future<void> _openAbonoSheet(PatrolIntegrationTester $) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Opens the editar form from the detail header's pencil (`Editar deuda`).
+/// Opens the detail's ⋮ overflow menu (`debtMenuTooltip`, "Más opciones") —
+/// since the HU-07 cerrar/completar extension landed, the header no longer
+/// has a direct pencil button: "Editar deuda"/"Cerrar deuda"/"Eliminar deuda"
+/// all live inside the `DebtActionsSheet` this opens. Same pattern as
+/// `debts_lifecycle_patrol_test.dart`'s `_openActionsMenu`.
+Future<void> _openActionsMenu(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.byTooltip('Más opciones'));
+  await $.tester.pumpAndSettle();
+}
+
+/// Opens the editar form via the ⋮ menu's "Editar deuda" row.
 Future<void> _openEditForm(PatrolIntegrationTester $) async {
-  await $.tester.tap(find.byTooltip('Editar deuda'));
+  await _openActionsMenu($);
+  await $.tester.tap(find.text('Editar deuda'));
   await $.tester.pumpAndSettle();
 }
 
@@ -599,9 +610,8 @@ void main() {
       await _submitDebtForm($, editing: false);
 
       await _openOnlyDebt($);
-      // The detail header's pencil opens the editar form.
-      await $.tester.tap(find.byTooltip('Editar deuda'));
-      await $.tester.pumpAndSettle();
+      // The detail header's ⋮ menu opens the editar form.
+      await _openEditForm($);
       expect(find.text('Editar deuda'), findsOneWidget);
 
       await _enterDebtName($, 'Crédito nuevo');
@@ -628,8 +638,7 @@ void main() {
       await _submitDebtForm($, editing: false);
 
       await _openOnlyDebt($);
-      await $.tester.tap(find.byTooltip('Editar deuda'));
-      await $.tester.pumpAndSettle();
+      await _openEditForm($);
 
       // The "Eliminar deuda" link lives at the bottom of the editar form; drag
       // it into view first (the form is a plain `ListView`).

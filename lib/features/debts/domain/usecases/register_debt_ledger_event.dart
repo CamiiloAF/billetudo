@@ -26,31 +26,45 @@ class RegisterDebtLedgerEvent {
     required int amountMinor,
     required DateTime date,
     String? note,
-  }) {
+  }) async {
     if (amountMinor <= 0) {
-      return Future.value(
-        const Left(
-          ValidationFailure(
-            'the amount must be a positive integer of cents',
-            field: 'amountMinor',
-          ),
+      return const Left(
+        ValidationFailure(
+          'the amount must be a positive integer of cents',
+          field: 'amountMinor',
         ),
       );
     }
 
-    return _repository.addDebtEntry(
-      DebtEntryDraft(
-        debtId: debtId,
-        kind: kind == DebtCashEventKind.disbursement
-            ? DebtEntryKind.disbursement
-            : DebtEntryKind.payment,
-        amountMinor: DebtEventRules.ledgerEventAmount(
-          kind: kind,
-          magnitudeMinor: amountMinor,
-        ),
-        entryDate: date,
-        note: note,
-      ),
+    final debtResult = await _repository.getDebt(debtId);
+    return debtResult.fold(
+      (failure) async => Left(failure),
+      (debt) {
+        if (debt.isClosed) {
+          return Future.value(
+            const Left(
+              ValidationFailure(
+                'a closed debt accepts no new abonos',
+                field: 'closedAt',
+              ),
+            ),
+          );
+        }
+        return _repository.addDebtEntry(
+          DebtEntryDraft(
+            debtId: debtId,
+            kind: kind == DebtCashEventKind.disbursement
+                ? DebtEntryKind.disbursement
+                : DebtEntryKind.payment,
+            amountMinor: DebtEventRules.ledgerEventAmount(
+              kind: kind,
+              magnitudeMinor: amountMinor,
+            ),
+            entryDate: date,
+            note: note,
+          ),
+        );
+      },
     );
   }
 }

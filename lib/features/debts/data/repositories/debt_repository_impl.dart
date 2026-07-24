@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:ui' show Locale;
 
 import 'package:drift/drift.dart' show Value;
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../../core/l10n/app_locale.dart';
+import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../transactions/data/models/transaction_mapper.dart';
 import '../../../transactions/domain/entities/transaction.dart'
     show TransactionType;
@@ -41,6 +44,29 @@ class DebtRepositoryImpl implements DebtRepository {
 
   final DebtsLocalDatasource _local;
   final DebtBalanceCalculator _calculator;
+
+  /// The debt-related bucket the opening movement is auto-categorized into,
+  /// by direction — same `category_seeds` catalog `AdjustAccountBalance` reuses
+  /// for its own auto-assigned "Otros" categories. `iOwe` (a debt the user
+  /// took on) lands in "Deudas"; `owedToMe` (a loan the user gave) lands in
+  /// "Cobro de préstamos", so the movement always shows up under a real,
+  /// debt-labeled category instead of "Sin categoría".
+  static const String _iOweOpeningCategoryId = 'seed-debts';
+  static const String _owedToMeOpeningCategoryId = 'seed-loan-collections';
+
+  static String _openingCategoryId(DebtDirection direction) =>
+      switch (direction) {
+        DebtDirection.iOwe => _iOweOpeningCategoryId,
+        DebtDirection.owedToMe => _owedToMeOpeningCategoryId,
+      };
+
+  /// This runs in `data/`, with no `BuildContext` to read the device's
+  /// active locale from — same constraint HU-06 category seeding hit, so it
+  /// resolves the language the same way (`AppLocale.resolveLanguageCode`)
+  /// instead of hardcoding Spanish.
+  static String _openingMovementNote(String debtName) => lookupAppLocalizations(
+        Locale(AppLocale.resolveLanguageCode()),
+      ).debtOpeningMovementNote(debtName);
 
   @override
   Stream<Result<DebtsSummary>> watchDebts() => _guardStream(
@@ -98,8 +124,9 @@ class DebtRepositoryImpl implements DebtRepository {
                 NotFoundFailure('debt "$debtId" does not exist'),
               );
             }
-            final entries =
-                (values[1]! as List<db.DebtEntry>).map(DebtEntryMapper.toEntity).toList();
+            final entries = (values[1]! as List<db.DebtEntry>)
+                .map(DebtEntryMapper.toEntity)
+                .toList();
             final cashEvents = (values[2]! as List<db.Transaction>)
                 .map(DebtCashEventMapper.toEntity)
                 .toList();
@@ -213,10 +240,12 @@ class DebtRepositoryImpl implements DebtRepository {
             .copyWith(principalMinor: const Value(0));
         final movementCompanion = db.TransactionsCompanion.insert(
           accountId: accountId,
+          categoryId: Value(_openingCategoryId(draft.direction)),
           amountMinor: draft.principalMinor,
           currency: draft.currency,
           type: TransactionMapper.typeToDb(type),
           date: date,
+          note: Value(_openingMovementNote(draft.name)),
           source: const Value(db.TxSource.manual),
           createdAt: Value(now),
           updatedAt: Value(now.millisecondsSinceEpoch),
@@ -272,7 +301,8 @@ class DebtRepositoryImpl implements DebtRepository {
         if (existing == null) {
           return Left(NotFoundFailure('debt "$id" does not exist'));
         }
-        var companion = DebtMapper.toUpdateCompanion(draft, now: DateTime.now());
+        var companion =
+            DebtMapper.toUpdateCompanion(draft, now: DateTime.now());
         if (existing.initialTransactionId != null) {
           companion = companion.copyWith(principalMinor: const Value(0));
         }
@@ -318,6 +348,19 @@ class DebtRepositoryImpl implements DebtRepository {
           deletedAt: null,
           updatedAt: now.millisecondsSinceEpoch,
         );
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Unit> closeDebt(String id) => _guard(() async {
+        final now = DateTime.now();
+        final row = await _local.updateDebt(
+          id,
+          DebtMapper.closeCompanion(now: now),
+        );
+        if (row == null) {
+          return Left(NotFoundFailure('debt "$id" does not exist'));
+        }
         return const Right(unit);
       });
 

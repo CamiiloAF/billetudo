@@ -45,7 +45,7 @@ class DebtUpdateBalanceSheet extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == DebtUpdateBalanceStatus.saved) {
-          Navigator.of(context).pop();
+          BottomSheetBase.dismiss(context);
         }
       },
       builder: (context, state) => DebtUpdateBalanceSheetBody(state: state),

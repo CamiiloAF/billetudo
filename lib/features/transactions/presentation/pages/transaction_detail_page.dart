@@ -14,6 +14,7 @@ import '../cubit/transaction_detail_state.dart';
 import '../widgets/detail_actions_row.dart';
 import '../widgets/detail_amount_hero.dart';
 import '../widgets/sheets/confirm_delete_transaction_sheet.dart';
+import '../widgets/transaction_debt_link_badge.dart';
 import '../widgets/transaction_detail_info_card.dart';
 import '../widgets/transaction_detail_tags_section.dart';
 import '../widgets/transaction_header_button.dart';
@@ -157,6 +158,10 @@ class TransactionDetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         TransactionDetailInfoCard(entry: entry, locale: locale),
+        if (entry.debtName != null) ...[
+          const SizedBox(height: 20),
+          TransactionDebtLinkBadge(debtName: entry.debtName!),
+        ],
         if (!transaction.isTransfer && entry.tags.isNotEmpty) ...[
           const SizedBox(height: 20),
           TransactionDetailTagsSection(tags: entry.tags),

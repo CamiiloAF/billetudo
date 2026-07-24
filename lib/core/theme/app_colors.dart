@@ -51,6 +51,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.expenseText,
     required this.snackbarAction,
     required this.scrim,
+    required this.segmentInactiveText,
   });
 
   final Color primary;
@@ -106,6 +107,14 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color snackbarAction;
   final Color scrim;
 
+  /// The inactive segment's text/icon tone for a generic (non-directional)
+  /// `SegmentedControl`, e.g. Deudas' "Activas"/"Cerradas" tabs
+  /// (`$segment-inactive-text`). Distinct from [textSecondary]: most
+  /// segmented controls in the app pass no `inactiveColor` and keep using
+  /// [textSecondary] as before — this token exists for the one instance the
+  /// `.pen` deliberately calls out.
+  final Color segmentInactiveText;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -145,6 +154,7 @@ class AppColors extends ThemeExtension<AppColors> {
     expenseText: Color(0xFFB91C1C),
     snackbarAction: Color(0xFFA78BFA),
     scrim: Color(0x66000000),
+    segmentInactiveText: Color(0xFF5F5D73),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -186,6 +196,7 @@ class AppColors extends ThemeExtension<AppColors> {
     expenseText: Color(0xFFF87171),
     snackbarAction: Color(0xFF5648C8),
     scrim: Color(0x66000000),
+    segmentInactiveText: Color(0xFF9A98B5),
   );
 
   @override
@@ -227,6 +238,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? expenseText,
     Color? snackbarAction,
     Color? scrim,
+    Color? segmentInactiveText,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -266,6 +278,7 @@ class AppColors extends ThemeExtension<AppColors> {
       expenseText: expenseText ?? this.expenseText,
       snackbarAction: snackbarAction ?? this.snackbarAction,
       scrim: scrim ?? this.scrim,
+      segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
     );
   }
 
@@ -311,6 +324,8 @@ class AppColors extends ThemeExtension<AppColors> {
       expenseText: Color.lerp(expenseText, other.expenseText, t)!,
       snackbarAction: Color.lerp(snackbarAction, other.snackbarAction, t)!,
       scrim: Color.lerp(scrim, other.scrim, t)!,
+      segmentInactiveText:
+          Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
     );
   }
 }

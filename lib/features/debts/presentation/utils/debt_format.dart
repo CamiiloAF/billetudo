@@ -55,6 +55,17 @@ abstract final class DebtFormat {
           ? l10n.debtProgressPaid(pct)
           : l10n.debtProgressCollected(pct);
 
+  /// "Debía" / "Me debían" — the closed-tab pill label (extension, HU-07):
+  /// same direction, past tense, always the neutral `$muted` treatment (never
+  /// the `$income-text` green the open "Me deben" pill wears).
+  static String pastDirectionLabel(
+    AppLocalizations l10n,
+    DebtDirection direction,
+  ) =>
+      direction == DebtDirection.iOwe
+          ? l10n.debtDirectionIOwePast
+          : l10n.debtDirectionOwedToMePast;
+
   /// The single word under the hero's big percentage: "pagado" / "cobrado".
   static String progressWord(
     AppLocalizations l10n,
@@ -72,7 +83,8 @@ abstract final class DebtFormat {
   /// by hand (magnitude formatted, sign prepended) because the formatter would
   /// otherwise place the minus between `$` and the digits.
   static String signedAmount(int effectMinor, String currency) {
-    final magnitude = _money.formatSymbol(effectMinor.abs(), currencyCode: currency);
+    final magnitude =
+        _money.formatSymbol(effectMinor.abs(), currencyCode: currency);
     return effectMinor < 0 ? '$_minus$magnitude' : '+$magnitude';
   }
 
@@ -152,6 +164,27 @@ abstract final class DebtFormat {
       case DebtLedgerKind.manualAdjustment:
         return LucideIcons.slidersHorizontal;
     }
+  }
+
+  /// "8 meses" / "1 mes" / "3 días" — the felicitación sheet's "Duración"
+  /// stat (extension, HU-07): whole months between [start] and [end] when at
+  /// least one has elapsed, days otherwise (a debt settled the same week it
+  /// started should not read "0 meses").
+  static String duration(AppLocalizations l10n, DateTime start, DateTime end) {
+    final months = _monthsBetween(start, end);
+    if (months >= 1) {
+      return l10n.debtDurationMonths(months);
+    }
+    final days = end.difference(start).inDays;
+    return l10n.debtDurationDays(days < 1 ? 1 : days);
+  }
+
+  static int _monthsBetween(DateTime start, DateTime end) {
+    var months = (end.year - start.year) * 12 + (end.month - start.month);
+    if (end.day < start.day) {
+      months -= 1;
+    }
+    return months < 0 ? 0 : months;
   }
 
   /// The small tag on a solo-deuda row ("Estimado" for interest, "No afecta

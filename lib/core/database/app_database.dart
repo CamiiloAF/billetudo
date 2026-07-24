@@ -363,6 +363,22 @@ class Debts extends Table with _SyncColumns {
   /// reference cycle (ReferenceName / generation-order conflicts). Referential
   /// integrity for this link is by UUID convention, not a Drift constraint.
   TextColumn get initialTransactionId => text().nullable()();
+
+  /// Manual closure timestamp. null = the debt is active. Non-null = the user
+  /// closed it (either by hand with a pending balance, or automatically on
+  /// reaching 100%). This is a pure BUSINESS-STATE flag, distinct from both
+  /// `deletedAt` (reversible UX trash) and `tombstonedAt` (irreversible
+  /// referential-integrity tombstone) — do not reuse either of those columns
+  /// for this concept, and do not reuse this one for theirs.
+  ///
+  /// Closing a debt is a status change, never a ledger event: it does NOT
+  /// create a `DebtEntry`. A closed debt's shown progress simply freezes
+  /// because no further entries/adjustments are recorded against it once
+  /// closed — enforce "no new entries on a closed debt" in the repository,
+  /// not here. Reversible in principle (a future "reopen" could clear this),
+  /// though no such UI exists yet; that reversibility does not make this the
+  /// UX-trash column.
+  DateTimeColumn get closedAt => dateTime().nullable()();
 }
 
 /// Ledger entries against a [Debts] row. The debt's outstanding balance is
@@ -615,7 +631,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -926,6 +942,18 @@ class AppDatabase extends _$AppDatabase {
               'UPDATE debts SET start_date = created_at '
               'WHERE start_date IS NULL',
             );
+          }
+
+          // v16 -> v17: Debts gains `closedAt`, a manual-closure business-state
+          // timestamp (null = active). Distinct from `deletedAt`/`tombstonedAt`
+          // — closing a debt is neither trash nor a referential tombstone, it
+          // is a status change. Additive nullable column -> no backfill
+          // needed. Closing never writes a `DebtEntry` (pure status change);
+          // enforce "no new entries on a closed debt" in the repository. Keep
+          // parity with Supabase/Postgres: replicate `debts.closed_at bigint`
+          // (epoch seconds, nullable) once sync is wired.
+          if (from < 17) {
+            await m.addColumn(debts, debts.closedAt);
           }
         },
       );

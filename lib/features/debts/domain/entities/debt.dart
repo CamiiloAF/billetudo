@@ -36,6 +36,7 @@ class Debt extends Equatable {
     this.interestRateBps,
     this.deletedAt,
     this.initialTransactionId,
+    this.closedAt,
   });
 
   /// UUID as text.
@@ -90,6 +91,15 @@ class Debt extends Equatable {
   /// [principalMinor] with no linked movement.
   final String? initialTransactionId;
 
+  /// Manual-closure business-state timestamp (extension, HU-07). `null` =
+  /// active. Set once, either by the user from the overflow menu (with a
+  /// balance still pending, frozen thereafter) or by the "Completar" button of
+  /// the felicitación sheet (once the balance reached 0). Distinct from
+  /// [deletedAt] (reversible trash) and `tombstonedAt` (referential lápida):
+  /// closing is neither — it is a status change that moves the debt from
+  /// "Activas" to "Cerradas" without hiding it or touching its history.
+  final DateTime? closedAt;
+
   /// The debt's floor date, defaulting defensively to [createdAt] when
   /// [startDate] is `null` (an unbackfilled legacy row).
   DateTime get effectiveStartDate => startDate ?? createdAt;
@@ -98,6 +108,11 @@ class Debt extends Equatable {
 
   /// Whether the opening balance is backed by a linked `Transaction`.
   bool get hasInitialMovement => initialTransactionId != null;
+
+  /// Whether the debt was manually closed (extension, HU-07). A closed debt
+  /// accepts no further writes (abonos, ajustes, cuotas) — see
+  /// `CloseDebt`/`RegisterDebtCashEvent` and friends.
+  bool get isClosed => closedAt != null;
 
   @override
   List<Object?> get props => [
@@ -115,5 +130,6 @@ class Debt extends Equatable {
         updatedAt,
         deletedAt,
         initialTransactionId,
+        closedAt,
       ];
 }

@@ -120,4 +120,37 @@ void main() {
     expect(find.text('Categoría'), findsNothing);
     expect(find.text('Transferencia'), findsOneWidget);
   });
+
+  group('bug 3: enlace a deuda', () {
+    testWidgets('con debtName muestra el badge de deuda enlazada',
+        (tester) async {
+      await pumpBody(
+        tester,
+        TransactionWithDetails(
+          transaction: buildTransaction(),
+          accountName: 'Efectivo',
+          categoryName: 'Comida',
+          debtName: 'Crédito carro',
+        ),
+      );
+
+      expect(
+        find.text('Enlazada a deuda: Crédito carro'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('sin debtName no muestra el badge de deuda', (tester) async {
+      await pumpBody(
+        tester,
+        TransactionWithDetails(
+          transaction: buildTransaction(),
+          accountName: 'Efectivo',
+          categoryName: 'Comida',
+        ),
+      );
+
+      expect(find.textContaining('Enlazada a deuda'), findsNothing);
+    });
+  });
 }

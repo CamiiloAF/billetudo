@@ -373,6 +373,40 @@ void main() {
     });
 
     test(
+        'a real pending occurrence that is overdue (its date sits before a '
+        'CURRENT window, in what looks like a closed previous window) still '
+        "shows for that template, and wins over the template's future "
+        'projection instead of showing both', () {
+      // The template's next cadence date already advanced into the current
+      // window (Jan 20), but its Dec 23 occurrence was never confirmed nor
+      // skipped — it's still sitting `pending`, overdue.
+      final t = template(nextDate: DateTime(2024, 1, 20));
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      final overduePending = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2023, 12, 23),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [overduePending],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2023, 12, 23));
+      expect(items.single.scheduledPaymentId, t.id);
+    });
+
+    test(
         'a confirmed occurrence in the ledger is never counted (only '
         '`pending` is)', () {
       final t = template(nextDate: DateTime(2024, 2, 1));

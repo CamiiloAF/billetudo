@@ -949,6 +949,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionDetailSourceLabel => 'Origen';
 
   @override
+  String transactionDetailDebtLinkedLabel(String debtName) {
+    return 'Enlazada a deuda: $debtName';
+  }
+
+  @override
   String get transactionDetailTagsLabel => 'Etiquetas';
 
   @override
@@ -1466,6 +1471,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtPaymentAccountPickerTitle => 'Elige una cuenta';
 
   @override
+  String debtOpeningMovementNote(String debtName) {
+    return 'Deuda: $debtName';
+  }
+
+  @override
   String get debtPaymentCta => 'Registrar abono';
 
   @override
@@ -1542,6 +1552,135 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get debtLedgerAbonoNoAccountSnackbar =>
       'Este abono no movió ninguna cuenta';
+
+  @override
+  String get debtMenuTooltip => 'Más opciones';
+
+  @override
+  String get debtActionClose => 'Cerrar deuda';
+
+  @override
+  String get debtActionError =>
+      'No pudimos completar la acción. Intenta de nuevo.';
+
+  @override
+  String get debtCloseSheetTitle => '¿Cerrar esta deuda?';
+
+  @override
+  String debtCloseSheetMessageIOwe(String amount, String counterparty) {
+    return 'Le debes $amount a $counterparty. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageIOweNoCounterparty(String amount) {
+    return 'Debes $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMe(String counterparty, String amount) {
+    return '$counterparty te debe $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMeNoCounterparty(String amount) {
+    return 'Te deben $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.';
+  }
+
+  @override
+  String get debtCloseInfoLabel => 'Saldo pendiente al cerrar';
+
+  @override
+  String get debtCloseCta => 'Cerrar deuda';
+
+  @override
+  String get debtCelebrationTitleIOwe => '¡Felicidades! Ya no debes nada';
+
+  @override
+  String get debtCelebrationTitleOwedToMe =>
+      '¡Felicidades! Ya no te deben nada';
+
+  @override
+  String debtCelebrationMessageIOwe(
+      String name, String amount, String duration) {
+    return 'Terminaste de pagar $name. En total pagaste $amount en $duration.';
+  }
+
+  @override
+  String debtCelebrationMessageOwedToMe(
+      String name, String amount, String duration) {
+    return 'Terminaste de cobrar $name. En total cobraste $amount en $duration.';
+  }
+
+  @override
+  String get debtCelebrationStatTotalPaidIOwe => 'Total pagado';
+
+  @override
+  String get debtCelebrationStatTotalPaidOwedToMe => 'Total cobrado';
+
+  @override
+  String get debtCelebrationStatDuration => 'Duración';
+
+  @override
+  String get debtCelebrationDismiss => 'Ahora no';
+
+  @override
+  String get debtCelebrationComplete => 'Completar';
+
+  @override
+  String debtDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count meses',
+      one: '1 mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String debtDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get debtDirectionIOwePast => 'Debía';
+
+  @override
+  String get debtDirectionOwedToMePast => 'Me debían';
+
+  @override
+  String debtCardStatusPaid(String date) {
+    return 'Pagada · $date';
+  }
+
+  @override
+  String debtCardStatusClosed(String date) {
+    return 'Cerrada · $date';
+  }
+
+  @override
+  String get debtsTabActive => 'Activas';
+
+  @override
+  String get debtsTabClosed => 'Cerradas';
+
+  @override
+  String get debtsClosedPaidLabel => 'Pagué';
+
+  @override
+  String get debtsClosedCollectedLabel => 'Me pagaron';
+
+  @override
+  String get debtsClosedEmptyMessage => 'Aún no has cerrado ninguna deuda';
+
+  @override
+  String get debtsActiveEmptyMessage => 'No tienes deudas activas';
 
   @override
   String get moreScheduledPayments => 'Pagos programados';

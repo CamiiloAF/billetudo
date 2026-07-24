@@ -1,4 +1,8 @@
+import 'dart:ui' show Locale;
+
 import 'package:billetudo/core/database/app_database.dart' hide DebtDirection;
+import 'package:billetudo/core/l10n/app_locale.dart';
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/debts/data/datasources/debts_local_datasource.dart';
 import 'package:billetudo/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
@@ -55,6 +59,13 @@ void main() {
   Future<List<Transaction>> debtTransactions(String debtId) =>
       (db.select(db.transactions)..where((t) => t.debtId.equals(debtId))).get();
 
+  // The opening note is resolved from the test runner's locale (same
+  // no-BuildContext path as production, `AppLocale.resolveLanguageCode`), not
+  // hardcoded to Spanish — mirror that instead of asserting a fixed string.
+  String expectedOpeningNote(String debtName) => lookupAppLocalizations(
+        Locale(AppLocale.resolveLanguageCode()),
+      ).debtOpeningMovementNote(debtName);
+
   test(
     'crear con registro: saldo derivado = \$X (no 2X), UNA tx, cuenta movida',
     () async {
@@ -77,6 +88,9 @@ void main() {
       expect(txs.single.accountId, account.id);
       // "Yo debo" opening is an income (took the loan).
       expect(txs.single.type, EntryType.income);
+      // The opening movement always carries a debt-labeled category and note.
+      expect(txs.single.categoryId, 'seed-debts');
+      expect(txs.single.note, expectedOpeningNote('Crédito carro'));
 
       final balance = await repository.getBalance(debt.id);
       expect(
@@ -254,6 +268,9 @@ void main() {
     final debt = result.getOrElse((_) => throw StateError('debt'));
     final txs = await debtTransactions(debt.id);
     expect(txs.single.type, EntryType.expense);
+    // "Me deben" opening is categorized as a loan collection, not "Deudas".
+    expect(txs.single.categoryId, 'seed-loan-collections');
+    expect(txs.single.note, expectedOpeningNote('Crédito carro'));
 
     final balance = await repository.getBalance(debt.id);
     expect(

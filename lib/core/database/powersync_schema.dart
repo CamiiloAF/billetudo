@@ -127,6 +127,10 @@ const powerSyncSchema = Schema([
     // DateTimeColumn (see the type comment above / due_date). Nullable; see
     // Debts.startDate.
     Column.integer('start_date'),
+    // Manual closure timestamp (schemaVersion 17). Epoch seconds like every
+    // DateTimeColumn. Nullable = active debt. Business-state flag, distinct
+    // from deleted_at/tombstoned_at; see Debts.closedAt.
+    Column.integer('closed_at'),
     ..._syncColumns,
   ]),
   // Solo-deuda ledger entries (schemaVersion 14). The outstanding balance is

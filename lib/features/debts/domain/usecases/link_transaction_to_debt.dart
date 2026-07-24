@@ -17,27 +17,40 @@ class LinkTransactionToDebt {
   FutureResult<Unit> call({
     required String transactionId,
     required String debtId,
-  }) {
+  }) async {
     if (transactionId.trim().isEmpty) {
-      return Future.value(
-        const Left(
-          ValidationFailure(
-            'a transaction id is required',
-            field: 'transactionId',
-          ),
+      return const Left(
+        ValidationFailure(
+          'a transaction id is required',
+          field: 'transactionId',
         ),
       );
     }
     if (debtId.trim().isEmpty) {
-      return Future.value(
-        const Left(
-          ValidationFailure('a debt id is required', field: 'debtId'),
-        ),
+      return const Left(
+        ValidationFailure('a debt id is required', field: 'debtId'),
       );
     }
-    return _repository.linkTransactionToDebt(
-      transactionId: transactionId,
-      debtId: debtId,
+
+    final debtResult = await _repository.getDebt(debtId);
+    return debtResult.fold(
+      (failure) async => Left(failure),
+      (debt) {
+        if (debt.isClosed) {
+          return Future.value(
+            const Left(
+              ValidationFailure(
+                'a closed debt accepts no new links',
+                field: 'closedAt',
+              ),
+            ),
+          );
+        }
+        return _repository.linkTransactionToDebt(
+          transactionId: transactionId,
+          debtId: debtId,
+        );
+      },
     );
   }
 }

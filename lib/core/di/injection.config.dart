@@ -232,6 +232,8 @@ import 'package:billetudo/features/debts/domain/services/debt_interest_calculato
     as _i255;
 import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart'
     as _i103;
+import 'package:billetudo/features/debts/domain/usecases/close_debt.dart'
+    as _i939;
 import 'package:billetudo/features/debts/domain/usecases/create_debt.dart'
     as _i247;
 import 'package:billetudo/features/debts/domain/usecases/create_debt_with_opening_movement.dart'
@@ -765,6 +767,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i939.CloseDebt>(
+        () => _i939.CloseDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i247.CreateDebt>(
         () => _i247.CreateDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i398.CreateDebtWithOpeningMovement>(
@@ -899,10 +903,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
         ));
-    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
-          gh<_i1003.WatchDebtDetail>(),
-          gh<_i255.DebtInterestCalculator>(),
-        ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),
@@ -944,6 +944,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i87.GetCategoryDeletionImpact>(),
           gh<_i968.DeleteCategory>(),
           gh<_i928.SuggestSubcategoryIcon>(),
+        ));
+    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i255.DebtInterestCalculator>(),
+          gh<_i939.CloseDebt>(),
+          gh<_i644.DeleteDebt>(),
         ));
     gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
           gh<_i1044.SignInWithGoogle>(),

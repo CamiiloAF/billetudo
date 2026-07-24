@@ -155,6 +155,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryIcon: row.category?.icon,
         categoryColor: row.category?.color,
         tags: row.tags.map(TagMapper.toEntity).toList(),
+        debtName: row.debt?.name,
       );
 
   /// Turns any infrastructure exception into a `Failure`, so nothing escapes

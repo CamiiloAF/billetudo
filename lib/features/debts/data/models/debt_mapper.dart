@@ -26,6 +26,7 @@ abstract final class DebtMapper {
         updatedAt: row.updatedAt,
         deletedAt: row.deletedAt,
         initialTransactionId: row.initialTransactionId,
+        closedAt: row.closedAt,
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).
@@ -65,8 +66,9 @@ abstract final class DebtMapper {
         accrualMode: Value(accrualModeToDb(draft.accrualMode)),
         // `startDate` is required in the form (never cleared), so it is left
         // untouched when a caller omits it rather than wiped to null.
-        startDate:
-            draft.startDate == null ? const Value.absent() : Value(draft.startDate),
+        startDate: draft.startDate == null
+            ? const Value.absent()
+            : Value(draft.startDate),
         counterparty: Value(draft.counterparty),
         dueDate: Value(draft.dueDate),
         interestRateBps: Value(draft.interestRateBps),
@@ -84,6 +86,15 @@ abstract final class DebtMapper {
   static db.DebtsCompanion restoreCompanion({required DateTime now}) =>
       db.DebtsCompanion(
         deletedAt: const Value(null),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      );
+
+  /// Extension (HU-07): manual closure, a pure status change — never a
+  /// `DebtEntry`. Stamps `closedAt` once; `CloseDebt` guards against closing an
+  /// already-closed debt before this ever runs.
+  static db.DebtsCompanion closeCompanion({required DateTime now}) =>
+      db.DebtsCompanion(
+        closedAt: Value(now),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
