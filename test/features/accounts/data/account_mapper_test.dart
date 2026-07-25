@@ -66,6 +66,7 @@ void main() {
         type: type,
         date: createdAt,
         source: db.TxSource.manual,
+        countsInBudget: false,
         transferAccountId: transferAccountId,
       );
 

@@ -219,6 +219,32 @@ void main() {
       );
     });
 
+    // B-3 (`docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3):
+    // the "¿Incluir en tu presupuesto?" toggle ON reveals the conditional
+    // `CategoryQuickPicker` below it (`transacciones.md`, Adición
+    // 2026-07-24, frame `S5Tjj`/`IRuP2`). The toggle-OFF default is already
+    // covered by "create transfer, empty" above.
+    testWidgets('create transfer, counts in budget on ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          transferAccountId: 'acc-2',
+          transferAccountName: 'Bancolombia',
+          countsInBudget: true,
+          categoryId: 'cat-1',
+          categoryName: 'Comida',
+          categoryKind: CategoryKind.expense,
+        ),
+        'create_transfer_counts_in_budget_$suffix',
+        brightness: brightness,
+      );
+    });
+
     testWidgets('edit expense, filled ($suffix)', (tester) async {
       await golden(
         tester,

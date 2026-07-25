@@ -2,6 +2,7 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/toggle_field.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -438,6 +439,120 @@ void main() {
       expect(find.byType(CategoryQuickPicker), findsNothing);
       expect(find.text('Cuenta destino'), findsOneWidget);
       expect(find.text('Nueva transferencia'), findsOneWidget);
+    });
+  });
+
+  group('B-3: transferencia presupuestable (toggle countsInBudget)', () {
+    testWidgets(
+        'gasto/ingreso nunca muestran el toggle "¿Incluir en tu '
+        'presupuesto?" (es transfer-only)', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      expect(find.byType(ToggleField), findsNothing);
+    });
+
+    testWidgets(
+        'transferencia con el toggle apagado (default) muestra el toggle '
+        'pero no el selector de categoría', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(find.text('¿Incluir en tu presupuesto?'), findsOneWidget);
+      expect(
+        find.text('Actívala para que se sume a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      expect(find.byType(CategoryQuickPicker), findsNothing);
+    });
+
+    testWidgets(
+        'transferencia con el toggle encendido muestra el selector de '
+        'categoría condicional con su hint ON', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(
+        find.text('Se suma a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
+    });
+
+    testWidgets('tocar el toggle se lo reporta al cubit con el valor opuesto',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+        ),
+      );
+
+      await tester.tap(find.byType(ToggleField));
+      await tester.pump();
+
+      verify(() => cubit.countsInBudgetChanged(true)).called(1);
+    });
+
+    testWidgets(
+        'con el toggle encendido, elegir una categoría del quick picker se '
+        'lo reporta al cubit', (tester) async {
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+        ),
+      );
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+        ),
+      );
+
+      await tester.tap(find.text('Comida'));
+      await tester.pump();
+
+      verify(
+        () => cubit.categorySelected('cat-1', CategoryKind.expense, 'Comida'),
+      ).called(1);
+    });
+
+    testWidgets(
+        'transferencia con el toggle encendido y sin categoría elegida '
+        'muestra el error de fieldCategoryId', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+          failure: const ValidationFailure(
+            'a category is required',
+            field: TransactionDraft.fieldCategoryId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una categoría.'), findsOneWidget);
     });
   });
 

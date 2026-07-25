@@ -45,6 +45,7 @@ class TransactionFormState extends Equatable {
     this.justEvaluated = false,
     this.editImpact,
     this.failure,
+    this.countsInBudget = false,
   }) : date = date ?? DateTime.now();
 
   /// `null` when creating; the transaction id when editing.
@@ -115,6 +116,12 @@ class TransactionFormState extends Equatable {
 
   final Failure? failure;
 
+  /// Only meaningful while [type] is `transfer` (B-3 of the plan): whether
+  /// this transfer counts in presupuestos/reportes, which requires a
+  /// [categoryId]. Ignored for `expense`/`income` — they already always
+  /// count.
+  final bool countsInBudget;
+
   bool get isEditing => id != null;
 
   bool get isTransfer => type == TransactionType.transfer;
@@ -168,6 +175,7 @@ class TransactionFormState extends Equatable {
     bool? justEvaluated,
     TransactionEditImpact? editImpact,
     Failure? failure,
+    bool? countsInBudget,
     bool clearCategory = false,
     bool clearTransferAccount = false,
     bool clearEditImpact = false,
@@ -206,6 +214,7 @@ class TransactionFormState extends Equatable {
         // A new state carrying data is a state without an error: the caller
         // clears the failure by simply not passing one.
         failure: failure,
+        countsInBudget: countsInBudget ?? this.countsInBudget,
       );
 
   @override
@@ -234,5 +243,6 @@ class TransactionFormState extends Equatable {
         justEvaluated,
         editImpact,
         failure,
+        countsInBudget,
       ];
 }

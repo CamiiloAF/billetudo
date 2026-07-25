@@ -543,4 +543,158 @@ void main() {
       },
     );
   });
+
+  group('B-3: transferencia presupuestable (countsInBudget)', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'countsInBudgetChanged(true) activa el flag',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isTrue);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'countsInBudgetChanged(false) apaga el flag y limpia la categoría '
+      'elegida mientras estaba prendido',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Transporte')
+          ..countsInBudgetChanged(false);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isFalse);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+        expect(cubit.state.categoryName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'cambiar de tipo (Transferencia → Gasto) reinicia el toggle',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.expense);
+        expect(cubit.state.countsInBudget, isFalse);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'reelegir Transferencia (mismo tipo) con el toggle prendido no lo '
+      'reinicia',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..typeSelected(TransactionType.transfer);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isTrue);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle activo pero sin categoría no '
+      'llama al caso de uso y reporta el error en fieldCategoryId',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..countsInBudgetChanged(true)
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.failedField, TransactionDraft.fieldCategoryId);
+        verifyNever(() => createTransaction(any()));
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle activo y categoría se persiste '
+      'con countsInBudget=true',
+      setUp: () {
+        when(() => createTransaction(any())).thenAnswer(
+          (_) async => Right(
+            buildTransaction(type: TransactionType.transfer),
+          ),
+        );
+        when(() => setTransactionTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..countsInBudgetChanged(true)
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Transporte')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, TransactionFormStatus.saved);
+        final captured = verify(() => createTransaction(captureAny()))
+            .captured
+            .single as TransactionDraft;
+        expect(captured.countsInBudget, isTrue);
+        expect(captured.categoryId, 'cat-exp');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle apagado (default) no exige '
+      'categoría y se persiste con countsInBudget=false',
+      setUp: () {
+        when(() => createTransaction(any())).thenAnswer(
+          (_) async => Right(
+            buildTransaction(type: TransactionType.transfer),
+          ),
+        );
+        when(() => setTransactionTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, TransactionFormStatus.saved);
+        final captured = verify(() => createTransaction(captureAny()))
+            .captured
+            .single as TransactionDraft;
+        expect(captured.countsInBudget, isFalse);
+        expect(captured.categoryId, isNull);
+      },
+    );
+  });
 }

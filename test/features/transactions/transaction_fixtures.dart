@@ -104,6 +104,10 @@ TransactionDraft buildIncomeDraft({
       note: note,
     );
 
+/// [categoryId]/[categoryKind]/[countsInBudget] default to the plain-transfer
+/// shape (no category, flag off) — pass them explicitly to exercise the B-3
+/// "transferencia presupuestable" behaviour
+/// (`docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3).
 TransactionDraft buildTransferDraft({
   String? id,
   String accountId = 'acc-1',
@@ -112,6 +116,9 @@ TransactionDraft buildTransferDraft({
   String currency = 'COP',
   DateTime? date,
   String? note,
+  String? categoryId,
+  CategoryKind? categoryKind,
+  bool countsInBudget = false,
 }) =>
     TransactionDraft(
       id: id,
@@ -122,6 +129,9 @@ TransactionDraft buildTransferDraft({
       type: TransactionType.transfer,
       date: date ?? testInstant,
       note: note,
+      categoryId: categoryId,
+      categoryKind: categoryKind,
+      countsInBudget: countsInBudget,
     );
 
 Tag buildTag({

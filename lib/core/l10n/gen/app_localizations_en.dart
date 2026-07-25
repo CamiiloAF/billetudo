@@ -814,8 +814,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionFormTransferFromLabel => 'From account';
 
   @override
-  String get transactionFormTransferInfo =>
-      'Transfers don\'t count as income or expense.';
+  String get transactionFormCountsInBudgetLabel => 'Include in your budget?';
+
+  @override
+  String get transactionFormCountsInBudgetHintOff =>
+      'Turn it on to have it count toward your budgets and reports.';
+
+  @override
+  String get transactionFormCountsInBudgetHintOn =>
+      'It counts toward your budgets and reports.';
 
   @override
   String get transactionFormSwapAccounts => 'Swap accounts';

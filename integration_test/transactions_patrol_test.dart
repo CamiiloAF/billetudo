@@ -27,6 +27,8 @@ import 'dart:async';
 import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/core/utils/money_formatter.dart';
+import 'package:billetudo/core/widgets/toggle_field.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/info_row.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
@@ -132,10 +134,12 @@ Future<void> _pickCategory(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Taps "Guardar" (`commonSave`) to submit a **new** expense/income
-/// transaction whose category was just picked via [_pickCategory] with
-/// [categoryName], retrying that pick (bounded, up to 3 attempts total) if
-/// the form is still showing afterward.
+/// Taps "Guardar" (`commonSave`) to submit a **new** transaction whose
+/// category was just picked via [_pickCategory] with [categoryName],
+/// retrying that pick (bounded, up to 3 attempts total) if the form is still
+/// showing afterward. Works for any type that actually shows a category
+/// picker at save time — expense/income always, and a `transfer` too once
+/// its "¿Incluir en tu presupuesto?" toggle is on (Fase B1+B2).
 ///
 /// Not chasing a real validation bug: every attempt uses the exact same
 /// steps that do work reliably elsewhere in this suite (`_pickCategory`'s
@@ -189,6 +193,27 @@ Future<void> _saveNewTransaction(
 void _goToTransactions(PatrolIntegrationTester $) {
   final context = $.tester.element(find.byType(Scaffold).first);
   unawaited(GoRouter.of(context).push(AppRoutes.transactions));
+}
+
+/// Re-enters `/movimientos` for a **second** time in the same scenario, via
+/// `go()` — not another call to [_goToTransactions]. Fase B1+B2's transfer
+/// scenario is the first (and, as of this writing, only) one that needs to
+/// leave Transacciones (to check a `Presupuesto`) and come back within a
+/// single `patrolTest`: [_goToTransactions]'s own `push` never gets popped
+/// on the way to Presupuestos (`_goToBudgets` uses `go`, which does not
+/// collapse a page an earlier `push` put on the stack — see
+/// [_goToTransactions]'s own doc comment), so a *second* `push` of the exact
+/// same `/movimientos` location collides with the still-live first one:
+/// `NavigatorState._debugCheckDuplicatedPageKeys`'s
+/// `'!keyReservation.contains(key)'` assertion, verified against a real
+/// emulator run. `go()` recomputes the whole page stack from the target
+/// URI instead of appending to it, discarding that stale entry — the exact
+/// mechanism [_goToBudgets]'s own doc comment already relies on for
+/// `/presupuestos`.
+Future<void> _returnToTransactions(PatrolIntegrationTester $) async {
+  final context = $.tester.element(find.byType(Scaffold).first);
+  GoRouter.of(context).go(AppRoutes.transactions);
+  await $.tester.pumpAndSettle();
 }
 
 /// Taps the `AccountPickerField` whose *label* (the text above the tappable
@@ -251,7 +276,7 @@ Future<void> _openOnlyTransaction(PatrolIntegrationTester $) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Waits (bounded, up to 5 extra pumps) for [finder] to satisfy [matcher]
+/// Waits (bounded, up to 10 extra pumps) for [finder] to satisfy [matcher]
 /// before asserting it, instead of relying solely on the `pumpAndSettle()`
 /// already done by the caller.
 ///
@@ -267,13 +292,21 @@ Future<void> _openOnlyTransaction(PatrolIntegrationTester $) async {
 /// and the list row underneath both still read the same value mid-
 /// transition) — checking the actual [matcher] on every attempt, not just
 /// non-emptiness, catches both.
+///
+/// Bound raised from 5 to 10 attempts (1.5s → 3s of bounded extra wait)
+/// after `HU-04 caso 2`'s seed-then-list-read still missed the 1.5s window
+/// on a real emulator run (2026-07-24): the direct DB insert this scenario
+/// uses to seed a scheduled-payment-linked transaction races the same
+/// reactive-requery lag documented above, just closer to its edge than the
+/// UI-driven writes other scenarios trigger. Costs nothing on the passing
+/// path — the loop only pumps extra frames when the first check misses.
 Future<void> _expectEventually(
   PatrolIntegrationTester $,
   Finder finder,
   Matcher matcher,
 ) async {
-  for (var attempt = 0; attempt < 5; attempt++) {
-    if (matcher.matches(finder, <dynamic, dynamic>{}) || attempt == 4) {
+  for (var attempt = 0; attempt < 10; attempt++) {
+    if (matcher.matches(finder, <dynamic, dynamic>{}) || attempt == 9) {
       break;
     }
     await $.tester.pump(const Duration(milliseconds: 300));
@@ -283,12 +316,12 @@ Future<void> _expectEventually(
 
 /// Types [digits] on the anchored keypad. Each digit is a **whole** peso
 /// place, not a cents-shifted calculator entry: `TransactionFormCubit
-/// .amountDigitPressed`'s "whole-number mode" scales by
-/// `MoneyFormatter.currencyDecimals(currency)`, which is `0` for COP — so
-/// `[2, 5, 0]` reads as literally "250", i.e. `$250`, never `$2,50` needing
-/// two extra trailing zeros the way a fixed-2-decimal calculator would
-/// (verified against a real emulator run: typing 5 digits for what was
-/// meant to be a 3-digit amount landed on a 100x-too-large total instead).
+/// .amountDigitPressed`'s "whole-number mode" always advances `amountMinor`
+/// as if it carried the storage-wide 2 implied decimals (`MoneyFormatter`'s
+/// own `_minorPerMajor`/`_storedDecimals`, the same convention every currency
+/// shares) — so `[2, 5, 0]` reaches an internal `amountMinor` of `25000`,
+/// which COP (0 *display* decimals, `MoneyFormatter.currencyDecimals`) then
+/// renders as `$250`, never `$2,50`.
 ///
 /// Verifies the displayed amount actually advanced after every single digit
 /// (bounded retry per digit, up to 3 attempts) instead of firing all the taps
@@ -297,7 +330,19 @@ Future<void> _expectEventually(
 /// documented for `accounts_patrol_test.dart`'s day-picker — otherwise only
 /// surfaces much later, as a wrong final amount with no indication of which
 /// digit was actually dropped (verified against a real emulator run).
+///
+/// The expected text after each digit is built through `MoneyFormatter`
+/// itself, not a bare `'\$$whole'` interpolation: once the running total
+/// reaches 1.000, `TransactionAmountExpandedZone` renders it with Spanish
+/// thousands grouping (`$1.000`, not `$1000`) — a plain `'\$$whole'` finder
+/// never matches from that point on, so every retry loop exhausts its 3
+/// attempts and *triple*-taps that digit, snowballing the amount
+/// exponentially (verified against a real emulator run, 2026-07-24: entering
+/// `[5, 0, 0, 0, 0]` for an intended $50.000 landed on $50.000.000.000 once
+/// the running total crossed 1.000 mid-entry). Every scenario before Fase
+/// B1+B2 only ever typed amounts under 1.000, so this never tripped before.
 Future<void> _enterAmount(PatrolIntegrationTester $, List<int> digits) async {
+  const money = MoneyFormatter();
   // `$0` (`MoneyFormatter.formatSymbol`), not `0,00`: COP shows no decimals
   // (`MoneyFormatter.currencyDecimals`), and the amount is always prefixed
   // with `$`, never suffixed with the currency code, in the form's Zona
@@ -308,13 +353,18 @@ Future<void> _enterAmount(PatrolIntegrationTester $, List<int> digits) async {
   var whole = 0;
   for (final digit in digits) {
     whole = whole * 10 + digit;
-    final expected = find.text('\$$whole');
-    for (var attempt = 0; attempt < 3; attempt++) {
+    // `whole * 100`: the entry-phase `amountMinor` the cubit actually holds
+    // (see this helper's own doc comment), so `formatSymbol` renders exactly
+    // what `TransactionAmountExpandedZone` shows on screen, grouping dots
+    // included.
+    final expectedText =
+        money.formatSymbol(whole * 100, currencyCode: 'COP');
+    final expected = find.text(expectedText);
+    for (var attempt = 0; attempt < 3 && expected.evaluate().isEmpty;
+        attempt++) {
       await $.tester.tap(find.text('$digit').first);
       await $.tester.pump();
-      if (expected.evaluate().isNotEmpty) {
-        break;
-      }
+      await $.tester.pump(const Duration(milliseconds: 100));
     }
   }
   await $.tester.pumpAndSettle();
@@ -347,6 +397,71 @@ void _expectInfoRow(String label, String value) {
     ),
     findsOneWidget,
   );
+}
+
+/// Deterministic navigation to the Presupuestos tab via `GoRouter.go`, same
+/// reasoning as `_goToAccountsList` — Presupuestos is a `StatefulShellBranch`
+/// (`AppRoutes.budgets`, see `app_router.dart`), so `go()` here just switches
+/// the active branch, it does not collapse a page stack the way it would for
+/// `/movimientos` (see `_goToTransactions`'s own doc comment).
+Future<void> _goToBudgets(PatrolIntegrationTester $) async {
+  final context = $.tester.element(find.byType(Scaffold).first);
+  GoRouter.of(context).go(AppRoutes.budgets);
+  await $.tester.pumpAndSettle();
+}
+
+/// Creates a budget scoped to a single account: `Personalizado` → `Cuentas`
+/// → pick [accountName] → `Aplicar`, then fills name/amount and submits.
+///
+/// Unlike every budget in the sibling `budgets_patrol_test.dart` (which
+/// stays on the default "Todo" scope specifically to avoid the remote
+/// `category_seeds` catalog — see that file's own doc comment), a
+/// single-*account* scope needs no category at all: `BudgetDraft.categoryIds`
+/// stays empty ("all categories"), so this carries no such network
+/// dependency. Assumes [accountName] already exists (`_addCashAccount`) and
+/// the Presupuestos tab is not yet open.
+Future<void> _createAccountScopedBudget(
+  PatrolIntegrationTester $, {
+  required String name,
+  required String amount,
+  required String accountName,
+}) async {
+  await _goToBudgets($);
+  await $.tester.tap(find.byTooltip('Nuevo presupuesto'));
+  await $.tester.pumpAndSettle();
+
+  await $.tester.enterText(find.byType(TextFormField).first, name);
+  await $.tester.pumpAndSettle();
+  await $.tester.enterText(find.byType(TextFormField).at(1), amount);
+  await $.tester.pumpAndSettle();
+
+  // `SegmentedControl<bool>` "Todo"/"Personalizado" (`budgetFormScopeAll`/
+  // `budgetFormScopeCustom`); "Personalizado" reveals the `Cuentas`/
+  // `Categorías` `BudgetNavField`s (see `budget_form_page.dart`).
+  await $.tester.tap(find.text('Personalizado'));
+  await $.tester.pumpAndSettle();
+  // Not `find.text('Cuentas')`: unlike `InfoRow` (label and value as two
+  // separate `Text` widgets, see `_expectInfoRow`'s own doc comment),
+  // `BudgetNavField` renders its label and value as a *single* interpolated
+  // `Text` ("Cuentas: Todas las cuentas", `budgetFormRowValue`) — so the bare
+  // label string never appears alone anywhere in the tree (verified against
+  // a real emulator run: `find.text('Cuentas')` finds 0 widgets even though
+  // the field is on screen).
+  await $.tester.tap(find.textContaining('Cuentas'));
+  await $.tester.pumpAndSettle();
+  await _pickAccount($, accountName);
+  await $.tester.tap(find.text('Aplicar'));
+  await $.tester.pumpAndSettle();
+
+  final button = find.text('Crear presupuesto');
+  await $.tester.dragUntilVisible(
+    button,
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(button);
+  await $.tester.pumpAndSettle();
 }
 
 void main() {
@@ -588,6 +703,27 @@ void main() {
               date: DateTime.now(),
               note: const Value('Suscripción test'),
               scheduledPaymentId: const Value('scheduled-seed-1'),
+              // Explicit, not relying on `TransactionsCompanion`'s Dart-side
+              // `withDefault(false)`: Drift opens on top of the
+              // PowerSync-managed connection (see `AppDatabase`'s own doc
+              // comment), whose local `Table` schema
+              // (`powersync_schema.dart`) declares every column as a bare
+              // nullable `Column.integer`/`.text`, with no SQL-level
+              // `DEFAULT`/`NOT NULL` of its own — that only exists in
+              // Drift's Dart-side generated DDL. Omitting a column Drift
+              // considers "has a default" here does not fall back to that
+              // default; it inserts a real `NULL`, and the generated
+              // `$TransactionsTable.map`'s non-null read on
+              // `counts_in_budget` then throws `Null check operator used on
+              // a null value` the moment the reactive list query re-maps
+              // this row — which surfaced as this scenario's seeded
+              // transaction silently never appearing on screen (verified
+              // against a real emulator run, 2026-07-24: the crash is in
+              // the stream's `map()`, not in anything this test asserts on
+              // directly). Every real write path in `lib/`
+              // (`transaction_mapper.dart`) already sets this explicitly on
+              // every insert — only this kind of raw test seed skips it.
+              countsInBudget: const Value(false),
             ),
           );
 
@@ -873,6 +1009,114 @@ void main() {
       // HU-08 criterion 10: legible source label, `manual` being the only
       // one any Fase 0 capture flow can actually produce.
       _expectInfoRow('Origen', 'Manual');
+    },
+  );
+
+  patrolTest(
+    'Fase B1+B2: una transferencia con "¿Incluir en tu presupuesto?" activo '
+    'cuenta como gasto del presupuesto de su cuenta origen; sin el toggle, '
+    'no lo afecta',
+    ($) async {
+      await startApp($);
+      await _goToAccountsList($);
+      await _addCashAccount($, 'Cuenta origen');
+      await _addCashAccount($, 'Cuenta destino');
+      await _createCategory($, 'Ahorro');
+
+      // A budget scoped ONLY to "Cuenta origen" (`docs/plan-cuentas-tipos-y-
+      // transferencias-presupuestables.md` §3): the datasource folds a
+      // budgetable transfer in as an origin-side expense row, so this is the
+      // one budget whose scope should ever see it.
+      await _createAccountScopedBudget(
+        $,
+        name: 'Presupuesto origen',
+        amount: '500000', // $500.000
+        accountName: 'Cuenta origen',
+      );
+      expect(find.text('Presupuesto origen'), findsOneWidget);
+
+      // First transfer, toggle left OFF (the default): the plan's "sin
+      // marcar: comportamiento actual, neutral" case — must never move a
+      // presupuesto, exactly like every transfer before Fase B1 existed.
+      _goToTransactions($);
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Transferencia'));
+      await $.tester.pumpAndSettle();
+      await _enterAmount($, [5, 0, 0, 0, 0]); // $50.000 COP
+      await _tapAccountField($, 'Cuenta origen');
+      await _pickAccount($, 'Cuenta origen');
+      await _tapAccountField($, 'Cuenta destino');
+      await _pickAccount($, 'Cuenta destino');
+      await $.tester.tap(find.byTooltip('Guardar'));
+      await $.tester.pumpAndSettle();
+
+      await _expectEventually(
+        $,
+        find.text('Cuenta origen → Cuenta destino'),
+        findsOneWidget,
+      );
+
+      await _goToBudgets($);
+      await $.tester.tap(find.text('Presupuesto origen'));
+      await $.tester.pumpAndSettle();
+      // Nothing counted yet: the un-toggled $50.000 transfer above stays
+      // excluded, same as the pre-Fase-B1 behaviour.
+      await _expectEventually(
+        $,
+        find.textContaining(r'$0 de $500.000'),
+        findsOneWidget,
+      );
+
+      // Second transfer, this time WITH the toggle ON and a category — Fase
+      // B1's motor: the origin side ("Cuenta origen", in this budget's
+      // scope) must now count as spend.
+      await _returnToTransactions($);
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Transferencia'));
+      await $.tester.pumpAndSettle();
+      await _enterAmount($, [1, 0, 0, 0, 0, 0]); // $100.000 COP
+      await _tapAccountField($, 'Cuenta origen');
+      await _pickAccount($, 'Cuenta origen');
+      await _tapAccountField($, 'Cuenta destino');
+      await _pickAccount($, 'Cuenta destino');
+
+      // `ToggleField` sits past Nota, off-screen until scrolled into view —
+      // same virtualized-`ListView` situation as HU-07's "+ Nueva" tag chip.
+      final toggle = find.byType(ToggleField);
+      await $.tester.dragUntilVisible(
+        toggle,
+        find.byType(Scrollable).first,
+        const Offset(0, -250),
+      );
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(toggle);
+      await $.tester.pumpAndSettle();
+      // Toggling ON reveals the `Category Quick Picker` right below it
+      // (`transaction_form_page.dart`), mandatory for a budgetable transfer.
+      // `_saveNewTransaction`, not a bare `_pickCategory` + `Guardar` tap:
+      // its own doc comment's "occasionally-missed category chip tap"
+      // flakiness applies here exactly as it does to a plain expense/income
+      // save — same `CategoryQuickPicker`, same `fieldCategoryId` validation
+      // gate on a budgetable transfer — verified against a real emulator
+      // run, 2026-07-24: a missed `Ahorro` tap left `Elige una categoría.`
+      // on screen and the whole scenario never got past `Guardar`.
+      await _saveNewTransaction($, categoryName: 'Ahorro');
+
+      await _goToBudgets($);
+      await $.tester.tap(find.text('Presupuesto origen'));
+      await $.tester.pumpAndSettle();
+      // The budgetable transfer's $100.000 origin side now counts — the
+      // earlier, un-toggled $50.000 transfer still does not: the total stays
+      // at $100.000, never $150.000.
+      await _expectEventually(
+        $,
+        find.textContaining(r'$100.000 de $500.000'),
+        findsOneWidget,
+      );
+      expect(find.textContaining(r'$150.000 de $500.000'), findsNothing);
     },
   );
 }

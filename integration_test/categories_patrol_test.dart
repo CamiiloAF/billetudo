@@ -209,6 +209,7 @@ void main() {
               currency: 'COP',
               type: EntryType.expense,
               date: DateTime(2026, 7, 15),
+              countsInBudget: const Value(false),
             ),
           );
 

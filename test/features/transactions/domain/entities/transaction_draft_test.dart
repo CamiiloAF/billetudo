@@ -147,4 +147,71 @@ void main() {
       expect(result.isRight(), isTrue);
     });
   });
+
+  group('B-3 — transferencia presupuestable (countsInBudget)', () {
+    test(
+        'countsInBudget=false (default) no exige categoría, incluso si se '
+        'pasa una', () {
+      final result = buildTransferDraft(
+        categoryId: 'cat-expense',
+        categoryKind: CategoryKind.expense,
+      ).validated();
+
+      expect(result.isRight(), isTrue);
+      final draft = result.getRight().toNullable()!;
+      // The default flow drops any category even if one was set: a plain
+      // transfer never carries one (HU-03).
+      expect(draft.categoryId, isNull);
+      expect(draft.countsInBudget, isFalse);
+    });
+
+    test('countsInBudget=true sin categoría falla', () {
+      final result = buildTransferDraft(countsInBudget: true).validated();
+
+      expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
+    });
+
+    test(
+        'countsInBudget=true con categoría de kind expense pasa y conserva '
+        'el flag', () {
+      final result = buildTransferDraft(
+        countsInBudget: true,
+        categoryId: 'cat-expense',
+        categoryKind: CategoryKind.expense,
+      ).validated();
+
+      expect(result.isRight(), isTrue);
+      final draft = result.getRight().toNullable()!;
+      expect(draft.categoryId, 'cat-expense');
+      expect(draft.countsInBudget, isTrue);
+    });
+
+    test('countsInBudget=true con categoría de kind income falla', () {
+      final result = buildTransferDraft(
+        countsInBudget: true,
+        categoryId: 'cat-income',
+        categoryKind: CategoryKind.income,
+      ).validated();
+
+      expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
+    });
+
+    test(
+        'un gasto o ingreso con countsInBudget=true en el input se '
+        'normaliza a false (el flag solo aplica a transferencias)', () {
+      final expenseResult = TransactionDraft(
+        accountId: 'acc-1',
+        categoryId: 'cat-expense-1',
+        categoryKind: CategoryKind.expense,
+        amountMinor: 10000,
+        currency: 'COP',
+        type: TransactionType.expense,
+        date: testInstant,
+        countsInBudget: true,
+      ).validated();
+
+      expect(expenseResult.isRight(), isTrue);
+      expect(expenseResult.getRight().toNullable()!.countsInBudget, isFalse);
+    });
+  });
 }

@@ -1496,11 +1496,23 @@ abstract class AppLocalizations {
   /// **'Cuenta origen'**
   String get transactionFormTransferFromLabel;
 
-  /// No description provided for @transactionFormTransferInfo.
+  /// No description provided for @transactionFormCountsInBudgetLabel.
   ///
   /// In es, this message translates to:
-  /// **'Las transferencias no cuentan como gasto ni ingreso.'**
-  String get transactionFormTransferInfo;
+  /// **'¿Incluir en tu presupuesto?'**
+  String get transactionFormCountsInBudgetLabel;
+
+  /// No description provided for @transactionFormCountsInBudgetHintOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívala para que se sume a tus presupuestos y reportes.'**
+  String get transactionFormCountsInBudgetHintOff;
+
+  /// No description provided for @transactionFormCountsInBudgetHintOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Se suma a tus presupuestos y reportes.'**
+  String get transactionFormCountsInBudgetHintOn;
 
   /// No description provided for @transactionFormSwapAccounts.
   ///

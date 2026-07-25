@@ -257,6 +257,13 @@ class Transactions extends Table with _SyncColumns {
       text().nullable().references(ScheduledPayments, #id)();
   TextColumn get goalId => text().nullable().references(Goals, #id)();
   TextColumn get debtId => text().nullable().references(Debts, #id)();
+
+  /// Only meaningful for `type == transfer`: when `true`, the transfer counts
+  /// in budgets/reports using its `categoryId`, like a normal transaction,
+  /// instead of being excluded by default. Always `false` for income/expense
+  /// (unused there). See docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
+  BoolColumn get countsInBudget =>
+      boolean().withDefault(const Constant(false))();
 }
 
 /// User-named budgets with a configurable scope (accounts + categories via the
@@ -631,7 +638,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -954,6 +961,20 @@ class AppDatabase extends _$AppDatabase {
           // (epoch seconds, nullable) once sync is wired.
           if (from < 17) {
             await m.addColumn(debts, debts.closedAt);
+          }
+
+          // v17 -> v18: Transactions gains `countsInBudget` (bool, default
+          // false). Lets a `type == transfer` transaction opt into counting
+          // in budgets/reports via its existing `categoryId`, instead of
+          // being excluded by default. Irrelevant for income/expense (always
+          // false there). Additive column with a default -> no backfill
+          // needed. Phase B1 of
+          // docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
+          // Keep parity with Supabase/Postgres: replicate
+          // `transactions.counts_in_budget boolean not null default false`
+          // once sync is wired.
+          if (from < 18) {
+            await m.addColumn(transactions, transactions.countsInBudget);
           }
         },
       );

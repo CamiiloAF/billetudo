@@ -815,8 +815,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionFormTransferFromLabel => 'Cuenta origen';
 
   @override
-  String get transactionFormTransferInfo =>
-      'Las transferencias no cuentan como gasto ni ingreso.';
+  String get transactionFormCountsInBudgetLabel =>
+      '¿Incluir en tu presupuesto?';
+
+  @override
+  String get transactionFormCountsInBudgetHintOff =>
+      'Actívala para que se sume a tus presupuestos y reportes.';
+
+  @override
+  String get transactionFormCountsInBudgetHintOn =>
+      'Se suma a tus presupuestos y reportes.';
 
   @override
   String get transactionFormSwapAccounts => 'Intercambiar cuentas';

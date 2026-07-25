@@ -32,6 +32,7 @@ class TransactionDraft extends Equatable {
     this.goalId,
     this.debtId,
     this.isBalanceAdjustment = false,
+    this.countsInBudget = false,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -76,6 +77,14 @@ class TransactionDraft extends Equatable {
   /// its sheet offers no picker. The transaction form never sets it, so its
   /// mandatory-category rule is untouched.
   final bool isBalanceAdjustment;
+
+  /// Only meaningful for `type == transfer` (HU-B3,
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3): when
+  /// `true`, the transfer requires a [categoryId] and counts in
+  /// presupuestos/reportes like a normal transaction, instead of the default
+  /// neutral behaviour where a transfer never touches either. Ignored for
+  /// `expense`/`income` (they already always count).
+  final bool countsInBudget;
 
   /// Validates every business rule of HU-01/HU-02/HU-03/HU-04 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
@@ -145,6 +154,7 @@ class TransactionDraft extends Equatable {
         goalId: goalId,
         debtId: debtId,
         isBalanceAdjustment: isBalanceAdjustment,
+        countsInBudget: type == TransactionType.transfer && countsInBudget,
       ),
     );
   }
@@ -171,9 +181,32 @@ class TransactionDraft extends Equatable {
             ),
           );
         }
-        // HU-03: a transfer is never income nor expense, so it carries no
-        // category.
-        return Right((null, null, transferAccountId));
+        // HU-03 (default): a transfer is never income nor expense, so it
+        // carries no category. B-3 (opt-in via `countsInBudget`): once the
+        // transfer is marked to count in presupuestos/reportes, it needs a
+        // category just like an expense — without one it would not match any
+        // budget's category scope.
+        if (!countsInBudget) {
+          return Right((null, null, transferAccountId));
+        }
+        final categoryId = this.categoryId;
+        if (categoryId == null) {
+          return const Left(
+            ValidationFailure(
+              'a category is required',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        if (categoryKind != CategoryKind.expense) {
+          return Left(
+            ValidationFailure(
+              'the category must be of kind ${CategoryKind.expense.name}',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        return Right((categoryId, categoryKind, transferAccountId));
 
       case TransactionType.expense:
       case TransactionType.income:
@@ -227,5 +260,6 @@ class TransactionDraft extends Equatable {
         goalId,
         debtId,
         isBalanceAdjustment,
+        countsInBudget,
       ];
 }

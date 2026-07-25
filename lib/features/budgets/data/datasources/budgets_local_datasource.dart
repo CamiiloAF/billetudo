@@ -243,9 +243,30 @@ class BudgetsLocalDatasource {
 
   // -- Expenses --------------------------------------------------------------
 
-  /// Every expense that could feed a budget: `type = expense`, not trashed nor
-  /// tombstoned, enriched with account and category names. Transfers and income
-  /// are excluded here, so they can never count as budget spend.
+  /// Every expense that could feed a budget: `type = expense`, plus a
+  /// `type = transfer` marked `countsInBudget = true` (Fase B1, the
+  /// transferencia presupuestable — `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md`
+  /// §3). Not trashed nor tombstoned, enriched with account and category
+  /// names.
+  ///
+  /// A budgetable transfer is folded in as an **origin-side expense row**:
+  /// [BudgetExpenseRow.accountId] is the transfer's origin account, so
+  /// `BudgetProgressCalculator._matchesAccountId` naturally counts it as
+  /// spend for any budget whose scope includes that origin account — no new
+  /// matching rule needed, it flows through the exact same pipeline as a
+  /// plain expense.
+  ///
+  /// **Destination side pending:** the plan's model is symmetric (the same
+  /// transfer should also count as *income* for a budget scoped to the
+  /// destination account), but nothing in the budgets domain today models a
+  /// per-scope "income reduces this budget" concept — `ZeroBasedSummary`
+  /// only sums a single global "income this month" figure, not income
+  /// filtered by account/category scope. Modeling that destination side
+  /// would mean inventing a new mechanism with no existing base, which is out
+  /// of scope here (see the task's explicit "don't invent a parallel
+  /// income-to-budget feature" guidance). Left as a documented gap — see
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3 and
+  /// `design-system/billetudo/pages/transacciones.md`.
   Stream<List<BudgetExpenseRow>> watchExpenses() {
     final query = _db.select(_db.transactions).join([
       innerJoin(
@@ -258,7 +279,9 @@ class BudgetsLocalDatasource {
       ),
     ])
       ..where(
-        _db.transactions.type.equalsValue(EntryType.expense) &
+        (_db.transactions.type.equalsValue(EntryType.expense) |
+                (_db.transactions.type.equalsValue(EntryType.transfer) &
+                    _db.transactions.countsInBudget.equals(true))) &
             _db.transactions.deletedAt.isNull() &
             _db.transactions.tombstonedAt.isNull(),
       );

@@ -4,9 +4,15 @@ import 'package:equatable/equatable.dart';
 /// value — not the full Transactions entity — so the scope/progress rule has no
 /// cross-feature coupling and stays trivially testable.
 ///
-/// Only real expenses ever become one of these: transfers are never budget
-/// spend (they would double-count a card payment) and income is irrelevant, so
-/// the data layer filters `type = expense`, `deletedAt IS NULL` before mapping.
+/// Real expenses (`type = expense`) always become one of these; income is
+/// irrelevant, so the data layer filters `deletedAt IS NULL` and either
+/// `type = expense` or (`type = transfer` and `countsInBudget = true`) before
+/// mapping. A plain transfer (the default, `countsInBudget = false`) is never
+/// budget spend — that would double-count a card payment. An **opted-in**
+/// transfer (Fase B1 — transferencia presupuestable,
+/// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3) is folded
+/// in as an origin-side expense row so it counts for any budget scoped to its
+/// origin account, exactly like a normal expense.
 class BudgetExpense extends Equatable {
   const BudgetExpense({
     required this.id,

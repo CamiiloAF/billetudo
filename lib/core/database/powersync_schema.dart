@@ -84,6 +84,7 @@ const powerSyncSchema = Schema([
     Column.text('scheduled_payment_id'),
     Column.text('goal_id'),
     Column.text('debt_id'),
+    Column.integer('counts_in_budget'),
     ..._syncColumns,
   ]),
   Table('budgets', [

@@ -11,6 +11,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../core/widgets/sheet_head.dart';
+import '../../../../core/widgets/toggle_field.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/presentation/cubit/accounts_list_cubit.dart';
 import '../../../accounts/presentation/cubit/accounts_list_state.dart';
@@ -28,7 +29,6 @@ import '../widgets/transaction_amount_fixed_zone.dart';
 import '../widgets/transaction_date_field.dart';
 import '../widgets/transaction_form_field_button.dart';
 import '../widgets/transaction_header_button.dart';
-import '../widgets/transaction_info_box.dart';
 import '../widgets/transaction_note_field.dart';
 import '../widgets/transaction_tags_field.dart';
 import '../widgets/transaction_type_segmented_control.dart';
@@ -247,8 +247,6 @@ class TransactionFormScrollZone extends StatelessWidget {
         const SizedBox(height: 8),
         if (state.isTransfer) ...[
           TransferAccountsGroup(state: state, errorScroll: errorScroll),
-          const SizedBox(height: 8),
-          TransactionInfoBox(message: l10n.transactionFormTransferInfo),
         ] else ...[
           KeyedSubtree(
             key: errorScroll.keyFor(TransactionDraft.fieldAccountId),
@@ -295,7 +293,41 @@ class TransactionFormScrollZone extends StatelessWidget {
           textInputAction: TextInputAction.done,
           onSubmitted: () => FocusScope.of(context).unfocus(),
         ),
-        if (!state.isTransfer) ...[
+        if (state.isTransfer) ...[
+          // Section Gap Spacer (Nota -> Toggle): 18px total between the base
+          // fields and the optional "cuenta en presupuesto" block, matching
+          // the pen's `mdI7m`/`zbkXB`/`Np9SU` spacer (6 here + the 6+6
+          // already contributed by the `SizedBox`s around it).
+          const SizedBox(height: 6),
+          ToggleField(
+            icon: LucideIcons.wallet,
+            label: l10n.transactionFormCountsInBudgetLabel,
+            value: state.countsInBudget,
+            hint: state.countsInBudget
+                ? l10n.transactionFormCountsInBudgetHintOn
+                : l10n.transactionFormCountsInBudgetHintOff,
+            onChanged: cubit.countsInBudgetChanged,
+          ),
+          if (state.countsInBudget) ...[
+            const SizedBox(height: 8),
+            KeyedSubtree(
+              key: errorScroll.keyFor(TransactionDraft.fieldCategoryId),
+              child: CategoryQuickPicker(
+                kind: CategoryKind.expense,
+                selectedId: state.categoryId,
+                accountId: state.accountId,
+                onSelected: (category) => cubit.categorySelected(
+                  category.id,
+                  category.kind,
+                  category.name,
+                ),
+                errorText: state.failedField == TransactionDraft.fieldCategoryId
+                    ? l10n.transactionErrorCategory
+                    : null,
+              ),
+            ),
+          ],
+        ] else ...[
           const SizedBox(height: 8),
           TransactionTagsField(
             selectedIds: state.tagIds,

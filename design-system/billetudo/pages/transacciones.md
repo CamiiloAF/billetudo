@@ -28,6 +28,9 @@ Interacciones aún sin especificar (apertura real de sheets desde sus chips, wra
 | Formulario Ingreso — Nota activa | `TVSuf` | `pTucO` |
 | Formulario Transferencia — Monto activo | `ArvTJ` | `f4fC5k` |
 | Formulario Transferencia — Nota activa | `h9DSSj` | `Te27A` |
+| Formulario Transferencia — Toggle presupuesto OFF | `l4nR7l` | `L8bqAX` |
+| Formulario Transferencia — Toggle presupuesto ON | `S5Tjj` | `IRuP2` |
+| Formulario Transferencia — Toggle presupuesto ON + Nota activa | `BmCFj` | `fmWeI` |
 | Componente — Zona Fija Monto Expandida | `Rslzk` | (mismo componente, tema automático) |
 | Componente — Zona Fija Monto Colapsada | `ofg07` | (mismo componente, tema automático) |
 | Detalle Transacción — Gasto | `Of2sW` | `U5k715` |
@@ -168,7 +171,7 @@ Las 6 pantallas usan `ref` a estos 2 componentes con overrides por tipo (label, 
 
 - **Monto**: color del valor — **Gasto → `$text-primary`** (neutral, nunca rojo), **Ingreso → `$income-text`**, **Transferencia → `$primary`** — coherente con el mismo patrón que ya usa `Transaction Row` en toda la app. `$income` crudo (36px/800) daba solo ~2.07:1 sobre `$background`; corregido con el token `$income-text` (~6.46:1, mismo patrón que `$expense-text`, ver `MASTER.md`). El mismo problema apareció y se corrigió en 2 lugares más de esta feature: label "Ingreso" del `Segmented Control` activo, y el monto de ingreso en la fila de la Lista (`edGxB/a1Pwa` en `B3GGa`). Pendiente fuera de alcance: el mismo patrón de `$income` crudo existe en Deudas/Presupuestos (`Budget Category Row`/`XwBn7`), no corregido por no ser parte de esta feature.
 - **Categoría** (Gasto e Ingreso): grid de `Category Chip`, label 13px/700 (subido desde 11px, era contenido primario no metadata), contraste del seleccionado con el token `primary-on-soft-strong`. Transferencia no lleva categoría (HU-03).
-- **Transferencia**: dos campos de cuenta (origen/destino) + botón swap (44x44) agrupados en `Account Swap Group` (`gap:4`, más compacto que el `gap:8` general) para leerse como un bloque — corrige percepción de espacio sobrante entre los 2 selectores. Sin categoría ni etiquetas. Info Box informativo ("Las transferencias no cuentan como gasto ni ingreso").
+- **Transferencia**: dos campos de cuenta (origen/destino) + botón swap (44x44) agrupados en `Account Swap Group` (`gap:4`, más compacto que el `gap:8` general) para leerse como un bloque — corrige percepción de espacio sobrante entre los 2 selectores. Sin etiquetas. **Categoría condicional** al toggle "Cuenta en tu presupuesto" — ver "Adición 2026-07-24" más abajo. El Info Box informativo original ("Las transferencias no cuentan como gasto ni ingreso") **se retiró** en esa misma adición: quedaba redundante/falso ahora que el toggle explica el efecto con su propio hint.
 - **Segmented Control**: padding interno ajustado para que el área tocable real de cada segmento sea 44px de alto (antes 36px) — fix a nivel de componente `hFu41`, se propaga a los 3 tipos automáticamente.
 
 ### Selector de categoría del formulario (chips "más usadas" + "Ver más" + sheet)
@@ -339,3 +342,50 @@ Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de ch
 **Código:** `MovementsBalanceCarousel` / `MovementsBalanceCard` (`lib/features/transactions/presentation/widgets/`), `BalanceCarouselCubit` (`lib/core/preferences/`, colapso + página activa, SharedPreferences per-device). El dato de saldo ya venía en `TransactionsListCubit` (`state.accounts` = `List<AccountWithBalance>`).
 
 **Fidelidad visual (2026-07-21):** el componente del carrusel (`C2g9cA`) es **fiel en claro y oscuro** contra `cgasM`/`Y0lWi`. Fix de contraste aplicado: la deuda pasó de `$expense` a `$expense-text` (16px falla 4.5:1 en oscuro). Hallazgos IMPORTANTES del reviewer son del **chrome compartido de la pantalla, no del carrusel** y son **pre-existentes** (no los introduce esta mejora): título "Movimientos" centrado en el golden vs izquierda en Pencil, y el chip de Fecha en 2º lugar (código) vs último (spec §3). **Gaps de cobertura:** los estados colapsado (`rGVw1`) y tarjeta-activa (`Ljf8l`) no tienen golden propio (los goldens de página fuerzan `collapsed:false` y cuenta activa normal).
+
+## Adición 2026-07-24 — Transferencia presupuestable (toggle `countsInBudget`)
+
+> **Estado:** diseño **aprobado en ambos temas** (claro y oscuro), auditado por `ui-ux-reviewer` sin hallazgos bloqueantes, y **fase B1+B2 implementadas** (`flutter-dev`): schema, motor de presupuestos (lado origen) y UI del formulario. Ver `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3 y §5 (Fase B2) para el contexto de producto completo.
+>
+> **Nota de fidelidad — copy del label:** los frames vigentes (`l4nR7l`/`S5Tjj`/`BmCFj` y sus pares oscuros) usan el label **"¿Incluir en tu presupuesto?"**, no "Cuenta en tu presupuesto" — el copy se unificó con el toggle de Metas en algún punto posterior a cuando se escribió la sección "Copy" de abajo, y ese párrafo quedó desactualizado. El código implementa el copy real del `.pen` (fuente de verdad, ver `CLAUDE.md`); la sección "Copy" abajo se corrige a continuación en vez de dejar el texto viejo.
+>
+> **Hallazgo del tap target del `Switch` (accesibilidad, abajo) — corregido en código:** `ToggleField` (`lib/core/widgets/toggle_field.dart`) envuelve la fila completa (ícono + label + switch + hint) en el `InkWell`, no solo `AppSwitch` (`lib/core/widgets/app_switch.dart`, 48×28).
+>
+> **Pendiente real, no de diseño:** el lado "ingreso en la cuenta destino" del modelo simétrico (ver más abajo) no tiene base en el dominio de presupuestos actual (`ZeroBasedSummary` solo modela un ingreso global, no por alcance) — se implementó solo el lado **gasto en la cuenta origen**. Ver `docs/requirements/06-presupuestos.md` §Reglas de negocio y edge cases para el detalle y el motivo de no inventar un mecanismo paralelo.
+
+Parte de la Sub-feature B del plan: una transferencia puede marcarse opcionalmente para que cuente en presupuestos y reportes, con un flag único simétrico (`countsInBudget`) — sin distinguir "gasto en origen" de "ingreso en destino" como conceptos separados; el mismo flag + la misma categoría alimentan ambos lados según el alcance de cada presupuesto (`BudgetAccounts`). Se descartó un modelo previo de atributo on/off-budget a nivel de `Accounts` por chocar con ese alcance ya existente — ver el plan para el detalle de esa decisión revertida.
+
+**Frames** (ver tabla de Frames arriba para los Node ID):
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Toggle OFF (default) | `l4nR7l` | `L8bqAX` |
+| Toggle ON | `S5Tjj` | `IRuP2` |
+| Toggle ON + Nota activa | `BmCFj` | `fmWeI` |
+
+No se diseñó el 4to cruce (Nota activa + Toggle OFF): con el toggle apagado no hay nada nuevo que mostrar respecto al patrón de "Nota activa" ya existente en el resto del formulario, salvo la fila apagada del toggle al final — decisión explícita del usuario de no construir esa pantalla por no aportar información nueva.
+
+**Componente:** `Toggle Field` (`gZyEC`, `reusable:true`) — card `$surface`/`$border` con ícono `wallet` + label + `Switch` (`bWezV`) + hint de una línea debajo. Instanciado sin cambios estructurales, solo overrides de copy y del estado del switch.
+
+**Copy (corregido contra el `.pen` vigente — ver nota de fidelidad arriba):**
+- Label: **"¿Incluir en tu presupuesto?"** (evita jerga "on-budget" cruda; unificado con el toggle de Metas).
+- Hint OFF: "Actívala para que se sume a tus presupuestos y reportes."
+- Hint ON: "Se suma a tus presupuestos y reportes."
+
+**Posición — Cuenta → Fecha → Nota → Toggle → Categoría**, al final del Scroll Zone, no inmediatamente después de Cuenta (que era la solicitud original). Con el toggle justo tras la cuenta, Fecha y Nota quedaban tapadas por el teclado/Zona Fija expandida — regresión frente al patrón ya aprobado en Gasto, donde solo contenido secundario (`Tags Row`) puede quedar bajo el fold, nunca los campos base. Reordenado así, solo el bloque opcional nuevo (Toggle + Categoría) puede requerir scroll. Aprobado explícitamente por el usuario.
+
+**Espaciado:** gap de **18px** entre el campo Nota y la card del `Toggle Field` (token "gap entre secciones mayores" de `MASTER.md`, no un valor inventado) — separa visualmente el bloque de campos base del bloque opcional nuevo. Implementado como un frame spacer invisible de `height:6` entre ambos (el `gap:6` que ya aporta el `Scroll Zone` a cada lado del spacer suma 6+6+6=18px), para no alterar el gap:6 general entre el resto de los campos del formulario.
+
+**Categoría condicional:** con el toggle activo se habilita `Category Quick Picker` (`EIoVx`, el mismo selector ya usado en Gasto/Ingreso) debajo del toggle — una sola categoría, aplica a ambos lados del flag simétrico (no hay categoría separada por origen/destino).
+
+**Zona Fija colapsada** (`ofg07`) en los 3 estados, mismo patrón ya usado cuando hay Nota activa — libera espacio de scroll para que el toggle (y la categoría, si aplica) queden visibles sin necesidad de que el usuario haga scroll manual en el caso común.
+
+**Info Box retirado:** el cuadro estático que antes explicaba "las transferencias no cuentan como gasto ni ingreso" se quitó — quedaba redundante en OFF y directamente falso en ON. El hint propio del toggle cubre esa explicación.
+
+**Accesibilidad — hallazgo corregido:** primera instancia del componente `Switch` (`bWezV`) en estado **OFF** en todo el sistema de diseño (todas las instancias previas estaban en ON). Su color por defecto (`$border`) no alcanzaba el mínimo 3:1 WCAG 1.4.11 contra `$surface` en ningún tema (~2:1 claro, ~2:1 oscuro por cálculo de luminancia). Corregido a `$text-secondary` **a nivel de instancia** en las 3 pantallas OFF/tras-colapso que lo requieren (no se tocó el componente base `bWezV`, que sigue por defecto en ON) — da ~4.9:1 en claro y ~5.9:1 en oscuro, verificado también visualmente por `ui-ux-reviewer`. Se lee como "gris apagado" vs. el violeta vívido del ON, coherente con el resto del sistema.
+
+**Hallazgo menor, no bloqueante (anotado por `ui-ux-reviewer`, pendiente para `flutter-dev`):** el `Switch` dentro de `Toggle Field` mide 48×28, por debajo del mínimo de tap target 44×44pt. No hay una regla documentada (como sí la tiene `Delete Opt-in Row`) que aclare que el gesto debe cubrir toda la fila del `Toggle Field`, no solo el frame del switch. En Flutter, el `GestureDetector`/`InkWell` debe envolver la fila completa (ícono + label + switch + hint), no solo el widget `Switch`.
+
+**Cambios de datos correspondientes** (fuera de alcance de este documento de diseño, ver el plan): `categoryId` habilitado + `countsInBudget` (bool) en `Transactions`; presupuestos ampliados para consumir transferencias marcadas según el alcance por cuenta ya existente.
+
+**Código (Fase B1+B2, implementado):** dominio — `TransactionDraft`/`Transaction` (`lib/features/transactions/domain/entities/`) llevan `countsInBudget`; `TransactionDraft.validated()` exige `categoryId` (kind `expense`) para una transferencia con el flag activo. Datos — `TransactionMapper` mapea el campo; `BudgetsLocalDatasource.watchExpenses()` (`lib/features/budgets/data/datasources/`) incluye las transferencias `countsInBudget = true` como filas de gasto con la cuenta origen, sin tocar `BudgetProgressCalculator` (llega por el mismo pipeline que un gasto normal). Presentación — `TransactionFormCubit.countsInBudgetChanged`, `ToggleField`/`AppSwitch` (`lib/core/widgets/`, nuevos, reusables) y el bloque condicional en `TransactionFormScrollZone` (`lib/features/transactions/presentation/pages/transaction_form_page.dart`). El antiguo `TransactionInfoBox` y su string `transactionFormTransferInfo` se retiraron (ver "Info Box retirado" arriba).

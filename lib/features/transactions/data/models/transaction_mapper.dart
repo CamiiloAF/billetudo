@@ -26,6 +26,7 @@ abstract final class TransactionMapper {
         scheduledPaymentId: row.scheduledPaymentId,
         goalId: row.goalId,
         debtId: row.debtId,
+        countsInBudget: row.countsInBudget,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       );
@@ -48,6 +49,7 @@ abstract final class TransactionMapper {
         scheduledPaymentId: Value(draft.scheduledPaymentId),
         goalId: Value(draft.goalId),
         debtId: Value(draft.debtId),
+        countsInBudget: Value(draft.countsInBudget),
         createdAt: Value(now),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
@@ -73,6 +75,7 @@ abstract final class TransactionMapper {
         scheduledPaymentId: Value(draft.scheduledPaymentId),
         goalId: Value(draft.goalId),
         debtId: Value(draft.debtId),
+        countsInBudget: Value(draft.countsInBudget),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 

@@ -134,12 +134,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       // type instead of leaving it null, or `validated()` would reject the
       // save on every edit of an already-categorized expense/income (the
       // category always matched the type when it was first picked — see
-      // `TransactionDraft` class doc).
+      // `TransactionDraft` class doc). A budgetable transfer's category is
+      // always `expense` kind (B-3), same as the form only ever offering it.
       categoryKind: transaction.categoryId == null
           ? null
-          : (transaction.type == TransactionType.expense
-              ? CategoryKind.expense
-              : CategoryKind.income),
+          : switch (transaction.type) {
+              TransactionType.expense => CategoryKind.expense,
+              TransactionType.income => CategoryKind.income,
+              TransactionType.transfer => CategoryKind.expense,
+            },
       categoryName: entry.categoryName,
       amountMinor: transaction.amountMinor,
       currency: transaction.currency,
@@ -149,6 +152,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       source: transaction.source,
       // Same as creation: the edit form opens with the keypad expanded.
       focusedField: TransactionFormFocusedField.amount,
+      countsInBudget: transaction.countsInBudget,
     );
   }
 
@@ -160,15 +164,29 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       state.copyWith(
         type: type,
         // Income and expense have distinct category sets (`CategoryKind`), and
-        // a transfer carries none — so any real type change must drop the
-        // previously picked category, or an expense category would linger on an
-        // income (item 17). Switching away from a transfer also drops a
-        // destination account that no longer applies.
+        // a transfer carries none by default — so any real type change must
+        // drop the previously picked category, or an expense category would
+        // linger on an income (item 17). Switching away from a transfer also
+        // drops a destination account that no longer applies, and resets the
+        // "cuenta en presupuesto" toggle — it is transfer-only state.
         clearCategory: true,
         clearTransferAccount: type != TransactionType.transfer,
+        countsInBudget:
+            type == TransactionType.transfer && state.countsInBudget,
       ),
     );
   }
+
+  /// The transfer-only "¿Incluir en tu presupuesto?" toggle (B-3). Turning it
+  /// off also drops any category picked while it was on, since a plain
+  /// transfer never carries one.
+  // ignore: avoid_positional_boolean_parameters
+  void countsInBudgetChanged(bool value) => emit(
+        state.copyWith(
+          countsInBudget: value,
+          clearCategory: !value,
+        ),
+      );
 
   void accountSelected(String id, String name) =>
       emit(state.copyWith(accountId: id, accountName: name));
@@ -502,6 +520,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       scheduledPaymentId: _original?.scheduledPaymentId,
       goalId: _original?.goalId,
       debtId: _original?.debtId,
+      countsInBudget: state.countsInBudget,
     ).validated();
   }
 }

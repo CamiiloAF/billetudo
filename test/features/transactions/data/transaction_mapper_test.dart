@@ -1,4 +1,6 @@
 import 'package:billetudo/core/database/app_database.dart' as db;
+import 'package:billetudo/features/categories/domain/entities/category.dart'
+    show CategoryKind;
 import 'package:billetudo/features/transactions/data/models/transaction_mapper.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
     as domain;
@@ -20,6 +22,7 @@ void main() {
         date: testInstant,
         note: 'Almuerzo',
         source: db.TxSource.manual,
+        countsInBudget: false,
         createdAt: testInstant,
         updatedAt: testInstantMillis,
       );
@@ -34,6 +37,27 @@ void main() {
       expect(entity.type, domain.TransactionType.expense);
       expect(entity.source, domain.TransactionSource.manual);
       expect(entity.note, 'Almuerzo');
+      expect(entity.countsInBudget, isFalse);
+    });
+
+    test('mapea countsInBudget=true (B-3, transferencia presupuestable)', () {
+      final row = db.Transaction(
+        id: 'tx-1',
+        accountId: 'acc-1',
+        categoryId: 'cat-1',
+        amountMinor: 10000,
+        currency: 'COP',
+        type: db.EntryType.transfer,
+        date: testInstant,
+        source: db.TxSource.manual,
+        countsInBudget: true,
+        createdAt: testInstant,
+        updatedAt: testInstantMillis,
+      );
+
+      final entity = TransactionMapper.toEntity(row);
+
+      expect(entity.countsInBudget, isTrue);
     });
 
     test('mapea cada TxSource por significado, no por índice', () {
@@ -46,6 +70,7 @@ void main() {
           type: db.EntryType.expense,
           date: testInstant,
           source: source,
+          countsInBudget: false,
           createdAt: testInstant,
           updatedAt: testInstantMillis,
         );
@@ -70,6 +95,23 @@ void main() {
       expect(companion.updatedAt, Value(testInstantMillis));
       expect(companion.type.value, db.EntryType.expense);
       expect(companion.source.value, db.TxSource.manual);
+      expect(companion.countsInBudget, const Value(false));
+    });
+
+    test(
+        'B-3: escribe countsInBudget=true de una transferencia '
+        'presupuestable', () {
+      final companion = TransactionMapper.toInsertCompanion(
+        buildTransferDraft(
+          countsInBudget: true,
+          categoryId: 'cat-expense-1',
+          categoryKind: CategoryKind.expense,
+        ),
+        now: testInstant,
+      );
+
+      expect(companion.countsInBudget, const Value(true));
+      expect(companion.categoryId, const Value('cat-expense-1'));
     });
   });
 
@@ -105,6 +147,20 @@ void main() {
       );
 
       expect(companion.categoryId, const Value('cat-expense-1'));
+    });
+
+    test('B-3: escribe countsInBudget de la transferencia editada', () {
+      final companion = TransactionMapper.toUpdateCompanion(
+        buildTransferDraft(
+          id: 'tx-1',
+          countsInBudget: true,
+          categoryId: 'cat-expense-1',
+          categoryKind: CategoryKind.expense,
+        ),
+        now: testInstant,
+      );
+
+      expect(companion.countsInBudget, const Value(true));
     });
   });
 

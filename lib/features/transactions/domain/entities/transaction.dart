@@ -32,6 +32,7 @@ class Transaction extends Equatable {
     this.scheduledPaymentId,
     this.goalId,
     this.debtId,
+    this.countsInBudget = false,
   });
 
   /// UUID as text.
@@ -65,6 +66,14 @@ class Transaction extends Equatable {
   final String? goalId;
   final String? debtId;
 
+  /// Only meaningful for `type == transfer`: when `true`, the transfer counts
+  /// in presupuestos/reportes using [categoryId], like a normal transaction —
+  /// as an expense for any budget scoped to [accountId] (origin), as income
+  /// for any budget scoped to [transferAccountId] (destination). See
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3.
+  /// Defaults to `false` (the pre-existing, neutral behaviour of transfers).
+  final bool countsInBudget;
+
   final DateTime createdAt;
 
   /// Epoch millis, not a `DateTime` (schema v5) — see `_SyncColumns.updatedAt`.
@@ -87,6 +96,7 @@ class Transaction extends Equatable {
         scheduledPaymentId,
         goalId,
         debtId,
+        countsInBudget,
         createdAt,
         updatedAt,
       ];

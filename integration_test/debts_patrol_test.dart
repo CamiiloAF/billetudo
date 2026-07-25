@@ -505,6 +505,7 @@ void main() {
               type: EntryType.expense,
               date: DateTime.now(),
               note: const Value('Pago cuota banco'),
+              countsInBudget: const Value(false),
             ),
           );
 
@@ -1051,6 +1052,7 @@ void main() {
               type: EntryType.expense,
               date: DateTime.now(),
               note: const Value('Pago libre'),
+              countsInBudget: const Value(false),
             ),
           );
       await db.into(db.transactions).insert(
@@ -1063,6 +1065,7 @@ void main() {
               date: DateTime.now(),
               note: const Value('Pago asociado'),
               debtId: Value(debtA.id),
+              countsInBudget: const Value(false),
             ),
           );
 
