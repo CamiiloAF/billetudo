@@ -262,8 +262,7 @@ class Transactions extends Table with _SyncColumns {
   /// in budgets/reports using its `categoryId`, like a normal transaction,
   /// instead of being excluded by default. Always `false` for income/expense
   /// (unused there). See docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
-  BoolColumn get countsInBudget =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get countsInBudget => boolean().clientDefault(() => false)();
 }
 
 /// User-named budgets with a configurable scope (accounts + categories via the
@@ -884,10 +883,28 @@ class AppDatabase extends _$AppDatabase {
           // for templates whose cursor has already advanced past their true
           // original date.
           if (from < 12) {
-            await m.database.customStatement(
-              'ALTER TABLE scheduled_payments '
-              'ADD COLUMN first_payment_date INTEGER NOT NULL DEFAULT 0',
-            );
+            // No `ALTER TABLE ADD COLUMN` here. Every `_SyncColumns` table is
+            // physically a PowerSync-managed VIEW since PowerSync was wired
+            // (2026-07-15) — SQLite hard-errors ("Cannot add a column to a
+            // view") on any `ALTER TABLE ADD/DROP COLUMN` against one, it is
+            // not a silent no-op as an earlier version of this comment (and
+            // `docs/requirements/05-auth-sync.md` decision #14's own closing
+            // note) assumed. Confirmed empirically 2026-07-24, after a real
+            // device hit this on an app update: `onUpgrade` running that
+            // `ALTER TABLE scheduled_payments ADD COLUMN ...` was the actual
+            // root cause of a `DatabaseFailure` cascading into every other
+            // feature's queries for the rest of that session.
+            //
+            // The column doesn't need adding here anyway: `powerSyncSchema`
+            // (`powersync_schema.dart`) already declares it, so PowerSync
+            // recreates the view with the column present the moment the app
+            // opens with the updated schema — before Drift's migration even
+            // runs (`database_connection.dart`). Only a genuine backfill (a
+            // plain `UPDATE`, safe against a view via its `INSTEAD OF`
+            // trigger — unlike DDL or `upsert`) belongs in `onUpgrade` for
+            // these tables. Same rule applies to every `from < N` block below
+            // that used to call `m.addColumn`/`m.dropColumn` on one of these
+            // tables — removed for the same reason, noted individually.
             await m.database.customStatement(
               'UPDATE scheduled_payments SET first_payment_date = next_date',
             );
@@ -918,9 +935,11 @@ class AppDatabase extends _$AppDatabase {
           // column, the `debt_entries` table (same columns + sync columns) and
           // the `scheduled_payments.debt_id` column once sync is wired.
           if (from < 14) {
-            await m.addColumn(debts, debts.accrualMode);
+            // `debts.accrualMode`/`scheduledPayments.debtId`: no `addColumn`
+            // — see the note on `from < 12` above. `debtEntries` is a brand
+            // new table, not an existing view, so `createTable` (`CREATE
+            // TABLE IF NOT EXISTS`) is safe and stays.
             await m.createTable(debtEntries);
-            await m.addColumn(scheduledPayments, scheduledPayments.debtId);
           }
 
           // v14 -> v15: Debts gains `initialTransactionId`, a nullable soft
@@ -931,7 +950,8 @@ class AppDatabase extends _$AppDatabase {
           // replicate `debts.initial_transaction_id text` (nullable) once sync
           // is wired.
           if (from < 15) {
-            await m.addColumn(debts, debts.initialTransactionId);
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do: the column is nullable, no backfill needed.
           }
 
           // v15 -> v16: Debts gains `startDate`, the date the debt started
@@ -944,7 +964,8 @@ class AppDatabase extends _$AppDatabase {
           // replicate `debts.start_date bigint` (epoch seconds, nullable) once
           // sync is wired.
           if (from < 16) {
-            await m.addColumn(debts, debts.startDate);
+            // No `addColumn` — see the note on `from < 12` above. Only the
+            // backfill (safe `UPDATE`) is needed.
             await customStatement(
               'UPDATE debts SET start_date = created_at '
               'WHERE start_date IS NULL',
@@ -960,7 +981,8 @@ class AppDatabase extends _$AppDatabase {
           // parity with Supabase/Postgres: replicate `debts.closed_at bigint`
           // (epoch seconds, nullable) once sync is wired.
           if (from < 17) {
-            await m.addColumn(debts, debts.closedAt);
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do: the column is nullable, no backfill needed.
           }
 
           // v17 -> v18: Transactions gains `countsInBudget` (bool, default
@@ -974,7 +996,13 @@ class AppDatabase extends _$AppDatabase {
           // `transactions.counts_in_budget boolean not null default false`
           // once sync is wired.
           if (from < 18) {
-            await m.addColumn(transactions, transactions.countsInBudget);
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do here on the client: unlike a client-only column, the
+            // Postgres `counts_in_budget boolean not null default false` was
+            // added with a real `DEFAULT`, which — because it is a real
+            // table, not a view — already backfilled every existing row
+            // server-side. Every device gets a real `false`, never a missing
+            // JSON key, once it re-syncs.
           }
         },
       );
