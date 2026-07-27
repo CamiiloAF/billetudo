@@ -22,7 +22,7 @@ void main() {
     expect(find.text('Inicio'), findsOneWidget);
     expect(find.text('Movimientos'), findsOneWidget);
     expect(find.text('Presupuestos'), findsOneWidget);
-    expect(find.text('Metas'), findsOneWidget);
+    expect(find.text('Pagos'), findsOneWidget);
     expect(find.text('Más'), findsOneWidget);
   });
 
@@ -30,14 +30,16 @@ void main() {
       (tester) async {
     await tester.pumpHomeWidget(tabBar(currentIndex: 2));
 
-    final items = tester.widgetList<HomeTabBarItem>(find.byType(HomeTabBarItem));
+    final items =
+        tester.widgetList<HomeTabBarItem>(find.byType(HomeTabBarItem));
     expect(
       items.map((i) => i.isActive).toList(),
       [false, false, true, false, false],
     );
   });
 
-  testWidgets('la pestaña activa usa el color de marca; las demás text-secondary',
+  testWidgets(
+      'la pestaña activa usa el color de marca; las demás text-secondary',
       (tester) async {
     await tester.pumpHomeWidget(tabBar());
 
@@ -57,7 +59,7 @@ void main() {
         .color!;
 
     expect(iconColor('Inicio'), colors.primary);
-    expect(iconColor('Metas'), colors.textSecondary);
+    expect(iconColor('Pagos'), colors.textSecondary);
   });
 
   testWidgets('tocar una pestaña reporta su índice (HU-01)', (tester) async {

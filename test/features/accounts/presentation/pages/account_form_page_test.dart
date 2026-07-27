@@ -1,6 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/page_header_circle_button.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_form_state.dart';
@@ -229,7 +230,73 @@ void main() {
     });
   });
 
-  testWidgets('el error del dominio se muestra en su campo', (tester) async {
+  group('saldo inicial / deuda actual (Mejora #1)', () {
+    testWidgets('alta de banco: aparece "Saldo inicial"', (tester) async {
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          type: AccountType.bank,
+        ),
+      );
+
+      expect(find.text('Saldo inicial'), findsOneWidget);
+    });
+
+    testWidgets('edición de banco: NO aparece "Saldo inicial"', (tester) async {
+      // Al editar, el saldo ya no se teclea a mano: se reconcilia con
+      // "Ajustar saldo" desde el detalle.
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          id: 'acc-1',
+          type: AccountType.bank,
+          name: 'Bancolombia',
+          initialBalanceText: '450050',
+        ),
+      );
+
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+
+    testWidgets('alta de tarjeta: aparece "Deuda actual", no "Saldo inicial"', (
+      tester,
+    ) async {
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          type: AccountType.card,
+        ),
+      );
+
+      expect(find.text('Deuda actual'), findsOneWidget);
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+
+    testWidgets('edición de tarjeta: NO aparece "Deuda actual"',
+        (tester) async {
+      // En una tarjeta existente la deuda es derivada; solo se ajusta desde el
+      // detalle, nunca se reescribe en el formulario.
+      await pumpForm(
+        tester,
+        const AccountFormState(
+          status: AccountFormStatus.ready,
+          id: 'card-1',
+          type: AccountType.card,
+          name: 'Visa Oro',
+        ),
+      );
+
+      expect(find.text('Deuda actual'), findsNothing);
+      expect(find.text('Saldo inicial'), findsNothing);
+    });
+  });
+
+  testWidgets(
+      'un nombre vacío muestra el error de obligatorio, no el de longitud '
+      '(fix #15b)', (tester) async {
     await pumpForm(
       tester,
       const AccountFormState(
@@ -239,10 +306,30 @@ void main() {
       ),
     );
 
+    expect(find.text('Ingresa un nombre para la cuenta.'), findsOneWidget);
+    expect(
+      find.text('Escribe un nombre de hasta 100 caracteres.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('un nombre que excede el límite muestra el error de longitud',
+      (tester) async {
+    await pumpForm(
+      tester,
+      AccountFormState(
+        status: AccountFormStatus.ready,
+        type: AccountType.bank,
+        name: 'a' * 101,
+        failure: const ValidationFailure('nope', field: 'name'),
+      ),
+    );
+
     expect(
       find.text('Escribe un nombre de hasta 100 caracteres.'),
       findsOneWidget,
     );
+    expect(find.text('Ingresa un nombre para la cuenta.'), findsNothing);
   });
 
   testWidgets('sin tipo elegido, el error apunta al selector de tipo',
@@ -258,7 +345,7 @@ void main() {
     expect(find.text('Elige el tipo de cuenta.'), findsOneWidget);
   });
 
-  testWidgets('guardar pide el submit al cubit', (tester) async {
+  testWidgets('guardar en el header pide el submit al cubit', (tester) async {
     when(() => cubit.submit(confirmed: any(named: 'confirmed')))
         .thenAnswer((_) async {});
     await pumpForm(
@@ -269,7 +356,32 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(LucideIcons.check));
+    // Dos íconos LucideIcons.check en pantalla: el del header y el del botón
+    // "Guardar cuenta" al final del cuerpo. Se distingue por el ancestro.
+    await tester.tap(
+      find.ancestor(
+        of: find.byIcon(LucideIcons.check),
+        matching: find.byType(PageHeaderCircleButton),
+      ),
+    );
+    verify(() => cubit.submit()).called(1);
+  });
+
+  testWidgets('guardar en el botón del cuerpo pide el submit al cubit',
+      (tester) async {
+    when(() => cubit.submit(confirmed: any(named: 'confirmed')))
+        .thenAnswer((_) async {});
+    await pumpForm(
+      tester,
+      const AccountFormState(
+        status: AccountFormStatus.ready,
+        type: AccountType.bank,
+      ),
+    );
+
+    expect(find.text('Guardar cuenta'), findsOneWidget);
+    await tester.ensureVisible(find.text('Guardar cuenta'));
+    await tester.tap(find.text('Guardar cuenta'));
     verify(() => cubit.submit()).called(1);
   });
 
@@ -282,10 +394,10 @@ void main() {
       ),
     );
 
-    final save = tester.widget<IconButton>(
+    final save = tester.widget<PageHeaderCircleButton>(
       find.ancestor(
         of: find.byIcon(LucideIcons.check),
-        matching: find.byType(IconButton),
+        matching: find.byType(PageHeaderCircleButton),
       ),
     );
     expect(save.onPressed, isNull);

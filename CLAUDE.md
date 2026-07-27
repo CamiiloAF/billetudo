@@ -12,15 +12,18 @@ Objetivo diferenciador: dar el cambio de hábito de YNAB **sin su fricción ni s
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # genera *.g.dart de Drift
+dart run build_runner build --force-jit                    # genera *.g.dart de Drift
 flutter gen-l10n                                           # regenera l10n tras tocar un .arb
 flutter analyze                                            # lints oficiales
-dart run custom_lint                                       # reglas propias (flutter analyze NO las ve)
 flutter test
 flutter run
 ```
 
 Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
+
+**`--force-jit` no es opcional.** Sin él, el build falla con `Failed to compile build script`: `build_runner` precompila su script de arranque con `dart compile`, que en Dart 3.10.4 no soporta *build hooks* — y tres dependencias del proyecto los traen (`sqlite3`, `powersync`, `objective_c`, todas por sus assets nativos). El fallback automático a JIT que `build_runner` documenta no se dispara acá, así que hay que pedirlo explícito. El modo JIT genera exactamente lo mismo y sigue siendo incremental.
+
+`--delete-conflicting-outputs` ya no existe (`build_runner` 2.15 lo removió); si se pasa, se ignora con un warning.
 
 ## Arquitectura y decisiones (no cambiar sin justificación)
 
@@ -36,7 +39,7 @@ Tras cambiar cualquier tabla o `@DriftDatabase`, **regenera** con build_runner.
 
 **Antes de escribir código, lee [`docs/convenciones-de-codigo.md`](docs/convenciones-de-codigo.md)** — es la guía completa (widgets, l10n, nombres, estado, comentarios) con el porqué de cada regla. Lo de abajo es el resumen crítico; ante cualquier duda de estilo, manda ese documento.
 
-Reglas propias del proyecto (plugin `custom_lint` en `tools/billetudo_lints/`). El IDE las muestra en vivo, pero **`flutter analyze` NO las corre** — hay que correr `dart run custom_lint` aparte:
+Reglas propias del proyecto que ningún lint oficial cubre (antes un plugin `custom_lint` en `tools/billetudo_lints/`, retirado el 2026-07-17 por un conflicto de versión de `analyzer` sin solución upstream — ver `docs/convenciones-de-codigo.md`). Las hace cumplir el subagente `ui-convention-reviewer`, proactivamente después de que `flutter-dev` termine de tocar `lib/`:
 - `avoid_widget_functions` — nada de funciones que devuelvan `Widget`; extrae una clase.
 - `avoid_private_widgets` — los widgets son públicos y viven en su propio archivo (`_XxxState` sí es privado).
 - `avoid_hardcoded_ui_strings` — texto de UI solo desde `AppLocalizations` (`lib/core/l10n/arb/`, es + en).
@@ -84,6 +87,9 @@ Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Ante
 - **Fuente de verdad real:** `billetudo.pen` (Pencil). Las 18 variables de color (tema claro/oscuro), tipografía y componentes reutilizables viven ahí. **Nunca hardcodear un hex** — usar siempre la variable (`get_variables`).
 - **Reglas escritas:** `design-system/billetudo/MASTER.md` (reglas globales: paleta, tipografía, radios/espaciado, componentes, accesibilidad, tono de marca) + `design-system/billetudo/pages/<pantalla>.md` (overrides por pantalla).
 - **Orden de lectura:** `pages/<pantalla>.md` (si existe, sus reglas sobreescriben) → `MASTER.md` → si el `.md` y el `.pen` difieren, **manda `billetudo.pen`** y se corrige el `.md`.
+- **Gate de acceso a Pencil (obligatorio antes de implementar UI):** el `.pen` está encriptado — solo se lee con las herramientas MCP de Pencil. **`flutter-dev` tiene acceso de solo lectura** (`get_editor_state`, `batch_get`, `get_screenshot`, `get_variables`, `snapshot_layout`, `export_nodes`); escribir en el `.pen` sigue reservado a `pencil-designer` (`ui-ux-reviewer` anota, `pencil-fidelity-reviewer` solo lee). **Mirar el frame antes de implementar una pantalla diseñada es obligatorio, no opcional** — el `.md` describe el diseño, el `.pen` **es** el diseño; cuando difieran manda el `.pen` y se corrige el `.md`. **Si Pencil no es accesible, el desarrollo de esa UI se detiene** — no se implementa a ciegas contra el `.md` solo. Motivo: eso ya produjo deriva visual real y estructural en Pagos Programados (FAB de Material en vez del componente del sistema, hoja de ingreso idéntica a la de gasto, botón de eliminar en violeta de marca en vez de `$expense`, un pago ya ejecutado presentado como activo) — y nada de eso falló un test. El workflow `feature-dev` aplica el gate automáticamente antes de la fase Build cuando `needsUi = true`.
+  - **El gate no reemplaza la verificación posterior.** Que `flutter-dev` pueda ver el frame reduce la deriva, no la elimina: sigue tomando decisiones de layout que el frame no especifica (Pencil no renderiza ellipsis, así que un texto que ahí cabe puede truncarse en Flutter). Por eso `/design-fidelity-check <feature>` sigue siendo el chequeo de cierre.
+- **Gate de fidelidad visual (después de implementar UI, a demanda):** el gate anterior solo verifica *acceso* a Pencil antes de construir, no que el resultado final sea fiel — para eso existe `/design-fidelity-check <feature>` (`pencil-fidelity-reviewer`), que compara golden tests ya generados contra sus nodeId de Pencil sin depender de un emulador en vivo (frágil: `adb input tap` puede dejar de responder de forma persistente, ver `docs/dev-runs/bug-fixes-pixel-audit.md`). No se invoca automáticamente en `feature-dev`; se corre por feature cuando se quiera esa garantía extra.
 - **Flujo por feature (diseño primero, spec después):**
   1. `pencil-designer` propone 2-3 variantes visuales de la pantalla directamente en `billetudo.pen`, **solo en tema claro**, contra `MASTER.md` (aún no existe `pages/<feature>.md` en este punto).
   2. El usuario evalúa y elige una variante; las descartadas se borran del canvas de inmediato (no se dejan a medias).
@@ -99,8 +105,8 @@ Toda decisión de UI se toma contra un sistema de diseño ya establecido. **Ante
 
 Definidos en `.claude/` para automatizar las convenciones de este documento:
 
-- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `compliance-reviewer` (reglas de Nivel 0/legales), `pencil-designer` (construye/edita pantallas en `billetudo.pen` contra el sistema de diseno; carga MASTER.md + `pages/<feature>.md` antes de dibujar, usa componentes `reusable:true` y variables `$token`), `ui-ux-reviewer` (audita pantallas en `billetudo.pen`/Pencil: jerarquia, accesibilidad, consistencia con el sistema de disenio y tono de marca; anota el canvas y reporta).
-- **Skills**: `/feature-dev <descripcion>` (feature completa en una corrida), `/new-feature <nombre>`, `/drift-schema-change <descripcion>`, `/tier0-check [ruta]`.
+- **Subagentes** (`.claude/agents/`): `architect` (triage y change map, solo lectura), `flutter-dev` (implementa features respetando las convenciones), `qa-automator` (dueno del testing: unit/widget/golden/Patrol e2e; solo escribe en `test/` e `integration_test/`), `feature-scaffolder` (boilerplate Clean Architecture), `drift-migration-helper` (cambios seguros al esquema Drift), `finance-code-reviewer` (convenciones de codigo), `ui-convention-reviewer` (las 3 reglas de widgets/UI que antes vivian en el plugin custom_lint retirado), `compliance-reviewer` (reglas de Nivel 0/legales), `pencil-designer` (construye/edita pantallas en `billetudo.pen` contra el sistema de diseno; carga MASTER.md + `pages/<feature>.md` antes de dibujar, usa componentes `reusable:true` y variables `$token`), `ui-ux-reviewer` (audita pantallas en `billetudo.pen`/Pencil: jerarquia, accesibilidad, consistencia con el sistema de disenio y tono de marca; anota el canvas y reporta), `pencil-fidelity-reviewer` (compara golden tests ya generados contra su nodeId de Pencil, pantalla por pantalla, sin emulador — solo lectura), `patrol-e2e-runner` (orquesta la ejecucion de las suites Patrol ya escritas contra el flavor `dev` — nunca `prod` — feature por feature, y reporta resultados estructurados a `docs/patrol-e2e-tracking.md`).
+- **Skills**: `/feature-dev <descripcion>` (feature completa en una corrida), `/new-feature <nombre>`, `/drift-schema-change <descripcion>`, `/tier0-check [ruta]`, `/design-fidelity-check <feature>` (fidelidad visual completa de una feature contra Pencil via golden tests, sin emulador).
 - **Workflows** (`.claude/workflows/`): `feature-dev` (el principal: triage automatico s/m/l → build → tests → review escalado → un unico resumen en `docs/dev-runs/<slug>.md`, sin commitear), `feature-scaffold` (solo boilerplate capa por capa) y `feature-review` (revision multi-dimension con verificacion adversarial; `feature-dev` lo reusa como review profundo en tamano L) — se invocan explicitamente, no por defecto.
 
 ## Estado del repo

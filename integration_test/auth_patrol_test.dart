@@ -102,7 +102,7 @@ void main() {
       await $.tester.pumpAndSettle();
 
       expect(find.text('Eliminar tu cuenta'), findsOneWidget);
-      expect(find.textContaining('no se puede deshacer'), findsOneWidget);
+      expect(find.textContaining('irreversible'), findsOneWidget);
 
       await $.tester.tap(find.text('Cancelar'));
       await $.tester.pumpAndSettle();

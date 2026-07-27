@@ -4,28 +4,48 @@ import '../l10n/gen/app_localizations.dart';
 import '../theme/app_colors.dart';
 import 'bottom_sheet_base.dart';
 import 'month_calendar.dart';
+import 'sheet_buttons_row.dart';
 
 /// The date picker sheet (`Date Picker Sheet` / `zMqxt`): the app's own
 /// single-date calendar, used instead of Material's `showDatePicker` because
 /// the design (Bottom Sheet Base, "Hoy" chip, Monday-first grid, ring-for-today)
 /// does not map onto it.
 ///
-/// Tapping a day selects it and closes the sheet, returning the chosen
-/// [DateTime] (patrón del formulario: sin botón "Aplicar"). Dismissing returns
-/// null.
+/// Tapping a day only moves the selection; the choice is committed with the
+/// footer's "Confirmar" (returning the chosen [DateTime]). "Cancelar" and
+/// dismissing both return null.
 class DatePickerSheet extends StatefulWidget {
-  const DatePickerSheet({required this.initialDate, super.key});
+  const DatePickerSheet({
+    required this.initialDate,
+    this.disabledBefore,
+    this.disabledAfter,
+    super.key,
+  });
 
   final DateTime initialDate;
 
-  /// Opens the sheet and resolves to the picked day, or null if dismissed.
+  /// Days strictly before this render dimmed and ignore taps.
+  final DateTime? disabledBefore;
+
+  /// Days strictly after this render dimmed and ignore taps (e.g. capping the
+  /// confirmation sheet's date at today).
+  final DateTime? disabledAfter;
+
+  /// Opens the sheet and resolves to the picked day once confirmed, or null if
+  /// cancelled or dismissed.
   static Future<DateTime?> show(
     BuildContext context, {
     required DateTime initialDate,
+    DateTime? disabledBefore,
+    DateTime? disabledAfter,
   }) =>
       BottomSheetBase.show<DateTime>(
         context,
-        builder: (context) => DatePickerSheet(initialDate: initialDate),
+        builder: (context) => DatePickerSheet(
+          initialDate: initialDate,
+          disabledBefore: disabledBefore,
+          disabledAfter: disabledAfter,
+        ),
       );
 
   @override
@@ -83,9 +103,22 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
         MonthCalendar(
           visibleMonth: _visibleMonth,
           selected: _selected,
-          onDaySelected: (date) => Navigator.of(context).pop(date),
+          onDaySelected: (date) => setState(() => _selected = date),
           onPreviousMonth: _showPreviousMonth,
           onNextMonth: _showNextMonth,
+          disabledBefore: widget.disabledBefore,
+          disabledAfter: widget.disabledAfter,
+        ),
+        const SizedBox(height: 16),
+        SheetButtonsRow(
+          left: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+          right: FilledButton(
+            onPressed: () => Navigator.of(context).pop(_selected),
+            child: Text(l10n.commonConfirm),
+          ),
         ),
       ],
     );

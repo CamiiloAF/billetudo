@@ -28,6 +28,9 @@ Interacciones aún sin especificar (apertura real de sheets desde sus chips, wra
 | Formulario Ingreso — Nota activa | `TVSuf` | `pTucO` |
 | Formulario Transferencia — Monto activo | `ArvTJ` | `f4fC5k` |
 | Formulario Transferencia — Nota activa | `h9DSSj` | `Te27A` |
+| Formulario Transferencia — Toggle presupuesto OFF | `l4nR7l` | `L8bqAX` |
+| Formulario Transferencia — Toggle presupuesto ON | `S5Tjj` | `IRuP2` |
+| Formulario Transferencia — Toggle presupuesto ON + Nota activa | `BmCFj` | `fmWeI` |
 | Componente — Zona Fija Monto Expandida | `Rslzk` | (mismo componente, tema automático) |
 | Componente — Zona Fija Monto Colapsada | `ofg07` | (mismo componente, tema automático) |
 | Detalle Transacción — Gasto | `Of2sW` | `U5k715` |
@@ -76,8 +79,9 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
      - **2+ cuentas seleccionadas**: icono genérico `layers` + "N cuentas" — instanciado en `XlXA8`/`idmDe` con ejemplo "3 cuentas".
      - **Todas seleccionadas (sin filtro)**: icono genérico `wallet` + "Todas" — instanciado en `s8uIq`/`H3bGO`.
      - El frame de referencia que documentaba los 3 estados aislados (`GSVWn`) fue eliminado tras quedar redundante frente a estas 6 pantallas reales.
-   - **Chip Categoria** / **Chip Tipo** / **Chip Etiqueta**: pill simple `$surface` + stroke `$border`, label `$text-secondary` 12/700, sin icono. El chip de Etiqueta se agregó tras la auditoría (faltaba, HU-06 exige poder filtrar por etiqueta).
-   - **Chip Fecha**: igual que los anteriores + icono `calendar`, label **"Este mes"** (refleja el nuevo default de HU-06b, antes decía genéricamente "Fecha"). Es el chip que abre el bottom sheet de selector de fecha (`P5fSkK`, ver sección propia).
+   - **Orden de la fila (DEFINITIVO, decisión del usuario 2026-07-21):** `Cuenta → Fecha → Categoría → Tipo → Etiqueta`. El chip de **Fecha va en 2º lugar** (justo después del Account Chip) — el usuario lo pidió así. Reemplaza cualquier mención previa de "Fecha al final"; el código ya lo tiene en 2º y es lo correcto. Los frames de Pencil se corrigieron para reflejarlo.
+   - **Chip Fecha** (2º): igual que los demás + icono `calendar`, label **"Este mes"** (refleja el default de HU-06b, antes decía genéricamente "Fecha"). Es el chip que abre el bottom sheet de selector de fecha (`P5fSkK`, ver sección propia).
+   - **Chip Categoria** / **Chip Tipo** / **Chip Etiqueta** (3º/4º/5º): pill simple `$surface` + stroke `$border`, label `$text-secondary` 12/700, sin icono. El chip de Etiqueta se agregó tras la auditoría (faltaba, HU-06 exige poder filtrar por etiqueta).
    - **Control de orden (HU-06, "ordenar por monto") — construido.** `Search Bar` pasó a vivir dentro de una fila `Search Row` (`gap:8`) junto a un botón nuevo `Sort Button` (44x48, `cornerRadius:16`, icono `arrow-up-down` 20px `$text-secondary`, `fill:$surface`/`stroke:$border` en estado inactivo/default — mismo tratamiento que un chip de filtro sin seleccionar). Instanciado en las 6 pantallas de Lista con datos reales (los estados vacío/carga/error no lo llevan, no hay filas que ordenar):
 
      | Pantalla | Sort Button |
@@ -105,6 +109,7 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
 4. **List**: agrupada por fecha.
    - **Date Head** (`justifyContent:"space_between"`): label del grupo ("Hoy"/"Ayer"/"12 de julio") en `$text-primary` 14/700 + contador "N movimientos" en `$text-secondary` 12/500 a la derecha.
    - Filas: instancias de `Transaction Row` (`DKJaf`), gap **16** entre filas dentro de un grupo, gap **24** entre grupos.
+   - **Corregido:** `Name` (`ua7j7`, la descripción del movimiento) desbordaba sin límite con textos largos (ej. "Diseño freelance para agencia internacional de branding" tapaba el `Sub` de abajo). Ahora envuelto en `Name Wrap` (`XWfyu`, `clip:true`, `height:40` ≈ 2 líneas a 15px/1.3). Pencil no soporta ellipsis nativo — el clip a 2 líneas en el `.pen` es la aproximación visual; en Flutter implementar con `maxLines: 2` + `TextOverflow.ellipsis` en el widget real.
 5. **FAB**: círculo 56px `$primary`, icono `plus` (`$on-primary`), `layoutPosition:"absolute"`, sombra `#6C5CE766`. **Construcción ad-hoc, NO es `reusable:true` todavía** — candidato a componentizar si se repite en otra pantalla (ej. si Presupuestos/Metas usan el mismo patrón de FAB).
 
 **Decisión de diseño (variante ganadora):** se exploraron 4 variantes (V1 chips scroll + agrupado, V2 filtro único + lista continua, V3 chip cuenta protagonista + airy, V4 mezcla V1+V3). Se eligió **V4** (Chips Row de V1 combinado con el Account Chip protagonista de V3) por dar acceso de un toque a los filtros de HU-06/HU-06a sin sacrificar la jerarquía visual de la cuenta seleccionada. Variantes descartadas (V1 `vk9HA`, V2 `JJ90m`, V3 `KCh28`) eliminadas del `.pen` de inmediato tras la decisión.
@@ -121,7 +126,11 @@ Siguiendo el patrón de Inicio: solo el área de contenido entre Chips Row y FAB
 
 Se exploraron 4 candidatos (original de grid de 12 meses + año, y 3 variantes: V-A lista vertical de presets, V-B stepper, V-C carrusel de meses + años). El usuario eligió **V-B (stepper)** por ser la mejor para navegación consecutiva hacia atrás sin perder contexto. Los otros 3 candidatos fueron eliminados del canvas.
 
-Reutiliza `Bottom Sheet Base` (`PqTUt`) vía `ref` + `Replace()`/`descendants` del `Content Slot`. Estructura actual: Title "Filtrar por fecha" + `Stepper Group` (`q4bPna`: `Granularity Switch` ref `hFu41` con "Semana/Mes/Año" + `Stepper Row` con flechas 44x44) + `Rango Personalizado Row` (`vluy1`, ahora sí lleva a `OFdj4`, ver más abajo). Sin `Sheet Buttons Row`/botón "Aplicar" — los presets aplican al toque inmediato, solo "Rango personalizado" requiere confirmación aparte (por eso su pantalla destino sí la tiene).
+Reutiliza `Bottom Sheet Base` (`PqTUt`) vía `ref` + `Replace()`/`descendants` del `Content Slot`. Estructura actual: Title "Filtrar por fecha" + `Stepper Group` (`q4bPna`: `Granularity Switch` ref `hFu41` con "Semana/Mes/Año" + `Stepper Row` con flechas 44x44) + `Rango Personalizado Row` (`vluy1`, ahora sí lleva a `OFdj4`, ver más abajo) + footer **`[Limpiar | Aplicar]`** (instancia de `Sheet Buttons Row` `Ot4yI`). Los presets ya NO aplican al toque inmediato: "Aplicar" cierra el sheet y confirma la selección; "Limpiar" resetea el filtro.
+
+- **Dos señales de "filtro aplicado" representadas en frames propios:**
+  - **(a) Preset activo** en el `Granularity Switch` — es el estado por defecto de los frames base `P5fSkK` (claro) / `R6U0i` (oscuro).
+  - **(b) Rango custom aplicado** (frames `mi0hB` claro / `DL2Q7` oscuro): la fila "Rango personalizado" se resalta (`$primary-soft` + borde `$primary-on-soft-strong` 1.5 + las fechas del rango + `check`), y el bloque de presets (Granularity Switch + Stepper) se atenúa junto a `opacity:0.4` como una unidad inactiva — el rango custom y los presets son mutuamente excluyentes, y así queda claro cuál gobierna el filtro.
 
 - **Estado por defecto: "Este mes"** (granularidad Mes activa, stepper mostrando "Julio 2026" con aspecto plenamente activo — label y flechas en `$text-primary`).
 - Sin divisores entre Title / Stepper Group / Rango Personalizado Row — solo `gap:16`, tratamiento simétrico en las 2 transiciones.
@@ -147,6 +156,9 @@ El patrón se repetía 6 veces (3 tipos x 2 estados) construido a mano — se co
 - **`Rslzk`** "Zona Fija - Monto Expandida": `Header` (label + `chevron-down` en wrap 44x44) + `Amount Value` centrado (40/800) + `Keypad` (ref `gHDTi`).
 - **`ofg07`** "Zona Fija - Monto Colapsada": fila con `Spacer` invisible 44x44 + `Amount Block Mini` (`width:fill_container`, `alignItems:center`, centrado real) + `Expand Wrap` 44x44 `chevron-up`. El spacer replica el ancho del wrap del chevron para que el monto quede genuinamente centrado en el ancho total, no solo en el espacio que deja el chevron.
 
+**Última fila del `Keypad` (`gHDTi`) — `[ "=" | ✓ Confirmar ]`:** la fila inferior del teclado combina el **"="** (evalúa operaciones matemáticas, comportamiento intacto) con un botón **Confirmar** primario compacto (ícono `check`, `$primary`, en la esquina inferior-derecha para quedar al alcance del pulgar) que cierra/colapsa la Zona Fija. En las hojas de confirmación de pago programado el Confirmar del keypad va `enabled:false` (esas hojas ya tienen su propio Confirmar) y ahí el "=" vuelve a su ancho de tecla normal.
+- **Nota para `flutter-dev`:** el Confirmar (visual 43×44) debe expandir su hit-area a ≥48dp con padding (mismo fix aplicado a `AI Question Chip`); y el "=" debe resolverse como flex/columna en la grilla, no con ancho fijo 81.5.
+
 Las 6 pantallas usan `ref` a estos 2 componentes con overrides por tipo (label, contenido del valor, color): Gasto → `$text-primary`/label "Monto"; Ingreso → `$income-text`/label "Monto"; Transferencia → `$primary`/label "Monto a transferir".
 
 **Regla de interacción — 2 estados por tipo (documentada en HU-01/02/03 de `docs/requirements/03-transacciones.md`, sección "Teclado numérico anclado"):**
@@ -159,7 +171,7 @@ Las 6 pantallas usan `ref` a estos 2 componentes con overrides por tipo (label, 
 
 - **Monto**: color del valor — **Gasto → `$text-primary`** (neutral, nunca rojo), **Ingreso → `$income-text`**, **Transferencia → `$primary`** — coherente con el mismo patrón que ya usa `Transaction Row` en toda la app. `$income` crudo (36px/800) daba solo ~2.07:1 sobre `$background`; corregido con el token `$income-text` (~6.46:1, mismo patrón que `$expense-text`, ver `MASTER.md`). El mismo problema apareció y se corrigió en 2 lugares más de esta feature: label "Ingreso" del `Segmented Control` activo, y el monto de ingreso en la fila de la Lista (`edGxB/a1Pwa` en `B3GGa`). Pendiente fuera de alcance: el mismo patrón de `$income` crudo existe en Deudas/Presupuestos (`Budget Category Row`/`XwBn7`), no corregido por no ser parte de esta feature.
 - **Categoría** (Gasto e Ingreso): grid de `Category Chip`, label 13px/700 (subido desde 11px, era contenido primario no metadata), contraste del seleccionado con el token `primary-on-soft-strong`. Transferencia no lleva categoría (HU-03).
-- **Transferencia**: dos campos de cuenta (origen/destino) + botón swap (44x44) agrupados en `Account Swap Group` (`gap:4`, más compacto que el `gap:8` general) para leerse como un bloque — corrige percepción de espacio sobrante entre los 2 selectores. Sin categoría ni etiquetas. Info Box informativo ("Las transferencias no cuentan como gasto ni ingreso").
+- **Transferencia**: dos campos de cuenta (origen/destino) + botón swap (44x44) agrupados en `Account Swap Group` (`gap:4`, más compacto que el `gap:8` general) para leerse como un bloque — corrige percepción de espacio sobrante entre los 2 selectores. Sin etiquetas. **Categoría condicional** al toggle "Cuenta en tu presupuesto" — ver "Adición 2026-07-24" más abajo. El Info Box informativo original ("Las transferencias no cuentan como gasto ni ingreso") **se retiró** en esa misma adición: quedaba redundante/falso ahora que el toggle explica el efecto con su propio hint.
 - **Segmented Control**: padding interno ajustado para que el área tocable real de cada segmento sea 44px de alto (antes 36px) — fix a nivel de componente `hFu41`, se propaga a los 3 tipos automáticamente.
 
 ### Selector de categoría del formulario (chips "más usadas" + "Ver más" + sheet)
@@ -173,11 +185,13 @@ Aplica a Gasto e Ingreso (Transferencia no lleva categoría). Reemplaza el selec
   - **Raíces asignables**: una transacción puede ir a una categoría raíz (`TransactionDraft.validated()` solo exige que el `kind` coincida, no restringe a hojas).
   - **Doble zona de gesto** en la fila raíz con subcategorías (Pencil `SLfJW` "Category Select Row" / código `CategorySelectRow`): el **cuerpo** de la fila elige-y-cierra, el **`Chevron Wrap` 44×44** solo expande/colapsa. Raíz **sin** subcategorías: sin chevron (nada que expandir), la fila entera elige. En búsqueda, los matches se auto-expanden y se oculta el chevron.
   - **Estado vacío de búsqueda** (Pencil `RculR` / código `CategorySelectEmptyState`): icono `search-x` + "No encontramos categorías con ese nombre", manteniendo la Search Bar arriba.
-- **Auditado** por `ui-ux-reviewer` (claridad del single-select sobre un patrón que viene del multi-select, chevron falso en raíz sin hijos corregido, estado vacío agregado). Componentes Pencil: `EIoVx`, `SfSln`, `SLfJW`; instancias/estado: `xGqs4`, `EOoXj`, `RculR`, `IYVRj`. **Tema oscuro generado y auditado** (zona `HXy6n` "SELECTORES DEL FORMULARIO — OSCURO"): sheet jerárquico `BobKK`, estado vacío `fz53P` — sin hallazgos de contraste (check `$primary-on-soft` sobre `$primary-soft` 5.52:1).
+- **Auditado** por `ui-ux-reviewer` (claridad del single-select sobre un patrón que viene del multi-select, chevron falso en raíz sin hijos corregido, estado vacío agregado). Componentes Pencil: `EIoVx`, `SfSln`, `SLfJW`; instancias/estado: `EOoXj`, `RculR`. **Tema oscuro generado y auditado** (zona `HXy6n` "SELECTORES DEL FORMULARIO — OSCURO"): sheet jerárquico `BobKK`, estado vacío `fz53P` — sin hallazgos de contraste (check `$primary-on-soft` sobre `$primary-soft` 5.52:1).
+- **2026-07-19 — consolidación:** `EIoVx` era el único componente `reusable:true` correcto, pero convivía con 12+ instancias sueltas de "Categoria Chips" copiadas a mano (`Q4jM84`, `QGHO0`, `KUKji`, `z4ApD`, `hMdSY`, `H9voVG`, `CQt0H`, `ylHL4`, más las de Pagos Programados) con colores inconsistentes — algunas monocromáticas violeta/gris, otras ya con color propio por categoría. Se reemplazaron todas por refs de `EIoVx`. `xGqs4` ("Control Chips - Variante A", un duplicado exploratorio con hex hardcodeados) e `IYVRj` se borraron por redundantes. En código, `CategoryQuickPicker`/`CategoryPickerChip` (antes un pill horizontal que nunca coincidió con `EIoVx`) se reconstruyó como el tile vertical real, y `scheduled_payments` dejó de tener su propia copia (`ScheduledPaymentCategoryTiles`, borrado) — ambas features usan el mismo `CategoryQuickPicker` hoy.
+  - **Colores de categorías de ingreso** (Salario `$teal`, Freelance `$indigo`, Inversiones `$mint`) se asignaron en esta consolidación — no había paleta documentada para categorías de ingreso antes de esto. **Aprobado por el usuario el 2026-07-19.**
 
 ### Selector de cuenta del formulario (sheet single-select)
 
-El campo Cuenta (y las 2 cuentas de Transferencia) abre un sheet de **selección simple** — distinto del Filtro de Cuentas de la Lista (`jpARf`), que es multi-select con "Todas"/"Ninguna" y botón "Aplicar". Aquí un tap elige y cierra, sin confirmación.
+El campo Cuenta (y las 2 cuentas de Transferencia) abre un sheet de **selección simple** — distinto del Filtro de Cuentas de la Lista (`jpARf`), que es multi-select con "Todas" y botón "Aplicar". Aquí un tap elige y cierra, sin confirmación.
 
 - **Sheet** (Pencil `fcVZN` "Account Select Sheet", ref `a510v` / código `AccountPickerSheetBody` sobre `Bottom Sheet Base` `PqTUt` / `BottomSheetBase`): título centrado "Elegir cuenta" + lista viva de cuentas, cada fila la misma `Filter Account Row` (`X3tZG`) reusada del filtro pero en modo single-select (la cuenta elegida queda marcada con su `check`). Saldo en rojo (`$expense-text`) si es negativo.
 - **Transferencia**: el sheet de cada campo excluye la cuenta ya elegida en el otro (`excludingId`) para no permitir origen == destino.
@@ -188,10 +202,10 @@ El campo Cuenta (y las 2 cuentas de Transferencia) abre un sheet de **selección
 
 El campo Fecha del formulario **no** abre el `showDatePicker` de Material ni el stepper de fecha de la Lista (`P5fSkK`, que filtra por periodo). Abre un **calendario propio de fecha única** porque el diseño (Bottom Sheet Base, chip "Hoy", grilla que empieza en lunes, hoy como anillo) no mapea sobre el de Material.
 
-- **Sheet** (Pencil `Date Picker Sheet` `zMqxt`, instancia `F5TDp` / código `DatePickerSheet` en `lib/core/widgets/`, sobre `BottomSheetBase`): header con título "Elegir fecha" (17/700) + chip **"Hoy"** a la derecha (`$primary-soft`, label `$primary-on-soft-strong` 13/700, alto 44 para tap target) que salta al mes actual y selecciona hoy.
+- **Sheet** (Pencil `Date Picker Sheet` `zMqxt`, usado directamente como componente — la instancia enmarcada `F5TDp` fue **eliminada** por ser un preview redundante del mismo componente / código `DatePickerSheet` en `lib/core/widgets/`, sobre `BottomSheetBase`): header con título "Elegir fecha" (17/700) + chip **"Hoy"** a la derecha (`$primary-soft`, label `$primary-on-soft-strong` 13/700, alto 44 para tap target) que salta al mes actual y selecciona hoy. Al pie lleva una fila **`[Cancelar | Confirmar]`** (instancia de `Sheet Buttons Row` `Ot4yI`, secundario + primario).
 - **Calendario** (Pencil `Month Calendar` `w4yuu` / código `MonthCalendar`, reutilizable en `core/widgets/`, basado en el grid de `OFdj4`): pill de Month Nav (`cornerRadius:16`, `$surface`+`$border`) con chevrons `‹`/`›` 44×44 (Lucide, con wrap de año dic→ene / ene→dic) y el mes centrado (15/700); Weekday Header "L M M J V S D" **empieza en lunes** (11/600 `$text-secondary`); grilla de celdas 44×44 circulares.
 - **Estados de la celda**: seleccionado = `fill $primary`, número `$on-primary` 700; **hoy** (si no es el seleccionado) = **anillo** `stroke $primary` 1px sin fill, número `$text-primary` 600 (decisión: ring, no fill); resto = transparente, número `$text-primary` 500; fuera de mes = celda vacía.
-- **Interacción**: tap en un día elige y cierra (patrón del form, sin botón "Aplicar"); el sheet resuelve el `DateTime`. Sin días deshabilitados. Nombres de mes/día vía `intl` (locale-aware); strings de UI "Elegir fecha"/"Hoy" desde `AppLocalizations`.
+- **Interacción**: tap en un día **selecciona** ese día (no cierra); **Confirmar** cierra el sheet y resuelve el `DateTime`; **Cancelar** descarta la selección sin cambiar el campo. El chip "Hoy" se conserva como atajo. Sin días deshabilitados. Nombres de mes/día vía `intl` (locale-aware); strings de UI "Elegir fecha"/"Hoy" desde `AppLocalizations`.
 - **Tema oscuro generado y auditado** (pantalla oscura `nYFOZ`, zona `HXy6n`): día seleccionado `$primary`/`$on-primary` 5.47:1, header `$text-secondary` 5.88:1, chip "Hoy" 5.52:1. Nota menor no bloqueante: el anillo de "Hoy" (`stroke $primary` sobre `$surface` oscuro) queda a 3.00:1, justo en el mínimo de 3:1 para objeto gráfico (igual que en claro; el número interior es plenamente legible).
 
 ### Formato de monto — COP sin decimales (decisión app-wide)
@@ -250,7 +264,7 @@ Las 7 piezas que cerraban el 100% de cobertura de HU. Todas reutilizan `Bottom S
 | Sheet - Nueva Etiqueta | `NazyV` | HU-07 |
 | Sheet - Aviso Impacto Edición | `L9DJI` | HU-04 |
 
-- **Filtro de cuentas** (`jpARf`): nuevo componente **`Filter Account Row`** (`X3tZG`) — icono circular + nombre/tipo + saldo, reusado en las 4 filas de ejemplo (Efectivo y Nequi marcadas). "Todas"/"Ninguna" en la cabecera + `Button/Primary` "Aplicar" al fondo.
+- **Filtro de cuentas** (`jpARf`): nuevo componente **`Filter Account Row`** (`X3tZG`) — icono circular + nombre/tipo + saldo, reusado en las 4 filas de ejemplo (Efectivo y Nequi marcadas). "Todas" en la cabecera (se quitó "Ninguna" 2026-07-20: no aporta valor, seleccionarla dejaría la lista sin movimientos) + `Button/Primary` "Aplicar" al fondo.
 - **Filtro de categoría** (`q0CTl`): **lista expandible raíz + subcategorías**, no un grid plano (rediseñado — ver detalle abajo).
 - **Filtro de tipo** (`rjjfw`): filas seleccionables (mismo patrón que cuentas, ver abajo) — no `Segmented Control`, decisión deliberada (HU-06 permite combinar tipos, no son mutuamente excluyentes).
 
@@ -268,10 +282,11 @@ HU-06 exige poder filtrar por categoría "incluye subcategorías si se elige la 
 ### Patrón de selección múltiple — fila completa (decisión final, reemplaza checkbox)
 
 Tras explorar 2 variantes (checkbox circular vs. fila completa cambia de estado), el usuario eligió: **sin checkbox dedicado, toda la fila es el control.** Sin seleccionar: `fill:$surface` + `stroke:$border`. Seleccionada: `fill:$primary-soft` + `stroke:$primary` + ícono `check` 18px `$primary-on-soft` en un slot fijo de 24x24 a la derecha (slot siempre reservado, icono con `enabled:true/false`, para no desalinear el contenido al des/seleccionar). Aplicado a `Filter Account Row` (`X3tZG`, override de `fill`/`stroke` en el root de la instancia) y a las filas de `rjjfw`. Referencia de la decisión conservada en el canvas: `vzVjI` ("Referencia - Patron Fila Seleccionable"). El componente `Checkbox` circular explorado y descartado (`TVDE9`) fue borrado por quedar sin uso.
-- **Filtro de etiqueta** (`FL1gK`): lista tipo `Currency Row` + search bar arriba (viaje-cartagena, deducible, trabajo, regalo de ejemplo).
+- **Filtro de etiqueta** (`FL1gK`): lista tipo `Currency Row` + search bar arriba (viaje-cartagena, deducible, trabajo, regalo de ejemplo). Header `Actions` (`IGeAG`): "Todas"/"Ninguna" para el filtro de lista; un 3er elemento **"+"** (ícono `plus`, `$primary-on-soft`, agregado 2026-07-19) para el contexto de selección-para-asignar (campo "Etiquetas" del formulario, HU-07) — el código decide cuál subconjunto mostrar según el título pasado. Tiene contraparte oscura `a5PH7i`, también con el "+" agregado.
 - **Rango personalizado** (`OFdj4`): calendario visual completo (nav mes/año + grid de 35 celdas, rango 3–9 jul 2026 resaltado: extremos en `$primary` sólido, días intermedios en `$primary-soft`) + `Button/Primary` "Aplicar" — es la única pieza de HU-06b que sí requiere confirmación explícita.
-- **Nueva etiqueta** (`NazyV`): sheet compacto, un `Form Field` de texto + `Button/Primary` "Crear".
+- **Nueva etiqueta** (`NazyV` / oscuro `YHAWB`, ya existía y ya estaba documentado — confirmado 2026-07-19 tras descartar un duplicado creado por error): sheet compacto, un `Form Field` de texto + `Button/Primary` "Crear".
 - **Aviso de impacto al editar** (`L9DJI`, HU-04): icono `link-2` en `$primary-soft`/`$primary-on-soft` (informativo, no destructivo — no usa `$expense`) + mensaje de ejemplo vinculado a una meta + `Sheet Buttons Row` "Cancelar"/"Continuar".
+- **2026-07-19 — consolidación de `Tags Row`/`Tag Chip`:** igual que con las categorías, había 12+ instancias sueltas del patrón etiqueta-asignada + chip "Nueva" con colores inconsistentes (la mayoría con el chip "Nueva" en `$muted`/`$text-secondary` gris, desactualizado). Se consolidaron en un componente reusable único (`cDmhX`, compone `Tag Chip` `nM9ea` + "Add Chip" `r1Oh6`) con el esquema correcto de `rlnXj`: chip asignado `$primary-soft` sin borde; "Nueva" en `$surface`+borde `$border`+ícono/texto `$primary-on-soft-strong`. En código, `TransactionFormTagChip` (compartido, ya no duplicado en `scheduled_payments`) tenía además un bug real de layout — `Container(alignment: Alignment.center)` sin ancho explícito se estiraba a todo el ancho dentro del `Wrap` (bug clásico de Flutter, no de diseño); corregido envolviendo el chip en `IntrinsicWidth`.
 
 ### Decisiones ya confirmadas por el usuario
 
@@ -283,7 +298,7 @@ Tras explorar 2 variantes (checkbox circular vs. fila completa cambia de estado)
 
 ## Componentes reutilizables usados
 
-`Bottom Sheet Base`, `Transaction Row`, `Status Bar/Android`, `Tab Bar`, `Page Header`, `Segmented Control`, `Category Chip`, `Form Field`, `Empty State`, `Skeleton Row`, `Button/Primary`, `Button/Secondary`, `Info Row` (`myfAc`), `Delete Link` (`u0THG`), `Sheet Buttons Row` (`Ot4yI`), `Currency Row` (`Q6KVp`), `Day Cell` (`gVeaW`), `Keypad` (`gHDTi`), `Zona Fija - Monto Expandida` (`Rslzk`), `Zona Fija - Monto Colapsada` (`ofg07`), `Snackbar` (`zSTlU`), `Button/FAB` (`H5mzN`), `Detail Amount Hero` (`npfLO`), `Detail Actions Row` (`jt8dk`), `Tag Chip` (`nM9ea`), `Filter Account Row` (`X3tZG`, nuevo — icono+nombre/tipo+saldo+checkbox, usado en el Filtro de Cuentas y en el sheet de cuenta del formulario en modo single-select, disponible para futuras listas de selección múltiple con saldo visible), `Category Quick Picker` (`EIoVx`), `Category Select Sheet` (`SfSln`), `Category Select Row` (`SLfJW`), `Account Select Sheet` (`fcVZN`, ref `a510v`), `Date Picker Sheet` (`zMqxt`, instancia `F5TDp`), `Month Calendar` (`w4yuu`, base del calendario de fecha única del formulario). El "Info Card" del Detalle queda como construcción específica de cada pantalla (a propósito, ver pendientes técnicos).
+`Bottom Sheet Base`, `Transaction Row`, `Status Bar/Android`, `Tab Bar`, `Page Header`, `Segmented Control`, `Category Chip`, `Form Field`, `Empty State`, `Skeleton Row`, `Button/Primary`, `Button/Secondary`, `Info Row` (`myfAc`), `Delete Link` (`u0THG`), `Sheet Buttons Row` (`Ot4yI`), `Currency Row` (`Q6KVp`), `Day Cell` (`gVeaW`), `Keypad` (`gHDTi`), `Zona Fija - Monto Expandida` (`Rslzk`), `Zona Fija - Monto Colapsada` (`ofg07`), `Snackbar` (`zSTlU`), `Button/FAB` (`H5mzN`), `Detail Amount Hero` (`npfLO`), `Detail Actions Row` (`jt8dk`), `Tag Chip` (`nM9ea`), `Filter Account Row` (`X3tZG`, nuevo — icono+nombre/tipo+saldo+checkbox, usado en el Filtro de Cuentas y en el sheet de cuenta del formulario en modo single-select, disponible para futuras listas de selección múltiple con saldo visible), `Category Quick Picker` (`EIoVx`), `Category Select Sheet` (`SfSln`), `Category Select Row` (`SLfJW`), `Account Select Sheet` (`fcVZN`, ref `a510v`), `Date Picker Sheet` (`zMqxt`, usado directamente — la instancia `F5TDp` fue eliminada por redundante), `Month Calendar` (`w4yuu`, base del calendario de fecha única del formulario). El "Info Card" del Detalle queda como construcción específica de cada pantalla (a propósito, ver pendientes técnicos).
 
 **Variable nueva:** `primary-on-soft-strong` — `light:#5648C8` (= `primary-deep` claro), `dark:#A78BFA` (= `primary-on-soft` oscuro, sin cambio visual ahí). Excepción de contraste creada específicamente para el label del `Category Chip` en estado seleccionado (13px/700 sobre `$primary-soft`/`$background` no alcanzaba 4.5:1 con `primary-on-soft`; con este token da 6.04:1 en claro). Falta agregarla a la tabla de paleta de `MASTER.md`.
 
@@ -300,3 +315,77 @@ Solo quedan 2 huecos reales contra `docs/requirements/03-transacciones.md` (todo
 - **"Info Card" del Detalle** (`n1PgQ`/`P0qZJ3`/`BGgi4`): sin componentizar a propósito — solo 3 instancias con contenido variable, decisión explícita del reviewer de dejarlo ad-hoc.
 - **Interacción real de mostrar/ocultar la Zona Fija**: la animación de colapso ya está definida en código (`AnimatedSize`+`AnimatedSwitcher`, 220ms `easeInOut`, ver "Animaciones de la Zona Fija"); queda por especificar el detalle de cómo se dispara el foco de "Nota" en Flutter (aún solo representada como 2 estados estáticos en Pencil).
 - **Tema oscuro**: cerrado para toda la feature. Las 24 pantallas del resto (Lista + estados, 6 formularios, Detalle, Eliminar/Snackbar, Filtros y sheet de fecha) viven en la zona "TRANSACCIONES — OSCURO" (label `h6URn`) y fueron generadas con `Copy()` + `theme:{mode:"dark"}` desde cada frame claro y auditadas (ver "Auditoría de tema oscuro" arriba). Los **tres selectores del formulario** (categoría `BobKK`/`fz53P`, cuenta `Zsrnf`, fecha `nYFOZ`) tienen su copia oscura en la zona aparte `HXy6n`, también auditada. El recoloreo salió 100% por variables (cero hex hardcodeado), porque toda la estructura repetida está componentizada y las pantallas oscuras instancian los mismos componentes `reusable:true` que las claras — así el rework del formulario (teclado, selectores, Zona Fija) se propaga solo a ambos temas.
+
+## Adición 2026-07-21 — Carrusel de saldo en Movimientos (Mejora #2)
+
+> **Estado:** aprobado e **implementado en código** (verde). **Tema oscuro generado** (2026-07-21, tras recuperarse el render de Pencil) y **badges de revisión eliminados**. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+
+Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de chips de filtro** y arriba de la lista. **No es fijo**: scrollea verticalmente con la lista (el buscador y los chips sí quedan fijos, el carrusel se va con el contenido).
+
+**Frames:**
+| Pieza | Node ID (Claro) | Node ID (Oscuro) |
+|---|---|---|
+| Movimientos · Var A — carrusel expandido (cuenta activa) | `cgasM` | `Y0lWi` |
+| Movimientos · Var A — carrusel colapsado (barra compacta) | `rGVw1` | `uxIps` |
+| Movimientos · Var A — carrusel con tarjeta de crédito activa | `Ljf8l` | `RdbCG` |
+
+**Componentes nuevos:** `C2g9cA` "Balance Card (Movimientos)" (altura uniforme; variante cuenta normal = avatar + nombre + tipo + saldo; variante tarjeta = deuda `$expense` + cupo disponible + barra de cupo, a la misma altura). `d2TX3` "Balance Bar Colapsada" (barra fina `$surface` + borde: `layers` + "N cuentas" + "Saldo total $X" + `chevron-down`, toda tocable para reexpandir).
+
+**Comportamiento:**
+- Refleja el filtro de cuenta: **1 cuenta** → esa card centrada (sin peek, sin dots); **2+ o "Todas"** → `PageView` con peek (~28px) + dots.
+- **Colapsable:** control = manija (`$muted`) + `chevron-up` centrado arriba del carrusel → colapsa a la barra compacta `d2TX3` (`chevron-down` para reexpandir; toda la barra es tocable). Estado persistido per-device (default expandido). El colapso **unificó** la variante compacta que se había explorado como opción propia.
+- **Tap en una card → detalle de esa cuenta** (`/cuentas/<id>`).
+- Saldos negativos (deuda de tarjeta) en `$expense`; positivos en `$text-primary`. 100% tokens.
+
+**Variantes exploradas y descartadas** (borradas del canvas): hero de saldo (`eP3uk`) y barra compacta como variante independiente (`ddypA` — su barra se reusó como el estado colapsado).
+
+**Código:** `MovementsBalanceCarousel` / `MovementsBalanceCard` (`lib/features/transactions/presentation/widgets/`), `BalanceCarouselCubit` (`lib/core/preferences/`, colapso + página activa, SharedPreferences per-device). El dato de saldo ya venía en `TransactionsListCubit` (`state.accounts` = `List<AccountWithBalance>`).
+
+**Fidelidad visual (2026-07-21):** el componente del carrusel (`C2g9cA`) es **fiel en claro y oscuro** contra `cgasM`/`Y0lWi`. Fix de contraste aplicado: la deuda pasó de `$expense` a `$expense-text` (16px falla 4.5:1 en oscuro). Hallazgos IMPORTANTES del reviewer son del **chrome compartido de la pantalla, no del carrusel** y son **pre-existentes** (no los introduce esta mejora): título "Movimientos" centrado en el golden vs izquierda en Pencil, y el chip de Fecha en 2º lugar (código) vs último (spec §3). **Gaps de cobertura:** los estados colapsado (`rGVw1`) y tarjeta-activa (`Ljf8l`) no tienen golden propio (los goldens de página fuerzan `collapsed:false` y cuenta activa normal).
+
+## Adición 2026-07-24 — Transferencia presupuestable (toggle `countsInBudget`)
+
+> **Estado:** diseño **aprobado en ambos temas** (claro y oscuro), auditado por `ui-ux-reviewer` sin hallazgos bloqueantes, y **fase B1+B2 implementadas** (`flutter-dev`): schema, motor de presupuestos (lado origen) y UI del formulario. Ver `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3 y §5 (Fase B2) para el contexto de producto completo.
+>
+> **Nota de fidelidad — copy del label:** los frames vigentes (`l4nR7l`/`S5Tjj`/`BmCFj` y sus pares oscuros) usan el label **"¿Incluir en tu presupuesto?"**, no "Cuenta en tu presupuesto" — el copy se unificó con el toggle de Metas en algún punto posterior a cuando se escribió la sección "Copy" de abajo, y ese párrafo quedó desactualizado. El código implementa el copy real del `.pen` (fuente de verdad, ver `CLAUDE.md`); la sección "Copy" abajo se corrige a continuación en vez de dejar el texto viejo.
+>
+> **Hallazgo del tap target del `Switch` (accesibilidad, abajo) — corregido en código:** `ToggleField` (`lib/core/widgets/toggle_field.dart`) envuelve la fila completa (ícono + label + switch + hint) en el `InkWell`, no solo `AppSwitch` (`lib/core/widgets/app_switch.dart`, 48×28).
+>
+> **Pendiente real, no de diseño:** el lado "ingreso en la cuenta destino" del modelo simétrico (ver más abajo) no tiene base en el dominio de presupuestos actual (`ZeroBasedSummary` solo modela un ingreso global, no por alcance) — se implementó solo el lado **gasto en la cuenta origen**. Ver `docs/requirements/06-presupuestos.md` §Reglas de negocio y edge cases para el detalle y el motivo de no inventar un mecanismo paralelo.
+
+Parte de la Sub-feature B del plan: una transferencia puede marcarse opcionalmente para que cuente en presupuestos y reportes, con un flag único simétrico (`countsInBudget`) — sin distinguir "gasto en origen" de "ingreso en destino" como conceptos separados; el mismo flag + la misma categoría alimentan ambos lados según el alcance de cada presupuesto (`BudgetAccounts`). Se descartó un modelo previo de atributo on/off-budget a nivel de `Accounts` por chocar con ese alcance ya existente — ver el plan para el detalle de esa decisión revertida.
+
+**Frames** (ver tabla de Frames arriba para los Node ID):
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Toggle OFF (default) | `l4nR7l` | `L8bqAX` |
+| Toggle ON | `S5Tjj` | `IRuP2` |
+| Toggle ON + Nota activa | `BmCFj` | `fmWeI` |
+
+No se diseñó el 4to cruce (Nota activa + Toggle OFF): con el toggle apagado no hay nada nuevo que mostrar respecto al patrón de "Nota activa" ya existente en el resto del formulario, salvo la fila apagada del toggle al final — decisión explícita del usuario de no construir esa pantalla por no aportar información nueva.
+
+**Componente:** `Toggle Field` (`gZyEC`, `reusable:true`) — card `$surface`/`$border` con ícono `wallet` + label + `Switch` (`bWezV`) + hint de una línea debajo. Instanciado sin cambios estructurales, solo overrides de copy y del estado del switch.
+
+**Copy (corregido contra el `.pen` vigente — ver nota de fidelidad arriba):**
+- Label: **"¿Incluir en tu presupuesto?"** (evita jerga "on-budget" cruda; unificado con el toggle de Metas).
+- Hint OFF: "Actívala para que se sume a tus presupuestos y reportes."
+- Hint ON: "Se suma a tus presupuestos y reportes."
+
+**Posición — Cuenta → Fecha → Nota → Toggle → Categoría**, al final del Scroll Zone, no inmediatamente después de Cuenta (que era la solicitud original). Con el toggle justo tras la cuenta, Fecha y Nota quedaban tapadas por el teclado/Zona Fija expandida — regresión frente al patrón ya aprobado en Gasto, donde solo contenido secundario (`Tags Row`) puede quedar bajo el fold, nunca los campos base. Reordenado así, solo el bloque opcional nuevo (Toggle + Categoría) puede requerir scroll. Aprobado explícitamente por el usuario.
+
+**Espaciado:** gap de **18px** entre el campo Nota y la card del `Toggle Field` (token "gap entre secciones mayores" de `MASTER.md`, no un valor inventado) — separa visualmente el bloque de campos base del bloque opcional nuevo. Implementado como un frame spacer invisible de `height:6` entre ambos (el `gap:6` que ya aporta el `Scroll Zone` a cada lado del spacer suma 6+6+6=18px), para no alterar el gap:6 general entre el resto de los campos del formulario.
+
+**Categoría condicional:** con el toggle activo se habilita `Category Quick Picker` (`EIoVx`, el mismo selector ya usado en Gasto/Ingreso) debajo del toggle — una sola categoría, aplica a ambos lados del flag simétrico (no hay categoría separada por origen/destino).
+
+**Zona Fija colapsada** (`ofg07`) en los 3 estados, mismo patrón ya usado cuando hay Nota activa — libera espacio de scroll para que el toggle (y la categoría, si aplica) queden visibles sin necesidad de que el usuario haga scroll manual en el caso común.
+
+**Info Box retirado:** el cuadro estático que antes explicaba "las transferencias no cuentan como gasto ni ingreso" se quitó — quedaba redundante en OFF y directamente falso en ON. El hint propio del toggle cubre esa explicación.
+
+**Accesibilidad — hallazgo corregido:** primera instancia del componente `Switch` (`bWezV`) en estado **OFF** en todo el sistema de diseño (todas las instancias previas estaban en ON). Su color por defecto (`$border`) no alcanzaba el mínimo 3:1 WCAG 1.4.11 contra `$surface` en ningún tema (~2:1 claro, ~2:1 oscuro por cálculo de luminancia). Corregido a `$text-secondary` **a nivel de instancia** en las 3 pantallas OFF/tras-colapso que lo requieren (no se tocó el componente base `bWezV`, que sigue por defecto en ON) — da ~4.9:1 en claro y ~5.9:1 en oscuro, verificado también visualmente por `ui-ux-reviewer`. Se lee como "gris apagado" vs. el violeta vívido del ON, coherente con el resto del sistema.
+
+**Hallazgo menor, no bloqueante (anotado por `ui-ux-reviewer`, pendiente para `flutter-dev`):** el `Switch` dentro de `Toggle Field` mide 48×28, por debajo del mínimo de tap target 44×44pt. No hay una regla documentada (como sí la tiene `Delete Opt-in Row`) que aclare que el gesto debe cubrir toda la fila del `Toggle Field`, no solo el frame del switch. En Flutter, el `GestureDetector`/`InkWell` debe envolver la fila completa (ícono + label + switch + hint), no solo el widget `Switch`.
+
+**Cambios de datos correspondientes** (fuera de alcance de este documento de diseño, ver el plan): `categoryId` habilitado + `countsInBudget` (bool) en `Transactions`; presupuestos ampliados para consumir transferencias marcadas según el alcance por cuenta ya existente.
+
+**Código (Fase B1+B2, implementado):** dominio — `TransactionDraft`/`Transaction` (`lib/features/transactions/domain/entities/`) llevan `countsInBudget`; `TransactionDraft.validated()` exige `categoryId` (kind `expense`) para una transferencia con el flag activo. Datos — `TransactionMapper` mapea el campo; `BudgetsLocalDatasource.watchExpenses()` (`lib/features/budgets/data/datasources/`) incluye las transferencias `countsInBudget = true` como filas de gasto con la cuenta origen, sin tocar `BudgetProgressCalculator` (llega por el mismo pipeline que un gasto normal). Presentación — `TransactionFormCubit.countsInBudgetChanged`, `ToggleField`/`AppSwitch` (`lib/core/widgets/`, nuevos, reusables) y el bloque condicional en `TransactionFormScrollZone` (`lib/features/transactions/presentation/pages/transaction_form_page.dart`). El antiguo `TransactionInfoBox` y su string `transactionFormTransferInfo` se retiraron (ver "Info Box retirado" arriba).

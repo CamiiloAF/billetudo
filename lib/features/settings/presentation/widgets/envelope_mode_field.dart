@@ -53,8 +53,12 @@ class EnvelopeModeField extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.settingsEnvelopeMode,
-                        style: theme.textTheme.titleSmall),
+                    // `Settings Row`'s `Label` (`grTTH`) is 15/600.
+                    Text(
+                      l10n.settingsEnvelopeMode,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       l10n.settingsEnvelopeModeSubtitle,

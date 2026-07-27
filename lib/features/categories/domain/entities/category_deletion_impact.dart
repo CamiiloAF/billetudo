@@ -7,6 +7,7 @@ class CategoryDeletionImpact extends Equatable {
   const CategoryDeletionImpact({
     required this.hasActiveSubcategories,
     required this.transactionCount,
+    this.subcategoryCount = 0,
     this.budgetCount = 0,
   });
 
@@ -14,6 +15,11 @@ class CategoryDeletionImpact extends Equatable {
   /// subcategories. Only ever true for a root category, since subcategories
   /// cannot themselves have children (max depth 2 levels).
   final bool hasActiveSubcategories;
+
+  /// How many active subcategories the category has — interpolated into the
+  /// "raíz con subcategorías" confirmation message (`w9ixr`). Always `0`
+  /// when [hasActiveSubcategories] is `false`.
+  final int subcategoryCount;
 
   /// Active transactions (`deletedAt IS NULL`) that reference this category
   /// by `categoryId`.
@@ -29,5 +35,5 @@ class CategoryDeletionImpact extends Equatable {
 
   @override
   List<Object?> get props =>
-      [hasActiveSubcategories, transactionCount, budgetCount];
+      [hasActiveSubcategories, subcategoryCount, transactionCount, budgetCount];
 }

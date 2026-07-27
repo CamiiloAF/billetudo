@@ -80,7 +80,7 @@ class CurrencySubtotalLine extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            money.format(
+            money.formatSymbol(
               subtotal.netWorthMinor,
               currencyCode: subtotal.currency,
             ),
@@ -96,7 +96,7 @@ class CurrencySubtotalLine extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               l10n.accountsTotalDebtsLine(
-                money.format(
+                money.formatSymbol(
                   subtotal.debtMinor,
                   currencyCode: subtotal.currency,
                 ),

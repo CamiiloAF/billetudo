@@ -15,13 +15,15 @@ Local-first estricto: la app es 100% usable sin cuenta (HU-01). La pantalla de L
 | Auth — Respaldo D: Centrado (Android, **ganadora**) | `fTetG` | `eCMut` | Decisión final, ambos temas |
 | Auth — Respaldo D: Centrado (iOS, **ganadora**) | `RSzD1` | `DFlXI` | Decisión final, ambos temas — misma estructura que `fTetG`, solo difiere Status Bar/iOS y Apple visible |
 | Auth — Fusión de datos (HU-04, **ganadora**) | `vexqA` | `V5NA1` | Decisión final, ambos temas — mismo lenguaje centrado que Login |
-| Auth — Cerrar sesión (HU-06, **ganadora**) | `j4hgYN` | `MDDdY` | Decisión final, ambos temas — Bottom Sheet, sigue el patrón obligatorio de MASTER |
+| Auth — Cerrar sesión, opt-in apagado (HU-06, **ganadora**) | `wlVUL` | `CWvdi` | Decisión final, ambos temas — Bottom Sheet. Reemplaza a `j4hgYN`, ver abajo |
+| Auth — Cerrar sesión, opt-in activado + sync al día (HU-06) | `c87DpD` | `Af1SN` | Decisión final, ambos temas — el caso mayoritario: se borra y no hay nada pendiente |
+| Auth — Cerrar sesión, opt-in activado + cambios sin subir (HU-06) | `dpxOS` | `WXI8Z` | Decisión final, ambos temas — suma el aviso ámbar de pérdida |
 | Auth — Borrar cuenta, paso 1: confirmación irreversible (HU-07) | `j8ZdEx` | `QOJ74` | Decisión final, ambos temas — Bottom Sheet, tono destructivo |
 | Auth — Borrar cuenta, paso 2: datos locales (HU-07) | `K8SAG` | `jxqEb` | Decisión final, ambos temas — Bottom Sheet, elección sin dark pattern |
 | Auth — Borrar cuenta, paso 3: confirmación final (HU-07) | `sqm4I` | `q43mHJ` | Decisión final, ambos temas — pantalla completa, cierre neutral |
 | Ajustes — sin sesión | `jDaUb` | `j4JYF` | Decisión final, ambos temas. Punto de entrada a Login. |
 | Ajustes — con sesión | `aaQBp` | `TQHmY` | Decisión final, ambos temas. Sin "Cerrar sesión" (se movió a "Más", ver abajo) — termina en la fila "Eliminar cuenta" rediseñada. |
-| Más (nueva, destino de la pestaña "Más" del Tab Bar) | `gXcHt` | `X9x7x` | Decisión final, ambos temas. Lista Cuentas/Categorías/Deudas/Pagos programados/Import-Export/Ajustes + "Cerrar sesión" al final. |
+| Más (destino de la pestaña "Más" del Tab Bar) | `gXcHt` | `X9x7x` | Decisión final, ambos temas. Lista Cuentas/Categorías/Deudas/Recurrentes/Gráficas e informes/Importar y exportar/Ajustes + "Cerrar sesión" al final. Deudas, Gráficas e informes e Importar y exportar llevan badge "Próximamente" (roadmap real, no bloqueado por Nivel 0). |
 | Borrar cuenta, paso 1 — estado de error | `T1YkkA` | — | Solo claro, referencia de patrón |
 | Login Android — estado de carga | `QD8kh` | — | Solo claro, referencia de patrón |
 | Login Android — estado de error | `JA0KD` | — | Solo claro, referencia de patrón. Snackbar anclado a 16px del `Sign-in Buttons Group` (mismo margen que el patrón de "Snackbar Undo" en Movimientos), no flotando a mitad de pantalla. |
@@ -73,15 +75,65 @@ Aparece justo después de un login exitoso donde había datos locales que fusion
 
 **Nota de contraste:** los valores de la Stats Card usan `$primary-on-soft` (no `$primary` puro) — en tema claro son visualmente idénticos, pero `$primary` puro sobre `$surface` cae a ~3.00:1 en tema oscuro (falla texto normal), mientras `$primary-on-soft` está calibrado para pasar en ambos temas. Aplica este mismo criterio a cualquier valor numérico destacado que se agregue después en esta pantalla o en Login.
 
-## Estructura (`j4hgYN`, cerrar sesión — HU-06)
+## Estructura (cerrar sesión — HU-06, 3 estados)
 
-Se dispara desde un botón "Cerrar sesión" en Ajustes/Configuración (pantalla que todavía no existe — punto de entrada futuro). Es un **Bottom Sheet**, no una pantalla completa ni un diálogo modal centrado: `MASTER.md` establece Bottom Sheet como patrón **obligatorio** para confirmaciones en mobile, y todo el precedente existente (Confirmar Eliminar, Confirmar Archivar, Confirmar Cambio, No se Puede Eliminar, todos en Cuentas) lo sigue sin excepción. Se probó una variante de diálogo centrado (`jpOWk`) solo para comparar y se descartó de inmediato por romper esa convención sin justificación.
+Se dispara desde "Cerrar sesión" al final de la pantalla **Más** (`gXcHt`). Es un **Bottom Sheet**, no una pantalla completa ni un diálogo modal centrado: `MASTER.md` establece Bottom Sheet como patrón **obligatorio** para confirmaciones en mobile, y todo el precedente existente (Confirmar Eliminar, Confirmar Archivar, Confirmar Cambio, No se Puede Eliminar, todos en Cuentas) lo sigue sin excepción. Se probó una variante de diálogo centrado (`jpOWk`) solo para comparar y se descartó de inmediato por romper esa convención sin justificación.
+
+### Por qué se rediseñó (2026-07-20)
+
+La versión anterior (`j4hgYN`) solo confirmaba cerrar sesión, prometiendo que los datos se conservan. El problema no era la hoja sino la HU: su criterio de aceptación ("conservar los datos locales") **contradice el motivo que ella misma declara** — *"para dejar de sincronizar en este dispositivo si lo comparto con alguien más"*. El caso de uso que justifica la historia es justamente el que la historia no resolvía: las finanzas quedaban visibles para quien usara el teléfono después.
+
+Decisiones de producto:
+- Se **ofrece elegir** qué pasa con los datos locales. **Conservar es el default** — sin cuenta la app sigue siendo plenamente usable (local-first), así que borrar nunca puede ser el camino por omisión.
+- **Borrar está disponible siempre, nunca bloqueado.** Se evaluó deshabilitarlo mientras la cola de subida tuviera pendientes y se descartó: un sync atascado —que ya ocurrió de verdad, ver decisión #17 de `05-auth-sync.md`— dejaría al usuario sin poder borrar sus propios datos. Se prefiere advertir explícitamente y respetar su decisión.
+- **Opt-in con casilla, no elección de dos opciones.** Se exploraron ambas. Ganó el opt-in porque el borrado es un *modificador* de cerrar sesión, no una acción par: dos radios del mismo peso le darían el 50% de la decisión visual a "borrar mis datos" en una hoja titulada "Cerrar sesión". Además, una elección de dos habría competido con `K8SAG` (paso 2 de borrar cuenta), que deliberadamente **no** lleva default por la regla de no-dark-pattern de HU-07: el usuario vería el mismo par de opciones dos veces, una con default y otra sin, y esa diferencia se puede justificar en un `.md` pero no en pantalla.
+
+### Estructura
 
 Instancia de `Bottom Sheet Base` (`PqTUt`) con el `Content Slot` reemplazado:
-- **Icon Circle** (56px, `$primary-soft`) + ícono `log-out` (26px, `$primary-on-soft`) — mismo tratamiento no alarmante que "Confirmar Archivar", NO el rojo/`$expense` de "Confirmar Eliminar" (cerrar sesión no es una acción destructiva).
-- **Título**: "Cerrar sesión".
-- **Mensaje**: "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión." — cubre las dos garantías de HU-06 (datos locales intactos + advertencia de no-sync) en tono neutral.
-- **`Sheet Buttons Row`** (`Ot4yI`): "Cancelar" (`Button/Secondary`, ícono `x` oculto) / "Cerrar sesión" (`Button/Primary`, ícono `log-out`).
+- **`Sheet Icon Header`** (`XPjIZ`): Icon Circle 56px `$primary-soft` + ícono `log-out` `$primary-on-soft` — mismo tratamiento no alarmante que "Confirmar Archivar", NO el `$expense` de "Confirmar Eliminar". **El header se mantiene neutro incluso con el opt-in activado**: la acción base sigue siendo cerrar sesión.
+- **`Delete Opt-in Row`** (`S533j9`, `reusable:true`): "Borrar también los datos de este teléfono" / "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas."
+- **`Unsynced Warning`**: bloque `$amber-soft` con ícono `cloud-off`, solo cuando hay cola pendiente. Va **entre** el opt-in y los botones, nunca flotando arriba.
+- **`Sheet Buttons Row`** (`Ot4yI`): "Cancelar" / CTA que muta según el opt-in.
+
+### El mensaje del header cambia con el estado (no es cosmético)
+
+| Estado | Mensaje |
+|---|---|
+| Opt-in apagado | "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión." |
+| Opt-in activado (ambos) | "Dejarás de sincronizar hasta que vuelvas a iniciar sesión." |
+
+Con la casilla marcada, prometer que los datos "seguirán guardados" es **literalmente falso** y queda a 30px de la fila roja que dice lo contrario. Detectado por `ui-ux-reviewer` como hallazgo crítico. El tono positivo que exige `CLAUDE.md` no autoriza un mensaje que desmienta la acción que el usuario acaba de configurar.
+
+### Contraste a vigilar
+
+`$text-secondary` sobre `$amber-soft` en oscuro (cuerpo del aviso, 13px/500) da **4.77:1** contra un umbral de 4.5. Pasa, pero es el par más ajustado de la pantalla y **el primero que se rompe si alguna vez se recalibra `$amber-soft`**. Se evaluó subirlo a `$text-primary` (12:1) y se descartó: compra 0.27 puntos a cambio de aplanar la jerarquía título/cuerpo del bloque, y es el mismo par que ya usa el mensaje del header de este sheet, así que cambiarlo introduciría una inconsistencia interna.
+
+### Regla de conteo del aviso
+
+**Se agrupa en un total, nunca se enumeran entidades por tipo.** Enumerar obliga a pluralizar cada entidad y el texto crece sin control ("3 movimientos, 2 presupuestos, 1 cuenta y 1 meta…"), justo en un bloque que debe leerse de un vistazo antes de una acción irreversible.
+
+| N | Texto del cuerpo |
+|---|---|
+| 0 | El bloque **no se muestra** — es el estado `c87DpD` / `Af1SN` |
+| 1 | "1 cambio **sigue guardado** solo en este teléfono. Si borras ahora, **ese cambio no quedará** en la nube." |
+| >1 | "4 cambios **siguen guardados** solo en este teléfono. Si borras ahora, **esos cambios no quedarán** en la nube." |
+
+**La concordancia alcanza cinco palabras, no una** (`siguen/sigue`, `guardados/guardado`, `esos cambios/ese cambio`, `quedarán/quedará`). Implementarlo como `count == 1 ? 'cambio' : 'cambios'` deja el resto de la frase mal concordada. En los `.arb` esto exige **dos strings completos o un plural ICU sobre la frase entera**, nunca interpolar la palabra suelta.
+
+El título ("Hay cambios que aún no se han subido") es fijo, no varía con N.
+
+**Altura verificada empíricamente** con N=1, N=4 y N=128: el bloque se mantiene en 104px (3 líneas) en los tres casos, así que el número no descuadra el sheet.
+
+### Estado: implementada (2026-07-20)
+
+Los 3 estados están en código y cubiertos por tests. Dos cosas que la implementación descubrió y que conviene saber antes de tocar esta pantalla:
+
+- **El `Sheet Icon Header` de esta hoja anula el estilo del mensaje** (`$text-secondary` / 14, contra `$text-primary` / 15 del componente base `XPjIZ`). Está en el `.pen` y no estaba en esta spec; `SheetMessage` ganó dos parámetros opcionales para soportarlo sin afectar a los demás sheets.
+- **`BottomSheetBase` no tiene scroll.** La fila de opt-in y el aviso envuelven texto sin ellipsis, igual que en el frame, así que con la escala de fuente de accesibilidad alta el sheet puede desbordar. Es un problema del componente base y afecta a todos los sheets, no solo a este — pendiente aparte.
+
+**Sin estado de "borrando…"** ni frame de transición entre apagado y activado. Decisión: no se diseña. Borrar la base local es rápido y el patrón de carga en el propio botón ya existe (`QD8kh`, Login). Si alguna vez resulta perceptible, se agrega entonces — diseñarlo antes era especular sobre una latencia que nadie midió, y la implementación confirmó que no hace falta.
+- **Tap target:** el área tocable es la fila completa (350x112), **no** el checkbox de 24x24. Implementarlo sobre el checkbox incumple el mínimo de 44 de MASTER.
 
 ## Estructura (borrar cuenta — HU-07, flujo de 3 pasos)
 
@@ -108,29 +160,33 @@ Se llega desde la fila "Ajustes" de la pantalla "Más" (ver siguiente sección) 
 1. **Sección "Cuenta y respaldo"**:
    - **Sin sesión** (`jDaUb`): fila `Appearance Field` (`R8PlN`) reusada como invitación — ícono `cloud-upload`, "Respaldar en la nube", "Guarda tus datos de forma segura" → navega a Login (`fTetG`).
    - **Con sesión** (`aaQBp`): `Session Card` (`$surface` + borde) con avatar iniciales sobre degradado `$primary`→`$primary-deep`, nombre + "Sesión iniciada con Google" (placeholder — viene de los datos reales de la sesión al implementar). Ya **no** incluye "Cerrar sesión" — se movió a la pantalla "Más" (decisión del usuario: acción de nivel superior, más fácil de encontrar que anidada en Ajustes).
-2. **Sección "Preferencias"**: 2 filas `Appearance Field` reusadas — "Apariencia" (estático por ahora, no hay selector diseñado) y "Moneda" (navega al `Selector de Moneda` ya existente en Cuentas, `rCY7Q`).
-3. **Spacer** (`fill_container`) empuja la zona destructiva al fondo real de la pantalla.
-4. **Eliminar cuenta** (`hRVfo` "Eliminar Cuenta Row", reemplaza al `Delete Link` original tras feedback de que el link de texto plano no se veía bien): fila completa con tap target de 44px+padding, fondo `$expense-soft`, icon-wrap circular `$surface` con ícono `trash-2` en `$expense`, label "Eliminar cuenta" en `$expense-text` 15px/600, chevron `$expense-text` → navega al flujo de borrado (`j8ZdEx`). Se siente como una acción real con jerarquía apropiada, no un link perdido, sin dejar de estar claramente separada de las opciones normales.
+2. **Sección "Presupuesto"** (agregada 2026-07-20): fila "Modo sobres" — `Icon Wrap` circular 44px (`$primary-soft` + ícono `target` en `$primary-on-soft`), Label "Modo sobres" (15/600) + Sublabel "Reparte todo tu ingreso en sobres" (12/500 `$text-secondary`) + link "¿Qué es?" con flecha (`$primary-on-soft`), `Switch` activado a la derecha (`$primary`/knob `$on-primary`). Copiada de la referencia aislada `Gbo3P` (dentro de `r5aVv` claro / `FP2Z2` dentro de `GZUqi` oscuro) — fuente de verdad del modo: es un ajuste GLOBAL de la app (`zeroBasedEnabled`), no un tipo por-presupuesto. Va en **sección propia**, no mezclada con "Preferencias": es un ajuste de comportamiento central del presupuesto, no una preferencia de visualización como Apariencia/Moneda. Ubicada entre "Cuenta y respaldo" y "Preferencias".
+   - Instancias: `jDaUb` → sección `OS5FO` (header `iAuS4`, fila `yQv0K`); `aaQBp` → sección `t1ZLAq` (header `y0yvK`, fila `z36Gz`); `j4JYF` → sección `l4xpYS` (header `w2mUu`, fila `X8OROv`); `TQHmY` → sección `ry1xa` (header `o7mgOL`, fila `r5x7B`).
+   - **Interacción — resuelto (verificado contra código 2026-07-20):** el link "¿Qué es?" abre el sheet `EnvelopeInfoSheet` (`eBwb0`/`gAetG`, ya aprobado sin hallazgos), el mismo widget en los 3 puntos de entrada de la app (Ajustes, hero de Presupuestos, menú `⋮` de Presupuestos). El `Switch` activa/desactiva directo sin confirmación en los 3 sitios; la única confirmación existe cuando se activa desde dentro del sheet informativo (CTA "Activar"), nunca al desactivar. Comportamiento consistente entre los 3 puntos de entrada — no hace falta diseñar nada nuevo.
+3. **Sección "Preferencias"**: 2 filas `Appearance Field` reusadas — "Apariencia" (estático por ahora, no hay selector diseñado) y "Moneda" (navega al `Selector de Moneda` ya existente en Cuentas, `rCY7Q`).
+4. **Spacer** (`fill_container`) empuja la zona destructiva al fondo real de la pantalla.
+5. **Eliminar cuenta** (`hRVfo` "Eliminar Cuenta Row", reemplaza al `Delete Link` original tras feedback de que el link de texto plano no se veía bien): fila completa con tap target de 44px+padding, fondo `$expense-soft`, icon-wrap circular `$surface` con ícono `trash-2` en `$expense`, label "Eliminar cuenta" en `$expense-text` 15px/600, chevron `$expense-text` → navega al flujo de borrado (`j8ZdEx`). Se siente como una acción real con jerarquía apropiada, no un link perdido, sin dejar de estar claramente separada de las opciones normales.
 
-Componentes reusados: `Page Header` (`Dtm0X`), `Appearance Field` (`R8PlN`, 3 instancias). `hRVfo` no es `reusable:true` (única instancia); el `Delete Link` original (`u0THG`) sigue existiendo y en uso en Detalle de Transacción — no se tocó, solo se dejó de usar aquí.
+Componentes reusados: `Page Header` (`Dtm0X`), `Appearance Field` (`R8PlN`, 3 instancias). `hRVfo` no es `reusable:true` (única instancia); el `Delete Link` original (`u0THG`) sigue existiendo y en uso en Detalle de Transacción — no se tocó, solo se dejó de usar aquí. La fila "Modo sobres" tampoco es `reusable:true` en las pantallas reales (solo la referencia `Gbo3P`/`FP2Z2` viven aisladas como plantilla) — si se necesita en un tercer lugar del `.pen`, convertir a `reusable:true` en ese momento.
 
 **Pendientes específicos de Ajustes:**
-- Solo existe tema claro — se genera el oscuro en la misma pasada que el resto de pantallas de la app que aún no lo tienen.
+- **Corrección 2026-07-20 (contra el `.pen`, que manda):** Ajustes SÍ tiene ambos temas — `jDaUb`/`aaQBp` (claro) y `j4JYF`/`TQHmY` (oscuro) ya existían con la misma estructura antes de esta pasada; la nota anterior ("solo existe tema claro") estaba desactualizada. Corregido aquí.
 - Nombre/avatar del usuario son de ejemplo ("Camila Agudelo") — vienen de la sesión real de Google/Apple al implementar.
 - La fila "Apariencia" no tiene un selector diseñado todavía (bottom sheet o pantalla para elegir claro/oscuro/sistema) — pendiente si se decide exponer esa opción.
+- ~~La fila "Modo sobres" es nueva (2026-07-20): falta diseñar el destino del link "¿Qué es?" y el flujo de confirmación...~~ **Resuelto 2026-07-20** — ver nota de "Interacción — resuelto" arriba.
 
 ## Estructura (`gXcHt`, pantalla "Más")
 
 Destino de la pestaña "Más" del Tab Bar (`u3b5s9`) — no existía, se construyó para resolver el pendiente de navegación de toda la feature. Agrupa los destinos que no caben en el tab bar (regla de `CLAUDE.md`). Header de texto simple "Más" (24px/700, sin back — es una pestaña raíz, no una pantalla apilada; no usa `Page Header`, mismo patrón que el resto de pestañas raíz del Tab Bar), Tab Bar al fondo con "Más" activo.
 
-1. **6 filas de navegación**, instancias de `Appearance Field` (`R8PlN`), cada una ícono + label + sublabel descriptivo + chevron: Cuentas, Categorías, Deudas, Pagos programados, Importar y exportar, **Ajustes** (→ `jDaUb`/`aaQBp` según sesión).
+1. **7 filas de navegación**, instancias de `Appearance Field` (`R8PlN`), cada una ícono + label + sublabel descriptivo + chevron: Cuentas, Categorías, Deudas, Recurrentes, **Gráficas e informes** (agregada 2026-07-20, `chart-line`, "Visualiza tus finanzas con gráficas"), Importar y exportar, **Ajustes** (→ `jDaUb`/`aaQBp` según sesión). Deudas, Gráficas e informes e Importar y exportar llevan el componente nuevo `Badge/Próximamente` (`yfvHv`, pill `$muted`/`$text-secondary` 11px/600) junto al label, dentro de un `Title Row` agregado a `R8PlN` — roadmap real, no bloqueado por Nivel 0.
 2. **Spacer** (`fill_container`).
 3. **Cerrar sesión** (reconstruida a mano replicando la fila que antes vivía en Ajustes: icon-wrap `$primary-soft`/`log-out`, tono neutral) → navega al Bottom Sheet `j4hgYN`. Vive aquí, no en Ajustes, por ser una acción de nivel superior que el usuario debe poder encontrar sin entrar a Ajustes primero.
 
 **Pendientes específicos de "Más":**
-- Solo tema claro.
 - Si "Cerrar sesión" llega a repetirse en un tercer lugar del `.pen`, componentizarla (`reusable:true`) — hoy es una única instancia manual.
 - Navegación de Inicio → "Más" ya está resuelta (pestaña del Tab Bar), pero no se verificó si además debería existir un acceso directo desde Inicio (ej. ícono de perfil) — no estaba en alcance.
+- **Advertencia de mantenimiento (2026-07-20):** al agregar el slot de badge a `R8PlN`, restructurar ese componente muy reusado (~20 instancias entre Más y Ajustes) borró momentáneamente el override de título (`IwyuZ`) de todas sus instancias — se corrigió restaurando cada una a mano. Si se vuelve a tocar la estructura interna de `R8PlN`, verificar con `get_screenshot` que ninguna instancia perdió sus overrides antes de dar por cerrado el cambio.
 
 ## Botones de login — reglas de marca (no negociables)
 
@@ -183,7 +239,11 @@ Variables usadas: `$background`, `$text-primary`, `$text-secondary`, `$muted`, `
 - **Copy de la Stats Card asume datos previos**: "Combinamos todo lo que ya tenías guardado..." asume que el usuario ya tenía cuentas/movimientos locales. Si un usuario nuevo inicia sesión sin haber registrado nada, la pantalla mostraría `0/0/0` y el mensaje se sentiría falso — falta decidir si esta pantalla se omite cuando no hay datos que fusionar, o si el copy debe ser más neutral para cubrir ese caso.
 - **Resuelto: punto de entrada a Ajustes.** Se llega desde la pantalla "Más" (`gXcHt`), destino de la pestaña "Más" del Tab Bar. La navegación de salida de la confirmación de fusión (qué pasa tras "Ir a mis finanzas") sigue sin definirse más allá de volver a la app.
 - **Toda la feature Auth (13 pantallas de flujo) ya tiene ambos temas** — Ajustes y "Más" fueron las últimas en cerrarse. Los 3 estados solo-claro de referencia (`QD8kh`/`JA0KD` loading/error de login, `T1YkkA` error del paso 1 de borrado) siguen sin oscuro, por diseño (son piezas de referencia de patrón, no pantallas del flujo principal).
-- **Canvas organizado**: todas las pantallas claras viven en `Zona — Auth (Claro)` (`dXjjz`) y las oscuras en `Zona — Auth (Oscuro)` (`S5vV0`), cada oscura alineada en la misma columna X que su par claro.
+- **Canvas organizado**: las pantallas de Auth, Ajustes y Más viven en **una sola zona mixta**, `Zona — AUTH / AJUSTES / MAS (Claro+Oscuro)` (`q394ty`), con el tema claro a la izquierda y el oscuro a la derecha (etiquetas `l2DJx` y `cK77Y`), cada frame oscuro alineado en la misma fila que su par claro. Los huecos en la columna oscura son intencionales: corresponden a los estados de referencia (`QD8kh`, `JA0KD`, `T1YkkA`) que por diseño solo existen en claro.
+
+  Los seis frames de Cerrar sesión (HU-06) viven aparte, en `iLJ80` (claro) y `hbIZX` (oscuro), donde se exploraron. Ahora que la HU está implementada dejaron de ser exploración y correspondería moverlos a `q394ty` — pendiente de higiene, no bloquea nada.
+
+  *(Este punto decía que había dos zonas separadas, `dXjjz` y `S5vV0`; se consolidaron en algún momento y el `.md` quedó viejo. Corregido el 2026-07-20 contra el `.pen`, que es la fuente de verdad.)*
 - **Loading/error de login** solo cubren Android en claro (`QD8kh`/`JA0KD`) — falta la versión iOS y oscura si se necesita como referencia (probablemente no haga falta, es el mismo patrón).
 - **Selector de "Apariencia"** en Ajustes no está diseñado — la fila es estática por ahora.
 - **Riesgo de dark pattern en Borrar Cuenta Paso 2** (`K8SAG`/`jxqEb`): el frame "decisión final" muestra una opción preseleccionada (con CTA habilitado) como ejemplo visual del estado post-selección, no el estado inicial real (que vive aparte en `GamyH`/`Fqpgc`, CTA deshabilitado, ninguna opción marcada). Anotado en el canvas (auditoría `ui-ux-reviewer` 2026-07-16) para que el handoff a `flutter-dev` no implemente por accidente una opción preseleccionada — violaría la regla explícita de no-dark-pattern de HU-07.

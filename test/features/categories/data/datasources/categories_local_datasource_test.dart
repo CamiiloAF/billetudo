@@ -1,5 +1,6 @@
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart';
+import 'package:billetudo/features/categories/data/models/category_seed_entry.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -317,6 +318,54 @@ void main() {
   });
 
   group('countActiveCategories / seedDefaultCategories', () {
+    // Small fixture standing in for the real `category_seeds` catalog
+    // (docs/requirements/05-auth-sync.md, decision #12): 2 expense roots (one
+    // with subcategories) + 1 income root, deliberately listed with a
+    // subcategory *before* its root to prove the datasource reorders for the
+    // `parentId` FK instead of relying on catalog row order.
+    final catalog = [
+      const CategorySeedEntry(
+        id: 'seed-food-market',
+        kind: CategoryKind.expense,
+        parentId: 'seed-food-drink',
+        nameEs: 'Mercado',
+        nameEn: 'Groceries',
+        icon: null,
+        color: null,
+        sortOrder: 0,
+      ),
+      const CategorySeedEntry(
+        id: 'seed-food-drink',
+        kind: CategoryKind.expense,
+        parentId: null,
+        nameEs: 'Comida y bebida',
+        nameEn: 'Food & drink',
+        icon: 'utensils',
+        color: 'mint',
+        sortOrder: 0,
+      ),
+      const CategorySeedEntry(
+        id: 'seed-transport',
+        kind: CategoryKind.expense,
+        parentId: null,
+        nameEs: 'Transporte',
+        nameEn: 'Transport',
+        icon: 'bus',
+        color: 'sky',
+        sortOrder: 1,
+      ),
+      const CategorySeedEntry(
+        id: 'seed-salary',
+        kind: CategoryKind.income,
+        parentId: null,
+        nameEs: 'Salario',
+        nameEn: 'Salary',
+        icon: 'banknote',
+        color: 'mint',
+        sortOrder: 0,
+      ),
+    ];
+
     test('0 sin categorías, > 0 tras crear una', () async {
       expect(await datasource.countActiveCategories(), 0);
 
@@ -325,37 +374,60 @@ void main() {
       expect(await datasource.countActiveCategories(), greaterThan(0));
     });
 
-    test('inserta el set semilla completo con sortOrder contiguo', () async {
-      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
+    test(
+        'inserta el catálogo con los ids estables del seed y el idioma '
+        'pedido, ordenando raíces antes que subcategorías', () async {
+      await datasource.seedDefaultCategories(
+        catalog,
+        DateTime(2026, 7, 15),
+        'es',
+      );
 
       final all = await db.select(db.categories).get();
-      // 17 raíces de gasto + sus subcategorías + 9 raíces de ingreso.
-      final expenseRoots = all
-          .where((c) => c.kind == CategoryKind.expense && c.parentId == null);
-      final incomeRoots =
-          all.where((c) => c.kind == CategoryKind.income && c.parentId == null);
-      expect(expenseRoots, hasLength(17));
-      expect(incomeRoots, hasLength(9));
+      expect(all, hasLength(4));
 
-      final expenseRootOrders = expenseRoots.map((c) => c.sortOrder).toList()
-        ..sort();
-      expect(expenseRootOrders, List.generate(17, (i) => i));
+      final food = all.singleWhere((c) => c.id == 'seed-food-drink');
+      expect(food.name, 'Comida y bebida');
+      expect(food.parentId, isNull);
+      expect(food.kind, CategoryKind.expense);
+
+      final market = all.singleWhere((c) => c.id == 'seed-food-market');
+      expect(market.name, 'Mercado');
+      expect(market.parentId, 'seed-food-drink');
+
+      final salary = all.singleWhere((c) => c.id == 'seed-salary');
+      expect(salary.kind, CategoryKind.income);
+    });
+
+    test('usa name_en cuando se le pide el idioma en', () async {
+      await datasource.seedDefaultCategories(
+        catalog,
+        DateTime(2026, 7, 15),
+        'en',
+      );
+
+      final food = await datasource.getCategory('seed-food-drink');
+      expect(food!.name, 'Food & drink');
     });
 
     test(
-        'vuelve a llamarse sin duplicar (comprobado por el use case, aquí '
-        'solo se verifica que el datasource siempre inserta lo que se le '
-        'pide)', () async {
-      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
-      final firstCount = await datasource.countActiveCategories();
+        'llamarlo dos veces con el mismo catálogo falla por choque de id '
+        '(la idempotencia es responsabilidad del use case, no de este '
+        'datasource)', () async {
+      await datasource.seedDefaultCategories(
+        catalog,
+        DateTime(2026, 7, 15),
+        'es',
+      );
 
-      // El datasource no es idempotente por sí mismo: esa regla vive en
-      // `SeedDefaultCategories` (el use case), que consulta `hasAnyCategory`
-      // antes de llamar aquí.
-      await datasource.seedDefaultCategories(DateTime(2026, 7, 15));
-      final secondCount = await datasource.countActiveCategories();
-
-      expect(secondCount, greaterThan(firstCount));
+      expect(
+        () => datasource.seedDefaultCategories(
+          catalog,
+          DateTime(2026, 7, 15),
+          'es',
+        ),
+        throwsA(anything),
+      );
     });
   });
 
@@ -419,6 +491,71 @@ void main() {
           await datasource.mostUsedCategories(CategoryKind.expense, 1);
 
       expect(result.map((c) => c.id), [comida.id]);
+    });
+
+    test('con accountId, cuentas distintas producen top-3 distintos', () async {
+      final accountA = await _insertAccount(db);
+      final accountB = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      final ocio = await insertCategory(name: 'Ocio', sortOrder: 2);
+
+      // Cuenta A: Comida (2), Transporte (0), Ocio (0).
+      await addTransaction(accountA, comida.id);
+      await addTransaction(accountA, comida.id);
+      // Cuenta B: Transporte (2), Comida (0), Ocio (0).
+      await addTransaction(accountB, transporte.id);
+      await addTransaction(accountB, transporte.id);
+
+      final resultA = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+        accountId: accountA,
+      );
+      final resultB = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+        accountId: accountB,
+      );
+
+      expect(resultA.map((c) => c.id), [comida.id, transporte.id, ocio.id]);
+      expect(resultB.map((c) => c.id), [transporte.id, comida.id, ocio.id]);
+    });
+
+    test('con accountId sin historial, cae en el mismo fallback por raíz',
+        () async {
+      final accountA = await _insertAccount(db);
+      final otherAccount = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      // El historial completo pertenece a otra cuenta -> accountA no tiene usos.
+      await addTransaction(otherAccount, transporte.id);
+      await addTransaction(otherAccount, transporte.id);
+
+      final result = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        2,
+        accountId: accountA,
+      );
+
+      expect(result.map((c) => c.id), [comida.id, transporte.id]);
+    });
+
+    test('accountId null se comporta igual que antes (sin regresión)',
+        () async {
+      final accountId = await _insertAccount(db);
+      final comida = await insertCategory(name: 'Comida');
+      final transporte = await insertCategory(name: 'Transporte', sortOrder: 1);
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, transporte.id);
+      await addTransaction(accountId, comida.id);
+
+      final result = await datasource.mostUsedCategories(
+        CategoryKind.expense,
+        3,
+      );
+
+      expect(result.map((c) => c.id), [transporte.id, comida.id]);
     });
   });
 

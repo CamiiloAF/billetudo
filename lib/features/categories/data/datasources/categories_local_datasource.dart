@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
-import 'default_categories_seed.dart';
+import '../models/category_seed_entry.dart';
 
 /// Drift queries for the Categories feature.
 ///
@@ -55,18 +55,27 @@ class CategoriesLocalDatasource {
   /// The [limit] most-used categories of [kind] by active-transaction count,
   /// for the transaction form's Category Quick Picker (HU-01/02). Counts
   /// transactions still alive (`deletedAt`/`tombstonedAt` null) that reference
-  /// each alive category. Ties — and the whole result for a user with no
-  /// history, where every count is zero — fall back to the earliest root
-  /// categories first, then by `sortOrder`, so a fresh user still gets a
-  /// sensible default set.
-  Future<List<Category>> mostUsedCategories(CategoryKind kind, int limit) {
+  /// each alive category. When [accountId] is given, only transactions on
+  /// that account count towards the usage — used to give each account its
+  /// own top-3, e.g. when the user switches accounts mid-form. Ties — and the
+  /// whole result for a user (or account) with no history, where every count
+  /// is zero — fall back to the earliest root categories first, then by
+  /// `sortOrder`, so a fresh user still gets a sensible default set.
+  Future<List<Category>> mostUsedCategories(
+    CategoryKind kind,
+    int limit, {
+    String? accountId,
+  }) {
     final usageCount = _db.transactions.id.count();
     final query = _db.select(_db.categories).join([
       leftOuterJoin(
         _db.transactions,
         _db.transactions.categoryId.equalsExp(_db.categories.id) &
             _db.transactions.deletedAt.isNull() &
-            _db.transactions.tombstonedAt.isNull(),
+            _db.transactions.tombstonedAt.isNull() &
+            (accountId == null
+                ? const Constant(true)
+                : _db.transactions.accountId.equals(accountId)),
       ),
     ])
       ..where(_db.categories.kind.equalsValue(kind) & _alive)
@@ -132,6 +141,15 @@ class CategoriesLocalDatasource {
     final row = await query.getSingleOrNull();
     final current = row?.read(maxOrder);
     return current == null ? 0 : current + 1;
+  }
+
+  /// Active subcategories of [parentId], ordered by `sortOrder` — feeds
+  /// `SuggestSubcategoryIcon` (icon/color picker, HU-02).
+  Future<List<Category>> activeSubcategories(String parentId) {
+    final query = _db.select(_db.categories)
+      ..where((c) => c.parentId.equals(parentId) & _alive)
+      ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]);
+    return query.get();
   }
 
   Future<int> countActiveSubcategories(String parentId) {
@@ -276,46 +294,44 @@ class CategoriesLocalDatasource {
           )
           .then((rows) => rows.isEmpty ? null : rows.first);
 
-  /// HU-06: inserts the whole onboarding seed set in one transaction. Each
-  /// root/subcategory gets a contiguous `sortOrder` within its own scope,
-  /// following the appendix order.
-  Future<void> seedDefaultCategories(DateTime now) => _db.transaction(
-        () async {
-          for (final entry in defaultCategorySeed.entries) {
-            final kind = entry.key;
-            var rootOrder = 0;
-            for (final root in entry.value) {
-              final rootRow = await insertCategory(
-                CategoriesCompanion.insert(
-                  name: root.name,
-                  kind: kind,
-                  icon: Value(root.icon),
-                  color: Value(root.color),
-                  sortOrder: Value(rootOrder),
-                  createdAt: Value(now),
-                  updatedAt: Value(now.millisecondsSinceEpoch),
-                ),
-              );
-              rootOrder++;
-
-              var subOrder = 0;
-              for (final sub in root.subcategories) {
-                await insertCategory(
-                  CategoriesCompanion.insert(
-                    name: sub.name,
-                    kind: kind,
-                    parentId: Value(rootRow.id),
-                    icon: Value(sub.icon),
-                    color: Value(sub.color),
-                    sortOrder: Value(subOrder),
-                    createdAt: Value(now),
-                    updatedAt: Value(now.millisecondsSinceEpoch),
-                  ),
-                );
-                subOrder++;
-              }
-            }
-          }
-        },
-      );
+  /// HU-06: inserts the onboarding seed set fetched from the remote
+  /// `category_seeds` catalog (`docs/requirements/05-auth-sync.md`, decision
+  /// #12), in one transaction.
+  ///
+  /// Unlike a normal [insertCategory], every row keeps the catalog's own
+  /// stable [CategorySeedEntry.id] instead of Drift's random `clientDefault`
+  /// UUID — the whole point of the decision: it lets HU-04's merge detect,
+  /// by primary key, whether the signed-in account already seeded this exact
+  /// category before.
+  ///
+  /// Roots are inserted before subcategories regardless of the catalog's own
+  /// row order, since `Categories.parentId` is a real FK and a subcategory
+  /// would otherwise fail to insert before its root exists. [languageCode]
+  /// picks which of the catalog's `name_es`/`name_en` becomes the local
+  /// `Categories.name` (see `AppLocale.resolveLanguageCode`); once seeded the
+  /// name is just a normal, editable field like any other category's.
+  Future<void> seedDefaultCategories(
+    List<CategorySeedEntry> catalog,
+    DateTime now,
+    String languageCode,
+  ) =>
+      _db.transaction(() async {
+        final roots = catalog.where((entry) => entry.isRoot);
+        final subcategories = catalog.where((entry) => !entry.isRoot);
+        for (final entry in [...roots, ...subcategories]) {
+          await insertCategory(
+            CategoriesCompanion.insert(
+              id: Value(entry.id),
+              name: entry.nameFor(languageCode),
+              kind: entry.kind,
+              parentId: Value(entry.parentId),
+              icon: Value(entry.icon),
+              color: Value(entry.color),
+              sortOrder: Value(entry.sortOrder),
+              createdAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
+          );
+        }
+      });
 }

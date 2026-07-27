@@ -51,7 +51,12 @@ class SettingsField extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(label, style: theme.textTheme.titleSmall),
+                      // `Settings Row`'s `Label` (`grTTH`) is 15/600.
+                      Text(
+                        label,
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
                       if (sublabel != null) ...[
                         const SizedBox(height: 2),
                         Text(

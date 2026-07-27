@@ -30,7 +30,7 @@ void main() {
     });
 
     test('emits the persisted flag once it has been set', () async {
-      await repository.setZeroBasedEnabled(true);
+      await repository.setZeroBasedEnabled(enabled: true);
 
       final result = await repository.watchSettings().first;
 
@@ -47,9 +47,9 @@ void main() {
       // land in the same microtask).
       await Future<void>.delayed(Duration.zero);
 
-      await repository.setZeroBasedEnabled(true);
+      await repository.setZeroBasedEnabled(enabled: true);
       await Future<void>.delayed(Duration.zero);
-      await repository.setZeroBasedEnabled(false);
+      await repository.setZeroBasedEnabled(enabled: false);
       await Future<void>.delayed(Duration.zero);
       await subscription.cancel();
 
@@ -60,8 +60,8 @@ void main() {
   group('setZeroBasedEnabled', () {
     test('upserts the singleton row instead of creating a second one',
         () async {
-      await repository.setZeroBasedEnabled(true);
-      await repository.setZeroBasedEnabled(false);
+      await repository.setZeroBasedEnabled(enabled: true);
+      await repository.setZeroBasedEnabled(enabled: false);
 
       final rows = await database.select(database.appSettings).get();
 
@@ -71,11 +71,11 @@ void main() {
     });
 
     test('stamps updatedAt on every write', () async {
-      await repository.setZeroBasedEnabled(true);
+      await repository.setZeroBasedEnabled(enabled: true);
       final first = await database.select(database.appSettings).getSingle();
 
       await Future<void>.delayed(const Duration(milliseconds: 5));
-      await repository.setZeroBasedEnabled(false);
+      await repository.setZeroBasedEnabled(enabled: false);
       final second = await database.select(database.appSettings).getSingle();
 
       expect(second.updatedAt, greaterThan(first.updatedAt));

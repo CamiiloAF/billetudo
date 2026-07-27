@@ -76,6 +76,27 @@ class Budget extends Equatable {
   /// Epoch millis, not a `DateTime` — see `_SyncColumns.updatedAt`.
   final int updatedAt;
 
+  /// A copy with a replaced [amountMinor]. Used to apply a Wallet-style
+  /// per-period override (`BudgetPeriodOverride`) to the amount the "Modo
+  /// sobres" summary counts for a budget's current window, without mutating the
+  /// stored row.
+  Budget withAmountMinor(int amountMinor) => Budget(
+        id: id,
+        name: name,
+        amountMinor: amountMinor,
+        currency: currency,
+        period: period,
+        startDate: startDate,
+        recurring: recurring,
+        rollover: rollover,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        icon: icon,
+        endDate: endDate,
+        archivedAt: archivedAt,
+        alertThresholdPct: alertThresholdPct,
+      );
+
   bool get isClosed => archivedAt != null;
 
   /// A one-off budget (no cadence to repeat). `custom` is exactly this in the

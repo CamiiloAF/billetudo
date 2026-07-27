@@ -15,39 +15,75 @@ void main() {
     getMostUsedCategories = GetMostUsedCategories(repository);
   });
 
-  test('delega en el repositorio (limit por defecto)', () async {
+  test('delega en el repositorio (limit por defecto, accountId nulo)',
+      () async {
     final categories = [
       buildCategory(),
       buildCategory(id: 'cat-2'),
       buildCategory(id: 'cat-3'),
     ];
     when(
-      () => repository.getMostUsedCategories(CategoryKind.expense),
+      () => repository.getMostUsedCategories(
+        CategoryKind.expense,
+        accountId: null,
+      ),
     ).thenAnswer((_) async => Right(categories));
 
     final result = await getMostUsedCategories(CategoryKind.expense);
 
     expect(result.getRight().toNullable(), categories);
     verify(
-      () => repository.getMostUsedCategories(CategoryKind.expense),
+      () => repository.getMostUsedCategories(
+        CategoryKind.expense,
+        accountId: null,
+      ),
     ).called(1);
   });
 
   test('respeta un limit explícito', () async {
     when(
-      () => repository.getMostUsedCategories(CategoryKind.income, limit: 5),
+      () => repository.getMostUsedCategories(
+        CategoryKind.income,
+        limit: 5,
+        accountId: null,
+      ),
     ).thenAnswer((_) async => const Right(<Category>[]));
 
     await getMostUsedCategories(CategoryKind.income, limit: 5);
 
     verify(
-      () => repository.getMostUsedCategories(CategoryKind.income, limit: 5),
+      () => repository.getMostUsedCategories(
+        CategoryKind.income,
+        limit: 5,
+        accountId: null,
+      ),
+    ).called(1);
+  });
+
+  test('propaga un accountId explícito al repositorio', () async {
+    when(
+      () => repository.getMostUsedCategories(
+        CategoryKind.expense,
+        accountId: 'account-1',
+      ),
+    ).thenAnswer((_) async => const Right(<Category>[]));
+
+    await getMostUsedCategories(CategoryKind.expense, accountId: 'account-1');
+
+    verify(
+      () => repository.getMostUsedCategories(
+        CategoryKind.expense,
+        accountId: 'account-1',
+      ),
     ).called(1);
   });
 
   test('propaga el failure del repositorio', () async {
     when(
-      () => repository.getMostUsedCategories(CategoryKind.expense),
+      () => repository.getMostUsedCategories(
+        CategoryKind.expense,
+        accountId: null,
+      ),
     ).thenAnswer((_) async => const Left(DatabaseFailure('boom')));
 
     final result = await getMostUsedCategories(CategoryKind.expense);

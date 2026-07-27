@@ -7,6 +7,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/account_with_balance.dart';
 import '../cubit/account_detail_cubit.dart';
@@ -18,6 +20,7 @@ import '../widgets/balance_card_hero.dart';
 import '../widgets/balance_card_simple.dart';
 import '../widgets/info_card.dart';
 import '../widgets/info_row.dart';
+import '../widgets/sheets/adjust_balance_sheet.dart';
 import '../widgets/sheets/cannot_delete_last_account_sheet.dart';
 import '../widgets/sheets/confirm_archive_account_sheet.dart';
 import '../widgets/sheets/confirm_delete_account_sheet.dart';
@@ -52,32 +55,41 @@ class AccountDetailPage extends StatelessWidget {
       },
       builder: (context, state) {
         final account = state.account;
+        final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            title: Text(account?.name ?? l10n.accountsTitle),
-            actions: [
-              if (account != null)
-                IconButton(
-                  onPressed: () => onEdit(account.id),
-                  tooltip: l10n.commonEdit,
-                  icon: const Icon(LucideIcons.pencil),
-                ),
-            ],
-          ),
           body: SafeArea(
-            child: switch (state.status) {
-              AccountDetailStatus.loading ||
-              AccountDetailStatus.closed =>
-                const Center(child: CircularProgressIndicator()),
-              AccountDetailStatus.failure => AccountsErrorView(
-                  onRetry: () =>
-                      context.read<AccountDetailCubit>().start(account!.id),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: account?.name ?? l10n.accountsTitle,
+                  trailing: account == null
+                      ? null
+                      : PageHeaderCircleButton(
+                          icon: LucideIcons.pencil,
+                          background: colors.primary,
+                          foreground: colors.onPrimary,
+                          tooltip: l10n.commonEdit,
+                          onPressed: () => onEdit(account.id),
+                        ),
                 ),
-              AccountDetailStatus.ready => AccountDetailBody(
-                  entry: state.entry!,
-                  revealedNumber: state.revealedNumber,
+                Expanded(
+                  child: switch (state.status) {
+                    AccountDetailStatus.loading ||
+                    AccountDetailStatus.closed =>
+                      const Center(child: CircularProgressIndicator()),
+                    AccountDetailStatus.failure => AccountsErrorView(
+                        onRetry: () => context
+                            .read<AccountDetailCubit>()
+                            .start(account!.id),
+                      ),
+                    AccountDetailStatus.ready => AccountDetailBody(
+                        entry: state.entry!,
+                        revealedNumber: state.revealedNumber,
+                      ),
+                  },
                 ),
-            },
+              ],
+            ),
           ),
         );
       },
@@ -152,11 +164,13 @@ class AccountDetailBody extends StatelessWidget {
                     view: account.cardBalancePrimary ?? CardBalanceView.debt,
                     onViewChanged:
                         context.read<AccountDetailCubit>().cardViewChanged,
+                    onEditBalance: () => _adjustBalance(context, entry),
                   )
                 else
                   BalanceCardSimple(
                     balanceMinor: entry.balance.balanceMinor,
                     currency: account.currency,
+                    onEditBalance: () => _adjustBalance(context, entry),
                   ),
                 const SizedBox(height: 18),
                 AccountInfoSection(
@@ -169,6 +183,18 @@ class AccountDetailBody extends StatelessWidget {
         ),
         AccountDetailActions(account: account),
       ],
+    );
+  }
+
+  /// Opens "Ajustar saldo" for this account. The detail refreshes on its own
+  /// once the write commits — Drift's reactive stream re-emits.
+  void _adjustBalance(BuildContext context, AccountWithBalance entry) {
+    unawaited(
+      AdjustBalanceSheet.show(
+        context,
+        account: entry.account,
+        currentBalanceMinor: entry.balance.balanceMinor,
+      ),
     );
   }
 }
@@ -261,10 +287,14 @@ class AccountDetailActions extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          OutlinedButton.icon(
-            onPressed: cubit.promptArchive,
-            icon: const Icon(LucideIcons.archive),
-            label: Text(l10n.accountArchiveAction),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: cubit.promptArchive,
+              // `Button/Secondary`'s icon (`d514i` in `ZCSCc`) is
+              // `enabled:false` here — text only, no `archive` glyph.
+              child: Text(l10n.accountArchiveAction),
+            ),
           ),
           TextButton(
             onPressed: cubit.promptDelete,
@@ -273,16 +303,17 @@ class AccountDetailActions extends StatelessWidget {
               children: [
                 Text(
                   l10n.accountDeleteAction,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        // `expense-text`, not `expense`: a normal-sized
-                        // destructive link needs the calibrated token to clear
-                        // 4.5:1 (MASTER.md).
-                        color: colors.expenseText,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    // `expense-text`, not `expense`: a normal-sized
+                    // destructive link needs the calibrated token to clear
+                    // 4.5:1 (MASTER.md).
+                    color: colors.expenseText,
+                  ),
                 ),
-                Icon(LucideIcons.chevronRight,
-                    size: 18, color: colors.expenseText),
+                const SizedBox(width: 4),
+                Icon(LucideIcons.trash2, size: 16, color: colors.expenseText),
               ],
             ),
           ),

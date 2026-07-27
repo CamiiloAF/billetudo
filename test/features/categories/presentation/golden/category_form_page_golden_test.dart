@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 class MockCategoryFormCubit extends MockCubit<CategoryFormState>
     implements CategoryFormCubit {}
@@ -35,7 +35,7 @@ void main() {
         child: const CategoryFormPage(),
       ),
       brightness: brightness,
-      size: tallGoldenPhoneSize,
+      size: tallGoldenPhoneSize(height: 1600),
     );
     await expectLater(
       find.byType(CategoryFormPage),
@@ -94,7 +94,7 @@ void main() {
           parentId: 'root-1',
           parentName: 'Comida',
           name: 'Restaurantes',
-          icon: 'utensils',
+          icon: 'utensils-crossed',
           color: 'coral',
           kindLockReason: CategoryKindLockReason.subcategory,
         ),

@@ -36,7 +36,7 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
   }
 
   @override
-  FutureResult<Unit> setZeroBasedEnabled(bool enabled) async {
+  FutureResult<Unit> setZeroBasedEnabled({required bool enabled}) async {
     try {
       await _local.setZeroBasedEnabled(
         zeroBasedEnabled: enabled,

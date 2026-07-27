@@ -10,6 +10,6 @@ class SetZeroBasedEnabled {
 
   final AppSettingsRepository _repository;
 
-  FutureResult<Unit> call(bool enabled) =>
-      _repository.setZeroBasedEnabled(enabled);
+  FutureResult<Unit> call({required bool enabled}) =>
+      _repository.setZeroBasedEnabled(enabled: enabled);
 }

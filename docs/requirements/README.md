@@ -15,5 +15,6 @@ Requerimientos funcionales de la capa gratuita y completa de la app (Nivel 0 seg
 11. [Import/Export CSV](11-import-export.md)
 12. [Multi-moneda](12-multi-moneda.md)
 13. [Onboarding](13-onboarding.md)
+14. [Apariencia (dentro de Ajustes)](14-apariencia.md)
 
 Ninguna de estas features puede quedar bloqueada tras anuncio o pago (regla de Nivel 0, `CLAUDE.md`). La única excepción documentada es dentro de **Gráficas e informes**: el set esencial es Nivel 0, pero las vistas avanzadas son Nivel 1/2 — ver el detalle en `10-graficas-informes.md`.

@@ -520,5 +520,41 @@ void main() {
 
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
     });
+
+    test('bug 3: expone el nombre de la deuda cuando la tx tiene debtId',
+        () async {
+      final debt = await database.into(database.debts).insertReturning(
+            DebtsCompanion.insert(
+              name: 'Crédito carro',
+              direction: DebtDirection.iOwe,
+              principalMinor: 0,
+              currency: 'COP',
+            ),
+          );
+      final transaction = await createTransaction(
+        expenseDraft(categoryId: expenseCategory.id),
+      );
+      await (database.update(database.transactions)
+            ..where((t) => t.id.equals(transaction.id)))
+          .write(TransactionsCompanion(debtId: Value(debt.id)));
+
+      final result =
+          await repository.watchTransactionDetail(transaction.id).first;
+
+      final detail = result.getRight().toNullable()!;
+      expect(detail.debtName, 'Crédito carro');
+    });
+
+    test('bug 3: una tx sin debtId no expone nombre de deuda', () async {
+      final transaction = await createTransaction(
+        expenseDraft(categoryId: expenseCategory.id),
+      );
+
+      final result =
+          await repository.watchTransactionDetail(transaction.id).first;
+
+      final detail = result.getRight().toNullable()!;
+      expect(detail.debtName, isNull);
+    });
   });
 }

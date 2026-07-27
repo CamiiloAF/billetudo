@@ -6,7 +6,7 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 
 ## Frames
 
-Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en la banda `Zona — Presupuestos (Oscuro)` (`Q9o9pz`), separada abajo del canvas claro.
+Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en una banda separada abajo del canvas claro, con un offset de **7010px** respecto al frame claro equivalente. (La banda no tiene frame contenedor propio: es posicional. El `ID` `Q9o9pz` que citaba este documento no existe en el `.pen`.)
 
 | Pantalla / pieza | Node ID (Claro) | Node ID (Oscuro) |
 |---|---|---|
@@ -20,19 +20,38 @@ Cada pantalla tiene su par claro→oscuro. El tema oscuro vive en la banda `Zona
 | Detalle — sobregasto | `DN0GV` | `zW1s4` |
 | Detalle — una única vez | `QLn6w` | `A5O26l` |
 | Histórico de presupuestos cerrados | `KfPyk` | `g2qP7` |
+| Histórico — carga (skeleton) | `rI2bL` | `swPIt` |
 | Modo sobres (base-cero) | `D1G5hl` | `YiBcF` |
-| Sheet — acciones del detalle (⋮) | `G26c4T` | `f1WviW` |
+| Sheet — acciones del detalle (⋮) | `JR1Xp` | `Z72OIH` |
+| Sheet — ajustar monto (crear ajuste) | `A8ZfHd` | `D0EoN` |
+| Sheet — ajustar monto (editar/cancelar ajuste ya programado) | `k6fKsZ` | `PPzUv` |
+| Detalle — ajuste programado (banner) | `reulY` | `ujbZf` |
 | Sheet — umbral de alerta | `m3jomu` | `GNQ49` |
 | Sheet — elegir ícono | `XsnnD` | `Al6tQ` |
 | Sheet — info "¿Qué es el modo sobres?" | `eBwb0` | `gAetG` |
 | Menú lista (⋮ header) | `TmOGV` | `cOcbC` |
 | Menú modo activo | `tFZyK` | `qJAka` |
 | Fila en Ajustes ("Modo sobres") | `r5aVv` | `GZUqi` |
+| Sheet — eliminar presupuesto | `hxkUC` | `T7pTgh` |
+| Detalle HU-12 — solo gastado (sin programado) | `kLUl7` | `KFaVk` |
+| Detalle HU-12 — programado sano | `H4HDen` | `S8OEo` |
+| Detalle HU-12 — riesgo de sobregiro proyectado | `EZeos` | `AqSs3` |
+| Sheet HU-12 — pagos programados del período (con datos) | `hFPFU` | `HH9m9` |
+| Sheet HU-12 — pagos programados del período (vacío) | `Tg476` | `ZCYip` |
 
 **Componentes reutilizables** (temáticos, sin variante oscura separada):
 - `Budget Line` (`FSL69`) — fila de presupuesto en la lista.
 - `Budget Skeleton Row` (`iVri4`) — placeholder de carga; usa token `$skeleton` (NO `$border`, invisible en oscuro).
-- `Archived Budget Row` (`Ote7d`) — fila del histórico.
+- `Archived Budget Row` (`Ote7d`) — fila del histórico. **Tarjeta de dos zonas**, no una fila plana: Body (icon-wrap + nombre + **alcance** + `"Cerrado <fecha>"` a la derecha, y debajo la fila de resultado con `circle-check-big` / `circle-minus` — el icono va en **ambos** resultados, no solo en sobregasto) y **Footer** separado por borde superior, alineado a la derecha, con `archive-restore` + "Reactivar".
+- `Archived Budget Skeleton Row` (`ktlIa`) — placeholder de carga del histórico, con la geometría de dos zonas de `Ote7d`. No reusar `iVri4`: es el placeholder de `FSL69` y tiene otra geometría.
+- `Budget Scheduled Row` (`j3b8Se`, "Variante A — Badge recurrencia") — fila de un pago programado dentro del sheet de HU-12 (ver más abajo). Icon-wrap con badge circular de recurrencia superpuesto (18×18 `$surface`+borde, ícono `repeat` 9px, mismo patrón del badge de edición de ícono del formulario), sub "Próximo: [fecha] · [cuenta]", monto en `$text-secondary`. Sin variante oscura separada (recolorea por tema).
+  - **Título = nota del pago, NO la categoría (fix items 3/19, `bugfixes-0.0.1.md`):** el título de la fila es el **nombre/nota** del pago programado (helper único `ScheduledPaymentFormat.templateName`, compartido con la `Scheduled Card` de la lista global). Si la nota está vacía → fallback genérico "Pago programado" (l10n `scheduledPaymentUntitled`), **nunca** la categoría. La categoría va como metadato secundario, no como título.
+
+**Caption "libre tras programados" en el hero del detalle (fix item 10, `bugfixes-0.0.1.md`):** en el hero de HU-12 (`H4HDen` claro / `S8OEo` oscuro), bajo el caption de "programado", una línea estilo caption (12/500 `$text-secondary`, `$font-body`) que muestra el presupuesto libre estimado: **"Quedarían $X libres si apruebas los programados"**, con `X = restante − programado`. Se muestra **solo cuando `programado>0` y `X≥0`**. En **sobregiro** (`X<0`) NO aparece — ese caso ya lo cubre la línea "excedería el presupuesto por $X" del estado de riesgo (`AqSs3`), sin duplicar.
+
+**Enlace "Ver todos los pagos programados" (fix item 11, `bugfixes-0.0.1.md`):** el sheet de pagos programados del período (`hFPFU`/`HH9m9`) lleva un footer (divisor + `calendar-clock` + "Ver todos los pagos programados" + `chevron-right`, `$primary-on-soft-strong`) que **navega a la lista global de Pagos Programados** (`context.go`, es tab-root). No expande in-situ.
+- `Adjust Sheet Body` (`pkshL`) — cuerpo compartido por las **4 superficies** del sheet de ajuste de monto (crear/editar × claro/oscuro), para no duplicar Title/Field/Hint entre ellas.
+- `Entry Row` (`s09qcC`) — fila genérica icono + label/sub + monto opcional + chevron, ahora marcada **`reusable:true`**. La usa tanto `Programado — Entry` (HU-12: icono `calendar-clock`, con monto) como el banner "Ajuste de monto" (icono `repeat-1`, sin monto en el slot derecho — el monto y el rango del período van en el sub). El banner no duplica la geometría a mano: es una instancia `ref` de `s09qcC` (banner Ajuste `b1SQB9` claro / `wHmyc` oscuro); el entry Programado del detalle `reulY`/`ujbZf` son las instancias `xhInB` (claro) / `oTe6R` (oscuro). **Deuda menor de higiene de canvas:** el master de `s09qcC` vive dentro del frame `H4HDen` (marcado `reusable` in situ), no en la banda de componentes del root. Los IDs viejos `AYsw7`/`s0ZlV`/`IlrYo`/`D8QEQ` ya no existen.
 
 ## Navegación
 
@@ -58,23 +77,60 @@ Norte de limpieza: **Inicio** (`aOhoY`) — casi todo blanco/superficie, un solo
 
 Componente `Budget Line` (`FSL69`): **3 datos + barra**, no más.
 - **Línea 1:** icono (icon-wrap `$muted`) + **nombre** (izq) + stack **"Te quedan / $X"** o **"Excedido por / $X"** (der).
-- **Línea 2 (meta, 12px `$text-secondary`):** **alcance corto · ancla temporal · %** en una sola línea. El `%` va gris (`$text-secondary`) en sano y rojo (`$expense-text`) en sobregasto.
-- **Barra** de progreso delgada (`$primary` sano / `$expense` sobregasto).
+- **Línea 2 (meta, 12px `$text-secondary`):** es una **fila de ancho completo con dos nodos**, no una cadena: `k0TmF` = **alcance corto · ancla temporal** (`fill_container`, a la izquierda) y `vdyCS` = **el `%` anclado a la derecha**. **No concatenes el `%` dentro del texto de meta**: queda dentro de la columna elástica y el ellipsis se lo come siempre — pasó, y el porcentaje no se vio en ningún golden hasta el 2026-07-19. El `%` va gris (`$text-secondary`) en sano y rojo (`$expense-text`) en sobregasto.
+  - **El ancla temporal es "se reinicia el [fecha]" / "termina el [fecha]"**, nunca "N días" (ver "Copy y tono").
+- **Barra** de progreso delgada, track `$border` y altura **6** en la lista (8 en el hero del detalle); fill `$primary` sano / `$expense` sobregasto.
+- **En sobregasto el rojo NO es ambiental:** se pinta el `%`, el stack derecho y la barra; **la meta se queda en `$text-secondary`**. El rojo es señal con significado.
+- Icon-wrap de la fila: **40×40 radio 12** (no círculo), icono 20 en `$primary-on-soft` (`$expense` en sobregasto).
 - **Al detalle, NO a la lista:** gastado, total, periodicidad, umbral, desglose. La lista es para decidir "¿puedo seguir gastando?".
 - Aire: padding de card ~18, gap ~18, borde `$border` 1px, radio 20, fondo `$surface` dominante.
 - **Sin resumen agregado permanente** ("$X presupuestado este mes" sumando todos): es engañoso porque los presupuestos tienen periodos distintos, se solapan (doble conteo) y son multi-moneda. Solo válido en Modo sobres (HU-06). No usarlo como hero de la lista.
 
-**Punto de entrada a crear:** fila-CTA **"+ Nuevo presupuesto"** al final de la lista (círculo `$surface` + `plus`, fondo `$primary-soft`, borde `$primary-light`, label `$primary-on-soft-strong` para pasar contraste AA). Reemplaza al FAB en esta pantalla.
+**Extensión HU-12 (pagos programados) en la lista:** el tramo "programado"/"riesgo" ya aprobado para el hero del detalle también se refleja aquí, sin agregar una línea de texto nueva (la línea de meta ya está saturada — ver arriba). Cambios sobre `Budget Line` (`FSL69`), se propagan a toda instancia (lista normal y Modo sobres) sin afectar las que no tienen nada programado (nacen `enabled:false`):
+- **Barra (altura 6, más delgada que el hero):** tramo `Scheduled` (`lyaNM`), hermano de `Fill` — mismo color y misma convención de recorte al 100% del track que el hero: `$primary-light` (programado sano) / `$amber` (riesgo de sobregiro proyectado, `spentMinor+scheduledMinor > amountMinor` sin sobregasto real). En tema claro el tramo sano es sutil a este grosor — no es un fallo (el texto ya lo nombra, WCAG 1.4.1 cubierto), pero no reusar este track de 6px para otro indicador de color sin verificar contraste real en dispositivo.
+- **Línea de meta:** el `%` (`vdyCS`) pasa a vivir en un `Pct Group` (`vNZMO`) junto a un ícono `calendar-clock` 12px (`PDFgP`), oculto por defecto — se habilita solo si hay tramo programado/riesgo, coloreado `$text-secondary` (sano) / `$amber-text` (riesgo). Resuelve "no depender solo de color" sin espacio para texto nuevo.
+- **Stack derecho:** tercer estado de copy, mutuamente excluyente con los otros dos — **"Podría exceder por $X"** en `$amber-text` (riesgo de sobregiro proyectado), distinto de "Te quedan $X" (sano) y "Excedido por $X" (sobregasto real, `$expense-text`). Condicional siempre ("Podría"), nunca un hecho consumado.
+- El estado de riesgo es la única combinación que agrega el ícono `calendar-clock` + barra de dos tonos — el sobregasto real sigue siendo una barra sólida roja sin ese ícono, para que ambas alertas no se confundan en un escaneo rápido.
+
+**Punto de entrada a crear:** fila-CTA **"+ Nuevo presupuesto"** al final de la lista (círculo **40pt** `$surface` + `plus`, fondo `$primary-soft`, borde `$primary-light`, label **700** `$primary-on-soft-strong` para pasar contraste AA). Reemplaza al FAB en esta pantalla — **Presupuestos no lleva `AppFab`**, su acción de crear vive en el header y en esta fila. El copy es "Nuevo presupuesto", no el del estado vacío ("Crear presupuesto").
+
+**Header** (`ymsmU`): dos botones **circulares de 44pt** en orden **`⋮` → `+`** (`HqZOy` con `ellipsis-vertical` sobre `$muted`; `QAY0j` con `plus` sobre `$primary`), gap 8. No son `IconButton` planos.
+
+**El ⋮ abre un bottom sheet, no un `PopupMenu`** (`TmOGV`/`cOcbC`, instancia de `Bottom Sheet Base`): head "Presupuestos / Opciones" y **siempre tres** opciones con icon-wrap `$muted` 38/r12, título 15/600 y subtítulo 12/500 — "Ver histórico / Presupuestos cerrados", "Activar|Desactivar modo sobres" con sus dos subtítulos (`tFZyK`/`qJAka` es la variante con sobres activo), y "¿Qué es el modo sobres?" (sin subtítulo). El patrón de fila y head vive en `lib/core/widgets/sheet_action_row.dart`.
 
 ## Detalle de presupuesto (`NloPT` / `vHIu4`; sobregasto `DN0GV`/`zW1s4`; única vez `QLn6w`/`A5O26l`)
 
 Orden vertical: `Page Header` (atrás + **"⋮"**) → **hero de progreso** → **actividad del periodo** → **pastilla flotante de periodo** (abajo).
 
 - **Hero de progreso — patrón compacto:** dato primario **"Te quedan $X"** + barra, y **debajo de la barra una sola caption de 2 partes** al estilo del Hero de Inicio (`HC Prog Row`): izq **"82% · $492.000 de $600.000"**, der **"Restan 18 días"**. **Prohibido** desglosar esas cifras en varios `Info Row`/chips apilados (se probó y saturó). Sobregasto → familia semántica `expense` (hero rojo).
-- **Stepper de periodo (HU-05) — pastilla flotante inferior:** NO es una fila arriba ni una barra de ancho completo (evita confundirse con la `Tab Bar`). Es una **píldora centrada flotante anclada abajo**, con el rango explícito del ciclo del propio presupuesto + estado: `‹ 1–31 jul · vigente ›` (la tarjeta sería "21 jul – 20 ago"), NO un mes calendario global. Siempre visible mientras la actividad scrollea. Controla qué periodo reflejan el hero y la actividad. Chevron deshabilitado en los bordes (no antes de `startDate` ni después de `endDate`). Alinear con el `DatePeriodFilter` de Transacciones.
-- **Actividad del periodo — expandir INLINE (no redirigir):** transacciones que cuentan para el presupuesto (reusa `Transaction Row`), excluye transferencias. El "ver más" **expande la lista in-place** con **"Cargar más"** (paginación perezosa) — **nunca** redirige a una lista global (rompería el contexto de periodo + alcance). Acceso secundario sutil **"Abrir en Movimientos ›"** para la lista global filtrada.
-- **Acciones — en overflow "⋮" del header** (sheet `G26c4T`/`f1WviW`): **Editar** (→ form prellenado) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (rojo `$expense-text`, → papelera `deletedAt`, HU-11).
+- **Stepper de periodo (HU-05) — pastilla flotante inferior:** NO es una fila arriba ni una barra de ancho completo (evita confundirse con la `Tab Bar`). Es una **píldora centrada flotante anclada abajo**, con el rango explícito del ciclo del propio presupuesto + estado: `‹ 21 jul – 20 ago · vigente ›`, NO un mes calendario global. (Este ejemplo decía `1–31 jul` y era justamente el error: un mes calendario. Estaba mal en el `.md` **y** en cuatro frames; se corrigió el 2026-07-19. No lo copies de vuelta.) El label va **partido en dos textos**, no en uno uniforme: rango 13/700 `$text-primary` + estado 12/600 `$text-secondary`. Los chevrons son **círculos `$muted` de 44pt**. En "una única vez" van **los dos** al 40%: hay un solo periodo, así que es índice 0 y último a la vez — no hay anterior ni siguiente. Siempre visible mientras la actividad scrollea. Controla qué periodo reflejan el hero y la actividad. Chevron deshabilitado en los bordes (no antes de `startDate` ni después de `endDate`). Alinear con el `DatePeriodFilter` de Transacciones.
+- **Actividad del periodo — expandir INLINE (no redirigir):** transacciones que cuentan para el presupuesto (reusa `Transaction Row`), excluye transferencias. El "ver más" **expande la lista in-place** con **"Ver más"** (paginación perezosa) — **nunca** redirige a una lista global (rompería el contexto de periodo + alcance). El header de la sección es `"Movimientos del periodo"` + el **contador** `"N movimientos"` a la derecha (`Nv04I`: `K7yvL` + `qFH6T`).
+
+> **No hay acceso "Abrir en Movimientos ›".** El spec lo pidió en prosa, pero no está dibujado en ninguna de las seis variantes del detalle y ocupaba en código el lugar que el frame da al contador. Se retiró (2026-07-19): el "ver más" ya despliega la lista completa ahí mismo, que es el objetivo; y el motivo por el que este mismo párrafo prohíbe redirigir —romper el contexto de periodo + alcance— aplica igual a un acceso secundario. Además, traducir un alcance compuesto ("2 cuentas · 3 categorías" + ventana del periodo) a los filtros de Movimientos no siempre es fiel, y un enlace que lleva a una lista distinta es peor que no tenerlo. Si alguna vez se quiere, se diseña en Pencil primero.
+- **Acciones — en overflow "⋮" del header** (sheet `JR1Xp`/`Z72OIH`): **Editar** (→ form prellenado) · **Ajustar monto** (ícono `repeat-1`, ajusta el monto del período visible del stepper — ver sección dedicada abajo) · **Cerrar (guardar en histórico)** (HU-10) · **Eliminar** (→ papelera `deletedAt`, HU-11; sheet de confirmación `hxkUC` / `T7pTgh`). El sheet de confirmación de eliminar usa tono **neutral `$primary`** (ícono `trash-2`), no rojo — es reversible vía papelera, mensaje: "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar."
 - **Variantes:** sobregasto (hero + caption en familia `expense`) y una única vez (ancla "termina el [fecha]", stepper acotado a `[startDate, endDate]`, chevron derecho deshabilitado en el último periodo).
+
+## HU-12 — Pagos programados dentro del presupuesto
+
+Extiende el hero de progreso del detalle (arriba) para proyectar, dentro del período vigente, los pagos programados que aún no se materializaron como transacción. Diseñado retroactivamente: la implementación en código llegó primero (ver `docs/dev-runs/budgets-scheduled-progress.md`) sin pasar por el gate de Pencil; este diseño formaliza esa deuda antes de que `flutter-dev` reconcilie el código contra él.
+
+Tres estados del hero, según si hay algo programado y si `spentMinor + scheduledMinor` supera `amountMinor` (proyección, no gasto real):
+
+- **Solo gastado** (`kLUl7`/`KFaVk`): nada programado en el período — la caption y el entry point "Programado" se ocultan por completo (`enabled:false`), la pantalla es indistinguible del detalle sin HU-12.
+- **Programado sano** (`H4HDen`/`S8OEo`): la barra suma un tercer tramo contiguo al gastado (ver "Barra de tres tramos" abajo) y la caption del hero gana una segunda línea: **"+ $X programado (llega a Y% si se ejecuta)"**, en `$text-secondary`.
+- **Riesgo de sobregiro proyectado** (`EZeos`/`AqSs3`): se activa cuando `spentMinor + scheduledMinor > amountMinor` **y el gasto real todavía NO excede** (ese caso ya existe y es el hero rojo `expense` de sobregasto real — no se tocan ni se confunden). La caption pasa a **"+ $X programado — excedería el presupuesto por $Y"** en `amber-text`, siempre en condicional ("excedería"/"Excedería"), nunca en presente ("excede") — es una proyección, nada se ejecutó todavía.
+
+**Excepción documentada a "Modelo de color — SOBRIO (no semáforo)":** la regla de arriba prohíbe explícitamente ámbar/semáforo por cercanía al límite, y ese caso general sigue vigente (gasto real acercándose al 100% sigue siendo violeta hasta sobregastar). El estado de riesgo de HU-12 es un caso distinto — **proyección de pagos aún no ejecutados**, no proximidad de gasto real — y usa `$amber`/`$amber-text`/`$amber-soft` (ver MASTER) como excepción deliberada, decidida explícitamente por el usuario tras auditoría de `ui-ux-reviewer`. No generalizar esta excepción a ningún otro indicador de cercanía al límite en la app.
+
+**Barra de tres tramos** (`F6J4sx` y equivalentes en `EZeos`/`AqSs3`):
+- Tramo 1 "gastado": `$primary` (o `$expense` si hay sobregasto real — mutuamente excluyente con el tramo de riesgo).
+- Tramo 2 "programado": `$primary-light` (no `$primary-soft` — casi hex-idéntico a `$border`, el segmento se perdía contra el track vacío) en estado sano; `$amber` en estado de riesgo. Extensión de uso de `$primary-light` documentada en MASTER (antes solo decoración pura, ahora codifica un dato real; sigue sin llevar texto/icono superpuesto).
+- **Convención de recorte al 100%:** la barra NUNCA excede el ancho visual del track, aunque el monto programado real implique más del 100% (ej. un tramo de riesgo que matemáticamente sería 45% del track se dibuja recortado a lo que quepa hasta el borde). La cifra exacta vive solo en el texto de la caption/fila ("excedería por $Y"), nunca en el ancho de la barra — decisión explícita del usuario, no un bug de proporción a corregir en código.
+- El tramo "programado"/"riesgo" nunca se comunica solo por color: la caption siempre lo nombra en texto (evita depender únicamente de color, WCAG 1.4.1).
+
+**Entry point "Programado"** (`s09qcC` y equivalentes): fila-tarjeta bajo el hero, oculta si no hay nada programado. Icon-wrap 40×40 `$primary-soft`/`calendar-clock` (o `$amber-soft` en riesgo) + label "Programado" + sub "N pagos próximos" + monto + chevron. Abre el sheet de la lista.
+
+**Sheet "Pagos programados del período"** (con datos `hFPFU`/`HH9m9`; vacío `Tg476`/`ZCYip`): reusa `Bottom Sheet Base`. Lista cada ocurrencia con `Budget Scheduled Row` (`j3b8Se` — ver "Componentes reutilizables"). Estado vacío reusa `Empty State` (`jmQO5`) con CTA deshabilitado (el sheet es de solo lectura, sin acción posible desde ahí); el head del sheet lleva solo el título, sin repetir el mensaje del `Empty State` en un hint aparte.
 
 ## Formulario crear/editar (`a3gGPM` / `AHGQc`)
 
@@ -84,18 +140,34 @@ Orden vertical: `Page Header` (atrás + **"⋮"**) → **hero de progreso** → 
   - **Una única vez** (`recurring = false`, ref. `C6SRE`/`c13OZ`) → NO muestra periodicidad; muestra **Inicio + Fin** (obligatorio). Este es el `custom` del enum `BudgetPeriod` — **en la UI no existe una pill "Personalizado"**, el caso custom ES la rama "Una única vez".
 - **Alcance con progressive disclosure:** las filas "Cuentas ›" / "Categorías ›" se muestran **solo en "Personalizado"**; en **"Todo"** (global, ref. `yfy35`/`u6RBA9`) se ocultan (redundantes). Patrón **A1 · filas + bottom sheet**: reúsan las hojas de Transacciones — `jpARf` ("Filtrar por cuenta") y `q0CTl` ("Filtrar por categoría", maneja subcategorías) — instanciadas con título de contexto ("Elegir cuentas" / "Incluir categorías"), sin duplicar los frames de Transacciones. En cada hoja, **"Todas" = incluir todas**; ambas dimensiones en "Todas" = presupuesto **global**.
 - **Umbral de alerta:** la fila "Avisarme al 80% del presupuesto ›" abre el sheet de umbral (`m3jomu`/`GNQ49`): presets **70/80/90 + Personalizado + No avisarme**, default 80. Persiste `alertThresholdPct` (HU-08).
-- **CTA "Crear presupuesto" deshabilitado** hasta que Nombre (1-100) y Monto (> 0) sean válidos (HU-01).
+- **CTA deshabilitado** hasta que Nombre (1-100) y Monto (> 0) sean válidos (HU-01). Va en una **barra inferior fija** (`l1wrUJ`): `$surface`, borde superior 1 `$border`, padding `[12,20,20,20]`, botón `fill_container`. **No** es el último item del scroll.
 - Editar = mismo form prellenado + acciones Cerrar/Eliminar desde el ⋮ del detalle.
+
+**Piezas del formulario que sí están en el `.pen` y es fácil omitir** (todas se implementaron el 2026-07-19 tras encontrarlas ausentes):
+
+- **Label de la primera sección: "Ícono y nombre"** (`AceYL`), al margen (x=20), alineado con la columna de labels de toda la pantalla — no indentado para cuadrar con el input.
+- **Badge de edición del ícono** (`oIyvH`): círculo 18×18 `$surface` con borde `$border`, sobrepuesto en la esquina inferior derecha del icon-button de 52×52.
+- **Selector de moneda dentro del input de Monto** (`EA3R5`): pastilla `$muted` radio 10 con `"COP"` 13/700 + `chevron-down`. El monto se formatea **con símbolo y sin decimales** (`$4.500.000`), igual en placeholder y en valor escrito.
+- **Periodicidad NO es un `Segmented Control`** (`Aj6Ly`): son **cuatro pastillas de ancho natural** (radio 12, padding `[9,14]`, gap 8; `$muted` en reposo, y la activa `$primary-soft` + borde `$primary` + label `$primary-on-soft-strong`).
+- **Las filas de navegación son `Form Field` (`wOlOA`)** con icono líder, **texto inline `"Etiqueta: valor"`** y **`chevron-right`** — sin label de sección encima. El chevron distingue: `-down` es desplegar aquí, `-right` es abrir un selector. "Repetir hasta" es una de estas filas, **no** un segmented control.
+- **Tira informativa del alcance "Todo"** (`yfy35/dd4X6`): `$primary-soft` radio 14 con icono `globe` y el texto "Incluye todo tu gasto: todas las cuentas y categorías."
+- **Una fila de navegación con valor puesto cambia su `chevron-right` por una `×` de limpiar** (`LucideIcons.x` 16 en `$text-secondary`), no dibujada en el frame pero **aceptada**: obligar a abrir el selector solo para borrar una fecha es peor. Misma afordancia que Pagos programados, con una diferencia deliberada: allá el chevron de reposo es `chevron-down` (campo desplegable) y aquí `chevron-right` (abre hoja). **Lo compartido es la `×`, no el chevron.**
+- **Placeholder del ícono sin elegir:** `shapes`, no `sparkles`. `sparkles` es el glifo de la familia IA/nudge del sistema (se usa en la tira `eZMPq` del hero de Modo sobres) y prometía "sugerencia IA" donde solo hay "elige un ícono". **Inconsistencia conocida:** Categorías sí usa `sparkles` en el mismo caso, pero ahí está dibujado y aprobado (`PZvWF/ZKIRA`) — unificarlo exige decidir cuál gana y editar Pencil.
+- **Los estados de carga del detalle y del formulario usan esqueletos**, no un spinner: la feature ya usa esqueletos en la lista (`iVri4`) y en el histórico (`ktlIa`), y un spinner rompía ese idioma. No tienen frame propio; su geometría se derivó de `NloPT` y `a3gGPM/lBpTl`.
+- **El hero omite la caption de días restantes fuera del periodo vigente.** `daysLeftFrom` clampa a 0, así que un periodo cerrado anunciaba "Último día" — falso. En `past` y `future` no se renderiza la caption; la píldora ya comunica el estado.
 
 ## Histórico (`KfPyk` / `g2qP7`)
 
-Lista de presupuestos **cerrados** (`archivedAt` no nulo), ordenados por fecha de cierre, con `Archived Budget Row` (`Ote7d`): nombre + periodo + **resultado real** (dentro/excedido; excedido en `$expense-text` con `circle-minus`). **No** incluye eliminados (papelera es aparte). Acceso desde el ⋮ de la lista (menú `TmOGV`/`cOcbC`). Reactivar = limpiar `archivedAt`.
+Lista de presupuestos **cerrados** (`archivedAt` no nulo), ordenados por fecha de cierre, con `Archived Budget Row` (`Ote7d`, ver su anatomía de dos zonas en "Componentes reutilizables"): nombre + **alcance** (no la periodicidad) + `"Cerrado <fecha>"` + **resultado real** en su propia fila (dentro con `circle-check-big` en `$text-secondary` / excedido con `circle-minus` en `$expense-text` — el copy es **"Terminó dentro del presupuesto"** / "Excedido por $X"). **No** incluye eliminados (papelera es aparte). Acceso desde el ⋮ de la lista (menú `TmOGV`/`cOcbC`). Reactivar = limpiar `archivedAt`, desde el **footer** de la tarjeta.
+
+Lleva **subheader** (`IMgeg`): "Presupuestos cerrados" (15/700) + "Los conservas sin borrar. Puedes reactivarlos cuando quieras." (12/500). Estado de carga con `Archived Budget Skeleton Row` (`ktlIa`), frames `rI2bL`/`swPIt`.
 
 ## Modo sobres (base-cero, HU-06) (`D1G5hl` / `YiBcF`)
 
 Nombre de UI: **"Modo sobres"** (no "base-cero"/"YNAB"/"zero-based" — jerga que el usuario no reconoce). Ícono `target`.
-- Hero propio: **ingreso del periodo − total asignado = sin asignar**; "Sin asignar" tiende a **cero** pero **no bloquea** ninguna acción (guía, no obstáculo).
-- Reusa `Budget Line` (`FSL69`) para el listado de asignaciones.
+- Hero propio (`w6P0W`): **ingreso del periodo − total asignado = sin asignar**; "Sin asignar" tiende a **cero** pero **no bloquea** ninguna acción (guía, no obstáculo). Es una **tarjeta `$surface` + borde `$border`** radio 24 padding 18 — **no** `$primary-soft`, que es el tratamiento de una fila-CTA; y el monto va 34/800 en **`$text-primary`**, no en violeta. Contiene cinco piezas que es fácil omitir: la pastilla **"Modo sobres"** (`Z2DJfz`, `target` sobre `$primary-soft`), el **botón info** circular de 28pt (`YXLex`, entrada al sheet `eBwb0`), el label **"Sin asignar este mes"**, la **barra de progreso** (`i9NQn`, track `$border`) y la **tira de nudge** (`eZMPq`, `$primary-soft` radio 14 con `sparkles` y copy motivacional). La caption son **dos anclas** en `space_between` ("Ingreso $X" izquierda / "Asignado $Y" derecha), no una línea envolvente.
+- Reusa `Budget Line` (`FSL69`) para el listado de asignaciones, pero **el label cambia a "Asignado"** con el monto asignado (no "Te quedan"), y la densidad es más compacta: padding 16 por tarjeta y gap 12 entre ellas (la lista normal usa 18/18).
+- **La lista de sobres no lleva fila-CTA** "+ Nuevo presupuesto": su única entrada es el `+` del header.
 - **Activación:** es opt-in a nivel de app desde **Ajustes → "Modo sobres"** (fila `r5aVv`/`GZUqi`, con link "¿Qué es?"). Persiste en `AppSettings.zeroBasedEnabled`. Estando activo, el ⋮ de la lista ofrece "Desactivar modo sobres" (menú `tFZyK`/`qJAka`).
 - **Info sheet** (`eBwb0`/`gAetG`): bottom sheet accesible desde "¿Qué es?" que explica el método sobres en lenguaje llano, sin jerga.
 
@@ -104,6 +176,22 @@ Nombre de UI: **"Modo sobres"** (no "base-cero"/"YNAB"/"zero-based" — jerga qu
 - **Vacío** (`Zqsi1`/`zIijv`): `Empty State` + copy neutral-positivo ("Aún no tienes presupuestos") + CTA "Crear presupuesto".
 - **Carga** (`L8A868`/`QiUJe`): 4× `Budget Skeleton Row` (`iVri4`), token `$skeleton`.
 - **Texto largo:** nombre/alcance a una línea con ellipsis (regla de contenido largo de MASTER).
+
+## Ajustar monto — el período donde el usuario está parado
+
+Mecanismo **override por período** (no "fork"): el presupuesto sigue siendo **un solo registro**. El ajuste crea/actualiza una fila en la tabla `BudgetPeriodOverrides` (una por `budgetId + periodStart`) que sobreescribe el monto **solo del período seleccionado**; los demás períodos usan el `amountMinor` base del presupuesto. Al terminar ese período, el monto vuelve solo al base — sin filas duplicadas en la lista y sin que el usuario tenga que revertir nada (pero SÍ puede quitar el override, ver "Editar/cancelar"). El ajuste apunta al **período que muestra el stepper** (donde el usuario está navegando), no a un "próximo" fijo; se rechaza ajustar un período ya terminado.
+
+**Punto de entrada** (`JR1Xp`/`Z72OIH`, sheet "Acciones del presupuesto"): ícono `repeat-1`, en el `⋮` del detalle — acción de gestión poco frecuente, no compite con el hero/CTA principal.
+
+**Sheet de ajuste** (`A8ZfHd`/`D0EoN`, body reusable `pkshL` — el `.pen` es la fuente de verdad y ya refleja este modelo): instancia de `Bottom Sheet Base`, forma compacta con el layout limpio (sin bloque `Info Row` `myfAc` separado para el monto actual; se eliminó la redundancia previa entre subtítulo y hint). Contenido: campo de monto nuevo etiquetado con el **rango del período visible** ("Nuevo monto · [rango]") con el monto base **inline** en el label row a la derecha ("Actual $[base]") → tira informativa `$primary-soft` de **una sola línea**, con el cuerpo en el token nuevo **`hint-text`** (*"El [fecha del período siguiente] vuelve a $[base] automáticamente."*). Dos variantes según si el período visible ya tiene override:
+- **Crear** (aún sin override en ese período): un solo botón primario **"Aplicar cambios"**.
+- **Editar/revertir** (ya hay override en el período visible; instancias claro `k6fKsZ` / oscuro `PPzUv`): `Sheet Buttons Row` (`Ot4yI`) con el par **`[Revertir ajuste | Aplicar cambios]`** — secundario **"Revertir ajuste"** (icono `rotate-ccw`, estilo neutral `Button/Secondary` — reversible, no punitivo) + primario **"Aplicar cambios"**. "Revertir ajuste" borra el override de ese período → vuelve al monto base.
+
+**Reflejo en el detalle** (`reulY`/`ujbZf`): el banner de ajuste (Label **"Ajuste de monto"** / Sub **"$850.000 · [rango del período]"** — copy relativo al período visible, sin "próximo"; instancias `b1SQB9` claro / `wHmyc` oscuro) bajo el Hero **sigue a la ventana visible del stepper**: aparece solo cuando el período que se muestra tiene un override, y al navegar entre períodos se recalcula. Tocarlo reabre el sheet en modo editar/revertir, prefilled. Coincidiendo con el código, el entry **"Programado"** de HU-12 (icono `calendar-clock`, "Programado" / "N pagos próximos", monto visible, instancias `xhInB` claro / `oTe6R` oscuro) **coexiste** con el banner de Ajuste bajo el Hero — orden **Hero → Programado → Ajuste → Movimientos del período**. Ambos son instancias del mismo `Entry Row` (`s09qcC`), diferenciados por icono (`calendar-clock` vs. `repeat-1`) y copy.
+
+**Snackbars** (`zSTlU`): tras aplicar → "Ajuste programado para el período seleccionado." (crear) / "Ajuste actualizado." (editar); tras "Revertir ajuste" → "Ajuste revertido — el período vuelve al monto habitual."
+
+> Nota de migración: la descripción anterior ("fork de 3 partes", "solo el próximo período") quedó obsoleta — el `.pen` (`pkshL`) y el código (tabla `BudgetPeriodOverrides`, cubit de detalle propagando `periodStart` de la ventana visible) mandan sobre este `.md`.
 
 ## Tema oscuro — notas de implementación
 

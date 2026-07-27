@@ -51,8 +51,10 @@ class CreditCardAccountRow extends StatelessWidget {
                           account.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          // 600, not 700: `Credit Card Account Row`'s `Name`
+                          // (`Z4mwDi`) is 15/600 — only `Debt` is 700.
                           style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -65,7 +67,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    money.format(
+                    money.formatSymbol(
                       balance.balanceMinor,
                       currencyCode: account.currency,
                     ),
@@ -89,7 +91,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.accountDebtLabel,
+                      l10n.accountDebtShortLabel,
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: colors.textSecondary),
                     ),
@@ -105,7 +107,7 @@ class CreditCardAccountRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      money.format(
+                      money.formatSymbol(
                         balance.debtMinor,
                         currencyCode: account.currency,
                       ),
@@ -113,7 +115,7 @@ class CreditCardAccountRow extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      money.format(
+                      money.formatSymbol(
                         // Floored at 0 by the domain: available credit is never
                         // shown negative (HU-02).
                         balance.availableCreditMinor ?? 0,

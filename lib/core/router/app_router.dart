@@ -13,9 +13,12 @@ import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
+import '../../features/auth/domain/entities/sign_out_outcome.dart';
+import '../../features/auth/domain/usecases/sign_out_with_local_data_choice.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/merge_cubit.dart';
+import '../../features/auth/presentation/cubit/sign_out_sheet_cubit.dart';
 import '../../features/auth/presentation/pages/account_deleted_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/merge_confirmation_page.dart';
@@ -35,10 +38,28 @@ import '../../features/categories/presentation/cubit/categories_list_cubit.dart'
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
 import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/categories/presentation/pages/category_form_page.dart';
+import '../../features/debts/domain/entities/debt.dart';
+import '../../features/debts/presentation/cubit/debt_detail_cubit.dart';
+import '../../features/debts/presentation/cubit/debt_form_cubit.dart';
+import '../../features/debts/presentation/cubit/debt_link_cubit.dart';
+import '../../features/debts/presentation/cubit/debts_list_cubit.dart';
+import '../../features/debts/presentation/pages/debt_detail_page.dart';
+import '../../features/debts/presentation/pages/debt_form_page.dart';
+import '../../features/debts/presentation/pages/debt_link_mode_page.dart';
+import '../../features/debts/presentation/pages/debts_list_page.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
+import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
+import '../../features/scheduled_payments/presentation/cubit/scheduled_payments_list_cubit.dart';
+import '../../features/scheduled_payments/presentation/pages/pending_occurrences_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
+import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
@@ -50,12 +71,14 @@ import '../../features/transactions/presentation/pages/transaction_form_page.dar
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../preferences/balance_carousel_cubit.dart';
 import '../widgets/coming_soon_page.dart';
 
 /// App routes. Each feature registers its own here. Paths stay in Spanish
 /// because they are user-visible URLs.
 ///
-/// The app is a five-tab shell (Inicio, Movimientos, Presupuestos, Metas, Más).
+/// The app is a five-tab shell (Inicio, Movimientos, Presupuestos, Pagos
+/// programados, Más).
 /// List/hub pages live inside their tab branch (the tab bar stays visible);
 /// stacked forms and detail pages render on the root navigator, above the tab
 /// bar (MASTER: a `Page Header` and the `Tab Bar` are mutually exclusive).
@@ -79,6 +102,18 @@ abstract final class AppRoutes {
   static const String login = '/mas/ajustes/respaldar';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String accountDeleted = '/mas/cuenta-eliminada';
+  static const String debts = '/deudas';
+  static const String newDebt = '/deudas/nueva';
+  static const String scheduledPayments = '/pagos-programados';
+  static const String newScheduledPayment = '/pagos-programados/nuevo';
+  static const String pendingScheduledPayments =
+      '/pagos-programados/por-confirmar';
+
+  /// The new-movement form preselecting [accountId] — used when the movements
+  /// list is filtered down to a single account (HU-06a). The form still lets
+  /// the user change it.
+  static String newTransactionForAccount(String accountId) =>
+      '$newTransaction?accountId=${Uri.encodeQueryComponent(accountId)}';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -89,6 +124,28 @@ abstract final class AppRoutes {
 
   /// Edit form of one budget: `/presupuestos/<id>/editar`.
   static String editBudget(String id) => '$budgets/$id/editar';
+
+  /// Detail of one debt: `/deudas/<id>`.
+  static String debt(String id) => '$debts/$id';
+
+  /// Edit form of one debt: `/deudas/<id>/editar`.
+  static String editDebt(String id) => '$debts/$id/editar';
+
+  /// Configurar cuota of one debt (HU-03): `/deudas/<id>/cuota`, optionally
+  /// editing the existing linked template via `?spId=`. Reuses the Pagos
+  /// Programados form in cuota mode; the debt context rides in `extra` as a
+  /// [DebtInstallmentContext].
+  static String debtInstallment(String debtId, {String? spId}) {
+    final base = '$debts/$debtId/cuota';
+    return spId == null
+        ? base
+        : '$base?spId=${Uri.encodeQueryComponent(spId)}';
+  }
+
+  /// Movimientos in Deudas link mode: `/movimientos/enlazar-deuda/<debtId>`
+  /// (HU-02). The `Debt` itself rides in the route's `extra` for the banner.
+  static String linkTransactionToDebt(String debtId) =>
+      '$transactions/enlazar-deuda/$debtId';
 
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
@@ -112,6 +169,85 @@ abstract final class AppRoutes {
 
   /// Edit form of one transaction: `/movimientos/<id>/editar`.
   static String editTransaction(String id) => '$transactions/$id/editar';
+
+  /// Detail of one scheduled payment template: `/pagos-programados/<id>`.
+  static String scheduledPayment(String id) => '$scheduledPayments/$id';
+
+  /// Edit form of one template: `/pagos-programados/<id>/editar`.
+  static String editScheduledPayment(String id) =>
+      '$scheduledPayments/$id/editar';
+
+  /// HU-06/criterion 14: the puente from a future-dated new transaction to a
+  /// brand-new `once` template, prefilled via query params — the router is
+  /// the only layer allowed to translate a `TransactionFormState` into
+  /// this, so neither feature's domain depends on the other.
+  static String newScheduledPaymentFromTransaction({
+    required String accountId,
+    required String accountName,
+    required int amountMinor,
+    required String currency,
+    required String type,
+    required DateTime nextDate,
+    String? categoryId,
+    String? categoryKind,
+    String? categoryName,
+    String? note,
+    List<String> tagIds = const <String>[],
+  }) {
+    final params = <String, String>{
+      'accountId': accountId,
+      'accountName': accountName,
+      'amountMinor': amountMinor.toString(),
+      'currency': currency,
+      'type': type,
+      'nextDate': nextDate.toIso8601String(),
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryKind != null) 'categoryKind': categoryKind,
+      if (categoryName != null) 'categoryName': categoryName,
+      if (note != null && note.isNotEmpty) 'note': note,
+      if (tagIds.isNotEmpty) 'tagIds': tagIds.join(','),
+    };
+    final query = params.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    return '$newScheduledPayment?$query';
+  }
+}
+
+/// The debt context the Configurar-cuota route needs (HU-03), passed as
+/// `extra`. Built by whichever screen launches the flow — the debt detail
+/// (from its `Debt`) or the Pagos Programados detail (from its
+/// `ScheduledPaymentLinkedDebt`) — so the reused Pagos Programados form gets
+/// the debt's name and direction without this feature's domains depending on
+/// each other. The router is the only layer that assembles it.
+class DebtInstallmentContext {
+  const DebtInstallmentContext({
+    required this.debtId,
+    required this.debtName,
+    required this.iOwe,
+    this.debtCreatedAt,
+    this.debtOutstandingMinor,
+  });
+
+  final String debtId;
+  final String debtName;
+
+  /// `DebtDirection.iOwe` → the cuota is an expense; `owedToMe` → income.
+  final bool iOwe;
+
+  /// The debt's creation date, when the flow starts from the debt detail
+  /// (Deudas fix 4a-i): the cuota's first payment cannot be dated before it.
+  /// Null on the secondary entry (editing from a Pago Programado detail), where
+  /// the derived outstanding is not cheaply available — the bounds are simply
+  /// not enforced there.
+  final DateTime? debtCreatedAt;
+
+  /// The debt's current derived outstanding balance (Deudas fix 4a-ii): the
+  /// cuota amount cannot exceed it. Null on the secondary entry (see above).
+  final int? debtOutstandingMinor;
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -129,10 +265,26 @@ GoRouter createAppRouter() {
           _inicioBranch(),
           _movimientosBranch(),
           _presupuestosBranch(),
-          _metasBranch(),
+          _pagosProgramadosBranch(),
           _masBranch(),
         ],
       ),
+      // Reachable from both the "Más" hub and Inicio's quick-access row, but
+      // deliberately outside every StatefulShellBranch: a top-level branch
+      // route can only use its own branch's navigator (go_router asserts
+      // `parentNavigatorKey == null || parentNavigatorKey == branch.navigatorKey`
+      // for the *first-level* routes of a branch — unlike routes nested a
+      // level deeper, e.g. Ajustes under `more`, see `_settingsRoute()`).
+      // Declaring these as siblings of the shell route itself is the
+      // documented go_router pattern for screens that must render without
+      // the tab bar regardless of which tab launched them. Metas is here (not a
+      // tab anymore): Pagos Programados took its tab slot; Metas is reached from
+      // Inicio's quick access and the "Más" hub as a stacked screen.
+      _accountsRoute(),
+      _categoriesRoute(),
+      _goalsRoute(),
+      _debtsRoute(),
+      _debtLinkModeRoute(),
     ],
   );
 }
@@ -147,8 +299,35 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onAddTransaction: () => context.push(AppRoutes.newTransaction),
               onSeeAllTransactions: () => context.go(AppRoutes.transactions),
               onOpenTransaction: (id) =>
-                  context.push(AppRoutes.transaction(id)),
+                  context.push<String>(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
+              onOpenAccounts: () => context.push(AppRoutes.accounts),
+              // Bugfix item 8: tapping an account's mini-card pins the
+              // Movimientos account filter (HU-06a) to just that account —
+              // reusing the list cubit's own `updateFilter`, which persists it
+              // — then switches to the Movimientos tab so it arrives filtered.
+              // `TransactionsListCubit` is a lazySingleton, so this reaches the
+              // same live instance the tab holds, whether or not it was opened
+              // yet this session.
+              onOpenAccountMovements: (accountId) {
+                unawaited(
+                  getIt<TransactionsListCubit>().filterByAccount(accountId),
+                );
+                context.go(AppRoutes.transactions);
+              },
+              // Pagos Programados is a tab now: switch to its branch instead of
+              // stacking it on the root navigator.
+              onOpenScheduledPayments: () =>
+                  context.go(AppRoutes.scheduledPayments),
+              onOpenGoals: () => context.push(AppRoutes.goals),
+              onOpenDebts: () => context.push(AppRoutes.debts),
+              onOpenReports: () => context.push(
+                AppRoutes.comingSoonTitled(
+                  AppLocalizations.of(context).moreReports,
+                ),
+              ),
+              // Bugfix item 6: offline with no session → back up / sign in.
+              onOpenLogin: () => context.push(AppRoutes.login),
             ),
           ),
         ),
@@ -162,12 +341,22 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
           builder: (context, state) {
             final listCubit =
                 _started(getIt<TransactionsListCubit>(), (c) => c.start());
-            return BlocProvider.value(
-              value: listCubit,
+            final carouselCubit =
+                _started(getIt<BalanceCarouselCubit>(), (c) => c.load());
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: listCubit),
+                BlocProvider.value(value: carouselCubit),
+              ],
               child: TransactionsPage(
-                onAddTransaction: () => context.push(AppRoutes.newTransaction),
+                onAddTransaction: (accountId) => context.push(
+                  accountId == null
+                      ? AppRoutes.newTransaction
+                      : AppRoutes.newTransactionForAccount(accountId),
+                ),
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
+                onOpenAccount: (id) => context.push(AppRoutes.account(id)),
               ),
             );
           },
@@ -179,9 +368,35 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
               builder: (context, state) => BlocProvider(
                 create: (context) => _started(
                   getIt<TransactionFormCubit>(),
-                  (c) => c.load(null, type: _typeFromQuery(state.uri)),
+                  (c) => c.load(
+                    null,
+                    type: _typeFromQuery(state.uri),
+                    accountId: state.uri.queryParameters['accountId'],
+                  ),
                 ),
-                child: const TransactionFormPage(),
+                child: TransactionFormPage(
+                  // pushReplacement, not push: the transaction form must leave
+                  // the stack as the scheduled-payment form opens, so popping
+                  // the PP form (after saving it) returns to the movements
+                  // list — the origin — instead of reappearing on the
+                  // now-abandoned transaction form (bugfix item 2-iii).
+                  onConvertToScheduledPayment: (formState) =>
+                      context.pushReplacement(
+                    AppRoutes.newScheduledPaymentFromTransaction(
+                      accountId: formState.accountId ?? '',
+                      accountName: formState.accountName ?? '',
+                      amountMinor: formState.amountMinor,
+                      currency: formState.currency,
+                      type: formState.type.name,
+                      nextDate: formState.date,
+                      categoryId: formState.categoryId,
+                      categoryKind: formState.categoryKind?.name,
+                      categoryName: formState.categoryName,
+                      note: formState.note,
+                      tagIds: formState.tagIds.toList(),
+                    ),
+                  ),
+                ),
               ),
             ),
             GoRoute(
@@ -273,7 +488,13 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                 child: BudgetDetailPage(
                   onEdit: (id) => context.push(AppRoutes.editBudget(id)),
                   onClosed: () => context.pop(),
-                  onOpenInTransactions: () => context.go(AppRoutes.transactions),
+                  onOpenTransaction: (id) =>
+                      context.push<String>(AppRoutes.transaction(id)),
+                  onOpenScheduledPayment: (id) =>
+                      context.push(AppRoutes.scheduledPayment(id)),
+                  // Pagos Programados is a tab root: switch to its branch.
+                  onSeeAllScheduled: () =>
+                      context.go(AppRoutes.scheduledPayments),
                 ),
               ),
               routes: [
@@ -295,16 +516,17 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
       ],
     );
 
-StatefulShellBranch _metasBranch() => StatefulShellBranch(
-      routes: [
-        GoRoute(
-          path: AppRoutes.goals,
-          builder: (context, state) => ComingSoonPage(
-            title: AppLocalizations.of(context).navGoals,
-            showAppBar: false,
-          ),
-        ),
-      ],
+// Metas is no longer a tab (Pagos Programados took its slot). It stays a real
+// Nivel 0 destination reachable from Inicio's quick access and the "Más" hub,
+// rendered as a stacked screen on the root navigator — hence its own
+// `Page Header` with a back button (`showAppBar` default), unlike when it was a
+// tab root.
+GoRoute _goalsRoute() => GoRoute(
+      path: AppRoutes.goals,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => ComingSoonPage(
+        title: AppLocalizations.of(context).navGoals,
+      ),
     );
 
 StatefulShellBranch _masBranch() => StatefulShellBranch(
@@ -317,6 +539,10 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
               builder: (context, session) => MorePage(
                 onOpenAccounts: () => context.push(AppRoutes.accounts),
                 onOpenCategories: () => context.push(AppRoutes.categories),
+                // Pagos Programados is a tab now: switch to its branch.
+                onOpenScheduledPayments: () =>
+                    context.go(AppRoutes.scheduledPayments),
+                onOpenGoals: () => context.push(AppRoutes.goals),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -344,15 +570,43 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
             _settingsRoute(),
           ],
         ),
-        _accountsRoute(),
-        _categoriesRoute(),
       ],
     );
 
+/// HU-06: shows the sheet and turns the outcome into UI. The ordering rule
+/// (sign out first, wipe second) and the "wipe failed but the session is gone"
+/// case live in [SignOutWithLocalDataChoice], where they can be tested.
 Future<void> _confirmSignOut(BuildContext context) async {
-  final confirmed = await ConfirmSignOutSheet.show(context);
-  if (confirmed == true) {
-    await getIt<AuthCubit>().signOut();
+  final cubit = getIt<SignOutSheetCubit>();
+  unawaited(cubit.start());
+
+  final choice = await ConfirmSignOutSheet.show(context, cubit);
+  await cubit.close();
+  if (choice == null) {
+    return; // cancelled
+  }
+
+  final outcome = await getIt<SignOutWithLocalDataChoice>()(choice);
+  if (!context.mounted) {
+    return;
+  }
+  switch (outcome) {
+    case SignedOutKeepingData():
+    case SignedOutAndWiped():
+      break;
+    case SignedOutButWipeFailed():
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(AppLocalizations.of(context).authSignOutWipeErrorMessage),
+        ),
+      );
+    case SignOutFailed():
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).authSignOutFailedMessage),
+        ),
+      );
   }
 }
 
@@ -411,6 +665,7 @@ GoRoute _settingsRoute() => GoRoute(
 
 GoRoute _accountsRoute() => GoRoute(
       path: AppRoutes.accounts,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => BlocProvider(
         create: (context) =>
             _started(getIt<AccountsListCubit>(), (c) => c.start()),
@@ -469,8 +724,167 @@ GoRoute _accountsRoute() => GoRoute(
       ],
     );
 
+// Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
+// rendered as a stacked screen on the root navigator — a `Page Header` with a
+// back button, no `Tab Bar`. The read screens (list + detail) plus the write
+// flows (crear/editar, abono, actualizar saldo) live here; configurar cuota is
+// a later phase.
+GoRoute _debtsRoute() => GoRoute(
+      path: AppRoutes.debts,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<DebtsListCubit>(), (c) => c.start()),
+        child: DebtsListPage(
+          onAddDebt: () => context.push(AppRoutes.newDebt),
+          onOpenDebt: (id) => context.push(AppRoutes.debt(id)),
+        ),
+      ),
+      routes: [
+        // Declared before ':id' so "nueva" is never read as an id.
+        GoRoute(
+          path: 'nueva',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<DebtFormCubit>(), (c) => c.load(null)),
+            child: const DebtFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<DebtDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: DebtDetailPage(
+              // Editing pops with `true` when the debt was deleted, so the
+              // detail closes back to the list behind it.
+              onEdit: (id) async {
+                final deleted =
+                    await context.push<bool>(AppRoutes.editDebt(id));
+                if ((deleted ?? false) && context.mounted) {
+                  context.pop();
+                }
+              },
+              // Cross-link into Pagos programados for the linked cuota (HU-03).
+              onOpenInstallment: (id) =>
+                  context.push(AppRoutes.scheduledPayment(id)),
+              // Configure the debt's cuota (HU-03): reuses the Pagos Programados
+              // form in cuota mode; the debt context rides in `extra`. The
+              // debt's creation date and current outstanding travel with it so
+              // the cuota form can bound the first-payment date and the cuota
+              // amount (Deudas fixes 4a).
+              onConfigureInstallment: (debt, outstandingMinor) => context.push(
+                AppRoutes.debtInstallment(debt.id),
+                extra: DebtInstallmentContext(
+                  debtId: debt.id,
+                  debtName: debt.name,
+                  iOwe: debt.direction == DebtDirection.iOwe,
+                  debtCreatedAt: debt.createdAt,
+                  debtOutstandingMinor: outstandingMinor,
+                ),
+              ),
+              // Attribute an existing movement to the debt (HU-02): the debt
+              // rides in `extra` so the banner needs no extra fetch.
+              onLinkExisting: (debt) => context.push(
+                AppRoutes.linkTransactionToDebt(debt.id),
+                extra: debt,
+              ),
+              // Open a cash ledger row's movement detail (HU-04).
+              onOpenTransaction: (id) =>
+                  context.push<String>(AppRoutes.transaction(id)),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<DebtFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
+                child: const DebtFormPage(),
+              ),
+            ),
+            // Configurar cuota (HU-03): the Pagos Programados form reused in
+            // cuota mode. The debt context arrives in `extra`; `?spId=` is set
+            // when editing an existing cuota (deep-link from its PP detail).
+            GoRoute(
+              path: 'cuota',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) {
+                final debtContext = state.extra! as DebtInstallmentContext;
+                final spId = state.uri.queryParameters['spId'];
+                return BlocProvider(
+                  create: (context) => _startedDebtInstallmentForm(
+                    debtContext,
+                    spId,
+                  ),
+                  child: const ScheduledPaymentFormPage(),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+
+/// HU-03: opens the Pagos Programados form in cuota mode for [debtContext],
+/// editing [scheduledPaymentId] when set (deep-link back from a cuota's PP
+/// detail) or creating a fresh cuota otherwise. Keeps the two features'
+/// domains decoupled: only plain values cross here.
+ScheduledPaymentFormCubit _startedDebtInstallmentForm(
+  DebtInstallmentContext debtContext,
+  String? scheduledPaymentId,
+) {
+  final cubit = getIt<ScheduledPaymentFormCubit>();
+  unawaited(
+    cubit.loadForDebtCuota(
+      debtId: debtContext.debtId,
+      debtName: debtContext.debtName,
+      debtIsIOwe: debtContext.iOwe,
+      scheduledPaymentId: scheduledPaymentId,
+      debtCreatedAt: debtContext.debtCreatedAt,
+      debtOutstandingMinor: debtContext.debtOutstandingMinor,
+    ),
+  );
+  return cubit;
+}
+
+// Movimientos in Deudas link mode (HU-02): the existing Movimientos list reused
+// with a `TransactionsLinkMode` — a banner, no FAB, no carousel, and row taps
+// that attribute the movement to the debt. Stacked on the root navigator above
+// the tab bar. The `Debt` arrives in `state.extra`.
+GoRoute _debtLinkModeRoute() => GoRoute(
+      path: AppRoutes.linkTransactionToDebt(':debtId'),
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final debt = state.extra! as Debt;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: _started(
+                getIt<TransactionsListCubit>(),
+                (c) => c.start(),
+              ),
+            ),
+            BlocProvider.value(
+              value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+            ),
+            BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
+          ],
+          child: DebtLinkModePage(debt: debt),
+        );
+      },
+    );
+
 GoRoute _categoriesRoute() => GoRoute(
       path: AppRoutes.categories,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => BlocProvider(
         create: (context) =>
             _started(getIt<CategoriesListCubit>(), (c) => c.start()),
@@ -531,6 +945,154 @@ GoRoute _categoriesRoute() => GoRoute(
         ),
       ],
     );
+
+// Pagos Programados (HU-01/02/03/04/05/06/07): now a bottom-nav tab (it took
+// Metas' slot). The list is the branch root, so it renders inside the shell
+// with the `Tab Bar` and — crucially — **without** `parentNavigatorKey`
+// (a branch-root route can only use its own branch's navigator; go_router
+// asserts this at construction time). Its stacked children ("nuevo",
+// "por-confirmar", ":id" and their sub-forms) keep
+// `parentNavigatorKey: _rootNavigatorKey` so they still push above the tab bar
+// on the root navigator — same pattern as Movimientos/Presupuestos.
+StatefulShellBranch _pagosProgramadosBranch() => StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.scheduledPayments,
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => _started(
+                  getIt<ScheduledPaymentsListCubit>(),
+                  (c) => c.start(),
+                ),
+              ),
+              BlocProvider(
+                create: (context) => _started(
+                  getIt<PendingOccurrencesCubit>(),
+                  (c) => c.start(),
+                ),
+              ),
+            ],
+            child: ScheduledPaymentsPage(
+              // As a tab root there is nothing to pop to, so no back button —
+              // it uses the left-aligned tab-root header instead.
+              showBackButton: false,
+              onAddScheduledPayment: () =>
+                  context.push(AppRoutes.newScheduledPayment),
+              onOpenScheduledPayment: (id) =>
+                  context.push(AppRoutes.scheduledPayment(id)),
+              onOpenPending: () =>
+                  context.push(AppRoutes.pendingScheduledPayments),
+            ),
+          ),
+          routes: [
+            // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
+            // ids.
+            GoRoute(
+              path: 'nuevo',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _startedScheduledPaymentForm(state.uri),
+                child: const ScheduledPaymentFormPage(),
+              ),
+            ),
+            GoRoute(
+              path: 'por-confirmar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                    getIt<PendingOccurrencesCubit>(), (c) => c.start()),
+                child: const PendingOccurrencesPage(),
+              ),
+            ),
+            GoRoute(
+              path: ':id',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<ScheduledPaymentDetailCubit>(),
+                  (c) => c.start(state.pathParameters['id']!),
+                ),
+                child: ScheduledPaymentDetailPage(
+                  onEdit: (id) =>
+                      context.push(AppRoutes.editScheduledPayment(id)),
+                  onOpenTransaction: (id) =>
+                      context.push<String>(AppRoutes.transaction(id)),
+                  // Cross-link into the owning debt's detail (HU-03).
+                  onOpenDebt: (debtId) =>
+                      context.push(AppRoutes.debt(debtId)),
+                  // Editing a cuota deep-links back to the debt's
+                  // Configurar-cuota screen (its home), not the plain form.
+                  onEditInstallment: (debt, spId) => context.push(
+                    AppRoutes.debtInstallment(debt.id, spId: spId),
+                    extra: DebtInstallmentContext(
+                      debtId: debt.id,
+                      debtName: debt.name,
+                      iOwe: debt.iOwe,
+                    ),
+                  ),
+                ),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'editar',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => _started(
+                      getIt<ScheduledPaymentFormCubit>(),
+                      (c) => c.load(state.pathParameters['id']),
+                    ),
+                    child: const ScheduledPaymentFormPage(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+/// HU-06/criterion 14: when the "nuevo" template route carries the puente's
+/// query params (see `AppRoutes.newScheduledPaymentFromTransaction`), starts
+/// the form prefilled from them instead of empty.
+ScheduledPaymentFormCubit _startedScheduledPaymentForm(Uri uri) {
+  final cubit = getIt<ScheduledPaymentFormCubit>();
+  final accountId = uri.queryParameters['accountId'];
+  if (accountId == null || accountId.isEmpty) {
+    unawaited(cubit.load(null));
+    return cubit;
+  }
+  final typeRaw = uri.queryParameters['type'];
+  final type = ScheduledPaymentType.values.firstWhere(
+    (value) => value.name == typeRaw,
+    orElse: () => ScheduledPaymentType.expense,
+  );
+  final categoryKindRaw = uri.queryParameters['categoryKind'];
+  final categoryKind = categoryKindRaw == null
+      ? null
+      : CategoryKind.values.firstWhere(
+          (value) => value.name == categoryKindRaw,
+          orElse: () => CategoryKind.expense,
+        );
+  cubit.loadFromBridge(
+    accountId: accountId,
+    accountName: uri.queryParameters['accountName'] ?? '',
+    amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? '') ?? 0,
+    currency: uri.queryParameters['currency'] ?? 'COP',
+    type: type,
+    nextDate: DateTime.tryParse(uri.queryParameters['nextDate'] ?? '') ??
+        DateTime.now(),
+    categoryId: uri.queryParameters['categoryId'],
+    categoryKind: categoryKind,
+    categoryName: uri.queryParameters['categoryName'],
+    note: uri.queryParameters['note'],
+    tagIds: (uri.queryParameters['tagIds'] ?? '')
+        .split(',')
+        .where((id) => id.isNotEmpty)
+        .toSet(),
+  );
+  return cubit;
+}
 
 TransactionType _typeFromQuery(Uri uri) {
   final raw = uri.queryParameters['type'];

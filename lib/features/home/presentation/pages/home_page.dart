@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,43 +8,74 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
+import '../widgets/home_balances_strip.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/home_hero_skeleton.dart';
+import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
 import '../widgets/sheets/month_picker_sheet.dart';
+import '../widgets/sheets/sync_status_sheet.dart';
 
-/// The Inicio tab (feature 04): header, hero, recent activity, AI banner and a
-/// scroll-aware FAB. It only reads and aggregates data (HU-01…HU-10); the one
-/// write it triggers is opening the new-transaction form via the FAB (HU-02).
+/// The Inicio tab (feature 04): header, hero, quick access, recent activity,
+/// AI banner and a scroll-aware FAB. It only reads and aggregates data
+/// (HU-01…HU-10); the one write it triggers is opening the new-transaction
+/// form via the FAB (HU-02).
 class HomePage extends StatefulWidget {
   const HomePage({
     required this.onAddTransaction,
     required this.onSeeAllTransactions,
     required this.onOpenTransaction,
     required this.onCreateBudget,
+    required this.onOpenAccounts,
+    required this.onOpenAccountMovements,
+    required this.onOpenScheduledPayments,
+    required this.onOpenGoals,
+    required this.onOpenDebts,
+    required this.onOpenReports,
+    required this.onOpenLogin,
     super.key,
   });
 
   final VoidCallback onAddTransaction;
   final VoidCallback onSeeAllTransactions;
-  final ValueChanged<String> onOpenTransaction;
+
+  /// Navigates to the detail page and resolves with whatever it popped with
+  /// (the deleted transaction's id, or `null`).
+  final Future<String?> Function(String id) onOpenTransaction;
   final VoidCallback onCreateBudget;
+
+  /// HU-05b: quick-access chip destinations.
+  final VoidCallback onOpenAccounts;
+
+  /// Bugfix item 8: tapping an account's mini-card in the "Mis cuentas" strip
+  /// opens Movimientos filtered to that account only.
+  final ValueChanged<String> onOpenAccountMovements;
+
+  final VoidCallback onOpenScheduledPayments;
+
+  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable as
+  /// the last quick-access chip and from the "Más" hub.
+  final VoidCallback onOpenGoals;
+  final VoidCallback onOpenDebts;
+  final VoidCallback onOpenReports;
+
+  /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
+  /// when the app is offline with no session, so the user can back up.
+  final VoidCallback onOpenLogin;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // A unique Hero tag for the FAB: the shell keeps every tab's FAB alive in the
-  // IndexedStack at once, so they must not share the default tag. Not UI copy.
-  static const Object _addFabHeroTag = 'homeAddTransactionFab';
-
   final ScrollController _scrollController = ScrollController();
 
   /// HU-02: the FAB hides on scroll down and comes back on scroll up.
@@ -89,6 +122,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Awaits the detail page's navigation, then — if it deleted something —
+  /// offers HU-05's "Deshacer" snackbar via [HomeCubit].
+  Future<void> _openTransaction(BuildContext context, String id) async {
+    final deletedId = await widget.onOpenTransaction(id);
+    if (deletedId != null && context.mounted) {
+      context.read<HomeCubit>().notifyExternalDelete(deletedId);
+    }
+  }
+
+  /// Bugfix item 6: the cloud icon's tap. "Estado real + reassurance":
+  ///
+  /// - offline *with no session* → routes to login so the user can back up
+  ///   (there is nothing to sync to yet). The session — not just the coarse
+  ///   [HomeSyncStatus.offline] — is what tells "no account" apart from "signed
+  ///   in but temporarily offline".
+  /// - any other case (synced, syncing, or offline *with* a session) → opens
+  ///   the reactive [SyncStatusSheet], which keeps tracking the live status.
+  void _onSyncTap(BuildContext context, HomeState state) {
+    final signedIn = state.user != null;
+    if (state.syncStatus == HomeSyncStatus.offline && !signedIn) {
+      widget.onOpenLogin();
+      return;
+    }
+    unawaited(SyncStatusSheet.show(context, context.read<HomeCubit>()));
+  }
+
   Future<void> _openAiSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -110,16 +169,33 @@ class _HomePageState extends State<HomePage> {
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
           opacity: _fabVisible ? 1 : 0,
-          child: FloatingActionButton(
-            heroTag: _addFabHeroTag,
-            onPressed: widget.onAddTransaction,
+          child: AppFab(
+            icon: LucideIcons.plus,
             tooltip: l10n.transactionsAdd,
-            child: const Icon(LucideIcons.plus),
+            onPressed: widget.onAddTransaction,
           ),
         ),
       ),
       body: SafeArea(
-        child: BlocBuilder<HomeCubit, HomeState>(
+        child: BlocConsumer<HomeCubit, HomeState>(
+          listenWhen: (previous, current) =>
+              previous.pendingUndoId != current.pendingUndoId &&
+              current.pendingUndoId != null,
+          listener: (context, state) {
+            final cubit = context.read<HomeCubit>();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l10n.transactionsUndoDeletedMessage),
+                  action: SnackBarAction(
+                    label: l10n.transactionsUndoAction,
+                    onPressed: cubit.undoDelete,
+                  ),
+                  persist: false,
+                ),
+              );
+          },
           builder: (context, state) {
             return CustomScrollView(
               controller: _scrollController,
@@ -131,32 +207,70 @@ class _HomePageState extends State<HomePage> {
                       syncStatus: state.syncStatus,
                       user: state.user,
                       onBellTap: () => _openBellSheet(context),
+                      onSyncTap: () => _onSyncTap(context, state),
                     ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: state.isLoading
+                    // Checks `spending == null` rather than `isLoading`: a
+                    // failed first load (no snapshot yet) is not "loading"
+                    // but still has no spending to show, and must fall back
+                    // to the skeleton instead of a null-check crash.
+                    child: state.spending == null
                         ? const HomeHeroSkeleton()
                         : HomeHeroCard(
                             spending: state.spending!,
+                            budgetProgress: state.budgetProgress,
                             monthLabel: _monthLabel(context, state.month),
                             onMonthTap: () => _openMonthPicker(context, state),
                             onCreateBudget: widget.onCreateBudget,
                           ),
                   ),
                 ),
+                // Acceso rápido (shortcuts) goes right under the hero, ABOVE the
+                // "Mis cuentas" strip (user preference: shortcuts first).
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
-                    child: RecentActivityHeader(
-                      onSeeAll: widget.onSeeAllTransactions,
-                      showSeeAll:
-                          state.status == HomeStatus.ready && !state.isEmpty,
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: QuickAccessRow(
+                      onOpenScheduledPayments: widget.onOpenScheduledPayments,
+                      onOpenDebts: widget.onOpenDebts,
+                      onOpenReports: widget.onOpenReports,
+                      onOpenGoals: widget.onOpenGoals,
                     ),
                   ),
                 ),
+                // "Mis cuentas" balance strip (bugfix item 8): below Acceso
+                // rápido, only once accounts exist. No outer horizontal padding —
+                // the strip pads its own header and lets the mini-card row
+                // scroll edge to edge.
+                if (state.accounts.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: HomeBalancesStrip(
+                        accounts: state.accounts,
+                        onSeeAll: widget.onOpenAccounts,
+                        onOpenAccountMovements: widget.onOpenAccountMovements,
+                      ),
+                    ),
+                  ),
+                // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
+                // from "Acceso rápido" to the loading/empty state: the
+                // "Movimientos recientes" header only exists once there is
+                // something to head.
+                if (state.status == HomeStatus.ready && !state.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
+                      child: RecentActivityHeader(
+                        onSeeAll: widget.onSeeAllTransactions,
+                        showSeeAll: true,
+                      ),
+                    ),
+                  ),
                 ..._bodySlivers(context, state),
               ],
             );
@@ -194,7 +308,8 @@ class _HomePageState extends State<HomePage> {
                 for (final entry in state.recentActivity)
                   RecentActivityRow(
                     entry: entry,
-                    onTap: () => widget.onOpenTransaction(entry.transaction.id),
+                    onTap: () =>
+                        _openTransaction(context, entry.transaction.id),
                   ),
                 const SizedBox(height: 16),
                 AiBanner(onTap: () => _openAiSheet(context)),
@@ -299,40 +414,16 @@ class HomeMovementsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(44),
-              ),
-              child: Icon(LucideIcons.receipt,
-                  size: 40, color: colors.primaryOnSoft),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.homeEmptyMovements,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(LucideIcons.plus),
-              label: Text(l10n.transactionsAdd),
-            ),
-          ],
-        ),
+    // The extra top/bottom inset is the only thing home adds: it sits in a
+    // fixed slot between the hero and the tab bar.
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 40),
+      child: EmptyState(
+        icon: LucideIcons.receipt,
+        message: l10n.homeEmptyMovements,
+        ctaLabel: l10n.transactionsAdd,
+        onCta: onAdd,
       ),
     );
   }

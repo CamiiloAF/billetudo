@@ -1,0 +1,9 @@
+# Hereda las reglas del proyecto pero relaja las que solo tienen sentido en
+# lib/. En los tests, pasar explícitamente un argumento que coincide con su
+# valor por defecto suele ser deliberado: deja el caso de prueba legible y
+# autocontenido sin obligar a ir a revisar la firma del constructor/función.
+include: ../analysis_options.yaml
+
+linter:
+  rules:
+    avoid_redundant_argument_values: false

@@ -36,12 +36,21 @@ class TransactionAmountFixedZone extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.entryFractionDigits = -1,
+    this.onBackspaceLongPress,
+    this.errorText,
     super.key,
   });
 
   final TransactionType type;
   final int amountMinor;
   final String currency;
+
+  /// How many fraction digits the active entry has typed (the cubit's
+  /// `entryFractionDigits`): `0` renders the pending decimal separator so the
+  /// comma shows the instant it is pressed (item 20). Only meaningful while
+  /// [expanded].
+  final int entryFractionDigits;
 
   /// True when the keypad is showing (amount has focus).
   final bool expanded;
@@ -54,9 +63,19 @@ class TransactionAmountFixedZone extends StatelessWidget {
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
 
+  /// Long-pressing backspace clears the whole amount (item 5).
+  final VoidCallback? onBackspaceLongPress;
+
+  /// Set when the amount failed validation (HU-01 criterion 8: a movement
+  /// needs a positive amount). Shown as a message anchored above the zone so
+  /// Guardar no longer feels like a silent no-op.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
+    final errorText = this.errorText;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -70,30 +89,47 @@ class TransactionAmountFixedZone extends StatelessWidget {
         duration: AppTheme.motionDuration,
         curve: AppTheme.motionCurve,
         alignment: Alignment.bottomCenter,
-        child: AnimatedSwitcher(
-          duration: AppTheme.motionDuration,
-          switchInCurve: AppTheme.motionCurve,
-          switchOutCurve: AppTheme.motionCurve,
-          child: expanded
-              ? TransactionAmountExpandedZone(
-                  key: const ValueKey('expanded'),
-                  type: type,
-                  amountMinor: amountMinor,
-                  currency: currency,
-                  onCollapse: onCollapse,
-                  onDigit: onDigit,
-                  onDecimal: onDecimal,
-                  onOperator: onOperator,
-                  onEquals: onEquals,
-                  onBackspace: onBackspace,
-                )
-              : TransactionAmountCollapsedBar(
-                  key: const ValueKey('collapsed'),
-                  type: type,
-                  amountMinor: amountMinor,
-                  currency: currency,
-                  onExpand: onExpand,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (errorText != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: Text(
+                  errorText,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.expense),
                 ),
+              ),
+            AnimatedSwitcher(
+              duration: AppTheme.motionDuration,
+              switchInCurve: AppTheme.motionCurve,
+              switchOutCurve: AppTheme.motionCurve,
+              child: expanded
+                  ? TransactionAmountExpandedZone(
+                      key: const ValueKey('expanded'),
+                      type: type,
+                      amountMinor: amountMinor,
+                      currency: currency,
+                      entryFractionDigits: entryFractionDigits,
+                      onCollapse: onCollapse,
+                      onDigit: onDigit,
+                      onDecimal: onDecimal,
+                      onOperator: onOperator,
+                      onEquals: onEquals,
+                      onBackspace: onBackspace,
+                      onBackspaceLongPress: onBackspaceLongPress,
+                    )
+                  : TransactionAmountCollapsedBar(
+                      key: const ValueKey('collapsed'),
+                      type: type,
+                      amountMinor: amountMinor,
+                      currency: currency,
+                      onExpand: onExpand,
+                    ),
+            ),
+          ],
         ),
       ),
     );
@@ -128,18 +164,26 @@ class TransactionAmountExpandedZone extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.entryFractionDigits = -1,
+    this.onBackspaceLongPress,
     super.key,
   });
 
   final TransactionType type;
   final int amountMinor;
   final String currency;
+
+  /// See [TransactionAmountFixedZone.entryFractionDigits].
+  final int entryFractionDigits;
   final VoidCallback onCollapse;
   final ValueChanged<int> onDigit;
   final VoidCallback onDecimal;
   final ValueChanged<CalcOperator> onOperator;
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
+
+  /// Long-pressing backspace clears the whole amount (item 5).
+  final VoidCallback? onBackspaceLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +225,11 @@ class TransactionAmountExpandedZone extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
-            money.formatSymbol(amountMinor, currencyCode: currency),
+            money.formatSymbolEntry(
+              amountMinor,
+              currencyCode: currency,
+              entryFractionDigits: entryFractionDigits,
+            ),
             textAlign: TextAlign.center,
             style: theme.textTheme.displaySmall?.copyWith(
               color: TransactionAmountFixedZone.amountColor(colors, type),
@@ -196,6 +244,10 @@ class TransactionAmountExpandedZone extends StatelessWidget {
           onOperator: onOperator,
           onEquals: onEquals,
           onBackspace: onBackspace,
+          onBackspaceLongPress: onBackspaceLongPress,
+          // Confirm commits the amount by collapsing the Zona Fija, the same
+          // action as the header chevron.
+          onConfirm: onCollapse,
         ),
       ],
     );

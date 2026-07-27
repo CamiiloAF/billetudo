@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -18,12 +20,18 @@ class HomeHeader extends StatelessWidget {
   const HomeHeader({
     required this.syncStatus,
     required this.onBellTap,
+    required this.onSyncTap,
     this.user,
     super.key,
   });
 
   final HomeSyncStatus syncStatus;
   final VoidCallback onBellTap;
+
+  /// Opens the sync-status sheet, or routes to login when offline with no
+  /// session (bugfix item 6). The Home owns the decision; the header only
+  /// forwards the tap.
+  final VoidCallback onSyncTap;
 
   /// The signed-in user, or null when local-first with no session (HU-07).
   final AuthUser? user;
@@ -43,7 +51,7 @@ class HomeHeader extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final initial = _initial;
     final greeting = user != null
-        ? l10n.homeGreetingNamed(user!.displayName)
+        ? l10n.homeGreetingNamed(user!.displayName.split(' ').first)
         : l10n.homeGreeting;
 
     return Row(
@@ -81,7 +89,7 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        SyncIndicator(status: syncStatus),
+        SyncIndicator(status: syncStatus, onTap: onSyncTap),
         const SizedBox(width: 4),
         IconButton(
           onPressed: onBellTap,
@@ -97,25 +105,110 @@ class HomeHeader extends StatelessWidget {
   }
 }
 
-/// The discreet sync-status icon (HU-10). Passive: it carries a semantics
-/// label but is not interactive.
-class SyncIndicator extends StatelessWidget {
-  const SyncIndicator({required this.status, super.key});
+/// The discreet sync-status icon (HU-10, bugfix item 6). It carries a
+/// semantics label and, when [onTap] is given, becomes a ≥44pt tap target that
+/// opens the sync-status sheet (or routes to login when offline with no
+/// session). Its visual footprint stays the 18px icon — only the touch area
+/// grows.
+///
+/// While syncing, the refresh icon rotates so the user can tell something is
+/// happening (notably during the post-login merge, where a static "synced"
+/// icon read as the app being stuck). Stateful only for that rotation.
+class SyncIndicator extends StatefulWidget {
+  const SyncIndicator({required this.status, this.onTap, super.key});
 
   final HomeSyncStatus status;
+
+  /// When non-null, the icon becomes interactive with a 44pt tap target.
+  /// `null` keeps it passive (its earlier HU-10 behaviour, still used by the
+  /// widget tests in isolation).
+  final VoidCallback? onTap;
+
+  @override
+  State<SyncIndicator> createState() => _SyncIndicatorState();
+}
+
+class _SyncIndicatorState extends State<SyncIndicator>
+    with SingleTickerProviderStateMixin {
+  /// One turn every 2s: slow enough to read as calm progress rather than an
+  /// alarm, fast enough to be visibly moving at 20px.
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
+
+  /// False when the OS asks for reduced motion (MASTER.md accessibility): the
+  /// icon then stays static and only the semantics label reports progress.
+  bool _motionAllowed = true;
+
+  bool get _shouldSpin =>
+      widget.status == HomeSyncStatus.syncing && _motionAllowed;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _motionAllowed = !MediaQuery.disableAnimationsOf(context);
+    _applySpin();
+  }
+
+  @override
+  void didUpdateWidget(SyncIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _applySpin();
+  }
+
+  /// Never leaves the controller ticking outside [HomeSyncStatus.syncing] —
+  /// an endless repeat in the background burns frames and battery.
+  void _applySpin() {
+    if (_shouldSpin) {
+      if (!_controller.isAnimating) {
+        // The ticker future only completes on dispose; nothing to await.
+        unawaited(_controller.repeat());
+      }
+    } else if (_controller.isAnimating || _controller.value != 0) {
+      _controller
+        ..stop()
+        ..reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final (icon, label) = switch (status) {
+    final (icon, label) = switch (widget.status) {
       HomeSyncStatus.synced => (LucideIcons.cloudCheck, l10n.homeSyncSynced),
       HomeSyncStatus.syncing => (LucideIcons.refreshCw, l10n.homeSyncSyncing),
       HomeSyncStatus.offline => (LucideIcons.cloudOff, l10n.homeSyncOffline),
     };
+    final indicator = RotationTransition(
+      turns: _controller,
+      child: Icon(icon, size: 18, color: colors.textSecondary),
+    );
+
+    final onTap = widget.onTap;
+    if (onTap == null) {
+      return Semantics(label: label, child: indicator);
+    }
+
     return Semantics(
       label: label,
-      child: Icon(icon, size: 20, color: colors.textSecondary),
+      button: true,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 22,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(child: indicator),
+        ),
+      ),
     );
   }
 }

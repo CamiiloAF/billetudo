@@ -15,10 +15,10 @@ class DateFilterState extends Equatable {
   List<Object?> get props => [filter];
 }
 
-/// Drives HU-06b's date filter: the granularity stepper applies immediately;
-/// a custom range only takes effect once the caller confirms it with
-/// "Aplicar" (this cubit's [applyCustomRange]), and its "X" always lands back
-/// on "Este mes" — there is no bare "no filter" state.
+/// Drives HU-06b's date filter as a local working copy: granularity, stepper
+/// and custom range all edit this state without touching the list — the sheet
+/// only commits the working filter when the user taps "Aplicar". "Limpiar"
+/// resets it to "Este mes"; there is no bare "no filter" state.
 @injectable
 class DateFilterCubit extends Cubit<DateFilterState> {
   DateFilterCubit() : super(DateFilterState());
@@ -26,15 +26,15 @@ class DateFilterCubit extends Cubit<DateFilterState> {
   void start(DatePeriodFilter initial) =>
       emit(DateFilterState(filter: initial));
 
-  /// HU-06b: the granularity segmented control applies immediately.
+  /// Updates the working granularity (committed later via "Aplicar").
   void granularitySelected(DateGranularity granularity) =>
       emit(DateFilterState(filter: state.filter.withGranularity(granularity)));
 
-  /// HU-06b: one step per tap, applied immediately.
+  /// One step per tap on the working period (committed later via "Aplicar").
   void step(int direction) =>
       emit(DateFilterState(filter: state.filter.stepped(direction)));
 
-  /// HU-06b: only takes effect when the sheet's "Aplicar" calls this.
+  /// Sets the working filter to a custom range (committed later via "Aplicar").
   void applyCustomRange({required DateTime start, required DateTime end}) =>
       emit(
         DateFilterState(
@@ -42,7 +42,7 @@ class DateFilterCubit extends Cubit<DateFilterState> {
         ),
       );
 
-  /// HU-06b: the custom range's "X" — back to "Este mes", never to a bare
+  /// "Limpiar" — reset the working filter to "Este mes", never to a bare
   /// "no filter".
   void clearToThisMonth() =>
       emit(DateFilterState(filter: DatePeriodFilter.clearedToThisMonth()));

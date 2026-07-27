@@ -15,12 +15,10 @@ void main() {
   Widget row(TransactionWithDetails entry, {VoidCallback? onTap}) =>
       RecentActivityRow(entry: entry, onTap: onTap ?? () {});
 
-  Color amountColor(WidgetTester tester, String amountText) => tester
-      .widget<Text>(find.text(amountText))
-      .style!
-      .color!;
+  Color amountColor(WidgetTester tester, String amountText) =>
+      tester.widget<Text>(find.text(amountText)).style!.color!;
 
-  testWidgets('gasto: signo negativo y color text-primary (nunca rojo, HU-05)',
+  testWidgets('gasto: sin signo y color text-primary (nunca rojo, HU-05)',
       (tester) async {
     await tester.pumpHomeWidget(
       row(buildActivity(
@@ -30,10 +28,10 @@ void main() {
     );
 
     expect(find.text('Mercado'), findsOneWidget);
-    expect(find.text('-250\u{00A0}COP'), findsOneWidget);
+    expect(find.text(r'-$250'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '-250\u{00A0}COP'), colors.textPrimary);
+    expect(amountColor(tester, r'-$250'), colors.textPrimary);
   });
 
   testWidgets('ingreso: signo positivo y color income (verde, HU-05)',
@@ -46,10 +44,10 @@ void main() {
       )),
     );
 
-    expect(find.text('+1.500\u{00A0}COP'), findsOneWidget);
+    expect(find.text(r'+$1.500'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '+1.500\u{00A0}COP'), colors.incomeText);
+    expect(amountColor(tester, r'+$1.500'), colors.incomeText);
   });
 
   testWidgets('transferencia: sin signo, color neutro y título "A → B" (HU-05)',
@@ -66,10 +64,10 @@ void main() {
     await tester.pumpHomeWidget(row(entry));
 
     expect(find.text('Cuenta A → Cuenta B'), findsOneWidget);
-    expect(find.text('1.000\u{00A0}COP'), findsOneWidget);
+    expect(find.text(r'$1.000'), findsOneWidget);
 
     final colors = tester.element(find.byType(RecentActivityRow)).colors;
-    expect(amountColor(tester, '1.000\u{00A0}COP'), colors.textPrimary);
+    expect(amountColor(tester, r'$1.000'), colors.textPrimary);
   });
 
   testWidgets('sin categoría: cae al nombre de la cuenta como título',

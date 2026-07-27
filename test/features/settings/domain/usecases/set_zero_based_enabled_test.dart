@@ -15,31 +15,31 @@ void main() {
   });
 
   test('HU-06: turns the flag on by delegating to the repository', () async {
-    when(() => repository.setZeroBasedEnabled(true))
+    when(() => repository.setZeroBasedEnabled(enabled: true))
         .thenAnswer((_) async => const Right(unit));
 
-    final result = await setZeroBasedEnabled(true);
+    final result = await setZeroBasedEnabled(enabled: true);
 
     expect(result.isRight(), isTrue);
-    verify(() => repository.setZeroBasedEnabled(true)).called(1);
+    verify(() => repository.setZeroBasedEnabled(enabled: true)).called(1);
   });
 
   test('turns the flag off by delegating to the repository', () async {
-    when(() => repository.setZeroBasedEnabled(false))
+    when(() => repository.setZeroBasedEnabled(enabled: false))
         .thenAnswer((_) async => const Right(unit));
 
-    final result = await setZeroBasedEnabled(false);
+    final result = await setZeroBasedEnabled(enabled: false);
 
     expect(result.isRight(), isTrue);
-    verify(() => repository.setZeroBasedEnabled(false)).called(1);
+    verify(() => repository.setZeroBasedEnabled(enabled: false)).called(1);
   });
 
   test('propagates a repository failure', () async {
-    when(() => repository.setZeroBasedEnabled(true)).thenAnswer(
+    when(() => repository.setZeroBasedEnabled(enabled: true)).thenAnswer(
       (_) async => const Left(DatabaseFailure('boom')),
     );
 
-    final result = await setZeroBasedEnabled(true);
+    final result = await setZeroBasedEnabled(enabled: true);
 
     expect(result.getLeft().toNullable(), isA<DatabaseFailure>());
   });

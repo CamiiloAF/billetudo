@@ -13,10 +13,14 @@ class ComingSoonBadge extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      // Matches Pencil's `Badge/Próximamente` (`yfvHv`): padding [4, 8], not
+      // a wider 10px pill — the extra 4px total width quietly ate into the
+      // title's budget in the "Más" hub rows that pair a title with this
+      // badge (`Title Row`, `els07`).
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: colors.muted,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,

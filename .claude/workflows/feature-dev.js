@@ -115,6 +115,16 @@ const QA_SCHEMA = {
   },
 }
 
+const PENCIL_ACCESS_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['accessible', 'reason'],
+  properties: {
+    accessible: { type: 'boolean', description: 'true SOLO si pudiste leer el .pen real (editor state + screenshot de la pantalla relevante), no solo el spec .md' },
+    reason: { type: 'string' },
+  },
+}
+
 const REVIEW_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -177,6 +187,36 @@ const acStr = plan.acceptanceCriteria.map((a, i) => `${i + 1}. ${a}`).join('\n')
 log(`[plan] "${SLUG}" tamano=${SIZE.toUpperCase()} — ${plan.changeMap.length} archivos, esquema=${plan.needsSchema}, ui=${plan.needsUi}, tier0=${plan.touchesTier0}`)
 
 // ---------------------------------------------------------------------------
+// Gate: acceso a Pencil — obligatorio antes de implementar UI diseñada.
+// flutter-dev NUNCA tiene herramientas MCP de Pencil (el .pen esta encriptado),
+// asi que solo puede trabajar contra el spec .md — eso ya produjo deriva visual
+// (componentes Material genericos en vez de los frames reales) en corridas previas.
+// Un agente CON acceso real (ui-ux-reviewer) debe confirmar que puede leer el .pen
+// antes de que arranque cualquier implementacion de presentation/. Sin eso, se detiene.
+// ---------------------------------------------------------------------------
+if (plan.needsUi) {
+  phase('Plan')
+  const pencilCheck = await agent(
+    `Antes de que flutter-dev implemente la capa presentation/ de la corrida "${SLUG}" (${plan.goal}), verifica que tienes acceso FUNCIONAL y REAL al archivo .pen de billetudo — no basta con que exista el spec .md.
+
+Pasos: llama a mcp__pencil__get_editor_state (include_schema:true si no conoces el schema todavia), y luego intenta localizar y ver (mcp__pencil__get_screenshot o mcp__pencil__batch_get) la o las pantallas relevantes a este objetivo dentro del canvas. Revisa tambien si existe design-system/billetudo/pages/<feature>.md correspondiente.
+
+Devuelve accessible=true SOLO si lograste ver el diseño real (frames del canvas), no solo leer el .md. Si el MCP de Pencil no responde, el archivo no carga, o no encuentras las pantallas de esta feature en el canvas, accessible=false y explica la causa exacta en reason.`,
+    { label: 'pencil-access-check', phase: 'Plan', schema: PENCIL_ACCESS_SCHEMA, agentType: 'ui-ux-reviewer', effort: 'low' },
+  )
+  if (!pencilCheck || !pencilCheck.accessible) {
+    return {
+      slug: SLUG,
+      aborted: true,
+      reason: `BLOQUEANTE: sin acceso real a Pencil (.pen) antes de implementar UI — ${pencilCheck ? pencilCheck.reason : 'el agente de verificacion no respondio.'}`,
+      plan,
+      note: 'Regla del proyecto (CLAUDE.md): flutter-dev no puede implementar presentation/ de una pantalla diseñada sin que se confirme primero acceso real al .pen — evita reintroducir la deriva visual (Material generico en vez de los frames reales) vista en pagos-programados. Reintenta esta corrida cuando Pencil este accesible.',
+    }
+  }
+  log(`[plan] acceso a Pencil confirmado — ${pencilCheck.reason}`)
+}
+
+// ---------------------------------------------------------------------------
 // Phase: Build — flutter-dev por etapas segun flags (secuencial: las capas dependen entre si)
 // ---------------------------------------------------------------------------
 phase('Build')
@@ -215,7 +255,7 @@ if (SIZE === 's') {
   await build('implementer', `Implementa TODO el cambio en una pasada (es tamano S: mecanico/bajo riesgo).${plan.needsSchema ? ' Incluye el cambio de esquema Drift: sube schemaVersion, agrega la migracion en onUpgrade y corre build_runner.' : ''}`)
 } else {
   if (plan.needsSchema) {
-    await build('schema', 'SOLO el cambio de esquema Drift: tablas/columnas en lib/core/database/app_database.dart, sube schemaVersion, migracion en onUpgrade, y corre dart run build_runner build --delete-conflicting-outputs. Nada de logica de feature todavia. Recuerda: UUIDs clientDefault, enums como texto, mixin _SyncColumns.')
+    await build('schema', 'SOLO el cambio de esquema Drift: tablas/columnas en lib/core/database/app_database.dart, sube schemaVersion, migracion en onUpgrade, y corre dart run build_runner build --force-jit. Nada de logica de feature todavia. Recuerda: UUIDs clientDefault, enums como texto, mixin _SyncColumns.')
   }
   await build('core', 'Las capas domain/ y data/ de la feature: entidades puras, interfaces de repositorio, un caso de uso por accion (con la logica de negocio y validaciones), DTOs/datasources Drift y la implementacion del repositorio (updatedAt en cada escritura). Con sus tests unit (casos de uso) y de data (Drift con NativeDatabase.memory()).')
   if (plan.needsUi) {
@@ -304,6 +344,13 @@ Devuelve (approved, blockers[{file,description}], observations[]).`,
         { label: 'code-review', phase: 'Review', schema: REVIEW_SCHEMA, agentType: 'finance-code-reviewer' },
       ),
     () =>
+      agent(
+        `Revisa SOLO las 3 convenciones de widgets/UI (funciones que devuelven Widget, widgets privados, strings de UI sin localizar) en estos archivos de la corrida "${SLUG}":
+${filesList}
+Devuelve (approved, blockers[{file,description}], observations[]). Blockers solo para violaciones reales.`,
+        { label: 'ui-convention', phase: 'Review', schema: REVIEW_SCHEMA, agentType: 'ui-convention-reviewer' },
+      ),
+    () =>
       plan.touchesTier0
         ? agent(
             `Revisa SOLO reglas de negocio/legales de billetudo (Nivel 0 gratis intacto, cupos server-side, AdMob SSV, sin banners/interstitials, disclaimers de IA, borrado de cuenta real, tono positivo) en estos archivos de la corrida "${SLUG}":
@@ -313,11 +360,11 @@ Devuelve (approved, blockers[{file,description}], observations[]). Blockers solo
           )
         : Promise.resolve({ approved: true, blockers: [], observations: [] }),
   ])
-  const [code, compliance] = reviews.map((r) => r || { approved: true, blockers: [], observations: [] })
+  const [code, uiConvention, compliance] = reviews.map((r) => r || { approved: true, blockers: [], observations: [] })
   return {
-    approved: code.approved && compliance.approved,
-    blockers: [...code.blockers, ...compliance.blockers],
-    observations: [...code.observations, ...compliance.observations],
+    approved: code.approved && uiConvention.approved && compliance.approved,
+    blockers: [...code.blockers, ...uiConvention.blockers, ...compliance.blockers],
+    observations: [...code.observations, ...uiConvention.observations, ...compliance.observations],
   }
 }
 

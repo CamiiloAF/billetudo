@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../auth/domain/entities/auth_user.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/entities/month_spending.dart';
@@ -12,8 +14,8 @@ import '../../domain/entities/month_spending.dart';
 enum HomeStatus { loading, ready, failure }
 
 /// The passive sync indicator (HU-10). Informative only, never a tap target.
-/// Defaults to [synced]: PowerSync is not wired yet and, local-first, data is
-/// always safe on device.
+/// Mirrors `core/sync`'s `SyncState`, which the cubit maps from the live sync
+/// engine; the default only holds until that stream's first emission.
 enum HomeSyncStatus { synced, syncing, offline }
 
 class HomeState extends Equatable {
@@ -25,6 +27,7 @@ class HomeState extends Equatable {
     this.syncStatus = HomeSyncStatus.synced,
     this.failure,
     this.user,
+    this.pendingUndoId,
   });
 
   /// The month currently visible (first day, at midnight). Defaults to
@@ -54,10 +57,22 @@ class HomeState extends Equatable {
   /// Home's loading/ready — only accounts + transactions do.
   final AuthUser? user;
 
+  /// The id of the transaction a "Deshacer" snackbar is currently offered
+  /// for, after a delete triggered from the transaction detail page opened
+  /// from Home's recent activity. `null` once dismissed or undone.
+  final String? pendingUndoId;
+
   MonthSpending? get spending => snapshot?.spending;
+
+  /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`).
+  BudgetWithProgress? get budgetProgress => snapshot?.budgetProgress;
 
   List<TransactionWithDetails> get recentActivity =>
       snapshot?.recentActivity ?? const [];
+
+  /// The active accounts with balances for the "Mis cuentas" strip (bugfix
+  /// item 8). Empty until the first snapshot lands.
+  List<AccountWithBalance> get accounts => snapshot?.accounts ?? const [];
 
   bool get isLoading => status == HomeStatus.loading;
 
@@ -73,6 +88,8 @@ class HomeState extends Equatable {
     AuthUser? user,
     bool clearSnapshot = false,
     bool updateUser = false,
+    String? pendingUndoId,
+    bool clearPendingUndo = false,
   }) =>
       HomeState(
         status: status ?? this.status,
@@ -84,6 +101,8 @@ class HomeState extends Equatable {
         // The session updates independently: only overwrite [user] when the
         // auth stream emits (so it can also be cleared to null on sign-out).
         user: updateUser ? user : this.user,
+        pendingUndoId:
+            clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
       );
 
   @override
@@ -95,5 +114,6 @@ class HomeState extends Equatable {
         syncStatus,
         failure,
         user,
+        pendingUndoId,
       ];
 }

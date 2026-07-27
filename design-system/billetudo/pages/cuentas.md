@@ -38,18 +38,20 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 
 ## Lista de cuentas (`l055o`)
 
-1. `Page Header`: atras + titulo "Cuentas" + boton `+` (agregar cuenta).
+1. `Page Header`: atras + titulo "Cuentas" + boton "Archivadas" (icono `archive`, fondo `$muted`) + boton `+` (agregar cuenta). **El boton "Archivadas" esta SIEMPRE visible, en los 4 estados** (con datos, vacio, carga, error) — el usuario debe poder navegar a cuentas archivadas incluso si la carga actual fallo, esta vacia, o esta cargando.
 2. **Total Card**: gradiente `$primary-deep`→`$primary`, label "Patrimonio total" + monto grande + sub-linea "Deudas: -$X" (`$on-primary`, 13px/500) — distingue activos de pasivos sin necesitar agrupar la lista por tipo.
 3. Lista de cuentas, **orden lineal** (soporta HU-09, reordenar por arrastre, sin ambiguedad de grupos):
    - Cuentas normales: instancia de `Account Card`.
    - Tarjeta de credito: instancia de `Credit Card Account Row` (icono + nombre/tipo + deuda `$expense` + barra de cupo usado + cifras Deuda/Cupo disponible).
+
+**Nombre de cuenta a 2 líneas (fix item 12, `bugfixes-0.0.1.md`):** el `Account Card` (`Q1ynM`) permite que el `Name` envuelva **hasta 2 líneas** (`Name`: `textGrowth:"fixed-width"` + `width:"fill_container"`) en vez de truncar a 1. El saldo permanece a la derecha, alineado al borde **superior** cuando el nombre ocupa 2 líneas. Las tarjetas pueden quedar con **altura despareja** (1 vs 2 líneas) — es por diseño, aceptado por el usuario, no corregir. En Flutter: `maxLines: 2` + `overflow: TextOverflow.ellipsis` en el nombre.
 
 **Decision de diseño (variante ganadora):** se exploraron una lista plana y una agrupada por tipo. Se eligio la **plana** porque HU-09 mapea 1:1 a una lista lineal y se rompe conceptualmente al agrupar. La ganancia informativa de la agrupada (separar deuda de activos) se logro sin agrupar, con la sub-linea de deuda en el Total Card. Variantes descartadas eliminadas del `.pen` (regla: al elegir, se borran las demas de inmediato).
 
 ### Estados
 - **Vacio**: usa el componente `Empty State` (icono `landmark` + mensaje "Aun no has agregado ninguna cuenta" + CTA "Agregar cuenta").
 - **Carga**: 4 instancias de `Skeleton Row` con la misma geometria que el estado con datos (evita salto visual).
-- **Error**: tarjeta centrada, icono `triangle-alert` en tono NEUTRAL (`$muted`/`$text-secondary`, no `$expense` — no es alerta financiera, es error de carga), mensaje + recordatorio local-first ("Tus datos siguen guardados en tu dispositivo") + boton "Reintentar".
+- **Error**: tarjeta centrada, icono `triangle-alert` en tono NEUTRAL (`$muted`/`$text-secondary`, no `$expense` — no es alerta financiera, es error de carga), mensaje + recordatorio local-first ("Tus datos siguen guardados en tu dispositivo") + boton "Reintentar". En este estado el boton `+` del header queda atenuado (`opacity:0.4`, no se puede agregar mientras la carga fallo) pero el boton "Archivadas" se mantiene con opacidad completa y activo.
 
 ## Detalle de cuenta
 
@@ -111,3 +113,37 @@ Documentados en detalle (estructura + overrides) en `design-system/billetudo/MAS
 - **Acceso definitivo desde Home**: hoy es un link temporal en el Hero de Inicio, pendiente de reubicar cuando se diseñe esa feature.
 - **HU-05** (selector multi-cuenta / vista combinada de transacciones): vive en la feature de Transacciones, no en Cuentas — fuera de alcance de este documento.
 - Confirmacion visual "Copiado" al copiar numero de cuenta + limpieza de portapapeles a 60s (HU-03): interaccion, no diseño estatico.
+
+## Adición 2026-07-21 — Ajuste controlado del saldo (Mejora #1)
+
+> **Estado:** aprobado e **implementado en código** (verde). **Tema oscuro generado** (2026-07-21, tras recuperarse el render de Pencil) y **badges de revisión eliminados**. Ver `docs/dev-runs/mejoras-carrusel-saldo-y-ajuste-saldo.md`.
+
+El saldo de una cuenta **ya no se edita libremente** en el formulario. Se ajusta desde el **detalle**, con dos opciones explícitas; y las tarjetas fijan su deuda inicial al crear.
+
+**Frames:**
+| Pieza | Node ID (Claro) | Node ID (Oscuro) |
+|---|---|---|
+| Detalle de cuenta (normal) — lápiz "Ajustar saldo" en la Balance Card | `c2jrG` | `r0hXJd` |
+| Detalle de tarjeta — lápiz "Ajustar saldo" en el Balance Card Hero | `Uk8DL` | `bT7Ga` |
+| Hoja "Ajustar saldo" (Var 1 — opciones radio + Aplicar) | `s0c82` | `t42NgN` |
+| Agregar tarjeta — campo "Deuda actual" en "Datos de la tarjeta" | `XcEBG` | `Dyfwj` |
+
+**Componentes nuevos:** `P0pSKV` "Balance Adjust Option" (tarjeta-radio con título + microcopy; seleccionada = `$primary-soft` + borde `$primary` + `circle-dot`, no solo color → cumple WCAG 1.4.1). En código: `BalanceEditButton` (lápiz sutil reusable) y `BalanceAdjustModeOption`.
+
+**Lápiz sutil "Ajustar saldo":** ícono `pencil` gris (`$text-secondary`, ~18px, área táctil ~40px) **a la derecha de la cifra** de la Balance Card (simple `c2jrG` y Hero `Uk8DL`) — deliberadamente distinto del lápiz violeta del `Page Header` (que edita la cuenta). Se ubicó pegado al monto (no en la esquina) para que lea "editar este saldo" y no compita con el lápiz del header.
+
+**Hoja "Ajustar saldo" (`s0c82`):** `Bottom Sheet Base` + saldo actual de referencia + `Form Field` "Nuevo saldo deseado" (o "Nueva deuda" en tarjeta) + dos `Balance Adjust Option` con microcopy que muestra la diferencia con signo + `Button/Primary` "Aplicar":
+- **Registrar ajuste** (default): crea una transacción con fecha de hoy por la diferencia (ingreso si el saldo sube, gasto si baja), con **nota "Ajuste de saldo"** y **categoría "Otros gastos"/"Otros ingresos"** según la dirección. Cuenta como transacción normal (afecta presupuestos/reportes).
+- **Corregir saldo inicial**: mueve `initialBalanceMinor` para que el saldo derivado dé el valor ingresado; no crea transacción.
+
+**"Deuda actual" al crear tarjeta (`XcEBG`):** money field en "Datos de la tarjeta" (label `accountDebtLabel`, ícono `banknote`), consecutivo con "Cupo máximo". Solo al **crear** tarjeta (la deuda se guarda como saldo negativo). Reemplaza el hueco previo (una tarjeta nueva no tenía forma de fijar deuda inicial).
+
+**"Saldo inicial" fuera de la edición:** el campo de saldo solo aparece al **crear** (cuenta normal → "Saldo inicial"; tarjeta → "Deuda actual"). Al **editar**, ninguna cuenta muestra campo de saldo — los cambios van por "Ajustar saldo". Corrige la sección "Campos y iconos" de arriba: "Saldo inicial" ya no es editable en `xdLeB`.
+
+**Decisión (caso tarjeta):** en tarjetas la cifra visible es la deuda; el copy dice "Nueva deuda" y el signo se maneja en dominio (deuda positiva tecleada → saldo real negativo).
+
+**Variante descartada** (borrada del canvas): hoja "Ajustar saldo" con dos botones de acción directos (`LuSBL`); ganó la de opciones radio + Aplicar.
+
+**Código:** `AccountBalanceAdjustment` / `AdjustAccountBalance` (dominio de accounts; la lógica de signo y del diff vive aquí), `AdjustBalanceSheet` / `AdjustBalanceCubit` (presentación).
+
+**Fidelidad visual (2026-07-21):** el lápiz de ajuste (detalle normal `c2jrG`/`r0hXJd` y tarjeta `Uk8DL`/`bT7Ga`), el campo "Deuda actual" (`XcEBG`/`Dyfwj`) y la ausencia de "Saldo inicial" al editar son **fieles** en claro y oscuro. La hoja "Ajustar saldo" (`s0c82`/`t42NgN`) tiene 6 goldens verdes. Hallazgos MENORES pre-existentes: label "Número de cuenta" vs "Número de tarjeta" en el detalle de tarjeta (no lo toca esta mejora). Diferencias de orden de campos entre el mock `XcEBG` y el formulario canónico son esperadas (el golden sigue el form real de creación).

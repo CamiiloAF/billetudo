@@ -4,15 +4,24 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
+import '../../../scheduled_payments/domain/entities/scheduled_payment.dart';
+import '../../../scheduled_payments/domain/entities/scheduled_payment_occurrence.dart';
+import '../../../scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/entities/budget_draft.dart';
 import '../../domain/entities/budget_expense.dart';
+import '../../domain/entities/budget_period_override.dart';
+import '../../domain/entities/budget_period_window.dart';
+import '../../domain/entities/budget_progress.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../../domain/entities/budget_with_progress.dart';
+import '../../domain/entities/pending_budget_adjustment.dart';
 import '../../domain/entities/period_income.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../../domain/repositories/budget_repository.dart';
+import '../../domain/services/budget_category_scope_resolver.dart';
 import '../../domain/services/budget_period_calculator.dart';
 import '../../domain/services/budget_progress_calculator.dart';
 import '../../domain/services/zero_based_summary_calculator.dart';
@@ -27,11 +36,19 @@ import '../models/budget_mapper.dart';
 /// implementation of the global-vs-emptied and period rules.
 @LazySingleton(as: BudgetRepository)
 class BudgetRepositoryImpl implements BudgetRepository {
-  const BudgetRepositoryImpl(this._local, this._progress, this._zeroBased);
+  const BudgetRepositoryImpl(
+    this._local,
+    this._progress,
+    this._zeroBased,
+    this._projectOccurrences,
+    this._scopeResolver,
+  );
 
   final BudgetsLocalDatasource _local;
   final BudgetProgressCalculator _progress;
   final ZeroBasedSummaryCalculator _zeroBased;
+  final ProjectUpcomingOccurrences _projectOccurrences;
+  final BudgetCategoryScopeResolver _scopeResolver;
 
   @override
   Stream<Result<List<BudgetWithProgress>>> watchActiveBudgets() =>
@@ -57,6 +74,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchScopeCategories(),
             _local.watchExpenses(),
             _local.watchAliveCategories(),
+            _local.watchScheduledExpenseTemplates(),
+            _local.watchPendingScheduledOccurrences(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final rows = values[0]! as List<db.Budget>;
@@ -64,9 +84,17 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categoryScope = values[2]! as List<BudgetScopeRefRow>;
             final expenses = values[3]! as List<BudgetExpenseRow>;
             final categories = values[4]! as List<db.Category>;
+            final templates = values[5]! as List<BudgetScheduledTemplateRow>;
+            final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
+            final overrides = values[7]! as List<BudgetPeriodOverride>;
+            final overrideIndex = _overrideIndex(overrides);
             final children = _categoryChildren(categories);
             final now = DateTime.now();
             final domainExpenses = expenses.map(_toExpense).toList();
+            final scheduledTemplates =
+                templates.map(_toScheduledTemplateDetail).toList();
+            final pendingOccurrences =
+                pending.map(_toPendingOccurrence).toList();
 
             return Right<Failure, List<BudgetWithProgress>>([
               for (final row in rows)
@@ -76,7 +104,13 @@ class BudgetRepositoryImpl implements BudgetRepository {
                   categoryScope: categoryScope,
                   expenses: domainExpenses,
                   children: children,
+                  scheduledTemplates: scheduledTemplates,
+                  pendingOccurrences: pendingOccurrences,
+                  overridesByBudget: overrideIndex,
                   reference: atClose ? (row.archivedAt ?? now) : now,
+                  // A closed budget's window is history: it never projects
+                  // future "programado" spend for a period that is over.
+                  includeScheduled: !atClose,
                 ),
             ]);
           },
@@ -89,7 +123,11 @@ class BudgetRepositoryImpl implements BudgetRepository {
     required List<BudgetScopeRefRow> categoryScope,
     required List<BudgetExpense> expenses,
     required Map<String, List<String>> children,
+    required List<BudgetScheduledTemplateDetail> scheduledTemplates,
+    required List<PendingScheduledOccurrence> pendingOccurrences,
+    required Map<String, Map<DateTime, int>> overridesByBudget,
     required DateTime reference,
+    required bool includeScheduled,
   }) {
     final scope = _scopeFor(budget.id, accountScope, categoryScope);
     final window = BudgetPeriodCalculator(budget).currentWindow(reference);
@@ -99,14 +137,58 @@ class BudgetRepositoryImpl implements BudgetRepository {
       window: window,
       expenses: expenses,
       now: reference,
+      amountMinorOverride: overridesByBudget[budget.id]?[window.start],
       categoryChildren: children,
     );
+    final scheduledMinor =
+        includeScheduled && window.status != BudgetWindowStatus.past
+            ? _scheduledMinorIn(
+                budget: budget,
+                scope: scope,
+                window: window,
+                templates: scheduledTemplates,
+                pendingOccurrences: pendingOccurrences,
+                children: children,
+              )
+            : 0;
     return BudgetWithProgress(
       budget: budget,
       scope: scope,
       window: window,
-      progress: progress,
+      progress: BudgetProgress(
+        amountMinor: progress.amountMinor,
+        spentMinor: progress.spentMinor,
+        daysLeft: progress.daysLeft,
+        scheduledMinor: scheduledMinor,
+      ),
     );
+  }
+
+  /// Sums [BudgetProgressCalculator.scheduledItemsIn] for the list — same
+  /// calculators `GetBudgetProgress` uses for the detail screen, so the two
+  /// never disagree on what "programado" means for a given window.
+  int _scheduledMinorIn({
+    required Budget budget,
+    required BudgetScope scope,
+    required BudgetPeriodWindow window,
+    required List<BudgetScheduledTemplateDetail> templates,
+    required List<PendingScheduledOccurrence> pendingOccurrences,
+    required Map<String, List<String>> children,
+  }) {
+    final items = _progress.scheduledItemsIn(
+      budget: budget,
+      scope: scope,
+      window: window,
+      templates: templates,
+      projected: _projectOccurrences(
+        templates: [for (final detail in templates) detail.template],
+        windowStart: window.start,
+        windowEndInclusive: window.lastDay,
+      ),
+      pendingOccurrences: pendingOccurrences,
+      categoryChildren: children,
+    );
+    return items.fold<int>(0, (sum, item) => sum + item.amountMinor);
   }
 
   @override
@@ -118,6 +200,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
             _local.watchScopeCategories(),
             _local.watchExpenses(),
             _local.watchAliveCategories(),
+            _local.watchScheduledExpenseTemplates(),
+            _local.watchPendingScheduledOccurrences(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final row = values[0] as db.Budget?;
@@ -130,20 +215,34 @@ class BudgetRepositoryImpl implements BudgetRepository {
             final categoryScope = values[2]! as List<BudgetScopeRefRow>;
             final expenses = values[3]! as List<BudgetExpenseRow>;
             final categories = values[4]! as List<db.Category>;
+            final templates = values[5]! as List<BudgetScheduledTemplateRow>;
+            final pending = values[6]! as List<BudgetPendingOccurrenceRow>;
+            final overrides = values[7]! as List<BudgetPeriodOverride>;
 
             return Right<Failure, BudgetDetailData>(
               BudgetDetailData(
                 budget: BudgetMapper.toEntity(row),
                 scope: _scopeFor(id, accountScope, categoryScope),
+                periodOverrides: {
+                  for (final o in overrides)
+                    if (o.budgetId == id) o.periodStart: o.amountMinor,
+                },
                 expenses: [
                   for (final expense in expenses)
                     BudgetExpenseDetail(
                       expense: _toExpense(expense),
                       title: expense.categoryName ?? expense.accountName,
+                      accountName: expense.accountName,
+                      categoryIcon: expense.categoryIcon,
+                      categoryColor: expense.categoryColor,
                       note: expense.note,
                     ),
                 ],
                 categoryChildren: _categoryChildren(categories),
+                scheduledTemplates:
+                    templates.map(_toScheduledTemplateDetail).toList(),
+                pendingScheduledOccurrences:
+                    pending.map(_toPendingOccurrence).toList(),
               ),
             );
           },
@@ -156,13 +255,21 @@ class BudgetRepositoryImpl implements BudgetRepository {
           [
             _local.watchActiveBudgets(),
             _local.watchIncome(),
+            _local.watchBudgetPeriodOverrides(),
           ],
           (values) {
             final budgets = values[0]! as List<db.Budget>;
             final income = values[1]! as List<BudgetIncomeRow>;
+            final overrides = values[2]! as List<BudgetPeriodOverride>;
+            final overrideIndex = _overrideIndex(overrides);
+            final now = DateTime.now();
             return Right<Failure, ZeroBasedSummary?>(
               _zeroBased.summarize(
-                activeBudgets: budgets.map(BudgetMapper.toEntity).toList(),
+                activeBudgets: budgets
+                    .map(BudgetMapper.toEntity)
+                    .map((b) =>
+                        _withCurrentWindowOverride(b, overrideIndex, now))
+                    .toList(),
                 income: [
                   for (final row in income)
                     PeriodIncome(
@@ -171,7 +278,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
                       date: row.date,
                     ),
                 ],
-                now: DateTime.now(),
+                now: now,
               ),
             );
           },
@@ -274,6 +381,239 @@ class BudgetRepositoryImpl implements BudgetRepository {
         return const Right(unit);
       });
 
+  @override
+  FutureResult<Unit> reconcileMaterializedCategoryScopes() => _guard(() async {
+        final categories = await _local.getAliveCategories();
+        final childrenByRoot = _childrenByRoot(categories);
+        final now = DateTime.now();
+
+        for (final budgetId in await _local.reconcilableBudgetIds()) {
+          final current = (await _local.categoryScopeOf(budgetId)).toSet();
+          // A global (empty) scope is already canonical: nothing to collapse.
+          if (current.isEmpty) {
+            continue;
+          }
+          final canonical = _scopeResolver.collapse(current, childrenByRoot);
+          // Idempotent: only rewrite when the scope actually changes, so a
+          // budget already canonical (or a genuinely partial pick) is untouched.
+          if (_sameIds(canonical, current)) {
+            continue;
+          }
+          // Only the category dimension changes; the account scope (including
+          // rows whose referent was deleted elsewhere) is left exactly as it is.
+          await _local.reconcileCategoryScope(
+            budgetId,
+            categoryIds: canonical,
+            now: now,
+          );
+        }
+        return const Right(unit);
+      });
+
+  /// Every root category id -> its direct (alive) children ids, including an
+  /// empty list for a childless root — the shape
+  /// [BudgetCategoryScopeResolver] needs to tell roots from subcategories.
+  Map<String, List<String>> _childrenByRoot(List<db.Category> categories) {
+    final result = <String, List<String>>{};
+    for (final category in categories) {
+      if (category.parentId == null) {
+        result.putIfAbsent(category.id, () => []);
+      }
+    }
+    for (final category in categories) {
+      final parentId = category.parentId;
+      if (parentId != null) {
+        result.putIfAbsent(parentId, () => []).add(category.id);
+      }
+    }
+    return result;
+  }
+
+  bool _sameIds(Set<String> a, Set<String> b) =>
+      a.length == b.length && a.containsAll(b);
+
+  @override
+  FutureResult<PendingBudgetAdjustment?> getPendingAdjustment(
+    String budgetId, {
+    required DateTime periodStart,
+  }) =>
+      _guard(() async {
+        final row = await _local.getBudget(budgetId);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$budgetId" does not exist'));
+        }
+        final original = BudgetMapper.toEntity(row);
+        final calculator = BudgetPeriodCalculator(original);
+        final now = DateTime.now();
+        // The target is the window the stepper is showing; `periodStart` is its
+        // start. Resolve its index so the "resume" cycle (target + 1) can be
+        // computed for the read model.
+        final target = calculator.currentWindow(periodStart);
+
+        final override = await _local.getPeriodOverride(budgetId, target.start);
+        if (override == null) {
+          return const Right(null);
+        }
+        return Right(
+          PendingBudgetAdjustment(
+            newAmountMinor: override.amountMinor,
+            effectiveFrom: target.start,
+            resumeAmountMinor: original.amountMinor,
+            resumeFrom: calculator.windowAt(target.index + 1, now).start,
+          ),
+        );
+      });
+
+  @override
+  FutureResult<Unit> scheduleBudgetAdjustment(
+    String id, {
+    required int newAmountMinor,
+    required DateTime periodStart,
+  }) =>
+      _guard(() async {
+        if (newAmountMinor <= 0) {
+          return const Left(
+            ValidationFailure(
+              'amount must be greater than 0',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final original = BudgetMapper.toEntity(row);
+        if (original.isOneOff) {
+          return const Left(
+            ValidationFailure(
+              'a one-off budget has no recurring period to adjust',
+              field: BudgetDraft.fieldEndDate,
+            ),
+          );
+        }
+
+        final now = DateTime.now();
+        final calculator = BudgetPeriodCalculator(original);
+        // The adjustment targets the window the stepper is showing
+        // (`periodStart`). Every other period keeps the base amount
+        // automatically. Resolve the window against the real clock so its
+        // status (past/current/future) is meaningful.
+        final index = calculator.currentWindow(periodStart).index;
+        final target = calculator.windowAt(index, now);
+
+        if (target.status == BudgetWindowStatus.past) {
+          return const Left(
+            ValidationFailure(
+              'a period that already ended cannot be adjusted',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+
+        if (await _local.getPeriodOverride(id, target.start) != null) {
+          return const Left(
+            ValidationFailure(
+              'budget already has a pending adjustment',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+
+        await _local.upsertPeriodOverride(
+          budgetId: id,
+          periodStart: target.start,
+          amountMinor: newAmountMinor,
+          now: now,
+        );
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Unit> updateBudgetAdjustment(
+    String id, {
+    required int newAmountMinor,
+    required DateTime periodStart,
+  }) =>
+      _guard(() async {
+        if (newAmountMinor <= 0) {
+          return const Left(
+            ValidationFailure(
+              'amount must be greater than 0',
+              field: BudgetDraft.fieldAmount,
+            ),
+          );
+        }
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final calculator = BudgetPeriodCalculator(BudgetMapper.toEntity(row));
+        final now = DateTime.now();
+        final target = calculator.currentWindow(periodStart);
+
+        if (await _local.getPeriodOverride(id, target.start) == null) {
+          return Left(
+            NotFoundFailure('budget "$id" has no pending adjustment'),
+          );
+        }
+        await _local.updatePeriodOverrideAmount(
+          budgetId: id,
+          periodStart: target.start,
+          amountMinor: newAmountMinor,
+          now: now,
+        );
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<Unit> cancelBudgetAdjustment(
+    String id, {
+    required DateTime periodStart,
+  }) =>
+      _guard(() async {
+        final row = await _local.getBudget(id);
+        if (row == null) {
+          return Left(NotFoundFailure('budget "$id" does not exist'));
+        }
+        final calculator = BudgetPeriodCalculator(BudgetMapper.toEntity(row));
+        final target = calculator.currentWindow(periodStart);
+
+        if (await _local.getPeriodOverride(id, target.start) == null) {
+          return Left(
+            NotFoundFailure('budget "$id" has no pending adjustment'),
+          );
+        }
+        await _local.deletePeriodOverride(id, target.start);
+        return const Right(unit);
+      });
+
+  /// Indexes every override by budget id and date-only window start, so the
+  /// progress join can resolve a window's target amount in O(1).
+  Map<String, Map<DateTime, int>> _overrideIndex(
+    List<BudgetPeriodOverride> overrides,
+  ) {
+    final index = <String, Map<DateTime, int>>{};
+    for (final override in overrides) {
+      index.putIfAbsent(override.budgetId, () => {})[override.periodStart] =
+          override.amountMinor;
+    }
+    return index;
+  }
+
+  /// Returns [budget] with its amount replaced by the override covering its
+  /// current window, if any — used so "Modo sobres" counts the effective
+  /// amount for the running period without mutating the stored row.
+  Budget _withCurrentWindowOverride(
+    Budget budget,
+    Map<String, Map<DateTime, int>> overridesByBudget,
+    DateTime now,
+  ) {
+    final window = BudgetPeriodCalculator(budget).currentWindow(now);
+    final override = overridesByBudget[budget.id]?[window.start];
+    return override == null ? budget : budget.withAmountMinor(override);
+  }
+
   BudgetScope _scopeFor(
     String budgetId,
     List<BudgetScopeRefRow> accountScope,
@@ -300,6 +640,100 @@ class BudgetRepositoryImpl implements BudgetRepository {
         currency: row.currency,
         date: row.date,
       );
+
+  BudgetScheduledTemplateDetail _toScheduledTemplateDetail(
+    BudgetScheduledTemplateRow row,
+  ) =>
+      BudgetScheduledTemplateDetail(
+        template: _toScheduledPayment(row.template),
+        title: row.categoryName ?? row.accountName,
+        accountName: row.accountName,
+        categoryIcon: row.categoryIcon,
+        categoryColor: row.categoryColor,
+      );
+
+  PendingScheduledOccurrence _toPendingOccurrence(
+    BudgetPendingOccurrenceRow row,
+  ) =>
+      PendingScheduledOccurrence(
+        occurrence: _toScheduledOccurrence(row.occurrence),
+        scheduledPayment: _toScheduledPayment(row.template),
+        accountName: row.accountName,
+        categoryName: row.categoryName,
+        categoryIcon: row.categoryIcon,
+        categoryColor: row.categoryColor,
+      );
+
+  /// Maps a raw `db.ScheduledPayment` row into the Pagos Programados domain
+  /// entity (HU-12) — reimplemented here, not imported from that feature's
+  /// `data/` mapper, per the layering rule (a feature's `data/` never imports
+  /// another feature's `data/`).
+  ScheduledPayment _toScheduledPayment(db.ScheduledPayment row) =>
+      ScheduledPayment(
+        id: row.id,
+        accountId: row.accountId,
+        categoryId: row.categoryId,
+        amountMinor: row.amountMinor,
+        currency: row.currency,
+        type: _scheduledTypeToDomain(row.type),
+        note: row.note,
+        transferAccountId: row.transferAccountId,
+        frequency: _scheduledFrequencyToDomain(row.frequency),
+        interval: row.interval,
+        nextDate: row.nextDate,
+        firstPaymentDate: row.firstPaymentDate,
+        endDate: row.endDate,
+        requiresConfirmation: row.requiresConfirmation,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        tombstonedAt: row.tombstonedAt,
+      );
+
+  ScheduledPaymentType _scheduledTypeToDomain(db.EntryType type) =>
+      switch (type) {
+        db.EntryType.income => ScheduledPaymentType.income,
+        db.EntryType.expense => ScheduledPaymentType.expense,
+        db.EntryType.transfer => ScheduledPaymentType.transfer,
+      };
+
+  ScheduledPaymentFrequency _scheduledFrequencyToDomain(
+    db.ScheduleFrequency frequency,
+  ) =>
+      switch (frequency) {
+        db.ScheduleFrequency.once => ScheduledPaymentFrequency.once,
+        db.ScheduleFrequency.daily => ScheduledPaymentFrequency.daily,
+        db.ScheduleFrequency.weekly => ScheduledPaymentFrequency.weekly,
+        db.ScheduleFrequency.monthly => ScheduledPaymentFrequency.monthly,
+        db.ScheduleFrequency.yearly => ScheduledPaymentFrequency.yearly,
+      };
+
+  ScheduledPaymentOccurrence _toScheduledOccurrence(
+    db.ScheduledPaymentOccurrence row,
+  ) =>
+      ScheduledPaymentOccurrence(
+        id: row.id,
+        scheduledPaymentId: row.scheduledPaymentId,
+        occurrenceDate: row.occurrenceDate,
+        status: _scheduledStatusToDomain(row.status),
+        snoozedToDate: row.snoozedToDate,
+        generatedTransactionId: row.generatedTransactionId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      );
+
+  ScheduledOccurrenceStatus _scheduledStatusToDomain(
+    db.ScheduledOccurrenceStatus status,
+  ) =>
+      switch (status) {
+        db.ScheduledOccurrenceStatus.pending =>
+          ScheduledOccurrenceStatus.pending,
+        db.ScheduledOccurrenceStatus.confirmed =>
+          ScheduledOccurrenceStatus.confirmed,
+        db.ScheduledOccurrenceStatus.skipped =>
+          ScheduledOccurrenceStatus.skipped,
+        db.ScheduledOccurrenceStatus.snoozed =>
+          ScheduledOccurrenceStatus.snoozed,
+      };
 
   Map<String, List<String>> _categoryChildren(List<db.Category> categories) {
     final children = <String, List<String>>{};

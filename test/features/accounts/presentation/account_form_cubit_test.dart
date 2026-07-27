@@ -195,6 +195,36 @@ void main() {
     );
 
     blocTest<AccountFormCubit, AccountFormState>(
+      'efectivo no pide tasa de interés: el dinero físico no genera interés',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.cash);
+      },
+      verify: (cubit) => expect(cubit.state.showInterestRateField, isFalse),
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'una cuenta bancaria también pide tasa de interés, no solo tarjetas',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.bank);
+      },
+      verify: (cubit) => expect(cubit.state.showInterestRateField, isTrue),
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'una tarjeta sí pide tasa de interés',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.card);
+      },
+      verify: (cubit) => expect(cubit.state.showInterestRateField, isTrue),
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
       'con número completo escrito, los últimos 4 se derivan y su campo '
       'desaparece',
       build: build,
@@ -243,6 +273,42 @@ void main() {
     );
   });
 
+  group('tarjeta: deuda actual se guarda negativa', () {
+    blocTest<AccountFormCubit, AccountFormState>(
+      'una tarjeta nueva guarda lo escrito (positivo) como saldo negativo',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.card);
+        cubit.nameChanged('Tarjeta');
+        cubit.initialBalanceChanged('100.000');
+        cubit.creditLimitChanged('3.000.000');
+        cubit.statementDaySelected(15);
+        cubit.paymentDueDaySelected(5);
+        await cubit.submit();
+      },
+      verify: (_) => expect(capturedCreate().initialBalanceMinor, -10000000),
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'al editar una tarjeta con deuda guardada, el campo muestra el valor '
+      'positivo',
+      setUp: () => stubAccount(
+        buildCard(
+          id: accountId,
+          creditLimitMinor: 500000,
+          initialBalanceMinor: -10000000,
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(accountId),
+      // Grouped, like the field itself keeps it while the user types
+      // (MoneyInputFormatter): a bare '100000' would jump into groups on the
+      // first keystroke.
+      verify: (cubit) => expect(cubit.state.initialBalanceText, '100.000'),
+    );
+  });
+
   group('edición (HU-06)', () {
     blocTest<AccountFormCubit, AccountFormState>(
       'precarga la cuenta y su número guardado',
@@ -268,7 +334,10 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.isEditing, isTrue);
         expect(cubit.state.name, 'Bancolombia');
-        expect(cubit.state.initialBalanceText, contains('4.500,50'));
+        // Editable text, grouped exactly as the field's own mask keeps it —
+        // the caret survives the separators now, so they no longer get in the
+        // way of editing.
+        expect(cubit.state.initialBalanceText, '4.500,50');
         // El número vuelve al formulario: sin él, el repositorio lo borraría
         // del almacén seguro en el siguiente guardado.
         expect(cubit.state.fullAccountNumber, '1234567890');

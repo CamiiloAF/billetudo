@@ -74,15 +74,16 @@ class CategorySelectRow extends StatelessWidget {
                       width: isSubcategory ? 32 : 40,
                       height: isSubcategory ? 32 : 40,
                       decoration: BoxDecoration(
-                        color:
-                            CategoryAppearance.softColorFor(colors, category.color),
+                        color: CategoryAppearance.softColorFor(
+                            colors, category.color),
                         borderRadius:
                             BorderRadius.circular(AppTheme.radiusMedium),
                       ),
                       child: Icon(
                         CategoryAppearance.iconFor(category.icon),
                         size: isSubcategory ? 16 : 20,
-                        color: CategoryAppearance.colorFor(colors, category.color),
+                        color:
+                            CategoryAppearance.colorFor(colors, category.color),
                       ),
                     ),
                     const SizedBox(width: 12),

@@ -1,0 +1,78 @@
+/// The canonical catalog of lucide icon names offered by the icon/color
+/// picker (`billetudo.pen`, node `lAxmS`), in the exact order they render in
+/// the grid (grouped by visual affinity — food, transport, home, ...).
+///
+/// Pure `List<String>`, no Flutter dependency: `domain/` never imports
+/// `IconData`. `presentation/utils/category_appearance.dart` re-exports this
+/// as `CategoryAppearance.iconNames` (mapping each name to its concrete
+/// `IconData`) so there is a single source of truth for the catalog itself.
+abstract final class CategoryIconCatalog {
+  const CategoryIconCatalog._();
+
+  static const List<String> names = [
+    'utensils-crossed',
+    'bus',
+    'car',
+    'house',
+    'heart-pulse',
+    'shield-check',
+    'repeat',
+    'shopping-bag',
+    'party-popper',
+    'graduation-cap',
+    'paw-print',
+    'credit-card',
+    'landmark',
+    'file-text',
+    'send',
+    'gift',
+    'wallet',
+    'laptop',
+    'briefcase',
+    'inbox',
+    'trending-up',
+    'hand-coins',
+    'rotate-ccw',
+    'heart-handshake',
+    'shopping-cart',
+    'coffee',
+    'fuel',
+    'wrench',
+    'zap',
+    'wifi',
+    'tv',
+    'washing-machine',
+    'cat',
+    'dog',
+    'music',
+    'gamepad-2',
+    'clapperboard',
+    'headphones',
+    'trophy',
+    'bike',
+    'pill',
+    'stethoscope',
+    'hammer',
+    'droplet',
+    'flame',
+    'monitor',
+    'smartphone',
+    'piggy-bank',
+    'coins',
+    'receipt',
+    'calculator',
+    'scale',
+    'scissors',
+    'plane',
+    'luggage',
+    'map-pin',
+    'bed',
+    'train',
+    'users',
+    'baby',
+    'book-open',
+    'building-2',
+    'church',
+    'dumbbell',
+  ];
+}

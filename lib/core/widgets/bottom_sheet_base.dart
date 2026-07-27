@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// The `Bottom Sheet Base` component: the chrome every sheet of this feature
 /// shares.
 ///
@@ -16,36 +18,84 @@ class BottomSheetBase extends StatelessWidget {
   final Widget child;
 
   /// Opens [child] as a modal sheet with the feature's chrome.
+  ///
+  /// [useRootNavigator] defaults to `true`: almost every page in this app is
+  /// nested under `HomeShellPage`'s `StatefulShellRoute.indexedStack`, and a
+  /// sheet opened on the branch navigator only covers its own branch,
+  /// leaving the bottom nav bar visible above it. Opening on the root
+  /// navigator instead makes the sheet cover the whole screen, nav bar
+  /// included — the behaviour every sheet in the app is expected to have.
+  /// Pass `false` only for the rare sheet that must stay scoped to its
+  /// branch, with a comment at the call site explaining why.
   static Future<T?> show<T>(
     BuildContext context, {
     required WidgetBuilder builder,
+    bool useRootNavigator = true,
   }) =>
       showModalBottomSheet<T>(
         context: context,
         isScrollControlled: true,
+        useRootNavigator: useRootNavigator,
         builder: (context) => BottomSheetBase(child: builder(context)),
       );
 
+  /// Closes a sheet opened with [show] once its own write finishes, safely
+  /// even when another sheet was pushed on top of it in the meantime.
+  ///
+  /// A save that settles a race with another sheet is not hypothetical: a
+  /// sheet's own save can trigger a Drift stream re-emission elsewhere in the
+  /// tree that opens a *second* modal sheet on the same root navigator (e.g.
+  /// `DebtCelebrationSheet` opening right after an abono/actualizar-saldo
+  /// settles a debt, `debt_detail_page.dart`'s `_handleSideEffects`). On a
+  /// real device the two triggers can race, landing the second sheet on top
+  /// of the navigator stack before this one's own "saved" listener runs.
+  /// A plain `Navigator.of(context).pop()` always pops whatever route is
+  /// currently on top — in that ordering it would silently pop the *other*
+  /// sheet instead of this one, so the other sheet would never be seen even
+  /// though it opened successfully. Removing this sheet's own route by
+  /// reference (`Navigator.removeRoute`) is safe under either ordering.
+  static void dismiss(BuildContext context) {
+    final route = ModalRoute.of(context);
+    if (route == null) {
+      return;
+    }
+    if (route.isCurrent) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).removeRoute(route);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: child,
+    // The keyboard inset lifts the whole sheet instead of covering it, so the
+    // search field of a filtering sheet stays visible while typing.
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: child,
+        ),
       ),
     );
   }
 }
 
-/// The icon + title + message body the confirmation sheets share.
+/// The icon + optional title + message body the confirmation sheets share.
+///
+/// Not every sheet opens with a title: the plain `alert-triangle` delete
+/// pattern (`o9116/qsjbj` in `billetudo.pen`) only has icon + message.
 class SheetMessage extends StatelessWidget {
   const SheetMessage({
     required this.icon,
     required this.iconColor,
     required this.iconBackground,
-    required this.title,
     required this.message,
+    this.title,
+    this.messageColor,
+    this.messageFontSize = 15,
     super.key,
   });
 
@@ -53,13 +103,23 @@ class SheetMessage extends StatelessWidget {
   final Color iconColor;
   final Color iconBackground;
 
-  /// Both already localized.
-  final String title;
+  /// Already localized. `null` renders no title (icon + message only).
+  final String? title;
+
+  /// Already localized.
   final String message;
+
+  /// Defaults to `$text-primary` / 15, the component's own values (`FxD3p` in
+  /// `XPjIZ`). "Cerrar sesión" (HU-06) overrides both to `$text-secondary`/14
+  /// in `billetudo.pen`, so the instance can say so instead of the shared
+  /// widget guessing.
+  final Color? messageColor;
+  final double messageFontSize;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.colors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -70,21 +130,32 @@ class SheetMessage extends StatelessWidget {
             color: iconBackground,
             borderRadius: BorderRadius.circular(28),
           ),
-          child: Icon(icon, color: iconColor, size: 28),
+          child: Icon(icon, color: iconColor, size: 26),
         ),
         const SizedBox(height: 16),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
+        if (title case final title?) ...[
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            // `Sheet Icon Header`'s title (`lmN3k` in `XPjIZ`) is 17/700 with
+            // a 1.3 line height, not the theme's 22/500 `titleLarge`.
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
+              color: colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
         Text(
           message,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+            color: messageColor ?? colors.textPrimary,
+            fontSize: messageFontSize,
+            fontWeight: FontWeight.w500,
+            height: 1.4,
           ),
         ),
       ],

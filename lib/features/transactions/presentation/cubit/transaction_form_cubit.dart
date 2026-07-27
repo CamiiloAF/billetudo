@@ -3,6 +3,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
@@ -29,6 +31,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     this._watchTransactionDetail,
     this._getTransactionEditImpact,
     this._setTransactionTags,
+    this._watchAccounts,
   ) : super(TransactionFormState());
 
   final CreateTransaction _createTransaction;
@@ -36,6 +39,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   final WatchTransactionDetail _watchTransactionDetail;
   final GetTransactionEditImpact _getTransactionEditImpact;
   final SetTransactionTags _setTransactionTags;
+  final WatchAccounts _watchAccounts;
 
   /// Kept for HU-04's edit-impact check; not part of the (Equatable) state,
   /// since it is never rendered — only diffed against the pending draft.
@@ -50,11 +54,31 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   }) async {
     if (id == null) {
       _original = null;
+      // Resolve against the live account list so the preselected account
+      // carries its name for the account chip and a stale id degrades
+      // gracefully. [accountId] is the caller's preference — the account the
+      // movements list was filtered by (HU-06a). When it is null or no longer
+      // exists, fall back to the first account by `sortOrder` (the account
+      // picker sheet's own order), so the form never opens with no account.
+      final result = await _watchAccounts().first;
+      if (isClosed) {
+        return;
+      }
+      String? initialAccountId;
+      String? initialAccountName;
+      if (result case Right(value: final accounts) when accounts.isNotEmpty) {
+        final preferred =
+            accountId == null ? null : _accountById(accounts, accountId);
+        final chosen = preferred ?? accounts.first;
+        initialAccountId = chosen.account.id;
+        initialAccountName = chosen.account.name;
+      }
       emit(
         TransactionFormState(
           status: TransactionFormStatus.ready,
           type: type,
-          accountId: accountId,
+          accountId: initialAccountId,
+          accountName: initialAccountName,
           // Open with the amount focused so the Zona Fija starts expanded with
           // the keypad visible — the design's default "Monto activo" state.
           focusedField: TransactionFormFocusedField.amount,
@@ -82,6 +106,18 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     }
   }
 
+  AccountWithBalance? _accountById(
+    List<AccountWithBalance> accounts,
+    String id,
+  ) {
+    for (final entry in accounts) {
+      if (entry.account.id == id) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   TransactionFormState _formFor(TransactionWithDetails entry) {
     final transaction = entry.transaction;
     return TransactionFormState(
@@ -93,6 +129,20 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       transferAccountId: transaction.transferAccountId,
       transferAccountName: entry.transferAccountName,
       categoryId: transaction.categoryId,
+      // `Transaction` never stores the category's `kind` (it is Categories'
+      // data, not Transactions'); re-derive it from the transaction's own
+      // type instead of leaving it null, or `validated()` would reject the
+      // save on every edit of an already-categorized expense/income (the
+      // category always matched the type when it was first picked — see
+      // `TransactionDraft` class doc). A budgetable transfer's category is
+      // always `expense` kind (B-3), same as the form only ever offering it.
+      categoryKind: transaction.categoryId == null
+          ? null
+          : switch (transaction.type) {
+              TransactionType.expense => CategoryKind.expense,
+              TransactionType.income => CategoryKind.income,
+              TransactionType.transfer => CategoryKind.expense,
+            },
       categoryName: entry.categoryName,
       amountMinor: transaction.amountMinor,
       currency: transaction.currency,
@@ -102,16 +152,39 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       source: transaction.source,
       // Same as creation: the edit form opens with the keypad expanded.
       focusedField: TransactionFormFocusedField.amount,
+      countsInBudget: transaction.countsInBudget,
     );
   }
 
-  void typeSelected(TransactionType type) => emit(
+  void typeSelected(TransactionType type) {
+    if (type == state.type) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        type: type,
+        // Income and expense have distinct category sets (`CategoryKind`), and
+        // a transfer carries none by default — so any real type change must
+        // drop the previously picked category, or an expense category would
+        // linger on an income (item 17). Switching away from a transfer also
+        // drops a destination account that no longer applies, and resets the
+        // "cuenta en presupuesto" toggle — it is transfer-only state.
+        clearCategory: true,
+        clearTransferAccount: type != TransactionType.transfer,
+        countsInBudget:
+            type == TransactionType.transfer && state.countsInBudget,
+      ),
+    );
+  }
+
+  /// The transfer-only "¿Incluir en tu presupuesto?" toggle (B-3). Turning it
+  /// off also drops any category picked while it was on, since a plain
+  /// transfer never carries one.
+  // ignore: avoid_positional_boolean_parameters
+  void countsInBudgetChanged(bool value) => emit(
         state.copyWith(
-          type: type,
-          // HU-03: a transfer carries no category; switching away from one
-          // must drop a destination account that no longer applies.
-          clearCategory: type == TransactionType.transfer,
-          clearTransferAccount: type != TransactionType.transfer,
+          countsInBudget: value,
+          clearCategory: !value,
         ),
       );
 
@@ -153,7 +226,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       return;
     }
     final base = _startFreshOperandIfNeeded(state);
-    final decimals = MoneyFormatter.currencyDecimals(base.currency);
+    final decimals = MoneyFormatter.inputDecimals(base.currency);
 
     final int next;
     final int nextFraction;
@@ -176,10 +249,11 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     emit(base.copyWith(amountMinor: next, entryFractionDigits: nextFraction));
   }
 
-  /// The decimal-point key. Only meaningful for currencies with minor units
-  /// (USD); for COP it is a no-op since amounts are whole pesos.
+  /// The decimal-point key. Every currency the app handles accepts typed cents
+  /// (item 4), so this is only a no-op for a hypothetical zero-decimal
+  /// [MoneyFormatter.inputDecimals] currency.
   void amountDecimalPressed() {
-    if (MoneyFormatter.currencyDecimals(state.currency) == 0) {
+    if (MoneyFormatter.inputDecimals(state.currency) == 0) {
       return;
     }
     final base = _startFreshOperandIfNeeded(state);
@@ -446,6 +520,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       scheduledPaymentId: _original?.scheduledPaymentId,
       goalId: _original?.goalId,
       debtId: _original?.debtId,
+      countsInBudget: state.countsInBudget,
     ).validated();
   }
 }

@@ -45,11 +45,15 @@ Transaction buildTransaction({
     );
 
 /// A valid expense draft: tests override only the field under test.
+///
+/// [categoryId]/[categoryKind] default to a matching expense category since
+/// `TransactionDraft.validated` now requires one — pass `categoryId: null`
+/// explicitly to exercise that rejection.
 TransactionDraft buildExpenseDraft({
   String? id,
   String accountId = 'acc-1',
-  String? categoryId,
-  CategoryKind? categoryKind,
+  String? categoryId = 'cat-expense-1',
+  CategoryKind? categoryKind = CategoryKind.expense,
   int amountMinor = 10000,
   String currency = 'COP',
   DateTime? date,
@@ -75,11 +79,14 @@ TransactionDraft buildExpenseDraft({
       debtId: debtId,
     );
 
+/// [categoryId]/[categoryKind] default to a matching income category since
+/// `TransactionDraft.validated` now requires one — pass `categoryId: null`
+/// explicitly to exercise that rejection.
 TransactionDraft buildIncomeDraft({
   String? id,
   String accountId = 'acc-1',
-  String? categoryId,
-  CategoryKind? categoryKind,
+  String? categoryId = 'cat-income-1',
+  CategoryKind? categoryKind = CategoryKind.income,
   int amountMinor = 10000,
   String currency = 'COP',
   DateTime? date,
@@ -97,6 +104,10 @@ TransactionDraft buildIncomeDraft({
       note: note,
     );
 
+/// [categoryId]/[categoryKind]/[countsInBudget] default to the plain-transfer
+/// shape (no category, flag off) — pass them explicitly to exercise the B-3
+/// "transferencia presupuestable" behaviour
+/// (`docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3).
 TransactionDraft buildTransferDraft({
   String? id,
   String accountId = 'acc-1',
@@ -105,6 +116,9 @@ TransactionDraft buildTransferDraft({
   String currency = 'COP',
   DateTime? date,
   String? note,
+  String? categoryId,
+  CategoryKind? categoryKind,
+  bool countsInBudget = false,
 }) =>
     TransactionDraft(
       id: id,
@@ -115,6 +129,9 @@ TransactionDraft buildTransferDraft({
       type: TransactionType.transfer,
       date: date ?? testInstant,
       note: note,
+      categoryId: categoryId,
+      categoryKind: categoryKind,
+      countsInBudget: countsInBudget,
     );
 
 Tag buildTag({

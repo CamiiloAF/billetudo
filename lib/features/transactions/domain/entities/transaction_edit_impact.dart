@@ -24,5 +24,6 @@ class TransactionEditImpact extends Equatable {
   bool get hasImpact => affectsScheduledPayment || affectsGoal || affectsDebt;
 
   @override
-  List<Object?> get props => [affectsScheduledPayment, affectsGoal, affectsDebt];
+  List<Object?> get props =>
+      [affectsScheduledPayment, affectsGoal, affectsDebt];
 }

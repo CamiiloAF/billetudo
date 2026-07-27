@@ -65,6 +65,7 @@ class LoginPage extends StatelessWidget {
                     ? cubit.continueWithApple
                     : cubit.continueWithGoogle,
               ),
+              persist: false,
             ),
           );
         cubit.dismissError();

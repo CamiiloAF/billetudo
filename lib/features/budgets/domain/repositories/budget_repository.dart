@@ -3,6 +3,7 @@ import '../entities/budget.dart';
 import '../entities/budget_detail_data.dart';
 import '../entities/budget_draft.dart';
 import '../entities/budget_with_progress.dart';
+import '../entities/pending_budget_adjustment.dart';
 import '../entities/zero_based_summary.dart';
 
 /// Contract the Budgets feature depends on. Implemented in `data/` over Drift
@@ -50,4 +51,55 @@ abstract class BudgetRepository {
 
   /// HU-11: stamps `deletedAt` (reversible trash).
   FutureResult<Unit> deleteBudget(String id);
+
+  /// One-shot reconciliation for fix #14: rewrites any budget whose category
+  /// scope was persisted **materialized** (every id of "Todas", or a root plus
+  /// all its children) into the canonical form ("Todas" -> empty/global, a
+  /// whole root -> just the root id), so categories created later are picked up
+  /// automatically. Idempotent: a budget already canonical (or a genuinely
+  /// partial selection) is left untouched, so it is safe to run on every launch.
+  FutureResult<Unit> reconcileMaterializedCategoryScopes();
+
+  /// "Ajustar monto": the pending amount override for the period starting at
+  /// [periodStart] (the window the stepper is currently showing), if
+  /// [scheduleBudgetAdjustment] created one. `null` when that window has nothing
+  /// pending, which is how the detail screen/sheet decide between "crear" and
+  /// "editar/cancelar". [periodStart] must be a window start (date-only).
+  FutureResult<PendingBudgetAdjustment?> getPendingAdjustment(
+    String budgetId, {
+    required DateTime periodStart,
+  });
+
+  /// Wallet-style per-period override: writes a `BudgetPeriodOverride` of
+  /// [newAmountMinor] for the window starting at [periodStart] (the one the
+  /// stepper is showing), leaving the budget itself a single row. Every other
+  /// period keeps the budget's base amount automatically. Fails with
+  /// [ValidationFailure] if [budgetId] is a one-off (no recurring cycle to
+  /// adjust), if the target window is already past (a finished period cannot be
+  /// adjusted), or if that window already has a pending override — callers must
+  /// check [getPendingAdjustment] first and call [updateBudgetAdjustment]
+  /// instead in that case.
+  FutureResult<Unit> scheduleBudgetAdjustment(
+    String budgetId, {
+    required int newAmountMinor,
+    required DateTime periodStart,
+  });
+
+  /// Changes the amount of the override already pending for [periodStart] (from
+  /// [scheduleBudgetAdjustment]) without creating a second one. Fails with
+  /// [NotFoundFailure] if that window has no pending override.
+  FutureResult<Unit> updateBudgetAdjustment(
+    String budgetId, {
+    required int newAmountMinor,
+    required DateTime periodStart,
+  });
+
+  /// "Quitar ajuste": cancels the override pending for [periodStart] —
+  /// hard-deletes its `BudgetPeriodOverride` row (it never applied, so no
+  /// trash/undo), leaving that window on the budget's base amount. Fails with
+  /// [NotFoundFailure] if that window has no pending override.
+  FutureResult<Unit> cancelBudgetAdjustment(
+    String budgetId, {
+    required DateTime periodStart,
+  });
 }

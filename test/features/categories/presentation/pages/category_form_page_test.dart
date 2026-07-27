@@ -31,6 +31,7 @@ void main() {
   late MockDeleteCategory deleteCategory;
   late MockCreateCategory createCategory;
   late MockUpdateCategory updateCategory;
+  late MockSuggestSubcategoryIcon suggestSubcategoryIcon;
   late CategoryFormCubit cubit;
 
   final category = Category(
@@ -48,6 +49,7 @@ void main() {
     deleteCategory = MockDeleteCategory();
     createCategory = MockCreateCategory();
     updateCategory = MockUpdateCategory();
+    suggestSubcategoryIcon = MockSuggestSubcategoryIcon();
 
     when(() => getCategory('cat-1')).thenAnswer((_) async => Right(category));
     when(() => getDeletionImpact('cat-1')).thenAnswer(
@@ -68,7 +70,8 @@ void main() {
         subcategoryResolution: any(named: 'subcategoryResolution'),
       ),
     ).thenAnswer(
-      (_) => Future.delayed(const Duration(milliseconds: 50), () => const Right(unit)),
+      (_) => Future.delayed(
+          const Duration(milliseconds: 50), () => const Right(unit)),
     );
 
     cubit = CategoryFormCubit(
@@ -77,6 +80,7 @@ void main() {
       getCategory,
       getDeletionImpact,
       deleteCategory,
+      suggestSubcategoryIcon,
     );
   });
 
@@ -127,7 +131,13 @@ void main() {
 
       await tester.tap(find.text('Eliminar categoría'));
       await tester.pumpAndSettle();
-      expect(find.text('¿Eliminar esta categoría?'), findsOneWidget);
+      // The reversible, violeta `trash-2` delete pattern (`jngMo`) opens with
+      // icon + message only, no title (never a destructive red treatment:
+      // this delete is undoable from the trash).
+      expect(
+        find.textContaining('Podrás recuperarla luego desde la papelera'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Eliminar'));
       // Let the delayed `deleteCategory` future and every listener rebuild

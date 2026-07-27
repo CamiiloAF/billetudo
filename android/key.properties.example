@@ -1,0 +1,8 @@
+# Copy to android/key.properties (gitignored) and fill in your UPLOAD key.
+# Play App Signing re-signs the delivered app with Google's own key, so this
+# is only the upload key. Never commit the real file or the .jks.
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+# Absolute path to the keystore, or relative to android/app/.
+storeFile=/absolute/path/to/billetudo-upload.jks

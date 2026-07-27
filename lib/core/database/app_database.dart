@@ -51,10 +51,52 @@ enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
+/// How a debt's outstanding balance grows over time. `manual` = the user
+/// records every change by hand; `auto` = the app periodically posts interest
+/// accrual entries from the debt's rate. Stored as text for parity with
+/// Postgres. See docs/requirements Debts (Fase 0).
+enum DebtAccrualMode { manual, auto }
+
+/// The nature of a single ledger entry against a debt. The outstanding balance
+/// is DERIVED by summing entries (plus the principal), so there is no stored
+/// balance column. `amountMinor` is signed: **+ increases** the debt, **−
+/// reduces** it. Stored as text for parity with Postgres.
+///  - `interestAccrual`: interest posted, manually or by the auto accrual (+).
+///  - `manualAdjustment`: reconciliation to the bank's figure via "actualizar
+///    saldo" — absorbs the difference, signed either way.
+///  - `payment`: a cash-less abono (HU-02 toggle "No"): reduces the debt (−)
+///    without moving any account — "someone else paid / cash / off my books".
+///  - `disbursement`: a cash-less desembolso (HU-02 toggle "No"): increases the
+///    debt (+) without moving any account.
+///
+/// Cash abonos/desembolsos are NOT here — those are a `Transaction` with a
+/// `debtId` (they move an account). These four are the solo-deuda entries.
+enum DebtEntryKind {
+  interestAccrual,
+  manualAdjustment,
+  payment,
+  disbursement,
+}
+
 /// How often a scheduled payment repeats. `once` is a one-time future payment
 /// (no repetition): it generates a single transaction on its date and then
 /// goes inactive. See docs/requirements/09-pagos-programados.md.
 enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
+
+/// Lifecycle of a single occurrence of a scheduled payment (as opposed to the
+/// template itself). One row per due date that has been processed by the
+/// catch-up generator (HU-02), used as the idempotency ledger so a due date
+/// is never generated twice and never silently lost if the app closes
+/// mid-run. See `ScheduledPaymentOccurrences` and
+/// docs/requirements/09-pagos-programados.md.
+///  - `pending`: manual-confirmation template (HU-03), due date reached, not
+///    yet applied to the balance.
+///  - `confirmed`: applied — a `Transaction` was generated (auto mode
+///    reaches this directly; manual mode reaches it via user confirmation).
+///  - `skipped`: user discarded it (HU-03), no transaction generated.
+///  - `snoozed`: user moved only this occurrence to `snoozedToDate` (HU-07);
+///    the template's cadence/`nextDate` is untouched.
+enum ScheduledOccurrenceStatus { pending, confirmed, skipped, snoozed }
 
 /// Which figure to highlight on a credit card (HU-04): 'debt' = show the
 /// current debt as the headline; 'available' = the available credit. Affects
@@ -68,7 +110,15 @@ enum CardBalanceView { debt, available }
 
 mixin _SyncColumns on Table {
   TextColumn get id => text().clientDefault(() => _uuid.v4())();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// `clientDefault`, not `.withDefault(currentDateAndTime)`: every
+  /// `_SyncColumns` table is physically a PowerSync-managed view (see
+  /// decision #14, docs/requirements/05-auth-sync.md), which has no real SQL
+  /// column defaults — any column a raw or Drift-builder INSERT statement
+  /// doesn't list explicitly comes back NULL, not this default. `clientDefault`
+  /// computes the value in Dart and always includes it in the generated
+  /// INSERT, so it survives being written through the view.
+  DateTimeColumn get createdAt => dateTime().clientDefault(DateTime.now)();
 
   /// Epoch millis (NOT a Drift `DateTimeColumn`), unlike [createdAt].
   ///
@@ -103,6 +153,16 @@ mixin _SyncColumns on Table {
   /// it — that is what [deletedAt] is for.
   DateTimeColumn get tombstonedAt => dateTime().nullable()();
 
+  /// Logical (non-FK) reference to `auth.users.id` in Supabase. There is no
+  /// local `users` table, so this cannot be a real SQLite foreign key.
+  ///
+  /// Nullable: the app is local-first, so rows created without a session have
+  /// no owner yet. It is filled once the user signs in and the local-data
+  /// merge (HU-04) runs. This is the prerequisite for RLS policies in
+  /// Postgres and per-user PowerSync sync rules. See
+  /// docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+  TextColumn get userId => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -121,13 +181,12 @@ class Accounts extends Table with _SyncColumns {
 
   /// Opening balance in cents. The current balance is derived by summing
   /// transactions.
-  IntColumn get initialBalanceMinor =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get initialBalanceMinor => integer().clientDefault(() => 0)();
 
   TextColumn get icon => text().nullable()();
   TextColumn get color => text().nullable()();
-  BoolColumn get archived => boolean().withDefault(const Constant(false))();
-  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  BoolColumn get archived => boolean().clientDefault(() => false)();
+  IntColumn get sortOrder => integer().clientDefault(() => 0)();
 
   // -- Bank identification and card data (all nullable so existing accounts
   //    are not broken; see docs/requirements/01-cuentas.md). --
@@ -166,7 +225,7 @@ class Categories extends Table with _SyncColumns {
 
   TextColumn get icon => text().nullable()();
   TextColumn get color => text().nullable()();
-  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  IntColumn get sortOrder => integer().clientDefault(() => 0)();
 }
 
 /// Transactions (income, expenses and transfers between accounts).
@@ -184,8 +243,9 @@ class Transactions extends Table with _SyncColumns {
   TextColumn get note => text().nullable()();
 
   /// Capture origin (to measure AI usage). Defaults to manual.
-  TextColumn get source =>
-      textEnum<TxSource>().withDefault(Constant(TxSource.manual.name))();
+  TextColumn get source => textEnum<TxSource>().clientDefault(
+        () => TxSource.manual.name,
+      )();
 
   /// Only for type == transfer: destination account.
   @ReferenceName('transactionsAsTransferAccount')
@@ -197,6 +257,12 @@ class Transactions extends Table with _SyncColumns {
       text().nullable().references(ScheduledPayments, #id)();
   TextColumn get goalId => text().nullable().references(Goals, #id)();
   TextColumn get debtId => text().nullable().references(Debts, #id)();
+
+  /// Only meaningful for `type == transfer`: when `true`, the transfer counts
+  /// in budgets/reports using its `categoryId`, like a normal transaction,
+  /// instead of being excluded by default. Always `false` for income/expense
+  /// (unused there). See docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
+  BoolColumn get countsInBudget => boolean().clientDefault(() => false)();
 }
 
 /// User-named budgets with a configurable scope (accounts + categories via the
@@ -219,7 +285,7 @@ class Budgets extends Table with _SyncColumns {
 
   /// true = periodic (repeats each [period] from [startDate]), false = a single
   /// one-off window. Defaults to true (periodic is the common case). HU-03.
-  BoolColumn get recurring => boolean().withDefault(const Constant(true))();
+  BoolColumn get recurring => boolean().clientDefault(() => true)();
 
   /// End of the window. Mandatory when `recurring = false` or `period = custom`;
   /// on periodic budgets, null = "forever", a set value = stop-renewing date.
@@ -233,11 +299,11 @@ class Budgets extends Table with _SyncColumns {
   /// Early-alert threshold as a whole percent (1-100). null = "don't alert me".
   /// HU-08.
   IntColumn get alertThresholdPct =>
-      integer().nullable().withDefault(const Constant(80))();
+      integer().nullable().clientDefault(() => 80)();
 
   /// Whether the leftover/overspend carries into the next period
   /// (zero-based style). Logic deferred (HU-07); the column exists from Phase 0.
-  BoolColumn get rollover => boolean().withDefault(const Constant(false))();
+  BoolColumn get rollover => boolean().clientDefault(() => false)();
 }
 
 /// Savings goals.
@@ -246,7 +312,7 @@ class Goals extends Table with _SyncColumns {
   IntColumn get targetMinor => integer()();
 
   /// Saved so far (optional: can be derived from transactions with goalId).
-  IntColumn get savedMinor => integer().withDefault(const Constant(0))();
+  IntColumn get savedMinor => integer().clientDefault(() => 0)();
   TextColumn get currency => text().withLength(min: 3, max: 3)();
 
   /// Goal tied to a specific account (a pain point we fix vs. Wallet).
@@ -269,6 +335,76 @@ class Debts extends Table with _SyncColumns {
   IntColumn get interestRateBps => integer().nullable()();
   TextColumn get counterparty => text().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
+
+  /// The date the debt started (when it was acquired/incurred). It is the
+  /// FLOOR of every payment/adjustment date (nothing may predate it) and the
+  /// date the initial ledger/disbursement record is stamped with. Always <=
+  /// today (enforced in code, not by the schema).
+  ///
+  /// `nullable()` is a `_SyncColumns`/PowerSync constraint, not the domain
+  /// intent: every `_SyncColumns` table is a PowerSync-managed view with no SQL
+  /// column defaults (decision #14, docs/requirements/05-auth-sync.md), so a
+  /// `clientDefault`/`.withDefault(...)` here would silently be ignored and
+  /// come back NULL. The repository stamps `startDate` explicitly on every
+  /// insert (like the other columns). Nullable also lets the `addColumn`
+  /// migration land safely on existing rows and backfill them.
+  DateTimeColumn get startDate => dateTime().nullable()();
+
+  /// How the outstanding balance grows: `manual` (user records every change)
+  /// or `auto` (the app posts interest accrual entries). Defaults to `manual`.
+  /// Stored as text via textEnum for parity with Postgres.
+  TextColumn get accrualMode => textEnum<DebtAccrualMode>().clientDefault(
+        () => DebtAccrualMode.manual.name,
+      )();
+
+  /// The disbursement [Transactions] row that represents the opening balance
+  /// when the user chose to record it against an account on debt creation.
+  /// null = the debt has no opening entry, so the opening balance lives in
+  /// [principalMinor] as before. This is the stable link the "edit balance ->
+  /// update the entry" flow (item 2b) uses.
+  ///
+  /// Deliberately a bare `text().nullable()` (soft UUID FK, PowerSync-style),
+  /// NOT `.references(Transactions, #id)`: `Transactions.debtId` already
+  /// references `Debts`, so a Drift FK back the other way would form a
+  /// reference cycle (ReferenceName / generation-order conflicts). Referential
+  /// integrity for this link is by UUID convention, not a Drift constraint.
+  TextColumn get initialTransactionId => text().nullable()();
+
+  /// Manual closure timestamp. null = the debt is active. Non-null = the user
+  /// closed it (either by hand with a pending balance, or automatically on
+  /// reaching 100%). This is a pure BUSINESS-STATE flag, distinct from both
+  /// `deletedAt` (reversible UX trash) and `tombstonedAt` (irreversible
+  /// referential-integrity tombstone) — do not reuse either of those columns
+  /// for this concept, and do not reuse this one for theirs.
+  ///
+  /// Closing a debt is a status change, never a ledger event: it does NOT
+  /// create a `DebtEntry`. A closed debt's shown progress simply freezes
+  /// because no further entries/adjustments are recorded against it once
+  /// closed — enforce "no new entries on a closed debt" in the repository,
+  /// not here. Reversible in principle (a future "reopen" could clear this),
+  /// though no such UI exists yet; that reversibility does not make this the
+  /// UX-trash column.
+  DateTimeColumn get closedAt => dateTime().nullable()();
+}
+
+/// Ledger entries against a [Debts] row. The debt's outstanding balance is
+/// DERIVED by summing these entries (together with the principal), so there is
+/// deliberately no stored balance column. Interest accrual and manual
+/// adjustments both live here as signed amounts.
+class DebtEntries extends Table with _SyncColumns {
+  TextColumn get debtId => text().references(Debts, #id)();
+  TextColumn get kind => textEnum<DebtEntryKind>()();
+
+  /// Signed amount in cents: positive increases the debt, negative reduces it.
+  /// Never double, same money rule as everywhere else.
+  IntColumn get amountMinor => integer()();
+
+  DateTimeColumn get entryDate => dateTime()();
+  TextColumn get note => text().nullable()();
+
+  /// The interest rate (whole basis points) used to compute this entry, when
+  /// it is an accrual. Optional snapshot for audit/display; null otherwise.
+  IntColumn get rateBpsSnapshot => integer().nullable()();
 }
 
 /// Templates for scheduled payments: one-time or repeating planned
@@ -290,15 +426,31 @@ class ScheduledPayments extends Table with _SyncColumns {
 
   /// How many [frequency] units between repeats. E.g. interval=2 + weekly =
   /// every 2 weeks. Ignored when [frequency] is `once`.
-  IntColumn get interval => integer().withDefault(const Constant(1))();
+  IntColumn get interval => integer().clientDefault(() => 1)();
+
+  /// The date the user picked as the first payment when the template was
+  /// created. IMMUTABLE: unlike [nextDate], this never changes after
+  /// creation — it is not a cursor. It exists purely for display (e.g. "First
+  /// payment" in the edit form), so the UI never confuses the recurrence
+  /// cursor with the original scheduled date. See
+  /// docs/requirements/09-pagos-programados.md.
+  DateTimeColumn get firstPaymentDate => dateTime()();
+
+  /// The next due date to be processed by the catch-up generator (HU-02).
+  /// MUTABLE cursor: rewritten every time catch-up advances the recurrence.
+  /// Never use this to display "first payment" — use [firstPaymentDate].
   DateTimeColumn get nextDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
 
   /// When true, reaching [nextDate] generates an editable draft the user must
   /// confirm before it applies to the balance, instead of applying it
   /// automatically (HU-03). Lets variable amounts (utilities) be adjusted.
-  BoolColumn get requiresConfirmation =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get requiresConfirmation => boolean().clientDefault(() => false)();
+
+  /// Links this template to a [Debts] row when it is a debt installment
+  /// (HU-03, docs/requirements/08-deudas.md). Nullable: an ordinary scheduled
+  /// payment (rent, subscription) has no debt; only installments set it.
+  TextColumn get debtId => text().nullable().references(Debts, #id)();
 }
 
 /// Free-form tags (a complement to categories).
@@ -317,6 +469,62 @@ class TransactionTags extends Table with _SyncColumns {
   @override
   List<Set<Column>> get uniqueKeys => [
         {transactionId, tagId},
+      ];
+}
+
+/// N:N relation between scheduled payment templates and tags. Twin of
+/// `TransactionTags`, same mechanics: its own id (from the mixin) because
+/// PowerSync needs a single-column PK. Never populated when the template's
+/// `type` is `transfer` (enforced in `data/`, mirrors the transaction rule).
+class ScheduledPaymentTags extends Table with _SyncColumns {
+  TextColumn get scheduledPaymentId =>
+      text().references(ScheduledPayments, #id)();
+  TextColumn get tagId => text().references(Tags, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {scheduledPaymentId, tagId},
+      ];
+}
+
+/// One row per due date of a scheduled payment template that has been
+/// processed by the catch-up generator (HU-02) or acted on by the user
+/// (confirm/skip/snooze, HU-03/HU-07). This is the idempotency ledger: the
+/// unique key on (scheduledPaymentId, occurrenceDate) guarantees a due date
+/// is generated at most once, even if the app closes mid-catch-up, and that
+/// no due date is silently skipped.
+///
+/// [occurrenceDate] is the template's original anchor date for this
+/// occurrence and is never mutated — the next occurrence's date is always
+/// computed from the template's own `frequency`/`interval`/`nextDate`, never
+/// from a snoozed date (see docs/requirements/09-pagos-programados.md,
+/// HU-07 "nota de dominio"). Snoozing only records where the user wants
+/// *this* occurrence to land, in [snoozedToDate].
+class ScheduledPaymentOccurrences extends Table with _SyncColumns {
+  TextColumn get scheduledPaymentId =>
+      text().references(ScheduledPayments, #id)();
+
+  /// The due date per the template's original cadence. Combined with
+  /// [scheduledPaymentId] as the idempotency key; see class doc.
+  DateTimeColumn get occurrenceDate => dateTime()();
+
+  TextColumn get status => textEnum<ScheduledOccurrenceStatus>().clientDefault(
+        () => ScheduledOccurrenceStatus.pending.name,
+      )();
+
+  /// Set only when [status] is `snoozed`: the later date the user chose.
+  /// Null for every other status. The effective due date to display is this
+  /// value when present, [occurrenceDate] otherwise.
+  DateTimeColumn get snoozedToDate => dateTime().nullable()();
+
+  /// The transaction generated when this occurrence was confirmed (auto or
+  /// manual mode). Null while `pending`, `skipped` or `snoozed`.
+  TextColumn get generatedTransactionId =>
+      text().nullable().references(Transactions, #id)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {scheduledPaymentId, occurrenceDate},
       ];
 }
 
@@ -346,31 +554,59 @@ class BudgetCategories extends Table with _SyncColumns {
       ];
 }
 
+/// Per-period amount override for a recurring budget (Wallet-style). One row
+/// per (budgetId, periodStart): it replaces [Budgets.amountMinor] for exactly
+/// the window that starts on [periodStart], leaving every other period on the
+/// original amount.
+///
+/// This REPLACES the old "fork" model, which inserted extra `Budgets` rows
+/// (adjusted/resume) that surfaced as DUPLICATE budgets in the list. The budget
+/// now stays a single row and the per-period amount lives here.
+///
+/// `deletedAt` / `tombstonedAt` from `_SyncColumns` go UNUSED here: cancelling
+/// an adjustment HARD-deletes its row (there is no trash/undo, and nothing
+/// references it by FK). Keep parity with Supabase/Postgres: same table and
+/// column names once sync is wired.
+@DataClassName('BudgetPeriodOverrideRow')
+class BudgetPeriodOverrides extends Table with _SyncColumns {
+  TextColumn get budgetId => text().references(Budgets, #id)();
+
+  /// Date-only start of the overridden window — exactly
+  /// `BudgetPeriodWindow.start` for that period.
+  DateTimeColumn get periodStart => dateTime()();
+
+  IntColumn get amountMinor => integer()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {budgetId, periodStart},
+      ];
+}
+
 /// Account-level app settings that must sync across the user's devices
 /// (zero-based mode, default currency...). Device-local prefs like the
 /// light/dark theme do NOT belong here — they go in a separate local store.
 ///
 /// DEVIATION FROM `_SyncColumns` (documented on purpose): this is a singleton.
-/// The [id] is overridden to a well-known constant (`'app'`) instead of a random
-/// per-row UUID (`clientDefault`). Two offline devices generating random UUIDs
-/// would each create a row and PowerSync would duplicate them on merge; with a
-/// constant id the row is a true singleton and the merge is last-write-wins over
-/// `updatedAt`. The default singleton row is inserted by the migration/onCreate.
+/// The [id] is overridden to a well-known constant (`'app'`) instead of a
+/// random per-row UUID. Two offline devices generating random UUIDs would
+/// each create a row and PowerSync would duplicate them on merge; with a
+/// constant id the row is a true singleton and the merge is last-write-wins
+/// over `updatedAt`. The default singleton row is inserted by the
+/// migration/onCreate (see `_seedAppSettings`).
 class AppSettings extends Table with _SyncColumns {
   @override
-  TextColumn get id => text().withDefault(const Constant('app'))();
+  TextColumn get id => text().clientDefault(() => 'app')();
 
   /// Global zero-based ("Modo sobres") flag (HU-06).
-  BoolColumn get zeroBasedEnabled =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get zeroBasedEnabled => boolean().clientDefault(() => false)();
 
   /// One-shot latch: the onboarding default categories (HU-06) have been seeded
   /// once for this installation. Set to true after the first (and only) seed and
   /// never cleared, so wiping every category does NOT trigger a re-seed on the
   /// next launch. This is the install-lifetime guarantee — `hasAnyCategory` only
   /// reflects the current row count, which is not enough.
-  BoolColumn get categoriesSeeded =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get categoriesSeeded => boolean().clientDefault(() => false)();
 }
 
 // ---------------------------------------------------------------------------
@@ -385,11 +621,15 @@ class AppSettings extends Table with _SyncColumns {
     Budgets,
     Goals,
     Debts,
+    DebtEntries,
     ScheduledPayments,
     Tags,
     TransactionTags,
+    ScheduledPaymentTags,
+    ScheduledPaymentOccurrences,
     BudgetAccounts,
     BudgetCategories,
+    BudgetPeriodOverrides,
     AppSettings,
   ],
 )
@@ -397,24 +637,29 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 18;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
-  /// `INSERT OR IGNORE`. `updated_at` is stamped in epoch millis (see
-  /// `_SyncColumns.updatedAt`); `created_at` and `zero_based_enabled` use their
-  /// column defaults.
-  Future<void> _seedAppSettings(Migrator m) async {
-    await m.database.customStatement(
-      'INSERT OR IGNORE INTO app_settings (id, updated_at) '
-      "VALUES ('app', CAST(strftime('%s','now') AS INTEGER) * 1000)",
-    );
-  }
+  /// `InsertMode.insertOrIgnore`.
+  ///
+  /// Goes through Drift's typed insert API, NOT a raw `customStatement`, on
+  /// purpose: every `_SyncColumns` table is physically a PowerSync-managed
+  /// view (decision #14, docs/requirements/05-auth-sync.md), which has no SQL
+  /// column defaults of its own — a raw INSERT that only lists a couple of
+  /// columns leaves every other column NULL. The typed API fills every
+  /// `clientDefault` column (id, createdAt, updatedAt, zeroBasedEnabled,
+  /// categoriesSeeded) explicitly, so the row comes out fully populated
+  /// however it gets written.
+  Future<void> _seedAppSettings() => into(appSettings).insert(
+        const AppSettingsCompanion(),
+        mode: InsertMode.insertOrIgnore,
+      );
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
           await m.createAll();
-          await _seedAppSettings(m);
+          await _seedAppSettings();
         },
         onUpgrade: (Migrator m, int from, int to) async {
           // v1 -> v2: bank identification and card data columns on Accounts
@@ -560,7 +805,7 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(budgetAccounts);
             await m.createTable(budgetCategories);
             await m.createTable(appSettings);
-            await _seedAppSettings(m);
+            await _seedAppSettings();
           }
 
           // v7 -> v8: scheduled payments gain a one-time frequency and two
@@ -590,11 +835,181 @@ class AppDatabase extends _$AppDatabase {
           if (from < 9) {
             await m.addColumn(appSettings, appSettings.categoriesSeeded);
           }
+
+          // v9 -> v10: every `_SyncColumns` table gains `userId`, a nullable
+          // logical reference to `auth.users.id` in Supabase (no local FK).
+          // Rows created offline/without a session keep it NULL until the
+          // user signs in and the local-data merge (HU-04) fills it in; this
+          // is what unlocks RLS in Postgres and per-user PowerSync sync
+          // rules. Additive nullable column -> no backfill needed. See
+          // docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+          if (from < 10) {
+            await m.addColumn(accounts, accounts.userId);
+            await m.addColumn(categories, categories.userId);
+            await m.addColumn(transactions, transactions.userId);
+            await m.addColumn(budgets, budgets.userId);
+            await m.addColumn(goals, goals.userId);
+            await m.addColumn(debts, debts.userId);
+            await m.addColumn(scheduledPayments, scheduledPayments.userId);
+            await m.addColumn(tags, tags.userId);
+            await m.addColumn(transactionTags, transactionTags.userId);
+            await m.addColumn(budgetAccounts, budgetAccounts.userId);
+            await m.addColumn(budgetCategories, budgetCategories.userId);
+            await m.addColumn(appSettings, appSettings.userId);
+          }
+
+          // v10 -> v11: Scheduled Payments feature (docs/requirements/
+          // 09-pagos-programados.md). Two new tables, both additive (no
+          // existing data to migrate):
+          //  - `ScheduledPaymentTags`: N:N bridge between templates and
+          //    `Tags`, twin of `TransactionTags` (HU-01).
+          //  - `ScheduledPaymentOccurrences`: idempotency ledger for the
+          //    catch-up generator plus per-occurrence state (pending
+          //    confirmation, skipped, snoozed) that never mutates the
+          //    template's own cadence (HU-02/HU-03/HU-07).
+          if (from < 11) {
+            await m.createTable(scheduledPaymentTags);
+            await m.createTable(scheduledPaymentOccurrences);
+          }
+
+          // v11 -> v12: ScheduledPayments gains `firstPaymentDate`, the
+          // immutable date the user originally picked as the first payment.
+          // Fixes a bug where the edit form displayed `nextDate` (a mutable
+          // catch-up cursor) as "First payment", which silently changed once
+          // the generator advanced the recurrence. `firstPaymentDate` is NOT
+          // NULL without a Drift default, so it is added by raw SQL with a
+          // temporary default and then backfilled from each row's current
+          // `next_date` — the best available approximation, though not exact
+          // for templates whose cursor has already advanced past their true
+          // original date.
+          if (from < 12) {
+            // No `ALTER TABLE ADD COLUMN` here. Every `_SyncColumns` table is
+            // physically a PowerSync-managed VIEW since PowerSync was wired
+            // (2026-07-15) — SQLite hard-errors ("Cannot add a column to a
+            // view") on any `ALTER TABLE ADD/DROP COLUMN` against one, it is
+            // not a silent no-op as an earlier version of this comment (and
+            // `docs/requirements/05-auth-sync.md` decision #14's own closing
+            // note) assumed. Confirmed empirically 2026-07-24, after a real
+            // device hit this on an app update: `onUpgrade` running that
+            // `ALTER TABLE scheduled_payments ADD COLUMN ...` was the actual
+            // root cause of a `DatabaseFailure` cascading into every other
+            // feature's queries for the rest of that session.
+            //
+            // The column doesn't need adding here anyway: `powerSyncSchema`
+            // (`powersync_schema.dart`) already declares it, so PowerSync
+            // recreates the view with the column present the moment the app
+            // opens with the updated schema — before Drift's migration even
+            // runs (`database_connection.dart`). Only a genuine backfill (a
+            // plain `UPDATE`, safe against a view via its `INSTEAD OF`
+            // trigger — unlike DDL or `upsert`) belongs in `onUpgrade` for
+            // these tables. Same rule applies to every `from < N` block below
+            // that used to call `m.addColumn`/`m.dropColumn` on one of these
+            // tables — removed for the same reason, noted individually.
+            await m.database.customStatement(
+              'UPDATE scheduled_payments SET first_payment_date = next_date',
+            );
+          }
+
+          // v12 -> v13: per-period budget amount override (Wallet-style),
+          // replacing the old multi-row "fork" adjustment model that surfaced
+          // adjusted/resume budgets as duplicate rows in the list. Additive
+          // table only — no existing data to migrate. NOTE: budgets a previous
+          // build already forked into extra `Budgets` rows are left as-is; they
+          // stay as separate budgets in the list until the user removes them
+          // (this migration cannot safely re-merge a past fork). Keep parity
+          // with Supabase/Postgres: same table/column names once sync is wired.
+          if (from < 13) {
+            await m.createTable(budgetPeriodOverrides);
+          }
+
+          // v13 -> v14: Debts feature (Fase 0). Both changes are additive, no
+          // existing data to migrate:
+          //  - `Debts.accrualMode`: how the balance grows (`manual`/`auto`),
+          //    stored as text, defaults to `manual`.
+          //  - `DebtEntries`: signed ledger of interest accrual and manual
+          //    adjustments. The outstanding balance is DERIVED from these, so
+          //    there is no stored balance column.
+          //  - `ScheduledPayments.debtId`: nullable FK linking an installment
+          //    template to its debt (HU-03, docs/requirements/08-deudas.md).
+          // Keep parity with Supabase/Postgres: replicate the `debts.accrual_mode`
+          // column, the `debt_entries` table (same columns + sync columns) and
+          // the `scheduled_payments.debt_id` column once sync is wired.
+          if (from < 14) {
+            // `debts.accrualMode`/`scheduledPayments.debtId`: no `addColumn`
+            // — see the note on `from < 12` above. `debtEntries` is a brand
+            // new table, not an existing view, so `createTable` (`CREATE
+            // TABLE IF NOT EXISTS`) is safe and stays.
+            await m.createTable(debtEntries);
+          }
+
+          // v14 -> v15: Debts gains `initialTransactionId`, a nullable soft
+          // UUID FK to the disbursement `Transactions` row that holds the
+          // opening balance when the user records it against an account
+          // ("registro inicial al crear deuda", item 2). Additive nullable
+          // column -> no backfill needed. Keep parity with Supabase/Postgres:
+          // replicate `debts.initial_transaction_id text` (nullable) once sync
+          // is wired.
+          if (from < 15) {
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do: the column is nullable, no backfill needed.
+          }
+
+          // v15 -> v16: Debts gains `startDate`, the date the debt started
+          // (when it was acquired). It is the floor of every payment/adjustment
+          // date and the date the initial record is stamped with. Added as a
+          // nullable column so it lands safely on existing rows, then backfilled
+          // to `created_at` — a sensible floor for pre-existing debts. Raw SQL
+          // for the backfill (a Drift `update(...).write(...)` cannot set a
+          // column from another column). Keep parity with Supabase/Postgres:
+          // replicate `debts.start_date bigint` (epoch seconds, nullable) once
+          // sync is wired.
+          if (from < 16) {
+            // No `addColumn` — see the note on `from < 12` above. Only the
+            // backfill (safe `UPDATE`) is needed.
+            await customStatement(
+              'UPDATE debts SET start_date = created_at '
+              'WHERE start_date IS NULL',
+            );
+          }
+
+          // v16 -> v17: Debts gains `closedAt`, a manual-closure business-state
+          // timestamp (null = active). Distinct from `deletedAt`/`tombstonedAt`
+          // — closing a debt is neither trash nor a referential tombstone, it
+          // is a status change. Additive nullable column -> no backfill
+          // needed. Closing never writes a `DebtEntry` (pure status change);
+          // enforce "no new entries on a closed debt" in the repository. Keep
+          // parity with Supabase/Postgres: replicate `debts.closed_at bigint`
+          // (epoch seconds, nullable) once sync is wired.
+          if (from < 17) {
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do: the column is nullable, no backfill needed.
+          }
+
+          // v17 -> v18: Transactions gains `countsInBudget` (bool, default
+          // false). Lets a `type == transfer` transaction opt into counting
+          // in budgets/reports via its existing `categoryId`, instead of
+          // being excluded by default. Irrelevant for income/expense (always
+          // false there). Additive column with a default -> no backfill
+          // needed. Phase B1 of
+          // docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
+          // Keep parity with Supabase/Postgres: replicate
+          // `transactions.counts_in_budget boolean not null default false`
+          // once sync is wired.
+          if (from < 18) {
+            // No `addColumn` — see the note on `from < 12` above. Nothing
+            // else to do here on the client: unlike a client-only column, the
+            // Postgres `counts_in_budget boolean not null default false` was
+            // added with a real `DEFAULT`, which — because it is a real
+            // table, not a view — already backfilled every existing row
+            // server-side. Every device gets a real `false`, never a missing
+            // JSON key, once it re-syncs.
+          }
         },
       );
 
-  // Once PowerSync is integrated, instead of opening our own NativeDatabase we
-  // open Drift on top of the PowerSync database, and define a PowerSync Schema
-  // mirroring these same tables/columns. PowerSync then handles bidirectional
-  // sync with Supabase Postgres.
+  // Drift opens on top of the PowerSync-managed connection instead of its own
+  // NativeDatabase (see `core/database/database_connection.dart` and decision
+  // #6, docs/requirements/05-auth-sync.md). The mirrored PowerSync `Schema`
+  // lives in `core/database/powersync_schema.dart` and must be kept in sync
+  // by hand with any change to a `_SyncColumns` table here.
 }

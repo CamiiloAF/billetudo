@@ -53,8 +53,7 @@ class AccountNumberRow extends StatelessWidget {
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: colors.textSecondary),
           ),
-          const Spacer(),
-          Flexible(
+          Expanded(
             child: Text(
               revealedNumber ?? l10n.accountNumberMasked(last4 ?? ''),
               textAlign: TextAlign.right,

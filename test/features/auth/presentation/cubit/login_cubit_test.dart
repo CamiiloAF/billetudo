@@ -105,7 +105,8 @@ void main() {
   );
 
   blocTest<LoginCubit, LoginState>(
-    'una excepción (backend no cableado) se surface como error, no crashea',
+    'una excepción no mapeada se surface como UnexpectedFailure conservando '
+    'la causa, no como un fallo de red genérico',
     build: build,
     setUp: () => when(() => signInWithGoogle()).thenThrow(UnimplementedError()),
     act: (cubit) => cubit.continueWithGoogle(),
@@ -114,7 +115,20 @@ void main() {
         status: LoginStatus.loading,
         lastProvider: AuthProvider.google,
       ),
-      isA<LoginState>().having((s) => s.status, 'status', LoginStatus.error),
+      isA<LoginState>()
+          .having((s) => s.status, 'status', LoginStatus.error)
+          .having((s) => s.failure, 'failure', isA<UnexpectedFailure>())
+          .having(
+            (s) => s.failure!.message,
+            'failure.message',
+            'sign-in failed unexpectedly',
+          )
+          .having(
+            (s) => s.failure!.cause,
+            'failure.cause',
+            isA<UnimplementedError>(),
+          )
+          .having((s) => s.failure!.stackTrace, 'stackTrace', isNotNull),
     ],
   );
 }

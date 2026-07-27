@@ -15,6 +15,14 @@ class GetMostUsedCategories {
 
   final CategoryRepository _repository;
 
-  FutureResult<List<Category>> call(CategoryKind kind, {int limit = 3}) =>
-      _repository.getMostUsedCategories(kind, limit: limit);
+  FutureResult<List<Category>> call(
+    CategoryKind kind, {
+    int limit = 3,
+    String? accountId,
+  }) =>
+      _repository.getMostUsedCategories(
+        kind,
+        limit: limit,
+        accountId: accountId,
+      );
 }

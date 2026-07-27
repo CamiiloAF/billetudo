@@ -3,8 +3,10 @@ import 'package:equatable/equatable.dart';
 import 'date_period_filter.dart';
 import 'transaction.dart';
 
-/// How the results of [TransactionFilter] are ordered (HU-06).
-enum TransactionSortOrder { dateDesc, amountDesc }
+/// How the results of [TransactionFilter] are ordered (HU-06). `dateDesc` is
+/// the default; every other value is a "non-default" order that flips the
+/// Sort Button into its active look and shows the Sort Label above the list.
+enum TransactionSortOrder { dateDesc, dateAsc, amountDesc, amountAsc }
 
 /// Combinable search + filter criteria for the transaction list (HU-06),
 /// persisted across the cubit's lifetime so scrolling/re-emitting never

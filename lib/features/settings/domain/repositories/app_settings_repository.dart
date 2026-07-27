@@ -16,7 +16,7 @@ abstract class AppSettingsRepository {
   FutureResult<AppSettings> getSettings();
 
   /// Turns "Modo sobres" (zero-based) on or off (HU-06).
-  FutureResult<Unit> setZeroBasedEnabled(bool enabled);
+  FutureResult<Unit> setZeroBasedEnabled({required bool enabled});
 
   /// Latches the onboarding default categories as seeded for this installation
   /// (HU-06). Idempotent: safe to call again.

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/keyboard_done_toolbar.dart';
 
 /// The `Form Field` component: label + input box (optional icon) + optional
 /// error text.
@@ -20,17 +21,26 @@ class AccountFormField extends StatelessWidget {
     this.icon,
     this.hint,
     this.initialValue,
+    this.controller,
     this.errorText,
     this.helperText,
     this.keyboardType,
     this.inputFormatters,
     this.maxLength,
     this.obscureText = false,
+    this.textCapitalization = TextCapitalization.none,
     this.trailing,
     this.onChanged,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
     super.key,
   })  : onTap = null,
-        value = null;
+        value = null,
+        assert(
+          initialValue == null || controller == null,
+          'a field is driven either by initialValue or by a controller',
+        );
 
   const AccountFormField.selector({
     required this.label,
@@ -42,18 +52,29 @@ class AccountFormField extends StatelessWidget {
     this.helperText,
     super.key,
   })  : initialValue = null,
+        controller = null,
         keyboardType = null,
         inputFormatters = null,
         maxLength = null,
         obscureText = false,
+        textCapitalization = TextCapitalization.none,
         trailing = null,
-        onChanged = null;
+        onChanged = null,
+        focusNode = null,
+        textInputAction = null,
+        onSubmitted = null;
 
   /// Already localized.
   final String label;
   final IconData? icon;
   final String? hint;
   final String? initialValue;
+
+  /// Drives the text when the field's content can change from the outside
+  /// after the first build (a money field re-rendered on a currency change).
+  /// Mutually exclusive with [initialValue]; its owner disposes it.
+  final TextEditingController? controller;
+
   final String? errorText;
   final String? helperText;
   final TextInputType? keyboardType;
@@ -61,10 +82,26 @@ class AccountFormField extends StatelessWidget {
   final int? maxLength;
   final bool obscureText;
 
+  /// How the keyboard auto-capitalizes typed text. Defaults to
+  /// [TextCapitalization.none]; name/institution fields opt into `.words`.
+  final TextCapitalization textCapitalization;
+
   /// Extra action inside the box (e.g. the reveal eye of the number field).
   final Widget? trailing;
 
   final ValueChanged<String>? onChanged;
+
+  /// The field's own focus node, so a form can chain focus explicitly (skipping
+  /// the selector fields between text inputs) instead of relying on traversal.
+  final FocusNode? focusNode;
+
+  /// The keyboard action button ("siguiente" / "listo"). `null` keeps Flutter's
+  /// default so existing single-field usages are unchanged.
+  final TextInputAction? textInputAction;
+
+  /// Fired when the keyboard action is confirmed (used to move focus to the next
+  /// text field, or to dismiss the keyboard on the last one).
+  final VoidCallback? onSubmitted;
 
   /// Non-null only on a selector field.
   final VoidCallback? onTap;
@@ -74,11 +111,47 @@ class AccountFormField extends StatelessWidget {
 
   bool get isSelector => onTap != null;
 
+  /// Whether this field opens the system number keyboard, which on iOS lacks a
+  /// return key — the case that needs a "Listo" accessory to dismiss.
+  bool get _usesSystemNumberKeyboard {
+    final type = keyboardType;
+    return type == TextInputType.number ||
+        type == TextInputType.phone ||
+        type == const TextInputType.numberWithOptions(decimal: true) ||
+        type == const TextInputType.numberWithOptions(signed: true) ||
+        type ==
+            const TextInputType.numberWithOptions(decimal: true, signed: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final icon = this.icon;
+
+    final Widget input = TextFormField(
+      initialValue: initialValue,
+      controller: controller,
+      focusNode: focusNode,
+      onChanged: onChanged,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLength: maxLength,
+      obscureText: obscureText,
+      textCapitalization: textCapitalization,
+      textInputAction: textInputAction,
+      onFieldSubmitted:
+          onSubmitted == null ? null : (_) => onSubmitted!.call(),
+      style: theme.textTheme.bodyLarge,
+      decoration: InputDecoration(
+        hintText: hint,
+        counterText: '',
+        errorText: errorText,
+        prefixIcon:
+            icon == null ? null : Icon(icon, color: colors.textSecondary),
+        suffixIcon: trailing,
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,24 +172,10 @@ class AccountFormField extends StatelessWidget {
             hasError: errorText != null,
             onTap: onTap!,
           )
+        else if (_usesSystemNumberKeyboard)
+          KeyboardDoneToolbar(child: input)
         else
-          TextFormField(
-            initialValue: initialValue,
-            onChanged: onChanged,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            maxLength: maxLength,
-            obscureText: obscureText,
-            style: theme.textTheme.bodyLarge,
-            decoration: InputDecoration(
-              hintText: hint,
-              counterText: '',
-              errorText: errorText,
-              prefixIcon:
-                  icon == null ? null : Icon(icon, color: colors.textSecondary),
-              suffixIcon: trailing,
-            ),
-          ),
+          input,
         if (helperText != null) ...[
           const SizedBox(height: 6),
           Text(
@@ -166,7 +225,7 @@ class AccountFormSelectorBox extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 52,
+        constraints: const BoxConstraints(minHeight: 52),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: colors.surface,
@@ -182,6 +241,8 @@ class AccountFormSelectorBox extends StatelessWidget {
             Expanded(
               child: Text(
                 value ?? hint ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color:
                       value == null ? colors.textSecondary : colors.textPrimary,

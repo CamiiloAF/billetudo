@@ -31,6 +31,8 @@ class TransactionDraft extends Equatable {
     this.scheduledPaymentId,
     this.goalId,
     this.debtId,
+    this.isBalanceAdjustment = false,
+    this.countsInBudget = false,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -68,6 +70,21 @@ class TransactionDraft extends Equatable {
   final String? scheduledPaymentId;
   final String? goalId;
   final String? debtId;
+
+  /// Marks a balance reconciliation (Accounts' "Ajustar saldo"). Not
+  /// persisted: it only relaxes the "a category is required" rule, because a
+  /// balance adjustment is category-less by nature — like a transfer leg — and
+  /// its sheet offers no picker. The transaction form never sets it, so its
+  /// mandatory-category rule is untouched.
+  final bool isBalanceAdjustment;
+
+  /// Only meaningful for `type == transfer` (HU-B3,
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3): when
+  /// `true`, the transfer requires a [categoryId] and counts in
+  /// presupuestos/reportes like a normal transaction, instead of the default
+  /// neutral behaviour where a transfer never touches either. Ignored for
+  /// `expense`/`income` (they already always count).
+  final bool countsInBudget;
 
   /// Validates every business rule of HU-01/HU-02/HU-03/HU-04 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
@@ -136,6 +153,8 @@ class TransactionDraft extends Equatable {
         scheduledPaymentId: scheduledPaymentId,
         goalId: goalId,
         debtId: debtId,
+        isBalanceAdjustment: isBalanceAdjustment,
+        countsInBudget: type == TransactionType.transfer && countsInBudget,
       ),
     );
   }
@@ -162,25 +181,58 @@ class TransactionDraft extends Equatable {
             ),
           );
         }
-        // HU-03: a transfer is never income nor expense, so it carries no
-        // category.
-        return Right((null, null, transferAccountId));
+        // HU-03 (default): a transfer is never income nor expense, so it
+        // carries no category. B-3 (opt-in via `countsInBudget`): once the
+        // transfer is marked to count in presupuestos/reportes, it needs a
+        // category just like an expense — without one it would not match any
+        // budget's category scope.
+        if (!countsInBudget) {
+          return Right((null, null, transferAccountId));
+        }
+        final categoryId = this.categoryId;
+        if (categoryId == null) {
+          return const Left(
+            ValidationFailure(
+              'a category is required',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        if (categoryKind != CategoryKind.expense) {
+          return Left(
+            ValidationFailure(
+              'the category must be of kind ${CategoryKind.expense.name}',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        return Right((categoryId, categoryKind, transferAccountId));
 
       case TransactionType.expense:
       case TransactionType.income:
         final categoryId = this.categoryId;
-        if (categoryId != null) {
-          final expectedKind = type == TransactionType.expense
-              ? CategoryKind.expense
-              : CategoryKind.income;
-          if (categoryKind != expectedKind) {
-            return Left(
-              ValidationFailure(
-                'the category must be of kind ${expectedKind.name}',
-                field: fieldCategoryId,
-              ),
-            );
-          }
+        final expectedKind = type == TransactionType.expense
+            ? CategoryKind.expense
+            : CategoryKind.income;
+        // A balance reconciliation has no category, on purpose.
+        if (categoryId == null && isBalanceAdjustment) {
+          return const Right((null, null, null));
+        }
+        if (categoryId == null) {
+          return const Left(
+            ValidationFailure(
+              'a category is required',
+              field: fieldCategoryId,
+            ),
+          );
+        }
+        if (categoryKind != expectedKind) {
+          return Left(
+            ValidationFailure(
+              'the category must be of kind ${expectedKind.name}',
+              field: fieldCategoryId,
+            ),
+          );
         }
         return Right((categoryId, categoryKind, null));
     }
@@ -207,5 +259,7 @@ class TransactionDraft extends Equatable {
         scheduledPaymentId,
         goalId,
         debtId,
+        isBalanceAdjustment,
+        countsInBudget,
       ];
 }

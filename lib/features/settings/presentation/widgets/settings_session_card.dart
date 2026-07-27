@@ -22,13 +22,11 @@ class SettingsSessionCard extends StatelessWidget {
     final providerLabel = user?.provider == AuthProvider.apple
         ? l10n.authSessionProviderApple
         : l10n.authSessionProviderGoogle;
-    final initials = (user?.displayName ?? '?')
+    final firstName = (user?.displayName ?? '?')
         .trim()
         .split(RegExp(r'\s+'))
-        .where((part) => part.isNotEmpty)
-        .take(2)
-        .map((part) => part[0].toUpperCase())
-        .join();
+        .firstWhere((part) => part.isNotEmpty, orElse: () => '?');
+    final initials = firstName[0].toUpperCase();
 
     return Container(
       padding: const EdgeInsets.all(16),

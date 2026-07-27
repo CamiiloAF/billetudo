@@ -5,7 +5,7 @@ import 'package:billetudo/features/categories/presentation/widgets/sheets/confir
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 void main() {
   setUpAll(() async {
@@ -56,12 +56,12 @@ void main() {
       );
     });
 
-    testWidgets('confirm delete, with transactions ($suffix)',
-        (tester) async {
+    testWidgets('confirm delete, with transactions ($suffix)', (tester) async {
       await golden(
         tester,
         (context) => ConfirmDeleteWithTransactionsSheet.show(
           context,
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -77,6 +77,8 @@ void main() {
         tester,
         (context) => ConfirmDeleteRootWithSubcategoriesSheet.show(
           context,
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),

@@ -70,6 +70,13 @@ class BudgetFormState extends Equatable {
 
   bool get isEditing => id != null;
 
+  /// The failing field, when [failure] points at one — mirrors
+  /// `AccountFormState.failedField`/`TransactionFormState.failedField` so the
+  /// form can highlight the offending input instead of failing silently.
+  String? get failedField => failure is ValidationFailure
+      ? (failure! as ValidationFailure).field
+      : null;
+
   /// One-off = the `custom` period; a single window with a mandatory end.
   bool get isOneOff => !recurring;
 

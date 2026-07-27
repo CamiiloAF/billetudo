@@ -9,7 +9,8 @@ void main() {
       'cambiar la granularidad salta al periodo que contiene la fecha activa',
       build: DateFilterCubit.new,
       act: (cubit) async {
-        cubit.start(DatePeriodFilter.granular(DateGranularity.month, DateTime(2026, 7, 15)));
+        cubit.start(DatePeriodFilter.granular(
+            DateGranularity.month, DateTime(2026, 7, 15)));
         cubit.granularitySelected(DateGranularity.year);
       },
       verify: (cubit) {
@@ -22,7 +23,8 @@ void main() {
       'un paso adelante mueve el periodo activo',
       build: DateFilterCubit.new,
       act: (cubit) async {
-        cubit.start(DatePeriodFilter.granular(DateGranularity.month, DateTime(2026, 7, 15)));
+        cubit.start(DatePeriodFilter.granular(
+            DateGranularity.month, DateTime(2026, 7, 15)));
         cubit.step(1);
       },
       verify: (cubit) => expect(cubit.state.filter.start, DateTime(2026, 8)),

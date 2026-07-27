@@ -7,7 +7,8 @@ import '../home_fixtures.dart';
 void main() {
   final month = DateTime(2026, 7);
 
-  test('el feed reciente incluye income, expense y transfer (actividad literal)',
+  test(
+      'el feed reciente incluye income, expense y transfer (actividad literal)',
       () {
     final snapshot = HomeSnapshot.from(
       month: month,
@@ -47,7 +48,8 @@ void main() {
       ],
     );
 
-    expect(snapshot.recentActivity, hasLength(HomeSnapshot.recentActivityLimit));
+    expect(
+        snapshot.recentActivity, hasLength(HomeSnapshot.recentActivityLimit));
     expect(snapshot.recentActivity.first.transaction.id, 'tx-8');
     expect(snapshot.recentActivity.last.transaction.id, 'tx-4');
   });
@@ -63,7 +65,8 @@ void main() {
     expect(snapshot.spending.displayTotalMinor, 0);
   });
 
-  test('solo transferencias: no está vacío (hay actividad) aunque el gasto sea 0',
+  test(
+      'solo transferencias: no está vacío (hay actividad) aunque el gasto sea 0',
       () {
     final snapshot = HomeSnapshot.from(
       month: month,
@@ -132,7 +135,8 @@ void main() {
     expect(snapshot.spending.displayCurrency, 'USD');
   });
 
-  test('sin cuentas: el hero \$0 cae al fallbackCurrency por defecto (COP)', () {
+  test('sin cuentas: el hero \$0 cae al fallbackCurrency por defecto (COP)',
+      () {
     final snapshot = HomeSnapshot.from(
       month: month,
       accounts: const [],
@@ -143,7 +147,8 @@ void main() {
     expect(snapshot.spending.displayCurrency, 'COP');
   });
 
-  test('multi-moneda: el hero muestra la moneda de mayor total (sin sumar '
+  test(
+      'multi-moneda: el hero muestra la moneda de mayor total (sin sumar '
       'cruzado)', () {
     final snapshot = HomeSnapshot.from(
       month: month,

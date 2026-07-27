@@ -1,5 +1,5 @@
 import 'package:billetudo/features/categories/domain/entities/category.dart';
-import 'package:billetudo/features/categories/presentation/pages/categories_page.dart';
+import 'package:billetudo/features/categories/presentation/widgets/category_kind_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,7 +35,8 @@ void main() {
     expect(picked, CategoryKind.income);
   });
 
-  testWidgets('"Gasto" nunca se pinta en el tono de \$expense (tono de marca)', (
+  testWidgets('"Gasto" nunca se pinta en el tono de \$expense (tono de marca)',
+      (
     tester,
   ) async {
     await tester.pumpAppWidget(

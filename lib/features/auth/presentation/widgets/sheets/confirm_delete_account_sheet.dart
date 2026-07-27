@@ -72,9 +72,12 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
                 child: Text(l10n.commonCancel),
               ),
               right: hasError
-                  ? OutlinedButton.icon(
+                  // `T1YkkA`'s retry (`qfTBg` in `BEllU`) carries no fill
+                  // override, so it renders as the filled `$primary`
+                  // `Button/Primary`, not a secondary outlined button.
+                  ? FilledButton.icon(
                       onPressed: isLoading ? null : cubit.retryDelete,
-                      icon: const Icon(LucideIcons.refreshCw),
+                      icon: const Icon(LucideIcons.refreshCw, size: 18),
                       label: Text(l10n.commonRetry),
                     )
                   : FilledButton.icon(
@@ -91,8 +94,20 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             )
-                          : const Icon(LucideIcons.trash),
-                      label: Text(l10n.authDeleteStep1Cta),
+                          : const Icon(LucideIcons.trash, size: 18),
+                      // "Eliminar cuenta" is wider than half a sheet row at the
+                      // button's own size, so Material would wrap it to two
+                      // lines. `FittedBox` keeps it on the single line the
+                      // frame (`j8ZdEx`) shows, shrinking a touch only if
+                      // needed instead of truncating with an ellipsis.
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          l10n.authDeleteStep1Cta,
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
+                      ),
                     ),
             ),
           ],

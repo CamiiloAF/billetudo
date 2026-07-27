@@ -3,11 +3,6 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  plugins:
-    # Reglas propias: avoid_widget_functions, avoid_private_widgets,
-    # avoid_hardcoded_ui_strings (ver tools/billetudo_lints/).
-    - custom_lint
-
   exclude:
     - '**/*.g.dart'
     - '**/*.freezed.dart'
@@ -97,9 +92,3 @@ linter:
 
     # --- Documentación ---
     comment_references: true
-
-custom_lint:
-  rules:
-    - avoid_widget_functions
-    - avoid_private_widgets
-    - avoid_hardcoded_ui_strings

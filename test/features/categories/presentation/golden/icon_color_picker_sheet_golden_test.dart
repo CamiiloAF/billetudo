@@ -2,14 +2,16 @@ import 'package:billetudo/features/categories/presentation/widgets/icon_color_pi
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'golden_helpers.dart';
+import '../../../../support/golden_helpers.dart';
 
 /// `ParentCategoryPickerSheet` is deliberately not covered here: unlike this
 /// sheet, it resolves its cubit through `getIt` (see
 /// `ParentCategoryPickerSheet.build`), which would require standing up the
 /// feature's whole DI graph just to render a golden. `IconColorPickerSheet`
 /// has no such dependency, so it is the one picker cheap enough to golden in
-/// isolation.
+/// isolation this way; `parent_category_picker_sheet_golden_test.dart`
+/// covers the other picker by goldening its body widget with a mocked cubit
+/// instead, sidestepping the same DI concern.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -22,6 +24,7 @@ void main() {
     required Brightness brightness,
     String? initialIcon,
     String? initialColor,
+    bool colorLocked = false,
   }) async {
     setGoldenViewport(tester);
     await tester.pumpWidget(
@@ -32,6 +35,7 @@ void main() {
               context,
               initialIcon: initialIcon,
               initialColor: initialColor,
+              colorLocked: colorLocked,
             ),
             child: const Text('open'),
           ),
@@ -63,6 +67,18 @@ void main() {
         brightness: brightness,
         initialIcon: 'car',
         initialColor: 'sky',
+      );
+    });
+
+    testWidgets('color locked, inherited from parent ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'locked_$suffix',
+        brightness: brightness,
+        initialIcon: 'utensils-crossed',
+        initialColor: 'coral',
+        colorLocked: true,
       );
     });
   }

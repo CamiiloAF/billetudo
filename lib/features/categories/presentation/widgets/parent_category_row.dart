@@ -51,7 +51,9 @@ class ParentCategoryRow extends StatelessWidget {
                 category.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyLarge,
+                // `Parent Category Row`'s `Name` (`S8iVeb`) is 15/600.
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             if (selected) Icon(LucideIcons.check, color: colors.primaryOnSoft),

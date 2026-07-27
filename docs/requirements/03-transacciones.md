@@ -13,7 +13,8 @@ El núcleo de la app. Registro **manual** ilimitado — limitarlo rompería la p
 Como usuario quiero registrar un gasto indicando cuenta, categoría, monto, fecha y nota opcional, para llevar control de en qué se me va el dinero.
 
 **Criterios de aceptación:**
-- Campos: `accountId` (obligatorio), `categoryId` (opcional, debe ser `kind = expense`), `amountMinor` (obligatorio, entero positivo en centavos), `currency`, `date` (obligatoria, default hoy), `note` (opcional).
+- Campos: `accountId` (obligatorio), `categoryId` (**obligatorio** para gasto, debe ser `kind = expense`), `amountMinor` (obligatorio, entero positivo en centavos), `currency`, `date` (obligatoria, default hoy), `note` (opcional).
+- **Categoría obligatoria en gasto/ingreso** (decisión de producto): un movimiento de gasto o ingreso sin categoría no aporta a los reportes. Solo la **transferencia** queda exenta (HU-03, no lleva categoría). El formulario valida y muestra error visible si falta (nunca no-op silencioso al guardar).
 - `type = expense`, `source = manual` por defecto.
 - El saldo de la cuenta se refleja de inmediato tras guardar.
 - El monto se captura en la moneda de la cuenta seleccionada por defecto; ver `12-multi-moneda.md` si se registra en otra moneda.
@@ -28,15 +29,15 @@ Como usuario quiero registrar un gasto indicando cuenta, categoría, monto, fech
 Como usuario quiero registrar un ingreso (salario, freelance, etc.), para que mi saldo y mis reportes reflejen también lo que entra, no solo lo que gasto.
 
 **Criterios de aceptación:**
-- Igual que HU-01 pero `type = income`, y `categoryId` debe ser de `kind = income` si se asigna.
+- Igual que HU-01 pero `type = income`, y `categoryId` es **obligatorio** y de `kind = income`.
 
 ### HU-03 — Registrar una transferencia entre cuentas
 Como usuario quiero mover dinero de una cuenta a otra (ej. de banco a efectivo), para que mi patrimonio total no se distorsione como si fuera un gasto.
 
 **Criterios de aceptación:**
 - `type = transfer`, requiere `accountId` (origen) y `transferAccountId` (destino), ambos obligatorios y distintos entre sí.
-- No requiere `categoryId` (una transferencia no es gasto ni ingreso real).
-- Afecta el saldo de ambas cuentas (resta en origen, suma en destino) pero **no** cuenta como gasto ni ingreso en gráficas de flujo/estructura de gasto.
+- No requiere `categoryId` (una transferencia no es gasto ni ingreso real), **salvo** que se marque como presupuestable (`countsInBudget`), donde la categoría pasa a ser obligatoria — ver `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3.
+- Afecta el saldo de ambas cuentas (resta en origen, suma en destino) pero **no** cuenta como gasto ni ingreso en gráficas de flujo/estructura de gasto **mientras `countsInBudget` sea `false`** (el default). Con el flag activo cuenta como **gasto en la cuenta origen** con su categoría; el lado destino solo aplica dentro del alcance de un presupuesto, nunca en reportes — ver `10-graficas-informes.md` §Reglas de conteo.
 - Si origen y destino tienen monedas distintas, ver `12-multi-moneda.md` para la tasa aplicada.
 
 ### HU-04 — Editar transacción
@@ -107,7 +108,7 @@ Como usuario quiero ver el detalle completo de una transacción (cuenta, categor
 ## Reglas de negocio y edge cases
 
 - `amountMinor` siempre entero positivo; el signo/dirección del efecto en el saldo lo determina `type`, nunca un monto negativo.
-- Una transacción `transfer` nunca debe aparecer en el desglose de "estructura de gasto" ni sumar al total de gastos del periodo — ver `10-graficas-informes.md`.
-- Lo mismo aplica a una transacción con `debtId` asignado: no cuenta en los totales de ingreso/gasto de gráficas/informes (ver `08-deudas.md`), aunque a diferencia de `transfer` sí puede llevar `categoryId` opcional para organización propia del usuario.
+- Una transacción `transfer` **sin** `countsInBudget` nunca aparece en el desglose de "estructura de gasto" ni suma al total de gastos del periodo. Con `countsInBudget = true` sí suma, como gasto de su categoría en la cuenta **origen** — ver `10-graficas-informes.md` §Reglas de conteo.
+- Una transacción con `debtId` asignado **sí cuenta** en los totales de ingreso/gasto de gráficas/informes, según su `type` (pagar la cuota es gasto real; tomar el préstamo es entrada de caja). *Esto invierte la regla anterior que la excluía como si fuera un `transfer`* — ver `08-deudas.md` §Estadísticas. El reporte de flujo ofrece un toggle para **segregarlas** como serie aparte, no para ocultarlas. Su `categoryId` sigue siendo opcional; los movimientos de deuda sin categoría caen en el bucket "Sin categoría" del desglose.
 - `source` se fija automáticamente por el flujo de entrada (en Fase 0 solo `manual` e `imported` existen realmente; los demás valores del enum quedan reservados para Fase 2/4).
 - Al eliminar una cuenta o categoría con transacciones asociadas, resolver primero según `01-cuentas.md` / `02-categorias.md` antes de permitir el borrado definitivo.

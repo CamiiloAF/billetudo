@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart' show DateUtils;
 
 import '../../../../core/error/result.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
@@ -44,6 +45,7 @@ class TransactionFormState extends Equatable {
     this.justEvaluated = false,
     this.editImpact,
     this.failure,
+    this.countsInBudget = false,
   }) : date = date ?? DateTime.now();
 
   /// `null` when creating; the transaction id when editing.
@@ -114,15 +116,39 @@ class TransactionFormState extends Equatable {
 
   final Failure? failure;
 
+  /// Only meaningful while [type] is `transfer` (B-3 of the plan): whether
+  /// this transfer counts in presupuestos/reportes, which requires a
+  /// [categoryId]. Ignored for `expense`/`income` — they already always
+  /// count.
+  final bool countsInBudget;
+
   bool get isEditing => id != null;
 
   bool get isTransfer => type == TransactionType.transfer;
+
+  /// HU-06/criterion 14: the puente to Pagos Programados only offers to turn
+  /// a **new** movement into a template — editing an existing transaction
+  /// never re-triggers it, even if its date is moved into the future.
+  bool get isFutureDate {
+    if (isEditing) {
+      return false;
+    }
+    final today = DateUtils.dateOnly(DateTime.now());
+    return DateUtils.dateOnly(date).isAfter(today);
+  }
 
   bool get isKeypadVisible =>
       focusedField == TransactionFormFocusedField.amount;
 
   bool get isAwaitingEditImpactConfirmation =>
       editImpact != null && editImpact!.hasImpact;
+
+  /// The failing field, when [failure] points at one — mirrors
+  /// `AccountFormState.failedField` so the form can highlight the offending
+  /// selector.
+  String? get failedField => failure is ValidationFailure
+      ? (failure! as ValidationFailure).field
+      : null;
 
   TransactionFormState copyWith({
     TransactionFormStatus? status,
@@ -149,6 +175,7 @@ class TransactionFormState extends Equatable {
     bool? justEvaluated,
     TransactionEditImpact? editImpact,
     Failure? failure,
+    bool? countsInBudget,
     bool clearCategory = false,
     bool clearTransferAccount = false,
     bool clearEditImpact = false,
@@ -187,6 +214,7 @@ class TransactionFormState extends Equatable {
         // A new state carrying data is a state without an error: the caller
         // clears the failure by simply not passing one.
         failure: failure,
+        countsInBudget: countsInBudget ?? this.countsInBudget,
       );
 
   @override
@@ -215,5 +243,6 @@ class TransactionFormState extends Equatable {
         justEvaluated,
         editImpact,
         failure,
+        countsInBudget,
       ];
 }

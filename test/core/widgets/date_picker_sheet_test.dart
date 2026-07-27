@@ -51,7 +51,8 @@ void main() {
     expect(find.byType(MonthCalendar), findsOneWidget);
   });
 
-  testWidgets('tocar un día lo selecciona y cierra el sheet', (tester) async {
+  testWidgets('tocar un día selecciona sin cerrar; Confirmar devuelve la fecha',
+      (tester) async {
     DateTime? picked;
     await tester.pumpWidget(
       MaterialApp(
@@ -82,8 +83,54 @@ void main() {
     await tester.tap(find.text('20'));
     await tester.pumpAndSettle();
 
+    // Selecting a day keeps the sheet open.
+    expect(find.text('Elegir fecha'), findsOneWidget);
+
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Elegir fecha'), findsNothing); // cerró
     expect(picked, DateTime(2026, 7, 20));
+  });
+
+  testWidgets('Cancelar cierra el sheet sin devolver fecha', (tester) async {
+    DateTime? picked;
+    var completed = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  picked = await DatePickerSheet.show(
+                    context,
+                    initialDate: DateTime(2026, 7, 15),
+                  );
+                  completed = true;
+                },
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('20'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elegir fecha'), findsNothing);
+    expect(completed, isTrue);
+    expect(picked, isNull);
   });
 
   testWidgets('los chevrons cambian de mes con wrap de año', (tester) async {

@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 
 /// HU-07: creates a tag on the fly, from either the transaction form or the
-/// tag filter. Purely a text prompt — the actual creation (and reuse of an
-/// existing tag with the same name) lives in `CreateTag`.
+/// tag filter (`NazyV`, "Sheet - Nueva Etiqueta"). Purely a text prompt — the
+/// actual creation (and reuse of an existing tag with the same name) lives in
+/// `CreateTag`.
+///
+/// The "Field - Nombre" (`c0ONUy`) is the same look as `wOlOA`
+/// (`TransactionFormFieldButton`, label above an input box with a leading
+/// icon) but editable directly rather than opening a picker, so it can't
+/// reuse that widget — it builds the same decoration by hand.
 class NewTagSheet extends StatefulWidget {
   const NewTagSheet({super.key});
 
   static Future<String?> show(BuildContext context) =>
-      showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<String>(
+        context,
         builder: (context) => const NewTagSheet(),
       );
 
@@ -31,35 +40,79 @@ class _NewTagSheetState extends State<NewTagSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          4,
-          20,
-          28 + MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.newTagSheetTitle,
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _controller,
-              autofocus: true,
-              decoration: InputDecoration(hintText: l10n.newTagNameHint),
-              onSubmitted: (value) => Navigator.of(context).pop(value),
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    // BottomSheetBase already pads its child by the live keyboard inset, so
+    // this sheet doesn't need (and must not add) a second one — doing both
+    // double-counts `viewInsets.bottom` and can push this fixed-size Column
+    // past the sheet's height budget while the keyboard animates in,
+    // overflowing on short screens. SingleChildScrollView is the remaining
+    // safety net: if the keyboard ever leaves less room than the content
+    // needs, it scrolls instead of overflowing.
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l10n.newTagSheetTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: colors.textPrimary,
             ),
-            const SizedBox(height: 12),
-            FilledButton(
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.newTagNameHint,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: colors.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppTheme.radiusField),
+              border: Border.all(color: colors.border),
+            ),
+            child: Row(
+              children: [
+                Icon(LucideIcons.tag, size: 18, color: colors.textSecondary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      isCollapsed: true,
+                      border: InputBorder.none,
+                    ),
+                    onSubmitted: (value) => Navigator.of(context).pop(value),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
               onPressed: () => Navigator.of(context).pop(_controller.text),
-              child: Text(l10n.commonSave),
+              icon: const Icon(LucideIcons.check, size: 18),
+              label: Text(l10n.commonCreate),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

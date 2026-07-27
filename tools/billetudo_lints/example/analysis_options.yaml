@@ -1,9 +1,0 @@
-analyzer:
-  plugins:
-    - custom_lint
-
-custom_lint:
-  rules:
-    - avoid_widget_functions
-    - avoid_private_widgets
-    - avoid_hardcoded_ui_strings

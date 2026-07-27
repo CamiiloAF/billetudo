@@ -7,6 +7,17 @@ import '../repositories/category_repository.dart';
 /// HU-06: seeds the onboarding set of common categories exactly once in the
 /// lifetime of the installation.
 ///
+/// The set itself now comes from the `category_seeds` table in Postgres, not
+/// a static Dart list (`docs/requirements/05-auth-sync.md`, decision #12) —
+/// `CategoryRepository.seedDefaultCategories()` fetches it under the hood.
+/// That means this can fail with a `NetworkFailure` on a device's first
+/// launch with no connectivity: this use case propagates that failure as-is
+/// (does **not** swallow it) and, critically, does **not** call
+/// `markCategoriesSeeded()` in that case — the latch only ever turns on once
+/// the set has actually landed locally, so a retry (wired up once the
+/// "sin conexión en el primer arranque" screen exists) can simply call this
+/// again.
+///
 /// Idempotence is guaranteed by the persistent `categoriesSeeded` latch on the
 /// `AppSettings` singleton — NOT by `hasAnyCategory`. Once the flag is set it is
 /// never cleared, so a user who deletes every category does not get the defaults

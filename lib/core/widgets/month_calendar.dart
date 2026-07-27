@@ -21,20 +21,45 @@ class MonthCalendar extends StatelessWidget {
     required this.onDaySelected,
     required this.onPreviousMonth,
     required this.onNextMonth,
+    this.disabledBefore,
+    this.disabledAfter,
+    this.rangeEnd,
     super.key,
   });
 
   /// Any day inside the month currently shown; only its year/month matter.
   final DateTime visibleMonth;
 
-  /// The currently selected day.
+  /// The currently selected day. In range mode ([rangeEnd] non-null) this is
+  /// the range's start.
   final DateTime selected;
 
   final ValueChanged<DateTime> onDaySelected;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
 
+  /// Days strictly before this floor render dimmed and ignore taps.
+  final DateTime? disabledBefore;
+
+  /// Days strictly after this ceiling render dimmed and ignore taps — e.g. the
+  /// confirmation sheet caps its date at today so a payment can't be recorded
+  /// in the future.
+  final DateTime? disabledAfter;
+
+  /// When set, switches the grid to range mode: [selected] and [rangeEnd]
+  /// render as solid `primary` endpoints, and the days strictly between them
+  /// render in `primary-soft` (`Sheet - Rango Personalizado` in
+  /// `billetudo.pen`, e.g. days 4-8 between the 3rd and the 9th). `null`
+  /// keeps the single-date behaviour used by `DatePickerSheet`/`SnoozeSheet`.
+  final DateTime? rangeEnd;
+
+  /// Row height of a day cell, and the size of the month-nav buttons. The
+  /// grid spreads across the full width (7 equal `Expanded` columns); this is
+  /// only the vertical rhythm, not a fixed column width.
   static const double _cell = 44;
+
+  /// Diameter of the circular day marker centred in each column.
+  static const double _circle = 40;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +115,9 @@ class MonthCalendar extends StatelessWidget {
           visibleMonth: visibleMonth,
           selected: selected,
           onDaySelected: onDaySelected,
+          disabledBefore: disabledBefore,
+          disabledAfter: disabledAfter,
+          rangeEnd: rangeEnd,
         ),
       ],
     );
@@ -143,16 +171,17 @@ class CalendarWeekdayHeader extends StatelessWidget {
     return Row(
       children: [
         for (final label in labels)
-          SizedBox(
-            width: MonthCalendar._cell,
-            height: 24,
-            child: Center(
-              child: Text(
-                toBeginningOfSentenceCase(label) ?? label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textSecondary,
+          Expanded(
+            child: SizedBox(
+              height: 24,
+              child: Center(
+                child: Text(
+                  toBeginningOfSentenceCase(label) ?? label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textSecondary,
+                  ),
                 ),
               ),
             ),
@@ -167,12 +196,20 @@ class CalendarMonthGrid extends StatelessWidget {
     required this.visibleMonth,
     required this.selected,
     required this.onDaySelected,
+    this.disabledBefore,
+    this.disabledAfter,
+    this.rangeEnd,
     super.key,
   });
 
   final DateTime visibleMonth;
   final DateTime selected;
   final ValueChanged<DateTime> onDaySelected;
+  final DateTime? disabledBefore;
+  final DateTime? disabledAfter;
+
+  /// See [MonthCalendar.rangeEnd].
+  final DateTime? rangeEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -183,27 +220,60 @@ class CalendarMonthGrid extends StatelessWidget {
     final leadingBlanks = firstOfMonth.weekday - 1;
     final today = DateUtils.dateOnly(DateTime.now());
     final selectedDay = DateUtils.dateOnly(selected);
+    final rangeEndDay = rangeEnd == null ? null : DateUtils.dateOnly(rangeEnd!);
+    final floor =
+        disabledBefore == null ? null : DateUtils.dateOnly(disabledBefore!);
+    final ceiling =
+        disabledAfter == null ? null : DateUtils.dateOnly(disabledAfter!);
 
+    const blank = SizedBox(height: MonthCalendar._cell);
     final cells = <Widget>[
-      for (var i = 0; i < leadingBlanks; i++)
-        const SizedBox(
-          width: MonthCalendar._cell,
-          height: MonthCalendar._cell,
-        ),
+      for (var i = 0; i < leadingBlanks; i++) blank,
       for (var day = 1; day <= daysInMonth; day++)
         CalendarDayCell(
           day: day,
           date: DateTime(visibleMonth.year, visibleMonth.month, day),
           isSelected: DateTime(visibleMonth.year, visibleMonth.month, day) ==
-              selectedDay,
+                  selectedDay ||
+              (rangeEndDay != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day) ==
+                      rangeEndDay),
+          isRangeMiddle: rangeEndDay != null &&
+              DateTime(visibleMonth.year, visibleMonth.month, day)
+                  .isAfter(selectedDay) &&
+              DateTime(visibleMonth.year, visibleMonth.month, day)
+                  .isBefore(rangeEndDay),
           isToday:
               DateTime(visibleMonth.year, visibleMonth.month, day) == today,
+          isDisabled: (floor != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day)
+                      .isBefore(floor)) ||
+              (ceiling != null &&
+                  DateTime(visibleMonth.year, visibleMonth.month, day)
+                      .isAfter(ceiling)),
           onTap: onDaySelected,
         ),
     ];
 
-    return Wrap(
-      children: cells,
+    // Seven equal `Expanded` columns per row spread the grid across the full
+    // width, like a conventional calendar, and keep every cell under its
+    // weekday header (which uses the same 7 `Expanded` columns). The last row
+    // of a month rarely fills all 7 columns; pad it with blank cells so the
+    // real days keep their column instead of stretching to fill the gap.
+    const columns = 7;
+    while (cells.length % columns != 0) {
+      cells.add(blank);
+    }
+    return Column(
+      children: [
+        for (var i = 0; i < cells.length; i += columns)
+          Row(
+            children: [
+              for (final cell in cells.sublist(i, i + columns))
+                Expanded(child: cell),
+            ],
+          ),
+      ],
     );
   }
 }
@@ -215,6 +285,8 @@ class CalendarDayCell extends StatelessWidget {
     required this.isSelected,
     required this.isToday,
     required this.onTap,
+    this.isDisabled = false,
+    this.isRangeMiddle = false,
     super.key,
   });
 
@@ -222,7 +294,13 @@ class CalendarDayCell extends StatelessWidget {
   final DateTime date;
   final bool isSelected;
   final bool isToday;
+  final bool isDisabled;
   final ValueChanged<DateTime> onTap;
+
+  /// Strictly between a range's start and end (`isSelected` is reserved for
+  /// the two endpoints). Renders `primary-soft` background with
+  /// `primary-on-soft` text, as in `billetudo.pen`'s range sheet.
+  final bool isRangeMiddle;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +316,11 @@ class CalendarDayCell extends StatelessWidget {
       foreground = colors.onPrimary;
       weight = FontWeight.w700;
       border = null;
+    } else if (isRangeMiddle) {
+      background = colors.primarySoft;
+      foreground = colors.primaryOnSoft;
+      weight = FontWeight.w500;
+      border = null;
     } else if (isToday) {
       background = Colors.transparent;
       foreground = colors.textPrimary;
@@ -250,30 +333,38 @@ class CalendarDayCell extends StatelessWidget {
       border = null;
     }
 
-    return SizedBox(
-      width: MonthCalendar._cell,
-      height: MonthCalendar._cell,
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: Material(
-          color: background,
-          shape: CircleBorder(
-            side: border == null
-                ? BorderSide.none
-                : BorderSide(color: colors.primary),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => onTap(date),
-            customBorder: const CircleBorder(),
-            child: Center(
-              child: Text(
-                // A bare day numeral, nothing to translate.
-                day.toString(),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight: weight,
-                  color: foreground,
+    return Opacity(
+      opacity: isDisabled ? 0.35 : 1,
+      // Row height fixed, width supplied by the parent's `Expanded` column;
+      // the circular marker is a fixed diameter centred in that column so it
+      // stays a perfect circle regardless of how wide the column gets.
+      child: SizedBox(
+        height: MonthCalendar._cell,
+        child: Center(
+          child: SizedBox(
+            width: MonthCalendar._circle,
+            height: MonthCalendar._circle,
+            child: Material(
+              color: background,
+              shape: CircleBorder(
+                side: border == null
+                    ? BorderSide.none
+                    : BorderSide(color: colors.primary),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: isDisabled ? null : () => onTap(date),
+                customBorder: const CircleBorder(),
+                child: Center(
+                  child: Text(
+                    // A bare day numeral, nothing to translate.
+                    day.toString(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      fontWeight: weight,
+                      color: foreground,
+                    ),
+                  ),
                 ),
               ),
             ),

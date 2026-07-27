@@ -5,6 +5,7 @@ import 'package:billetudo/features/categories/domain/usecases/delete_category.da
 import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
 import 'package:billetudo/features/categories/domain/usecases/get_category_deletion_impact.dart';
 import 'package:billetudo/features/categories/domain/usecases/reorder_categories.dart';
+import 'package:billetudo/features/categories/domain/usecases/suggest_subcategory_icon.dart';
 import 'package:billetudo/features/categories/domain/usecases/update_category.dart';
 import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart';
 import 'package:billetudo/features/categories/domain/usecases/watch_parent_candidates.dart';
@@ -28,6 +29,9 @@ class MockGetCategoryDeletionImpact extends Mock
     implements GetCategoryDeletionImpact {}
 
 class MockDeleteCategory extends Mock implements DeleteCategory {}
+
+class MockSuggestSubcategoryIcon extends Mock
+    implements SuggestSubcategoryIcon {}
 
 /// Fallbacks mocktail needs for `any()` on the feature's own types.
 void registerCategoryPresentationFallbacks() {

@@ -42,8 +42,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
               periodEndExclusive: filter.datePeriod.endExclusive,
               orderBy: switch (filter.sortOrder) {
                 TransactionSortOrder.dateDesc => TransactionOrderBy.dateDesc,
+                TransactionSortOrder.dateAsc => TransactionOrderBy.dateAsc,
                 TransactionSortOrder.amountDesc =>
                   TransactionOrderBy.amountDesc,
+                TransactionSortOrder.amountAsc => TransactionOrderBy.amountAsc,
               },
             )
             .map((rows) => Right(rows.map(_toWithDetails).toList())),
@@ -153,6 +155,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryIcon: row.category?.icon,
         categoryColor: row.category?.color,
         tags: row.tags.map(TagMapper.toEntity).toList(),
+        debtName: row.debt?.name,
       );
 
   /// Turns any infrastructure exception into a `Failure`, so nothing escapes

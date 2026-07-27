@@ -17,6 +17,7 @@ class TransactionWithDetails extends Equatable {
     this.categoryIcon,
     this.categoryColor,
     this.tags = const <Tag>[],
+    this.debtName,
   });
 
   final Transaction transaction;
@@ -31,6 +32,11 @@ class TransactionWithDetails extends Equatable {
 
   final List<Tag> tags;
 
+  /// Only set when [Transaction.debtId] is non-null (HU-08/deudas): the name
+  /// of the debt this transaction is linked to, so the detail screen can
+  /// surface the link instead of showing just the generic category.
+  final String? debtName;
+
   @override
   List<Object?> get props => [
         transaction,
@@ -40,5 +46,6 @@ class TransactionWithDetails extends Equatable {
         categoryIcon,
         categoryColor,
         tags,
+        debtName,
       ];
 }

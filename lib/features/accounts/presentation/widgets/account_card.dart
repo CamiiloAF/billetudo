@@ -33,7 +33,12 @@ class AccountCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Padding(
           padding: const EdgeInsets.all(16),
+          // `start`, not `center`: the name wraps to up to two lines (bugfix
+          // item 12), so the balance anchors to the top edge instead of
+          // floating to the vertical middle of a two-line name. Short names
+          // stay on one line — the uneven row height is accepted by design.
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AccountTypeAvatar(type: account.type),
               const SizedBox(width: 12),
@@ -43,10 +48,12 @@ class AccountCard extends StatelessWidget {
                   children: [
                     Text(
                       account.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                      // 600, not 700: `Account Card`'s `Name` (`w4d4i6`) is
+                      // 15/600 — only the balance is 700.
                       style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -60,7 +67,7 @@ class AccountCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 const MoneyFormatter()
-                    .format(balanceMinor, currencyCode: account.currency),
+                    .formatSymbol(balanceMinor, currencyCode: account.currency),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: balanceMinor < 0 ? colors.expense : colors.textPrimary,

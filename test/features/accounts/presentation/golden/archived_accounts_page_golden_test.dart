@@ -7,8 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/golden_helpers.dart';
 import '../../account_fixtures.dart';
-import 'golden_helpers.dart';
 
 class MockArchivedAccountsCubit extends MockCubit<ArchivedAccountsState>
     implements ArchivedAccountsCubit {}
@@ -78,6 +78,17 @@ void main() {
         tester,
         const ArchivedAccountsState(status: ArchivedAccountsStatus.ready),
         'empty_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('failure ($suffix)', (tester) async {
+      // Shares the `AccountsErrorView`/`ErrorState` component fixed
+      // 2026-07-20 (docs/dev-runs/bug-fixes-pixel-audit.md follow-up).
+      await golden(
+        tester,
+        const ArchivedAccountsState(status: ArchivedAccountsStatus.failure),
+        'error_$suffix',
         brightness: brightness,
       );
     });

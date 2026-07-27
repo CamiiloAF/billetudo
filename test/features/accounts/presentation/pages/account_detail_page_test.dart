@@ -1,10 +1,12 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/page_header_circle_button.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_cubit.dart';
 import 'package:billetudo/features/accounts/presentation/cubit/account_detail_state.dart';
 import 'package:billetudo/features/accounts/presentation/pages/account_detail_page.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_number_row.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/balance_edit_button.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -77,7 +79,7 @@ void main() {
 
       // La fila existe (el last4 identifica la tarjeta)...
       expect(find.byType(AccountNumberRow), findsOneWidget);
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
 
       // ...pero la página la arma en modo tarjeta: sin nada que revelar.
       final row =
@@ -95,7 +97,15 @@ void main() {
 
       // Sin ojo no hay forma de disparar la lectura: el PAN de una tarjeta no
       // existe, así que el detalle jamás debe intentar leerlo ni copiarlo.
-      expect(find.byType(IconButton), findsOneWidget); // solo "Editar"
+      expect(
+        find.byType(PageHeaderCircleButton),
+        findsNWidgets(2),
+      ); // volver + "Editar", nada de acciones sobre el número
+      // Dos lápices esperados (Mejora #1): el violeta del header que edita la
+      // cuenta y el gris sutil de "Ajustar saldo" junto a la cifra. Ninguno
+      // toca el PAN.
+      expect(find.byIcon(LucideIcons.pencil), findsNWidgets(2));
+      expect(find.byType(BalanceEditButton), findsOneWidget);
       verifyNever(cubit.revealNumber);
       verifyNever(cubit.copyNumber);
     });
@@ -108,7 +118,7 @@ void main() {
       final row =
           tester.widget<AccountNumberRow>(find.byType(AccountNumberRow));
       expect(row.isCard, isFalse);
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
       expect(find.text(fullNumber), findsNothing);
       expect(eye, findsOneWidget);
       expect(copy, findsOneWidget);

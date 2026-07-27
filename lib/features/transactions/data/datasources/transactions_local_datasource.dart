@@ -13,6 +13,7 @@ class TransactionRowWithJoins {
     this.transferAccount,
     this.category,
     this.tags = const <Tag>[],
+    this.debt,
   });
 
   final Transaction transaction;
@@ -20,10 +21,15 @@ class TransactionRowWithJoins {
   final Account? transferAccount;
   final Category? category;
   final List<Tag> tags;
+
+  /// The debt this transaction is linked to (`transaction.debtId`), when any.
+  /// Only `watchTransactionDetail` joins `Debts` — the list query doesn't need
+  /// it — so this is `null` there even for a linked transaction.
+  final Debt? debt;
 }
 
 /// How the transaction list is ordered at the SQL level (HU-06).
-enum TransactionOrderBy { dateDesc, amountDesc }
+enum TransactionOrderBy { dateDesc, dateAsc, amountDesc, amountAsc }
 
 /// Drift queries for the Transactions feature.
 ///
@@ -116,8 +122,11 @@ class TransactionsLocalDatasource {
         switch (orderBy) {
           TransactionOrderBy.dateDesc =>
             OrderingTerm.desc(_db.transactions.date),
+          TransactionOrderBy.dateAsc => OrderingTerm.asc(_db.transactions.date),
           TransactionOrderBy.amountDesc =>
             OrderingTerm.desc(_db.transactions.amountMinor),
+          TransactionOrderBy.amountAsc =>
+            OrderingTerm.asc(_db.transactions.amountMinor),
         },
         // Stable tiebreaker: also keeps every fanned-out tag row of the same
         // transaction contiguous, which [_groupByTransaction] relies on.
@@ -153,6 +162,10 @@ class TransactionsLocalDatasource {
       leftOuterJoin(
         _db.tags,
         _db.tags.id.equalsExp(_db.transactionTags.tagId),
+      ),
+      leftOuterJoin(
+        _db.debts,
+        _db.debts.id.equalsExp(_db.transactions.debtId),
       ),
     ])
       ..where(_db.transactions.id.equals(id) & _alive);
@@ -229,6 +242,7 @@ class TransactionsLocalDatasource {
           transferAccount: row.readTableOrNull(transferAccounts),
           category: row.readTableOrNull(_db.categories),
           tags: tag == null ? const [] : [tag],
+          debt: row.readTableOrNull(_db.debts),
         );
       } else if (tag != null) {
         byId[transaction.id] = TransactionRowWithJoins(
@@ -237,6 +251,7 @@ class TransactionsLocalDatasource {
           transferAccount: existing.transferAccount,
           category: existing.category,
           tags: [...existing.tags, tag],
+          debt: existing.debt,
         );
       }
     }

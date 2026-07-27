@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../domain/entities/budget_period_override.dart';
+import '../models/budget_period_override_mapper.dart';
 
 /// One scope reference (account or category) of a budget, with whether its
 /// referent still exists. Data-layer type: never leaves `data/`.
@@ -29,6 +31,8 @@ class BudgetExpenseRow {
     required this.accountName,
     this.categoryId,
     this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
     this.note,
   });
 
@@ -40,6 +44,8 @@ class BudgetExpenseRow {
   final DateTime date;
   final String accountName;
   final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
   final String? note;
 }
 
@@ -55,6 +61,48 @@ class BudgetIncomeRow {
   final int amountMinor;
   final String currency;
   final DateTime date;
+}
+
+/// An active expense scheduled-payment template eligible for a budget's
+/// "programado" segment (HU-12), enriched with the names its row would show.
+/// Data-layer type: never leaves `data/`; the repository maps [template] (a
+/// raw Drift row) into the domain `ScheduledPayment` entity itself, rather
+/// than importing Pagos Programados' `data/` mapper.
+class BudgetScheduledTemplateRow {
+  const BudgetScheduledTemplateRow({
+    required this.template,
+    required this.accountName,
+    this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
+  });
+
+  final ScheduledPayment template;
+  final String accountName;
+  final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
+}
+
+/// A `pending` occurrence (HU-03 ledger) of an expense scheduled-payment
+/// template, eligible for a budget's "programado" segment (HU-12). Data-layer
+/// type, same reasoning as [BudgetScheduledTemplateRow].
+class BudgetPendingOccurrenceRow {
+  const BudgetPendingOccurrenceRow({
+    required this.occurrence,
+    required this.template,
+    required this.accountName,
+    this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
+  });
+
+  final ScheduledPaymentOccurrence occurrence;
+  final ScheduledPayment template;
+  final String accountName;
+  final String? categoryName;
+  final String? categoryIcon;
+  final String? categoryColor;
 }
 
 /// Drift queries for the Budgets feature.
@@ -177,11 +225,48 @@ class BudgetsLocalDatasource {
         ..where((c) => c.deletedAt.isNull() & c.tombstonedAt.isNull()))
       .watch();
 
+  /// One-shot alive categories — the fix #14 scope reconciliation needs the
+  /// current tree once, not a stream.
+  Future<List<Category>> getAliveCategories() => (_db.select(_db.categories)
+        ..where((c) => c.deletedAt.isNull() & c.tombstonedAt.isNull()))
+      .get();
+
+  /// Ids of the budgets the fix #14 reconciliation should inspect: everything
+  /// not tombstoned (active, archived and trashed budgets alike — all could
+  /// carry a frozen materialized scope).
+  Future<List<String>> reconcilableBudgetIds() async {
+    final rows = await (_db.select(_db.budgets)
+          ..where((b) => b.tombstonedAt.isNull()))
+        .get();
+    return [for (final row in rows) row.id];
+  }
+
   // -- Expenses --------------------------------------------------------------
 
-  /// Every expense that could feed a budget: `type = expense`, not trashed nor
-  /// tombstoned, enriched with account and category names. Transfers and income
-  /// are excluded here, so they can never count as budget spend.
+  /// Every expense that could feed a budget: `type = expense`, plus a
+  /// `type = transfer` marked `countsInBudget = true` (Fase B1, the
+  /// transferencia presupuestable — `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md`
+  /// §3). Not trashed nor tombstoned, enriched with account and category
+  /// names.
+  ///
+  /// A budgetable transfer is folded in as an **origin-side expense row**:
+  /// [BudgetExpenseRow.accountId] is the transfer's origin account, so
+  /// `BudgetProgressCalculator._matchesAccountId` naturally counts it as
+  /// spend for any budget whose scope includes that origin account — no new
+  /// matching rule needed, it flows through the exact same pipeline as a
+  /// plain expense.
+  ///
+  /// **Destination side pending:** the plan's model is symmetric (the same
+  /// transfer should also count as *income* for a budget scoped to the
+  /// destination account), but nothing in the budgets domain today models a
+  /// per-scope "income reduces this budget" concept — `ZeroBasedSummary`
+  /// only sums a single global "income this month" figure, not income
+  /// filtered by account/category scope. Modeling that destination side
+  /// would mean inventing a new mechanism with no existing base, which is out
+  /// of scope here (see the task's explicit "don't invent a parallel
+  /// income-to-budget feature" guidance). Left as a documented gap — see
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3 and
+  /// `design-system/billetudo/pages/transacciones.md`.
   Stream<List<BudgetExpenseRow>> watchExpenses() {
     final query = _db.select(_db.transactions).join([
       innerJoin(
@@ -194,7 +279,9 @@ class BudgetsLocalDatasource {
       ),
     ])
       ..where(
-        _db.transactions.type.equalsValue(EntryType.expense) &
+        (_db.transactions.type.equalsValue(EntryType.expense) |
+                (_db.transactions.type.equalsValue(EntryType.transfer) &
+                    _db.transactions.countsInBudget.equals(true))) &
             _db.transactions.deletedAt.isNull() &
             _db.transactions.tombstonedAt.isNull(),
       );
@@ -211,6 +298,8 @@ class BudgetsLocalDatasource {
                 date: row.readTable(_db.transactions).date,
                 accountName: row.readTable(_db.accounts).name,
                 categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
                 note: row.readTable(_db.transactions).note,
               ),
           ],
@@ -236,6 +325,106 @@ class BudgetsLocalDatasource {
                 amountMinor: row.amountMinor,
                 currency: row.currency,
                 date: row.date,
+              ),
+          ],
+        );
+  }
+
+  // -- Scheduled payments (HU-12) ---------------------------------------------
+
+  /// Active expense scheduled-payment templates that can feed a budget's
+  /// "programado" segment: `type = expense`, not tombstoned, and — for a
+  /// `once` template that already fired — excluded (its `nextDate` never
+  /// advances past the date it already generated, so it must not be
+  /// re-projected; same rule `_activeExpr` applies in Pagos Programados,
+  /// reselected here rather than imported, per the data-layer boundary).
+  /// Enriched with account/category names for display.
+  Stream<List<BudgetScheduledTemplateRow>> watchScheduledExpenseTemplates() {
+    final query = _db.select(_db.scheduledPayments).join([
+      innerJoin(
+        _db.accounts,
+        _db.accounts.id.equalsExp(_db.scheduledPayments.accountId),
+      ),
+      leftOuterJoin(
+        _db.categories,
+        _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
+      ),
+    ])
+      ..where(
+        _db.scheduledPayments.type.equalsValue(EntryType.expense) &
+            _db.scheduledPayments.tombstonedAt.isNull() &
+            (_db.scheduledPayments.frequency
+                    .equalsValue(ScheduleFrequency.once)
+                    .not() |
+                _onceAlreadyFired().not()),
+      );
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              BudgetScheduledTemplateRow(
+                template: row.readTable(_db.scheduledPayments),
+                accountName: row.readTable(_db.accounts).name,
+                categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
+              ),
+          ],
+        );
+  }
+
+  /// Whether a template has already generated a `confirmed` occurrence — the
+  /// only way a `once` template (whose `nextDate` never advances) must stop
+  /// projecting.
+  Expression<bool> _onceAlreadyFired() => existsQuery(
+        _db.selectOnly(_db.scheduledPaymentOccurrences)
+          ..addColumns([_db.scheduledPaymentOccurrences.id])
+          ..where(
+            _db.scheduledPaymentOccurrences.scheduledPaymentId
+                    .equalsExp(_db.scheduledPayments.id) &
+                _db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.confirmed),
+          ),
+      );
+
+  /// Occurrences still `pending` (HU-03) of expense templates, eligible for a
+  /// budget's "programado" segment: `confirmed`/`skipped`/`snoozed` ones are
+  /// excluded (`snoozed` moves the effective date but is not itself owed, so
+  /// HU-12 leaves it out — see
+  /// `BudgetProgressCalculator.matchesPendingScheduledOccurrence`).
+  Stream<List<BudgetPendingOccurrenceRow>> watchPendingScheduledOccurrences() {
+    final query = _db.select(_db.scheduledPaymentOccurrences).join([
+      innerJoin(
+        _db.scheduledPayments,
+        _db.scheduledPayments.id
+            .equalsExp(_db.scheduledPaymentOccurrences.scheduledPaymentId),
+      ),
+      innerJoin(
+        _db.accounts,
+        _db.accounts.id.equalsExp(_db.scheduledPayments.accountId),
+      ),
+      leftOuterJoin(
+        _db.categories,
+        _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
+      ),
+    ])
+      ..where(
+        _db.scheduledPaymentOccurrences.status
+                .equalsValue(ScheduledOccurrenceStatus.pending) &
+            _db.scheduledPayments.type.equalsValue(EntryType.expense) &
+            _db.scheduledPayments.tombstonedAt.isNull(),
+      );
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              BudgetPendingOccurrenceRow(
+                occurrence: row.readTable(_db.scheduledPaymentOccurrences),
+                template: row.readTable(_db.scheduledPayments),
+                accountName: row.readTable(_db.accounts).name,
+                categoryName: row.readTableOrNull(_db.categories)?.name,
+                categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                categoryColor: row.readTableOrNull(_db.categories)?.color,
               ),
           ],
         );
@@ -305,6 +494,19 @@ class BudgetsLocalDatasource {
       }
     }
   }
+
+  /// Rewrites only the **category** dimension of a budget's scope to exactly
+  /// [categoryIds], leaving the account rows untouched — the fix #14
+  /// reconciliation only ever changes categories, and must not disturb an
+  /// account scope row whose referent was deleted elsewhere.
+  Future<void> reconcileCategoryScope(
+    String budgetId, {
+    required Set<String> categoryIds,
+    required DateTime now,
+  }) =>
+      _db.transaction(
+        () => _reconcileCategories(budgetId, categoryIds, now),
+      );
 
   Future<void> _reconcileCategories(
     String budgetId,
@@ -392,6 +594,90 @@ class BudgetsLocalDatasource {
     return [
       for (final row in rows) row.readTable(_db.budgetCategories).categoryId,
     ];
+  }
+
+  // -- Per-period amount override (Wallet-style) -----------------------------
+  //
+  // Replaces the old multi-row "fork" model: instead of inserting extra
+  // `Budgets` rows for the adjusted/resume periods (which surfaced as duplicate
+  // budgets), the budget stays a single row and a per-period amount lives in
+  // `BudgetPeriodOverrides`, one row per (budgetId, periodStart). See
+  // `BudgetRepositoryImpl` for which window `periodStart` targets (the next
+  // one). Cancelling an override is a HARD delete — no trash/undo, nothing
+  // references it by FK.
+
+  /// Every override row, mapped to the domain entity, for the list-progress
+  /// join. `periodStart` is normalized to date-only by the mapper so it indexes
+  /// by equality against `BudgetPeriodWindow.start`.
+  Stream<List<BudgetPeriodOverride>> watchBudgetPeriodOverrides() =>
+      _db.select(_db.budgetPeriodOverrides).watch().map(
+            (rows) => rows.map(BudgetPeriodOverrideMapper.toEntity).toList(),
+          );
+
+  /// The override for ([budgetId], [periodStart]) if one exists. [periodStart]
+  /// is matched date-only.
+  Future<BudgetPeriodOverride?> getPeriodOverride(
+    String budgetId,
+    DateTime periodStart,
+  ) async {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    final row = await (_db.select(_db.budgetPeriodOverrides)
+          ..where(
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
+          ))
+        .getSingleOrNull();
+    return row == null ? null : BudgetPeriodOverrideMapper.toEntity(row);
+  }
+
+  /// Inserts a new override for ([budgetId], [periodStart]). The repository has
+  /// already checked no override exists for that window (uniqueness), so this
+  /// is a plain insert. [periodStart] is stored date-only.
+  Future<void> upsertPeriodOverride({
+    required String budgetId,
+    required DateTime periodStart,
+    required int amountMinor,
+    required DateTime now,
+  }) =>
+      _db.into(_db.budgetPeriodOverrides).insert(
+            BudgetPeriodOverridesCompanion.insert(
+              budgetId: budgetId,
+              periodStart: BudgetPeriodOverrideMapper.dateOnly(periodStart),
+              amountMinor: amountMinor,
+              createdAt: Value(now),
+              updatedAt: Value(now.millisecondsSinceEpoch),
+            ),
+          );
+
+  /// Rewrites the amount of the existing override for ([budgetId],
+  /// [periodStart]), stamping `updatedAt`.
+  Future<void> updatePeriodOverrideAmount({
+    required String budgetId,
+    required DateTime periodStart,
+    required int amountMinor,
+    required DateTime now,
+  }) {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    return (_db.update(_db.budgetPeriodOverrides)
+          ..where(
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
+          ))
+        .write(
+      BudgetPeriodOverridesCompanion(
+        amountMinor: Value(amountMinor),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      ),
+    );
+  }
+
+  /// HARD-deletes the override for ([budgetId], [periodStart]) — cancelling an
+  /// adjustment. Nothing references it, so there is no trash/undo.
+  Future<void> deletePeriodOverride(String budgetId, DateTime periodStart) {
+    final start = BudgetPeriodOverrideMapper.dateOnly(periodStart);
+    return (_db.delete(_db.budgetPeriodOverrides)
+          ..where(
+            (o) => o.budgetId.equals(budgetId) & o.periodStart.equals(start),
+          ))
+        .go();
   }
 
   Expression<bool> _budgetAlive($BudgetsTable b) =>

@@ -48,6 +48,16 @@ void main() {
     ValueChanged<String>? onOpenCategory,
   }) async {
     when(() => cubit.state).thenReturn(state);
+    // `PageHeader` (fix: AppBar → PageHeader) is taller than the old AppBar,
+    // so the default 800x600 test surface no longer fits all 6 skeleton
+    // rows in the initial viewport. A tall phone-sized surface keeps this
+    // test independent of the header's exact height.
+    tester.view.physicalSize = const Size(390, 1600) * 3;
+    tester.view.devicePixelRatio = 3;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),

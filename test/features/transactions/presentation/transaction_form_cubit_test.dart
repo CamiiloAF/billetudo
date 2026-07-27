@@ -1,7 +1,11 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/accounts/domain/entities/account.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
+import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -13,12 +17,35 @@ import 'package:mocktail/mocktail.dart';
 import '../transaction_fixtures.dart';
 import 'usecase_mocks.dart';
 
+AccountWithBalance _accountWithBalance({
+  String id = 'acc-1',
+  String name = 'Cuenta 1',
+  int sortOrder = 0,
+}) {
+  final account = Account(
+    id: id,
+    name: name,
+    type: AccountType.bank,
+    currency: 'COP',
+    initialBalanceMinor: 0,
+    archived: false,
+    sortOrder: sortOrder,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026).millisecondsSinceEpoch,
+  );
+  return AccountWithBalance(
+    account: account,
+    balance: AccountBalance.fromBalance(account: account, balanceMinor: 0),
+  );
+}
+
 void main() {
   late MockCreateTransaction createTransaction;
   late MockUpdateTransaction updateTransaction;
   late MockWatchTransactionDetail watchTransactionDetail;
   late MockGetTransactionEditImpact getTransactionEditImpact;
   late MockSetTransactionTags setTransactionTags;
+  late MockWatchAccounts watchAccounts;
 
   setUpAll(registerPresentationFallbacks);
 
@@ -28,6 +55,12 @@ void main() {
     watchTransactionDetail = MockWatchTransactionDetail();
     getTransactionEditImpact = MockGetTransactionEditImpact();
     setTransactionTags = MockSetTransactionTags();
+    watchAccounts = MockWatchAccounts();
+    // No accounts by default, so `load(null)` never auto-preselects one and
+    // the existing "no account picked" scenarios stay meaningful — tests
+    // that care about the preselection stub their own account list.
+    when(() => watchAccounts())
+        .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
   });
 
   TransactionFormCubit build() => TransactionFormCubit(
@@ -36,6 +69,7 @@ void main() {
         watchTransactionDetail,
         getTransactionEditImpact,
         setTransactionTags,
+        watchAccounts,
       );
 
   group('teclado numérico anclado (criterio 11)', () {
@@ -140,6 +174,36 @@ void main() {
       // $10 / 3 = $3.333… → 333 minor units (round half-up).
       verify: (cubit) => expect(cubit.state.amountMinor, 333),
     );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'el punto decimal ahora también construye centavos en COP (item 4)',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null); // moneda por defecto: COP
+        cubit
+          ..amountDigitPressed(4)
+          ..amountDigitPressed(5)
+          ..amountDecimalPressed()
+          ..amountDigitPressed(5)
+          ..amountDigitPressed(0);
+      },
+      // 45,50 COP → 4550 minor units; el almacenamiento sigue en centavos.
+      verify: (cubit) => expect(cubit.state.amountMinor, 4550),
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'limpiar (long-press borrar) vuelve el monto a 0',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..amountDigitPressed(1)
+          ..amountDigitPressed(2)
+          ..amountDigitPressed(3)
+          ..amountCleared();
+      },
+      verify: (cubit) => expect(cubit.state.amountMinor, 0),
+    );
   });
 
   group('crear (HU-01/02/03)', () {
@@ -156,6 +220,7 @@ void main() {
         await cubit.load(null);
         cubit
           ..accountSelected('acc-1', 'Cuenta 1')
+          ..categorySelected('cat-1', CategoryKind.expense, 'Comida')
           ..amountDigitPressed(1)
           ..amountDigitPressed(0)
           ..amountDigitPressed(0)
@@ -181,10 +246,100 @@ void main() {
         verifyNever(() => createTransaction(any()));
       },
     );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'sin categoría seleccionada no llama al caso de uso (bug fix 11a)',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.failedField, TransactionDraft.fieldCategoryId);
+        verifyNever(() => createTransaction(any()));
+      },
+    );
+  });
+
+  group('preselección de cuenta al crear (bug fix 11b)', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null) preselecciona la primera cuenta por sortOrder',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        // `WatchAccounts` already returns the list ordered by `sortOrder`
+        // (same source `AccountPickerSheetBody` uses); the cubit trusts that
+        // order and just takes the first entry.
+        (_) => Stream.value(
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-1');
+        expect(cubit.state.accountName, 'Bancolombia');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null) sin cuentas no preselecciona nada',
+      build: build,
+      act: (cubit) => cubit.load(null),
+      verify: (cubit) {
+        expect(cubit.state.accountId, isNull);
+        expect(cubit.state.accountName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null, accountId: ...) preselecciona esa cuenta con su nombre',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.load(null, accountId: 'acc-2'),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-2');
+        // Resolved from the live list, not left null for the caller to know.
+        expect(cubit.state.accountName, 'Nequi');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'load(null, accountId: ...) inexistente cae a la primera cuenta',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            _accountWithBalance(name: 'Bancolombia'),
+            _accountWithBalance(id: 'acc-2', name: 'Nequi', sortOrder: 1),
+          ]),
+        ),
+      ),
+      build: build,
+      // The filtered account was deleted between filtering and tapping "+".
+      act: (cubit) => cubit.load(null, accountId: 'acc-borrada'),
+      verify: (cubit) {
+        expect(cubit.state.accountId, 'acc-1');
+        expect(cubit.state.accountName, 'Bancolombia');
+      },
+    );
   });
 
   group('editar (HU-04)', () {
-    final original = buildTransaction(scheduledPaymentId: 'rec-1');
+    final original = buildTransaction(
+      categoryId: 'cat-1',
+      scheduledPaymentId: 'rec-1',
+    );
 
     blocTest<TransactionFormCubit, TransactionFormState>(
       'un cambio que afecta un vínculo se detiene con la advertencia, sin persistir',
@@ -273,7 +428,8 @@ void main() {
           (_) => Stream.value(
             Right(
               TransactionWithDetails(
-                transaction: buildTransaction(source: TransactionSource.imported),
+                transaction:
+                    buildTransaction(source: TransactionSource.imported),
                 accountName: 'Bancolombia',
               ),
             ),
@@ -334,6 +490,210 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.categoryId, 'cat-2');
         expect(cubit.state.categoryName, 'Transporte');
+      },
+    );
+  });
+
+  group('item 17: cambiar tipo reinicia la categoría', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'gasto → ingreso limpia la categoría de gasto seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Comida')
+          ..typeSelected(TransactionType.income);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.income);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+        expect(cubit.state.categoryName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'ingreso → gasto limpia la categoría de ingreso seleccionada',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.income)
+          ..categorySelected('cat-inc', CategoryKind.income, 'Salario')
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.expense);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'reelegir el mismo tipo no borra la categoría',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Comida')
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.categoryId, 'cat-exp');
+      },
+    );
+  });
+
+  group('B-3: transferencia presupuestable (countsInBudget)', () {
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'countsInBudgetChanged(true) activa el flag',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isTrue);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'countsInBudgetChanged(false) apaga el flag y limpia la categoría '
+      'elegida mientras estaba prendido',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Transporte')
+          ..countsInBudgetChanged(false);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isFalse);
+        expect(cubit.state.categoryId, isNull);
+        expect(cubit.state.categoryKind, isNull);
+        expect(cubit.state.categoryName, isNull);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'cambiar de tipo (Transferencia → Gasto) reinicia el toggle',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..typeSelected(TransactionType.expense);
+      },
+      verify: (cubit) {
+        expect(cubit.state.type, TransactionType.expense);
+        expect(cubit.state.countsInBudget, isFalse);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'reelegir Transferencia (mismo tipo) con el toggle prendido no lo '
+      'reinicia',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..typeSelected(TransactionType.transfer)
+          ..countsInBudgetChanged(true)
+          ..typeSelected(TransactionType.transfer);
+      },
+      verify: (cubit) {
+        expect(cubit.state.countsInBudget, isTrue);
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle activo pero sin categoría no '
+      'llama al caso de uso y reporta el error en fieldCategoryId',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..countsInBudgetChanged(true)
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.failedField, TransactionDraft.fieldCategoryId);
+        verifyNever(() => createTransaction(any()));
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle activo y categoría se persiste '
+      'con countsInBudget=true',
+      setUp: () {
+        when(() => createTransaction(any())).thenAnswer(
+          (_) async => Right(
+            buildTransaction(type: TransactionType.transfer),
+          ),
+        );
+        when(() => setTransactionTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..countsInBudgetChanged(true)
+          ..categorySelected('cat-exp', CategoryKind.expense, 'Transporte')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, TransactionFormStatus.saved);
+        final captured = verify(() => createTransaction(captureAny()))
+            .captured
+            .single as TransactionDraft;
+        expect(captured.countsInBudget, isTrue);
+        expect(captured.categoryId, 'cat-exp');
+      },
+    );
+
+    blocTest<TransactionFormCubit, TransactionFormState>(
+      'submit: transferencia con el toggle apagado (default) no exige '
+      'categoría y se persiste con countsInBudget=false',
+      setUp: () {
+        when(() => createTransaction(any())).thenAnswer(
+          (_) async => Right(
+            buildTransaction(type: TransactionType.transfer),
+          ),
+        );
+        when(() => setTransactionTags(any(), any()))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit
+          ..accountSelected('acc-1', 'Cuenta 1')
+          ..typeSelected(TransactionType.transfer)
+          ..transferAccountSelected('acc-2', 'Cuenta 2')
+          ..amountDigitPressed(1);
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, TransactionFormStatus.saved);
+        final captured = verify(() => createTransaction(captureAny()))
+            .captured
+            .single as TransactionDraft;
+        expect(captured.countsInBudget, isFalse);
+        expect(captured.categoryId, isNull);
       },
     );
   });

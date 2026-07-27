@@ -117,6 +117,14 @@ class AccountFormState extends Equatable {
       type != AccountType.cash &&
       (!showFullNumberField || (fullAccountNumber ?? '').isEmpty);
 
+  /// Every account type can carry a rate (HU-02): Pencil shows the field on
+  /// the add form (`CwiKu`), on editing a card (`xdLeB`) and on the detail of
+  /// a plain savings account (`ZCSCc`, "Tasa de interés: 3.5% anual") — the
+  /// design never restricts it to cards. Cash is the one exception the
+  /// mockups do not cover but that a real rate cannot apply to: physical cash
+  /// does not accrue interest.
+  bool get showInterestRateField => type != AccountType.cash;
+
   /// The stored number is unknown: the read failed and the user has not typed a
   /// replacement, so the empty field is hiding a value instead of stating there
   /// is none. Saving must leave the stored number alone, and the form must say

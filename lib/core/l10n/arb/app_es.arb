@@ -14,6 +14,12 @@
   "@commonCancel": {},
   "commonDelete": "Eliminar",
   "@commonDelete": {},
+  "commonContinue": "Continuar",
+  "@commonContinue": {},
+  "commonAnd": "y",
+  "@commonAnd": {
+    "description": "Conjunción para unir el último elemento de una lista en prosa, ej. 'a, b y c'."
+  },
   "commonEdit": "Editar",
   "@commonEdit": {},
   "commonRetry": "Reintentar",
@@ -22,10 +28,20 @@
   "@commonBack": {
     "description": "Etiqueta accesible del botón atrás del Page Header."
   },
+  "commonMoreActions": "Más opciones",
+  "@commonMoreActions": {
+    "description": "Etiqueta accesible del botón ⋮ del Page Header."
+  },
   "commonApply": "Aplicar",
   "@commonApply": {},
+  "commonClear": "Limpiar",
+  "@commonClear": {},
+  "commonConfirm": "Confirmar",
+  "@commonConfirm": {},
   "commonDone": "Listo",
   "@commonDone": {},
+  "commonCreate": "Crear",
+  "@commonCreate": {},
   "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
   "@errorUnexpected": {
     "description": "Mensaje genérico para UnexpectedFailure."
@@ -64,7 +80,7 @@
   },
   "accountsErrorTitle": "No pudimos cargar tus cuentas",
   "@accountsErrorTitle": {},
-  "accountsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo",
+  "accountsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
   "@accountsErrorLocalFirst": {
     "description": "Recordatorio local-first del estado de error."
   },
@@ -80,7 +96,7 @@
   },
   "accountTypeCash": "Efectivo",
   "@accountTypeCash": {},
-  "accountTypeBank": "Banco",
+  "accountTypeBank": "Cuenta corriente",
   "@accountTypeBank": {},
   "accountTypeCard": "Tarjeta de crédito",
   "@accountTypeCard": {},
@@ -88,7 +104,7 @@
   "@accountTypeSavings": {},
   "accountTypeInvestment": "Inversión",
   "@accountTypeInvestment": {},
-  "accountTypeOther": "Otra",
+  "accountTypeOther": "Cuenta general",
   "@accountTypeOther": {},
   "accountBalanceLabel": "Saldo actual",
   "@accountBalanceLabel": {},
@@ -96,6 +112,40 @@
   "@accountAvailableCreditLabel": {},
   "accountDebtLabel": "Deuda actual",
   "@accountDebtLabel": {},
+  "accountBalanceAdjustTitle": "Ajustar saldo",
+  "@accountBalanceAdjustTitle": {},
+  "accountBalanceAdjustCurrent": "Saldo actual: {amount}",
+  "@accountBalanceAdjustCurrent": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustCurrentDebt": "Deuda actual: {amount}",
+  "@accountBalanceAdjustCurrentDebt": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "accountBalanceAdjustNewLabel": "Nuevo saldo deseado",
+  "@accountBalanceAdjustNewLabel": {},
+  "accountBalanceAdjustNewDebtLabel": "Nueva deuda",
+  "@accountBalanceAdjustNewDebtLabel": {},
+  "accountBalanceAdjustHowLabel": "¿Cómo quieres aplicarlo?",
+  "@accountBalanceAdjustHowLabel": {},
+  "accountBalanceAdjustRegisterTitle": "Registrar ajuste",
+  "@accountBalanceAdjustRegisterTitle": {},
+  "accountBalanceAdjustRegisterBody": "Creamos un movimiento con fecha de hoy por la diferencia ({diff}). Suma a tus reportes y presupuestos.",
+  "@accountBalanceAdjustRegisterBody": {
+    "placeholders": { "diff": { "type": "String" } }
+  },
+  "accountBalanceAdjustCorrectTitle": "Corregir saldo inicial",
+  "@accountBalanceAdjustCorrectTitle": {},
+  "accountBalanceAdjustCorrectBody": "Ajustamos tu saldo de arranque para que cuadre. No crea ningún movimiento.",
+  "@accountBalanceAdjustCorrectBody": {},
+  "accountBalanceAdjustApplyCta": "Aplicar",
+  "@accountBalanceAdjustApplyCta": {},
+  "accountBalanceAdjustError": "No pudimos ajustar el saldo. Intenta de nuevo.",
+  "@accountBalanceAdjustError": {},
+  "accountBalanceAdjustNote": "Ajuste de saldo",
+  "@accountBalanceAdjustNote": {},
+  "accountDebtShortLabel": "Deuda",
+  "@accountDebtShortLabel": {},
   "accountOverLimitBadge": "Sobrecupo",
   "@accountOverLimitBadge": {},
   "accountOverLimitCaption": "Excedido en {amount}",
@@ -163,7 +213,7 @@
       }
     }
   },
-  "accountNumberMasked": "•••• {last4}",
+  "accountNumberMasked": "••••••• {last4}",
   "@accountNumberMasked": {
     "placeholders": {
       "last4": {
@@ -192,13 +242,13 @@
   "@accountFormTypeLabel": {},
   "accountFormTypeChange": "Cambiar",
   "@accountFormTypeChange": {},
-  "accountFormNameLabel": "Nombre",
+  "accountFormNameLabel": "Nombre de la cuenta",
   "@accountFormNameLabel": {},
   "accountFormNameHint": "Ej. Cuenta de ahorros",
   "@accountFormNameHint": {},
-  "accountFormInstitutionLabel": "Institución",
+  "accountFormInstitutionLabel": "Institución (opcional)",
   "@accountFormInstitutionLabel": {},
-  "accountFormInstitutionHint": "Ej. Bancolombia",
+  "accountFormInstitutionHint": "Opcional",
   "@accountFormInstitutionHint": {},
   "accountFormInitialBalanceLabel": "Saldo inicial",
   "@accountFormInitialBalanceLabel": {},
@@ -232,12 +282,16 @@
   "@accountFormStatementDayLabel": {},
   "accountFormPaymentDueDayLabel": "Día de pago",
   "@accountFormPaymentDueDayLabel": {},
-  "accountFormAmountHint": "0",
+  "accountFormAmountHint": "$0",
   "@accountFormAmountHint": {},
   "accountFormSelectHint": "Seleccionar",
   "@accountFormSelectHint": {},
+  "accountFormSaveCta": "Guardar cuenta",
+  "@accountFormSaveCta": {},
   "accountErrorType": "Elige el tipo de cuenta.",
   "@accountErrorType": {},
+  "accountErrorNameRequired": "Ingresa un nombre para la cuenta.",
+  "@accountErrorNameRequired": {},
   "accountErrorName": "Escribe un nombre de hasta 100 caracteres.",
   "@accountErrorName": {},
   "accountErrorCurrency": "Elige una moneda.",
@@ -258,11 +312,9 @@
   "@accountErrorStatementDay": {},
   "accountErrorPaymentDueDay": "Elige un día entre 1 y 31.",
   "@accountErrorPaymentDueDay": {},
-  "accountDeleteSheetTitle": "¿Eliminar esta cuenta?",
-  "@accountDeleteSheetTitle": {},
-  "accountDeleteSheetMessage": "La cuenta dejará de aparecer en tus listas.",
+  "accountDeleteSheetMessage": "Esta cuenta no tiene movimientos asociados. Esta acción no se puede deshacer.",
   "@accountDeleteSheetMessage": {},
-  "accountDeleteSheetImpact": "{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}",
+  "accountDeleteSheetImpact": "{count, plural, =1{Esta cuenta tiene 1 transacción asociada. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.} other{Esta cuenta tiene {count} transacciones asociadas. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.}}",
   "@accountDeleteSheetImpact": {
     "description": "HU-08: impacto en tono neutral, informa sin culpar.",
     "placeholders": {
@@ -275,13 +327,11 @@
   "@accountArchiveSheetTitle": {},
   "accountArchiveSheetMessage": "Podrás recuperarla cuando quieras desde “Cuentas archivadas”.",
   "@accountArchiveSheetMessage": {},
-  "accountChangeSheetTitle": "¿Confirmas el cambio?",
-  "@accountChangeSheetTitle": {},
-  "accountChangeSheetMessage": "Esta cuenta ya tiene movimientos. Cambiar su tipo o su moneda cambia cómo se leen sus cifras.",
+  "accountChangeSheetMessage": "Cambiar el tipo o la moneda de esta cuenta puede afectar cálculos y reportes de tus transacciones existentes. ¿Deseas continuar?",
   "@accountChangeSheetMessage": {},
   "accountChangeConfirm": "Confirmar",
   "@accountChangeConfirm": {},
-  "accountCurrencySheetTitle": "Moneda",
+  "accountCurrencySheetTitle": "Selecciona la moneda",
   "@accountCurrencySheetTitle": {},
   "currencyCopName": "Peso colombiano",
   "@currencyCopName": {},
@@ -337,8 +387,10 @@
   "@categoryFormEditTitle": {},
   "categoryFormEditSubcategoryTitle": "Editar subcategoría",
   "@categoryFormEditSubcategoryTitle": {},
-  "categoryFormAppearanceLabel": "Icono y color",
+  "categoryFormAppearanceLabel": "Ícono y color",
   "@categoryFormAppearanceLabel": {},
+  "categoryFormAppearanceEmptyLabel": "Elegir ícono y color",
+  "@categoryFormAppearanceEmptyLabel": {},
   "categoryFormAppearanceEmptySublabel": "Toca para elegir (opcional)",
   "@categoryFormAppearanceEmptySublabel": {},
   "categoryFormAppearanceFilledSublabel": "Toca para cambiar",
@@ -351,6 +403,8 @@
   "@categoryFormKindLabel": {},
   "categoryFormParentLabel": "Categoría padre",
   "@categoryFormParentLabel": {},
+  "categoryErrorNameRequired": "Ingresa un nombre para la categoría.",
+  "@categoryErrorNameRequired": {},
   "categoryErrorName": "Escribe un nombre de hasta 100 caracteres.",
   "@categoryErrorName": {},
   "categoryKindLockedSubcategory": "Hereda el tipo de la categoría padre — no se puede cambiar en subcategorías.",
@@ -359,22 +413,33 @@
   "@categoryKindLockedRoot": {},
   "categoryDeleteAction": "Eliminar categoría",
   "@categoryDeleteAction": {},
-  "categoryAppearancePickerTitle": "Icono y color",
+  "categoryDeleteSubcategoryAction": "Eliminar subcategoría",
+  "@categoryDeleteSubcategoryAction": {},
+  "categoryAppearancePickerTitle": "Ícono y color",
   "@categoryAppearancePickerTitle": {},
+  "categoryColorLockedSubcategory": "El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras.",
+  "@categoryColorLockedSubcategory": {},
+  "categoryAppearanceIconSectionLabel": "Ícono",
+  "@categoryAppearanceIconSectionLabel": {},
+  "categoryAppearanceColorSectionLabel": "Color",
+  "@categoryAppearanceColorSectionLabel": {},
   "categoryParentPickerTitle": "Categoría padre",
   "@categoryParentPickerTitle": {},
+  "categoryParentPickerHint": "Solo se muestran categorías principales de Gasto. Las subcategorías no pueden anidarse dentro de otras subcategorías.",
+  "@categoryParentPickerHint": {},
   "categoryParentPickerEmpty": "No hay categorías disponibles todavía.",
   "@categoryParentPickerEmpty": {},
   "categoryDeleteSimpleTitle": "¿Eliminar esta categoría?",
   "@categoryDeleteSimpleTitle": {},
-  "categoryDeleteSimpleMessage": "Podrás recuperarla después desde la papelera.",
+  "categoryDeleteSimpleMessage": "Esta categoría se eliminará de tu lista. Podrás recuperarla luego desde la papelera, en Ajustes.",
   "@categoryDeleteSimpleMessage": {},
-  "categoryDeleteTransactionsTitle": "¿Eliminar esta categoría?",
-  "@categoryDeleteTransactionsTitle": {},
-  "categoryDeleteTransactionsCount": "{count, plural, =1{Tiene 1 movimiento asociado.} other{Tiene {count} movimientos asociados.}}",
-  "@categoryDeleteTransactionsCount": {
-    "description": "HU-04 caso 2: impacto en tono neutral, informa sin culpar.",
+  "categoryDeleteTransactionsMessage": "{count, plural, =1{\"{categoryName}\" tiene 1 movimiento asociado. Elige qué hacer con él antes de eliminar la categoría.} other{\"{categoryName}\" tiene {count} movimientos asociados. Elige qué hacer con ellos antes de eliminar la categoría.}}",
+  "@categoryDeleteTransactionsMessage": {
+    "description": "HU-04 caso 2 (`snXFk`): mensaje único con el nombre real de la categoría y el conteo de movimientos, en tono neutral.",
     "placeholders": {
+      "categoryName": {
+        "type": "String"
+      },
       "count": {
         "type": "int"
       }
@@ -386,10 +451,18 @@
   "@categoryDeleteClearOption": {},
   "categoryReassignTransactionsPickerTitle": "Reasignar a otra categoría",
   "@categoryReassignTransactionsPickerTitle": {},
-  "categoryDeleteSubcategoriesTitle": "Esta categoría tiene subcategorías",
-  "@categoryDeleteSubcategoriesTitle": {},
-  "categoryDeleteSubcategoriesMessage": "Antes de eliminarla, decide qué pasa con sus subcategorías.",
-  "@categoryDeleteSubcategoriesMessage": {},
+  "categoryDeleteSubcategoriesMessage": "{count, plural, =1{\"{categoryName}\" tiene 1 subcategoría activa. Debes resolverla antes de eliminar esta categoría raíz.} other{\"{categoryName}\" tiene {count} subcategorías activas. Debes resolverlas antes de eliminar esta categoría raíz.}}",
+  "@categoryDeleteSubcategoriesMessage": {
+    "description": "HU-04 caso 3 (`w9ixr`): mensaje único con el nombre real de la categoría raíz y el conteo de subcategorías activas.",
+    "placeholders": {
+      "categoryName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "categoryReassignSubcategoriesOption": "Reasignar subcategorías",
   "@categoryReassignSubcategoriesOption": {},
   "categoryReassignSubcategoriesPickerTitle": "Mover subcategorías a",
@@ -398,7 +471,7 @@
   "@categoryCascadeDeleteOption": {},
   "categoryCascadeConfirmTitle": "¿Eliminar la categoría y sus subcategorías?",
   "@categoryCascadeConfirmTitle": {},
-  "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.",
+  "categoryCascadeConfirmMessage": "Se eliminarán la categoría y todas sus subcategorías. Podrás deshacerlo justo después de eliminar.",
   "@categoryCascadeConfirmMessage": {},
   "transactionsTitle": "Movimientos",
   "@transactionsTitle": {},
@@ -412,7 +485,7 @@
   "@transactionsEmptyPeriodMessage": {},
   "transactionsErrorTitle": "No pudimos cargar tus movimientos",
   "@transactionsErrorTitle": {},
-  "transactionsErrorLocalFirst": "Tus datos siguen a salvo en este dispositivo.",
+  "transactionsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
   "@transactionsErrorLocalFirst": {},
   "transactionsAdd": "Agregar movimiento",
   "@transactionsAdd": {},
@@ -432,8 +505,58 @@
   "@transactionsFilterTag": {},
   "transactionsSortDateDesc": "Más recientes primero",
   "@transactionsSortDateDesc": {},
-  "transactionsSortAmountDesc": "Monto: mayor a menor",
+  "transactionsSortDateAsc": "Más antiguos primero",
+  "@transactionsSortDateAsc": {},
+  "transactionsSortAmountDesc": "Mayor a menor",
   "@transactionsSortAmountDesc": {},
+  "transactionsSortAmountAsc": "Menor a mayor",
+  "@transactionsSortAmountAsc": {},
+  "transactionsSortSectionDate": "FECHA",
+  "@transactionsSortSectionDate": {},
+  "transactionsSortSectionAmount": "MONTO",
+  "@transactionsSortSectionAmount": {},
+  "transactionsSortActiveByDate": "Ordenado por fecha",
+  "@transactionsSortActiveByDate": {},
+  "transactionsSortActiveByAmount": "Ordenado por monto",
+  "@transactionsSortActiveByAmount": {},
+  "transactionsFilterAccountsSelected": "{count, plural, =1{1 cuenta} other{{count} cuentas}}",
+  "@transactionsFilterAccountsSelected": {
+    "description": "Etiqueta del chip de cuenta cuando hay más de una cuenta activa como filtro (HU-06a).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transactionsBalanceTotalLabel": "Saldo total",
+  "@transactionsBalanceTotalLabel": {
+    "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
+  },
+  "transactionsBalanceCardBalanceLabel": "Saldo",
+  "@transactionsBalanceCardBalanceLabel": {
+    "description": "Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta."
+  },
+  "transactionsBalanceCarouselCollapse": "Ocultar saldos",
+  "@transactionsBalanceCarouselCollapse": {
+    "description": "Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2)."
+  },
+  "transactionsBalanceCarouselExpand": "Mostrar saldos",
+  "@transactionsBalanceCarouselExpand": {
+    "description": "Semántica de la barra compacta que reexpande el carrusel de saldo en Movimientos (Mejora #2)."
+  },
+  "transactionsGroupToday": "Hoy",
+  "@transactionsGroupToday": {},
+  "transactionsGroupYesterday": "Ayer",
+  "@transactionsGroupYesterday": {},
+  "transactionsGroupCount": "{count, plural, =1{1 movimiento} other{{count} movimientos}}",
+  "@transactionsGroupCount": {
+    "description": "Contador del encabezado de cada grupo de fecha de la lista de movimientos (HU-06).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "transactionTypeExpense": "Gasto",
   "@transactionTypeExpense": {},
   "transactionTypeIncome": "Ingreso",
@@ -458,6 +581,14 @@
   "@transactionFormTransferAccountLabel": {},
   "transactionFormCategoryLabel": "Categoría",
   "@transactionFormCategoryLabel": {},
+  "transactionErrorAccount": "Elige una cuenta.",
+  "@transactionErrorAccount": {},
+  "transactionErrorCategory": "Elige una categoría.",
+  "@transactionErrorCategory": {},
+  "transactionErrorAmount": "Ingresa un monto mayor a cero.",
+  "@transactionErrorAmount": {},
+  "transactionErrorTransferAccount": "Elige la cuenta de destino.",
+  "@transactionErrorTransferAccount": {},
   "categorySelectTitle": "Elegir categoría",
   "@categorySelectTitle": {},
   "categorySelectSearchHint": "Buscar categoría",
@@ -490,8 +621,12 @@
   "@transactionFormTransferAmountLabel": {},
   "transactionFormTransferFromLabel": "Cuenta origen",
   "@transactionFormTransferFromLabel": {},
-  "transactionFormTransferInfo": "Las transferencias no cuentan como gasto ni ingreso.",
-  "@transactionFormTransferInfo": {},
+  "transactionFormCountsInBudgetLabel": "¿Incluir en tu presupuesto?",
+  "@transactionFormCountsInBudgetLabel": {},
+  "transactionFormCountsInBudgetHintOff": "Actívala para que se sume a tus presupuestos y reportes.",
+  "@transactionFormCountsInBudgetHintOff": {},
+  "transactionFormCountsInBudgetHintOn": "Se suma a tus presupuestos y reportes.",
+  "@transactionFormCountsInBudgetHintOn": {},
   "transactionFormSwapAccounts": "Intercambiar cuentas",
   "@transactionFormSwapAccounts": {},
   "transactionFormDateToday": "Hoy",
@@ -528,6 +663,8 @@
   "@transactionFormKeypadDivide": {},
   "transactionFormKeypadEquals": "Calcular resultado",
   "@transactionFormKeypadEquals": {},
+  "transactionFormKeypadConfirm": "Confirmar",
+  "@transactionFormKeypadConfirm": {},
   "transactionFormKeypadDecimal": "Punto decimal",
   "@transactionFormKeypadDecimal": {},
   "transactionFormKeypadBackspace": "Borrar",
@@ -544,26 +681,31 @@
   "@transactionSourceImported": {},
   "transactionSourceScheduled": "Programado",
   "@transactionSourceScheduled": {},
-  "transactionEditImpactTitle": "Este movimiento está vinculado",
-  "@transactionEditImpactTitle": {},
-  "transactionEditImpactScheduled": "Afecta su pago programado asociado.",
-  "@transactionEditImpactScheduled": {},
-  "transactionEditImpactGoal": "Afecta la meta a la que aporta.",
-  "@transactionEditImpactGoal": {},
-  "transactionEditImpactDebt": "Afecta la deuda a la que abona.",
-  "@transactionEditImpactDebt": {},
-  "transactionEditImpactConfirm": "Guardar de todas formas",
-  "@transactionEditImpactConfirm": {},
+  "transactionEditImpactMessage": "Esta transacción está vinculada a {links}. Si cambias el monto, revisa que siga coincidiendo.",
+  "@transactionEditImpactMessage": {
+    "placeholders": {
+      "links": {
+        "type": "String",
+        "example": "tu meta"
+      }
+    }
+  },
+  "transactionEditImpactLinkScheduled": "tu pago programado",
+  "@transactionEditImpactLinkScheduled": {},
+  "transactionEditImpactLinkGoal": "tu meta",
+  "@transactionEditImpactLinkGoal": {},
+  "transactionEditImpactLinkDebt": "tu deuda",
+  "@transactionEditImpactLinkDebt": {},
   "transactionDeleteTitle": "¿Eliminar este movimiento?",
   "@transactionDeleteTitle": {},
-  "transactionDeleteMessage": "Podrás recuperarlo después desde la papelera.",
+  "transactionDeleteMessage": "Podrás deshacerlo justo después de eliminar.",
   "@transactionDeleteMessage": {},
-  "transactionDetailTitle": "Detalle del movimiento",
-  "@transactionDetailTitle": {},
-  "transactionDetailEdit": "Editar",
-  "@transactionDetailEdit": {},
-  "transactionDetailDelete": "Eliminar",
-  "@transactionDetailDelete": {},
+  "transactionDetailTitleExpense": "Detalle del gasto",
+  "@transactionDetailTitleExpense": {},
+  "transactionDetailTitleIncome": "Detalle del ingreso",
+  "@transactionDetailTitleIncome": {},
+  "transactionDetailTitleTransfer": "Detalle de la transferencia",
+  "@transactionDetailTitleTransfer": {},
   "transactionDetailSource": "Registrado como {source}",
   "@transactionDetailSource": {
     "placeholders": {
@@ -572,46 +714,36 @@
       }
     }
   },
-  "transactionDetailAccountLine": "Cuenta: {account}",
-  "@transactionDetailAccountLine": {
+  "transactionDetailAccountLabel": "Cuenta",
+  "@transactionDetailAccountLabel": {},
+  "transactionDetailAccountFromLabel": "Cuenta origen",
+  "@transactionDetailAccountFromLabel": {},
+  "transactionDetailAccountToLabel": "Cuenta destino",
+  "@transactionDetailAccountToLabel": {},
+  "transactionDetailCategoryLabel": "Categoría",
+  "@transactionDetailCategoryLabel": {},
+  "transactionDetailDateLabel": "Fecha",
+  "@transactionDetailDateLabel": {},
+  "transactionDetailNoteLabel": "Nota",
+  "@transactionDetailNoteLabel": {},
+  "transactionDetailNoNote": "Sin nota",
+  "@transactionDetailNoNote": {},
+  "transactionDetailSourceLabel": "Origen",
+  "@transactionDetailSourceLabel": {},
+  "transactionDetailDebtLinkedLabel": "Enlazada a deuda: {debtName}",
+  "@transactionDetailDebtLinkedLabel": {
     "placeholders": {
-      "account": {
+      "debtName": {
         "type": "String"
       }
     }
   },
-  "transactionDetailTransferLine": "Cuenta destino: {account}",
-  "@transactionDetailTransferLine": {
-    "placeholders": {
-      "account": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailCategoryLine": "Categoría: {category}",
-  "@transactionDetailCategoryLine": {
-    "placeholders": {
-      "category": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailNoteLine": "Nota: {note}",
-  "@transactionDetailNoteLine": {
-    "placeholders": {
-      "note": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionDetailTagsLine": "Etiquetas: {tags}",
-  "@transactionDetailTagsLine": {
-    "placeholders": {
-      "tags": {
-        "type": "String"
-      }
-    }
-  },
+  "transactionDetailTagsLabel": "Etiquetas",
+  "@transactionDetailTagsLabel": {},
+  "transactionDetailTransferSubtitle": "Transferencia",
+  "@transactionDetailTransferSubtitle": {},
+  "transactionDetailDeleteLink": "Eliminar movimiento",
+  "@transactionDetailDeleteLink": {},
   "accountFilterSheetTitle": "Filtrar por cuenta",
   "@accountFilterSheetTitle": {},
   "accountFilterSelectAll": "Todas",
@@ -649,6 +781,10 @@
   },
   "tagFilterSheetTitle": "Filtrar por etiqueta",
   "@tagFilterSheetTitle": {},
+  "tagFilterSearchHint": "Buscar etiqueta",
+  "@tagFilterSearchHint": {},
+  "tagFilterEmpty": "No encontramos etiquetas con ese nombre",
+  "@tagFilterEmpty": {},
   "newTagSheetTitle": "Nueva etiqueta",
   "@newTagSheetTitle": {},
   "newTagNameHint": "Nombre de la etiqueta",
@@ -659,6 +795,10 @@
   "@navBudgets": {},
   "navGoals": "Metas",
   "@navGoals": {},
+  "navScheduledPayments": "Pagos",
+  "@navScheduledPayments": {
+    "description": "Etiqueta corta de la pestaña de Pagos programados en la barra inferior."
+  },
   "navMore": "Más",
   "@navMore": {},
   "homeGreeting": "Hola de nuevo",
@@ -678,10 +818,24 @@
   "@homeNotificationsTooltip": {},
   "homeSyncSynced": "Sincronizado",
   "@homeSyncSynced": {},
-  "homeSyncSyncing": "Sincronizando",
+  "homeSyncSyncing": "Sincronizando…",
   "@homeSyncSyncing": {},
   "homeSyncOffline": "Sin conexión",
   "@homeSyncOffline": {},
+  "homeSyncSheetSyncedTitle": "Todo a salvo",
+  "@homeSyncSheetSyncedTitle": {},
+  "homeSyncSheetSyncedMessage": "Tu información está a salvo y sincronizada.",
+  "@homeSyncSheetSyncedMessage": {},
+  "homeSyncSheetSyncingTitle": "Sincronizando…",
+  "@homeSyncSheetSyncingTitle": {},
+  "homeSyncSheetSyncingMessage": "Estamos guardando tus cambios en la nube.",
+  "@homeSyncSheetSyncingMessage": {},
+  "homeSyncSheetOfflineTitle": "Sin conexión",
+  "@homeSyncSheetOfflineTitle": {},
+  "homeSyncSheetOfflineMessage": "Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.",
+  "@homeSyncSheetOfflineMessage": {},
+  "homeSyncSheetDismiss": "Entendido",
+  "@homeSyncSheetDismiss": {},
   "homeSpentInMonth": "Gastado en {month}",
   "@homeSpentInMonth": {
     "description": "Etiqueta del hero con el mes visible.",
@@ -696,15 +850,49 @@
   "@homeBudgetInvitation": {},
   "homeNoSpendingYet": "Aún no hay gastos este mes",
   "@homeNoSpendingYet": {},
+  "homeHeroBudgetProgress": "{pct}% de {amount}",
+  "@homeHeroBudgetProgress": {
+    "description": "Caption izquierdo de la barra de progreso del hero con presupuesto (HU-03, aOhoY): porcentaje gastado del presupuesto global mensual y su monto total.",
+    "placeholders": {
+      "pct": { "type": "int" },
+      "amount": {
+        "type": "String",
+        "example": "$3.000.000"
+      }
+    }
+  },
+  "homeHeroBudgetDaysLeft": "{count, plural, =0{último día} one{falta {count} día} other{faltan {count} días}}",
+  "@homeHeroBudgetDaysLeft": {
+    "description": "Caption derecho de la barra de progreso del hero con presupuesto (HU-03, aOhoY): días que quedan del periodo mensual vigente.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeQuickAccessTitle": "Acceso rápido",
+  "@homeQuickAccessTitle": {
+    "description": "Caption de la fila de accesos directos del Home (HU-05b)."
+  },
+  "homeQuickAccessScheduledPayments": "Pagos programados",
+  "@homeQuickAccessScheduledPayments": {
+    "description": "Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más."
+  },
   "homeRecentTitle": "Movimientos recientes",
   "@homeRecentTitle": {},
   "homeSeeAll": "Ver todos",
   "@homeSeeAll": {},
+  "homeBalancesTitle": "Mis cuentas",
+  "@homeBalancesTitle": {
+    "description": "Encabezado de la tira de saldos por cuenta en Inicio."
+  },
+  "homeBalancesSeeAll": "Ver todas",
+  "@homeBalancesSeeAll": {
+    "description": "Enlace de la tira de saldos que abre la lista de Cuentas."
+  },
   "homeEmptyMovements": "Aún no registras movimientos",
   "@homeEmptyMovements": {},
   "homeLoading": "Cargando inicio",
   "@homeLoading": {},
-  "homeMonthPickerTitle": "Elegir mes",
+  "homeMonthPickerTitle": "Selecciona el mes",
   "@homeMonthPickerTitle": {},
   "homeAiBanner": "Pronto: pregúntale a Billetudo",
   "@homeAiBanner": {},
@@ -714,6 +902,12 @@
   "@homeAiDisclaimer": {},
   "homeNotificationsSheetMessage": "Las notificaciones llegarán pronto.",
   "@homeNotificationsSheetMessage": {},
+  "homeExitConfirmTitle": "¿Salir de Billetudo?",
+  "@homeExitConfirmTitle": {},
+  "homeExitConfirmMessage": "Puedes volver cuando quieras, tus datos se quedan guardados.",
+  "@homeExitConfirmMessage": {},
+  "homeExitConfirmAction": "Salir",
+  "@homeExitConfirmAction": {},
   "comingSoonTitle": "Próximamente",
   "@comingSoonTitle": {},
   "comingSoonMessage": "Estamos preparando esta sección. Muy pronto la tendrás aquí.",
@@ -724,16 +918,388 @@
   "@comingSoonUnderstood": {},
   "moreTitle": "Más",
   "@moreTitle": {},
+  "moreAccountsDescription": "Gestiona tus cuentas y saldos",
+  "@moreAccountsDescription": {},
+  "moreCategoriesDescription": "Organiza tus gastos e ingresos",
+  "@moreCategoriesDescription": {},
   "moreDebts": "Deudas",
   "@moreDebts": {},
+  "moreDebtsDescription": "Sigue tus deudas y pagos",
+  "@moreDebtsDescription": {},
+  "debtsTitle": "Deudas",
+  "@debtsTitle": {},
+  "debtsAdd": "Agregar deuda",
+  "@debtsAdd": {},
+  "debtsLoading": "Cargando tus deudas",
+  "@debtsLoading": {},
+  "debtsSummaryTitle": "Resumen",
+  "@debtsSummaryTitle": {},
+  "debtsSectionTitle": "Tus deudas",
+  "@debtsSectionTitle": {},
+  "debtsEmptyMessage": "Aún no tienes deudas registradas",
+  "@debtsEmptyMessage": {},
+  "debtsEmptyDescription": "Registra lo que debes o lo que te deben para seguir tu progreso de pago en un solo lugar.",
+  "@debtsEmptyDescription": {},
+  "debtsErrorTitle": "No pudimos cargar tus deudas",
+  "@debtsErrorTitle": {},
+  "debtDetailErrorTitle": "No pudimos cargar esta deuda",
+  "@debtDetailErrorTitle": {},
+  "debtDirectionIOwe": "Yo debo",
+  "@debtDirectionIOwe": {},
+  "debtDirectionOwedToMe": "Me deben",
+  "@debtDirectionOwedToMe": {},
+  "debtProgressPaid": "{pct}% pagado",
+  "@debtProgressPaid": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtProgressCollected": "{pct}% cobrado",
+  "@debtProgressCollected": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtAmountOf": "de {amount}",
+  "@debtAmountOf": {
+    "description": "Monto original de la deuda bajo el saldo pendiente. El monto llega ya formateado.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtDueOn": "Vence {date}",
+  "@debtDueOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtPercentValue": "{pct}%",
+  "@debtPercentValue": {
+    "placeholders": { "pct": { "type": "int" } }
+  },
+  "debtDetailBalanceLabel": "Saldo pendiente",
+  "@debtDetailBalanceLabel": {},
+  "debtDetailPaidLabel": "pagado",
+  "@debtDetailPaidLabel": {},
+  "debtDetailCollectedLabel": "cobrado",
+  "@debtDetailCollectedLabel": {},
+  "debtDetailGrowth": "Crece ~{amount}/día",
+  "@debtDetailGrowth": {
+    "description": "Interés diario estimado de la deuda. El monto llega ya formateado.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtDetailEstimated": "estimado",
+  "@debtDetailEstimated": {},
+  "debtDetailUpdateBalance": "Actualizar saldo",
+  "@debtDetailUpdateBalance": {},
+  "debtDetailMovementsTitle": "Movimientos",
+  "@debtDetailMovementsTitle": {},
+  "debtDetailRegisterPayment": "Registrar abono",
+  "@debtDetailRegisterPayment": {},
+  "debtInstallmentTitle": "Próxima cuota",
+  "@debtInstallmentTitle": {},
+  "debtInstallmentBadge": "Cuota · {date}",
+  "@debtInstallmentBadge": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtInstallmentScheduledBadge": "Pago programado",
+  "@debtInstallmentScheduledBadge": {},
+  "debtConfigureInstallmentTitle": "Configurar cuota",
+  "@debtConfigureInstallmentTitle": {},
+  "debtConfigureInstallmentSubtitle": "Programa la cuota de esta deuda",
+  "@debtConfigureInstallmentSubtitle": {},
+  "debtLedgerOpening": "Saldo de apertura",
+  "@debtLedgerOpening": {},
+  "debtLedgerDisbursement": "Desembolso",
+  "@debtLedgerDisbursement": {},
+  "debtLedgerPaymentOwe": "Abono a la deuda",
+  "@debtLedgerPaymentOwe": {},
+  "debtLedgerPaymentOwed": "Pago recibido",
+  "@debtLedgerPaymentOwed": {},
+  "debtLedgerInterest": "Interés",
+  "@debtLedgerInterest": {},
+  "debtLedgerAdjustment": "Saldo actualizado",
+  "@debtLedgerAdjustment": {},
+  "debtLedgerRunning": "Saldo {amount}",
+  "@debtLedgerRunning": {
+    "description": "Saldo corrido de la deuda tras un asiento. El monto llega ya formateado.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtLedgerTagEstimated": "Estimado",
+  "@debtLedgerTagEstimated": {},
+  "debtLedgerTagNoAccount": "No afecta cuentas",
+  "@debtLedgerTagNoAccount": {},
+  "debtEditTooltip": "Editar deuda",
+  "@debtEditTooltip": {},
+  "debtDetailTitleFallback": "Deuda",
+  "@debtDetailTitleFallback": {},
+  "debtFormNewTitle": "Nueva deuda",
+  "@debtFormNewTitle": {},
+  "debtFormEditTitle": "Editar deuda",
+  "@debtFormEditTitle": {},
+  "debtFormDirectionLabel": "¿Debes o te deben?",
+  "@debtFormDirectionLabel": {},
+  "debtFormOpeningBalanceLabel": "Saldo de apertura",
+  "@debtFormOpeningBalanceLabel": {},
+  "debtFormErrorAmountZero": "El saldo de apertura debe ser mayor a 0",
+  "@debtFormErrorAmountZero": {},
+  "debtFormNameLabel": "Nombre de la deuda",
+  "@debtFormNameLabel": {},
+  "debtFormNameHint": "Crédito vehicular, préstamo a Andrés…",
+  "@debtFormNameHint": {},
+  "debtFormNameRequired": "Ponle un nombre a la deuda",
+  "@debtFormNameRequired": {},
+  "debtFormCounterpartyLabel": "Contraparte",
+  "@debtFormCounterpartyLabel": {},
+  "debtFormCounterpartyLabelIOwe": "Le debo a",
+  "@debtFormCounterpartyLabelIOwe": {},
+  "debtFormCounterpartyLabelOwedToMe": "Me debe",
+  "@debtFormCounterpartyLabelOwedToMe": {},
+  "debtFormCounterpartyHint": "Banco, persona…",
+  "@debtFormCounterpartyHint": {},
+  "debtFormStartDateLabel": "Fecha",
+  "@debtFormStartDateLabel": {},
+  "debtFormDueDateLabel": "Fecha de vencimiento",
+  "@debtFormDueDateLabel": {},
+  "debtFormDueDateHint": "Sin fecha",
+  "@debtFormDueDateHint": {},
+  "debtFormErrorDueBeforeStart": "La fecha de vencimiento debe ser posterior a la fecha de inicio",
+  "@debtFormErrorDueBeforeStart": {},
+  "debtFormInterestLabel": "Interés anual (opcional)",
+  "@debtFormInterestLabel": {},
+  "debtFormInterestHint": "0",
+  "@debtFormInterestHint": {},
+  "debtFormInterestError": "Revisa la tasa de interés",
+  "@debtFormInterestError": {},
+  "debtFormAccrualModeLabel": "Modo de interés",
+  "@debtFormAccrualModeLabel": {},
+  "debtFormAccrualManual": "Manual",
+  "@debtFormAccrualManual": {},
+  "debtFormAccrualAuto": "Automático",
+  "@debtFormAccrualAuto": {},
+  "debtFormAccrualHint": "Manual: tú pones la cifra del banco. Automático estima el crecimiento diario (estimado).",
+  "@debtFormAccrualHint": {},
+  "debtFormCreateCta": "Crear deuda",
+  "@debtFormCreateCta": {},
+  "debtFormSaveCta": "Guardar cambios",
+  "@debtFormSaveCta": {},
+  "debtFormDelete": "Eliminar deuda",
+  "@debtFormDelete": {},
+  "debtCurrencySheetTitle": "Moneda",
+  "@debtCurrencySheetTitle": {},
+  "debtCurrencyPill": "{code} · {name}",
+  "@debtCurrencyPill": {
+    "placeholders": {
+      "code": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "debtDeleteSheetTitle": "¿Eliminar esta deuda?",
+  "@debtDeleteSheetTitle": {},
+  "debtDeleteSheetMessage": "Podrás recuperarla desde la papelera.",
+  "@debtDeleteSheetMessage": {},
+  "debtContext": "{name} · {direction}",
+  "@debtContext": {
+    "description": "Subtítulo de contexto: nombre de la deuda y su dirección.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "direction": { "type": "String" }
+    }
+  },
+  "debtDateToday": "Hoy, {date}",
+  "@debtDateToday": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtPaymentTitle": "Registrar abono",
+  "@debtPaymentTitle": {},
+  "debtPaymentAmountLabel": "Abono",
+  "@debtPaymentAmountLabel": {},
+  "debtPaymentAddToAccountLabel": "¿Agregar a una cuenta?",
+  "@debtPaymentAddToAccountLabel": {},
+  "debtPaymentAddToAccountHintYes": "Moverá el saldo y contará en tus estadísticas",
+  "@debtPaymentAddToAccountHintYes": {},
+  "debtPaymentAddToAccountHintNo": "Este abono baja el saldo de la deuda pero no moverá ninguna cuenta.",
+  "@debtPaymentAddToAccountHintNo": {},
+  "debtPaymentLinkExisting": "¿Ya lo registraste? Enlaza un movimiento",
+  "@debtPaymentLinkExisting": {},
+  "debtPaymentDateLabel": "Fecha",
+  "@debtPaymentDateLabel": {},
+  "debtPaymentNoteLabel": "Nota (opcional)",
+  "@debtPaymentNoteLabel": {},
+  "debtPaymentNoteHint": "Agregar una nota",
+  "@debtPaymentNoteHint": {},
+  "debtPaymentCategoryLabel": "Categoría (opcional)",
+  "@debtPaymentCategoryLabel": {},
+  "debtPaymentCategoryNone": "Sin categoría",
+  "@debtPaymentCategoryNone": {},
+  "debtPaymentSelectAccount": "Elige una cuenta",
+  "@debtPaymentSelectAccount": {},
+  "debtPaymentAccountPickerTitle": "Elige una cuenta",
+  "@debtPaymentAccountPickerTitle": {},
+  "debtOpeningMovementNote": "Deuda: {debtName}",
+  "@debtOpeningMovementNote": {
+    "description": "Nota autogenerada del movimiento de apertura de una deuda, cuando el usuario elige registrarlo en una cuenta. No editable por widgets: se resuelve sin BuildContext (AppLocale.resolveLanguageCode) porque se escribe desde data/.",
+    "placeholders": {
+      "debtName": { "type": "String" }
+    }
+  },
+  "debtPaymentCta": "Registrar abono",
+  "@debtPaymentCta": {},
+  "debtPaymentError": "No pudimos registrar el abono. Intenta de nuevo.",
+  "@debtPaymentError": {},
+  "debtUpdateBalanceTitle": "Actualizar saldo",
+  "@debtUpdateBalanceTitle": {},
+  "debtUpdateBalanceNewLabel": "Nuevo saldo",
+  "@debtUpdateBalanceNewLabel": {},
+  "debtUpdateBalanceEstimatedLabel": "Saldo estimado hoy",
+  "@debtUpdateBalanceEstimatedLabel": {},
+  "debtUpdateBalanceAdjustLabel": "Ajuste que se registra",
+  "@debtUpdateBalanceAdjustLabel": {},
+  "debtUpdateBalanceHint": "Registra un ajuste en la deuda para igualar la cifra del banco. No mueve ninguna cuenta.",
+  "@debtUpdateBalanceHint": {},
+  "debtUpdateBalanceDateLabel": "Fecha del ajuste",
+  "@debtUpdateBalanceDateLabel": {},
+  "debtUpdateBalanceCta": "Guardar saldo",
+  "@debtUpdateBalanceCta": {},
+  "debtUpdateBalanceError": "No pudimos actualizar el saldo. Intenta de nuevo.",
+  "@debtUpdateBalanceError": {},
+  "debtLinkBannerTitle": "Enlazar a {debt}",
+  "@debtLinkBannerTitle": {
+    "placeholders": { "debt": { "type": "String" } }
+  },
+  "debtLinkBannerBody": "Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.",
+  "@debtLinkBannerBody": {},
+  "debtLinkError": "No pudimos enlazar el movimiento. Intenta de nuevo.",
+  "@debtLinkError": {},
+  "debtInitialRegistroTitle": "¿Quieres crear un registro inicial para esta deuda?",
+  "@debtInitialRegistroTitle": {},
+  "debtInitialRegistroMessage": "Si lo creas, cambiará el saldo de la cuenta que elijas.",
+  "@debtInitialRegistroMessage": {},
+  "debtInitialRegistroSoloDeuda": "No, solo la deuda",
+  "@debtInitialRegistroSoloDeuda": {},
+  "debtInitialRegistroChooseAccount": "Sí, elegir cuenta",
+  "@debtInitialRegistroChooseAccount": {},
+  "debtUpdateRegistroTitle": "¿Actualizar también el registro?",
+  "@debtUpdateRegistroTitle": {},
+  "debtUpdateRegistroMessage": "Cambiar el saldo de apertura actualizará el registro inicial de {from} a {to}.",
+  "@debtUpdateRegistroMessage": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "debtUpdateRegistroConfirm": "Actualizar",
+  "@debtUpdateRegistroConfirm": {},
+  "debtOpeningLinkSnackbar": "Saldo inicial · sin cuenta enlazada",
+  "@debtOpeningLinkSnackbar": {},
+  "debtLedgerAbonoNoAccountSnackbar": "Este abono no movió ninguna cuenta",
+  "@debtLedgerAbonoNoAccountSnackbar": {},
+  "debtMenuTooltip": "Más opciones",
+  "@debtMenuTooltip": {},
+  "debtActionClose": "Cerrar deuda",
+  "@debtActionClose": {},
+  "debtActionError": "No pudimos completar la acción. Intenta de nuevo.",
+  "@debtActionError": {},
+  "debtCloseSheetTitle": "¿Cerrar esta deuda?",
+  "@debtCloseSheetTitle": {},
+  "debtCloseSheetMessageIOwe": "Le debes {amount} a {counterparty}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
+  "@debtCloseSheetMessageIOwe": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "counterparty": { "type": "String" }
+    }
+  },
+  "debtCloseSheetMessageIOweNoCounterparty": "Debes {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
+  "@debtCloseSheetMessageIOweNoCounterparty": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtCloseSheetMessageOwedToMe": "{counterparty} te debe {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
+  "@debtCloseSheetMessageOwedToMe": {
+    "placeholders": {
+      "counterparty": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "debtCloseSheetMessageOwedToMeNoCounterparty": "Te deben {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
+  "@debtCloseSheetMessageOwedToMeNoCounterparty": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "debtCloseInfoLabel": "Saldo pendiente al cerrar",
+  "@debtCloseInfoLabel": {},
+  "debtCloseCta": "Cerrar deuda",
+  "@debtCloseCta": {},
+  "debtCelebrationTitleIOwe": "¡Felicidades! Ya no debes nada",
+  "@debtCelebrationTitleIOwe": {},
+  "debtCelebrationTitleOwedToMe": "¡Felicidades! Ya no te deben nada",
+  "@debtCelebrationTitleOwedToMe": {},
+  "debtCelebrationMessageIOwe": "Terminaste de pagar {name}. En total pagaste {amount} en {duration}.",
+  "@debtCelebrationMessageIOwe": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "amount": { "type": "String" },
+      "duration": { "type": "String" }
+    }
+  },
+  "debtCelebrationMessageOwedToMe": "Terminaste de cobrar {name}. En total cobraste {amount} en {duration}.",
+  "@debtCelebrationMessageOwedToMe": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "amount": { "type": "String" },
+      "duration": { "type": "String" }
+    }
+  },
+  "debtCelebrationStatTotalPaidIOwe": "Total pagado",
+  "@debtCelebrationStatTotalPaidIOwe": {},
+  "debtCelebrationStatTotalPaidOwedToMe": "Total cobrado",
+  "@debtCelebrationStatTotalPaidOwedToMe": {},
+  "debtCelebrationStatDuration": "Duración",
+  "@debtCelebrationStatDuration": {},
+  "debtCelebrationDismiss": "Ahora no",
+  "@debtCelebrationDismiss": {},
+  "debtCelebrationComplete": "Completar",
+  "@debtCelebrationComplete": {},
+  "debtDurationMonths": "{count, plural, =1{1 mes} other{{count} meses}}",
+  "@debtDurationMonths": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "debtDurationDays": "{count, plural, =1{1 día} other{{count} días}}",
+  "@debtDurationDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "debtDirectionIOwePast": "Debía",
+  "@debtDirectionIOwePast": {},
+  "debtDirectionOwedToMePast": "Me debían",
+  "@debtDirectionOwedToMePast": {},
+  "debtCardStatusPaid": "Pagada · {date}",
+  "@debtCardStatusPaid": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtCardStatusClosed": "Cerrada · {date}",
+  "@debtCardStatusClosed": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "debtsTabActive": "Activas",
+  "@debtsTabActive": {},
+  "debtsTabClosed": "Cerradas",
+  "@debtsTabClosed": {},
+  "debtsClosedPaidLabel": "Pagué",
+  "@debtsClosedPaidLabel": {},
+  "debtsClosedCollectedLabel": "Me pagaron",
+  "@debtsClosedCollectedLabel": {},
+  "debtsClosedEmptyMessage": "Aún no has cerrado ninguna deuda",
+  "@debtsClosedEmptyMessage": {},
+  "debtsActiveEmptyMessage": "No tienes deudas activas",
+  "@debtsActiveEmptyMessage": {},
   "moreScheduledPayments": "Pagos programados",
   "@moreScheduledPayments": {},
+  "moreScheduledPaymentsDescription": "Pagos e ingresos automáticos",
+  "@moreScheduledPaymentsDescription": {},
   "moreReports": "Gráficas e informes",
   "@moreReports": {},
+  "moreReportsDescription": "Visualiza tus finanzas con gráficas",
+  "@moreReportsDescription": {},
+  "moreGoalsDescription": "Ahorra para tus metas y objetivos",
+  "@moreGoalsDescription": {},
   "moreImportExport": "Importar y exportar",
   "@moreImportExport": {},
+  "moreImportExportDescription": "Respalda o trae tus datos",
+  "@moreImportExportDescription": {},
   "moreSettings": "Ajustes",
   "@moreSettings": {},
+  "moreSettingsDescription": "Preferencias y tu cuenta",
+  "@moreSettingsDescription": {},
   "moreSignOut": "Cerrar sesión",
   "@moreSignOut": {},
 
@@ -777,24 +1343,57 @@
 
   "authSignOutSheetTitle": "Cerrar sesión",
   "@authSignOutSheetTitle": {},
-  "authSignOutSheetMessage": "Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.",
-  "@authSignOutSheetMessage": {},
+  "authSignOutSheetMessage": "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+  "@authSignOutSheetMessage": {
+    "description": "HU-06: mensaje con el opt-in de borrado APAGADO."
+  },
+  "authSignOutSheetMessageDeleting": "Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
+  "@authSignOutSheetMessageDeleting": {
+    "description": "HU-06: mensaje con el opt-in ACTIVADO. Pierde la promesa de conservación a propósito: con la casilla marcada sería falsa."
+  },
   "authSignOutCta": "Cerrar sesión",
   "@authSignOutCta": {},
+  "authSignOutDeleteCta": "Borrar y salir",
+  "@authSignOutDeleteCta": {
+    "description": "HU-06: CTA cuando el opt-in de borrado está activado."
+  },
+  "authSignOutDeleteOptInTitle": "Borrar también los datos de este teléfono",
+  "@authSignOutDeleteOptInTitle": {},
+  "authSignOutDeleteOptInSubtitle": "Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.",
+  "@authSignOutDeleteOptInSubtitle": {},
+  "authSignOutUnsyncedTitle": "Hay cambios que aún no se han subido",
+  "@authSignOutUnsyncedTitle": {},
+  "authSignOutUnsyncedBody": "{count, plural, =1{1 cambio sigue guardado solo en este teléfono. Si borras ahora, ese cambio no quedará en la nube.} other{{count} cambios siguen guardados solo en este teléfono. Si borras ahora, esos cambios no quedarán en la nube.}}",
+  "@authSignOutUnsyncedBody": {
+    "description": "HU-06: la concordancia alcanza cinco palabras (sigue/siguen, guardado/guardados, ese/esos cambio(s), quedará/quedarán), por eso el plural ICU cubre la frase entera y no la palabra suelta.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authSignOutWipeErrorMessage": "Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.",
+  "@authSignOutWipeErrorMessage": {
+    "description": "HU-06: el wipe falló después de cerrar sesión. No reportar un éxito falso."
+  },
+  "authSignOutFailedMessage": "No pudimos cerrar tu sesión, así que no borramos nada de este teléfono. Inténtalo de nuevo.",
+  "@authSignOutFailedMessage": {
+    "description": "HU-06: el cierre de sesión falló, por lo que el borrado se canceló. Deja claro que los datos siguen intactos para que el usuario reintente."
+  },
 
   "authDeleteStep1Title": "Eliminar tu cuenta",
   "@authDeleteStep1Title": {},
-  "authDeleteStep1Message": "Vamos a borrar tus cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta en la nube. Esta acción no se puede deshacer.",
+  "authDeleteStep1Message": "Esta acción es irreversible. Se borrarán para siempre todos tus datos en la nube: cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta.",
   "@authDeleteStep1Message": {},
   "authDeleteStep1Cta": "Eliminar cuenta",
   "@authDeleteStep1Cta": {},
   "authDeleteStep1ErrorTitle": "No pudimos eliminar tu cuenta",
   "@authDeleteStep1ErrorTitle": {},
-  "authDeleteStep1ErrorMessage": "Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.",
+  "authDeleteStep1ErrorMessage": "Hubo un problema para conectar con el servidor y no pudimos completar la solicitud. Tus datos siguen a salvo en este dispositivo — intenta de nuevo.",
   "@authDeleteStep1ErrorMessage": {},
   "authDeleteStep2Title": "¿Qué hacemos con tus datos en este teléfono?",
   "@authDeleteStep2Title": {},
-  "authDeleteStep2Subtitle": "Tu cuenta en la nube ya se eliminó. Esto es solo sobre este dispositivo.",
+  "authDeleteStep2Subtitle": "Tu cuenta en la nube ya fue eliminada. Elige qué pasa con lo que queda guardado aquí, en este dispositivo.",
   "@authDeleteStep2Subtitle": {},
   "authDeleteStep2KeepTitle": "Conservar mis datos en este dispositivo",
   "@authDeleteStep2KeepTitle": {},
@@ -826,10 +1425,18 @@
   "@settingsBackupTitle": {},
   "settingsBackupSubtitle": "Guarda tus datos de forma segura",
   "@settingsBackupSubtitle": {},
+  "settingsBudgetSection": "Presupuesto",
+  "@settingsBudgetSection": {},
   "settingsPreferencesSection": "Preferencias",
   "@settingsPreferencesSection": {},
   "settingsAppearance": "Apariencia",
   "@settingsAppearance": {},
+  "settingsAppearanceLight": "Claro",
+  "@settingsAppearanceLight": {},
+  "settingsAppearanceDark": "Oscuro",
+  "@settingsAppearanceDark": {},
+  "settingsAppearanceSystem": "Sistema",
+  "@settingsAppearanceSystem": {},
   "settingsCurrency": "Moneda",
   "@settingsCurrency": {},
   "settingsCurrencySubtitle": "Elige la moneda con la que registras tus movimientos",
@@ -847,16 +1454,22 @@
   "@budgetsEmptyMessage": {},
   "budgetsEmptyCta": "Crear presupuesto",
   "@budgetsEmptyCta": {},
+  "budgetsEmptyDescription": "Crea uno para controlar tu gasto sin esfuerzo",
+  "@budgetsEmptyDescription": {},
   "budgetsLoading": "Cargando tus presupuestos",
   "@budgetsLoading": {},
   "budgetsErrorTitle": "No pudimos cargar tus presupuestos",
   "@budgetsErrorTitle": {},
   "budgetsMenuHistory": "Ver histórico",
   "@budgetsMenuHistory": {},
+  "budgetsMenuTooltip": "Más opciones",
+  "@budgetsMenuTooltip": {},
   "budgetRemainingLabel": "Te quedan",
   "@budgetRemainingLabel": {},
   "budgetOverspentLabel": "Excedido por",
   "@budgetOverspentLabel": {},
+  "budgetAtRiskLabel": "Podría exceder por",
+  "@budgetAtRiskLabel": {},
   "budgetResetsOn": "se reinicia el {date}",
   "@budgetResetsOn": {
     "placeholders": { "date": { "type": "String" } }
@@ -885,6 +1498,10 @@
   "@budgetDaysLeft": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "budgetEndsInDays": "{count, plural, =0{Último día} one{Termina en {count} día} other{Termina en {count} días}}",
+  "@budgetEndsInDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetProgressBreakdown": "{spent} de {amount}",
   "@budgetProgressBreakdown": {
     "placeholders": {
@@ -892,14 +1509,73 @@
       "amount": { "type": "String" }
     }
   },
-  "budgetActivityTitle": "Actividad del periodo",
+  "budgetActivityTitle": "Movimientos del periodo",
   "@budgetActivityTitle": {},
+  "budgetActivityCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
+  "@budgetActivityCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
-  "budgetLoadMore": "Cargar más",
+  "budgetScheduledLabel": "Programado",
+  "@budgetScheduledLabel": {},
+  "budgetScheduledEntrySub": "{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}",
+  "@budgetScheduledEntrySub": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "budgetScheduledEntrySubRisk": "Excedería el presupuesto por {amount}",
+  "@budgetScheduledEntrySubRisk": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledCaption": "+ {amount} programado (llega a {pct}% si se ejecuta)",
+  "@budgetScheduledCaption": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "pct": { "type": "int" }
+    }
+  },
+  "budgetScheduledCaptionRisk": "+ {amount} programado — excedería el presupuesto por {overage}",
+  "@budgetScheduledCaptionRisk": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "overage": { "type": "String" }
+    }
+  },
+  "budgetScheduledFreeCaption": "{amount} quedarían libres si apruebas los programados",
+  "@budgetScheduledFreeCaption": {
+    "description": "Sublínea del hero del detalle de presupuesto: cuánto quedaría libre tras aprobar los pagos programados del período. Solo cuando el margen es no negativo.",
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "budgetScheduledSheetTitle": "Pagos programados del período",
+  "@budgetScheduledSheetTitle": {},
+  "budgetScheduledSheetSeeAll": "Ver todos los pagos programados",
+  "@budgetScheduledSheetSeeAll": {
+    "description": "Enlace al pie del sheet de pagos programados del presupuesto que abre la lista global de Pagos programados."
+  },
+  "budgetScheduledSheetHint": "Suman {amount} de lo reservado este período.",
+  "@budgetScheduledSheetHint": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetScheduledSheetEmpty": "Aún no tienes pagos programados en este período",
+  "@budgetScheduledSheetEmpty": {},
+  "budgetScheduledRowSubtitle": "Próximo: {date} · {accountName}",
+  "@budgetScheduledRowSubtitle": {
+    "description": "Subtítulo de una fila de pago programado dentro del presupuesto: fecha de la próxima ocurrencia y la cuenta asociada.",
+    "placeholders": {
+      "date": { "type": "String" },
+      "accountName": { "type": "String" }
+    }
+  },
+  "budgetLoadMore": "Ver más",
   "@budgetLoadMore": {},
-  "budgetOpenInTransactions": "Abrir en Movimientos",
-  "@budgetOpenInTransactions": {},
+  "budgetOneOffWindow": "Ventana única",
+  "@budgetOneOffWindow": {},
+  "budgetPeriodPreviousTooltip": "Periodo anterior",
+  "@budgetPeriodPreviousTooltip": {},
+  "budgetPeriodNextTooltip": "Periodo siguiente",
+  "@budgetPeriodNextTooltip": {},
   "budgetPeriodStatusCurrent": "vigente",
   "@budgetPeriodStatusCurrent": {},
   "budgetPeriodStatusPast": "pasado",
@@ -910,9 +1586,13 @@
   "@budgetActionClose": {},
   "budgetActionDelete": "Eliminar",
   "@budgetActionDelete": {},
-  "budgetDeleteConfirmTitle": "¿Eliminar presupuesto?",
-  "@budgetDeleteConfirmTitle": {},
-  "budgetDeleteConfirmMessage": "Podrás recuperarlo desde la papelera.",
+  "budgetActionDeleteBudget": "Eliminar presupuesto",
+  "@budgetActionDeleteBudget": {},
+  "budgetActionAdjustAmount": "Ajustar monto — este período",
+  "@budgetActionAdjustAmount": {},
+  "budgetDetailActionsSubtitle": "Acciones del presupuesto",
+  "@budgetDetailActionsSubtitle": {},
+  "budgetDeleteConfirmMessage": "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.",
   "@budgetDeleteConfirmMessage": {},
   "budgetFormNewTitle": "Nuevo presupuesto",
   "@budgetFormNewTitle": {},
@@ -920,8 +1600,22 @@
   "@budgetFormEditTitle": {},
   "budgetFormNameLabel": "Nombre",
   "@budgetFormNameLabel": {},
+  "budgetFormIconNameLabel": "Ícono y nombre",
+  "@budgetFormIconNameLabel": {},
+  "budgetFormRowValue": "{label}: {value}",
+  "@budgetFormRowValue": {
+    "placeholders": { "label": { "type": "String" }, "value": { "type": "String" } }
+  },
+  "budgetFormScopeAllHint": "Incluye todo tu gasto: todas las cuentas y categorías.",
+  "@budgetFormScopeAllHint": {},
   "budgetFormNameHint": "Ej. Mercado del mes",
   "@budgetFormNameHint": {},
+  "budgetErrorName": "Escribe un nombre para el presupuesto.",
+  "@budgetErrorName": {},
+  "budgetErrorAmount": "Ingresa un monto mayor a cero.",
+  "@budgetErrorAmount": {},
+  "budgetErrorEndDate": "Elige una fecha de fin posterior al inicio.",
+  "@budgetErrorEndDate": {},
   "budgetFormIconLabel": "Ícono",
   "@budgetFormIconLabel": {},
   "budgetFormAmountLabel": "Monto",
@@ -946,6 +1640,8 @@
   "@budgetFormStartLabel": {},
   "budgetFormEndLabel": "Fin",
   "@budgetFormEndLabel": {},
+  "budgetFormEndHint": "Elegir fecha",
+  "@budgetFormEndHint": {},
   "budgetFormRepeatUntilLabel": "Repetir hasta",
   "@budgetFormRepeatUntilLabel": {},
   "budgetFormForever": "Para siempre",
@@ -976,21 +1672,83 @@
   "@budgetFormCreateCta": {},
   "budgetFormSaveCta": "Guardar cambios",
   "@budgetFormSaveCta": {},
-  "budgetThresholdTitle": "Umbral de alerta",
+  "budgetThresholdTitle": "Avisarme cuando gaste el…",
   "@budgetThresholdTitle": {},
+  "budgetThresholdHint": "Te enviaremos un aviso local al llegar a ese % — sin costo.",
+  "@budgetThresholdHint": {},
+  "budgetThresholdRecommended": "Recomendado",
+  "@budgetThresholdRecommended": {},
   "budgetThresholdCustom": "Personalizado",
   "@budgetThresholdCustom": {},
+  "budgetThresholdCustomSubtitle": "Define tu propio %",
+  "@budgetThresholdCustomSubtitle": {},
+  "budgetThresholdCustomTitle": "Define tu propio %",
+  "@budgetThresholdCustomTitle": {},
+  "budgetThresholdCustomHint": "Ajusta el porcentaje en pasos de 5.",
+  "@budgetThresholdCustomHint": {},
+  "budgetThresholdOffSubtitle": "Desactiva la alerta de este presupuesto",
+  "@budgetThresholdOffSubtitle": {},
+  "budgetThresholdDecrease": "Bajar el porcentaje",
+  "@budgetThresholdDecrease": {},
+  "budgetThresholdIncrease": "Subir el porcentaje",
+  "@budgetThresholdIncrease": {},
   "budgetIconSheetTitle": "Elegir ícono",
   "@budgetIconSheetTitle": {},
+  "budgetIconSheetHint": "El ícono se muestra en un fondo neutro — sin color por presupuesto.",
+  "@budgetIconSheetHint": {},
   "budgetsHistoryTitle": "Histórico",
   "@budgetsHistoryTitle": {},
   "budgetsHistoryEmpty": "No has cerrado ningún presupuesto",
   "@budgetsHistoryEmpty": {},
+  "budgetsHistoryEmptyDescription": "Cuando cierres uno, lo encontrarás aquí para consultarlo o reactivarlo",
+  "@budgetsHistoryEmptyDescription": {},
   "budgetsHistoryLoading": "Cargando tu histórico",
   "@budgetsHistoryLoading": {},
+  "budgetDetailLoading": "Cargando el presupuesto",
+  "@budgetDetailLoading": {},
+  "budgetFormLoading": "Cargando el formulario",
+  "@budgetFormLoading": {},
+  "budgetClosedOn": "Cerrado {date}",
+  "@budgetClosedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "budgetsHistorySubtitle": "Presupuestos cerrados",
+  "@budgetsHistorySubtitle": {},
+  "budgetsHistoryHint": "Los conservas sin borrar. Puedes reactivarlos cuando quieras.",
+  "@budgetsHistoryHint": {},
+  "budgetsMenuOptions": "Opciones",
+  "@budgetsMenuOptions": {},
+  "budgetsMenuHistorySubtitle": "Presupuestos cerrados",
+  "@budgetsMenuHistorySubtitle": {},
+  "budgetsMenuEnableEnvelope": "Activar modo sobres",
+  "@budgetsMenuEnableEnvelope": {},
+  "budgetsMenuEnableEnvelopeSubtitle": "Reparte todo tu ingreso en sobres",
+  "@budgetsMenuEnableEnvelopeSubtitle": {},
+  "budgetsMenuDisableEnvelopeSubtitle": "Vuelve a la lista normal",
+  "@budgetsMenuDisableEnvelopeSubtitle": {},
+  "budgetsEnvelopeBadge": "Modo sobres",
+  "@budgetsEnvelopeBadge": {},
+  "budgetsEnvelopeIncome": "Ingreso {income}",
+  "@budgetsEnvelopeIncome": {
+    "placeholders": { "income": { "type": "String" } }
+  },
+  "budgetsEnvelopeAssigned": "Asignado {assigned}",
+  "@budgetsEnvelopeAssigned": {
+    "placeholders": { "assigned": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudge": "Casi lo logras: dale un trabajo a los {amount} restantes.",
+  "@budgetsEnvelopeNudge": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetsEnvelopeNudgeOver": "Asignaste {amount} más de lo que entró. Ajusta un sobre cuando quieras.",
+  "@budgetsEnvelopeNudgeOver": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAssignedLabel": "Asignado",
+  "@budgetAssignedLabel": {},
   "budgetReactivate": "Reactivar",
   "@budgetReactivate": {},
-  "budgetResultWithin": "Dentro del presupuesto",
+  "budgetResultWithin": "Terminó dentro del presupuesto",
   "@budgetResultWithin": {},
   "budgetResultOverspent": "Excedido por {amount}",
   "@budgetResultOverspent": {
@@ -1003,29 +1761,424 @@
   },
   "settingsEnvelopeMode": "Modo sobres",
   "@settingsEnvelopeMode": {},
-  "settingsEnvelopeModeSubtitle": "Reparte tu ingreso del mes entre tus presupuestos",
+  "settingsEnvelopeModeSubtitle": "Reparte todo tu ingreso en sobres",
   "@settingsEnvelopeModeSubtitle": {},
   "settingsEnvelopeWhatIs": "¿Qué es?",
   "@settingsEnvelopeWhatIs": {},
   "envelopeInfoTitle": "¿Qué es el modo sobres?",
   "@envelopeInfoTitle": {},
-  "envelopeInfoBody": "Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.",
+  "envelopeInfoBody": "Es una forma de presupuestar donde le das un trabajo a cada peso. Repartes todo tu ingreso del mes en 'sobres' —tus presupuestos— hasta que no quede nada sin asignar.",
   "@envelopeInfoBody": {},
+  "envelopeInfoBulletJobs": "Así decides a dónde va tu plata antes de gastarla: gastar, ahorrar o pagar deudas.",
+  "@envelopeInfoBulletJobs": {},
+  "envelopeInfoBulletZero": "Cuando 'Sin asignar' llega a $0, cada peso tiene un propósito.",
+  "@envelopeInfoBulletZero": {},
+  "envelopeInfoReassure": "Es opcional y no te bloquea nada. Actívalo o desactívalo cuando quieras.",
+  "@envelopeInfoReassure": {},
+  "envelopeInfoActivate": "Activar modo sobres",
+  "@envelopeInfoActivate": {},
   "envelopeInfoGotIt": "Entendido",
   "@envelopeInfoGotIt": {},
   "budgetsMenuDisableEnvelope": "Desactivar modo sobres",
   "@budgetsMenuDisableEnvelope": {},
-  "budgetsEnvelopeUnassignedLabel": "Sin asignar",
+  "budgetsEnvelopeUnassignedLabel": "Sin asignar este mes",
   "@budgetsEnvelopeUnassignedLabel": {},
   "budgetsEnvelopeOverLabel": "Asignado de más",
   "@budgetsEnvelopeOverLabel": {},
   "budgetsEnvelopeAllAssigned": "Cada peso tiene un trabajo",
   "@budgetsEnvelopeAllAssigned": {},
-  "budgetsEnvelopeCaption": "{income} de ingreso · {assigned} asignado",
-  "@budgetsEnvelopeCaption": {
+  "firstLaunchOfflineTitle": "Conéctate para continuar",
+  "@firstLaunchOfflineTitle": {
+    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
+  },
+  "firstLaunchOfflineSubtitle": "Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.",
+  "@firstLaunchOfflineSubtitle": {},
+  "firstLaunchOfflineRetrying": "Reintentando...",
+  "@firstLaunchOfflineRetrying": {
+    "description": "Label del botón Reintentar mientras la petición está en curso."
+  },
+  "splashLoadingCaption": "Cargando tus finanzas...",
+  "@splashLoadingCaption": {
+    "description": "Caption bajo el spinner indeterminado del splash inicial (design-system/billetudo/pages/splash.md, nodo M0TfmS), mientras arrancan Drift/PowerSync antes de mostrar la app real."
+  },
+  "brandWordmarkPrefix": "b",
+  "@brandWordmarkPrefix": {
+    "description": "Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string."
+  },
+  "brandWordmarkDotlessI": "ı",
+  "@brandWordmarkDotlessI": {
+    "description": "La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales."
+  },
+  "brandWordmarkSuffix": "lletudo",
+  "@brandWordmarkSuffix": {
+    "description": "Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real."
+  },
+  "scheduledPaymentsTitle": "Pagos programados",
+  "@scheduledPaymentsTitle": {},
+  "scheduledPaymentsAdd": "Nuevo pago programado",
+  "@scheduledPaymentsAdd": {},
+  "scheduledPaymentsLoading": "Cargando tus pagos programados",
+  "@scheduledPaymentsLoading": {},
+  "scheduledPaymentUntitled": "Pago programado",
+  "@scheduledPaymentUntitled": {},
+  "scheduledPaymentsEmptyMessage": "Aún no tienes pagos programados",
+  "@scheduledPaymentsEmptyMessage": {},
+  "scheduledPaymentsErrorTitle": "No pudimos cargar tus pagos programados",
+  "@scheduledPaymentsErrorTitle": {},
+  "scheduledPaymentsErrorLocalFirst": "Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.",
+  "@scheduledPaymentsErrorLocalFirst": {},
+  "scheduledPaymentsActiveCount": "Activos · {count}",
+  "@scheduledPaymentsActiveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingTitle": "Por confirmar",
+  "@scheduledPendingTitle": {},
+  "scheduledPendingEmpty": "No tienes pagos por confirmar.",
+  "@scheduledPendingEmpty": {},
+  "scheduledReviewAll": "Revisar todas",
+  "@scheduledReviewAll": {},
+  "scheduledPendingBadge": "Pendiente de confirmar",
+  "@scheduledPendingBadge": {},
+  "scheduledOnceBadge": "Pago único",
+  "@scheduledOnceBadge": {},
+  "scheduledInactiveBadge": "Inactivo",
+  "@scheduledInactiveBadge": {},
+  "scheduledConfirmationSheetTitle": "Confirmar pago",
+  "@scheduledConfirmationSheetTitle": {},
+  "scheduledConfirmationSheetConfirm": "Confirmar",
+  "@scheduledConfirmationSheetConfirm": {},
+  "scheduledConfirmationSheetSkip": "Omitir",
+  "@scheduledConfirmationSheetSkip": {},
+  "scheduledConfirmationSheetSnooze": "Posponer",
+  "@scheduledConfirmationSheetSnooze": {},
+  "scheduledGuidedReviewPosition": "Pago {position} de {total}",
+  "@scheduledGuidedReviewPosition": {
     "placeholders": {
-      "income": { "type": "String" },
-      "assigned": { "type": "String" }
+      "position": { "type": "int" },
+      "total": { "type": "int" }
     }
-  }
+  },
+  "scheduledUndoSkipMessage": "Pago omitido",
+  "@scheduledUndoSkipMessage": {},
+  "scheduledUndoSnoozeMessage": "Pago pospuesto",
+  "@scheduledUndoSnoozeMessage": {},
+  "scheduledSnoozeSheetTitle": "Posponer pago",
+  "@scheduledSnoozeSheetTitle": {},
+  "scheduledSnoozeSheetSave": "Posponer",
+  "@scheduledSnoozeSheetSave": {},
+  "scheduledDeleteSheetTitle": "¿Eliminar este pago programado?",
+  "@scheduledDeleteSheetTitle": {},
+  "scheduledDeleteSheetMessage": "Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.",
+  "@scheduledDeleteSheetMessage": {},
+  "scheduledDeleteSheetTitleInstallment": "¿Eliminar esta cuota?",
+  "@scheduledDeleteSheetTitleInstallment": {},
+  "scheduledDeleteSheetMessageInstallment": "Se deja de agendar la cuota. La deuda y los abonos que ya registró se conservan en tu historial.",
+  "@scheduledDeleteSheetMessageInstallment": {},
+  "scheduledPaymentFormNewTitle": "Nuevo pago programado",
+  "@scheduledPaymentFormNewTitle": {},
+  "scheduledPaymentFormEditTitle": "Editar pago programado",
+  "@scheduledPaymentFormEditTitle": {},
+  "scheduledPaymentFormNextDateLabel": "Primer pago",
+  "@scheduledPaymentFormNextDateLabel": {},
+  "scheduledPaymentFormOnceDateLabel": "Fecha del pago",
+  "@scheduledPaymentFormOnceDateLabel": {},
+  "scheduledPaymentFormModeSectionLabel": "Al llegar la fecha",
+  "@scheduledPaymentFormModeSectionLabel": {},
+  "scheduledPaymentFormTagNew": "Etiqueta",
+  "@scheduledPaymentFormTagNew": {},
+  "scheduledPaymentFormFrequencyLabel": "Frecuencia",
+  "@scheduledPaymentFormFrequencyLabel": {},
+  "scheduledPaymentFormCategoryMoreLabel": "Otra",
+  "@scheduledPaymentFormCategoryMoreLabel": {},
+  "scheduledPaymentErrorAccount": "Elige una cuenta.",
+  "@scheduledPaymentErrorAccount": {},
+  "scheduledPaymentErrorAmount": "Ingresa un monto mayor a cero.",
+  "@scheduledPaymentErrorAmount": {},
+  "scheduledPaymentErrorTransferAccount": "Elige la cuenta de destino.",
+  "@scheduledPaymentErrorTransferAccount": {},
+  "scheduledPaymentErrorCategory": "Elige una categoría.",
+  "@scheduledPaymentErrorCategory": {},
+  "scheduledPaymentInstallmentAmountExceedsError": "La cuota no puede superar el saldo de la deuda.",
+  "@scheduledPaymentInstallmentAmountExceedsError": {},
+  "scheduledPaymentFormIntervalStepperLabel": "Repetir cada",
+  "@scheduledPaymentFormIntervalStepperLabel": {},
+  "scheduledPaymentFormEndDateLabel": "Termina",
+  "@scheduledPaymentFormEndDateLabel": {},
+  "scheduledPaymentFormEndDateNone": "Para siempre",
+  "@scheduledPaymentFormEndDateNone": {},
+  "scheduledPaymentFormModeAutomaticTitle": "Automático",
+  "@scheduledPaymentFormModeAutomaticTitle": {},
+  "scheduledPaymentFormModeAutomaticSubtitle": "Se registra solo al llegar la fecha",
+  "@scheduledPaymentFormModeAutomaticSubtitle": {},
+  "scheduledPaymentFormModeManualTitle": "Manual",
+  "@scheduledPaymentFormModeManualTitle": {},
+  "scheduledPaymentFormModeManualSubtitle": "Por ahora deberás confirmarlo tú mismo",
+  "@scheduledPaymentFormModeManualSubtitle": {
+    "description": "TEMPORAL (2026-07-21): aún no existen notificaciones/recordatorios. Revertir a un texto que prometa un aviso automático (ej. 'Te avisamos para que confirmes antes de afectar tu saldo') cuando se implemente el sistema de notificaciones."
+  },
+  "scheduledPaymentFormDeleteAction": "Eliminar pago programado",
+  "@scheduledPaymentFormDeleteAction": {},
+  "scheduledPaymentInstallmentTitle": "Configurar cuota",
+  "@scheduledPaymentInstallmentTitle": {},
+  "scheduledPaymentInstallmentEditTitle": "Editar cuota",
+  "@scheduledPaymentInstallmentEditTitle": {},
+  "scheduledPaymentInstallmentDeleteAction": "Eliminar cuota",
+  "@scheduledPaymentInstallmentDeleteAction": {},
+  "scheduledPaymentInstallmentBanner": "Se crea un pago programado enlazado a esta deuda. Confírmalo o pospónlo en Pagos programados.",
+  "@scheduledPaymentInstallmentBanner": {},
+  "scheduledPaymentDetailLinkedDebtLabel": "Cuota de",
+  "@scheduledPaymentDetailLinkedDebtLabel": {},
+  "scheduledDebtChipLabel": "Deuda",
+  "@scheduledDebtChipLabel": {},
+  "scheduledFrequencyOnce": "Solo una vez",
+  "@scheduledFrequencyOnce": {},
+  "scheduledFrequencyDaily": "cada día",
+  "@scheduledFrequencyDaily": {},
+  "scheduledFrequencyWeekly": "cada semana",
+  "@scheduledFrequencyWeekly": {},
+  "scheduledFrequencyMonthly": "cada mes",
+  "@scheduledFrequencyMonthly": {},
+  "scheduledFrequencyYearly": "cada año",
+  "@scheduledFrequencyYearly": {},
+  "scheduledFrequencyChipOnce": "Único",
+  "@scheduledFrequencyChipOnce": {},
+  "scheduledFrequencyChipDaily": "Día",
+  "@scheduledFrequencyChipDaily": {},
+  "scheduledFrequencyChipWeekly": "Semana",
+  "@scheduledFrequencyChipWeekly": {},
+  "scheduledFrequencyChipMonthly": "Mes",
+  "@scheduledFrequencyChipMonthly": {},
+  "scheduledFrequencyChipYearly": "Año",
+  "@scheduledFrequencyChipYearly": {},
+  "scheduledPaymentDetailTitle": "Detalle",
+  "@scheduledPaymentDetailTitle": {},
+  "scheduledPaymentDetailNextPayment": "Próximo pago: {date}",
+  "@scheduledPaymentDetailNextPayment": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentDetailHistoryTitle": "Historial",
+  "@scheduledPaymentDetailHistoryTitle": {},
+  "scheduledPaymentDetailHistoryEmpty": "Todavía no se ha generado ningún movimiento de este pago programado.",
+  "@scheduledPaymentDetailHistoryEmpty": {},
+  "scheduledPaymentDetailHistorySeeAll": "Ver historial completo ({count})",
+  "@scheduledPaymentDetailHistorySeeAll": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledSkippedBadge": "Omitido",
+  "@scheduledSkippedBadge": {},
+  "scheduledRecoverAction": "Recuperar",
+  "@scheduledRecoverAction": {},
+  "scheduledRecoverMessage": "Pago recuperado",
+  "@scheduledRecoverMessage": {},
+  "scheduledPaymentDetailHeroLabel": "PRÓXIMO PAGO",
+  "@scheduledPaymentDetailHeroLabel": {},
+  "scheduledPaymentDetailRecurrenceOnce": "Una sola vez el {date}",
+  "@scheduledPaymentDetailRecurrenceOnce": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentDetailRecurrenceForever": "Se repite {unit} desde el {date}, para siempre",
+  "@scheduledPaymentDetailRecurrenceForever": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "scheduledPaymentDetailRecurrenceUntil": "Se repite {unit} desde el {date}, hasta el {endDate}",
+  "@scheduledPaymentDetailRecurrenceUntil": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "date": { "type": "String" },
+      "endDate": { "type": "String" }
+    }
+  },
+  "scheduledRecurrenceUnitDaily": "cada día",
+  "@scheduledRecurrenceUnitDaily": {},
+  "scheduledRecurrenceUnitDailyInterval": "cada {interval} días",
+  "@scheduledRecurrenceUnitDailyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitWeekly": "cada semana",
+  "@scheduledRecurrenceUnitWeekly": {},
+  "scheduledRecurrenceUnitWeeklyInterval": "cada {interval} semanas",
+  "@scheduledRecurrenceUnitWeeklyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitMonthly": "cada mes",
+  "@scheduledRecurrenceUnitMonthly": {},
+  "scheduledRecurrenceUnitMonthlyInterval": "cada {interval} meses",
+  "@scheduledRecurrenceUnitMonthlyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledRecurrenceUnitYearly": "cada año",
+  "@scheduledRecurrenceUnitYearly": {},
+  "scheduledRecurrenceUnitYearlyInterval": "cada {interval} años",
+  "@scheduledRecurrenceUnitYearlyInterval": {
+    "placeholders": { "interval": { "type": "int" } }
+  },
+  "scheduledPaymentDetailModeLabel": "Modo de registro",
+  "@scheduledPaymentDetailModeLabel": {},
+  "scheduledPaymentDetailModeAutomatic": "Automático",
+  "@scheduledPaymentDetailModeAutomatic": {},
+  "scheduledPaymentDetailModeManual": "Manual",
+  "@scheduledPaymentDetailModeManual": {},
+  "scheduledPaymentDetailAccountLabel": "Cuenta",
+  "@scheduledPaymentDetailAccountLabel": {},
+  "scheduledPaymentDetailStatusLabel": "Estado",
+  "@scheduledPaymentDetailStatusLabel": {},
+  "scheduledPaymentDetailStatusActive": "Activa",
+  "@scheduledPaymentDetailStatusActive": {},
+  "scheduledPaymentDetailStatusFinished": "Terminada",
+  "@scheduledPaymentDetailStatusFinished": {},
+  "scheduledPaymentDetailHeroLabelExecuted": "PAGO EJECUTADO",
+  "@scheduledPaymentDetailHeroLabelExecuted": {},
+  "scheduledPaymentDetailConfirmNowCta": "Confirmar ahora",
+  "@scheduledPaymentDetailConfirmNowCta": {},
+  "scheduledPaymentDetailConfirmNowError": "No pudimos confirmar este pago ahora. Intenta de nuevo.",
+  "@scheduledPaymentDetailConfirmNowError": {},
+  "scheduledPaymentDetailTagsLabel": "Etiquetas",
+  "@scheduledPaymentDetailTagsLabel": {},
+  "scheduledPaymentDetailTagsEmpty": "Sin etiquetas",
+  "@scheduledPaymentDetailTagsEmpty": {},
+  "scheduledPaymentBridgeTitle": "¿Es un pago programado?",
+  "@scheduledPaymentBridgeTitle": {},
+  "scheduledPaymentBridgeMessage": "Elegiste una fecha futura. Un movimiento con fecha futura se registra como pago programado; así se aplica solo cuando llegue el día.",
+  "@scheduledPaymentBridgeMessage": {},
+  "scheduledPaymentBridgeAccept": "Sí, programarlo",
+  "@scheduledPaymentBridgeAccept": {},
+  "scheduledPaymentBridgeDecline": "Cambiar la fecha",
+  "@scheduledPaymentBridgeDecline": {},
+  "scheduledFinishedCount": "Terminados · {count}",
+  "@scheduledFinishedCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledFinishedCaption": "Ya no generan movimientos. Los que crearon siguen en tus cuentas.",
+  "@scheduledFinishedCaption": {},
+  "scheduledFinishedCardChip": "Terminada",
+  "@scheduledFinishedCardChip": {},
+  "scheduledFinishedErrorTitle": "No pudimos cargar tus pagos terminados",
+  "@scheduledFinishedErrorTitle": {},
+  "scheduledFinishedLastPayment": "Último pago · {date}",
+  "@scheduledFinishedLastPayment": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduledPaymentsNoActiveMessage": "Por ahora no tienes pagos programados activos",
+  "@scheduledPaymentsNoActiveMessage": {},
+  "scheduledPaymentsNoActiveDescription": "{count, plural, one{Tu pago terminado sigue disponible en «Terminados».} other{Tus {count} pagos terminados siguen disponibles en «Terminados».}}",
+  "@scheduledPaymentsNoActiveDescription": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingCardOverflow": "Ver los otros {count} pendientes",
+  "@scheduledPendingCardOverflow": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingCardTitle": "Por confirmar {count}",
+  "@scheduledPendingCardTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledPendingCardCaption": "Aún no afectan tu saldo",
+  "@scheduledPendingCardCaption": {},
+  "scheduledPaymentsEmptyCta": "Programar un pago",
+  "@scheduledPaymentsEmptyCta": {},
+  "scheduledManualNotifyChip": "Te avisamos",
+  "@scheduledManualNotifyChip": {},
+  "scheduledDueToday": "Vence hoy",
+  "@scheduledDueToday": {},
+  "scheduledDueOneDayAgo": "hace 1 día",
+  "@scheduledDueOneDayAgo": {},
+  "scheduledDueDaysAgo": "hace {count} días",
+  "@scheduledDueDaysAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledDueInDays": "en {count} días",
+  "@scheduledDueInDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scheduledDueInOneDay": "en 1 día",
+  "@scheduledDueInOneDay": {},
+  "scheduledConfirmationSheetScopeNote": "Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer {amount}.",
+  "@scheduledConfirmationSheetScopeNote": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "scheduledConfirmationSheetAccumulatedTitle": "Tienes {count} pagos de {template} sin confirmar",
+  "@scheduledConfirmationSheetAccumulatedTitle": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "template": { "type": "String" }
+    }
+  },
+  "scheduledConfirmationSheetAccumulatedSub": "Ahora confirmas la más antigua, del {date}. {others, plural, =1{La otra sigue en tu lista.} other{Las otras {others} siguen en tu lista.}}",
+  "@scheduledConfirmationSheetAccumulatedSub": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "others": { "type": "int" }
+    }
+  },
+  "scheduledConfirmationSheetAmountLabel": "Monto a registrar",
+  "@scheduledConfirmationSheetAmountLabel": {},
+  "scheduledConfirmationSheetTransferAmountLabel": "Monto a transferir",
+  "@scheduledConfirmationSheetTransferAmountLabel": {},
+  "scheduledConfirmationSheetSourceAccountLabel": "Cuenta origen",
+  "@scheduledConfirmationSheetSourceAccountLabel": {},
+  "scheduledConfirmationSheetTargetAccountLabel": "Cuenta destino",
+  "@scheduledConfirmationSheetTargetAccountLabel": {},
+  "scheduledDetailActionsSheetSubtitle": "Acciones del pago programado",
+  "@scheduledDetailActionsSheetSubtitle": {},
+  "scheduledDetailActionsSnooze": "Posponer este pago",
+  "@scheduledDetailActionsSnooze": {},
+  "scheduledDetailActionsDelete": "Eliminar pago programado",
+  "@scheduledDetailActionsDelete": {},
+  "scheduledDetailActionsDeleteInstallment": "Eliminar cuota",
+  "@scheduledDetailActionsDeleteInstallment": {},
+  "scheduledSnoozeSheetSectionTitle": "Elige la nueva fecha",
+  "@scheduledSnoozeSheetSectionTitle": {},
+  "scheduledConfirmationSheetEditTooltip": "Editar plantilla",
+  "@scheduledConfirmationSheetEditTooltip": {},
+  "scheduledGuidedReviewExit": "Salir",
+  "@scheduledGuidedReviewExit": {},
+  "scheduledGuidedReviewConfirmNext": "Confirmar y siguiente",
+  "@scheduledGuidedReviewConfirmNext": {},
+  "scheduledSnoozeContextLine": "Vencía el {date} · muévelo hacia adelante",
+  "@scheduledSnoozeContextLine": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "budgetAdjustSheetTitle": "Ajustar monto",
+  "@budgetAdjustSheetTitle": {},
+  "budgetAdjustCurrentAmountInline": "Actual {amount}",
+  "@budgetAdjustCurrentAmountInline": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "budgetAdjustNewAmountLabel": "Nuevo monto · {range}",
+  "@budgetAdjustNewAmountLabel": {
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "budgetAdjustExplainer": "El {resumeDate} vuelve a {originalAmount} automáticamente.",
+  "@budgetAdjustExplainer": {
+    "placeholders": {
+      "resumeDate": { "type": "String" },
+      "originalAmount": { "type": "String" }
+    }
+  },
+  "budgetAdjustApplyCta": "Aplicar cambios",
+  "@budgetAdjustApplyCta": {},
+  "budgetAdjustRemoveCta": "Revertir ajuste",
+  "@budgetAdjustRemoveCta": {},
+  "budgetAdjustBannerLabel": "Ajuste de monto",
+  "@budgetAdjustBannerLabel": {},
+  "budgetAdjustBannerSub": "{amount} · {range}",
+  "@budgetAdjustBannerSub": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "range": { "type": "String" }
+    }
+  },
+  "budgetAdjustScheduledSnackbar": "Ajuste programado para el período seleccionado.",
+  "@budgetAdjustScheduledSnackbar": {},
+  "budgetAdjustUpdatedSnackbar": "Ajuste actualizado.",
+  "@budgetAdjustUpdatedSnackbar": {},
+  "budgetAdjustCancelledSnackbar": "Ajuste revertido — el período vuelve al monto habitual.",
+  "@budgetAdjustCancelledSnackbar": {}
 }

@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,8 +8,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Release signing is driven by android/key.properties (gitignored). It holds
+// the UPLOAD key — Play App Signing re-signs the delivered APK with Google's
+// own key. If the file is absent (fresh clone, CI without secrets), we fall
+// back to debug signing so `flutter run --release` still works locally.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
+}
+
 android {
-    namespace = "com.camiloagudelo.billetudo"
+    namespace = "com.billetudo.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +34,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.camiloagudelo.billetudo"
+        applicationId = "com.billetudo.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -36,17 +50,45 @@ android {
         testInstrumentationRunnerArguments["clearPackageData"] = "true"
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Billetudo Dev")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "Billetudo")
+        }
+    }
+
     testOptions {
         // Required by PatrolJUnitRunner: runs each test in its own instance so
         // a crash in one scenario cannot take the rest of the suite down.
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Uses the upload key when key.properties is present; otherwise
+            // falls back to debug so local `flutter run --release` still works.
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

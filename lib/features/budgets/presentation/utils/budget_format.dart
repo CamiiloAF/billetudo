@@ -13,7 +13,18 @@ import '../../domain/entities/budget_scope.dart';
 abstract final class BudgetFormat {
   const BudgetFormat._();
 
-  static final DateFormat _dayMonth = DateFormat('d MMM', 'es_CO');
+  /// The form's date rows spell the month out — locale-aware, so es renders
+  /// "21 de julio de 2026" and en "July 21, 2026" (`a3gGPM/cb5On`). The compact
+  /// [dayMonth] is for the dense list/detail meta lines, not for a field the
+  /// user is about to change. [locale] comes from
+  /// `Localizations.localeOf(context).toString()`.
+  static String longDate(DateTime date, String locale) =>
+      DateFormat.yMMMMd(locale).format(date);
+
+  /// Compact day + short month ("30 jun" / "Jun 30"), locale-aware, as the
+  /// history's "Cerrado <fecha>" (`qlbT0`) and the meta lines spell it.
+  static String dayMonth(DateTime date, String locale) =>
+      DateFormat.MMMd(locale).format(date);
 
   /// Short scope label for the list/detail meta line (HU-04). Warns when the
   /// scope was narrowed but every referent is gone.
@@ -39,20 +50,21 @@ abstract final class BudgetFormat {
     AppLocalizations l10n,
     Budget budget,
     BudgetPeriodWindow window,
+    String locale,
   ) =>
       budget.isOneOff
-          ? l10n.budgetEndsOn(_dayMonth.format(window.lastDay))
-          : l10n.budgetResetsOn(_dayMonth.format(window.endExclusive));
+          ? l10n.budgetEndsOn(dayMonth(window.lastDay, locale))
+          : l10n.budgetResetsOn(dayMonth(window.endExclusive, locale));
 
   /// The explicit cycle range for the period stepper, e.g. "1–31 jul" or
   /// "21 jul – 20 ago".
-  static String rangeLabel(BudgetPeriodWindow window) {
+  static String rangeLabel(BudgetPeriodWindow window, String locale) {
     final start = window.start;
     final last = window.lastDay;
     if (start.year == last.year && start.month == last.month) {
-      return '${start.day}–${_dayMonth.format(last)}';
+      return '${start.day}–${dayMonth(last, locale)}';
     }
-    return '${_dayMonth.format(start)} – ${_dayMonth.format(last)}';
+    return '${dayMonth(start, locale)} – ${dayMonth(last, locale)}';
   }
 
   /// The hero's 2-part left caption: "82% · $492.000 de $600.000".
@@ -64,17 +76,120 @@ abstract final class BudgetFormat {
     const money = MoneyFormatter();
     return '${l10n.budgetPercent(progress.percent)} · '
         '${l10n.budgetProgressBreakdown(
-      money.format(progress.spentMinor, currencyCode: currency),
-      money.format(progress.amountMinor, currencyCode: currency),
+      money.formatSymbol(progress.spentMinor, currencyCode: currency),
+      money.formatSymbol(progress.amountMinor, currencyCode: currency),
     )}';
   }
 
-  /// The period stepper's inner label: "1–31 jul · vigente".
-  static String periodStepperLabel(
+  /// The hero's second caption line for what is "programado" (HU-12): `null`
+  /// when nothing is scheduled in the window. Reads as a projection, never
+  /// a fact already true — "excedería", never "excede" (MASTER.md).
+  static String? scheduledCaption(
     AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+  ) {
+    if (progress.scheduledMinor <= 0) {
+      return null;
+    }
+    const money = MoneyFormatter();
+    final scheduledAmount =
+        money.formatSymbol(progress.scheduledMinor, currencyCode: currency);
+    if (progress.isScheduledOverspendRisk) {
+      final overage = money.formatSymbol(
+        progress.scheduledOverageMinor,
+        currencyCode: currency,
+      );
+      return l10n.budgetScheduledCaptionRisk(scheduledAmount, overage);
+    }
+    return l10n.budgetScheduledCaption(
+        scheduledAmount, progress.committedPercent);
+  }
+
+  /// The hero's sub-line under [scheduledCaption] (bugfix item 10, `rzssO`):
+  /// how much would stay free after approving every scheduled payment in the
+  /// window. `null` unless something is scheduled and the projection still
+  /// leaves a non-negative margin — the overspend case is already stated by
+  /// [scheduledCaption]'s risk line (HU-12), so this never duplicates it.
+  static String? freeAfterScheduledCaption(
+    AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+  ) {
+    if (progress.scheduledMinor <= 0 || progress.freeAfterScheduledMinor < 0) {
+      return null;
+    }
+    const money = MoneyFormatter();
+    return l10n.budgetScheduledFreeCaption(
+      money.formatSymbol(
+        progress.freeAfterScheduledMinor,
+        currencyCode: currency,
+      ),
+    );
+  }
+
+  /// The "Programado" entry card's sub line (HU-12): the risk's overage takes
+  /// over the plain "N pagos próximos" count, same reasoning as
+  /// [scheduledCaption].
+  static String scheduledEntrySub(
+    AppLocalizations l10n,
+    BudgetProgress progress,
+    String currency,
+    int count,
+  ) {
+    if (progress.isScheduledOverspendRisk) {
+      const money = MoneyFormatter();
+      return l10n.budgetScheduledEntrySubRisk(
+        money.formatSymbol(progress.scheduledOverageMinor,
+            currencyCode: currency),
+      );
+    }
+    return l10n.budgetScheduledEntrySub(count);
+  }
+
+  /// The stepper's leading, bold half. A recurring budget steps through cycles
+  /// so it names the range ("1–31 jul"); a one-off has a single window, so
+  /// naming a range would suggest a navigation that does not exist — `QLn6w`
+  /// reads "Ventana única" instead.
+  static String stepperRange(
+    AppLocalizations l10n,
+    Budget budget,
     BudgetPeriodWindow window,
+    String locale,
   ) =>
-      '${rangeLabel(window)} · ${statusLabel(l10n, window.status)}';
+      budget.isOneOff ? l10n.budgetOneOffWindow : rangeLabel(window, locale);
+
+  /// The stepper's trailing, secondary half ("· vigente", "· termina el
+  /// 24 dic"). The bullet belongs to this text node in `NloPT/e6kYhx`.
+  static String stepperState(
+    AppLocalizations l10n,
+    Budget budget,
+    BudgetPeriodWindow window,
+    String locale,
+  ) =>
+      budget.isOneOff
+          ? '· ${l10n.budgetEndsOn(dayMonth(window.lastDay, locale))}'
+          : '· ${statusLabel(l10n, window.status)}';
+
+  /// The hero's right caption: "Restan 18 días" while the cycle repeats,
+  /// "Termina en 8 días" when the window is the budget's only one (`QLn6w`).
+  ///
+  /// `null` outside the running window: a period the stepper already labels
+  /// "pasado" (or "próximo") has no days left to announce — counting down a
+  /// closed cycle is simply false.
+  static String? daysLeftCaption(
+    AppLocalizations l10n,
+    Budget budget,
+    BudgetPeriodWindow window,
+    BudgetProgress progress,
+  ) {
+    if (!window.isCurrent) {
+      return null;
+    }
+    return budget.isOneOff
+        ? l10n.budgetEndsInDays(progress.daysLeft)
+        : l10n.budgetDaysLeft(progress.daysLeft);
+  }
 
   static String statusLabel(
     AppLocalizations l10n,

@@ -1,7 +1,10 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/bottom_sheet_base.dart';
 import 'package:billetudo/core/widgets/budget_usage_notice.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
+import 'package:billetudo/features/categories/domain/usecases/delete_category.dart';
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_root_with_subcategories_sheet.dart';
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_simple_sheet.dart';
 import 'package:billetudo/features/categories/presentation/widgets/sheets/confirm_delete_with_transactions_sheet.dart';
@@ -14,22 +17,33 @@ import '../pump_widget.dart';
 void main() {
   group('caso 1: sin dependientes', () {
     testWidgets(
-        'icono neutral (color primary, no destructivo) y las 2 acciones', (
+        'icono trash-2 en tono violeta (nunca rojo), sin título, y las '
+        '2 acciones', (
       tester,
     ) async {
       await tester.pumpAppWidget(const ConfirmDeleteSimpleSheet());
 
-      expect(find.text('¿Eliminar esta categoría?'), findsOneWidget);
+      // Reversible via papelera: icon + message only, no separate title, and
+      // the icon/button stay violeta ($primary), never a destructive red.
       expect(
-        find.textContaining('Podrás recuperarla después'),
+        find.textContaining('Podrás recuperarla luego desde la papelera'),
         findsOneWidget,
       );
       expect(find.text('Cancelar'), findsOneWidget);
       expect(find.text('Eliminar'), findsOneWidget);
-      // Es reversible vía papelera: nada de rojo/expense aquí.
-      // Uno en la cabecera del sheet, otro en el botón "Eliminar".
-      expect(find.byIcon(LucideIcons.trash), findsNWidgets(2));
+      // Both the header icon and the confirm button's icon are trash2 — never
+      // a destructive alert-triangle, and never the neutral `trash`.
+      expect(find.byIcon(LucideIcons.trash2), findsNWidgets(2));
       expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
+      expect(find.byIcon(LucideIcons.trash), findsNothing);
+
+      final context = tester.element(find.byType(ConfirmDeleteSimpleSheet));
+      final colors = context.colors;
+      final sheetMessage = tester.widget<SheetMessage>(
+        find.byType(SheetMessage),
+      );
+      expect(sheetMessage.iconColor, colors.primaryOnSoft);
+      expect(sheetMessage.iconBackground, colors.primarySoft);
     });
 
     testWidgets('tocar Eliminar resuelve `true`', (tester) async {
@@ -57,6 +71,7 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -64,52 +79,82 @@ void main() {
       );
 
       expect(
-        find.text('Tiene 3 movimientos asociados.'),
+        find.textContaining('"Restaurantes" tiene 3 movimientos asociados'),
         findsOneWidget,
       );
       expect(find.text('Reasignar a otra categoría'), findsOneWidget);
       expect(find.text('Dejar sin categoría'), findsOneWidget);
     });
 
-    testWidgets('"Dejar sin categoría" y Eliminar resuelven `clear`', (
-      tester,
-    ) async {
+    testWidgets(
+        '"Reasignar" es la opción por defecto: Continuar arranca '
+        'deshabilitado hasta elegir destino', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 1,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
         ),
       );
 
-      // "Dejar sin categoría" ya es la opción por defecto: Eliminar queda
-      // habilitado sin tocar nada más.
-      final deleteButton = tester.widget<FilledButton>(
+      // This step never deletes by itself, so the confirm button reads
+      // "Continuar" (never "Eliminar"), and stays disabled while "Reasignar"
+      // is selected without a resolved target.
+      expect(find.text('Eliminar'), findsNothing);
+      // `FilledButton.icon` returns a private `_FilledButtonWithIcon`
+      // subclass, so `find.byType(FilledButton)` (exact-type match) misses
+      // it — match by predicate instead.
+      final continueButton = tester.widget<FilledButton>(
         find.ancestor(
-          of: find.text('Eliminar'),
-          matching: find.byType(FilledButton),
+          of: find.text('Continuar'),
+          matching: find.byWidgetPredicate((widget) => widget is FilledButton),
         ),
       );
-      expect(deleteButton.onPressed, isNotNull);
+      expect(continueButton.onPressed, isNull);
     });
 
-    testWidgets(
-        'con "Reasignar" elegido pero sin categoría destino, Eliminar '
-        'queda deshabilitado', (tester) async {
-      await tester.pumpAppWidget(
-        const ConfirmDeleteWithTransactionsSheet(
-          transactionCount: 1,
-          kind: CategoryKind.expense,
-          excludingId: 'cat-1',
+    testWidgets('"Dejar sin categoría" habilita Continuar y resuelve `clear`', (
+      tester,
+    ) async {
+      TransactionResolution? result;
+      await tester.pumpWidget(
+        _wrapWithTrigger(
+          onPressed: (context) async {
+            result = await ConfirmDeleteWithTransactionsSheet.show(
+              context,
+              categoryName: 'Restaurantes',
+              transactionCount: 1,
+              kind: CategoryKind.expense,
+              excludingId: 'cat-1',
+            );
+          },
         ),
       );
 
-      // Simula el estado "reasignar elegido, sin picker resuelto" sin
-      // disparar el picker real (que necesita el contenedor de DI): el
-      // radio de reasignar no cambia `_choice` hasta que el picker resuelve
-      // algo, así que el botón sigue habilitado con "Dejar sin categoría".
-      // Esta prueba deja constancia de esa regla en vez de forzar el picker.
-      expect(find.text('Reasignar a otra categoría'), findsOneWidget);
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+
+      // Switch the radio choice away from the default "Reasignar" to
+      // "Dejar sin categoría", which resolves right away (no picker).
+      await tester.tap(find.text('Dejar sin categoría'));
+      await tester.pumpAndSettle();
+
+      // `FilledButton.icon` returns a private `_FilledButtonWithIcon`
+      // subclass, so `find.byType(FilledButton)` (exact-type match) misses
+      // it — match by predicate instead.
+      final continueButton = tester.widget<FilledButton>(
+        find.ancestor(
+          of: find.text('Continuar'),
+          matching: find.byWidgetPredicate((widget) => widget is FilledButton),
+        ),
+      );
+      expect(continueButton.onPressed, isNotNull);
+
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+
+      expect(result, const TransactionResolution.clear());
     });
   });
 
@@ -119,12 +164,19 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),
       );
 
-      expect(find.text('Esta categoría tiene subcategorías'), findsOneWidget);
+      // `w9ixr`'s title is `enabled:false`: a single message with the real
+      // category name and subcategory count interpolated, no separate title.
+      expect(
+        find.textContaining('"Transporte" tiene 2 subcategorías activas'),
+        findsOneWidget,
+      );
       expect(find.byIcon(LucideIcons.info), findsOneWidget);
       expect(find.text('Reasignar subcategorías'), findsOneWidget);
       expect(find.text('Eliminar todo en cascada'), findsOneWidget);
@@ -137,6 +189,8 @@ void main() {
     ) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),
@@ -186,6 +240,7 @@ void main() {
         'aviso con el conteo correcto', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -204,6 +259,7 @@ void main() {
         'ningún aviso', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteWithTransactionsSheet(
+          categoryName: 'Restaurantes',
           transactionCount: 3,
           kind: CategoryKind.expense,
           excludingId: 'cat-1',
@@ -226,6 +282,8 @@ void main() {
         'aviso con el conteo correcto', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
           budgetCount: 4,
@@ -243,6 +301,8 @@ void main() {
         'ningún aviso', (tester) async {
       await tester.pumpAppWidget(
         const ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: 'Transporte',
+          subcategoryCount: 2,
           kind: CategoryKind.expense,
           rootId: 'root-1',
         ),

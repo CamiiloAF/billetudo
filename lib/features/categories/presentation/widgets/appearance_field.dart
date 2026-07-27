@@ -26,6 +26,7 @@ class AppearanceField extends StatelessWidget {
 
   final String? iconName;
   final String? colorToken;
+
   final VoidCallback onTap;
 
   @override

@@ -7,12 +7,17 @@ import '../../../../core/theme/app_theme.dart';
 import '../cubit/transaction_form_state.dart';
 
 /// The anchored calculator keypad of the transaction form (Pencil `Keypad`
-/// node): a 4-column grid in calculator order (7-8-9 on top) with the four
-/// operators down the right edge and a full-width `=` on its own row.
+/// node `gHDTi`): a 4-column grid in calculator order (7-8-9 on top) with the
+/// four operators down the right edge, and a last row where the `=` fills the
+/// width alongside a fixed-width primary Confirm key (`IBiRL`, `check`).
 ///
 /// Purely a dumb input widget: it only reports which key was tapped. Whether it
 /// shows at all is up to the caller (`TransactionFormState.isKeypadVisible`);
 /// collapsing it lives in the Zona Fija header chevron, not here.
+///
+/// When [onConfirm] is null or [confirmEnabled] is false (e.g. the payment
+/// confirmation sheet, which carries its own Confirmar), the Confirm key is
+/// dropped and the `=` returns to full width.
 class NumericKeypad extends StatelessWidget {
   const NumericKeypad({
     required this.onDigit,
@@ -20,6 +25,9 @@ class NumericKeypad extends StatelessWidget {
     required this.onOperator,
     required this.onEquals,
     required this.onBackspace,
+    this.onBackspaceLongPress,
+    this.onConfirm,
+    this.confirmEnabled = true,
     super.key,
   });
 
@@ -28,6 +36,17 @@ class NumericKeypad extends StatelessWidget {
   final ValueChanged<CalcOperator> onOperator;
   final VoidCallback onEquals;
   final VoidCallback onBackspace;
+
+  /// Long-pressing the backspace key clears the whole amount at once. Null
+  /// leaves the key with just its per-tap delete.
+  final VoidCallback? onBackspaceLongPress;
+
+  /// Commits the amount and collapses/closes the amount zone. Null where the
+  /// keypad has no Confirm key of its own.
+  final VoidCallback? onConfirm;
+
+  /// Hides the Confirm key when false, letting the `=` span the full width.
+  final bool confirmEnabled;
 
   static const double gap = 8;
 
@@ -98,6 +117,7 @@ class NumericKeypad extends StatelessWidget {
                   icon: LucideIcons.delete,
                   semanticLabel: l10n.transactionFormKeypadBackspace,
                   onTap: onBackspace,
+                  onLongPress: onBackspaceLongPress,
                 ),
                 KeypadKey.icon(
                   icon: LucideIcons.plus,
@@ -116,9 +136,68 @@ class NumericKeypad extends StatelessWidget {
                     onTap: onEquals,
                   ),
                 ),
+                if (onConfirm != null && confirmEnabled) ...[
+                  const SizedBox(width: gap),
+                  KeypadConfirmKey(
+                    onTap: onConfirm!,
+                    semanticLabel: l10n.transactionFormKeypadConfirm,
+                  ),
+                ],
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The primary Confirm key (`IBiRL`): a fixed ~44px `$primary` square with a
+/// `check` glyph in `$on-primary`, pinned to the bottom-right of the last row.
+/// The painted box stays ~44 to match the design, but the tap target is padded
+/// out to ≥48dp (the `AI Question Chip` criterion) via an outer [SizedBox].
+class KeypadConfirmKey extends StatelessWidget {
+  const KeypadConfirmKey({
+    required this.onTap,
+    required this.semanticLabel,
+    super.key,
+  });
+
+  final VoidCallback onTap;
+  final String semanticLabel;
+
+  static const double _visual = 44;
+  static const double _hitTarget = 48;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: SizedBox(
+        width: _hitTarget,
+        height: _hitTarget,
+        child: Center(
+          child: Material(
+            color: colors.primary,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: SizedBox(
+                width: _visual,
+                height: _visual,
+                child: Center(
+                  child: Icon(
+                    LucideIcons.check,
+                    size: 20,
+                    color: colors.onPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -152,6 +231,7 @@ class KeypadKey extends StatelessWidget {
     this.isDecimal = false,
     this.icon,
     this.semanticLabel,
+    this.onLongPress,
   });
 
   /// A digit key (`0`–`9`).
@@ -165,17 +245,27 @@ class KeypadKey extends StatelessWidget {
   }) : this._(isDecimal: true, semanticLabel: semanticLabel, onTap: onTap);
 
   /// An operator / action key rendered as a lucide icon, with a spoken label.
+  /// [onLongPress] is optional — only the backspace key uses it (clear-all).
   const KeypadKey.icon({
     required IconData icon,
     required String semanticLabel,
     required VoidCallback onTap,
-  }) : this._(icon: icon, semanticLabel: semanticLabel, onTap: onTap);
+    VoidCallback? onLongPress,
+  }) : this._(
+          icon: icon,
+          semanticLabel: semanticLabel,
+          onTap: onTap,
+          onLongPress: onLongPress,
+        );
 
   final int? digit;
   final bool isDecimal;
   final IconData? icon;
   final String? semanticLabel;
   final VoidCallback onTap;
+
+  /// Fired on a long-press instead of a tap. Only the backspace key sets it.
+  final VoidCallback? onLongPress;
 
   static const double _height = 44;
   static const String _decimalGlyph = '.';
@@ -206,6 +296,7 @@ class KeypadKey extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: SizedBox(
             height: _height,

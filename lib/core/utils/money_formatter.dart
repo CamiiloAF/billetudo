@@ -25,14 +25,48 @@ class MoneyFormatter {
 
   static const int _minorPerMajor = 100;
 
-  /// How many decimals a currency shows to the user. Storage always keeps two
-  /// (minor unit = 1/100, see [_minorPerMajor]); this is only about *display*.
-  /// COP has no cents in practice, so it reads as a whole number (`$45.000`),
-  /// while USD keeps its two (`$12.34`). The full app-wide reconciliation of
-  /// per-currency minor units lives in `12-multi-moneda.md`; this covers the
-  /// two currencies the app handles today.
+  /// How many decimals the *stored* minor unit carries, for every currency.
+  /// Paired with [_minorPerMajor]; only [currencyDecimals] varies.
+  static const int _storedDecimals = 2;
+
+  /// The leading symbol [formatSymbol] prepends. Exposed so an *editable*
+  /// amount field can paint it as a fixed prefix outside the editable text
+  /// (where it would otherwise be stripped by the field's digit-only input
+  /// formatter), and still read exactly like the read-only `$45.000` the
+  /// design shows.
+  static const String currencySymbol = r'$';
+
+  /// A currency's **default** number of shown decimals. COP reads as a whole
+  /// number by convention (`$45.000`), USD keeps its two (`$12,34`). This is
+  /// the *baseline*: [displayDecimals] still reveals real cents when a COP
+  /// amount happens to carry them (item 4), and [inputDecimals] governs how
+  /// many the user may *type* (always two). The full app-wide reconciliation
+  /// of per-currency minor units lives in `12-multi-moneda.md`.
   static int currencyDecimals(String currencyCode) =>
-      currencyCode == 'COP' ? 0 : 2;
+      currencyCode == 'COP' ? 0 : _storedDecimals;
+
+  /// How many decimals the user may **type** into a money field, for every
+  /// currency. Storage keeps two (minor unit = 1/100), so entry allows two
+  /// too — COP included: a COP purchase can carry cents and the keypad must
+  /// let the user enter them (item 4). Decoupled from [currencyDecimals] on
+  /// purpose: COP *accepts* cents on input but only *shows* them when they are
+  /// non-zero (see [displayDecimals]).
+  static int inputDecimals(String currencyCode) => _storedDecimals;
+
+  /// How many decimals to actually **show** for [amountMinor] in
+  /// [currencyCode]: the currency's [currencyDecimals] baseline, but revealing
+  /// the stored cents when the amount genuinely carries them. So COP renders a
+  /// whole amount as `$45.000` (no forced `,00`) and only `$45.000,50` once it
+  /// has cents; USD always shows its two. A whole amount is detected by value
+  /// (`amountMinor % 100 == 0`), which holds for negatives too since Dart's
+  /// `%` is non-negative for a positive divisor.
+  static int displayDecimals(int amountMinor, String currencyCode) {
+    final base = currencyDecimals(currencyCode);
+    if (base >= _storedDecimals) {
+      return base;
+    }
+    return amountMinor % _minorPerMajor == 0 ? base : _storedDecimals;
+  }
 
   /// `1234, currencyCode: 'COP'` → `"$1.234"` (per [locale]).
   ///
@@ -50,7 +84,8 @@ class MoneyFormatter {
     final formatter = NumberFormat.currency(
       locale: locale,
       name: currencyCode,
-      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+      decimalDigits:
+          decimalDigits ?? displayDecimals(amountMinor, currencyCode),
     );
     return formatter.format(amountMinor / _minorPerMajor);
   }
@@ -60,6 +95,11 @@ class MoneyFormatter {
   /// ([currencyDecimals]). Use it where the design shows a plain `$45.000`
   /// (e.g. the transaction form's Zona Fija) rather than the `COP` code.
   ///
+  /// Builds the string manually (symbol + [formatAmount]) instead of letting
+  /// `NumberFormat.currency` place the symbol: for `es_CO`, ICU's currency
+  /// pattern puts the symbol *after* the number (`"1.234 $"`), which reads
+  /// backwards for a `$`-prefixed design — Pencil always shows `$` leading.
+  ///
   /// Display only — the amount never becomes a stored `double`, same as
   /// [format].
   String formatSymbol(
@@ -68,13 +108,65 @@ class MoneyFormatter {
     String locale = 'es_CO',
     int? decimalDigits,
   }) {
-    final formatter = NumberFormat.currency(
+    final digits = formatAmount(
+      amountMinor,
       locale: locale,
-      symbol: r'$',
-      decimalDigits: decimalDigits ?? currencyDecimals(currencyCode),
+      decimalDigits:
+          decimalDigits ?? displayDecimals(amountMinor, currencyCode),
     );
-    return formatter.format(amountMinor / _minorPerMajor);
+    return '$currencySymbol$digits';
   }
+
+  /// Formats [amountMinor] the way an **active** money-entry field must read
+  /// it, honoring how many fraction digits the user has typed so far
+  /// ([entryFractionDigits], the counter the keypad's cubit and
+  /// `CalculatorAmountBuffer` keep):
+  ///
+  /// - `-1` (whole-number entry, no decimal key pressed yet): renders like
+  ///   [formatSymbol] — the currency's own decimals, so COP keeps "solo cuando
+  ///   existen" and never forces `,00` (item 4).
+  /// - `0` (decimal key just pressed, no fraction digit yet): the integer part
+  ///   followed by a **pending** decimal separator, so tapping the comma shows
+  ///   "$45," at once instead of waiting for the next digit (item 20).
+  /// - `1..2`: exactly that many fraction digits, so what the user typed is
+  ///   what they see ("$45,0" then "$45,05").
+  ///
+  /// Entry-time only. Read-only display (the collapsed bar, lists, detail)
+  /// keeps [formatSymbol]'s "cents only when they exist" rule, so this must not
+  /// be used outside an actively-focused amount field.
+  String formatSymbolEntry(
+    int amountMinor, {
+    required String currencyCode,
+    required int entryFractionDigits,
+    String locale = 'es_CO',
+  }) {
+    if (entryFractionDigits <= 0) {
+      final base =
+          formatSymbol(amountMinor, currencyCode: currencyCode, locale: locale);
+      if (entryFractionDigits < 0) {
+        return base;
+      }
+      // A whole amount already carrying a decimal separator (e.g. USD's forced
+      // two decimals, "$45,00") must not gain a second one; only append the
+      // pending separator when the value is still shown without one (COP).
+      final separator = decimalSeparatorFor(locale);
+      return base.contains(separator) ? base : '$base$separator';
+    }
+    final digits = formatAmount(
+      amountMinor,
+      locale: locale,
+      decimalDigits: entryFractionDigits,
+    );
+    return '$currencySymbol$digits';
+  }
+
+  /// The single character [formatSymbol]/[formatAmount] use to separate the
+  /// fraction for [locale] (es_CO → `,`). Exposed so [formatSymbolEntry] can
+  /// render a *pending* decimal separator without hard-coding it.
+  static String decimalSeparatorFor(String locale) =>
+      NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1)
+          .symbols
+          .DECIMAL_SEP;
 
   /// Same as [format] but without the currency code/symbol (digits only).
   ///
@@ -92,6 +184,73 @@ class MoneyFormatter {
       decimalDigits: decimalDigits ?? 2,
     );
     return formatter.format(amountMinor / _minorPerMajor);
+  }
+
+  /// Like [formatAmount] but **editable**: it never bakes in a thousands
+  /// separator, only the decimal one (when [decimalDigits] > 0). Use it for the
+  /// `initialValue` of a plain `TextFormField` the user is meant to keep
+  /// typing in — `formatAmount`'s grouping dot lands inside the editable text
+  /// and fights every edit after the first (e.g. reopening a saved credit
+  /// limit). [format]/[formatAmount] stay the ones to use for read-only
+  /// display, where the grouping helps instead of getting in the way.
+  String formatAmountForEditing(
+    int amountMinor, {
+    String locale = 'es_CO',
+    int? decimalDigits,
+  }) {
+    final formatter = NumberFormat.decimalPatternDigits(
+      locale: locale,
+      decimalDigits: decimalDigits ?? 2,
+    )..turnOffGrouping();
+    return formatter.format(amountMinor / _minorPerMajor);
+  }
+
+  /// Rounds [amountMinor] to the precision [currencyCode] actually shows.
+  ///
+  /// Storage always keeps 1/100 (see [_minorPerMajor]) whatever the currency,
+  /// so switching currency never *reinterprets* a stored amount: `450000000`
+  /// is 4.500.000,00 in COP and in USD alike. What does change is how many of
+  /// those decimals are visible — COP shows none — and a field must not
+  /// display `1.235` while it still holds `1.234,56`. This is what reconciles
+  /// the two: the visible figure is also the stored one.
+  ///
+  /// Rounds **half-up on the magnitude**, the same rule [parseScaled] already
+  /// applies to digits typed past the currency's precision. Truncating was the
+  /// alternative and it is worse: it drops the user's cents silently *and*
+  /// always downwards, so `1.234,99` would become `1.234`. Half-up moves the
+  /// figure by at most half a unit and matches what the user was already
+  /// reading. Going back to a currency with cents cannot restore them — they
+  /// are gone at the moment the figure is shown without them.
+  static int roundToCurrencyPrecision(int amountMinor, String currencyCode) {
+    final factor = _pow10(_storedDecimals - currencyDecimals(currencyCode));
+    if (factor <= 1) {
+      return amountMinor;
+    }
+    final negative = amountMinor < 0;
+    final magnitude = negative ? -amountMinor : amountMinor;
+    final rounded = ((magnitude + factor ~/ 2) ~/ factor) * factor;
+    return negative ? -rounded : rounded;
+  }
+
+  /// Re-renders an *editable* money [text] with [currencyCode]'s own decimals,
+  /// rounding it via [roundToCurrencyPrecision] first.
+  ///
+  /// Returns [text] untouched when it does not parse (empty field, a lone `-`,
+  /// a half-typed figure): there is nothing to re-render and rewriting it
+  /// would fight the user mid-keystroke.
+  ///
+  /// Grouped like the fields keep it while typing (`4.500.000`), so the result
+  /// can be handed straight back to a `TextEditingController` next to a
+  /// `MoneyInputFormatter`.
+  String reformatForCurrency(String text, String currencyCode) {
+    final minor = parseMinor(text);
+    if (minor == null) {
+      return text;
+    }
+    return formatAmount(
+      roundToCurrencyPrecision(minor, currencyCode),
+      decimalDigits: currencyDecimals(currencyCode),
+    );
   }
 
   /// Converts a major value (e.g. `12.34`) to minor units (`1234`).

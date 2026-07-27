@@ -3,14 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account_with_balance.dart';
 import '../cubit/accounts_list_cubit.dart';
 import '../cubit/accounts_list_state.dart';
 import '../widgets/account_card.dart';
 import '../widgets/accounts_error_view.dart';
 import '../widgets/accounts_total_card.dart';
+import '../widgets/accounts_total_card_skeleton.dart';
 import '../widgets/credit_card_account_row.dart';
-import '../widgets/empty_state.dart';
 import '../widgets/skeleton_row.dart';
 
 /// The accounts list (`l055o`/`nwFMA`/`sh7r2`/`L6Za0`).
@@ -34,37 +38,52 @@ class AccountsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.accountsTitle),
-        actions: [
-          IconButton(
-            onPressed: onOpenArchived,
-            tooltip: l10n.accountsArchivedTitle,
-            icon: const Icon(LucideIcons.archive),
-          ),
-          IconButton(
-            onPressed: onAddAccount,
-            tooltip: l10n.accountsAdd,
-            icon: const Icon(LucideIcons.plus),
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: BlocBuilder<AccountsListCubit, AccountsListState>(
-          builder: (context, state) => switch (state.status) {
-            AccountsListStatus.loading => const AccountsLoadingView(),
-            AccountsListStatus.failure => AccountsErrorView(
-                onRetry: context.read<AccountsListCubit>().start,
+        child: Column(
+          children: [
+            PageHeader(
+              title: l10n.accountsTitle,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.archive,
+                    background: colors.muted,
+                    foreground: colors.textPrimary,
+                    tooltip: l10n.accountsArchivedTitle,
+                    onPressed: onOpenArchived,
+                  ),
+                  const SizedBox(width: 8),
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.plus,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.accountsAdd,
+                    onPressed: onAddAccount,
+                  ),
+                ],
               ),
-            AccountsListStatus.ready when state.accounts.isEmpty =>
-              AccountsEmptyView(onAddAccount: onAddAccount),
-            AccountsListStatus.ready => AccountsListView(
-                state: state,
-                onOpenAccount: onOpenAccount,
+            ),
+            Expanded(
+              child: BlocBuilder<AccountsListCubit, AccountsListState>(
+                builder: (context, state) => switch (state.status) {
+                  AccountsListStatus.loading => const AccountsLoadingView(),
+                  AccountsListStatus.failure => AccountsErrorView(
+                      onRetry: context.read<AccountsListCubit>().start,
+                    ),
+                  AccountsListStatus.ready when state.accounts.isEmpty =>
+                    AccountsEmptyView(onAddAccount: onAddAccount),
+                  AccountsListStatus.ready => AccountsListView(
+                      state: state,
+                      onOpenAccount: onOpenAccount,
+                    ),
+                },
               ),
-          },
+            ),
+          ],
         ),
       ),
     );
@@ -83,14 +102,19 @@ class AccountsLoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: AppLocalizations.of(context).accountsLoading,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _nameWidths.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => SkeletonRow(
-          nameWidth: _nameWidths[index],
-          typeWidth: 60 + (index % 3) * 12,
-        ),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 6, 20, 20),
+        children: [
+          const AccountsTotalCardSkeleton(),
+          const SizedBox(height: 20),
+          for (var index = 0; index < _nameWidths.length; index++) ...[
+            if (index > 0) const SizedBox(height: 12),
+            SkeletonRow(
+              nameWidth: _nameWidths[index],
+              typeWidth: 60 + (index % 3) * 12,
+            ),
+          ],
+        ],
       ),
     );
   }

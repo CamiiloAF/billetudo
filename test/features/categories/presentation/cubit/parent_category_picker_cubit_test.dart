@@ -16,8 +16,7 @@ void main() {
 
   final root1 = buildCategory(id: 'root-1');
   final root2 = buildCategory(id: 'root-2', name: 'Transporte');
-  final sub1 =
-      buildCategory(id: 'sub-1', name: 'Mercado', parentId: 'root-1');
+  final sub1 = buildCategory(id: 'sub-1', name: 'Mercado', parentId: 'root-1');
 
   setUpAll(registerCategoryPresentationFallbacks);
 
@@ -32,7 +31,8 @@ void main() {
   blocTest<ParentCategoryPickerCubit, ParentCategoryPickerState>(
     'rootsOnly: true delega directo en WatchParentCandidates',
     setUp: () => when(
-      () => watchParentCandidates(any(), excludingId: any(named: 'excludingId')),
+      () =>
+          watchParentCandidates(any(), excludingId: any(named: 'excludingId')),
     ).thenAnswer((_) => Stream.value(Right([root1, root2]))),
     build: build,
     act: (cubit) => cubit.start(CategoryKind.expense, excludingId: 'root-3'),
@@ -73,7 +73,8 @@ void main() {
   blocTest<ParentCategoryPickerCubit, ParentCategoryPickerState>(
     'un fallo del stream deja el estado de error',
     setUp: () => when(
-      () => watchParentCandidates(any(), excludingId: any(named: 'excludingId')),
+      () =>
+          watchParentCandidates(any(), excludingId: any(named: 'excludingId')),
     ).thenAnswer((_) => Stream.value(const Left(DatabaseFailure('boom')))),
     build: build,
     act: (cubit) => cubit.start(CategoryKind.expense),

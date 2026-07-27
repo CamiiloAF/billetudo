@@ -30,28 +30,48 @@ class AppSettingsLocalDatasource {
           .getSingleOrNull();
 
   /// Marks the onboarding default categories as seeded for this installation.
-  /// Upserts on the constant id (like [setZeroBasedEnabled]) so it can never
-  /// create a second row, and stamps [now] into `updatedAt`.
-  Future<void> markCategoriesSeeded({required DateTime now}) =>
-      _db.into(_db.appSettings).insertOnConflictUpdate(
-            AppSettingsCompanion.insert(
-              id: const Value(singletonId),
-              categoriesSeeded: const Value(true),
-              updatedAt: Value(now.millisecondsSinceEpoch),
-            ),
-          );
+  Future<void> markCategoriesSeeded({required DateTime now}) => _write(
+        AppSettingsCompanion(
+          categoriesSeeded: const Value(true),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
 
-  /// Upserts the singleton with [zeroBasedEnabled]. Uses `insertOnConflictUpdate`
-  /// keyed on the constant id so it can never create a second row.
+  /// Updates the singleton's [zeroBasedEnabled].
   Future<void> setZeroBasedEnabled({
     required bool zeroBasedEnabled,
     required DateTime now,
   }) =>
-      _db.into(_db.appSettings).insertOnConflictUpdate(
-            AppSettingsCompanion.insert(
-              id: const Value(singletonId),
-              zeroBasedEnabled: Value(zeroBasedEnabled),
-              updatedAt: Value(now.millisecondsSinceEpoch),
-            ),
-          );
+      _write(
+        AppSettingsCompanion(
+          zeroBasedEnabled: Value(zeroBasedEnabled),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
+  /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
+  /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
+  /// #14, docs/requirements/05-auth-sync.md) and SQLite rejects
+  /// `INSERT ... ON CONFLICT ... DO UPDATE` against a view outright
+  /// (`cannot UPSERT a view`), whatever its `INSTEAD OF` triggers do.
+  ///
+  /// The row usually exists (`_seedAppSettings()` creates it on
+  /// `onCreate`/migration), but it can legitimately be gone: wiping this
+  /// device on sign-out (HU-06) goes through
+  /// `PowerSyncDatabase.disconnectAndClear`, which empties every synced table
+  /// including this one, and no migration re-runs afterwards. Without this
+  /// fallback the seed latch could never be set again and the default
+  /// categories would be re-seeded on every launch.
+  Future<void> _write(AppSettingsCompanion values) async {
+    final updated = await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(singletonId)))
+        .write(values);
+    if (updated > 0) {
+      return;
+    }
+    await _db.into(_db.appSettings).insert(
+          values.copyWith(id: const Value(singletonId)),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
 }

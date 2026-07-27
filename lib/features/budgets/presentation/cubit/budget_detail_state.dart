@@ -5,6 +5,7 @@ import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_activity_item.dart';
 import '../../domain/entities/budget_period_view.dart';
 import '../../domain/entities/budget_scope.dart';
+import '../../domain/entities/pending_budget_adjustment.dart';
 
 enum BudgetDetailStatus { loading, ready, failure }
 
@@ -19,6 +20,8 @@ class BudgetDetailState extends Equatable {
     this.view,
     this.visibleActivityCount = activityPageSize,
     this.failure,
+    this.pendingUndoId,
+    this.pendingAdjustment,
   });
 
   /// How many activity rows a "Cargar más" tap reveals.
@@ -30,6 +33,17 @@ class BudgetDetailState extends Equatable {
   final BudgetPeriodView? view;
   final int visibleActivityCount;
   final Failure? failure;
+
+  /// The id of a transaction a "Deshacer" snackbar is currently offered for,
+  /// after a delete triggered from the transaction detail page opened from
+  /// this budget's activity. `null` once dismissed or undone.
+  final String? pendingUndoId;
+
+  /// "Ajustar monto": the pending override for the window the stepper is
+  /// currently showing, if any — drives whether the banner shows and whether
+  /// its sheet opens in "crear" or "editar/cancelar" mode. `null` means the
+  /// visible window has nothing pending.
+  final PendingBudgetAdjustment? pendingAdjustment;
 
   bool get isLoading => status == BudgetDetailStatus.loading;
 
@@ -51,6 +65,10 @@ class BudgetDetailState extends Equatable {
     BudgetPeriodView? view,
     int? visibleActivityCount,
     Failure? failure,
+    String? pendingUndoId,
+    bool clearPendingUndo = false,
+    PendingBudgetAdjustment? pendingAdjustment,
+    bool clearPendingAdjustment = false,
   }) =>
       BudgetDetailState(
         status: status ?? this.status,
@@ -59,9 +77,22 @@ class BudgetDetailState extends Equatable {
         view: view ?? this.view,
         visibleActivityCount: visibleActivityCount ?? this.visibleActivityCount,
         failure: failure,
+        pendingUndoId:
+            clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
+        pendingAdjustment: clearPendingAdjustment
+            ? null
+            : (pendingAdjustment ?? this.pendingAdjustment),
       );
 
   @override
-  List<Object?> get props =>
-      [status, budget, scope, view, visibleActivityCount, failure];
+  List<Object?> get props => [
+        status,
+        budget,
+        scope,
+        view,
+        visibleActivityCount,
+        failure,
+        pendingUndoId,
+        pendingAdjustment,
+      ];
 }

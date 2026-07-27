@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/root_tab_header.dart';
 import '../widgets/more_row.dart';
 
 /// The "Más" hub (HU-01): the entry point to every other Nivel 0 destination.
@@ -11,6 +12,8 @@ class MorePage extends StatelessWidget {
   const MorePage({
     required this.onOpenAccounts,
     required this.onOpenCategories,
+    required this.onOpenScheduledPayments,
+    required this.onOpenGoals,
     required this.onOpenComingSoon,
     required this.onOpenSettings,
     required this.isSignedIn,
@@ -20,6 +23,11 @@ class MorePage extends StatelessWidget {
 
   final VoidCallback onOpenAccounts;
   final VoidCallback onOpenCategories;
+  final VoidCallback onOpenScheduledPayments;
+
+  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable from
+  /// here and from Inicio's quick access. Today it lands on `ComingSoonPage`.
+  final VoidCallback onOpenGoals;
 
   /// Opens a stacked "Próximamente" page titled with the destination's name.
   final ValueChanged<String> onOpenComingSoon;
@@ -37,58 +45,84 @@ class MorePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.moreTitle)),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
           children: [
-            MoreRow(
-              icon: LucideIcons.wallet,
-              label: l10n.accountsTitle,
-              onTap: onOpenAccounts,
-            ),
-            MoreRow(
-              icon: LucideIcons.shapes,
-              label: l10n.categoriesTitle,
-              onTap: onOpenCategories,
-            ),
-            MoreRow(
-              icon: LucideIcons.handCoins,
-              label: l10n.moreDebts,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreDebts),
-            ),
-            MoreRow(
-              icon: LucideIcons.refreshCw,
-              label: l10n.moreScheduledPayments,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreScheduledPayments),
-            ),
-            MoreRow(
-              icon: LucideIcons.chartLine,
-              label: l10n.moreReports,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreReports),
-            ),
-            MoreRow(
-              icon: LucideIcons.arrowUpDown,
-              label: l10n.moreImportExport,
-              comingSoon: true,
-              onTap: () => onOpenComingSoon(l10n.moreImportExport),
-            ),
-            MoreRow(
-              icon: LucideIcons.settings,
-              label: l10n.moreSettings,
-              onTap: onOpenSettings,
-            ),
-            if (isSignedIn) ...[
-              const SizedBox(height: 16),
-              MoreRow(
-                icon: LucideIcons.logOut,
-                label: l10n.moreSignOut,
-                onTap: onSignOut,
+            RootTabHeader(title: l10n.moreTitle),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: [
+                  MoreRow(
+                    icon: LucideIcons.wallet,
+                    label: l10n.accountsTitle,
+                    description: l10n.moreAccountsDescription,
+                    onTap: onOpenAccounts,
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.shapes,
+                    label: l10n.categoriesTitle,
+                    description: l10n.moreCategoriesDescription,
+                    onTap: onOpenCategories,
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.handCoins,
+                    label: l10n.moreDebts,
+                    description: l10n.moreDebtsDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreDebts),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.repeat,
+                    label: l10n.moreScheduledPayments,
+                    description: l10n.moreScheduledPaymentsDescription,
+                    onTap: onOpenScheduledPayments,
+                  ),
+                  // Metas lost its bottom-nav tab to Pagos Programados (bugfix
+                  // item 7); it lives here and in Inicio's quick access. Still
+                  // `Próximamente` until the Metas lote ships.
+                  MoreRow(
+                    icon: LucideIcons.target,
+                    label: l10n.navGoals,
+                    description: l10n.moreGoalsDescription,
+                    comingSoon: true,
+                    onTap: onOpenGoals,
+                  ),
+                  // Design debt: Pencil frame `gXcHt` only defines 6 rows and
+                  // omits "Gráficas e informes" — kept here because it's a real
+                  // roadmap feature (fl_chart, see CLAUDE.md); the `.pen` needs
+                  // to be updated to reflect it.
+                  MoreRow(
+                    icon: LucideIcons.chartLine,
+                    label: l10n.moreReports,
+                    description: l10n.moreReportsDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreReports),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.arrowUpDown,
+                    label: l10n.moreImportExport,
+                    description: l10n.moreImportExportDescription,
+                    comingSoon: true,
+                    onTap: () => onOpenComingSoon(l10n.moreImportExport),
+                  ),
+                  MoreRow(
+                    icon: LucideIcons.settings,
+                    label: l10n.moreSettings,
+                    description: l10n.moreSettingsDescription,
+                    onTap: onOpenSettings,
+                  ),
+                  if (isSignedIn) ...[
+                    const SizedBox(height: 16),
+                    MoreRow(
+                      icon: LucideIcons.logOut,
+                      label: l10n.moreSignOut,
+                      onTap: onSignOut,
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
           ],
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/toggle_field.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -11,6 +13,7 @@ import 'package:billetudo/features/categories/domain/entities/category_node.dart
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_cubit.dart';
 import 'package:billetudo/features/categories/presentation/cubit/categories_list_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_state.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
@@ -24,6 +27,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionFormCubit extends MockCubit<TransactionFormState>
@@ -35,8 +39,7 @@ class MockAccountsListCubit extends MockCubit<AccountsListState>
 class MockCategoriesListCubit extends MockCubit<CategoriesListState>
     implements CategoriesListCubit {}
 
-class MockCategoryQuickPickerCubit
-    extends MockCubit<CategoryQuickPickerState>
+class MockCategoryQuickPickerCubit extends MockCubit<CategoryQuickPickerState>
     implements CategoryQuickPickerCubit {}
 
 class MockTagFilterCubit extends MockCubit<TagFilterState>
@@ -140,6 +143,7 @@ void main() {
       () => categoryQuickPickerCubit.start(
         kind: any(named: 'kind'),
         selectedId: any(named: 'selectedId'),
+        accountId: any(named: 'accountId'),
       ),
     ).thenAnswer((_) async {});
     when(
@@ -149,6 +153,8 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.syncSelection(any()))
+        .thenAnswer((_) async {});
+    when(() => categoryQuickPickerCubit.setAccount(any()))
         .thenAnswer((_) async {});
     when(() => categoryQuickPickerCubit.state).thenReturn(
       const CategoryQuickPickerState(
@@ -316,6 +322,81 @@ void main() {
     });
   });
 
+  group('quick picker filtrado por cuenta (HU quick-picker-most-used)', () {
+    testWidgets('el accountId del estado se propaga al arrancar el picker',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+        ),
+      );
+
+      verify(
+        () => categoryQuickPickerCubit.start(
+          kind: CategoryKind.expense,
+          selectedId: null,
+          accountId: 'acc-1',
+        ),
+      ).called(1);
+    });
+
+    testWidgets(
+        'cambiar de cuenta en el formulario le propaga el nuevo accountId '
+        'al picker sin perder la categoría elegida en el widget',
+        (tester) async {
+      final initial = TransactionFormState(
+        status: TransactionFormStatus.ready,
+        accountId: 'acc-1',
+        accountName: 'Efectivo',
+        categoryId: 'cat-1',
+      );
+      final afterAccountSwitch = initial.copyWith(
+        accountId: 'acc-2',
+        accountName: 'Bancolombia',
+      );
+      whenListen(
+        cubit,
+        Stream<TransactionFormState>.fromIterable([afterAccountSwitch]),
+        initialState: initial,
+      );
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+          selected: _buildCategory(),
+        ),
+      );
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<TransactionFormCubit>.value(
+            value: cubit,
+            child: const TransactionFormPage(),
+          ),
+        ),
+      );
+      // Lets the stream's single emission (the account switch) reach the
+      // widget tree.
+      await tester.pump();
+
+      verify(() => categoryQuickPickerCubit.setAccount('acc-2')).called(1);
+      // The chip for the already-selected category ("Comida") is still
+      // shown — the account switch never cleared it.
+      expect(find.text('Comida'), findsOneWidget);
+    });
+  });
+
   group('los 3 tipos renderizan los campos correctos', () {
     testWidgets('gasto: cuenta + categoría, sin segunda cuenta',
         (tester) async {
@@ -358,6 +439,120 @@ void main() {
       expect(find.byType(CategoryQuickPicker), findsNothing);
       expect(find.text('Cuenta destino'), findsOneWidget);
       expect(find.text('Nueva transferencia'), findsOneWidget);
+    });
+  });
+
+  group('B-3: transferencia presupuestable (toggle countsInBudget)', () {
+    testWidgets(
+        'gasto/ingreso nunca muestran el toggle "¿Incluir en tu '
+        'presupuesto?" (es transfer-only)', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      expect(find.byType(ToggleField), findsNothing);
+    });
+
+    testWidgets(
+        'transferencia con el toggle apagado (default) muestra el toggle '
+        'pero no el selector de categoría', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(find.text('¿Incluir en tu presupuesto?'), findsOneWidget);
+      expect(
+        find.text('Actívala para que se sume a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      expect(find.byType(CategoryQuickPicker), findsNothing);
+    });
+
+    testWidgets(
+        'transferencia con el toggle encendido muestra el selector de '
+        'categoría condicional con su hint ON', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(
+        find.text('Se suma a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
+    });
+
+    testWidgets('tocar el toggle se lo reporta al cubit con el valor opuesto',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+        ),
+      );
+
+      await tester.tap(find.byType(ToggleField));
+      await tester.pump();
+
+      verify(() => cubit.countsInBudgetChanged(true)).called(1);
+    });
+
+    testWidgets(
+        'con el toggle encendido, elegir una categoría del quick picker se '
+        'lo reporta al cubit', (tester) async {
+      when(() => categoryQuickPickerCubit.state).thenReturn(
+        CategoryQuickPickerState(
+          status: CategoryQuickPickerStatus.ready,
+          mostUsed: [_buildCategory()],
+        ),
+      );
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+        ),
+      );
+
+      await tester.tap(find.text('Comida'));
+      await tester.pump();
+
+      verify(
+        () => cubit.categorySelected('cat-1', CategoryKind.expense, 'Comida'),
+      ).called(1);
+    });
+
+    testWidgets(
+        'transferencia con el toggle encendido y sin categoría elegida '
+        'muestra el error de fieldCategoryId', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          countsInBudget: true,
+          failure: const ValidationFailure(
+            'a category is required',
+            field: TransactionDraft.fieldCategoryId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una categoría.'), findsOneWidget);
     });
   });
 
@@ -424,6 +619,194 @@ void main() {
       await tester.pump();
 
       verify(() => cubit.noteFocused()).called(1);
+    });
+
+    testWidgets(
+        'dejar presionada la tecla borrar limpia todo el monto (item 5)',
+        (tester) async {
+      when(() => cubit.amountCleared()).thenReturn(null);
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          amountMinor: 123400,
+          focusedField: TransactionFormFocusedField.amount,
+        ),
+      );
+
+      await tester.longPress(find.byIcon(LucideIcons.delete));
+      await tester.pump();
+
+      verify(() => cubit.amountCleared()).called(1);
+      verifyNever(() => cubit.amountBackspace());
+    });
+  });
+
+  group('errores de validación (bug fixes 8 y 11a)', () {
+    testWidgets(
+        'sin cuenta seleccionada y falla de fieldAccountId, el selector de '
+        'cuenta muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          failure: const ValidationFailure(
+            'an account is required',
+            field: TransactionDraft.fieldAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una cuenta.'), findsOneWidget);
+    });
+
+    testWidgets(
+        'sin categoría seleccionada y falla de fieldCategoryId, el selector '
+        'de categoría muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'a category is required',
+            field: TransactionDraft.fieldCategoryId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige una categoría.'), findsOneWidget);
+    });
+
+    testWidgets(
+        'monto en cero y falla de fieldAmountMinor, la zona de monto muestra '
+        'el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'the amount must be positive',
+            field: TransactionDraft.fieldAmountMinor,
+          ),
+        ),
+      );
+
+      expect(find.text('Ingresa un monto mayor a cero.'), findsOneWidget);
+    });
+
+    testWidgets(
+        'transferencia sin destino y falla de fieldTransferAccountId, el '
+        'selector de destino muestra el mensaje de error', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.transfer,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          failure: const ValidationFailure(
+            'a transfer requires a destination account',
+            field: TransactionDraft.fieldTransferAccountId,
+          ),
+        ),
+      );
+
+      expect(find.text('Elige la cuenta de destino.'), findsOneWidget);
+    });
+
+    testWidgets('sin fallas, ningún mensaje de error se muestra',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(status: TransactionFormStatus.ready),
+      );
+
+      expect(find.text('Elige una cuenta.'), findsNothing);
+      expect(find.text('Elige una categoría.'), findsNothing);
+      expect(find.text('Ingresa un monto mayor a cero.'), findsNothing);
+    });
+  });
+
+  group('puente a pago programado por fecha futura (bugfix item 2)', () {
+    Future<void> pumpFutureForm(
+      WidgetTester tester, {
+      required ValueChanged<TransactionFormState>? onConvert,
+    }) async {
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      when(() => cubit.state).thenReturn(
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Comida',
+          amountMinor: 5000,
+          // A month ahead: `isFutureDate` is true for a brand-new movement.
+          date: DateTime.now().add(const Duration(days: 30)),
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<TransactionFormCubit>.value(
+            value: cubit,
+            child: TransactionFormPage(onConvertToScheduledPayment: onConvert),
+          ),
+        ),
+      );
+    }
+
+    testWidgets(
+        'una fecha futura abre el sheet-puente en vez de guardar directo',
+        (tester) async {
+      await pumpFutureForm(tester, onConvert: (_) {});
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Es un pago programado?'), findsOneWidget);
+      verifyNever(() => cubit.submit());
+    });
+
+    testWidgets('descartar el puente (Cambiar la fecha) NO guarda la tx futura',
+        (tester) async {
+      TransactionFormState? converted;
+      await pumpFutureForm(tester, onConvert: (state) => converted = state);
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cambiar la fecha'));
+      await tester.pumpAndSettle();
+
+      // Ni se convirtió a PP ni se persistió como movimiento normal.
+      expect(converted, isNull);
+      verifyNever(() => cubit.submit());
+    });
+
+    testWidgets('aceptar el puente convierte a PP y no guarda como normal',
+        (tester) async {
+      TransactionFormState? converted;
+      await pumpFutureForm(tester, onConvert: (state) => converted = state);
+
+      await tester.tap(find.byTooltip('Guardar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sí, programarlo'));
+      await tester.pumpAndSettle();
+
+      expect(converted, isNotNull);
+      expect(converted!.amountMinor, 5000);
+      verifyNever(() => cubit.submit());
     });
   });
 }

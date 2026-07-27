@@ -20,6 +20,7 @@ void main() {
         syncStatus: HomeSyncStatus.synced,
         user: user,
         onBellTap: () {},
+        onSyncTap: () {},
       );
 
   testWidgets('sin sesión: saludo genérico y avatar con ícono (HU-07)',

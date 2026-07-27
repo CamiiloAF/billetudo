@@ -13,7 +13,7 @@ Uso: `/drift-schema-change <descripcion del cambio>` (ej. `/drift-schema-change 
 2. Delega el cambio al subagente `drift-migration-helper` (via Agent, subagent_type: `drift-migration-helper`), describiendole exactamente el cambio pedido.
 3. Cuando el subagente termine, confirma con el usuario:
    - Que `schemaVersion` subio y la migracion quedo escrita (no solo la tabla nueva).
-   - Que `dart run build_runner build --delete-conflicting-outputs` corrio sin errores.
+   - Que `dart run build_runner build --force-jit` corrio sin errores.
    - Que se le recordo al usuario replicar el cambio en el esquema de Supabase/PowerSync (este flujo no toca Supabase directamente).
 4. Si el cambio afecta una tabla que ya tiene features construidas encima (`lib/features/*`), advierte cuales carpetas probablemente necesiten actualizarse (modelos/DTOs en `data/`, entidades en `domain/`) en vez de asumir que siguen compilando.
 

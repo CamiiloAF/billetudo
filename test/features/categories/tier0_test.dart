@@ -57,7 +57,8 @@ void main() {
     );
   });
 
-  test('ninguna capacidad de Categorías está condicionada por premium o '
+  test(
+      'ninguna capacidad de Categorías está condicionada por premium o '
       'cupo', () {
     // Identificadores que delatarían un gate: `isPremium`, `hasQuota`,
     // `showRewardedAd`, `entitlement`... Se busca por símbolo, no por palabra
@@ -110,7 +111,8 @@ void main() {
     );
   });
 
-  test('crear una categoría no consulta ningún gate: solo valida y '
+  test(
+      'crear una categoría no consulta ningún gate: solo valida y '
       'persiste', () {
     // CreateCategory es el punto natural donde aparecería un "ya usaste tus
     // N categorías gratis". Sus dependencias deben ser únicamente el

@@ -20,6 +20,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.primarySoft,
     required this.primaryOnSoft,
     required this.primaryOnSoftStrong,
+    required this.hintText,
     required this.mint,
     required this.mintSoft,
     required this.sky,
@@ -30,6 +31,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.coralSoft,
     required this.amber,
     required this.amberSoft,
+    required this.amberText,
     required this.teal,
     required this.tealSoft,
     required this.indigo,
@@ -49,6 +51,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.expenseText,
     required this.snackbarAction,
     required this.scrim,
+    required this.segmentInactiveText,
   });
 
   final Color primary;
@@ -57,6 +60,11 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color primarySoft;
   final Color primaryOnSoft;
   final Color primaryOnSoftStrong;
+
+  /// Text/icon tone for hint tiras over `$primary-soft`. In light it matches
+  /// [primaryDeep]; in dark it is a near-white lavender so it clears AA on the
+  /// dark `$primary-soft` fill, where `primaryDeep` read as lilac-on-lilac.
+  final Color hintText;
   final Color mint;
   final Color mintSoft;
   final Color sky;
@@ -67,6 +75,13 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color coralSoft;
   final Color amber;
   final Color amberSoft;
+
+  /// `amber` calibrated for 12px/700 text on `$surface` (~5.12:1 in light;
+  /// `amber` itself only clears ~4.2:1, failing AA). Same pattern as
+  /// `expenseText`/`incomeText`. First real use: the "riesgo de sobregiro
+  /// proyectado" caption/row of Presupuestos (HU-12), see
+  /// `design-system/billetudo/pages/presupuestos.md`.
+  final Color amberText;
   final Color teal;
   final Color tealSoft;
   final Color indigo;
@@ -92,6 +107,14 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color snackbarAction;
   final Color scrim;
 
+  /// The inactive segment's text/icon tone for a generic (non-directional)
+  /// `SegmentedControl`, e.g. Deudas' "Activas"/"Cerradas" tabs
+  /// (`$segment-inactive-text`). Distinct from [textSecondary]: most
+  /// segmented controls in the app pass no `inactiveColor` and keep using
+  /// [textSecondary] as before — this token exists for the one instance the
+  /// `.pen` deliberately calls out.
+  final Color segmentInactiveText;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -100,6 +123,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFFEEECFB),
     primaryOnSoft: Color(0xFF6C5CE7),
     primaryOnSoftStrong: Color(0xFF5648C8),
+    hintText: Color(0xFF5648C8),
     mint: Color(0xFF059669),
     mintSoft: Color(0xFFE6F7EF),
     sky: Color(0xFF2563EB),
@@ -110,6 +134,7 @@ class AppColors extends ThemeExtension<AppColors> {
     coralSoft: Color(0xFFFDE8ED),
     amber: Color(0xFF9B7608),
     amberSoft: Color(0xFFFDF3E0),
+    amberText: Color(0xFF8A6906),
     teal: Color(0xFF0F766E),
     tealSoft: Color(0xFFE0F5F3),
     indigo: Color(0xFF3730A3),
@@ -129,6 +154,7 @@ class AppColors extends ThemeExtension<AppColors> {
     expenseText: Color(0xFFB91C1C),
     snackbarAction: Color(0xFFA78BFA),
     scrim: Color(0x66000000),
+    segmentInactiveText: Color(0xFF5F5D73),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -139,6 +165,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFF26243B),
     primaryOnSoft: Color(0xFFA78BFA),
     primaryOnSoftStrong: Color(0xFFA78BFA),
+    hintText: Color(0xFFE4DEFA),
     mint: Color(0xFF34D399),
     mintSoft: Color(0xFF16321F),
     sky: Color(0xFF4C9AFF),
@@ -149,6 +176,7 @@ class AppColors extends ThemeExtension<AppColors> {
     coralSoft: Color(0xFF3A1620),
     amber: Color(0xFFFBDE24),
     amberSoft: Color(0xFF3A2E0F),
+    amberText: Color(0xFFFBDE24),
     teal: Color(0xFF2DD4BF),
     tealSoft: Color(0xFF0F2E2B),
     indigo: Color(0xFF818CF8),
@@ -168,6 +196,7 @@ class AppColors extends ThemeExtension<AppColors> {
     expenseText: Color(0xFFF87171),
     snackbarAction: Color(0xFF5648C8),
     scrim: Color(0x66000000),
+    segmentInactiveText: Color(0xFF9A98B5),
   );
 
   @override
@@ -178,6 +207,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? primarySoft,
     Color? primaryOnSoft,
     Color? primaryOnSoftStrong,
+    Color? hintText,
     Color? mint,
     Color? mintSoft,
     Color? sky,
@@ -188,6 +218,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? coralSoft,
     Color? amber,
     Color? amberSoft,
+    Color? amberText,
     Color? teal,
     Color? tealSoft,
     Color? indigo,
@@ -207,6 +238,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? expenseText,
     Color? snackbarAction,
     Color? scrim,
+    Color? segmentInactiveText,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -215,6 +247,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primarySoft: primarySoft ?? this.primarySoft,
       primaryOnSoft: primaryOnSoft ?? this.primaryOnSoft,
       primaryOnSoftStrong: primaryOnSoftStrong ?? this.primaryOnSoftStrong,
+      hintText: hintText ?? this.hintText,
       mint: mint ?? this.mint,
       mintSoft: mintSoft ?? this.mintSoft,
       sky: sky ?? this.sky,
@@ -225,6 +258,7 @@ class AppColors extends ThemeExtension<AppColors> {
       coralSoft: coralSoft ?? this.coralSoft,
       amber: amber ?? this.amber,
       amberSoft: amberSoft ?? this.amberSoft,
+      amberText: amberText ?? this.amberText,
       teal: teal ?? this.teal,
       tealSoft: tealSoft ?? this.tealSoft,
       indigo: indigo ?? this.indigo,
@@ -244,6 +278,7 @@ class AppColors extends ThemeExtension<AppColors> {
       expenseText: expenseText ?? this.expenseText,
       snackbarAction: snackbarAction ?? this.snackbarAction,
       scrim: scrim ?? this.scrim,
+      segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
     );
   }
 
@@ -258,6 +293,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryOnSoft: Color.lerp(primaryOnSoft, other.primaryOnSoft, t)!,
       primaryOnSoftStrong:
           Color.lerp(primaryOnSoftStrong, other.primaryOnSoftStrong, t)!,
+      hintText: Color.lerp(hintText, other.hintText, t)!,
       mint: Color.lerp(mint, other.mint, t)!,
       mintSoft: Color.lerp(mintSoft, other.mintSoft, t)!,
       sky: Color.lerp(sky, other.sky, t)!,
@@ -268,6 +304,7 @@ class AppColors extends ThemeExtension<AppColors> {
       coralSoft: Color.lerp(coralSoft, other.coralSoft, t)!,
       amber: Color.lerp(amber, other.amber, t)!,
       amberSoft: Color.lerp(amberSoft, other.amberSoft, t)!,
+      amberText: Color.lerp(amberText, other.amberText, t)!,
       teal: Color.lerp(teal, other.teal, t)!,
       tealSoft: Color.lerp(tealSoft, other.tealSoft, t)!,
       indigo: Color.lerp(indigo, other.indigo, t)!,
@@ -287,6 +324,8 @@ class AppColors extends ThemeExtension<AppColors> {
       expenseText: Color.lerp(expenseText, other.expenseText, t)!,
       snackbarAction: Color.lerp(snackbarAction, other.snackbarAction, t)!,
       scrim: Color.lerp(scrim, other.scrim, t)!,
+      segmentInactiveText:
+          Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
     );
   }
 }

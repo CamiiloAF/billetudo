@@ -6,11 +6,10 @@ import '../entities/merge_summary.dart';
 /// Contract the Auth feature depends on.
 ///
 /// Implemented in `data/` over the official Google/Apple SDKs for the
-/// client-side half of sign-in, plus (pending PowerSync/Supabase wiring,
-/// see `docs/requirements/05-auth-sync.md`) the server half that actually
-/// creates/merges/deletes the cloud account. Until that wiring lands, the
-/// methods that need a backend throw `UnimplementedError` — see
-/// `AuthRepositoryImpl` for exactly which ones and why.
+/// client-side half of sign-in, Supabase for the session/account, and
+/// PowerSync for sync (see `docs/requirements/05-auth-sync.md`). [deleteAccount]
+/// still needs a Supabase Edge Function that doesn't exist yet — it throws
+/// `UnimplementedError` until that lands; see `AuthRepositoryImpl`.
 ///
 /// Signing in is always optional (HU-01): nothing in this contract may be
 /// called to gate access to a Nivel 0 feature.

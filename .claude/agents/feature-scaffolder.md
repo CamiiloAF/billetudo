@@ -20,4 +20,4 @@ Cuando te pidan crear la feature `<nombre>`, genera en `lib/features/<nombre>/` 
 
 Reglas de codigo mientras generas: dinero siempre en enteros de centavos (`amountMinor`), IDs UUID en texto, actualiza `updatedAt` en cada escritura del repositorio, comillas simples, comas finales, tipos de retorno explicitos (ver `analysis_options.yaml`). No agregues features de Nivel 0 detras de un gate de anuncio/pago.
 
-Si alguna carpeta ya tiene archivos, no los sobrescribas — complementa lo que falte. Al terminar, corre `dart run build_runner build --delete-conflicting-outputs` si tocaste `app_database.dart`, y `flutter analyze` para confirmar que compila. Resume que archivos creaste y que queda pendiente (wiring en `lib/core/di/`, tests).
+Si alguna carpeta ya tiene archivos, no los sobrescribas — complementa lo que falte. Al terminar, corre `dart run build_runner build --force-jit` si tocaste `app_database.dart`, y `flutter analyze` para confirmar que compila. Resume que archivos creaste y que queda pendiente (wiring en `lib/core/di/`, tests).

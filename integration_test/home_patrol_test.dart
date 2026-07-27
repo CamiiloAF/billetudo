@@ -13,6 +13,7 @@
 // would drive the shell.
 import 'package:billetudo/core/widgets/coming_soon_page.dart';
 import 'package:billetudo/features/accounts/presentation/pages/accounts_page.dart';
+import 'package:billetudo/features/budgets/presentation/pages/budgets_page.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
@@ -65,15 +66,15 @@ void main() {
   );
 
   patrolTest(
-    'HU-01: las pestañas Presupuestos y Metas muestran "Próximamente"',
+    'HU-01: Presupuestos abre su feature real y Metas muestra "Próximamente"',
     ($) async {
       await startApp($);
 
-      // Budgets and Goals are empty features: both tabs render the shared
-      // ComingSoonPage placeholder, never a fabricated feature.
+      // Budgets shipped as a real feature (BudgetsPage), so its tab no longer
+      // renders the ComingSoonPage placeholder. Goals is still unimplemented.
       await $.tester.tap(find.text('Presupuestos'));
       await $.tester.pumpAndSettle();
-      expect(find.byType(ComingSoonPage), findsOneWidget);
+      expect(find.byType(BudgetsPage), findsOneWidget);
 
       await $.tester.tap(find.text('Metas'));
       await $.tester.pumpAndSettle();

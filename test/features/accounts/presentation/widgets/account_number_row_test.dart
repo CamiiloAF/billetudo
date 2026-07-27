@@ -17,7 +17,7 @@ void main() {
         const AccountNumberRow(last4: '4321', isCard: false),
       );
 
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
       expect(find.textContaining('1234567890'), findsNothing);
       expect(eye, findsOneWidget);
       expect(copy, findsOneWidget);
@@ -34,7 +34,7 @@ void main() {
       );
 
       expect(find.text('1234567890'), findsOneWidget);
-      expect(find.text('•••• 4321'), findsNothing);
+      expect(find.text('••••••• 4321'), findsNothing);
       expect(eyeOff, findsOneWidget);
       expect(eye, findsNothing);
     });
@@ -67,7 +67,7 @@ void main() {
         const AccountNumberRow(last4: '4321', isCard: true),
       );
 
-      expect(find.text('•••• 4321'), findsOneWidget);
+      expect(find.text('••••••• 4321'), findsOneWidget);
       // La asimetría es deliberada: no hay PAN guardado que revelar o copiar,
       // y ofrecer los botones prometería lo contrario.
       expect(eye, findsNothing);

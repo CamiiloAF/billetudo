@@ -25,6 +25,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonDelete => 'Eliminar';
 
   @override
+  String get commonContinue => 'Continuar';
+
+  @override
+  String get commonAnd => 'y';
+
+  @override
   String get commonEdit => 'Editar';
 
   @override
@@ -34,10 +40,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonBack => 'Atrás';
 
   @override
+  String get commonMoreActions => 'Más opciones';
+
+  @override
   String get commonApply => 'Aplicar';
 
   @override
+  String get commonClear => 'Limpiar';
+
+  @override
+  String get commonConfirm => 'Confirmar';
+
+  @override
   String get commonDone => 'Listo';
+
+  @override
+  String get commonCreate => 'Crear';
 
   @override
   String get errorUnexpected => 'Algo salió mal. Intenta de nuevo.';
@@ -75,7 +93,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountsErrorLocalFirst =>
-      'Tus datos siguen guardados en tu dispositivo';
+      'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.';
 
   @override
   String get accountsArchivedTitle => 'Cuentas archivadas';
@@ -94,7 +112,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountTypeCash => 'Efectivo';
 
   @override
-  String get accountTypeBank => 'Banco';
+  String get accountTypeBank => 'Cuenta corriente';
 
   @override
   String get accountTypeCard => 'Tarjeta de crédito';
@@ -106,7 +124,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountTypeInvestment => 'Inversión';
 
   @override
-  String get accountTypeOther => 'Otra';
+  String get accountTypeOther => 'Cuenta general';
 
   @override
   String get accountBalanceLabel => 'Saldo actual';
@@ -116,6 +134,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountDebtLabel => 'Deuda actual';
+
+  @override
+  String get accountBalanceAdjustTitle => 'Ajustar saldo';
+
+  @override
+  String accountBalanceAdjustCurrent(String amount) {
+    return 'Saldo actual: $amount';
+  }
+
+  @override
+  String accountBalanceAdjustCurrentDebt(String amount) {
+    return 'Deuda actual: $amount';
+  }
+
+  @override
+  String get accountBalanceAdjustNewLabel => 'Nuevo saldo deseado';
+
+  @override
+  String get accountBalanceAdjustNewDebtLabel => 'Nueva deuda';
+
+  @override
+  String get accountBalanceAdjustHowLabel => '¿Cómo quieres aplicarlo?';
+
+  @override
+  String get accountBalanceAdjustRegisterTitle => 'Registrar ajuste';
+
+  @override
+  String accountBalanceAdjustRegisterBody(String diff) {
+    return 'Creamos un movimiento con fecha de hoy por la diferencia ($diff). Suma a tus reportes y presupuestos.';
+  }
+
+  @override
+  String get accountBalanceAdjustCorrectTitle => 'Corregir saldo inicial';
+
+  @override
+  String get accountBalanceAdjustCorrectBody =>
+      'Ajustamos tu saldo de arranque para que cuadre. No crea ningún movimiento.';
+
+  @override
+  String get accountBalanceAdjustApplyCta => 'Aplicar';
+
+  @override
+  String get accountBalanceAdjustError =>
+      'No pudimos ajustar el saldo. Intenta de nuevo.';
+
+  @override
+  String get accountBalanceAdjustNote => 'Ajuste de saldo';
+
+  @override
+  String get accountDebtShortLabel => 'Deuda';
 
   @override
   String get accountOverLimitBadge => 'Sobrecupo';
@@ -165,7 +233,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String accountNumberMasked(String last4) {
-    return '•••• $last4';
+    return '••••••• $last4';
   }
 
   @override
@@ -200,16 +268,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountFormTypeChange => 'Cambiar';
 
   @override
-  String get accountFormNameLabel => 'Nombre';
+  String get accountFormNameLabel => 'Nombre de la cuenta';
 
   @override
   String get accountFormNameHint => 'Ej. Cuenta de ahorros';
 
   @override
-  String get accountFormInstitutionLabel => 'Institución';
+  String get accountFormInstitutionLabel => 'Institución (opcional)';
 
   @override
-  String get accountFormInstitutionHint => 'Ej. Bancolombia';
+  String get accountFormInstitutionHint => 'Opcional';
 
   @override
   String get accountFormInitialBalanceLabel => 'Saldo inicial';
@@ -256,13 +324,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountFormPaymentDueDayLabel => 'Día de pago';
 
   @override
-  String get accountFormAmountHint => '0';
+  String get accountFormAmountHint => '\$0';
 
   @override
   String get accountFormSelectHint => 'Seleccionar';
 
   @override
+  String get accountFormSaveCta => 'Guardar cuenta';
+
+  @override
   String get accountErrorType => 'Elige el tipo de cuenta.';
+
+  @override
+  String get accountErrorNameRequired => 'Ingresa un nombre para la cuenta.';
 
   @override
   String get accountErrorName => 'Escribe un nombre de hasta 100 caracteres.';
@@ -298,19 +372,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountErrorPaymentDueDay => 'Elige un día entre 1 y 31.';
 
   @override
-  String get accountDeleteSheetTitle => '¿Eliminar esta cuenta?';
-
-  @override
   String get accountDeleteSheetMessage =>
-      'La cuenta dejará de aparecer en tus listas.';
+      'Esta cuenta no tiene movimientos asociados. Esta acción no se puede deshacer.';
 
   @override
   String accountDeleteSheetImpact(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiene $count movimientos asociados.',
-      one: 'Tiene 1 movimiento asociado.',
+      other:
+          'Esta cuenta tiene $count transacciones asociadas. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.',
+      one:
+          'Esta cuenta tiene 1 transacción asociada. Si la eliminas, ese historial se archivará también. Esta acción no se puede deshacer.',
     );
     return '$_temp0';
   }
@@ -323,17 +396,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Podrás recuperarla cuando quieras desde “Cuentas archivadas”.';
 
   @override
-  String get accountChangeSheetTitle => '¿Confirmas el cambio?';
-
-  @override
   String get accountChangeSheetMessage =>
-      'Esta cuenta ya tiene movimientos. Cambiar su tipo o su moneda cambia cómo se leen sus cifras.';
+      'Cambiar el tipo o la moneda de esta cuenta puede afectar cálculos y reportes de tus transacciones existentes. ¿Deseas continuar?';
 
   @override
   String get accountChangeConfirm => 'Confirmar';
 
   @override
-  String get accountCurrencySheetTitle => 'Moneda';
+  String get accountCurrencySheetTitle => 'Selecciona la moneda';
 
   @override
   String get currencyCopName => 'Peso colombiano';
@@ -406,7 +476,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryFormEditSubcategoryTitle => 'Editar subcategoría';
 
   @override
-  String get categoryFormAppearanceLabel => 'Icono y color';
+  String get categoryFormAppearanceLabel => 'Ícono y color';
+
+  @override
+  String get categoryFormAppearanceEmptyLabel => 'Elegir ícono y color';
 
   @override
   String get categoryFormAppearanceEmptySublabel =>
@@ -428,6 +501,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryFormParentLabel => 'Categoría padre';
 
   @override
+  String get categoryErrorNameRequired =>
+      'Ingresa un nombre para la categoría.';
+
+  @override
   String get categoryErrorName => 'Escribe un nombre de hasta 100 caracteres.';
 
   @override
@@ -442,10 +519,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryDeleteAction => 'Eliminar categoría';
 
   @override
-  String get categoryAppearancePickerTitle => 'Icono y color';
+  String get categoryDeleteSubcategoryAction => 'Eliminar subcategoría';
+
+  @override
+  String get categoryAppearancePickerTitle => 'Ícono y color';
+
+  @override
+  String get categoryColorLockedSubcategory =>
+      'El color se hereda de la categoría padre y no se puede cambiar. Elige el ícono que prefieras.';
+
+  @override
+  String get categoryAppearanceIconSectionLabel => 'Ícono';
+
+  @override
+  String get categoryAppearanceColorSectionLabel => 'Color';
 
   @override
   String get categoryParentPickerTitle => 'Categoría padre';
+
+  @override
+  String get categoryParentPickerHint =>
+      'Solo se muestran categorías principales de Gasto. Las subcategorías no pueden anidarse dentro de otras subcategorías.';
 
   @override
   String get categoryParentPickerEmpty =>
@@ -456,18 +550,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryDeleteSimpleMessage =>
-      'Podrás recuperarla después desde la papelera.';
+      'Esta categoría se eliminará de tu lista. Podrás recuperarla luego desde la papelera, en Ajustes.';
 
   @override
-  String get categoryDeleteTransactionsTitle => '¿Eliminar esta categoría?';
-
-  @override
-  String categoryDeleteTransactionsCount(int count) {
+  String categoryDeleteTransactionsMessage(String categoryName, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiene $count movimientos asociados.',
-      one: 'Tiene 1 movimiento asociado.',
+      other:
+          '\"$categoryName\" tiene $count movimientos asociados. Elige qué hacer con ellos antes de eliminar la categoría.',
+      one:
+          '\"$categoryName\" tiene 1 movimiento asociado. Elige qué hacer con él antes de eliminar la categoría.',
     );
     return '$_temp0';
   }
@@ -483,12 +576,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Reasignar a otra categoría';
 
   @override
-  String get categoryDeleteSubcategoriesTitle =>
-      'Esta categoría tiene subcategorías';
-
-  @override
-  String get categoryDeleteSubcategoriesMessage =>
-      'Antes de eliminarla, decide qué pasa con sus subcategorías.';
+  String categoryDeleteSubcategoriesMessage(String categoryName, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '\"$categoryName\" tiene $count subcategorías activas. Debes resolverlas antes de eliminar esta categoría raíz.',
+      one:
+          '\"$categoryName\" tiene 1 subcategoría activa. Debes resolverla antes de eliminar esta categoría raíz.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get categoryReassignSubcategoriesOption => 'Reasignar subcategorías';
@@ -506,7 +604,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryCascadeConfirmMessage =>
-      'Se eliminarán la categoría y todas sus subcategorías. Podrás recuperarlas después desde la papelera.';
+      'Se eliminarán la categoría y todas sus subcategorías. Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get transactionsTitle => 'Movimientos';
@@ -530,7 +628,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsErrorLocalFirst =>
-      'Tus datos siguen a salvo en este dispositivo.';
+      'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.';
 
   @override
   String get transactionsAdd => 'Agregar movimiento';
@@ -560,7 +658,65 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsSortDateDesc => 'Más recientes primero';
 
   @override
-  String get transactionsSortAmountDesc => 'Monto: mayor a menor';
+  String get transactionsSortDateAsc => 'Más antiguos primero';
+
+  @override
+  String get transactionsSortAmountDesc => 'Mayor a menor';
+
+  @override
+  String get transactionsSortAmountAsc => 'Menor a mayor';
+
+  @override
+  String get transactionsSortSectionDate => 'FECHA';
+
+  @override
+  String get transactionsSortSectionAmount => 'MONTO';
+
+  @override
+  String get transactionsSortActiveByDate => 'Ordenado por fecha';
+
+  @override
+  String get transactionsSortActiveByAmount => 'Ordenado por monto';
+
+  @override
+  String transactionsFilterAccountsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cuentas',
+      one: '1 cuenta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transactionsBalanceTotalLabel => 'Saldo total';
+
+  @override
+  String get transactionsBalanceCardBalanceLabel => 'Saldo';
+
+  @override
+  String get transactionsBalanceCarouselCollapse => 'Ocultar saldos';
+
+  @override
+  String get transactionsBalanceCarouselExpand => 'Mostrar saldos';
+
+  @override
+  String get transactionsGroupToday => 'Hoy';
+
+  @override
+  String get transactionsGroupYesterday => 'Ayer';
+
+  @override
+  String transactionsGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos',
+      one: '1 movimiento',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get transactionTypeExpense => 'Gasto';
@@ -597,6 +753,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionFormCategoryLabel => 'Categoría';
+
+  @override
+  String get transactionErrorAccount => 'Elige una cuenta.';
+
+  @override
+  String get transactionErrorCategory => 'Elige una categoría.';
+
+  @override
+  String get transactionErrorAmount => 'Ingresa un monto mayor a cero.';
+
+  @override
+  String get transactionErrorTransferAccount => 'Elige la cuenta de destino.';
 
   @override
   String get categorySelectTitle => 'Elegir categoría';
@@ -647,8 +815,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionFormTransferFromLabel => 'Cuenta origen';
 
   @override
-  String get transactionFormTransferInfo =>
-      'Las transferencias no cuentan como gasto ni ingreso.';
+  String get transactionFormCountsInBudgetLabel =>
+      '¿Incluir en tu presupuesto?';
+
+  @override
+  String get transactionFormCountsInBudgetHintOff =>
+      'Actívala para que se sume a tus presupuestos y reportes.';
+
+  @override
+  String get transactionFormCountsInBudgetHintOn =>
+      'Se suma a tus presupuestos y reportes.';
 
   @override
   String get transactionFormSwapAccounts => 'Intercambiar cuentas';
@@ -695,6 +871,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionFormKeypadEquals => 'Calcular resultado';
 
   @override
+  String get transactionFormKeypadConfirm => 'Confirmar';
+
+  @override
   String get transactionFormKeypadDecimal => 'Punto decimal';
 
   @override
@@ -719,36 +898,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionSourceScheduled => 'Programado';
 
   @override
-  String get transactionEditImpactTitle => 'Este movimiento está vinculado';
+  String transactionEditImpactMessage(String links) {
+    return 'Esta transacción está vinculada a $links. Si cambias el monto, revisa que siga coincidiendo.';
+  }
 
   @override
-  String get transactionEditImpactScheduled =>
-      'Afecta su pago programado asociado.';
+  String get transactionEditImpactLinkScheduled => 'tu pago programado';
 
   @override
-  String get transactionEditImpactGoal => 'Afecta la meta a la que aporta.';
+  String get transactionEditImpactLinkGoal => 'tu meta';
 
   @override
-  String get transactionEditImpactDebt => 'Afecta la deuda a la que abona.';
-
-  @override
-  String get transactionEditImpactConfirm => 'Guardar de todas formas';
+  String get transactionEditImpactLinkDebt => 'tu deuda';
 
   @override
   String get transactionDeleteTitle => '¿Eliminar este movimiento?';
 
   @override
   String get transactionDeleteMessage =>
-      'Podrás recuperarlo después desde la papelera.';
+      'Podrás deshacerlo justo después de eliminar.';
 
   @override
-  String get transactionDetailTitle => 'Detalle del movimiento';
+  String get transactionDetailTitleExpense => 'Detalle del gasto';
 
   @override
-  String get transactionDetailEdit => 'Editar';
+  String get transactionDetailTitleIncome => 'Detalle del ingreso';
 
   @override
-  String get transactionDetailDelete => 'Eliminar';
+  String get transactionDetailTitleTransfer => 'Detalle de la transferencia';
 
   @override
   String transactionDetailSource(String source) {
@@ -756,29 +933,42 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String transactionDetailAccountLine(String account) {
-    return 'Cuenta: $account';
+  String get transactionDetailAccountLabel => 'Cuenta';
+
+  @override
+  String get transactionDetailAccountFromLabel => 'Cuenta origen';
+
+  @override
+  String get transactionDetailAccountToLabel => 'Cuenta destino';
+
+  @override
+  String get transactionDetailCategoryLabel => 'Categoría';
+
+  @override
+  String get transactionDetailDateLabel => 'Fecha';
+
+  @override
+  String get transactionDetailNoteLabel => 'Nota';
+
+  @override
+  String get transactionDetailNoNote => 'Sin nota';
+
+  @override
+  String get transactionDetailSourceLabel => 'Origen';
+
+  @override
+  String transactionDetailDebtLinkedLabel(String debtName) {
+    return 'Enlazada a deuda: $debtName';
   }
 
   @override
-  String transactionDetailTransferLine(String account) {
-    return 'Cuenta destino: $account';
-  }
+  String get transactionDetailTagsLabel => 'Etiquetas';
 
   @override
-  String transactionDetailCategoryLine(String category) {
-    return 'Categoría: $category';
-  }
+  String get transactionDetailTransferSubtitle => 'Transferencia';
 
   @override
-  String transactionDetailNoteLine(String note) {
-    return 'Nota: $note';
-  }
-
-  @override
-  String transactionDetailTagsLine(String tags) {
-    return 'Etiquetas: $tags';
-  }
+  String get transactionDetailDeleteLink => 'Eliminar movimiento';
 
   @override
   String get accountFilterSheetTitle => 'Filtrar por cuenta';
@@ -825,6 +1015,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tagFilterSheetTitle => 'Filtrar por etiqueta';
 
   @override
+  String get tagFilterSearchHint => 'Buscar etiqueta';
+
+  @override
+  String get tagFilterEmpty => 'No encontramos etiquetas con ese nombre';
+
+  @override
   String get newTagSheetTitle => 'Nueva etiqueta';
 
   @override
@@ -838,6 +1034,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get navGoals => 'Metas';
+
+  @override
+  String get navScheduledPayments => 'Pagos';
 
   @override
   String get navMore => 'Más';
@@ -857,10 +1056,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeSyncSynced => 'Sincronizado';
 
   @override
-  String get homeSyncSyncing => 'Sincronizando';
+  String get homeSyncSyncing => 'Sincronizando…';
 
   @override
   String get homeSyncOffline => 'Sin conexión';
+
+  @override
+  String get homeSyncSheetSyncedTitle => 'Todo a salvo';
+
+  @override
+  String get homeSyncSheetSyncedMessage =>
+      'Tu información está a salvo y sincronizada.';
+
+  @override
+  String get homeSyncSheetSyncingTitle => 'Sincronizando…';
+
+  @override
+  String get homeSyncSheetSyncingMessage =>
+      'Estamos guardando tus cambios en la nube.';
+
+  @override
+  String get homeSyncSheetOfflineTitle => 'Sin conexión';
+
+  @override
+  String get homeSyncSheetOfflineMessage =>
+      'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.';
+
+  @override
+  String get homeSyncSheetDismiss => 'Entendido';
 
   @override
   String homeSpentInMonth(String month) {
@@ -875,10 +1098,39 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeNoSpendingYet => 'Aún no hay gastos este mes';
 
   @override
+  String homeHeroBudgetProgress(int pct, String amount) {
+    return '$pct% de $amount';
+  }
+
+  @override
+  String homeHeroBudgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'faltan $count días',
+      one: 'falta $count día',
+      zero: 'último día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeQuickAccessTitle => 'Acceso rápido';
+
+  @override
+  String get homeQuickAccessScheduledPayments => 'Pagos programados';
+
+  @override
   String get homeRecentTitle => 'Movimientos recientes';
 
   @override
   String get homeSeeAll => 'Ver todos';
+
+  @override
+  String get homeBalancesTitle => 'Mis cuentas';
+
+  @override
+  String get homeBalancesSeeAll => 'Ver todas';
 
   @override
   String get homeEmptyMovements => 'Aún no registras movimientos';
@@ -887,7 +1139,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeLoading => 'Cargando inicio';
 
   @override
-  String get homeMonthPickerTitle => 'Elegir mes';
+  String get homeMonthPickerTitle => 'Selecciona el mes';
 
   @override
   String get homeAiBanner => 'Pronto: pregúntale a Billetudo';
@@ -902,6 +1154,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get homeNotificationsSheetMessage =>
       'Las notificaciones llegarán pronto.';
+
+  @override
+  String get homeExitConfirmTitle => '¿Salir de Billetudo?';
+
+  @override
+  String get homeExitConfirmMessage =>
+      'Puedes volver cuando quieras, tus datos se quedan guardados.';
+
+  @override
+  String get homeExitConfirmAction => 'Salir';
 
   @override
   String get comingSoonTitle => 'Próximamente';
@@ -920,19 +1182,540 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moreTitle => 'Más';
 
   @override
+  String get moreAccountsDescription => 'Gestiona tus cuentas y saldos';
+
+  @override
+  String get moreCategoriesDescription => 'Organiza tus gastos e ingresos';
+
+  @override
   String get moreDebts => 'Deudas';
+
+  @override
+  String get moreDebtsDescription => 'Sigue tus deudas y pagos';
+
+  @override
+  String get debtsTitle => 'Deudas';
+
+  @override
+  String get debtsAdd => 'Agregar deuda';
+
+  @override
+  String get debtsLoading => 'Cargando tus deudas';
+
+  @override
+  String get debtsSummaryTitle => 'Resumen';
+
+  @override
+  String get debtsSectionTitle => 'Tus deudas';
+
+  @override
+  String get debtsEmptyMessage => 'Aún no tienes deudas registradas';
+
+  @override
+  String get debtsEmptyDescription =>
+      'Registra lo que debes o lo que te deben para seguir tu progreso de pago en un solo lugar.';
+
+  @override
+  String get debtsErrorTitle => 'No pudimos cargar tus deudas';
+
+  @override
+  String get debtDetailErrorTitle => 'No pudimos cargar esta deuda';
+
+  @override
+  String get debtDirectionIOwe => 'Yo debo';
+
+  @override
+  String get debtDirectionOwedToMe => 'Me deben';
+
+  @override
+  String debtProgressPaid(int pct) {
+    return '$pct% pagado';
+  }
+
+  @override
+  String debtProgressCollected(int pct) {
+    return '$pct% cobrado';
+  }
+
+  @override
+  String debtAmountOf(String amount) {
+    return 'de $amount';
+  }
+
+  @override
+  String debtDueOn(String date) {
+    return 'Vence $date';
+  }
+
+  @override
+  String debtPercentValue(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String get debtDetailBalanceLabel => 'Saldo pendiente';
+
+  @override
+  String get debtDetailPaidLabel => 'pagado';
+
+  @override
+  String get debtDetailCollectedLabel => 'cobrado';
+
+  @override
+  String debtDetailGrowth(String amount) {
+    return 'Crece ~$amount/día';
+  }
+
+  @override
+  String get debtDetailEstimated => 'estimado';
+
+  @override
+  String get debtDetailUpdateBalance => 'Actualizar saldo';
+
+  @override
+  String get debtDetailMovementsTitle => 'Movimientos';
+
+  @override
+  String get debtDetailRegisterPayment => 'Registrar abono';
+
+  @override
+  String get debtInstallmentTitle => 'Próxima cuota';
+
+  @override
+  String debtInstallmentBadge(String date) {
+    return 'Cuota · $date';
+  }
+
+  @override
+  String get debtInstallmentScheduledBadge => 'Pago programado';
+
+  @override
+  String get debtConfigureInstallmentTitle => 'Configurar cuota';
+
+  @override
+  String get debtConfigureInstallmentSubtitle =>
+      'Programa la cuota de esta deuda';
+
+  @override
+  String get debtLedgerOpening => 'Saldo de apertura';
+
+  @override
+  String get debtLedgerDisbursement => 'Desembolso';
+
+  @override
+  String get debtLedgerPaymentOwe => 'Abono a la deuda';
+
+  @override
+  String get debtLedgerPaymentOwed => 'Pago recibido';
+
+  @override
+  String get debtLedgerInterest => 'Interés';
+
+  @override
+  String get debtLedgerAdjustment => 'Saldo actualizado';
+
+  @override
+  String debtLedgerRunning(String amount) {
+    return 'Saldo $amount';
+  }
+
+  @override
+  String get debtLedgerTagEstimated => 'Estimado';
+
+  @override
+  String get debtLedgerTagNoAccount => 'No afecta cuentas';
+
+  @override
+  String get debtEditTooltip => 'Editar deuda';
+
+  @override
+  String get debtDetailTitleFallback => 'Deuda';
+
+  @override
+  String get debtFormNewTitle => 'Nueva deuda';
+
+  @override
+  String get debtFormEditTitle => 'Editar deuda';
+
+  @override
+  String get debtFormDirectionLabel => '¿Debes o te deben?';
+
+  @override
+  String get debtFormOpeningBalanceLabel => 'Saldo de apertura';
+
+  @override
+  String get debtFormErrorAmountZero =>
+      'El saldo de apertura debe ser mayor a 0';
+
+  @override
+  String get debtFormNameLabel => 'Nombre de la deuda';
+
+  @override
+  String get debtFormNameHint => 'Crédito vehicular, préstamo a Andrés…';
+
+  @override
+  String get debtFormNameRequired => 'Ponle un nombre a la deuda';
+
+  @override
+  String get debtFormCounterpartyLabel => 'Contraparte';
+
+  @override
+  String get debtFormCounterpartyLabelIOwe => 'Le debo a';
+
+  @override
+  String get debtFormCounterpartyLabelOwedToMe => 'Me debe';
+
+  @override
+  String get debtFormCounterpartyHint => 'Banco, persona…';
+
+  @override
+  String get debtFormStartDateLabel => 'Fecha';
+
+  @override
+  String get debtFormDueDateLabel => 'Fecha de vencimiento';
+
+  @override
+  String get debtFormDueDateHint => 'Sin fecha';
+
+  @override
+  String get debtFormErrorDueBeforeStart =>
+      'La fecha de vencimiento debe ser posterior a la fecha de inicio';
+
+  @override
+  String get debtFormInterestLabel => 'Interés anual (opcional)';
+
+  @override
+  String get debtFormInterestHint => '0';
+
+  @override
+  String get debtFormInterestError => 'Revisa la tasa de interés';
+
+  @override
+  String get debtFormAccrualModeLabel => 'Modo de interés';
+
+  @override
+  String get debtFormAccrualManual => 'Manual';
+
+  @override
+  String get debtFormAccrualAuto => 'Automático';
+
+  @override
+  String get debtFormAccrualHint =>
+      'Manual: tú pones la cifra del banco. Automático estima el crecimiento diario (estimado).';
+
+  @override
+  String get debtFormCreateCta => 'Crear deuda';
+
+  @override
+  String get debtFormSaveCta => 'Guardar cambios';
+
+  @override
+  String get debtFormDelete => 'Eliminar deuda';
+
+  @override
+  String get debtCurrencySheetTitle => 'Moneda';
+
+  @override
+  String debtCurrencyPill(String code, String name) {
+    return '$code · $name';
+  }
+
+  @override
+  String get debtDeleteSheetTitle => '¿Eliminar esta deuda?';
+
+  @override
+  String get debtDeleteSheetMessage => 'Podrás recuperarla desde la papelera.';
+
+  @override
+  String debtContext(String name, String direction) {
+    return '$name · $direction';
+  }
+
+  @override
+  String debtDateToday(String date) {
+    return 'Hoy, $date';
+  }
+
+  @override
+  String get debtPaymentTitle => 'Registrar abono';
+
+  @override
+  String get debtPaymentAmountLabel => 'Abono';
+
+  @override
+  String get debtPaymentAddToAccountLabel => '¿Agregar a una cuenta?';
+
+  @override
+  String get debtPaymentAddToAccountHintYes =>
+      'Moverá el saldo y contará en tus estadísticas';
+
+  @override
+  String get debtPaymentAddToAccountHintNo =>
+      'Este abono baja el saldo de la deuda pero no moverá ninguna cuenta.';
+
+  @override
+  String get debtPaymentLinkExisting =>
+      '¿Ya lo registraste? Enlaza un movimiento';
+
+  @override
+  String get debtPaymentDateLabel => 'Fecha';
+
+  @override
+  String get debtPaymentNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get debtPaymentNoteHint => 'Agregar una nota';
+
+  @override
+  String get debtPaymentCategoryLabel => 'Categoría (opcional)';
+
+  @override
+  String get debtPaymentCategoryNone => 'Sin categoría';
+
+  @override
+  String get debtPaymentSelectAccount => 'Elige una cuenta';
+
+  @override
+  String get debtPaymentAccountPickerTitle => 'Elige una cuenta';
+
+  @override
+  String debtOpeningMovementNote(String debtName) {
+    return 'Deuda: $debtName';
+  }
+
+  @override
+  String get debtPaymentCta => 'Registrar abono';
+
+  @override
+  String get debtPaymentError =>
+      'No pudimos registrar el abono. Intenta de nuevo.';
+
+  @override
+  String get debtUpdateBalanceTitle => 'Actualizar saldo';
+
+  @override
+  String get debtUpdateBalanceNewLabel => 'Nuevo saldo';
+
+  @override
+  String get debtUpdateBalanceEstimatedLabel => 'Saldo estimado hoy';
+
+  @override
+  String get debtUpdateBalanceAdjustLabel => 'Ajuste que se registra';
+
+  @override
+  String get debtUpdateBalanceHint =>
+      'Registra un ajuste en la deuda para igualar la cifra del banco. No mueve ninguna cuenta.';
+
+  @override
+  String get debtUpdateBalanceDateLabel => 'Fecha del ajuste';
+
+  @override
+  String get debtUpdateBalanceCta => 'Guardar saldo';
+
+  @override
+  String get debtUpdateBalanceError =>
+      'No pudimos actualizar el saldo. Intenta de nuevo.';
+
+  @override
+  String debtLinkBannerTitle(String debt) {
+    return 'Enlazar a $debt';
+  }
+
+  @override
+  String get debtLinkBannerBody =>
+      'Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.';
+
+  @override
+  String get debtLinkError =>
+      'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
+  String get debtInitialRegistroTitle =>
+      '¿Quieres crear un registro inicial para esta deuda?';
+
+  @override
+  String get debtInitialRegistroMessage =>
+      'Si lo creas, cambiará el saldo de la cuenta que elijas.';
+
+  @override
+  String get debtInitialRegistroSoloDeuda => 'No, solo la deuda';
+
+  @override
+  String get debtInitialRegistroChooseAccount => 'Sí, elegir cuenta';
+
+  @override
+  String get debtUpdateRegistroTitle => '¿Actualizar también el registro?';
+
+  @override
+  String debtUpdateRegistroMessage(String from, String to) {
+    return 'Cambiar el saldo de apertura actualizará el registro inicial de $from a $to.';
+  }
+
+  @override
+  String get debtUpdateRegistroConfirm => 'Actualizar';
+
+  @override
+  String get debtOpeningLinkSnackbar => 'Saldo inicial · sin cuenta enlazada';
+
+  @override
+  String get debtLedgerAbonoNoAccountSnackbar =>
+      'Este abono no movió ninguna cuenta';
+
+  @override
+  String get debtMenuTooltip => 'Más opciones';
+
+  @override
+  String get debtActionClose => 'Cerrar deuda';
+
+  @override
+  String get debtActionError =>
+      'No pudimos completar la acción. Intenta de nuevo.';
+
+  @override
+  String get debtCloseSheetTitle => '¿Cerrar esta deuda?';
+
+  @override
+  String debtCloseSheetMessageIOwe(String amount, String counterparty) {
+    return 'Le debes $amount a $counterparty. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageIOweNoCounterparty(String amount) {
+    return 'Debes $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMe(String counterparty, String amount) {
+    return '$counterparty te debe $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMeNoCounterparty(String amount) {
+    return 'Te deben $amount. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.';
+  }
+
+  @override
+  String get debtCloseInfoLabel => 'Saldo pendiente al cerrar';
+
+  @override
+  String get debtCloseCta => 'Cerrar deuda';
+
+  @override
+  String get debtCelebrationTitleIOwe => '¡Felicidades! Ya no debes nada';
+
+  @override
+  String get debtCelebrationTitleOwedToMe =>
+      '¡Felicidades! Ya no te deben nada';
+
+  @override
+  String debtCelebrationMessageIOwe(
+      String name, String amount, String duration) {
+    return 'Terminaste de pagar $name. En total pagaste $amount en $duration.';
+  }
+
+  @override
+  String debtCelebrationMessageOwedToMe(
+      String name, String amount, String duration) {
+    return 'Terminaste de cobrar $name. En total cobraste $amount en $duration.';
+  }
+
+  @override
+  String get debtCelebrationStatTotalPaidIOwe => 'Total pagado';
+
+  @override
+  String get debtCelebrationStatTotalPaidOwedToMe => 'Total cobrado';
+
+  @override
+  String get debtCelebrationStatDuration => 'Duración';
+
+  @override
+  String get debtCelebrationDismiss => 'Ahora no';
+
+  @override
+  String get debtCelebrationComplete => 'Completar';
+
+  @override
+  String debtDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count meses',
+      one: '1 mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String debtDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get debtDirectionIOwePast => 'Debía';
+
+  @override
+  String get debtDirectionOwedToMePast => 'Me debían';
+
+  @override
+  String debtCardStatusPaid(String date) {
+    return 'Pagada · $date';
+  }
+
+  @override
+  String debtCardStatusClosed(String date) {
+    return 'Cerrada · $date';
+  }
+
+  @override
+  String get debtsTabActive => 'Activas';
+
+  @override
+  String get debtsTabClosed => 'Cerradas';
+
+  @override
+  String get debtsClosedPaidLabel => 'Pagué';
+
+  @override
+  String get debtsClosedCollectedLabel => 'Me pagaron';
+
+  @override
+  String get debtsClosedEmptyMessage => 'Aún no has cerrado ninguna deuda';
+
+  @override
+  String get debtsActiveEmptyMessage => 'No tienes deudas activas';
 
   @override
   String get moreScheduledPayments => 'Pagos programados';
 
   @override
+  String get moreScheduledPaymentsDescription => 'Pagos e ingresos automáticos';
+
+  @override
   String get moreReports => 'Gráficas e informes';
+
+  @override
+  String get moreReportsDescription => 'Visualiza tus finanzas con gráficas';
+
+  @override
+  String get moreGoalsDescription => 'Ahorra para tus metas y objetivos';
 
   @override
   String get moreImportExport => 'Importar y exportar';
 
   @override
+  String get moreImportExportDescription => 'Respalda o trae tus datos';
+
+  @override
   String get moreSettings => 'Ajustes';
+
+  @override
+  String get moreSettingsDescription => 'Preferencias y tu cuenta';
 
   @override
   String get moreSignOut => 'Cerrar sesión';
@@ -1001,17 +1784,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authSignOutSheetMessage =>
-      'Tus cuentas y movimientos seguirán guardados en este dispositivo, no se borran. Pero los cambios que hagas aquí después no se sincronizarán hasta que vuelvas a iniciar sesión.';
+      'Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.';
+
+  @override
+  String get authSignOutSheetMessageDeleting =>
+      'Dejarás de sincronizar hasta que vuelvas a iniciar sesión.';
 
   @override
   String get authSignOutCta => 'Cerrar sesión';
+
+  @override
+  String get authSignOutDeleteCta => 'Borrar y salir';
+
+  @override
+  String get authSignOutDeleteOptInTitle =>
+      'Borrar también los datos de este teléfono';
+
+  @override
+  String get authSignOutDeleteOptInSubtitle =>
+      'Tu cuenta en la nube no se toca: al volver a entrar, los recuperas.';
+
+  @override
+  String get authSignOutUnsyncedTitle => 'Hay cambios que aún no se han subido';
+
+  @override
+  String authSignOutUnsyncedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count cambios siguen guardados solo en este teléfono. Si borras ahora, esos cambios no quedarán en la nube.',
+      one:
+          '1 cambio sigue guardado solo en este teléfono. Si borras ahora, ese cambio no quedará en la nube.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authSignOutWipeErrorMessage =>
+      'Cerramos tu sesión, pero no pudimos borrar los datos de este teléfono. Siguen aquí.';
+
+  @override
+  String get authSignOutFailedMessage =>
+      'No pudimos cerrar tu sesión, así que no borramos nada de este teléfono. Inténtalo de nuevo.';
 
   @override
   String get authDeleteStep1Title => 'Eliminar tu cuenta';
 
   @override
   String get authDeleteStep1Message =>
-      'Vamos a borrar tus cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta en la nube. Esta acción no se puede deshacer.';
+      'Esta acción es irreversible. Se borrarán para siempre todos tus datos en la nube: cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta.';
 
   @override
   String get authDeleteStep1Cta => 'Eliminar cuenta';
@@ -1021,7 +1843,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authDeleteStep1ErrorMessage =>
-      'Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.';
+      'Hubo un problema para conectar con el servidor y no pudimos completar la solicitud. Tus datos siguen a salvo en este dispositivo — intenta de nuevo.';
 
   @override
   String get authDeleteStep2Title =>
@@ -1029,7 +1851,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authDeleteStep2Subtitle =>
-      'Tu cuenta en la nube ya se eliminó. Esto es solo sobre este dispositivo.';
+      'Tu cuenta en la nube ya fue eliminada. Elige qué pasa con lo que queda guardado aquí, en este dispositivo.';
 
   @override
   String get authDeleteStep2KeepTitle =>
@@ -1079,10 +1901,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsBackupSubtitle => 'Guarda tus datos de forma segura';
 
   @override
+  String get settingsBudgetSection => 'Presupuesto';
+
+  @override
   String get settingsPreferencesSection => 'Preferencias';
 
   @override
   String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsAppearanceLight => 'Claro';
+
+  @override
+  String get settingsAppearanceDark => 'Oscuro';
+
+  @override
+  String get settingsAppearanceSystem => 'Sistema';
 
   @override
   String get settingsCurrency => 'Moneda';
@@ -1110,6 +1944,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsEmptyCta => 'Crear presupuesto';
 
   @override
+  String get budgetsEmptyDescription =>
+      'Crea uno para controlar tu gasto sin esfuerzo';
+
+  @override
   String get budgetsLoading => 'Cargando tus presupuestos';
 
   @override
@@ -1119,10 +1957,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsMenuHistory => 'Ver histórico';
 
   @override
+  String get budgetsMenuTooltip => 'Más opciones';
+
+  @override
   String get budgetRemainingLabel => 'Te quedan';
 
   @override
   String get budgetOverspentLabel => 'Excedido por';
+
+  @override
+  String get budgetAtRiskLabel => 'Podría exceder por';
 
   @override
   String budgetResetsOn(String date) {
@@ -1180,21 +2024,104 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String budgetEndsInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Termina en $count días',
+      one: 'Termina en $count día',
+      zero: 'Último día',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String budgetProgressBreakdown(String spent, String amount) {
     return '$spent de $amount';
   }
 
   @override
-  String get budgetActivityTitle => 'Actividad del periodo';
+  String get budgetActivityTitle => 'Movimientos del periodo';
+
+  @override
+  String budgetActivityCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos',
+      one: '$count movimiento',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get budgetActivityEmpty => 'Sin movimientos en este periodo';
 
   @override
-  String get budgetLoadMore => 'Cargar más';
+  String get budgetScheduledLabel => 'Programado';
 
   @override
-  String get budgetOpenInTransactions => 'Abrir en Movimientos';
+  String budgetScheduledEntrySub(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pagos próximos',
+      one: '$count pago próximo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetScheduledEntrySubRisk(String amount) {
+    return 'Excedería el presupuesto por $amount';
+  }
+
+  @override
+  String budgetScheduledCaption(String amount, int pct) {
+    return '+ $amount programado (llega a $pct% si se ejecuta)';
+  }
+
+  @override
+  String budgetScheduledCaptionRisk(String amount, String overage) {
+    return '+ $amount programado — excedería el presupuesto por $overage';
+  }
+
+  @override
+  String budgetScheduledFreeCaption(String amount) {
+    return '$amount quedarían libres si apruebas los programados';
+  }
+
+  @override
+  String get budgetScheduledSheetTitle => 'Pagos programados del período';
+
+  @override
+  String get budgetScheduledSheetSeeAll => 'Ver todos los pagos programados';
+
+  @override
+  String budgetScheduledSheetHint(String amount) {
+    return 'Suman $amount de lo reservado este período.';
+  }
+
+  @override
+  String get budgetScheduledSheetEmpty =>
+      'Aún no tienes pagos programados en este período';
+
+  @override
+  String budgetScheduledRowSubtitle(String date, String accountName) {
+    return 'Próximo: $date · $accountName';
+  }
+
+  @override
+  String get budgetLoadMore => 'Ver más';
+
+  @override
+  String get budgetOneOffWindow => 'Ventana única';
+
+  @override
+  String get budgetPeriodPreviousTooltip => 'Periodo anterior';
+
+  @override
+  String get budgetPeriodNextTooltip => 'Periodo siguiente';
 
   @override
   String get budgetPeriodStatusCurrent => 'vigente';
@@ -1212,11 +2139,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetActionDelete => 'Eliminar';
 
   @override
-  String get budgetDeleteConfirmTitle => '¿Eliminar presupuesto?';
+  String get budgetActionDeleteBudget => 'Eliminar presupuesto';
+
+  @override
+  String get budgetActionAdjustAmount => 'Ajustar monto — este período';
+
+  @override
+  String get budgetDetailActionsSubtitle => 'Acciones del presupuesto';
 
   @override
   String get budgetDeleteConfirmMessage =>
-      'Podrás recuperarlo desde la papelera.';
+      'Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.';
 
   @override
   String get budgetFormNewTitle => 'Nuevo presupuesto';
@@ -1228,7 +2161,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetFormNameLabel => 'Nombre';
 
   @override
+  String get budgetFormIconNameLabel => 'Ícono y nombre';
+
+  @override
+  String budgetFormRowValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get budgetFormScopeAllHint =>
+      'Incluye todo tu gasto: todas las cuentas y categorías.';
+
+  @override
   String get budgetFormNameHint => 'Ej. Mercado del mes';
+
+  @override
+  String get budgetErrorName => 'Escribe un nombre para el presupuesto.';
+
+  @override
+  String get budgetErrorAmount => 'Ingresa un monto mayor a cero.';
+
+  @override
+  String get budgetErrorEndDate =>
+      'Elige una fecha de fin posterior al inicio.';
 
   @override
   String get budgetFormIconLabel => 'Ícono';
@@ -1265,6 +2220,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetFormEndLabel => 'Fin';
+
+  @override
+  String get budgetFormEndHint => 'Elegir fecha';
 
   @override
   String get budgetFormRepeatUntilLabel => 'Repetir hasta';
@@ -1311,13 +2269,43 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetFormSaveCta => 'Guardar cambios';
 
   @override
-  String get budgetThresholdTitle => 'Umbral de alerta';
+  String get budgetThresholdTitle => 'Avisarme cuando gaste el…';
+
+  @override
+  String get budgetThresholdHint =>
+      'Te enviaremos un aviso local al llegar a ese % — sin costo.';
+
+  @override
+  String get budgetThresholdRecommended => 'Recomendado';
 
   @override
   String get budgetThresholdCustom => 'Personalizado';
 
   @override
+  String get budgetThresholdCustomSubtitle => 'Define tu propio %';
+
+  @override
+  String get budgetThresholdCustomTitle => 'Define tu propio %';
+
+  @override
+  String get budgetThresholdCustomHint => 'Ajusta el porcentaje en pasos de 5.';
+
+  @override
+  String get budgetThresholdOffSubtitle =>
+      'Desactiva la alerta de este presupuesto';
+
+  @override
+  String get budgetThresholdDecrease => 'Bajar el porcentaje';
+
+  @override
+  String get budgetThresholdIncrease => 'Subir el porcentaje';
+
+  @override
   String get budgetIconSheetTitle => 'Elegir ícono';
+
+  @override
+  String get budgetIconSheetHint =>
+      'El ícono se muestra en un fondo neutro — sin color por presupuesto.';
 
   @override
   String get budgetsHistoryTitle => 'Histórico';
@@ -1326,13 +2314,77 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsHistoryEmpty => 'No has cerrado ningún presupuesto';
 
   @override
+  String get budgetsHistoryEmptyDescription =>
+      'Cuando cierres uno, lo encontrarás aquí para consultarlo o reactivarlo';
+
+  @override
   String get budgetsHistoryLoading => 'Cargando tu histórico';
+
+  @override
+  String get budgetDetailLoading => 'Cargando el presupuesto';
+
+  @override
+  String get budgetFormLoading => 'Cargando el formulario';
+
+  @override
+  String budgetClosedOn(String date) {
+    return 'Cerrado $date';
+  }
+
+  @override
+  String get budgetsHistorySubtitle => 'Presupuestos cerrados';
+
+  @override
+  String get budgetsHistoryHint =>
+      'Los conservas sin borrar. Puedes reactivarlos cuando quieras.';
+
+  @override
+  String get budgetsMenuOptions => 'Opciones';
+
+  @override
+  String get budgetsMenuHistorySubtitle => 'Presupuestos cerrados';
+
+  @override
+  String get budgetsMenuEnableEnvelope => 'Activar modo sobres';
+
+  @override
+  String get budgetsMenuEnableEnvelopeSubtitle =>
+      'Reparte todo tu ingreso en sobres';
+
+  @override
+  String get budgetsMenuDisableEnvelopeSubtitle => 'Vuelve a la lista normal';
+
+  @override
+  String get budgetsEnvelopeBadge => 'Modo sobres';
+
+  @override
+  String budgetsEnvelopeIncome(String income) {
+    return 'Ingreso $income';
+  }
+
+  @override
+  String budgetsEnvelopeAssigned(String assigned) {
+    return 'Asignado $assigned';
+  }
+
+  @override
+  String budgetsEnvelopeNudge(String amount) {
+    return 'Casi lo logras: dale un trabajo a los $amount restantes.';
+  }
+
+  @override
+  String budgetsEnvelopeNudgeOver(String amount) {
+    return 'Asignaste $amount más de lo que entró. Ajusta un sobre cuando quieras.';
+  }
+
+  @override
+  String get budgetAssignedLabel => 'Asignado';
 
   @override
   String get budgetReactivate => 'Reactivar';
 
   @override
-  String get budgetResultWithin => 'Dentro del presupuesto';
+  String get budgetResultWithin => 'Terminó dentro del presupuesto';
 
   @override
   String budgetResultOverspent(String amount) {
@@ -1355,7 +2407,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsEnvelopeModeSubtitle =>
-      'Reparte tu ingreso del mes entre tus presupuestos';
+      'Reparte todo tu ingreso en sobres';
 
   @override
   String get settingsEnvelopeWhatIs => '¿Qué es?';
@@ -1365,7 +2417,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get envelopeInfoBody =>
-      'Es una forma sencilla de organizar tu dinero: en vez de gastar de un montón común, repartes lo que recibes cada mes en sobres, uno por cada cosa que te importa (mercado, arriendo, salidas). Así, antes de gastar, ya sabes cuánto tiene cada sobre. La idea es que todo tu ingreso quede repartido, para que cada peso tenga un propósito. Es opcional y puedes prenderlo o apagarlo cuando quieras.';
+      'Es una forma de presupuestar donde le das un trabajo a cada peso. Repartes todo tu ingreso del mes en \'sobres\' —tus presupuestos— hasta que no quede nada sin asignar.';
+
+  @override
+  String get envelopeInfoBulletJobs =>
+      'Así decides a dónde va tu plata antes de gastarla: gastar, ahorrar o pagar deudas.';
+
+  @override
+  String get envelopeInfoBulletZero =>
+      'Cuando \'Sin asignar\' llega a \$0, cada peso tiene un propósito.';
+
+  @override
+  String get envelopeInfoReassure =>
+      'Es opcional y no te bloquea nada. Actívalo o desactívalo cuando quieras.';
+
+  @override
+  String get envelopeInfoActivate => 'Activar modo sobres';
 
   @override
   String get envelopeInfoGotIt => 'Entendido';
@@ -1374,7 +2441,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsMenuDisableEnvelope => 'Desactivar modo sobres';
 
   @override
-  String get budgetsEnvelopeUnassignedLabel => 'Sin asignar';
+  String get budgetsEnvelopeUnassignedLabel => 'Sin asignar este mes';
 
   @override
   String get budgetsEnvelopeOverLabel => 'Asignado de más';
@@ -1383,7 +2450,541 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsEnvelopeAllAssigned => 'Cada peso tiene un trabajo';
 
   @override
-  String budgetsEnvelopeCaption(String income, String assigned) {
-    return '$income de ingreso · $assigned asignado';
+  String get firstLaunchOfflineTitle => 'Conéctate para continuar';
+
+  @override
+  String get firstLaunchOfflineSubtitle =>
+      'Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.';
+
+  @override
+  String get firstLaunchOfflineRetrying => 'Reintentando...';
+
+  @override
+  String get splashLoadingCaption => 'Cargando tus finanzas...';
+
+  @override
+  String get brandWordmarkPrefix => 'b';
+
+  @override
+  String get brandWordmarkDotlessI => 'ı';
+
+  @override
+  String get brandWordmarkSuffix => 'lletudo';
+
+  @override
+  String get scheduledPaymentsTitle => 'Pagos programados';
+
+  @override
+  String get scheduledPaymentsAdd => 'Nuevo pago programado';
+
+  @override
+  String get scheduledPaymentsLoading => 'Cargando tus pagos programados';
+
+  @override
+  String get scheduledPaymentUntitled => 'Pago programado';
+
+  @override
+  String get scheduledPaymentsEmptyMessage => 'Aún no tienes pagos programados';
+
+  @override
+  String get scheduledPaymentsErrorTitle =>
+      'No pudimos cargar tus pagos programados';
+
+  @override
+  String get scheduledPaymentsErrorLocalFirst =>
+      'Tus datos siguen guardados en tu dispositivo. Intenta de nuevo.';
+
+  @override
+  String scheduledPaymentsActiveCount(int count) {
+    return 'Activos · $count';
   }
+
+  @override
+  String get scheduledPendingTitle => 'Por confirmar';
+
+  @override
+  String get scheduledPendingEmpty => 'No tienes pagos por confirmar.';
+
+  @override
+  String get scheduledReviewAll => 'Revisar todas';
+
+  @override
+  String get scheduledPendingBadge => 'Pendiente de confirmar';
+
+  @override
+  String get scheduledOnceBadge => 'Pago único';
+
+  @override
+  String get scheduledInactiveBadge => 'Inactivo';
+
+  @override
+  String get scheduledConfirmationSheetTitle => 'Confirmar pago';
+
+  @override
+  String get scheduledConfirmationSheetConfirm => 'Confirmar';
+
+  @override
+  String get scheduledConfirmationSheetSkip => 'Omitir';
+
+  @override
+  String get scheduledConfirmationSheetSnooze => 'Posponer';
+
+  @override
+  String scheduledGuidedReviewPosition(int position, int total) {
+    return 'Pago $position de $total';
+  }
+
+  @override
+  String get scheduledUndoSkipMessage => 'Pago omitido';
+
+  @override
+  String get scheduledUndoSnoozeMessage => 'Pago pospuesto';
+
+  @override
+  String get scheduledSnoozeSheetTitle => 'Posponer pago';
+
+  @override
+  String get scheduledSnoozeSheetSave => 'Posponer';
+
+  @override
+  String get scheduledDeleteSheetTitle => '¿Eliminar este pago programado?';
+
+  @override
+  String get scheduledDeleteSheetMessage =>
+      'Se detiene la generación de pagos futuros. Las transacciones que ya generó se conservan en tu historial.';
+
+  @override
+  String get scheduledDeleteSheetTitleInstallment => '¿Eliminar esta cuota?';
+
+  @override
+  String get scheduledDeleteSheetMessageInstallment =>
+      'Se deja de agendar la cuota. La deuda y los abonos que ya registró se conservan en tu historial.';
+
+  @override
+  String get scheduledPaymentFormNewTitle => 'Nuevo pago programado';
+
+  @override
+  String get scheduledPaymentFormEditTitle => 'Editar pago programado';
+
+  @override
+  String get scheduledPaymentFormNextDateLabel => 'Primer pago';
+
+  @override
+  String get scheduledPaymentFormOnceDateLabel => 'Fecha del pago';
+
+  @override
+  String get scheduledPaymentFormModeSectionLabel => 'Al llegar la fecha';
+
+  @override
+  String get scheduledPaymentFormTagNew => 'Etiqueta';
+
+  @override
+  String get scheduledPaymentFormFrequencyLabel => 'Frecuencia';
+
+  @override
+  String get scheduledPaymentFormCategoryMoreLabel => 'Otra';
+
+  @override
+  String get scheduledPaymentErrorAccount => 'Elige una cuenta.';
+
+  @override
+  String get scheduledPaymentErrorAmount => 'Ingresa un monto mayor a cero.';
+
+  @override
+  String get scheduledPaymentErrorTransferAccount =>
+      'Elige la cuenta de destino.';
+
+  @override
+  String get scheduledPaymentErrorCategory => 'Elige una categoría.';
+
+  @override
+  String get scheduledPaymentInstallmentAmountExceedsError =>
+      'La cuota no puede superar el saldo de la deuda.';
+
+  @override
+  String get scheduledPaymentFormIntervalStepperLabel => 'Repetir cada';
+
+  @override
+  String get scheduledPaymentFormEndDateLabel => 'Termina';
+
+  @override
+  String get scheduledPaymentFormEndDateNone => 'Para siempre';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticTitle => 'Automático';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticSubtitle =>
+      'Se registra solo al llegar la fecha';
+
+  @override
+  String get scheduledPaymentFormModeManualTitle => 'Manual';
+
+  @override
+  String get scheduledPaymentFormModeManualSubtitle =>
+      'Por ahora deberás confirmarlo tú mismo';
+
+  @override
+  String get scheduledPaymentFormDeleteAction => 'Eliminar pago programado';
+
+  @override
+  String get scheduledPaymentInstallmentTitle => 'Configurar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentEditTitle => 'Editar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentDeleteAction => 'Eliminar cuota';
+
+  @override
+  String get scheduledPaymentInstallmentBanner =>
+      'Se crea un pago programado enlazado a esta deuda. Confírmalo o pospónlo en Pagos programados.';
+
+  @override
+  String get scheduledPaymentDetailLinkedDebtLabel => 'Cuota de';
+
+  @override
+  String get scheduledDebtChipLabel => 'Deuda';
+
+  @override
+  String get scheduledFrequencyOnce => 'Solo una vez';
+
+  @override
+  String get scheduledFrequencyDaily => 'cada día';
+
+  @override
+  String get scheduledFrequencyWeekly => 'cada semana';
+
+  @override
+  String get scheduledFrequencyMonthly => 'cada mes';
+
+  @override
+  String get scheduledFrequencyYearly => 'cada año';
+
+  @override
+  String get scheduledFrequencyChipOnce => 'Único';
+
+  @override
+  String get scheduledFrequencyChipDaily => 'Día';
+
+  @override
+  String get scheduledFrequencyChipWeekly => 'Semana';
+
+  @override
+  String get scheduledFrequencyChipMonthly => 'Mes';
+
+  @override
+  String get scheduledFrequencyChipYearly => 'Año';
+
+  @override
+  String get scheduledPaymentDetailTitle => 'Detalle';
+
+  @override
+  String scheduledPaymentDetailNextPayment(String date) {
+    return 'Próximo pago: $date';
+  }
+
+  @override
+  String get scheduledPaymentDetailHistoryTitle => 'Historial';
+
+  @override
+  String get scheduledPaymentDetailHistoryEmpty =>
+      'Todavía no se ha generado ningún movimiento de este pago programado.';
+
+  @override
+  String scheduledPaymentDetailHistorySeeAll(int count) {
+    return 'Ver historial completo ($count)';
+  }
+
+  @override
+  String get scheduledSkippedBadge => 'Omitido';
+
+  @override
+  String get scheduledRecoverAction => 'Recuperar';
+
+  @override
+  String get scheduledRecoverMessage => 'Pago recuperado';
+
+  @override
+  String get scheduledPaymentDetailHeroLabel => 'PRÓXIMO PAGO';
+
+  @override
+  String scheduledPaymentDetailRecurrenceOnce(String date) {
+    return 'Una sola vez el $date';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceForever(String unit, String date) {
+    return 'Se repite $unit desde el $date, para siempre';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceUntil(
+      String unit, String date, String endDate) {
+    return 'Se repite $unit desde el $date, hasta el $endDate';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitDaily => 'cada día';
+
+  @override
+  String scheduledRecurrenceUnitDailyInterval(int interval) {
+    return 'cada $interval días';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitWeekly => 'cada semana';
+
+  @override
+  String scheduledRecurrenceUnitWeeklyInterval(int interval) {
+    return 'cada $interval semanas';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitMonthly => 'cada mes';
+
+  @override
+  String scheduledRecurrenceUnitMonthlyInterval(int interval) {
+    return 'cada $interval meses';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitYearly => 'cada año';
+
+  @override
+  String scheduledRecurrenceUnitYearlyInterval(int interval) {
+    return 'cada $interval años';
+  }
+
+  @override
+  String get scheduledPaymentDetailModeLabel => 'Modo de registro';
+
+  @override
+  String get scheduledPaymentDetailModeAutomatic => 'Automático';
+
+  @override
+  String get scheduledPaymentDetailModeManual => 'Manual';
+
+  @override
+  String get scheduledPaymentDetailAccountLabel => 'Cuenta';
+
+  @override
+  String get scheduledPaymentDetailStatusLabel => 'Estado';
+
+  @override
+  String get scheduledPaymentDetailStatusActive => 'Activa';
+
+  @override
+  String get scheduledPaymentDetailStatusFinished => 'Terminada';
+
+  @override
+  String get scheduledPaymentDetailHeroLabelExecuted => 'PAGO EJECUTADO';
+
+  @override
+  String get scheduledPaymentDetailConfirmNowCta => 'Confirmar ahora';
+
+  @override
+  String get scheduledPaymentDetailConfirmNowError =>
+      'No pudimos confirmar este pago ahora. Intenta de nuevo.';
+
+  @override
+  String get scheduledPaymentDetailTagsLabel => 'Etiquetas';
+
+  @override
+  String get scheduledPaymentDetailTagsEmpty => 'Sin etiquetas';
+
+  @override
+  String get scheduledPaymentBridgeTitle => '¿Es un pago programado?';
+
+  @override
+  String get scheduledPaymentBridgeMessage =>
+      'Elegiste una fecha futura. Un movimiento con fecha futura se registra como pago programado; así se aplica solo cuando llegue el día.';
+
+  @override
+  String get scheduledPaymentBridgeAccept => 'Sí, programarlo';
+
+  @override
+  String get scheduledPaymentBridgeDecline => 'Cambiar la fecha';
+
+  @override
+  String scheduledFinishedCount(int count) {
+    return 'Terminados · $count';
+  }
+
+  @override
+  String get scheduledFinishedCaption =>
+      'Ya no generan movimientos. Los que crearon siguen en tus cuentas.';
+
+  @override
+  String get scheduledFinishedCardChip => 'Terminada';
+
+  @override
+  String get scheduledFinishedErrorTitle =>
+      'No pudimos cargar tus pagos terminados';
+
+  @override
+  String scheduledFinishedLastPayment(String date) {
+    return 'Último pago · $date';
+  }
+
+  @override
+  String get scheduledPaymentsNoActiveMessage =>
+      'Por ahora no tienes pagos programados activos';
+
+  @override
+  String scheduledPaymentsNoActiveDescription(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tus $count pagos terminados siguen disponibles en «Terminados».',
+      one: 'Tu pago terminado sigue disponible en «Terminados».',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduledPendingCardOverflow(int count) {
+    return 'Ver los otros $count pendientes';
+  }
+
+  @override
+  String scheduledPendingCardTitle(int count) {
+    return 'Por confirmar $count';
+  }
+
+  @override
+  String get scheduledPendingCardCaption => 'Aún no afectan tu saldo';
+
+  @override
+  String get scheduledPaymentsEmptyCta => 'Programar un pago';
+
+  @override
+  String get scheduledManualNotifyChip => 'Te avisamos';
+
+  @override
+  String get scheduledDueToday => 'Vence hoy';
+
+  @override
+  String get scheduledDueOneDayAgo => 'hace 1 día';
+
+  @override
+  String scheduledDueDaysAgo(int count) {
+    return 'hace $count días';
+  }
+
+  @override
+  String scheduledDueInDays(int count) {
+    return 'en $count días';
+  }
+
+  @override
+  String get scheduledDueInOneDay => 'en 1 día';
+
+  @override
+  String scheduledConfirmationSheetScopeNote(String amount) {
+    return 'Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer $amount.';
+  }
+
+  @override
+  String scheduledConfirmationSheetAccumulatedTitle(
+      int count, String template) {
+    return 'Tienes $count pagos de $template sin confirmar';
+  }
+
+  @override
+  String scheduledConfirmationSheetAccumulatedSub(String date, int others) {
+    String _temp0 = intl.Intl.pluralLogic(
+      others,
+      locale: localeName,
+      other: 'Las otras $others siguen en tu lista.',
+      one: 'La otra sigue en tu lista.',
+    );
+    return 'Ahora confirmas la más antigua, del $date. $_temp0';
+  }
+
+  @override
+  String get scheduledConfirmationSheetAmountLabel => 'Monto a registrar';
+
+  @override
+  String get scheduledConfirmationSheetTransferAmountLabel =>
+      'Monto a transferir';
+
+  @override
+  String get scheduledConfirmationSheetSourceAccountLabel => 'Cuenta origen';
+
+  @override
+  String get scheduledConfirmationSheetTargetAccountLabel => 'Cuenta destino';
+
+  @override
+  String get scheduledDetailActionsSheetSubtitle =>
+      'Acciones del pago programado';
+
+  @override
+  String get scheduledDetailActionsSnooze => 'Posponer este pago';
+
+  @override
+  String get scheduledDetailActionsDelete => 'Eliminar pago programado';
+
+  @override
+  String get scheduledDetailActionsDeleteInstallment => 'Eliminar cuota';
+
+  @override
+  String get scheduledSnoozeSheetSectionTitle => 'Elige la nueva fecha';
+
+  @override
+  String get scheduledConfirmationSheetEditTooltip => 'Editar plantilla';
+
+  @override
+  String get scheduledGuidedReviewExit => 'Salir';
+
+  @override
+  String get scheduledGuidedReviewConfirmNext => 'Confirmar y siguiente';
+
+  @override
+  String scheduledSnoozeContextLine(String date) {
+    return 'Vencía el $date · muévelo hacia adelante';
+  }
+
+  @override
+  String get budgetAdjustSheetTitle => 'Ajustar monto';
+
+  @override
+  String budgetAdjustCurrentAmountInline(String amount) {
+    return 'Actual $amount';
+  }
+
+  @override
+  String budgetAdjustNewAmountLabel(String range) {
+    return 'Nuevo monto · $range';
+  }
+
+  @override
+  String budgetAdjustExplainer(String resumeDate, String originalAmount) {
+    return 'El $resumeDate vuelve a $originalAmount automáticamente.';
+  }
+
+  @override
+  String get budgetAdjustApplyCta => 'Aplicar cambios';
+
+  @override
+  String get budgetAdjustRemoveCta => 'Revertir ajuste';
+
+  @override
+  String get budgetAdjustBannerLabel => 'Ajuste de monto';
+
+  @override
+  String budgetAdjustBannerSub(String amount, String range) {
+    return '$amount · $range';
+  }
+
+  @override
+  String get budgetAdjustScheduledSnackbar =>
+      'Ajuste programado para el período seleccionado.';
+
+  @override
+  String get budgetAdjustUpdatedSnackbar => 'Ajuste actualizado.';
+
+  @override
+  String get budgetAdjustCancelledSnackbar =>
+      'Ajuste revertido — el período vuelve al monto habitual.';
 }

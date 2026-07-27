@@ -38,7 +38,7 @@ void main() {
     );
 
     expect(find.text('Eliminar tu cuenta'), findsOneWidget);
-    expect(find.textContaining('no se puede deshacer'), findsOneWidget);
+    expect(find.textContaining('irreversible'), findsOneWidget);
     expect(find.byIcon(LucideIcons.triangleAlert), findsOneWidget);
 
     final row = tester.widget<SheetButtonsRow>(find.byType(SheetButtonsRow));

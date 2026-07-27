@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/form_error_scroll_controller.dart';
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/category_draft.dart';
 import '../cubit/category_form_cubit.dart';
 import '../cubit/category_form_state.dart';
 import '../widgets/appearance_field.dart';
+import '../widgets/category_kind_toggle.dart';
 import '../widgets/delete_link.dart';
 import '../widgets/icon_color_picker_sheet.dart';
 import '../widgets/parent_category_picker_sheet.dart';
@@ -22,46 +27,63 @@ import '../widgets/sheets/confirm_delete_with_transactions_sheet.dart';
 /// Guardar/Eliminar. Which pieces show and whether Tipo is locked depends on
 /// [CategoryFormState], not on which of the 4 cases the caller thinks it is
 /// building — the state already encodes that.
-class CategoryFormPage extends StatelessWidget {
+class CategoryFormPage extends StatefulWidget {
   const CategoryFormPage({super.key});
+
+  @override
+  State<CategoryFormPage> createState() => _CategoryFormPageState();
+}
+
+class _CategoryFormPageState extends State<CategoryFormPage> {
+  final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CategoryFormCubit, CategoryFormState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
-          previous.deletePrompt != current.deletePrompt,
+          previous.deletePrompt != current.deletePrompt ||
+          previous.failedField != current.failedField,
       listener: (context, state) async {
         if (state.status == CategoryFormStatus.saved) {
-          Navigator.of(context).pop();
+          // Pop with the persisted category (null after a delete). Callers that
+          // don't await the push ignore it; the `Category Select Sheet`'s "+"
+          // (bugfix item 13) uses it to leave the new category selected.
+          Navigator.of(context).pop(state.savedCategory);
           return;
         }
+        _errorScroll.scrollToField(state.failedField);
         await _handlePrompt(context, state);
       },
       builder: (context, state) {
         final l10n = AppLocalizations.of(context);
+        final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: Navigator.of(context).pop,
-              tooltip: l10n.commonCancel,
-              icon: const Icon(LucideIcons.x),
-            ),
-            title: Text(_titleFor(l10n, state)),
-            actions: [
-              IconButton(
-                onPressed: state.status == CategoryFormStatus.saving
-                    ? null
-                    : context.read<CategoryFormCubit>().submit,
-                tooltip: l10n.commonSave,
-                icon: const Icon(LucideIcons.check),
-              ),
-            ],
-          ),
           body: SafeArea(
-            child: state.status == CategoryFormStatus.loading
-                ? const Center(child: CircularProgressIndicator())
-                : CategoryFormBody(state: state),
+            child: Column(
+              children: [
+                PageHeader(
+                  title: _titleFor(l10n, state),
+                  trailing: PageHeaderCircleButton(
+                    icon: LucideIcons.check,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.commonSave,
+                    onPressed: state.status == CategoryFormStatus.saving
+                        ? null
+                        : context.read<CategoryFormCubit>().submit,
+                  ),
+                ),
+                Expanded(
+                  child: state.status == CategoryFormStatus.loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : CategoryFormBody(
+                          state: state,
+                          errorScroll: _errorScroll,
+                        ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -91,6 +113,7 @@ class CategoryFormPage extends StatelessWidget {
         final confirmed = await ConfirmDeleteSimpleSheet.show(
           context,
           budgetCount: state.deletionImpact?.budgetCount ?? 0,
+          isSubcategory: state.isSubcategory,
         );
         if (confirmed ?? false) {
           await cubit.confirmSimpleDelete();
@@ -101,6 +124,7 @@ class CategoryFormPage extends StatelessWidget {
         final impact = state.deletionImpact;
         final resolution = await ConfirmDeleteWithTransactionsSheet.show(
           context,
+          categoryName: state.name,
           transactionCount: impact?.transactionCount ?? 0,
           kind: state.kind,
           excludingId: state.id!,
@@ -114,6 +138,8 @@ class CategoryFormPage extends StatelessWidget {
       case CategoryDeletePrompt.subcategories:
         final resolution = await ConfirmDeleteRootWithSubcategoriesSheet.show(
           context,
+          categoryName: state.name,
+          subcategoryCount: state.deletionImpact?.subcategoryCount ?? 0,
           kind: state.kind,
           rootId: state.id!,
           budgetCount: state.deletionImpact?.budgetCount ?? 0,
@@ -130,9 +156,14 @@ class CategoryFormPage extends StatelessWidget {
 /// The form's fields: Apariencia, Nombre, Tipo (locked or not) and, only for
 /// a subcategory, Categoría padre.
 class CategoryFormBody extends StatelessWidget {
-  const CategoryFormBody({required this.state, super.key});
+  const CategoryFormBody({
+    required this.state,
+    required this.errorScroll,
+    super.key,
+  });
 
   final CategoryFormState state;
+  final FormErrorScrollController errorScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -143,17 +174,24 @@ class CategoryFormBody extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
         AppearanceField(
-          label: l10n.categoryFormAppearanceLabel,
+          label: state.icon == null
+              ? l10n.categoryFormAppearanceEmptyLabel
+              : l10n.categoryFormAppearanceLabel,
           sublabel: state.icon == null
               ? l10n.categoryFormAppearanceEmptySublabel
               : l10n.categoryFormAppearanceFilledSublabel,
           iconName: state.icon,
           colorToken: state.color,
           onTap: () async {
+            await dismissSystemKeyboard(context);
+            if (!context.mounted) {
+              return;
+            }
             final picked = await IconColorPickerSheet.show(
               context,
               initialIcon: state.icon,
               initialColor: state.color,
+              colorLocked: state.isSubcategory,
             );
             if (picked != null) {
               cubit.appearanceSelected(icon: picked.icon, color: picked.color);
@@ -169,15 +207,22 @@ class CategoryFormBody extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          initialValue: state.name,
-          maxLength: CategoryDraft.maxNameLength,
-          decoration: InputDecoration(
-            hintText: l10n.categoryFormNameHint,
-            counterText: '',
-            errorText: _errorFor(l10n, state, CategoryDraft.fieldName),
+        KeyedSubtree(
+          key: errorScroll.keyFor(CategoryDraft.fieldName),
+          child: TextFormField(
+            initialValue: state.name,
+            maxLength: CategoryDraft.maxNameLength,
+            textCapitalization: TextCapitalization.sentences,
+            // The only text field of the form: "listo" dismisses the keyboard.
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+            decoration: InputDecoration(
+              hintText: l10n.categoryFormNameHint,
+              counterText: '',
+              errorText: _errorFor(l10n, state, CategoryDraft.fieldName),
+            ),
+            onChanged: cubit.nameChanged,
           ),
-          onChanged: cubit.nameChanged,
         ),
         const SizedBox(height: 18),
         Text(
@@ -203,6 +248,10 @@ class CategoryFormBody extends StatelessWidget {
             state: state,
             onTap: state.isEditing
                 ? () async {
+                    await dismissSystemKeyboard(context);
+                    if (!context.mounted) {
+                      return;
+                    }
                     final picked = await ParentCategoryPickerSheet.show(
                       context,
                       kind: state.kind,
@@ -219,7 +268,9 @@ class CategoryFormBody extends StatelessWidget {
         if (state.isEditing) ...[
           const SizedBox(height: 28),
           DeleteLink(
-            label: l10n.categoryDeleteAction,
+            label: state.isSubcategory
+                ? l10n.categoryDeleteSubcategoryAction
+                : l10n.categoryDeleteAction,
             onTap: cubit.promptDelete,
           ),
         ],
@@ -235,14 +286,22 @@ class CategoryFormBody extends StatelessWidget {
     if (state.failedField != field) {
       return null;
     }
-    return field == CategoryDraft.fieldName
-        ? l10n.categoryErrorName
-        : l10n.errorUnexpected;
+    if (field != CategoryDraft.fieldName) {
+      return l10n.errorUnexpected;
+    }
+    // The name failed one of two rules (validated in that order): empty ->
+    // required, or over the limit -> too long. Reconstruct which from the
+    // current value so an empty field never shows the length copy (fix #15b).
+    return state.name.trim().isEmpty
+        ? l10n.categoryErrorNameRequired
+        : l10n.categoryErrorName;
   }
 }
 
-/// Tipo Gasto/Ingreso: a plain toggle, or the locked treatment (candado +
-/// `opacity:0.55` + explanatory caption) per [CategoryFormState.kindLockReason].
+/// Tipo Gasto/Ingreso: the shared [CategoryKindToggle] (same `Segmented
+/// Control` component `hFu41` used by the listing), or the locked treatment
+/// (candado + `opacity:0.55` + explanatory caption) per
+/// [CategoryFormState.kindLockReason].
 class CategoryKindField extends StatelessWidget {
   const CategoryKindField(
       {required this.state, required this.onChanged, super.key});
@@ -258,26 +317,10 @@ class CategoryKindField extends StatelessWidget {
 
     final toggle = Opacity(
       opacity: state.kindLocked ? 0.55 : 1,
-      child: Row(
-        children: [
-          Expanded(
-            child: CategoryKindOption(
-              label: l10n.categoryKindExpense,
-              selected: state.kind == CategoryKind.expense,
-              enabled: !state.kindLocked,
-              onTap: () => onChanged(CategoryKind.expense),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: CategoryKindOption(
-              label: l10n.categoryKindIncome,
-              selected: state.kind == CategoryKind.income,
-              enabled: !state.kindLocked,
-              onTap: () => onChanged(CategoryKind.income),
-            ),
-          ),
-        ],
+      child: CategoryKindToggle(
+        selected: state.kind,
+        enabled: !state.kindLocked,
+        onChanged: onChanged,
       ),
     );
 
@@ -308,50 +351,6 @@ class CategoryKindField extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class CategoryKindOption extends StatelessWidget {
-  const CategoryKindOption({
-    required this.label,
-    required this.selected,
-    required this.enabled,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? colors.primarySoft : colors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? colors.primary : colors.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
-          ),
-        ),
-      ),
     );
   }
 }

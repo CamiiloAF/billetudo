@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/budget_usage_notice.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/usecases/delete_category.dart';
@@ -17,14 +18,25 @@ import '../parent_category_picker_sheet.dart';
 /// 2 real actions already live above. Cascade asks for a second, explicit
 /// confirmation (`categorias.md`'s pending note: this action is broad and
 /// deserves extra friction).
+///
+/// `w9ixr`'s `Sheet Icon Header` title is `enabled:false` — there's only one
+/// message, with the root category's real name and the subcategory count
+/// interpolated into it, not a generic title plus a separate subtitle.
 class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   const ConfirmDeleteRootWithSubcategoriesSheet({
+    required this.categoryName,
+    required this.subcategoryCount,
     required this.kind,
     required this.rootId,
     this.budgetCount = 0,
     super.key,
   });
 
+  /// The real root category name, interpolated into the sheet's single
+  /// message.
+  final String categoryName;
+
+  final int subcategoryCount;
   final CategoryKind kind;
   final String rootId;
 
@@ -34,14 +46,17 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   /// Resolves to the chosen [SubcategoryResolution], or `null` if dismissed.
   static Future<SubcategoryResolution?> show(
     BuildContext context, {
+    required String categoryName,
+    required int subcategoryCount,
     required CategoryKind kind,
     required String rootId,
     int budgetCount = 0,
   }) =>
-      showModalBottomSheet<SubcategoryResolution>(
-        context: context,
-        isScrollControlled: true,
+      BottomSheetBase.show<SubcategoryResolution>(
+        context,
         builder: (context) => ConfirmDeleteRootWithSubcategoriesSheet(
+          categoryName: categoryName,
+          subcategoryCount: subcategoryCount,
           kind: kind,
           rootId: rootId,
           budgetCount: budgetCount,
@@ -51,85 +66,62 @@ class ConfirmDeleteRootWithSubcategoriesSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child:
-                  Icon(LucideIcons.info, color: colors.primaryOnSoft, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.categoryDeleteSubcategoriesTitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.categoryDeleteSubcategoriesMessage,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            BudgetUsageNotice(count: budgetCount),
-            const SizedBox(height: 20),
-            CategoryDeleteActionRow(
-              icon: LucideIcons.arrowLeftRight,
-              label: l10n.categoryReassignSubcategoriesOption,
-              background: colors.primarySoft,
-              foreground: colors.primaryOnSoft,
-              onTap: () async {
-                final target = await ParentCategoryPickerSheet.show(
-                  context,
-                  kind: kind,
-                  excludingId: rootId,
-                  title: l10n.categoryReassignSubcategoriesPickerTitle,
-                );
-                if (target != null && context.mounted) {
-                  Navigator.of(context)
-                      .pop(SubcategoryResolution.reassign(target.id));
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            CategoryDeleteActionRow(
-              icon: LucideIcons.trash2,
-              label: l10n.categoryCascadeDeleteOption,
-              background: colors.expenseSoft,
-              foreground: colors.expense,
-              onTap: () async {
-                final confirmed = await _confirmCascade(context, l10n);
-                if ((confirmed ?? false) && context.mounted) {
-                  Navigator.of(context)
-                      .pop(const SubcategoryResolution.cascade());
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.commonCancel),
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetMessage(
+          icon: LucideIcons.info,
+          iconColor: colors.primaryOnSoft,
+          iconBackground: colors.primarySoft,
+          message: l10n.categoryDeleteSubcategoriesMessage(
+            categoryName,
+            subcategoryCount,
+          ),
         ),
-      ),
+        BudgetUsageNotice(count: budgetCount),
+        const SizedBox(height: 20),
+        CategoryDeleteActionRow(
+          icon: LucideIcons.folderTree,
+          label: l10n.categoryReassignSubcategoriesOption,
+          background: colors.primarySoft,
+          foreground: colors.primaryOnSoft,
+          onTap: () async {
+            final target = await ParentCategoryPickerSheet.show(
+              context,
+              kind: kind,
+              excludingId: rootId,
+              title: l10n.categoryReassignSubcategoriesPickerTitle,
+            );
+            if (target != null && context.mounted) {
+              Navigator.of(context)
+                  .pop(SubcategoryResolution.reassign(target.id));
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        CategoryDeleteActionRow(
+          icon: LucideIcons.trash2,
+          label: l10n.categoryCascadeDeleteOption,
+          background: colors.expenseSoft,
+          foreground: colors.expenseText,
+          onTap: () async {
+            final confirmed = await _confirmCascade(context, l10n);
+            if ((confirmed ?? false) && context.mounted) {
+              Navigator.of(context).pop(const SubcategoryResolution.cascade());
+            }
+          },
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+        ),
+      ],
     );
   }
 
@@ -176,6 +168,7 @@ class CategoryDeleteActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -185,6 +178,7 @@ class CategoryDeleteActionRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           children: [

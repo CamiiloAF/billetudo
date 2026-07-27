@@ -7,6 +7,7 @@ import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/account_balance.dart';
 
+import 'balance_edit_button.dart';
 import 'credit_usage_bar.dart';
 import 'over_limit_badge.dart';
 
@@ -24,6 +25,7 @@ class BalanceCardHero extends StatefulWidget {
     required this.creditLimitMinor,
     required this.view,
     this.onViewChanged,
+    this.onEditBalance,
     super.key,
   });
 
@@ -35,6 +37,10 @@ class BalanceCardHero extends StatefulWidget {
   final CardBalanceView view;
 
   final ValueChanged<CardBalanceView>? onViewChanged;
+
+  /// Opens "Ajustar saldo" from the pencil next to the headline figure (Mejora
+  /// #1). `null` hides the pencil.
+  final VoidCallback? onEditBalance;
 
   /// Carousel order, fixed by the design: available credit, then debt.
   static const List<CardBalanceView> pages = [
@@ -88,21 +94,23 @@ class _BalanceCardHeroState extends State<BalanceCardHero> {
                   label: l10n.accountAvailableCreditLabel,
                   // Floored at 0 by the domain: an overspent card shows $0
                   // available, never a negative "credit" (HU-02).
-                  amount: money.format(
+                  amount: money.formatSymbol(
                     balance.availableCreditMinor ?? 0,
                     currencyCode: widget.currency,
                   ),
                   color: colors.textPrimary,
                   showOverLimitBadge: balance.overLimit,
+                  onEditBalance: widget.onEditBalance,
                 ),
                 BalanceHeroFigure(
                   label: l10n.accountDebtLabel,
-                  amount: money.format(
+                  amount: money.formatSymbol(
                     balance.debtMinor,
                     currencyCode: widget.currency,
                   ),
                   color: colors.expense,
                   showOverLimitBadge: false,
+                  onEditBalance: widget.onEditBalance,
                 ),
               ],
             ),
@@ -140,17 +148,17 @@ class _BalanceCardHeroState extends State<BalanceCardHero> {
           Text(
             balance.overLimit
                 ? l10n.accountOverLimitCaption(
-                    money.format(
+                    money.formatSymbol(
                       balance.excessMinor,
                       currencyCode: widget.currency,
                     ),
                   )
                 : l10n.accountCreditUsedCaption(
-                    money.format(
+                    money.formatSymbol(
                       balance.debtMinor,
                       currencyCode: widget.currency,
                     ),
-                    money.format(
+                    money.formatSymbol(
                       widget.creditLimitMinor,
                       currencyCode: widget.currency,
                     ),
@@ -174,6 +182,7 @@ class BalanceHeroFigure extends StatelessWidget {
     required this.amount,
     required this.color,
     required this.showOverLimitBadge,
+    this.onEditBalance,
     super.key,
   });
 
@@ -181,6 +190,9 @@ class BalanceHeroFigure extends StatelessWidget {
   final String amount;
   final Color color;
   final bool showOverLimitBadge;
+
+  /// The subtle "Ajustar saldo" pencil, right of the figure. `null` hides it.
+  final VoidCallback? onEditBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -194,11 +206,24 @@ class BalanceHeroFigure extends StatelessWidget {
               ?.copyWith(color: context.colors.textSecondary),
         ),
         const SizedBox(height: 6),
-        Text(
-          amount,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.displaySmall
-              ?.copyWith(fontWeight: FontWeight.w800, color: color),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                amount,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w800, color: color),
+              ),
+            ),
+            if (onEditBalance != null) ...[
+              const SizedBox(width: 4),
+              BalanceEditButton(onPressed: onEditBalance!),
+            ],
+          ],
         ),
         if (showOverLimitBadge) ...[
           const SizedBox(height: 8),

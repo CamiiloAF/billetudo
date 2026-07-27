@@ -11,7 +11,8 @@ void main() {
     root: buildCategory(id: 'root-1', name: 'Transporte'),
     subcategories: [
       buildCategory(id: 'sub-1', name: 'Taxi/App', parentId: 'root-1'),
-      buildCategory(id: 'sub-2', name: 'Transporte público', parentId: 'root-1'),
+      buildCategory(
+          id: 'sub-2', name: 'Transporte público', parentId: 'root-1'),
     ],
   );
 

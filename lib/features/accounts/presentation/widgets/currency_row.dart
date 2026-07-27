@@ -62,8 +62,10 @@ class CurrencyRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   name,
+                  // `Currency Row`'s `Label` (`IBJXS`) is 15/600, not the
+                  // 500 of plain body copy.
                   style: theme.textTheme.bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w500),
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               if (isSelected)

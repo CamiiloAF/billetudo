@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import 'month_spending.dart';
 
@@ -11,15 +12,33 @@ import 'month_spending.dart';
 /// Pure aggregation lives here (a `from` factory), so it is unit-testable
 /// without a cubit, a repository or Flutter.
 class HomeSnapshot extends Equatable {
-  const HomeSnapshot({required this.spending, required this.recentActivity});
+  const HomeSnapshot({
+    required this.spending,
+    required this.recentActivity,
+    required this.accounts,
+    this.budgetProgress,
+  });
 
   final MonthSpending spending;
+
+  /// The active accounts with their balances (HU-01), in the repository's
+  /// order. Feeds the "Mis cuentas" balance strip (bugfix item 8); kept as the
+  /// full list because the strip scrolls horizontally rather than capping.
+  final List<AccountWithBalance> accounts;
 
   /// The most recent movements of active accounts (HU-05): a literal activity
   /// feed — income, expense **and** transfer — ordered newest first and capped
   /// at [recentActivityLimit]. Unlike [spending], it applies no expense-only
   /// exclusion.
   final List<TransactionWithDetails> recentActivity;
+
+  /// The active global (no account/category scope) monthly budget's progress
+  /// for the viewed month (HU-03, `aOhoY`), or `null` when none qualifies —
+  /// reuses `budgets/domain`'s own entity instead of duplicating it, same
+  /// pattern as depending on `accounts`/`transactions`. This is an independent
+  /// input (not derived from the transactions/accounts aggregation), passed
+  /// straight through by the caller.
+  final BudgetWithProgress? budgetProgress;
 
   /// How many rows the recent feed shows (HU-05: "~5 filas").
   static const int recentActivityLimit = 5;
@@ -33,19 +52,23 @@ class HomeSnapshot extends Equatable {
     required DateTime month,
     required Iterable<TransactionWithDetails> transactions,
     required Iterable<AccountWithBalance> accounts,
+    BudgetWithProgress? budgetProgress,
     String fallbackCurrency = 'COP',
   }) {
+    final accountList = accounts.toList();
     final activeAccountIds = {
-      for (final entry in accounts) entry.account.id,
+      for (final entry in accountList) entry.account.id,
     };
 
     // The hero's currency, when the month has no expenses, follows the active
     // accounts so a `$0` still reads in the user's money.
-    final currency =
-        accounts.isNotEmpty ? accounts.first.account.currency : fallbackCurrency;
+    final currency = accountList.isNotEmpty
+        ? accountList.first.account.currency
+        : fallbackCurrency;
 
     final recent = transactions
-        .where((entry) => activeAccountIds.contains(entry.transaction.accountId))
+        .where(
+            (entry) => activeAccountIds.contains(entry.transaction.accountId))
         .toList()
       ..sort((a, b) => b.transaction.date.compareTo(a.transaction.date));
 
@@ -57,9 +80,12 @@ class HomeSnapshot extends Equatable {
         fallbackCurrency: currency,
       ),
       recentActivity: recent.take(recentActivityLimit).toList(),
+      accounts: accountList,
+      budgetProgress: budgetProgress,
     );
   }
 
   @override
-  List<Object?> get props => [spending, recentActivity];
+  List<Object?> get props =>
+      [spending, recentActivity, accounts, budgetProgress];
 }

@@ -30,17 +30,20 @@ class CategoryQuickPickerState extends Equatable {
 
   bool get isReady => status == CategoryQuickPickerStatus.ready;
 
-  /// The category chips to render: the most-used set, with the current
-  /// selection prepended as an extra chip when it falls outside that set
-  /// (edge case: the user picked a category that isn't among their top 3).
-  /// This keeps the current choice always visible without hiding a most-used
-  /// category.
+  /// The category chips to render: the most-used set (top 3), with the
+  /// current selection prepended as an extra chip when it falls outside that
+  /// set (edge case: the user picked a category that isn't among their top
+  /// 3). This keeps the current choice always visible without hiding a
+  /// most-used category — capped at 3 total, per the `EIoVx` spec (3
+  /// category chips + the "Ver más" chip), dropping the least-used one to
+  /// make room.
   List<Category> get displayCategories {
     final current = selected;
-    if (current == null || mostUsed.any((category) => category.id == current.id)) {
-      return mostUsed;
+    if (current == null ||
+        mostUsed.any((category) => category.id == current.id)) {
+      return mostUsed.take(3).toList();
     }
-    return [current, ...mostUsed];
+    return [current, ...mostUsed].take(3).toList();
   }
 
   CategoryQuickPickerState copyWith({

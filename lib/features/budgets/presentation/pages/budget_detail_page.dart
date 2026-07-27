@@ -4,15 +4,27 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../domain/entities/budget_scope.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
+import '../utils/budget_adjustment_windows.dart';
 import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
+import '../widgets/budget_adjustment_entry_card.dart';
+import '../widgets/budget_detail_skeleton_view.dart';
+import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
+import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
 import '../widgets/period_stepper_pill.dart';
+import '../widgets/sheets/budget_adjust_amount_sheet.dart';
 import '../widgets/sheets/budget_detail_actions_sheet.dart';
+import '../widgets/sheets/budget_scheduled_sheet.dart';
 import '../widgets/sheets/confirm_delete_budget_sheet.dart';
 
 /// The budget detail (`NloPT`, HU-04/HU-05). Hero + activity, with the floating
@@ -21,7 +33,9 @@ class BudgetDetailPage extends StatelessWidget {
   const BudgetDetailPage({
     required this.onEdit,
     required this.onClosed,
-    required this.onOpenInTransactions,
+    required this.onOpenTransaction,
+    required this.onOpenScheduledPayment,
+    required this.onSeeAllScheduled,
     super.key,
   });
 
@@ -29,36 +43,85 @@ class BudgetDetailPage extends StatelessWidget {
 
   /// Called after the budget is closed or deleted, to leave the detail.
   final VoidCallback onClosed;
-  final VoidCallback onOpenInTransactions;
+
+  /// Navigates to the transaction detail page (from an activity row) and
+  /// resolves with whatever it popped with (the deleted transaction's id, or
+  /// `null`).
+  final Future<String?> Function(String id) onOpenTransaction;
+
+  /// Called with a scheduled payment (template) id, from a scheduled row, to
+  /// open its detail.
+  final ValueChanged<String> onOpenScheduledPayment;
+
+  /// Navigates to the global Pagos Programados list from the period sheet's
+  /// footer (bugfix item 11). A tab-root destination, so this must `go`.
+  final VoidCallback onSeeAllScheduled;
+
+  /// Awaits the detail page's navigation, then — if it deleted something —
+  /// offers HU-05's "Deshacer" snackbar via [BudgetDetailCubit].
+  Future<void> _openTransaction(BuildContext context, String id) async {
+    final deletedId = await onOpenTransaction(id);
+    if (deletedId != null && context.mounted) {
+      context.read<BudgetDetailCubit>().notifyExternalDelete(deletedId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          BlocBuilder<BudgetDetailCubit, BudgetDetailState>(
-            builder: (context, state) => IconButton(
-              tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-              icon: const Icon(LucideIcons.ellipsisVertical),
-              onPressed:
-                  state.budget == null ? null : () => _openActions(context),
-            ),
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: BlocBuilder<BudgetDetailCubit, BudgetDetailState>(
-          builder: (context, state) => switch (state.status) {
-            BudgetDetailStatus.loading =>
-              const Center(child: CircularProgressIndicator()),
-            BudgetDetailStatus.failure => BudgetsErrorView(
-                onRetry: () {},
-              ),
-            BudgetDetailStatus.ready => BudgetDetailBody(
-                state: state,
-                onOpenInTransactions: onOpenInTransactions,
-              ),
+        child: BlocConsumer<BudgetDetailCubit, BudgetDetailState>(
+          listenWhen: (previous, current) =>
+              previous.pendingUndoId != current.pendingUndoId &&
+              current.pendingUndoId != null,
+          listener: (context, state) {
+            final cubit = context.read<BudgetDetailCubit>();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l10n.transactionsUndoDeletedMessage),
+                  action: SnackBarAction(
+                    label: l10n.transactionsUndoAction,
+                    onPressed: cubit.undoDelete,
+                  ),
+                  persist: false,
+                ),
+              );
           },
+          builder: (context, state) => Column(
+            children: [
+              PageHeader(
+                title: state.budget?.name ?? '',
+                trailing: PageHeaderCircleButton(
+                  icon: LucideIcons.ellipsisVertical,
+                  background: colors.muted,
+                  foreground: colors.textPrimary,
+                  tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+                  onPressed:
+                      state.budget == null ? null : () => _openActions(context),
+                ),
+              ),
+              Expanded(
+                child: switch (state.status) {
+                  BudgetDetailStatus.loading =>
+                    const BudgetDetailSkeletonView(),
+                  BudgetDetailStatus.failure => BudgetsErrorView(
+                      onRetry: () {},
+                    ),
+                  BudgetDetailStatus.ready => BudgetDetailBody(
+                      state: state,
+                      onOpenTransaction: (id) => _openTransaction(context, id),
+                      onOpenScheduledPayment: onOpenScheduledPayment,
+                      onSeeAllScheduled: onSeeAllScheduled,
+                      onAdjustAmount: () => _openAdjustAmountSheet(context),
+                    ),
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -66,17 +129,23 @@ class BudgetDetailPage extends StatelessWidget {
 
   Future<void> _openActions(BuildContext context) async {
     final cubit = context.read<BudgetDetailCubit>();
-    final id = cubit.state.budget?.id;
-    if (id == null) {
+    final budget = cubit.state.budget;
+    if (budget == null) {
       return;
     }
-    final action = await BudgetDetailActionsSheet.show(context);
+    final id = budget.id;
+    final action = await BudgetDetailActionsSheet.show(
+      context,
+      budgetName: budget.name,
+    );
     if (action == null || !context.mounted) {
       return;
     }
     switch (action) {
       case BudgetDetailAction.edit:
         onEdit(id);
+      case BudgetDetailAction.adjustAmount:
+        await _openAdjustAmountSheet(context);
       case BudgetDetailAction.close:
         await cubit.closeToHistory();
         onClosed();
@@ -88,38 +157,177 @@ class BudgetDetailPage extends StatelessWidget {
         }
     }
   }
+
+  /// "Ajustar monto": opens the sheet in "crear" mode from the `⋮` entry point,
+  /// or in "editar/cancelar" mode — reopened prefilled — from the detail
+  /// banner (HU-13). The adjustment targets the window the stepper is currently
+  /// showing, so the sheet's ranges come from the visible view.
+  Future<void> _openAdjustAmountSheet(BuildContext context) async {
+    final cubit = context.read<BudgetDetailCubit>();
+    final budget = cubit.state.budget;
+    final view = cubit.state.view;
+    if (budget == null || view == null) {
+      return;
+    }
+    final pending = cubit.state.pendingAdjustment;
+    final windows =
+        BudgetAdjustmentWindows(budget, view.window, DateTime.now());
+    final result = await BudgetAdjustAmountSheet.show(
+      context,
+      currentAmountMinor: budget.amountMinor,
+      currency: budget.currency,
+      windows: windows,
+      pendingAmountMinor: pending?.newAmountMinor,
+    );
+    if (result == null || !context.mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    switch (result) {
+      case BudgetAdjustAmountApplied(:final newAmountMinor):
+        final isEditing = pending != null;
+        final actionResult = isEditing
+            ? await cubit.updateAmountAdjustment(newAmountMinor)
+            : await cubit.scheduleAmountAdjustment(newAmountMinor);
+        actionResult.fold(
+          (_) {},
+          (_) {
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isEditing
+                        ? l10n.budgetAdjustUpdatedSnackbar
+                        : l10n.budgetAdjustScheduledSnackbar,
+                  ),
+                  // Float above the anchored period stepper (bottom: 0) so it
+                  // does not cover the ← / → CTA while it is visible.
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
+                ),
+              );
+          },
+        );
+      case BudgetAdjustAmountRemoved():
+        final actionResult = await cubit.cancelAmountAdjustment();
+        actionResult.fold(
+          (_) {},
+          (_) {
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(l10n.budgetAdjustCancelledSnackbar),
+                  // Float above the anchored period stepper, same as above.
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
+                ),
+              );
+          },
+        );
+    }
+  }
 }
 
 /// The detail content: a scrolling hero + activity under a floating stepper.
 class BudgetDetailBody extends StatelessWidget {
   const BudgetDetailBody({
     required this.state,
-    required this.onOpenInTransactions,
+    required this.onOpenTransaction,
+    required this.onOpenScheduledPayment,
+    required this.onSeeAllScheduled,
+    required this.onAdjustAmount,
     super.key,
   });
 
   final BudgetDetailState state;
-  final VoidCallback onOpenInTransactions;
+
+  /// Called with a transaction id, from an activity row.
+  final ValueChanged<String> onOpenTransaction;
+
+  /// Called with a scheduled payment (template) id, from a scheduled row.
+  final ValueChanged<String> onOpenScheduledPayment;
+
+  /// Navigates to the global Pagos Programados list (bugfix item 11).
+  final VoidCallback onSeeAllScheduled;
+
+  /// "Ajustar monto": opens the sheet in "editar/cancelar" mode, from the
+  /// banner (HU-13).
+  final VoidCallback onAdjustAmount;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<BudgetDetailCubit>();
     final view = state.view;
-    if (view == null || state.budget == null) {
+    final budget = state.budget;
+    if (view == null || budget == null) {
       return const SizedBox.shrink();
     }
+    final progress = view.progress;
 
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 96),
           children: [
             BudgetDetailHero(state: state),
-            const SizedBox(height: 24),
+            // HU-12: the "Programado" entry (`s09qcC`) is its own card under
+            // the hero, not part of it — hidden entirely when the window has
+            // nothing scheduled (`kLUl7`).
+            if (progress.scheduledMinor > 0) ...[
+              const SizedBox(height: 16),
+              BudgetScheduledEntryCard(
+                label: AppLocalizations.of(context).budgetScheduledLabel,
+                sub: BudgetFormat.scheduledEntrySub(
+                  AppLocalizations.of(context),
+                  progress,
+                  budget.currency,
+                  view.scheduledItems.length,
+                ),
+                amountLabel: const MoneyFormatter().formatSymbol(
+                  progress.scheduledMinor,
+                  currencyCode: budget.currency,
+                ),
+                atRisk: progress.isScheduledOverspendRisk,
+                onTap: () => BudgetScheduledSheet.show(
+                  context,
+                  items: view.scheduledItems,
+                  totalMinor: progress.scheduledMinor,
+                  currency: budget.currency,
+                  onOpenScheduledPayment: onOpenScheduledPayment,
+                  onSeeAllScheduled: onSeeAllScheduled,
+                ),
+              ),
+            ],
+            // "Ajustar monto": the pending-override banner (`s09qcC` instance),
+            // shown only when the window the stepper is showing has an
+            // override — hidden entirely otherwise, same convention as the
+            // "Programado" card above.
+            if (state.pendingAdjustment case final adjustment?) ...[
+              const SizedBox(height: 16),
+              BudgetAdjustmentEntryCard(
+                label: AppLocalizations.of(context).budgetAdjustBannerLabel,
+                sub: AppLocalizations.of(context).budgetAdjustBannerSub(
+                  const MoneyFormatter().formatSymbol(
+                    adjustment.newAmountMinor,
+                    currencyCode: budget.currency,
+                  ),
+                  BudgetFormat.rangeLabel(
+                    view.window,
+                    Localizations.localeOf(context).toString(),
+                  ),
+                ),
+                onTap: onAdjustAmount,
+              ),
+            ],
+            // `QWC08` spaces the hero and the activity by 16, not 24.
+            const SizedBox(height: 16),
             BudgetActivitySection(
               state: state,
               onLoadMore: cubit.loadMoreActivity,
-              onOpenInTransactions: onOpenInTransactions,
+              onOpenTransaction: onOpenTransaction,
             ),
           ],
         ),
@@ -128,6 +336,7 @@ class BudgetDetailBody extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: PeriodStepperPill(
+            budget: budget,
             window: view.window,
             onPrevious: cubit.previousPeriod,
             onNext: cubit.nextPeriod,
@@ -138,7 +347,9 @@ class BudgetDetailBody extends StatelessWidget {
   }
 }
 
-/// Compact hero: "Te quedan $X" + bar + a single 2-part caption.
+/// Compact hero card (`NloPT/j35Yt`): the budget's identity row, "Te quedan $X"
+/// and the bar with a single 2-part caption — all inside one `$surface` card,
+/// the dominant element of the screen.
 class BudgetDetailHero extends StatelessWidget {
   const BudgetDetailHero({required this.state, super.key});
 
@@ -150,77 +361,194 @@ class BudgetDetailHero extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final budget = state.budget!;
-    final progress = state.view!.progress;
-    final window = state.view!.window;
+    final scope = state.scope ?? const BudgetScope.empty();
+    final view = state.view!;
+    final progress = view.progress;
     final overspent = progress.isOverspent;
+    final daysLeft =
+        BudgetFormat.daysLeftCaption(l10n, budget, view.window, progress);
     const money = MoneyFormatter();
 
-    final headline = money.format(
+    final headline = money.formatSymbol(
       overspent ? -progress.remainingMinor : progress.remainingMinor,
       currencyCode: budget.currency,
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          budget.name,
-          style: theme.textTheme.titleMedium
-              ?.copyWith(color: colors.textSecondary),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          overspent ? l10n.budgetOverspentLabel : l10n.budgetRemainingLabel,
-          style:
-              theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          headline,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: overspent ? colors.expenseText : colors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        BudgetProgressBar(fraction: progress.fraction, overspent: overspent),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                BudgetFormat.progressCaption(l10n, progress, budget.currency),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: overspent ? colors.expenseText : colors.textSecondary,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // `NloPT/UOLr6` — the identity row. The name repeats the header on
+          // purpose: the card must stand on its own as the budget's object.
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: overspent ? colors.expenseSoft : colors.muted,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  CategoryAppearance.iconForOrPlaceholder(budget.icon),
+                  size: 20,
+                  color: overspent ? colors.expense : colors.primaryOnSoft,
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      budget.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      BudgetFormat.scopeLabel(l10n, scope),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            overspent ? l10n.budgetOverspentLabel : l10n.budgetRemainingLabel,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: overspent ? colors.expenseText : colors.textSecondary,
             ),
-            const SizedBox(width: 12),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            headline,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontSize: 34,
+              fontWeight: FontWeight.w800,
+              color: overspent ? colors.expenseText : colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          BudgetProgressBar(
+            fraction: progress.fraction,
+            overspent: overspent,
+            scheduledFraction: progress.scheduledFraction,
+            scheduledAtRisk: progress.isScheduledOverspendRisk,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  BudgetFormat.progressCaption(l10n, progress, budget.currency),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        overspent ? colors.expenseText : colors.textSecondary,
+                  ),
+                ),
+              ),
+              // The days left come from the domain's already-computed
+              // `progress.daysLeft`, never from `DateTime.now()` in `build`:
+              // that made the widget non-deterministic (and printed "Último
+              // día" in every golden). Absent on a period that is not the
+              // running one.
+              if (daysLeft != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  daysLeft,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          // HU-12's second caption line, e.g. "+ $60.000 programado (llega a
+          // 92% si se ejecuta)" (sano) or "... — excedería el presupuesto por
+          // $Y" (riesgo, `amber-text`). `null` when the window has nothing
+          // scheduled, matching WCAG 1.4.1: the "programado"/riesgo segment
+          // is always named in text here, never signalled by the bar's color
+          // alone.
+          if (BudgetFormat.scheduledCaption(l10n, progress, budget.currency)
+              case final scheduledCaption?) ...[
+            const SizedBox(height: 8),
             Text(
-              l10n.budgetDaysLeft(window.daysLeftFrom(DateTime.now())),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colors.textSecondary),
+              scheduledCaption,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: progress.isScheduledOverspendRisk
+                    ? colors.amberText
+                    : colors.textSecondary,
+              ),
             ),
           ],
-        ),
-      ],
+          // Bugfix item 10 (`rzssO`): how much would stay free after approving
+          // every scheduled payment. Only in the healthy case — when the
+          // projection overshoots, `scheduledCaption` above already carries the
+          // "excedería" line, so this stays absent to avoid duplicating it.
+          if (BudgetFormat.freeAfterScheduledCaption(
+                  l10n, progress, budget.currency)
+              case final freeCaption?) ...[
+            const SizedBox(height: 8),
+            Text(
+              freeCaption,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: colors.textSecondary,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
 
-/// The period's activity: matched expenses, "Cargar más" and the secondary
-/// "Abrir en Movimientos ›" link.
+/// The period's activity (`NloPT/R30oao`): the section header with the movement
+/// count, the matched expenses and the "Ver más" pill.
 class BudgetActivitySection extends StatelessWidget {
   const BudgetActivitySection({
     required this.state,
     required this.onLoadMore,
-    required this.onOpenInTransactions,
+    required this.onOpenTransaction,
     super.key,
   });
 
   final BudgetDetailState state;
   final VoidCallback onLoadMore;
-  final VoidCallback onOpenInTransactions;
+
+  /// Called with a row's transaction id to open its detail.
+  final ValueChanged<String> onOpenTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -228,24 +556,36 @@ class BudgetActivitySection extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final items = state.visibleActivity;
+    final total = state.view?.activity.length ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // `NloPT/Nv04I` — title on the left, the period's movement count on
+        // the right. The count is the total of the period, not the visible
+        // slice, so it does not change as "Ver más" expands the list.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               l10n.budgetActivityTitle,
-              style: theme.textTheme.titleSmall,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            TextButton(
-              onPressed: onOpenInTransactions,
-              child: Text(l10n.budgetOpenInTransactions),
+            const SizedBox(width: 8),
+            Text(
+              l10n.budgetActivityCount(total),
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: colors.textSecondary,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         if (items.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -258,17 +598,14 @@ class BudgetActivitySection extends StatelessWidget {
             ),
           )
         else
-          for (final item in items) ...[
-            BudgetActivityRow(item: item),
-            const SizedBox(height: 10),
+          for (final (index, item) in items.indexed) ...[
+            if (index > 0) const SizedBox(height: 14),
+            BudgetActivityRow(item: item, onTap: onOpenTransaction),
           ],
-        if (state.hasMoreActivity)
-          Center(
-            child: TextButton(
-              onPressed: onLoadMore,
-              child: Text(l10n.budgetLoadMore),
-            ),
-          ),
+        if (state.hasMoreActivity) ...[
+          const SizedBox(height: 18),
+          BudgetLoadMoreButton(onPressed: onLoadMore),
+        ],
       ],
     );
   }

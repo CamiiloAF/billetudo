@@ -48,11 +48,11 @@ void main() {
   blocTest<AppSettingsCubit, AppSettingsState>(
     'setZeroBasedEnabled delegates to the use case instead of emitting '
     'directly: the stream is the source of truth',
-    setUp: () => when(() => setZeroBasedEnabled(true))
+    setUp: () => when(() => setZeroBasedEnabled(enabled: true))
         .thenAnswer((_) async => const Right(unit)),
     build: build,
-    act: (cubit) => cubit.setZeroBasedEnabled(true),
+    act: (cubit) => cubit.setZeroBasedEnabled(enabled: true),
     expect: () => <AppSettingsState>[],
-    verify: (_) => verify(() => setZeroBasedEnabled(true)).called(1),
+    verify: (_) => verify(() => setZeroBasedEnabled(enabled: true)).called(1),
   );
 }

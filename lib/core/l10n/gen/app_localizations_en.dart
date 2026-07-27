@@ -25,6 +25,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonContinue => 'Continue';
+
+  @override
+  String get commonAnd => 'and';
+
+  @override
   String get commonEdit => 'Edit';
 
   @override
@@ -34,10 +40,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonMoreActions => 'More options';
+
+  @override
   String get commonApply => 'Apply';
 
   @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get commonConfirm => 'Confirm';
+
+  @override
   String get commonDone => 'Done';
+
+  @override
+  String get commonCreate => 'Create';
 
   @override
   String get errorUnexpected => 'Something went wrong. Please try again.';
@@ -75,7 +93,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountsErrorLocalFirst =>
-      'Your data is still saved on your device';
+      'Your data is still saved on your device. Try again.';
 
   @override
   String get accountsArchivedTitle => 'Archived accounts';
@@ -94,7 +112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountTypeCash => 'Cash';
 
   @override
-  String get accountTypeBank => 'Bank';
+  String get accountTypeBank => 'Checking account';
 
   @override
   String get accountTypeCard => 'Credit card';
@@ -106,7 +124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountTypeInvestment => 'Investment';
 
   @override
-  String get accountTypeOther => 'Other';
+  String get accountTypeOther => 'General account';
 
   @override
   String get accountBalanceLabel => 'Current balance';
@@ -116,6 +134,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDebtLabel => 'Current debt';
+
+  @override
+  String get accountBalanceAdjustTitle => 'Adjust balance';
+
+  @override
+  String accountBalanceAdjustCurrent(String amount) {
+    return 'Current balance: $amount';
+  }
+
+  @override
+  String accountBalanceAdjustCurrentDebt(String amount) {
+    return 'Current debt: $amount';
+  }
+
+  @override
+  String get accountBalanceAdjustNewLabel => 'New desired balance';
+
+  @override
+  String get accountBalanceAdjustNewDebtLabel => 'New debt';
+
+  @override
+  String get accountBalanceAdjustHowLabel => 'How do you want to apply it?';
+
+  @override
+  String get accountBalanceAdjustRegisterTitle => 'Register adjustment';
+
+  @override
+  String accountBalanceAdjustRegisterBody(String diff) {
+    return 'We create a movement dated today for the difference ($diff). It counts toward your reports and budgets.';
+  }
+
+  @override
+  String get accountBalanceAdjustCorrectTitle => 'Correct opening balance';
+
+  @override
+  String get accountBalanceAdjustCorrectBody =>
+      'We adjust your starting balance so it matches. No movement is created.';
+
+  @override
+  String get accountBalanceAdjustApplyCta => 'Apply';
+
+  @override
+  String get accountBalanceAdjustError =>
+      'We couldn\'t adjust the balance. Try again.';
+
+  @override
+  String get accountBalanceAdjustNote => 'Balance adjustment';
+
+  @override
+  String get accountDebtShortLabel => 'Debt';
 
   @override
   String get accountOverLimitBadge => 'Over limit';
@@ -165,7 +233,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String accountNumberMasked(String last4) {
-    return '•••• $last4';
+    return '••••••• $last4';
   }
 
   @override
@@ -200,16 +268,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountFormTypeChange => 'Change';
 
   @override
-  String get accountFormNameLabel => 'Name';
+  String get accountFormNameLabel => 'Account name';
 
   @override
   String get accountFormNameHint => 'E.g. Savings account';
 
   @override
-  String get accountFormInstitutionLabel => 'Institution';
+  String get accountFormInstitutionLabel => 'Institution (optional)';
 
   @override
-  String get accountFormInstitutionHint => 'E.g. Bancolombia';
+  String get accountFormInstitutionHint => 'Optional';
 
   @override
   String get accountFormInitialBalanceLabel => 'Opening balance';
@@ -256,13 +324,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountFormPaymentDueDayLabel => 'Payment due day';
 
   @override
-  String get accountFormAmountHint => '0';
+  String get accountFormAmountHint => '\$0';
 
   @override
   String get accountFormSelectHint => 'Select';
 
   @override
+  String get accountFormSaveCta => 'Save account';
+
+  @override
   String get accountErrorType => 'Pick the account type.';
+
+  @override
+  String get accountErrorNameRequired => 'Enter a name for the account.';
 
   @override
   String get accountErrorName => 'Enter a name of up to 100 characters.';
@@ -297,19 +371,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountErrorPaymentDueDay => 'Pick a day between 1 and 31.';
 
   @override
-  String get accountDeleteSheetTitle => 'Delete this account?';
-
-  @override
   String get accountDeleteSheetMessage =>
-      'The account will no longer appear in your lists.';
+      'This account has no linked transactions. This action cannot be undone.';
 
   @override
   String accountDeleteSheetImpact(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'It has $count linked transactions.',
-      one: 'It has 1 linked transaction.',
+      other:
+          'This account has $count linked transactions. Deleting it will archive that history too. This action cannot be undone.',
+      one:
+          'This account has 1 linked transaction. Deleting it will archive that history too. This action cannot be undone.',
     );
     return '$_temp0';
   }
@@ -322,17 +395,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can bring it back any time from “Archived accounts”.';
 
   @override
-  String get accountChangeSheetTitle => 'Confirm the change?';
-
-  @override
   String get accountChangeSheetMessage =>
-      'This account already has transactions. Changing its type or currency changes how its figures read.';
+      'Changing this account\'s type or currency can affect calculations and reports on its existing transactions. Do you want to continue?';
 
   @override
   String get accountChangeConfirm => 'Confirm';
 
   @override
-  String get accountCurrencySheetTitle => 'Currency';
+  String get accountCurrencySheetTitle => 'Select the currency';
 
   @override
   String get currencyCopName => 'Colombian peso';
@@ -410,6 +480,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryFormAppearanceLabel => 'Icon and color';
 
   @override
+  String get categoryFormAppearanceEmptyLabel => 'Choose icon and color';
+
+  @override
   String get categoryFormAppearanceEmptySublabel => 'Tap to choose (optional)';
 
   @override
@@ -428,6 +501,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryFormParentLabel => 'Parent category';
 
   @override
+  String get categoryErrorNameRequired => 'Enter a name for the category.';
+
+  @override
   String get categoryErrorName => 'Enter a name of up to 100 characters.';
 
   @override
@@ -442,10 +518,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryDeleteAction => 'Delete category';
 
   @override
+  String get categoryDeleteSubcategoryAction => 'Delete subcategory';
+
+  @override
   String get categoryAppearancePickerTitle => 'Icon and color';
 
   @override
+  String get categoryColorLockedSubcategory =>
+      'The color is inherited from the parent category and can\'t be changed. Pick the icon you like.';
+
+  @override
+  String get categoryAppearanceIconSectionLabel => 'Icon';
+
+  @override
+  String get categoryAppearanceColorSectionLabel => 'Color';
+
+  @override
   String get categoryParentPickerTitle => 'Parent category';
+
+  @override
+  String get categoryParentPickerHint =>
+      'Only main Expense categories are shown. Subcategories can\'t be nested inside other subcategories.';
 
   @override
   String get categoryParentPickerEmpty => 'No categories available yet.';
@@ -455,18 +548,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteSimpleMessage =>
-      'You can bring it back later from the trash.';
+      'This category will be removed from your list. You can recover it later from the trash, in Settings.';
 
   @override
-  String get categoryDeleteTransactionsTitle => 'Delete this category?';
-
-  @override
-  String categoryDeleteTransactionsCount(int count) {
+  String categoryDeleteTransactionsMessage(String categoryName, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'It has $count linked transactions.',
-      one: 'It has 1 linked transaction.',
+      other:
+          '\"$categoryName\" has $count linked transactions. Choose what to do with them before deleting the category.',
+      one:
+          '\"$categoryName\" has 1 linked transaction. Choose what to do with it before deleting the category.',
     );
     return '$_temp0';
   }
@@ -482,12 +574,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reassign to another category';
 
   @override
-  String get categoryDeleteSubcategoriesTitle =>
-      'This category has subcategories';
-
-  @override
-  String get categoryDeleteSubcategoriesMessage =>
-      'Before deleting it, decide what happens to its subcategories.';
+  String categoryDeleteSubcategoriesMessage(String categoryName, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '\"$categoryName\" has $count active subcategories. You need to resolve them before deleting this root category.',
+      one:
+          '\"$categoryName\" has 1 active subcategory. You need to resolve it before deleting this root category.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get categoryReassignSubcategoriesOption => 'Reassign subcategories';
@@ -505,7 +602,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryCascadeConfirmMessage =>
-      'This deletes the category and all of its subcategories. You can bring them back later from the trash.';
+      'This deletes the category and all of its subcategories. You can undo this right after deleting.';
 
   @override
   String get transactionsTitle => 'Transactions';
@@ -528,7 +625,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsErrorLocalFirst =>
-      'Your data is still safe on this device.';
+      'Your data is still saved on your device. Try again.';
 
   @override
   String get transactionsAdd => 'Add transaction';
@@ -558,7 +655,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsSortDateDesc => 'Most recent first';
 
   @override
-  String get transactionsSortAmountDesc => 'Amount: high to low';
+  String get transactionsSortDateAsc => 'Oldest first';
+
+  @override
+  String get transactionsSortAmountDesc => 'High to low';
+
+  @override
+  String get transactionsSortAmountAsc => 'Low to high';
+
+  @override
+  String get transactionsSortSectionDate => 'DATE';
+
+  @override
+  String get transactionsSortSectionAmount => 'AMOUNT';
+
+  @override
+  String get transactionsSortActiveByDate => 'Sorted by date';
+
+  @override
+  String get transactionsSortActiveByAmount => 'Sorted by amount';
+
+  @override
+  String transactionsFilterAccountsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transactionsBalanceTotalLabel => 'Total balance';
+
+  @override
+  String get transactionsBalanceCardBalanceLabel => 'Balance';
+
+  @override
+  String get transactionsBalanceCarouselCollapse => 'Hide balances';
+
+  @override
+  String get transactionsBalanceCarouselExpand => 'Show balances';
+
+  @override
+  String get transactionsGroupToday => 'Today';
+
+  @override
+  String get transactionsGroupYesterday => 'Yesterday';
+
+  @override
+  String transactionsGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '1 transaction',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get transactionTypeExpense => 'Expense';
@@ -595,6 +750,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionFormCategoryLabel => 'Category';
+
+  @override
+  String get transactionErrorAccount => 'Choose an account.';
+
+  @override
+  String get transactionErrorCategory => 'Choose a category.';
+
+  @override
+  String get transactionErrorAmount => 'Enter an amount greater than zero.';
+
+  @override
+  String get transactionErrorTransferAccount =>
+      'Choose the destination account.';
 
   @override
   String get categorySelectTitle => 'Choose category';
@@ -646,8 +814,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionFormTransferFromLabel => 'From account';
 
   @override
-  String get transactionFormTransferInfo =>
-      'Transfers don\'t count as income or expense.';
+  String get transactionFormCountsInBudgetLabel => 'Include in your budget?';
+
+  @override
+  String get transactionFormCountsInBudgetHintOff =>
+      'Turn it on to have it count toward your budgets and reports.';
+
+  @override
+  String get transactionFormCountsInBudgetHintOn =>
+      'It counts toward your budgets and reports.';
 
   @override
   String get transactionFormSwapAccounts => 'Swap accounts';
@@ -694,6 +869,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionFormKeypadEquals => 'Calculate result';
 
   @override
+  String get transactionFormKeypadConfirm => 'Confirm';
+
+  @override
   String get transactionFormKeypadDecimal => 'Decimal point';
 
   @override
@@ -718,37 +896,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionSourceScheduled => 'Scheduled';
 
   @override
-  String get transactionEditImpactTitle => 'This transaction is linked';
+  String transactionEditImpactMessage(String links) {
+    return 'This transaction is linked to $links. If you change the amount, make sure it still matches.';
+  }
 
   @override
-  String get transactionEditImpactScheduled =>
-      'It affects its linked scheduled payment.';
+  String get transactionEditImpactLinkScheduled => 'your scheduled payment';
 
   @override
-  String get transactionEditImpactGoal =>
-      'It affects the goal it contributes to.';
+  String get transactionEditImpactLinkGoal => 'your goal';
 
   @override
-  String get transactionEditImpactDebt => 'It affects the debt it pays down.';
-
-  @override
-  String get transactionEditImpactConfirm => 'Save anyway';
+  String get transactionEditImpactLinkDebt => 'your debt';
 
   @override
   String get transactionDeleteTitle => 'Delete this transaction?';
 
   @override
   String get transactionDeleteMessage =>
-      'You can bring it back later from the trash.';
+      'You can undo this right after deleting.';
 
   @override
-  String get transactionDetailTitle => 'Transaction detail';
+  String get transactionDetailTitleExpense => 'Expense detail';
 
   @override
-  String get transactionDetailEdit => 'Edit';
+  String get transactionDetailTitleIncome => 'Income detail';
 
   @override
-  String get transactionDetailDelete => 'Delete';
+  String get transactionDetailTitleTransfer => 'Transfer detail';
 
   @override
   String transactionDetailSource(String source) {
@@ -756,29 +931,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String transactionDetailAccountLine(String account) {
-    return 'Account: $account';
+  String get transactionDetailAccountLabel => 'Account';
+
+  @override
+  String get transactionDetailAccountFromLabel => 'Source account';
+
+  @override
+  String get transactionDetailAccountToLabel => 'Destination account';
+
+  @override
+  String get transactionDetailCategoryLabel => 'Category';
+
+  @override
+  String get transactionDetailDateLabel => 'Date';
+
+  @override
+  String get transactionDetailNoteLabel => 'Note';
+
+  @override
+  String get transactionDetailNoNote => 'No note';
+
+  @override
+  String get transactionDetailSourceLabel => 'Source';
+
+  @override
+  String transactionDetailDebtLinkedLabel(String debtName) {
+    return 'Linked to debt: $debtName';
   }
 
   @override
-  String transactionDetailTransferLine(String account) {
-    return 'Destination account: $account';
-  }
+  String get transactionDetailTagsLabel => 'Tags';
 
   @override
-  String transactionDetailCategoryLine(String category) {
-    return 'Category: $category';
-  }
+  String get transactionDetailTransferSubtitle => 'Transfer';
 
   @override
-  String transactionDetailNoteLine(String note) {
-    return 'Note: $note';
-  }
-
-  @override
-  String transactionDetailTagsLine(String tags) {
-    return 'Tags: $tags';
-  }
+  String get transactionDetailDeleteLink => 'Delete transaction';
 
   @override
   String get accountFilterSheetTitle => 'Filter by account';
@@ -825,6 +1013,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagFilterSheetTitle => 'Filter by tag';
 
   @override
+  String get tagFilterSearchHint => 'Search tag';
+
+  @override
+  String get tagFilterEmpty => 'We couldn\'t find tags with that name';
+
+  @override
   String get newTagSheetTitle => 'New tag';
 
   @override
@@ -838,6 +1032,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navGoals => 'Goals';
+
+  @override
+  String get navScheduledPayments => 'Payments';
 
   @override
   String get navMore => 'More';
@@ -857,10 +1054,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSyncSynced => 'Synced';
 
   @override
-  String get homeSyncSyncing => 'Syncing';
+  String get homeSyncSyncing => 'Syncing…';
 
   @override
   String get homeSyncOffline => 'Offline';
+
+  @override
+  String get homeSyncSheetSyncedTitle => 'All backed up';
+
+  @override
+  String get homeSyncSheetSyncedMessage =>
+      'Your information is safe and synced.';
+
+  @override
+  String get homeSyncSheetSyncingTitle => 'Syncing…';
+
+  @override
+  String get homeSyncSheetSyncingMessage =>
+      'We\'re saving your changes to the cloud.';
+
+  @override
+  String get homeSyncSheetOfflineTitle => 'Offline';
+
+  @override
+  String get homeSyncSheetOfflineMessage =>
+      'Your data is saved on this device. It\'ll sync as soon as the connection is back.';
+
+  @override
+  String get homeSyncSheetDismiss => 'Got it';
 
   @override
   String homeSpentInMonth(String month) {
@@ -875,10 +1096,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNoSpendingYet => 'No spending yet this month';
 
   @override
+  String homeHeroBudgetProgress(int pct, String amount) {
+    return '$pct% of $amount';
+  }
+
+  @override
+  String homeHeroBudgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeQuickAccessTitle => 'Quick access';
+
+  @override
+  String get homeQuickAccessScheduledPayments => 'Scheduled payments';
+
+  @override
   String get homeRecentTitle => 'Recent activity';
 
   @override
   String get homeSeeAll => 'See all';
+
+  @override
+  String get homeBalancesTitle => 'My accounts';
+
+  @override
+  String get homeBalancesSeeAll => 'See all';
 
   @override
   String get homeEmptyMovements => 'You have not logged any movements yet';
@@ -887,7 +1137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeLoading => 'Loading home';
 
   @override
-  String get homeMonthPickerTitle => 'Choose month';
+  String get homeMonthPickerTitle => 'Select month';
 
   @override
   String get homeAiBanner => 'Coming soon: ask Billetudo';
@@ -901,6 +1151,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
+
+  @override
+  String get homeExitConfirmTitle => 'Leave Billetudo?';
+
+  @override
+  String get homeExitConfirmMessage =>
+      'You can come back anytime, your data stays saved.';
+
+  @override
+  String get homeExitConfirmAction => 'Exit';
 
   @override
   String get comingSoonTitle => 'Coming soon';
@@ -919,19 +1179,539 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreTitle => 'More';
 
   @override
+  String get moreAccountsDescription => 'Manage your accounts and balances';
+
+  @override
+  String get moreCategoriesDescription => 'Organize your income and expenses';
+
+  @override
   String get moreDebts => 'Debts';
+
+  @override
+  String get moreDebtsDescription => 'Track your debts and payments';
+
+  @override
+  String get debtsTitle => 'Debts';
+
+  @override
+  String get debtsAdd => 'Add debt';
+
+  @override
+  String get debtsLoading => 'Loading your debts';
+
+  @override
+  String get debtsSummaryTitle => 'Summary';
+
+  @override
+  String get debtsSectionTitle => 'Your debts';
+
+  @override
+  String get debtsEmptyMessage => 'You don\'t have any debts yet';
+
+  @override
+  String get debtsEmptyDescription =>
+      'Track what you owe or what you\'re owed to follow your payoff progress in one place.';
+
+  @override
+  String get debtsErrorTitle => 'We couldn\'t load your debts';
+
+  @override
+  String get debtDetailErrorTitle => 'We couldn\'t load this debt';
+
+  @override
+  String get debtDirectionIOwe => 'I owe';
+
+  @override
+  String get debtDirectionOwedToMe => 'Owed to me';
+
+  @override
+  String debtProgressPaid(int pct) {
+    return '$pct% paid';
+  }
+
+  @override
+  String debtProgressCollected(int pct) {
+    return '$pct% collected';
+  }
+
+  @override
+  String debtAmountOf(String amount) {
+    return 'of $amount';
+  }
+
+  @override
+  String debtDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String debtPercentValue(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String get debtDetailBalanceLabel => 'Outstanding balance';
+
+  @override
+  String get debtDetailPaidLabel => 'paid';
+
+  @override
+  String get debtDetailCollectedLabel => 'collected';
+
+  @override
+  String debtDetailGrowth(String amount) {
+    return 'Grows ~$amount/day';
+  }
+
+  @override
+  String get debtDetailEstimated => 'estimated';
+
+  @override
+  String get debtDetailUpdateBalance => 'Update balance';
+
+  @override
+  String get debtDetailMovementsTitle => 'Movements';
+
+  @override
+  String get debtDetailRegisterPayment => 'Record payment';
+
+  @override
+  String get debtInstallmentTitle => 'Next installment';
+
+  @override
+  String debtInstallmentBadge(String date) {
+    return 'Installment · $date';
+  }
+
+  @override
+  String get debtInstallmentScheduledBadge => 'Scheduled payment';
+
+  @override
+  String get debtConfigureInstallmentTitle => 'Set up installment';
+
+  @override
+  String get debtConfigureInstallmentSubtitle =>
+      'Schedule this debt\'s installment';
+
+  @override
+  String get debtLedgerOpening => 'Opening balance';
+
+  @override
+  String get debtLedgerDisbursement => 'Disbursement';
+
+  @override
+  String get debtLedgerPaymentOwe => 'Payment on the debt';
+
+  @override
+  String get debtLedgerPaymentOwed => 'Payment received';
+
+  @override
+  String get debtLedgerInterest => 'Interest';
+
+  @override
+  String get debtLedgerAdjustment => 'Balance updated';
+
+  @override
+  String debtLedgerRunning(String amount) {
+    return 'Balance $amount';
+  }
+
+  @override
+  String get debtLedgerTagEstimated => 'Estimated';
+
+  @override
+  String get debtLedgerTagNoAccount => 'Doesn\'t affect accounts';
+
+  @override
+  String get debtEditTooltip => 'Edit debt';
+
+  @override
+  String get debtDetailTitleFallback => 'Debt';
+
+  @override
+  String get debtFormNewTitle => 'New debt';
+
+  @override
+  String get debtFormEditTitle => 'Edit debt';
+
+  @override
+  String get debtFormDirectionLabel => 'Do you owe or are you owed?';
+
+  @override
+  String get debtFormOpeningBalanceLabel => 'Opening balance';
+
+  @override
+  String get debtFormErrorAmountZero =>
+      'The opening balance must be greater than zero';
+
+  @override
+  String get debtFormNameLabel => 'Debt name';
+
+  @override
+  String get debtFormNameHint => 'Car loan, loan to Andrés…';
+
+  @override
+  String get debtFormNameRequired => 'Give the debt a name';
+
+  @override
+  String get debtFormCounterpartyLabel => 'Counterparty';
+
+  @override
+  String get debtFormCounterpartyLabelIOwe => 'I owe';
+
+  @override
+  String get debtFormCounterpartyLabelOwedToMe => 'Owed by';
+
+  @override
+  String get debtFormCounterpartyHint => 'Bank, person…';
+
+  @override
+  String get debtFormStartDateLabel => 'Date';
+
+  @override
+  String get debtFormDueDateLabel => 'Due date';
+
+  @override
+  String get debtFormDueDateHint => 'No date';
+
+  @override
+  String get debtFormErrorDueBeforeStart =>
+      'The due date must be after the start date';
+
+  @override
+  String get debtFormInterestLabel => 'Annual interest (optional)';
+
+  @override
+  String get debtFormInterestHint => '0';
+
+  @override
+  String get debtFormInterestError => 'Check the interest rate';
+
+  @override
+  String get debtFormAccrualModeLabel => 'Interest mode';
+
+  @override
+  String get debtFormAccrualManual => 'Manual';
+
+  @override
+  String get debtFormAccrualAuto => 'Automatic';
+
+  @override
+  String get debtFormAccrualHint =>
+      'Manual: you enter the bank\'s figure. Automatic estimates the daily growth (estimated).';
+
+  @override
+  String get debtFormCreateCta => 'Create debt';
+
+  @override
+  String get debtFormSaveCta => 'Save changes';
+
+  @override
+  String get debtFormDelete => 'Delete debt';
+
+  @override
+  String get debtCurrencySheetTitle => 'Currency';
+
+  @override
+  String debtCurrencyPill(String code, String name) {
+    return '$code · $name';
+  }
+
+  @override
+  String get debtDeleteSheetTitle => 'Delete this debt?';
+
+  @override
+  String get debtDeleteSheetMessage => 'You can restore it from the trash.';
+
+  @override
+  String debtContext(String name, String direction) {
+    return '$name · $direction';
+  }
+
+  @override
+  String debtDateToday(String date) {
+    return 'Today, $date';
+  }
+
+  @override
+  String get debtPaymentTitle => 'Register payment';
+
+  @override
+  String get debtPaymentAmountLabel => 'Payment';
+
+  @override
+  String get debtPaymentAddToAccountLabel => 'Add to an account?';
+
+  @override
+  String get debtPaymentAddToAccountHintYes =>
+      'It will move the balance and count in your stats';
+
+  @override
+  String get debtPaymentAddToAccountHintNo =>
+      'This payment lowers the debt but won\'t move any account.';
+
+  @override
+  String get debtPaymentLinkExisting => 'Already recorded it? Link a movement';
+
+  @override
+  String get debtPaymentDateLabel => 'Date';
+
+  @override
+  String get debtPaymentNoteLabel => 'Note (optional)';
+
+  @override
+  String get debtPaymentNoteHint => 'Add a note';
+
+  @override
+  String get debtPaymentCategoryLabel => 'Category (optional)';
+
+  @override
+  String get debtPaymentCategoryNone => 'No category';
+
+  @override
+  String get debtPaymentSelectAccount => 'Choose an account';
+
+  @override
+  String get debtPaymentAccountPickerTitle => 'Choose an account';
+
+  @override
+  String debtOpeningMovementNote(String debtName) {
+    return 'Debt: $debtName';
+  }
+
+  @override
+  String get debtPaymentCta => 'Register payment';
+
+  @override
+  String get debtPaymentError =>
+      'We couldn\'t register the payment. Try again.';
+
+  @override
+  String get debtUpdateBalanceTitle => 'Update balance';
+
+  @override
+  String get debtUpdateBalanceNewLabel => 'New balance';
+
+  @override
+  String get debtUpdateBalanceEstimatedLabel => 'Estimated balance today';
+
+  @override
+  String get debtUpdateBalanceAdjustLabel => 'Adjustment recorded';
+
+  @override
+  String get debtUpdateBalanceHint =>
+      'Records an adjustment on the debt to match the bank\'s figure. It moves no account.';
+
+  @override
+  String get debtUpdateBalanceDateLabel => 'Adjustment date';
+
+  @override
+  String get debtUpdateBalanceCta => 'Save balance';
+
+  @override
+  String get debtUpdateBalanceError =>
+      'We couldn\'t update the balance. Try again.';
+
+  @override
+  String debtLinkBannerTitle(String debt) {
+    return 'Link to $debt';
+  }
+
+  @override
+  String get debtLinkBannerBody =>
+      'Choose a movement you already recorded; we attribute it to this debt instead of creating a new one.';
+
+  @override
+  String get debtLinkError => 'We couldn\'t link the movement. Try again.';
+
+  @override
+  String get debtInitialRegistroTitle =>
+      'Create an initial record for this debt?';
+
+  @override
+  String get debtInitialRegistroMessage =>
+      'If you create it, the balance of the account you pick will change.';
+
+  @override
+  String get debtInitialRegistroSoloDeuda => 'No, just the debt';
+
+  @override
+  String get debtInitialRegistroChooseAccount => 'Yes, pick account';
+
+  @override
+  String get debtUpdateRegistroTitle => 'Update the record too?';
+
+  @override
+  String debtUpdateRegistroMessage(String from, String to) {
+    return 'Changing the opening balance will update the initial record from $from to $to.';
+  }
+
+  @override
+  String get debtUpdateRegistroConfirm => 'Update';
+
+  @override
+  String get debtOpeningLinkSnackbar => 'Initial balance · no account linked';
+
+  @override
+  String get debtLedgerAbonoNoAccountSnackbar =>
+      'This payment didn\'t move any account';
+
+  @override
+  String get debtMenuTooltip => 'More options';
+
+  @override
+  String get debtActionClose => 'Close debt';
+
+  @override
+  String get debtActionError => 'We couldn\'t complete that action. Try again.';
+
+  @override
+  String get debtCloseSheetTitle => 'Close this debt?';
+
+  @override
+  String debtCloseSheetMessageIOwe(String amount, String counterparty) {
+    return 'You owe $counterparty $amount. Closing it will remove it from your active debts and stop reminding you to pay it.';
+  }
+
+  @override
+  String debtCloseSheetMessageIOweNoCounterparty(String amount) {
+    return 'You owe $amount. Closing it will remove it from your active debts and stop reminding you to pay it.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMe(String counterparty, String amount) {
+    return '$counterparty owes you $amount. Closing it will remove it from your active debts and stop reminding you to collect it.';
+  }
+
+  @override
+  String debtCloseSheetMessageOwedToMeNoCounterparty(String amount) {
+    return 'You are owed $amount. Closing it will remove it from your active debts and stop reminding you to collect it.';
+  }
+
+  @override
+  String get debtCloseInfoLabel => 'Balance pending at close';
+
+  @override
+  String get debtCloseCta => 'Close debt';
+
+  @override
+  String get debtCelebrationTitleIOwe =>
+      'Congrats! You don\'t owe anything anymore';
+
+  @override
+  String get debtCelebrationTitleOwedToMe =>
+      'Congrats! Nothing left to collect';
+
+  @override
+  String debtCelebrationMessageIOwe(
+      String name, String amount, String duration) {
+    return 'You finished paying off $name. You paid $amount in total over $duration.';
+  }
+
+  @override
+  String debtCelebrationMessageOwedToMe(
+      String name, String amount, String duration) {
+    return 'You finished collecting $name. You collected $amount in total over $duration.';
+  }
+
+  @override
+  String get debtCelebrationStatTotalPaidIOwe => 'Total paid';
+
+  @override
+  String get debtCelebrationStatTotalPaidOwedToMe => 'Total collected';
+
+  @override
+  String get debtCelebrationStatDuration => 'Duration';
+
+  @override
+  String get debtCelebrationDismiss => 'Not now';
+
+  @override
+  String get debtCelebrationComplete => 'Complete';
+
+  @override
+  String debtDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count months',
+      one: '1 month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String debtDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get debtDirectionIOwePast => 'Owed';
+
+  @override
+  String get debtDirectionOwedToMePast => 'Was owed';
+
+  @override
+  String debtCardStatusPaid(String date) {
+    return 'Paid · $date';
+  }
+
+  @override
+  String debtCardStatusClosed(String date) {
+    return 'Closed · $date';
+  }
+
+  @override
+  String get debtsTabActive => 'Active';
+
+  @override
+  String get debtsTabClosed => 'Closed';
+
+  @override
+  String get debtsClosedPaidLabel => 'I paid';
+
+  @override
+  String get debtsClosedCollectedLabel => 'I was paid';
+
+  @override
+  String get debtsClosedEmptyMessage => 'You haven\'t closed any debt yet';
+
+  @override
+  String get debtsActiveEmptyMessage => 'You have no active debts';
 
   @override
   String get moreScheduledPayments => 'Scheduled payments';
 
   @override
+  String get moreScheduledPaymentsDescription =>
+      'Automatic payments and income';
+
+  @override
   String get moreReports => 'Charts and reports';
+
+  @override
+  String get moreReportsDescription => 'See your finances in charts';
+
+  @override
+  String get moreGoalsDescription => 'Save toward your goals';
 
   @override
   String get moreImportExport => 'Import and export';
 
   @override
+  String get moreImportExportDescription => 'Back up or bring in your data';
+
+  @override
   String get moreSettings => 'Settings';
+
+  @override
+  String get moreSettingsDescription => 'Preferences and your account';
 
   @override
   String get moreSignOut => 'Sign out';
@@ -999,17 +1779,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authSignOutSheetMessage =>
-      'Your accounts and transactions will stay saved on this device — they won\'t be deleted. But changes you make here afterwards won\'t sync until you sign in again.';
+      'Your accounts and transactions will stay saved on this phone. You\'ll stop syncing until you sign in again.';
+
+  @override
+  String get authSignOutSheetMessageDeleting =>
+      'You\'ll stop syncing until you sign in again.';
 
   @override
   String get authSignOutCta => 'Sign out';
+
+  @override
+  String get authSignOutDeleteCta => 'Delete and sign out';
+
+  @override
+  String get authSignOutDeleteOptInTitle => 'Also delete this phone\'s data';
+
+  @override
+  String get authSignOutDeleteOptInSubtitle =>
+      'Your cloud account stays untouched: sign in again and you get it all back.';
+
+  @override
+  String get authSignOutUnsyncedTitle =>
+      'Some changes haven\'t been uploaded yet';
+
+  @override
+  String authSignOutUnsyncedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are still saved only on this phone. If you delete now, those changes won\'t make it to the cloud.',
+      one:
+          '1 change is still saved only on this phone. If you delete now, that change won\'t make it to the cloud.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authSignOutWipeErrorMessage =>
+      'We signed you out, but couldn\'t delete this phone\'s data. It\'s still here.';
+
+  @override
+  String get authSignOutFailedMessage =>
+      'We couldn\'t sign you out, so nothing was deleted from this phone. Please try again.';
 
   @override
   String get authDeleteStep1Title => 'Delete your account';
 
   @override
   String get authDeleteStep1Message =>
-      'We\'re about to delete your accounts, transactions, categories and everything else tied to your account in the cloud. This can\'t be undone.';
+      'This action is irreversible. All your cloud data will be permanently deleted: accounts, transactions, categories and everything else tied to your account.';
 
   @override
   String get authDeleteStep1Cta => 'Delete account';
@@ -1019,7 +1838,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeleteStep1ErrorMessage =>
-      'Your data is still safe on this device. Try again once you have a connection.';
+      'There was a problem connecting to the server and we couldn\'t complete the request. Your data is still safe on this device — try again.';
 
   @override
   String get authDeleteStep2Title =>
@@ -1027,7 +1846,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeleteStep2Subtitle =>
-      'Your cloud account is already deleted. This is only about this device.';
+      'Your cloud account has already been deleted. Choose what happens to what\'s still saved here, on this device.';
 
   @override
   String get authDeleteStep2KeepTitle => 'Keep my data on this device';
@@ -1075,10 +1894,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsBackupSubtitle => 'Keep your data safe';
 
   @override
+  String get settingsBudgetSection => 'Budget';
+
+  @override
   String get settingsPreferencesSection => 'Preferences';
 
   @override
   String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceLight => 'Light';
+
+  @override
+  String get settingsAppearanceDark => 'Dark';
+
+  @override
+  String get settingsAppearanceSystem => 'System';
 
   @override
   String get settingsCurrency => 'Currency';
@@ -1106,6 +1937,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsEmptyCta => 'Create budget';
 
   @override
+  String get budgetsEmptyDescription =>
+      'Create one to keep an effortless eye on your spending';
+
+  @override
   String get budgetsLoading => 'Loading your budgets';
 
   @override
@@ -1115,10 +1950,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsMenuHistory => 'View history';
 
   @override
+  String get budgetsMenuTooltip => 'More options';
+
+  @override
   String get budgetRemainingLabel => 'You have left';
 
   @override
   String get budgetOverspentLabel => 'Over by';
+
+  @override
+  String get budgetAtRiskLabel => 'Could exceed by';
 
   @override
   String budgetResetsOn(String date) {
@@ -1176,21 +2017,104 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String budgetEndsInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ends in $count days',
+      one: 'Ends in $count day',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String budgetProgressBreakdown(String spent, String amount) {
     return '$spent of $amount';
   }
 
   @override
-  String get budgetActivityTitle => 'This period\'s activity';
+  String get budgetActivityTitle => 'This period\'s transactions';
+
+  @override
+  String budgetActivityCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '$count transaction',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get budgetActivityEmpty => 'No transactions in this period';
 
   @override
-  String get budgetLoadMore => 'Load more';
+  String get budgetScheduledLabel => 'Scheduled';
 
   @override
-  String get budgetOpenInTransactions => 'Open in Transactions';
+  String budgetScheduledEntrySub(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count upcoming payments',
+      one: '$count upcoming payment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetScheduledEntrySubRisk(String amount) {
+    return 'Would go over budget by $amount';
+  }
+
+  @override
+  String budgetScheduledCaption(String amount, int pct) {
+    return '+ $amount scheduled (reaches $pct% if it goes through)';
+  }
+
+  @override
+  String budgetScheduledCaptionRisk(String amount, String overage) {
+    return '+ $amount scheduled — would go over budget by $overage';
+  }
+
+  @override
+  String budgetScheduledFreeCaption(String amount) {
+    return '$amount would be free if you approve the scheduled payments';
+  }
+
+  @override
+  String get budgetScheduledSheetTitle => 'Scheduled payments for this period';
+
+  @override
+  String get budgetScheduledSheetSeeAll => 'See all scheduled payments';
+
+  @override
+  String budgetScheduledSheetHint(String amount) {
+    return '$amount of what\'s set aside this period.';
+  }
+
+  @override
+  String get budgetScheduledSheetEmpty =>
+      'No scheduled payments in this period yet';
+
+  @override
+  String budgetScheduledRowSubtitle(String date, String accountName) {
+    return 'Next: $date · $accountName';
+  }
+
+  @override
+  String get budgetLoadMore => 'See more';
+
+  @override
+  String get budgetOneOffWindow => 'Single window';
+
+  @override
+  String get budgetPeriodPreviousTooltip => 'Previous period';
+
+  @override
+  String get budgetPeriodNextTooltip => 'Next period';
 
   @override
   String get budgetPeriodStatusCurrent => 'current';
@@ -1208,10 +2132,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetActionDelete => 'Delete';
 
   @override
-  String get budgetDeleteConfirmTitle => 'Delete budget?';
+  String get budgetActionDeleteBudget => 'Delete budget';
 
   @override
-  String get budgetDeleteConfirmMessage => 'You can restore it from the trash.';
+  String get budgetActionAdjustAmount => 'Adjust amount — this period';
+
+  @override
+  String get budgetDetailActionsSubtitle => 'Budget actions';
+
+  @override
+  String get budgetDeleteConfirmMessage =>
+      'This budget will be deleted. You can undo this right after deleting.';
 
   @override
   String get budgetFormNewTitle => 'New budget';
@@ -1223,7 +2154,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetFormNameLabel => 'Name';
 
   @override
+  String get budgetFormIconNameLabel => 'Icon and name';
+
+  @override
+  String budgetFormRowValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get budgetFormScopeAllHint =>
+      'Covers all your spending: every account and category.';
+
+  @override
   String get budgetFormNameHint => 'e.g. Monthly groceries';
+
+  @override
+  String get budgetErrorName => 'Enter a name for the budget.';
+
+  @override
+  String get budgetErrorAmount => 'Enter an amount greater than zero.';
+
+  @override
+  String get budgetErrorEndDate => 'Choose an end date after the start date.';
 
   @override
   String get budgetFormIconLabel => 'Icon';
@@ -1260,6 +2212,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetFormEndLabel => 'End';
+
+  @override
+  String get budgetFormEndHint => 'Pick a date';
 
   @override
   String get budgetFormRepeatUntilLabel => 'Repeat until';
@@ -1306,13 +2261,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetFormSaveCta => 'Save changes';
 
   @override
-  String get budgetThresholdTitle => 'Alert threshold';
+  String get budgetThresholdTitle => 'Alert me when I\'ve spent…';
+
+  @override
+  String get budgetThresholdHint =>
+      'We\'ll send you a local notice when you reach that % — free of charge.';
+
+  @override
+  String get budgetThresholdRecommended => 'Recommended';
 
   @override
   String get budgetThresholdCustom => 'Custom';
 
   @override
+  String get budgetThresholdCustomSubtitle => 'Set your own %';
+
+  @override
+  String get budgetThresholdCustomTitle => 'Set your own %';
+
+  @override
+  String get budgetThresholdCustomHint =>
+      'Adjust the percentage in steps of 5.';
+
+  @override
+  String get budgetThresholdOffSubtitle => 'Turns off this budget\'s alert';
+
+  @override
+  String get budgetThresholdDecrease => 'Lower the percentage';
+
+  @override
+  String get budgetThresholdIncrease => 'Raise the percentage';
+
+  @override
   String get budgetIconSheetTitle => 'Choose icon';
+
+  @override
+  String get budgetIconSheetHint =>
+      'The icon shows on a neutral background — no color per budget.';
 
   @override
   String get budgetsHistoryTitle => 'History';
@@ -1321,13 +2306,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsHistoryEmpty => 'You haven\'t closed any budgets';
 
   @override
+  String get budgetsHistoryEmptyDescription =>
+      'When you close one, you\'ll find it here to review or reactivate';
+
+  @override
   String get budgetsHistoryLoading => 'Loading your history';
+
+  @override
+  String get budgetDetailLoading => 'Loading the budget';
+
+  @override
+  String get budgetFormLoading => 'Loading the form';
+
+  @override
+  String budgetClosedOn(String date) {
+    return 'Closed $date';
+  }
+
+  @override
+  String get budgetsHistorySubtitle => 'Closed budgets';
+
+  @override
+  String get budgetsHistoryHint =>
+      'You keep them without deleting. Reactivate them whenever you want.';
+
+  @override
+  String get budgetsMenuOptions => 'Options';
+
+  @override
+  String get budgetsMenuHistorySubtitle => 'Closed budgets';
+
+  @override
+  String get budgetsMenuEnableEnvelope => 'Turn on envelope mode';
+
+  @override
+  String get budgetsMenuEnableEnvelopeSubtitle =>
+      'Split all your income into envelopes';
+
+  @override
+  String get budgetsMenuDisableEnvelopeSubtitle => 'Back to the normal list';
+
+  @override
+  String get budgetsEnvelopeBadge => 'Envelope mode';
+
+  @override
+  String budgetsEnvelopeIncome(String income) {
+    return 'Income $income';
+  }
+
+  @override
+  String budgetsEnvelopeAssigned(String assigned) {
+    return 'Assigned $assigned';
+  }
+
+  @override
+  String budgetsEnvelopeNudge(String amount) {
+    return 'Almost there: give the remaining $amount a job.';
+  }
+
+  @override
+  String budgetsEnvelopeNudgeOver(String amount) {
+    return 'You assigned $amount more than came in. Adjust an envelope whenever you like.';
+  }
+
+  @override
+  String get budgetAssignedLabel => 'Assigned';
 
   @override
   String get budgetReactivate => 'Reactivate';
 
   @override
-  String get budgetResultWithin => 'Within budget';
+  String get budgetResultWithin => 'Ended within budget';
 
   @override
   String budgetResultOverspent(String amount) {
@@ -1350,7 +2399,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsEnvelopeModeSubtitle =>
-      'Split this month\'s income across your budgets';
+      'Split your entire income into envelopes';
 
   @override
   String get settingsEnvelopeWhatIs => 'What is it?';
@@ -1360,7 +2409,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get envelopeInfoBody =>
-      'It\'s a simple way to organize your money: instead of spending from one big pile, you split what you get each month into envelopes, one for each thing that matters to you (groceries, rent, going out). That way, before you spend, you already know how much each envelope holds. The idea is for all your income to be split up, so every cent has a purpose. It\'s optional and you can turn it on or off whenever you like.';
+      'It\'s a way of budgeting where you give every cent a job. You split all of the month\'s income into \'envelopes\' — your budgets — until nothing is left unassigned.';
+
+  @override
+  String get envelopeInfoBulletJobs =>
+      'That\'s how you decide where your money goes before you spend it: spend, save or pay off debt.';
+
+  @override
+  String get envelopeInfoBulletZero =>
+      'When \'Unassigned\' reaches \$0, every cent has a purpose.';
+
+  @override
+  String get envelopeInfoReassure =>
+      'It\'s optional and blocks nothing. Turn it on or off whenever you like.';
+
+  @override
+  String get envelopeInfoActivate => 'Turn on envelope mode';
 
   @override
   String get envelopeInfoGotIt => 'Got it';
@@ -1369,7 +2433,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsMenuDisableEnvelope => 'Turn off envelope mode';
 
   @override
-  String get budgetsEnvelopeUnassignedLabel => 'Unassigned';
+  String get budgetsEnvelopeUnassignedLabel => 'Unassigned this month';
 
   @override
   String get budgetsEnvelopeOverLabel => 'Over-assigned';
@@ -1378,7 +2442,545 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsEnvelopeAllAssigned => 'Every cent has a job';
 
   @override
-  String budgetsEnvelopeCaption(String income, String assigned) {
-    return '$income income · $assigned assigned';
+  String get firstLaunchOfflineTitle => 'Connect to continue';
+
+  @override
+  String get firstLaunchOfflineSubtitle =>
+      'We need an internet connection to finish setting up your account. Try again once you have signal.';
+
+  @override
+  String get firstLaunchOfflineRetrying => 'Retrying...';
+
+  @override
+  String get splashLoadingCaption => 'Loading your finances...';
+
+  @override
+  String get brandWordmarkPrefix => 'b';
+
+  @override
+  String get brandWordmarkDotlessI => 'ı';
+
+  @override
+  String get brandWordmarkSuffix => 'lletudo';
+
+  @override
+  String get scheduledPaymentsTitle => 'Scheduled payments';
+
+  @override
+  String get scheduledPaymentsAdd => 'New scheduled payment';
+
+  @override
+  String get scheduledPaymentsLoading => 'Loading your scheduled payments';
+
+  @override
+  String get scheduledPaymentUntitled => 'Scheduled payment';
+
+  @override
+  String get scheduledPaymentsEmptyMessage =>
+      'You have no scheduled payments yet';
+
+  @override
+  String get scheduledPaymentsErrorTitle =>
+      'We couldn\'t load your scheduled payments';
+
+  @override
+  String get scheduledPaymentsErrorLocalFirst =>
+      'Your data is still stored on your device. Try again.';
+
+  @override
+  String scheduledPaymentsActiveCount(int count) {
+    return 'Active · $count';
   }
+
+  @override
+  String get scheduledPendingTitle => 'Pending confirmation';
+
+  @override
+  String get scheduledPendingEmpty =>
+      'You don\'t have any payments to confirm.';
+
+  @override
+  String get scheduledReviewAll => 'Review all';
+
+  @override
+  String get scheduledPendingBadge => 'Pending confirmation';
+
+  @override
+  String get scheduledOnceBadge => 'One-time payment';
+
+  @override
+  String get scheduledInactiveBadge => 'Inactive';
+
+  @override
+  String get scheduledConfirmationSheetTitle => 'Confirm payment';
+
+  @override
+  String get scheduledConfirmationSheetConfirm => 'Confirm';
+
+  @override
+  String get scheduledConfirmationSheetSkip => 'Skip';
+
+  @override
+  String get scheduledConfirmationSheetSnooze => 'Snooze';
+
+  @override
+  String scheduledGuidedReviewPosition(int position, int total) {
+    return 'Payment $position of $total';
+  }
+
+  @override
+  String get scheduledUndoSkipMessage => 'Payment skipped';
+
+  @override
+  String get scheduledUndoSnoozeMessage => 'Payment snoozed';
+
+  @override
+  String get scheduledSnoozeSheetTitle => 'Snooze payment';
+
+  @override
+  String get scheduledSnoozeSheetSave => 'Snooze';
+
+  @override
+  String get scheduledDeleteSheetTitle => 'Delete this scheduled payment?';
+
+  @override
+  String get scheduledDeleteSheetMessage =>
+      'Future payments stop being generated. The transactions it already generated stay in your history.';
+
+  @override
+  String get scheduledDeleteSheetTitleInstallment => 'Delete this installment?';
+
+  @override
+  String get scheduledDeleteSheetMessageInstallment =>
+      'The installment stops being scheduled. The debt and the payments it already recorded stay in your history.';
+
+  @override
+  String get scheduledPaymentFormNewTitle => 'New scheduled payment';
+
+  @override
+  String get scheduledPaymentFormEditTitle => 'Edit scheduled payment';
+
+  @override
+  String get scheduledPaymentFormNextDateLabel => 'First payment';
+
+  @override
+  String get scheduledPaymentFormOnceDateLabel => 'Payment date';
+
+  @override
+  String get scheduledPaymentFormModeSectionLabel => 'When the date arrives';
+
+  @override
+  String get scheduledPaymentFormTagNew => 'Tag';
+
+  @override
+  String get scheduledPaymentFormFrequencyLabel => 'Frequency';
+
+  @override
+  String get scheduledPaymentFormCategoryMoreLabel => 'Other';
+
+  @override
+  String get scheduledPaymentErrorAccount => 'Choose an account.';
+
+  @override
+  String get scheduledPaymentErrorAmount =>
+      'Enter an amount greater than zero.';
+
+  @override
+  String get scheduledPaymentErrorTransferAccount =>
+      'Choose the destination account.';
+
+  @override
+  String get scheduledPaymentErrorCategory => 'Choose a category.';
+
+  @override
+  String get scheduledPaymentInstallmentAmountExceedsError =>
+      'The installment can\'t be larger than the debt balance.';
+
+  @override
+  String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';
+
+  @override
+  String get scheduledPaymentFormEndDateLabel => 'Ends';
+
+  @override
+  String get scheduledPaymentFormEndDateNone => 'Forever';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticTitle => 'Automatic';
+
+  @override
+  String get scheduledPaymentFormModeAutomaticSubtitle =>
+      'Records itself when the date arrives';
+
+  @override
+  String get scheduledPaymentFormModeManualTitle => 'Manual';
+
+  @override
+  String get scheduledPaymentFormModeManualSubtitle =>
+      'For now, you\'ll need to confirm it yourself';
+
+  @override
+  String get scheduledPaymentFormDeleteAction => 'Delete scheduled payment';
+
+  @override
+  String get scheduledPaymentInstallmentTitle => 'Set up installment';
+
+  @override
+  String get scheduledPaymentInstallmentEditTitle => 'Edit installment';
+
+  @override
+  String get scheduledPaymentInstallmentDeleteAction => 'Delete installment';
+
+  @override
+  String get scheduledPaymentInstallmentBanner =>
+      'This creates a scheduled payment linked to this debt. Confirm or postpone it in Scheduled payments.';
+
+  @override
+  String get scheduledPaymentDetailLinkedDebtLabel => 'Installment of';
+
+  @override
+  String get scheduledDebtChipLabel => 'Debt';
+
+  @override
+  String get scheduledFrequencyOnce => 'Once only';
+
+  @override
+  String get scheduledFrequencyDaily => 'every day';
+
+  @override
+  String get scheduledFrequencyWeekly => 'every week';
+
+  @override
+  String get scheduledFrequencyMonthly => 'every month';
+
+  @override
+  String get scheduledFrequencyYearly => 'every year';
+
+  @override
+  String get scheduledFrequencyChipOnce => 'Once';
+
+  @override
+  String get scheduledFrequencyChipDaily => 'Day';
+
+  @override
+  String get scheduledFrequencyChipWeekly => 'Week';
+
+  @override
+  String get scheduledFrequencyChipMonthly => 'Month';
+
+  @override
+  String get scheduledFrequencyChipYearly => 'Year';
+
+  @override
+  String get scheduledPaymentDetailTitle => 'Detail';
+
+  @override
+  String scheduledPaymentDetailNextPayment(String date) {
+    return 'Next payment: $date';
+  }
+
+  @override
+  String get scheduledPaymentDetailHistoryTitle => 'History';
+
+  @override
+  String get scheduledPaymentDetailHistoryEmpty =>
+      'No transaction has been generated for this scheduled payment yet.';
+
+  @override
+  String scheduledPaymentDetailHistorySeeAll(int count) {
+    return 'See full history ($count)';
+  }
+
+  @override
+  String get scheduledSkippedBadge => 'Skipped';
+
+  @override
+  String get scheduledRecoverAction => 'Recover';
+
+  @override
+  String get scheduledRecoverMessage => 'Payment recovered';
+
+  @override
+  String get scheduledPaymentDetailHeroLabel => 'NEXT PAYMENT';
+
+  @override
+  String scheduledPaymentDetailRecurrenceOnce(String date) {
+    return 'Just once on $date';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceForever(String unit, String date) {
+    return 'Repeats $unit from $date, forever';
+  }
+
+  @override
+  String scheduledPaymentDetailRecurrenceUntil(
+      String unit, String date, String endDate) {
+    return 'Repeats $unit from $date, until $endDate';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitDaily => 'every day';
+
+  @override
+  String scheduledRecurrenceUnitDailyInterval(int interval) {
+    return 'every $interval days';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitWeekly => 'every week';
+
+  @override
+  String scheduledRecurrenceUnitWeeklyInterval(int interval) {
+    return 'every $interval weeks';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitMonthly => 'every month';
+
+  @override
+  String scheduledRecurrenceUnitMonthlyInterval(int interval) {
+    return 'every $interval months';
+  }
+
+  @override
+  String get scheduledRecurrenceUnitYearly => 'every year';
+
+  @override
+  String scheduledRecurrenceUnitYearlyInterval(int interval) {
+    return 'every $interval years';
+  }
+
+  @override
+  String get scheduledPaymentDetailModeLabel => 'Recording mode';
+
+  @override
+  String get scheduledPaymentDetailModeAutomatic => 'Automatic';
+
+  @override
+  String get scheduledPaymentDetailModeManual => 'Manual';
+
+  @override
+  String get scheduledPaymentDetailAccountLabel => 'Account';
+
+  @override
+  String get scheduledPaymentDetailStatusLabel => 'Status';
+
+  @override
+  String get scheduledPaymentDetailStatusActive => 'Active';
+
+  @override
+  String get scheduledPaymentDetailStatusFinished => 'Finished';
+
+  @override
+  String get scheduledPaymentDetailHeroLabelExecuted => 'PAYMENT MADE';
+
+  @override
+  String get scheduledPaymentDetailConfirmNowCta => 'Confirm now';
+
+  @override
+  String get scheduledPaymentDetailConfirmNowError =>
+      'We couldn\'t confirm this payment now. Please try again.';
+
+  @override
+  String get scheduledPaymentDetailTagsLabel => 'Tags';
+
+  @override
+  String get scheduledPaymentDetailTagsEmpty => 'No tags';
+
+  @override
+  String get scheduledPaymentBridgeTitle => 'Is this a scheduled payment?';
+
+  @override
+  String get scheduledPaymentBridgeMessage =>
+      'You picked a future date. A future-dated movement is saved as a scheduled payment, so it only applies once the day arrives.';
+
+  @override
+  String get scheduledPaymentBridgeAccept => 'Yes, schedule it';
+
+  @override
+  String get scheduledPaymentBridgeDecline => 'Change the date';
+
+  @override
+  String scheduledFinishedCount(int count) {
+    return 'Finished · $count';
+  }
+
+  @override
+  String get scheduledFinishedCaption =>
+      'They no longer create transactions. The ones they already created stay in your accounts.';
+
+  @override
+  String get scheduledFinishedCardChip => 'Finished';
+
+  @override
+  String get scheduledFinishedErrorTitle =>
+      'We couldn\'t load your finished payments';
+
+  @override
+  String scheduledFinishedLastPayment(String date) {
+    return 'Last payment · $date';
+  }
+
+  @override
+  String get scheduledPaymentsNoActiveMessage =>
+      'You don\'t have any active scheduled payments right now';
+
+  @override
+  String scheduledPaymentsNoActiveDescription(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Your $count finished payments are still available under \"Finished\".',
+      one: 'Your finished payment is still available under \"Finished\".',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduledPendingCardOverflow(int count) {
+    return 'See the other $count pending';
+  }
+
+  @override
+  String scheduledPendingCardTitle(int count) {
+    return 'Pending confirmation $count';
+  }
+
+  @override
+  String get scheduledPendingCardCaption =>
+      'They haven\'t affected your balance yet';
+
+  @override
+  String get scheduledPaymentsEmptyCta => 'Schedule a payment';
+
+  @override
+  String get scheduledManualNotifyChip => 'We\'ll remind you';
+
+  @override
+  String get scheduledDueToday => 'Due today';
+
+  @override
+  String get scheduledDueOneDayAgo => '1 day ago';
+
+  @override
+  String scheduledDueDaysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String scheduledDueInDays(int count) {
+    return 'in $count days';
+  }
+
+  @override
+  String get scheduledDueInOneDay => 'in 1 day';
+
+  @override
+  String scheduledConfirmationSheetScopeNote(String amount) {
+    return 'What you edit applies to this payment only. The template stays the same and next month it will propose $amount again.';
+  }
+
+  @override
+  String scheduledConfirmationSheetAccumulatedTitle(
+      int count, String template) {
+    return 'You have $count unconfirmed payments for $template';
+  }
+
+  @override
+  String scheduledConfirmationSheetAccumulatedSub(String date, int others) {
+    String _temp0 = intl.Intl.pluralLogic(
+      others,
+      locale: localeName,
+      other: 'The other $others stay on your list.',
+      one: 'The other one stays on your list.',
+    );
+    return 'You\'re now confirming the oldest one, from $date. $_temp0';
+  }
+
+  @override
+  String get scheduledConfirmationSheetAmountLabel => 'Amount to record';
+
+  @override
+  String get scheduledConfirmationSheetTransferAmountLabel =>
+      'Amount to transfer';
+
+  @override
+  String get scheduledConfirmationSheetSourceAccountLabel => 'From account';
+
+  @override
+  String get scheduledConfirmationSheetTargetAccountLabel => 'To account';
+
+  @override
+  String get scheduledDetailActionsSheetSubtitle => 'Scheduled payment actions';
+
+  @override
+  String get scheduledDetailActionsSnooze => 'Snooze this payment';
+
+  @override
+  String get scheduledDetailActionsDelete => 'Delete scheduled payment';
+
+  @override
+  String get scheduledDetailActionsDeleteInstallment => 'Delete installment';
+
+  @override
+  String get scheduledSnoozeSheetSectionTitle => 'Pick the new date';
+
+  @override
+  String get scheduledConfirmationSheetEditTooltip => 'Edit template';
+
+  @override
+  String get scheduledGuidedReviewExit => 'Exit';
+
+  @override
+  String get scheduledGuidedReviewConfirmNext => 'Confirm and next';
+
+  @override
+  String scheduledSnoozeContextLine(String date) {
+    return 'Was due on $date · move it forward';
+  }
+
+  @override
+  String get budgetAdjustSheetTitle => 'Adjust amount';
+
+  @override
+  String budgetAdjustCurrentAmountInline(String amount) {
+    return 'Current $amount';
+  }
+
+  @override
+  String budgetAdjustNewAmountLabel(String range) {
+    return 'New amount · $range';
+  }
+
+  @override
+  String budgetAdjustExplainer(String resumeDate, String originalAmount) {
+    return 'On $resumeDate it goes back to $originalAmount automatically.';
+  }
+
+  @override
+  String get budgetAdjustApplyCta => 'Apply changes';
+
+  @override
+  String get budgetAdjustRemoveCta => 'Revert adjustment';
+
+  @override
+  String get budgetAdjustBannerLabel => 'Amount adjustment';
+
+  @override
+  String budgetAdjustBannerSub(String amount, String range) {
+    return '$amount · $range';
+  }
+
+  @override
+  String get budgetAdjustScheduledSnackbar =>
+      'Adjustment scheduled for the selected period.';
+
+  @override
+  String get budgetAdjustUpdatedSnackbar => 'Adjustment updated.';
+
+  @override
+  String get budgetAdjustCancelledSnackbar =>
+      'Adjustment reverted — the period goes back to the usual amount.';
 }
