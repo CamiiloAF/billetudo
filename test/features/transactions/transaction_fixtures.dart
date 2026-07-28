@@ -91,6 +91,7 @@ TransactionDraft buildIncomeDraft({
   String currency = 'COP',
   DateTime? date,
   String? note,
+  String? goalId,
 }) =>
     TransactionDraft(
       id: id,
@@ -102,6 +103,7 @@ TransactionDraft buildIncomeDraft({
       type: TransactionType.income,
       date: date ?? testInstant,
       note: note,
+      goalId: goalId,
     );
 
 /// [categoryId]/[categoryKind]/[countsInBudget] default to the plain-transfer

@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
+import '../../../goals/domain/repositories/goal_repository.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
 import '../../domain/entities/transaction_filter.dart';
@@ -22,10 +23,22 @@ import '../models/transaction_mapper.dart';
 /// schema references a transaction's id by foreign key.
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl implements TransactionRepository {
-  const TransactionRepositoryImpl(this._local, this._tags, this._crash);
+  const TransactionRepositoryImpl(
+    this._local,
+    this._tags,
+    this._goals,
+    this._crash,
+  );
 
   final TransactionsLocalDatasource _local;
   final TagsLocalDatasource _tags;
+
+  /// Metas cascade (`docs/requirements/07-metas.md` HU-08): a transaction
+  /// carrying a `goalId` may mirror a `GoalContribution`. Editing/deleting it
+  /// here must keep that movement's amount/existence in sync, orchestrated
+  /// from this repository since that is where a transaction actually
+  /// changes.
+  final GoalRepository _goals;
   final CrashReporter _crash;
 
   @override
@@ -103,6 +116,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
         if (row == null) {
           return Left(NotFoundFailure('transaction "$id" does not exist'));
         }
+        if (row.goalId != null) {
+          // No-op when this transaction backs no `GoalContribution`.
+          await _goals.syncContributionForTransactionAmount(
+            transactionId: id,
+            amountMinor: row.amountMinor,
+          );
+        }
         return Right(TransactionMapper.toEntity(row));
       });
 
@@ -115,6 +135,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
         );
         if (row == null) {
           return Left(NotFoundFailure('transaction "$id" does not exist'));
+        }
+        if (row.goalId != null) {
+          await _goals.removeContributionForTransaction(id);
         }
         return const Right(unit);
       });

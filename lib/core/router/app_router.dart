@@ -47,6 +47,18 @@ import '../../features/debts/presentation/pages/debt_detail_page.dart';
 import '../../features/debts/presentation/pages/debt_form_page.dart';
 import '../../features/debts/presentation/pages/debt_link_mode_page.dart';
 import '../../features/debts/presentation/pages/debts_list_page.dart';
+import '../../features/goals/domain/entities/goal_with_progress.dart';
+import '../../features/goals/domain/usecases/archive_goal.dart';
+import '../../features/goals/presentation/cubit/archived_goals_cubit.dart';
+import '../../features/goals/presentation/cubit/goal_detail_cubit.dart';
+import '../../features/goals/presentation/cubit/goal_form_cubit.dart';
+import '../../features/goals/presentation/cubit/goals_list_cubit.dart';
+import '../../features/goals/presentation/pages/archived_goals_page.dart';
+import '../../features/goals/presentation/pages/goal_completed_celebration_page.dart';
+import '../../features/goals/presentation/pages/goal_detail_page.dart';
+import '../../features/goals/presentation/pages/goal_form_page.dart';
+import '../../features/goals/presentation/pages/goals_list_page.dart';
+import '../../features/goals/presentation/widgets/goal_milestone_sheet.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
@@ -90,6 +102,8 @@ abstract final class AppRoutes {
   static const String newBudget = '/presupuestos/nuevo';
   static const String budgetsHistory = '/presupuestos/historico';
   static const String goals = '/metas';
+  static const String newGoal = '/metas/nueva';
+  static const String archivedGoals = '/metas/archivadas';
   static const String more = '/mas';
   static const String comingSoon = '/mas/proximamente';
   static const String accounts = '/cuentas';
@@ -124,6 +138,12 @@ abstract final class AppRoutes {
 
   /// Edit form of one budget: `/presupuestos/<id>/editar`.
   static String editBudget(String id) => '$budgets/$id/editar';
+
+  /// Detail of one goal: `/metas/<id>`.
+  static String goal(String id) => '$goals/$id';
+
+  /// Edit form of one goal: `/metas/<id>/editar`.
+  static String editGoal(String id) => '$goals/$id/editar';
 
   /// Detail of one debt: `/deudas/<id>`.
   static String debt(String id) => '$debts/$id';
@@ -525,10 +545,118 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
 GoRoute _goalsRoute() => GoRoute(
       path: AppRoutes.goals,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => ComingSoonPage(
-        title: AppLocalizations.of(context).navGoals,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<GoalsListCubit>(), (c) => c.start()),
+        child: GoalsListPage(
+          onAddGoal: () => context.push(AppRoutes.newGoal),
+          onOpenGoal: (id) => context.push(AppRoutes.goal(id)),
+          onOpenArchived: () => context.push(AppRoutes.archivedGoals),
+          // The lista filtrada por cuenta (HU-12's `qFX42`) has no frame in
+          // this stage's scope; the account's own detail is the closest
+          // existing screen until that follow-up lands.
+          onOpenCoherenceAccount: (accountId) =>
+              context.push(AppRoutes.account(accountId)),
+        ),
       ),
+      routes: [
+        GoRoute(
+          path: 'archivadas',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<ArchivedGoalsCubit>(), (c) => c.start()),
+            child: ArchivedGoalsPage(
+              onOpenGoal: (id) => context.push(AppRoutes.goal(id)),
+            ),
+          ),
+        ),
+        // Declared before ':id' so "nueva" is never read as an id.
+        GoRoute(
+          path: 'nueva',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<GoalFormCubit>(), (c) => c.load(null)),
+            child: const GoalFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<GoalDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: GoalDetailPage(
+              onEdit: (id) async {
+                final deleted =
+                    await context.push<bool>(AppRoutes.editGoal(id));
+                if ((deleted ?? false) && context.mounted) {
+                  context.pop();
+                }
+              },
+              onOpenCompletedCelebration: (progress) => unawaited(
+                _openGoalCompletedCelebration(context, progress),
+              ),
+              onOpenMilestone: (goalName, milestonePct) => unawaited(
+                GoalMilestoneSheet.show(
+                  context,
+                  goalName: goalName,
+                  milestonePct: milestonePct,
+                ),
+              ),
+              onOpenTransaction: (id) =>
+                  context.push<String>(AppRoutes.transaction(id)),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<GoalFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
+                child: const GoalFormPage(),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
+
+/// HU-07: the 100% full-screen celebration, pushed on top of the detail once
+/// a contribution crosses the last milestone. "Crear la próxima meta" opens
+/// the form; "Archivar meta" archives this one — both pop back to the detail,
+/// which then reflects the fresh state on its own via its stream.
+Future<void> _openGoalCompletedCelebration(
+  BuildContext context,
+  GoalWithProgress progress,
+) async {
+  final goal = progress.goal;
+  await Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute<void>(
+      builder: (context) => GoalCompletedCelebrationPage(
+        goalName: goal.name,
+        savedMinor: progress.savedMinor,
+        currency: goal.currency,
+        onCreateNext: () {
+          Navigator.of(context).pop();
+          unawaited(context.push(AppRoutes.newGoal));
+        },
+        onArchive: () async {
+          await getIt<ArchiveGoal>()(goal.id);
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        },
+      ),
+    ),
+  );
+}
 
 StatefulShellBranch _masBranch() => StatefulShellBranch(
       routes: [

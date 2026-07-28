@@ -2996,4 +2996,286 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get budgetAdjustCancelledSnackbar =>
       'Adjustment reverted — the period goes back to the usual amount.';
+
+  @override
+  String get goalsTitle => 'Goals';
+
+  @override
+  String get goalsAdd => 'New goal';
+
+  @override
+  String get goalsErrorTitle => 'We couldn\'t load your goals';
+
+  @override
+  String get goalsEmptyMessage => 'Choose something to save for';
+
+  @override
+  String get goalsEmptyDescription =>
+      'Give your money a purpose. Start with an idea or create your own.';
+
+  @override
+  String get goalsEmptyTemplatesTitle => 'Start with a template';
+
+  @override
+  String get goalsEmptyCustomCta => 'Create a custom goal';
+
+  @override
+  String get goalsArchivedCta => 'Archived goals';
+
+  @override
+  String get goalsArchivedTitle => 'Archived goals';
+
+  @override
+  String get goalsArchivedEmptyMessage => 'You have no archived goals';
+
+  @override
+  String goalCoherenceMessage(String amount) {
+    return 'Your goals exceed the account\'s real balance by $amount';
+  }
+
+  @override
+  String goalCardRemaining(String amount) {
+    return '$amount to go';
+  }
+
+  @override
+  String goalCardCompleted(String amount) {
+    return 'You saved $amount';
+  }
+
+  @override
+  String goalCardMeta(int pct) {
+    return '$pct% complete';
+  }
+
+  @override
+  String get goalCardChapterClosed => 'Achieved · chapter closed';
+
+  @override
+  String get goalDetailTitle => 'Goal';
+
+  @override
+  String goalDetailRemaining(String amount) {
+    return '$amount to go';
+  }
+
+  @override
+  String goalDetailAchieved(String amount) {
+    return 'You saved $amount';
+  }
+
+  @override
+  String get goalActionsTooltip => 'More actions';
+
+  @override
+  String get goalEditTooltip => 'Edit goal';
+
+  @override
+  String get goalActionArchive => 'Archive goal';
+
+  @override
+  String get goalActionUnarchive => 'Unarchive goal';
+
+  @override
+  String get goalArchiveSheetTitle => 'Archive this goal?';
+
+  @override
+  String get goalArchiveSheetMessage =>
+      'It leaves your main list and stops accepting new movements. You can unarchive it any time.';
+
+  @override
+  String get goalArchiveConfirm => 'Archive';
+
+  @override
+  String get goalUnarchiveSheetTitle => 'Unarchive this goal?';
+
+  @override
+  String get goalUnarchiveSheetMessage =>
+      'It returns to your main list and you can contribute and withdraw again.';
+
+  @override
+  String get goalUnarchiveConfirm => 'Unarchive';
+
+  @override
+  String get goalDeleteSheetTitle => 'Delete this goal?';
+
+  @override
+  String get goalDeleteSheetMessage =>
+      'It moves to the trash. You can restore it as long as you haven\'t emptied the trash.';
+
+  @override
+  String goalMovementsTitle(int count) {
+    return 'Movements ($count)';
+  }
+
+  @override
+  String goalMovementsSeeAll(int count) {
+    return 'See all ($count)';
+  }
+
+  @override
+  String get goalMovementsEmpty =>
+      'You haven\'t recorded any movements for this goal yet.';
+
+  @override
+  String get goalMovementContribution => 'Contribution';
+
+  @override
+  String get goalMovementWithdrawal => 'Withdrawal';
+
+  @override
+  String get goalMovementDateLabel => 'Date';
+
+  @override
+  String get goalMovementNoteLabel => 'Note (optional)';
+
+  @override
+  String get goalMovementNoteHint => 'Add a note';
+
+  @override
+  String get goalMovementError => 'We couldn\'t save the movement. Try again.';
+
+  @override
+  String goalDateToday(String date) {
+    return 'Today, $date';
+  }
+
+  @override
+  String get goalContributeTitle => 'Register contribution';
+
+  @override
+  String get goalContributeAmountLabel => 'Contribution';
+
+  @override
+  String get goalContributeCta => 'Contribute';
+
+  @override
+  String get goalWithdrawTitle => 'Register withdrawal';
+
+  @override
+  String get goalWithdrawAmountLabel => 'Withdrawal';
+
+  @override
+  String get goalWithdrawCta => 'Withdraw';
+
+  @override
+  String goalWithdrawAvailable(String amount) {
+    return 'Available in the goal: $amount · Use it all';
+  }
+
+  @override
+  String get goalWithdrawErrorExceedsSaved =>
+      'You can\'t withdraw more than what you\'ve saved in this goal.';
+
+  @override
+  String get goalQuickAmountOther => 'Other';
+
+  @override
+  String get goalProjectionNoTargetDate => 'No target date set';
+
+  @override
+  String get goalProjectionOverdue => 'The target date already passed';
+
+  @override
+  String get goalProjectionInsufficientHistory =>
+      'Contribute a bit more to see your savings pace';
+
+  @override
+  String goalProjectionMonthlyNeeded(String amount) {
+    return 'You need to contribute $amount a month to reach your date';
+  }
+
+  @override
+  String goalProjectionOnPace(String month) {
+    return 'At your pace, you\'ll get there in $month';
+  }
+
+  @override
+  String goalMilestoneTitle(int pct) {
+    return 'You reached $pct%!';
+  }
+
+  @override
+  String goalMilestonePercent(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String goalMilestoneMessage(String name) {
+    return 'Keep it up with $name. Every contribution brings you closer.';
+  }
+
+  @override
+  String get goalMilestoneCta => 'Keep saving';
+
+  @override
+  String get goalCompletedBadge => 'Goal achieved';
+
+  @override
+  String goalCompletedTitle(String name) {
+    return 'You achieved $name!';
+  }
+
+  @override
+  String goalCompletedMessage(String amount) {
+    return 'You saved $amount in total. This achievement stays with you.';
+  }
+
+  @override
+  String get goalCompletedCreateNext => 'Create the next goal';
+
+  @override
+  String get goalCompletedArchive => 'Archive goal';
+
+  @override
+  String get goalFormNewTitle => 'New goal';
+
+  @override
+  String get goalFormEditTitle => 'Edit goal';
+
+  @override
+  String get goalFormTargetLabel => 'Target';
+
+  @override
+  String get goalFormErrorTargetZero => 'The target must be greater than zero';
+
+  @override
+  String get goalFormNameLabel => 'Name';
+
+  @override
+  String get goalFormNameHint => 'E.g. Trip to Cartagena';
+
+  @override
+  String get goalFormNameRequired => 'Name is required';
+
+  @override
+  String get goalFormAccountLabel => 'Linked account (recommended)';
+
+  @override
+  String get goalFormAccountHint => 'Choose an account';
+
+  @override
+  String get goalFormAccountPickerTitle => 'Choose an account';
+
+  @override
+  String get goalFormTargetDateLabel => 'Target date (optional)';
+
+  @override
+  String get goalFormTargetDateHint => 'Choose a date after today';
+
+  @override
+  String get goalFormErrorTargetDatePast => 'The date must be after today';
+
+  @override
+  String get goalFormInitialSavedLabel =>
+      'Already have something saved? (optional)';
+
+  @override
+  String get goalFormCreateCta => 'Create goal';
+
+  @override
+  String get goalFormSaveCta => 'Save changes';
+
+  @override
+  String get goalCurrencySheetTitle => 'Choose the currency';
 }

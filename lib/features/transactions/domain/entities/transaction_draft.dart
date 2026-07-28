@@ -44,6 +44,7 @@ class TransactionDraft extends Equatable {
   static const String fieldCategoryId = 'categoryId';
   static const String fieldTransferAccountId = 'transferAccountId';
   static const String fieldNote = 'note';
+  static const String fieldGoalId = 'goalId';
 
   static const int maxNoteLength = 500;
 
@@ -126,6 +127,20 @@ class TransactionDraft extends Equatable {
         ValidationFailure(
           'note exceeds $maxNoteLength characters',
           field: fieldNote,
+        ),
+      );
+    }
+
+    // Metas invariant (docs/requirements/07-metas.md, "Reglas de negocio y
+    // edge cases"): an aporte/retiro is never `type = expense` — it is either
+    // a `transfer` (moves money) or an `income` (a bonus apartado directo a
+    // la meta). Enforced here, in the domain, not only in the UI, so nothing
+    // can create a "gasto fantasma" through a different entry point.
+    if (type == TransactionType.expense && goalId != null) {
+      return const Left(
+        ValidationFailure(
+          'an expense cannot be linked to a goal',
+          field: fieldGoalId,
         ),
       );
     }

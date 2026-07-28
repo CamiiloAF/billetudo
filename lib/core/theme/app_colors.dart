@@ -52,6 +52,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.snackbarAction,
     required this.scrim,
     required this.segmentInactiveText,
+    required this.track,
   });
 
   final Color primary;
@@ -115,6 +116,11 @@ class AppColors extends ThemeExtension<AppColors> {
   /// `.pen` deliberately calls out.
   final Color segmentInactiveText;
 
+  /// The surco (track) of arcs/progress bars (`$track`, new token added for
+  /// Metas' Goal Ring): calibrated ≥3:1 with the `$primary` fill in both
+  /// themes, unlike `$muted`/`$border` (which read ~2.2-2.75:1 in dark).
+  final Color track;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -155,6 +161,7 @@ class AppColors extends ThemeExtension<AppColors> {
     snackbarAction: Color(0xFFA78BFA),
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF5F5D73),
+    track: Color(0xFFEEECFB),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -197,6 +204,7 @@ class AppColors extends ThemeExtension<AppColors> {
     snackbarAction: Color(0xFF5648C8),
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF9A98B5),
+    track: Color(0xFF101018),
   );
 
   @override
@@ -239,6 +247,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? snackbarAction,
     Color? scrim,
     Color? segmentInactiveText,
+    Color? track,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -279,6 +288,7 @@ class AppColors extends ThemeExtension<AppColors> {
       snackbarAction: snackbarAction ?? this.snackbarAction,
       scrim: scrim ?? this.scrim,
       segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
+      track: track ?? this.track,
     );
   }
 
@@ -326,6 +336,7 @@ class AppColors extends ThemeExtension<AppColors> {
       scrim: Color.lerp(scrim, other.scrim, t)!,
       segmentInactiveText:
           Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
+      track: Color.lerp(track, other.track, t)!,
     );
   }
 }

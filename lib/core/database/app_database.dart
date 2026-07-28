@@ -51,6 +51,14 @@ enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 enum DebtDirection { iOwe, owedToMe }
 
+/// The nature of a single [GoalContributions] movement. The goal's saved
+/// amount is DERIVED by summing these (contribution - withdrawal), so
+/// `Goals` itself stores no progress column — same "derive, don't store"
+/// pattern as `DebtEntryKind`/`DebtEntries` for `Debts`. `amountMinor` on
+/// `GoalContributions` is always positive; this enum carries the sign
+/// meaning. Stored as text for parity with Postgres.
+enum GoalMovementDirection { contribution, withdrawal }
+
 /// How a debt's outstanding balance grows over time. `manual` = the user
 /// records every change by hand; `auto` = the app periodically posts interest
 /// accrual entries from the debt's rate. Stored as text for parity with
@@ -306,20 +314,71 @@ class Budgets extends Table with _SyncColumns {
   BoolColumn get rollover => boolean().clientDefault(() => false)();
 }
 
-/// Savings goals.
+/// Savings goals. NOTE: there is deliberately no stored progress column —
+/// `savedMinor` is DERIVED by summing [GoalContributions] (contribution -
+/// withdrawal), the same "derive, don't store" pattern `Debts` uses via
+/// `DebtEntries`. See docs/requirements/07-metas.md.
 class Goals extends Table with _SyncColumns {
-  TextColumn get name => text()();
+  TextColumn get name => text().withLength(min: 1, max: 100)();
   IntColumn get targetMinor => integer()();
-
-  /// Saved so far (optional: can be derived from transactions with goalId).
-  IntColumn get savedMinor => integer().clientDefault(() => 0)();
   TextColumn get currency => text().withLength(min: 3, max: 3)();
 
   /// Goal tied to a specific account (a pain point we fix vs. Wallet).
   TextColumn get accountId => text().nullable().references(Accounts, #id)();
   DateTimeColumn get targetDate => dateTime().nullable()();
   TextColumn get icon => text().nullable()();
-  TextColumn get color => text().nullable()();
+
+  /// Completion timestamp. null = not completed. Set automatically the
+  /// moment derived `savedMinor` reaches 100% of `targetMinor`, or when the
+  /// user lowers `targetMinor` below the already-saved amount; cleared again
+  /// if `targetMinor` is later raised back above `savedMinor`. A pure
+  /// BUSINESS-STATE flag, distinct from `deletedAt` (reversible UX trash) and
+  /// `tombstonedAt` (irreversible referential tombstone) — same pattern as
+  /// `Debts.closedAt`. A withdrawal on a completed goal never clears this
+  /// (the shown progress freezes at 100% instead).
+  DateTimeColumn get completedAt => dateTime().nullable()();
+
+  /// Archive timestamp. null = active. Non-null hides the goal from the main
+  /// list and its momentum/coherence calculations, and blocks new
+  /// contributions/withdrawals, without deleting anything. Reversible
+  /// (un-archive clears it) but NOT the same column as `deletedAt`: this is a
+  /// visibility/business-state toggle the user can flip back and forth,
+  /// while `deletedAt` is the papelera flow.
+  DateTimeColumn get archivedAt => dateTime().nullable()();
+
+  /// Highest celebration threshold (0/25/50/75/100) already crossed and
+  /// celebrated, so crossing the same one again after a withdrawal-induced
+  /// dip does not re-trigger the celebration. Only moves forward when
+  /// `savedMinor` crosses a new threshold for the first time.
+  IntColumn get lastMilestonePct => integer().clientDefault(() => 0)();
+}
+
+/// A single ledger movement against a [Goals] row — the ONLY source of a
+/// goal's progress (`Goals` has no stored `savedMinor`; it is always
+/// `SUM(contribution) - SUM(withdrawal)` over these rows). Mirrors how
+/// `DebtEntries` derives a debt's outstanding balance.
+class GoalContributions extends Table with _SyncColumns {
+  TextColumn get goalId => text().references(Goals, #id)();
+
+  /// Always positive; [direction] carries the sign meaning.
+  IntColumn get amountMinor => integer()();
+  TextColumn get direction => textEnum<GoalMovementDirection>()();
+  DateTimeColumn get date => dateTime()();
+
+  /// The [Transactions] row this movement mirrors, when it actually moved
+  /// money (a real transfer into/out of the goal's linked account). null = a
+  /// tracking-only contribution/withdrawal that never touched a balance.
+  ///
+  /// Deliberately a bare `text().nullable()` (soft UUID FK, PowerSync-style),
+  /// NOT `.references(Transactions, #id)`: `Transactions.goalId` already
+  /// references `Goals`, and this table also references `Goals`, so a Drift
+  /// FK from here back to `Transactions` would risk the same reference-cycle
+  /// / generation-order conflict already documented on
+  /// `Debts.initialTransactionId`. Referential integrity for this link is by
+  /// UUID convention, enforced by the repository (cascade edit/delete).
+  TextColumn get transactionId => text().nullable()();
+
+  TextColumn get note => text().nullable()();
 }
 
 /// Debts and loans (I owe / owed to me).
@@ -620,6 +679,7 @@ class AppSettings extends Table with _SyncColumns {
     Transactions,
     Budgets,
     Goals,
+    GoalContributions,
     Debts,
     DebtEntries,
     ScheduledPayments,
@@ -637,7 +697,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1003,6 +1063,79 @@ class AppDatabase extends _$AppDatabase {
             // table, not a view — already backfilled every existing row
             // server-side. Every device gets a real `false`, never a missing
             // JSON key, once it re-syncs.
+          }
+
+          // v18 -> v19: Metas de ahorro (Nivel 0, docs/requirements/07-metas.md).
+          // `Goals` drops `savedMinor`/`color` and gains `completedAt`,
+          // `archivedAt`, `lastMilestonePct`; the new `GoalContributions`
+          // table becomes the ONLY source of a goal's progress
+          // (`SUM(contribution) - SUM(withdrawal)`), same "derive, don't
+          // store" pattern `DebtEntries` already uses for `Debts`.
+          //
+          // No `addColumn`/`dropColumn` for the `Goals` side — see the note
+          // on `from < 12` above: `goals` is a PowerSync-managed view, and by
+          // the time this callback runs, `openPowerSyncDatabase()`
+          // (`bootstrap.dart`) has already replaced its schema with the NEW
+          // one (`powersync_schema.dart`, no `saved_minor`/`color` exposed)
+          // — Drift's migration always runs strictly after that, never
+          // before. `m.createTable(goalContributions)` is a safe no-op
+          // either way: the PowerSync view for the new table already exists
+          // by now (`CREATE TABLE IF NOT EXISTS` treats an existing view of
+          // the same name as "already there").
+          if (from < 19) {
+            await m.createTable(goalContributions);
+
+            // Backfill: any pre-existing `Goals.savedMinor` becomes the
+            // goal's first `GoalContributions` row (direction=contribution,
+            // transactionId=null) before the column disappears from the
+            // `goals` view for good. The value is already gone from that
+            // view by the time we get here (see above) — but PowerSync never
+            // rewrites a row's underlying JSON on a schema change, only the
+            // view definition, so it is still readable straight off the raw
+            // storage table: `ps_data__goals` holds rows already claimed by
+            // an account, `ps_data_local__goals` holds rows still unclaimed
+            // (HU-04) — a pre-existing goal can be in either, so both are
+            // checked.
+            for (final rawTable in ['ps_data__goals', 'ps_data_local__goals']) {
+              final tableExists = await customSelect(
+                "SELECT name FROM sqlite_master WHERE type = 'table' "
+                'AND name = ?',
+                variables: [Variable<String>(rawTable)],
+              ).getSingleOrNull();
+              if (tableExists == null) {
+                continue;
+              }
+
+              final rows = await customSelect(
+                'SELECT id, '
+                "CAST(json_extract(data, '\$.saved_minor') AS INTEGER) "
+                'AS saved_minor, '
+                "CAST(json_extract(data, '\$.created_at') AS INTEGER) "
+                'AS created_at '
+                'FROM $rawTable',
+              ).get();
+
+              for (final row in rows) {
+                final savedMinor = row.read<int?>('saved_minor') ?? 0;
+                if (savedMinor == 0) {
+                  continue;
+                }
+                final createdAtSeconds = row.read<int?>('created_at');
+                final movementDate = createdAtSeconds != null
+                    ? DateTime.fromMillisecondsSinceEpoch(
+                        createdAtSeconds * 1000,
+                      )
+                    : DateTime.now();
+                await into(goalContributions).insert(
+                  GoalContributionsCompanion.insert(
+                    goalId: row.read<String>('id'),
+                    amountMinor: savedMinor.abs(),
+                    direction: GoalMovementDirection.contribution,
+                    date: movementDate,
+                  ),
+                );
+              }
+            }
           }
         },
       );

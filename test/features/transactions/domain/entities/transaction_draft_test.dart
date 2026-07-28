@@ -95,6 +95,15 @@ void main() {
       expect(draft.amountMinor, 123456);
       expect(draft.amountMinor, isA<int>());
     });
+
+    test(
+      'invariante Metas: rechaza un gasto con goalId, no solo en la UI',
+      () {
+        final result = buildExpenseDraft(goalId: 'goal-1').validated();
+
+        expect(failureOf(result).field, TransactionDraft.fieldGoalId);
+      },
+    );
   });
 
   group('HU-02 — ingreso', () {
@@ -118,6 +127,16 @@ void main() {
 
       expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
     });
+
+    test(
+      'Metas: un ingreso con goalId (bono apartado a una meta) sí se acepta',
+      () {
+        final result = buildIncomeDraft(goalId: 'goal-1').validated();
+
+        expect(result.isRight(), isTrue);
+        expect(result.getRight().toNullable()!.goalId, 'goal-1');
+      },
+    );
   });
 
   group('HU-03 — transferencia', () {

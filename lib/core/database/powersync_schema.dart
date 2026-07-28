@@ -104,12 +104,35 @@ const powerSyncSchema = Schema([
   Table('goals', [
     Column.text('name'),
     Column.integer('target_minor'),
-    Column.integer('saved_minor'),
     Column.text('currency'),
     Column.text('account_id'),
     Column.integer('target_date'),
     Column.text('icon'),
-    Column.text('color'),
+    // Completion timestamp (schemaVersion 19). Epoch seconds like every
+    // DateTimeColumn. Nullable = not completed. Business-state flag; see
+    // Goals.completedAt.
+    Column.integer('completed_at'),
+    // Archive timestamp (schemaVersion 19). Epoch seconds. Nullable =
+    // active; see Goals.archivedAt.
+    Column.integer('archived_at'),
+    // Highest milestone percent already celebrated (schemaVersion 19); see
+    // Goals.lastMilestonePct.
+    Column.integer('last_milestone_pct'),
+    ..._syncColumns,
+  ]),
+  // Ledger of contribution/withdrawal movements against a goal (schemaVersion
+  // 19). A goal's saved amount is DERIVED by summing these — there is no
+  // `saved_minor` column here or on `goals`; see GoalContributions.
+  Table('goal_contributions', [
+    Column.text('goal_id'),
+    Column.integer('amount_minor'),
+    Column.text('direction'),
+    Column.integer('date'),
+    // Soft UUID FK to the transaction this movement mirrors, when it moved
+    // real money. Nullable = tracking-only movement; see
+    // GoalContributions.transactionId.
+    Column.text('transaction_id'),
+    Column.text('note'),
     ..._syncColumns,
   ]),
   Table('debts', [

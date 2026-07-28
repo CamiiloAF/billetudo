@@ -5,6 +5,13 @@ import 'package:billetudo/core/database/app_database.dart' as schema
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
+import 'package:billetudo/features/goals/data/datasources/goals_local_datasource.dart';
+import 'package:billetudo/features/goals/data/repositories/goal_repository_impl.dart';
+import 'package:billetudo/features/goals/domain/services/goal_coherence_calculator.dart';
+import 'package:billetudo/features/goals/domain/services/goal_milestone_tracker.dart';
+import 'package:billetudo/features/goals/domain/services/goal_momentum_calculator.dart';
+import 'package:billetudo/features/goals/domain/services/goal_progress_calculator.dart';
+import 'package:billetudo/features/goals/domain/services/goal_projection_calculator.dart';
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart';
 import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart';
 import 'package:billetudo/features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -31,6 +38,15 @@ void main() {
     repository = TransactionRepositoryImpl(
       TransactionsLocalDatasource(database),
       TagsLocalDatasource(database),
+      GoalRepositoryImpl(
+        GoalsLocalDatasource(database),
+        const GoalProgressCalculator(),
+        const GoalMilestoneTracker(),
+        const GoalProjectionCalculator(),
+        const GoalMomentumCalculator(),
+        const GoalCoherenceCalculator(),
+        const NoopCrashReporter(),
+      ),
       const NoopCrashReporter(),
     );
   });

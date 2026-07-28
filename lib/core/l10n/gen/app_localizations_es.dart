@@ -3000,4 +3000,287 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get budgetAdjustCancelledSnackbar =>
       'Ajuste revertido — el período vuelve al monto habitual.';
+
+  @override
+  String get goalsTitle => 'Metas';
+
+  @override
+  String get goalsAdd => 'Nueva meta';
+
+  @override
+  String get goalsErrorTitle => 'No pudimos cargar tus metas';
+
+  @override
+  String get goalsEmptyMessage => 'Elige algo por lo que ahorrar';
+
+  @override
+  String get goalsEmptyDescription =>
+      'Dale un propósito a tu dinero. Empieza con una idea o crea la tuya.';
+
+  @override
+  String get goalsEmptyTemplatesTitle => 'Empieza con una plantilla';
+
+  @override
+  String get goalsEmptyCustomCta => 'Crear meta personalizada';
+
+  @override
+  String get goalsArchivedCta => 'Metas archivadas';
+
+  @override
+  String get goalsArchivedTitle => 'Metas archivadas';
+
+  @override
+  String get goalsArchivedEmptyMessage => 'No tienes metas archivadas';
+
+  @override
+  String goalCoherenceMessage(String amount) {
+    return 'Tus metas superan el saldo real de la cuenta por $amount';
+  }
+
+  @override
+  String goalCardRemaining(String amount) {
+    return 'Te faltan $amount';
+  }
+
+  @override
+  String goalCardCompleted(String amount) {
+    return 'Ahorraste $amount';
+  }
+
+  @override
+  String goalCardMeta(int pct) {
+    return '$pct% completado';
+  }
+
+  @override
+  String get goalCardChapterClosed => 'Cumplida · capítulo cerrado';
+
+  @override
+  String get goalDetailTitle => 'Meta';
+
+  @override
+  String goalDetailRemaining(String amount) {
+    return 'Te faltan $amount';
+  }
+
+  @override
+  String goalDetailAchieved(String amount) {
+    return 'Ahorraste $amount';
+  }
+
+  @override
+  String get goalActionsTooltip => 'Más acciones';
+
+  @override
+  String get goalEditTooltip => 'Editar meta';
+
+  @override
+  String get goalActionArchive => 'Archivar meta';
+
+  @override
+  String get goalActionUnarchive => 'Desarchivar meta';
+
+  @override
+  String get goalArchiveSheetTitle => '¿Archivar esta meta?';
+
+  @override
+  String get goalArchiveSheetMessage =>
+      'Se quita de tu lista principal y deja de aceptar nuevos movimientos. Puedes desarchivarla cuando quieras.';
+
+  @override
+  String get goalArchiveConfirm => 'Archivar';
+
+  @override
+  String get goalUnarchiveSheetTitle => '¿Desarchivar esta meta?';
+
+  @override
+  String get goalUnarchiveSheetMessage =>
+      'Vuelve a tu lista principal y podrás aportar y retirar de nuevo.';
+
+  @override
+  String get goalUnarchiveConfirm => 'Desarchivar';
+
+  @override
+  String get goalDeleteSheetTitle => '¿Eliminar esta meta?';
+
+  @override
+  String get goalDeleteSheetMessage =>
+      'Se mueve a la papelera. Puedes recuperarla mientras no la elimines definitivamente.';
+
+  @override
+  String goalMovementsTitle(int count) {
+    return 'Movimientos ($count)';
+  }
+
+  @override
+  String goalMovementsSeeAll(int count) {
+    return 'Ver todos ($count)';
+  }
+
+  @override
+  String get goalMovementsEmpty =>
+      'Todavía no registras movimientos en esta meta.';
+
+  @override
+  String get goalMovementContribution => 'Aporte';
+
+  @override
+  String get goalMovementWithdrawal => 'Retiro';
+
+  @override
+  String get goalMovementDateLabel => 'Fecha';
+
+  @override
+  String get goalMovementNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get goalMovementNoteHint => 'Agregar una nota';
+
+  @override
+  String get goalMovementError =>
+      'No pudimos guardar el movimiento. Intenta de nuevo.';
+
+  @override
+  String goalDateToday(String date) {
+    return 'Hoy, $date';
+  }
+
+  @override
+  String get goalContributeTitle => 'Registrar aporte';
+
+  @override
+  String get goalContributeAmountLabel => 'Aporte';
+
+  @override
+  String get goalContributeCta => 'Aportar';
+
+  @override
+  String get goalWithdrawTitle => 'Registrar retiro';
+
+  @override
+  String get goalWithdrawAmountLabel => 'Retiro';
+
+  @override
+  String get goalWithdrawCta => 'Retirar';
+
+  @override
+  String goalWithdrawAvailable(String amount) {
+    return 'Disponible en la meta: $amount · Usar todo';
+  }
+
+  @override
+  String get goalWithdrawErrorExceedsSaved =>
+      'No puedes retirar más de lo que has ahorrado en esta meta.';
+
+  @override
+  String get goalQuickAmountOther => 'Otro';
+
+  @override
+  String get goalProjectionNoTargetDate => 'Sin fecha objetivo definida';
+
+  @override
+  String get goalProjectionOverdue => 'La fecha objetivo ya pasó';
+
+  @override
+  String get goalProjectionInsufficientHistory =>
+      'Aporta un poco más para ver tu ritmo de ahorro';
+
+  @override
+  String goalProjectionMonthlyNeeded(String amount) {
+    return 'Necesitas aportar $amount al mes para llegar a tu fecha';
+  }
+
+  @override
+  String goalProjectionOnPace(String month) {
+    return 'A tu ritmo, llegas en $month';
+  }
+
+  @override
+  String goalMilestoneTitle(int pct) {
+    return '¡Llegaste al $pct%!';
+  }
+
+  @override
+  String goalMilestonePercent(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String goalMilestoneMessage(String name) {
+    return 'Sigue así con $name. Cada aporte te acerca más.';
+  }
+
+  @override
+  String get goalMilestoneCta => 'Seguir ahorrando';
+
+  @override
+  String get goalCompletedBadge => 'Meta cumplida';
+
+  @override
+  String goalCompletedTitle(String name) {
+    return '¡Cumpliste $name!';
+  }
+
+  @override
+  String goalCompletedMessage(String amount) {
+    return 'Ahorraste $amount en total. Este logro queda contigo.';
+  }
+
+  @override
+  String get goalCompletedCreateNext => 'Crear la próxima meta';
+
+  @override
+  String get goalCompletedArchive => 'Archivar meta';
+
+  @override
+  String get goalFormNewTitle => 'Nueva meta';
+
+  @override
+  String get goalFormEditTitle => 'Editar meta';
+
+  @override
+  String get goalFormTargetLabel => 'Objetivo';
+
+  @override
+  String get goalFormErrorTargetZero => 'El objetivo debe ser mayor a cero';
+
+  @override
+  String get goalFormNameLabel => 'Nombre';
+
+  @override
+  String get goalFormNameHint => 'Ej. Viaje a Cartagena';
+
+  @override
+  String get goalFormNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get goalFormAccountLabel => 'Cuenta vinculada (recomendado)';
+
+  @override
+  String get goalFormAccountHint => 'Elige una cuenta';
+
+  @override
+  String get goalFormAccountPickerTitle => 'Elige una cuenta';
+
+  @override
+  String get goalFormTargetDateLabel => 'Fecha objetivo (opcional)';
+
+  @override
+  String get goalFormTargetDateHint => 'Elegir una fecha posterior a hoy';
+
+  @override
+  String get goalFormErrorTargetDatePast => 'La fecha debe ser posterior a hoy';
+
+  @override
+  String get goalFormInitialSavedLabel =>
+      '¿Ya tienes algo ahorrado? (opcional)';
+
+  @override
+  String get goalFormCreateCta => 'Crear meta';
+
+  @override
+  String get goalFormSaveCta => 'Guardar cambios';
+
+  @override
+  String get goalCurrencySheetTitle => 'Elige la moneda';
 }
