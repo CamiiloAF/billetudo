@@ -110,6 +110,7 @@ dependencies:
   shared_preferences: ^2.3.2
 
 dev_dependencies:
+  sentry_dart_plugin: ^3.4.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
@@ -214,3 +215,9 @@ dependency_overrides:
   # analyzer override above or its generated-code formatter breaks at
   # runtime (`ParserErrorCode` moved between analyzer majors).
   dart_style: 3.1.6
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: billetudo
+  org: camilo-agudelo

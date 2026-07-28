@@ -40,3 +40,5 @@ test/**/golden/failures/
 
 # Git worktrees temporales de subagentes/skills (nunca commitear)
 .claude/worktrees/
+
+sentry.properties
