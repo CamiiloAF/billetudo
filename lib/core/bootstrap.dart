@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/categories/domain/usecases/seed_default_categories.dart';
+import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
 import 'bootstrap/app_bootstrap_gate.dart';
 import 'bootstrap/first_launch_offline_gate.dart';
 import 'config/env.dart';
@@ -141,6 +142,25 @@ Future<Widget Function()> _initApp(Widget Function() builder) async {
         ),
       );
     }
+  }
+
+  // Catch up on scheduled payments due since the last launch (HU-02,
+  // docs/requirements). Automatic templates get their `Transaction`
+  // generated here; manual ones just get a pending occurrence, confirmed
+  // later by the user. Idempotent and 100% local (no PowerSync/network
+  // dependency), so it's safe to also leave the same call in
+  // `ScheduledPaymentsListCubit.start()` as a refresh/safety net for when the
+  // user opens that screen. Unlike category seeding, there's no
+  // network-availability case to block on — any failure is just logged.
+  final catchUpResult = await getIt<GenerateDueScheduledPayments>()();
+  if (catchUpResult case Left(value: final failure)) {
+    unawaited(
+      crash.recordError(
+        failure,
+        StackTrace.current,
+        context: 'generateDueScheduledPayments',
+      ),
+    );
   }
 
   return effectiveBuilder;
