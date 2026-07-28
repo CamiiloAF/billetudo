@@ -1,0 +1,11 @@
+-- schemaVersion 17 (commit 66cacba, 2026-07-24): cerrar/completar una deuda.
+--
+-- Esta columna faltó en prod durante 4 días y bloqueó la cola de subida de
+-- PowerSync por completo: PostgREST responde PGRST204 ("could not find the
+-- 'closed_at' column"), el conector lo clasificaba como error transitorio y
+-- reintentaba la misma transacción para siempre. Como la cola es FIFO, ninguna
+-- escritura posterior — de ninguna tabla — llegó a subir.
+--
+-- Epoch SECONDS en bigint, nunca timestamptz: ver el comentario de tipos en
+-- lib/core/database/powersync_schema.dart.
+alter table public.debts add column if not exists closed_at bigint;

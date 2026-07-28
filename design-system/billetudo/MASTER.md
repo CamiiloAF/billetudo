@@ -18,7 +18,7 @@
 
 ### Paleta de color
 
-35 variables definidas en `billetudo.pen` (`get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
+42 variables definidas en `billetudo.pen` (41 de color + `font-body`; ver `get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. La tabla de abajo no las recoge todas — faltan documentar `track`, `track-overlay` y `month-chip-bg` (conteo corregido el 2026-07-28: el `.md` decia 35). **Manda el `.pen`: ante cualquier duda, `get_variables`.** **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
 
 | Token | Claro | Oscuro | Uso |
 |-------|-------|--------|-----|
@@ -49,7 +49,7 @@
 | `skeleton` | `#ECEBF3` | `#45455F` | **Relleno de bloques placeholder de skeleton (estados de carga).** Claro = idéntico a `border` (el skeleton claro no cambia); oscuro deliberadamente más luminoso que `border` (`#2A2A3D`) para que el skeleton se lea sin gritar (~1.9:1 sobre `background`, ~1.77:1 sobre `surface`) — `border` oscuro daba ~1.25:1, casi invisible. Usar SOLO para rellenos placeholder de skeleton, nunca para bordes/divisores reales (esos siguen en `border`). Disponible para reusar en skeletons de otras features (Cuentas/Categorías/Movimientos). |
 | `text-primary` | `#1C1B29` | `#F4F3FA` | Texto principal. |
 | `text-secondary` | `#6B6980` | `#9A98B5` | Texto secundario/metadatos. |
-| `segment-inactive-text` | `#5F5D73` | `#9A98B5` (= `text-secondary` oscuro) | Label del segmento **INACTIVO** del `Segmented Control` (`hFu41`). `text-secondary` sobre `muted` daba ~4.4:1 en claro (falla AA 4.5); este token calibrado sube a ~5.3:1 en claro manteniéndose más tenue que el activo (`text-primary` ~13:1). En oscuro reusa el valor de `text-secondary` (~6:1, ya pasaba → cero cambio visual). Mismo patrón que `expense-text`/`income-text`. Usar solo para labels inactivos de segmented controls. |
+| `segment-inactive-text` | `#5F5D73` | `#9A98B5` (= `text-secondary` oscuro) | Label del segmento **INACTIVO** del `Segmented Control` (`hFu41`). `text-secondary` sobre `muted` daba ~4.4:1 en claro (falla AA 4.5); este token calibrado sube a ~5.3:1 en claro manteniéndose más tenue que el activo (`text-primary` ~13:1). En oscuro reusa el valor de `text-secondary` (~6:1, ya pasaba → cero cambio visual). Mismo patrón que `expense-text`/`income-text`. **Alcance ampliado el 2026-07-28:** ya no es solo para segmented controls — es el token para **cualquier label o glifo apagado sobre `muted`**, incluidos los CTA en estado inerte (ej. "Sincronizando…"). `text-secondary` sobre `muted` mide **4.56:1**, que pasa AA por un 1% y solo si el texto califica como grande — un label de 15px/700 **no** califica (umbral 18.66px). Si vas a apagar texto sobre `muted`, usa este token, nunca `text-secondary`. |
 | `on-primary` | `#FFFFFF` (fijo) | — | Texto/iconos sobre superficies `primary`. Usar SIEMPRE solido, nunca traslucido (ver Accesibilidad). |
 | `income` | `#22C55E` | `#34D399` | Semantica: monto positivo/ingreso. Usado en Cuentas (deuda de tarjeta ya saldada, saldos positivos) ademas de Transacciones. |
 | `income-text` | `#166534` | `#34D399` (sin cambio) | **Usar en vez de `income` para texto de tamaño normal/mediano** (ej. `Amount Value` del formulario de Ingreso, 36-40px pero no calificando como "texto grande" por debajo de ~800 weight en algunos casos limite). Motivo: `income` (`#22C55E`) sobre `background` da solo ~2.07:1 en claro, muy por debajo de cualquier umbral WCAG. `income-text` calibrado a ~6.46:1 en claro; en oscuro `income` (`#34D399`) ya pasa por si solo asi que `income-text` reusa el mismo valor sin cambio. Mismo patron que `expense`/`expense-text`. |
@@ -137,11 +137,37 @@ Header de subpantalla (no es un destino de tab): boton "atras" (o "x" para modal
 
 - **Overrides tipicos:** icono del boton de atras (`arrow-left` para volver, `x` para cerrar un modal/formulario), titulo, icono del boton de accion (`plus` para agregar, `check` para guardar).
 - **Regla de navegacion:** toda pantalla con `Page Header` (boton atras/cerrar) NO lleva `Tab Bar` — son pantallas apiladas (push/modal), no destinos de tab. Solo Inicio, Transacciones/Movimientos, Presupuestos y Metas (los 5 items del Tab Bar) usan su propio header custom + `Tab Bar`.
-- **Centrado real del titulo:** boton de atras y boton de accion miden AMBOS 44x44 (antes el de atras media 40x40, descentraba el titulo en pantallas con texto largo — corregido). El `Title` usa `textGrowth:"fixed-width"` + `width:"fill_container"` + `textAlign:"center"`, nunca `textGrowth:"auto"` — asi se centra en el espacio real entre botones en vez de depender solo de que ambos lados midan igual. Si un lado no tiene accion (ej. pantallas sin boton `+`), usar un spacer `enabled:false` de 44x44 en su lugar, nunca quitar el nodo — si se quita, el titulo se descentra.
+- **Centrado real del titulo:** boton de atras y boton de accion miden AMBOS 44x44 (antes el de atras media 40x40, descentraba el titulo en pantallas con texto largo — corregido). El `Title` usa `textGrowth:"fixed-width"` + `width:"fill_container"` + `textAlign:"center"`, nunca `textGrowth:"auto"` — asi se centra en el espacio real entre botones en vez de depender solo de que ambos lados midan igual. Si un lado no tiene accion (ej. pantallas sin boton `+`), va un spacer de 44x44 en su lugar, nunca se quita el nodo — si se quita, el titulo se descentra.
+
+  > **Corregido el 2026-07-28 — esta regla decia `enabled:false` y estaba mal.** Un nodo `enabled:false` **no ocupa espacio en el layout de Pencil**, asi que el spacer aportaba 0 y el titulo quedaba **descentrado 22px** en toda instancia sin boton de accion. Medido: con el spacer apagado el `Title` mide 306px desde x=64 (centro 217, cuando el centro real es 195); con boton de accion presente mide 262px y si queda centrado.
+  >
+  > **La forma correcta**, verificada con `snapshot_layout`: spacer **`enabled:true` con `fill:[]`** (lista vacia, no un hex transparente) y el **glifo interno** en `enabled:false`. Visible para el layout, invisible para el ojo.
+  >
+  > Barrido del 2026-07-28: de ~216 instancias de `Dtm0X`, **66 estaban afectadas**. Si un titulo "se ve casi centrado", **medilo con `snapshot_layout`** en vez de confiar en el ojo — 22px no saltan a la vista, y por eso sobrevivio tanto.
 - **Variante con subtitulo (`s9gXs`, "Page Header · Con subtitulo"):** cuando la pantalla necesita una segunda linea de contexto bajo el titulo (ej. "Configurar cuota" + "Credito vehicular · Yo debo" en Deudas), usar este componente aparte — mismo chrome que `Dtm0X` pero con un `Title Group` (Title + Subtitle 13/500 `$text-secondary`, centrados, `gap:2`). Se creo como componente separado a proposito (no como slot opcional dentro de `Dtm0X`) por la regla tecnica de reestructuracion de arriba. En Flutter es el mismo Page Header con una segunda linea de texto, no un widget distinto.
 
 ### Button/Primary y Button/Secondary
 CTA principal (fill `$primary`) y secundario (outline, `$surface` + `$border`). Icono opcional a la izquierda (`enabled:false` para ocultarlo, ej. en `Button/Secondary` de "Cancelar").
+
+### Button/Neutral (`xncgz`)
+CTA solido de alto contraste sin color de marca: fill `$text-primary`, label e icono en `$background`. Mismo chrome y metrica que `Button/Primary`.
+
+**Cuando usarlo en vez de `Button/Primary`:** en pantallas donde `$primary` ya carga un **significado semantico** y teñir el CTA de violeta lo difuminaria. Caso canonico: "Estado de sincronizacion" (`pages/sincronizacion.md`), donde el violeta significa **la nube** — por eso la fila "Guardar una copia" (archivo local) usa `$teal` y el CTA de reparacion usa `Button/Neutral`. Tambien es la salida cuando un CTA de color se pelea con un fondo de estado (ej. `$amber-soft`): antes de inventar un token, probar `Button/Neutral`.
+
+**No** es un boton deshabilitado ni de menor jerarquia: pesa igual que `Button/Primary`. Para acciones opcionales corresponde `Button/Secondary`.
+
+### Sync Hero (`XxHV3`)
+Bloque hero de la familia "Estado de sincronizacion" (`pages/sincronizacion.md`). Creado el 2026-07-28 al detectar que la misma estructura estaba **copiada a mano en 9 frames** — al generar el tema oscuro habrian sido 18.
+
+Slots: `rZGDr`/`Nr8UU` (Icon Wrap + Icon), `C45uQZ` Title 19/700, `ETLeL` Kicker 13/600, `j1QIm` Body 13/500, `fwn43` Time Row (instancia de `AGZry`), `L5io11` **CTA Slot — se reemplaza entero** via `Replace()`, nunca se le cambian props, y `RBT2p` CTA Caption (apagada por defecto). Fijo: radio 24, padding 20, gap 12, wrap 48px.
+
+Root segun estado: `$surface` + `$border` en los neutros; **`$amber-soft` sin borde** en los de atencion (presencia por fondo, no por contorno — se evaluo con borde y se descarto).
+
+#### Contraste del chrome: los botones se identifican por su label (decision 2026-07-28)
+
+`Button/Secondary` no alcanza los 3:1 que WCAG 1.4.11 pide para objetos graficos, y nunca los alcanzo: `$border` sobre `$surface` mide **~1.09:1**. En estado inerte con relleno `$muted` tampoco: **1.17:1** sobre `$surface` y **1.06:1** sobre `$amber-soft`, donde el borde ni ayuda (~1.03:1, mas tenue que el relleno).
+
+**Se acepta el patron a conciencia:** el componente se identifica por su **label**, que si cumple con holgura. Es defendible bajo 1.4.11, que aplica a los elementos necesarios para identificar un control. Se documenta porque hasta hoy era un limite **heredado sin decidir**. Dos consecuencias: **ningun boton de este sistema puede depender solo de su forma para ser reconocible** (si alguna vez hay uno solo-icono, necesita otro tratamiento), y si se recalibra un token de borde **hay que revisar `Button/Secondary` entero**, no parchear la pantalla donde moleste.
 
 ### Status Bar/Android y Status Bar/iOS
 Barra de estado simulada (hora + iconos de senal/wifi/bateria) que corona cada mockup de pantalla. Dos variantes intercambiables, mismo chrome externo (`height:62`, `padding:[16,24,0,24]`, `width` override a `fill_container` por instancia).
@@ -162,7 +188,7 @@ Campo de formulario: label + caja de input (icono opcional + valor/placeholder) 
 Panel que sube desde abajo — patron obligatorio para confirmaciones/selectores en mobile (nunca modal/dialog centrado, ver regla de patrones mobile mas abajo). Estructura: `Overlay` (`fill:$scrim`, `justifyContent:end`, cubre toda la pantalla) → `Sheet` (`fill:$surface`, `cornerRadius:[28,28,0,0]` — solo esquinas superiores, `padding:[12,20,28,20]`, `gap:16`) → `Handle Wrap` (barra `$border` de agarre, centrada) + **`Content Slot`** (vacio en el componente base; cada instancia reemplaza este slot via `Replace()` con su titulo/icono/mensaje/lista/grid + fila de botones especifica).
 
 - El componente base NO impone un "Title" fijo — algunas instancias usan titulo de texto simple (ej. Selector de Moneda), otras usan icono+mensaje sin titulo (ej. Confirmar Eliminar). Cada instancia decide la forma de su contenido, el slot solo fija el chrome compartido (scrim, radios, handle, padding).
-- Instancias existentes: Confirmar Eliminar (`oymM5`), Confirmar Archivar (`o8dBmH`), Confirmar Cambio tipo/moneda (`SpjqW`), Selector de Moneda (`rCY7Q`), Selector de Dia (`tYzxA`), No se Puede Eliminar (`Yc1U2`). (El Selector de Icono y Color se descarto — las cuentas usan icono/color estandar segun tipo, sin personalizacion.)
+- Instancias existentes: Confirmar Eliminar (`oymM5`), Confirmar Archivar (`o8dBmH`), Confirmar Cambio tipo/moneda (`SpjqW`), Selector de Moneda (`rCY7Q`), Selector de Dia (`tYzxA`), No se Puede Eliminar (`Yc1U2`). (El Selector de Icono y Color se descarto — las cuentas usan icono/color estandar segun tipo, sin personalizacion.) **Mas las 7 hojas del indicador de sincronizacion** (`DUSmQ`, `uYVmf`, `n1qFs`, `MEcVH`, `W4oGp`, `T7Iw0C`, `r1qQYc` y sus gemelas oscuras) — ver `pages/sincronizacion.md`. Esta lista se queda corta con facilidad: ante la duda, buscar los `ref` a este componente en el `.pen`.
 - Al crear un nuevo bottom sheet, SIEMPRE instanciar este componente (`ref` + `Replace()` del slot) — nunca reconstruir el `Overlay`/`Sheet`/`Handle` a mano de nuevo.
 
 ### Balance Card Hero (`o8HEx`)
@@ -248,7 +274,9 @@ Chip pequeño reusado en dos contextos: selector de tipo de cuenta (Agregar Cuen
 
 ## Estados de pantalla (Inicio)
 
-Toda pantalla que carga datos de forma async debe considerar sus estados (con datos / vacio / carga; error solo si de verdad puede quedarse sin datos). **Inicio** se rediseño (composicion "actividad primero", ver `pages/inicio.md`) y es la referencia de este patron — 8 frames en `billetudo.pen` (4 estados x 2 temas):
+Toda pantalla que carga datos de forma async debe considerar sus estados (con datos / vacio / carga; error solo si de verdad puede quedarse sin datos). **Inicio** se rediseño (composicion "actividad primero", ver `pages/inicio.md`) y es la referencia de este patron — **14 frames** en `billetudo.pen` (7 pantallas x 2 temas). Los 4 estados canonicos de la tabla, mas 3 variantes de contenido: `ZMNrt`/`Tr8ZF` (Proximamente IA), `HZTCs`/`Z7WpGJ` (Proximamente Notificaciones) y `k7kv4`/`iGwrg` (Selector de mes).
+
+**Las 14 instancian `Nk9rB` (Home Header)** desde el 2026-07-28. Antes reconstruian el header a mano y el canvas acumulaba 17 iconos de sync sueltos duplicados — por eso ninguna mostraba el 4.o estado del indicador (`saRZW`). Si agregas una pantalla de Inicio, **instancia el componente**, no lo copies.
 
 | Estado | Frame claro | Frame oscuro | Que cambia |
 |--------|-------------|---------------|------------|

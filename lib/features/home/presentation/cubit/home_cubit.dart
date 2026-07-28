@@ -88,6 +88,12 @@ class HomeCubit extends Cubit<HomeState> {
       SyncState.synced => HomeSyncStatus.synced,
       SyncState.syncing => HomeSyncStatus.syncing,
       SyncState.offline => HomeSyncStatus.offline,
+      // Held-back writes read as "not backed up" with the affordances the Home
+      // already has — never as `synced`, which would repeat the lie the app
+      // told for three days while its queue was blocked. The dedicated
+      // treatment (its own icon and copy) belongs to the sync status screen
+      // being designed, and lands with it.
+      SyncState.stalled => HomeSyncStatus.offline,
     };
     // `failure` is re-passed on purpose: `copyWith` drops it when omitted, and
     // a sync tick must not clear a failure the body is still rendering.

@@ -2,6 +2,7 @@ import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart';
 import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
@@ -59,6 +60,10 @@ class FakeSyncStatusRepository implements SyncStatusRepository {
 
   @override
   Stream<SyncState> watchSyncState() => const Stream<SyncState>.empty();
+
+  @override
+  Stream<SyncStatusSnapshot> watchStatus() =>
+      const Stream<SyncStatusSnapshot>.empty();
 }
 
 /// HU-06 de punta a punta por la ruta real: el router es quien traduce cada

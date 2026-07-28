@@ -1,14 +1,17 @@
 name: CI — Flutter Analyze & Test
 
-# DESHABILITADO temporalmente: solo se dispara a mano (workflow_dispatch) hasta
-# terminar el setup de CI/CD. Para REACTIVAR, descomenta los triggers push/PR de
-# abajo (y puedes quitar workflow_dispatch si no lo quieres).
+# REACTIVADO el 2026-07-28 a raíz del incidente de pérdida de datos (decisión
+# #22 en docs/requirements/05-auth-sync.md). El paso "Paridad de esquema" de
+# abajo es el guardrail contra la cuarta repetición del mismo bug, y un
+# guardrail que solo corre a mano no es un guardrail: la decisión #21 ya había
+# identificado esta misma mitigación y quedó sin operar dos días antes del
+# incidente. `workflow_dispatch` se conserva para poder correrlo bajo demanda.
 on:
   workflow_dispatch:
-  # push:
-  #   branches: ['main', 'dev']
-  # pull_request:
-  #   branches: ['main', 'dev']
+  push:
+    branches: ['main', 'dev']
+  pull_request:
+    branches: ['main', 'dev']
 
 jobs:
   analyze-and-test:
@@ -37,6 +40,17 @@ jobs:
 
       - name: Analyze
         run: flutter analyze
+
+      # Guardrail del incidente del 2026-07-28 (decisión #22 en
+      # docs/requirements/05-auth-sync.md). Cuatro veces seguidas un cambio de
+      # esquema tocó Drift pero no Postgres; la cuarta costó 89 registros de un
+      # usuario real. Corre aparte de la suite y ANTES que ella para que, cuando
+      # falle, el motivo se lea en el nombre del paso y no enterrado entre 2600
+      # tests. Si esto falla: NO se publica — se crea la migración que falta en
+      # supabase/migrations/ y se refresca el snapshot con
+      # `dart run tool/check_schema_parity.dart --refresh`.
+      - name: Paridad de esquema (cliente ↔ Postgres)
+        run: flutter test test/core/database/schema_parity_test.dart
 
       # Se excluyen los golden tests (*_golden_test.dart): sus PNG de referencia
       # se generaron en macOS y el render de fuentes en Linux difiere lo
