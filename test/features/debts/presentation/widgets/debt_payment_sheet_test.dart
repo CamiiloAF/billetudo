@@ -1,14 +1,18 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_type_avatar.dart';
+import 'package:billetudo/features/categories/presentation/utils/category_appearance.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_payment_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_payment_state.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_cash_switch.dart';
+import 'package:billetudo/features/debts/presentation/widgets/debt_form_field.dart';
 import 'package:billetudo/features/debts/presentation/widgets/sheets/debt_payment_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../accounts/account_fixtures.dart';
@@ -66,7 +70,7 @@ void main() {
     await pump(tester, stateWith(addToAccount: true));
     expect(find.byType(AccountTypeAvatar), findsOneWidget);
     expect(find.text('Bancolombia'), findsOneWidget);
-    expect(find.text('Categoría (opcional)'), findsOneWidget);
+    expect(find.text('Categoría'), findsOneWidget);
     expect(
       find.text('Moverá el saldo y contará en tus estadísticas'),
       findsOneWidget,
@@ -78,7 +82,7 @@ void main() {
       (tester) async {
     await pump(tester, stateWith(addToAccount: false));
     expect(find.byType(AccountTypeAvatar), findsNothing);
-    expect(find.text('Categoría (opcional)'), findsNothing);
+    expect(find.text('Categoría'), findsNothing);
     expect(
       find.text(
         'Este abono baja el saldo de la deuda pero no moverá ninguna cuenta.',
@@ -93,5 +97,38 @@ void main() {
       find.text('¿Ya lo registraste? Enlaza un movimiento'),
       findsOneWidget,
     );
+  });
+
+  group('fix: ícono real de categoría (antes tag fijo)', () {
+    DebtFormField categoryField(WidgetTester tester) => tester
+        .widgetList<DebtFormField>(find.byType(DebtFormField))
+        .firstWhere((field) => field.label == 'Categoría');
+
+    testWidgets('sin categoría elegida usa el tag genérico neutro',
+        (tester) async {
+      await pump(tester, stateWith(addToAccount: true));
+
+      final field = categoryField(tester);
+      expect(field.icon, LucideIcons.tag);
+      expect(field.iconColor, isNull);
+    });
+
+    testWidgets(
+        'con categoría elegida pinta su ícono/color real, no el tag fijo',
+        (tester) async {
+      final state = stateWith(addToAccount: true).copyWith(
+        categoryId: () => 'cat-1',
+        categoryName: () => 'Transporte',
+        categoryIcon: () => 'bus',
+        categoryColor: () => 'sky',
+      );
+      await pump(tester, state);
+
+      final field = categoryField(tester);
+      final colors = AppTheme.light().extension<AppColors>()!;
+      expect(field.icon, CategoryAppearance.iconFor('bus'));
+      expect(field.icon, isNot(LucideIcons.tag));
+      expect(field.iconColor, CategoryAppearance.colorFor(colors, 'sky'));
+    });
   });
 }

@@ -78,7 +78,8 @@ class DebtDetailPage extends StatelessWidget {
       listenWhen: (previous, current) =>
           previous.status != current.status ||
           previous.actionFailure != current.actionFailure ||
-          previous.celebration != current.celebration,
+          previous.celebration != current.celebration ||
+          previous.closeSuccess != current.closeSuccess,
       listener: (context, state) => unawaited(
         _handleSideEffects(context, state, l10n),
       ),
@@ -140,9 +141,15 @@ class DebtDetailPage extends StatelessWidget {
               return const SizedBox.shrink();
             }
             final debt = detail.debt;
+            // Fix 5: once the balance is fully settled but the debt isn't
+            // closed yet, the fixed CTA switches from "Registrar abono" to
+            // "Completar deuda" — there is nothing left to abonar, so opening
+            // the payment sheet would be a dead end.
+            final settled = detail.balance.settled;
             return SafeArea(
               top: false,
               child: DebtDetailBottomBar(
+                settled: settled,
                 onRegisterPayment: () => unawaited(
                   DebtPaymentSheet.show(
                     context,
@@ -150,6 +157,8 @@ class DebtDetailPage extends StatelessWidget {
                     onLinkExisting: () => onLinkExisting(debt),
                   ),
                 ),
+                onCompleteDebt: () =>
+                    unawaited(context.read<DebtDetailCubit>().closeDebt()),
               ),
             );
           },
@@ -158,9 +167,11 @@ class DebtDetailPage extends StatelessWidget {
     );
   }
 
-  /// Reacts to the three one-shot signals `DebtDetailCubit` can raise: pop on
-  /// a successful delete, snackbar an action failure, or open the
-  /// felicitación sheet the instant the balance crosses to settled.
+  /// Reacts to the four one-shot signals `DebtDetailCubit` can raise: pop on
+  /// a successful delete, snackbar an action failure, snackbar a successful
+  /// close/complete (fired once from `closeDebt()` no matter which of its
+  /// three call sites triggered it), or open the felicitación sheet the
+  /// instant the balance crosses to settled.
   Future<void> _handleSideEffects(
     BuildContext context,
     DebtDetailState state,
@@ -178,6 +189,13 @@ class DebtDetailPage extends StatelessWidget {
         ..showSnackBar(SnackBar(content: Text(l10n.debtActionError)));
       return;
     }
+    if (state.closeSuccess != null) {
+      cubit.dismissCloseSuccess();
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.debtActionCloseSuccess)));
+      return;
+    }
     final celebration = state.celebration;
     if (celebration != null) {
       cubit.dismissCelebration();
@@ -192,15 +210,32 @@ class DebtDetailPage extends StatelessWidget {
   }
 
   Future<void> _openActionsSheet(BuildContext context, Debt debt) async {
-    final action = await DebtActionsSheet.show(context, debtName: debt.name);
+    final cubit = context.read<DebtDetailCubit>();
+    // Fix 5: a debt already closed offers no close/complete row at all — its
+    // domain use case (`CloseDebt`) already rejects re-closing, this just
+    // avoids surfacing `debtActionError` for an action that can never work.
+    final settled = cubit.state.detail?.balance.settled ?? false;
+    final action = await DebtActionsSheet.show(
+      context,
+      debtName: debt.name,
+      showCloseAction: !debt.isClosed,
+      settled: settled,
+    );
     if (!context.mounted || action == null) {
       return;
     }
-    final cubit = context.read<DebtDetailCubit>();
     switch (action) {
       case DebtActionsSheetAction.edit:
         onEdit(debt.id);
       case DebtActionsSheetAction.close:
+        // Fix 5: once the balance is settled, "Completar deuda" closes
+        // directly — the confirm sheet exists to warn about closing with a
+        // balance still pending, which does not apply here (mirrors the
+        // felicitación sheet's "Completar" flow).
+        if (settled) {
+          await cubit.closeDebt();
+          break;
+        }
         final confirmed = await DebtCloseConfirmSheet.show(
           context,
           debt: debt,
@@ -266,7 +301,11 @@ class DebtDetailReadyView extends StatelessWidget {
             installment: installment,
             onTap: () => onOpenInstallment(installment.scheduledPaymentId),
           )
-        else
+        // Fix 5: a debt already at 100% (nothing outstanding) has no more
+        // cuota left to configure, whether or not it's been closed yet —
+        // offering "Configurar cuota" here would just point at a form that
+        // caps the cuota amount to an outstanding balance of 0.
+        else if (!debt.isClosed && detail.balance.outstandingMinor > 0)
           DebtConfigureInstallmentCard(
             onTap: () => onConfigureInstallment(
               debt,
@@ -336,11 +375,21 @@ class DebtDetailReadyView extends StatelessWidget {
   }
 }
 
-/// The fixed "Registrar abono" button at the thumb zone (`wubqC`).
+/// The fixed CTA at the thumb zone (`wubqC`): "Registrar abono" normally, or
+/// "Completar deuda" (fix 5) once the outstanding balance reaches 0 but the
+/// debt isn't closed yet — there is nothing left to abonar, so the CTA closes
+/// the debt directly instead of opening the (now pointless) payment sheet.
 class DebtDetailBottomBar extends StatelessWidget {
-  const DebtDetailBottomBar({required this.onRegisterPayment, super.key});
+  const DebtDetailBottomBar({
+    required this.onRegisterPayment,
+    required this.onCompleteDebt,
+    this.settled = false,
+    super.key,
+  });
 
   final VoidCallback onRegisterPayment;
+  final VoidCallback onCompleteDebt;
+  final bool settled;
 
   @override
   Widget build(BuildContext context) {
@@ -354,10 +403,14 @@ class DebtDetailBottomBar extends StatelessWidget {
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: FilledButton.icon(
-        onPressed: onRegisterPayment,
+        onPressed: settled ? onCompleteDebt : onRegisterPayment,
         style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-        icon: const Icon(LucideIcons.plus, size: 18),
-        label: Text(l10n.debtDetailRegisterPayment),
+        icon: Icon(settled ? LucideIcons.flag : LucideIcons.plus, size: 18),
+        label: Text(
+          settled
+              ? l10n.debtDetailCompleteDebt
+              : l10n.debtDetailRegisterPayment,
+        ),
       ),
     );
   }

@@ -409,6 +409,7 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 ),
                 child: TransactionDetailPage(
                   onEdit: (id) => context.push(AppRoutes.editTransaction(id)),
+                  onOpenDebt: (id) => context.push(AppRoutes.debt(id)),
                 ),
               ),
               routes: [

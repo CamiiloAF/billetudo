@@ -464,6 +464,69 @@ void main() {
       expect(items, hasLength(1));
       expect(items.single.scheduledPaymentId, 'eligible');
     });
+
+    test(
+        'fix 6: a `once` template whose nextDate never advances is not '
+        'duplicated once its own overdue occurrence turns `pending`', () {
+      // `once` never advances `nextDate` past a processed date (unlike
+      // recurring templates) — see `_catchUpTemplate`'s documented no-op —
+      // so the template keeps re-projecting the exact same overdue date that
+      // already has a real `pending` occurrence for it.
+      final t = template(
+        frequency: ScheduledPaymentFrequency.once,
+        nextDate: DateTime(2024, 1, 5),
+      );
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      final overduePending =
+          pending(scheduledPayment: t, occurrenceDate: DateTime(2024, 1, 5));
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [overduePending],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2024, 1, 5));
+      expect(items.single.scheduledPaymentId, t.id);
+    });
+
+    test(
+        'fix 6: the same exact-date duplicate is also prevented for a '
+        'recurring template', () {
+      final t = template(
+        frequency: ScheduledPaymentFrequency.monthly,
+        nextDate: DateTime(2024, 1, 5),
+      );
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      final samDatePending =
+          pending(scheduledPayment: t, occurrenceDate: DateTime(2024, 1, 5));
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [samDatePending],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2024, 1, 5));
+    });
   });
 
   group('both dimensions (AND)', () {

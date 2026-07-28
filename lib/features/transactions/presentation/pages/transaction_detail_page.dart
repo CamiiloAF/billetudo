@@ -23,9 +23,18 @@ import '../widgets/transaction_header_button.dart';
 /// expense, `s4Wsu5` income, `xNp8g` transfer), with edit and delete (HU-05)
 /// actions.
 class TransactionDetailPage extends StatelessWidget {
-  const TransactionDetailPage({required this.onEdit, super.key});
+  const TransactionDetailPage({
+    required this.onEdit,
+    this.onOpenDebt,
+    super.key,
+  });
 
   final ValueChanged<String> onEdit;
+
+  /// Opens the linked debt's detail page (bug 3, Deudas) when the "Enlazada a
+  /// deuda" badge is tapped. `null` keeps the badge inert (e.g. tests that
+  /// only assert the read-only content).
+  final ValueChanged<String>? onOpenDebt;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +113,7 @@ class TransactionDetailPage extends StatelessWidget {
                   onEdit: () => onEdit(entry.transaction.id),
                   onDelete:
                       context.read<TransactionDetailCubit>().requestDelete,
+                  onOpenDebt: onOpenDebt,
                 ),
               TransactionDetailStatus.ready => const SizedBox.shrink(),
             },
@@ -126,6 +136,7 @@ class TransactionDetailBody extends StatelessWidget {
     required this.entry,
     this.onEdit,
     this.onDelete,
+    this.onOpenDebt,
     super.key,
   });
 
@@ -134,6 +145,10 @@ class TransactionDetailBody extends StatelessWidget {
   /// Null in tests that only assert the read-only content.
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+
+  /// Opens the linked debt's detail page (bug 3, Deudas). Null keeps the
+  /// "Enlazada a deuda" badge inert.
+  final ValueChanged<String>? onOpenDebt;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +175,12 @@ class TransactionDetailBody extends StatelessWidget {
         TransactionDetailInfoCard(entry: entry, locale: locale),
         if (entry.debtName != null) ...[
           const SizedBox(height: 20),
-          TransactionDebtLinkBadge(debtName: entry.debtName!),
+          TransactionDebtLinkBadge(
+            debtName: entry.debtName!,
+            onTap: onOpenDebt == null
+                ? null
+                : () => onOpenDebt!(entry.transaction.debtId!),
+          ),
         ],
         if (!transaction.isTransfer && entry.tags.isNotEmpty) ...[
           const SizedBox(height: 20),

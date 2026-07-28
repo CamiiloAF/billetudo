@@ -1,7 +1,9 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart' as db;
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/preferences/debt_payment_toggle_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
 import 'package:billetudo/features/debts/data/datasources/debts_local_datasource.dart';
 import 'package:billetudo/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
@@ -22,6 +24,8 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockTogglePreference extends Mock
     implements DebtPaymentTogglePreferenceDatasource {}
 
+class MockGetCategory extends Mock implements GetCategory {}
+
 /// Bug 5: reproduces the EXACT user flow (open the sheet, `addToAccount =
 /// true`, pick an account, pick a category via `categorySelected`, submit)
 /// against a real in-memory Drift DB end to end — `DebtPaymentCubit` ->
@@ -39,6 +43,7 @@ void main() {
     repository = DebtRepositoryImpl(
       DebtsLocalDatasource(database),
       const DebtBalanceCalculator(),
+      const NoopCrashReporter(),
     );
     watchAccounts = MockWatchAccounts();
     togglePreference = MockTogglePreference();
@@ -93,12 +98,21 @@ void main() {
             debtId: any(named: 'debtId'),
             addToAccount: any(named: 'addToAccount'),
           )).thenAnswer((_) async {});
+      final getCategory = MockGetCategory();
+      // The seed catalog isn't seeded in this in-memory DB; the default
+      // resolution fails harmlessly and the test picks a category explicitly
+      // below, same as fix 7's fallback when the seed lookup fails.
+      when(() => getCategory(any())).thenAnswer(
+        (_) async =>
+            const Left(NotFoundFailure('seed category not seeded in test')),
+      );
 
       final cubit = DebtPaymentCubit(
         RegisterDebtCashEvent(repository),
         RegisterDebtLedgerEvent(repository),
         watchAccounts,
         togglePreference,
+        getCategory,
       );
       addTearDown(cubit.close);
 

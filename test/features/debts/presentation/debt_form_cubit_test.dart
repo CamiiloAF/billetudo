@@ -164,6 +164,74 @@ void main() {
   );
 
   blocTest<DebtFormCubit, DebtFormState>(
+    'fix 9: load(id) con SOLO el movimiento de apertura marca '
+    'hasNonOpeningMovements en false',
+    setUp: () => when(() => watchDebtDetail.call('d1')).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          buildDebtDetail(
+            debt: buildDebt(
+              principalMinor: 0,
+              initialTransactionId: 't-open',
+            ),
+            ledger: [
+              buildLedgerEntry(
+                id: 't-open',
+                kind: DebtLedgerKind.cashDisbursement,
+                effectMinor: 4200000000,
+                transactionId: 't-open',
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    build: build,
+    act: (cubit) => cubit.load('d1'),
+    expect: () => [
+      isA<DebtFormState>().having(
+          (s) => s.hasNonOpeningMovements, 'hasNonOpeningMovements', false),
+    ],
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'fix 9: load(id) con un abono además de la apertura marca '
+    'hasNonOpeningMovements en true',
+    setUp: () => when(() => watchDebtDetail.call('d1')).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          buildDebtDetail(
+            debt: buildDebt(
+              principalMinor: 0,
+              initialTransactionId: 't-open',
+            ),
+            ledger: [
+              buildLedgerEntry(
+                id: 'l-abono',
+                kind: DebtLedgerKind.cashPayment,
+                effectMinor: -50000,
+                transactionId: 't-abono',
+              ),
+              buildLedgerEntry(
+                id: 't-open',
+                kind: DebtLedgerKind.cashDisbursement,
+                effectMinor: 4200000000,
+                transactionId: 't-open',
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    build: build,
+    act: (cubit) => cubit.load('d1'),
+    expect: () => [
+      isA<DebtFormState>().having(
+          (s) => s.hasNonOpeningMovements, 'hasNonOpeningMovements', true),
+    ],
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
     'submit sin cuentas crea la deuda directamente y llega a saved',
     setUp: () => when(() => createDebt.call(any()))
         .thenAnswer((_) async => Right(buildDebt())),
@@ -322,8 +390,11 @@ void main() {
 
   blocTest<DebtFormCubit, DebtFormState>(
     'editar con registro y cambiar el saldo pide confirmar el registro (2b)',
-    setUp: () => when(() => updateDebt.call(any()))
-        .thenAnswer((_) async => Right(buildDebt())),
+    setUp: () => when(() => updateDebt.call(
+          any(),
+          directionChanged: any(named: 'directionChanged'),
+          hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+        )).thenAnswer((_) async => Right(buildDebt())),
     build: build,
     seed: () => const DebtFormState(
       status: DebtFormStatus.ready,
@@ -352,8 +423,11 @@ void main() {
   blocTest<DebtFormCubit, DebtFormState>(
     'confirmar el registro actualiza el movimiento y llega a saved (2b)',
     setUp: () {
-      when(() => updateDebt.call(any()))
-          .thenAnswer((_) async => Right(buildDebt()));
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer((_) async => Right(buildDebt()));
       when(
         () => updateInitialMovement.call(
           transactionId: any(named: 'transactionId'),
@@ -388,8 +462,11 @@ void main() {
 
   blocTest<DebtFormCubit, DebtFormState>(
     'cancelar el registro no toca el movimiento y llega a saved (2b)',
-    setUp: () => when(() => updateDebt.call(any()))
-        .thenAnswer((_) async => Right(buildDebt())),
+    setUp: () => when(() => updateDebt.call(
+          any(),
+          directionChanged: any(named: 'directionChanged'),
+          hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+        )).thenAnswer((_) async => Right(buildDebt())),
     build: build,
     seed: () => const DebtFormState(
       status: DebtFormStatus.ready,
@@ -416,8 +493,11 @@ void main() {
 
   blocTest<DebtFormCubit, DebtFormState>(
     'editar con registro sin cambiar el saldo no pide confirmar (2b)',
-    setUp: () => when(() => updateDebt.call(any()))
-        .thenAnswer((_) async => Right(buildDebt())),
+    setUp: () => when(() => updateDebt.call(
+          any(),
+          directionChanged: any(named: 'directionChanged'),
+          hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+        )).thenAnswer((_) async => Right(buildDebt())),
     build: build,
     seed: () => const DebtFormState(
       status: DebtFormStatus.ready,
@@ -448,8 +528,11 @@ void main() {
     'editar solo la dirección (sin tocar el saldo) re-sincroniza el tipo del '
     'movimiento en silencio, sin hoja (2b edge case)',
     setUp: () {
-      when(() => updateDebt.call(any()))
-          .thenAnswer((_) async => Right(buildDebt()));
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer((_) async => Right(buildDebt()));
       when(
         () => updateInitialMovement.call(
           transactionId: any(named: 'transactionId'),
@@ -493,8 +576,11 @@ void main() {
     'editar con registro cambiando SOLO la fecha de inicio re-sincroniza la '
     'fecha del movimiento en silencio, sin hoja (2b)',
     setUp: () {
-      when(() => updateDebt.call(any()))
-          .thenAnswer((_) async => Right(buildDebt()));
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer((_) async => Right(buildDebt()));
       when(
         () => updateInitialMovement.call(
           transactionId: any(named: 'transactionId'),
@@ -540,8 +626,11 @@ void main() {
     'editar con registro cambiando monto Y fecha: al confirmar la hoja el '
     'movimiento queda con el nuevo monto y la nueva fecha (2b)',
     setUp: () {
-      when(() => updateDebt.call(any()))
-          .thenAnswer((_) async => Right(buildDebt()));
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer((_) async => Right(buildDebt()));
       when(
         () => updateInitialMovement.call(
           transactionId: any(named: 'transactionId'),
@@ -578,8 +667,11 @@ void main() {
 
   blocTest<DebtFormCubit, DebtFormState>(
     'editar SIN registro cambiando la fecha no toca ningún movimiento (2b)',
-    setUp: () => when(() => updateDebt.call(any()))
-        .thenAnswer((_) async => Right(buildDebt())),
+    setUp: () => when(() => updateDebt.call(
+          any(),
+          directionChanged: any(named: 'directionChanged'),
+          hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+        )).thenAnswer((_) async => Right(buildDebt())),
     build: build,
     seed: () => DebtFormState(
       status: DebtFormStatus.ready,
@@ -648,6 +740,107 @@ void main() {
         date: DateTime(2025, 6, 15),
       ),
     ).called(1),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'fix 9 (escenario 1): un solo submit() completa el ciclo hasta saved '
+    'incluso cuando reasincroniza el movimiento en silencio (antes era '
+    'unawaited y el ciclo no terminaba en la primera pulsación)',
+    setUp: () {
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer((_) async => Right(buildDebt()));
+      when(
+        () => updateInitialMovement.call(
+          transactionId: any(named: 'transactionId'),
+          amountMinor: any(named: 'amountMinor'),
+          direction: any(named: 'direction'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+    },
+    build: build,
+    seed: () => const DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      direction: DebtDirection.owedToMe,
+      directionBaseline: DebtDirection.iOwe,
+      amountMinor: 100,
+      openingBaselineMinor: 100,
+      initialTransactionId: 't-open',
+    ),
+    // A single, non-awaited-by-the-test act call: bloc_test still awaits it
+    // internally, but the assertion that matters is `verify` below finding
+    // the resync already happened — the regression was that `submit()`
+    // returned/settled before the resync's own state transition landed.
+    act: (cubit) => cubit.submit(),
+    verify: (cubit) {
+      expect(cubit.state.status, DebtFormStatus.saved);
+      verify(
+        () => updateInitialMovement.call(
+          transactionId: 't-open',
+          amountMinor: 100,
+          direction: DebtDirection.owedToMe,
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'fix 9 (escenario 2): cambiar direction con movimientos más allá de la '
+    'apertura queda bloqueado por el dominio, sin abrir la hoja de '
+    'felicitación ni tocar el movimiento inicial',
+    setUp: () {
+      when(() => updateDebt.call(
+            any(),
+            directionChanged: any(named: 'directionChanged'),
+            hasNonOpeningMovements: any(named: 'hasNonOpeningMovements'),
+          )).thenAnswer(
+        (_) async => const Left(
+          ValidationFailure(
+            'cannot change direction: this debt already has movements '
+            'beyond its opening',
+            field: DebtDraft.fieldDirection,
+          ),
+        ),
+      );
+    },
+    build: build,
+    seed: () => const DebtFormState(
+      status: DebtFormStatus.ready,
+      id: 'd1',
+      name: 'Crédito',
+      direction: DebtDirection.owedToMe,
+      directionBaseline: DebtDirection.iOwe,
+      amountMinor: 100,
+      openingBaselineMinor: 100,
+      hasNonOpeningMovements: true,
+    ),
+    act: (cubit) => cubit.submit(),
+    expect: () => [
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.saving),
+      isA<DebtFormState>()
+          .having((s) => s.status, 'status', DebtFormStatus.ready)
+          .having((s) => s.failedField, 'failedField', DebtDraft.fieldDirection)
+          .having((s) => s.prompt, 'prompt', isNull),
+    ],
+    verify: (_) {
+      verify(() => updateDebt.call(
+            any(),
+            directionChanged: true,
+            hasNonOpeningMovements: true,
+          )).called(1);
+      verifyNever(
+        () => updateInitialMovement.call(
+          transactionId: any(named: 'transactionId'),
+          amountMinor: any(named: 'amountMinor'),
+          direction: any(named: 'direction'),
+        ),
+      );
+    },
   );
 
   blocTest<DebtFormCubit, DebtFormState>(

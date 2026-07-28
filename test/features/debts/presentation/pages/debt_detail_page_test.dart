@@ -238,4 +238,80 @@ void main() {
     await tester.pump();
     expect(find.text('Este abono no movió ninguna cuenta'), findsOneWidget);
   });
+
+  group('fix: snackbar de éxito al completar/cerrar la deuda', () {
+    testWidgets(
+        'closeSuccess muestra "Deuda completada" y se descarta con '
+        'dismissCloseSuccess (sin importar cuál de los 3 frentes disparó '
+        'el cierre)', (tester) async {
+      whenListen(
+        cubit,
+        Stream.value(
+          readyState.copyWith(closeSuccess: () => const DebtCloseSuccess()),
+        ),
+        initialState: readyState,
+      );
+      when(cubit.dismissCloseSuccess).thenReturn(null);
+
+      await pump(tester, readyState);
+      await tester.pump();
+
+      expect(find.text('Deuda completada'), findsOneWidget);
+      verify(cubit.dismissCloseSuccess).called(1);
+    });
+  });
+
+  group('fix 5: deuda saldada (100%) pero aún no cerrada', () {
+    final settledDetail = buildDebtDetail(
+      debt: buildDebt(id: 'd1', name: 'Préstamo a mamá'),
+      balance: buildBalance(
+        principalMinor: 2000000,
+        totalIncreasesMinor: 2000000,
+        totalDecreasesMinor: 2000000,
+      ),
+      ledger: [
+        buildLedgerEntry(
+          id: 'pay',
+          kind: DebtLedgerKind.cashPayment,
+          effectMinor: -2000000,
+          transactionId: 't1',
+        ),
+        buildLedgerEntry(
+          id: 'open',
+          kind: DebtLedgerKind.opening,
+          effectMinor: 2000000,
+        ),
+      ],
+    );
+    final settledState = DebtDetailState(
+      status: DebtDetailStatus.ready,
+      detail: settledDetail,
+      runningBalances: const [0, 2000000],
+    );
+
+    testWidgets(
+        'el CTA fijo cambia a "Completar deuda" y ya no muestra "Registrar '
+        'abono"', (tester) async {
+      await pump(tester, settledState);
+      expect(find.text('Completar deuda'), findsOneWidget);
+      expect(find.text('Registrar abono'), findsNothing);
+    });
+
+    testWidgets('tocar "Completar deuda" llama a closeDebt en el cubit',
+        (tester) async {
+      when(cubit.closeDebt).thenAnswer((_) async {});
+      await pump(tester, settledState);
+
+      await tester.tap(find.text('Completar deuda'));
+      await tester.pump();
+
+      verify(cubit.closeDebt).called(1);
+    });
+
+    testWidgets('ya no muestra la card "Configurar cuota"', (tester) async {
+      await pump(tester, settledState);
+      expect(find.byType(DebtConfigureInstallmentCard), findsNothing);
+      expect(find.text('Configurar cuota'), findsNothing);
+    });
+  });
 }

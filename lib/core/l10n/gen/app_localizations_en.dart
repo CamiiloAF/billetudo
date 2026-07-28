@@ -1276,6 +1276,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtDetailRegisterPayment => 'Record payment';
 
   @override
+  String get debtDetailCompleteDebt => 'Complete debt';
+
+  @override
   String get debtInstallmentTitle => 'Next installment';
 
   @override
@@ -1463,10 +1466,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtPaymentNoteHint => 'Add a note';
 
   @override
-  String get debtPaymentCategoryLabel => 'Category (optional)';
+  String get debtPaymentCategoryLabel => 'Category';
 
   @override
-  String get debtPaymentCategoryNone => 'No category';
+  String get debtPaymentCategoryNone => 'Choose a category';
 
   @override
   String get debtPaymentSelectAccount => 'Choose an account';
@@ -1563,7 +1566,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtActionClose => 'Close debt';
 
   @override
+  String get debtActionComplete => 'Complete debt';
+
+  @override
+  String get debtFormErrorDirectionLocked =>
+      'You can\'t change this debt\'s direction because it already has movements recorded beyond its opening.';
+
+  @override
   String get debtActionError => 'We couldn\'t complete that action. Try again.';
+
+  @override
+  String get debtActionCloseSuccess => 'Debt completed';
 
   @override
   String get debtCloseSheetTitle => 'Close this debt?';

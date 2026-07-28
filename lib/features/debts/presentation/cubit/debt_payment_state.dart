@@ -26,6 +26,8 @@ class DebtPaymentState extends Equatable {
     this.note = '',
     this.categoryId,
     this.categoryName,
+    this.categoryIcon,
+    this.categoryColor,
     this.failure,
   });
 
@@ -44,6 +46,13 @@ class DebtPaymentState extends Equatable {
   final String? categoryId;
   final String? categoryName;
 
+  /// The chosen category's Lucide icon name/palette token (fix: the "Categoría"
+  /// field used to always show a fixed `tag` glyph instead of the real
+  /// category appearance) — resolved via `CategoryAppearance` in the sheet, not
+  /// here, so this stays a pure domain-adjacent string pair.
+  final String? categoryIcon;
+  final String? categoryColor;
+
   final Failure? failure;
 
   bool get isSaving => status == DebtPaymentStatus.saving;
@@ -58,12 +67,15 @@ class DebtPaymentState extends Equatable {
     return null;
   }
 
-  /// The CTA is enabled once there is a positive amount and — when adding to an
-  /// account — a selected account to move.
+  /// The CTA is enabled once there is a positive amount and — when adding to
+  /// an account — a selected account AND a category (fix 7: the category is
+  /// mandatory for a cash abono, same rule regular transactions follow;
+  /// preselected in `DebtPaymentCubit.start` but the user can still clear it
+  /// via the picker).
   bool get canSubmit =>
       amountMinor > 0 &&
       !isSaving &&
-      (!addToAccount || selectedAccountId != null);
+      (!addToAccount || (selectedAccountId != null && categoryId != null));
 
   DebtPaymentState copyWith({
     DebtPaymentStatus? status,
@@ -75,6 +87,8 @@ class DebtPaymentState extends Equatable {
     String? note,
     String? Function()? categoryId,
     String? Function()? categoryName,
+    String? Function()? categoryIcon,
+    String? Function()? categoryColor,
     Failure? Function()? failure,
   }) =>
       DebtPaymentState(
@@ -90,6 +104,9 @@ class DebtPaymentState extends Equatable {
         note: note ?? this.note,
         categoryId: categoryId == null ? this.categoryId : categoryId(),
         categoryName: categoryName == null ? this.categoryName : categoryName(),
+        categoryIcon: categoryIcon == null ? this.categoryIcon : categoryIcon(),
+        categoryColor:
+            categoryColor == null ? this.categoryColor : categoryColor(),
         failure: failure == null ? this.failure : failure(),
       );
 
@@ -105,6 +122,8 @@ class DebtPaymentState extends Equatable {
         note,
         categoryId,
         categoryName,
+        categoryIcon,
+        categoryColor,
         failure,
       ];
 }

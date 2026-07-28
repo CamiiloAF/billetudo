@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -10,6 +8,7 @@ import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_detail.dart';
 import '../../domain/entities/debt_draft.dart';
+import '../../domain/entities/debt_ledger_entry.dart';
 import '../../domain/usecases/create_debt.dart';
 import '../../domain/usecases/create_debt_with_opening_movement.dart';
 import '../../domain/usecases/delete_debt.dart';
@@ -113,13 +112,13 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       startDate: debt.effectiveStartDate,
       startDateBaseline: debt.effectiveStartDate,
       dueDate: debt.dueDate,
-      rateText: debt.interestRateBps == null
-          ? ''
-          : _rateText(debt.interestRateBps!),
+      rateText:
+          debt.interestRateBps == null ? '' : _rateText(debt.interestRateBps!),
       accrualMode: debt.accrualMode,
       accounts: accounts,
       initialTransactionId: initialTxId,
       openingBaselineMinor: openingMinor,
+      hasNonOpeningMovements: _hasNonOpeningMovements(detail, initialTxId),
     );
   }
 
@@ -130,6 +129,24 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       }
     }
     return 0;
+  }
+
+  /// Whether [detail]'s ledger has any row beyond the opening one (fix 9,
+  /// scenario 2) — the synthesized `opening` row for a classic debt, or the
+  /// cash row matching [initialTransactionId] for a registro-inicial debt.
+  static bool _hasNonOpeningMovements(
+    DebtDetail detail,
+    String? initialTransactionId,
+  ) {
+    for (final entry in detail.ledger) {
+      final isOpeningRow = entry.kind == DebtLedgerKind.opening ||
+          (initialTransactionId != null &&
+              entry.transactionId == initialTransactionId);
+      if (!isOpeningRow) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Basis points back to the editable "18,5" the field types in (2450 → 24,5).
@@ -173,9 +190,8 @@ class DebtFormCubit extends Cubit<DebtFormState> {
   void dueDateChanged(DateTime? dueDate) => emit(
         state.copyWith(
           dueDate: () => dueDate,
-          failedField: state.failedField == DebtDraft.fieldDueDate
-              ? () => null
-              : null,
+          failedField:
+              state.failedField == DebtDraft.fieldDueDate ? () => null : null,
         ),
       );
 
@@ -242,13 +258,35 @@ class DebtFormCubit extends Cubit<DebtFormState> {
   }
 
   Future<void> _submitEdit(DebtDraft draft) async {
-    emit(state.copyWith(status: DebtFormStatus.saving, failedField: () => null));
-    final result = await _updateDebt(draft);
+    emit(
+        state.copyWith(status: DebtFormStatus.saving, failedField: () => null));
+    // Fix 9 (scenario 2): a direction change reinterprets the sign of every
+    // past cash event at balance-calculation time (`DebtEventRules`
+    // /`DebtBalanceCalculator` derive it from the debt's CURRENT direction,
+    // never a per-event stored sign). Re-syncing the linked opening movement's
+    // `type` below keeps THAT one event's meaning intact, but any abono/
+    // disbursement beyond it has no such re-sync and would be silently
+    // reinterpreted — so a direction change is blocked at the domain level
+    // once the debt has movements beyond its opening (`UpdateDebt`), instead
+    // of letting the ledger's history drift out from under the user (which is
+    // what used to spuriously cross the balance to "settled" and pop the
+    // felicitación sheet).
+    final directionChanged = state.direction != state.directionBaseline;
+    final result = await _updateDebt(
+      draft,
+      directionChanged: directionChanged,
+      hasNonOpeningMovements: state.hasNonOpeningMovements,
+    );
     if (isClosed) {
       return;
     }
-    result.fold(
-      (failure) => emit(
+    // Fix 9 (scenario 1): this whole branch must be awaited end to end so
+    // `submit()` never returns before the cycle reaches `saved`/`failure` —
+    // the previous code fired `_resyncInitialMovementSilently()` with
+    // `unawaited`, so the very first tap could return with the cubit still
+    // sitting in `saving` and nothing visibly happening.
+    await result.fold(
+      (failure) async => emit(
         state.copyWith(
           status: DebtFormStatus.ready,
           failedField: () =>
@@ -256,14 +294,13 @@ class DebtFormCubit extends Cubit<DebtFormState> {
           failure: () => failure,
         ),
       ),
-      (_) {
+      (_) async {
         // The debt row is saved. The linked opening movement (item 2b) may need
         // to follow the edit in one of three ways:
         final amountChanged = state.hasInitialMovement &&
             state.amountMinor > 0 &&
             state.amountMinor != state.openingBaselineMinor;
-        final directionChanged = state.hasInitialMovement &&
-            state.direction != state.directionBaseline;
+        final resyncDirection = state.hasInitialMovement && directionChanged;
         final startDateChanged = _startDateChanged();
 
         if (amountChanged) {
@@ -281,14 +318,14 @@ class DebtFormCubit extends Cubit<DebtFormState> {
               ),
             ),
           );
-        } else if (directionChanged || startDateChanged) {
+        } else if (resyncDirection || startDateChanged) {
           // The opening figure is untouched, but the direction and/or the start
           // date changed. Neither is a money decision — the movement's `type`
           // (income↔expense) is derived from the direction, and its date IS the
           // debt's opening event date — so re-sync both silently, no sheet
           // (edge case 2b). Otherwise the movement's sign or its date would
           // drift from the debt.
-          unawaited(_resyncInitialMovementSilently());
+          await _resyncInitialMovementSilently();
         } else {
           emit(state.copyWith(status: DebtFormStatus.saved));
         }
@@ -297,7 +334,8 @@ class DebtFormCubit extends Cubit<DebtFormState> {
   }
 
   Future<void> _createSoloDeuda() async {
-    emit(state.copyWith(status: DebtFormStatus.saving, failedField: () => null));
+    emit(
+        state.copyWith(status: DebtFormStatus.saving, failedField: () => null));
     final result = await _createDebt(_buildDraft(state.amountMinor));
     if (isClosed) {
       return;

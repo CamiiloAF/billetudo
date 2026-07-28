@@ -2324,6 +2324,12 @@ abstract class AppLocalizations {
   /// **'Registrar abono'**
   String get debtDetailRegisterPayment;
 
+  /// No description provided for @debtDetailCompleteDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar deuda'**
+  String get debtDetailCompleteDebt;
+
   /// No description provided for @debtInstallmentTitle.
   ///
   /// In es, this message translates to:
@@ -2669,13 +2675,13 @@ abstract class AppLocalizations {
   /// No description provided for @debtPaymentCategoryLabel.
   ///
   /// In es, this message translates to:
-  /// **'Categoría (opcional)'**
+  /// **'Categoría'**
   String get debtPaymentCategoryLabel;
 
   /// No description provided for @debtPaymentCategoryNone.
   ///
   /// In es, this message translates to:
-  /// **'Sin categoría'**
+  /// **'Elige una categoría'**
   String get debtPaymentCategoryNone;
 
   /// No description provided for @debtPaymentSelectAccount.
@@ -2840,11 +2846,29 @@ abstract class AppLocalizations {
   /// **'Cerrar deuda'**
   String get debtActionClose;
 
+  /// No description provided for @debtActionComplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar deuda'**
+  String get debtActionComplete;
+
+  /// No description provided for @debtFormErrorDirectionLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes cambiar la dirección de esta deuda porque ya tiene movimientos registrados además de la apertura.'**
+  String get debtFormErrorDirectionLocked;
+
   /// No description provided for @debtActionError.
   ///
   /// In es, this message translates to:
   /// **'No pudimos completar la acción. Intenta de nuevo.'**
   String get debtActionError;
+
+  /// No description provided for @debtActionCloseSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda completada'**
+  String get debtActionCloseSuccess;
 
   /// No description provided for @debtCloseSheetTitle.
   ///

@@ -1279,6 +1279,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtDetailRegisterPayment => 'Registrar abono';
 
   @override
+  String get debtDetailCompleteDebt => 'Completar deuda';
+
+  @override
   String get debtInstallmentTitle => 'Próxima cuota';
 
   @override
@@ -1467,10 +1470,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtPaymentNoteHint => 'Agregar una nota';
 
   @override
-  String get debtPaymentCategoryLabel => 'Categoría (opcional)';
+  String get debtPaymentCategoryLabel => 'Categoría';
 
   @override
-  String get debtPaymentCategoryNone => 'Sin categoría';
+  String get debtPaymentCategoryNone => 'Elige una categoría';
 
   @override
   String get debtPaymentSelectAccount => 'Elige una cuenta';
@@ -1568,8 +1571,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtActionClose => 'Cerrar deuda';
 
   @override
+  String get debtActionComplete => 'Completar deuda';
+
+  @override
+  String get debtFormErrorDirectionLocked =>
+      'No puedes cambiar la dirección de esta deuda porque ya tiene movimientos registrados además de la apertura.';
+
+  @override
   String get debtActionError =>
       'No pudimos completar la acción. Intenta de nuevo.';
+
+  @override
+  String get debtActionCloseSuccess => 'Deuda completada';
 
   @override
   String get debtCloseSheetTitle => '¿Cerrar esta deuda?';

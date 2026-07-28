@@ -152,5 +152,61 @@ void main() {
 
       expect(find.textContaining('Enlazada a deuda'), findsNothing);
     });
+
+    testWidgets(
+        'fix: tocar el badge navega al detalle de la deuda enlazada '
+        '(entry.transaction.debtId)', (tester) async {
+      String? openedDebtId;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: TransactionDetailBody(
+              entry: TransactionWithDetails(
+                transaction: buildTransaction(debtId: 'debt-1'),
+                accountName: 'Efectivo',
+                categoryName: 'Comida',
+                debtName: 'Crédito carro',
+              ),
+              onOpenDebt: (id) => openedDebtId = id,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Enlazada a deuda: Crédito carro'));
+      await tester.pumpAndSettle();
+
+      expect(openedDebtId, 'debt-1');
+    });
+
+    testWidgets('sin onOpenDebt el badge queda inerte al tocarlo',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: TransactionDetailBody(
+              entry: TransactionWithDetails(
+                transaction: buildTransaction(debtId: 'debt-1'),
+                accountName: 'Efectivo',
+                categoryName: 'Comida',
+                debtName: 'Crédito carro',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Should not throw for lack of a handler.
+      await tester.tap(find.text('Enlazada a deuda: Crédito carro'));
+      await tester.pumpAndSettle();
+    });
   });
 }

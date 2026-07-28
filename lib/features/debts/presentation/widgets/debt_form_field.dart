@@ -33,6 +33,7 @@ class DebtFormField extends StatelessWidget {
     super.key,
   })  : onTap = null,
         value = null,
+        iconColor = null,
         onClear = null;
 
   const DebtFormField.selector({
@@ -40,6 +41,7 @@ class DebtFormField extends StatelessWidget {
     required this.value,
     required this.onTap,
     this.icon,
+    this.iconColor,
     this.hint,
     this.errorText,
     this.onClear,
@@ -57,6 +59,12 @@ class DebtFormField extends StatelessWidget {
 
   final String label;
   final IconData? icon;
+
+  /// Overrides the leading icon's color for a selector field (e.g. the
+  /// selected category's own decorative color); `null` keeps the default
+  /// `$text-secondary` neutral tone.
+  final Color? iconColor;
+
   final String? hint;
   final String? initialValue;
   final String? errorText;
@@ -152,6 +160,7 @@ class DebtFormField extends StatelessWidget {
         if (_isSelector)
           DebtFormSelectorBox(
             icon: icon,
+            iconColor: iconColor,
             value: value,
             hint: hint,
             hasError: errorText != null,
@@ -183,6 +192,7 @@ class DebtFormSelectorBox extends StatelessWidget {
     required this.hasError,
     required this.onTap,
     this.icon,
+    this.iconColor,
     this.onClear,
     super.key,
   });
@@ -192,6 +202,10 @@ class DebtFormSelectorBox extends StatelessWidget {
   final bool hasError;
   final VoidCallback onTap;
   final IconData? icon;
+
+  /// Overrides the leading icon's color; `null` keeps the default
+  /// `$text-secondary` neutral tone.
+  final Color? iconColor;
 
   /// When set, a trailing "×" clears the value (item 1e) instead of opening the
   /// picker; shown only when there is a value.
@@ -218,7 +232,7 @@ class DebtFormSelectorBox extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: colors.textSecondary, size: 18),
+              Icon(icon, color: iconColor ?? colors.textSecondary, size: 18),
               const SizedBox(width: 8),
             ],
             Expanded(

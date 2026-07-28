@@ -244,7 +244,7 @@ void main() {
   group('closeDebt', () {
     blocTest<DebtDetailCubit, DebtDetailState>(
       'a successful close leaves no actionFailure (the stream reflects '
-      'closedAt on its own)',
+      'closedAt on its own) and fires closeSuccess once',
       setUp: () {
         when(() => watchDebtDetail.call(any())).thenAnswer(
           (_) => Stream.value(Right(detailWith(buildDebt()))),
@@ -257,13 +257,58 @@ void main() {
         await cubit.start('d1');
         await cubit.closeDebt();
       },
-      skip: 1,
+      skip: 2,
       expect: () => [
         isA<DebtDetailState>()
             .having((s) => s.status, 'status', DebtDetailStatus.ready)
-            .having((s) => s.actionFailure, 'actionFailure', isNull),
+            .having((s) => s.actionFailure, 'actionFailure', isNull)
+            .having((s) => s.closeSuccess, 'closeSuccess', isNotNull),
       ],
       verify: (_) => verify(() => closeDebt.call('d1')).called(1),
+    );
+
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'dismissCloseSuccess clears a fired closeSuccess',
+      setUp: () {
+        when(() => watchDebtDetail.call(any())).thenAnswer(
+          (_) => Stream.value(Right(detailWith(buildDebt()))),
+        );
+        when(() => closeDebt.call('d1'))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('d1');
+        await cubit.closeDebt();
+        cubit.dismissCloseSuccess();
+      },
+      skip: 3,
+      expect: () => [
+        isA<DebtDetailState>()
+            .having((s) => s.closeSuccess, 'closeSuccess', isNull),
+      ],
+    );
+
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'a failed close does not fire closeSuccess',
+      setUp: () {
+        when(() => watchDebtDetail.call(any())).thenAnswer(
+          (_) => Stream.value(Right(detailWith(buildDebt()))),
+        );
+        when(() => closeDebt.call('d1')).thenAnswer(
+          (_) async => const Left(ValidationFailure('already closed')),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('d1');
+        await cubit.closeDebt();
+      },
+      skip: 2,
+      expect: () => [
+        isA<DebtDetailState>()
+            .having((s) => s.closeSuccess, 'closeSuccess', isNull),
+      ],
     );
 
     blocTest<DebtDetailCubit, DebtDetailState>(

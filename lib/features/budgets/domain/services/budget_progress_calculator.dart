@@ -219,6 +219,28 @@ class BudgetProgressCalculator {
           pending.scheduledPayment.id,
     };
 
+    // Fix 6: the *exact same* occurrence (same template id, same calendar
+    // date) must never be counted from both sources. The "never overlap by
+    // construction" invariant above assumes catch-up always advances a
+    // template's cursor past whatever date it just turned `pending` — true
+    // for recurring templates, but NOT for a `once` template, whose
+    // `nextDate` never advances (`_catchUpTemplate`'s documented no-op). So a
+    // `once` template that is still awaiting confirmation keeps re-projecting
+    // its own already-pending date forever, duplicating the row this
+    // `pendingOccurrences` loop below also emits for it. Excluding by exact
+    // (id, day) pair — rather than blanket-excluding the whole template, as
+    // [overduePendingTemplateIds] does for the "carried over from a past
+    // window" case above — is what lets a template's genuinely distinct next
+    // cycle still show up alongside a same-window pending occurrence.
+    final pendingOccurrenceKeys = <String>{
+      for (final pending in pendingOccurrences)
+        if (pending.occurrence.isPending)
+          _occurrenceKey(
+            pending.scheduledPayment.id,
+            pending.occurrence.effectiveDate,
+          ),
+    };
+
     final items = <BudgetScheduledItem>[];
 
     for (final occurrence in projected) {
@@ -227,6 +249,11 @@ class BudgetProgressCalculator {
         continue;
       }
       if (overduePendingTemplateIds.contains(occurrence.scheduledPaymentId)) {
+        continue;
+      }
+      if (pendingOccurrenceKeys.contains(
+        _occurrenceKey(occurrence.scheduledPaymentId, occurrence.date),
+      )) {
         continue;
       }
       if (!matchesProjectedOccurrence(
@@ -317,6 +344,13 @@ class BudgetProgressCalculator {
 
   bool _inWindow(BudgetPeriodWindow window, DateTime date) =>
       !date.isBefore(window.start) && date.isBefore(window.endExclusive);
+
+  /// Identifies one occurrence by template + calendar day (fix 6), ignoring
+  /// any time-of-day component so a projected date and its already-`pending`
+  /// counterpart compare equal even if one carries a time and the other
+  /// doesn't.
+  String _occurrenceKey(String scheduledPaymentId, DateTime date) =>
+      '$scheduledPaymentId@${date.year}-${date.month}-${date.day}';
 
   /// Expands each scoped category to itself plus its subcategories (HU-04). The
   /// hierarchy is two levels (root -> sub), but a BFS keeps it correct if that

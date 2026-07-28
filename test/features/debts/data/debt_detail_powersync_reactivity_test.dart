@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/features/debts/data/datasources/debts_local_datasource.dart';
@@ -39,6 +40,7 @@ void main() {
     repository = DebtRepositoryImpl(
       DebtsLocalDatasource(database),
       const DebtBalanceCalculator(),
+      const NoopCrashReporter(),
     );
   });
 

@@ -44,6 +44,8 @@ void main() {
         amountMinor: 150000,
         categoryId: addToAccount ? 'c1' : null,
         categoryName: addToAccount ? 'Cuota crédito' : null,
+        categoryIcon: addToAccount ? 'credit-card' : null,
+        categoryColor: addToAccount ? 'indigo' : null,
         date: DateTime(2026, 7, 5),
       );
 

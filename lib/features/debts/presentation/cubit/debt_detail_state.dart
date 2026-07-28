@@ -36,6 +36,19 @@ class DebtSettledCelebration extends Equatable {
   List<Object?> get props => [debt, totalPaidMinor, settledAt];
 }
 
+/// Fires once the moment `DebtDetailCubit.closeDebt()` succeeds, regardless of
+/// which of the three call sites triggered it (the fixed CTA, the overflow
+/// menu's "Cerrar deuda"/"Completar deuda", or the felicitación sheet's
+/// "Completar" button) — a single snackbar instead of duplicating it at each
+/// call site. Carries no data; only its presence/absence matters. Cleared
+/// once the page has consumed it via `DebtDetailCubit.dismissCloseSuccess`.
+class DebtCloseSuccess extends Equatable {
+  const DebtCloseSuccess();
+
+  @override
+  List<Object?> get props => [];
+}
+
 /// The linked installment shown in the "Próxima cuota" card. It comes from a
 /// `ScheduledPayment` carrying this debt's id (HU-03), a cross-link that
 /// `WatchDebtDetail` does not yet expose — so this stays `null` until the
@@ -67,6 +80,7 @@ class DebtDetailState extends Equatable {
     this.failure,
     this.actionFailure,
     this.celebration,
+    this.closeSuccess,
   });
 
   final DebtDetailStatus status;
@@ -103,6 +117,9 @@ class DebtDetailState extends Equatable {
   /// the cubit itself never re-sets it for the same crossing.
   final DebtSettledCelebration? celebration;
 
+  /// Set once `closeDebt()` succeeds, from any of its three call sites.
+  final DebtCloseSuccess? closeSuccess;
+
   bool get isLoading => status == DebtDetailStatus.loading;
 
   DebtDetailState copyWith({
@@ -114,6 +131,7 @@ class DebtDetailState extends Equatable {
     Failure? failure,
     Failure? Function()? actionFailure,
     DebtSettledCelebration? Function()? celebration,
+    DebtCloseSuccess? Function()? closeSuccess,
   }) =>
       DebtDetailState(
         status: status ?? this.status,
@@ -125,6 +143,8 @@ class DebtDetailState extends Equatable {
         actionFailure:
             actionFailure == null ? this.actionFailure : actionFailure(),
         celebration: celebration == null ? this.celebration : celebration(),
+        closeSuccess:
+            closeSuccess == null ? this.closeSuccess : closeSuccess(),
       );
 
   @override
@@ -137,5 +157,6 @@ class DebtDetailState extends Equatable {
         failure,
         actionFailure,
         celebration,
+        closeSuccess,
       ];
 }

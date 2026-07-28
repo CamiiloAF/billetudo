@@ -10,7 +10,7 @@ import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.da
 import 'package:billetudo/features/debts/presentation/pages/debt_detail_page.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_amount_hero_field.dart';
 import 'package:billetudo/features/debts/presentation/widgets/sheets/debt_payment_sheet.dart';
-import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/drift.dart' show InsertMode, Value, driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,6 +58,20 @@ void main() {
             currency: 'COP',
           ),
         );
+    // Fix 7: the abono sheet preselects `DebtCategorySeed.categoryIdFor` —
+    // for an `iOwe` debt that's `seed-debts` — and requires a category to
+    // submit, so this real-DI flow needs the row to actually exist. Both
+    // tests in this file share the same underlying DB (opened once in
+    // `setUpAll`), so `insertOrIgnore` keeps a second seeding a no-op instead
+    // of a unique-constraint failure.
+    await db.into(db.categories).insert(
+          CategoriesCompanion.insert(
+            id: const Value('seed-debts'),
+            name: 'Pago de préstamos',
+            kind: CategoryKind.expense,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
     final debt = await db.into(db.debts).insertReturning(
           DebtsCompanion.insert(
             name: 'Crédito carro',
@@ -89,7 +103,8 @@ void main() {
     }
   }
 
-  testWidgets('HU-02 abono con caja: el saldo baja \$600 -> \$400 en el detalle',
+  testWidgets(
+      'HU-02 abono con caja: el saldo baja \$600 -> \$400 en el detalle',
       (tester) async {
     late final String debtId;
     await tester.runAsync(() async => debtId = await seedDebtAndAccount());
