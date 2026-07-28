@@ -6156,6 +6156,24 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.} other{Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos {count} cambios no volverían.}}'**
   String syncHeroAttentionBody(num count);
 
+  /// No description provided for @syncHeroStaleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin contacto con la nube'**
+  String get syncHeroStaleTitle;
+
+  /// No description provided for @syncHeroStaleKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización hace {since}'**
+  String syncHeroStaleKicker(String since);
+
+  /// No description provided for @syncHeroStaleBody.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.'**
+  String get syncHeroStaleBody;
+
   /// No description provided for @syncHeroSyncedTitle.
   ///
   /// In es, this message translates to:

@@ -105,8 +105,11 @@ class SyncStatusPage extends StatelessWidget {
                   if (state.isLoading) {
                     return const SyncStatusSkeleton();
                   }
-                  final screenState =
-                      SyncScreenState.resolve(state, isSignedIn: isSignedIn);
+                  final screenState = SyncScreenState.resolve(
+                    state,
+                    isSignedIn: isSignedIn,
+                    now: DateTime.now(),
+                  );
                   final cubit = context.read<SyncStatusCubit>();
 
                   return ListView(

@@ -3630,6 +3630,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get syncHeroStaleTitle => 'No contact with the cloud';
+
+  @override
+  String syncHeroStaleKicker(String since) {
+    return 'Last synced $since ago';
+  }
+
+  @override
+  String get syncHeroStaleBody =>
+      'Nothing is waiting: what you already recorded is safe in the cloud. But until there is contact again, anything you record from now on stays only on this phone.';
+
+  @override
   String get syncHeroSyncedTitle => 'Everything is synced';
 
   @override

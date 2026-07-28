@@ -99,6 +99,30 @@ class SyncStatusHero extends StatelessWidget {
             enabled: _ctaEnabled,
           ),
         ),
+      // Amber like `attention`, but its own copy: nothing is held back here,
+      // so the attention wording ("N changes live only on this phone") would
+      // be false. What is at risk is what the user records *from now on*.
+      // The CTA is "Sincronizar ahora", not "Reintentar": there were no
+      // failed attempts to retry.
+      SyncScreenState.stale => SyncHero(
+          attention: true,
+          icon: LucideIcons.cloudOff,
+          iconColor: colors.amber,
+          iconBackground: colors.surface,
+          title: l10n.syncHeroStaleTitle,
+          kicker: relative == null
+              ? l10n.syncHeroAttentionKickerNever
+              : l10n.syncHeroStaleKicker(relative),
+          kickerColor: colors.amberText,
+          body: l10n.syncHeroStaleBody,
+          timeRow: SyncTimeRow(
+            label: relative == null
+                ? l10n.syncNeverSyncedLabel
+                : l10n.syncLastSyncLabel(relative),
+            color: colors.amberText,
+          ),
+          cta: syncCta,
+        ),
       SyncScreenState.healthy => SyncHero(
           icon: LucideIcons.cloudCheck,
           iconColor: colors.mint,

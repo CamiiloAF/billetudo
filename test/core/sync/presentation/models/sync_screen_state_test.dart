@@ -34,13 +34,15 @@ void main() {
     SyncState syncState = SyncState.synced,
     bool neverSynced = false,
     int pending = 0,
+    DateTime? lastSyncedAt,
   }) =>
       SyncStatusState(
         status: SyncStatusStatus.ready,
         snapshot: SyncStatusSnapshot(
           state: syncState,
           quarantinedCount: pending,
-          lastSyncedAt: neverSynced ? null : DateTime(2026, 7, 28, 11),
+          lastSyncedAt:
+              neverSynced ? null : lastSyncedAt ?? DateTime(2026, 7, 28, 11),
           hasSyncedEver: !neverSynced,
         ),
         pending: [for (var i = 0; i < pending; i++) change('q-$i')],
@@ -52,7 +54,7 @@ void main() {
       final state = stateWith(syncState: SyncState.offline, pending: 2);
 
       expect(
-        SyncScreenState.resolve(state, isSignedIn: true),
+        SyncScreenState.resolve(state, isSignedIn: true, now: DateTime.now()),
         SyncScreenState.attention,
       );
     });
@@ -65,7 +67,7 @@ void main() {
       );
 
       expect(
-        SyncScreenState.resolve(state, isSignedIn: true),
+        SyncScreenState.resolve(state, isSignedIn: true, now: DateTime.now()),
         SyncScreenState.attention,
       );
     });
@@ -74,7 +76,7 @@ void main() {
       final state = stateWith(syncState: SyncState.stalled, pending: 5);
 
       expect(
-        SyncScreenState.resolve(state, isSignedIn: false),
+        SyncScreenState.resolve(state, isSignedIn: false, now: DateTime.now()),
         SyncScreenState.signedOut,
       );
     });
@@ -84,7 +86,7 @@ void main() {
       final state = stateWith(syncState: SyncState.offline, neverSynced: true);
 
       expect(
-        SyncScreenState.resolve(state, isSignedIn: true),
+        SyncScreenState.resolve(state, isSignedIn: true, now: DateTime.now()),
         SyncScreenState.neverSynced,
       );
     });
@@ -93,14 +95,14 @@ void main() {
   group('los cinco estados', () {
     test('con pendientes: atención', () {
       expect(
-        SyncScreenState.resolve(stateWith(pending: 3), isSignedIn: true),
+        SyncScreenState.resolve(stateWith(pending: 3), isSignedIn: true, now: DateTime.now()),
         SyncScreenState.attention,
       );
     });
 
     test('sin pendientes y sincronizado: todo bien', () {
       expect(
-        SyncScreenState.resolve(stateWith(), isSignedIn: true),
+        SyncScreenState.resolve(stateWith(), isSignedIn: true, now: DateTime.now()),
         SyncScreenState.healthy,
       );
     });
@@ -108,7 +110,7 @@ void main() {
     test('sin sincronizar nunca: informativo, no atención', () {
       final resolved = SyncScreenState.resolve(
         stateWith(neverSynced: true),
-        isSignedIn: true,
+        isSignedIn: true, now: DateTime.now(),
       );
 
       expect(resolved, SyncScreenState.neverSynced);
@@ -119,7 +121,7 @@ void main() {
       expect(
         SyncScreenState.resolve(
           stateWith(syncState: SyncState.offline),
-          isSignedIn: true,
+          isSignedIn: true, now: DateTime.now(),
         ),
         SyncScreenState.offline,
       );
@@ -127,7 +129,7 @@ void main() {
 
     test('sin sesión: sin sesión', () {
       expect(
-        SyncScreenState.resolve(stateWith(), isSignedIn: false),
+        SyncScreenState.resolve(stateWith(), isSignedIn: false, now: DateTime.now()),
         SyncScreenState.signedOut,
       );
     });
@@ -138,16 +140,47 @@ void main() {
       expect(
         SyncScreenState.resolve(
           stateWith(syncState: SyncState.syncing),
-          isSignedIn: true,
+          isSignedIn: true, now: DateTime.now(),
         ),
         SyncScreenState.healthy,
       );
     });
   });
 
-  test('isAttention solo es cierto en el estado de atención', () {
+  test('isAttention cubre las dos caras ámbar: atención y stale', () {
+    // `stale` comparte color y peso con `attention`, pero no su copy: ahí no
+    // hay nada retenido, así que decir "N cambios viven solo en este
+    // teléfono" sería falso. Ambas son ámbar; solo esas dos.
+    const amber = {SyncScreenState.attention, SyncScreenState.stale};
     for (final state in SyncScreenState.values) {
-      expect(state.isAttention, state == SyncScreenState.attention);
+      expect(
+        state.isAttention,
+        amber.contains(state),
+        reason: '$state',
+      );
     }
+  });
+
+  test('sin pendientes y con más de 24 h sin sincronizar, la pantalla no '
+      'puede decir que todo está bien', () {
+    // Regresión de la contradicción entre superficies: el indicador del Home
+    // se pone ámbar con este mismo dato, y una pantalla que dijera "Todo está
+    // sincronizado" mientras el ícono alarma erosiona la confianza en el
+    // ícono — que es lo único que hace que el usuario lo mire la próxima vez.
+    final now = DateTime(2026, 7, 28, 12);
+    final state = stateWith(lastSyncedAt: now.subtract(const Duration(hours: 25)));
+
+    expect(
+      SyncScreenState.resolve(state, isSignedIn: true, now: now),
+      SyncScreenState.stale,
+    );
+    expect(
+      SyncScreenState.resolve(
+        stateWith(lastSyncedAt: now.subtract(const Duration(hours: 23))),
+        isSignedIn: true,
+        now: now,
+      ),
+      isNot(SyncScreenState.stale),
+    );
   });
 }

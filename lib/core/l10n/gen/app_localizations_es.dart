@@ -3635,6 +3635,18 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get syncHeroStaleTitle => 'Sin contacto con la nube';
+
+  @override
+  String syncHeroStaleKicker(String since) {
+    return 'Última sincronización hace $since';
+  }
+
+  @override
+  String get syncHeroStaleBody =>
+      'No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.';
+
+  @override
   String get syncHeroSyncedTitle => 'Todo está sincronizado';
 
   @override
