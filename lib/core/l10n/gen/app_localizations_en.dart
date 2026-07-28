@@ -3583,4 +3583,442 @@ class AppLocalizationsEn extends AppLocalizations {
       String kind, String goalName) {
     return 'This $kind is part of what completed $goalName: deleting it puts the goal back in progress until you complete it again. It was a manual entry, so none of your accounts change balance.';
   }
+
+  @override
+  String get syncStatusTitle => 'Sync status';
+
+  @override
+  String syncHeroAttentionTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString changes are only on this phone',
+      one: '1 change is only on this phone',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHeroAttentionKicker(String since) {
+    return 'Not uploaded to the cloud since $since';
+  }
+
+  @override
+  String get syncHeroAttentionKickerNever => 'Not uploaded to the cloud yet';
+
+  @override
+  String syncHeroAttentionBody(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'We have them complete here. Until they upload, the cloud has no copy of them: if you change phones or reinstall the app, those $countString changes would not come back.',
+      one:
+          'We have it complete here. Until it uploads, the cloud has no copy of it: if you change phones or reinstall the app, that change would not come back.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncHeroSyncedTitle => 'Everything is synced';
+
+  @override
+  String get syncHeroSyncedKicker => 'Nothing waiting to upload';
+
+  @override
+  String get syncHeroSyncedBody =>
+      'Your data is complete on this phone and there is also a copy in the cloud. If you change phones, you get it back by signing in.';
+
+  @override
+  String get syncHeroNeverTitle => 'Not synced yet';
+
+  @override
+  String get syncHeroNeverKicker => 'You just signed in';
+
+  @override
+  String get syncHeroNeverBody =>
+      'Your data is complete on this phone. As soon as there is a connection it uploads on its own; you don\'t have to do anything.';
+
+  @override
+  String get syncHeroOfflineTitle => 'No connection';
+
+  @override
+  String get syncHeroOfflineKicker =>
+      'It resumes on its own when the signal is back';
+
+  @override
+  String get syncHeroOfflineBody =>
+      'Your data is saved on this phone and nothing is lost meanwhile. Whatever is left to upload syncs on its own as soon as the connection returns.';
+
+  @override
+  String get syncHeroOfflineCaption =>
+      'It will retry on its own as soon as there is a connection.';
+
+  @override
+  String get syncHeroSignedOutTitle => 'No session started';
+
+  @override
+  String get syncHeroSignedOutKicker => 'Your data lives only on this phone';
+
+  @override
+  String get syncHeroSignedOutBody =>
+      'Everything is complete here and the app works the same without an account. The only thing missing is the copy in the cloud: without it, a phone change or a reinstall would have nowhere to recover your data from.';
+
+  @override
+  String get syncSignInCta => 'Sign in';
+
+  @override
+  String get syncRetryNowCta => 'Retry now';
+
+  @override
+  String get syncSyncNowCta => 'Sync now';
+
+  @override
+  String get syncSyncingCta => 'Syncing…';
+
+  @override
+  String syncLastSyncLabel(String relative) {
+    return 'Last sync: $relative';
+  }
+
+  @override
+  String syncLastSuccessfulSyncLabel(String relative) {
+    return 'Last successful sync: $relative';
+  }
+
+  @override
+  String get syncNeverSyncedLabel => 'Not synced yet';
+
+  @override
+  String get syncNoActiveSyncLabel => 'No active sync';
+
+  @override
+  String syncTimeAgo(String duration) {
+    return '$duration ago';
+  }
+
+  @override
+  String get syncDurationMoment => 'a moment';
+
+  @override
+  String syncDurationMinutes(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationHours(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationDays(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSectionPending => 'What is waiting';
+
+  @override
+  String syncSectionPendingLink(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return 'See all $countString';
+  }
+
+  @override
+  String get syncSectionDiagnostics => 'Diagnostics';
+
+  @override
+  String get syncSectionBackupAndDiagnostics => 'Copy and diagnostics';
+
+  @override
+  String get syncSectionMeanwhile => 'Meanwhile';
+
+  @override
+  String get syncSaveCopyTitle => 'Save a copy';
+
+  @override
+  String get syncSaveCopyDescription =>
+      'A file with everything of yours, ready to load back.';
+
+  @override
+  String syncSaveCopyDescriptionAttention(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Those $countString changes live only here. A copy puts them out of harm\'s way.',
+      one: 'That change lives only here. A copy puts it out of harm\'s way.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSaveCopyDescriptionSignedOut =>
+      'Without an account, a copy file is the only way not to depend on this phone.';
+
+  @override
+  String get syncSaveCopyChip => 'Restorable in the app';
+
+  @override
+  String get syncTechnicalLogTitle => 'Technical log';
+
+  @override
+  String get syncTechnicalLogSubtitle => 'To send to support if needed';
+
+  @override
+  String get syncExportExcelTitle => 'Export to Excel';
+
+  @override
+  String get syncExportExcelSubtitle => 'To view them in a spreadsheet';
+
+  @override
+  String get syncPendingListTitle => 'Changes not uploaded';
+
+  @override
+  String syncPendingListSummary(num count, String since) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString changes waiting · the oldest, since $since',
+      one: '1 change waiting · since $since',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncPendingRowTitle(String kind, String label) {
+    return '$kind · $label';
+  }
+
+  @override
+  String syncPendingRowMeta(num attempts, String date) {
+    final intl.NumberFormat attemptsNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String attemptsString = attemptsNumberFormat.format(attempts);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: 'Waiting since $date · $attemptsString attempts',
+      one: 'Waiting since $date · 1 attempt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncEntityTransaction => 'Movement';
+
+  @override
+  String get syncEntityAccount => 'Account';
+
+  @override
+  String get syncEntityBudget => 'Budget';
+
+  @override
+  String get syncEntityGoal => 'Goal';
+
+  @override
+  String get syncEntityGoalContribution => 'Goal contribution';
+
+  @override
+  String get syncEntityDebt => 'Debt';
+
+  @override
+  String get syncEntityDebtEntry => 'Debt payment';
+
+  @override
+  String get syncEntityScheduledPayment => 'Scheduled payment';
+
+  @override
+  String get syncEntityCategory => 'Category';
+
+  @override
+  String get syncEntityTag => 'Tag';
+
+  @override
+  String get syncEntitySettings => 'Settings';
+
+  @override
+  String get syncEntityOther => 'Change';
+
+  @override
+  String syncDetailWaiting(String duration) {
+    return 'Waiting for $duration';
+  }
+
+  @override
+  String syncDetailAttempts(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString upload attempts',
+      one: '1 upload attempt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDetailRisk =>
+      'The cloud does not have a copy of this change yet: if you reinstall the app or change phones, it would not come back.';
+
+  @override
+  String get syncDetailRetry => 'Retry';
+
+  @override
+  String syncLogSheetSubtitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Last $countString lines · useful for support',
+      one: 'Last line · useful for support',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncLogPrivacyNote =>
+      'The log does not include amounts or the names of your movements: only dates, codes and retries.';
+
+  @override
+  String get syncLogEmpty => 'Nothing logged yet.';
+
+  @override
+  String get syncLogCopy => 'Copy';
+
+  @override
+  String get syncLogShare => 'Share';
+
+  @override
+  String get syncLogShareSubject => 'Billetudo sync log';
+
+  @override
+  String get syncLogCopied => 'Log copied';
+
+  @override
+  String syncRetrySuccess(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'All up to date · $countString changes uploaded',
+      one: 'All up to date · 1 change uploaded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncRetryPartial =>
+      'We couldn\'t upload everything. It is still saved on this phone.';
+
+  @override
+  String get syncRetryPartialAction => 'See detail';
+
+  @override
+  String get homeSyncAttention => 'Changes not uploaded';
+
+  @override
+  String homeSyncSheetStalledTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString changes are only on this phone',
+      one: '1 change is only on this phone',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeSyncSheetStalledMessage =>
+      'We couldn\'t save them to the cloud. They are complete here, but the cloud does not have a copy of them yet.';
+
+  @override
+  String get homeSyncSheetTooLongTitle => 'Syncing is taking a while';
+
+  @override
+  String homeSyncSheetTooLongMessage(String duration) {
+    return 'We have been trying to upload your changes for $duration. Nothing is missing on this phone; what has not happened yet is the copy in the cloud.';
+  }
+
+  @override
+  String get homeSyncSheetDetails => 'See details';
+
+  @override
+  String get settingsSyncStatus => 'Sync status';
 }

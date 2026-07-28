@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
-import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
@@ -29,7 +30,7 @@ class MockWatchMonthTransactions extends Mock
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
-class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+class MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
@@ -67,7 +68,7 @@ void main() {
     // Default: the sync stream stays quiet, so the state keeps its initial
     // `syncStatus`; individual tests override to emit sync ticks.
     when(() => watchSyncStatus())
-        .thenAnswer((_) => const Stream<SyncState>.empty());
+        .thenAnswer((_) => const Stream<SyncStatusSnapshot>.empty());
     when(() => restoreTransaction(any()))
         .thenAnswer((_) async => const Right(unit));
     // Default: no qualifying budget; individual tests override.
@@ -295,8 +296,11 @@ void main() {
       'el estado de sync $syncState se refleja en syncStatus (HU-10)',
       setUp: () {
         stubReady();
-        when(() => watchSyncStatus())
-            .thenAnswer((_) => Stream<SyncState>.value(syncState));
+        when(() => watchSyncStatus()).thenAnswer(
+          (_) => Stream<SyncStatusSnapshot>.value(
+            SyncStatusSnapshot(state: syncState, quarantinedCount: 0),
+          ),
+        );
       },
       build: build,
       act: (cubit) => cubit.start(),
@@ -313,8 +317,18 @@ void main() {
     setUp: () {
       stubReady();
       when(() => watchSyncStatus()).thenAnswer(
-        (_) => Stream<SyncState>.fromIterable(
-          const [SyncState.offline, SyncState.syncing, SyncState.synced],
+        (_) => Stream<SyncStatusSnapshot>.fromIterable(
+          const [
+            SyncStatusSnapshot(
+              state: SyncState.offline,
+              quarantinedCount: 0,
+            ),
+            SyncStatusSnapshot(
+              state: SyncState.syncing,
+              quarantinedCount: 0,
+            ),
+            SyncStatusSnapshot(state: SyncState.synced, quarantinedCount: 0),
+          ],
         ),
       );
     },
@@ -335,7 +349,7 @@ void main() {
       (_) =>
           Stream<Result<List<TransactionWithDetails>>>.value(Right(activity)),
     );
-    final syncController = StreamController<SyncState>();
+    final syncController = StreamController<SyncStatusSnapshot>();
     when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
 
     final cubit = build();
@@ -344,7 +358,9 @@ void main() {
     expect(cubit.state.status, HomeStatus.failure);
     expect(cubit.state.failure, failure);
 
-    syncController.add(SyncState.syncing);
+    syncController.add(
+      const SyncStatusSnapshot(state: SyncState.syncing, quarantinedCount: 0),
+    );
     await Future<void>.delayed(Duration.zero);
 
     expect(cubit.state.syncStatus, HomeSyncStatus.syncing);
@@ -412,7 +428,7 @@ void main() {
     final txController =
         StreamController<Result<List<TransactionWithDetails>>>.broadcast();
     final authController = StreamController<AuthSession>.broadcast();
-    final syncController = StreamController<SyncState>.broadcast();
+    final syncController = StreamController<SyncStatusSnapshot>.broadcast();
     final budgetProgressController =
         StreamController<Result<BudgetWithProgress?>>.broadcast();
     when(() => watchAccounts()).thenAnswer((_) => accountsController.stream);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../theme/app_colors.dart';
 
 /// The small "Próximamente" pill shown on not-yet-built rows.
 class ComingSoonBadge extends StatelessWidget {

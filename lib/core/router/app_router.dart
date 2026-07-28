@@ -88,6 +88,9 @@ import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../preferences/balance_carousel_cubit.dart';
+import '../sync/presentation/cubit/sync_status_cubit.dart';
+import '../sync/presentation/pages/pending_sync_changes_page.dart';
+import '../sync/presentation/pages/sync_status_page.dart';
 import '../widgets/coming_soon_page.dart';
 
 /// App routes. Each feature registers its own here. Paths stay in Spanish
@@ -118,6 +121,9 @@ abstract final class AppRoutes {
   static const String newTransaction = '/movimientos/nuevo';
   static const String settings = '/mas/ajustes';
   static const String login = '/mas/ajustes/respaldar';
+  static const String syncStatus = '/mas/ajustes/sincronizacion';
+  static const String pendingSyncChanges =
+      '/mas/ajustes/sincronizacion/cambios';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String accountDeleted = '/mas/cuenta-eliminada';
   static const String debts = '/deudas';
@@ -161,9 +167,7 @@ abstract final class AppRoutes {
   /// [DebtInstallmentContext].
   static String debtInstallment(String debtId, {String? spId}) {
     final base = '$debts/$debtId/cuota';
-    return spId == null
-        ? base
-        : '$base?spId=${Uri.encodeQueryComponent(spId)}';
+    return spId == null ? base : '$base?spId=${Uri.encodeQueryComponent(spId)}';
   }
 
   /// Movimientos in Deudas link mode: `/movimientos/enlazar-deuda/<debtId>`
@@ -376,6 +380,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               ),
               // Bugfix item 6: offline with no session → back up / sign in.
               onOpenLogin: () => context.push(AppRoutes.login),
+              onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
             ),
           ),
         ),
@@ -790,6 +795,13 @@ GoRoute _settingsRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<AppSettingsCubit>(), (c) => c.start()),
           ),
+          // Feeds the "Estado de sincronización" row its own sublabel — the
+          // last successful sync, which HU-08 wants visible before the user
+          // even opens the screen.
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<SyncStatusCubit>(), (c) => c.start()),
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () => context.push(AppRoutes.login),
@@ -799,9 +811,11 @@ GoRoute _settingsRoute() => GoRoute(
           ),
           onOpenComingSoon: (title) =>
               context.push(AppRoutes.comingSoonTitled(title)),
+          onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
         ),
       ),
       routes: [
+        _syncStatusRoute(),
         GoRoute(
           path: 'respaldar',
           parentNavigatorKey: _rootNavigatorKey,
@@ -825,6 +839,59 @@ GoRoute _settingsRoute() => GoRoute(
               ),
             ),
           ],
+        ),
+      ],
+    );
+
+// "Estado de sincronización" (HU-08) and its full pending list. Both are
+// stacked pages with a `Page Header`, so they live on the root navigator.
+//
+// Each route builds its own `SyncStatusCubit`: they are separate entries of the
+// root navigator, so neither can inherit the other's provider, and the cubit
+// only reads local streams.
+//
+// `isSignedIn` is resolved here, in the composition root, and handed down —
+// `core/sync` must not depend on the auth feature to know whether there is a
+// session.
+GoRoute _syncStatusRoute() => GoRoute(
+      path: 'sincronizacion',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: getIt<AuthCubit>()),
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<SyncStatusCubit>(), (c) => c.start()),
+          ),
+        ],
+        child: BlocBuilder<AuthCubit, AuthSession>(
+          builder: (context, session) => SyncStatusPage(
+            isSignedIn: session.isSignedIn,
+            onSignIn: () => context.push(AppRoutes.login),
+            onSeeAllPending: () => context.push(AppRoutes.pendingSyncChanges),
+            // The local copy is Importar y exportar's flow, never a sheet of
+            // its own: two surfaces for the same thing would eventually drift
+            // apart on the very wording (copy vs. backup) this screen cannot
+            // afford to blur.
+            onSaveCopy: () => context.push(
+              AppRoutes.comingSoonTitled(
+                AppLocalizations.of(context).moreImportExport,
+              ),
+            ),
+            onOpenComingSoon: (title) =>
+                context.push(AppRoutes.comingSoonTitled(title)),
+          ),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'cambios',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<SyncStatusCubit>(), (c) => c.start()),
+            child: const PendingSyncChangesPage(),
+          ),
         ),
       ],
     );

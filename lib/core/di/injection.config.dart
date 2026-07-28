@@ -83,6 +83,10 @@ import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart'
     as _i567;
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart'
     as _i773;
+import 'package:billetudo/core/sync/presentation/cubit/sync_log_cubit.dart'
+    as _i897;
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_cubit.dart'
+    as _i696;
 import 'package:billetudo/core/theme/theme_mode_cubit.dart' as _i407;
 import 'package:billetudo/core/theme/theme_preference_datasource.dart' as _i207;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
@@ -736,6 +740,10 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i843.UpdateScheduledPayment>(() =>
         _i843.UpdateScheduledPayment(gh<_i680.ScheduledPaymentRepository>()));
+    gh.factory<_i897.SyncLogCubit>(() => _i897.SyncLogCubit(
+          gh<_i77.WatchSyncLog>(),
+          gh<_i177.ExportSyncLog>(),
+        ));
     gh.lazySingleton<_i136.SyncRetryWatchdog>(
         () => _i136.SyncRetryWatchdog(gh<_i390.SyncRetryLedgerStore>()));
     gh.factory<_i504.SnoozeSheetCubit>(
@@ -903,6 +911,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i172.WatchParentCandidates>(),
               gh<_i722.WatchCategories>(),
             ));
+    gh.factory<_i696.SyncStatusCubit>(() => _i696.SyncStatusCubit(
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i239.WatchQuarantinedOperations>(),
+          gh<_i883.RetryAllQuarantinedOperations>(),
+          gh<_i215.RetryQuarantinedOperation>(),
+        ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.lazySingleton<_i1067.AccountRepository>(
@@ -1209,16 +1223,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i569.CreateGoalQuickAmount>(),
           gh<_i1040.DeleteGoalQuickAmount>(),
         ));
+    gh.factory<_i1059.AdjustBalanceCubit>(
+        () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
           gh<_i837.WatchAccounts>(),
           gh<_i426.WatchMonthTransactions>(),
           gh<_i716.WatchAuthSession>(),
-          gh<_i567.WatchSyncStatus>(),
+          gh<_i773.WatchSyncStatusDetails>(),
           gh<_i177.RestoreTransaction>(),
           gh<_i139.WatchGlobalMonthlyBudgetProgress>(),
         ));
-    gh.factory<_i1059.AdjustBalanceCubit>(
-        () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i492.GoalContributionCubit>(() => _i492.GoalContributionCubit(
           gh<_i1023.ContributeToGoal>(),
           gh<_i1047.WithdrawFromGoal>(),

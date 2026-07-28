@@ -120,6 +120,24 @@ dependencies:
   # NO devolver a dev_dependencies: lib/ la usa en produccion.
   http: ^1.6.0
 
+  # Share sheet nativo. Infraestructura de tres features, dos de ellas Nivel 0
+  # — no es la dependencia de un boton suelto:
+  #  1. Registro tecnico de sincronizacion (HU-08, 05-auth-sync.md): mandar el
+  #     log a soporte cuando algo se traba.
+  #  2. Export PNG de graficas (HU-05, 10-graficas-informes.md).
+  #  3. CSV, .zip y copia completa (HU-01/HU-03, 11-import-export.md).
+  #
+  # Los dos requisitos de export apoyan su promesa de privacidad en el share
+  # NATIVO: "sin pedir permisos de almacenamiento donde el share nativo baste".
+  # Sin esto habria que pedir permiso de escritura en disco — friccion y mala
+  # senal en una app de finanzas. La promesa escrita no se puede cumplir de
+  # otra forma.
+  #
+  # No contradice la regla de no enviar SDKs sin usar (ver purchases_flutter /
+  # google_mobile_ads, comentados hasta que exista su feature): esta se usa
+  # desde el dia uno, en el registro tecnico de sync.
+  share_plus: ^13.3.0
+
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

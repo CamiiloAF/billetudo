@@ -6125,6 +6125,498 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.'**
   String goalDeleteMovementMessageCompletedManual(String kind, String goalName);
+
+  /// No description provided for @syncStatusTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado de sincronización'**
+  String get syncStatusTitle;
+
+  /// No description provided for @syncHeroAttentionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}'**
+  String syncHeroAttentionTitle(num count);
+
+  /// No description provided for @syncHeroAttentionKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin subir a la nube desde {since}'**
+  String syncHeroAttentionKicker(String since);
+
+  /// No description provided for @syncHeroAttentionKickerNever.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía sin subir a la nube'**
+  String get syncHeroAttentionKickerNever;
+
+  /// No description provided for @syncHeroAttentionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.} other{Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos {count} cambios no volverían.}}'**
+  String syncHeroAttentionBody(num count);
+
+  /// No description provided for @syncHeroSyncedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo está sincronizado'**
+  String get syncHeroSyncedTitle;
+
+  /// No description provided for @syncHeroSyncedKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada esperando para subir'**
+  String get syncHeroSyncedKicker;
+
+  /// No description provided for @syncHeroSyncedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están completos en este teléfono y también hay copia en la nube. Si cambias de teléfono, los recuperas al iniciar sesión.'**
+  String get syncHeroSyncedBody;
+
+  /// No description provided for @syncHeroNeverTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no se ha sincronizado'**
+  String get syncHeroNeverTitle;
+
+  /// No description provided for @syncHeroNeverKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Acabas de iniciar sesión'**
+  String get syncHeroNeverKicker;
+
+  /// No description provided for @syncHeroNeverBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están completos en este teléfono. En cuanto haya conexión suben solos a la nube; no tienes que hacer nada.'**
+  String get syncHeroNeverBody;
+
+  /// No description provided for @syncHeroOfflineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get syncHeroOfflineTitle;
+
+  /// No description provided for @syncHeroOfflineKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Se reanuda sola al volver la señal'**
+  String get syncHeroOfflineKicker;
+
+  /// No description provided for @syncHeroOfflineBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están guardados en este teléfono y no se pierde nada mientras tanto. Lo que falte por subir se sincroniza solo en cuanto vuelva la conexión.'**
+  String get syncHeroOfflineBody;
+
+  /// No description provided for @syncHeroOfflineCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Se reintentará solo en cuanto haya conexión.'**
+  String get syncHeroOfflineCaption;
+
+  /// No description provided for @syncHeroSignedOutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay sesión iniciada'**
+  String get syncHeroSignedOutTitle;
+
+  /// No description provided for @syncHeroSignedOutKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos viven solo en este teléfono'**
+  String get syncHeroSignedOutKicker;
+
+  /// No description provided for @syncHeroSignedOutBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo está completo aquí y la app funciona igual sin cuenta. Lo único que falta es la copia en la nube: sin ella, un cambio de teléfono o una reinstalación no tendrían de dónde recuperar tus datos.'**
+  String get syncHeroSignedOutBody;
+
+  /// No description provided for @syncSignInCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar sesión'**
+  String get syncSignInCta;
+
+  /// No description provided for @syncRetryNowCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar ahora'**
+  String get syncRetryNowCta;
+
+  /// No description provided for @syncSyncNowCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar ahora'**
+  String get syncSyncNowCta;
+
+  /// No description provided for @syncSyncingCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizando…'**
+  String get syncSyncingCta;
+
+  /// No description provided for @syncLastSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización: {relative}'**
+  String syncLastSyncLabel(String relative);
+
+  /// No description provided for @syncLastSuccessfulSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización exitosa: {relative}'**
+  String syncLastSuccessfulSyncLabel(String relative);
+
+  /// No description provided for @syncNeverSyncedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no se ha sincronizado'**
+  String get syncNeverSyncedLabel;
+
+  /// No description provided for @syncNoActiveSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sincronización activa'**
+  String get syncNoActiveSyncLabel;
+
+  /// No description provided for @syncTimeAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {duration}'**
+  String syncTimeAgo(String duration);
+
+  /// No description provided for @syncDurationMoment.
+  ///
+  /// In es, this message translates to:
+  /// **'un momento'**
+  String get syncDurationMoment;
+
+  /// No description provided for @syncDurationMinutes.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 minuto} other{{count} minutos}}'**
+  String syncDurationMinutes(num count);
+
+  /// No description provided for @syncDurationHours.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 hora} other{{count} horas}}'**
+  String syncDurationHours(num count);
+
+  /// No description provided for @syncDurationDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String syncDurationDays(num count);
+
+  /// No description provided for @syncSectionPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué está esperando'**
+  String get syncSectionPending;
+
+  /// No description provided for @syncSectionPendingLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver los {count}'**
+  String syncSectionPendingLink(num count);
+
+  /// No description provided for @syncSectionDiagnostics.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico'**
+  String get syncSectionDiagnostics;
+
+  /// No description provided for @syncSectionBackupAndDiagnostics.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia y diagnóstico'**
+  String get syncSectionBackupAndDiagnostics;
+
+  /// No description provided for @syncSectionMeanwhile.
+  ///
+  /// In es, this message translates to:
+  /// **'Mientras tanto'**
+  String get syncSectionMeanwhile;
+
+  /// No description provided for @syncSaveCopyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar una copia'**
+  String get syncSaveCopyTitle;
+
+  /// No description provided for @syncSaveCopyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Un archivo con todo lo tuyo, listo para volver a cargarlo.'**
+  String get syncSaveCopyDescription;
+
+  /// No description provided for @syncSaveCopyDescriptionAttention.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Ese cambio vive solo aquí. Una copia lo pone a salvo.} other{Esos {count} cambios viven solo aquí. Una copia los pone a salvo.}}'**
+  String syncSaveCopyDescriptionAttention(num count);
+
+  /// No description provided for @syncSaveCopyDescriptionSignedOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.'**
+  String get syncSaveCopyDescriptionSignedOut;
+
+  /// No description provided for @syncSaveCopyChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurable en la app'**
+  String get syncSaveCopyChip;
+
+  /// No description provided for @syncTechnicalLogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro técnico'**
+  String get syncTechnicalLogTitle;
+
+  /// No description provided for @syncTechnicalLogSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para enviarlo a soporte si hace falta'**
+  String get syncTechnicalLogSubtitle;
+
+  /// No description provided for @syncExportExcelTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar a Excel'**
+  String get syncExportExcelTitle;
+
+  /// No description provided for @syncExportExcelSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para verlos en una hoja de cálculo'**
+  String get syncExportExcelSubtitle;
+
+  /// No description provided for @syncPendingListTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios sin subir'**
+  String get syncPendingListTitle;
+
+  /// No description provided for @syncPendingListSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio esperando · desde {since}} other{{count} cambios esperando · el más antiguo, desde {since}}}'**
+  String syncPendingListSummary(num count, String since);
+
+  /// No description provided for @syncPendingRowTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} · {label}'**
+  String syncPendingRowTitle(String kind, String label);
+
+  /// No description provided for @syncPendingRowMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{attempts, plural, =1{Pendiente desde el {date} · 1 intento} other{Pendiente desde el {date} · {attempts} intentos}}'**
+  String syncPendingRowMeta(num attempts, String date);
+
+  /// No description provided for @syncEntityTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimiento'**
+  String get syncEntityTransaction;
+
+  /// No description provided for @syncEntityAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get syncEntityAccount;
+
+  /// No description provided for @syncEntityBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get syncEntityBudget;
+
+  /// No description provided for @syncEntityGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta'**
+  String get syncEntityGoal;
+
+  /// No description provided for @syncEntityGoalContribution.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte a meta'**
+  String get syncEntityGoalContribution;
+
+  /// No description provided for @syncEntityDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get syncEntityDebt;
+
+  /// No description provided for @syncEntityDebtEntry.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago de deuda'**
+  String get syncEntityDebtEntry;
+
+  /// No description provided for @syncEntityScheduledPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago programado'**
+  String get syncEntityScheduledPayment;
+
+  /// No description provided for @syncEntityCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get syncEntityCategory;
+
+  /// No description provided for @syncEntityTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiqueta'**
+  String get syncEntityTag;
+
+  /// No description provided for @syncEntitySettings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get syncEntitySettings;
+
+  /// No description provided for @syncEntityOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio'**
+  String get syncEntityOther;
+
+  /// No description provided for @syncDetailWaiting.
+  ///
+  /// In es, this message translates to:
+  /// **'Lleva {duration} esperando'**
+  String syncDetailWaiting(String duration);
+
+  /// No description provided for @syncDetailAttempts.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 intento de subida} other{{count} intentos de subida}}'**
+  String syncDetailAttempts(num count);
+
+  /// No description provided for @syncDetailRisk.
+  ///
+  /// In es, this message translates to:
+  /// **'La nube todavía no tiene copia de este cambio: si reinstalas la app o cambias de teléfono, no volvería.'**
+  String get syncDetailRisk;
+
+  /// No description provided for @syncDetailRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get syncDetailRetry;
+
+  /// No description provided for @syncLogSheetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}'**
+  String syncLogSheetSubtitle(num count);
+
+  /// No description provided for @syncLogPrivacyNote.
+  ///
+  /// In es, this message translates to:
+  /// **'El registro no incluye montos ni los nombres de tus movimientos: solo fechas, códigos y reintentos.'**
+  String get syncLogPrivacyNote;
+
+  /// No description provided for @syncLogEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay nada registrado.'**
+  String get syncLogEmpty;
+
+  /// No description provided for @syncLogCopy.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get syncLogCopy;
+
+  /// No description provided for @syncLogShare.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get syncLogShare;
+
+  /// No description provided for @syncLogShareSubject.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro de sincronización de Billetudo'**
+  String get syncLogShareSubject;
+
+  /// No description provided for @syncLogCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro copiado'**
+  String get syncLogCopied;
+
+  /// No description provided for @syncRetrySuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Todo al día · 1 cambio subido} other{Todo al día · {count} cambios subidos}}'**
+  String syncRetrySuccess(num count);
+
+  /// No description provided for @syncRetryPartial.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo subir todo. Sigue guardado en este teléfono.'**
+  String get syncRetryPartial;
+
+  /// No description provided for @syncRetryPartialAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalle'**
+  String get syncRetryPartialAction;
+
+  /// No description provided for @homeSyncAttention.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios sin subir'**
+  String get homeSyncAttention;
+
+  /// No description provided for @homeSyncSheetStalledTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}'**
+  String homeSyncSheetStalledTitle(num count);
+
+  /// No description provided for @homeSyncSheetStalledMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.'**
+  String get homeSyncSheetStalledMessage;
+
+  /// No description provided for @homeSyncSheetTooLongTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'La sincronización está tardando'**
+  String get homeSyncSheetTooLongTitle;
+
+  /// No description provided for @homeSyncSheetTooLongMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevamos {duration} intentando subir tus cambios. En este teléfono no falta nada; lo que aún no ocurre es la copia en la nube.'**
+  String homeSyncSheetTooLongMessage(String duration);
+
+  /// No description provided for @homeSyncSheetDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalles'**
+  String get homeSyncSheetDetails;
+
+  /// No description provided for @settingsSyncStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado de sincronización'**
+  String get settingsSyncStatus;
 }
 
 class _AppLocalizationsDelegate

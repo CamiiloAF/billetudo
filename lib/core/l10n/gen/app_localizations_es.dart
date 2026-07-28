@@ -3588,4 +3588,442 @@ class AppLocalizationsEs extends AppLocalizations {
       String kind, String goalName) {
     return 'Este $kind hace parte de lo que completó $goalName: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.';
   }
+
+  @override
+  String get syncStatusTitle => 'Estado de sincronización';
+
+  @override
+  String syncHeroAttentionTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios están solo en este teléfono',
+      one: '1 cambio está solo en este teléfono',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHeroAttentionKicker(String since) {
+    return 'Sin subir a la nube desde $since';
+  }
+
+  @override
+  String get syncHeroAttentionKickerNever => 'Todavía sin subir a la nube';
+
+  @override
+  String syncHeroAttentionBody(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos $countString cambios no volverían.',
+      one:
+          'Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncHeroSyncedTitle => 'Todo está sincronizado';
+
+  @override
+  String get syncHeroSyncedKicker => 'Nada esperando para subir';
+
+  @override
+  String get syncHeroSyncedBody =>
+      'Tus datos están completos en este teléfono y también hay copia en la nube. Si cambias de teléfono, los recuperas al iniciar sesión.';
+
+  @override
+  String get syncHeroNeverTitle => 'Aún no se ha sincronizado';
+
+  @override
+  String get syncHeroNeverKicker => 'Acabas de iniciar sesión';
+
+  @override
+  String get syncHeroNeverBody =>
+      'Tus datos están completos en este teléfono. En cuanto haya conexión suben solos a la nube; no tienes que hacer nada.';
+
+  @override
+  String get syncHeroOfflineTitle => 'Sin conexión';
+
+  @override
+  String get syncHeroOfflineKicker => 'Se reanuda sola al volver la señal';
+
+  @override
+  String get syncHeroOfflineBody =>
+      'Tus datos están guardados en este teléfono y no se pierde nada mientras tanto. Lo que falte por subir se sincroniza solo en cuanto vuelva la conexión.';
+
+  @override
+  String get syncHeroOfflineCaption =>
+      'Se reintentará solo en cuanto haya conexión.';
+
+  @override
+  String get syncHeroSignedOutTitle => 'No hay sesión iniciada';
+
+  @override
+  String get syncHeroSignedOutKicker => 'Tus datos viven solo en este teléfono';
+
+  @override
+  String get syncHeroSignedOutBody =>
+      'Todo está completo aquí y la app funciona igual sin cuenta. Lo único que falta es la copia en la nube: sin ella, un cambio de teléfono o una reinstalación no tendrían de dónde recuperar tus datos.';
+
+  @override
+  String get syncSignInCta => 'Iniciar sesión';
+
+  @override
+  String get syncRetryNowCta => 'Reintentar ahora';
+
+  @override
+  String get syncSyncNowCta => 'Sincronizar ahora';
+
+  @override
+  String get syncSyncingCta => 'Sincronizando…';
+
+  @override
+  String syncLastSyncLabel(String relative) {
+    return 'Última sincronización: $relative';
+  }
+
+  @override
+  String syncLastSuccessfulSyncLabel(String relative) {
+    return 'Última sincronización exitosa: $relative';
+  }
+
+  @override
+  String get syncNeverSyncedLabel => 'Aún no se ha sincronizado';
+
+  @override
+  String get syncNoActiveSyncLabel => 'Sin sincronización activa';
+
+  @override
+  String syncTimeAgo(String duration) {
+    return 'hace $duration';
+  }
+
+  @override
+  String get syncDurationMoment => 'un momento';
+
+  @override
+  String syncDurationMinutes(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString minutos',
+      one: '1 minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationHours(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationDays(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSectionPending => 'Qué está esperando';
+
+  @override
+  String syncSectionPendingLink(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return 'Ver los $countString';
+  }
+
+  @override
+  String get syncSectionDiagnostics => 'Diagnóstico';
+
+  @override
+  String get syncSectionBackupAndDiagnostics => 'Copia y diagnóstico';
+
+  @override
+  String get syncSectionMeanwhile => 'Mientras tanto';
+
+  @override
+  String get syncSaveCopyTitle => 'Guardar una copia';
+
+  @override
+  String get syncSaveCopyDescription =>
+      'Un archivo con todo lo tuyo, listo para volver a cargarlo.';
+
+  @override
+  String syncSaveCopyDescriptionAttention(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Esos $countString cambios viven solo aquí. Una copia los pone a salvo.',
+      one: 'Ese cambio vive solo aquí. Una copia lo pone a salvo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSaveCopyDescriptionSignedOut =>
+      'Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.';
+
+  @override
+  String get syncSaveCopyChip => 'Restaurable en la app';
+
+  @override
+  String get syncTechnicalLogTitle => 'Registro técnico';
+
+  @override
+  String get syncTechnicalLogSubtitle =>
+      'Para enviarlo a soporte si hace falta';
+
+  @override
+  String get syncExportExcelTitle => 'Exportar a Excel';
+
+  @override
+  String get syncExportExcelSubtitle => 'Para verlos en una hoja de cálculo';
+
+  @override
+  String get syncPendingListTitle => 'Cambios sin subir';
+
+  @override
+  String syncPendingListSummary(num count, String since) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios esperando · el más antiguo, desde $since',
+      one: '1 cambio esperando · desde $since',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncPendingRowTitle(String kind, String label) {
+    return '$kind · $label';
+  }
+
+  @override
+  String syncPendingRowMeta(num attempts, String date) {
+    final intl.NumberFormat attemptsNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String attemptsString = attemptsNumberFormat.format(attempts);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: 'Pendiente desde el $date · $attemptsString intentos',
+      one: 'Pendiente desde el $date · 1 intento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncEntityTransaction => 'Movimiento';
+
+  @override
+  String get syncEntityAccount => 'Cuenta';
+
+  @override
+  String get syncEntityBudget => 'Presupuesto';
+
+  @override
+  String get syncEntityGoal => 'Meta';
+
+  @override
+  String get syncEntityGoalContribution => 'Aporte a meta';
+
+  @override
+  String get syncEntityDebt => 'Deuda';
+
+  @override
+  String get syncEntityDebtEntry => 'Pago de deuda';
+
+  @override
+  String get syncEntityScheduledPayment => 'Pago programado';
+
+  @override
+  String get syncEntityCategory => 'Categoría';
+
+  @override
+  String get syncEntityTag => 'Etiqueta';
+
+  @override
+  String get syncEntitySettings => 'Ajustes';
+
+  @override
+  String get syncEntityOther => 'Cambio';
+
+  @override
+  String syncDetailWaiting(String duration) {
+    return 'Lleva $duration esperando';
+  }
+
+  @override
+  String syncDetailAttempts(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString intentos de subida',
+      one: '1 intento de subida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDetailRisk =>
+      'La nube todavía no tiene copia de este cambio: si reinstalas la app o cambias de teléfono, no volvería.';
+
+  @override
+  String get syncDetailRetry => 'Reintentar';
+
+  @override
+  String syncLogSheetSubtitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Últimas $countString líneas · útil para soporte',
+      one: 'Última línea · útil para soporte',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncLogPrivacyNote =>
+      'El registro no incluye montos ni los nombres de tus movimientos: solo fechas, códigos y reintentos.';
+
+  @override
+  String get syncLogEmpty => 'Todavía no hay nada registrado.';
+
+  @override
+  String get syncLogCopy => 'Copiar';
+
+  @override
+  String get syncLogShare => 'Compartir';
+
+  @override
+  String get syncLogShareSubject => 'Registro de sincronización de Billetudo';
+
+  @override
+  String get syncLogCopied => 'Registro copiado';
+
+  @override
+  String syncRetrySuccess(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Todo al día · $countString cambios subidos',
+      one: 'Todo al día · 1 cambio subido',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncRetryPartial =>
+      'No se pudo subir todo. Sigue guardado en este teléfono.';
+
+  @override
+  String get syncRetryPartialAction => 'Ver detalle';
+
+  @override
+  String get homeSyncAttention => 'Cambios sin subir';
+
+  @override
+  String homeSyncSheetStalledTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios están solo en este teléfono',
+      one: '1 cambio está solo en este teléfono',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeSyncSheetStalledMessage =>
+      'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.';
+
+  @override
+  String get homeSyncSheetTooLongTitle => 'La sincronización está tardando';
+
+  @override
+  String homeSyncSheetTooLongMessage(String duration) {
+    return 'Llevamos $duration intentando subir tus cambios. En este teléfono no falta nada; lo que aún no ocurre es la copia en la nube.';
+  }
+
+  @override
+  String get homeSyncSheetDetails => 'Ver detalles';
+
+  @override
+  String get settingsSyncStatus => 'Estado de sincronización';
 }

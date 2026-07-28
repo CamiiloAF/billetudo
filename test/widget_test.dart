@@ -4,8 +4,8 @@
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
-import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
-import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
@@ -33,7 +33,7 @@ class _MockWatchMonthTransactions extends Mock
 
 class _MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
-class _MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+class _MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class _MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
@@ -67,7 +67,7 @@ void main() {
       (_) => const Stream<AuthSession>.empty(),
     );
     when(watchSyncStatus.call).thenAnswer(
-      (_) => const Stream<SyncState>.empty(),
+      (_) => const Stream<SyncStatusSnapshot>.empty(),
     );
     when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),

@@ -5,7 +5,7 @@ import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart';
 import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dart';
-import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart';
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
@@ -42,7 +42,7 @@ class MockWatchMonthTransactions extends Mock
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
-class MockWatchSyncStatus extends Mock implements WatchSyncStatus {}
+class MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
@@ -117,7 +117,7 @@ void main() {
       (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
     );
     when(watchSyncStatus.call)
-        .thenAnswer((_) => const Stream<SyncState>.empty());
+        .thenAnswer((_) => const Stream<SyncStatusSnapshot>.empty());
     // La fila "Cerrar sesión" de Más solo existe con sesión iniciada.
     when(watchAuthSession.call).thenAnswer(
       (_) => const Stream<AuthSession>.empty(),

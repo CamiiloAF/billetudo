@@ -1,0 +1,113 @@
+import 'package:billetudo/core/sync/domain/entities/quarantined_operation.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_failure_kind.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_operation.dart';
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_cubit.dart';
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_state.dart';
+import 'package:billetudo/core/sync/presentation/models/pending_sync_change.dart';
+import 'package:billetudo/core/sync/presentation/widgets/sheets/pending_change_detail_sheet.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../../../support/golden_helpers.dart';
+
+class MockSyncStatusCubit extends MockCubit<SyncStatusState>
+    implements SyncStatusCubit {}
+
+/// "Detalle de la operación" (`r1qQYc`/`YzMN5`), abierta desde una fila.
+///
+/// Dos casos de negocio distinguibles: un cambio que trae monto y fecha en su
+/// payload (un movimiento) y uno que no trae ninguno de los dos — el subtítulo
+/// desaparece entero en vez de inventar un relleno.
+void main() {
+  setUpAll(() async {
+    disableGoogleFontsRuntimeFetching();
+    await loadMaterialIconsFont();
+  });
+
+  final now = DateTime.now();
+
+  PendingSyncChange change({required bool withAmount}) =>
+      PendingSyncChange.fromOperation(
+        QuarantinedOperation(
+          id: 'q-1',
+          operation: SyncOperation(
+            tableName: withAmount ? 'transactions' : 'accounts',
+            rowId: 'row-1',
+            type: SyncOperationType.put,
+            payload: withAmount
+                ? {
+                    'note': 'Café con Ana',
+                    'amount_minor': 1800000,
+                    'currency': 'COP',
+                    'date': DateTime.utc(2026, 7, 12).millisecondsSinceEpoch ~/
+                        1000,
+                  }
+                : const {'name': 'Cuenta de ahorros'},
+          ),
+          kind: SyncFailureKind.brokenSchema,
+          errorCode: 'PGRST204',
+          errorMessage: 'column does not exist',
+          quarantinedAt: now.subtract(const Duration(days: 3)),
+          updatedAt: now,
+          attempts: 8,
+        ),
+      );
+
+  Future<void> golden(
+    WidgetTester tester,
+    PendingSyncChange value,
+    String name, {
+    required Brightness brightness,
+  }) async {
+    final cubit = MockSyncStatusCubit();
+    whenListen(
+      cubit,
+      const Stream<SyncStatusState>.empty(),
+      initialState: const SyncStatusState(),
+    );
+
+    setGoldenViewport(tester);
+    await tester.pumpWidget(
+      wrapForGolden(
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () =>
+                PendingChangeDetailSheet.show(context, cubit, value),
+            child: const Text('open'),
+          ),
+        ),
+        brightness: brightness,
+      ),
+    );
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/pending_change_detail_sheet_$name.png'),
+    );
+  }
+
+  for (final brightness in Brightness.values) {
+    final suffix = brightness == Brightness.light ? 'light' : 'dark';
+
+    testWidgets('detalle — con monto y fecha ($suffix)', (tester) async {
+      await golden(
+        tester,
+        change(withAmount: true),
+        'with_amount_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('detalle — sin monto ni fecha ($suffix)', (tester) async {
+      await golden(
+        tester,
+        change(withAmount: false),
+        'no_amount_$suffix',
+        brightness: brightness,
+      );
+    });
+  }
+}

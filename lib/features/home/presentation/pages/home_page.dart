@@ -40,6 +40,7 @@ class HomePage extends StatefulWidget {
     required this.onOpenDebts,
     required this.onOpenReports,
     required this.onOpenLogin,
+    required this.onOpenSyncStatus,
     super.key,
   });
 
@@ -65,6 +66,10 @@ class HomePage extends StatefulWidget {
   /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
   /// when the app is offline with no session, so the user can back up.
   final VoidCallback onOpenLogin;
+
+  /// Opens "Estado de sincronización" from the cloud sheet (HU-08). The sheet
+  /// never navigates itself; the Home owns the destination.
+  final VoidCallback onOpenSyncStatus;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -140,7 +145,13 @@ class _HomePageState extends State<HomePage> {
       widget.onOpenLogin();
       return;
     }
-    unawaited(SyncStatusSheet.show(context, context.read<HomeCubit>()));
+    unawaited(
+      SyncStatusSheet.show(
+        context,
+        context.read<HomeCubit>(),
+        onOpenDetails: widget.onOpenSyncStatus,
+      ),
+    );
   }
 
   Future<void> _openAiSheet(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/sync/domain/entities/sync_status_snapshot.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../auth/domain/entities/auth_user.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
@@ -13,10 +14,21 @@ import '../../domain/entities/month_spending.dart';
 /// full-screen error: the Home is local-first (HU-10).
 enum HomeStatus { loading, ready, failure }
 
-/// The passive sync indicator (HU-10). Informative only, never a tap target.
-/// Mirrors `core/sync`'s `SyncState`, which the cubit maps from the live sync
-/// engine; the default only holds until that stream's first emission.
-enum HomeSyncStatus { synced, syncing, offline }
+/// The Home's sync indicator (HU-10 + HU-08's fourth state). Mirrors
+/// `core/sync`'s `SyncState`, which the cubit maps from the live sync engine;
+/// the default only holds until that stream's first emission.
+enum HomeSyncStatus {
+  synced,
+  syncing,
+  offline,
+
+  /// Changes are held back, or the last successful sync is older than
+  /// `SyncFreshness.staleAfter`. Amber, never the destructive red: the data is
+  /// safe on the phone, it just is not backed up. Sharing one state with
+  /// "syncing for three days" is deliberate — that is the case HU-08 exists to
+  /// stop looking healthy.
+  attention,
+}
 
 class HomeState extends Equatable {
   const HomeState({
@@ -25,6 +37,7 @@ class HomeState extends Equatable {
     this.status = HomeStatus.loading,
     this.snapshot,
     this.syncStatus = HomeSyncStatus.synced,
+    this.syncSnapshot = const SyncStatusSnapshot.unknown(),
     this.failure,
     this.user,
     this.pendingUndoId,
@@ -50,6 +63,12 @@ class HomeState extends Equatable {
   final HomeSnapshot? snapshot;
 
   final HomeSyncStatus syncStatus;
+
+  /// The detail behind [syncStatus]: when the last full sync landed and how
+  /// many writes are held back. The cloud sheet needs both — showing the time
+  /// in every one of its states is the literal lesson of the incident.
+  final SyncStatusSnapshot syncSnapshot;
+
   final Failure? failure;
 
   /// The signed-in user (HU-07), or null when local-first with no session.
@@ -84,6 +103,7 @@ class HomeState extends Equatable {
     DateTime? month,
     HomeSnapshot? snapshot,
     HomeSyncStatus? syncStatus,
+    SyncStatusSnapshot? syncSnapshot,
     Failure? failure,
     AuthUser? user,
     bool clearSnapshot = false,
@@ -97,6 +117,7 @@ class HomeState extends Equatable {
         currentMonth: currentMonth,
         snapshot: clearSnapshot ? null : (snapshot ?? this.snapshot),
         syncStatus: syncStatus ?? this.syncStatus,
+        syncSnapshot: syncSnapshot ?? this.syncSnapshot,
         failure: failure,
         // The session updates independently: only overwrite [user] when the
         // auth stream emits (so it can also be cleared to null on sign-out).
@@ -112,6 +133,7 @@ class HomeState extends Equatable {
         currentMonth,
         snapshot,
         syncStatus,
+        syncSnapshot,
         failure,
         user,
         pendingUndoId,

@@ -1,3 +1,7 @@
+import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_cubit.dart';
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_state.dart';
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
@@ -27,11 +31,15 @@ class MockAppSettingsCubit extends MockCubit<AppSettingsState>
 class MockThemeModeCubit extends MockCubit<ThemeMode>
     implements ThemeModeCubit {}
 
+class MockSyncStatusCubit extends MockCubit<SyncStatusState>
+    implements SyncStatusCubit {}
+
 void main() {
   late MockWatchAuthSession watchAuthSession;
   late MockSignOut signOut;
   late MockAppSettingsCubit appSettingsCubit;
   late MockThemeModeCubit themeModeCubit;
+  late MockSyncStatusCubit syncStatusCubit;
 
   const user = AuthUser(
     id: 'google-1',
@@ -61,6 +69,13 @@ void main() {
       initialState: ThemeMode.system,
     );
     when(() => themeModeCubit.setThemeMode(any())).thenAnswer((_) async {});
+    syncStatusCubit = MockSyncStatusCubit();
+    when(() => syncStatusCubit.state).thenReturn(const SyncStatusState());
+    whenListen(
+      syncStatusCubit,
+      const Stream<SyncStatusState>.empty(),
+      initialState: const SyncStatusState(),
+    );
   });
 
   Future<void> pumpSettings(
@@ -69,6 +84,7 @@ void main() {
     VoidCallback? onOpenLogin,
     VoidCallback? onOpenDeleteAccount,
     ValueChanged<String>? onOpenComingSoon,
+    VoidCallback? onOpenSyncStatus,
   }) async {
     when(() => watchAuthSession.current).thenReturn(session);
     when(() => watchAuthSession()).thenAnswer((_) => const Stream.empty());
@@ -79,16 +95,71 @@ void main() {
           BlocProvider(create: (_) => AuthCubit(watchAuthSession, signOut)),
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
+          BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
         ],
         child: SettingsPage(
           onOpenLogin: onOpenLogin ?? () {},
           onOpenDeleteAccount: onOpenDeleteAccount ?? () {},
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
+          onOpenSyncStatus: onOpenSyncStatus ?? () {},
         ),
       ),
       wrapInScaffold: false,
     );
   }
+
+  /// HU-08: la entrada al diagnóstico de sync vive bajo la `Session Card` y
+  /// **solo existe con sesión**. Sin ella, la invitación correcta es
+  /// "Respaldar en la nube": agregar una fila de diagnóstico convertiría una
+  /// invitación clara en un rodeo.
+  group('entrada a "Estado de sincronización" (HU-08)', () {
+    testWidgets(
+        'con sesión: aparece bajo la tarjeta de sesión con la última '
+        'sincronización', (tester) async {
+      when(() => syncStatusCubit.state).thenReturn(
+        SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: SyncStatusSnapshot(
+            state: SyncState.synced,
+            quarantinedCount: 0,
+            lastSyncedAt: DateTime.now().subtract(const Duration(minutes: 5)),
+            hasSyncedEver: true,
+          ),
+        ),
+      );
+      await pumpSettings(tester, session: const AuthSession.signedIn(user));
+
+      expect(find.text('Estado de sincronización'), findsOneWidget);
+      expect(
+          find.text('Última sincronización: hace 5 minutos'), findsOneWidget);
+      expect(
+        tester.getRect(find.byType(SettingsSessionCard)).bottom,
+        lessThan(tester.getRect(find.text('Estado de sincronización')).top),
+      );
+    });
+
+    testWidgets('sin sesión: NO existe', (tester) async {
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      expect(find.text('Estado de sincronización'), findsNothing);
+      expect(find.text('Respaldar en la nube'), findsOneWidget);
+    });
+
+    testWidgets('tocarla navega a la pantalla de sincronización',
+        (tester) async {
+      var opened = 0;
+      await pumpSettings(
+        tester,
+        session: const AuthSession.signedIn(user),
+        onOpenSyncStatus: () => opened++,
+      );
+
+      await tester.tap(find.text('Estado de sincronización'));
+      await tester.pump();
+
+      expect(opened, 1);
+    });
+  });
 
   testWidgets(
       'sin sesión: invita a respaldar en la nube, no muestra la tarjeta de '

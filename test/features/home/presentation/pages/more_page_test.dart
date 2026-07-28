@@ -1,5 +1,5 @@
+import 'package:billetudo/core/widgets/coming_soon_badge.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
-import 'package:billetudo/features/home/presentation/widgets/coming_soon_badge.dart';
 import 'package:billetudo/features/home/presentation/widgets/more_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

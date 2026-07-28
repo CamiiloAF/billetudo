@@ -5,15 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/sync/presentation/widgets/sync_status_settings_field.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/settings_field.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
 import '../widgets/appearance_field.dart';
 import '../widgets/envelope_mode_field.dart';
-import '../widgets/settings_field.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
 import '../widgets/sheets/envelope_info_sheet.dart';
@@ -30,12 +31,18 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenLogin,
     required this.onOpenDeleteAccount,
     required this.onOpenComingSoon,
+    required this.onOpenSyncStatus,
     super.key,
   });
 
   final VoidCallback onOpenLogin;
   final VoidCallback onOpenDeleteAccount;
   final ValueChanged<String> onOpenComingSoon;
+
+  /// Opens "Estado de sincronización" (HU-08). Only reachable with a session:
+  /// without one there is no cloud to report on, and Ajustes offers
+  /// "Respaldar en la nube" instead.
+  final VoidCallback onOpenSyncStatus;
 
   /// Opens the info sheet and honours its "Activar modo sobres" call to action.
   Future<void> _openEnvelopeInfo(
@@ -69,9 +76,11 @@ class SettingsPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                     children: [
                       SettingsSectionLabel(l10n.settingsAccountSection),
-                      if (session.isSignedIn)
-                        SettingsSessionCard(session: session, l10n: l10n)
-                      else
+                      if (session.isSignedIn) ...[
+                        SettingsSessionCard(session: session, l10n: l10n),
+                        const SizedBox(height: 12),
+                        SyncStatusSettingsField(onTap: onOpenSyncStatus),
+                      ] else
                         SettingsField(
                           icon: LucideIcons.cloudUpload,
                           label: l10n.settingsBackupTitle,

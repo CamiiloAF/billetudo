@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'coming_soon_badge.dart';
+import '../../../../core/widgets/coming_soon_badge.dart';
 
 /// A single row of the "Más" hub: icon + label, with an optional secondary
 /// description line, optionally flagged as "Próximamente".

@@ -77,6 +77,7 @@ void main() {
             onOpenDebts: onOpenDebts ?? () {},
             onOpenReports: onOpenReports ?? () {},
             onOpenLogin: onOpenLogin ?? () {},
+            onOpenSyncStatus: () {},
           ),
         ),
       ),

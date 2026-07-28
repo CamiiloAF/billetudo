@@ -72,6 +72,7 @@ void main() {
           onOpenDebts: () {},
           onOpenReports: () {},
           onOpenLogin: () {},
+          onOpenSyncStatus: () {},
         ),
       ),
       brightness: brightness,

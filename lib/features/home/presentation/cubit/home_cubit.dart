@@ -5,7 +5,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/sync/domain/entities/sync_state.dart';
-import '../../../../core/sync/domain/usecases/watch_sync_status.dart';
+import '../../../../core/sync/domain/entities/sync_status_snapshot.dart';
+import '../../../../core/sync/domain/usecases/watch_sync_status_details.dart';
+import '../../../../core/sync/presentation/utils/sync_freshness.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
@@ -32,7 +34,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchAccounts,
     this._watchMonthTransactions,
     this._watchAuthSession,
-    this._watchSyncStatus,
+    this._watchSyncStatusDetails,
     this._restoreTransaction,
     this._watchGlobalMonthlyBudgetProgress,
   ) : super(HomeState.initial(DateTime.now()));
@@ -40,14 +42,14 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchAccounts _watchAccounts;
   final WatchMonthTransactions _watchMonthTransactions;
   final WatchAuthSession _watchAuthSession;
-  final WatchSyncStatus _watchSyncStatus;
+  final WatchSyncStatusDetails _watchSyncStatusDetails;
   final RestoreTransaction _restoreTransaction;
   final WatchGlobalMonthlyBudgetProgress _watchGlobalMonthlyBudgetProgress;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
   StreamSubscription<AuthSession>? _authSub;
-  StreamSubscription<SyncState>? _syncSub;
+  StreamSubscription<SyncStatusSnapshot>? _syncSub;
   StreamSubscription<Result<BudgetWithProgress?>>? _budgetProgressSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
@@ -63,7 +65,7 @@ class HomeCubit extends Cubit<HomeState> {
     await _budgetProgressSub?.cancel();
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _authSub = _watchAuthSession().listen(_onAuthSession);
-    _syncSub = _watchSyncStatus().listen(_onSyncState);
+    _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
     _budgetProgressSub =
         _watchGlobalMonthlyBudgetProgress().listen(_onBudgetProgress);
     await _subscribeTransactions(state.month);
@@ -80,24 +82,34 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// HU-10: the sync indicator is passive and independent of [HomeStatus] —
   /// being offline or mid-merge never turns the Home into an error screen.
-  void _onSyncState(SyncState syncState) {
+  ///
+  /// HU-08 adds the fourth state. Two conditions map to it, both amber:
+  /// writes held back in the quarantine, and a last successful sync older
+  /// than 24 h. The second one is the incident itself — "syncing" and
+  /// "syncing since three days ago" must not render the same, and the
+  /// indicator only has four states to say it with.
+  void _onSyncSnapshot(SyncStatusSnapshot snapshot) {
     if (isClosed) {
       return;
     }
-    final syncStatus = switch (syncState) {
+    final isStale =
+        SyncFreshness.isStale(snapshot.lastSyncedAt, now: DateTime.now());
+    final syncStatus = switch (snapshot.state) {
+      SyncState.stalled => HomeSyncStatus.attention,
+      _ when isStale => HomeSyncStatus.attention,
       SyncState.synced => HomeSyncStatus.synced,
       SyncState.syncing => HomeSyncStatus.syncing,
       SyncState.offline => HomeSyncStatus.offline,
-      // Held-back writes read as "not backed up" with the affordances the Home
-      // already has — never as `synced`, which would repeat the lie the app
-      // told for three days while its queue was blocked. The dedicated
-      // treatment (its own icon and copy) belongs to the sync status screen
-      // being designed, and lands with it.
-      SyncState.stalled => HomeSyncStatus.offline,
     };
     // `failure` is re-passed on purpose: `copyWith` drops it when omitted, and
     // a sync tick must not clear a failure the body is still rendering.
-    emit(state.copyWith(syncStatus: syncStatus, failure: state.failure));
+    emit(
+      state.copyWith(
+        syncStatus: syncStatus,
+        syncSnapshot: snapshot,
+        failure: state.failure,
+      ),
+    );
   }
 
   /// HU-04: change the visible month (hero + recent feed update together).
