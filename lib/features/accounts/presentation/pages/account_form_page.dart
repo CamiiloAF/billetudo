@@ -65,7 +65,6 @@ class _AccountFormPageState extends State<AccountFormPage> {
                   title: state.isEditing
                       ? l10n.accountFormEditTitle
                       : l10n.accountFormNewTitle,
-                  onBack: Navigator.of(context).pop,
                   trailing: PageHeaderCircleButton(
                     icon: LucideIcons.check,
                     background: colors.primary,

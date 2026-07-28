@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../core/widgets/sheet_head.dart';
@@ -79,10 +81,10 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
               impact: impact,
               onCancel: () {
                 cubit.editImpactDismissed();
-                Navigator.of(context).pop();
+                _handleClose(context);
               },
               onConfirm: () {
-                Navigator.of(context).pop();
+                _handleClose(context);
                 unawaited(cubit.submit(confirmed: true));
               },
             ),
@@ -103,7 +105,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                 background: colors.muted,
                 foreground: colors.textPrimary,
                 tooltip: l10n.commonCancel,
-                onPressed: Navigator.of(context).pop,
+                onPressed: () => _handleClose(context),
               ),
             ),
             title: Text(
@@ -212,6 +214,14 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
     }
     // Declined or dismissed: intentionally no `submit()`. A future-dated
     // movement is never persisted as a normal transaction.
+  }
+
+  void _handleClose(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
   }
 }
 

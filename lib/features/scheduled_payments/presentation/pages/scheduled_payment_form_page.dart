@@ -78,7 +78,7 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                 icon: const Icon(LucideIcons.x, size: 20),
                 color: colors.textPrimary,
                 tooltip: l10n.commonCancel,
-                onPressed: Navigator.of(context).pop,
+                onPressed: () => _handleClose(context),
               ),
             ),
             // In cuota mode the header carries a context subtitle ("Crédito
@@ -168,6 +168,14 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
         );
       },
     );
+  }
+
+  void _handleClose(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
   }
 }
 
