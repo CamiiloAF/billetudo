@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart' hide BudgetPeriod;
 import 'package:billetudo/features/budgets/data/datasources/budgets_local_datasource.dart';
 import 'package:billetudo/features/budgets/data/repositories/budget_repository_impl.dart';
@@ -31,6 +32,7 @@ void main() {
       const ZeroBasedSummaryCalculator(),
       const ProjectUpcomingOccurrences(),
       const BudgetCategoryScopeResolver(),
+      const NoopCrashReporter(),
     );
   });
 

@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart' as db;
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart';
@@ -38,6 +39,7 @@ void main() {
     repository = CategoryRepositoryImpl(
       CategoriesLocalDatasource(database),
       remoteSeeds,
+      const NoopCrashReporter(),
     );
   });
 

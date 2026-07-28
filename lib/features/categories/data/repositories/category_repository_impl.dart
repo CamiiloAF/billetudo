@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
 import '../../../../core/l10n/app_locale.dart';
@@ -22,10 +23,11 @@ import '../models/category_seed_entry.dart';
 /// `deletedAt` trash is enough for this feature.
 @LazySingleton(as: CategoryRepository)
 class CategoryRepositoryImpl implements CategoryRepository {
-  const CategoryRepositoryImpl(this._local, this._remoteSeeds);
+  const CategoryRepositoryImpl(this._local, this._remoteSeeds, this._crash);
 
   final CategoriesLocalDatasource _local;
   final CategorySeedsRemoteDatasource _remoteSeeds;
+  final CrashReporter _crash;
 
   @override
   Stream<Result<List<CategoryNode>>> watchCategories(CategoryKind kind) =>
@@ -276,6 +278,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       return await body();
     } catch (e, st) {
+      await _crash.recordError(e, st, context: 'categories query');
       return Left(
         DatabaseFailure('categories query failed', cause: e, stackTrace: st),
       );
@@ -289,15 +292,24 @@ class CategoryRepositoryImpl implements CategoryRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'categories stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'categories stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'categories stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
@@ -21,10 +22,11 @@ import '../models/transaction_mapper.dart';
 /// schema references a transaction's id by foreign key.
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl implements TransactionRepository {
-  const TransactionRepositoryImpl(this._local, this._tags);
+  const TransactionRepositoryImpl(this._local, this._tags, this._crash);
 
   final TransactionsLocalDatasource _local;
   final TagsLocalDatasource _tags;
+  final CrashReporter _crash;
 
   @override
   Stream<Result<List<TransactionWithDetails>>> watchTransactions(
@@ -164,6 +166,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       return await body();
     } catch (e, st) {
+      // Report so the failure is never silent: dev prints it (NoopCrashReporter
+      // in debug), prod ships it to Sentry (SentryCrashReporter).
+      await _crash.recordError(e, st, context: 'transactions query');
       return Left(
         DatabaseFailure(
           'transactions query failed',
@@ -181,15 +186,25 @@ class TransactionRepositoryImpl implements TransactionRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'transactions stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            // Same visibility as [_guard]: dev prints, prod ships to Sentry.
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'transactions stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'transactions stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

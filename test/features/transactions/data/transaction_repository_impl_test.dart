@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
 import 'package:billetudo/core/database/app_database.dart' as schema
     show CategoryKind;
@@ -30,6 +31,7 @@ void main() {
     repository = TransactionRepositoryImpl(
       TransactionsLocalDatasource(database),
       TagsLocalDatasource(database),
+      const NoopCrashReporter(),
     );
   });
 

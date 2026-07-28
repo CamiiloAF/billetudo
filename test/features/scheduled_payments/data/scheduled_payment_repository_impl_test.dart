@@ -1296,6 +1296,7 @@ void main() {
       final debtRepository = DebtRepositoryImpl(
         DebtsLocalDatasource(database),
         const DebtBalanceCalculator(),
+        const NoopCrashReporter(),
       );
       final debt = await createDebt(
         direction: DebtDirection.iOwe,
