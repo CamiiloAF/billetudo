@@ -14,15 +14,21 @@ import 'sheet_buttons_row.dart';
 /// Tapping a day only moves the selection; the choice is committed with the
 /// footer's "Confirmar" (returning the chosen [DateTime]). "Cancelar" and
 /// dismissing both return null.
+///
+/// [initialDate] is nullable to distinguish an actual prior selection (e.g.
+/// editing an existing date) from having none yet (e.g. a brand-new goal's
+/// target date): passing `null` opens on the current month with no day
+/// highlighted, and "Confirmar" stays disabled until the user taps one — a
+/// real selection is never fabricated on the caller's behalf.
 class DatePickerSheet extends StatefulWidget {
   const DatePickerSheet({
-    required this.initialDate,
+    this.initialDate,
     this.disabledBefore,
     this.disabledAfter,
     super.key,
   });
 
-  final DateTime initialDate;
+  final DateTime? initialDate;
 
   /// Days strictly before this render dimmed and ignore taps.
   final DateTime? disabledBefore;
@@ -32,10 +38,11 @@ class DatePickerSheet extends StatefulWidget {
   final DateTime? disabledAfter;
 
   /// Opens the sheet and resolves to the picked day once confirmed, or null if
-  /// cancelled or dismissed.
+  /// cancelled, dismissed, or (when [initialDate] is null) never given a
+  /// selection to confirm.
   static Future<DateTime?> show(
     BuildContext context, {
-    required DateTime initialDate,
+    DateTime? initialDate,
     DateTime? disabledBefore,
     DateTime? disabledAfter,
   }) =>
@@ -53,9 +60,11 @@ class DatePickerSheet extends StatefulWidget {
 }
 
 class _DatePickerSheetState extends State<DatePickerSheet> {
-  late DateTime _selected = DateUtils.dateOnly(widget.initialDate);
-  late DateTime _visibleMonth =
-      DateTime(widget.initialDate.year, widget.initialDate.month);
+  late DateTime? _selected =
+      widget.initialDate == null ? null : DateUtils.dateOnly(widget.initialDate!);
+  late DateTime _visibleMonth = widget.initialDate == null
+      ? DateTime(DateTime.now().year, DateTime.now().month)
+      : DateTime(widget.initialDate!.year, widget.initialDate!.month);
 
   void _showPreviousMonth() {
     setState(() {
@@ -116,7 +125,9 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
             child: Text(l10n.commonCancel),
           ),
           right: FilledButton(
-            onPressed: () => Navigator.of(context).pop(_selected),
+            onPressed: _selected == null
+                ? null
+                : () => Navigator.of(context).pop(_selected),
             child: Text(l10n.commonConfirm),
           ),
         ),

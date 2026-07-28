@@ -18,6 +18,7 @@ import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_action
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_contribution_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_currency_picker_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_movement_detail_sheet.dart';
+import 'package:billetudo/features/goals/presentation/widgets/sheets/new_goal_quick_amount_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -552,6 +553,52 @@ void main() {
         },
         'goal_confirm_delete_movement_completed_$suffix',
         brightness: brightness,
+      );
+    });
+
+    // "+ Nueva" (`urHlG`/`MqLys`): a minimal sheet — just the Monto field and
+    // "Crear chip", disabled until an amount is entered (there is no separate
+    // validation-error copy; the CTA staying disabled at $0 is the only
+    // feedback the design gives, same precedent as the compact fields in
+    // `goal_form_page_golden_test`).
+    testWidgets('nuevo aporte rápido: vacío, CTA deshabilitado ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        (context) =>
+            NewGoalQuickAmountSheet.show(context, currency: 'COP'),
+        'goal_new_quick_amount_empty_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('nuevo aporte rápido: con monto, CTA habilitado ($suffix)',
+        (tester) async {
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () =>
+                  NewGoalQuickAmountSheet.show(context, currency: 'COP'),
+              child: const Text('open'),
+            ),
+          ),
+          brightness: brightness,
+        ),
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey('goal-new-quick-amount')),
+        '30000',
+      );
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/sheet_goal_new_quick_amount_filled_$suffix.png'),
       );
     });
   }

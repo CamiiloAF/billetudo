@@ -3349,10 +3349,32 @@ class AppLocalizationsEs extends AppLocalizations {
       'No puedes retirar más de lo que has ahorrado en esta meta.';
 
   @override
-  String get goalQuickAmountOther => 'Otro';
+  String get goalQuickAmountOther => 'Otro monto';
 
   @override
   String get goalQuickAmountLabel => 'APORTE RÁPIDO';
+
+  @override
+  String get goalQuickAmountAddCta => 'Nueva';
+
+  @override
+  String get goalQuickAmountFieldLabel => 'Monto';
+
+  @override
+  String get goalQuickAmountDeletedMessage => 'Aporte rápido eliminado';
+
+  @override
+  String get goalQuickAmountUndoAction => 'Deshacer';
+
+  @override
+  String get goalNewQuickAmountTitle => 'Nuevo aporte rápido';
+
+  @override
+  String get goalNewQuickAmountSubtitle =>
+      'Guarda un monto para aportarlo con un toque la próxima vez.';
+
+  @override
+  String get goalNewQuickAmountCta => 'Crear chip';
 
   @override
   String get goalProjectionNoTargetDate => 'Sin fecha objetivo definida';

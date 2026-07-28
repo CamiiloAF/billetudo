@@ -3,6 +3,7 @@ import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart'
 import 'package:billetudo/features/goals/domain/entities/goal_detail.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_momentum.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_projection.dart';
+import 'package:billetudo/features/goals/domain/entities/goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_with_progress.dart';
 
 Goal buildGoal({
@@ -70,6 +71,20 @@ GoalContribution buildGoalContribution({
       updatedAt: (date ?? DateTime(2026, 7, 5)).millisecondsSinceEpoch,
       transactionId: transactionId,
       note: note,
+    );
+
+GoalQuickAmount buildGoalQuickAmount({
+  String id = 'qa1',
+  String goalId = 'g1',
+  int amountMinor = 200000,
+  DateTime? createdAt,
+}) =>
+    GoalQuickAmount(
+      id: id,
+      goalId: goalId,
+      amountMinor: amountMinor,
+      createdAt: createdAt ?? DateTime(2026, 7, 1),
+      updatedAt: (createdAt ?? DateTime(2026, 7, 1)).millisecondsSinceEpoch,
     );
 
 GoalDetail buildGoalDetail({

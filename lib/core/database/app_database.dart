@@ -512,6 +512,28 @@ class ScheduledPayments extends Table with _SyncColumns {
   TextColumn get debtId => text().nullable().references(Debts, #id)();
 }
 
+/// User-defined "quick contribution" amount chips for a [Goals] row (Metas
+/// detail, "Aporte rápido" row — design-system/billetudo/pages/metas.md). The
+/// two built-in chips ($50.000/$100.000) are NOT rows here; only the ones the
+/// user adds via "Nuevo aporte rápido" live in this table, alongside the
+/// fixed pair, in the UI.
+///
+/// Uses `_SyncColumns` for consistency with every other table, but — same as
+/// `Tags`/`TransactionTags` — this feature has no trash/undo flow of its own:
+/// the designed interaction is "tap X -> instant removal + a transient
+/// Snackbar 'Deshacer'", which is a UI-level undo window, not a persistent
+/// papelera. So `deletedAt` goes UNUSED here; removing a chip is a real
+/// `DELETE` (the repository can still honor the Snackbar's undo window by
+/// re-inserting the row while it's showing, before the delete is committed —
+/// that is a UI-timing concern, not a schema one). `tombstonedAt` also goes
+/// unused: nothing references a `GoalQuickAmounts` row by id.
+class GoalQuickAmounts extends Table with _SyncColumns {
+  TextColumn get goalId => text().references(Goals, #id)();
+
+  /// Chip amount in cents. Never double, same money rule as everywhere else.
+  IntColumn get amountMinor => integer()();
+}
+
 /// Free-form tags (a complement to categories).
 class Tags extends Table with _SyncColumns {
   TextColumn get name => text().withLength(min: 1, max: 60)();
@@ -680,6 +702,7 @@ class AppSettings extends Table with _SyncColumns {
     Budgets,
     Goals,
     GoalContributions,
+    GoalQuickAmounts,
     Debts,
     DebtEntries,
     ScheduledPayments,
@@ -697,7 +720,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1136,6 +1159,17 @@ class AppDatabase extends _$AppDatabase {
                 );
               }
             }
+          }
+
+          // v19 -> v20: `GoalQuickAmounts`, user-defined "aporte rápido" chips
+          // per goal (design-system/billetudo/pages/metas.md). Additive table
+          // only — no existing data to migrate. `deletedAt`/`tombstonedAt` go
+          // unused here (same pattern as `Tags`/`TransactionTags`): removing a
+          // chip is a real DELETE, not a soft delete. Keep parity with
+          // Supabase/Postgres: replicate the `goal_quick_amounts` table (same
+          // columns + sync columns) once sync is wired.
+          if (from < 20) {
+            await m.createTable(goalQuickAmounts);
           }
         },
       );

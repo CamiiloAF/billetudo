@@ -3344,10 +3344,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can\'t withdraw more than what you\'ve saved in this goal.';
 
   @override
-  String get goalQuickAmountOther => 'Other';
+  String get goalQuickAmountOther => 'Other amount';
 
   @override
   String get goalQuickAmountLabel => 'QUICK CONTRIBUTION';
+
+  @override
+  String get goalQuickAmountAddCta => 'New';
+
+  @override
+  String get goalQuickAmountFieldLabel => 'Amount';
+
+  @override
+  String get goalQuickAmountDeletedMessage => 'Quick amount deleted';
+
+  @override
+  String get goalQuickAmountUndoAction => 'Undo';
+
+  @override
+  String get goalNewQuickAmountTitle => 'New quick amount';
+
+  @override
+  String get goalNewQuickAmountSubtitle =>
+      'Save an amount to contribute it with a tap next time.';
+
+  @override
+  String get goalNewQuickAmountCta => 'Create chip';
 
   @override
   String get goalProjectionNoTargetDate => 'No target date set';

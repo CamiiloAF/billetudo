@@ -3,10 +3,14 @@ import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart'
 import 'package:billetudo/features/goals/domain/entities/goal_detail.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_momentum.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_projection.dart';
+import 'package:billetudo/features/goals/domain/entities/goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/usecases/archive_goal.dart';
 import 'package:billetudo/features/goals/domain/usecases/contribute_to_goal.dart';
+import 'package:billetudo/features/goals/domain/usecases/create_goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/usecases/delete_goal.dart';
+import 'package:billetudo/features/goals/domain/usecases/delete_goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/usecases/watch_goal_detail.dart';
+import 'package:billetudo/features/goals/domain/usecases/watch_goal_quick_amounts.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -23,6 +27,25 @@ class MockDeleteGoal extends Mock implements DeleteGoal {}
 
 class MockContributeToGoal extends Mock implements ContributeToGoal {}
 
+class MockWatchGoalQuickAmounts extends Mock implements WatchGoalQuickAmounts {}
+
+class MockCreateGoalQuickAmount extends Mock implements CreateGoalQuickAmount {}
+
+class MockDeleteGoalQuickAmount extends Mock implements DeleteGoalQuickAmount {}
+
+GoalQuickAmount _quickAmount({
+  String id = 'qa1',
+  String goalId = 'g1',
+  int amountMinor = 20000,
+}) =>
+    GoalQuickAmount(
+      id: id,
+      goalId: goalId,
+      amountMinor: amountMinor,
+      createdAt: DateTime(2026, 7, 1),
+      updatedAt: DateTime(2026, 7, 1).millisecondsSinceEpoch,
+    );
+
 GoalDetail _detail({int savedMinor = 0}) {
   final goal = buildGoal();
   return GoalDetail(
@@ -38,16 +61,31 @@ void main() {
   late MockArchiveGoal archiveGoal;
   late MockDeleteGoal deleteGoal;
   late MockContributeToGoal contributeToGoal;
+  late MockWatchGoalQuickAmounts watchGoalQuickAmounts;
+  late MockCreateGoalQuickAmount createGoalQuickAmount;
+  late MockDeleteGoalQuickAmount deleteGoalQuickAmount;
 
   setUp(() {
     watchGoalDetail = MockWatchGoalDetail();
     archiveGoal = MockArchiveGoal();
     deleteGoal = MockDeleteGoal();
     contributeToGoal = MockContributeToGoal();
+    watchGoalQuickAmounts = MockWatchGoalQuickAmounts();
+    createGoalQuickAmount = MockCreateGoalQuickAmount();
+    deleteGoalQuickAmount = MockDeleteGoalQuickAmount();
+    when(() => watchGoalQuickAmounts(any()))
+        .thenAnswer((_) => Stream.value(const Right(<GoalQuickAmount>[])));
   });
 
-  GoalDetailCubit build() =>
-      GoalDetailCubit(watchGoalDetail, archiveGoal, deleteGoal, contributeToGoal);
+  GoalDetailCubit build() => GoalDetailCubit(
+        watchGoalDetail,
+        archiveGoal,
+        deleteGoal,
+        contributeToGoal,
+        watchGoalQuickAmounts,
+        createGoalQuickAmount,
+        deleteGoalQuickAmount,
+      );
 
   blocTest<GoalDetailCubit, GoalDetailState>(
     'start emite loading y luego ready con el detalle',
@@ -122,6 +160,63 @@ void main() {
       (failure) => fail('expected a Right, got $failure'),
       (milestone) => expect(milestone, 50),
     );
+    await cubit.close();
+  });
+
+  blocTest<GoalDetailCubit, GoalDetailState>(
+    'expone los chips personalizados de aporte rápido del stream',
+    setUp: () {
+      when(() => watchGoalDetail('g1'))
+          .thenAnswer((_) => Stream.value(Right(_detail())));
+      when(() => watchGoalQuickAmounts('g1')).thenAnswer(
+        (_) => Stream.value(Right([_quickAmount()])),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start('g1'),
+    skip: 2,
+    expect: () => [
+      isA<GoalDetailState>()
+          .having((s) => s.quickAmounts, 'quickAmounts', [_quickAmount()]),
+    ],
+  );
+
+  test('createQuickAmount delega en CreateGoalQuickAmount', () async {
+    when(() => watchGoalDetail('g1'))
+        .thenAnswer((_) => Stream.value(Right(_detail())));
+    when(
+      () => createGoalQuickAmount(
+        goalId: any(named: 'goalId'),
+        amountMinor: any(named: 'amountMinor'),
+      ),
+    ).thenAnswer((_) async => Right(_quickAmount()));
+
+    final cubit = build();
+    await cubit.start('g1');
+    final result = await cubit.createQuickAmount(20000);
+
+    verify(
+      () => createGoalQuickAmount(goalId: 'g1', amountMinor: 20000),
+    ).called(1);
+    result.fold(
+      (failure) => fail('expected a Right, got $failure'),
+      (quickAmount) => expect(quickAmount, _quickAmount()),
+    );
+    await cubit.close();
+  });
+
+  test('deleteQuickAmount delega en DeleteGoalQuickAmount', () async {
+    when(() => watchGoalDetail('g1'))
+        .thenAnswer((_) => Stream.value(Right(_detail())));
+    when(() => deleteGoalQuickAmount('qa1'))
+        .thenAnswer((_) async => const Right(unit));
+
+    final cubit = build();
+    await cubit.start('g1');
+    final result = await cubit.deleteQuickAmount('qa1');
+
+    verify(() => deleteGoalQuickAmount('qa1')).called(1);
+    expect(result.isRight(), isTrue);
     await cubit.close();
   });
 }

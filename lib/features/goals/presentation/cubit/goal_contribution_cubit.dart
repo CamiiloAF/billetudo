@@ -37,6 +37,7 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
     required String currency,
     int maxWithdrawableMinor = 0,
     bool hasLinkedAccount = true,
+    int initialAmountMinor = 0,
   }) async {
     emit(
       GoalContributionState(
@@ -45,6 +46,7 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
         direction: direction,
         currency: currency,
         maxWithdrawableMinor: maxWithdrawableMinor,
+        amountMinor: initialAmountMinor,
         date: DateTime.now(),
         hasLinkedAccount: hasLinkedAccount,
       ),
@@ -69,7 +71,8 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
   void noteChanged(String note) => emit(state.copyWith(note: note));
 
   /// Caps the amount at the withdrawable maximum, for the "Usar todo" chip.
-  void useMax() => emit(state.copyWith(amountMinor: state.maxWithdrawableMinor));
+  void useMax() =>
+      emit(state.copyWith(amountMinor: state.maxWithdrawableMinor));
 
   /// Flips "¿Mover dinero de una cuenta?". A no-op when trying to turn it on
   /// without a linked account ([GoalContributionState.hasLinkedAccount]).
@@ -100,8 +103,9 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
   void toggleCountsInBudget(bool value) => emit(
         state.copyWith(
           countsInBudget: value,
-          categoryId: () =>
-              value ? (state.categoryId ?? GoalCategorySeed.savingsCategoryId) : null,
+          categoryId: () => value
+              ? (state.categoryId ?? GoalCategorySeed.savingsCategoryId)
+              : null,
         ),
       );
 
@@ -113,7 +117,8 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
       return;
     }
     emit(
-      state.copyWith(status: GoalContributionStatus.saving, failure: () => null),
+      state.copyWith(
+          status: GoalContributionStatus.saving, failure: () => null),
     );
 
     final note = state.note.trim().isEmpty ? null : state.note.trim();

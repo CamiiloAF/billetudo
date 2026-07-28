@@ -5732,7 +5732,7 @@ abstract class AppLocalizations {
   /// No description provided for @goalQuickAmountOther.
   ///
   /// In es, this message translates to:
-  /// **'Otro'**
+  /// **'Otro monto'**
   String get goalQuickAmountOther;
 
   /// No description provided for @goalQuickAmountLabel.
@@ -5740,6 +5740,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'APORTE RÁPIDO'**
   String get goalQuickAmountLabel;
+
+  /// No description provided for @goalQuickAmountAddCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva'**
+  String get goalQuickAmountAddCta;
+
+  /// No description provided for @goalQuickAmountFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get goalQuickAmountFieldLabel;
+
+  /// No description provided for @goalQuickAmountDeletedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte rápido eliminado'**
+  String get goalQuickAmountDeletedMessage;
+
+  /// No description provided for @goalQuickAmountUndoAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer'**
+  String get goalQuickAmountUndoAction;
+
+  /// No description provided for @goalNewQuickAmountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo aporte rápido'**
+  String get goalNewQuickAmountTitle;
+
+  /// No description provided for @goalNewQuickAmountSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda un monto para aportarlo con un toque la próxima vez.'**
+  String get goalNewQuickAmountSubtitle;
+
+  /// No description provided for @goalNewQuickAmountCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear chip'**
+  String get goalNewQuickAmountCta;
 
   /// No description provided for @goalProjectionNoTargetDate.
   ///

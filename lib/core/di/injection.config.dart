@@ -318,10 +318,16 @@ import 'package:billetudo/features/debts/presentation/cubit/debt_update_balance_
     as _i170;
 import 'package:billetudo/features/debts/presentation/cubit/debts_list_cubit.dart'
     as _i481;
+import 'package:billetudo/features/goals/data/datasources/goal_quick_amounts_local_datasource.dart'
+    as _i60;
 import 'package:billetudo/features/goals/data/datasources/goals_local_datasource.dart'
     as _i822;
+import 'package:billetudo/features/goals/data/repositories/goal_quick_amounts_repository_impl.dart'
+    as _i327;
 import 'package:billetudo/features/goals/data/repositories/goal_repository_impl.dart'
     as _i1066;
+import 'package:billetudo/features/goals/domain/repositories/goal_quick_amounts_repository.dart'
+    as _i34;
 import 'package:billetudo/features/goals/domain/repositories/goal_repository.dart'
     as _i696;
 import 'package:billetudo/features/goals/domain/services/goal_coherence_calculator.dart'
@@ -340,8 +346,12 @@ import 'package:billetudo/features/goals/domain/usecases/contribute_to_goal.dart
     as _i1023;
 import 'package:billetudo/features/goals/domain/usecases/create_goal.dart'
     as _i97;
+import 'package:billetudo/features/goals/domain/usecases/create_goal_quick_amount.dart'
+    as _i569;
 import 'package:billetudo/features/goals/domain/usecases/delete_goal.dart'
     as _i333;
+import 'package:billetudo/features/goals/domain/usecases/delete_goal_quick_amount.dart'
+    as _i1040;
 import 'package:billetudo/features/goals/domain/usecases/get_goal_movement_accounts.dart'
     as _i34;
 import 'package:billetudo/features/goals/domain/usecases/link_transaction_to_goal.dart'
@@ -356,6 +366,8 @@ import 'package:billetudo/features/goals/domain/usecases/watch_archived_goals.da
     as _i711;
 import 'package:billetudo/features/goals/domain/usecases/watch_goal_detail.dart'
     as _i678;
+import 'package:billetudo/features/goals/domain/usecases/watch_goal_quick_amounts.dart'
+    as _i492;
 import 'package:billetudo/features/goals/domain/usecases/watch_goals.dart'
     as _i529;
 import 'package:billetudo/features/goals/domain/usecases/withdraw_from_goal.dart'
@@ -613,6 +625,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i907.DebtsLocalDatasource>(
         () => _i907.DebtsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i60.GoalQuickAmountsLocalDatasource>(
+        () => _i60.GoalQuickAmountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i822.GoalsLocalDatasource>(
         () => _i822.GoalsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i276.ScheduledPaymentTagsLocalDatasource>(() =>
@@ -667,6 +681,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i77.WatchSyncLog(gh<_i666.SyncLogRepository>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
+    gh.lazySingleton<_i34.GoalQuickAmountsRepository>(
+        () => _i327.GoalQuickAmountsRepositoryImpl(
+              gh<_i60.GoalQuickAmountsLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
     gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
@@ -812,6 +831,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i182.GetAppSettings>(),
           gh<_i636.SetZeroBasedEnabled>(),
         ));
+    gh.factory<_i569.CreateGoalQuickAmount>(() =>
+        _i569.CreateGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
+    gh.factory<_i1040.DeleteGoalQuickAmount>(() =>
+        _i1040.DeleteGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
+    gh.factory<_i492.WatchGoalQuickAmounts>(() =>
+        _i492.WatchGoalQuickAmounts(gh<_i34.GoalQuickAmountsRepository>()));
     gh.lazySingleton<_i932.DebtRepository>(() => _i454.DebtRepositoryImpl(
           gh<_i907.DebtsLocalDatasource>(),
           gh<_i1013.DebtBalanceCalculator>(),
@@ -1045,12 +1070,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i170.DebtUpdateBalanceCubit>(
         () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
-    gh.factory<_i701.GoalDetailCubit>(() => _i701.GoalDetailCubit(
-          gh<_i678.WatchGoalDetail>(),
-          gh<_i695.ArchiveGoal>(),
-          gh<_i333.DeleteGoal>(),
-          gh<_i1023.ContributeToGoal>(),
-        ));
     gh.factory<_i843.ZeroBasedSummaryCubit>(
         () => _i843.ZeroBasedSummaryCubit(gh<_i458.GetZeroBasedSummary>()));
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
@@ -1180,6 +1199,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
+        ));
+    gh.factory<_i701.GoalDetailCubit>(() => _i701.GoalDetailCubit(
+          gh<_i678.WatchGoalDetail>(),
+          gh<_i695.ArchiveGoal>(),
+          gh<_i333.DeleteGoal>(),
+          gh<_i1023.ContributeToGoal>(),
+          gh<_i492.WatchGoalQuickAmounts>(),
+          gh<_i569.CreateGoalQuickAmount>(),
+          gh<_i1040.DeleteGoalQuickAmount>(),
         ));
     gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
           gh<_i837.WatchAccounts>(),

@@ -30,9 +30,11 @@ class MonthCalendar extends StatelessWidget {
   /// Any day inside the month currently shown; only its year/month matter.
   final DateTime visibleMonth;
 
-  /// The currently selected day. In range mode ([rangeEnd] non-null) this is
-  /// the range's start.
-  final DateTime selected;
+  /// The currently selected day, or `null` when nothing has been chosen yet
+  /// (e.g. `DatePickerSheet` opened without an `initialDate`) — no day renders
+  /// highlighted in that case. In range mode ([rangeEnd] non-null) this is the
+  /// range's start.
+  final DateTime? selected;
 
   final ValueChanged<DateTime> onDaySelected;
   final VoidCallback onPreviousMonth;
@@ -203,7 +205,9 @@ class CalendarMonthGrid extends StatelessWidget {
   });
 
   final DateTime visibleMonth;
-  final DateTime selected;
+
+  /// See [MonthCalendar.selected].
+  final DateTime? selected;
   final ValueChanged<DateTime> onDaySelected;
   final DateTime? disabledBefore;
   final DateTime? disabledAfter;
@@ -219,7 +223,7 @@ class CalendarMonthGrid extends StatelessWidget {
     // weekday: Mon=1..Sun=7; leading blanks before the 1st, Monday-first.
     final leadingBlanks = firstOfMonth.weekday - 1;
     final today = DateUtils.dateOnly(DateTime.now());
-    final selectedDay = DateUtils.dateOnly(selected);
+    final selectedDay = selected == null ? null : DateUtils.dateOnly(selected!);
     final rangeEndDay = rangeEnd == null ? null : DateUtils.dateOnly(rangeEnd!);
     final floor =
         disabledBefore == null ? null : DateUtils.dateOnly(disabledBefore!);
@@ -239,6 +243,7 @@ class CalendarMonthGrid extends StatelessWidget {
                   DateTime(visibleMonth.year, visibleMonth.month, day) ==
                       rangeEndDay),
           isRangeMiddle: rangeEndDay != null &&
+              selectedDay != null &&
               DateTime(visibleMonth.year, visibleMonth.month, day)
                   .isAfter(selectedDay) &&
               DateTime(visibleMonth.year, visibleMonth.month, day)

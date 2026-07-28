@@ -12,6 +12,7 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/goal_contribution.dart';
 import '../../domain/entities/goal_detail.dart';
 import '../../domain/entities/goal_projection.dart';
+import '../../domain/entities/goal_quick_amount.dart';
 import '../../domain/entities/goal_with_progress.dart';
 import '../cubit/goal_detail_cubit.dart';
 import '../cubit/goal_detail_state.dart';
@@ -26,6 +27,7 @@ import '../widgets/sheets/confirm_delete_goal_sheet.dart';
 import '../widgets/sheets/goal_actions_sheet.dart';
 import '../widgets/sheets/goal_contribution_sheet.dart';
 import '../widgets/sheets/goal_movement_detail_sheet.dart';
+import '../widgets/sheets/new_goal_quick_amount_sheet.dart';
 
 /// The goal detail (HU-05/06/07/12/15): arc héroe + "Te faltan $X" + forward
 /// projection, quick-amount chips + Aportar/Retirar, and the movement peek
@@ -70,6 +72,7 @@ class GoalDetailPage extends StatelessWidget {
                     GoalDetailStatus.ready => GoalDetailBody(
                         detail: state.detail!,
                         movementsExpanded: state.movementsExpanded,
+                        quickAmounts: state.quickAmounts,
                         onOpenCompletedCelebration: onOpenCompletedCelebration,
                         onOpenMilestone: onOpenMilestone,
                         onOpenTransaction: onOpenTransaction,
@@ -87,7 +90,8 @@ class GoalDetailPage extends StatelessWidget {
 }
 
 class GoalDetailHeader extends StatelessWidget {
-  const GoalDetailHeader({required this.state, required this.onEdit, super.key});
+  const GoalDetailHeader(
+      {required this.state, required this.onEdit, super.key});
 
   final GoalDetailState state;
   final ValueChanged<String> onEdit;
@@ -154,6 +158,7 @@ class GoalDetailBody extends StatelessWidget {
   const GoalDetailBody({
     required this.detail,
     required this.movementsExpanded,
+    required this.quickAmounts,
     required this.onOpenCompletedCelebration,
     required this.onOpenMilestone,
     required this.onEdit,
@@ -163,6 +168,7 @@ class GoalDetailBody extends StatelessWidget {
 
   final GoalDetail detail;
   final bool movementsExpanded;
+  final List<GoalQuickAmount> quickAmounts;
   final void Function(GoalWithProgress progress) onOpenCompletedCelebration;
   final void Function(String goalName, int milestonePct) onOpenMilestone;
   final ValueChanged<String> onEdit;
@@ -349,8 +355,16 @@ class GoalDetailBody extends StatelessWidget {
             const SizedBox(height: 10),
             GoalQuickAmountRow(
               currency: goal.currency,
+              customAmounts: quickAmounts,
               onQuickAmount: (amountMinor) => unawaited(
-                _quickContribute(context, goal.id, goal.currency, amountMinor),
+                _openContribute(
+                  context,
+                  goal.id,
+                  goal.name,
+                  goal.currency,
+                  hasUsableLinkedAccount,
+                  initialAmountMinor: amountMinor,
+                ),
               ),
               onOther: () => unawaited(
                 _openContribute(
@@ -361,6 +375,10 @@ class GoalDetailBody extends StatelessWidget {
                   hasUsableLinkedAccount,
                 ),
               ),
+              onAddNew: () =>
+                  unawaited(_addQuickAmount(context, goal.id, goal.currency)),
+              onRemoveCustom: (quickAmount) =>
+                  unawaited(_removeQuickAmount(context, quickAmount)),
             ),
           ],
           const SizedBox(height: 24),
@@ -441,27 +459,19 @@ class GoalDetailBody extends StatelessWidget {
     }
   }
 
-  Future<void> _quickContribute(
-    BuildContext context,
-    String goalId,
-    String currency,
-    int amountMinor,
-  ) async {
-    final cubit = context.read<GoalDetailCubit>();
-    final result = await cubit.quickContribute(amountMinor);
-    if (!context.mounted) {
-      return;
-    }
-    result.fold((_) {}, (milestone) => _handleMilestone(context, cubit, milestone));
-  }
-
+  /// HU-14/Aporte rápido: every amount chip — fixed or custom — opens this
+  /// same full sheet prefilled with [initialAmountMinor], indistinguishable
+  /// from a manual aporte (design-system/billetudo/pages/metas.md § Aporte
+  /// rápido). "Otro monto" calls this with no amount, its historical
+  /// behaviour.
   Future<void> _openContribute(
     BuildContext context,
     String goalId,
     String goalName,
     String currency,
-    bool hasLinkedAccount,
-  ) async {
+    bool hasLinkedAccount, {
+    int initialAmountMinor = 0,
+  }) async {
     final cubit = context.read<GoalDetailCubit>();
     final milestone = await GoalContributionSheet.show(
       context,
@@ -470,10 +480,58 @@ class GoalDetailBody extends StatelessWidget {
       direction: GoalMovementDirection.contribution,
       currency: currency,
       hasLinkedAccount: hasLinkedAccount,
+      initialAmountMinor: initialAmountMinor,
     );
     if (context.mounted) {
       _handleMilestone(context, cubit, milestone);
     }
+  }
+
+  /// "+ Nueva": opens the minimal sheet and, once it resolves an amount,
+  /// persists it as a new chip via `GoalDetailCubit.createQuickAmount` — the
+  /// row picks it up reactively once the write lands.
+  Future<void> _addQuickAmount(
+    BuildContext context,
+    String goalId,
+    String currency,
+  ) async {
+    final amountMinor =
+        await NewGoalQuickAmountSheet.show(context, currency: currency);
+    if (amountMinor == null || !context.mounted) {
+      return;
+    }
+    await context.read<GoalDetailCubit>().createQuickAmount(amountMinor);
+  }
+
+  /// The inline "x" on a custom chip: deletes instantly, then offers
+  /// "Deshacer" via a transient snackbar that simply re-creates the chip with
+  /// the same amount (no soft-delete/trash for this table, see
+  /// `GoalQuickAmounts`' table doc).
+  Future<void> _removeQuickAmount(
+    BuildContext context,
+    GoalQuickAmount quickAmount,
+  ) async {
+    final cubit = context.read<GoalDetailCubit>();
+    final l10n = AppLocalizations.of(context);
+    final result = await cubit.deleteQuickAmount(quickAmount.id);
+    if (!context.mounted) {
+      return;
+    }
+    result.fold((_) {}, (_) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.goalQuickAmountDeletedMessage),
+            action: SnackBarAction(
+              label: l10n.goalQuickAmountUndoAction,
+              onPressed: () =>
+                  unawaited(cubit.createQuickAmount(quickAmount.amountMinor)),
+            ),
+            persist: false,
+          ),
+        );
+    });
   }
 
   Future<void> _openWithdraw(

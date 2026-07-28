@@ -135,6 +135,15 @@ const powerSyncSchema = Schema([
     Column.text('note'),
     ..._syncColumns,
   ]),
+  // User-defined "aporte rápido" chips per goal (schemaVersion 20). No trash
+  // flow of its own — same as `tags`/`transaction_tags` — so `deleted_at`/
+  // `tombstoned_at` go unused; removal is a real DELETE. See
+  // GoalQuickAmounts.
+  Table('goal_quick_amounts', [
+    Column.text('goal_id'),
+    Column.integer('amount_minor'),
+    ..._syncColumns,
+  ]),
   Table('debts', [
     Column.text('name'),
     Column.text('direction'),

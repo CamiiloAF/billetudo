@@ -284,7 +284,7 @@ class GoalFormBody extends StatelessWidget {
   ) async {
     final picked = await DatePickerSheet.show(
       context,
-      initialDate: current ?? DateTime.now().add(const Duration(days: 30)),
+      initialDate: current,
       disabledBefore: DateTime.now(),
     );
     if (picked != null) {
@@ -381,14 +381,21 @@ class GoalIconAndNameRow extends StatelessWidget {
               initialValue: state.name,
               textCapitalization: TextCapitalization.sentences,
               maxLength: GoalDraft.maxNameLength,
+              textAlignVertical: TextAlignVertical.center,
               onChanged: cubit.nameChanged,
+              buildCounter: (
+                context, {
+                required currentLength,
+                required isFocused,
+                maxLength,
+              }) =>
+                  null,
               decoration: InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
-                counterText: '',
                 hintText: l10n.goalFormNameHint,
                 errorText: state.failedField == GoalDraft.fieldName
                     ? l10n.goalFormNameRequired

@@ -50,6 +50,7 @@ class GoalContributionSheet extends StatelessWidget {
     required String currency,
     int maxWithdrawableMinor = 0,
     bool hasLinkedAccount = true,
+    int initialAmountMinor = 0,
   }) =>
       BottomSheetBase.show<int?>(
         context,
@@ -64,6 +65,7 @@ class GoalContributionSheet extends StatelessWidget {
                 currency: currency,
                 maxWithdrawableMinor: maxWithdrawableMinor,
                 hasLinkedAccount: hasLinkedAccount,
+                initialAmountMinor: initialAmountMinor,
               ),
             );
             return cubit;
@@ -172,6 +174,7 @@ class GoalContributionSheetBody extends StatelessWidget {
                   value: state.moveMoney,
                   hint: _moveFundsHint(l10n, state),
                   onChanged: cubit.toggleMoveMoney,
+                  enabled: state.hasLinkedAccount,
                 ),
                 if (state.moveMoney) ...[
                   const SizedBox(height: 14),
@@ -230,7 +233,8 @@ class GoalContributionSheetBody extends StatelessWidget {
                   initialValue: state.note,
                   textCapitalization: TextCapitalization.sentences,
                   onChanged: cubit.noteChanged,
-                  decoration: InputDecoration(hintText: l10n.goalMovementNoteHint),
+                  decoration:
+                      InputDecoration(hintText: l10n.goalMovementNoteHint),
                 ),
                 const SizedBox(height: 4),
                 Center(
@@ -269,10 +273,13 @@ class GoalContributionSheetBody extends StatelessWidget {
           child: FilledButton.icon(
             key: const ValueKey('goal-movement-submit'),
             onPressed: state.canSubmit ? cubit.submit : null,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+            style:
+                FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
             icon: const Icon(LucideIcons.check, size: 18),
             label: Text(
-              state.isWithdrawal ? l10n.goalWithdrawCta : l10n.goalContributeCta,
+              state.isWithdrawal
+                  ? l10n.goalWithdrawCta
+                  : l10n.goalContributeCta,
             ),
           ),
         ),

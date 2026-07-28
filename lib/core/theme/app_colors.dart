@@ -118,8 +118,18 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color segmentInactiveText;
 
   /// The surco (track) of arcs/progress bars (`$track`, new token added for
-  /// Metas' Goal Ring): calibrated ≥3:1 with the `$primary` fill in both
-  /// themes, unlike `$muted`/`$border` (which read ~2.2-2.75:1 in dark).
+  /// Metas' Goal Ring): calibrated ≥3:1 with the `$primary` fill in light.
+  ///
+  /// Dark diverges from `billetudo.pen`'s own `$track` value (`#101018`,
+  /// confirmed via `get_variables`): that hex is *darker* than both
+  /// `$background` (`#14141F`) and `$surface` (`#1E1E2E`), so the ring's
+  /// unfilled arc reads as ~1:1 contrast against the card it sits on —
+  /// effectively invisible. No dark frame of the Goal Ring exists in the
+  /// `.pen` to confirm an intended look, so this reuses `$border`
+  /// (`#2A2A3D`), the closest existing token that is visibly lighter than
+  /// `$surface`/`$background` in dark, matching the relationship `$track`
+  /// already has in light (lighter than the card, not darker). Flagged for
+  /// `pencil-designer` to correct the source variable.
   final Color track;
 
   /// A translucent white overlay (`$track-overlay`, fixed — not themed) used
@@ -212,7 +222,7 @@ class AppColors extends ThemeExtension<AppColors> {
     snackbarAction: Color(0xFF5648C8),
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF9A98B5),
-    track: Color(0xFF101018),
+    track: Color(0xFF2A2A3D),
     trackOverlay: Color(0x33FFFFFF),
   );
 
