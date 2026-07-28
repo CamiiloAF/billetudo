@@ -5249,6 +5249,36 @@ abstract class AppLocalizations {
   /// **'Tus metas superan el saldo real de la cuenta por {amount}'**
   String goalCoherenceMessage(String amount);
 
+  /// No description provided for @goalMomentumStreak.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, plural, =1{1 semana seguida} other{{weeks} semanas seguidas}}'**
+  String goalMomentumStreak(int weeks);
+
+  /// No description provided for @goalMomentumStreakSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu mejor racha aportando. ¡Sigue así!'**
+  String get goalMomentumStreakSub;
+
+  /// No description provided for @goalMomentumBrokenTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Retoma tu racha de ahorro'**
+  String get goalMomentumBrokenTitle;
+
+  /// No description provided for @goalMomentumBrokenSub.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, plural, =1{Hace 1 semana sin aportar · vuelve cuando quieras} other{Hace {weeks} semanas sin aportar · vuelve cuando quieras}}'**
+  String goalMomentumBrokenSub(int weeks);
+
+  /// No description provided for @goalMomentumMilestone.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximo hito: {pct}% en {goalName} · faltan {amount}'**
+  String goalMomentumMilestone(int pct, String goalName, String amount);
+
   /// No description provided for @goalCardRemaining.
   ///
   /// In es, this message translates to:

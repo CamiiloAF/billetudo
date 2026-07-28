@@ -38,6 +38,7 @@ GoalWithProgress buildGoalWithProgress({
   int displayedPercent = 0,
   int? remainingMinor,
   GoalCoherenceSignal? coherence,
+  GoalMomentum? momentum,
 }) {
   final resolvedGoal = goal ?? buildGoal();
   return GoalWithProgress(
@@ -46,6 +47,7 @@ GoalWithProgress buildGoalWithProgress({
     displayedPercent: displayedPercent,
     remainingMinor: remainingMinor ?? (resolvedGoal.targetMinor - savedMinor),
     coherence: coherence,
+    momentum: momentum,
   );
 }
 

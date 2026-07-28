@@ -1,3 +1,4 @@
+import 'package:billetudo/features/goals/domain/entities/goal_momentum.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_with_progress.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goals_list_cubit.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goals_list_state.dart';
@@ -74,6 +75,46 @@ void main() {
     ),
   ];
 
+  // HU-15: the list header's momentum, shown on top of the list (never a
+  // monetary total across goals). Two variants — an active streak with a
+  // nearby milestone, and a broken one (`zJQwe`) — separate from `goals`
+  // above so the existing "with data" baseline stays untouched.
+  final momentumActiveGoals = [
+    buildGoalWithProgress(
+      goal: buildGoal(id: 'g1', name: 'Viaje a Cartagena', targetMinor: 3000000),
+      savedMinor: 1200000,
+      displayedPercent: 40,
+      momentum: const GoalMomentum(streakWeeks: 6),
+    ),
+    buildGoalWithProgress(
+      goal: buildGoal(
+        id: 'g2',
+        name: 'Computador nuevo',
+        targetMinor: 4500000,
+        lastMilestonePct: 25,
+      ),
+      savedMinor: 3375000,
+      displayedPercent: 75,
+      momentum: const GoalMomentum(
+        streakWeeks: 2,
+        nextMilestonePct: 50,
+        amountToNextMilestoneMinor: 225000,
+      ),
+    ),
+  ];
+
+  final momentumBrokenGoals = [
+    buildGoalWithProgress(
+      goal: buildGoal(id: 'g1', name: 'Viaje a Cartagena', targetMinor: 3000000),
+      savedMinor: 1200000,
+      displayedPercent: 40,
+      momentum: const GoalMomentum(
+        streakWeeks: 0,
+        weeksSinceLastContribution: 3,
+      ),
+    ),
+  ];
+
   Future<void> golden(
     WidgetTester tester,
     GoalsListState state,
@@ -133,6 +174,33 @@ void main() {
         tester,
         GoalsListState(status: GoalsListStatus.ready, goals: goals),
         'with_data_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'con momentum: racha activa + próximo hito (HU-15) ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        GoalsListState(
+          status: GoalsListStatus.ready,
+          goals: momentumActiveGoals,
+        ),
+        'momentum_active_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('con momentum: racha rota, tono neutro (HU-15) ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        GoalsListState(
+          status: GoalsListStatus.ready,
+          goals: momentumBrokenGoals,
+        ),
+        'momentum_broken_$suffix',
         brightness: brightness,
       );
     });

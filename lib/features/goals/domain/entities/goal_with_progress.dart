@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'goal.dart';
+import 'goal_momentum.dart';
 
 /// HU-12: an informative (never blocking) signal that the metas linked to one
 /// account add up to more than the account actually holds. Computed per
@@ -46,6 +47,7 @@ class GoalWithProgress extends Equatable {
     required this.displayedPercent,
     required this.remainingMinor,
     this.coherence,
+    this.momentum,
   });
 
   final Goal goal;
@@ -68,15 +70,25 @@ class GoalWithProgress extends Equatable {
   /// archived goal, or one whose account is not over-assigned.
   final GoalCoherenceSignal? coherence;
 
-  GoalWithProgress copyWith({GoalCoherenceSignal? coherence}) => GoalWithProgress(
+  /// HU-15's per-goal streak/next-milestone shape, computed alongside the
+  /// rest of the progress for every goal in the list (`GoalsListState`
+  /// aggregates it into the list header's `GoalListMomentum`).
+  final GoalMomentum? momentum;
+
+  GoalWithProgress copyWith({
+    GoalCoherenceSignal? coherence,
+    GoalMomentum? momentum,
+  }) =>
+      GoalWithProgress(
         goal: goal,
         savedMinor: savedMinor,
         displayedPercent: displayedPercent,
         remainingMinor: remainingMinor,
         coherence: coherence ?? this.coherence,
+        momentum: momentum ?? this.momentum,
       );
 
   @override
   List<Object?> get props =>
-      [goal, savedMinor, displayedPercent, remainingMinor, coherence];
+      [goal, savedMinor, displayedPercent, remainingMinor, coherence, momentum];
 }

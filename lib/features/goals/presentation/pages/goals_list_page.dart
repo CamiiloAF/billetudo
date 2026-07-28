@@ -13,6 +13,7 @@ import '../cubit/goals_list_cubit.dart';
 import '../cubit/goals_list_state.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_coherence_banner.dart';
+import '../widgets/goal_momentum_header.dart';
 import '../widgets/goal_starter_template_card.dart';
 
 /// The goals list (HU-11): a `Page Header` with the add action, then either
@@ -167,10 +168,15 @@ class GoalsListView extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = context.colors;
     final signals = state.coherenceSignals;
+    final momentum = state.momentum;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       children: [
+        if (momentum.hasSignal) ...[
+          GoalMomentumHeader(momentum: momentum),
+          const SizedBox(height: 14),
+        ],
         for (var i = 0; i < signals.length; i++) ...[
           GoalCoherenceBanner(
             signal: signals[i],

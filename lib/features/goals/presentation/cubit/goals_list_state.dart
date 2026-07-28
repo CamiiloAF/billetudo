@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../domain/entities/goal_list_momentum.dart';
 import '../../domain/entities/goal_with_progress.dart';
+import '../../domain/services/goal_list_momentum_calculator.dart';
 
 /// The three states the goals list renders (HU-11).
 enum GoalsListStatus { loading, ready, failure }
@@ -37,6 +39,12 @@ class GoalsListState extends Equatable {
     }
     return byAccount.values.toList();
   }
+
+  /// HU-15: the list header's cross-goal momentum signal, aggregated from
+  /// every goal's own `GoalMomentum` — never computed when the list is
+  /// still loading/empty (the page only reads this once `goals` is ready and
+  /// non-empty).
+  GoalListMomentum get momentum => GoalListMomentumCalculator.calculate(goals);
 
   GoalsListState copyWith({
     GoalsListStatus? status,

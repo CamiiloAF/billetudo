@@ -43,9 +43,12 @@ void main() {
     );
 
     // The type itself has no aggregate-total field; asserting its declared
-    // shape is what keeps this invariant from silently regressing.
+    // shape is what keeps this invariant from silently regressing. Adding
+    // `weeksSinceLastContribution` does not violate it — it is still just a
+    // week count, never a monetary sum across goals.
     expect(momentum.props, [
       momentum.streakWeeks,
+      momentum.weeksSinceLastContribution,
       momentum.nextMilestonePct,
       momentum.amountToNextMilestoneMinor,
     ]);
@@ -117,6 +120,44 @@ void main() {
 
     expect(momentum.nextMilestonePct, isNull);
     expect(momentum.amountToNextMilestoneMinor, isNull);
+  });
+
+  test('a broken streak reports how many weeks since the last contribution', () {
+    final momentum = calculator.calculate(
+      goal: _buildGoal(),
+      contributions: [
+        _contributionOn(today.subtract(const Duration(days: 21))),
+      ],
+      savedMinor: 1000,
+      now: today,
+    );
+
+    expect(momentum.streakWeeks, 0);
+    expect(momentum.weeksSinceLastContribution, 3);
+  });
+
+  test('an active streak never reports weeks-since-last-contribution', () {
+    final momentum = calculator.calculate(
+      goal: _buildGoal(),
+      contributions: [_contributionOn(today)],
+      savedMinor: 1000,
+      now: today,
+    );
+
+    expect(momentum.streakWeeks, greaterThan(0));
+    expect(momentum.weeksSinceLastContribution, isNull);
+  });
+
+  test('no contribution history ever leaves weeks-since-last-contribution null', () {
+    final momentum = calculator.calculate(
+      goal: _buildGoal(),
+      contributions: const [],
+      savedMinor: 0,
+      now: today,
+    );
+
+    expect(momentum.streakWeeks, 0);
+    expect(momentum.weeksSinceLastContribution, isNull);
   });
 
   test('the amount to the next milestone never goes negative', () {

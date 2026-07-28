@@ -3038,6 +3038,39 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String goalMomentumStreak(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks semanas seguidas',
+      one: '1 semana seguida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get goalMomentumStreakSub => 'Tu mejor racha aportando. ¡Sigue así!';
+
+  @override
+  String get goalMomentumBrokenTitle => 'Retoma tu racha de ahorro';
+
+  @override
+  String goalMomentumBrokenSub(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: 'Hace $weeks semanas sin aportar · vuelve cuando quieras',
+      one: 'Hace 1 semana sin aportar · vuelve cuando quieras',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalMomentumMilestone(int pct, String goalName, String amount) {
+    return 'Próximo hito: $pct% en $goalName · faltan $amount';
+  }
+
+  @override
   String goalCardRemaining(String amount) {
     return 'Te faltan $amount';
   }

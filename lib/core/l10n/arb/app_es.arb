@@ -2211,6 +2211,22 @@
   "@goalsArchivedEmptyMessage": {},
   "goalCoherenceMessage": "Tus metas superan el saldo real de la cuenta por {amount}",
   "@goalCoherenceMessage": {"placeholders": {"amount": {"type": "String"}}},
+  "goalMomentumStreak": "{weeks, plural, =1{1 semana seguida} other{{weeks} semanas seguidas}}",
+  "@goalMomentumStreak": {"placeholders": {"weeks": {"type": "int"}}},
+  "goalMomentumStreakSub": "Tu mejor racha aportando. ¡Sigue así!",
+  "@goalMomentumStreakSub": {},
+  "goalMomentumBrokenTitle": "Retoma tu racha de ahorro",
+  "@goalMomentumBrokenTitle": {},
+  "goalMomentumBrokenSub": "{weeks, plural, =1{Hace 1 semana sin aportar · vuelve cuando quieras} other{Hace {weeks} semanas sin aportar · vuelve cuando quieras}}",
+  "@goalMomentumBrokenSub": {"placeholders": {"weeks": {"type": "int"}}},
+  "goalMomentumMilestone": "Próximo hito: {pct}% en {goalName} · faltan {amount}",
+  "@goalMomentumMilestone": {
+    "placeholders": {
+      "pct": {"type": "int"},
+      "goalName": {"type": "String"},
+      "amount": {"type": "String"}
+    }
+  },
   "goalCardRemaining": "Te faltan {amount}",
   "@goalCardRemaining": {"placeholders": {"amount": {"type": "String"}}},
   "goalCardCompleted": "Ahorraste {amount}",

@@ -20,6 +20,9 @@ class GoalMomentumCalculator {
   }) {
     final today = now ?? DateTime.now();
     final streakWeeks = _streakWeeks(contributions, today: today);
+    final weeksSinceLastContribution = streakWeeks == 0
+        ? _weeksSinceLastContribution(contributions, today: today)
+        : null;
 
     int? nextMilestonePct;
     for (final threshold in GoalMilestoneTracker.thresholds) {
@@ -35,10 +38,38 @@ class GoalMomentumCalculator {
 
     return GoalMomentum(
       streakWeeks: streakWeeks,
+      weeksSinceLastContribution: weeksSinceLastContribution,
       nextMilestonePct: nextMilestonePct,
       amountToNextMilestoneMinor:
           amountToNext == null ? null : (amountToNext < 0 ? 0 : amountToNext),
     );
+  }
+
+  /// Only called once [_streakWeeks] is already `0`: the current week has no
+  /// `contribution`, so this looks back for the most recent one and reports
+  /// how many weeks ago that was. `null` when there has never been one.
+  int? _weeksSinceLastContribution(
+    List<GoalContribution> contributions, {
+    required DateTime today,
+  }) {
+    final epoch = DateTime(2000);
+    final currentWeek = today.difference(epoch).inDays ~/ 7;
+
+    int? lastContributionWeek;
+    for (final contribution in contributions) {
+      if (contribution.direction != GoalMovementDirection.contribution) {
+        continue;
+      }
+      final weekIndex = contribution.date.difference(epoch).inDays ~/ 7;
+      if (lastContributionWeek == null || weekIndex > lastContributionWeek) {
+        lastContributionWeek = weekIndex;
+      }
+    }
+
+    if (lastContributionWeek == null) {
+      return null;
+    }
+    return currentWeek - lastContributionWeek;
   }
 
   /// Counts back from the week containing [today]: how many consecutive

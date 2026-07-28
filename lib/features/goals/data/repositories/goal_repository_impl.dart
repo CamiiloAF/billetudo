@@ -62,10 +62,20 @@ class GoalRepositoryImpl implements GoalRepository {
             final byGoal = _groupContributions(contributions);
             final withProgress = goals.map((row) {
               final goal = GoalMapper.toEntity(row);
-              return _progressCalculator.calculate(
+              final goalContributions = byGoal[goal.id] ?? const [];
+              final progress = _progressCalculator.calculate(
                 goal: goal,
-                contributions: byGoal[goal.id] ?? const [],
+                contributions: goalContributions,
               );
+              // HU-15: computed per goal here (contributions/savedMinor are
+              // already at hand) so `GoalsListState` only has to aggregate,
+              // never talk to Drift.
+              final momentum = _momentumCalculator.calculate(
+                goal: goal,
+                contributions: goalContributions,
+                savedMinor: progress.savedMinor,
+              );
+              return progress.copyWith(momentum: momentum);
             }).toList();
             return Right<Failure, List<GoalWithProgress>>(withProgress);
           },

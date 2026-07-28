@@ -193,8 +193,9 @@ class GoalFormBody extends StatelessWidget {
         ),
         if (!state.isEditing) ...[
           const SizedBox(height: 14),
-          GoalFieldLabel(l10n.goalFormInitialSavedLabel),
-          const SizedBox(height: 6),
+          // `GoalAmountHeroField` already renders `label` internally (as
+          // `GoalFormTargetLabel`/`Objetivo` above does), so no external
+          // `GoalFieldLabel` here — adding one duplicated the text (`PjBCt`).
           GoalAmountHeroField(
             fieldKey: const ValueKey('goal-amount-initial'),
             label: l10n.goalFormInitialSavedLabel,
