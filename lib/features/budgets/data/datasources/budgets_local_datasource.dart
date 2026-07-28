@@ -387,11 +387,13 @@ class BudgetsLocalDatasource {
           ),
       );
 
-  /// Occurrences still `pending` (HU-03) of expense templates, eligible for a
-  /// budget's "programado" segment: `confirmed`/`skipped`/`snoozed` ones are
-  /// excluded (`snoozed` moves the effective date but is not itself owed, so
-  /// HU-12 leaves it out — see
-  /// `BudgetProgressCalculator.matchesPendingScheduledOccurrence`).
+  /// Occurrences still awaiting resolution — `pending` or `snoozed` (HU-03/
+  /// HU-07) — of expense templates, eligible for a budget's "programado"
+  /// segment: only `confirmed` (already a `Transaction`, counted via
+  /// [spentIn](BudgetProgressCalculator) instead) and `skipped` (deliberately
+  /// discarded) are excluded. A `snoozed` occurrence counts with its new
+  /// `effectiveDate`, not its original `occurrenceDate` — see
+  /// `BudgetProgressCalculator.matchesPendingScheduledOccurrence`.
   Stream<List<BudgetPendingOccurrenceRow>> watchPendingScheduledOccurrences() {
     final query = _db.select(_db.scheduledPaymentOccurrences).join([
       innerJoin(
@@ -409,8 +411,10 @@ class BudgetsLocalDatasource {
       ),
     ])
       ..where(
-        _db.scheduledPaymentOccurrences.status
-                .equalsValue(ScheduledOccurrenceStatus.pending) &
+        (_db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.pending) |
+                _db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.snoozed)) &
             _db.scheduledPayments.type.equalsValue(EntryType.expense) &
             _db.scheduledPayments.tombstonedAt.isNull(),
       );

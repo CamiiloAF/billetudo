@@ -148,10 +148,13 @@ class BudgetProgressCalculator {
     return _inWindow(window, occurrence.date);
   }
 
-  /// Whether an already-registered `pending` occurrence belongs in [window]
-  /// and in the budget's scope (HU-12, criterion 4). Only `pending` counts —
-  /// `confirmed`/`skipped`/`snoozed` are excluded here (a `confirmed` one is
-  /// already a `Transaction`, counted via [spentIn] instead).
+  /// Whether an already-registered occurrence still awaiting resolution
+  /// (`pending` or `snoozed`) belongs in [window] and in the budget's scope
+  /// (HU-12, criterion 4). A `snoozed` occurrence is matched by its
+  /// `effectiveDate` (the snoozed-to date), not its original one.
+  /// `confirmed`/`skipped` are excluded here (a `confirmed` one is already a
+  /// `Transaction`, counted via
+  /// [spentIn] instead; `skipped` was deliberately discarded).
   bool matchesPendingScheduledOccurrence({
     required Budget budget,
     required BudgetScope scope,
@@ -159,7 +162,7 @@ class BudgetProgressCalculator {
     required BudgetPeriodWindow window,
     required PendingScheduledOccurrence pending,
   }) {
-    if (!pending.occurrence.isPending) {
+    if (!pending.occurrence.isAwaitingResolution) {
       return false;
     }
     if (!matchesTemplateScope(
@@ -196,19 +199,22 @@ class BudgetProgressCalculator {
       for (final detail in templates) detail.template.id: detail,
     };
 
-    // Templates with a real, still-unresolved (`pending`) occurrence that is
-    // OVERDUE relative to the *current* window (its real date sits before
-    // `window.start`, in what would otherwise read as a closed previous
-    // window). That occurrence represents the actual obligation the user owes
-    // right now, so it must win over the template's still-future cadence
-    // projection instead of showing alongside it. A pending occurrence that
-    // already sits inside the window is a different case (criterion 4): it
-    // coexists with the template's own next projection, since the two are
-    // genuinely different dates, not a duplicate.
+    // Templates with a real, still-unresolved (`pending` or `snoozed`)
+    // occurrence that is OVERDUE relative to the *current* window (its
+    // `effectiveDate` sits before `window.start`, in what would otherwise
+    // read as a closed previous window). That occurrence represents the
+    // actual obligation the user owes right now, so it must win over the
+    // template's still-future cadence projection instead of showing
+    // alongside it. A `snoozed` occurrence whose new `effectiveDate` still
+    // sits before the window behaves identically to an overdue `pending` one
+    // here. A pending/snoozed occurrence that already sits inside the window
+    // is a different case (criterion 4): it coexists with the template's own
+    // next projection, since the two are genuinely different dates, not a
+    // duplicate.
     final overduePendingTemplateIds = <String>{
       for (final pending in pendingOccurrences)
         if (window.status == BudgetWindowStatus.current &&
-            pending.occurrence.isPending &&
+            pending.occurrence.isAwaitingResolution &&
             pending.occurrence.effectiveDate.isBefore(window.start) &&
             matchesTemplateScope(
               budget: budget,
@@ -222,19 +228,19 @@ class BudgetProgressCalculator {
     // Fix 6: the *exact same* occurrence (same template id, same calendar
     // date) must never be counted from both sources. The "never overlap by
     // construction" invariant above assumes catch-up always advances a
-    // template's cursor past whatever date it just turned `pending` — true
-    // for recurring templates, but NOT for a `once` template, whose
+    // template's cursor past whatever date it just turned `pending`/`snoozed`
+    // — true for recurring templates, but NOT for a `once` template, whose
     // `nextDate` never advances (`_catchUpTemplate`'s documented no-op). So a
-    // `once` template that is still awaiting confirmation keeps re-projecting
-    // its own already-pending date forever, duplicating the row this
+    // `once` template that is still awaiting resolution keeps re-projecting
+    // its own already-registered date forever, duplicating the row this
     // `pendingOccurrences` loop below also emits for it. Excluding by exact
     // (id, day) pair — rather than blanket-excluding the whole template, as
     // [overduePendingTemplateIds] does for the "carried over from a past
     // window" case above — is what lets a template's genuinely distinct next
-    // cycle still show up alongside a same-window pending occurrence.
+    // cycle still show up alongside a same-window pending/snoozed occurrence.
     final pendingOccurrenceKeys = <String>{
       for (final pending in pendingOccurrences)
-        if (pending.occurrence.isPending)
+        if (pending.occurrence.isAwaitingResolution)
           _occurrenceKey(
             pending.scheduledPayment.id,
             pending.occurrence.effectiveDate,
@@ -292,7 +298,7 @@ class BudgetProgressCalculator {
       );
       final overdueInCurrentWindow = !inWindow &&
           window.status == BudgetWindowStatus.current &&
-          pending.occurrence.isPending &&
+          pending.occurrence.isAwaitingResolution &&
           pending.occurrence.effectiveDate.isBefore(window.start) &&
           matchesTemplateScope(
             budget: budget,

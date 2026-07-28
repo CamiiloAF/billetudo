@@ -111,7 +111,10 @@ void main() {
     expect(controller.selection.baseOffset, controller.text.length);
   });
 
-  testWidgets('the COP field refuses a decimal separator after the switch',
+  testWidgets(
+      'the COP field still accepts a decimal separator after the switch '
+      '(bugfix: storage always keeps two decimals, so entry must allow them '
+      'in every currency, same as GoalAmountHeroField/DebtAmountHeroField)',
       (tester) async {
     var reported = '';
     await pump(tester, text: '', currency: 'USD');
@@ -120,6 +123,6 @@ void main() {
     await tester.enterText(find.byType(TextField), '1234,56');
     await tester.pump();
 
-    expect(reported, '1.234');
+    expect(reported, '1.234,56');
   });
 }

@@ -218,6 +218,7 @@ void main() {
       required ScheduledPayment scheduledPayment,
       required DateTime occurrenceDate,
       ScheduledOccurrenceStatus status = ScheduledOccurrenceStatus.pending,
+      DateTime? snoozedToDate,
       String accountName = 'Efectivo',
     }) =>
         PendingScheduledOccurrence(
@@ -226,6 +227,7 @@ void main() {
             scheduledPaymentId: scheduledPayment.id,
             occurrenceDate: occurrenceDate,
             status: status,
+            snoozedToDate: snoozedToDate,
             createdAt: DateTime(2024),
             updatedAt: 0,
           ),
@@ -426,6 +428,185 @@ void main() {
       );
 
       expect(items, isEmpty);
+    });
+
+    test(
+        'a skipped occurrence in the ledger is never counted (only '
+        '`pending`/`snoozed` are)', () {
+      final t = template(nextDate: DateTime(2024, 2, 1));
+      final skipped = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2024, 1, 15),
+        status: ScheduledOccurrenceStatus.skipped,
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: const [],
+        pendingOccurrences: [skipped],
+      );
+
+      expect(items, isEmpty);
+    });
+
+    test(
+        'a snoozed occurrence whose new effectiveDate falls inside the '
+        'window counts, using the snoozed date rather than the original one',
+        () {
+      final t = template(nextDate: DateTime(2024, 2, 1));
+      final snoozed = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2024, 1, 5),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2024, 1, 22),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: const [],
+        pendingOccurrences: [snoozed],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2024, 1, 22));
+    });
+
+    test(
+        'a snoozed occurrence whose new effectiveDate falls outside the '
+        'window does not count for that window', () {
+      final t = template(nextDate: DateTime(2024, 2, 1));
+      // Snoozed from a January date to a February one — out of this window.
+      final snoozed = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2024, 1, 5),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2024, 2, 10),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: const [],
+        pendingOccurrences: [snoozed],
+      );
+
+      expect(items, isEmpty);
+    });
+
+    test(
+        'an occurrence overdue relative to a past window, then snoozed into '
+        'the CURRENT window, counts in the current one', () {
+      // Originally due Dec 23 (before this January window), then snoozed to
+      // Jan 18 — inside the current window. It must count here, with the new
+      // date, and must not be treated as "overdue carried over" (that branch
+      // is for a still-before-window effectiveDate, not this case).
+      final t = template(nextDate: DateTime(2024, 1, 20));
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      final snoozedIntoWindow = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2023, 12, 23),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2024, 1, 18),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [snoozedIntoWindow],
+      );
+
+      // Both the snoozed occurrence (Jan 18) and the template's own next
+      // projection (Jan 20) should show — they're genuinely different dates.
+      expect(items, hasLength(2));
+      expect(items.map((i) => i.date), [
+        DateTime(2024, 1, 18),
+        DateTime(2024, 1, 20),
+      ]);
+    });
+
+    test(
+        'an occurrence still overdue relative to the CURRENT window after '
+        'being snoozed (its new date still sits before window.start) still '
+        "wins over the template's future projection", () {
+      final t = template(nextDate: DateTime(2024, 1, 20));
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      // Snoozed from Nov 23 to Dec 23 — still before this January window.
+      final stillOverdueSnoozed = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2023, 11, 23),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2023, 12, 23),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [stillOverdueSnoozed],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2023, 12, 23));
+      expect(items.single.scheduledPaymentId, t.id);
+    });
+
+    test(
+        'fix 6 also holds for a `once` template whose overdue occurrence '
+        'turns `snoozed` instead of `pending`: no duplicate with the '
+        'projection', () {
+      final t = template(
+        frequency: ScheduledPaymentFrequency.once,
+        nextDate: DateTime(2024, 1, 5),
+      );
+      final projected = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+      // Snoozed, but to the exact same date the template still projects.
+      final snoozedSameDate = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2024, 1, 1),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2024, 1, 5),
+      );
+
+      final items = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projected,
+        pendingOccurrences: [snoozedSameDate],
+      );
+
+      expect(items, hasLength(1));
+      expect(items.single.date, DateTime(2024, 1, 5));
+      expect(items.single.scheduledPaymentId, t.id);
     });
 
     test('respects scope and currency, same rule as matched expenses', () {

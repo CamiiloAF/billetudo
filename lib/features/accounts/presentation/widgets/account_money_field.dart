@@ -103,7 +103,7 @@ class _AccountMoneyFieldState extends State<AccountMoneyField> {
       ),
       inputFormatters: [
         MoneyInputFormatter(
-          decimals: MoneyFormatter.currencyDecimals(widget.currency),
+          decimals: MoneyFormatter.inputDecimals(widget.currency),
           allowNegative: widget.allowNegative,
         ),
       ],

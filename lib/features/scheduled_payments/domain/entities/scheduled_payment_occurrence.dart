@@ -59,6 +59,14 @@ class ScheduledPaymentOccurrence extends Equatable {
 
   bool get isPending => status == ScheduledOccurrenceStatus.pending;
 
+  /// Whether this occurrence is still unresolved and owed: `pending` (never
+  /// touched) or `snoozed` (moved to a later date but not yet confirmed or
+  /// skipped). Excludes `confirmed` (already a `Transaction`) and `skipped`
+  /// (deliberately discarded).
+  bool get isAwaitingResolution =>
+      status == ScheduledOccurrenceStatus.pending ||
+      status == ScheduledOccurrenceStatus.snoozed;
+
   /// Whether [date] counts as due — today or earlier, never a future date.
   /// The single rule for what counts as "pendiente para confirmar": both
   /// "Zona de pendientes" (list) and the detail's confirm affordance are
