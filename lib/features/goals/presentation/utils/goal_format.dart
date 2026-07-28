@@ -42,6 +42,13 @@ abstract final class GoalFormat {
     return DateFormat.yMMMd(locale).format(date);
   }
 
+  /// Full month name, "12 de julio de 2026" — the movement detail sheet's
+  /// own "Fecha" row (`N8Dv2e`), more formal than [dateLong]'s abbreviation.
+  static String dateFull(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMMd(locale).format(date);
+  }
+
   /// "Hoy, 22 jul" when [date] is today, the plain "22 jul" otherwise — the
   /// sheets' date-field label.
   static String relativeDate(

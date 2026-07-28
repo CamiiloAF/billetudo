@@ -53,6 +53,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.scrim,
     required this.segmentInactiveText,
     required this.track,
+    required this.trackOverlay,
   });
 
   final Color primary;
@@ -121,6 +122,12 @@ class AppColors extends ThemeExtension<AppColors> {
   /// themes, unlike `$muted`/`$border` (which read ~2.2-2.75:1 in dark).
   final Color track;
 
+  /// A translucent white overlay (`$track-overlay`, fixed — not themed) used
+  /// for a medallion drawn atop a colored/gradient surface (e.g. Metas'
+  /// empty-state hero card), where a plain `$muted`/`$surface` fill would not
+  /// read against the gradient behind it.
+  final Color trackOverlay;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -162,6 +169,7 @@ class AppColors extends ThemeExtension<AppColors> {
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF5F5D73),
     track: Color(0xFFEEECFB),
+    trackOverlay: Color(0x33FFFFFF),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -205,6 +213,7 @@ class AppColors extends ThemeExtension<AppColors> {
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF9A98B5),
     track: Color(0xFF101018),
+    trackOverlay: Color(0x33FFFFFF),
   );
 
   @override
@@ -248,6 +257,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? scrim,
     Color? segmentInactiveText,
     Color? track,
+    Color? trackOverlay,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -289,6 +299,7 @@ class AppColors extends ThemeExtension<AppColors> {
       scrim: scrim ?? this.scrim,
       segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
       track: track ?? this.track,
+      trackOverlay: trackOverlay ?? this.trackOverlay,
     );
   }
 
@@ -337,6 +348,7 @@ class AppColors extends ThemeExtension<AppColors> {
       segmentInactiveText:
           Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
       track: Color.lerp(track, other.track, t)!,
+      trackOverlay: Color.lerp(trackOverlay, other.trackOverlay, t)!,
     );
   }
 }

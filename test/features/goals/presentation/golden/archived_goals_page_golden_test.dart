@@ -48,6 +48,20 @@ void main() {
       savedMinor: 4000000,
       displayedPercent: 20,
     ),
+    // Archived AND completed (`owwhT`/`YfcFn`): `ArchivedGoalRow` must show
+    // the mint treatment + "Cumplida" badge instead of a percentage, even
+    // though the goal is no longer active.
+    buildGoalWithProgress(
+      goal: buildGoal(
+        id: 'g3',
+        name: 'Fondo de emergencia',
+        targetMinor: 3000000,
+        archivedAt: DateTime(2026, 4, 15),
+        completedAt: DateTime(2026, 4, 10),
+      ),
+      savedMinor: 3000000,
+      displayedPercent: 100,
+    ),
   ];
 
   Future<void> golden(

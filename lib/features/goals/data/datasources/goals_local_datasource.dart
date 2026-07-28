@@ -71,6 +71,12 @@ class GoalsLocalDatasource {
             ))
           .get();
 
+  /// A single movement by its own id, for the "Eliminar movimiento" sheets.
+  Future<GoalContribution?> getContributionById(String id) =>
+      (_db.select(_db.goalContributions)
+            ..where((c) => c.id.equals(id) & _aliveContribution(c)))
+          .getSingleOrNull();
+
   Future<List<Goal>> getActiveGoals() => (_db.select(_db.goals)
         ..where((g) => _aliveGoal(g) & g.archivedAt.isNull()))
       .get();
@@ -81,6 +87,14 @@ class GoalsLocalDatasource {
   Future<Account?> getAccount(String accountId) =>
       (_db.select(_db.accounts)
             ..where((a) => a.id.equals(accountId) & a.tombstonedAt.isNull()))
+          .getSingleOrNull();
+
+  /// Same as [getAccount] but ignoring the tombstone too — the "cuenta con
+  /// lápida" detail state (`XoGzx`) and the movement detail sheet's account
+  /// names (`N8Dv2e`) both need to keep naming an account after it was
+  /// tombstoned, since the goal/movement still reference its id.
+  Future<Account?> getAccountEvenTombstoned(String accountId) =>
+      (_db.select(_db.accounts)..where((a) => a.id.equals(accountId)))
           .getSingleOrNull();
 
   /// Every non-deleted movement touching [accountId], on either side of a
@@ -241,4 +255,21 @@ class GoalsLocalDatasource {
       (_db.delete(_db.goalContributions)
             ..where((c) => c.transactionId.equals(transactionId)))
           .go();
+
+  /// The "Eliminar movimiento" sheets for a tracking-only movement
+  /// (`GoalRepository.removeContribution`): reversible trash via
+  /// `deletedAt`, same rule as everything else in this feature.
+  Future<void> softDeleteContribution(
+    String id, {
+    required DateTime deletedAt,
+    required int updatedAt,
+  }) =>
+      (_db.update(_db.goalContributions)
+            ..where((c) => c.id.equals(id) & _aliveContribution(c)))
+          .write(
+        GoalContributionsCompanion(
+          deletedAt: Value(deletedAt),
+          updatedAt: Value(updatedAt),
+        ),
+      );
 }

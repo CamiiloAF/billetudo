@@ -10,12 +10,17 @@ import 'goal_momentum.dart';
 class GoalCoherenceSignal extends Equatable {
   const GoalCoherenceSignal({
     required this.accountId,
+    required this.accountName,
     required this.totalSavedMinor,
     required this.accountBalanceMinor,
     required this.currency,
   });
 
   final String accountId;
+
+  /// The linked account's own name, so the list's filter chip (`qFX42`) and
+  /// coherence banner can name it without a second round-trip.
+  final String accountName;
 
   /// Sum of `savedMinor` across every active goal linked to [accountId].
   final int totalSavedMinor;
@@ -31,6 +36,7 @@ class GoalCoherenceSignal extends Equatable {
   @override
   List<Object?> get props => [
         accountId,
+        accountName,
         totalSavedMinor,
         accountBalanceMinor,
         currency,

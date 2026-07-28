@@ -45,6 +45,16 @@ class GoalsListCubit extends Cubit<GoalsListState> {
     );
   }
 
+  /// HU-12's "lista filtrada por cuenta" (`qFX42`): scopes the list to
+  /// [accountId] in place, instead of navigating anywhere — the filter chip
+  /// this reveals is dismissible via [clearFilter].
+  void filterByAccount(String accountId, String accountName) => emit(
+        state.copyWith(filter: (id: accountId, name: accountName)),
+      );
+
+  /// Dismisses the filter chip, back to the full list.
+  void clearFilter() => emit(state.copyWith(clearFilter: true));
+
   @override
   Future<void> close() async {
     await _subscription?.cancel();

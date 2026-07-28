@@ -2615,6 +2615,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'La cuota no puede superar el saldo de la deuda.';
 
   @override
+  String get scheduledPaymentFormNotFoundError =>
+      'Este pago programado ya no existe. Es posible que lo hayas eliminado.';
+
+  @override
+  String get scheduledPaymentFormSaveError =>
+      'No pudimos guardar los cambios. Intenta de nuevo.';
+
+  @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repetir cada';
 
   @override
@@ -3030,7 +3038,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalsArchivedTitle => 'Metas archivadas';
 
   @override
-  String get goalsArchivedEmptyMessage => 'No tienes metas archivadas';
+  String get goalsArchivedEmptyMessage => 'Aún no has archivado ninguna meta';
+
+  @override
+  String get goalsArchivedEmptyDescription =>
+      'Cuando termines o pauses una meta, archívala: conserva su progreso y su historial, y sale de tu lista principal.';
 
   @override
   String goalCoherenceMessage(String amount) {
@@ -3102,16 +3114,58 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String goalDetailSavedOfTarget(String saved, String target) {
+    return '$saved ahorrado de $target';
+  }
+
+  @override
   String get goalActionsTooltip => 'Más acciones';
 
   @override
   String get goalEditTooltip => 'Editar meta';
 
   @override
+  String get goalActionEditSubtitle => 'Nombre, objetivo, fecha o cuenta';
+
+  @override
   String get goalActionArchive => 'Archivar meta';
 
   @override
+  String get goalActionArchiveSubtitle =>
+      'Sale de la lista y conserva su historial';
+
+  @override
   String get goalActionUnarchive => 'Desarchivar meta';
+
+  @override
+  String get goalActionUnarchiveSubtitle => 'Vuelve a tu lista principal';
+
+  @override
+  String get goalActionDeleteLabel => 'Eliminar meta';
+
+  @override
+  String get goalActionDeleteSubtitle => 'Va a la papelera; puedes deshacerlo';
+
+  @override
+  String get goalRowUnarchive => 'Desarchivar';
+
+  @override
+  String get goalRowCompletedBadge => 'Cumplida';
+
+  @override
+  String goalRowArchivedOn(String account, String date) {
+    return '$account · archivada el $date';
+  }
+
+  @override
+  String goalRowArchivedOnNoAccount(String date) {
+    return 'Archivada el $date';
+  }
+
+  @override
+  String goalRowTargetOf(String amount) {
+    return 'de $amount';
+  }
 
   @override
   String get goalArchiveSheetTitle => '¿Archivar esta meta?';
@@ -3144,6 +3198,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String goalMovementsTitle(int count) {
     return 'Movimientos ($count)';
   }
+
+  @override
+  String get goalMovementsSectionTitle => 'Movimientos';
 
   @override
   String goalMovementsSeeAll(int count) {
@@ -3182,6 +3239,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalContributeTitle => 'Registrar aporte';
 
   @override
+  String goalContributeTitleWithName(String name) {
+    return 'Aportar a $name';
+  }
+
+  @override
+  String get goalContributeSubtitle => 'Suma a tu progreso de la meta.';
+
+  @override
   String get goalContributeAmountLabel => 'Aporte';
 
   @override
@@ -3191,10 +3256,88 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalWithdrawTitle => 'Registrar retiro';
 
   @override
+  String goalWithdrawTitleWithName(String name) {
+    return 'Retirar de $name';
+  }
+
+  @override
+  String get goalWithdrawSubtitle => 'Sacar dinero de una meta es normal.';
+
+  @override
   String get goalWithdrawAmountLabel => 'Retiro';
 
   @override
+  String get goalMoveFundsToggleLabel => '¿Mover dinero de una cuenta?';
+
+  @override
+  String get goalMoveFundsToggleHintContribute =>
+      'Solo registra el avance de tu meta; no mueve ninguna cuenta.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdraw =>
+      'Solo registra el retiro; no toca ninguna cuenta.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOn =>
+      'Se crea una transferencia: el saldo de la cuenta de origen baja y el de la meta sube.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOnBudget =>
+      'Se crea una transferencia hacia la cuenta de tu meta.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdrawOn =>
+      'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.';
+
+  @override
+  String get goalMoveFundsGateHint =>
+      'Vincula una cuenta a esta meta para poder mover dinero (edítala desde su detalle).';
+
+  @override
+  String get goalContributeSourceAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalWithdrawDestinationAccountLabel => 'Cuenta de destino';
+
+  @override
+  String get goalAccountFieldPlaceholder => 'Elige una cuenta';
+
+  @override
+  String get goalBudgetToggleLabel => '¿Incluir en tu presupuesto?';
+
+  @override
+  String get goalBudgetToggleHintOff =>
+      'No entra en tus presupuestos ni reportes.';
+
+  @override
+  String get goalBudgetToggleHintOnContribute =>
+      'Cuenta como egreso en la cuenta de origen y como ingreso en la de tu meta.';
+
+  @override
+  String get goalBudgetToggleHintOnWithdraw =>
+      'Cuenta como ingreso en la cuenta de destino, según tus presupuestos.';
+
+  @override
+  String get goalLinkTransactionCta => 'Enlazar un movimiento';
+
+  @override
+  String goalLinkBannerTitle(String name) {
+    return 'Enlazar a $name';
+  }
+
+  @override
+  String get goalLinkBannerBody =>
+      'Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo.';
+
+  @override
+  String get goalLinkError =>
+      'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
   String get goalWithdrawCta => 'Retirar';
+
+  @override
+  String get goalAdjustDateCta => 'Ajustar la fecha';
 
   @override
   String goalWithdrawAvailable(String amount) {
@@ -3209,10 +3352,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalQuickAmountOther => 'Otro';
 
   @override
+  String get goalQuickAmountLabel => 'APORTE RÁPIDO';
+
+  @override
   String get goalProjectionNoTargetDate => 'Sin fecha objetivo definida';
 
   @override
-  String get goalProjectionOverdue => 'La fecha objetivo ya pasó';
+  String get goalProjectionOverdue =>
+      'La fecha que elegiste ya pasó y tu meta sigue en pie. Ponle una fecha nueva y volvemos a proyectarte la llegada.';
 
   @override
   String get goalProjectionInsufficientHistory =>
@@ -3316,4 +3463,107 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get goalCurrencySheetTitle => 'Elige la moneda';
+
+  @override
+  String get goalIconSheetTitle => 'Elegir ícono';
+
+  @override
+  String get goalIconSheetHint =>
+      'El ícono se muestra en un fondo neutro — sin color por meta.';
+
+  @override
+  String get goalFormIconAndNameLabel => 'Ícono y nombre';
+
+  @override
+  String goalFormCurrencyHintLocked(String account, String currency) {
+    return 'La moneda la define la cuenta vinculada ($account, $currency). Cambia la cuenta si necesitas otra moneda.';
+  }
+
+  @override
+  String get goalFormCurrencyHintUnlocked =>
+      'Elige la moneda de tu meta. Si vinculas una cuenta, la moneda se fija a la de esa cuenta.';
+
+  @override
+  String get goalFormInitialSavedHint =>
+      'Lo guardamos como el primer movimiento del historial, para que tu meta arranque completa.';
+
+  @override
+  String goalAccountFilterLabel(String accountName) {
+    return 'Metas en $accountName';
+  }
+
+  @override
+  String get goalAccountFilterClearTooltip => 'Quitar filtro';
+
+  @override
+  String get goalCoherenceLink => 'Ver las metas de esta cuenta';
+
+  @override
+  String goalDetailSavedOfTargetNoAccount(String saved, String target) {
+    return '$saved de $target · sin cuenta vinculada';
+  }
+
+  @override
+  String get goalDetailAccountUnavailableMessage =>
+      'La cuenta que tenías vinculada ya no está disponible. Tu historial sigue completo y esta meta pasa a avance manual.';
+
+  @override
+  String get goalDetailAccountUnavailableLink => 'Vincular otra cuenta';
+
+  @override
+  String get goalMovementDetailTitle => 'Detalle del movimiento';
+
+  @override
+  String get goalMovementDetailHint =>
+      'Puedes corregirlo o eliminarlo. Si el movimiento tiene una transferencia detrás, se actualiza junto con él.';
+
+  @override
+  String get goalMovementDetailDateLabel => 'Fecha';
+
+  @override
+  String get goalMovementDetailOriginAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalMovementDetailTransferLabel => 'Transferencia';
+
+  @override
+  String goalMovementDetailTransferValue(String origin, String destination) {
+    return '$origin → $destination';
+  }
+
+  @override
+  String get goalMovementDetailNoteLabel => 'Nota';
+
+  @override
+  String get goalMovementKindContributionLower => 'aporte';
+
+  @override
+  String get goalMovementKindWithdrawalLower => 'retiro';
+
+  @override
+  String goalDeleteMovementTitle(String kind, String amount) {
+    return '¿Eliminar este $kind de $amount?';
+  }
+
+  @override
+  String goalDeleteMovementMessageTransfer(String origin, String destination) {
+    return 'El avance de la meta se recalcula sin él. Como este movimiento tiene una transferencia detrás, esa transferencia también se elimina y los saldos de $origin y $destination vuelven a como estaban.';
+  }
+
+  @override
+  String goalDeleteMovementMessageManual(String kind) {
+    return 'El avance de la meta se recalcula sin él. Este $kind fue un registro manual, así que ninguna de tus cuentas cambia de saldo.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedTransfer(
+      String kind, String goalName, String origin, String destination) {
+    return 'Este $kind hace parte de lo que completó $goalName: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. La transferencia detrás también se elimina y los saldos de $origin y $destination vuelven a como estaban.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedManual(
+      String kind, String goalName) {
+    return 'Este $kind hace parte de lo que completó $goalName: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.';
+  }
 }

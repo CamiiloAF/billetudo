@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/goal_with_progress.dart';
 import '../../domain/usecases/archive_goal.dart';
 import '../../domain/usecases/watch_archived_goals.dart';
@@ -14,17 +15,30 @@ import 'archived_goals_state.dart';
 /// list without leaving this screen.
 @injectable
 class ArchivedGoalsCubit extends Cubit<ArchivedGoalsState> {
-  ArchivedGoalsCubit(this._watchArchivedGoals, this._archiveGoal)
-      : super(const ArchivedGoalsState());
+  ArchivedGoalsCubit(
+    this._watchArchivedGoals,
+    this._archiveGoal,
+    this._watchAccounts,
+  ) : super(const ArchivedGoalsState());
 
   final WatchArchivedGoals _watchArchivedGoals;
   final ArchiveGoal _archiveGoal;
+  final WatchAccounts _watchAccounts;
 
   StreamSubscription<Result<List<GoalWithProgress>>>? _subscription;
 
   Future<void> start() async {
     await _subscription?.cancel();
     emit(const ArchivedGoalsState());
+    final accountsResult = await _watchAccounts().first;
+    if (isClosed) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        accounts: accountsResult.fold((_) => const [], (list) => list),
+      ),
+    );
     _subscription = _watchArchivedGoals().listen(_onGoals);
   }
 

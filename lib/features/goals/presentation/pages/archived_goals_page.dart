@@ -6,6 +6,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header.dart';
+import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../domain/entities/goal_with_progress.dart';
 import '../cubit/archived_goals_cubit.dart';
 import '../cubit/archived_goals_state.dart';
@@ -40,9 +41,11 @@ class ArchivedGoalsPage extends StatelessWidget {
                     EmptyState(
                       icon: LucideIcons.archive,
                       message: l10n.goalsArchivedEmptyMessage,
+                      description: l10n.goalsArchivedEmptyDescription,
                     ),
                   ArchivedGoalsStatus.ready => ArchivedGoalsListView(
                       goals: state.goals,
+                      accounts: state.accounts,
                       onOpenGoal: onOpenGoal,
                     ),
                 },
@@ -58,11 +61,13 @@ class ArchivedGoalsPage extends StatelessWidget {
 class ArchivedGoalsListView extends StatelessWidget {
   const ArchivedGoalsListView({
     required this.goals,
+    required this.accounts,
     required this.onOpenGoal,
     super.key,
   });
 
   final List<GoalWithProgress> goals;
+  final List<AccountWithBalance> accounts;
   final ValueChanged<String> onOpenGoal;
 
   @override
@@ -70,11 +75,24 @@ class ArchivedGoalsListView extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       itemCount: goals.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 10),
+      separatorBuilder: (context, index) => const SizedBox(height: 14),
       itemBuilder: (context, index) => ArchivedGoalRow(
         entry: goals[index],
+        accountName: _accountName(goals[index].goal.accountId),
         onTap: () => onOpenGoal(goals[index].goal.id),
       ),
     );
+  }
+
+  String? _accountName(String? accountId) {
+    if (accountId == null) {
+      return null;
+    }
+    for (final entry in accounts) {
+      if (entry.account.id == accountId) {
+        return entry.account.name;
+      }
+    }
+    return null;
   }
 }

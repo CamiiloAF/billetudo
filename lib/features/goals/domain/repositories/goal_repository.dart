@@ -4,6 +4,7 @@ import '../entities/goal_contribution.dart';
 import '../entities/goal_contribution_draft.dart';
 import '../entities/goal_detail.dart';
 import '../entities/goal_draft.dart';
+import '../entities/goal_movement_accounts.dart';
 import '../entities/goal_with_progress.dart';
 
 /// Contract the Metas feature depends on. Implemented in `data/` over Drift
@@ -104,4 +105,28 @@ abstract class GoalRepository {
   /// HU-08 cascade: removes the `GoalContribution` that mirrored
   /// [transactionId] when that transaction is deleted. No-op when none does.
   FutureResult<Unit> removeContributionForTransaction(String transactionId);
+
+  /// The Sheet detalle del movimiento (`N8Dv2e`)'s "Cuenta de origen"/
+  /// "Transferencia" rows: the origin/destination account names of the
+  /// `Transaction` a money-moving movement mirrors. `null` when
+  /// [transactionId] does not resolve to a transaction (should not happen for
+  /// a live movement) or either account row is missing entirely.
+  FutureResult<GoalMovementAccounts?> getMovementAccounts(String transactionId);
+
+  /// Deletes a single movement from a goal's ledger (the "Eliminar
+  /// movimiento" sheets, `arr2T`/`H2ND7O`/`xCNxM`): reversible via
+  /// `deletedAt`, same trash convention as everything else, but its effect on
+  /// the goal's derived state is a rewrite of history, unlike
+  /// [withdraw]/[contribute] which only ever add new events. Only for a
+  /// tracking-only [GoalContribution] (`transactionId == null`) —
+  /// a money-moving one must be removed by deleting its `Transaction`
+  /// instead (`TransactionRepository.deleteTransaction`, which cascades here
+  /// via [removeContributionForTransaction]), so the transfer and its
+  /// account balances unwind together.
+  ///
+  /// Unlike a normal contribution/withdrawal, this can move `completedAt`
+  /// **backwards**: deleting a movement that completed the goal reverts it
+  /// to in-progress, because this is a correction of history, not a new
+  /// event (HU-07's "never clears on a withdrawal" rule does not apply here).
+  FutureResult<Unit> removeContribution(String contributionId);
 }

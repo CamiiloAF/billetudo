@@ -10,11 +10,13 @@ class GoalAccountFact {
     required this.goal,
     required this.accountBalanceMinor,
     required this.accountCurrency,
+    required this.accountName,
   });
 
   final GoalWithProgress goal;
   final int accountBalanceMinor;
   final String accountCurrency;
+  final String accountName;
 }
 
 /// Pure domain service implementing HU-12: for every account with active
@@ -32,6 +34,7 @@ class GoalCoherenceCalculator {
     final totalsByAccount = <String, int>{};
     final balanceByAccount = <String, int>{};
     final currencyByAccount = <String, String>{};
+    final nameByAccount = <String, String>{};
 
     for (final fact in facts) {
       final accountId = fact.goal.goal.accountId;
@@ -42,6 +45,7 @@ class GoalCoherenceCalculator {
           (totalsByAccount[accountId] ?? 0) + fact.goal.savedMinor;
       balanceByAccount[accountId] = fact.accountBalanceMinor;
       currencyByAccount[accountId] = fact.accountCurrency;
+      nameByAccount[accountId] = fact.accountName;
     }
 
     final signals = <String, GoalCoherenceSignal>{};
@@ -52,6 +56,7 @@ class GoalCoherenceCalculator {
       if (total > balance) {
         signals[accountId] = GoalCoherenceSignal(
           accountId: accountId,
+          accountName: nameByAccount[accountId]!,
           totalSavedMinor: total,
           accountBalanceMinor: balance,
           currency: currencyByAccount[accountId]!,

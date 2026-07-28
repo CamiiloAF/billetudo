@@ -40,15 +40,35 @@ class GoalCoherenceBanner extends StatelessWidget {
               Icon(LucideIcons.info, size: 18, color: colors.sky),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  l10n.goalCoherenceMessage(
-                    GoalFormat.amount(signal.overshootMinor, signal.currency),
-                  ),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.goalCoherenceMessage(
+                        GoalFormat.amount(
+                          signal.overshootMinor,
+                          signal.currency,
+                        ),
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                        height: 1.35,
+                      ),
+                    ),
+                    if (onTap != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        l10n.goalCoherenceLink,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: colors.primaryOnSoftStrong,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               if (onTap != null) ...[

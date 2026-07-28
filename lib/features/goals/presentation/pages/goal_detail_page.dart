@@ -17,6 +17,7 @@ import '../cubit/goal_detail_cubit.dart';
 import '../cubit/goal_detail_state.dart';
 import '../utils/goal_format.dart';
 import '../utils/goal_icon_appearance.dart';
+import '../widgets/goal_account_unavailable_banner.dart';
 import '../widgets/goal_movement_row.dart';
 import '../widgets/goal_progress_ring.dart';
 import '../widgets/goal_quick_amount_row.dart';
@@ -24,6 +25,7 @@ import '../widgets/sheets/confirm_archive_goal_sheet.dart';
 import '../widgets/sheets/confirm_delete_goal_sheet.dart';
 import '../widgets/sheets/goal_actions_sheet.dart';
 import '../widgets/sheets/goal_contribution_sheet.dart';
+import '../widgets/sheets/goal_movement_detail_sheet.dart';
 
 /// The goal detail (HU-05/06/07/12/15): arc héroe + "Te faltan $X" + forward
 /// projection, quick-amount chips + Aportar/Retirar, and the movement peek
@@ -71,6 +73,7 @@ class GoalDetailPage extends StatelessWidget {
                         onOpenCompletedCelebration: onOpenCompletedCelebration,
                         onOpenMilestone: onOpenMilestone,
                         onOpenTransaction: onOpenTransaction,
+                        onEdit: onEdit,
                       ),
                   },
                 ),
@@ -153,6 +156,7 @@ class GoalDetailBody extends StatelessWidget {
     required this.movementsExpanded,
     required this.onOpenCompletedCelebration,
     required this.onOpenMilestone,
+    required this.onEdit,
     this.onOpenTransaction,
     super.key,
   });
@@ -161,6 +165,7 @@ class GoalDetailBody extends StatelessWidget {
   final bool movementsExpanded;
   final void Function(GoalWithProgress progress) onOpenCompletedCelebration;
   final void Function(String goalName, int milestonePct) onOpenMilestone;
+  final ValueChanged<String> onEdit;
   final ValueChanged<String>? onOpenTransaction;
 
   static const int _peekCount = 2;
@@ -176,6 +181,11 @@ class GoalDetailBody extends StatelessWidget {
     final history = detail.history;
     final visible =
         movementsExpanded ? history : history.take(_peekCount).toList();
+    final accountUnavailable = goal.hasAccount && detail.accountTombstoned;
+    // HU-12's "cuenta con lápida" (`XoGzx`): once its linked account is
+    // tombstoned, the goal effectively tracks manually again — a fresh
+    // contribution/retiro can no longer move money through it.
+    final hasUsableLinkedAccount = goal.hasAccount && !accountUnavailable;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
@@ -186,10 +196,26 @@ class GoalDetailBody extends StatelessWidget {
             size: 168,
             strokeWidth: 12,
             completed: completed,
-            child: Icon(
-              GoalIconAppearance.iconFor(goal.icon),
-              size: 32,
-              color: completed ? colors.incomeText : colors.primaryOnSoftStrong,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  GoalIconAppearance.iconFor(goal.icon),
+                  size: 34,
+                  color: completed ? colors.incomeText : colors.primaryOnSoft,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${progress.displayedPercent}%',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: completed
+                        ? colors.incomeText
+                        : colors.primaryOnSoftStrong,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -237,57 +263,115 @@ class GoalDetailBody extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 3),
+        Center(
+          child: Text(
+            accountUnavailable
+                ? l10n.goalDetailSavedOfTargetNoAccount(
+                    GoalFormat.amount(progress.savedMinor, goal.currency),
+                    GoalFormat.amount(goal.targetMinor, goal.currency),
+                  )
+                : l10n.goalDetailSavedOfTarget(
+                    GoalFormat.amount(progress.savedMinor, goal.currency),
+                    GoalFormat.amount(goal.targetMinor, goal.currency),
+                  ),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: colors.textSecondary,
+            ),
+          ),
+        ),
         const SizedBox(height: 24),
         if (!goal.isArchived) ...[
+          Row(
+            children: [
+              Expanded(
+                child: detail.projection.kind == GoalProjectionKind.overdue
+                    ? OutlinedButton.icon(
+                        onPressed: () => onEdit(goal.id),
+                        icon: const Icon(LucideIcons.calendar, size: 16),
+                        label: Text(l10n.goalAdjustDateCta),
+                      )
+                    : OutlinedButton.icon(
+                        onPressed: progress.savedMinor <= 0
+                            ? null
+                            : () => unawaited(
+                                  _openWithdraw(
+                                    context,
+                                    goal.id,
+                                    goal.name,
+                                    goal.currency,
+                                    progress.savedMinor,
+                                    hasUsableLinkedAccount,
+                                  ),
+                                ),
+                        icon: const Icon(LucideIcons.arrowDownLeft, size: 16),
+                        label: Text(l10n.goalWithdrawCta),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => unawaited(
+                    _openContribute(
+                      context,
+                      goal.id,
+                      goal.name,
+                      goal.currency,
+                      hasUsableLinkedAccount,
+                    ),
+                  ),
+                  icon: const Icon(LucideIcons.plus, size: 16),
+                  label: Text(l10n.goalContributeCta),
+                ),
+              ),
+            ],
+          ),
+          if (accountUnavailable) ...[
+            const SizedBox(height: 14),
+            GoalAccountUnavailableBanner(
+              onLinkAnother: () => onEdit(goal.id),
+            ),
+          ],
           if (!completed) ...[
+            const SizedBox(height: 20),
+            Text(
+              l10n.goalQuickAmountLabel,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: colors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 10),
             GoalQuickAmountRow(
               currency: goal.currency,
               onQuickAmount: (amountMinor) => unawaited(
                 _quickContribute(context, goal.id, goal.currency, amountMinor),
               ),
               onOther: () => unawaited(
-                _openContribute(context, goal.id, goal.currency),
+                _openContribute(
+                  context,
+                  goal.id,
+                  goal.name,
+                  goal.currency,
+                  hasUsableLinkedAccount,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
           ],
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: progress.savedMinor <= 0
-                      ? null
-                      : () => unawaited(
-                            _openWithdraw(
-                              context,
-                              goal.id,
-                              goal.currency,
-                              progress.savedMinor,
-                            ),
-                          ),
-                  child: Text(l10n.goalWithdrawCta),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () => unawaited(
-                    _openContribute(context, goal.id, goal.currency),
-                  ),
-                  child: Text(l10n.goalContributeCta),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
         ],
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              l10n.goalMovementsTitle(history.length),
+              l10n.goalMovementsSectionTitle,
               style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: colors.textPrimary,
               ),
@@ -316,9 +400,16 @@ class GoalDetailBody extends StatelessWidget {
             GoalMovementRow(
               movement: movement,
               currency: goal.currency,
-              onTap: movement.transactionId == null
-                  ? null
-                  : () => onOpenTransaction?.call(movement.transactionId!),
+              onTap: () => unawaited(
+                GoalMovementDetailSheet.show(
+                  context,
+                  movement: movement,
+                  currency: goal.currency,
+                  goalName: goal.name,
+                  goalCompleted: completed,
+                  onOpenTransaction: onOpenTransaction,
+                ),
+              ),
             ),
       ],
     );
@@ -367,14 +458,18 @@ class GoalDetailBody extends StatelessWidget {
   Future<void> _openContribute(
     BuildContext context,
     String goalId,
+    String goalName,
     String currency,
+    bool hasLinkedAccount,
   ) async {
     final cubit = context.read<GoalDetailCubit>();
     final milestone = await GoalContributionSheet.show(
       context,
       goalId: goalId,
+      goalName: goalName,
       direction: GoalMovementDirection.contribution,
       currency: currency,
+      hasLinkedAccount: hasLinkedAccount,
     );
     if (context.mounted) {
       _handleMilestone(context, cubit, milestone);
@@ -384,15 +479,19 @@ class GoalDetailBody extends StatelessWidget {
   Future<void> _openWithdraw(
     BuildContext context,
     String goalId,
+    String goalName,
     String currency,
     int maxWithdrawableMinor,
+    bool hasLinkedAccount,
   ) async {
     await GoalContributionSheet.show(
       context,
       goalId: goalId,
+      goalName: goalName,
       direction: GoalMovementDirection.withdrawal,
       currency: currency,
       maxWithdrawableMinor: maxWithdrawableMinor,
+      hasLinkedAccount: hasLinkedAccount,
     );
   }
 

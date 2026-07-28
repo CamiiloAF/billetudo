@@ -37,7 +37,6 @@ class HomePage extends StatefulWidget {
     required this.onOpenAccounts,
     required this.onOpenAccountMovements,
     required this.onOpenScheduledPayments,
-    required this.onOpenGoals,
     required this.onOpenDebts,
     required this.onOpenReports,
     required this.onOpenLogin,
@@ -60,10 +59,6 @@ class HomePage extends StatefulWidget {
   final ValueChanged<String> onOpenAccountMovements;
 
   final VoidCallback onOpenScheduledPayments;
-
-  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable as
-  /// the last quick-access chip and from the "Más" hub.
-  final VoidCallback onOpenGoals;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
 
@@ -238,7 +233,6 @@ class _HomePageState extends State<HomePage> {
                       onOpenScheduledPayments: widget.onOpenScheduledPayments,
                       onOpenDebts: widget.onOpenDebts,
                       onOpenReports: widget.onOpenReports,
-                      onOpenGoals: widget.onOpenGoals,
                     ),
                   ),
                 ),

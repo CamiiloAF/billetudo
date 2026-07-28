@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../utils/goal_format.dart';
@@ -38,7 +39,11 @@ class GoalQuickAmountRow extends StatelessWidget {
           const SizedBox(width: 8),
         ],
         Expanded(
-          child: QuickAmountChip(label: l10n.goalQuickAmountOther, onTap: onOther),
+          child: QuickAmountChip(
+            label: l10n.goalQuickAmountOther,
+            icon: LucideIcons.pencil,
+            onTap: onOther,
+          ),
         ),
       ],
     );

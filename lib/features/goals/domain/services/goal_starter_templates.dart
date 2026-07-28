@@ -33,24 +33,38 @@ abstract final class GoalStarterTemplates {
   static const String threeMonthCushionId = 'starter-three-month-cushion';
 
   static const List<GoalStarterTemplate> all = [
+    // Icons and which template carries the "3 meses de tus gastos ≈ $X"
+    // suggestion are confirmed against the real `.pen` tiles (`qzBkN`'s
+    // `vjTZR` rows), not guessed from the templates' own names — "Colchón de
+    // 3 meses" mentions "3 meses" in its copy but the frame gives it a
+    // static description, not a computed suggestion; only "Fondo de
+    // emergencia" does.
     GoalStarterTemplate(
       id: emergencyFundId,
       name: 'Fondo de emergencia',
-      icon: 'shield',
+      icon: 'umbrella',
       suggestedMonthsOfExpenses: 3,
     ),
     GoalStarterTemplate(
       id: vacationId,
       name: 'Vacaciones',
-      icon: 'palm-tree',
+      icon: 'plane',
     ),
     GoalStarterTemplate(
       id: threeMonthCushionId,
       name: 'Un colchón de 3 meses',
-      icon: 'umbrella',
-      suggestedMonthsOfExpenses: 3,
+      icon: 'shield',
     ),
   ];
+
+  /// A static placeholder average monthly expense, in COP-equivalent minor
+  /// units ($800.000). No use case in this codebase yet derives a real
+  /// average from the user's transaction history — until one exists, the
+  /// empty-state's "3 meses de tus gastos ≈ $X" suggestion falls back to this
+  /// fixed figure rather than going unsuggested. Replace with a real
+  /// data-derived average (e.g. a dedicated `WatchAverageMonthlyExpense` use
+  /// case reading `Transactions`) as soon as that source exists.
+  static const int fallbackAverageMonthlyExpenseMinor = 80000000;
 
   /// HU-13: "3 meses de tus gastos ≈ $X" — a suggestion the user can edit,
   /// never an imposed value. `null` when there is no expense history to

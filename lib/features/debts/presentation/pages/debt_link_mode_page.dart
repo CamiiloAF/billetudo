@@ -20,6 +20,7 @@ class DebtLinkModePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TransactionsPage(
       // The FAB is hidden and the row/account taps below are unused in link
       // mode, so these are inert stubs.
@@ -29,7 +30,8 @@ class DebtLinkModePage extends StatelessWidget {
       linkMode: TransactionsLinkMode(
         // Just the name: the direction ("· Yo debo") confuses more than it
         // helps while picking a movement to attribute.
-        debtLabel: debt.name,
+        bannerTitle: l10n.debtLinkBannerTitle(debt.name),
+        bannerBody: l10n.debtLinkBannerBody,
         onCancel: () => Navigator.of(context).pop(),
         onLinkTransaction: (transactionId) =>
             _link(context, transactionId),

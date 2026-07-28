@@ -12,6 +12,7 @@ import '../../domain/entities/goal_draft.dart';
 import '../cubit/goal_form_cubit.dart';
 import '../cubit/goal_form_state.dart';
 import '../utils/goal_format.dart';
+import '../utils/goal_icon_appearance.dart';
 import '../widgets/currency_pill.dart';
 import '../widgets/goal_amount_hero_field.dart';
 import '../widgets/goal_field_label.dart';
@@ -19,12 +20,13 @@ import '../widgets/goal_selector_box.dart';
 import '../widgets/sheets/confirm_delete_goal_sheet.dart';
 import '../widgets/sheets/goal_account_picker_sheet.dart';
 import '../widgets/sheets/goal_currency_picker_sheet.dart';
+import '../widgets/sheets/goal_icon_picker_sheet.dart';
 
-/// Crear / editar meta (`PjBCt`/`M2f3R`, HU-01/HU-02/HU-08): the objective
-/// amount as the héroe, name, optional linked account (locks the currency),
-/// optional fecha objetivo, and — on create only — an optional "¿Ya tienes
-/// algo ahorrado?" starting figure. Editing reveals "Eliminar meta"
-/// (papelera/undo, HU-10).
+/// Crear / editar meta (`PjBCt`/`M2f3R`, HU-01/HU-02/HU-08): ícono y nombre,
+/// the objective amount as a compact dominant row, optional linked account
+/// (locks the currency), optional fecha objetivo, and — on create only — an
+/// optional, visually secondary "¿Ya tienes algo ahorrado?" starting figure.
+/// Editing reveals "Eliminar meta" (papelera/undo, HU-10).
 ///
 /// Pops with `true` when the goal was deleted.
 class GoalFormPage extends StatelessWidget {
@@ -82,11 +84,14 @@ class GoalFormHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         children: [
+          // `PjBCt`'s `Dtm0X` Page Header always shows the back arrow, never
+          // an "x" — crear/editar meta is a stacked screen, not a dismissible
+          // sheet.
           PageHeaderCircleButton(
-            icon: LucideIcons.x,
+            icon: LucideIcons.arrowLeft,
             background: colors.muted,
             foreground: colors.textPrimary,
-            tooltip: l10n.commonCancel,
+            tooltip: l10n.commonBack,
             onPressed: Navigator.of(context).pop,
           ),
           Expanded(
@@ -119,10 +124,17 @@ class GoalFormBody extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final cubit = context.read<GoalFormCubit>();
+    final isCurrencyLocked = state.isCurrencyLocked;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
       children: [
+        GoalFieldLabel(l10n.goalFormIconAndNameLabel),
+        const SizedBox(height: 6),
+        GoalIconAndNameRow(state: state),
+        const SizedBox(height: 16),
+        GoalFieldLabel(l10n.goalFormTargetLabel),
+        const SizedBox(height: 6),
         GoalAmountHeroField(
           key: ValueKey('target-${state.id ?? 'new'}'),
           fieldKey: const ValueKey('goal-amount-target'),
@@ -133,34 +145,27 @@ class GoalFormBody extends StatelessWidget {
           errorText: state.failedField == GoalDraft.fieldTargetMinor
               ? l10n.goalFormErrorTargetZero
               : null,
-          boxed: true,
-        ),
-        const SizedBox(height: 6),
-        Center(
-          child: CurrencyPill(
+          compact: true,
+          compactTrailing: CurrencyPill(
             label: state.currency,
-            locked: state.isCurrencyLocked,
-            onTap: state.isCurrencyLocked
+            locked: isCurrencyLocked,
+            onTap: isCurrencyLocked
                 ? null
                 : () => unawaited(_pickCurrency(context, cubit, state.currency)),
           ),
         ),
-        const SizedBox(height: 16),
-        GoalFieldLabel(l10n.goalFormNameLabel),
         const SizedBox(height: 6),
-        TextFormField(
-          key: ValueKey('name-${state.id ?? 'new'}'),
-          initialValue: state.name,
-          textCapitalization: TextCapitalization.sentences,
-          maxLength: GoalDraft.maxNameLength,
-          onChanged: cubit.nameChanged,
-          decoration: InputDecoration(
-            hintText: l10n.goalFormNameHint,
-            counterText: '',
-            errorText: state.failedField == GoalDraft.fieldName
-                ? l10n.goalFormNameRequired
-                : null,
-          ),
+        Text(
+          isCurrencyLocked
+              ? l10n.goalFormCurrencyHintLocked(
+                  _selectedAccountName(state) ?? '', state.currency)
+              : l10n.goalFormCurrencyHintUnlocked,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+                color: colors.textSecondary,
+              ),
         ),
         const SizedBox(height: 14),
         GoalFieldLabel(l10n.goalFormAccountLabel),
@@ -193,15 +198,26 @@ class GoalFormBody extends StatelessWidget {
         ),
         if (!state.isEditing) ...[
           const SizedBox(height: 14),
-          // `GoalAmountHeroField` already renders `label` internally (as
-          // `GoalFormTargetLabel`/`Objetivo` above does), so no external
-          // `GoalFieldLabel` here — adding one duplicated the text (`PjBCt`).
+          GoalFieldLabel(l10n.goalFormInitialSavedLabel),
+          const SizedBox(height: 6),
           GoalAmountHeroField(
             fieldKey: const ValueKey('goal-amount-initial'),
             label: l10n.goalFormInitialSavedLabel,
             currency: state.currency,
             initialAmountMinor: state.initialSavedMinor,
             onChanged: cubit.initialSavedMinorChanged,
+            compact: true,
+            compactLeadingIcon: LucideIcons.piggyBank,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.goalFormInitialSavedHint,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                  color: colors.textSecondary,
+                ),
           ),
         ],
         if (state.isEditing) ...[
@@ -280,6 +296,119 @@ class GoalFormBody extends StatelessWidget {
     final confirmed = await ConfirmDeleteGoalSheet.show(context);
     if ((confirmed ?? false) && context.mounted) {
       await cubit.delete();
+    }
+  }
+}
+
+/// The "Ícono y nombre" row (`PjBCt`'s `NxBR7`): a 52x52 tappable icon avatar
+/// with a small pencil edit-badge, opening [GoalIconPickerSheet], next to the
+/// name's own `Input Box`.
+class GoalIconAndNameRow extends StatelessWidget {
+  const GoalIconAndNameRow({required this.state, super.key});
+
+  final GoalFormState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
+    final cubit = context.read<GoalFormCubit>();
+
+    return Row(
+      children: [
+        Semantics(
+          button: true,
+          label: l10n.goalIconSheetTitle,
+          child: InkWell(
+            onTap: () => unawaited(_pickIcon(context, cubit, state.icon)),
+            borderRadius: BorderRadius.circular(14),
+            child: SizedBox(
+              width: 52,
+              height: 52,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.muted,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      GoalIconAppearance.iconFor(state.icon),
+                      size: 22,
+                      color: colors.primaryOnSoft,
+                    ),
+                  ),
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: colors.border),
+                      ),
+                      child: Icon(
+                        LucideIcons.pencil,
+                        size: 10,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colors.border),
+            ),
+            child: TextFormField(
+              key: ValueKey('name-${state.id ?? 'new'}'),
+              initialValue: state.name,
+              textCapitalization: TextCapitalization.sentences,
+              maxLength: GoalDraft.maxNameLength,
+              onChanged: cubit.nameChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                counterText: '',
+                hintText: l10n.goalFormNameHint,
+                errorText: state.failedField == GoalDraft.fieldName
+                    ? l10n.goalFormNameRequired
+                    : null,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickIcon(
+    BuildContext context,
+    GoalFormCubit cubit,
+    String? current,
+  ) async {
+    final picked = await GoalIconPickerSheet.show(context, selected: current);
+    if (picked != null) {
+      cubit.iconChanged(picked);
     }
   }
 }

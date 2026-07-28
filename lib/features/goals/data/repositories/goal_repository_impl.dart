@@ -13,6 +13,7 @@ import '../../domain/entities/goal_contribution.dart';
 import '../../domain/entities/goal_contribution_draft.dart';
 import '../../domain/entities/goal_detail.dart';
 import '../../domain/entities/goal_draft.dart';
+import '../../domain/entities/goal_movement_accounts.dart';
 import '../../domain/entities/goal_with_progress.dart';
 import '../../domain/repositories/goal_repository.dart';
 import '../../domain/services/goal_coherence_calculator.dart';
@@ -162,16 +163,18 @@ class GoalRepositoryImpl implements GoalRepository {
             return Left<Failure, GoalDetail>(failure);
           }
           final detail = result.getOrElse((_) => throw StateError('unreachable'));
-          final coherence = await _coherenceForGoal(detail.progress.goal);
-          if (coherence == null) {
-            return Right<Failure, GoalDetail>(detail);
-          }
+          final goal = detail.progress.goal;
+          final coherence = await _coherenceForGoal(goal);
+          final accountTombstoned = await _isAccountTombstoned(goal.accountId);
           return Right<Failure, GoalDetail>(
             GoalDetail(
-              progress: detail.progress.copyWith(coherence: coherence),
+              progress: coherence == null
+                  ? detail.progress
+                  : detail.progress.copyWith(coherence: coherence),
               projection: detail.projection,
               momentum: detail.momentum,
               history: detail.history,
+              accountTombstoned: accountTombstoned,
             ),
           );
         }),
@@ -506,7 +509,7 @@ class GoalRepositoryImpl implements GoalRepository {
           amountMinor: amountMinor,
           updatedAt: now.millisecondsSinceEpoch,
         );
-        await _reconcileAfterExternalMovementChange(
+        await _reconcileAfterHistoryRewrite(
           contributionRow.goalId,
           now: now,
         );
@@ -523,14 +526,74 @@ class GoalRepositoryImpl implements GoalRepository {
           return const Right(unit);
         }
         await _local.deleteContributionForTransaction(transactionId);
-        await _reconcileAfterExternalMovementChange(
+        await _reconcileAfterHistoryRewrite(
           contributionRow.goalId,
           now: DateTime.now(),
         );
         return const Right(unit);
       });
 
-  Future<void> _reconcileAfterExternalMovementChange(
+  @override
+  FutureResult<GoalMovementAccounts?> getMovementAccounts(
+    String transactionId,
+  ) =>
+      _guard(() async {
+        final transaction = await _local.getTransaction(transactionId);
+        final transferAccountId = transaction?.transferAccountId;
+        if (transaction == null || transferAccountId == null) {
+          return const Right(null);
+        }
+        final origin =
+            await _local.getAccountEvenTombstoned(transaction.accountId);
+        final destination =
+            await _local.getAccountEvenTombstoned(transferAccountId);
+        if (origin == null || destination == null) {
+          return const Right(null);
+        }
+        return Right(
+          GoalMovementAccounts(
+            originName: origin.name,
+            destinationName: destination.name,
+          ),
+        );
+      });
+
+  @override
+  FutureResult<Unit> removeContribution(String contributionId) => _guard(
+        () async {
+          final contributionRow =
+              await _local.getContributionById(contributionId);
+          if (contributionRow == null) {
+            return Left(
+              NotFoundFailure('contribution "$contributionId" does not exist'),
+            );
+          }
+          final now = DateTime.now();
+          await _local.softDeleteContribution(
+            contributionId,
+            deletedAt: now,
+            updatedAt: now.millisecondsSinceEpoch,
+          );
+          await _reconcileAfterHistoryRewrite(contributionRow.goalId, now: now);
+          return const Right(unit);
+        },
+      );
+
+  Future<bool> _isAccountTombstoned(String? accountId) async {
+    if (accountId == null) {
+      return false;
+    }
+    final row = await _local.getAccountEvenTombstoned(accountId);
+    return row?.tombstonedAt != null;
+  }
+
+  /// Shared by every write that REWRITES a goal's history instead of adding a
+  /// new event to it (deleting or editing a movement): unlike
+  /// [_reconcileProgressState] (used by a fresh contribute/withdraw, which
+  /// only ever moves `completedAt`/`lastMilestonePct` forward), this can move
+  /// both backwards too — the same bidirectional rule `UpdateGoal` already
+  /// applies when `targetMinor` changes.
+  Future<void> _reconcileAfterHistoryRewrite(
     String goalId, {
     required DateTime now,
   }) async {
@@ -540,7 +603,32 @@ class GoalRepositoryImpl implements GoalRepository {
     }
     final goal = GoalMapper.toEntity(goalRow);
     final savedMinor = await _savedMinorOf(goalId);
-    await _reconcileProgressState(goal: goal, savedMinor: savedMinor, now: now);
+
+    var completedAt = goal.completedAt;
+    if (completedAt != null && savedMinor < goal.targetMinor) {
+      completedAt = null;
+    } else if (completedAt == null && savedMinor >= goal.targetMinor) {
+      completedAt = now;
+    }
+
+    final rawPercent =
+        goal.targetMinor <= 0 ? 0 : (savedMinor * 100) / goal.targetMinor;
+    final lastMilestonePct = _milestoneTracker.reconcileAfterTargetChange(
+      currentLastMilestonePct: goal.lastMilestonePct,
+      newRawPercent: rawPercent,
+    );
+
+    if (completedAt != goal.completedAt ||
+        lastMilestonePct != goal.lastMilestonePct) {
+      await _local.updateGoal(
+        goalId,
+        GoalMapper.progressStateCompanion(
+          completedAt: completedAt,
+          lastMilestonePct: lastMilestonePct,
+          now: now,
+        ),
+      );
+    }
   }
 
   Future<int> _savedMinorOf(String goalId) async {
@@ -615,7 +703,7 @@ class GoalRepositoryImpl implements GoalRepository {
     List<GoalWithProgress> activeGoals,
   ) async {
     final facts = <GoalAccountFact>[];
-    final balanceCache = <String, (int, String)>{};
+    final balanceCache = <String, (int, String, String)>{};
 
     for (final goalWithProgress in activeGoals) {
       final accountId = goalWithProgress.goal.accountId;
@@ -634,7 +722,7 @@ class GoalRepositoryImpl implements GoalRepository {
           movements:
               movements.map((m) => AccountMapper.toMovement(m, accountId)),
         );
-        cached = (balance.balanceMinor, accountRow.currency);
+        cached = (balance.balanceMinor, accountRow.currency, accountRow.name);
         balanceCache[accountId] = cached;
       }
       facts.add(
@@ -642,6 +730,7 @@ class GoalRepositoryImpl implements GoalRepository {
           goal: goalWithProgress,
           accountBalanceMinor: cached.$1,
           accountCurrency: cached.$2,
+          accountName: cached.$3,
         ),
       );
     }

@@ -21,6 +21,7 @@ void main() {
       MorePage(
         onOpenAccounts: () {},
         onOpenCategories: () {},
+        onOpenDebts: () {},
         onOpenScheduledPayments: () {},
         onOpenGoals: () {},
         onOpenComingSoon: (_) {},

@@ -27,26 +27,29 @@ abstract final class GoalIconAppearance {
     'camera': LucideIcons.camera,
     'briefcase': LucideIcons.briefcase,
     'sparkles': LucideIcons.sparkles,
+    'flag': LucideIcons.flag,
   };
 
-  /// The set offered by the icon picker (`cwj6B`), in display order.
+  /// The set offered by the icon picker (`cwj6B`, "set expresivo"), in the
+  /// exact 5x3 grid order the frame lays out. Confirmed against the real
+  /// `.pen` tiles (not the row/tile *names*, which are stale copy-paste
+  /// labels in Pencil — the tiles' own `icon` field is the source of truth).
   static const List<String> iconNames = [
-    'target',
-    'shield',
-    'palm-tree',
-    'umbrella',
     'plane',
-    'car',
-    'house',
-    'graduation-cap',
+    'umbrella',
+    'shield',
     'gift',
-    'heart',
-    'piggy-bank',
     'laptop',
     'bike',
-    'camera',
-    'briefcase',
+    'graduation-cap',
+    'palm-tree',
+    'house',
+    'car',
+    'heart',
+    'target',
     'sparkles',
+    'flag',
+    'piggy-bank',
   ];
 
   static IconData iconFor(String? name) =>

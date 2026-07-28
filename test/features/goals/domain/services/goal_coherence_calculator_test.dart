@@ -36,6 +36,7 @@ void main() {
         goal: _withProgress(id: 'g1', accountId: 'acc-1', savedMinor: 50000),
         accountBalanceMinor: 100000,
         accountCurrency: 'COP',
+        accountName: 'Cuenta',
       ),
     ]);
 
@@ -51,11 +52,13 @@ void main() {
           goal: _withProgress(id: 'g1', accountId: 'acc-1', savedMinor: 70000),
           accountBalanceMinor: 100000,
           accountCurrency: 'COP',
+          accountName: 'Cuenta',
         ),
         GoalAccountFact(
           goal: _withProgress(id: 'g2', accountId: 'acc-1', savedMinor: 50000),
           accountBalanceMinor: 100000,
           accountCurrency: 'COP',
+          accountName: 'Cuenta',
         ),
       ]);
 
@@ -73,11 +76,13 @@ void main() {
         goal: _withProgress(id: 'g1', accountId: 'acc-1', savedMinor: 200000),
         accountBalanceMinor: 100000,
         accountCurrency: 'COP',
+        accountName: 'Cuenta',
       ),
       GoalAccountFact(
         goal: _withProgress(id: 'g2', accountId: 'acc-2', savedMinor: 10000),
         accountBalanceMinor: 100000,
         accountCurrency: 'COP',
+        accountName: 'Cuenta',
       ),
     ]);
 

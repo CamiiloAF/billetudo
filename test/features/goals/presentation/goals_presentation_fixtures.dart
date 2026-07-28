@@ -79,10 +79,12 @@ GoalDetail buildGoalDetail({
   ),
   GoalMomentum momentum = const GoalMomentum(streakWeeks: 0),
   List<GoalContribution> history = const [],
+  bool accountTombstoned = false,
 }) =>
     GoalDetail(
       progress: progress ?? buildGoalWithProgress(),
       projection: projection,
       momentum: momentum,
       history: history,
+      accountTombstoned: accountTombstoned,
     );

@@ -47,16 +47,20 @@ import '../../features/debts/presentation/pages/debt_detail_page.dart';
 import '../../features/debts/presentation/pages/debt_form_page.dart';
 import '../../features/debts/presentation/pages/debt_link_mode_page.dart';
 import '../../features/debts/presentation/pages/debts_list_page.dart';
+import '../../features/goals/domain/entities/goal_contribution.dart';
 import '../../features/goals/domain/entities/goal_with_progress.dart';
+import '../../features/goals/domain/services/goal_starter_templates.dart';
 import '../../features/goals/domain/usecases/archive_goal.dart';
 import '../../features/goals/presentation/cubit/archived_goals_cubit.dart';
 import '../../features/goals/presentation/cubit/goal_detail_cubit.dart';
 import '../../features/goals/presentation/cubit/goal_form_cubit.dart';
+import '../../features/goals/presentation/cubit/goal_link_cubit.dart';
 import '../../features/goals/presentation/cubit/goals_list_cubit.dart';
 import '../../features/goals/presentation/pages/archived_goals_page.dart';
 import '../../features/goals/presentation/pages/goal_completed_celebration_page.dart';
 import '../../features/goals/presentation/pages/goal_detail_page.dart';
 import '../../features/goals/presentation/pages/goal_form_page.dart';
+import '../../features/goals/presentation/pages/goal_link_mode_page.dart';
 import '../../features/goals/presentation/pages/goals_list_page.dart';
 import '../../features/goals/presentation/widgets/goal_milestone_sheet.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
@@ -167,6 +171,12 @@ abstract final class AppRoutes {
   static String linkTransactionToDebt(String debtId) =>
       '$transactions/enlazar-deuda/$debtId';
 
+  /// Movimientos in Metas link mode: `/movimientos/enlazar-meta/<goalId>`
+  /// (HU-03 "Enlazar un movimiento"). The [GoalLinkContext] rides in the
+  /// route's `extra` for the banner and the movement direction.
+  static String linkTransactionToGoal(String goalId) =>
+      '$transactions/enlazar-meta/$goalId';
+
   /// Detail of one account: `/cuentas/<id>`.
   static String account(String id) => '$accounts/$id';
 
@@ -270,6 +280,23 @@ class DebtInstallmentContext {
   final int? debtOutstandingMinor;
 }
 
+/// The goal context the Enlazar-un-movimiento route needs (HU-03), passed as
+/// `extra`. Built by `GoalContributionSheet` (from the goal it is open on)
+/// so the reused Movimientos list gets the goal's name and the movement
+/// direction it was open on, without either feature's domain depending on
+/// the other. The router is the only layer that assembles it.
+class GoalLinkContext {
+  const GoalLinkContext({
+    required this.goalId,
+    required this.goalName,
+    required this.direction,
+  });
+
+  final String goalId;
+  final String goalName;
+  final GoalMovementDirection direction;
+}
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
@@ -285,7 +312,7 @@ GoRouter createAppRouter() {
           _inicioBranch(),
           _movimientosBranch(),
           _presupuestosBranch(),
-          _pagosProgramadosBranch(),
+          _metasBranch(),
           _masBranch(),
         ],
       ),
@@ -296,15 +323,17 @@ GoRouter createAppRouter() {
       // for the *first-level* routes of a branch — unlike routes nested a
       // level deeper, e.g. Ajustes under `more`, see `_settingsRoute()`).
       // Declaring these as siblings of the shell route itself is the
-      // documented go_router pattern for screens that must render without
-      // the tab bar regardless of which tab launched them. Metas is here (not a
-      // tab anymore): Pagos Programados took its tab slot; Metas is reached from
-      // Inicio's quick access and the "Más" hub as a stacked screen.
+      // documented go_router pattern for screens that must render without the
+      // tab bar regardless of which tab launched them. Pagos Programados is
+      // here (not a tab anymore): Metas recovered its slot, so Pagos
+      // Programados is reached from Inicio's quick access and the "Más" hub
+      // as a stacked screen.
       _accountsRoute(),
       _categoriesRoute(),
-      _goalsRoute(),
+      _pagosProgramadosRoute(),
       _debtsRoute(),
       _debtLinkModeRoute(),
+      _goalLinkModeRoute(),
     ],
   );
 }
@@ -335,11 +364,10 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                 );
                 context.go(AppRoutes.transactions);
               },
-              // Pagos Programados is a tab now: switch to its branch instead of
-              // stacking it on the root navigator.
+              // Pagos Programados is no longer a tab: stack it on the root
+              // navigator.
               onOpenScheduledPayments: () =>
-                  context.go(AppRoutes.scheduledPayments),
-              onOpenGoals: () => context.push(AppRoutes.goals),
+                  context.push(AppRoutes.scheduledPayments),
               onOpenDebts: () => context.push(AppRoutes.debts),
               onOpenReports: () => context.push(
                 AppRoutes.comingSoonTitled(
@@ -513,9 +541,9 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
                       context.push<String>(AppRoutes.transaction(id)),
                   onOpenScheduledPayment: (id) =>
                       context.push(AppRoutes.scheduledPayment(id)),
-                  // Pagos Programados is a tab root: switch to its branch.
+                  // Pagos Programados is no longer a tab root: stack it.
                   onSeeAllScheduled: () =>
-                      context.go(AppRoutes.scheduledPayments),
+                      context.push(AppRoutes.scheduledPayments),
                 ),
               ),
               routes: [
@@ -537,91 +565,98 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
       ],
     );
 
-// Metas is no longer a tab (Pagos Programados took its slot). It stays a real
-// Nivel 0 destination reachable from Inicio's quick access and the "Más" hub,
-// rendered as a stacked screen on the root navigator — hence its own
-// `Page Header` with a back button (`showAppBar` default), unlike when it was a
-// tab root.
-GoRoute _goalsRoute() => GoRoute(
-      path: AppRoutes.goals,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => BlocProvider(
-        create: (context) =>
-            _started(getIt<GoalsListCubit>(), (c) => c.start()),
-        child: GoalsListPage(
-          onAddGoal: () => context.push(AppRoutes.newGoal),
-          onOpenGoal: (id) => context.push(AppRoutes.goal(id)),
-          onOpenArchived: () => context.push(AppRoutes.archivedGoals),
-          // The lista filtrada por cuenta (HU-12's `qFX42`) has no frame in
-          // this stage's scope; the account's own detail is the closest
-          // existing screen until that follow-up lands.
-          onOpenCoherenceAccount: (accountId) =>
-              context.push(AppRoutes.account(accountId)),
-        ),
-      ),
+// Metas (HU-11/12/13): a bottom-nav tab again (it recovered its slot from
+// Pagos Programados). The list is the branch root, so it renders inside the
+// shell with the `Tab Bar` and — crucially — **without** `parentNavigatorKey`
+// (a branch-root route can only use its own branch's navigator; go_router
+// asserts this at construction time). Its stacked children ("archivadas",
+// "nueva", ":id" and their sub-forms) keep `parentNavigatorKey:
+// _rootNavigatorKey` so they still push above the tab bar on the root
+// navigator — same pattern as Movimientos/Presupuestos.
+StatefulShellBranch _metasBranch() => StatefulShellBranch(
       routes: [
         GoRoute(
-          path: 'archivadas',
-          parentNavigatorKey: _rootNavigatorKey,
+          path: AppRoutes.goals,
           builder: (context, state) => BlocProvider(
             create: (context) =>
-                _started(getIt<ArchivedGoalsCubit>(), (c) => c.start()),
-            child: ArchivedGoalsPage(
+                _started(getIt<GoalsListCubit>(), (c) => c.start()),
+            child: GoalsListPage(
+              onAddGoal: ([template]) =>
+                  context.push(AppRoutes.newGoal, extra: template),
               onOpenGoal: (id) => context.push(AppRoutes.goal(id)),
-            ),
-          ),
-        ),
-        // Declared before ':id' so "nueva" is never read as an id.
-        GoRoute(
-          path: 'nueva',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) =>
-                _started(getIt<GoalFormCubit>(), (c) => c.load(null)),
-            child: const GoalFormPage(),
-          ),
-        ),
-        GoRoute(
-          path: ':id',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _started(
-              getIt<GoalDetailCubit>(),
-              (c) => c.start(state.pathParameters['id']!),
-            ),
-            child: GoalDetailPage(
-              onEdit: (id) async {
-                final deleted =
-                    await context.push<bool>(AppRoutes.editGoal(id));
-                if ((deleted ?? false) && context.mounted) {
-                  context.pop();
-                }
-              },
-              onOpenCompletedCelebration: (progress) => unawaited(
-                _openGoalCompletedCelebration(context, progress),
-              ),
-              onOpenMilestone: (goalName, milestonePct) => unawaited(
-                GoalMilestoneSheet.show(
-                  context,
-                  goalName: goalName,
-                  milestonePct: milestonePct,
-                ),
-              ),
-              onOpenTransaction: (id) =>
-                  context.push<String>(AppRoutes.transaction(id)),
+              onOpenArchived: () => context.push(AppRoutes.archivedGoals),
             ),
           ),
           routes: [
             GoRoute(
-              path: 'editar',
+              path: 'archivadas',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) =>
+                    _started(getIt<ArchivedGoalsCubit>(), (c) => c.start()),
+                child: ArchivedGoalsPage(
+                  onOpenGoal: (id) => context.push(AppRoutes.goal(id)),
+                ),
+              ),
+            ),
+            // Declared before ':id' so "nueva" is never read as an id.
+            GoRoute(
+              path: 'nueva',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (context, state) => BlocProvider(
                 create: (context) => _started(
                   getIt<GoalFormCubit>(),
-                  (c) => c.load(state.pathParameters['id']),
+                  (c) => c.load(
+                    null,
+                    template: state.extra as GoalStarterTemplate?,
+                  ),
                 ),
                 child: const GoalFormPage(),
               ),
+            ),
+            GoRoute(
+              path: ':id',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => BlocProvider(
+                create: (context) => _started(
+                  getIt<GoalDetailCubit>(),
+                  (c) => c.start(state.pathParameters['id']!),
+                ),
+                child: GoalDetailPage(
+                  onEdit: (id) async {
+                    final deleted =
+                        await context.push<bool>(AppRoutes.editGoal(id));
+                    if ((deleted ?? false) && context.mounted) {
+                      context.pop();
+                    }
+                  },
+                  onOpenCompletedCelebration: (progress) => unawaited(
+                    _openGoalCompletedCelebration(context, progress),
+                  ),
+                  onOpenMilestone: (goalName, milestonePct) => unawaited(
+                    GoalMilestoneSheet.show(
+                      context,
+                      goalName: goalName,
+                      milestonePct: milestonePct,
+                    ),
+                  ),
+                  onOpenTransaction: (id) =>
+                      context.push<String>(AppRoutes.transaction(id)),
+                ),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'editar',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => _started(
+                      getIt<GoalFormCubit>(),
+                      (c) => c.load(state.pathParameters['id']),
+                    ),
+                    child: const GoalFormPage(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -668,10 +703,12 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
               builder: (context, session) => MorePage(
                 onOpenAccounts: () => context.push(AppRoutes.accounts),
                 onOpenCategories: () => context.push(AppRoutes.categories),
-                // Pagos Programados is a tab now: switch to its branch.
+                onOpenDebts: () => context.push(AppRoutes.debts),
+                // Pagos Programados is no longer a tab: stack it.
                 onOpenScheduledPayments: () =>
-                    context.go(AppRoutes.scheduledPayments),
-                onOpenGoals: () => context.push(AppRoutes.goals),
+                    context.push(AppRoutes.scheduledPayments),
+                // Metas is a tab root now: switch to its branch.
+                onOpenGoals: () => context.go(AppRoutes.goals),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -1011,6 +1048,42 @@ GoRoute _debtLinkModeRoute() => GoRoute(
       },
     );
 
+// Movimientos in Metas link mode (HU-03 "Enlazar un movimiento"): the
+// existing Movimientos list reused with a `TransactionsLinkMode` — a banner,
+// no FAB, no carousel, and row taps that attribute the movement to the goal.
+// Stacked on the root navigator above the tab bar. The `GoalLinkContext`
+// arrives in `state.extra`.
+GoRoute _goalLinkModeRoute() => GoRoute(
+      path: AppRoutes.linkTransactionToGoal(':goalId'),
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final linkContext = state.extra! as GoalLinkContext;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: _started(getIt<TransactionsListCubit>(), (c) => c.start()),
+            ),
+            BlocProvider.value(
+              value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+            ),
+            BlocProvider.value(
+              value: getIt<GoalLinkCubit>()
+                ..start(
+                  goalId: linkContext.goalId,
+                  goalName: linkContext.goalName,
+                  direction: linkContext.direction,
+                ),
+            ),
+          ],
+          child: GoalLinkModePage(
+            goalId: linkContext.goalId,
+            goalName: linkContext.goalName,
+            direction: linkContext.direction,
+          ),
+        );
+      },
+    );
+
 GoRoute _categoriesRoute() => GoRoute(
       path: AppRoutes.categories,
       parentNavigatorKey: _rootNavigatorKey,
@@ -1075,106 +1148,94 @@ GoRoute _categoriesRoute() => GoRoute(
       ],
     );
 
-// Pagos Programados (HU-01/02/03/04/05/06/07): now a bottom-nav tab (it took
-// Metas' slot). The list is the branch root, so it renders inside the shell
-// with the `Tab Bar` and — crucially — **without** `parentNavigatorKey`
-// (a branch-root route can only use its own branch's navigator; go_router
-// asserts this at construction time). Its stacked children ("nuevo",
-// "por-confirmar", ":id" and their sub-forms) keep
-// `parentNavigatorKey: _rootNavigatorKey` so they still push above the tab bar
-// on the root navigator — same pattern as Movimientos/Presupuestos.
-StatefulShellBranch _pagosProgramadosBranch() => StatefulShellBranch(
+// Pagos Programados (HU-01/02/03/04/05/06/07): no longer a tab (Metas
+// recovered its slot). It stays a real Nivel 0 destination reachable from
+// Inicio's quick access and the "Más" hub, rendered as a stacked screen on
+// the root navigator — hence its own `Page Header` with a back button,
+// unlike when it was a tab root.
+GoRoute _pagosProgramadosRoute() => GoRoute(
+      path: AppRoutes.scheduledPayments,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => _started(
+              getIt<ScheduledPaymentsListCubit>(),
+              (c) => c.start(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => _started(
+              getIt<PendingOccurrencesCubit>(),
+              (c) => c.start(),
+            ),
+          ),
+        ],
+        child: ScheduledPaymentsPage(
+          onAddScheduledPayment: () =>
+              context.push(AppRoutes.newScheduledPayment),
+          onOpenScheduledPayment: (id) =>
+              context.push(AppRoutes.scheduledPayment(id)),
+          onOpenPending: () => context.push(AppRoutes.pendingScheduledPayments),
+        ),
+      ),
       routes: [
+        // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
+        // ids.
         GoRoute(
-          path: AppRoutes.scheduledPayments,
-          builder: (context, state) => MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context) => _started(
-                  getIt<ScheduledPaymentsListCubit>(),
-                  (c) => c.start(),
+          path: 'nuevo',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _startedScheduledPaymentForm(state.uri),
+            child: const ScheduledPaymentFormPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'por-confirmar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<PendingOccurrencesCubit>(), (c) => c.start()),
+            child: const PendingOccurrencesPage(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<ScheduledPaymentDetailCubit>(),
+              (c) => c.start(state.pathParameters['id']!),
+            ),
+            child: ScheduledPaymentDetailPage(
+              onEdit: (id) => context.push(AppRoutes.editScheduledPayment(id)),
+              onOpenTransaction: (id) =>
+                  context.push<String>(AppRoutes.transaction(id)),
+              // Cross-link into the owning debt's detail (HU-03).
+              onOpenDebt: (debtId) => context.push(AppRoutes.debt(debtId)),
+              // Editing a cuota deep-links back to the debt's
+              // Configurar-cuota screen (its home), not the plain form.
+              onEditInstallment: (debt, spId) => context.push(
+                AppRoutes.debtInstallment(debt.id, spId: spId),
+                extra: DebtInstallmentContext(
+                  debtId: debt.id,
+                  debtName: debt.name,
+                  iOwe: debt.iOwe,
                 ),
               ),
-              BlocProvider(
-                create: (context) => _started(
-                  getIt<PendingOccurrencesCubit>(),
-                  (c) => c.start(),
-                ),
-              ),
-            ],
-            child: ScheduledPaymentsPage(
-              // As a tab root there is nothing to pop to, so no back button —
-              // it uses the left-aligned tab-root header instead.
-              showBackButton: false,
-              onAddScheduledPayment: () =>
-                  context.push(AppRoutes.newScheduledPayment),
-              onOpenScheduledPayment: (id) =>
-                  context.push(AppRoutes.scheduledPayment(id)),
-              onOpenPending: () =>
-                  context.push(AppRoutes.pendingScheduledPayments),
             ),
           ),
           routes: [
-            // Declared before ':id' so "nuevo"/"por-confirmar" are never read as
-            // ids.
             GoRoute(
-              path: 'nuevo',
+              path: 'editar',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (context, state) => BlocProvider(
-                create: (context) => _startedScheduledPaymentForm(state.uri),
+                create: (context) => _started(
+                  getIt<ScheduledPaymentFormCubit>(),
+                  (c) => c.load(state.pathParameters['id']),
+                ),
                 child: const ScheduledPaymentFormPage(),
               ),
-            ),
-            GoRoute(
-              path: 'por-confirmar',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (context, state) => BlocProvider(
-                create: (context) => _started(
-                    getIt<PendingOccurrencesCubit>(), (c) => c.start()),
-                child: const PendingOccurrencesPage(),
-              ),
-            ),
-            GoRoute(
-              path: ':id',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (context, state) => BlocProvider(
-                create: (context) => _started(
-                  getIt<ScheduledPaymentDetailCubit>(),
-                  (c) => c.start(state.pathParameters['id']!),
-                ),
-                child: ScheduledPaymentDetailPage(
-                  onEdit: (id) =>
-                      context.push(AppRoutes.editScheduledPayment(id)),
-                  onOpenTransaction: (id) =>
-                      context.push<String>(AppRoutes.transaction(id)),
-                  // Cross-link into the owning debt's detail (HU-03).
-                  onOpenDebt: (debtId) =>
-                      context.push(AppRoutes.debt(debtId)),
-                  // Editing a cuota deep-links back to the debt's
-                  // Configurar-cuota screen (its home), not the plain form.
-                  onEditInstallment: (debt, spId) => context.push(
-                    AppRoutes.debtInstallment(debt.id, spId: spId),
-                    extra: DebtInstallmentContext(
-                      debtId: debt.id,
-                      debtName: debt.name,
-                      iOwe: debt.iOwe,
-                    ),
-                  ),
-                ),
-              ),
-              routes: [
-                GoRoute(
-                  path: 'editar',
-                  parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => _started(
-                      getIt<ScheduledPaymentFormCubit>(),
-                      (c) => c.load(state.pathParameters['id']),
-                    ),
-                    child: const ScheduledPaymentFormPage(),
-                  ),
-                ),
-              ],
             ),
           ],
         ),

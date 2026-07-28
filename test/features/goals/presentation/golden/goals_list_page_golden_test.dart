@@ -35,6 +35,7 @@ void main() {
 
   const coherenceSignal = GoalCoherenceSignal(
     accountId: 'a1',
+    accountName: 'Ahorros Bancolombia',
     totalSavedMinor: 5200000,
     accountBalanceMinor: 4000000,
     currency: 'COP',
@@ -103,6 +104,35 @@ void main() {
     ),
   ];
 
+  // HU-12: lista filtrada por cuenta (`qFX42`/`CnkG9`) — the removable
+  // "Metas en <cuenta>" chip active, coherence signal for that account still
+  // shown underneath it, and archived goals' link hidden while filtered.
+  final filteredGoals = [
+    buildGoalWithProgress(
+      goal: buildGoal(
+        id: 'g1',
+        name: 'Viaje a Cartagena',
+        targetMinor: 3000000,
+        targetDate: DateTime(2026, 12, 1),
+        accountId: 'a1',
+      ),
+      savedMinor: 1800000,
+      displayedPercent: 60,
+      coherence: coherenceSignal,
+    ),
+    buildGoalWithProgress(
+      goal: buildGoal(
+        id: 'g3',
+        name: 'Colchón de emergencia',
+        targetMinor: 4000000,
+        accountId: 'a1',
+      ),
+      savedMinor: 900000,
+      displayedPercent: 22,
+      coherence: coherenceSignal,
+    ),
+  ];
+
   final momentumBrokenGoals = [
     buildGoalWithProgress(
       goal: buildGoal(id: 'g1', name: 'Viaje a Cartagena', targetMinor: 3000000),
@@ -128,10 +158,9 @@ void main() {
       BlocProvider<GoalsListCubit>.value(
         value: cubit,
         child: GoalsListPage(
-          onAddGoal: () {},
+          onAddGoal: ([_]) {},
           onOpenGoal: (_) {},
           onOpenArchived: () {},
-          onOpenCoherenceAccount: (_) {},
         ),
       ),
       brightness: brightness,
@@ -174,6 +203,22 @@ void main() {
         tester,
         GoalsListState(status: GoalsListStatus.ready, goals: goals),
         'with_data_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'filtrada por cuenta (HU-12): chip removible + señal de coherencia ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        GoalsListState(
+          status: GoalsListStatus.ready,
+          goals: filteredGoals,
+          filterAccountId: 'a1',
+          filterAccountName: 'Ahorros Bancolombia',
+        ),
+        'filtered_by_account_$suffix',
         brightness: brightness,
       );
     });

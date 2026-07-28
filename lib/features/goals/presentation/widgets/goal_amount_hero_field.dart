@@ -19,6 +19,9 @@ class GoalAmountHeroField extends StatefulWidget {
     this.autofocus = false,
     this.fieldKey,
     this.errorText,
+    this.compact = false,
+    this.compactLeadingIcon,
+    this.compactTrailing,
     super.key,
   });
 
@@ -30,6 +33,22 @@ class GoalAmountHeroField extends StatefulWidget {
   final bool autofocus;
   final Key? fieldKey;
   final String? errorText;
+
+  /// Switches to the compact row shape crear/editar meta uses for "Objetivo"
+  /// and "¿Ya tienes algo ahorrado?" (`PjBCt`'s `U7V5pb`/`BKgCe` Input Box
+  /// rows): a single 52pt bordered row instead of the big centered héroe, with
+  /// [label] rendered by the caller's own `GoalFieldLabel` above it instead of
+  /// internally. `false` keeps the héroe shape (sheets' amount field).
+  final bool compact;
+
+  /// Only meaningful when [compact] is `true`: the row's leading icon
+  /// (Avance's `piggy-bank`). `null` omits it (Objetivo has none).
+  final IconData? compactLeadingIcon;
+
+  /// Only meaningful when [compact] is `true`: an optional trailing widget
+  /// (Objetivo's locked/tappable currency chip). `null` renders no trailing
+  /// slot.
+  final Widget? compactTrailing;
 
   @override
   State<GoalAmountHeroField> createState() => _GoalAmountHeroFieldState();
@@ -78,6 +97,11 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final error = widget.errorText;
+
+    if (widget.compact) {
+      return _buildCompact(context, colors, theme, error);
+    }
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -135,7 +159,6 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
       ],
     );
 
-    final error = widget.errorText;
     final Widget hero = !widget.boxed
         ? content
         : Container(
@@ -158,6 +181,95 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         hero,
+        const SizedBox(height: 6),
+        Text(
+          error,
+          style: theme.textTheme.bodySmall?.copyWith(color: colors.expenseText),
+        ),
+      ],
+    );
+  }
+
+  /// The compact row (`U7V5pb`/`BKgCe`): a single 52pt bordered "Input Box"
+  /// with an optional leading icon, the editable amount, and an optional
+  /// trailing widget — no internal label (the caller renders its own
+  /// `GoalFieldLabel` above, so "Objetivo" dominates and the optional Avance
+  /// field reads as a plain compact row next to it, matching `PjBCt`).
+  Widget _buildCompact(
+    BuildContext context,
+    AppColors colors,
+    ThemeData theme,
+    String? error,
+  ) {
+    // Objetivo (no leading icon) is the bold 22/800 hero of the form; Avance
+    // (piggy-bank icon) is deliberately smaller/lighter — same type scale the
+    // `wOlOA` Form Field row uses for its own value text.
+    final bold = widget.compactLeadingIcon == null;
+    final textStyle = theme.textTheme.bodyLarge?.copyWith(
+      color: colors.textPrimary,
+      fontSize: bold ? 22 : 15,
+      fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+    );
+
+    final row = Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: error == null ? colors.border : colors.expense,
+        ),
+      ),
+      child: Row(
+        children: [
+          if (widget.compactLeadingIcon case final icon?) ...[
+            Icon(icon, size: 18, color: colors.textSecondary),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: TextField(
+              key: widget.fieldKey,
+              controller: _controller,
+              autofocus: widget.autofocus,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              enableInteractiveSelection: false,
+              inputFormatters: [
+                MoneyInputFormatter(
+                  decimals: MoneyFormatter.inputDecimals(widget.currency),
+                ),
+              ],
+              onChanged: _onChanged,
+              cursorColor: colors.primary,
+              style: textStyle,
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                prefixText: MoneyFormatter.currencySymbol,
+                prefixStyle: textStyle,
+                hintText: '0',
+                hintStyle: textStyle?.copyWith(color: colors.textSecondary),
+              ),
+            ),
+          ),
+          if (widget.compactTrailing case final trailing?) ...[
+            const SizedBox(width: 8),
+            trailing,
+          ],
+        ],
+      ),
+    );
+
+    if (error == null) {
+      return row;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        row,
         const SizedBox(height: 6),
         Text(
           error,

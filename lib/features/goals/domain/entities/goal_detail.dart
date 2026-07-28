@@ -13,6 +13,7 @@ class GoalDetail extends Equatable {
     required this.projection,
     required this.momentum,
     required this.history,
+    this.accountTombstoned = false,
   });
 
   final GoalWithProgress progress;
@@ -22,6 +23,14 @@ class GoalDetail extends Equatable {
   /// Every non-hidden movement, newest first.
   final List<GoalContribution> history;
 
+  /// Whether `progress.goal.accountId`'s account was tombstoned (referential
+  /// lápida, `Accounts.tombstonedAt`) — the account row is hidden from every
+  /// normal query, but the goal still references its id, so it keeps its
+  /// full movement history instead of losing it. `false` when the goal has no
+  /// linked account at all.
+  final bool accountTombstoned;
+
   @override
-  List<Object?> get props => [progress, projection, momentum, history];
+  List<Object?> get props =>
+      [progress, projection, momentum, history, accountTombstoned];
 }

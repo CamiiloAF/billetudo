@@ -5,26 +5,24 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// HU-05b: fixed chrome row of navigation shortcuts (Pagos programados,
-/// Deudas, Gráficas e informes, Metas) shown right below the Hero Card in
-/// every Home state (loading/ready/empty/failure). Purely a navigation aid to
-/// sections otherwise buried in "Más" — no selected/active chip, and the
-/// order is fixed for now (configurable reordering is a future feature, see
-/// `docs/requirements/04-inicio.md` § Pendiente). Metas is last: it lost its
-/// bottom-nav tab to Pagos Programados (bugfix item 7). Cuentas is not here:
-/// the "Mis cuentas" strip right below already covers that shortcut.
+/// Deudas, Gráficas e informes) shown right below the Hero Card in every Home
+/// state (loading/ready/empty/failure). Purely a navigation aid to sections
+/// otherwise buried in "Más" — no selected/active chip, and the order is
+/// fixed for now (configurable reordering is a future feature, see
+/// `docs/requirements/04-inicio.md` § Pendiente). Metas is not here anymore:
+/// it recovered its own bottom-nav tab. Cuentas is not here either: the "Mis
+/// cuentas" strip right below already covers that shortcut.
 class QuickAccessRow extends StatelessWidget {
   const QuickAccessRow({
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
-    required this.onOpenGoals,
     super.key,
   });
 
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
-  final VoidCallback onOpenGoals;
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +62,6 @@ class QuickAccessRow extends StatelessWidget {
                 icon: LucideIcons.chartColumn,
                 label: l10n.moreReports,
                 onTap: onOpenReports,
-              ),
-              const SizedBox(width: 8),
-              QuickAccessChip(
-                icon: LucideIcons.target,
-                label: l10n.navGoals,
-                onTap: onOpenGoals,
               ),
             ],
           ),

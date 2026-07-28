@@ -2610,6 +2610,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The installment can\'t be larger than the debt balance.';
 
   @override
+  String get scheduledPaymentFormNotFoundError =>
+      'This scheduled payment no longer exists. You may have already deleted it.';
+
+  @override
+  String get scheduledPaymentFormSaveError =>
+      'We couldn\'t save your changes. Please try again.';
+
+  @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repeat every';
 
   @override
@@ -3026,7 +3034,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsArchivedTitle => 'Archived goals';
 
   @override
-  String get goalsArchivedEmptyMessage => 'You have no archived goals';
+  String get goalsArchivedEmptyMessage => 'You haven\'t archived any goal yet';
+
+  @override
+  String get goalsArchivedEmptyDescription =>
+      'When you finish or pause a goal, archive it: it keeps its progress and history, and leaves your main list.';
 
   @override
   String goalCoherenceMessage(String amount) {
@@ -3099,16 +3111,58 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String goalDetailSavedOfTarget(String saved, String target) {
+    return '$saved saved of $target';
+  }
+
+  @override
   String get goalActionsTooltip => 'More actions';
 
   @override
   String get goalEditTooltip => 'Edit goal';
 
   @override
+  String get goalActionEditSubtitle => 'Name, target, date or account';
+
+  @override
   String get goalActionArchive => 'Archive goal';
 
   @override
+  String get goalActionArchiveSubtitle =>
+      'Leaves the list and keeps its history';
+
+  @override
   String get goalActionUnarchive => 'Unarchive goal';
+
+  @override
+  String get goalActionUnarchiveSubtitle => 'Returns to your main list';
+
+  @override
+  String get goalActionDeleteLabel => 'Delete goal';
+
+  @override
+  String get goalActionDeleteSubtitle => 'Goes to trash; you can undo it';
+
+  @override
+  String get goalRowUnarchive => 'Unarchive';
+
+  @override
+  String get goalRowCompletedBadge => 'Achieved';
+
+  @override
+  String goalRowArchivedOn(String account, String date) {
+    return '$account · archived on $date';
+  }
+
+  @override
+  String goalRowArchivedOnNoAccount(String date) {
+    return 'Archived on $date';
+  }
+
+  @override
+  String goalRowTargetOf(String amount) {
+    return 'of $amount';
+  }
 
   @override
   String get goalArchiveSheetTitle => 'Archive this goal?';
@@ -3141,6 +3195,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String goalMovementsTitle(int count) {
     return 'Movements ($count)';
   }
+
+  @override
+  String get goalMovementsSectionTitle => 'Movements';
 
   @override
   String goalMovementsSeeAll(int count) {
@@ -3178,6 +3235,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalContributeTitle => 'Register contribution';
 
   @override
+  String goalContributeTitleWithName(String name) {
+    return 'Contribute to $name';
+  }
+
+  @override
+  String get goalContributeSubtitle => 'Adds to your goal\'s progress.';
+
+  @override
   String get goalContributeAmountLabel => 'Contribution';
 
   @override
@@ -3187,10 +3252,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalWithdrawTitle => 'Register withdrawal';
 
   @override
+  String goalWithdrawTitleWithName(String name) {
+    return 'Withdraw from $name';
+  }
+
+  @override
+  String get goalWithdrawSubtitle => 'Taking money out of a goal is normal.';
+
+  @override
   String get goalWithdrawAmountLabel => 'Withdrawal';
 
   @override
+  String get goalMoveFundsToggleLabel => 'Move money from an account?';
+
+  @override
+  String get goalMoveFundsToggleHintContribute =>
+      'Only records your goal\'s progress; no account is touched.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdraw =>
+      'Only records the withdrawal; no account is touched.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOn =>
+      'This creates a transfer: the origin account\'s balance goes down and the goal\'s goes up.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOnBudget =>
+      'This creates a transfer into your goal\'s account.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdrawOn =>
+      'This creates a transfer: it leaves your goal and enters the destination account.';
+
+  @override
+  String get goalMoveFundsGateHint =>
+      'Link an account to this goal to move money (edit it from its detail).';
+
+  @override
+  String get goalContributeSourceAccountLabel => 'Origin account';
+
+  @override
+  String get goalWithdrawDestinationAccountLabel => 'Destination account';
+
+  @override
+  String get goalAccountFieldPlaceholder => 'Choose an account';
+
+  @override
+  String get goalBudgetToggleLabel => 'Include in your budget?';
+
+  @override
+  String get goalBudgetToggleHintOff =>
+      'It won\'t count in your budgets or reports.';
+
+  @override
+  String get goalBudgetToggleHintOnContribute =>
+      'Counts as an expense in the origin account and as income in the goal\'s.';
+
+  @override
+  String get goalBudgetToggleHintOnWithdraw =>
+      'Counts as income in the destination account, per your budgets.';
+
+  @override
+  String get goalLinkTransactionCta => 'Link a movement';
+
+  @override
+  String goalLinkBannerTitle(String name) {
+    return 'Link to $name';
+  }
+
+  @override
+  String get goalLinkBannerBody =>
+      'Choose a movement you already registered; we\'ll attribute it to this goal, not create a new one.';
+
+  @override
+  String get goalLinkError => 'We couldn\'t link the movement. Try again.';
+
+  @override
   String get goalWithdrawCta => 'Withdraw';
+
+  @override
+  String get goalAdjustDateCta => 'Adjust the date';
 
   @override
   String goalWithdrawAvailable(String amount) {
@@ -3205,10 +3347,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalQuickAmountOther => 'Other';
 
   @override
+  String get goalQuickAmountLabel => 'QUICK CONTRIBUTION';
+
+  @override
   String get goalProjectionNoTargetDate => 'No target date set';
 
   @override
-  String get goalProjectionOverdue => 'The target date already passed';
+  String get goalProjectionOverdue =>
+      'The date you picked already passed and your goal is still on track. Set a new one and we\'ll re-project your arrival.';
 
   @override
   String get goalProjectionInsufficientHistory =>
@@ -3312,4 +3458,107 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goalCurrencySheetTitle => 'Choose the currency';
+
+  @override
+  String get goalIconSheetTitle => 'Choose an icon';
+
+  @override
+  String get goalIconSheetHint =>
+      'The icon shows on a neutral background — goals don\'t carry a color.';
+
+  @override
+  String get goalFormIconAndNameLabel => 'Icon and name';
+
+  @override
+  String goalFormCurrencyHintLocked(String account, String currency) {
+    return 'The currency is set by the linked account ($account, $currency). Change the account if you need another currency.';
+  }
+
+  @override
+  String get goalFormCurrencyHintUnlocked =>
+      'Choose your goal\'s currency. Linking an account will lock it to that account\'s own.';
+
+  @override
+  String get goalFormInitialSavedHint =>
+      'We save it as the first entry in the history, so your goal starts complete.';
+
+  @override
+  String goalAccountFilterLabel(String accountName) {
+    return 'Goals in $accountName';
+  }
+
+  @override
+  String get goalAccountFilterClearTooltip => 'Clear filter';
+
+  @override
+  String get goalCoherenceLink => 'See this account\'s goals';
+
+  @override
+  String goalDetailSavedOfTargetNoAccount(String saved, String target) {
+    return '$saved of $target · no linked account';
+  }
+
+  @override
+  String get goalDetailAccountUnavailableMessage =>
+      'The account you had linked is no longer available. Your history is still complete and this goal switches to manual tracking.';
+
+  @override
+  String get goalDetailAccountUnavailableLink => 'Link another account';
+
+  @override
+  String get goalMovementDetailTitle => 'Movement detail';
+
+  @override
+  String get goalMovementDetailHint =>
+      'You can correct or delete it. If the movement has a transfer behind it, it updates along with it.';
+
+  @override
+  String get goalMovementDetailDateLabel => 'Date';
+
+  @override
+  String get goalMovementDetailOriginAccountLabel => 'Origin account';
+
+  @override
+  String get goalMovementDetailTransferLabel => 'Transfer';
+
+  @override
+  String goalMovementDetailTransferValue(String origin, String destination) {
+    return '$origin → $destination';
+  }
+
+  @override
+  String get goalMovementDetailNoteLabel => 'Note';
+
+  @override
+  String get goalMovementKindContributionLower => 'contribution';
+
+  @override
+  String get goalMovementKindWithdrawalLower => 'withdrawal';
+
+  @override
+  String goalDeleteMovementTitle(String kind, String amount) {
+    return 'Delete this $kind of $amount?';
+  }
+
+  @override
+  String goalDeleteMovementMessageTransfer(String origin, String destination) {
+    return 'The goal\'s progress is recalculated without it. Since this movement has a transfer behind it, that transfer is also deleted and $origin\'s and $destination\'s balances go back to what they were.';
+  }
+
+  @override
+  String goalDeleteMovementMessageManual(String kind) {
+    return 'The goal\'s progress is recalculated without it. This $kind was a manual entry, so none of your accounts change balance.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedTransfer(
+      String kind, String goalName, String origin, String destination) {
+    return 'This $kind is part of what completed $goalName: deleting it puts the goal back in progress until you complete it again. The transfer behind it is also deleted and $origin\'s and $destination\'s balances go back to what they were.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedManual(
+      String kind, String goalName) {
+    return 'This $kind is part of what completed $goalName: deleting it puts the goal back in progress until you complete it again. It was a manual entry, so none of your accounts change balance.';
+  }
 }

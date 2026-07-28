@@ -43,7 +43,7 @@ class GoalMovementRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              isWithdrawal ? LucideIcons.arrowUpRight : LucideIcons.arrowDownLeft,
+              isWithdrawal ? LucideIcons.arrowDown : LucideIcons.arrowUp,
               size: 20,
               color: isWithdrawal ? colors.textSecondary : colors.primaryOnSoft,
             ),
@@ -86,6 +86,8 @@ class GoalMovementRow extends StatelessWidget {
               color: isWithdrawal ? colors.textSecondary : colors.textPrimary,
             ),
           ),
+          const SizedBox(width: 6),
+          Icon(LucideIcons.chevronRight, size: 16, color: colors.textSecondary),
         ],
       ),
     );

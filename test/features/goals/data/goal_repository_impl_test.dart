@@ -428,5 +428,172 @@ void main() {
         expect(savedResult.getRight().toNullable(), 70000);
       },
     );
+
+    test(
+      'watchGoalDetail expone accountTombstoned cuando la cuenta vinculada '
+      'fue tombstoneada',
+      () async {
+        final account = await insertAccount();
+        final goal = await createGoal(accountId: account.id);
+
+        final before = await repository.watchGoalDetail(goal.id).first;
+        expect(before.getRight().toNullable()!.accountTombstoned, isFalse);
+
+        await (db.update(db.accounts)..where((a) => a.id.equals(account.id)))
+            .write(AccountsCompanion(tombstonedAt: Value(DateTime(2026, 8))));
+
+        final after = await repository.watchGoalDetail(goal.id).first;
+        expect(after.getRight().toNullable()!.accountTombstoned, isTrue);
+      },
+    );
+
+    test('una meta sin cuenta nunca reporta accountTombstoned', () async {
+      final goal = await createGoal();
+
+      final detail = await repository.watchGoalDetail(goal.id).first;
+      expect(detail.getRight().toNullable()!.accountTombstoned, isFalse);
+    });
+  });
+
+  group('getMovementAccounts (sheet detalle del movimiento, N8Dv2e)', () {
+    test(
+      'resuelve el nombre de la cuenta de origen y destino de una '
+      'transferencia',
+      () async {
+        final origin = await insertAccount(name: 'Nequi');
+        final destination = await insertAccount(name: 'Ahorros Bancolombia');
+        final goal = await createGoal(accountId: destination.id);
+
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 30000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+            moveMoney: true,
+            originAccountId: origin.id,
+            destinationAccountId: destination.id,
+          ),
+        );
+        final (contribution, _) = result.getRight().toNullable()!;
+
+        final accounts = await repository.getMovementAccounts(
+          contribution.transactionId!,
+        );
+        final resolved = accounts.getRight().toNullable();
+        expect(resolved, isNotNull);
+        expect(resolved!.originName, 'Nequi');
+        expect(resolved.destinationName, 'Ahorros Bancolombia');
+      },
+    );
+
+    test(
+      'sigue resolviendo el nombre aunque la cuenta haya sido tombstoneada',
+      () async {
+        final origin = await insertAccount(name: 'Nequi');
+        final destination = await insertAccount(name: 'Ahorros Bancolombia');
+        final goal = await createGoal(accountId: destination.id);
+
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 30000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+            moveMoney: true,
+            originAccountId: origin.id,
+            destinationAccountId: destination.id,
+          ),
+        );
+        final (contribution, _) = result.getRight().toNullable()!;
+
+        await (db.update(db.accounts)..where((a) => a.id.equals(destination.id)))
+            .write(AccountsCompanion(tombstonedAt: Value(DateTime(2026, 8))));
+
+        final accounts = await repository.getMovementAccounts(
+          contribution.transactionId!,
+        );
+        expect(
+          accounts.getRight().toNullable()!.destinationName,
+          'Ahorros Bancolombia',
+        );
+      },
+    );
+
+    test('null cuando el movimiento no movió dinero', () async {
+      final goal = await createGoal();
+      final result = await repository.contribute(
+        GoalContributionDraft(
+          goalId: goal.id,
+          amountMinor: 30000,
+          direction: GoalMovementDirection.contribution,
+          date: DateTime(2026, 7, 10),
+          currency: 'COP',
+        ),
+      );
+      final (contribution, _) = result.getRight().toNullable()!;
+      expect(contribution.transactionId, isNull);
+    });
+  });
+
+  group('removeContribution — eliminar movimiento (arr2T/H2ND7O/xCNxM)', () {
+    test('elimina un aporte de seguimiento puro (deletedAt reversible)', () async {
+      final goal = await createGoal();
+      final result = await repository.contribute(
+        GoalContributionDraft(
+          goalId: goal.id,
+          amountMinor: 50000,
+          direction: GoalMovementDirection.contribution,
+          date: DateTime(2026, 7, 10),
+          currency: 'COP',
+        ),
+      );
+      final (contribution, _) = result.getRight().toNullable()!;
+
+      final removeResult = await repository.removeContribution(contribution.id);
+      expect(removeResult.isRight(), isTrue);
+
+      final savedResult = await repository.getSavedMinor(goal.id);
+      expect(savedResult.getRight().toNullable(), 0);
+
+      final row = await (db.select(db.goalContributions)
+            ..where((c) => c.id.equals(contribution.id)))
+          .getSingleOrNull();
+      expect(row!.deletedAt, isNotNull);
+    });
+
+    test(
+      'eliminar el aporte que completó la meta la vuelve a poner en curso',
+      () async {
+        final goal = await createGoal(targetMinor: 100000);
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 100000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+          ),
+        );
+        final (contribution, crossed) = result.getRight().toNullable()!;
+        expect(crossed, 100);
+
+        final completedGoal = await repository.getGoal(goal.id);
+        expect(completedGoal.getRight().toNullable()!.completedAt, isNotNull);
+
+        await repository.removeContribution(contribution.id);
+
+        final reverted = await repository.getGoal(goal.id);
+        expect(reverted.getRight().toNullable()!.completedAt, isNull);
+        expect(reverted.getRight().toNullable()!.lastMilestonePct, lessThan(100));
+      },
+    );
+
+    test('NotFoundFailure cuando el movimiento ya no existe', () async {
+      final result = await repository.removeContribution('no-existe');
+      expect(result.isLeft(), isTrue);
+    });
   });
 }

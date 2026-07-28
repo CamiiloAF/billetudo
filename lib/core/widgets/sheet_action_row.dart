@@ -25,15 +25,17 @@ class SheetActionRow extends StatelessWidget {
   }) : _bare = false;
 
   /// The wrap-less variant (`G26c4T/Jp1Pn`): no icon-wrap, 20pt icon, `[14, 4]`
-  /// padding and no subtitle.
+  /// padding. [subtitle] is optional — most `.bare` rows carry none, but
+  /// Metas' own overflow sheet (`W5gXNE`) pairs this shape with a one-line
+  /// explanation under every option ("Nombre, objetivo, fecha o cuenta").
   const SheetActionRow.bare({
     required this.icon,
     required this.title,
     required this.onTap,
+    this.subtitle,
     this.foreground,
     super.key,
-  })  : subtitle = null,
-        _bare = true;
+  }) : _bare = true;
 
   final IconData icon;
 

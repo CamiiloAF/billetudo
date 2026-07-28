@@ -95,6 +95,22 @@ void main() {
       );
     });
 
+    testWidgets(
+        'crear: sin cuenta vinculada, moneda editable ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        GoalFormState(
+          status: GoalFormStatus.ready,
+          name: 'Viaje a Cartagena',
+          targetMinor: 3000000,
+          accounts: accounts,
+        ),
+        'create_currency_unlocked_$suffix',
+        brightness: brightness,
+      );
+    });
+
     testWidgets('editar: prellenado, con eliminar ($suffix)', (tester) async {
       await golden(
         tester,

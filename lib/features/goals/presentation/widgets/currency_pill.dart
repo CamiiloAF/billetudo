@@ -3,8 +3,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Currency badge shown under a goal's hero amount field: locked (with a
-/// padlock) once an account is linked, or tappable to switch currency.
+/// Currency chip shown at the end of the "Objetivo" amount row (`Ed7Lz`
+/// Currency Locked / `H8HDGn` Currency): a `$muted` pill with the code and,
+/// locked (an account is linked) a padlock, or unlocked a chevron-down to
+/// switch currency.
 class CurrencyPill extends StatelessWidget {
   const CurrencyPill({required this.label, required this.locked, this.onTap, super.key});
 
@@ -17,36 +19,33 @@ class CurrencyPill extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     return Material(
-      color: colors.primarySoft,
-      borderRadius: BorderRadius.circular(12),
+      color: colors.muted,
+      borderRadius: BorderRadius.circular(locked ? 10 : 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(locked ? 10 : 12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: locked ? 7 : 0,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (locked) ...[
-                Icon(LucideIcons.lock, size: 12, color: colors.primaryOnSoftStrong),
-                const SizedBox(width: 5),
-              ],
               Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.primaryOnSoftStrong,
+                  color: colors.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (!locked) ...[
-                const SizedBox(width: 5),
-                Icon(
-                  LucideIcons.chevronDown,
-                  size: 14,
-                  color: colors.primaryOnSoftStrong,
-                ),
-              ],
+              const SizedBox(width: 4),
+              Icon(
+                locked ? LucideIcons.lock : LucideIcons.chevronDown,
+                size: locked ? 13 : 14,
+                color: colors.textSecondary,
+              ),
             ],
           ),
         ),

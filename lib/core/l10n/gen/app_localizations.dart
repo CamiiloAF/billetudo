@@ -4558,6 +4558,18 @@ abstract class AppLocalizations {
   /// **'La cuota no puede superar el saldo de la deuda.'**
   String get scheduledPaymentInstallmentAmountExceedsError;
 
+  /// No description provided for @scheduledPaymentFormNotFoundError.
+  ///
+  /// In es, this message translates to:
+  /// **'Este pago programado ya no existe. Es posible que lo hayas eliminado.'**
+  String get scheduledPaymentFormNotFoundError;
+
+  /// No description provided for @scheduledPaymentFormSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar los cambios. Intenta de nuevo.'**
+  String get scheduledPaymentFormSaveError;
+
   /// No description provided for @scheduledPaymentFormIntervalStepperLabel.
   ///
   /// In es, this message translates to:
@@ -5240,8 +5252,14 @@ abstract class AppLocalizations {
   /// No description provided for @goalsArchivedEmptyMessage.
   ///
   /// In es, this message translates to:
-  /// **'No tienes metas archivadas'**
+  /// **'Aún no has archivado ninguna meta'**
   String get goalsArchivedEmptyMessage;
+
+  /// No description provided for @goalsArchivedEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando termines o pauses una meta, archívala: conserva su progreso y su historial, y sale de tu lista principal.'**
+  String get goalsArchivedEmptyDescription;
 
   /// No description provided for @goalCoherenceMessage.
   ///
@@ -5321,6 +5339,12 @@ abstract class AppLocalizations {
   /// **'Ahorraste {amount}'**
   String goalDetailAchieved(String amount);
 
+  /// No description provided for @goalDetailSavedOfTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} ahorrado de {target}'**
+  String goalDetailSavedOfTarget(String saved, String target);
+
   /// No description provided for @goalActionsTooltip.
   ///
   /// In es, this message translates to:
@@ -5333,17 +5357,77 @@ abstract class AppLocalizations {
   /// **'Editar meta'**
   String get goalEditTooltip;
 
+  /// No description provided for @goalActionEditSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre, objetivo, fecha o cuenta'**
+  String get goalActionEditSubtitle;
+
   /// No description provided for @goalActionArchive.
   ///
   /// In es, this message translates to:
   /// **'Archivar meta'**
   String get goalActionArchive;
 
+  /// No description provided for @goalActionArchiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sale de la lista y conserva su historial'**
+  String get goalActionArchiveSubtitle;
+
   /// No description provided for @goalActionUnarchive.
   ///
   /// In es, this message translates to:
   /// **'Desarchivar meta'**
   String get goalActionUnarchive;
+
+  /// No description provided for @goalActionUnarchiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a tu lista principal'**
+  String get goalActionUnarchiveSubtitle;
+
+  /// No description provided for @goalActionDeleteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar meta'**
+  String get goalActionDeleteLabel;
+
+  /// No description provided for @goalActionDeleteSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Va a la papelera; puedes deshacerlo'**
+  String get goalActionDeleteSubtitle;
+
+  /// No description provided for @goalRowUnarchive.
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar'**
+  String get goalRowUnarchive;
+
+  /// No description provided for @goalRowCompletedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cumplida'**
+  String get goalRowCompletedBadge;
+
+  /// No description provided for @goalRowArchivedOn.
+  ///
+  /// In es, this message translates to:
+  /// **'{account} · archivada el {date}'**
+  String goalRowArchivedOn(String account, String date);
+
+  /// No description provided for @goalRowArchivedOnNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivada el {date}'**
+  String goalRowArchivedOnNoAccount(String date);
+
+  /// No description provided for @goalRowTargetOf.
+  ///
+  /// In es, this message translates to:
+  /// **'de {amount}'**
+  String goalRowTargetOf(String amount);
 
   /// No description provided for @goalArchiveSheetTitle.
   ///
@@ -5398,6 +5482,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Movimientos ({count})'**
   String goalMovementsTitle(int count);
+
+  /// No description provided for @goalMovementsSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get goalMovementsSectionTitle;
 
   /// No description provided for @goalMovementsSeeAll.
   ///
@@ -5459,6 +5549,18 @@ abstract class AppLocalizations {
   /// **'Registrar aporte'**
   String get goalContributeTitle;
 
+  /// No description provided for @goalContributeTitleWithName.
+  ///
+  /// In es, this message translates to:
+  /// **'Aportar a {name}'**
+  String goalContributeTitleWithName(String name);
+
+  /// No description provided for @goalContributeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Suma a tu progreso de la meta.'**
+  String get goalContributeSubtitle;
+
   /// No description provided for @goalContributeAmountLabel.
   ///
   /// In es, this message translates to:
@@ -5477,17 +5579,143 @@ abstract class AppLocalizations {
   /// **'Registrar retiro'**
   String get goalWithdrawTitle;
 
+  /// No description provided for @goalWithdrawTitleWithName.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar de {name}'**
+  String goalWithdrawTitleWithName(String name);
+
+  /// No description provided for @goalWithdrawSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sacar dinero de una meta es normal.'**
+  String get goalWithdrawSubtitle;
+
   /// No description provided for @goalWithdrawAmountLabel.
   ///
   /// In es, this message translates to:
   /// **'Retiro'**
   String get goalWithdrawAmountLabel;
 
+  /// No description provided for @goalMoveFundsToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Mover dinero de una cuenta?'**
+  String get goalMoveFundsToggleLabel;
+
+  /// No description provided for @goalMoveFundsToggleHintContribute.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo registra el avance de tu meta; no mueve ninguna cuenta.'**
+  String get goalMoveFundsToggleHintContribute;
+
+  /// No description provided for @goalMoveFundsToggleHintWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo registra el retiro; no toca ninguna cuenta.'**
+  String get goalMoveFundsToggleHintWithdraw;
+
+  /// No description provided for @goalMoveFundsToggleHintContributeOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia: el saldo de la cuenta de origen baja y el de la meta sube.'**
+  String get goalMoveFundsToggleHintContributeOn;
+
+  /// No description provided for @goalMoveFundsToggleHintContributeOnBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia hacia la cuenta de tu meta.'**
+  String get goalMoveFundsToggleHintContributeOnBudget;
+
+  /// No description provided for @goalMoveFundsToggleHintWithdrawOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.'**
+  String get goalMoveFundsToggleHintWithdrawOn;
+
+  /// No description provided for @goalMoveFundsGateHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincula una cuenta a esta meta para poder mover dinero (edítala desde su detalle).'**
+  String get goalMoveFundsGateHint;
+
+  /// No description provided for @goalContributeSourceAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de origen'**
+  String get goalContributeSourceAccountLabel;
+
+  /// No description provided for @goalWithdrawDestinationAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de destino'**
+  String get goalWithdrawDestinationAccountLabel;
+
+  /// No description provided for @goalAccountFieldPlaceholder.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta'**
+  String get goalAccountFieldPlaceholder;
+
+  /// No description provided for @goalBudgetToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Incluir en tu presupuesto?'**
+  String get goalBudgetToggleLabel;
+
+  /// No description provided for @goalBudgetToggleHintOff.
+  ///
+  /// In es, this message translates to:
+  /// **'No entra en tus presupuestos ni reportes.'**
+  String get goalBudgetToggleHintOff;
+
+  /// No description provided for @goalBudgetToggleHintOnContribute.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta como egreso en la cuenta de origen y como ingreso en la de tu meta.'**
+  String get goalBudgetToggleHintOnContribute;
+
+  /// No description provided for @goalBudgetToggleHintOnWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta como ingreso en la cuenta de destino, según tus presupuestos.'**
+  String get goalBudgetToggleHintOnWithdraw;
+
+  /// No description provided for @goalLinkTransactionCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un movimiento'**
+  String get goalLinkTransactionCta;
+
+  /// No description provided for @goalLinkBannerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar a {name}'**
+  String goalLinkBannerTitle(String name);
+
+  /// No description provided for @goalLinkBannerBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo.'**
+  String get goalLinkBannerBody;
+
+  /// No description provided for @goalLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enlazar el movimiento. Intenta de nuevo.'**
+  String get goalLinkError;
+
   /// No description provided for @goalWithdrawCta.
   ///
   /// In es, this message translates to:
   /// **'Retirar'**
   String get goalWithdrawCta;
+
+  /// No description provided for @goalAdjustDateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar la fecha'**
+  String get goalAdjustDateCta;
 
   /// No description provided for @goalWithdrawAvailable.
   ///
@@ -5507,6 +5735,12 @@ abstract class AppLocalizations {
   /// **'Otro'**
   String get goalQuickAmountOther;
 
+  /// No description provided for @goalQuickAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'APORTE RÁPIDO'**
+  String get goalQuickAmountLabel;
+
   /// No description provided for @goalProjectionNoTargetDate.
   ///
   /// In es, this message translates to:
@@ -5516,7 +5750,7 @@ abstract class AppLocalizations {
   /// No description provided for @goalProjectionOverdue.
   ///
   /// In es, this message translates to:
-  /// **'La fecha objetivo ya pasó'**
+  /// **'La fecha que elegiste ya pasó y tu meta sigue en pie. Ponle una fecha nueva y volvemos a proyectarte la llegada.'**
   String get goalProjectionOverdue;
 
   /// No description provided for @goalProjectionInsufficientHistory.
@@ -5692,6 +5926,163 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Elige la moneda'**
   String get goalCurrencySheetTitle;
+
+  /// No description provided for @goalIconSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir ícono'**
+  String get goalIconSheetTitle;
+
+  /// No description provided for @goalIconSheetHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El ícono se muestra en un fondo neutro — sin color por meta.'**
+  String get goalIconSheetHint;
+
+  /// No description provided for @goalFormIconAndNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono y nombre'**
+  String get goalFormIconAndNameLabel;
+
+  /// No description provided for @goalFormCurrencyHintLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'La moneda la define la cuenta vinculada ({account}, {currency}). Cambia la cuenta si necesitas otra moneda.'**
+  String goalFormCurrencyHintLocked(String account, String currency);
+
+  /// No description provided for @goalFormCurrencyHintUnlocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la moneda de tu meta. Si vinculas una cuenta, la moneda se fija a la de esa cuenta.'**
+  String get goalFormCurrencyHintUnlocked;
+
+  /// No description provided for @goalFormInitialSavedHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo guardamos como el primer movimiento del historial, para que tu meta arranque completa.'**
+  String get goalFormInitialSavedHint;
+
+  /// No description provided for @goalAccountFilterLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas en {accountName}'**
+  String goalAccountFilterLabel(String accountName);
+
+  /// No description provided for @goalAccountFilterClearTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar filtro'**
+  String get goalAccountFilterClearTooltip;
+
+  /// No description provided for @goalCoherenceLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver las metas de esta cuenta'**
+  String get goalCoherenceLink;
+
+  /// No description provided for @goalDetailSavedOfTargetNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} de {target} · sin cuenta vinculada'**
+  String goalDetailSavedOfTargetNoAccount(String saved, String target);
+
+  /// No description provided for @goalDetailAccountUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuenta que tenías vinculada ya no está disponible. Tu historial sigue completo y esta meta pasa a avance manual.'**
+  String get goalDetailAccountUnavailableMessage;
+
+  /// No description provided for @goalDetailAccountUnavailableLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincular otra cuenta'**
+  String get goalDetailAccountUnavailableLink;
+
+  /// No description provided for @goalMovementDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle del movimiento'**
+  String get goalMovementDetailTitle;
+
+  /// No description provided for @goalMovementDetailHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes corregirlo o eliminarlo. Si el movimiento tiene una transferencia detrás, se actualiza junto con él.'**
+  String get goalMovementDetailHint;
+
+  /// No description provided for @goalMovementDetailDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get goalMovementDetailDateLabel;
+
+  /// No description provided for @goalMovementDetailOriginAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de origen'**
+  String get goalMovementDetailOriginAccountLabel;
+
+  /// No description provided for @goalMovementDetailTransferLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get goalMovementDetailTransferLabel;
+
+  /// No description provided for @goalMovementDetailTransferValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{origin} → {destination}'**
+  String goalMovementDetailTransferValue(String origin, String destination);
+
+  /// No description provided for @goalMovementDetailNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get goalMovementDetailNoteLabel;
+
+  /// No description provided for @goalMovementKindContributionLower.
+  ///
+  /// In es, this message translates to:
+  /// **'aporte'**
+  String get goalMovementKindContributionLower;
+
+  /// No description provided for @goalMovementKindWithdrawalLower.
+  ///
+  /// In es, this message translates to:
+  /// **'retiro'**
+  String get goalMovementKindWithdrawalLower;
+
+  /// No description provided for @goalDeleteMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar este {kind} de {amount}?'**
+  String goalDeleteMovementTitle(String kind, String amount);
+
+  /// No description provided for @goalDeleteMovementMessageTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'El avance de la meta se recalcula sin él. Como este movimiento tiene una transferencia detrás, esa transferencia también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.'**
+  String goalDeleteMovementMessageTransfer(String origin, String destination);
+
+  /// No description provided for @goalDeleteMovementMessageManual.
+  ///
+  /// In es, this message translates to:
+  /// **'El avance de la meta se recalcula sin él. Este {kind} fue un registro manual, así que ninguna de tus cuentas cambia de saldo.'**
+  String goalDeleteMovementMessageManual(String kind);
+
+  /// No description provided for @goalDeleteMovementMessageCompletedTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. La transferencia detrás también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.'**
+  String goalDeleteMovementMessageCompletedTransfer(
+      String kind, String goalName, String origin, String destination);
+
+  /// No description provided for @goalDeleteMovementMessageCompletedManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.'**
+  String goalDeleteMovementMessageCompletedManual(String kind, String goalName);
 }
 
 class _AppLocalizationsDelegate

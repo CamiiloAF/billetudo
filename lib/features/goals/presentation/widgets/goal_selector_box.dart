@@ -69,8 +69,11 @@ class GoalSelectorBox extends StatelessWidget {
                     child: Icon(LucideIcons.x, size: 16, color: colors.textSecondary),
                   )
                 else
+                  // `wOlOA`'s `PrXDA` is overridden to `chevron-right` for
+                  // every compact list-style row Metas uses it for (Cuenta,
+                  // Fecha) — never the dropdown `chevron-down`.
                   Icon(
-                    LucideIcons.chevronDown,
+                    LucideIcons.chevronRight,
                     size: 16,
                     color: colors.textSecondary,
                   ),

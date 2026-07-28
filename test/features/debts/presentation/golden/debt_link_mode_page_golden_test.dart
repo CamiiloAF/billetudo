@@ -70,7 +70,9 @@ void main() {
   ];
 
   final linkMode = TransactionsLinkMode(
-    debtLabel: 'Crédito vehicular',
+    bannerTitle: 'Enlazar a Crédito vehicular',
+    bannerBody:
+        'Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.',
     onCancel: () {},
     onLinkTransaction: (_) async {},
     requiredType: TransactionType.expense,

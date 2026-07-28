@@ -69,7 +69,6 @@ void main() {
           onOpenAccounts: () {},
           onOpenAccountMovements: (_) {},
           onOpenScheduledPayments: () {},
-          onOpenGoals: () {},
           onOpenDebts: () {},
           onOpenReports: () {},
           onOpenLogin: () {},

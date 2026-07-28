@@ -23,18 +23,66 @@ import 'package:billetudo/core/preferences/debt_payment_toggle_preference_dataso
     as _i554;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
 import 'package:billetudo/core/security/secure_storage_service.dart' as _i1034;
+import 'package:billetudo/core/sync/data/datasources/json_sync_log_store.dart'
+    as _i466;
+import 'package:billetudo/core/sync/data/datasources/json_sync_quarantine_store.dart'
+    as _i312;
+import 'package:billetudo/core/sync/data/datasources/json_sync_retry_ledger_store.dart'
+    as _i646;
 import 'package:billetudo/core/sync/data/datasources/power_sync_status_source.dart'
     as _i358;
+import 'package:billetudo/core/sync/data/datasources/supabase_operation_uploader.dart'
+    as _i257;
+import 'package:billetudo/core/sync/data/datasources/sync_log_store.dart'
+    as _i811;
+import 'package:billetudo/core/sync/data/datasources/sync_operation_uploader.dart'
+    as _i190;
+import 'package:billetudo/core/sync/data/datasources/sync_quarantine_store.dart'
+    as _i568;
+import 'package:billetudo/core/sync/data/datasources/sync_retry_ledger_store.dart'
+    as _i390;
+import 'package:billetudo/core/sync/data/datasources/sync_retry_watchdog.dart'
+    as _i136;
 import 'package:billetudo/core/sync/data/datasources/sync_status_source.dart'
     as _i130;
+import 'package:billetudo/core/sync/data/datasources/sync_storage_directory.dart'
+    as _i766;
+import 'package:billetudo/core/sync/data/repositories/sync_log_repository_impl.dart'
+    as _i133;
+import 'package:billetudo/core/sync/data/repositories/sync_quarantine_repository_impl.dart'
+    as _i850;
 import 'package:billetudo/core/sync/data/repositories/sync_status_repository_impl.dart'
     as _i975;
+import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart'
+    as _i666;
+import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart'
+    as _i400;
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart'
     as _i691;
+import 'package:billetudo/core/sync/domain/usecases/clear_sync_log.dart'
+    as _i623;
+import 'package:billetudo/core/sync/domain/usecases/discard_all_quarantined_operations.dart'
+    as _i192;
+import 'package:billetudo/core/sync/domain/usecases/discard_quarantined_operation.dart'
+    as _i427;
+import 'package:billetudo/core/sync/domain/usecases/export_sync_log.dart'
+    as _i177;
 import 'package:billetudo/core/sync/domain/usecases/get_pending_upload_count.dart'
     as _i102;
+import 'package:billetudo/core/sync/domain/usecases/get_quarantined_operations.dart'
+    as _i783;
+import 'package:billetudo/core/sync/domain/usecases/retry_all_quarantined_operations.dart'
+    as _i883;
+import 'package:billetudo/core/sync/domain/usecases/retry_quarantined_operation.dart'
+    as _i215;
+import 'package:billetudo/core/sync/domain/usecases/watch_quarantined_operations.dart'
+    as _i239;
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_log.dart'
+    as _i77;
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status.dart'
     as _i567;
+import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart'
+    as _i773;
 import 'package:billetudo/core/theme/theme_mode_cubit.dart' as _i407;
 import 'package:billetudo/core/theme/theme_preference_datasource.dart' as _i207;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
@@ -294,8 +342,12 @@ import 'package:billetudo/features/goals/domain/usecases/create_goal.dart'
     as _i97;
 import 'package:billetudo/features/goals/domain/usecases/delete_goal.dart'
     as _i333;
+import 'package:billetudo/features/goals/domain/usecases/get_goal_movement_accounts.dart'
+    as _i34;
 import 'package:billetudo/features/goals/domain/usecases/link_transaction_to_goal.dart'
     as _i933;
+import 'package:billetudo/features/goals/domain/usecases/remove_goal_movement.dart'
+    as _i525;
 import 'package:billetudo/features/goals/domain/usecases/restore_goal.dart'
     as _i800;
 import 'package:billetudo/features/goals/domain/usecases/update_goal.dart'
@@ -316,6 +368,10 @@ import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.da
     as _i701;
 import 'package:billetudo/features/goals/presentation/cubit/goal_form_cubit.dart'
     as _i253;
+import 'package:billetudo/features/goals/presentation/cubit/goal_link_cubit.dart'
+    as _i875;
+import 'package:billetudo/features/goals/presentation/cubit/goal_movement_detail_cubit.dart'
+    as _i143;
 import 'package:billetudo/features/goals/presentation/cubit/goals_list_cubit.dart'
     as _i29;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
@@ -521,15 +577,15 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
-    gh.lazySingleton<_i872.PowerSyncConnector>(() => _i872.PowerSyncConnector(
-          gh<_i454.SupabaseClient>(),
-          gh<_i474.CrashReporter>(),
-        ));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
         _i226.SeedCategoryOwnershipRemoteDatasource(
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i190.SyncOperationUploader>(
+        () => _i257.SupabaseOperationUploader(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i766.SyncStorageDirectory>(
+        () => const _i766.AppDocumentsSyncStorageDirectory());
     gh.lazySingleton<_i407.ThemeModeCubit>(
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
@@ -537,6 +593,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i249.AppDatabase>(),
               gh<_i226.SeedCategoryOwnershipRemoteDatasource>(),
             ));
+    gh.lazySingleton<_i811.SyncLogStore>(
+        () => _i466.JsonSyncLogStore(gh<_i766.SyncStorageDirectory>()));
+    gh.lazySingleton<_i666.SyncLogRepository>(() => _i133.SyncLogRepositoryImpl(
+          gh<_i811.SyncLogStore>(),
+          gh<_i474.CrashReporter>(),
+        ));
+    gh.lazySingleton<_i568.SyncQuarantineStore>(
+        () => _i312.JsonSyncQuarantineStore(gh<_i766.SyncStorageDirectory>()));
     gh.lazySingleton<_i1034.SecureStorageService>(
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
@@ -561,20 +625,48 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1008.TagsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i556.TransactionsLocalDatasource>(
         () => _i556.TransactionsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i400.SyncQuarantineRepository>(
+        () => _i850.SyncQuarantineRepositoryImpl(
+              gh<_i568.SyncQuarantineStore>(),
+              gh<_i190.SyncOperationUploader>(),
+              gh<_i666.SyncLogRepository>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i130.SyncStatusSource>(
         () => _i358.PowerSyncStatusSource(gh<_i433.PowerSyncDatabase>()));
+    gh.lazySingleton<_i390.SyncRetryLedgerStore>(
+        () => _i646.JsonSyncRetryLedgerStore(gh<_i766.SyncStorageDirectory>()));
     gh.lazySingleton<_i680.ScheduledPaymentRepository>(
         () => _i9.ScheduledPaymentRepositoryImpl(
               gh<_i928.ScheduledPaymentsLocalDatasource>(),
               gh<_i276.ScheduledPaymentTagsLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i192.DiscardAllQuarantinedOperations>(() =>
+        _i192.DiscardAllQuarantinedOperations(
+            gh<_i400.SyncQuarantineRepository>()));
+    gh.factory<_i427.DiscardQuarantinedOperation>(() =>
+        _i427.DiscardQuarantinedOperation(
+            gh<_i400.SyncQuarantineRepository>()));
+    gh.factory<_i783.GetQuarantinedOperations>(() =>
+        _i783.GetQuarantinedOperations(gh<_i400.SyncQuarantineRepository>()));
+    gh.factory<_i883.RetryAllQuarantinedOperations>(() =>
+        _i883.RetryAllQuarantinedOperations(
+            gh<_i400.SyncQuarantineRepository>()));
+    gh.factory<_i215.RetryQuarantinedOperation>(() =>
+        _i215.RetryQuarantinedOperation(gh<_i400.SyncQuarantineRepository>()));
+    gh.factory<_i239.WatchQuarantinedOperations>(() =>
+        _i239.WatchQuarantinedOperations(gh<_i400.SyncQuarantineRepository>()));
     gh.lazySingleton<_i173.LocalDataWipeDatasource>(
         () => _i173.LocalDataWipeDatasource(gh<_i433.PowerSyncDatabase>()));
+    gh.factory<_i623.ClearSyncLog>(
+        () => _i623.ClearSyncLog(gh<_i666.SyncLogRepository>()));
+    gh.factory<_i177.ExportSyncLog>(
+        () => _i177.ExportSyncLog(gh<_i666.SyncLogRepository>()));
+    gh.factory<_i77.WatchSyncLog>(
+        () => _i77.WatchSyncLog(gh<_i666.SyncLogRepository>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
-    gh.lazySingleton<_i691.SyncStatusRepository>(
-        () => _i975.SyncStatusRepositoryImpl(gh<_i130.SyncStatusSource>()));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
     gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
@@ -625,6 +717,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i843.UpdateScheduledPayment>(() =>
         _i843.UpdateScheduledPayment(gh<_i680.ScheduledPaymentRepository>()));
+    gh.lazySingleton<_i136.SyncRetryWatchdog>(
+        () => _i136.SyncRetryWatchdog(gh<_i390.SyncRetryLedgerStore>()));
     gh.factory<_i504.SnoozeSheetCubit>(
         () => _i504.SnoozeSheetCubit(gh<_i1009.SnoozeScheduledOccurrence>()));
     gh.factory<_i824.ScheduledPaymentTagPickerCubit>(
@@ -642,6 +736,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i180.CategorySeedsRemoteDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.lazySingleton<_i872.PowerSyncConnector>(() => _i872.PowerSyncConnector(
+          gh<_i454.SupabaseClient>(),
+          gh<_i190.SyncOperationUploader>(),
+          gh<_i400.SyncQuarantineRepository>(),
+          gh<_i666.SyncLogRepository>(),
+          gh<_i474.CrashReporter>(),
+          gh<_i136.SyncRetryWatchdog>(),
+        ));
     gh.factory<_i793.PendingOccurrencesCubit>(
         () => _i793.PendingOccurrencesCubit(
               gh<_i551.GetPendingOccurrences>(),
@@ -695,6 +797,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
         () => _i121.WatchTags(gh<_i716.TagRepository>()));
+    gh.lazySingleton<_i691.SyncStatusRepository>(
+        () => _i975.SyncStatusRepositoryImpl(
+              gh<_i130.SyncStatusSource>(),
+              gh<_i400.SyncQuarantineRepository>(),
+            ));
     gh.lazySingleton<_i487.AppSettingsRepository>(() =>
         _i733.AppSettingsRepositoryImpl(gh<_i95.AppSettingsLocalDatasource>()));
     gh.factory<_i182.GetAppSettings>(
@@ -746,6 +853,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i102.GetPendingUploadCount(gh<_i691.SyncStatusRepository>()));
     gh.factory<_i567.WatchSyncStatus>(
         () => _i567.WatchSyncStatus(gh<_i691.SyncStatusRepository>()));
+    gh.factory<_i773.WatchSyncStatusDetails>(
+        () => _i773.WatchSyncStatusDetails(gh<_i691.SyncStatusRepository>()));
     gh.factory<_i693.SeedDefaultCategories>(() => _i693.SeedDefaultCategories(
           gh<_i802.CategoryRepository>(),
           gh<_i487.AppSettingsRepository>(),
@@ -889,8 +998,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i333.DeleteGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i333.PurgeGoal>(
         () => _i333.PurgeGoal(gh<_i696.GoalRepository>()));
+    gh.factory<_i34.GetGoalMovementAccounts>(
+        () => _i34.GetGoalMovementAccounts(gh<_i696.GoalRepository>()));
     gh.factory<_i933.LinkTransactionToGoal>(
         () => _i933.LinkTransactionToGoal(gh<_i696.GoalRepository>()));
+    gh.factory<_i525.RemoveGoalMovement>(
+        () => _i525.RemoveGoalMovement(gh<_i696.GoalRepository>()));
     gh.factory<_i800.RestoreGoal>(
         () => _i800.RestoreGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i711.WatchArchivedGoals>(
@@ -903,6 +1016,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1047.WithdrawFromGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
+    gh.factory<_i875.GoalLinkCubit>(
+        () => _i875.GoalLinkCubit(gh<_i933.LinkTransactionToGoal>()));
     gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
           gh<_i526.CreateBudget>(),
           gh<_i857.UpdateBudget>(),
@@ -910,17 +1025,15 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i722.WatchCategories>(),
           gh<_i795.BudgetCategoryScopeResolver>(),
         ));
-    gh.factory<_i597.ArchivedGoalsCubit>(() => _i597.ArchivedGoalsCubit(
-          gh<_i711.WatchArchivedGoals>(),
-          gh<_i695.ArchiveGoal>(),
-        ));
+    gh.factory<_i143.GoalMovementDetailCubit>(
+        () => _i143.GoalMovementDetailCubit(
+              gh<_i34.GetGoalMovementAccounts>(),
+              gh<_i525.RemoveGoalMovement>(),
+              gh<_i612.DeleteTransaction>(),
+            ));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
-        ));
-    gh.factory<_i492.GoalContributionCubit>(() => _i492.GoalContributionCubit(
-          gh<_i1023.ContributeToGoal>(),
-          gh<_i1047.WithdrawFromGoal>(),
         ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
@@ -1059,6 +1172,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1003.WatchDebtDetail>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.factory<_i597.ArchivedGoalsCubit>(() => _i597.ArchivedGoalsCubit(
+          gh<_i711.WatchArchivedGoals>(),
+          gh<_i695.ArchiveGoal>(),
+          gh<_i837.WatchAccounts>(),
+        ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
@@ -1073,6 +1191,11 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
+    gh.factory<_i492.GoalContributionCubit>(() => _i492.GoalContributionCubit(
+          gh<_i1023.ContributeToGoal>(),
+          gh<_i1047.WithdrawFromGoal>(),
+          gh<_i837.WatchAccounts>(),
+        ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(
               gh<_i242.CreateScheduledPayment>(),

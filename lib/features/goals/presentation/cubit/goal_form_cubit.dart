@@ -5,6 +5,7 @@ import '../../../../core/error/result.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/goal_draft.dart';
+import '../../domain/services/goal_starter_templates.dart';
 import '../../domain/usecases/create_goal.dart';
 import '../../domain/usecases/delete_goal.dart';
 import '../../domain/usecases/update_goal.dart';
@@ -34,14 +35,35 @@ class GoalFormCubit extends Cubit<GoalFormState> {
   final WatchAccounts _watchAccounts;
 
   /// Loads the goal to edit, or prepares an empty form when [id] is null.
-  Future<void> load(String? id) async {
+  ///
+  /// [template] only applies when [id] is null (HU-13 "Nueva meta — desde
+  /// plantilla"): it prefills the name and icon, and — when the template
+  /// carries a data-derived suggestion — the target amount, all still fully
+  /// editable. The account and target date are deliberately left unset: a
+  /// template never invents those.
+  Future<void> load(String? id, {GoalStarterTemplate? template}) async {
     final accounts = await _loadAccounts();
     if (isClosed) {
       return;
     }
 
     if (id == null) {
-      emit(GoalFormState(status: GoalFormStatus.ready, accounts: accounts));
+      emit(
+        GoalFormState(
+          status: GoalFormStatus.ready,
+          name: template?.name ?? '',
+          icon: template?.icon,
+          targetMinor: template == null
+              ? 0
+              : GoalStarterTemplates.suggestedTargetMinor(
+                    template: template,
+                    averageMonthlyExpenseMinor:
+                        GoalStarterTemplates.fallbackAverageMonthlyExpenseMinor,
+                  ) ??
+                  0,
+          accounts: accounts,
+        ),
+      );
       return;
     }
 
