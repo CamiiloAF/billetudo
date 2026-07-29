@@ -1268,6 +1268,8 @@
   "homeSyncAttention": "Changes not uploaded",
   "homeSyncSheetStalledTitle": "{count, plural, =1{1 change is only on this phone} other{{count} changes are only on this phone}}",
   "homeSyncSheetStalledMessage": "We couldn't save them to the cloud. They are complete here, but the cloud does not have a copy of them yet.",
+  "homeSyncSheetStaleTitle": "No contact with the cloud",
+  "homeSyncSheetStaleMessage": "Nothing is waiting: what you already recorded is safe in the cloud. But we've had no contact for {duration}, so anything you record from now on stays only on this phone.",
   "homeSyncSheetTooLongTitle": "Syncing is taking a while",
   "homeSyncSheetTooLongMessage": "We have been trying to upload your changes for {duration}. Nothing is missing on this phone; what has not happened yet is the copy in the cloud.",
   "homeSyncSheetDetails": "See details",

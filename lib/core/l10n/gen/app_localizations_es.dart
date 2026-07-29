@@ -4033,6 +4033,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.';
 
   @override
+  String get homeSyncSheetStaleTitle => 'Sin contacto con la nube';
+
+  @override
+  String homeSyncSheetStaleMessage(String duration) {
+    return 'No hay cambios pendientes: lo que registraste ya está a salvo en la nube. Pero llevamos $duration sin conectar, así que lo que registres de ahora en adelante se queda solo en este teléfono.';
+  }
+
+  @override
   String get homeSyncSheetTooLongTitle => 'La sincronización está tardando';
 
   @override

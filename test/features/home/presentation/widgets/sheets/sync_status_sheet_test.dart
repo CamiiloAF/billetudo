@@ -54,6 +54,7 @@ void main() {
     HomeSyncStatus status, {
     Duration? syncedAgo = const Duration(minutes: 5),
     int quarantined = 0,
+    SyncState snapshotState = SyncState.synced,
   }) =>
       HomeState(
         month: month,
@@ -61,7 +62,7 @@ void main() {
         status: HomeStatus.ready,
         syncStatus: status,
         syncSnapshot: SyncStatusSnapshot(
-          state: SyncState.synced,
+          state: snapshotState,
           quarantinedCount: quarantined,
           lastSyncedAt:
               syncedAgo == null ? null : DateTime.now().subtract(syncedAgo),
@@ -92,10 +93,18 @@ void main() {
         () => sheetState(HomeSyncStatus.attention, quarantined: 2),
       ),
       (
-        'sincronizando hace demasiado',
+        'silencio prolongado (stale, sin reintento activo)',
         () => sheetState(
               HomeSyncStatus.attention,
               syncedAgo: const Duration(days: 3),
+            ),
+      ),
+      (
+        'sincronizando hace demasiado (reintento activo)',
+        () => sheetState(
+              HomeSyncStatus.attention,
+              syncedAgo: const Duration(days: 3),
+              snapshotState: SyncState.syncing,
             ),
       ),
     ]) {
@@ -136,11 +145,15 @@ void main() {
 
     testWidgets('sincronizando hace demasiado: NO se ve como sincronizando',
         (tester) async {
+      // Only truthful with an active retry in flight (`state: syncing`):
+      // this copy claims "llevamos X días intentando subir tus cambios",
+      // which would be a lie with nothing pending and nothing retrying.
       await pumpState(
         tester,
         sheetState(
           HomeSyncStatus.attention,
           syncedAgo: const Duration(days: 3),
+          snapshotState: SyncState.syncing,
         ),
       );
 
@@ -150,6 +163,32 @@ void main() {
         find.textContaining('Llevamos 3 días intentando subir tus cambios'),
         findsOneWidget,
       );
+    });
+
+    testWidgets(
+        'silencio prolongado sin nada pendiente: no reclama un reintento '
+        'activo', (tester) async {
+      // Regression: before splitting the branch, this exact fixture (nothing
+      // quarantined, just >24h since the last success, no active retry) fell
+      // into the "too long" copy above and showed "Llevamos 3 días
+      // intentando subir tus cambios" — false, because nothing was even
+      // trying. Same class of bug as "Esos 0 cambios viven solo aquí" on the
+      // full screen.
+      await pumpState(
+        tester,
+        sheetState(
+          HomeSyncStatus.attention,
+          syncedAgo: const Duration(days: 3),
+        ),
+      );
+
+      expect(find.text('Sin contacto con la nube'), findsOneWidget);
+      expect(find.text('La sincronización está tardando'), findsNothing);
+      expect(
+        find.textContaining('Llevamos'),
+        findsNothing,
+      );
+      expect(find.byIcon(LucideIcons.cloudOff), findsOneWidget);
     });
 
     testWidgets('la fila de tiempo pasa a ámbar pasadas las 24 h',

@@ -68,11 +68,19 @@ class SyncLogEntry extends Equatable {
   /// Console-shaped single line — short timestamp, context, detail — used both
   /// by the plain-text export and by the log block of "Registro técnico".
   ///
-  /// The density is the point (`T7Iw0C` shows six entries, one line each): the
-  /// ISO timestamp with milliseconds plus the `[LEVEL] … — ` scaffolding wrapped
-  /// most entries over two or three lines, so a block sized for eight showed
-  /// four and cut the last one in half. `info` carries no marker, because the
-  /// severity worth spending characters on is the one that is not routine.
+  /// The density is the point (`T7Iw0C` shows six entries, one line each). Two
+  /// things had to change to get there, not just this method:
+  ///  - the short UTC timestamp instead of ISO-with-milliseconds, and no
+  ///    `[LEVEL] … — ` scaffolding (`info` carries no marker at all — the
+  ///    severity worth spending characters on is the one that is not
+  ///    routine);
+  ///  - **every call site's `message` is telegraphic** ("push 12 ops", "retry
+  ///    #8"), not prose. `tableName`/`code` are already prepended below, so a
+  ///    message that repeats them (`"retry failed for X on Y"`)
+  ///    silently doubles the line. The full exception (`$error`) belongs in
+  ///    the Sentry `context` at the call site, never in `message` — it is
+  ///    unbounded and would wrap the block on its own regardless of this
+  ///    method.
   String toLogLine() {
     final context = level == SyncLogLevel.info
         ? _snakeCase(event.name)

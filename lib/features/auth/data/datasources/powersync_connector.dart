@@ -56,7 +56,7 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
         _loggedUserId = null;
         await _log.record(
           event: SyncLogEvent.connection,
-          message: 'no session: sync stays offline',
+          message: 'no session',
         );
       }
       return null;
@@ -66,7 +66,7 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
       _loggedSignedOut = false;
       await _log.record(
         event: SyncLogEvent.connection,
-        message: 'credentials issued for user ${session.user.id}',
+        message: 'credentials issued',
       );
     }
     return ps.PowerSyncCredentials(
@@ -107,7 +107,7 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
     final operations = transaction.crud.map(_toSyncOperation).toList();
     await _log.record(
       event: SyncLogEvent.uploadStarted,
-      message: 'uploading ${operations.length} operation(s)',
+      message: 'push ${operations.length} ops',
     );
 
     var quarantined = 0;
@@ -127,10 +127,15 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
             error: error,
           );
           if (!verdict.shouldQuarantine) {
+            // Console-shaped and terse on purpose (`toLogLine()`): the table
+            // and code are already prepended by the log line itself, and
+            // `$error` is reserved for the Sentry `context` below — a raw
+            // exception can be arbitrarily long and would blow the one-line
+            // density the "Registro técnico" frame (`T7Iw0C`) is built for.
             await _log.record(
               event: SyncLogEvent.uploadRetry,
               level: SyncLogLevel.warning,
-              message: 'transient failure, batch will be retried: $error',
+              message: 'retry #${verdict.attempts}',
               code: code,
               tableName: operation.tableName,
             );
@@ -164,8 +169,8 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
           await _log.record(
             event: SyncLogEvent.watchdogQuarantined,
             level: SyncLogLevel.error,
-            message: 'retry watchdog quarantined an unclassified failure after '
-                '${verdict.describe()}: $error',
+            message: 'stalled ${verdict.attempts}x/'
+                '${verdict.stuckFor.inHours}h',
             code: code,
             tableName: operation.tableName,
           );
@@ -196,7 +201,7 @@ class PowerSyncConnector extends ps.PowerSyncBackendConnector {
         await _log.record(
           event: SyncLogEvent.quarantined,
           level: SyncLogLevel.error,
-          message: '${kind.name} rejection, operation quarantined: $error',
+          message: 'quarantined (${kind.name})',
           code: code,
           tableName: operation.tableName,
         );

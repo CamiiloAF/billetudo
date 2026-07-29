@@ -146,7 +146,7 @@ class SyncQuarantineRepositoryImpl implements SyncQuarantineRepository {
       await _log.record(
         event: SyncLogEvent.quarantineDiscarded,
         level: SyncLogLevel.warning,
-        message: 'quarantined operation $id discarded by the user',
+        message: 'discarded by user',
       );
       return const Right(unit);
     } catch (e, st) {
@@ -167,7 +167,7 @@ class SyncQuarantineRepositoryImpl implements SyncQuarantineRepository {
       await _log.record(
         event: SyncLogEvent.quarantineDiscarded,
         level: SyncLogLevel.warning,
-        message: 'the whole sync quarantine was discarded by the user',
+        message: 'quarantine cleared by user',
       );
       return const Right(unit);
     } catch (e, st) {
@@ -203,10 +203,11 @@ class SyncQuarantineRepositoryImpl implements SyncQuarantineRepository {
     try {
       await _uploader.upload(operation.operation);
       await _store.remove(operation.id);
+      // `tableName:` already prepends the table to the log line — repeating
+      // it in the message is what made this the longest line in the block.
       await _log.record(
         event: SyncLogEvent.quarantineRetry,
-        message: 'retry succeeded for ${operation.operation.type.name} on '
-            '${operation.operation.tableName}',
+        message: 'retry ok',
         tableName: operation.operation.tableName,
       );
       return const Right(unit);
@@ -227,8 +228,7 @@ class SyncQuarantineRepositoryImpl implements SyncQuarantineRepository {
       await _log.record(
         event: SyncLogEvent.quarantineRetry,
         level: SyncLogLevel.error,
-        message: 'retry failed for ${operation.operation.type.name} on '
-            '${operation.operation.tableName}: $e',
+        message: 'retry failed',
         code: code,
         tableName: operation.operation.tableName,
       );

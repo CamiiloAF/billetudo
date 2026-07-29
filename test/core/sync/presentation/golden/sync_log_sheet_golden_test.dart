@@ -57,17 +57,20 @@ void main() {
   /// arranca, una escritura se rechaza, se reintenta, el watchdog la saca de
   /// la cola y la subida termina con operaciones en cuarentena.
   final entries = <SyncLogEntry>[
+    // Telegraphic on purpose, matching the density every real call site now
+    // uses (`toLogLine()`, `powersync_connector.dart`): the block is sized
+    // for eight one-line entries (`T7Iw0C`), not eight paragraphs.
     entry(
       0,
       level: SyncLogLevel.info,
       event: SyncLogEvent.connection,
-      message: 'credentials handed to sync engine',
+      message: 'credentials issued',
     ),
     entry(
       1,
       level: SyncLogLevel.info,
       event: SyncLogEvent.uploadStarted,
-      message: 'uploading 12 operations',
+      message: 'push 12 ops',
     ),
     entry(
       2,
@@ -75,7 +78,7 @@ void main() {
       event: SyncLogEvent.uploadRetry,
       code: 'PGRST204',
       tableName: 'transactions',
-      message: 'column does not exist, will retry',
+      message: 'retry #1',
     ),
     entry(
       3,
@@ -83,7 +86,7 @@ void main() {
       event: SyncLogEvent.quarantined,
       code: 'PGRST204',
       tableName: 'transactions',
-      message: 'permanent failure, moved to quarantine',
+      message: 'quarantined (brokenSchema)',
     ),
     entry(
       4,
@@ -91,26 +94,26 @@ void main() {
       event: SyncLogEvent.watchdogQuarantined,
       code: '503',
       tableName: 'debts',
-      message: 'blocking the queue for 3 days, pulled out',
+      message: 'stalled 20x/72h',
     ),
     entry(
       5,
       level: SyncLogLevel.info,
       event: SyncLogEvent.uploadFinished,
-      message: 'finished with 2 quarantined operations',
+      message: '10 uploaded, 2 quarantined',
     ),
     entry(
       6,
       level: SyncLogLevel.info,
       event: SyncLogEvent.quarantineRetry,
       tableName: 'transactions',
-      message: 'manual replay requested',
+      message: 'retry ok',
     ),
     entry(
       7,
       level: SyncLogLevel.info,
       event: SyncLogEvent.uploadFinished,
-      message: 'all operations uploaded',
+      message: '1 uploaded, 0 quarantined',
     ),
   ];
 

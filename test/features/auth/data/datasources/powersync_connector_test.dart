@@ -624,7 +624,7 @@ void main() {
           message: captureAny(named: 'message'),
         ),
       ).captured;
-      expect(started.single, contains('2 operation'));
+      expect(started.single, contains('2 ops'));
 
       final finished = verify(
         () => log.record(
@@ -757,7 +757,7 @@ void main() {
             tableName: 'debts',
           ),
         ).captured;
-        expect(captured.single, contains('20 rejections over 25h'));
+        expect(captured.single, contains('stalled 20x/25h'));
         verifyNever(
           () => log.record(
             event: SyncLogEvent.quarantined,

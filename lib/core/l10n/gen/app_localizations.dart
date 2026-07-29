@@ -6624,6 +6624,18 @@ abstract class AppLocalizations {
   /// **'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.'**
   String get homeSyncSheetStalledMessage;
 
+  /// No description provided for @homeSyncSheetStaleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin contacto con la nube'**
+  String get homeSyncSheetStaleTitle;
+
+  /// No description provided for @homeSyncSheetStaleMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cambios pendientes: lo que registraste ya está a salvo en la nube. Pero llevamos {duration} sin conectar, así que lo que registres de ahora en adelante se queda solo en este teléfono.'**
+  String homeSyncSheetStaleMessage(String duration);
+
   /// No description provided for @homeSyncSheetTooLongTitle.
   ///
   /// In es, this message translates to:

@@ -4028,6 +4028,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t save them to the cloud. They are complete here, but the cloud does not have a copy of them yet.';
 
   @override
+  String get homeSyncSheetStaleTitle => 'No contact with the cloud';
+
+  @override
+  String homeSyncSheetStaleMessage(String duration) {
+    return 'Nothing is waiting: what you already recorded is safe in the cloud. But we\'ve had no contact for $duration, so anything you record from now on stays only on this phone.';
+  }
+
+  @override
   String get homeSyncSheetTooLongTitle => 'Syncing is taking a while';
 
   @override

@@ -27,6 +27,7 @@ void main() {
     HomeSyncStatus status, {
     Duration syncedAgo = const Duration(minutes: 5),
     int quarantined = 0,
+    SyncState snapshotState = SyncState.synced,
   }) =>
       HomeState(
         month: month,
@@ -34,7 +35,7 @@ void main() {
         status: HomeStatus.ready,
         syncStatus: status,
         syncSnapshot: SyncStatusSnapshot(
-          state: SyncState.synced,
+          state: snapshotState,
           quarantinedCount: quarantined,
           lastSyncedAt: DateTime.now().subtract(syncedAgo),
           hasSyncedEver: true,
@@ -127,16 +128,37 @@ void main() {
       );
     });
 
-    // `W4oGp`/`G6yA34`: sincronizando hace demasiado — el caso literal del
-    // incidente, que no puede verse igual que "sincronizando".
+    // `W4oGp`/`G6yA34`: sincronizando hace demasiado — reintento activo que
+    // lleva más de 24 h sin éxito, el caso literal del incidente. Requiere
+    // `state: syncing` explícito: es la única combinación de la que esta
+    // copy es verdad (dice "llevamos X intentando subir tus cambios").
     testWidgets('sync status sheet — too long ($suffix)', (tester) async {
       await golden(
         tester,
         stateWith(
           HomeSyncStatus.attention,
           syncedAgo: const Duration(days: 3),
+          snapshotState: SyncState.syncing,
         ),
         'too_long_$suffix',
+        brightness: brightness,
+        withDetails: true,
+      );
+    });
+
+    // Sin frame propio todavía en `billetudo.pen` (gap conocido, ver
+    // `design-system/billetudo/pages/sincronizacion.md`): atención sin nada
+    // en cuarentena y sin reintento activo — solo silencio. Antes de este fix
+    // caía en la copy de "too long" ("Llevamos 3 días intentando subir tus
+    // cambios"), falsa cuando no hay ningún cambio pendiente.
+    testWidgets('sync status sheet — stale ($suffix)', (tester) async {
+      await golden(
+        tester,
+        stateWith(
+          HomeSyncStatus.attention,
+          syncedAgo: const Duration(days: 3),
+        ),
+        'stale_$suffix',
         brightness: brightness,
         withDetails: true,
       );

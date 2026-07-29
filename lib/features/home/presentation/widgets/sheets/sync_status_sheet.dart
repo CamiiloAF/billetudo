@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../../core/sync/domain/entities/sync_state.dart';
 import '../../../../../core/sync/presentation/utils/sync_freshness.dart';
 import '../../../../../core/sync/presentation/utils/sync_relative_time.dart';
 import '../../../../../core/sync/presentation/widgets/sync_time_row.dart';
@@ -78,10 +79,31 @@ class SyncStatusSheet extends StatelessWidget {
               l10n.homeSyncSheetStalledTitle(snapshot.quarantinedCount),
               l10n.homeSyncSheetStalledMessage,
             ),
-          HomeSyncStatus.attention => (
+          // Attention with an empty quarantine (`_map` in the repository never
+          // reports `stalled` with nothing quarantined) still splits in two:
+          // whether the engine is actively mid-retry or plainly silent. Only
+          // the first one is truthfully "taking too long" — claiming an
+          // active upload retry (`homeSyncSheetTooLongMessage`) while nothing
+          // is even trying would be the same lie the incident behind HU-08
+          // was built to stop the app from telling.
+          HomeSyncStatus.attention
+                when !isStalled && snapshot.state == SyncState.syncing =>
+            (
               LucideIcons.hourglass,
               l10n.homeSyncSheetTooLongTitle,
               l10n.homeSyncSheetTooLongMessage(
+                lastSyncedAt == null
+                    ? l10n.syncDurationMoment
+                    : SyncRelativeTime.elapsed(
+                        l10n,
+                        now.difference(lastSyncedAt),
+                      ),
+              ),
+            ),
+          HomeSyncStatus.attention => (
+              LucideIcons.cloudOff,
+              l10n.homeSyncSheetStaleTitle,
+              l10n.homeSyncSheetStaleMessage(
                 lastSyncedAt == null
                     ? l10n.syncDurationMoment
                     : SyncRelativeTime.elapsed(
