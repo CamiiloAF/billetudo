@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../domain/entities/goal_contribution.dart';
+import '../../domain/entities/goal_contribution_draft.dart';
 
 enum EditGoalMovementStatus { ready, saving, saved, failure }
 
@@ -39,6 +40,17 @@ class EditGoalMovementState extends Equatable {
   bool get isWithdrawal => direction == GoalMovementDirection.withdrawal;
   bool get isSaving => status == EditGoalMovementStatus.saving;
   bool get canSubmit => amountMinor > 0 && !isSaving;
+
+  /// Whether [failure] is attributable to the Monto field itself — a
+  /// `ValidationFailure` on `GoalContributionDraft.fieldAmountMinor`, either
+  /// the "retiro supera lo ahorrado" case or an invalid (`<= 0`) amount.
+  /// Drives whether the UI anchors the error to `GoalAmountHeroField`
+  /// (border + message) instead of showing the generic sheet-level text.
+  bool get isAmountFailure {
+    final currentFailure = failure;
+    return currentFailure is ValidationFailure &&
+        currentFailure.field == GoalContributionDraft.fieldAmountMinor;
+  }
 
   EditGoalMovementState copyWith({
     EditGoalMovementStatus? status,

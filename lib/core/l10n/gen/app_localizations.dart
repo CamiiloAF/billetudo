@@ -6071,6 +6071,18 @@ abstract class AppLocalizations {
   /// **'Editar movimiento'**
   String get goalMovementEditTitle;
 
+  /// No description provided for @goalMovementEditHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Corrige el monto, la fecha o la nota de este movimiento. No crea ni elimina movimientos.'**
+  String get goalMovementEditHint;
+
+  /// No description provided for @goalMovementAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get goalMovementAmountLabel;
+
   /// No description provided for @goalMovementKindContributionLower.
   ///
   /// In es, this message translates to:

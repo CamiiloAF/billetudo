@@ -131,6 +131,11 @@ Chip de pregunta sugerida para el asistente "Billetudo". Texto + flecha, fondo `
 
 - Padding `[14,16]` (subido desde `[11,14]`) para cumplir el tap target minimo de 44pt de alto — hallazgo de la revision UX, corregido a nivel de componente (afecta ambas instancias/pantallas automaticamente).
 
+### Load More · Ver más (`oadHE`)
+Pill de paginacion incremental para ledgers/listas (8 iniciales + 8 por carga, controlado por codigo). Usado en Presupuestos, Deudas, Pagos Programados y Metas.
+
+- Padding vertical `13` (subido desde `12` el 2026-07-29) para alcanzar el tap target minimo de 44pt — el contenedor media 42px de alto, hallazgo de `ui-ux-reviewer`, corregido a nivel de componente (propaga a las 6 instancias).
+
 ### Tab Bar
 Navegacion inferior de 5 destinos (Inicio, Movimientos, Presupuestos, Metas, Mas), estilo flotante tipo "Liquid Glass".
 

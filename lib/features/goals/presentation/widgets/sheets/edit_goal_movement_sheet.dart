@@ -88,7 +88,18 @@ class EditGoalMovementSheetBody extends StatelessWidget {
                     color: colors.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.goalMovementEditHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 14),
+                GoalMovementFieldLabel(text: l10n.goalMovementAmountLabel),
+                const SizedBox(height: 6),
                 GoalAmountHeroField(
                   fieldKey: const ValueKey('edit-goal-movement-amount'),
                   label: state.isWithdrawal
@@ -103,6 +114,16 @@ class EditGoalMovementSheetBody extends StatelessWidget {
                     label: state.currency,
                     locked: false,
                   ),
+                  // Only a retiro can reach this failure in practice — a
+                  // monto <= 0 already keeps `canSubmit` false, so submit()
+                  // never runs — but the withdraw-specific copy would be
+                  // wrong for an aporte, so it falls back to the generic,
+                  // still field-anchored message in that case.
+                  errorText: state.isAmountFailure
+                      ? (state.isWithdrawal
+                          ? l10n.goalWithdrawErrorExceedsSaved
+                          : l10n.goalMovementError)
+                      : null,
                 ),
                 const SizedBox(height: 14),
                 GoalMovementFieldLabel(text: l10n.goalMovementDateLabel),
@@ -111,6 +132,7 @@ class EditGoalMovementSheetBody extends StatelessWidget {
                   icon: LucideIcons.calendar,
                   value: GoalFormat.relativeDate(context, l10n, state.date),
                   onTap: () => unawaited(_pickDate(context, cubit, state.date)),
+                  trailingIcon: LucideIcons.chevronRight,
                 ),
                 const SizedBox(height: 14),
                 GoalMovementFieldLabel(text: l10n.goalMovementNoteLabel),
@@ -123,7 +145,7 @@ class EditGoalMovementSheetBody extends StatelessWidget {
                   decoration:
                       InputDecoration(hintText: l10n.goalMovementNoteHint),
                 ),
-                if (state.failure != null) ...[
+                if (state.failure != null && !state.isAmountFailure) ...[
                   const SizedBox(height: 8),
                   Text(
                     l10n.goalMovementError,

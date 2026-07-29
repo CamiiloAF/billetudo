@@ -4,6 +4,7 @@ import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/widgets/bottom_sheet_base.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart';
+import 'package:billetudo/features/goals/domain/entities/goal_contribution_draft.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_movement_accounts.dart';
 import 'package:billetudo/features/goals/domain/services/goal_category_seed.dart';
 import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_cubit.dart';
@@ -542,6 +543,7 @@ void main() {
           status: EditGoalMovementStatus.failure,
           failure: const ValidationFailure(
             'a withdrawal cannot leave the goal\'s saved amount negative',
+            field: GoalContributionDraft.fieldAmountMinor,
           ),
         ),
       );

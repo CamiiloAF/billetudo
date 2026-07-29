@@ -3546,6 +3546,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalMovementEditTitle => 'Editar movimiento';
 
   @override
+  String get goalMovementEditHint =>
+      'Corrige el monto, la fecha o la nota de este movimiento. No crea ni elimina movimientos.';
+
+  @override
+  String get goalMovementAmountLabel => 'Monto';
+
+  @override
   String get goalMovementKindContributionLower => 'aporte';
 
   @override

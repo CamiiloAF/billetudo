@@ -1,5 +1,6 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart';
+import 'package:billetudo/features/goals/domain/entities/goal_contribution_draft.dart';
 import 'package:billetudo/features/goals/domain/usecases/update_goal_movement.dart';
 import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_cubit.dart';
 import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_state.dart';
@@ -148,6 +149,7 @@ void main() {
         (_) async => const Left(
           ValidationFailure(
             'a withdrawal cannot leave the goal\'s saved amount negative',
+            field: GoalContributionDraft.fieldAmountMinor,
           ),
         ),
       ),
@@ -168,7 +170,52 @@ void main() {
         isA<EditGoalMovementState>()
             .having((s) => s.status, 'status', EditGoalMovementStatus.failure)
             .having((s) => s.failure, 'failure', isA<ValidationFailure>())
-            .having((s) => s.amountMinor, 'amountMinor', 999999),
+            .having((s) => s.amountMinor, 'amountMinor', 999999)
+            .having(
+              (s) => s.isAmountFailure,
+              'isAmountFailure',
+              isTrue,
+            ),
+      ],
+    );
+
+    blocTest<EditGoalMovementCubit, EditGoalMovementState>(
+      'una falla no atribuible al monto (p.ej. de base de datos) no marca '
+      'isAmountFailure, así la UI no la ancla al campo de Monto',
+      setUp: () => when(
+        () => updateGoalMovement(
+          contributionId: any(named: 'contributionId'),
+          amountMinor: any(named: 'amountMinor'),
+          date: any(named: 'date'),
+          note: any(named: 'note'),
+        ),
+      ).thenAnswer(
+        (_) async => const Left(
+          DatabaseFailure('no se pudo guardar el movimiento'),
+        ),
+      ),
+      build: build,
+      seed: () => EditGoalMovementState(
+        contributionId: 'm1',
+        goalId: 'g1',
+        goalName: 'Viaje',
+        direction: GoalMovementDirection.contribution,
+        currency: 'COP',
+        amountMinor: 9000,
+        date: DateTime(2026, 7, 15),
+      ),
+      act: (cubit) => cubit.submit(),
+      expect: () => [
+        isA<EditGoalMovementState>()
+            .having((s) => s.status, 'status', EditGoalMovementStatus.saving),
+        isA<EditGoalMovementState>()
+            .having((s) => s.status, 'status', EditGoalMovementStatus.failure)
+            .having((s) => s.failure, 'failure', isA<DatabaseFailure>())
+            .having(
+              (s) => s.isAmountFailure,
+              'isAmountFailure',
+              isFalse,
+            ),
       ],
     );
 

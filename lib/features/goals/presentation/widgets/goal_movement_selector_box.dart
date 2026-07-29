@@ -4,18 +4,25 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Tappable, dropdown-styled box for the fecha field in
-/// `GoalContributionSheet`.
+/// `GoalContributionSheet` and `EditGoalMovementSheet`.
 class GoalMovementSelectorBox extends StatelessWidget {
   const GoalMovementSelectorBox({
     required this.icon,
     required this.value,
     required this.onTap,
+    this.trailingIcon = LucideIcons.chevronDown,
     super.key,
   });
 
   final IconData icon;
   final String value;
   final VoidCallback onTap;
+
+  /// Pencil's `wOlOA` (Form Field) default trailing icon is chevron-down,
+  /// but `EditGoalMovementSheet`'s Fecha instance (`vvxXn`/`REkBO`'s
+  /// `PrXDA`) overrides it to chevron-right — matched by passing
+  /// `LucideIcons.chevronRight` from that caller.
+  final IconData trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +53,7 @@ class GoalMovementSelectorBox extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(LucideIcons.chevronDown, color: colors.textSecondary, size: 16),
+            Icon(trailingIcon, color: colors.textSecondary, size: 16),
           ],
         ),
       ),
