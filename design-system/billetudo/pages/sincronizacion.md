@@ -41,7 +41,7 @@ Y la tensión que toda la pantalla resuelve: el usuario debe entender que **sus 
 | Sin conexión | `n1qFs` | `IrLj4` |
 | Registros trabados | `MEcVH` | `ISnfN` |
 | Sincronizando hace demasiado | `W4oGp` | `G6yA34` |
-| **Silencio prolongado (`stale`)** | *sin frame — ver nota* | *sin frame — ver nota* |
+| **Silencio prolongado (`stale`)** | `kvytN` | `iWlff` |
 | Registro técnico | `T7Iw0C` | `ShmG5` |
 | Detalle de la operación | `r1qQYc` | `YzMN5` |
 
@@ -110,7 +110,6 @@ Fila "Estado de sincronización" con sublabel "Última sincronización: hace 5 m
 
 ## Pendientes
 
-- **Hoja "Silencio prolongado" (`stale`) sin frame propio en `billetudo.pen` (2026-07-28).** Al implementar `SyncStatusSheet` se descubrió que `HomeSyncStatus.attention` con la cuarentena vacía en realidad cubre **dos** situaciones distintas, no una: (a) el motor sigue reintentando activamente (`SyncState.syncing`) y lleva más de 24 h sin éxito — eso **sí** es `W4oGp`, "La sincronización está tardando"; (b) no hay nada pendiente ni ningún reintento en curso, solo silencio — la app no ha vuelto a hablar con la nube. Antes de esta corrida, (b) caía por defecto en la copy de (a) y decía *"Llevamos 3 días intentando subir tus cambios"* con **cero** cambios pendientes — la misma familia de mentira que "Esos 0 cambios viven solo aquí" en la pantalla principal. Se implementó con copy propio (`homeSyncSheetStaleTitle`/`Message`, glifo `cloud-off`, mismo hecho que `syncHeroStaleTitle` de la pantalla principal) reusando el chrome de `W4oGp`, igual que `Pe8V9` reusó `XxHV3`. **Falta el frame formal en Pencil** — variante de contenido, no de estructura, así que no bloquea, pero debe agregarse cuando se retome el `.pen` de esta feature.
 - **Implementar en Flutter.** Es lo único grande que queda: la capa de datos y dominio ya existe (`lib/core/sync/` — cuarentena, log, `SyncStatusSnapshot`, `WatchSyncStatusDetails`, watchdog) y **está sin consumidor** a la espera de esta UI.
 - **8 íconos de sync sueltos** en headers aún reconstruidos a mano fuera de Inicio (Notificaciones, Balance V2 y sus oscuros): ninguno mostraría el cuarto estado.
 - **No diseñado:** la animación de giro del `loader-circle`, el gesto de scroll de `rxUil`, y la hoja de "archivar" (decisión de producto abierta).
