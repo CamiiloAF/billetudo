@@ -4,7 +4,7 @@
 **Librería:** `fl_chart`
 **Fuente de datos:** `Transactions`, `Accounts`, `Categories`, `Budgets`, `Goals`, `Debts`, `DebtEntries`
 **Ruta:** vive en el hub **"Más"** (`04-inicio.md` HU-01) y tiene chip de acceso rápido en Inicio (`04-inicio.md` HU-05b).
-**Diseño:** aún no diseñado en `billetudo.pen`. Antes de implementar, seguir el flujo de diseño de `CLAUDE.md` (Pencil primero, `pages/graficas.md` después de aprobar).
+**Diseño:** **terminado y aprobado** (claro + oscuro) en `billetudo.pen`, 2026-07-28. Spec por pantalla en `design-system/billetudo/pages/graficas.md` — leerlo antes de implementar; recoge decisiones que este documento no fija (tabs pinneados, `$primary-data`, el tratamiento del balance negativo, y por qué Patrimonio se dibuja con barras en Pencil pero se implementa como `LineChart`).
 
 ## Contexto
 
@@ -49,9 +49,9 @@ Estas reglas son la fuente de verdad de "qué transacción entra en qué número
 
 ### Moneda
 
-- Si el usuario tiene **una sola moneda** (caso mayoritario): no hay conversión, ningún rótulo de aproximación.
-- Si tiene **varias** y hay tasa cacheada (`12-multi-moneda.md`): se normaliza a la moneda base y se **rotula visiblemente como cifra aproximada/convertida**.
-- Si tiene varias y **no** hay tasa cacheada (offline en el primer arranque, o antes de que exista la fuente FX): se **segmenta por moneda** — nunca se inventa un número ni se suman monedas distintas. Es el mismo criterio que ya usa `08-deudas.md` HU-04 en Fase 0.
+**Fuera del alcance de este entregable (decisión 2026-07-28).** Multi-moneda (`12-multi-moneda.md`) se construye en una fase posterior; hasta entonces esta feature asume **una sola moneda** (caso mayoritario) y no dibuja, calcula ni rotula nada relacionado con conversión.
+
+Concretamente, en este entregable **no** se construyen: normalización a moneda base, rótulo de "cifra aproximada/convertida", ni segmentación por moneda. Cuando llegue la fase de multi-moneda, se añaden aquí siguiendo el mismo criterio que ya usa `08-deudas.md` HU-04 (con tasa → normalizar y rotular aproximado; sin tasa → segmentar, nunca sumar monedas distintas ni inventar un número).
 
 ### Fechas y agregación
 
@@ -77,10 +77,11 @@ Como usuario quiero ver la evolución de lo que tengo en el tiempo, para saber s
   - **Patrimonio líquido / disponible** = Σ saldos de cuentas activas (el saldo de una tarjeta ya es negativo, así que resta solo).
   - **Patrimonio total** = líquido − Σ saldo pendiente de deudas `iOwe` + Σ saldo pendiente de deudas `owedToMe`.
 - **Las deudas entran al patrimonio total** (una hipoteca de 200M resta; lo que me debe el primo suma como cuenta por cobrar) pero **no** al líquido/gastable — es el "tracking account" de YNAB nombrado con honestidad (`08-deudas.md` §Patrimonio). La separación líquido/total es justo lo que ese doc pide explicitar.
+- **Forma del gráfico: línea/área, no barras** (decisión 2026-07-28). El patrimonio es un saldo acumulado en el tiempo y se lee como tendencia, no como magnitudes comparadas entre sí. El mockup de Pencil (`kgM3u`) usa barras **solo porque Pencil no puede dibujar líneas**; es una aproximación declarada, no la especificación. En Flutter se implementa con `LineChart` de `fl_chart` (dos series: líquido y total).
 - El saldo de cada cuenta en un punto del tiempo se reconstruye con `initialBalanceMinor` + transacciones acumuladas hasta esa fecha. El saldo de cada deuda se reconstruye **desde su ledger** (apertura + asientos de caja + `DebtEntries` hasta esa fecha), nunca desde un número guardado.
 - **El interés de una deuda baja el patrimonio sin aparecer en el flujo de caja (HU-01).** No es una inconsistencia: no es caja. Si la vista deja ver ambas curvas, debe poder explicarse (copy corto o tooltip), o el usuario la lee como un bug.
 - Opción de **incluir cuentas archivadas** (excluidas por defecto).
-- Multi-moneda: según las "Reglas de conteo" (una moneda → directo; varias con tasa → normalizado y rotulado aproximado; varias sin tasa → segmentado).
+- Multi-moneda: fuera de alcance (ver "Reglas de conteo" → Moneda). Se asume moneda única.
 - Es parte del **set esencial gratis** (Nivel 0).
 
 ### HU-03 — Ver estructura de gasto por categoría
@@ -98,6 +99,7 @@ Como usuario quiero una vista resumen que combine el estado de mis presupuestos 
 
 **Criterios de aceptación:**
 - Reutiliza los cálculos de `06-presupuestos.md` (HU-03) y `07-metas.md` (HU-04); esta feature solo los presenta agregados. **No reimplementa** ninguna de las dos lógicas.
+- **Es la vista por defecto de la pantalla** (decisión 2026-07-28): primer tab y el que se abre al entrar, porque es la respuesta de 3 segundos a "¿cómo voy en conjunto?". Como es presentación pura de cálculos ajenos, **no** se le diseñan estados propios más allá del vacío (ver HU-06); carga y error los hereda de los cubits de Presupuestos y Metas.
 - **Deudas no tienen bloque propio aquí** (decisión 2026-07-24): el avance "pagado / total" es el corazón de la feature Deudas y construirlo dos veces la duplica. Se resuelve con un **cross-link** a Deudas (`08-deudas.md` HU-04), coherente con el chip de acceso rápido de Inicio.
 - **Delimitación contra el Home (`04-inicio.md`):** el Home responde *"¿cómo voy hoy?"* (gasto del mes en curso + actividad reciente, un solo mes, sin desglose). Esta vista responde *"¿cómo voy en conjunto?"* (todos los presupuestos activos y todas las metas, sin feed de actividad). No se comparten widgets de presentación, sí los casos de uso de `06` y `07`.
 - Es parte del **set esencial gratis** (Nivel 0).
@@ -106,7 +108,9 @@ Como usuario quiero una vista resumen que combine el estado de mis presupuestos 
 Como usuario quiero poder guardar/compartir una imagen de una gráfica del set esencial, para respaldarla o compartirla informalmente (no confundir con export a PDF de informes avanzados, que es Nivel 1/2).
 
 **Criterios de aceptación:**
+- **Disparador: ícono de compartir en el `Page Header`** (decisión 2026-07-28), no un botón fijo al fondo de cada tab. El export es una acción secundaria y poco frecuente; la fila fija le quitaba ~60px verticales al gráfico en las cuatro pantallas.
 - Exporta la **vista actual** como PNG con capacidades nativas de Flutter (`RepaintBoundary` → `toImage`), sin generar un documento de informe compuesto (eso es Cubo B/C).
+- **Qué entra en la imagen:** el `RepaintBoundary` envuelve la card del gráfico más su título y el rango de fechas — **nunca el chrome de navegación** (tabs, header, el propio disparador de export).
 - La imagen se entrega vía **share sheet del sistema** (y opción de guardar), sin requerir permisos de almacenamiento adicionales donde el share nativo baste.
 - La imagen respeta el tema activo (claro/oscuro) y no filtra datos que la vista no muestre.
 
@@ -128,6 +132,7 @@ Para que añadir una vista avanzada en Fase 4 sea **aditivo** y no un retrofit s
 - **Un único punto de guarda** (`ChartAccessGuard` o equivalente) que consulta el `tier` antes de abrir una vista. En Fase 0 siempre deja pasar porque no existe ninguna `advanced`; en Fase 4 se le conecta la verificación de cupo **server-side** sin tocar las vistas.
 - **El rango de fechas es parámetro** de cada vista desde el día 1 (HU-01), no una constante — es lo que después habilita comparativas y tendencias sin reescribir la capa de datos.
 - **Nada de UI avanzada apagada**: no se agregan pantallas, rutas ni entradas de menú para vistas que no existen.
+- **Cómo entra una vista avanzada en Fase 4** (decisión 2026-07-28): como **acción dentro de un tab existente** (ej. "comparar con el periodo anterior" dentro de Flujo), **nunca como un tab nuevo**. Con 4 tabs el control ya está en su techo medido y un quinto obligaría a rediseñar la navegación; una acción dentro del tab es aditiva y sigue respetando "nada de UI avanzada apagada" — hoy simplemente no existe la acción.
 
 ## Reglas de negocio y edge cases (crítico: no romper Nivel 0)
 
@@ -135,6 +140,8 @@ Para que añadir una vista avanzada en Fase 4 sea **aditivo** y no un retrofit s
 - El límite de Nivel 1 se cuenta por **vistas nuevas generadas**, no por reaperturas: una vista avanzada ya desbloqueada este mes debe seguir viéndose sin gastar cupo. Es responsabilidad del backend (Fase 4); lo que esta feature aporta desde ya es la costura de arriba.
 - Ninguna gráfica del set esencial puede quedar detrás de anuncio o pago bajo ninguna circunstancia (regla explícita de Nivel 0 en CLAUDE.md), ni recortada por rango de fechas o número de vistas.
 - Todas las gráficas se calculan **100% en el dispositivo** (costo marginal $0), agregando en SQL.
+- **Lectura de valores (transversal a HU-01/02/03):** ningún gráfico del set esencial muestra ejes ni escala, así que **debe poder tocarse** para leer la magnitud: tap en una barra, punto o segmento revela su valor y el periodo al que corresponde. Sin esto el gráfico es decorativo y todo el peso informativo queda en el hero.
+- **Accesibilidad:** cada gráfico expone un resumen textual vía `Semantics` (qué mide, rango, y el dato principal), porque un lector de pantalla no puede recorrer las barras.
 - **Tono:** positivo y de progreso. Un mes con flujo negativo o una categoría alta se comunican con neutralidad, nunca avergonzando.
 - Textos solo desde `AppLocalizations` (es + en); colores solo desde variables del `.pen` — ninguna serie de `fl_chart` con hex hardcodeado.
 
@@ -153,6 +160,7 @@ Las "Reglas de conteo" de este doc son la fuente de verdad. Estos documentos se 
 ## Fases
 
 - **Fase 0 (esta HU):** HU-01 a HU-06 + la costura de tiers. Requiere que existan Transacciones, Cuentas, Categorías, Presupuestos, Metas y Deudas.
+- **Fase de multi-moneda:** cuando se construya `12-multi-moneda.md`, se añade a HU-01/HU-02/HU-03 el manejo de varias monedas descrito en "Reglas de conteo" → Moneda. No es bloqueante para este entregable.
 - **Dependencia blanda:** HU-01/HU-03 solo cambian de comportamiento cuando exista `countsInBudget` (Fase B1 del plan de transferencias). Si esta feature se implementa antes, la regla queda escrita y sin efecto — no es bloqueante.
 - **Fase 4:** vistas avanzadas (Cubo B) enchufadas al catálogo + verificación de cupo server-side + AdMob SSV / RevenueCat.
 
