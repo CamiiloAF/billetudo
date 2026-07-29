@@ -1,6 +1,6 @@
 # Página: Estado de sincronización
 
-Overrides sobre `MASTER.md` para la familia de pantallas y hojas del estado de sincronización (HU-08 en `docs/requirements/05-auth-sync.md`). **Diseño cerrado y aprobado el 2026-07-28, claro y oscuro.** Falta implementar en Flutter.
+Overrides sobre `MASTER.md` para la familia de pantallas y hojas del estado de sincronización (HU-08 en `docs/requirements/05-auth-sync.md`). **Diseño cerrado y aprobado el 2026-07-28 (claro y oscuro) e implementado en Flutter** — cerrado también contra `/design-fidelity-check` el mismo día (ver `docs/fidelidad-visual-tracking.md`).
 
 ## Tesis (norte del diseño)
 
@@ -108,9 +108,15 @@ Fila "Estado de sincronización" con sublabel "Última sincronización: hace 5 m
 - **Límite heredado, aceptado a conciencia:** el relleno `$muted` del CTA inerte da 1.06:1 sobre `$amber-soft` (1.13:1 en oscuro) y el borde no lo resuelve. El botón se identifica por su **label**, que sí cumple. Es el mismo límite que `Button/Secondary` arrastra en todo el sistema — ver §Contraste del chrome en `MASTER.md`.
 - Tap target del indicador: 44×44 (antes era un ícono suelto de 18px sin área de toque).
 
+## Notas de UX review cerradas (2026-07-29)
+
+- **Link "Ver los 89" (`MG3eK`/`psOSC`) sube a peso 700.** Iba en `$text-primary` peso 600, igual que el resto del texto — perdía la señal de afordancia de "Ver todos" que en el resto del producto se resuelve con `$primary-on-soft`, color que esta pantalla no puede usar (`$primary` = la nube). Se corrige solo con peso, sin tocar color.
+- **Skeleton `KgGHB`/`nTlwj` se acepta tal cual.** Dibuja hero + 3 filas — la silueta del estado de atención — aunque el caso común (cola local vacía) termine en "todo sincronizado". Geometría correcta (I/O de SQLite es lo único que justifica el skeleton) y el estado dura poco; se documenta el matiz de tono como decisión consciente en vez de rediseñar a un skeleton solo-hero.
+- **Margen ajustado en `MG3eK`/`psOSC` (89 pendientes), aceptado sin fix.** Contenido a 854px contra 834px disponibles (los 27px extra vienen del padding de tap target del link "Ver los 89"). No se recorta nada hoy; queda anotado por si una fuente de sistema ampliada o un dispositivo más corto lo hace entrar en scroll — en ese caso, la salida sería colapsar "Diagnóstico".
+- **`t1391g` ganó un 5º caso** (`k1HsDg`, "Sin sesión · informativo"): el contrato de referencia solo documentaba los 4 casos de la fila de tiempo (Normal ×2, Atención, Nunca sincronizó) y le faltaba el de `b0O9jr` — icono `cloud-off` + "Sin sincronización activa" en `$text-secondary`, neutral porque no es un estado de atención.
+
 ## Pendientes
 
-- **Implementar en Flutter.** Es lo único grande que queda: la capa de datos y dominio ya existe (`lib/core/sync/` — cuarentena, log, `SyncStatusSnapshot`, `WatchSyncStatusDetails`, watchdog) y **está sin consumidor** a la espera de esta UI.
 - **8 íconos de sync sueltos** en headers aún reconstruidos a mano fuera de Inicio (Notificaciones, Balance V2 y sus oscuros): ninguno mostraría el cuarto estado.
 - **No diseñado:** la animación de giro del `loader-circle`, el gesto de scroll de `rxUil`, y la hoja de "archivar" (decisión de producto abierta).
 - Las 7 hojas no dibujan el dispositivo tras el scrim — convención heredada del mockup, igual en ambos temas.

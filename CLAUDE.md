@@ -109,6 +109,14 @@ Definidos en `.claude/` para automatizar las convenciones de este documento:
 - **Skills**: `/feature-dev <descripcion>` (feature completa en una corrida), `/new-feature <nombre>`, `/drift-schema-change <descripcion>`, `/tier0-check [ruta]`, `/design-fidelity-check <feature>` (fidelidad visual completa de una feature contra Pencil via golden tests, sin emulador).
 - **Workflows** (`.claude/workflows/`): `feature-dev` (el principal: triage automatico s/m/l → build → tests → review escalado → un unico resumen en `docs/dev-runs/<slug>.md`, sin commitear), `feature-scaffold` (solo boilerplate capa por capa) y `feature-review` (revision multi-dimension con verificacion adversarial; `feature-dev` lo reusa como review profundo en tamano L) — se invocan explicitamente, no por defecto.
 
+### Tamaño del cambio: cuándo NO usar `/feature-dev`
+
+`/feature-dev` corre el mismo pipeline completo (triage → implementación → tests → goldens → `flutter analyze`/`flutter test` de toda la suite afectada → review) sin importar qué tan chico sea el diff — cada fase es un agente propio que arranca su propio contexto, y compilar + regenerar goldens de Flutter es lento independientemente del tamaño del cambio. Para un fix de una línea eso significa ~20-40 min por overhead fijo, no por el trabajo en sí.
+
+**Usa `/feature-dev` (o el workflow completo) cuando:** la petición es una feature nueva, toca múltiples archivos/capas, cambia una regla de negocio o el esquema Drift, o el usuario quiere explícitamente la garantía de tests+review automáticos para algo riesgoso.
+
+**Para un fix pequeño y ya diagnosticado** (causa raíz identificada, un archivo o un archivo + su test/golden directamente relacionado, sin lógica de negocio nueva): saltarse el workflow y usar los subagentes puntuales por su cuenta — `flutter-dev` para el cambio en `lib/`, `qa-automator` para actualizar el test/golden afectado, y `finance-code-reviewer`/`ui-convention-reviewer` si tocó `lib/` — en vez de la orquestación de triage+fases de `/feature-dev`. Si el cambio es puramente mecánico y no de negocio (renombrar, mover un párrafo de doc, actualizar un nodeId en un `.md`), edítalo directo sin pasar por ningún subagente.
+
 ## Estado del repo
 
 Ya existe: esquema Drift (`lib/core/database/app_database.dart`, `schemaVersion` 9), base técnica cableada (`lib/core/`: DI, router, tema, l10n, errores, seguridad — ver "Cablear la base técnica de la app"), y la primera feature completa: **Cuentas** (`lib/features/accounts/`, Nivel 0, HU-01 a HU-09 salvo HU-05 que pertenece a Transacciones). El resto de `lib/features/*` sigue siendo lienzo en blanco — no derives su estructura por analogía a otro proyecto Flutter, sigue las convenciones de este documento.
