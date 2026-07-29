@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/empty_state.dart';
 import '../../../widgets/page_header.dart';
 import '../cubit/sync_status_cubit.dart';
 import '../cubit/sync_status_state.dart';
@@ -48,6 +50,23 @@ class PendingSyncChangesPage extends StatelessWidget {
                           changes.first.pendingSince,
                           now: DateTime.now(),
                         );
+
+                  // Reaching this screen with nothing waiting is good news, so
+                  // it gets a composed empty state (`wcrqA`/`Z1ws4n`) instead
+                  // of the bare grey line it used to render — which read as an
+                  // unfinished screen, and is a shape no other surface of the
+                  // product uses. No CTA: there is no action to take, and
+                  // "Volver" would duplicate the header's back arrow. No amber
+                  // either: in this family amber means something is waiting.
+                  if (changes.isEmpty) {
+                    return Center(
+                      child: EmptyState(
+                        icon: LucideIcons.cloudCheck,
+                        message: l10n.syncPendingEmptyMessage,
+                        description: l10n.syncPendingEmptyDescription,
+                      ),
+                    );
+                  }
 
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),

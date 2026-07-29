@@ -204,7 +204,7 @@ void main() {
     expect(stored.single.event, SyncLogEvent.quarantined);
   });
 
-  test('toLogLine arma una línea con fecha UTC, nivel, evento, tabla y código',
+  test('toLogLine arma una línea de consola: fecha corta, contexto y detalle',
       () {
     final line = entry(
       level: SyncLogLevel.error,
@@ -216,9 +216,20 @@ void main() {
 
     expect(
       line,
-      '2026-07-27T10:30:00.000Z [ERROR] quarantined table=debts '
-      'code=PGRST204 — operation quarantined',
+      '2026-07-27 10:30:00  error/quarantined  '
+      'debts PGRST204 operation quarantined',
     );
+  });
+
+  test(
+      'toLogLine deja el nivel fuera cuando es info y escribe el evento en '
+      'snake_case', () {
+    final line = entry(
+      event: SyncLogEvent.uploadRetry,
+      message: 'retrying write',
+    ).toLogLine();
+
+    expect(line, '2026-07-27 10:30:00  upload_retry  retrying write');
   });
 
   test('el archivo guarda enums por nombre y fechas en UTC ISO-8601', () async {

@@ -125,7 +125,11 @@ class SyncStatusPage extends StatelessWidget {
                       // In the attention states the copy row answers, right
                       // there, the risk the hero just named — it does not wait
                       // its turn inside the diagnostics section.
-                      if (screenState.isAttention) ...[
+                      // `attention` only, not `isAttention`: `stale` shares the
+                      // amber but has nothing held back, so the pending list
+                      // would render an empty section under a header, and the
+                      // copy row would read "Esos 0 cambios viven solo aquí".
+                      if (screenState == SyncScreenState.attention) ...[
                         DataActionRow(
                           icon: LucideIcons.hardDriveDownload,
                           iconColor: colors.teal,
@@ -142,6 +146,23 @@ class SyncStatusPage extends StatelessWidget {
                           onOpenChange: (change) =>
                               _openDetail(context, change),
                           onSeeAll: onSeeAllPending,
+                        ),
+                        const SizedBox(height: 16),
+                        SyncDiagnosticsSection(
+                          title: l10n.syncSectionDiagnostics,
+                          showExcel: false,
+                          onOpenComingSoon: onOpenComingSoon,
+                        ),
+                      ] else if (screenState == SyncScreenState.stale) ...[
+                        // Same offer, different reason: nothing is held back
+                        // yet, but anything recorded from now on will be.
+                        DataActionRow(
+                          icon: LucideIcons.hardDriveDownload,
+                          iconColor: colors.teal,
+                          iconBackground: colors.tealSoft,
+                          title: l10n.syncSaveCopyTitle,
+                          description: l10n.syncSaveCopyDescriptionStale,
+                          onTap: onSaveCopy,
                         ),
                         const SizedBox(height: 16),
                         SyncDiagnosticsSection(
@@ -205,7 +226,14 @@ class SyncStatusSkeleton extends StatelessWidget {
       children: const [
         SyncHeroSkeleton(),
         SizedBox(height: 16),
-        SyncSkeletonBlock(width: 150, height: 15),
+        // Left-aligned on purpose: as a direct `ListView` child the block gets
+        // a tight cross-axis constraint and stretches to the full width, which
+        // reads as a paragraph instead of the section header word it stands in
+        // for (`m85JY`, 150×15).
+        Align(
+          alignment: Alignment.centerLeft,
+          child: SyncSkeletonBlock(width: 150, height: 15),
+        ),
         SizedBox(height: 10),
         SyncSkeletonRow(),
         SizedBox(height: 10),

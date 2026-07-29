@@ -1979,7 +1979,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSyncSheetSyncingMessage.
   ///
   /// In es, this message translates to:
-  /// **'Estamos guardando tus cambios en la nube.'**
+  /// **'Estamos guardando tus cambios en la nube. Puedes seguir usando la app.'**
   String get homeSyncSheetSyncingMessage;
 
   /// No description provided for @homeSyncSheetOfflineTitle.
@@ -1991,7 +1991,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSyncSheetOfflineMessage.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.'**
+  /// **'Tus datos están guardados en este teléfono. Se sincronizarán en cuanto vuelva la conexión.'**
   String get homeSyncSheetOfflineMessage;
 
   /// No description provided for @homeSyncSheetDismiss.
@@ -6162,12 +6162,6 @@ abstract class AppLocalizations {
   /// **'Sin contacto con la nube'**
   String get syncHeroStaleTitle;
 
-  /// No description provided for @syncHeroStaleKicker.
-  ///
-  /// In es, this message translates to:
-  /// **'Última sincronización hace {since}'**
-  String syncHeroStaleKicker(String since);
-
   /// No description provided for @syncHeroStaleBody.
   ///
   /// In es, this message translates to:
@@ -6378,6 +6372,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Ese cambio vive solo aquí. Una copia lo pone a salvo.} other{Esos {count} cambios viven solo aquí. Una copia los pone a salvo.}}'**
   String syncSaveCopyDescriptionAttention(num count);
 
+  /// No description provided for @syncSaveCopyDescriptionStale.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que registres desde ahora se queda aquí hasta que vuelva el contacto. Una copia lo pone a salvo.'**
+  String get syncSaveCopyDescriptionStale;
+
   /// No description provided for @syncSaveCopyDescriptionSignedOut.
   ///
   /// In es, this message translates to:
@@ -6534,10 +6534,22 @@ abstract class AppLocalizations {
   /// **'Reintentar'**
   String get syncDetailRetry;
 
+  /// No description provided for @syncPendingEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada esperando para subir'**
+  String get syncPendingEmptyMessage;
+
+  /// No description provided for @syncPendingEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo lo que registraste ya llegó a la nube.'**
+  String get syncPendingEmptyDescription;
+
   /// No description provided for @syncLogSheetSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'{count, plural, =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}'**
+  /// **'{count, plural, =0{Aún no hay líneas · nada que reportar} =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}'**
   String syncLogSheetSubtitle(num count);
 
   /// No description provided for @syncLogPrivacyNote.

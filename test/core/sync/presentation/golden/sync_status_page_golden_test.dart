@@ -11,6 +11,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
 
@@ -63,6 +64,8 @@ void main() {
     Duration? syncedAgo = const Duration(minutes: 5),
     int pending = 0,
     bool isRetrying = false,
+    SyncRetryOutcome retryOutcome = SyncRetryOutcome.none,
+    int retriedCount = 0,
   }) =>
       SyncStatusState(
         status: status,
@@ -84,6 +87,8 @@ void main() {
             ),
         ],
         isRetrying: isRetrying,
+        retryOutcome: retryOutcome,
+        retriedCount: retriedCount,
       );
 
   Future<void> golden(
@@ -92,13 +97,21 @@ void main() {
     String name, {
     required Brightness brightness,
     bool isSignedIn = true,
+    SyncStatusState? outcome,
+    double height = 1100,
   }) async {
     final cubit = MockSyncStatusCubit();
+    // Los frames de resultado (`J0B0e`/`SZgd4`) son un snackbar, y el snackbar
+    // solo aparece si el `retryOutcome` *cambia*: por eso el estado con
+    // resultado se emite como transición, no como estado inicial.
     whenListen(
       cubit,
-      const Stream<SyncStatusState>.empty(),
+      outcome == null
+          ? const Stream<SyncStatusState>.empty()
+          : Stream<SyncStatusState>.value(outcome),
       initialState: initial,
     );
+    when(cubit.acknowledgeRetryOutcome).thenReturn(null);
 
     await pumpGolden(
       tester,
@@ -115,7 +128,7 @@ void main() {
       brightness: brightness,
       // La pantalla debe caber sin scroll por diseño; el lienzo alto captura
       // el bloque completo para poder verificar justamente eso.
-      size: tallGoldenPhoneSize(height: 1100),
+      size: tallGoldenPhoneSize(height: height),
     );
 
     await expectLater(
@@ -165,6 +178,19 @@ void main() {
       await golden(tester, state(), 'healthy_$suffix', brightness: brightness);
     });
 
+    // La sexta cara: nada retenido, pero la última sincronización exitosa
+    // pasó de las 24 h. Ámbar con copy propio, glifo `cloud-off` y CTA
+    // "Sincronizar ahora" (no "Reintentar": no hubo intentos fallidos).
+    testWidgets('sync status page — sin contacto con la nube ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        state(syncedAgo: const Duration(days: 3)),
+        'stale_$suffix',
+        brightness: brightness,
+      );
+    });
+
     testWidgets('sync status page — nunca sincronizó ($suffix)',
         (tester) async {
       await golden(
@@ -200,6 +226,44 @@ void main() {
         state(status: SyncStatusStatus.loading),
         'loading_$suffix',
         brightness: brightness,
+      );
+    });
+
+    // `J0B0e`/`zqXq8`: el reintento subió todo. El hero recién ahí pasa a
+    // sano, y el resultado se comunica con snackbar — nunca reescribiendo el
+    // hero en silencio.
+    testWidgets('sync status page — resultado, todo al día ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        state(syncState: SyncState.stalled, pending: 3, isRetrying: true),
+        'result_all_uploaded_$suffix',
+        brightness: brightness,
+        outcome: state(
+          retryOutcome: SyncRetryOutcome.allUploaded,
+          retriedCount: 3,
+        ),
+        // El snackbar flotante necesita su margen inferior completo dentro
+        // del lienzo; con 1100 queda cortado por el borde.
+        height: 1240,
+      );
+    });
+
+    // `SZgd4`/`aqybA`: el reintento no pudo subir todo. Las filas que quedan
+    // siguen en la lista, y el snackbar ofrece verlas.
+    testWidgets('sync status page — resultado, no se pudo subir ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        state(syncState: SyncState.stalled, pending: 3, isRetrying: true),
+        'result_partial_$suffix',
+        brightness: brightness,
+        outcome: state(
+          syncState: SyncState.stalled,
+          pending: 2,
+          retryOutcome: SyncRetryOutcome.partial,
+        ),
+        height: 1240,
       );
     });
   }

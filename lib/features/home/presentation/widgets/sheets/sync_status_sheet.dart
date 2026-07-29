@@ -148,9 +148,15 @@ class SyncStatusSheet extends StatelessWidget {
             const SizedBox(height: 18),
             SyncTimeRow(
               label: timeLabel,
-              color: isStale || isAttention
-                  ? colors.amberText
-                  : colors.textPrimary,
+              // Only the age decides the colour. Painting the row amber just
+              // because the sheet is in attention would make a queue stuck
+              // five minutes ago look exactly like one stuck three days ago —
+              // the very confusion this row exists to break.
+              color: switch (relative) {
+                null => colors.textSecondary,
+                _ when isStale => colors.amberText,
+                _ => colors.textPrimary,
+              },
             ),
             const SizedBox(height: 18),
             if (isAttention && onOpenDetails != null)

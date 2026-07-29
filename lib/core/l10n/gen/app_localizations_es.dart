@@ -1073,14 +1073,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSyncSheetSyncingMessage =>
-      'Estamos guardando tus cambios en la nube.';
+      'Estamos guardando tus cambios en la nube. Puedes seguir usando la app.';
 
   @override
   String get homeSyncSheetOfflineTitle => 'Sin conexión';
 
   @override
   String get homeSyncSheetOfflineMessage =>
-      'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.';
+      'Tus datos están guardados en este teléfono. Se sincronizarán en cuanto vuelva la conexión.';
 
   @override
   String get homeSyncSheetDismiss => 'Entendido';
@@ -3638,11 +3638,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncHeroStaleTitle => 'Sin contacto con la nube';
 
   @override
-  String syncHeroStaleKicker(String since) {
-    return 'Última sincronización hace $since';
-  }
-
-  @override
   String get syncHeroStaleBody =>
       'No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.';
 
@@ -3821,6 +3816,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get syncSaveCopyDescriptionStale =>
+      'Lo que registres desde ahora se queda aquí hasta que vuelva el contacto. Una copia lo pone a salvo.';
+
+  @override
   String get syncSaveCopyDescriptionSignedOut =>
       'Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.';
 
@@ -3945,6 +3944,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncDetailRetry => 'Reintentar';
 
   @override
+  String get syncPendingEmptyMessage => 'Nada esperando para subir';
+
+  @override
+  String get syncPendingEmptyDescription =>
+      'Todo lo que registraste ya llegó a la nube.';
+
+  @override
   String syncLogSheetSubtitle(num count) {
     final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
       locale: localeName,
@@ -3956,6 +3962,7 @@ class AppLocalizationsEs extends AppLocalizations {
       locale: localeName,
       other: 'Últimas $countString líneas · útil para soporte',
       one: 'Última línea · útil para soporte',
+      zero: 'Aún no hay líneas · nada que reportar',
     );
     return '$_temp0';
   }

@@ -16,9 +16,11 @@ class MockSyncStatusCubit extends MockCubit<SyncStatusState>
 
 /// "Detalle de la operación" (`r1qQYc`/`YzMN5`), abierta desde una fila.
 ///
-/// Dos casos de negocio distinguibles: un cambio que trae monto y fecha en su
-/// payload (un movimiento) y uno que no trae ninguno de los dos — el subtítulo
-/// desaparece entero en vez de inventar un relleno.
+/// Tres casos de negocio distinguibles: un cambio que trae monto y fecha en su
+/// payload (un movimiento), uno que no trae ninguno de los dos — el subtítulo
+/// desaparece entero en vez de inventar un relleno — y uno cuyo payload no
+/// trae con qué nombrarlo, donde el título se queda solo con el tipo de
+/// entidad.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -106,6 +108,33 @@ void main() {
         tester,
         change(withAmount: false),
         'no_amount_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Payload sin nombre: el título se queda con el tipo de entidad solo
+    // ("Meta"), nunca con el nombre de la tabla.
+    testWidgets('detalle — sin nombre en el payload ($suffix)', (tester) async {
+      await golden(
+        tester,
+        PendingSyncChange.fromOperation(
+          QuarantinedOperation(
+            id: 'q-2',
+            operation: const SyncOperation(
+              tableName: 'goals',
+              rowId: 'row-2',
+              type: SyncOperationType.put,
+              payload: {'target_minor': 250000000},
+            ),
+            kind: SyncFailureKind.brokenSchema,
+            errorCode: 'PGRST204',
+            errorMessage: 'column does not exist',
+            quarantinedAt: now.subtract(const Duration(hours: 5)),
+            updatedAt: now,
+            attempts: 1,
+          ),
+        ),
+        'no_label_$suffix',
         brightness: brightness,
       );
     });

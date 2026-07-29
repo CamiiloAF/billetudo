@@ -89,5 +89,43 @@ void main() {
         matchesGoldenFile('goldens/pending_sync_changes_page_$suffix.png'),
       );
     });
+
+    // La lista se vacía sola: las filas desaparecen una a una al confirmar
+    // cada operación, así que el usuario puede quedarse mirando esta pantalla
+    // hasta que no quede ninguna. El resumen pasa a decir que no hay nada
+    // esperando, en vez de dejar un encabezado con un contador en cero.
+    testWidgets('pending sync changes page — sin pendientes ($suffix)',
+        (tester) async {
+      final cubit = MockSyncStatusCubit();
+      whenListen(
+        cubit,
+        const Stream<SyncStatusState>.empty(),
+        initialState: SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: SyncStatusSnapshot(
+            state: SyncState.synced,
+            quarantinedCount: 0,
+            lastSyncedAt: now,
+            hasSyncedEver: true,
+          ),
+        ),
+      );
+
+      await pumpGolden(
+        tester,
+        BlocProvider<SyncStatusCubit>.value(
+          value: cubit,
+          child: const PendingSyncChangesPage(),
+        ),
+        brightness: brightness,
+      );
+
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile(
+          'goldens/pending_sync_changes_page_empty_$suffix.png',
+        ),
+      );
+    });
   }
 }

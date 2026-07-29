@@ -86,12 +86,11 @@ class SyncStatusHero extends StatelessWidget {
               : l10n.syncHeroAttentionKicker(relative),
           kickerColor: colors.amberText,
           body: l10n.syncHeroAttentionBody(state.pendingCount),
-          timeRow: SyncTimeRow(
-            label: relative == null
-                ? l10n.syncNeverSyncedLabel
-                : l10n.syncLastSyncLabel(relative),
-            color: colors.amberText,
-          ),
+          // The 24 h threshold has no exception per state: an attention hero
+          // whose last sync was five minutes ago is not the same story as one
+          // that has been silent for three days, and burning the amber on the
+          // first would stop it meaning anything on the second.
+          timeRow: timeRow,
           cta: NeutralButton(
             label: _ctaEnabled ? l10n.syncRetryNowCta : _inertLabel(l10n),
             icon: _ctaEnabled ? LucideIcons.refreshCw : _inertIcon,
@@ -110,17 +109,18 @@ class SyncStatusHero extends StatelessWidget {
           iconColor: colors.amber,
           iconBackground: colors.surface,
           title: l10n.syncHeroStaleTitle,
-          kicker: relative == null
-              ? l10n.syncHeroAttentionKickerNever
-              : l10n.syncHeroStaleKicker(relative),
-          kickerColor: colors.amberText,
+          // The kicker says what distinguishes this state — nothing is held
+          // back — instead of repeating the timestamp the row below already
+          // carries. And it stays neutral: the good news here is that there
+          // is no backlog; what deserves amber is the silence, which is what
+          // the time row shows.
+          kicker: l10n.syncHeroSyncedKicker,
           body: l10n.syncHeroStaleBody,
-          timeRow: SyncTimeRow(
-            label: relative == null
-                ? l10n.syncNeverSyncedLabel
-                : l10n.syncLastSyncLabel(relative),
-            color: colors.amberText,
-          ),
+          // Amber here too, but derived — not pinned. This state *is* older
+          // than 24 h by definition, so the shared row already resolves to
+          // amber; hardcoding it would leave two sources of truth for the
+          // same threshold.
+          timeRow: timeRow,
           cta: syncCta,
         ),
       SyncScreenState.healthy => SyncHero(

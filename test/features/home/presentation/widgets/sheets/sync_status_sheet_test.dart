@@ -244,7 +244,12 @@ void main() {
 
     expect(find.text('Sincronizando…'), findsOneWidget);
     expect(
-        find.text('Estamos guardando tus cambios en la nube.'), findsOneWidget);
+      find.text(
+        'Estamos guardando tus cambios en la nube. '
+        'Puedes seguir usando la app.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Todo a salvo'), findsNothing);
 
     controller.add(stateWith(HomeSyncStatus.synced));
@@ -271,7 +276,7 @@ void main() {
     expect(find.text('Sin conexión'), findsOneWidget);
     expect(
       find.text(
-        'Tus datos están guardados en este dispositivo. '
+        'Tus datos están guardados en este teléfono. '
         'Se sincronizarán en cuanto vuelva la conexión.',
       ),
       findsOneWidget,

@@ -158,11 +158,11 @@ void main() {
 
     final lines = text.split('\n');
     expect(lines, hasLength(2));
-    expect(lines.first, contains('uploadStarted'));
+    expect(lines.first, contains('upload_started'));
     expect(lines.first, contains('primera'));
-    expect(lines.last, contains('[ERROR] quarantined'));
-    expect(lines.last, contains('table=debts'));
-    expect(lines.last, contains('code=PGRST204'));
+    expect(lines.last, contains('error/quarantined'));
+    expect(lines.last, contains('debts'));
+    expect(lines.last, contains('PGRST204'));
   });
 
   test('exportAsText con el log vacío devuelve texto vacío', () async {

@@ -75,12 +75,16 @@ class PendingSyncChange extends Equatable {
 
   /// Dates travel to Postgres as unix **seconds** (decision #15 of
   /// `05-auth-sync.md`), which is also how they sit in the upload payload.
+  ///
+  /// Read back as UTC on purpose: these are calendar days pinned to UTC
+  /// midnight, so converting them to the phone's zone would shift a movement
+  /// made "el 12" to "el 11" anywhere west of Greenwich.
   static DateTime? _asDate(Object? value) {
     final seconds = _asInt(value);
     if (seconds == null) {
       return null;
     }
-    return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+    return DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
   }
 
   @override

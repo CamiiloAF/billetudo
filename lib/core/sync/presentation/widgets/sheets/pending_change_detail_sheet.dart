@@ -62,7 +62,10 @@ class PendingChangeDetailSheet extends StatelessWidget {
     }
     final occurredAt = change.occurredAt;
     if (occurredAt != null) {
-      parts.add(DateFormat.yMMMMd(locale).format(occurredAt));
+      // Day and month only: the year adds length (and truncation risk) to a
+      // line whose job is to identify a change the user made days ago, not
+      // years ago.
+      parts.add(DateFormat.MMMMd(locale).format(occurredAt));
     }
     return parts.isEmpty ? null : parts.join(' · ');
   }

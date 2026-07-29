@@ -1071,14 +1071,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSyncSheetSyncingMessage =>
-      'We\'re saving your changes to the cloud.';
+      'We\'re saving your changes to the cloud. You can keep using the app.';
 
   @override
   String get homeSyncSheetOfflineTitle => 'Offline';
 
   @override
   String get homeSyncSheetOfflineMessage =>
-      'Your data is saved on this device. It\'ll sync as soon as the connection is back.';
+      'Your data is saved on this phone. It\'ll sync as soon as the connection is back.';
 
   @override
   String get homeSyncSheetDismiss => 'Got it';
@@ -3633,11 +3633,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncHeroStaleTitle => 'No contact with the cloud';
 
   @override
-  String syncHeroStaleKicker(String since) {
-    return 'Last synced $since ago';
-  }
-
-  @override
   String get syncHeroStaleBody =>
       'Nothing is waiting: what you already recorded is safe in the cloud. But until there is contact again, anything you record from now on stays only on this phone.';
 
@@ -3817,6 +3812,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get syncSaveCopyDescriptionStale =>
+      'Anything you record from now on stays here until contact returns. A copy keeps it safe.';
+
+  @override
   String get syncSaveCopyDescriptionSignedOut =>
       'Without an account, a copy file is the only way not to depend on this phone.';
 
@@ -3940,6 +3939,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncDetailRetry => 'Retry';
 
   @override
+  String get syncPendingEmptyMessage => 'Nothing waiting to upload';
+
+  @override
+  String get syncPendingEmptyDescription =>
+      'Everything you recorded already reached the cloud.';
+
+  @override
   String syncLogSheetSubtitle(num count) {
     final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
       locale: localeName,
@@ -3951,6 +3957,7 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: 'Last $countString lines · useful for support',
       one: 'Last line · useful for support',
+      zero: 'No lines yet · nothing to report',
     );
     return '$_temp0';
   }

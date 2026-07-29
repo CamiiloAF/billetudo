@@ -65,21 +65,40 @@ class SyncLogEntry extends Equatable {
   /// Table involved, when applicable.
   final String? tableName;
 
-  /// Single-line rendering used by the plain-text export.
+  /// Console-shaped single line — short timestamp, context, detail — used both
+  /// by the plain-text export and by the log block of "Registro técnico".
+  ///
+  /// The density is the point (`T7Iw0C` shows six entries, one line each): the
+  /// ISO timestamp with milliseconds plus the `[LEVEL] … — ` scaffolding wrapped
+  /// most entries over two or three lines, so a block sized for eight showed
+  /// four and cut the last one in half. `info` carries no marker, because the
+  /// severity worth spending characters on is the one that is not routine.
   String toLogLine() {
-    final buffer = StringBuffer()
-      ..write(timestamp.toUtc().toIso8601String())
-      ..write(' [${level.name.toUpperCase()}] ')
-      ..write(event.name);
-    if (tableName != null) {
-      buffer.write(' table=$tableName');
-    }
-    if (code != null) {
-      buffer.write(' code=$code');
-    }
-    buffer.write(' — $message');
-    return buffer.toString();
+    final context = level == SyncLogLevel.info
+        ? _snakeCase(event.name)
+        : '${level.name}/${_snakeCase(event.name)}';
+    final detail = <String>[
+      if (tableName != null) tableName!,
+      if (code != null) code!,
+      message,
+    ].join(' ');
+    return '$_utcTimestamp  $context  $detail';
   }
+
+  /// `2026-07-15 09:14:02`, always UTC: a log read on one device may well be
+  /// pasted next to one read on another.
+  String get _utcTimestamp {
+    final at = timestamp.toUtc();
+    return '${at.year}-${_pad(at.month)}-${_pad(at.day)} '
+        '${_pad(at.hour)}:${_pad(at.minute)}:${_pad(at.second)}';
+  }
+
+  static String _pad(int value) => value.toString().padLeft(2, '0');
+
+  static String _snakeCase(String name) => name.replaceAllMapped(
+        RegExp('[A-Z]'),
+        (match) => '_${match[0]!.toLowerCase()}',
+      );
 
   @override
   List<Object?> get props => [

@@ -18,7 +18,9 @@
 
 ### Paleta de color
 
-42 variables definidas en `billetudo.pen` (41 de color + `font-body`; ver `get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. La tabla de abajo no las recoge todas — faltan documentar `track`, `track-overlay` y `month-chip-bg` (conteo corregido el 2026-07-28: el `.md` decia 35). **Manda el `.pen`: ante cualquier duda, `get_variables`.** **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
+43 variables definidas en `billetudo.pen` (42 de color + `font-body`; ver `get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. La tabla de abajo no las recoge todas — faltan documentar `track`, `track-overlay`, `month-chip-bg` y `primary-data` (conteo corregido el 2026-07-28: el `.md` decia 35).
+
+**`primary-data` (añadida el 2026-07-28)** es el violeta de marca **cuando pinta un dato**, no identidad: arcos de dona, series de grafica, barras de avance. Claro `#6C5CE7` (identico a `primary`, el claro no cambia); oscuro `#8F7BF2` en vez de `#6D4FE0`. Motivo: `primary` oscuro daba **exactamente 3.00:1** sobre `surface` — el minimo de WCAG 1.4.11 para objetos graficos, sin margen; `primary-data` oscuro da 4.80:1. Usar `primary` para identidad (botones, FAB, chips, tab activo) y `primary-data` para relleno de dato. **Migracion pendiente de aprobacion** (nota `p1t42T` del `.pen`): `FSL69` (barra de presupuesto), `q1qGr` y `EB2TX` (anillos de meta) siguen en `primary` y deberian migrar — eso cierra el "tema sistemico pendiente" que esta seccion anota en Accesibilidad. **Manda el `.pen`: ante cualquier duda, `get_variables`.** **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
 
 | Token | Claro | Oscuro | Uso |
 |-------|-------|--------|-----|
@@ -87,6 +89,9 @@
 - Padding de contenido de pantalla: 20px horizontal.
 - Gap entre secciones mayores: 18px. Gap entre items relacionados: 8-16px.
 - Los frames de pantalla ("Screen") usan **altura fija de 972px, igual en TODAS las pantallas** (no `fit_content`). Esto se cambio a proposito: con `fit_content` cada pantalla se encogia a su propio contenido y el "dispositivo" quedaba de tamaño distinto entre pantallas (obvio en estados con poco contenido, ej. Error), lo cual confunde al comparar mockups. El wrapper `Content` (el que va DEBAJO del status bar y ENCIMA del tab bar) usa `height:"fill_container"` para ocupar el espacio restante — así el Tab Bar siempre queda anclado al fondo real de los 972px, sin importar cuanto contenido tenga esa pantalla. Para estados con poco contenido (ej. Error), centrar el bloque de contenido dentro de `Content` con `justifyContent:"center"` en vez de dejarlo pegado arriba con espacio muerto abajo.
+- **972 es el viewport, no el techo del contenido.** Que una pantalla mida 972 en el `.pen` no significa que su contenido quepa entero sin scroll en el telefono; significa que el mockup representa lo que se ve de una vez. Cuando una pantalla scrollea, **la estructura del frame lo declara**: el `Content` se parte en dos hijos, `Zona fija — NO scrollea` y `Zona scrolleable`, cada uno con su `context` explicando que va en cada lado. Primer caso: **Graficas · Resumen** (`xZvir`/`FGzgC`/`XQVQe`/`SsnL0`), donde los Chart Tabs quedan fijos y el bloque de hero + cards + cross-link se desplaza. Nunca dejes la decision implicita: si no esta partida, `flutter-dev` la resuelve por su cuenta y `/design-fidelity-check` no la puede verificar.
+- Corolario: **crecer el frame por encima de 972 no es la salida** cuando el contenido no cabe. Se intento con Resumen (1022px, 2026-07-28) y se revirtio el mismo dia: el contenido sobrante era un control que no aplicaba a esa vista. Una pantalla que no cabe suele ser señal de que hay contenido que compactar o que sobra, no de que necesite mas alto.
+- El **gap del wrapper `Content`** es 8 en el deck de Graficas, con la unica excepcion de Resumen (14), por ser la pantalla que apila mas bloques heterogeneos. No es deriva del chrome unificado.
 
 ---
 

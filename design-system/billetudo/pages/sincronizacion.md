@@ -19,6 +19,7 @@ Y la tensión que toda la pantalla resuelve: el usuario debe entender que **sus 
 | Estado | Claro | Oscuro |
 |---|---|---|
 | Atención (registros trabados) | `hE3Ds` | `sTebL` |
+| **Sin contacto con la nube** (`stale`) | `Pe8V9` | `f2roK0` |
 | Todo bien | `AGwSd` | `BwHgf` |
 | Carga / skeleton | `KgGHB` | `nTlwj` |
 | Nunca sincronizó | `Ux4Eo` | `reRjw` |
@@ -26,6 +27,7 @@ Y la tensión que toda la pantalla resuelve: el usuario debe entender que **sus 
 | Sin sesión | `b0O9jr` | `YHUON` |
 | Atención · 89 pendientes | `MG3eK` | `psOSC` |
 | Lista completa de pendientes | `rxUil` | `xA9X1` |
+| **Lista completa · vacía** | `wcrqA` | `Z1ws4n` |
 | Sincronizando en curso | `p26K0` | `R5mjuG` |
 | Resultado · todo al día | `J0B0e` | `zqXq8` |
 | Resultado · no se pudo subir | `SZgd4` | `aqybA` |
@@ -75,10 +77,13 @@ Fila "Estado de sincronización" con sublabel "Última sincronización: hace 5 m
 - **`$primary` significa "la nube".** Por eso la fila "Guardar una copia" usa **`$teal`** (archivo local) y **ningún CTA de sync lleva violeta**: el CTA de atención es `Button/Neutral` sólido y el de estado sano es `Button/Secondary` enteramente neutro. Se evaluó un glifo violeta en el CTA sano y **se descartó — no reintroducir**.
 - **Única excepción:** el `Button/Primary` violeta de "Iniciar sesión" en el estado sin sesión. Ahí no rompe la regla, la usa: iniciar sesión *es* activar la nube.
 - La jerarquía entre los dos CTA se codifica **solo por peso** (sólido = reparar, hueco = forzar), señal que sobrevive a la escala de grises.
+- **El CTA hueco sobre `$amber-soft` está medido y aceptado (2026-07-28).** El estado `stale` es el primer caso de la familia donde un `Button/Secondary` (relleno `$surface`) se apoya sobre el hero ámbar, así que se verificó explícitamente: **label 15.7:1 en claro y 14.1:1 en oscuro**. La *forma* del botón queda en 1.10:1 / 1.23:1, bajo el 3:1 de objeto gráfico — pero es el límite sistémico ya decidido en `MASTER.md` §Contraste del chrome, no un defecto de este frame, y de hecho es **mejor** que el CTA inerte que esta misma spec ya aceptaba (1.06:1 / 1.13:1). **No parchear**: teñir el botón o darle borde de color reintroduciría la jerarquía cromática que la familia decidió no tener, y solo en una pantalla.
 
 ### Comportamiento (no se lee del frame)
 
 - **Umbral ámbar: 24 h.** Hasta ahí la fila de tiempo va en `$text-primary`; a partir de ahí label e ícono pasan a `$amber-text`. Fraseo siempre relativo ("hace 3 días"), nunca fecha absoluta.
+  - **Sin excepción por estado.** La auditoría del 2026-07-28 encontró que el estado de atención pintaba la fila en ámbar *siempre*, sin mirar la antigüedad: con la última sincronización hace 5 minutos se veía igual que con 3 días. Eso reintroduce, dentro del propio estado de atención, el problema que la HU-08 existe para resolver, y de paso desgasta el ámbar encendiéndolo cuando nada es aún preocupante. El color **se deriva de `SyncFreshness.isStale`**, nunca se fija en la rama de un estado — una sola fuente de verdad para el umbral.
+  - **El umbral tiene además su propia cara de pantalla**, no solo efecto sobre la fila: el estado `stale` (sin pendientes, más de 24 h sin sincronizar). Existe para que la pantalla no contradiga al indicador del Home, que se pone ámbar con ese mismo dato.
 - **La fila de tiempo se muestra en los cuatro estados**, también cuando todo va bien. Si solo apareciera al fallar, el usuario no tendría con qué comparar — es la lección literal del incidente.
 - **Nunca sincronizó** es informativo, no error: `$text-secondary`, **cero ámbar**, hero con `cloud-upload` sobre `$primary-soft`.
 - **Prioridad de estados:** si hay cambios sin subir **y** no hay conexión, manda el estado de atención. El riesgo pesa más que la causa.
