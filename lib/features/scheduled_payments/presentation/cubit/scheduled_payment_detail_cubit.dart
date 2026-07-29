@@ -73,9 +73,8 @@ class ScheduledPaymentDetailCubit extends Cubit<ScheduledPaymentDetailState> {
     });
   }
 
-  /// Criterion 13: "Ver historial completo (N)" — loads the next page
-  /// in-place, no navigation.
-  Future<void> loadMoreHistory({int pageSize = 10}) async {
+  /// Criterion 13: "Ver más" — loads the next page in-place, no navigation.
+  Future<void> loadMoreHistory({int pageSize = 8}) async {
     final id = _id;
     if (id == null || state.loadingMoreHistory || !state.hasMoreHistory) {
       return;

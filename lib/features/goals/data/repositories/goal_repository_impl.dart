@@ -579,6 +579,52 @@ class GoalRepositoryImpl implements GoalRepository {
         },
       );
 
+  @override
+  FutureResult<GoalContribution> getContribution(String contributionId) =>
+      _guard(() async {
+        final row = await _local.getContributionById(contributionId);
+        if (row == null) {
+          return Left(
+            NotFoundFailure('contribution "$contributionId" does not exist'),
+          );
+        }
+        return Right(GoalContributionMapper.toEntity(row));
+      });
+
+  @override
+  FutureResult<Unit> updateContribution({
+    required String contributionId,
+    required int amountMinor,
+    required DateTime date,
+    String? note,
+  }) =>
+      _guard(() async {
+        final row = await _local.getContributionById(contributionId);
+        if (row == null) {
+          return Left(
+            NotFoundFailure('contribution "$contributionId" does not exist'),
+          );
+        }
+        if (row.transactionId != null) {
+          return const Left(
+            ValidationFailure(
+              'a money-moving movement can only be edited through its '
+              'linked transaction',
+            ),
+          );
+        }
+        final now = DateTime.now();
+        await _local.updateContributionFields(
+          contributionId,
+          amountMinor: amountMinor,
+          date: date,
+          note: note,
+          updatedAt: now.millisecondsSinceEpoch,
+        );
+        await _reconcileAfterHistoryRewrite(row.goalId, now: now);
+        return const Right(unit);
+      });
+
   Future<bool> _isAccountTombstoned(String? accountId) async {
     if (accountId == null) {
       return false;

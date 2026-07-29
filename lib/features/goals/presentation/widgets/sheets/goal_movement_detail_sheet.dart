@@ -16,13 +16,17 @@ import '../../cubit/goal_movement_detail_state.dart';
 import '../../utils/goal_format.dart';
 import '../../utils/goal_movement_delete_copy.dart';
 import 'confirm_delete_goal_movement_sheet.dart';
+import 'edit_goal_movement_sheet.dart';
 
 /// The movement detail sheet (`N8Dv2e`): amount + kind, then "Fecha" always,
 /// "Cuenta de origen"/"Transferencia" only for a money-moving movement, and
-/// "Nota" when present. Editar opens the linked transaction (only possible
-/// for a money-moving movement — a tracking-only one has none to edit);
-/// Eliminar opens `ConfirmDeleteGoalMovementSheet` with the right copy
-/// variant and, once confirmed, deletes the movement.
+/// "Nota" when present. Editar/Eliminar always show together
+/// (`DetailActionsRow`): for a money-moving movement, Editar opens the
+/// linked transaction (unwinding the transfer requires editing it, not this
+/// row); for a tracking-only one, Editar opens `EditGoalMovementSheet` to
+/// rewrite monto/fecha/nota of that same row in place. Eliminar opens
+/// `ConfirmDeleteGoalMovementSheet` with the right copy variant and, once
+/// confirmed, deletes the movement.
 ///
 /// Resolves to `true` once the movement was actually deleted, so the caller
 /// (already subscribed to the goal detail stream) can pop further if needed.
@@ -119,10 +123,13 @@ class GoalMovementDetailSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
-                      isWithdrawal ? LucideIcons.arrowDown : LucideIcons.arrowUp,
+                      isWithdrawal
+                          ? LucideIcons.arrowDown
+                          : LucideIcons.arrowUp,
                       size: 20,
-                      color:
-                          isWithdrawal ? colors.textSecondary : colors.primaryOnSoft,
+                      color: isWithdrawal
+                          ? colors.textSecondary
+                          : colors.primaryOnSoft,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -167,49 +174,36 @@ class GoalMovementDetailSheet extends StatelessWidget {
                 accounts: state.accounts,
               ),
             const SizedBox(height: 14),
-            if (movement.transactionId case final transactionId?)
-              DetailActionsRow(
-                editLabel: l10n.commonEdit,
-                deleteLabel: l10n.commonDelete,
-                onEdit: () {
-                  Navigator.of(context).pop();
-                  onOpenTransaction?.call(transactionId);
-                },
-                onDelete: () => unawaited(_confirmDelete(context, state)),
-              )
-            else
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => unawaited(_confirmDelete(context, state)),
-                  borderRadius: BorderRadius.circular(12),
-                  child: SizedBox(
-                    height: 44,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          LucideIcons.trash2,
-                          size: 16,
-                          color: colors.expenseText,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.commonDelete,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: colors.expenseText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            DetailActionsRow(
+              editLabel: l10n.commonEdit,
+              deleteLabel: l10n.commonDelete,
+              onEdit: () => unawaited(_edit(context)),
+              onDelete: () => unawaited(_confirmDelete(context, state)),
+            ),
           ],
         );
       },
+    );
+  }
+
+  /// With a `transactionId`, opens the linked transaction (unchanged
+  /// behaviour); otherwise pops this sheet and opens `EditGoalMovementSheet`
+  /// to rewrite this movement's monto/fecha/nota in place.
+  Future<void> _edit(BuildContext context) async {
+    final transactionId = movement.transactionId;
+    Navigator.of(context).pop();
+    if (transactionId != null) {
+      onOpenTransaction?.call(transactionId);
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+    await EditGoalMovementSheet.show(
+      context,
+      movement: movement,
+      goalName: goalName,
+      currency: currency,
     );
   }
 
@@ -247,7 +241,8 @@ class GoalMovementDetailSheet extends StatelessWidget {
 /// "Cuenta de origen"/"Transferencia" only for a money-moving movement whose
 /// [accounts] resolved, and "Nota" when present.
 class GoalMovementDetailsCard extends StatelessWidget {
-  const GoalMovementDetailsCard({required this.movement, this.accounts, super.key});
+  const GoalMovementDetailsCard(
+      {required this.movement, this.accounts, super.key});
 
   final GoalContribution movement;
   final GoalMovementAccounts? accounts;

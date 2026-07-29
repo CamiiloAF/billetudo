@@ -129,4 +129,29 @@ abstract class GoalRepository {
   /// to in-progress, because this is a correction of history, not a new
   /// event (HU-07's "never clears on a withdrawal" rule does not apply here).
   FutureResult<Unit> removeContribution(String contributionId);
+
+  /// A single movement by its own id, for `UpdateGoalMovement`: reads its
+  /// current `transactionId`/`direction`/`amountMinor` before rewriting it,
+  /// so the use case can reject a money-moving movement and re-check the
+  /// negative-`savedMinor` invariant excluding this movement's previous
+  /// amount.
+  FutureResult<GoalContribution> getContribution(String contributionId);
+
+  /// The "Editar movimiento" sheet for a tracking-only movement
+  /// (`transactionId == null`): rewrites `amountMinor`/`date`/`note` on the
+  /// SAME `GoalContribution` row — no delete, no new row, unlike
+  /// [contribute]/[withdraw]. Like [removeContribution], this is a rewrite of
+  /// history, so it reconciles `completedAt`/`lastMilestonePct`
+  /// bidirectionally (can move either forward or backward), not the
+  /// forward-only rule a fresh [contribute]/[withdraw] applies.
+  ///
+  /// A money-moving movement (`transactionId != null`) is rejected with a
+  /// `ValidationFailure` — it must be edited through its `Transaction`
+  /// instead, same restriction as [removeContribution].
+  FutureResult<Unit> updateContribution({
+    required String contributionId,
+    required int amountMinor,
+    required DateTime date,
+    String? note,
+  });
 }

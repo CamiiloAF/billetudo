@@ -1,4 +1,3 @@
-import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_projection.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_state.dart';
@@ -104,11 +103,11 @@ void main() {
     ),
   );
 
-  // Movimientos expandidos in-place (`p6g6S`/`v6yh8`): more than the 2-row
-  // peek, all visible, "Ver todos" gone since it's already expanded.
-  final expandedMovementsState = GoalDetailState(
+  // Historial con "Ver más" (8/+8, componente compartido `LoadMoreButton`):
+  // más de 8 movimientos revela sólo la primera página; el resto se pide con
+  // el mismo botón que Presupuestos/Deudas/Pagos programados.
+  final loadMoreMovementsState = GoalDetailState(
     status: GoalDetailStatus.ready,
-    movementsExpanded: true,
     detail: buildGoalDetail(
       progress: buildGoalWithProgress(
         goal: buildGoal(
@@ -125,25 +124,14 @@ void main() {
         estimatedDate: DateTime(2026, 11, 1),
         paceMinorPerMonth: 200000,
       ),
-      history: [
-        buildGoalContribution(
-          id: 'm3',
-          amountMinor: 300000,
-          date: DateTime(2026, 7, 20),
-          note: 'Ahorro de julio',
+      history: List.generate(
+        10,
+        (index) => buildGoalContribution(
+          id: 'm$index',
+          amountMinor: 100000 + index * 1000,
+          date: DateTime(2026, 7, 20).subtract(Duration(days: index)),
         ),
-        buildGoalContribution(
-          id: 'm2',
-          amountMinor: 50000,
-          direction: GoalMovementDirection.withdrawal,
-          date: DateTime(2026, 6, 15),
-        ),
-        buildGoalContribution(
-          id: 'm1',
-          amountMinor: 1550000,
-          date: DateTime(2026, 6, 1),
-        ),
-      ],
+      ),
     ),
   );
 
@@ -352,11 +340,11 @@ void main() {
       );
     });
 
-    testWidgets('movimientos expandidos in-place ($suffix)', (tester) async {
+    testWidgets('historial con "Ver más" (8/+8) ($suffix)', (tester) async {
       await golden(
         tester,
-        expandedMovementsState,
-        'movements_expanded_$suffix',
+        loadMoreMovementsState,
+        'movements_load_more_$suffix',
         brightness: brightness,
       );
     });

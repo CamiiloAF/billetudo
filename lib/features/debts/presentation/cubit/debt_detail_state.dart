@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_detail.dart';
+import '../../domain/entities/debt_ledger_entry.dart';
 
 /// The three states the debt detail renders (frames `cUzp6`/`ZQIPe`/`tVUoU`).
 /// There is no "empty ledger": a debt always has at least its opening row.
@@ -75,6 +76,7 @@ class DebtDetailState extends Equatable {
     this.status = DebtDetailStatus.loading,
     this.detail,
     this.runningBalances = const [],
+    this.visibleLedgerCount = ledgerPageSize,
     this.dailyGrowthMinor,
     this.installment,
     this.failure,
@@ -82,6 +84,10 @@ class DebtDetailState extends Equatable {
     this.celebration,
     this.closeSuccess,
   });
+
+  /// How many ledger rows a "Ver más" tap reveals, following
+  /// `BudgetDetailState.activityPageSize`'s exact pattern.
+  static const int ledgerPageSize = 8;
 
   final DebtDetailStatus status;
 
@@ -92,6 +98,9 @@ class DebtDetailState extends Equatable {
   /// with `detail.ledger` (newest-first). Derived from the domain's signed
   /// effects and the domain's outstanding total — never re-deriving any sign.
   final List<int> runningBalances;
+
+  /// How many of `detail.ledger`'s newest-first rows are currently shown.
+  final int visibleLedgerCount;
 
   /// The estimated interest the debt accrues in one day, for the "Crece
   /// ~$X/día · estimado" line. `null` unless the debt accrues automatically
@@ -122,10 +131,28 @@ class DebtDetailState extends Equatable {
 
   bool get isLoading => status == DebtDetailStatus.loading;
 
+  /// The ledger slice currently shown, newest-first, capped to
+  /// [visibleLedgerCount].
+  List<DebtLedgerEntry> get visibleLedger {
+    final ledger = detail?.ledger ?? const <DebtLedgerEntry>[];
+    return ledger.length <= visibleLedgerCount
+        ? ledger
+        : ledger.sublist(0, visibleLedgerCount);
+  }
+
+  /// The running balances aligned to [visibleLedger], same cap.
+  List<int> get visibleRunningBalances => runningBalances.length <=
+          visibleLedgerCount
+      ? runningBalances
+      : runningBalances.sublist(0, visibleLedgerCount);
+
+  bool get hasMoreLedger => (detail?.ledger.length ?? 0) > visibleLedgerCount;
+
   DebtDetailState copyWith({
     DebtDetailStatus? status,
     DebtDetail? detail,
     List<int>? runningBalances,
+    int? visibleLedgerCount,
     int? dailyGrowthMinor,
     DebtInstallmentView? installment,
     Failure? failure,
@@ -137,6 +164,7 @@ class DebtDetailState extends Equatable {
         status: status ?? this.status,
         detail: detail ?? this.detail,
         runningBalances: runningBalances ?? this.runningBalances,
+        visibleLedgerCount: visibleLedgerCount ?? this.visibleLedgerCount,
         dailyGrowthMinor: dailyGrowthMinor,
         installment: installment,
         failure: failure,
@@ -152,6 +180,7 @@ class DebtDetailState extends Equatable {
         status,
         detail,
         runningBalances,
+        visibleLedgerCount,
         dailyGrowthMinor,
         installment,
         failure,

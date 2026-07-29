@@ -27,7 +27,6 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Pantalla | Claro | Oscuro |
 |---|---|---|
 | Detalle — en curso (arco héroe + "faltan · cuándo") | `QBTVl` | `B7uhw` |
-| Detalle — movimientos expandidos in-place | `p6g6S` | `v6yh8` |
 | Detalle — cumplida (encuadre invertido) | `ApfDj` | `E1KRCN` |
 | Detalle — sin historial suficiente | `xEqbd` | `q2zQv` |
 | Detalle — sin fecha objetivo | `E4jMdn` | `Y3d7wu` |
@@ -64,6 +63,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Sheet acciones ⋮ — cumplida | `tKk1Y` | `xWPAp` |
 | Sheet acciones ⋮ — archivada | `uGtaB` | `xsN19` |
 | Sheet detalle del movimiento | `N8Dv2e` | `opOuE` |
+| Sheet editar movimiento | `REkBO` | pendiente (tema oscuro tras aprobación del claro) |
 | Sheet eliminar meta | `Iytov` | `LMTXI` |
 | Sheet archivar meta | `j2L43` | `eDx3b` |
 | Sheet desarchivar meta | `Yl5sf` | `jnnQW` |
@@ -108,20 +108,43 @@ Header de **momentum** (racha "Llevas N semanas aportando" + próximo hito "50% 
 Es la pantalla más decisiva (la ve quien aún no ahorra). **Vende**: hero con gradiente `$primary-deep→$primary` + copy aspiracional + 3 `Goal Template Row` con monto derivado ("3 meses de tus gastos ≈ $X") + "Crear meta personalizada". Nunca el Empty State genérico.
 
 ### Detalle (`QBTVl`)
-**Arco héroe** con % dentro (`$primary-on-soft-strong`, no `$primary` crudo). El **nombre en `$text-primary`** (ancla de identidad), y **"Te faltan $X" (36/800) domina** sobre el acumulado. Proyección positiva ("a tu ritmo, llegas en marzo"). **Aporte rápido** (ver sección propia "Aporte rápido" más abajo — chips personalizables). El ledger recede a un peek de 2 filas con "Ver todos (N)" que **expande in-place** (`p6g6S`), patrón Presupuesto/PP. La **cumplida** (`ApfDj`) invierte el encuadre (celebra "Ahorraste $X", arco lleno `$income-text`, acción principal "Archivar meta").
+**Arco héroe** con % dentro (`$primary-on-soft-strong`, no `$primary` crudo). El **nombre en `$text-primary`** (ancla de identidad), y **"Te faltan $X" (36/800) domina** sobre el acumulado. Proyección positiva ("a tu ritmo, llegas en marzo"). **Aporte rápido** (ver sección propia "Aporte rápido" más abajo — chips personalizables). El ledger ya no es un peek-de-2-y-expandir-todo-de-un-toque (ver nota "Historial: de 'Ver todos (N)' a 'Ver más' incremental" más abajo). La **cumplida** (`ApfDj`) invierte el encuadre (celebra "Ahorraste $X", arco lleno `$income-text`, acción principal "Archivar meta").
+
+**Historial: de "Ver todos (N)" a "Ver más" incremental (sincronizado 2026-07-29, 🔖 en revisión, badge `YP2xX`, frame `QBTVl`).** El patrón viejo —peek de 2 filas + link "Ver todos (N)" que expandía TODO el historial de un toque, materializado en un frame aparte `p6g6S` ("movimientos expandidos in-place")— se reemplazó por el mismo patrón incremental que ya usan Presupuestos/Deudas/Pagos Programados:
+
+- El header de la sección "Movimientos" ya no lleva un link tocable: el nodo `ig0kJ` pasó de "Ver todos (N)" (`$primary-on-soft-strong` 14/700) a un contador pasivo "N movimientos" (`$text-secondary` 12/600, mismo tratamiento que el `Count` de `Budget Line`/`Nv04I` en Presupuestos).
+- Debajo de `Rows` se agregó un wrapper `Más` con una instancia del componente reusable **`Load More · Ver más`** (`oadHE`, definido en `presupuestos.md`/`NloPT`).
+- El peek pasó de 2 a 4 filas visibles en el mockup (el `.pen` no dibuja literalmente 8 — mismo criterio que el resto de las pantallas: el conteo real de "8 iniciales + 8 por carga" lo controla el código).
+- **`p6g6S` fue eliminado** del `.pen`: representaba el estado "todo expandido con Ver menos" del patrón viejo, que ya no existe (el nuevo comportamiento es incremental, sin un botón de colapsar). Su copia oscura `v6yh8` quedó huérfana — pendiente de limpiar cuando se sincronice el tema oscuro de esta pantalla.
 
 ### Aporte rápido (fila en el Detalle, agregado 2026-07-28)
 
-Fila horizontal scrolleable (`Scroll Row`, `clip:true`, mismo patrón que `Quick Access` de Inicio) bajo el eyebrow "APORTE RÁPIDO": chips fijos $50.000 / $100.000 / "Otro monto" (abre el sheet Aportar completo, comportamiento que antes tenía "Otro") + chips personalizados creados por el usuario + `Add Chip` ("+ Nueva") siempre al final. **Sin límite de chips** — la fila es scrolleable, no se trunca ni se pagina; el chip de creación queda siempre visible al final del scroll. Frame de referencia: `Qi3aR` (claro) / `HKc12` (oscuro).
+Fila horizontal scrolleable (`Scroll Row`, `clip:true`, mismo patrón que `Quick Access` de Inicio) bajo el eyebrow "APORTE RÁPIDO": los dos chips $50.000 / $100.000 (sembrados como filas `GoalQuickAmount` reales al crear la meta, ver "Eliminar un chip" abajo) + chips personalizados creados por el usuario + `Add Chip` ("+ Nueva") siempre al final. **Ya no existe un chip fijo "Otro monto"**: el CTA "+ Aportar" del encabezado ya abre el mismo sheet Aportar sin monto prefijado, así que el chip era redundante (corregido 2026-07-29, código como fuente de verdad — `billetudo.pen` aún puede mostrar el diseño viejo, ver nota al final de esta sección). **Sin límite de chips** — la fila es scrolleable, no se trunca ni se pagina; el chip de creación queda siempre visible al final del scroll. Frame de referencia: `Qi3aR` (claro) / `HKc12` (oscuro).
 
 **Crear un chip:** sheet minimal (`urHlG` / `MqLys` oscuro) — solo campo Monto + CTA "Crear chip", sin los demás campos del sheet Aportar completo (fecha, nota, enlazar).
 
 **Prefill al aportar con un chip de monto ($50k/$100k/personalizados):** el sheet Aportar se abre prefilled con el monto del chip, **sin ningún indicio visual de que viene de un chip rápido** — se ve idéntico a un aporte manual (`e9nrdh` / `W6Kijx` oscuro), decisión que evita la sensación de "modo distinto" para una acción que ya era transparente en la fila.
 
-**Eliminar un chip personalizado:** patrón **X inline junto al label**, dentro del mismo chip — mismo patrón que `Tag Chip` (`nM9ea`, Transacciones), NO corner-badge ni mantener-presionado (`Vspnx` / `tst9V` oscuro; ícono `Owsx0`/`Remove`). Decisión de framework: **no** se usa mantener-presionado porque ese gesto ya significa "reordenar" en Cuentas/Categorías — reusarlo para eliminar rompería esa convención. **Tap directo en la X → eliminación instantánea + `Snackbar` con "Deshacer"**, sin sheet de confirmación: es una acción reversible y de bajo riesgo (el chip no es dinero, es un atajo). Los chips fijos ($50k/$100k/"Otro monto"/"+ Nueva") nunca llevan indicador de eliminación — solo los personalizados creados por el usuario.
+**Eliminar un chip:** patrón **X inline junto al label**, dentro del mismo chip — mismo patrón que `Tag Chip` (`nM9ea`, Transacciones), NO corner-badge ni mantener-presionado (`Vspnx` / `tst9V` oscuro; ícono `Owsx0`/`Remove`). Decisión de framework: **no** se usa mantener-presionado porque ese gesto ya significa "reordenar" en Cuentas/Categorías — reusarlo para eliminar rompería esa convención. **Tap directo en la X → eliminación instantánea + `Snackbar` con "Deshacer"**, sin sheet de confirmación: es una acción reversible y de bajo riesgo (el chip no es dinero, es un atajo). **Los chips $50k/$100k sí llevan X** (corregido 2026-07-29): al ser filas `GoalQuickAmount` reales sembradas por `CreateGoal` en vez de valores hardcodeados en el widget, toda la fila es una sola lista uniforme sin chips indistinguibles ni indelebles — solo "+ Nueva" queda fuera de esta lista, por ser la acción de creación, no un monto.
+
+**Divergencia pendiente con `billetudo.pen`:** si el frame `Qi3aR`/`HKc12` todavía muestra el chip "Otro monto" y/o los chips $50k/$100k sin X, es diseño desactualizado tras este fix de código — no se editó el `.pen` en esta corrida; pendiente de que `pencil-designer` lo alinee.
 
 ### Sheets Aportar / Retirar — modelo de aportes (HU-03/04)
 Reemplazan los sheets binarios viejos por **uno con toggle** (patrón abono de Deudas). **Toggle 1 "¿Mover dinero de una cuenta?"**: OFF = seguimiento puro (cajita, cero efectos); ON = transferencia real (revela cuenta origen/destino). **Toggle 2 "¿Incluir en tu presupuesto?"** (solo aparece con toggle 1 ON): ON revela `Category Quick Picker` con **"Ahorros" preseleccionada**, y colapsa la zona de monto (`ofg07`) para que la categoría no quede tapada. Copy del toggle 2 unificado con el form de transferencia. Retirar: **tope duro** ("Disponible en la meta: $X · Usar todo"); variante **cumplida** (`gw4XS`) con copy propio ("ya está cumplida; sacar dinero no cambia eso"). **Enlazar un movimiento** (`jc77R`): modo enlazar sobre Movimientos (banner "Enlazar a &lt;meta&gt;" + "Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo"), paridad Deudas.
+
+### Sheet editar movimiento (`REkBO`, agregado 2026-07-29)
+
+Variante **A "Consistente"** elegida entre 3 propuestas (B "banner de contexto" y C "badge de tipo + estado de error" descartadas y borradas del canvas). Habilita editar (no solo eliminar) un movimiento de **solo seguimiento** (sin cuenta/transferencia vinculada) desde el Sheet detalle del movimiento (`N8Dv2e`) — antes ese caso solo ofrecía "Eliminar" aunque el subtítulo prometía "corregir o eliminar". Estructura, de arriba a abajo, dentro de `Bottom Sheet Base` (`PqTUt`):
+
+- **Head**: título "Editar movimiento" (17/700, `$text-primary`) + hint explicando que corrige monto/fecha/nota sin crear ni eliminar el movimiento (12/500, `$text-secondary`).
+- **Field Monto**: mismo patrón compacto (label "Monto" + Input Box 52px, `cornerRadius:14`, `$surface`/`$border`) que ya usan las hojas Aportar/Retirar — reaplicado, no es un componente nuevo.
+- **Field Fecha**: instancia de `Form Field` (`wOlOA`) con ícono `calendar` y chevron; abre el `Date Picker Sheet` (`zMqxt`) ya existente, sin cambios.
+- **Field Nota**: instancia de `Form Field` (`wOlOA`) con ícono `notebook-pen`, opcional.
+- **CTA**: instancia de `Button/Primary` (`j7Zvt`), "Guardar" + ícono `check`.
+
+**Sin componentes nuevos**: reutiliza `Bottom Sheet Base`, `Form Field` y `Button/Primary` ya existentes en el sistema. No lleva banner de contexto ni badge de estado (esas eran las variantes B/C, descartadas por ruido visual frente al caso simple).
+
+**Estado:** solo tema claro, sin refinamiento de `ui-ux-reviewer` todavía y sin variantes de estado (error de validación al superar el tope al editar un retiro, guardando). El tema oscuro se construye únicamente después de que el usuario apruebe explícitamente el refinamiento del claro.
 
 ### Integración con Pagos (`HOdfO`/`ebcqG`/`RX8C9`/`a2yR8P`)
 Aporte recurrente = pago programado con `goalId`. Sheet de decisión (enlazar existente / crear nuevo); config clon de la cuota de Deudas (banner cross-link, cuenta origen, toggle presupuesto + categoría, freq, monto fijo); picker de PP existente; card **"Meta Enlazada"** en el detalle del PP (eyebrow "META ENLAZADA" + "Aporte a / &lt;meta&gt;" + deep-link), análoga a "Deuda Enlazada". Enlace exclusivo `debtId` **o** `goalId`.

@@ -154,67 +154,90 @@ class GoalContributionSheetBody extends StatelessWidget {
                 if (state.isWithdrawal) ...[
                   const SizedBox(height: 6),
                   Center(
-                    child: TextButton(
-                      onPressed: cubit.useMax,
-                      child: Text(
-                        l10n.goalWithdrawAvailable(
-                          GoalFormat.amount(
-                            state.maxWithdrawableMinor,
-                            state.currency,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.goalWithdrawAvailableLabel(
+                            GoalFormat.amount(
+                              state.maxWithdrawableMinor,
+                              state.currency,
+                            ),
+                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: colors.textSecondary,
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          key: const ValueKey('goal-withdraw-use-max'),
+                          onTap: cubit.useMax,
+                          child: Text(
+                            l10n.goalWithdrawUseMaxCta,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: colors.primaryOnSoftStrong,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
-                ToggleField(
-                  icon: LucideIcons.arrowLeftRight,
-                  label: l10n.goalMoveFundsToggleLabel,
-                  value: state.moveMoney,
-                  hint: _moveFundsHint(l10n, state),
-                  onChanged: cubit.toggleMoveMoney,
-                  enabled: state.hasLinkedAccount,
-                ),
-                if (state.moveMoney) ...[
-                  const SizedBox(height: 14),
-                  GoalMovementFieldLabel(
-                    text: state.isWithdrawal
-                        ? l10n.goalWithdrawDestinationAccountLabel
-                        : l10n.goalContributeSourceAccountLabel,
-                  ),
-                  const SizedBox(height: 6),
-                  GoalMovementSelectorBox(
-                    icon: LucideIcons.wallet,
-                    value: state.selectedAccount == null
-                        ? l10n.goalAccountFieldPlaceholder
-                        : '${state.selectedAccount!.account.name} · '
-                            '${GoalFormat.amount(
-                            state.selectedAccount!.balance.balanceMinor,
-                            state.selectedAccount!.account.currency,
-                          )}',
-                    onTap: () => unawaited(_pickAccount(context, cubit, state)),
-                  ),
-                  const SizedBox(height: 14),
+                if (state.hasLinkedAccount) ...[
+                  const SizedBox(height: 10),
                   ToggleField(
-                    icon: LucideIcons.chartPie,
-                    label: l10n.goalBudgetToggleLabel,
-                    value: state.countsInBudget,
-                    hint: state.countsInBudget
-                        ? (state.isWithdrawal
-                            ? l10n.goalBudgetToggleHintOnWithdraw
-                            : l10n.goalBudgetToggleHintOnContribute)
-                        : l10n.goalBudgetToggleHintOff,
-                    onChanged: cubit.toggleCountsInBudget,
+                    icon: LucideIcons.arrowLeftRight,
+                    label: l10n.goalMoveFundsToggleLabel,
+                    value: state.moveMoney,
+                    hint: _moveFundsHint(l10n, state),
+                    onChanged: cubit.toggleMoveMoney,
                   ),
-                  if (state.countsInBudget) ...[
+                  if (state.moveMoney) ...[
                     const SizedBox(height: 14),
-                    CategoryQuickPicker(
-                      kind: CategoryKind.expense,
-                      selectedId: state.categoryId,
-                      onSelected: (category) =>
-                          cubit.categoryChanged(category.id),
+                    GoalMovementFieldLabel(
+                      text: state.isWithdrawal
+                          ? l10n.goalWithdrawDestinationAccountLabel
+                          : l10n.goalContributeSourceAccountLabel,
                     ),
+                    const SizedBox(height: 6),
+                    GoalMovementSelectorBox(
+                      icon: LucideIcons.wallet,
+                      value: state.selectedAccount == null
+                          ? l10n.goalAccountFieldPlaceholder
+                          : '${state.selectedAccount!.account.name} · '
+                              '${GoalFormat.amount(
+                              state.selectedAccount!.balance.balanceMinor,
+                              state.selectedAccount!.account.currency,
+                            )}',
+                      onTap: () =>
+                          unawaited(_pickAccount(context, cubit, state)),
+                    ),
+                    const SizedBox(height: 14),
+                    ToggleField(
+                      icon: LucideIcons.chartPie,
+                      label: l10n.goalBudgetToggleLabel,
+                      value: state.countsInBudget,
+                      hint: state.countsInBudget
+                          ? (state.isWithdrawal
+                              ? l10n.goalBudgetToggleHintOnWithdraw
+                              : l10n.goalBudgetToggleHintOnContribute)
+                          : l10n.goalBudgetToggleHintOff,
+                      onChanged: cubit.toggleCountsInBudget,
+                    ),
+                    if (state.countsInBudget) ...[
+                      const SizedBox(height: 14),
+                      CategoryQuickPicker(
+                        kind: CategoryKind.expense,
+                        selectedId: state.categoryId,
+                        onSelected: (category) =>
+                            cubit.categoryChanged(category.id),
+                      ),
+                    ],
                   ],
                 ],
                 const SizedBox(height: 14),
@@ -291,12 +314,10 @@ class GoalContributionSheetBody extends StatelessWidget {
   /// tracking-only; ON (billetudo.pen `BETeo`/`GK69y`/`CpLy8`/`DiDwa`) explains
   /// the transfer it will create — a shorter copy once the transfer is also
   /// presupuestable (contribute only; withdraw uses the same copy either way).
-  /// A goal with no linked account explains why the toggle stays off instead
-  /// (there is nowhere for the transfer to land).
+  /// Only called when `state.hasLinkedAccount` is true — the toggle itself is
+  /// hidden otherwise, since a goal with no linked account has nowhere for a
+  /// transfer to land.
   String _moveFundsHint(AppLocalizations l10n, GoalContributionState state) {
-    if (!state.hasLinkedAccount) {
-      return l10n.goalMoveFundsGateHint;
-    }
     if (!state.moveMoney) {
       return state.isWithdrawal
           ? l10n.goalMoveFundsToggleHintWithdraw

@@ -2,11 +2,14 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/goals/domain/entities/goal.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_draft.dart';
+import 'package:billetudo/features/goals/domain/entities/goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/usecases/create_goal.dart';
+import 'package:billetudo/features/goals/domain/usecases/create_goal_quick_amount.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../accounts/domain/usecases/account_repository_mock.dart';
+import 'goal_quick_amounts_repository_mock.dart';
 import 'goal_repository_mock.dart';
 
 Account _account({
@@ -36,9 +39,19 @@ Goal _goal({String currency = 'COP', String? accountId}) => Goal(
       updatedAt: 0,
     );
 
+GoalQuickAmount _quickAmount({required String goalId, required int amountMinor}) =>
+    GoalQuickAmount(
+      id: 'qa-$amountMinor',
+      goalId: goalId,
+      amountMinor: amountMinor,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026).millisecondsSinceEpoch,
+    );
+
 void main() {
   late MockGoalRepository repository;
   late MockAccountRepository accounts;
+  late MockGoalQuickAmountsRepository quickAmounts;
   late CreateGoal usecase;
 
   setUpAll(() {
@@ -49,7 +62,25 @@ void main() {
   setUp(() {
     repository = MockGoalRepository();
     accounts = MockAccountRepository();
-    usecase = CreateGoal(repository, accounts);
+    quickAmounts = MockGoalQuickAmountsRepository();
+    usecase = CreateGoal(
+      repository,
+      accounts,
+      CreateGoalQuickAmount(quickAmounts),
+    );
+    when(
+      () => quickAmounts.createQuickAmount(
+        goalId: any(named: 'goalId'),
+        amountMinor: any(named: 'amountMinor'),
+      ),
+    ).thenAnswer(
+      (invocation) async => Right(
+        _quickAmount(
+          goalId: invocation.namedArguments[#goalId] as String,
+          amountMinor: invocation.namedArguments[#amountMinor] as int,
+        ),
+      ),
+    );
   });
 
   test('rejects an invalid draft before touching either repository',
@@ -122,5 +153,45 @@ void main() {
         verify(() => repository.createGoal(captureAny())).captured.single
             as GoalDraft;
     expect(captured.currency, 'COP');
+  });
+
+  test(
+      r'seeds the two default $50.000/$100.000 quick-amount chips after '
+      'successfully creating the goal', () async {
+    when(() => repository.createGoal(any()))
+        .thenAnswer((_) async => Right(_goal()));
+
+    final result = await usecase(
+      const GoalDraft(name: 'Colchón', targetMinor: 500000, currency: 'COP'),
+    );
+
+    expect(result.isRight(), isTrue);
+    verify(
+      () => quickAmounts.createQuickAmount(goalId: 'g1', amountMinor: 5000000),
+    ).called(1);
+    verify(
+      () => quickAmounts.createQuickAmount(
+        goalId: 'g1',
+        amountMinor: 10000000,
+      ),
+    ).called(1);
+  });
+
+  test('does not seed any quick-amount chip when creation fails', () async {
+    when(() => repository.createGoal(any())).thenAnswer(
+      (_) async => const Left(DatabaseFailure('disco lleno')),
+    );
+
+    final result = await usecase(
+      const GoalDraft(name: 'Colchón', targetMinor: 500000, currency: 'COP'),
+    );
+
+    expect(result.isLeft(), isTrue);
+    verifyNever(
+      () => quickAmounts.createQuickAmount(
+        goalId: any(named: 'goalId'),
+        amountMinor: any(named: 'amountMinor'),
+      ),
+    );
   });
 }

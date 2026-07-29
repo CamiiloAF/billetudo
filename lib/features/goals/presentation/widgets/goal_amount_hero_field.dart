@@ -74,8 +74,20 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
   @override
   void didUpdateWidget(GoalAmountHeroField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.currency != oldWidget.currency) {
-      final minor = MoneyFormatter.parseMinor(_controller.text) ?? 0;
+    final currentMinor = MoneyFormatter.parseMinor(_controller.text) ?? 0;
+    final currencyChanged = widget.currency != oldWidget.currency;
+    // Resyncing on every `initialAmountMinor` change would fight normal
+    // typing: each keystroke round-trips through `onChanged` ->
+    // `cubit.amountChanged` -> a rebuild with `initialAmountMinor` already
+    // equal to what the controller holds, so that case is a no-op guarded by
+    // the `currentMinor` comparison below. Only an *external* change (e.g.
+    // "Usar todo" pushing a new max) actually differs from the controller's
+    // parsed value and needs to reformat the visible text.
+    final externalAmountChange =
+        widget.initialAmountMinor != oldWidget.initialAmountMinor &&
+            widget.initialAmountMinor != currentMinor;
+    if (currencyChanged || externalAmountChange) {
+      final minor = currencyChanged ? currentMinor : widget.initialAmountMinor;
       final text = _seed(minor, widget.currency);
       _controller.value = TextEditingValue(
         text: text,
@@ -100,7 +112,16 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
     final error = widget.errorText;
 
     if (widget.compact) {
-      return _buildCompact(context, colors, theme, error);
+      return CompactGoalAmountField(
+        controller: _controller,
+        onChanged: _onChanged,
+        currency: widget.currency,
+        fieldKey: widget.fieldKey,
+        autofocus: widget.autofocus,
+        errorText: error,
+        compactLeadingIcon: widget.compactLeadingIcon,
+        compactTrailing: widget.compactTrailing,
+      );
     }
 
     final content = Column(
@@ -189,22 +210,54 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
       ],
     );
   }
+}
 
-  /// The compact row (`U7V5pb`/`BKgCe`): a single 52pt bordered "Input Box"
-  /// with an optional leading icon, the editable amount, and an optional
-  /// trailing widget — no internal label (the caller renders its own
-  /// `GoalFieldLabel` above, so "Objetivo" dominates and the optional Avance
-  /// field reads as a plain compact row next to it, matching `PjBCt`).
-  Widget _buildCompact(
-    BuildContext context,
-    AppColors colors,
-    ThemeData theme,
-    String? error,
-  ) {
+/// The compact row (`U7V5pb`/`BKgCe`): a single 52pt bordered "Input Box"
+/// with an optional leading icon, the editable amount, and an optional
+/// trailing widget — no internal label (the caller renders its own
+/// `GoalFieldLabel` above, so "Objetivo" dominates and the optional Avance
+/// field reads as a plain compact row next to it, matching `PjBCt`).
+///
+/// Extracted from [GoalAmountHeroField]'s compact branch so it has its own
+/// element in the tree and can be tested in isolation.
+class CompactGoalAmountField extends StatelessWidget {
+  const CompactGoalAmountField({
+    required this.controller,
+    required this.onChanged,
+    required this.currency,
+    this.fieldKey,
+    this.autofocus = false,
+    this.errorText,
+    this.compactLeadingIcon,
+    this.compactTrailing,
+    super.key,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final String currency;
+  final Key? fieldKey;
+  final bool autofocus;
+  final String? errorText;
+
+  /// The row's leading icon (Avance's `piggy-bank`). `null` omits it
+  /// (Objetivo has none).
+  final IconData? compactLeadingIcon;
+
+  /// An optional trailing widget (Objetivo's locked/tappable currency chip).
+  /// `null` renders no trailing slot.
+  final Widget? compactTrailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final error = errorText;
+
     // Objetivo (no leading icon) is the bold 22/800 hero of the form; Avance
     // (piggy-bank icon) is deliberately smaller/lighter — same type scale the
     // `wOlOA` Form Field row uses for its own value text.
-    final bold = widget.compactLeadingIcon == null;
+    final bold = compactLeadingIcon == null;
     final textStyle = theme.textTheme.bodyLarge?.copyWith(
       color: colors.textPrimary,
       fontSize: bold ? 22 : 15,
@@ -223,23 +276,24 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
       ),
       child: Row(
         children: [
-          if (widget.compactLeadingIcon case final icon?) ...[
+          if (compactLeadingIcon case final icon?) ...[
             Icon(icon, size: 18, color: colors.textSecondary),
             const SizedBox(width: 8),
           ],
           Expanded(
             child: TextField(
-              key: widget.fieldKey,
-              controller: _controller,
-              autofocus: widget.autofocus,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              key: fieldKey,
+              controller: controller,
+              autofocus: autofocus,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               enableInteractiveSelection: false,
               inputFormatters: [
                 MoneyInputFormatter(
-                  decimals: MoneyFormatter.inputDecimals(widget.currency),
+                  decimals: MoneyFormatter.inputDecimals(currency),
                 ),
               ],
-              onChanged: _onChanged,
+              onChanged: onChanged,
               cursorColor: colors.primary,
               style: textStyle,
               decoration: InputDecoration(
@@ -255,7 +309,7 @@ class _GoalAmountHeroFieldState extends State<GoalAmountHeroField> {
               ),
             ),
           ),
-          if (widget.compactTrailing case final trailing?) ...[
+          if (compactTrailing case final trailing?) ...[
             const SizedBox(width: 8),
             trailing,
           ],

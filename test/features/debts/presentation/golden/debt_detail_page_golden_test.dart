@@ -163,6 +163,46 @@ void main() {
     runningBalances: const [0, 120000000, 200000000],
   );
 
+  // Más de 8 filas en el ledger (patrón compartido 8/+8, `LoadMoreButton`):
+  // sólo la primera página se muestra hasta que "Ver más" pide otra.
+  final loadMoreLedgerDetail = buildDebtDetail(
+    debt: buildDebt(
+      id: 'd4',
+      name: 'Tarjeta de crédito',
+      counterparty: 'Bancolombia',
+    ),
+    balance: buildBalance(
+      principalMinor: 500000000,
+      totalIncreasesMinor: 500000000,
+      totalDecreasesMinor: 90000000,
+    ),
+    ledger: [
+      for (var i = 0; i < 9; i++)
+        buildLedgerEntry(
+          id: 'row$i',
+          kind: DebtLedgerKind.cashPayment,
+          date: DateTime(2026, 7, 20).subtract(Duration(days: i * 3)),
+          effectMinor: -10000000,
+          transactionId: 't$i',
+        ),
+      buildLedgerEntry(
+        id: 'open',
+        kind: DebtLedgerKind.opening,
+        date: DateTime(2026, 1, 1),
+        effectMinor: 500000000,
+      ),
+    ],
+  );
+
+  final loadMoreLedgerReady = DebtDetailState(
+    status: DebtDetailStatus.ready,
+    detail: loadMoreLedgerDetail,
+    runningBalances: [
+      for (var i = 0; i < 9; i++) 500000000 - (i + 1) * 10000000,
+      500000000,
+    ],
+  );
+
   Future<void> golden(
     WidgetTester tester,
     DebtDetailState state,
@@ -238,6 +278,15 @@ void main() {
         tester,
         settledReady,
         'settled_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('ledger con "Ver más" (8/+8) ($suffix)', (tester) async {
+      await golden(
+        tester,
+        loadMoreLedgerReady,
+        'ledger_load_more_$suffix',
         brightness: brightness,
       );
     });

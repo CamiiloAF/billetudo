@@ -24,6 +24,10 @@
   "@commonEdit": {},
   "commonRetry": "Reintentar",
   "@commonRetry": {},
+  "commonLoadMore": "Ver más",
+  "@commonLoadMore": {
+    "description": "Etiqueta compartida del botón 'Ver más' que revela más filas de una lista paginada en el sitio (presupuestos, deudas, metas, pagos programados)."
+  },
   "commonBack": "Atrás",
   "@commonBack": {
     "description": "Etiqueta accesible del botón atrás del Page Header."
@@ -1576,8 +1580,6 @@
       "accountName": { "type": "String" }
     }
   },
-  "budgetLoadMore": "Ver más",
-  "@budgetLoadMore": {},
   "budgetOneOffWindow": "Ventana única",
   "@budgetOneOffWindow": {},
   "budgetPeriodPreviousTooltip": "Periodo anterior",
@@ -1972,10 +1974,6 @@
   "@scheduledPaymentDetailHistoryTitle": {},
   "scheduledPaymentDetailHistoryEmpty": "Todavía no se ha generado ningún movimiento de este pago programado.",
   "@scheduledPaymentDetailHistoryEmpty": {},
-  "scheduledPaymentDetailHistorySeeAll": "Ver historial completo ({count})",
-  "@scheduledPaymentDetailHistorySeeAll": {
-    "placeholders": { "count": { "type": "int" } }
-  },
   "scheduledSkippedBadge": "Omitido",
   "@scheduledSkippedBadge": {},
   "scheduledRecoverAction": "Recuperar",
@@ -2297,8 +2295,6 @@
   "@goalMovementsTitle": {"placeholders": {"count": {"type": "int"}}},
   "goalMovementsSectionTitle": "Movimientos",
   "@goalMovementsSectionTitle": {},
-  "goalMovementsSeeAll": "Ver todos ({count})",
-  "@goalMovementsSeeAll": {"placeholders": {"count": {"type": "int"}}},
   "goalMovementsEmpty": "Todavía no registras movimientos en esta meta.",
   "@goalMovementsEmpty": {},
   "goalMovementContribution": "Aporte",
@@ -2345,8 +2341,6 @@
   "@goalMoveFundsToggleHintContributeOnBudget": {},
   "goalMoveFundsToggleHintWithdrawOn": "Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.",
   "@goalMoveFundsToggleHintWithdrawOn": {},
-  "goalMoveFundsGateHint": "Vincula una cuenta a esta meta para poder mover dinero (edítala desde su detalle).",
-  "@goalMoveFundsGateHint": {},
   "goalContributeSourceAccountLabel": "Cuenta de origen",
   "@goalContributeSourceAccountLabel": {},
   "goalWithdrawDestinationAccountLabel": "Cuenta de destino",
@@ -2373,12 +2367,12 @@
   "@goalWithdrawCta": {},
   "goalAdjustDateCta": "Ajustar la fecha",
   "@goalAdjustDateCta": {},
-  "goalWithdrawAvailable": "Disponible en la meta: {amount} · Usar todo",
-  "@goalWithdrawAvailable": {"placeholders": {"amount": {"type": "String"}}},
+  "goalWithdrawAvailableLabel": "Disponible en la meta: {amount}",
+  "@goalWithdrawAvailableLabel": {"placeholders": {"amount": {"type": "String"}}},
+  "goalWithdrawUseMaxCta": "Usar todo",
+  "@goalWithdrawUseMaxCta": {},
   "goalWithdrawErrorExceedsSaved": "No puedes retirar más de lo que has ahorrado en esta meta.",
   "@goalWithdrawErrorExceedsSaved": {},
-  "goalQuickAmountOther": "Otro monto",
-  "@goalQuickAmountOther": {},
   "goalQuickAmountLabel": "APORTE RÁPIDO",
   "@goalQuickAmountLabel": {},
   "goalQuickAmountAddCta": "Nueva",
@@ -2495,6 +2489,8 @@
   "@goalMovementDetailTransferValue": {"placeholders": {"origin": {"type": "String"}, "destination": {"type": "String"}}},
   "goalMovementDetailNoteLabel": "Nota",
   "@goalMovementDetailNoteLabel": {},
+  "goalMovementEditTitle": "Editar movimiento",
+  "@goalMovementEditTitle": {},
   "goalMovementKindContributionLower": "aporte",
   "@goalMovementKindContributionLower": {},
   "goalMovementKindWithdrawalLower": "retiro",

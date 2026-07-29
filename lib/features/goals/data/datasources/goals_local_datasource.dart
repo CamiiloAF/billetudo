@@ -272,4 +272,33 @@ class GoalsLocalDatasource {
           updatedAt: Value(updatedAt),
         ),
       );
+
+  /// The "Editar movimiento" sheet's write for a tracking-only movement
+  /// (`GoalRepository.updateContribution`): rewrites amount/date/note in
+  /// place on the same row. Restricted to `transactionId IS NULL` — a
+  /// money-moving movement is guarded against at the repository layer, but
+  /// the `WHERE` here is a second line of defense so this can never silently
+  /// rewrite one even if that guard is ever skipped.
+  Future<void> updateContributionFields(
+    String id, {
+    required int amountMinor,
+    required DateTime date,
+    required String? note,
+    required int updatedAt,
+  }) =>
+      (_db.update(_db.goalContributions)
+            ..where(
+              (c) =>
+                  c.id.equals(id) &
+                  c.transactionId.isNull() &
+                  _aliveContribution(c),
+            ))
+          .write(
+        GoalContributionsCompanion(
+          amountMinor: Value(amountMinor),
+          date: Value(date),
+          note: Value(note),
+          updatedAt: Value(updatedAt),
+        ),
+      );
 }

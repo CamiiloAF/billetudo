@@ -14,7 +14,7 @@ class GetScheduledPaymentDetail {
 
   Stream<Result<ScheduledPaymentDetail>> call(
     String id, {
-    int historyPageSize = 3,
+    int historyPageSize = 8,
   }) =>
       _repository.watchScheduledPaymentDetail(
         id,

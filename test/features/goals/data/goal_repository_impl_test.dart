@@ -596,4 +596,143 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
   });
+
+  group('updateContribution — editar movimiento de solo seguimiento', () {
+    test(
+      'reescribe amountMinor/date/note en la misma fila y actualiza updatedAt',
+      () async {
+        final goal = await createGoal();
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 40000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+            note: 'nota original',
+          ),
+        );
+        final (contribution, _) = result.getRight().toNullable()!;
+
+        final updateResult = await repository.updateContribution(
+          contributionId: contribution.id,
+          amountMinor: 55000,
+          date: DateTime(2026, 7, 12),
+          note: 'nota editada',
+        );
+        expect(updateResult.isRight(), isTrue);
+
+        final row = await (db.select(db.goalContributions)
+              ..where((c) => c.id.equals(contribution.id)))
+            .getSingle();
+        expect(row.amountMinor, 55000);
+        expect(row.date, DateTime(2026, 7, 12));
+        expect(row.note, 'nota editada');
+        expect(row.updatedAt, greaterThanOrEqualTo(contribution.updatedAt));
+
+        final savedResult = await repository.getSavedMinor(goal.id);
+        expect(savedResult.getRight().toNullable(), 55000);
+      },
+    );
+
+    test(
+      'getContribution lee el movimiento vivo por su propio id',
+      () async {
+        final goal = await createGoal();
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 40000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+          ),
+        );
+        final (contribution, _) = result.getRight().toNullable()!;
+
+        final readResult = await repository.getContribution(contribution.id);
+        expect(readResult.isRight(), isTrue);
+        expect(readResult.getRight().toNullable()!.id, contribution.id);
+        expect(readResult.getRight().toNullable()!.transactionId, isNull);
+      },
+    );
+
+    test('NotFoundFailure de getContribution cuando el id no existe',
+        () async {
+      final result = await repository.getContribution('no-existe');
+      expect(result.isLeft(), isTrue);
+    });
+
+    test(
+      'editar el aporte que completó la meta hacia abajo la vuelve a poner en curso',
+      () async {
+        final goal = await createGoal(targetMinor: 100000);
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 100000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+          ),
+        );
+        final (contribution, crossed) = result.getRight().toNullable()!;
+        expect(crossed, 100);
+
+        await repository.updateContribution(
+          contributionId: contribution.id,
+          amountMinor: 40000,
+          date: DateTime(2026, 7, 10),
+        );
+
+        final reverted = await repository.getGoal(goal.id);
+        expect(reverted.getRight().toNullable()!.completedAt, isNull);
+      },
+    );
+
+    test(
+      'rechaza editar un movimiento que sí movió dinero (transactionId != null)',
+      () async {
+        final origin = await insertAccount(name: 'Origen');
+        final destination = await insertAccount(name: 'Destino');
+        final goal = await createGoal();
+        final result = await repository.contribute(
+          GoalContributionDraft(
+            goalId: goal.id,
+            amountMinor: 30000,
+            direction: GoalMovementDirection.contribution,
+            date: DateTime(2026, 7, 10),
+            currency: 'COP',
+            moveMoney: true,
+            originAccountId: origin.id,
+            destinationAccountId: destination.id,
+          ),
+        );
+        final (contribution, _) = result.getRight().toNullable()!;
+        expect(contribution.transactionId, isNotNull);
+
+        final updateResult = await repository.updateContribution(
+          contributionId: contribution.id,
+          amountMinor: 1000,
+          date: DateTime(2026, 7, 10),
+        );
+
+        expect(updateResult.isLeft(), isTrue);
+        final row = await (db.select(db.goalContributions)
+              ..where((c) => c.id.equals(contribution.id)))
+            .getSingle();
+        expect(row.amountMinor, 30000);
+      },
+    );
+
+    test('NotFoundFailure cuando el movimiento a editar ya no existe',
+        () async {
+      final result = await repository.updateContribution(
+        contributionId: 'no-existe',
+        amountMinor: 1000,
+        date: DateTime(2026, 7, 10),
+      );
+      expect(result.isLeft(), isTrue);
+    });
+  });
 }

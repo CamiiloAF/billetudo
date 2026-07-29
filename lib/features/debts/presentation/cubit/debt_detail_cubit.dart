@@ -85,6 +85,15 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     );
   }
 
+  /// Reveals one more page of the ledger, following
+  /// `BudgetDetailCubit.loadMoreActivity()`'s exact pattern.
+  void loadMoreLedger() => emit(
+        state.copyWith(
+          visibleLedgerCount:
+              state.visibleLedgerCount + DebtDetailState.ledgerPageSize,
+        ),
+      );
+
   /// Extension (HU-07): manually closes the debt from any of its three call
   /// sites (the fixed CTA, the overflow menu's "Cerrar deuda"/"Completar
   /// deuda", or the felicitación sheet's "Completar" button). The detail

@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
+import '../../../accounts/account_fixtures.dart';
 import '../goals_presentation_fixtures.dart';
 
 class MockGoalDetailCubit extends MockCubit<GoalDetailState>
@@ -55,9 +56,12 @@ void main() {
     watchAccounts = MockWatchAccounts();
     when(() => watchAccounts()).thenAnswer(
       (_) => Stream.value(
-        const Right<Failure, List<AccountWithBalance>>(
-          <AccountWithBalance>[],
-        ),
+        Right<Failure, List<AccountWithBalance>>([
+          buildAccountWithBalance(
+            account: buildAccount(id: 'a1', name: 'Bancolombia'),
+            balanceMinor: 3450000,
+          ),
+        ]),
       ),
     );
 
@@ -71,6 +75,17 @@ void main() {
 
   tearDown(getIt.reset);
 
+  // `CreateGoal` seeds this one as a real row right after the goal is
+  // created — it is no longer a hardcoded chip in `GoalQuickAmountRow`, so
+  // the fixture must carry it explicitly for the "chip fijo" case below.
+  final seededChip = GoalQuickAmount(
+    id: 'seed1',
+    goalId: 'g1',
+    amountMinor: 5000000,
+    createdAt: DateTime(2026, 5, 1),
+    updatedAt: DateTime(2026, 5, 1).millisecondsSinceEpoch,
+  );
+
   final customChip = GoalQuickAmount(
     id: 'qa1',
     goalId: 'g1',
@@ -81,7 +96,7 @@ void main() {
 
   final readyState = GoalDetailState(
     status: GoalDetailStatus.ready,
-    quickAmounts: [customChip],
+    quickAmounts: [seededChip, customChip],
     detail: buildGoalDetail(
       progress: buildGoalWithProgress(
         goal: buildGoal(
@@ -89,6 +104,7 @@ void main() {
           name: 'Viaje a Cartagena',
           targetMinor: 3000000,
           targetDate: DateTime(2026, 12, 1),
+          accountId: 'a1',
         ),
         savedMinor: 1800000,
         displayedPercent: 60,
@@ -138,13 +154,13 @@ void main() {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
     testWidgets(
-      'chip fijo (\$50.000): abre el sheet real con el monto prefilled ($suffix)',
+      'chip sembrado (\$50.000): abre el sheet real con el monto prefilled ($suffix)',
       (tester) async {
         await openSheetFromChip(tester, '\$50.000', brightness: brightness);
 
-        // The real trigger: tapping the fixed chip opened GoalContributionSheet
+        // The real trigger: tapping the seeded chip opened GoalContributionSheet
         // (not the hand-built state the other suite uses) with the amount
-        // already in the field — same TextField the manual "Otro monto" flow
+        // already in the field — same TextField a manual aporte
         // fills in, no extra badge/label revealing it came from a chip.
         expect(find.text('Aportar a Viaje a Cartagena'), findsOneWidget);
         final field = tester.widget<TextField>(

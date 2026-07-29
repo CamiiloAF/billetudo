@@ -96,8 +96,14 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
     });
   }
 
-  /// HU-05 `p6g6S`: expands the ledger peek in-place.
-  void expandMovements() => emit(state.copyWith(movementsExpanded: true));
+  /// HU-05 `p6g6S`: reveals one more page of the movement history in-place,
+  /// following `BudgetDetailCubit.loadMoreActivity()`'s exact pattern.
+  void loadMoreMovements() => emit(
+        state.copyWith(
+          visibleMovementsCount: state.visibleMovementsCount +
+              GoalDetailState.movementsPageSize,
+        ),
+      );
 
   /// HU-14: a one-tap quick amount reuses this exact write path — never a
   /// separate "quick" code path. Returns the milestone newly crossed

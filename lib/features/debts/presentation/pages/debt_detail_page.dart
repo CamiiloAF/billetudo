@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_state.dart';
+import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/debt.dart';
@@ -274,7 +275,8 @@ class DebtDetailReadyView extends StatelessWidget {
     final colors = context.colors;
     final detail = state.detail!;
     final debt = detail.debt;
-    final ledger = detail.ledger;
+    final ledger = state.visibleLedger;
+    final runningBalances = state.visibleRunningBalances;
     final installment = state.installment;
 
     return ListView(
@@ -327,15 +329,20 @@ class DebtDetailReadyView extends StatelessWidget {
           DebtLedgerRow(
             entry: ledger[index],
             direction: debt.direction,
-            runningMinor: index < state.runningBalances.length
-                ? state.runningBalances[index]
-                : 0,
+            runningMinor:
+                index < runningBalances.length ? runningBalances[index] : 0,
             currency: debt.currency,
             onOpenTransaction: onOpenTransaction,
             initialTransactionId: debt.initialTransactionId,
             onLinkOpening: () => _showOpeningLinkSnackbar(context),
             onLedgerPaymentNoAccount: () =>
                 _showLedgerPaymentNoAccountSnackbar(context),
+          ),
+        ],
+        if (state.hasMoreLedger) ...[
+          const SizedBox(height: 8),
+          LoadMoreButton(
+            onPressed: context.read<DebtDetailCubit>().loadMoreLedger,
           ),
         ],
       ],

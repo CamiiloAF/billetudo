@@ -37,6 +37,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonRetry => 'Reintentar';
 
   @override
+  String get commonLoadMore => 'Ver más';
+
+  @override
   String get commonBack => 'Atrás';
 
   @override
@@ -2125,9 +2128,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get budgetLoadMore => 'Ver más';
-
-  @override
   String get budgetOneOffWindow => 'Ventana única';
 
   @override
@@ -2713,11 +2713,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Todavía no se ha generado ningún movimiento de este pago programado.';
 
   @override
-  String scheduledPaymentDetailHistorySeeAll(int count) {
-    return 'Ver historial completo ($count)';
-  }
-
-  @override
   String get scheduledSkippedBadge => 'Omitido';
 
   @override
@@ -3203,11 +3198,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalMovementsSectionTitle => 'Movimientos';
 
   @override
-  String goalMovementsSeeAll(int count) {
-    return 'Ver todos ($count)';
-  }
-
-  @override
   String get goalMovementsEmpty =>
       'Todavía no registras movimientos en esta meta.';
 
@@ -3290,10 +3280,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.';
 
   @override
-  String get goalMoveFundsGateHint =>
-      'Vincula una cuenta a esta meta para poder mover dinero (edítala desde su detalle).';
-
-  @override
   String get goalContributeSourceAccountLabel => 'Cuenta de origen';
 
   @override
@@ -3340,16 +3326,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalAdjustDateCta => 'Ajustar la fecha';
 
   @override
-  String goalWithdrawAvailable(String amount) {
-    return 'Disponible en la meta: $amount · Usar todo';
+  String goalWithdrawAvailableLabel(String amount) {
+    return 'Disponible en la meta: $amount';
   }
+
+  @override
+  String get goalWithdrawUseMaxCta => 'Usar todo';
 
   @override
   String get goalWithdrawErrorExceedsSaved =>
       'No puedes retirar más de lo que has ahorrado en esta meta.';
-
-  @override
-  String get goalQuickAmountOther => 'Otro monto';
 
   @override
   String get goalQuickAmountLabel => 'APORTE RÁPIDO';
@@ -3555,6 +3541,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get goalMovementDetailNoteLabel => 'Nota';
+
+  @override
+  String get goalMovementEditTitle => 'Editar movimiento';
 
   @override
   String get goalMovementKindContributionLower => 'aporte';

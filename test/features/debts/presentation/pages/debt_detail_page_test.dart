@@ -1,6 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/error_state.dart';
+import 'package:billetudo/core/widgets/load_more_button.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
@@ -237,6 +238,63 @@ void main() {
     await tester.tap(find.byType(DebtLedgerRow).first);
     await tester.pump();
     expect(find.text('Este abono no movió ninguna cuenta'), findsOneWidget);
+  });
+
+  group('HU-04: paginación "Ver más" del ledger (8/+8)', () {
+    DebtDetailState buildManyRowsState(int rowCount) {
+      final ledger = [
+        for (var i = 0; i < rowCount - 1; i++)
+          buildLedgerEntry(
+            id: 'row$i',
+            kind: DebtLedgerKind.cashPayment,
+            effectMinor: -10000,
+            transactionId: 't$i',
+          ),
+        buildLedgerEntry(
+          id: 'open',
+          kind: DebtLedgerKind.opening,
+          effectMinor: 1000000,
+        ),
+      ];
+      return DebtDetailState(
+        status: DebtDetailStatus.ready,
+        detail: buildDebtDetail(
+          debt: buildDebt(id: 'd1', name: 'Tarjeta'),
+          balance: buildBalance(
+            principalMinor: 1000000,
+            totalIncreasesMinor: 1000000,
+            totalDecreasesMinor: (rowCount - 1) * 10000,
+          ),
+          ledger: ledger,
+        ),
+        runningBalances: [
+          for (var i = 0; i < rowCount - 1; i++) 1000000 - (i + 1) * 10000,
+          1000000,
+        ],
+      );
+    }
+
+    testWidgets('con 8 movimientos o menos no muestra el botón',
+        (tester) async {
+      await pump(tester, buildManyRowsState(8));
+      expect(find.byType(DebtLedgerRow), findsNWidgets(8));
+      expect(find.byType(LoadMoreButton), findsNothing);
+    });
+
+    testWidgets(
+        'con más de 8 revela sólo la primera página y el botón carga 8 más '
+        'por toque', (tester) async {
+      when(cubit.loadMoreLedger).thenReturn(null);
+      final manyRowsState = buildManyRowsState(20);
+      await pump(tester, manyRowsState);
+
+      expect(find.byType(DebtLedgerRow), findsNWidgets(8));
+      expect(find.byType(LoadMoreButton), findsOneWidget);
+
+      await tester.tap(find.byType(LoadMoreButton));
+      await tester.pump();
+      verify(cubit.loadMoreLedger).called(1);
+    });
   });
 
   group('fix: snackbar de éxito al completar/cerrar la deuda', () {

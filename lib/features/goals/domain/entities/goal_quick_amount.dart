@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 
-/// A user-defined "aporte rápido" chip for a goal (Metas detail, "Aporte
-/// rápido" row — design-system/billetudo/pages/metas.md). The two built-in
-/// chips ($50.000/$100.000) are never represented as a [GoalQuickAmount]; only
-/// the ones the user creates via "+ Nueva" live as rows.
+/// An "aporte rápido" chip for a goal (Metas detail, "Aporte rápido" row —
+/// design-system/billetudo/pages/metas.md). Every chip shown in that row is a
+/// [GoalQuickAmount] row: the two default chips ($50.000/$100.000) are seeded
+/// by `CreateGoal` right after a goal is created, and the user can add more
+/// via "+ Nueva" — both kinds are plain rows with no distinguishing flag, so
+/// every chip carries the same delete ("x") affordance.
 ///
 /// Pure domain entity: no Drift types.
 class GoalQuickAmount extends Equatable {

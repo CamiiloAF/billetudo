@@ -366,6 +366,8 @@ import 'package:billetudo/features/goals/domain/usecases/restore_goal.dart'
     as _i800;
 import 'package:billetudo/features/goals/domain/usecases/update_goal.dart'
     as _i436;
+import 'package:billetudo/features/goals/domain/usecases/update_goal_movement.dart'
+    as _i1000;
 import 'package:billetudo/features/goals/domain/usecases/watch_archived_goals.dart'
     as _i711;
 import 'package:billetudo/features/goals/domain/usecases/watch_goal_detail.dart'
@@ -378,6 +380,8 @@ import 'package:billetudo/features/goals/domain/usecases/withdraw_from_goal.dart
     as _i1047;
 import 'package:billetudo/features/goals/presentation/cubit/archived_goals_cubit.dart'
     as _i597;
+import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_cubit.dart'
+    as _i511;
 import 'package:billetudo/features/goals/presentation/cubit/goal_contribution_cubit.dart'
     as _i492;
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.dart'
@@ -1005,10 +1009,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i716.WatchAuthSession(gh<_i913.AuthRepository>()));
     gh.factory<_i537.WipeLocalData>(
         () => _i537.WipeLocalData(gh<_i913.AuthRepository>()));
-    gh.factory<_i97.CreateGoal>(() => _i97.CreateGoal(
-          gh<_i696.GoalRepository>(),
-          gh<_i1067.AccountRepository>(),
-        ));
     gh.factory<_i436.UpdateGoal>(() => _i436.UpdateGoal(
           gh<_i696.GoalRepository>(),
           gh<_i1067.AccountRepository>(),
@@ -1045,6 +1045,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i525.RemoveGoalMovement(gh<_i696.GoalRepository>()));
     gh.factory<_i800.RestoreGoal>(
         () => _i800.RestoreGoal(gh<_i696.GoalRepository>()));
+    gh.factory<_i1000.UpdateGoalMovement>(
+        () => _i1000.UpdateGoalMovement(gh<_i696.GoalRepository>()));
     gh.factory<_i711.WatchArchivedGoals>(
         () => _i711.WatchArchivedGoals(gh<_i696.GoalRepository>()));
     gh.factory<_i678.WatchGoalDetail>(
@@ -1078,6 +1080,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i481.DebtsListCubit>(
         () => _i481.DebtsListCubit(gh<_i42.WatchDebts>()));
+    gh.factory<_i97.CreateGoal>(() => _i97.CreateGoal(
+          gh<_i696.GoalRepository>(),
+          gh<_i1067.AccountRepository>(),
+          gh<_i569.CreateGoalQuickAmount>(),
+        ));
     gh.factory<_i635.ArchivedBudgetsCubit>(() => _i635.ArchivedBudgetsCubit(
           gh<_i829.GetArchivedBudgets>(),
           gh<_i405.ReactivateBudget>(),
@@ -1129,6 +1136,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i902.WatchAccountsOverview(gh<_i1067.AccountRepository>()));
     gh.factory<_i545.WatchArchivedAccounts>(
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
+    gh.factory<_i511.EditGoalMovementCubit>(
+        () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
     gh.factory<_i11.ScheduledPaymentDetailCubit>(
         () => _i11.ScheduledPaymentDetailCubit(
               gh<_i470.GetScheduledPaymentDetail>(),

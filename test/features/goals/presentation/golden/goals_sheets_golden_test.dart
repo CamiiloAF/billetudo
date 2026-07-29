@@ -1,10 +1,13 @@
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/widgets/bottom_sheet_base.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_movement_accounts.dart';
 import 'package:billetudo/features/goals/domain/services/goal_category_seed.dart';
+import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_cubit.dart';
+import 'package:billetudo/features/goals/presentation/cubit/edit_goal_movement_state.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_contribution_cubit.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_contribution_state.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_movement_detail_cubit.dart';
@@ -13,6 +16,7 @@ import 'package:billetudo/features/goals/presentation/utils/goal_movement_delete
 import 'package:billetudo/features/goals/presentation/widgets/sheets/confirm_archive_goal_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/confirm_delete_goal_movement_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/confirm_delete_goal_sheet.dart';
+import 'package:billetudo/features/goals/presentation/widgets/sheets/edit_goal_movement_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_account_picker_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_actions_sheet.dart';
 import 'package:billetudo/features/goals/presentation/widgets/sheets/goal_contribution_sheet.dart';
@@ -25,6 +29,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
@@ -40,6 +45,9 @@ class MockCategoryQuickPickerCubit extends MockCubit<CategoryQuickPickerState>
 class MockGoalMovementDetailCubit extends MockCubit<GoalMovementDetailState>
     implements GoalMovementDetailCubit {}
 
+class MockEditGoalMovementCubit extends MockCubit<EditGoalMovementState>
+    implements EditGoalMovementCubit {}
+
 /// Every bottom sheet under `presentation/widgets/sheets/` for Metas:
 /// registrar aporte/retiro (HU-03/HU-04), confirmar eliminar (HU-10),
 /// confirmar archivar/desarchivar (HU-09), el menú de acciones del overflow,
@@ -48,6 +56,7 @@ void main() {
   late MockGoalContributionCubit contributionCubit;
   late MockCategoryQuickPickerCubit categoryQuickPickerCubit;
   late MockGoalMovementDetailCubit movementDetailCubit;
+  late MockEditGoalMovementCubit editMovementCubit;
 
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -57,6 +66,7 @@ void main() {
   setUp(() {
     contributionCubit = MockGoalContributionCubit();
     movementDetailCubit = MockGoalMovementDetailCubit();
+    editMovementCubit = MockEditGoalMovementCubit();
 
     // The "Categoría" field (`CategoryQuickPicker`) resolves its own cubit
     // through `getIt` — same precedent as `transaction_form_page_golden_test`.
@@ -139,6 +149,7 @@ void main() {
     String? selectedAccountId,
     bool countsInBudget = false,
     String? categoryId,
+    bool hasLinkedAccount = true,
   }) =>
       GoalContributionState(
         goalId: 'g1',
@@ -154,13 +165,15 @@ void main() {
         selectedAccountId: selectedAccountId,
         countsInBudget: countsInBudget,
         categoryId: categoryId,
+        hasLinkedAccount: hasLinkedAccount,
       );
 
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
     testWidgets('aportar ($suffix)', (tester) async {
-      final state = contributionState(direction: GoalMovementDirection.contribution);
+      final state =
+          contributionState(direction: GoalMovementDirection.contribution);
       when(() => contributionCubit.state).thenReturn(state);
       await golden(
         tester,
@@ -176,7 +189,31 @@ void main() {
       );
     });
 
-    testWidgets('retirar: excede el ahorrado (error) ($suffix)', (tester) async {
+    testWidgets(
+        'aportar: sin cuenta vinculada, sin toggle mover dinero ($suffix)',
+        (tester) async {
+      final state = contributionState(
+        direction: GoalMovementDirection.contribution,
+        hasLinkedAccount: false,
+      );
+      when(() => contributionCubit.state).thenReturn(state);
+      await golden(
+        tester,
+        (context) => BottomSheetBase.show<void>(
+          context,
+          builder: (_) => BlocProvider<GoalContributionCubit>.value(
+            value: contributionCubit,
+            child: GoalContributionSheetBody(state: state),
+          ),
+        ),
+        'goal_contribute_no_linked_account_$suffix',
+        brightness: brightness,
+      );
+      expect(find.byIcon(LucideIcons.arrowLeftRight), findsNothing);
+    });
+
+    testWidgets('retirar: excede el ahorrado (error) ($suffix)',
+        (tester) async {
       final state = contributionState(
         direction: GoalMovementDirection.withdrawal,
         amountMinor: 900000,
@@ -240,7 +277,8 @@ void main() {
       );
     });
 
-    testWidgets('aportar: mover ON, presupuestable ON ($suffix)', (tester) async {
+    testWidgets('aportar: mover ON, presupuestable ON ($suffix)',
+        (tester) async {
       final state = contributionState(
         direction: GoalMovementDirection.contribution,
         moveMoney: true,
@@ -288,7 +326,8 @@ void main() {
     // `DiDwa`/`e9QOrp`: the withdrawal symmetric to
     // "aportar: mover ON, presupuestable ON" — Category Quick Picker visible
     // when withdrawing with move-money and countsInBudget both on.
-    testWidgets('retirar: mover ON, presupuestable ON ($suffix)', (tester) async {
+    testWidgets('retirar: mover ON, presupuestable ON ($suffix)',
+        (tester) async {
       final state = contributionState(
         direction: GoalMovementDirection.withdrawal,
         maxWithdrawableMinor: 500000,
@@ -388,9 +427,10 @@ void main() {
       );
     });
 
-    // `N8Dv2e`/`opOuE`: the movement detail sheet — a money-moving movement
-    // (Editar opens the linked transaction, Eliminar) vs. a tracking-only one
-    // (no Editar, nothing to open).
+    // `N8Dv2e`/`opOuE`: the movement detail sheet — Editar + Eliminar always
+    // show together, whether the movement moved real money (Editar opens the
+    // linked transaction) or is tracking-only (Editar opens
+    // `EditGoalMovementSheet` on this same row).
     testWidgets('detalle de movimiento: con transferencia ($suffix)',
         (tester) async {
       final movement = buildGoalContribution(
@@ -454,6 +494,67 @@ void main() {
           ),
         ),
         'goal_movement_detail_manual_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // "Editar movimiento" (`goal_movement_detail_sheet.dart`'s Editar for a
+    // tracking-only movement): monto/fecha/nota of the SAME row, no account
+    // picker, no "¿Mover dinero?" toggle — unlike `GoalContributionSheet`.
+    testWidgets('editar movimiento: seguimiento puro ($suffix)',
+        (tester) async {
+      when(() => editMovementCubit.state).thenReturn(
+        EditGoalMovementState(
+          contributionId: 'm2',
+          goalId: 'g1',
+          goalName: 'Viaje a Cartagena',
+          direction: GoalMovementDirection.withdrawal,
+          currency: 'COP',
+          amountMinor: 150000,
+          date: DateTime(2026, 6, 15),
+        ),
+      );
+      await golden(
+        tester,
+        (context) => BottomSheetBase.show<bool>(
+          context,
+          builder: (_) => BlocProvider<EditGoalMovementCubit>.value(
+            value: editMovementCubit,
+            child: const EditGoalMovementSheet(),
+          ),
+        ),
+        'edit_goal_movement_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('editar movimiento: con error de guardado ($suffix)',
+        (tester) async {
+      when(() => editMovementCubit.state).thenReturn(
+        EditGoalMovementState(
+          contributionId: 'm2',
+          goalId: 'g1',
+          goalName: 'Viaje a Cartagena',
+          direction: GoalMovementDirection.withdrawal,
+          currency: 'COP',
+          amountMinor: 999999999,
+          date: DateTime(2026, 6, 15),
+          status: EditGoalMovementStatus.failure,
+          failure: const ValidationFailure(
+            'a withdrawal cannot leave the goal\'s saved amount negative',
+          ),
+        ),
+      );
+      await golden(
+        tester,
+        (context) => BottomSheetBase.show<bool>(
+          context,
+          builder: (_) => BlocProvider<EditGoalMovementCubit>.value(
+            value: editMovementCubit,
+            child: const EditGoalMovementSheet(),
+          ),
+        ),
+        'edit_goal_movement_error_$suffix',
         brightness: brightness,
       );
     });
@@ -565,8 +666,7 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        (context) =>
-            NewGoalQuickAmountSheet.show(context, currency: 'COP'),
+        (context) => NewGoalQuickAmountSheet.show(context, currency: 'COP'),
         'goal_new_quick_amount_empty_$suffix',
         brightness: brightness,
       );
@@ -598,7 +698,8 @@ void main() {
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/sheet_goal_new_quick_amount_filled_$suffix.png'),
+        matchesGoldenFile(
+            'goldens/sheet_goal_new_quick_amount_filled_$suffix.png'),
       );
     });
   }

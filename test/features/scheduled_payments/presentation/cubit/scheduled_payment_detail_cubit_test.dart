@@ -116,7 +116,7 @@ void main() {
         expect(cubit.state.historyExpanded, isTrue);
         expect(cubit.state.loadingMoreHistory, isFalse);
         verify(
-          () => getHistory('sp-1', offset: 0, limit: 10),
+          () => getHistory('sp-1', offset: 0, limit: 8),
         ).called(1);
       },
     );

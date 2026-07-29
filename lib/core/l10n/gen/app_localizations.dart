@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Reintentar'**
   String get commonRetry;
 
+  /// Etiqueta compartida del botón 'Ver más' que revela más filas de una lista paginada en el sitio (presupuestos, deudas, metas, pagos programados).
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más'**
+  String get commonLoadMore;
+
   /// Etiqueta accesible del botón atrás del Page Header.
   ///
   /// In es, this message translates to:
@@ -3676,12 +3682,6 @@ abstract class AppLocalizations {
   /// **'Próximo: {date} · {accountName}'**
   String budgetScheduledRowSubtitle(String date, String accountName);
 
-  /// No description provided for @budgetLoadMore.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver más'**
-  String get budgetLoadMore;
-
   /// No description provided for @budgetOneOffWindow.
   ///
   /// In es, this message translates to:
@@ -4738,12 +4738,6 @@ abstract class AppLocalizations {
   /// **'Todavía no se ha generado ningún movimiento de este pago programado.'**
   String get scheduledPaymentDetailHistoryEmpty;
 
-  /// No description provided for @scheduledPaymentDetailHistorySeeAll.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver historial completo ({count})'**
-  String scheduledPaymentDetailHistorySeeAll(int count);
-
   /// No description provided for @scheduledSkippedBadge.
   ///
   /// In es, this message translates to:
@@ -5489,12 +5483,6 @@ abstract class AppLocalizations {
   /// **'Movimientos'**
   String get goalMovementsSectionTitle;
 
-  /// No description provided for @goalMovementsSeeAll.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver todos ({count})'**
-  String goalMovementsSeeAll(int count);
-
   /// No description provided for @goalMovementsEmpty.
   ///
   /// In es, this message translates to:
@@ -5633,12 +5621,6 @@ abstract class AppLocalizations {
   /// **'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.'**
   String get goalMoveFundsToggleHintWithdrawOn;
 
-  /// No description provided for @goalMoveFundsGateHint.
-  ///
-  /// In es, this message translates to:
-  /// **'Vincula una cuenta a esta meta para poder mover dinero (edítala desde su detalle).'**
-  String get goalMoveFundsGateHint;
-
   /// No description provided for @goalContributeSourceAccountLabel.
   ///
   /// In es, this message translates to:
@@ -5717,23 +5699,23 @@ abstract class AppLocalizations {
   /// **'Ajustar la fecha'**
   String get goalAdjustDateCta;
 
-  /// No description provided for @goalWithdrawAvailable.
+  /// No description provided for @goalWithdrawAvailableLabel.
   ///
   /// In es, this message translates to:
-  /// **'Disponible en la meta: {amount} · Usar todo'**
-  String goalWithdrawAvailable(String amount);
+  /// **'Disponible en la meta: {amount}'**
+  String goalWithdrawAvailableLabel(String amount);
+
+  /// No description provided for @goalWithdrawUseMaxCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar todo'**
+  String get goalWithdrawUseMaxCta;
 
   /// No description provided for @goalWithdrawErrorExceedsSaved.
   ///
   /// In es, this message translates to:
   /// **'No puedes retirar más de lo que has ahorrado en esta meta.'**
   String get goalWithdrawErrorExceedsSaved;
-
-  /// No description provided for @goalQuickAmountOther.
-  ///
-  /// In es, this message translates to:
-  /// **'Otro monto'**
-  String get goalQuickAmountOther;
 
   /// No description provided for @goalQuickAmountLabel.
   ///
@@ -6082,6 +6064,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nota'**
   String get goalMovementDetailNoteLabel;
+
+  /// No description provided for @goalMovementEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar movimiento'**
+  String get goalMovementEditTitle;
 
   /// No description provided for @goalMovementKindContributionLower.
   ///

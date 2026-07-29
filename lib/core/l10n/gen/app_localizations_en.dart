@@ -37,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String get commonLoadMore => 'See more';
+
+  @override
   String get commonBack => 'Back';
 
   @override
@@ -2118,9 +2121,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get budgetLoadMore => 'See more';
-
-  @override
   String get budgetOneOffWindow => 'Single window';
 
   @override
@@ -2708,11 +2708,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No transaction has been generated for this scheduled payment yet.';
 
   @override
-  String scheduledPaymentDetailHistorySeeAll(int count) {
-    return 'See full history ($count)';
-  }
-
-  @override
   String get scheduledSkippedBadge => 'Skipped';
 
   @override
@@ -3200,11 +3195,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalMovementsSectionTitle => 'Movements';
 
   @override
-  String goalMovementsSeeAll(int count) {
-    return 'See all ($count)';
-  }
-
-  @override
   String get goalMovementsEmpty =>
       'You haven\'t recorded any movements for this goal yet.';
 
@@ -3286,10 +3276,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This creates a transfer: it leaves your goal and enters the destination account.';
 
   @override
-  String get goalMoveFundsGateHint =>
-      'Link an account to this goal to move money (edit it from its detail).';
-
-  @override
   String get goalContributeSourceAccountLabel => 'Origin account';
 
   @override
@@ -3335,16 +3321,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalAdjustDateCta => 'Adjust the date';
 
   @override
-  String goalWithdrawAvailable(String amount) {
-    return 'Available in the goal: $amount · Use it all';
+  String goalWithdrawAvailableLabel(String amount) {
+    return 'Available in the goal: $amount';
   }
+
+  @override
+  String get goalWithdrawUseMaxCta => 'Use it all';
 
   @override
   String get goalWithdrawErrorExceedsSaved =>
       'You can\'t withdraw more than what you\'ve saved in this goal.';
-
-  @override
-  String get goalQuickAmountOther => 'Other amount';
 
   @override
   String get goalQuickAmountLabel => 'QUICK CONTRIBUTION';
@@ -3550,6 +3536,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goalMovementDetailNoteLabel => 'Note';
+
+  @override
+  String get goalMovementEditTitle => 'Edit movement';
 
   @override
   String get goalMovementKindContributionLower => 'contribution';

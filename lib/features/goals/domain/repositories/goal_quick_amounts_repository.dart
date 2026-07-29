@@ -10,12 +10,14 @@ import '../entities/goal_quick_amount.dart';
 /// (HU spec) is a UI-timing affordance built on top of [createQuickAmount],
 /// not a soft-delete flow.
 abstract class GoalQuickAmountsRepository {
-  /// Reactive list of custom chips for [goalId], oldest first — new chips
-  /// append at the end of the scroll row, right before "Otro monto"/"+ Nueva".
+  /// Reactive list of chips for [goalId], oldest first — the two defaults
+  /// seeded on goal creation come first, then any chips the user adds via
+  /// "+ Nueva" append at the end of the scroll row.
   Stream<Result<List<GoalQuickAmount>>> watchQuickAmounts(String goalId);
 
-  /// Creates a new chip ("+ Nueva" sheet, or the "Deshacer" re-insertion after
-  /// a delete).
+  /// Creates a new chip: the two defaults seeded right after a goal is
+  /// created, the "+ Nueva" sheet's own CTA, or the "Deshacer" re-insertion
+  /// after a delete.
   FutureResult<GoalQuickAmount> createQuickAmount({
     required String goalId,
     required int amountMinor,

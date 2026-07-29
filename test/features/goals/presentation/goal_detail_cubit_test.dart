@@ -46,15 +46,28 @@ GoalQuickAmount _quickAmount({
       updatedAt: DateTime(2026, 7, 1).millisecondsSinceEpoch,
     );
 
-GoalDetail _detail({int savedMinor = 0}) {
+GoalDetail _detail({int savedMinor = 0, List<GoalContribution> history = const []}) {
   final goal = buildGoal();
   return GoalDetail(
     progress: buildGoalWithProgress(goal: goal, savedMinor: savedMinor),
     projection: const GoalProjection(kind: GoalProjectionKind.noTargetDate),
     momentum: const GoalMomentum(streakWeeks: 0),
-    history: const [],
+    history: history,
   );
 }
+
+List<GoalContribution> _history(int count) => List.generate(
+      count,
+      (index) => GoalContribution(
+        id: 'm$index',
+        goalId: 'g1',
+        amountMinor: 10000,
+        direction: GoalMovementDirection.contribution,
+        date: DateTime(2026, 7, 1).subtract(Duration(days: index)),
+        createdAt: DateTime(2026, 7, 1),
+        updatedAt: DateTime(2026, 7, 1).millisecondsSinceEpoch,
+      ),
+    );
 
 void main() {
   late MockWatchGoalDetail watchGoalDetail;
@@ -103,18 +116,39 @@ void main() {
   );
 
   blocTest<GoalDetailCubit, GoalDetailState>(
-    'expandMovements expande el peek de movimientos',
-    setUp: () => when(() => watchGoalDetail('g1'))
-        .thenAnswer((_) => Stream.value(Right(_detail()))),
+    'con 8 movimientos o menos no hay más para revelar',
+    setUp: () => when(() => watchGoalDetail('g1')).thenAnswer(
+      (_) => Stream.value(Right(_detail(history: _history(8)))),
+    ),
+    build: build,
+    act: (cubit) => cubit.start('g1'),
+    skip: 1,
+    expect: () => [
+      isA<GoalDetailState>()
+          .having((s) => s.hasMoreMovements, 'hasMoreMovements', false)
+          .having((s) => s.visibleMovements.length, 'visibleMovements', 8),
+    ],
+  );
+
+  blocTest<GoalDetailCubit, GoalDetailState>(
+    'loadMoreMovements revela 8 más a la vez, nunca todos de un tiro',
+    setUp: () => when(() => watchGoalDetail('g1')).thenAnswer(
+      (_) => Stream.value(Right(_detail(history: _history(20)))),
+    ),
     build: build,
     act: (cubit) async {
       await cubit.start('g1');
-      cubit.expandMovements();
+      await Future<void>.delayed(Duration.zero);
+      cubit.loadMoreMovements();
     },
-    skip: 2,
+    skip: 1,
     expect: () => [
       isA<GoalDetailState>()
-          .having((s) => s.movementsExpanded, 'movementsExpanded', true),
+          .having((s) => s.hasMoreMovements, 'hasMoreMovements', true)
+          .having((s) => s.visibleMovements.length, 'visibleMovements', 8),
+      isA<GoalDetailState>()
+          .having((s) => s.hasMoreMovements, 'hasMoreMovements', true)
+          .having((s) => s.visibleMovements.length, 'visibleMovements', 16),
     ],
   );
 

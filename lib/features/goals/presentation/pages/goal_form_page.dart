@@ -311,10 +311,15 @@ class GoalIconAndNameRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<GoalFormCubit>();
+    final nameError = state.failedField == GoalDraft.fieldName
+        ? l10n.goalFormNameRequired
+        : null;
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
           button: true,
@@ -368,40 +373,48 @@ class GoalIconAndNameRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: colors.border),
-            ),
-            child: TextFormField(
-              key: ValueKey('name-${state.id ?? 'new'}'),
-              initialValue: state.name,
-              textCapitalization: TextCapitalization.sentences,
-              maxLength: GoalDraft.maxNameLength,
-              textAlignVertical: TextAlignVertical.center,
-              onChanged: cubit.nameChanged,
-              buildCounter: (
-                context, {
-                required currentLength,
-                required isFocused,
-                maxLength,
-              }) =>
-                  null,
-              decoration: InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                hintText: l10n.goalFormNameHint,
-                errorText: state.failedField == GoalDraft.fieldName
-                    ? l10n.goalFormNameRequired
-                    : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: nameError != null ? colors.expense : colors.border,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: TextFormField(
+                  key: ValueKey('name-${state.id ?? 'new'}'),
+                  initialValue: state.name,
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: GoalDraft.maxNameLength,
+                  onChanged: cubit.nameChanged,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    filled: false,
+                    counterText: '',
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: l10n.goalFormNameHint,
+                  ),
+                ),
               ),
-            ),
+              if (nameError != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  nameError,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.expense,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],

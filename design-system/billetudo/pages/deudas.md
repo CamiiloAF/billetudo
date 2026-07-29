@@ -90,6 +90,8 @@ Variante C. **Hero Compact** (`E7TQkJ`): pill direccion + chip moneda, saldo pen
 - **Carga** (`ZQIPe`): skeleton del hero + meta card + cuota card + `Debt Ledger Skeleton Row` + skeleton del CTA.
 - **Error** (`tVUoU`): `Error State` con el header del detalle. (No hay "ledger vacio": una deuda siempre tiene al menos el asiento de apertura.)
 
+**"Ver más" del ledger (sincronizado 2026-07-29, 🔖 en revisión, badge `sOq5v`):** el ledger ya no se muestra completo sin paginación. Debajo de `Ledger List` (`FKoQC`) se instancia el componente reusable **`Load More · Ver más`** (`oadHE`, master vive dentro de `NloPT` en Presupuestos — mismo patrón de higiene de canvas que `s09qcC`): pill `$muted`, label "Ver más" + `chevron-down`, ambos `$primary-on-soft-strong`. Mismo componente que usan Presupuestos/Pagos Programados/Metas — unificación de paginación de ledgers en las 4 features (8 iniciales + 8 por carga; ver `docs/dev-runs/` de la corrida de código correspondiente). El mockup solo dibuja 3 filas de ejemplo antes del botón (se quitó la fila "Ajuste" del dato de muestra para que cupiera en el viewport de 972px) — el conteo real lo controla el código, no el `.pen`.
+
 ## Form crear/editar deuda (`dUryC` Yo debo / `B36jV` Me deben)
 
 Variante B ("Monto heroe"). Saldo de apertura como **heroe** + caret + pill de moneda (`$primary-on-soft-strong` para contraste). Toggle de direccion `qCUup`. Campos: **"Nombre de la deuda"**, contraparte con **label direccional** ("Yo debo" → **"Le debo a"**; "Me deben" → **"Me debe"** — variante `B36jV`), y **DOS campos de fecha**:

@@ -241,6 +241,75 @@ void main() {
     ],
   );
 
+  group('HU-04: paginación "Ver más" del ledger (8/+8)', () {
+    List<DebtLedgerEntry> manyLedger(int count) => [
+          for (var i = 0; i < count - 1; i++)
+            buildLedgerEntry(
+              id: 'row$i',
+              kind: DebtLedgerKind.cashPayment,
+              effectMinor: -1000,
+            ),
+          buildLedgerEntry(
+            id: 'open',
+            kind: DebtLedgerKind.opening,
+            effectMinor: 100000,
+          ),
+        ];
+
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'con 8 movimientos o menos no hay más para revelar',
+      setUp: () => when(() => watchDebtDetail.call(any())).thenAnswer(
+        (_) => Stream.value(
+          Right(
+            buildDebtDetail(
+              debt: buildDebt(),
+              balance: buildBalance(principalMinor: 100000),
+              ledger: manyLedger(8),
+            ),
+          ),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.start('d1'),
+      skip: 1,
+      expect: () => [
+        isA<DebtDetailState>()
+            .having((s) => s.hasMoreLedger, 'hasMoreLedger', false)
+            .having((s) => s.visibleLedger.length, 'visibleLedger', 8),
+      ],
+    );
+
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'loadMoreLedger revela 8 filas más a la vez',
+      setUp: () => when(() => watchDebtDetail.call(any())).thenAnswer(
+        (_) => Stream.value(
+          Right(
+            buildDebtDetail(
+              debt: buildDebt(),
+              balance: buildBalance(principalMinor: 100000),
+              ledger: manyLedger(20),
+            ),
+          ),
+        ),
+      ),
+      build: build,
+      act: (cubit) async {
+        await cubit.start('d1');
+        await Future<void>.delayed(Duration.zero);
+        cubit.loadMoreLedger();
+      },
+      skip: 1,
+      expect: () => [
+        isA<DebtDetailState>()
+            .having((s) => s.hasMoreLedger, 'hasMoreLedger', true)
+            .having((s) => s.visibleLedger.length, 'visibleLedger', 8),
+        isA<DebtDetailState>()
+            .having((s) => s.hasMoreLedger, 'hasMoreLedger', true)
+            .having((s) => s.visibleLedger.length, 'visibleLedger', 16),
+      ],
+    );
+  });
+
   group('closeDebt', () {
     blocTest<DebtDetailCubit, DebtDetailState>(
       'a successful close leaves no actionFailure (the stream reflects '

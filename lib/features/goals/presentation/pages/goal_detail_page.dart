@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_state.dart';
+import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/goal_contribution.dart';
@@ -71,7 +72,8 @@ class GoalDetailPage extends StatelessWidget {
                       ),
                     GoalDetailStatus.ready => GoalDetailBody(
                         detail: state.detail!,
-                        movementsExpanded: state.movementsExpanded,
+                        visibleMovementsCount: state.visibleMovementsCount,
+                        hasMoreMovements: state.hasMoreMovements,
                         quickAmounts: state.quickAmounts,
                         onOpenCompletedCelebration: onOpenCompletedCelebration,
                         onOpenMilestone: onOpenMilestone,
@@ -157,7 +159,8 @@ class GoalDetailHeader extends StatelessWidget {
 class GoalDetailBody extends StatelessWidget {
   const GoalDetailBody({
     required this.detail,
-    required this.movementsExpanded,
+    required this.visibleMovementsCount,
+    required this.hasMoreMovements,
     required this.quickAmounts,
     required this.onOpenCompletedCelebration,
     required this.onOpenMilestone,
@@ -167,14 +170,15 @@ class GoalDetailBody extends StatelessWidget {
   });
 
   final GoalDetail detail;
-  final bool movementsExpanded;
+
+  /// How many of `detail.history`'s newest-first rows are currently shown.
+  final int visibleMovementsCount;
+  final bool hasMoreMovements;
   final List<GoalQuickAmount> quickAmounts;
   final void Function(GoalWithProgress progress) onOpenCompletedCelebration;
   final void Function(String goalName, int milestonePct) onOpenMilestone;
   final ValueChanged<String> onEdit;
   final ValueChanged<String>? onOpenTransaction;
-
-  static const int _peekCount = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -185,8 +189,9 @@ class GoalDetailBody extends StatelessWidget {
     final goal = progress.goal;
     final completed = goal.isCompleted;
     final history = detail.history;
-    final visible =
-        movementsExpanded ? history : history.take(_peekCount).toList();
+    final visible = history.length <= visibleMovementsCount
+        ? history
+        : history.sublist(0, visibleMovementsCount);
     final accountUnavailable = goal.hasAccount && detail.accountTombstoned;
     // HU-12's "cuenta con lápida" (`XoGzx`): once its linked account is
     // tombstoned, the goal effectively tracks manually again — a fresh
@@ -366,15 +371,6 @@ class GoalDetailBody extends StatelessWidget {
                   initialAmountMinor: amountMinor,
                 ),
               ),
-              onOther: () => unawaited(
-                _openContribute(
-                  context,
-                  goal.id,
-                  goal.name,
-                  goal.currency,
-                  hasUsableLinkedAccount,
-                ),
-              ),
               onAddNew: () =>
                   unawaited(_addQuickAmount(context, goal.id, goal.currency)),
               onRemoveCustom: (quickAmount) =>
@@ -383,24 +379,15 @@ class GoalDetailBody extends StatelessWidget {
           ],
           const SizedBox(height: 24),
         ],
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              l10n.goalMovementsSectionTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: colors.textPrimary,
-              ),
-            ),
-            if (!movementsExpanded && history.length > _peekCount)
-              TextButton(
-                onPressed: context.read<GoalDetailCubit>().expandMovements,
-                child: Text(l10n.goalMovementsSeeAll(history.length)),
-              ),
-          ],
+        Text(
+          l10n.goalMovementsSectionTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
         ),
+        const SizedBox(height: 8),
         if (visible.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -429,6 +416,12 @@ class GoalDetailBody extends StatelessWidget {
                 ),
               ),
             ),
+        if (hasMoreMovements) ...[
+          const SizedBox(height: 8),
+          LoadMoreButton(
+            onPressed: context.read<GoalDetailCubit>().loadMoreMovements,
+          ),
+        ],
       ],
     );
   }
@@ -459,11 +452,11 @@ class GoalDetailBody extends StatelessWidget {
     }
   }
 
-  /// HU-14/Aporte rápido: every amount chip — fixed or custom — opens this
-  /// same full sheet prefilled with [initialAmountMinor], indistinguishable
-  /// from a manual aporte (design-system/billetudo/pages/metas.md § Aporte
-  /// rápido). "Otro monto" calls this with no amount, its historical
-  /// behaviour.
+  /// HU-14/Aporte rápido: every amount chip opens this same full sheet
+  /// prefilled with [initialAmountMinor], indistinguishable from a manual
+  /// aporte (design-system/billetudo/pages/metas.md § Aporte rápido). The
+  /// "+ Aportar" CTA calls this with no amount (the default `0`), which is
+  /// also what the removed "Otro monto" chip used to do.
   Future<void> _openContribute(
     BuildContext context,
     String goalId,
