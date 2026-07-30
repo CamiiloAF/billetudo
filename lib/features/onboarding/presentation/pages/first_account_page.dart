@@ -131,6 +131,7 @@ class _FirstAccountPageState extends State<FirstAccountPage> {
                       Expanded(
                         child: AccountFormField.selector(
                           label: l10n.accountFormCurrencyLabel,
+                          icon: LucideIcons.coins,
                           value: state.currency,
                           errorText: _errorFor(
                             l10n,
@@ -144,6 +145,7 @@ class _FirstAccountPageState extends State<FirstAccountPage> {
                       Expanded(
                         child: AccountMoneyField(
                           label: l10n.accountFormInitialBalanceLabel,
+                          icon: LucideIcons.banknote,
                           currency: state.currency,
                           text: state.initialBalanceText,
                           hint: l10n.accountFormAmountHint,
@@ -161,6 +163,7 @@ class _FirstAccountPageState extends State<FirstAccountPage> {
                 else
                   AccountFormField.selector(
                     label: l10n.accountFormCurrencyLabel,
+                    icon: LucideIcons.coins,
                     value: state.currency,
                     errorText:
                         _errorFor(l10n, state, AccountDraft.fieldCurrency),

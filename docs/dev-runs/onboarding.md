@@ -53,7 +53,7 @@ HU-05 congelada fuera de alcance):
 | `test/core/database/fixtures/postgres_schema.json` | Snapshot actualizado para `schema_parity_test.dart` |
 | `lib/features/settings/domain/**`, `data/**` | Latch `onboardingCompleted`: entidad, `AppSettingsRepository.markOnboardingCompleted()`, `SetOnboardingCompleted`, datasource + repo impl |
 | `lib/features/onboarding/domain/**` | `OnboardingStep`, `OnboardingProgress`, `ResolveDefaultCurrencyForLocale` (CO→COP, resto→USD, acotado a lo que soporta hoy el picker de Cuentas), `ShouldShowOnboarding`, `CompleteOnboarding` |
-| `lib/features/onboarding/presentation/**` | `OnboardingFlowCubit` + 4 páginas (`WelcomePage`, `FirstAccountPage`, `BackupIntroPage`, `ClosingPage`) + widgets propios (`OnboardingScaffold`, `OnboardingTopBar`, `OnboardingProgressDot`, `OnboardingSecondaryLink`, `OnboardingStatusBadge`, `OnboardingWalletCard`/`OnboardingWalletFan`/`OnboardingWalletFanCard`) |
+| `lib/features/onboarding/presentation/**` | `OnboardingFlowCubit` + 4 páginas (`WelcomePage`, `FirstAccountPage`, `BackupIntroPage`, `ClosingPage`) + widgets propios (`OnboardingScaffold`, `OnboardingTopBar`, `OnboardingProgressDot`, `OnboardingSecondaryLink`, `OnboardingStatusBadge`, `OnboardingWalletCard`/`OnboardingWalletFan`/`OnboardingWalletFanCard`). Fix de fidelidad post-review: `FirstAccountPage` agrega `icon: LucideIcons.coins`/`banknote` a los campos Moneda/Saldo-Deuda (faltaban en el reuso de `AccountFormField`/`AccountMoneyField`) |
 | `lib/features/accounts/presentation/widgets/account_type_row.dart`, `.../sheets/account_type_picker_sheet.dart` | Extraídos de `AccountFormPage` para reusarlos en la variante compacta de Onboarding sin duplicar el selector de tipo |
 | `lib/core/router/app_router.dart` | Rutas `/bienvenida`, `/bienvenida/cuenta`, `/bienvenida/respaldo`, `/bienvenida/cierre`, `/bienvenida/iniciar-sesion(/fusion)`, fuera del shell de tabs; **fix real**: `_startedOnboardingAccountForm` llamaba `AppLocalizations.of(context)` dentro de un `BlocProvider.create` (prohibido por Flutter, crasheaba en device real) — el nombre localizado ahora se resuelve en el `builder` del `GoRoute` y se pasa como parámetro; y ahora consulta `AccountRepository.watchActiveAccounts()` para reflejar una cuenta ya creada en un intento anterior (interrupción a mitad, AC 9) en vez de re-ofrecer siempre el default |
 | `lib/core/bootstrap.dart` | Evalúa `ShouldShowOnboarding` una sola vez tras el bootstrap, fija `initialLocation` |
@@ -109,16 +109,24 @@ posterior.
 
 ## Fidelidad visual vs Pencil
 
-**Bloqueada por herramienta, no por hallazgos.** Los 12 goldens están generados; el `.md` del spec
-existe y mapea las 6 pantallas a sus nodeId. Pero en esta sesión el editor de Pencil no tenía
-ningún `.pen` abierto (`get_app_state`/`get_screenshot`/`execute` fallaron con "A file needs to be
-open in the editor" incluso pasando `filePath` explícito al worktree), y no existe una herramienta
-MCP para abrir un archivo — requiere que la app de escritorio Pencil tenga
-`billetudo-onboarding/billetudo.pen` cargado primero.
+**✅ Aprobada — 0 hallazgos pendientes.** `/design-fidelity-check onboarding` completo con
+`pencil-fidelity-reviewer` (el editor de Pencil se abrió en la ruta del worktree principal,
+`/Users/cami/Developer/Personal/billetudo/billetudo.pen` — mismo commit/contenido que la copia de
+este worktree, válido para lectura). Comparadas las 12 goldens contra sus nodeId (`fRrDQ`/`mmFVh`,
+`G7vDVK`/`c2wua2`, `O2QbEF`/`yClJt`, `MydOr`/`DfHXL`, `Gi0NV`/`Bylcp`, `bAKS6`/`ld3xh`).
 
-**Pendiente:** abrir `billetudo.pen` de este worktree en Pencil y re-correr
-`/design-fidelity-check onboarding`. Ver fila "Onboarding" en `docs/fidelidad-visual-tracking.md`
-(estado `❌ Sin auditar`) para el detalle.
+**1ª pasada:** 4 hallazgos IMPORTANTE, un solo patrón — el formulario compacto de Onboarding reusa
+`AccountFormField`/`AccountMoneyField` de Cuentas pero omitía su parámetro opcional `icon`: faltaba
+`coins` en el campo "Moneda" y `banknote` en "Saldo inicial"/"Deuda actual" (`first_account_page`,
+variantes savings+card, claro+oscuro). Corregido en
+`lib/features/onboarding/presentation/pages/first_account_page.dart` (3 sitios, mismos iconos que ya
+usa `AccountFormPage`) y los 4 goldens afectados regenerados.
+
+**2ª pasada (re-verificación): 0 hallazgos.** Nota investigada y descartada como hallazgo: el
+mockup de Pencil muestra "$0" en el campo de saldo, pero es el hint/placeholder de un campo vacío
+— con un valor real pre-cargado (`"0"`, como en Onboarding) ningún campo de dinero de la app
+antepone el símbolo, tampoco en Cuentas ya aprobado; comportamiento consistente en todo el sistema,
+dato de mockup, no una divergencia real. Sin gaps de cobertura (`.md` y goldens 1:1).
 
 ## 👤 Verifica a mano
 
@@ -126,16 +134,12 @@ MCP para abrir un archivo — requiere que la app de escritorio Pencil tenga
   debe minimizar la app, no dejar un Home a medias) — solo verificable en device físico/gesto real.
 - El camino HU-06/HU-07 de login real (Google/Apple) de punta a punta, incluida la fusión de datos
   — Patrol no puede automatizarlo (round-trip OAuth interactivo).
-- Fidelidad visual contra Pencil (bloqueada esta corrida, ver sección arriba) — re-correr
-  `/design-fidelity-check onboarding` con el `.pen` abierto en el editor.
 - Confirmar visualmente en un device real que la animación del `OnboardingWalletCard`/
   `OnboardingWalletFan` (hero/shared-element, sin precedente previo en el repo) se ve fluida — los
   golden tests no capturan animación.
 
 ## Pendientes y riesgos
 
-- **Fidelidad visual sin cerrar** (bloqueo de tooling, ver arriba) — no es una divergencia
-  detectada, es ausencia de verificación.
 - **`15-gate-cuenta.md` no implementado todavía**: el CTA de "crear cuenta" en el paso de Cierre
   cuando se omitió la cuenta es un bridge local al cubit de Onboarding (copy autocontenido, igual
   al frame `bAKS6`/`ld3xh` de Pencil), no el widget puente compartido que describe ese documento
