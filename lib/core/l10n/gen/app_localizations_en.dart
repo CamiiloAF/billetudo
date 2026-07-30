@@ -4044,4 +4044,289 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSyncStatus => 'Sync status';
+
+  @override
+  String get reportsTabSummary => 'Summary';
+
+  @override
+  String get reportsTabCashflow => 'Cash flow';
+
+  @override
+  String get reportsTabNetWorth => 'Net worth';
+
+  @override
+  String get reportsTabCategories => 'Categories';
+
+  @override
+  String reportsPeriodLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Last $count months',
+      one: 'Last month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodDaysWithData(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days with data',
+      one: '$count day with data',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodSinceDate(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get reportsPeriodSheetTitle => 'Filter period';
+
+  @override
+  String get reportsPeriodGranularityMonth => 'Month';
+
+  @override
+  String get reportsPeriodGranularityYear => 'Year';
+
+  @override
+  String get reportsPeriodClear => 'Clear';
+
+  @override
+  String get reportsCashflowCardTitle => 'Cash flow';
+
+  @override
+  String get reportsCashflowCardSubtitle =>
+      'Income vs. expenses, month by month';
+
+  @override
+  String get reportsCashflowIncomeLabel => 'Income';
+
+  @override
+  String get reportsCashflowExpenseLabel => 'Expenses';
+
+  @override
+  String get reportsCashflowDebtLegendLabel => 'Debt movements';
+
+  @override
+  String reportsCashflowPositiveLabel(String periodPhrase) {
+    return 'You saved in $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowNegativeLabel(String periodPhrase) {
+    return 'Balance for $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowShortHistoryLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Balance of your first $count days',
+      one: 'Balance of your first day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsCashflowPeriodPhraseLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'the last $count months',
+      one: 'the last month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsCashflowPeriodPhraseGeneric => 'the selected period';
+
+  @override
+  String reportsCashflowNegativeExplainer(String amount, String periodPhrase) {
+    return '$amount more went out than came in during $periodPhrase. Below you can see which months weighed the most.';
+  }
+
+  @override
+  String get reportsCashflowViewCategoriesLink => 'See where it went';
+
+  @override
+  String reportsCashflowCurrentMonthNote(String month, int day) {
+    return '$month is still in progress: it goes up to the $day.';
+  }
+
+  @override
+  String get reportsCashflowDebtToggleLabel => 'Separate debt movements';
+
+  @override
+  String get reportsCashflowDebtToggleHint =>
+      'Shown as a separate series, never hidden.';
+
+  @override
+  String get reportsCashflowShortHistoryNote =>
+      'We adjusted the view to the days you already logged. Once you complete your first month, you\'ll see the month-by-month comparison.';
+
+  @override
+  String get reportsNetWorthCardTitle => 'Net worth';
+
+  @override
+  String get reportsNetWorthCaption =>
+      'Liquid is what you can use today. Total subtracts what you owe and adds what you\'re owed.';
+
+  @override
+  String get reportsNetWorthLegendLiquid => 'Liquid net worth';
+
+  @override
+  String get reportsNetWorthLegendTotal => 'Total net worth';
+
+  @override
+  String get reportsNetWorthFigureLiquidLabel => 'Liquid';
+
+  @override
+  String get reportsNetWorthFigureTotalLabel => 'Total';
+
+  @override
+  String get reportsNetWorthInterestNote =>
+      'A debt\'s interest lowers your net worth, but it doesn\'t show in Cash flow: it\'s not money that left an account.';
+
+  @override
+  String get reportsNetWorthArchivedToggleLabel => 'Include archived accounts';
+
+  @override
+  String get reportsNetWorthArchivedToggleHint =>
+      'Today they\'re left out of both figures.';
+
+  @override
+  String reportsNetWorthSubtitle(String from, String to, String currency) {
+    return 'From the close of $from to $to · $currency';
+  }
+
+  @override
+  String get reportsCategoriesCardTitle => 'Spending breakdown';
+
+  @override
+  String reportsCategoriesSubtitle(int count, String range) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories · $range',
+      one: '$count category · $range',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsCategoriesTopLabel(String name, int pct) {
+    return 'Top spend: $name · $pct%';
+  }
+
+  @override
+  String get reportsCategoriesUncategorized => 'No category';
+
+  @override
+  String get reportsCategoriesViewSubcategories => 'See subcategories';
+
+  @override
+  String reportsCategoriesMovementsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movements',
+      one: '$count movement',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardBudgetsTitle => 'Budgets';
+
+  @override
+  String reportsDashboardBudgetsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active budgets · own cycles',
+      one: '$count active budget · own cycles',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardGoalsTitle => 'Goals';
+
+  @override
+  String reportsDashboardGoalsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count goals in progress',
+      one: '$count goal in progress',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsGoalSummaryAmountOfTarget(String saved, String target) {
+    return '$saved of $target';
+  }
+
+  @override
+  String get reportsDashboardBudgetsEmptySubtitle =>
+      'You haven\'t created any yet';
+
+  @override
+  String get reportsDashboardBudgetsEmptyMessage =>
+      'Once you create a budget, you\'ll see how much is left in the cycle here.';
+
+  @override
+  String get reportsDashboardGoalsEmptySubtitle =>
+      'You haven\'t created any yet';
+
+  @override
+  String get reportsDashboardGoalsEmptyMessage =>
+      'Your savings goals will show their progress here, all together.';
+
+  @override
+  String get reportsDashboardCrossLinkDebts =>
+      'See how your debts are progressing';
+
+  @override
+  String reportsDashboardHeroBudgetsAvailable(String amount) {
+    return '$amount available';
+  }
+
+  @override
+  String reportsDashboardHeroGoalsSaved(String amount) {
+    return '$amount saved';
+  }
+
+  @override
+  String get reportsEmptyTitle => 'No movements yet in this period';
+
+  @override
+  String get reportsEmptyMessage =>
+      'Log an expense or income and you\'ll see how your money moves month by month here.';
+
+  @override
+  String get reportsSyncNoticeMessage =>
+      'You have unsynced changes. What you see here is complete and saved on your phone.';
+
+  @override
+  String get reportsExportTooltip => 'Export as image';
+
+  @override
+  String get reportsExportError => 'We couldn\'t export the chart. Try again.';
+
+  @override
+  String reportsExportShareText(String title) {
+    return '$title chart — billetudo';
+  }
+
+  @override
+  String get reportsChartSkeletonLoadingLabel => 'Loading chart';
 }

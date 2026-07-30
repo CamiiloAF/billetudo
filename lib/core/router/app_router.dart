@@ -67,6 +67,12 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/reports/presentation/cubit/cashflow_cubit.dart';
+import '../../features/reports/presentation/cubit/category_breakdown_cubit.dart';
+import '../../features/reports/presentation/cubit/net_worth_cubit.dart';
+import '../../features/reports/presentation/cubit/reports_dashboard_cubit.dart';
+import '../../features/reports/presentation/cubit/reports_shell_cubit.dart';
+import '../../features/reports/presentation/pages/reports_page.dart';
 import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
@@ -130,6 +136,7 @@ abstract final class AppRoutes {
   static const String newDebt = '/deudas/nueva';
   static const String scheduledPayments = '/pagos-programados';
   static const String newScheduledPayment = '/pagos-programados/nuevo';
+  static const String reports = '/graficas';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
 
@@ -338,6 +345,7 @@ GoRouter createAppRouter() {
       _debtsRoute(),
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
+      _reportsRoute(),
     ],
   );
 }
@@ -373,11 +381,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onOpenScheduledPayments: () =>
                   context.push(AppRoutes.scheduledPayments),
               onOpenDebts: () => context.push(AppRoutes.debts),
-              onOpenReports: () => context.push(
-                AppRoutes.comingSoonTitled(
-                  AppLocalizations.of(context).moreReports,
-                ),
-              ),
+              onOpenReports: () => context.push(AppRoutes.reports),
               // Bugfix item 6: offline with no session → back up / sign in.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
@@ -714,6 +718,7 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
                     context.push(AppRoutes.scheduledPayments),
                 // Metas is a tab root now: switch to its branch.
                 onOpenGoals: () => context.go(AppRoutes.goals),
+                onOpenReports: () => context.push(AppRoutes.reports),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -955,6 +960,35 @@ GoRoute _accountsRoute() => GoRoute(
           ],
         ),
       ],
+    );
+
+// Gráficas e informes (HU-01 to HU-06, Nivel 0): reached from the "Más" hub
+// row and Inicio's quick-access chip, rendered as a stacked screen — a `Page
+// Header` (no `Tab Bar`) hosting `ReportsPage`'s own 4-tab shell. One
+// `ReportsShellCubit` plus the 4 per-tab cubits, all provided once for the
+// life of the page so switching tabs never re-fetches (the shared period).
+GoRoute _reportsRoute() => GoRoute(
+      path: AppRoutes.reports,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => getIt<ReportsShellCubit>()),
+          BlocProvider(create: (context) => getIt<CashflowCubit>()),
+          BlocProvider(create: (context) => getIt<NetWorthCubit>()),
+          BlocProvider(create: (context) => getIt<CategoryBreakdownCubit>()),
+          BlocProvider(create: (context) => getIt<ReportsDashboardCubit>()),
+        ],
+        child: ReportsPage(
+          onAddMovement: () => context.push(AppRoutes.newTransaction),
+          onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+          onOpenBudget: (entry) =>
+              context.push(AppRoutes.budget(entry.budget.id)),
+          onCreateBudget: () => context.push(AppRoutes.newBudget),
+          onOpenGoal: (entry) => context.push(AppRoutes.goal(entry.goal.id)),
+          onCreateGoal: () => context.push(AppRoutes.newGoal),
+          onOpenDebts: () => context.push(AppRoutes.debts),
+        ),
+      ),
     );
 
 // Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
