@@ -39,7 +39,11 @@ class NetWorthCardContent extends StatelessWidget {
         title: l10n.reportsNetWorthCardTitle,
         subtitle: '',
         boundaryKey: boundaryKey,
-        child: const ChartSkeletonView(showHero: false, showNote: false),
+        child: const ChartSkeletonView(
+          showHero: false,
+          showNote: false,
+          shape: ChartSkeletonShape.line,
+        ),
       );
     }
 

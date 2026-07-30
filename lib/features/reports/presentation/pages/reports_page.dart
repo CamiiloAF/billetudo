@@ -12,6 +12,7 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../goals/domain/entities/goal_with_progress.dart';
 import '../../domain/entities/chart_view.dart';
+import '../../domain/entities/date_range.dart';
 import '../cubit/reports_shell_cubit.dart';
 import '../cubit/reports_shell_state.dart';
 import '../utils/chart_export.dart';
@@ -34,6 +35,7 @@ class ReportsPage extends StatefulWidget {
     required this.onOpenGoal,
     required this.onCreateGoal,
     required this.onOpenDebts,
+    this.onOpenCategoryMovements,
     super.key,
   });
 
@@ -44,6 +46,11 @@ class ReportsPage extends StatefulWidget {
   final ValueChanged<GoalWithProgress> onOpenGoal;
   final VoidCallback onCreateGoal;
   final VoidCallback onOpenDebts;
+
+  /// Navigates to Movimientos filtered by a tapped category row and the
+  /// active Gráficas period, from the Categorías tab.
+  final void Function(String categoryId, DateRange range)?
+      onOpenCategoryMovements;
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();
@@ -142,6 +149,8 @@ class _ReportsPageState extends State<ReportsPage> {
                       ChartViewId.categoryBreakdown => CategoryBreakdownTabView(
                           onAddMovement: widget.onAddMovement,
                           onOpenSyncStatus: widget.onOpenSyncStatus,
+                          onOpenCategoryMovements:
+                              widget.onOpenCategoryMovements,
                           cardBoundaryKey: _categoriesCardKey,
                         ),
                     },

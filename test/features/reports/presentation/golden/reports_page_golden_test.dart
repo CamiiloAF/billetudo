@@ -14,7 +14,10 @@ import 'package:billetudo/features/reports/presentation/cubit/reports_dashboard_
 import 'package:billetudo/features/reports/presentation/cubit/reports_shell_cubit.dart';
 import 'package:billetudo/features/reports/presentation/cubit/reports_shell_state.dart';
 import 'package:billetudo/features/reports/presentation/pages/reports_page.dart';
+import 'package:billetudo/features/reports/presentation/widgets/categories/category_view_subcategories_link.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,6 +88,27 @@ void main() {
     dashboardCubit = MockReportsDashboardCubit();
   });
 
+  /// Fabricates the tap `fl_chart` would report for tapping the donut
+  /// section at [index] and invokes the chart's own `touchCallback`
+  /// directly — same technique as `category_donut_chart_test.dart`, since
+  /// tapping the real rendered geometry of a `PieChart` from a widget test
+  /// is brittle.
+  void tapDonutSection(WidgetTester tester, int index) {
+    final pieChart = tester.widget<PieChart>(find.byType(PieChart));
+    final touchCallback = pieChart.data.pieTouchData.touchCallback!;
+    touchCallback(
+      FlTapUpEvent(TapUpDetails(kind: PointerDeviceKind.touch)),
+      PieTouchResponse(
+        PieTouchedSection(
+          PieChartSectionData(),
+          index,
+          0,
+          0,
+        ),
+      ),
+    );
+  }
+
   Future<void> golden(
     WidgetTester tester,
     String name, {
@@ -94,6 +118,7 @@ void main() {
     NetWorthState? netWorthState,
     CategoryBreakdownState? categoryState,
     ReportsDashboardState? dashboardState,
+    Future<void> Function(WidgetTester tester)? interact,
   }) async {
     when(
       () => shellCubit.state,
@@ -134,6 +159,10 @@ void main() {
       brightness: brightness,
       size: tallGoldenPhoneSize(height: 1400),
     );
+    if (interact != null) {
+      await interact(tester);
+      await tester.pumpAndSettle();
+    }
     await expectLater(
       find.byType(ReportsPage),
       matchesGoldenFile('goldens/reports_page_$name.png'),
@@ -352,6 +381,52 @@ void main() {
           status: CategoryBreakdownStatus.ready,
           breakdown: categoryBreakdownWithData(),
         ),
+      );
+    });
+
+    testWidgets('categories: sección seleccionada ($suffix)', (tester) async {
+      // A root arc (Mercado, the top spender, has subcategories) tapped and
+      // held selected: the donut's centre shows its name + amount, and the
+      // drill-down pill becomes enabled ("Ver subcategorías").
+      await golden(
+        tester,
+        'categories_selected_$suffix',
+        brightness: brightness,
+        shellState: ReportsShellState(
+          activeTab: ChartViewId.categoryBreakdown,
+        ),
+        categoryState: CategoryBreakdownState(
+          status: CategoryBreakdownStatus.ready,
+          breakdown: categoryBreakdownWithData(),
+        ),
+        interact: (tester) async {
+          tapDonutSection(tester, 0);
+        },
+      );
+    });
+
+    testWidgets('categories: nivel de subcategorías ($suffix)', (
+      tester,
+    ) async {
+      // After drilling into Mercado: the donut now shows its subcategories
+      // and the pill reads "Atrás" instead of "Ver subcategorías".
+      await golden(
+        tester,
+        'categories_subcategories_$suffix',
+        brightness: brightness,
+        shellState: ReportsShellState(
+          activeTab: ChartViewId.categoryBreakdown,
+        ),
+        categoryState: CategoryBreakdownState(
+          status: CategoryBreakdownStatus.ready,
+          breakdown: categoryBreakdownWithData(),
+        ),
+        interact: (tester) async {
+          tapDonutSection(tester, 0);
+          await tester.pump();
+          await tester
+              .tap(find.byType(CategoryViewSubcategoriesLink));
+        },
       );
     });
   }

@@ -3,25 +3,43 @@ import 'package:flutter/material.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'chart_skeleton_hero.dart';
+import 'chart_skeleton_plot.dart';
+
+/// The plot geometry a [ChartSkeletonView] should mimic, matching each
+/// data-tab card's real chart per `design-system/billetudo/pages/
+/// graficas.md`'s "Carga" rule ("skeleton con la geometría real del
+/// gráfico"): Flujo (`ITx4K`) is `BarChart`, Patrimonio is `LineChart`
+/// (`khZjH` — the `.pen`'s bars there are a Pencil tool limitation, not the
+/// spec) and Categorías is a donut (`A3zxf`). Neither Patrimonio nor
+/// Categorías has its own "carga" frame in the `.pen`, so their skeletons
+/// are inferred from that rule rather than a dedicated nodeId.
+enum ChartSkeletonShape { bars, line, donut }
 
 /// HU-06 "carga": skeleton with the chart's real geometry — a 330px plot
-/// reserving the current-month note's space, and **uniform-height** bars
+/// reserving the current-month note's space, and **uniform** placeholders
 /// (a varied skeleton would suggest real data, per
 /// `design-system/billetudo/pages/graficas.md`). Reused by the three
-/// data-tab cards (Flujo `ITx4K`, and the same shape for Patrimonio/
-/// Categorías, not separately framed in the `.pen`); the tabs and period
-/// selector around it stay interactive — only this card enters "carga".
+/// data-tab cards (Flujo `ITx4K` bars; Patrimonio/Categorías use [shape] to
+/// match their own chart type instead of reusing the bars verbatim). The
+/// tabs and period selector around it stay interactive — only this card
+/// enters "carga".
 class ChartSkeletonView extends StatelessWidget {
   const ChartSkeletonView({
     this.columnCount = 6,
     this.showHero = true,
     this.showNote = true,
+    this.shape = ChartSkeletonShape.bars,
     super.key,
   });
 
   final int columnCount;
   final bool showHero;
   final bool showNote;
+
+  /// Which geometry the plot placeholder draws. Defaults to [ChartSkeletonShape.bars]
+  /// (Flujo's real chart); Patrimonio/Categorías pass [ChartSkeletonShape.line]/
+  /// [ChartSkeletonShape.donut] to match their own real chart's shape.
+  final ChartSkeletonShape shape;
 
   static const double _plotHeight = 330;
 
@@ -62,20 +80,10 @@ class ChartSkeletonView extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: _plotHeight,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (var i = 0; i < columnCount; i++)
-                  Container(
-                    width: 13,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      color: colors.skeleton,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-              ],
+            child: ChartSkeletonPlot(
+              shape: shape,
+              columnCount: columnCount,
+              skeletonColor: colors.skeleton,
             ),
           ),
           if (showNote) ...[

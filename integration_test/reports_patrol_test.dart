@@ -19,6 +19,9 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
 import 'package:billetudo/features/reports/presentation/pages/reports_page.dart';
 import 'package:billetudo/features/reports/presentation/widgets/period_selector.dart';
+import 'package:billetudo/features/transactions/presentation/pages/transactions_page.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -54,6 +57,60 @@ Future<void> _seedOneMonthOfData() async {
           currency: 'COP',
           type: EntryType.expense,
           date: DateTime(now.year, now.month),
+        ),
+      );
+}
+
+/// Seeds a real account and two expense categories, each with its own
+/// current-month transaction (distinct `note`s so the two rows are
+/// distinguishable once filtered), for the row-tap-to-Movimientos scenario
+/// (criteria 8-9 of "Gráficas — cerrar pendientes de Categorías"). Two
+/// categories keep the Categorías donut/desglose from collapsing into the
+/// single-section case, exercising the same "flat desglose" shape as
+/// `_seedOneMonthOfData` but with something to filter *against*.
+Future<void> _seedTwoCategoriesOfData() async {
+  final db = getIt<AppDatabase>();
+  final account = await db.into(db.accounts).insertReturning(
+        AccountsCompanion.insert(
+          name: 'Cuenta seed',
+          type: AccountType.cash,
+          currency: 'COP',
+        ),
+      );
+  final groceries = await db.into(db.categories).insertReturning(
+        CategoriesCompanion.insert(
+          name: 'Mercado drill',
+          kind: CategoryKind.expense,
+        ),
+      );
+  final transport = await db.into(db.categories).insertReturning(
+        CategoriesCompanion.insert(
+          name: 'Transporte drill',
+          kind: CategoryKind.expense,
+        ),
+      );
+  final now = DateTime.now();
+  final firstOfMonth = DateTime(now.year, now.month);
+  await db.into(db.transactions).insert(
+        TransactionsCompanion.insert(
+          accountId: account.id,
+          categoryId: Value(groceries.id),
+          amountMinor: 120000,
+          currency: 'COP',
+          type: EntryType.expense,
+          date: firstOfMonth,
+          note: const Value('nota mercado drill'),
+        ),
+      );
+  await db.into(db.transactions).insert(
+        TransactionsCompanion.insert(
+          accountId: account.id,
+          categoryId: Value(transport.id),
+          amountMinor: 45000,
+          currency: 'COP',
+          type: EntryType.expense,
+          date: firstOfMonth,
+          note: const Value('nota transporte drill'),
         ),
       );
 }
@@ -193,4 +250,65 @@ void main() {
       expect(find.text('Ver el avance de tus deudas'), findsOneWidget);
     },
   );
+
+  patrolTest(
+    'tocar una fila de Categorías navega a Movimientos ya filtrado por esa '
+    'categoría y el rango de fechas activo en Gráficas',
+    ($) async {
+      await startApp($);
+      await _seedTwoCategoriesOfData();
+
+      await _goToReportsFromMoreHub($);
+      await $.tester.tap(find.text('Categorías'));
+      await $.tester.pumpAndSettle();
+      expect(find.text('Mercado drill'), findsOneWidget);
+      expect(find.text('Transporte drill'), findsOneWidget);
+
+      // Criterion 8/9: tapping the "Transporte drill" row (a real
+      // `categoryId`, unlike "Sin categoría") crosses into Movimientos
+      // pre-filtered — this is the multi-screen, router-driven part of the
+      // feature that only an on-device run exercises end to end; the
+      // callback wiring itself is already covered by
+      // `category_breakdown_card_content_test.dart`.
+      await $.tester.tap(find.text('Transporte drill'));
+      await $.tester.pumpAndSettle();
+      expect(find.byType(TransactionsPage), findsOneWidget);
+
+      // The category chip switched to its active (`primary-soft`) look.
+      final categoryChip = $.tester.widget<FilterChipPill>(
+        find.byWidgetPredicate(
+          (widget) => widget is FilterChipPill && widget.label == 'Categorías',
+        ),
+      );
+      expect(categoryChip.active, isTrue);
+
+      // Only the Transporte transaction is visible — Mercado's is filtered
+      // out by the category, proving the filter is scoped to exactly the
+      // tapped category, not just "any category".
+      await _expectEventually(
+        $,
+        find.byType(TransactionRow),
+        findsOneWidget,
+      );
+      expect(find.text('nota transporte drill'), findsOneWidget);
+      expect(find.text('nota mercado drill'), findsNothing);
+    },
+  );
+}
+
+/// Retries [finder] against [matcher] a few times before asserting — some
+/// filtered lists settle a beat after `pumpAndSettle` once Drift's stream
+/// re-emits, same convention as `transactions_patrol_test.dart`.
+Future<void> _expectEventually(
+  PatrolIntegrationTester $,
+  Finder finder,
+  Matcher matcher,
+) async {
+  for (var attempt = 0; attempt < 10; attempt++) {
+    if (matcher.matches(finder, <dynamic, dynamic>{}) || attempt == 9) {
+      break;
+    }
+    await $.tester.pump(const Duration(milliseconds: 300));
+  }
+  expect(finder, matcher);
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
+import '../../../domain/entities/date_range.dart';
 import '../../cubit/category_breakdown_cubit.dart';
 import '../../cubit/category_breakdown_state.dart';
 import '../../cubit/reports_shell_cubit.dart';
@@ -20,12 +21,18 @@ class CategoryBreakdownTabView extends StatefulWidget {
   const CategoryBreakdownTabView({
     required this.onAddMovement,
     required this.onOpenSyncStatus,
+    this.onOpenCategoryMovements,
     this.cardBoundaryKey,
     super.key,
   });
 
   final VoidCallback onAddMovement;
   final VoidCallback onOpenSyncStatus;
+
+  /// Navigates to Movimientos filtered by the tapped row's category id and
+  /// the active Gráficas period (start/endExclusive), if provided.
+  final void Function(String categoryId, DateRange range)?
+      onOpenCategoryMovements;
 
   /// See `ReportCard.boundaryKey`.
   final GlobalKey? cardBoundaryKey;
@@ -92,10 +99,13 @@ class _CategoryBreakdownTabViewState extends State<CategoryBreakdownTabView> {
                       state: state,
                       rangeCaption: rangeCaption,
                       onAddMovement: widget.onAddMovement,
-                      // TODO(graficas): wire once "Ver subcategorías" has a
-                      // destination — not designed yet (pendiente 3,
-                      // design-system/billetudo/pages/graficas.md). Leaving
-                      // onViewSubcategories unset renders the link inert.
+                      onOpenCategoryMovements:
+                          widget.onOpenCategoryMovements == null
+                              ? null
+                              : (categoryId) => widget.onOpenCategoryMovements!(
+                                    categoryId,
+                                    shell.period.range,
+                                  ),
                       boundaryKey: widget.cardBoundaryKey,
                     ),
                   ],

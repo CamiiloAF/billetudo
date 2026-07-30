@@ -4,15 +4,38 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 
-/// The `Ver subcategorías` link (`guwa6`): a 44pt tappable row with a top
-/// border, closing `Card Categorías`' flat desglose (`A3zxf`). Its
-/// destination is not designed yet (`design-system/billetudo/pages/
-/// graficas.md`, pendiente 3) — [onTap] is deliberately nullable so a caller
-/// with nowhere to send the user can render the link inert rather than
-/// invent a screen.
-class CategoryViewSubcategoriesLink extends StatelessWidget {
-  const CategoryViewSubcategoriesLink({this.onTap, super.key});
+/// The three visual states of [CategoryViewSubcategoriesLink].
+enum CategoryDrillDownLinkState {
+  /// No section of the donut is selected: the pill is visually inert and
+  /// does not react to tap (criterion 4).
+  disabled,
 
+  /// A root category with subcategories is selected: tapping drills into
+  /// that category's subcategory donut.
+  viewSubcategories,
+
+  /// Already showing a subcategory donut: tapping returns to the root level.
+  back,
+}
+
+/// The `Ver subcategorías`/`Atrás` pill (`guwa6`): a 44pt tappable row with a
+/// top border, closing `Card Categorías`' flat desglose (`A3zxf`). Its
+/// label, icon and interactivity follow [state]:
+/// - [CategoryDrillDownLinkState.disabled]: no selection yet, inert.
+/// - [CategoryDrillDownLinkState.viewSubcategories]: selected category has
+///   subcategories, tapping drills in.
+/// - [CategoryDrillDownLinkState.back]: already one level in, tapping
+///   returns to the root donut.
+class CategoryViewSubcategoriesLink extends StatelessWidget {
+  const CategoryViewSubcategoriesLink({
+    required this.state,
+    this.onTap,
+    super.key,
+  });
+
+  final CategoryDrillDownLinkState state;
+
+  /// Ignored when [state] is [CategoryDrillDownLinkState.disabled].
   final VoidCallback? onTap;
 
   @override
@@ -20,9 +43,18 @@ class CategoryViewSubcategoriesLink extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final isDisabled = state == CategoryDrillDownLinkState.disabled;
+    final label = state == CategoryDrillDownLinkState.back
+        ? l10n.reportsCategoriesBack
+        : l10n.reportsCategoriesViewSubcategories;
+    final icon = state == CategoryDrillDownLinkState.back
+        ? LucideIcons.chevronLeft
+        : LucideIcons.chevronRight;
+    final tone =
+        isDisabled ? colors.segmentInactiveText : colors.primaryOnSoft;
 
     return InkWell(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: Container(
         height: 44,
         alignment: Alignment.center,
@@ -32,20 +64,22 @@ class CategoryViewSubcategoriesLink extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (state == CategoryDrillDownLinkState.back) ...[
+              Icon(icon, size: 15, color: tone),
+              const SizedBox(width: 4),
+            ],
             Text(
-              l10n.reportsCategoriesViewSubcategories,
+              label,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: colors.primaryOnSoft,
+                color: tone,
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(
-              LucideIcons.chevronRight,
-              size: 15,
-              color: colors.primaryOnSoft,
-            ),
+            if (state != CategoryDrillDownLinkState.back) ...[
+              const SizedBox(width: 4),
+              Icon(icon, size: 15, color: tone),
+            ],
           ],
         ),
       ),

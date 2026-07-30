@@ -54,6 +54,7 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Chart Cross-link Card | `wvAKu` → **Cross-link Deudas Card** | Renombrado: icono y label están horneados, es de un solo caso. |
 | Goal Summary Row | `He7JZ` | Fila de meta en Resumen (anida `q1qGr`). |
 | Card Empty | `S27V2` | Vacío dentro de una tarjeta, CTA reemplazable por slot. |
+| Chart Drill Pill | `OiM6E` | Pill de drill-down del donut (44px, borde superior). 3 estados vía overrides: inerte (`$segment-inactive-text`), habilitado "Ver subcategorías" (`$primary-on-soft`, chevron-right), "Atrás" (`$primary-on-soft`, chevron-left a la izquierda vía slot `enabled:false`/`true`, no reordenando hijos). Reemplaza 3 copias inline (`guwa6`→`gbZI4`, `kjLPg`→`Ok2bd`, `FK2qi`→`Fkwo3`). |
 
 Reusados sin modificar: `Dtm0X` Page Header, `vYZJT` Status Bar, `FSL69` Budget Line, `DRc5X` Category Row, `gZyEC` Toggle Field, `hIbs3` Menu Row, `jmQO5` Empty State, `j7Zvt`/`pNjOz` botones, `q1qGr` Goal Ring/Mini.
 
@@ -107,6 +108,17 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 **Variantes de copy para l10n** (nota `Ojbfk`): la primera frase es constante en forma, la segunda depende del rango — mes único (agregación por día), varios meses, rango personalizado, historial corto. **Prohibido en estas cadenas:** "suele pasar"/"no te preocupes" (excusa), "te pasaste"/"gastaste de más" (juzga). El monto siempre con signo y cifra completa.
 
+### Categorías — interacción de la dona y drill-down (reemplaza el tap-and-hold)
+
+**Decisión del usuario, ya implementada** (reemplaza cualquier mención previa de "mantener presionado para revelar" en esta pantalla):
+
+- **Tap simple con selección persistente**, no tap-and-hold: tocar un arco lo deja seleccionado (radio mayor) hasta que se toque otro arco (cambia la selección) o se vuelva a tocar el mismo (deselecciona). Nunca dos arcos resaltados a la vez.
+- **Centro de la dona**: con selección activa, muestra el **nombre de la categoría** sobre el monto gastado en ella; sin selección, vuelve a mostrar solo el total (como hoy).
+- **Pill "Ver subcategorías" / "Ir más profundo"**: deshabilitado (estilo inerte) mientras no haya ninguna sección seleccionada; habilitado con selección activa.
+- **Drill-down in-place, no pantalla nueva**: al tocar el pill con una categoría seleccionada, la misma dona y el desglose se re-renderizan con las subcategorías de esa categoría, y la selección se limpia al entrar al nuevo nivel. Esto resuelve el pendiente "destino de 'Ver subcategorías'" — nunca hubo que diseñar un destino, es el mismo frame con otro nivel de datos.
+- **Pill "Atrás"**: mismo componente que el pill de profundizar, pero en el nivel de subcategorías cambia su copy/ícono a "Atrás" (chevron hacia atrás) y regresa al nivel de categorías raíz sin selección activa (componentizado en `Chart Drill Pill` `OiM6E`, ver tabla de componentes).
+- **Tap en una card de categoría o subcategoría** (fuera de la dona, en el desglose) navega a Movimientos preseleccionando el filtro por esa categoría y el rango de fechas activo en Gráficas.
+
 ### Estados
 
 - **Vacío**: `Empty State` centrado + CTA "Agregar movimiento". Nunca un gráfico de ceros.
@@ -120,7 +132,7 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 - **Patrimonio se implementa como `LineChart`**, no barras (nota `khZjH`). El `.pen` usa barras **solo** porque Pencil no puede dibujar líneas; es una aproximación declarada, no la especificación. El resto del frame (hero de dos cifras, nota del interés, toggle de archivadas, jerarquía, colores) sí es especificación.
 - **La 7ª columna "ene" del gráfico de patrimonio** no es decorativa: el neto de caja del periodo **es** el cambio del patrimonio líquido, y con solo 6 columnas esa identidad es aritméticamente imposible (el delta feb→jul solo puede valer el neto de mar–jul). La columna de partida es lo que permite que endpoints y pasos mensuales cuadren a la vez.
 - **Las figuras del hero de Resumen no usan `Chart Legend Item`** a propósito: son etiquetas de sección, no leyendas de serie. Ese componente reserva el color para keyear una serie graficada.
-- **Lectura de valores**: los gráficos no tienen ejes ni escala, así que **deben poder tocarse** para leer la magnitud (tap en barra, punto o segmento → valor y periodo). Sin eso el gráfico es decorativo y todo el peso informativo queda en el hero. **No está diseñado todavía.**
+- **Lectura de valores**: los gráficos no tienen ejes ni escala, así que **deben poder tocarse** para leer la magnitud (tap en barra, punto o segmento → valor y periodo). Sin eso el gráfico es decorativo y todo el peso informativo queda en el hero. **No está diseñado todavía**, salvo en Categorías, donde ya se resolvió con selección persistente (ver "Categorías — interacción de la dona y drill-down").
 - **Accesibilidad**: cada gráfico expone un resumen textual vía `Semantics` — un lector de pantalla no puede recorrer las barras. En la dona, `peach` y `coral` son el par adyacente más cercano (~36° de matiz): cada arco está keyeado por su fila con ícono y nombre, así que el color no es el único canal.
 - **Multimoneda está fuera de este entregable** (nota `O91yc8`): no hay rótulo de "cifra aproximada" ni segmentación por moneda. Se asume moneda única.
 - **Datos de mockup no son especificación**: son coherentes dentro de cada plantilla y entre frames que comparten hero, no globalmente.
@@ -129,4 +141,4 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 1. **Migración de `FSL69`/`q1qGr`/`EB2TX` a `$primary-data`** — requiere aprobación del usuario; toca Presupuestos y Metas, ya aprobadas.
 2. **Variante oscura del sheet Selector de Periodo (`Sy92N`)** — no construida.
-3. **Sin diseñar**: tooltip de lectura de valor al tocar, share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, destino de "Ver subcategorías", variante ON del toggle "Incluir cuentas archivadas".
+3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas".

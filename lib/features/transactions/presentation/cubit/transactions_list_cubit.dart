@@ -7,6 +7,7 @@ import '../../../../core/error/result.dart';
 import '../../../../core/preferences/account_filter_preference_datasource.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 import '../../domain/usecases/delete_transaction.dart';
@@ -115,6 +116,26 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// source of truth — no duplicated filter state.
   Future<void> filterByAccount(String accountId) =>
       updateFilter(state.filter.copyWith(accountIds: {accountId}));
+
+  /// Reports' Categorías tab (HU-03 drill-down): pins the category filter to
+  /// exactly [categoryId] and the date filter to the `[start, endInclusive]`
+  /// window active in Gráficas at the moment of the tap, used when the user
+  /// taps a `CategoryBreakdownRow`. Mirrors [filterByAccount]'s pattern so
+  /// the router never builds `TransactionFilter` itself.
+  Future<void> filterByCategoryAndRange({
+    required String categoryId,
+    required DateTime start,
+    required DateTime endInclusive,
+  }) =>
+      updateFilter(
+        state.filter.copyWith(
+          categoryIds: {categoryId},
+          datePeriod: DatePeriodFilter.custom(
+            start: start,
+            end: endInclusive,
+          ),
+        ),
+      );
 
   /// HU-06: free-text search over note and category name.
   Future<void> searchChanged(String text) =>

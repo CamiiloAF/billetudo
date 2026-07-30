@@ -2799,11 +2799,12 @@
 
   "reportsCategoriesCardTitle": "Estructura de gasto",
   "@reportsCategoriesCardTitle": {},
-  "reportsCategoriesSubtitle": "{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}",
+  "reportsCategoriesSubtitle": "{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}",
   "@reportsCategoriesSubtitle": {
     "placeholders": {
       "count": { "type": "int" },
-      "range": { "type": "String" }
+      "range": { "type": "String" },
+      "isSubcategory": { "type": "String" }
     }
   },
   "reportsCategoriesTopLabel": "Mayor gasto: {name} · {pct}%",
@@ -2817,6 +2818,8 @@
   "@reportsCategoriesUncategorized": {},
   "reportsCategoriesViewSubcategories": "Ver subcategorías",
   "@reportsCategoriesViewSubcategories": {},
+  "reportsCategoriesBack": "Atrás",
+  "@reportsCategoriesBack": {},
   "reportsCategoriesMovementsCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
   "@reportsCategoriesMovementsCount": {
     "placeholders": { "count": { "type": "int" } }

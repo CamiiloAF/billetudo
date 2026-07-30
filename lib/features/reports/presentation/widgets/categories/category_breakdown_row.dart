@@ -21,12 +21,18 @@ class CategoryBreakdownRow extends StatelessWidget {
     required this.item,
     required this.totalMinor,
     this.currencyCode = 'COP',
+    this.onTap,
     super.key,
   });
 
   final CategoryBreakdownItem item;
   final int totalMinor;
   final String currencyCode;
+
+  /// Navigates to Movimientos filtered by this row's category. `null` for
+  /// the "Sin categoría" bucket (`item.categoryId == null`), which has no
+  /// category id to filter by.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +41,13 @@ class CategoryBreakdownRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     const money = MoneyFormatter();
 
-    final pct = totalMinor == 0 ? 0 : (item.amountMinor * 100 / totalMinor).round();
+    final pct =
+        totalMinor == 0 ? 0 : (item.amountMinor * 100 / totalMinor).round();
     final name = item.isUncategorized
         ? l10n.reportsCategoriesUncategorized
         : (item.name ?? '');
-    final tone = item.isUncategorized ? colors.textSecondary : _tone(colors, item);
+    final tone =
+        item.isUncategorized ? colors.textSecondary : _tone(colors, item);
     final softTone = item.isUncategorized
         ? colors.muted
         : CategoryAppearance.softColorFor(colors, item.color);
@@ -50,70 +58,75 @@ class CategoryBreakdownRow extends StatelessWidget {
     return Semantics(
       label: '$name, $pct%, '
           '${money.formatSymbol(item.amountMinor, currencyCode: currencyCode)}',
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: softTone,
-                    borderRadius: BorderRadius.circular(20),
+      button: onTap != null,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: softTone,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(icon, size: 20, color: tone),
                   ),
-                  child: Icon(icon, size: 20, color: tone),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: colors.textPrimary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: colors.textPrimary,
+                          ),
                         ),
-                      ),
-                      Text(
-                        money.formatSymbol(item.amountMinor, currencyCode: currencyCode),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: colors.textSecondary,
+                        Text(
+                          money.formatSymbol(item.amountMinor,
+                              currencyCode: currencyCode),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: colors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '$pct%',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: colors.textPrimary,
+                  const SizedBox(width: 8),
+                  Text(
+                    '$pct%',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: colors.textPrimary,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: pct / 100,
-                minHeight: 6,
-                backgroundColor: colors.muted,
-                valueColor: AlwaysStoppedAnimation(tone),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: pct / 100,
+                  minHeight: 6,
+                  backgroundColor: colors.muted,
+                  valueColor: AlwaysStoppedAnimation(tone),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

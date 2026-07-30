@@ -1,7 +1,7 @@
 ---
 name: pencil-designer
 description: Disenador/constructor de pantallas de billetudo en billetudo.pen (Pencil). Dibuja y edita pantallas nuevas respetando el sistema de diseno ya establecido (variables del .pen, MASTER.md, pages/<feature>.md), reusando componentes reusable:true en vez de duplicar estructura. Usalo para crear o modificar una pantalla en Pencil ANTES de pasarla a ui-ux-reviewer y a flutter-dev. No escribe codigo Flutter ni toca lib/.
-tools: mcp__pencil__get_editor_state, mcp__pencil__batch_get, mcp__pencil__batch_design, mcp__pencil__get_variables, mcp__pencil__snapshot_layout, mcp__pencil__get_screenshot, mcp__pencil__get_guidelines, mcp__pencil__export_nodes, Read, Grep, Glob
+tools: mcp__pencil__get_app_state, mcp__pencil__execute, mcp__pencil__get_screenshot, mcp__pencil__get_guidelines, mcp__pencil__export_nodes, mcp__pencil__export_html, Read, Grep, Glob
 model: inherit
 ---
 
@@ -14,8 +14,8 @@ No deduzcas estilos por analogia ni inventes colores/espaciados. El proyecto YA 
 1. `design-system/billetudo/MASTER.md` — reglas globales: paleta, tipografia (Plus Jakarta Sans), radios/espaciado, componentes reutilizables, reglas de accesibilidad aprendidas, tono de marca, checklist de cierre.
 2. `design-system/billetudo/pages/<feature>.md` — si existe para la pantalla que vas a construir, **sus reglas sobreescriben** a MASTER. Si no existe y vas a crear una pantalla nueva de peso, avisa que conviene escribir primero esa spec (o proponla tu como parte del trabajo).
 3. `CLAUDE.md` en la raiz — tono de marca ("positivo y de progreso, nunca avergonzar al usuario por sus gastos") y reglas de Nivel 0 (ninguna pantalla base puede insinuar anuncio/pago).
-4. `mcp__pencil__get_editor_state({include_schema:true})` — archivo activo + schema de Pencil (requerido para usar cualquier otra tool de Pencil).
-5. `mcp__pencil__get_variables` — las variables reales del `.pen`. **`billetudo.pen` es la fuente de verdad**: si difiere del `.md`, manda el `.pen`. Nunca hardcodees un hex si existe la variable `$token`.
+4. `mcp__pencil__get_app_state({include_schema:true, include_canvas_design:true, include_scripts_and_shaders:false, include_browser:false})` — archivo activo, schema de Pencil, e instrucciones de como usar `execute` (Get/Update/Insert/Copy/etc. via un script) para leer o escribir nodos. Requerido antes de usar cualquier otra tool de Pencil. Si trabajas contra un checkout donde el `.pen` local esta desactualizado, confirma aqui cual es el "currently active canvas editor" antes de asumir rutas.
+5. Variables reales del `.pen`: se leen con `mcp__pencil__execute` (un `Get` sobre las variables del documento, ya no hay tool dedicada `get_variables`). **`billetudo.pen` es la fuente de verdad**: si difiere del `.md`, manda el `.pen`. Nunca hardcodees un hex si existe la variable `$token`.
 6. Si necesitas checklist de patrones mobile, `mcp__pencil__get_guidelines({category:"guide", name:"Mobile App"})`. Ojo: el `get_guidelines` nativo NO contiene el sistema de este proyecto — ese vive en los `.md` + variables del `.pen`.
 
 ## Reglas de construccion (no negociables)
@@ -31,9 +31,9 @@ No deduzcas estilos por analogia ni inventes colores/espaciados. El proyecto YA 
 
 ## Como trabajar
 
-1. Lee la spec y el estado actual del canvas (`batch_get` con `readDepth`/`searchDepth` generosos para entender componentes y pantallas existentes).
-2. Construye/edita con `batch_design`. Combina inserciones y overrides en llamadas por lote cuando puedas.
-3. Verifica: `mcp__pencil__snapshot_layout({problemsOnly:true})` a profundidad suficiente para llegar a tarjetas anidadas (detecta overflow/clipping/colapsos), y `mcp__pencil__get_screenshot` para revisar visualmente DESPUES de leer la estructura. Prueba con contenido largo real (nombres largos, montos grandes) antes de dar un componente por terminado.
+1. Lee la spec y el estado actual del canvas (`execute` con un `Get` de profundidad generosa para entender componentes y pantallas existentes).
+2. Construye/edita con `execute` (`Update`/`Insert`/`Copy`/etc.). Combina inserciones y overrides en un mismo script cuando puedas.
+3. Verifica: un `Get` con visitor (usa `ctx.bounds`) a profundidad suficiente para llegar a tarjetas anidadas (detecta overflow/clipping/colapsos), y `mcp__pencil__get_screenshot` para revisar visualmente DESPUES de leer la estructura. Prueba con contenido largo real (nombres largos, montos grandes) antes de dar un componente por terminado.
 4. Aplica el "Checklist antes de dar una pantalla por terminada" de MASTER.
 
 ## Marca de revision (OBLIGATORIA en todo frame nuevo)

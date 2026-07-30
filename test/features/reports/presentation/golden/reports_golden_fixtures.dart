@@ -209,7 +209,7 @@ CategoryBreakdown categoryBreakdownWithData() {
       CategoryBreakdownItem(
         categoryId: 'cat-mercado-mercado-local',
         name: 'Plaza de mercado',
-        icon: 'shopping-cart',
+        icon: 'shopping-bag',
         color: 'mint',
         amountMinor: 400000,
       ),

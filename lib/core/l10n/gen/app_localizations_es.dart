@@ -4214,14 +4214,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get reportsCategoriesCardTitle => 'Estructura de gasto';
 
   @override
-  String reportsCategoriesSubtitle(int count, String range) {
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory) {
     String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorías · $range',
+      one: '$count subcategoría · $range',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other: '$count categorías · $range',
       one: '$count categoría · $range',
     );
-    return '$_temp0';
+    String _temp2 = intl.Intl.selectLogic(
+      isSubcategory,
+      {
+        'true': '$_temp0',
+        'other': '$_temp1',
+      },
+    );
+    return '$_temp2';
   }
 
   @override
@@ -4234,6 +4248,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportsCategoriesViewSubcategories => 'Ver subcategorías';
+
+  @override
+  String get reportsCategoriesBack => 'Atrás';
 
   @override
   String reportsCategoriesMovementsCount(int count) {

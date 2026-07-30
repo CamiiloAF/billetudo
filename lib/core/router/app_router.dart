@@ -987,6 +987,22 @@ GoRoute _reportsRoute() => GoRoute(
           onOpenGoal: (entry) => context.push(AppRoutes.goal(entry.goal.id)),
           onCreateGoal: () => context.push(AppRoutes.newGoal),
           onOpenDebts: () => context.push(AppRoutes.debts),
+          // Categorías drill-down: tapping a `CategoryBreakdownRow` filters
+          // Movimientos by that category id and the date range active in
+          // Gráficas at the moment of the tap — `DateRange.endExclusive` is
+          // half-open, so it maps to `DatePeriodFilter.custom`'s inclusive
+          // `endInclusive` by stepping back one day.
+          onOpenCategoryMovements: (categoryId, range) {
+            unawaited(
+              getIt<TransactionsListCubit>().filterByCategoryAndRange(
+                categoryId: categoryId,
+                start: range.start,
+                endInclusive:
+                    range.endExclusive.subtract(const Duration(days: 1)),
+              ),
+            );
+            context.go(AppRoutes.transactions);
+          },
         ),
       ),
     );

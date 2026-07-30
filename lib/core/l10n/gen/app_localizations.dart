@@ -6891,8 +6891,9 @@ abstract class AppLocalizations {
   /// No description provided for @reportsCategoriesSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}'**
-  String reportsCategoriesSubtitle(int count, String range);
+  /// **'{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}'**
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory);
 
   /// No description provided for @reportsCategoriesTopLabel.
   ///
@@ -6911,6 +6912,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver subcategorías'**
   String get reportsCategoriesViewSubcategories;
+
+  /// No description provided for @reportsCategoriesBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Atrás'**
+  String get reportsCategoriesBack;
 
   /// No description provided for @reportsCategoriesMovementsCount.
   ///
