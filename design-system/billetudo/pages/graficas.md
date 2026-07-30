@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas.
+**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas. **Ampliación 2026-07-29/30:** 6 pantallas nuevas (5 estados de carga/vacío que faltaban + destino de "Ver subcategorías") aprobadas en claro y oscuro, auditadas por `ui-ux-reviewer` (3 hallazgos IMPORTANTE corregidos en la variante "Con dona").
 
 ## Tesis (norte del diseño)
 
@@ -33,11 +33,23 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Flujo — fallo de sync (no bloqueante) | `ZhpWo` | `k4SZI` |
 | Flujo — balance negativo | `V1PNE` | `p3C3D8` |
 | Resumen — vacío (sin presupuestos ni metas) | `XQVQe` | `SsnL0` |
+| Resumen — carga (skeleton) | `Mvjzq` | `a7rxu` |
+| Patrimonio — carga (skeleton) | `iWBYq` | `bzqEm` |
+| Patrimonio — vacío (sin cuentas) | `OZvwz` | `Nl2Mk` |
+| Categorías — carga (skeleton) | `s28FH` | `G8log5` |
+| Categorías — vacío (sin movimientos) | `wQcSY` | `CIUzC` |
+
+Las 5 filas nuevas (Resumen/Patrimonio/Categorías) siguen el mismo lenguaje ya validado en Flujo — mismo criterio de altura uniforme en los skeletons, mismo `Empty State`. CTA de cada vacío: Patrimonio → "Agregar cuenta" (pide cuentas, no movimientos); Categorías → "Agregar movimiento".
 
 ### Sheets
 | Pieza | Claro | Oscuro |
 |---|---|---|
 | Selector de Periodo | `Sy92N` | **no construido** (hueco conocido) |
+
+### Ver Subcategorías (destino de "Ver subcategorías")
+| Pantalla | Claro | Oscuro |
+|---|---|---|
+| Ver Subcategorías — variante C, con dona | `BfdaF` | `fqc0X` |
 
 ## Componentes propios de la feature
 
@@ -54,6 +66,7 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Chart Cross-link Card | `wvAKu` → **Cross-link Deudas Card** | Renombrado: icono y label están horneados, es de un solo caso. |
 | Goal Summary Row | `He7JZ` | Fila de meta en Resumen (anida `q1qGr`). |
 | Card Empty | `S27V2` | Vacío dentro de una tarjeta, CTA reemplazable por slot. |
+| Category Switch Chip | `SspER` | Fila horizontal de categorías en Ver Subcategorías, con scroll horizontal (`ListView` en Flutter). Seleccionado = 3 señales: stroke `$primary-data`, ícono `$primary-data`, texto `$text-primary`. No seleccionado: sin stroke, ícono y texto en `$segment-inactive-text`. El fill (`$primary-soft` seleccionado / `$muted` no seleccionado) **no** es señal válida por sí sola — ambos tokens comparten el mismo hex en los dos temas. |
 
 Reusados sin modificar: `Dtm0X` Page Header, `vYZJT` Status Bar, `FSL69` Budget Line, `DRc5X` Category Row, `gZyEC` Toggle Field, `hIbs3` Menu Row, `jmQO5` Empty State, `j7Zvt`/`pNjOz` botones, `q1qGr` Goal Ring/Mini.
 
@@ -115,6 +128,14 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 - **Fallo de sync**: **no** es error a pantalla completa. La gráfica se ve entera con todos sus datos y el fallo es una tira discreta en `$amber` (no `$expense`) que lleva al Estado de sincronización. Hay cambios esperando, no algo roto. Mismo criterio que `04-inicio.md` HU-10. Es una presentación distinta al mismo evento de dominio que en Inicio muestra `Sync Indicator` (`saRZW`) en el header: divergencia deliberada, documentada en el `context` de la tira.
 - **Resumen vacío**: cada tarjeta lleva su vacío con su CTA en el lugar. **Un solo CTA primario por pantalla** (nota `FR1Gz`): "Crear presupuesto" Primary, "Crear meta" Secondary — dos primarios apilados compiten y ninguno gana. Patrón reusable: dos `Card Empty` hermanas apiladas → la primera Primary, las siguientes Secondary.
 
+### Destino de "Ver subcategorías" (pendiente #3, resuelto 2026-07-29)
+
+**Variante "Con dona" (`BfdaF`)**: el link "Ver subcategorías" de la tarjeta de Categorías (`A3zxf`/`guwa6`) navega a una pantalla propia con `Page Header · Con subtítulo` (`s9gXs`, título = nombre de la categoría, subtítulo = rango vigente) y una `Report Card` (`dflhE`) con dona + desglose de subcategorías, mismo lenguaje que la dona de Categorías.
+
+**Switcher horizontal de categorías, no un link por fila**: el link real en `Card Categorías` es único, al final de la tarjeta — no hay un "ver subcategorías" por cada fila del desglose. Por eso el destino no asume que se llegó desde una categoría fija: trae un `Category Switcher` horizontal (`Category Switch Chip` × N, componente nuevo `SspER`) para cambiar de categoría sin volver atrás. Contrato de selección: 3 señales (stroke + color de ícono + color de texto), nunca el fill solo.
+
+Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista simple" (página completa sin gráfico) y variante B "hoja/bottom sheet" (mismo contenido en `Bottom Sheet Base`).
+
 ## Notas para implementación
 
 - **Patrimonio se implementa como `LineChart`**, no barras (nota `khZjH`). El `.pen` usa barras **solo** porque Pencil no puede dibujar líneas; es una aproximación declarada, no la especificación. El resto del frame (hero de dos cifras, nota del interés, toggle de archivadas, jerarquía, colores) sí es especificación.
@@ -129,4 +150,5 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 1. **Migración de `FSL69`/`q1qGr`/`EB2TX` a `$primary-data`** — requiere aprobación del usuario; toca Presupuestos y Metas, ya aprobadas.
 2. **Variante oscura del sheet Selector de Periodo (`Sy92N`)** — no construida.
-3. **Sin diseñar**: tooltip de lectura de valor al tocar, share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, destino de "Ver subcategorías", variante ON del toggle "Incluir cuentas archivadas".
+3. **Sin diseñar**: tooltip de lectura de valor al tocar, share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver `BfdaF` en "Decisiones cerradas".
+4. ~~Tema oscuro pendiente para las 6 pantallas nuevas de 2026-07-29~~ — resuelto 2026-07-30, ver nodeIds oscuros en "Frames".
