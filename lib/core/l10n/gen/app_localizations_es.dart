@@ -4049,4 +4049,78 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSyncStatus => 'Estado de sincronización';
+
+  @override
+  String get accountTypeSheetTitle => 'Selecciona el tipo de cuenta';
+
+  @override
+  String get onboardingWelcomeHeadline =>
+      'Todo lo esencial. Gratis. Para siempre.';
+
+  @override
+  String get onboardingWelcomeSubhead =>
+      'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.';
+
+  @override
+  String get onboardingWelcomeCaption =>
+      'Ya dejamos categorías listas para ti.';
+
+  @override
+  String get onboardingWelcomeCta => 'Comenzar';
+
+  @override
+  String get onboardingAlreadyHaveAccount => 'Ya tengo cuenta';
+
+  @override
+  String get onboardingAccountHeadline => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingAccountSubhead =>
+      'Empieza con esta sugerencia o cámbiala a tu gusto.';
+
+  @override
+  String get onboardingAccountDefaultName => 'Ahorros';
+
+  @override
+  String get onboardingAccountCta => 'Crear cuenta';
+
+  @override
+  String get onboardingAccountSkip => 'Omitir por ahora';
+
+  @override
+  String get onboardingBackupHeadline => 'Respalda tus datos, cuando quieras';
+
+  @override
+  String get onboardingBackupBody =>
+      'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.';
+
+  @override
+  String get onboardingBackupFootnote =>
+      'Actívalo luego en Ajustes → Respaldar.';
+
+  @override
+  String get onboardingBackupCta => 'Activar respaldo';
+
+  @override
+  String get onboardingBackupSkip => 'Después';
+
+  @override
+  String get onboardingClosingHeadline => 'Tu billetera está lista';
+
+  @override
+  String get onboardingClosingSubheadWithAccount =>
+      'Registra tu primer movimiento y empieza a tomar el control de tu dinero.';
+
+  @override
+  String get onboardingClosingSubheadNoAccount =>
+      'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.';
+
+  @override
+  String get onboardingClosingCtaTransaction => 'Registra tu primer movimiento';
+
+  @override
+  String get onboardingClosingCtaAccount => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingClosingSkip => 'Lo hago después';
 }

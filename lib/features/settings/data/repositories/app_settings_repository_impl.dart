@@ -62,11 +62,24 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
     }
   }
 
+  @override
+  FutureResult<Unit> markOnboardingCompleted() async {
+    try {
+      await _local.markOnboardingCompleted(now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
   AppSettings _toEntity(db.AppSetting? row) => row == null
       ? const AppSettings.defaults()
       : AppSettings(
           zeroBasedEnabled: row.zeroBasedEnabled,
           categoriesSeeded: row.categoriesSeeded,
+          onboardingCompleted: row.onboardingCompleted,
         );
 
   StreamTransformer<Result<AppSettings>, Result<AppSettings>> _guardStream() =>
