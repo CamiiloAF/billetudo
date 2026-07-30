@@ -9,7 +9,7 @@
 // delete their own account.
 //
 // Deletion order: `delete_account_data` (a Postgres function, atomic by
-// definition — see the migration that created it) removes the 12 mirrored
+// definition — see the migration that created it) removes the 13 mirrored
 // tables first; `auth.admin.deleteUser` runs only if that succeeds. If the
 // admin delete failed after the data was gone, we would strand a userless
 // account row — better than deleting the user and leaving orphaned data with
