@@ -60,6 +60,9 @@ const powerSyncSchema = Schema([
     Column.integer('statement_day'),
     Column.integer('payment_due_day'),
     Column.text('card_balance_primary'),
+    // The import batch this account was created by (schemaVersion 21).
+    // Nullable = created by hand; see Accounts.importBatchId.
+    Column.text('import_batch_id'),
     ..._syncColumns,
   ]),
   Table('categories', [
@@ -69,6 +72,10 @@ const powerSyncSchema = Schema([
     Column.text('icon'),
     Column.text('color'),
     Column.integer('sort_order'),
+    // The import batch this category was created by (schemaVersion 21).
+    // Nullable = created by hand (or a `seed-*` catalog category); see
+    // Categories.importBatchId.
+    Column.text('import_batch_id'),
     ..._syncColumns,
   ]),
   Table('transactions', [
@@ -85,6 +92,9 @@ const powerSyncSchema = Schema([
     Column.text('goal_id'),
     Column.text('debt_id'),
     Column.integer('counts_in_budget'),
+    // The import batch this transaction was created by (schemaVersion 21).
+    // Nullable = not from an import; see Transactions.importBatchId.
+    Column.text('import_batch_id'),
     ..._syncColumns,
   ]),
   Table('budgets', [
@@ -197,6 +207,9 @@ const powerSyncSchema = Schema([
   Table('tags', [
     Column.text('name'),
     Column.text('color'),
+    // The import batch this tag was created by (schemaVersion 21). Nullable
+    // = created by hand; see Tags.importBatchId.
+    Column.text('import_batch_id'),
     ..._syncColumns,
   ]),
   Table('transaction_tags', [
@@ -236,6 +249,19 @@ const powerSyncSchema = Schema([
   Table('app_settings', [
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),
+    ..._syncColumns,
+  ]),
+  // One row per completed CSV import (schemaVersion 21,
+  // docs/requirements/11-import-export.md). Never deleted — `reverted_at`
+  // marks a revert (HU-08) instead of removing the row, so the history
+  // survives it.
+  Table('import_batches', [
+    Column.text('file_name'),
+    Column.text('template_name'),
+    Column.integer('imported_at'),
+    Column.integer('rows_imported'),
+    Column.integer('rows_skipped'),
+    Column.integer('reverted_at'),
     ..._syncColumns,
   ]),
 ]);

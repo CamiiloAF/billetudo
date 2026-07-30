@@ -70,3 +70,28 @@ final class AuthCancelledFailure extends Failure {
 final class UnexpectedFailure extends Failure {
   const UnexpectedFailure(super.message, {super.cause, super.stackTrace});
 }
+
+/// A file the user picked, or a file the app tried to write, could not be
+/// read/written (HU-09 of `docs/requirements/11-import-export.md`): not CSV,
+/// unreadable encoding, no rows, no disk space, permission denied. Not a
+/// crash — the tone is "the file has a problem", never "you did something
+/// wrong" (`CLAUDE.md`).
+final class IoFailure extends Failure {
+  const IoFailure(super.message, {this.reason, super.cause, super.stackTrace});
+
+  /// Machine-readable cause, so presentation can pick the right copy/icon
+  /// without parsing [message].
+  final IoFailureReason? reason;
+
+  @override
+  List<Object?> get props => [...super.props, reason];
+}
+
+/// Why an [IoFailure] happened.
+enum IoFailureReason {
+  unreadableFile,
+  emptyFile,
+  noSpace,
+  permissionDenied,
+  cancelled,
+}

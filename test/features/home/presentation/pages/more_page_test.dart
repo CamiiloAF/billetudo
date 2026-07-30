@@ -14,6 +14,7 @@ void main() {
     VoidCallback? onDebts,
     VoidCallback? onScheduledPayments,
     VoidCallback? onGoals,
+    VoidCallback? onImportExport,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -26,6 +27,7 @@ void main() {
           onOpenDebts: onDebts ?? () {},
           onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenGoals: onGoals ?? () {},
+          onOpenImportExport: onImportExport ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -59,13 +61,14 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías, Deudas, Pagos programados, Metas y Ajustes están '
-      'vivas (sin badge Próximamente)', (tester) async {
+      'Cuentas, Categorías, Deudas, Pagos programados, Metas, Importar y '
+      'exportar y Ajustes están vivas (sin badge Próximamente)', (tester) async {
     await pumpMore(tester);
 
-    // Six live rows, two not-yet-built ones carrying the badge (Gráficas e
-    // informes, Importar y exportar).
-    expect(find.byType(ComingSoonBadge), findsNWidgets(2));
+    // Seven live rows, one not-yet-built one carrying the badge (Gráficas e
+    // informes). Importar y exportar shipped its presentation layer, so it
+    // is no longer a "Próximamente" destination.
+    expect(find.byType(ComingSoonBadge), findsOneWidget);
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -86,6 +89,7 @@ void main() {
     expect(badgeOf('Deudas'), isNull);
     expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Metas'), isNull);
+    expect(badgeOf('Importar y exportar'), isNull);
     expect(badgeOf('Ajustes'), isNull);
   });
 
@@ -146,6 +150,7 @@ void main() {
     var debts = 0;
     var scheduledPayments = 0;
     var goals = 0;
+    var importExport = 0;
     await pumpMore(
       tester,
       onAccounts: () => accounts++,
@@ -153,6 +158,7 @@ void main() {
       onDebts: () => debts++,
       onScheduledPayments: () => scheduledPayments++,
       onGoals: () => goals++,
+      onImportExport: () => importExport++,
     );
 
     await tester.tap(find.text('Cuentas'));
@@ -170,12 +176,20 @@ void main() {
     );
     await tester.tap(find.text('Metas'));
     await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Importar y exportar'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(find.text('Importar y exportar'));
+    await tester.pump();
 
     expect(accounts, 1);
     expect(categories, 1);
     expect(debts, 1);
     expect(scheduledPayments, 1);
     expect(goals, 1);
+    expect(importExport, 1);
   });
 
   testWidgets('tocar un destino "Próximamente" pasa su etiqueta al callback',

@@ -67,6 +67,18 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/import_export/presentation/cubit/export_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_batches_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_export_hub_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_flow_cubit.dart';
+import '../../features/import_export/presentation/cubit/restore_cubit.dart';
+import '../../features/import_export/presentation/cubit/save_copy_cubit.dart';
+import '../../features/import_export/presentation/pages/export_page.dart';
+import '../../features/import_export/presentation/pages/import_batches_page.dart';
+import '../../features/import_export/presentation/pages/import_export_hub_page.dart';
+import '../../features/import_export/presentation/pages/import_flow_page.dart';
+import '../../features/import_export/presentation/pages/restore_page.dart';
+import '../../features/import_export/presentation/pages/save_copy_page.dart';
 import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
@@ -132,6 +144,12 @@ abstract final class AppRoutes {
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
+  static const String importExport = '/mas/importar-exportar';
+  static const String exportCsv = '$importExport/exportar';
+  static const String importCsv = '$importExport/importar';
+  static const String importBatches = '$importExport/importaciones';
+  static const String restoreCopy = '$importExport/restaurar';
+  static const String saveCopy = '$importExport/guardar-copia';
 
   /// The new-movement form preselecting [accountId] — used when the movements
   /// list is filtered down to a single account (HU-06a). The form still lets
@@ -338,6 +356,7 @@ GoRouter createAppRouter() {
       _debtsRoute(),
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
+      _importExportRoute(),
     ],
   );
 }
@@ -714,6 +733,7 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
                     context.push(AppRoutes.scheduledPayments),
                 // Metas is a tab root now: switch to its branch.
                 onOpenGoals: () => context.go(AppRoutes.goals),
+                onOpenImportExport: () => context.push(AppRoutes.importExport),
                 onOpenComingSoon: (title) =>
                     context.push(AppRoutes.comingSoonTitled(title)),
                 onOpenSettings: () => context.push(AppRoutes.settings),
@@ -873,11 +893,7 @@ GoRoute _syncStatusRoute() => GoRoute(
             // its own: two surfaces for the same thing would eventually drift
             // apart on the very wording (copy vs. backup) this screen cannot
             // afford to blur.
-            onSaveCopy: () => context.push(
-              AppRoutes.comingSoonTitled(
-                AppLocalizations.of(context).moreImportExport,
-              ),
-            ),
+            onSaveCopy: () => context.push(AppRoutes.importExport),
             onOpenComingSoon: (title) =>
                 context.push(AppRoutes.comingSoonTitled(title)),
           ),
@@ -1149,6 +1165,72 @@ GoRoute _goalLinkModeRoute() => GoRoute(
           ),
         );
       },
+    );
+
+// Import/Export (`docs/requirements/11-import-export.md`): the hub is
+// reached from "Más" → Gestión and from Sincronización's "Guardar una copia"
+// row, so it lives as a root-navigator sibling like Cuentas/Categorías —
+// never inside a `StatefulShellBranch` (a `Page Header` and the `Tab Bar`
+// are mutually exclusive, MASTER.md).
+GoRoute _importExportRoute() => GoRoute(
+      path: AppRoutes.importExport,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<ImportExportHubCubit>(), (c) => c.start()),
+        child: ImportExportHubPage(
+          onSaveCopy: () => context.push(AppRoutes.saveCopy),
+          onExportCsv: () => context.push(AppRoutes.exportCsv),
+          onImportCsv: () => context.push(AppRoutes.importCsv),
+          onRestore: () => context.push(AppRoutes.restoreCopy),
+          onSeeImportHistory: () => context.push(AppRoutes.importBatches),
+          onOpenBatch: (_) => context.push(AppRoutes.importBatches),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'exportar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                getIt<ExportCubit>()..start(hasAnyTransactions: true),
+            child: const ExportPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'importar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => getIt<ImportFlowCubit>()..reset(),
+            child: ImportFlowPage(onDone: () => context.pop()),
+          ),
+        ),
+        GoRoute(
+          path: 'importaciones',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<ImportBatchesCubit>(), (c) => c.start()),
+            child: const ImportBatchesPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'restaurar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => getIt<RestoreCubit>()..reset(),
+            child: RestorePage(onDone: () => context.go(AppRoutes.importExport)),
+          ),
+        ),
+        GoRoute(
+          path: 'guardar-copia',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(getIt<SaveCopyCubit>(), (c) => c.start()),
+            child: SaveCopyPage(onDone: () => context.pop()),
+          ),
+        ),
+      ],
     );
 
 GoRoute _categoriesRoute() => GoRoute(
