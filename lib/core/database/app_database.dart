@@ -694,8 +694,7 @@ class AppSettings extends Table with _SyncColumns {
   /// finishes (or explicitly skips) onboarding and never cleared, so the
   /// flow does not reappear on a later launch. Same pattern as
   /// [categoriesSeeded].
-  BoolColumn get onboardingCompleted =>
-      boolean().clientDefault(() => false)();
+  BoolColumn get onboardingCompleted => boolean().clientDefault(() => false)();
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,10 +1181,15 @@ class AppDatabase extends _$AppDatabase {
 
           // v20 -> v21: `AppSettings` gains `onboardingCompleted`, a one-shot
           // latch so the onboarding flow (`lib/features/onboarding/`) runs
-          // once per installation and never reappears. Same pattern as
-          // `categoriesSeeded` (v8 -> v9 above).
+          // once per installation and never reappears. No `addColumn` — see
+          // the note on `from < 12` above: `appSettings` is a PowerSync-
+          // managed view, and `powerSyncSchema` (`powersync_schema.dart`)
+          // already declares `onboarding_completed`, so PowerSync recreates
+          // the view with the column present before this migration runs.
+          // Nothing else to do here: the column has a client default of
+          // `false`, so the singleton row keeps that value with no backfill.
           if (from < 21) {
-            await m.addColumn(appSettings, appSettings.onboardingCompleted);
+            // No `addColumn` — see comment above.
           }
         },
       );

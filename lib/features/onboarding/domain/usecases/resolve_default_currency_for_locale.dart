@@ -1,32 +1,30 @@
 import 'package:injectable/injectable.dart';
 
 /// HU-02 (`docs/requirements/13-onboarding.md`): picks the currency to
-/// pre-fill on the first-account step, from the device locale's region.
+/// pre-fill on the first-account step.
 ///
-/// The requirements document lists a wider table (CO→COP, MX→MXN, AR→ARS,
-/// CL→CLP, PE→PEN, ES→EUR, US→USD…), but the Accounts currency picker
-/// (`AccountFormState.supportedCurrencies`,
-/// `currency_picker_sheet.dart`) deliberately only offers `COP` and `USD`
-/// today — MXN/ARS/CLP/PEN/EUR were retired from it on purpose. Pre-filling a
-/// currency the picker cannot actually offer would show the user a value they
-/// then cannot keep, so this use case narrows the table to what the picker
-/// supports: `CO` resolves to `COP`, everything else (including an unknown or
-/// missing region) falls back to `USD`. Widen this once Accounts' currency
-/// picker grows back the other currencies.
+/// The requirements document originally asked for this to derive the
+/// currency from the device locale's region (CO→COP, MX→MXN, AR→ARS,
+/// CL→CLP, PE→PEN, ES→EUR, US→USD…), narrowed to what the Accounts currency
+/// picker actually supports today (`COP`/`USD` only —
+/// `AccountFormState.supportedCurrencies`, `currency_picker_sheet.dart`).
+/// **Changed 2026-07-30:** region-based resolution was dropped entirely.
+/// The device locale's region is a language/formatting preference, not the
+/// user's real location — confirmed in testing with a device set to
+/// Spanish (Spain) and later to a system region of `US` while physically in
+/// Colombia, both of which resolved away from `COP`. `regionCode` is now
+/// ignored: the app's primary market is Colombia, so the default is always
+/// `COP`. The currency **always stays editable** here, so this is a starting
+/// point, never a silent lock-in. Revisit once Accounts' currency picker
+/// grows back the other currencies and/or a more reliable location signal
+/// is worth the added complexity.
 @injectable
 class ResolveDefaultCurrencyForLocale {
   const ResolveDefaultCurrencyForLocale();
 
   static const String _cop = 'COP';
-  static const String _usd = 'USD';
 
-  /// [regionCode] is an ISO 3166-1 alpha-2 region (e.g. the `countryCode` of
-  /// the device's `Locale`, or `Platform.localeName`'s region segment).
-  /// `null` or unrecognized values fall back to [_usd].
-  String call(String? regionCode) {
-    if (regionCode == null) {
-      return _usd;
-    }
-    return regionCode.toUpperCase() == 'CO' ? _cop : _usd;
-  }
+  /// [regionCode] is unused (kept for call-site compatibility) — see the
+  /// class doc for why region-based resolution was dropped.
+  String call(String? regionCode) => _cop;
 }

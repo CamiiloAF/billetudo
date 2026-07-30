@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1250,8 +1249,7 @@ GoRoute _onboardingRoute() => GoRoute(
           path: 'respaldo',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => BlocProvider.value(
-            value: getIt<OnboardingFlowCubit>()
-              ..stepped(OnboardingStep.backup),
+            value: getIt<OnboardingFlowCubit>()..stepped(OnboardingStep.backup),
             child: BackupIntroPage(
               onActivarRespaldo: () => context.push(
                 AppRoutes.onboardingLoginFrom(closesFlow: false),
@@ -1279,8 +1277,7 @@ GoRoute _onboardingRoute() => GoRoute(
                           : AppRoutes.newTransaction,
                     ),
                   ),
-                  onSkip: () =>
-                      unawaited(_finishOnboardingThen(context, null)),
+                  onSkip: () => unawaited(_finishOnboardingThen(context, null)),
                 ),
               ),
             );
@@ -1290,7 +1287,8 @@ GoRoute _onboardingRoute() => GoRoute(
           path: 'iniciar-sesion',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) {
-            final closesFlow = state.uri.queryParameters['closesFlow'] == 'true';
+            final closesFlow =
+                state.uri.queryParameters['closesFlow'] == 'true';
             return BlocProvider(
               create: (context) => getIt<LoginCubit>(),
               child: LoginPage(
@@ -1314,6 +1312,14 @@ GoRoute _onboardingRoute() => GoRoute(
                   create: (context) =>
                       _started(getIt<MergeCubit>(), (c) => c.start()),
                   child: MergeConfirmationPage(
+                    // `closesFlow: false` (HU-07, "Activar respaldo" from
+                    // step 3) does NOT go to Home/finanzas — it returns to
+                    // Cierre (step 4). "Ir a mis finanzas" would mislead the
+                    // user there, so this path gets the generic "Continuar"
+                    // instead; `closesFlow: true` keeps the default label.
+                    ctaLabel: closesFlow
+                        ? null
+                        : AppLocalizations.of(context).commonContinue,
                     onDone: () => unawaited(
                       _finishOnboardingAfterLogin(
                         context,
@@ -1360,7 +1366,8 @@ Future<void> _loadOnboardingAccountForm(
   final accountsResult =
       await getIt<AccountRepository>().watchActiveAccounts().first;
   final existing = switch (accountsResult) {
-    Right(value: final accounts) when accounts.isNotEmpty => accounts.first.account,
+    Right(value: final accounts) when accounts.isNotEmpty =>
+      accounts.first.account,
     _ => null,
   };
   if (existing != null) {
@@ -1369,8 +1376,7 @@ Future<void> _loadOnboardingAccountForm(
   }
 
   await cubit.load(null);
-  final regionCode = ui.PlatformDispatcher.instance.locale.countryCode;
-  final currency = getIt<ResolveDefaultCurrencyForLocale>()(regionCode);
+  final currency = getIt<ResolveDefaultCurrencyForLocale>()(null);
   cubit
     ..typeSelected(AccountType.savings)
     ..nameChanged(defaultName)

@@ -27,10 +27,11 @@ import '../widgets/onboarding_wallet_fan.dart';
 /// nothing but its already-public setters (`typeSelected`, `nameChanged`,
 /// `currencySelected`), so every validation rule (including HU-02's
 /// card-fields requirement) runs unmodified. This page only renders a
-/// **subset** of that cubit's fields — name, type, currency, balance, plus
-/// the card section when `type == card` — hiding institution/number/interest
-/// rate/icon/colour, per `13-onboarding.md` HU-02's "reutiliza el formulario
-/// ... simplificado por defecto".
+/// **subset** of that cubit's fields — name, institution (`showInstitutionField`
+/// — hidden for cash, same as the full form), type, currency, balance, plus
+/// the card section when `type == card` — hiding number/interest rate/icon/
+/// colour, per `13-onboarding.md` HU-02's "reutiliza el formulario ...
+/// simplificado por defecto".
 ///
 /// **Divergence from `O2QbEF`, documented:** Pencil's card variant shows
 /// "Deuda actual" in the top row next to "Moneda". This page instead keeps
@@ -117,12 +118,27 @@ class _FirstAccountPageState extends State<FirstAccountPage> {
                 const SizedBox(height: 16),
                 AccountFormField.text(
                   label: l10n.accountFormNameLabel,
+                  hint: l10n.accountFormNameHint,
                   initialValue: state.name,
                   maxLength: AccountDraft.maxNameLength,
                   textCapitalization: TextCapitalization.words,
                   errorText: _errorFor(l10n, state, AccountDraft.fieldName),
                   onChanged: cubit.nameChanged,
                 ),
+                if (state.showInstitutionField) ...[
+                  const SizedBox(height: 16),
+                  AccountFormField.text(
+                    label: l10n.accountFormInstitutionLabel,
+                    icon: LucideIcons.landmark,
+                    hint: l10n.accountFormInstitutionHint,
+                    initialValue: state.institution,
+                    maxLength: AccountDraft.maxInstitutionLength,
+                    textCapitalization: TextCapitalization.words,
+                    errorText:
+                        _errorFor(l10n, state, AccountDraft.fieldInstitution),
+                    onChanged: cubit.institutionChanged,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 if (type == null || !type.isCard)
                   Row(
@@ -271,6 +287,7 @@ String? _errorFor(AppLocalizations l10n, AccountFormState state, String field) {
         ? l10n.accountErrorNameRequired
         : l10n.accountErrorName,
     AccountDraft.fieldCurrency => l10n.accountErrorCurrency,
+    AccountDraft.fieldInstitution => l10n.accountErrorInstitution,
     AccountDraft.fieldCreditLimitMinor => l10n.accountErrorCreditLimit,
     AccountDraft.fieldStatementDay => l10n.accountErrorStatementDay,
     AccountDraft.fieldPaymentDueDay => l10n.accountErrorPaymentDueDay,

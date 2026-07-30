@@ -13,15 +13,26 @@ import '../widgets/merge_stats_card.dart';
 /// successful first sign-in that had local data to fold in. Same centered
 /// language as Login, for continuity across the Auth flow.
 class MergeConfirmationPage extends StatelessWidget {
-  const MergeConfirmationPage({required this.onDone, super.key});
+  const MergeConfirmationPage({required this.onDone, this.ctaLabel, super.key});
 
-  /// "Ir a mis finanzas".
+  /// Called when the user taps the CTA. What it actually does depends on the
+  /// caller: from Ajustes it always goes to Home, but from the onboarding's
+  /// "Respalda tus datos" (HU-07) step it goes back to Cierre (the flow
+  /// isn't done yet) — see `_finishOnboardingAfterLogin` in `app_router.dart`.
   final VoidCallback onDone;
+
+  /// Overrides the CTA's label, which otherwise defaults to
+  /// `l10n.authMergeCta` ("Ir a mis finanzas"). The onboarding caller passes
+  /// `l10n.commonContinue` when `onDone` does NOT go to Home/finances (HU-07,
+  /// `closesFlow: false`) — showing "Ir a mis finanzas" for a button that
+  /// actually returns to another onboarding step would mislead the user.
+  final String? ctaLabel;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final label = ctaLabel ?? l10n.authMergeCta;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -64,7 +75,7 @@ class MergeConfirmationPage extends StatelessWidget {
                         width: double.infinity,
                         child: FilledButton(
                           onPressed: onDone,
-                          child: Text(l10n.authMergeCta),
+                          child: Text(label),
                         ),
                       ),
                     ],
@@ -128,7 +139,7 @@ class MergeConfirmationPage extends StatelessWidget {
                     child: FilledButton.icon(
                       onPressed: onDone,
                       icon: const Icon(LucideIcons.arrowRight),
-                      label: Text(l10n.authMergeCta),
+                      label: Text(label),
                     ),
                   ),
                 ],
