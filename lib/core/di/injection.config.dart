@@ -398,6 +398,14 @@ import 'package:billetudo/features/home/domain/usecases/watch_month_transactions
     as _i426;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
     as _i199;
+import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
+    as _i522;
+import 'package:billetudo/features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart'
+    as _i394;
+import 'package:billetudo/features/onboarding/domain/usecases/should_show_onboarding.dart'
+    as _i152;
+import 'package:billetudo/features/onboarding/presentation/cubit/onboarding_flow_cubit.dart'
+    as _i9;
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payment_tags_local_datasource.dart'
     as _i276;
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payments_local_datasource.dart'
@@ -470,6 +478,8 @@ import 'package:billetudo/features/settings/domain/repositories/app_settings_rep
     as _i487;
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
     as _i182;
+import 'package:billetudo/features/settings/domain/usecases/set_onboarding_completed.dart'
+    as _i528;
 import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart'
     as _i636;
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart'
@@ -541,6 +551,8 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final registerModule = _$RegisterModule();
+    gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
+        () => const _i394.ResolveDefaultCurrencyForLocale());
     gh.factory<_i450.ProjectUpcomingOccurrences>(
         () => const _i450.ProjectUpcomingOccurrences());
     gh.factory<_i604.GetTransactionEditImpact>(
@@ -837,6 +849,8 @@ extension GetItInjectableX on _i174.GetIt {
         _i733.AppSettingsRepositoryImpl(gh<_i95.AppSettingsLocalDatasource>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i528.SetOnboardingCompleted>(
+        () => _i528.SetOnboardingCompleted(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i636.SetZeroBasedEnabled>(
         () => _i636.SetZeroBasedEnabled(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
@@ -1057,6 +1071,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1047.WithdrawFromGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
+    gh.factory<_i522.CompleteOnboarding>(
+        () => _i522.CompleteOnboarding(gh<_i528.SetOnboardingCompleted>()));
     gh.factory<_i875.GoalLinkCubit>(
         () => _i875.GoalLinkCubit(gh<_i933.LinkTransactionToGoal>()));
     gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
@@ -1099,6 +1115,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
+    gh.factory<_i152.ShouldShowOnboarding>(() => _i152.ShouldShowOnboarding(
+          gh<_i487.AppSettingsRepository>(),
+          gh<_i1067.AccountRepository>(),
+        ));
     gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
           gh<_i871.GetBudgetById>(),
           gh<_i559.GetBudgetProgress>(),
@@ -1154,6 +1174,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i498.DeleteAccount>(),
           gh<_i537.WipeLocalData>(),
         ));
+    gh.lazySingleton<_i9.OnboardingFlowCubit>(
+        () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
     gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
           gh<_i1003.WatchDebtDetail>(),
           gh<_i255.DebtInterestCalculator>(),

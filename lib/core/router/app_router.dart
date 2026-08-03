@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/accounts/domain/entities/account.dart';
+import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/accounts/presentation/cubit/account_detail_cubit.dart';
 import '../../features/accounts/presentation/cubit/account_form_cubit.dart';
 import '../../features/accounts/presentation/cubit/accounts_list_cubit.dart';
@@ -67,6 +69,14 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/onboarding/domain/entities/onboarding_progress.dart';
+import '../../features/onboarding/domain/entities/onboarding_step.dart';
+import '../../features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart';
+import '../../features/onboarding/presentation/cubit/onboarding_flow_cubit.dart';
+import '../../features/onboarding/presentation/pages/backup_intro_page.dart';
+import '../../features/onboarding/presentation/pages/closing_page.dart';
+import '../../features/onboarding/presentation/pages/first_account_page.dart';
+import '../../features/onboarding/presentation/pages/welcome_page.dart';
 import '../../features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import '../../features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import '../../features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
@@ -86,6 +96,7 @@ import '../../features/transactions/presentation/pages/transaction_detail_page.d
 import '../../features/transactions/presentation/pages/transaction_form_page.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
+import '../error/result.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../preferences/balance_carousel_cubit.dart';
 import '../sync/presentation/cubit/sync_status_cubit.dart';
@@ -105,6 +116,13 @@ abstract final class AppRoutes {
   const AppRoutes._();
 
   static const String home = '/';
+  static const String onboarding = '/bienvenida';
+  static const String onboardingAccount = '/bienvenida/cuenta';
+  static const String onboardingBackup = '/bienvenida/respaldo';
+  static const String onboardingClosing = '/bienvenida/cierre';
+  static const String onboardingLogin = '/bienvenida/iniciar-sesion';
+  static const String onboardingMergeConfirmation =
+      '/bienvenida/iniciar-sesion/fusion';
   static const String budgets = '/presupuestos';
   static const String newBudget = '/presupuestos/nuevo';
   static const String budgetsHistory = '/presupuestos/historico';
@@ -138,6 +156,18 @@ abstract final class AppRoutes {
   /// the user change it.
   static String newTransactionForAccount(String accountId) =>
       '$newTransaction?accountId=${Uri.encodeQueryComponent(accountId)}';
+
+  /// The onboarding login screen (HU-06 from Bienvenida, HU-07 "Activar
+  /// respaldo" from Respalda tus datos) — same route, same reused
+  /// [LoginPage], but [closesFlow] decides what a successful sign-in does
+  /// next: HU-06 closes the whole flow, HU-07 continues to Cierre.
+  static String onboardingLoginFrom({required bool closesFlow}) =>
+      '$onboardingLogin?closesFlow=$closesFlow';
+
+  /// The onboarding merge-confirmation screen, carrying the same
+  /// [closesFlow] flag through from [onboardingLoginFrom].
+  static String onboardingMergeConfirmationFrom({required bool closesFlow}) =>
+      '$onboardingMergeConfirmation?closesFlow=$closesFlow';
 
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
@@ -304,10 +334,19 @@ class GoalLinkContext {
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
-GoRouter createAppRouter() {
+///
+/// [initialLocation] defaults to [AppRoutes.home] — `bootstrap.dart` passes
+/// [AppRoutes.onboarding] instead when `ShouldShowOnboarding` (evaluated
+/// exactly once, before this router exists) says the welcome flow has not
+/// run yet (`13-onboarding.md`, "El gate se evalúa una sola vez por
+/// arranque, tras el bootstrap"). This is a one-shot decision, not a
+/// reactive `redirect`: nothing here re-checks the latch on every
+/// navigation, so a remote change to `onboardingCompleted` arriving mid-
+/// session (it syncs) never yanks the user out of the screen they are on.
+GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: AppRoutes.home,
+    initialLocation: initialLocation,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -338,6 +377,12 @@ GoRouter createAppRouter() {
       _debtsRoute(),
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
+      // The welcome flow (`13-onboarding.md`): a sibling of the shell route,
+      // same reasoning as the routes above — it must render without the tab
+      // bar, and unlike them it is also the *only* screen reachable while
+      // active (nothing links to the shell routes until the flow closes and
+      // pushes/goes to `AppRoutes.home` itself).
+      _onboardingRoute(),
     ],
   );
 }
@@ -1150,6 +1195,238 @@ GoRoute _goalLinkModeRoute() => GoRoute(
         );
       },
     );
+
+// The welcome flow (`13-onboarding.md`): four screens under `/bienvenida`,
+// each its own `GoRoute` (not a `PageView` inside one route) so the Android
+// back button gets ordinary stack-pop behavior between steps for free, and
+// so "Ya tengo cuenta"/"Activar respaldo" can reuse the *exact* `LoginPage`/
+// `MergeConfirmationPage` routes (just with onboarding-flavored callbacks)
+// instead of a parallel login implementation. All stacked on the root
+// navigator, outside the tab shell — nothing here has a `Tab Bar`.
+GoRoute _onboardingRoute() => GoRoute(
+      path: AppRoutes.onboarding,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            getIt<OnboardingFlowCubit>()..stepped(OnboardingStep.welcome),
+        child: WelcomePage(
+          onComenzar: () => context.push(AppRoutes.onboardingAccount),
+          onYaTengoCuenta: () => context.push(
+            AppRoutes.onboardingLoginFrom(closesFlow: true),
+          ),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'cuenta',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(
+                value: getIt<OnboardingFlowCubit>()
+                  ..stepped(OnboardingStep.account),
+              ),
+              BlocProvider(
+                create: (_) => _startedOnboardingAccountForm(
+                  defaultName:
+                      AppLocalizations.of(context).onboardingAccountDefaultName,
+                ),
+              ),
+            ],
+            child: FirstAccountPage(
+              onCreated: () {
+                getIt<OnboardingFlowCubit>().accountCreated();
+                unawaited(context.push(AppRoutes.onboardingBackup));
+              },
+              onSkip: () {
+                getIt<OnboardingFlowCubit>().accountSkipped();
+                unawaited(context.push(AppRoutes.onboardingBackup));
+              },
+            ),
+          ),
+        ),
+        GoRoute(
+          path: 'respaldo',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider.value(
+            value: getIt<OnboardingFlowCubit>()..stepped(OnboardingStep.backup),
+            child: BackupIntroPage(
+              onActivarRespaldo: () => context.push(
+                AppRoutes.onboardingLoginFrom(closesFlow: false),
+              ),
+              onDespues: () => context.push(AppRoutes.onboardingClosing),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: 'cierre',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final cubit = getIt<OnboardingFlowCubit>()
+              ..stepped(OnboardingStep.closing);
+            return BlocProvider.value(
+              value: cubit,
+              child: BlocBuilder<OnboardingFlowCubit, OnboardingProgress>(
+                builder: (context, progress) => ClosingPage(
+                  accountSkipped: progress.accountSkipped,
+                  onPrimary: () => unawaited(
+                    _finishOnboardingThen(
+                      context,
+                      progress.accountSkipped
+                          ? AppRoutes.newAccount
+                          : AppRoutes.newTransaction,
+                    ),
+                  ),
+                  onSkip: () => unawaited(_finishOnboardingThen(context, null)),
+                ),
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: 'iniciar-sesion',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final closesFlow =
+                state.uri.queryParameters['closesFlow'] == 'true';
+            return BlocProvider(
+              create: (context) => getIt<LoginCubit>(),
+              child: LoginPage(
+                onSignedIn: () => context.push(
+                  AppRoutes.onboardingMergeConfirmationFrom(
+                    closesFlow: closesFlow,
+                  ),
+                ),
+                onSkip: () => context.pop(),
+              ),
+            );
+          },
+          routes: [
+            GoRoute(
+              path: 'fusion',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) {
+                final closesFlow =
+                    state.uri.queryParameters['closesFlow'] == 'true';
+                return BlocProvider(
+                  create: (context) =>
+                      _started(getIt<MergeCubit>(), (c) => c.start()),
+                  child: MergeConfirmationPage(
+                    // `closesFlow: false` (HU-07, "Activar respaldo" from
+                    // step 3) does NOT go to Home/finanzas — it returns to
+                    // Cierre (step 4). "Ir a mis finanzas" would mislead the
+                    // user there, so this path gets the generic "Continuar"
+                    // instead; `closesFlow: true` keeps the default label.
+                    ctaLabel: closesFlow
+                        ? null
+                        : AppLocalizations.of(context).commonContinue,
+                    onDone: () => unawaited(
+                      _finishOnboardingAfterLogin(
+                        context,
+                        closesFlow: closesFlow,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+
+/// HU-02: pre-fills the exact `AccountFormCubit` `AccountFormPage` uses
+/// (`docs/requirements/13-onboarding.md` — "reutiliza el formulario ...
+/// mismas validaciones, mismos widgets") through its own public setters —
+/// name "Ahorros" (localized), type `savings`, currency from the device
+/// region (`ResolveDefaultCurrencyForLocale`). No new use case, no second
+/// form implementation.
+///
+/// [defaultName] is resolved by the caller (the route's own `builder`
+/// context, a normal build-phase context) rather than looked up here: this
+/// function runs inside a `BlocProvider.create`, and `AppLocalizations.of`
+/// calls `dependOnInheritedWidgetOfExactType`, which Flutter forbids from
+/// `create` — that life-cycle never re-runs, so it can never react to a
+/// dependency change, and throws instead of silently ignoring it.
+AccountFormCubit _startedOnboardingAccountForm({required String defaultName}) {
+  final cubit = getIt<AccountFormCubit>();
+  unawaited(_loadOnboardingAccountForm(cubit, defaultName: defaultName));
+  return cubit;
+}
+
+/// `13-onboarding.md`, "Interrupción a mitad": if the app died right after
+/// step 2 created the account on a previous attempt, the account survives
+/// (it is a normal row, never tagged "created in onboarding") and this step
+/// must show it instead of silently re-offering the "Ahorros" default —
+/// which would look identical to a fresh account and invite a duplicate.
+Future<void> _loadOnboardingAccountForm(
+  AccountFormCubit cubit, {
+  required String defaultName,
+}) async {
+  final accountsResult =
+      await getIt<AccountRepository>().watchActiveAccounts().first;
+  final existing = switch (accountsResult) {
+    Right(value: final accounts) when accounts.isNotEmpty =>
+      accounts.first.account,
+    _ => null,
+  };
+  if (existing != null) {
+    await cubit.load(existing.id);
+    return;
+  }
+
+  await cubit.load(null);
+  final currency = getIt<ResolveDefaultCurrencyForLocale>()(null);
+  cubit
+    ..typeSelected(AccountType.savings)
+    ..nameChanged(defaultName)
+    ..currencySelected(currency);
+}
+
+/// HU-04: acting on the closing screen — registering or skipping — is what
+/// turns the `onboardingCompleted` latch on, regardless of which one the user
+/// picked (`13-onboarding.md`, "Persistencia y ciclo de vida del flujo").
+/// [nextRoute] is pushed on top of Home afterward when the CTA itself opens
+/// something (the transaction form, or the create-account bridge); `null`
+/// for the plain skip.
+Future<void> _finishOnboardingThen(
+  BuildContext context,
+  String? nextRoute,
+) async {
+  await getIt<OnboardingFlowCubit>().finish();
+  if (!context.mounted) {
+    return;
+  }
+  context.go(AppRoutes.home);
+  if (nextRoute != null) {
+    unawaited(context.push(nextRoute));
+  }
+}
+
+/// HU-06 (`closesFlow: true`, from Bienvenida's "Ya tengo cuenta"): a
+/// successful sign-in + merge closes the whole flow and enters Home directly
+/// — "no se le vuelve a pedir crear una cuenta a alguien que acaba de
+/// recuperar las suyas".
+///
+/// HU-07 (`closesFlow: false`, from Respalda tus datos' "Activar respaldo"):
+/// "Activar respaldo aquí no termina el onboarding a la fuerza" — the flow
+/// continues to Cierre with normalcy instead, which is the one that actually
+/// finishes it.
+Future<void> _finishOnboardingAfterLogin(
+  BuildContext context, {
+  required bool closesFlow,
+}) async {
+  final cubit = getIt<OnboardingFlowCubit>()..authenticated();
+  if (!closesFlow) {
+    context.go(AppRoutes.onboardingClosing);
+    return;
+  }
+  await cubit.finish();
+  if (!context.mounted) {
+    return;
+  }
+  context.go(AppRoutes.home);
+}
 
 GoRoute _categoriesRoute() => GoRoute(
       path: AppRoutes.categories,

@@ -14,7 +14,15 @@ import 'core/theme/theme_mode_cubit.dart';
 /// supported locales — es + en, with es as the natural fallback) and
 /// go_router navigation.
 class BilletudoApp extends StatefulWidget {
-  const BilletudoApp({super.key});
+  const BilletudoApp({this.initialLocation = AppRoutes.home, super.key});
+
+  /// `bootstrap.dart` resolves this once, before the widget tree exists, via
+  /// `ShouldShowOnboarding` (`13-onboarding.md`, "El gate se evalúa una sola
+  /// vez por arranque, tras el bootstrap") — [AppRoutes.onboarding] when the
+  /// welcome flow has not run yet, [AppRoutes.home] otherwise. Not a
+  /// `redirect`: a one-shot decision, so a remote change to the latch
+  /// arriving mid-session never yanks the user off the screen they are on.
+  final String initialLocation;
 
   @override
   State<BilletudoApp> createState() => _BilletudoAppState();
@@ -22,7 +30,8 @@ class BilletudoApp extends StatefulWidget {
 
 class _BilletudoAppState extends State<BilletudoApp> {
   // Built once, not on every rebuild.
-  late final GoRouter _router = createAppRouter();
+  late final GoRouter _router =
+      createAppRouter(initialLocation: widget.initialLocation);
 
   // A DI singleton (survives the whole process, not just this widget), so
   // `.value` below — not `create:` — keeps `BlocProvider` from disposing it

@@ -236,6 +236,7 @@ const powerSyncSchema = Schema([
   Table('app_settings', [
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),
+    Column.integer('onboarding_completed'),
     ..._syncColumns,
   ]),
 ]);

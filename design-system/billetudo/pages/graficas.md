@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas. **Ampliación 2026-07-29/30:** 6 pantallas nuevas (5 estados de carga/vacío que faltaban + destino de "Ver subcategorías") aprobadas en claro y oscuro, auditadas por `ui-ux-reviewer` (3 hallazgos IMPORTANTE corregidos en la variante "Con dona").
+**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas. **Ampliación 2026-07-29/30:** 6 pantallas nuevas (5 estados de carga/vacío que faltaban + destino de "Ver subcategorías") aprobadas en claro y oscuro, auditadas por `ui-ux-reviewer` (3 hallazgos IMPORTANTE corregidos en la variante "Con dona"). **Excepción (2026-07-30, en revisión):** la interacción del donut de Categorías cambió (ver "Interacción del donut de Categorías" más abajo) — `A3zxf` fue modificado y lleva marca `🔖 EN REVISION` en el canvas junto con sus dos nuevas variantes (`tCOi4`, `d2bv47`), solo en tema claro hasta que el usuario apruebe explícitamente; `Zyd8k` (oscuro) no se toca todavía.
 
 ## Tesis (norte del diseño)
 
@@ -23,6 +23,8 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Flujo — ingresos vs. gastos mes a mes (HU-01) | `o8uzbT` | `BmKsK` |
 | Patrimonio — líquido vs. total (HU-02) | `kgM3u` | `bX4is` |
 | Categorías — dona + desglose (HU-03) | `A3zxf` | `Zyd8k` |
+| Categorías — dona, con selección (Vivienda) | `tCOi4` | **no construido** (solo claro, ver "en revisión" abajo) |
+| Categorías — dona, pill "Atrás" (subcategorías) | `d2bv47` | **no construido** (solo claro, ver "en revisión" abajo) |
 
 ### Estados (HU-06)
 | Estado | Claro | Oscuro |
@@ -120,6 +122,19 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 **Variantes de copy para l10n** (nota `Ojbfk`): la primera frase es constante en forma, la segunda depende del rango — mes único (agregación por día), varios meses, rango personalizado, historial corto. **Prohibido en estas cadenas:** "suele pasar"/"no te preocupes" (excusa), "te pasaste"/"gastaste de más" (juzga). El monto siempre con signo y cifra completa.
 
+### Interacción del donut de Categorías (2026-07-30, en revisión — solo tema claro)
+
+Reemplaza la interacción anterior de "mantener presionado para revelar" (nunca llegó a dibujarse en el `.pen` ni a documentarse aquí, así que no hay nada que borrar salvo la instrucción verbal). La nueva interacción es **tap simple con selección persistente**, tres frames en `A3zxf` y sus dos variantes nuevas:
+
+1. **Selección por tap.** Tocar un arco lo deja seleccionado: crece centrado de 156 a 180px (mismo `innerRadius` 0.73, así que el anillo se ve más grueso/prominente hacia ambos lados, sin desalinearse ni superponerse con los vecinos) hasta que el usuario toca otro arco (el nuevo pasa a agrandado, el anterior vuelve a 156px) o vuelve a tocar el mismo arco (se deselecciona, todos vuelven a 156px). **Nunca hay dos arcos resaltados a la vez.**
+2. **Centro del donut:**
+   - **Sin selección** (`A3zxf`, estado por defecto): centro muestra solo el total ("$19.190.000" / "gastado"), sin nombre de categoría — esto YA era el comportamiento existente, no cambió.
+   - **Con selección** (`tCOi4`, ej. Vivienda seleccionada): el centro cambia a nombre de categoría arriba (12/600, `$text-secondary`) y monto gastado en esa categoría abajo (16/800, `$text-primary` — mismo estilo que el total por defecto).
+3. **Pill "Ver subcategorías":** se ve deshabilitado/inerte (`$segment-inactive-text` en label e ícono, en vez de `$primary-on-soft`) cuando NO hay selección (`A3zxf`); pasa a su estilo habilitado (`$primary-on-soft`) en cuanto hay una sección seleccionada (`tCOi4`). Mismo patrón de token que usa `segment-inactive-text` para "cualquier label/glifo apagado sobre `muted`" en MASTER — aquí el pill vive sobre `$surface`, mismo criterio de "apagado" por tratamiento de color, no por opacidad.
+4. **Pill "Atrás" (`d2bv47`):** mismo componente/fila (borde superior, 44px), pero cuando el usuario ya profundizó a nivel de subcategorías (drill-down **in-place**, no navegación a otra pantalla) cambia su copy a "Atrás" y su ícono a `chevron-left`, reemplazando "Ver subcategorías"/`chevron-right`. Reemplaza el ítem "destino de 'Ver subcategorías'" de "Pendientes conocidos" — ya no es un destino, es un drill-down in-place con su propia afordancia de retroceso.
+
+**No incluido en esta revisión** (fuera de alcance de lo pedido): el listado de subcategorías en sí (`Desglose`/`qrzfK` no cambia entre variantes), y si la fila del Desglose correspondiente a la categoría seleccionada debería resaltarse también — ninguno de los dos se diseñó, quedan abiertos si se quiere profundizar.
+
 ### Estados
 
 - **Vacío**: `Empty State` centrado + CTA "Agregar movimiento". Nunca un gráfico de ceros.
@@ -152,3 +167,4 @@ Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista s
 2. **Variante oscura del sheet Selector de Periodo (`Sy92N`)** — no construida.
 3. **Sin diseñar**: tooltip de lectura de valor al tocar, share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver `BfdaF` en "Decisiones cerradas".
 4. ~~Tema oscuro pendiente para las 6 pantallas nuevas de 2026-07-29~~ — resuelto 2026-07-30, ver nodeIds oscuros en "Frames".
+5. **Variante oscura de la nueva interacción del donut de Categorías** (`tCOi4`/`d2bv47` — ver "Interacción del donut de Categorías") — pendiente hasta que el usuario apruebe el tema claro.

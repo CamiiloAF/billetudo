@@ -37,6 +37,15 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Marks the welcome flow (`docs/requirements/13-onboarding.md`) as
+  /// completed for this installation.
+  Future<void> markOnboardingCompleted({required DateTime now}) => _write(
+        AppSettingsCompanion(
+          onboardingCompleted: const Value(true),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// Updates the singleton's [zeroBasedEnabled].
   Future<void> setZeroBasedEnabled({
     required bool zeroBasedEnabled,
