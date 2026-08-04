@@ -240,12 +240,22 @@ jobs:
 
       # El nombre del profile ("Billetudo App Store") debe coincidir con el que
       # crees en el portal y con ios/ExportOptionsProd.plist.
+      #
+      # El pbxproj generado por Xcode no trae `PROVISIONING_PROFILE_SPECIFIER`
+      # (esa clave solo aparece una vez que eliges el perfil a mano en la UI de
+      # Xcode) ni `CODE_SIGN_IDENTITY` sin calificar (el real es
+      # `CODE_SIGN_IDENTITY[sdk=iphoneos*]`) — reemplazar esos placeholders
+      # inexistentes era un no-op silencioso: quedaba `CODE_SIGN_STYLE = Manual`
+      # sin perfil/identidad asignados, y Xcode caía de vuelta a firma
+      # automática (falla en CI con "No Accounts"/"No profiles ... found").
       - name: Force manual signing in Xcode project
         run: |
           PBXPROJ=ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' "$PBXPROJ"
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "";/PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";/g' "$PBXPROJ"
-          sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/CODE_SIGN_IDENTITY = "Apple Distribution"/g' "$PBXPROJ"
+          sed -i '' '/CODE_SIGN_STYLE = Manual;/a\
+			PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";
+' "$PBXPROJ"
+          sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer"/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution"/g' "$PBXPROJ"
 
       - name: Build IPA
         run: |
