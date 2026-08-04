@@ -81,4 +81,24 @@ void main() {
       expect(second.updatedAt, greaterThan(first.updatedAt));
     });
   });
+
+  group('markOnboardingCompleted', () {
+    test('turns the latch on and upserts the singleton row', () async {
+      await repository.markOnboardingCompleted();
+
+      final rows = await database.select(database.appSettings).get();
+
+      expect(rows, hasLength(1));
+      expect(rows.single.id, AppSettingsLocalDatasource.singletonId);
+      expect(rows.single.onboardingCompleted, isTrue);
+    });
+
+    test('is reflected by getSettings', () async {
+      await repository.markOnboardingCompleted();
+
+      final result = await repository.getSettings();
+
+      expect(result.getRight().toNullable()!.onboardingCompleted, isTrue);
+    });
+  });
 }

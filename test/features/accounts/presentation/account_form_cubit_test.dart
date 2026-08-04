@@ -163,6 +163,40 @@ void main() {
       },
       verify: (cubit) => expect(cubit.state.status, AccountFormStatus.saved),
     );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'al guardar bien, el estado queda en modo edición con el id creado',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.bank);
+        cubit.nameChanged('Bancolombia');
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        expect(cubit.state.id, buildAccount().id);
+        expect(cubit.state.isEditing, isTrue);
+      },
+    );
+
+    blocTest<AccountFormCubit, AccountFormState>(
+      'reenviar el mismo formulario tras guardar actualiza en vez de '
+      'duplicar (bug: el onboarding puede reabrir esta misma instancia '
+      'con "volver")',
+      build: build,
+      act: (cubit) async {
+        await cubit.load(null);
+        cubit.typeSelected(AccountType.bank);
+        cubit.nameChanged('Bancolombia');
+        await cubit.submit();
+        await cubit.submit();
+      },
+      verify: (cubit) {
+        verify(() => createAccount(any())).called(1);
+        verify(() => updateAccount(any(), confirmed: any(named: 'confirmed')))
+            .called(1);
+      },
+    );
   });
 
   group('campos condicionales por tipo', () {

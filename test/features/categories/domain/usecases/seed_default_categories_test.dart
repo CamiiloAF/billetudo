@@ -15,6 +15,7 @@ void main() {
   AppSettings settings({required bool categoriesSeeded}) => AppSettings(
         zeroBasedEnabled: false,
         categoriesSeeded: categoriesSeeded,
+        onboardingCompleted: false,
       );
 
   setUp(() {

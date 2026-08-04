@@ -194,6 +194,31 @@ void main() {
     );
 
     blocTest<TransactionsListCubit, TransactionsListState>(
+      'filterByCategoryAndRange fija categoría y rango de fechas '
+      '(drill-down de Gráficas)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-mercado',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.categoryIds, {'cat-mercado'});
+        expect(cubit.state.filter.datePeriod.isCustomRange, isTrue);
+        expect(cubit.state.filter.datePeriod.start, DateTime(2026, 2));
+        expect(
+          cubit.state.filter.datePeriod.endExclusive,
+          DateTime(2026, 8),
+        );
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
       'updateFilter que solo cambia otro campo no persiste accountIds',
       setUp: () => when(() => watchTransactions(any()))
           .thenAnswer((_) => Stream.value(Right([entry]))),

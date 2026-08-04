@@ -4063,4 +4063,378 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSyncStatus => 'Estado de sincronización';
+
+  @override
+  String get reportsTabSummary => 'Resumen';
+
+  @override
+  String get reportsTabCashflow => 'Flujo';
+
+  @override
+  String get reportsTabNetWorth => 'Patrimonio';
+
+  @override
+  String get reportsTabCategories => 'Categorías';
+
+  @override
+  String reportsPeriodLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Últimos $count meses',
+      one: 'Último mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodDaysWithData(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días con datos',
+      one: '$count día con datos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodSinceDate(String date) {
+    return 'Desde el $date';
+  }
+
+  @override
+  String get reportsPeriodSheetTitle => 'Filtrar periodo';
+
+  @override
+  String get reportsPeriodGranularityMonth => 'Mes';
+
+  @override
+  String get reportsPeriodGranularityYear => 'Año';
+
+  @override
+  String get reportsPeriodClear => 'Limpiar';
+
+  @override
+  String get reportsCashflowCardTitle => 'Flujo de caja';
+
+  @override
+  String get reportsCashflowCardSubtitle => 'Ingresos vs. gastos, mes a mes';
+
+  @override
+  String get reportsCashflowIncomeLabel => 'Ingresos';
+
+  @override
+  String get reportsCashflowExpenseLabel => 'Gastos';
+
+  @override
+  String get reportsCashflowDebtLegendLabel => 'Movimientos de deuda';
+
+  @override
+  String reportsCashflowPositiveLabel(String periodPhrase) {
+    return 'Ahorraste en $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowNegativeLabel(String periodPhrase) {
+    return 'Balance de $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowShortHistoryLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Balance de tus primeros $count días',
+      one: 'Balance de tu primer día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsCashflowPeriodPhraseLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'los últimos $count meses',
+      one: 'el último mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsCashflowPeriodPhraseGeneric => 'el periodo seleccionado';
+
+  @override
+  String reportsCashflowNegativeExplainer(String amount, String periodPhrase) {
+    return 'Salió $amount más de lo que entró en $periodPhrase. Abajo puedes ver qué meses pesaron más.';
+  }
+
+  @override
+  String get reportsCashflowViewCategoriesLink => 'Ver en qué se fue';
+
+  @override
+  String reportsCashflowCurrentMonthNote(String month, int day) {
+    return '$month va en curso: llega hasta el $day.';
+  }
+
+  @override
+  String get reportsCashflowDebtToggleLabel => 'Separar movimientos de deuda';
+
+  @override
+  String get reportsCashflowDebtToggleHint =>
+      'Se muestran como una serie aparte, nunca se ocultan.';
+
+  @override
+  String get reportsCashflowShortHistoryNote =>
+      'Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.';
+
+  @override
+  String get reportsNetWorthCardTitle => 'Patrimonio';
+
+  @override
+  String get reportsNetWorthCaption =>
+      'El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.';
+
+  @override
+  String get reportsNetWorthLegendLiquid => 'Patrimonio líquido';
+
+  @override
+  String get reportsNetWorthLegendTotal => 'Patrimonio total';
+
+  @override
+  String get reportsNetWorthFigureLiquidLabel => 'Líquido';
+
+  @override
+  String get reportsNetWorthFigureTotalLabel => 'Total';
+
+  @override
+  String get reportsNetWorthInterestNote =>
+      'El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.';
+
+  @override
+  String get reportsNetWorthArchivedToggleLabel => 'Incluir cuentas archivadas';
+
+  @override
+  String get reportsNetWorthArchivedToggleHint =>
+      'Hoy quedan fuera de las dos cifras.';
+
+  @override
+  String reportsNetWorthSubtitle(String from, String to, String currency) {
+    return 'Del cierre de $from al $to · $currency';
+  }
+
+  @override
+  String get reportsCategoriesCardTitle => 'Estructura de gasto';
+
+  @override
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorías · $range',
+      one: '$count subcategoría · $range',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categorías · $range',
+      one: '$count categoría · $range',
+    );
+    String _temp2 = intl.Intl.selectLogic(
+      isSubcategory,
+      {
+        'true': '$_temp0',
+        'other': '$_temp1',
+      },
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String reportsCategoriesTopLabel(String name, int pct) {
+    return 'Mayor gasto: $name · $pct%';
+  }
+
+  @override
+  String get reportsCategoriesUncategorized => 'Sin categoría';
+
+  @override
+  String get reportsCategoriesViewSubcategories => 'Profundizar';
+
+  @override
+  String get reportsCategoriesBack => 'Atrás';
+
+  @override
+  String reportsCategoriesMovementsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos',
+      one: '$count movimiento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardBudgetsTitle => 'Presupuestos';
+
+  @override
+  String reportsDashboardBudgetsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count presupuestos activos · ciclos propios',
+      one: '$count presupuesto activo · ciclos propios',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardGoalsTitle => 'Metas';
+
+  @override
+  String reportsDashboardGoalsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count metas en curso',
+      one: '$count meta en curso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsGoalSummaryAmountOfTarget(String saved, String target) {
+    return '$saved de $target';
+  }
+
+  @override
+  String get reportsDashboardBudgetsEmptySubtitle =>
+      'Aún no has creado ninguno';
+
+  @override
+  String get reportsDashboardBudgetsEmptyMessage =>
+      'Cuando crees un presupuesto, aquí verás cuánto te queda del ciclo.';
+
+  @override
+  String get reportsDashboardGoalsEmptySubtitle => 'Aún no has creado ninguna';
+
+  @override
+  String get reportsDashboardGoalsEmptyMessage =>
+      'Tus metas de ahorro mostrarán su avance aquí, todas juntas.';
+
+  @override
+  String get reportsDashboardCrossLinkDebts => 'Ver el avance de tus deudas';
+
+  @override
+  String reportsDashboardHeroBudgetsAvailable(String amount) {
+    return '$amount disponibles';
+  }
+
+  @override
+  String reportsDashboardHeroGoalsSaved(String amount) {
+    return '$amount ahorrados';
+  }
+
+  @override
+  String get reportsEmptyTitle => 'Aún no hay movimientos en este periodo';
+
+  @override
+  String get reportsEmptyMessage =>
+      'Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.';
+
+  @override
+  String get reportsSyncNoticeMessage =>
+      'Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.';
+
+  @override
+  String get reportsExportTooltip => 'Exportar como imagen';
+
+  @override
+  String get reportsExportError =>
+      'No pudimos exportar la gráfica. Intenta de nuevo.';
+
+  @override
+  String reportsExportShareText(String title) {
+    return 'Gráfica de $title — billetudo';
+  }
+
+  @override
+  String get reportsChartSkeletonLoadingLabel => 'Cargando gráfica';
+
+  @override
+  String get accountTypeSheetTitle => 'Selecciona el tipo de cuenta';
+
+  @override
+  String get onboardingWelcomeHeadline =>
+      'Todo lo esencial. Gratis. Para siempre.';
+
+  @override
+  String get onboardingWelcomeSubhead =>
+      'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.';
+
+  @override
+  String get onboardingWelcomeCaption =>
+      'Ya dejamos categorías listas para ti.';
+
+  @override
+  String get onboardingWelcomeCta => 'Comenzar';
+
+  @override
+  String get onboardingAlreadyHaveAccount => 'Ya tengo cuenta';
+
+  @override
+  String get onboardingAccountHeadline => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingAccountSubhead =>
+      'Empieza con esta sugerencia o cámbiala a tu gusto.';
+
+  @override
+  String get onboardingAccountDefaultName => 'Ahorros';
+
+  @override
+  String get onboardingAccountCta => 'Crear cuenta';
+
+  @override
+  String get onboardingAccountSkip => 'Omitir por ahora';
+
+  @override
+  String get onboardingBackupHeadline => 'Respalda tus datos, cuando quieras';
+
+  @override
+  String get onboardingBackupBody =>
+      'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.';
+
+  @override
+  String get onboardingBackupFootnote =>
+      'Actívalo luego en Ajustes → Respaldar.';
+
+  @override
+  String get onboardingBackupCta => 'Activar respaldo';
+
+  @override
+  String get onboardingBackupSkip => 'Después';
+
+  @override
+  String get onboardingClosingHeadline => 'Tu billetera está lista';
+
+  @override
+  String get onboardingClosingSubheadWithAccount =>
+      'Registra tu primer movimiento y empieza a tomar el control de tu dinero.';
+
+  @override
+  String get onboardingClosingSubheadNoAccount =>
+      'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.';
+
+  @override
+  String get onboardingClosingCtaTransaction => 'Registra tu primer movimiento';
+
+  @override
+  String get onboardingClosingCtaAccount => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingClosingSkip => 'Lo hago después';
 }
