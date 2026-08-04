@@ -727,7 +727,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1186,10 +1186,37 @@ class AppDatabase extends _$AppDatabase {
           // managed view, and `powerSyncSchema` (`powersync_schema.dart`)
           // already declares `onboarding_completed`, so PowerSync recreates
           // the view with the column present before this migration runs.
-          // Nothing else to do here: the column has a client default of
-          // `false`, so the singleton row keeps that value with no backfill.
+          //
+          // WRONG ASSUMPTION (this comment originally claimed "the column has
+          // a client default of `false`, so the singleton row keeps that
+          // value with no backfill" — confirmed false 2026-08-04 on a real
+          // device, BILLETUDO-9/BILLETUDO-A): `clientDefault` only runs when
+          // Drift *inserts* a row through its typed API; it never backfills
+          // an already-existing row. A singleton created before this column
+          // existed has no `onboarding_completed` key in its PowerSync JSON
+          // blob at all, so `json_extract` reads SQL NULL — Drift's generated
+          // mapper does a non-nullable `!` on that and crashes
+          // (`$AppSettingsTable.map`, `TypeError: Null check operator used on
+          // a null value`) every time that row is read, not just once. The
+          // `from < 12` rule ("only a genuine backfill... belongs in
+          // onUpgrade") applied here too; see the `from < 22` backfill below.
           if (from < 21) {
             // No `addColumn` — see comment above.
+          }
+
+          // v21 -> v22: backfills `onboarding_completed` for any singleton
+          // row that predates it (see the corrected note on `from < 21`
+          // above). Bumping schemaVersion (not amending the v20->v21 block)
+          // so this backfill actually re-runs for installs already sitting
+          // at v21 with the broken row — `onUpgrade` only replays blocks
+          // between the device's current `user_version` and this new one.
+          // Safe against a view via its `INSTEAD OF` trigger (same pattern as
+          // `from < 12`'s `scheduled_payments` backfill).
+          if (from < 22) {
+            await m.database.customStatement(
+              'UPDATE app_settings SET onboarding_completed = 0 '
+              'WHERE onboarding_completed IS NULL',
+            );
           }
         },
       );

@@ -148,11 +148,7 @@ Future<Widget Function()> _initApp(
   final onboardingResult = await getIt<ShouldShowOnboarding>()();
   final shouldShowOnboarding = onboardingResult.fold((failure) {
     unawaited(
-      crash.recordError(
-        failure,
-        StackTrace.current,
-        context: 'shouldShowOnboarding',
-      ),
+      crash.recordFailure(failure, context: 'shouldShowOnboarding'),
     );
     return false;
   }, (shouldShow) => shouldShow);
@@ -168,11 +164,7 @@ Future<Widget Function()> _initApp(
           );
     } else {
       unawaited(
-        crash.recordError(
-          failure,
-          StackTrace.current,
-          context: 'seedDefaultCategories',
-        ),
+        crash.recordFailure(failure, context: 'seedDefaultCategories'),
       );
     }
   }
@@ -188,11 +180,7 @@ Future<Widget Function()> _initApp(
   final catchUpResult = await getIt<GenerateDueScheduledPayments>()();
   if (catchUpResult case Left(value: final failure)) {
     unawaited(
-      crash.recordError(
-        failure,
-        StackTrace.current,
-        context: 'generateDueScheduledPayments',
-      ),
+      crash.recordFailure(failure, context: 'generateDueScheduledPayments'),
     );
   }
 
