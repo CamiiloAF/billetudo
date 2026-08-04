@@ -4,7 +4,7 @@ import '../../domain/entities/date_range.dart';
 
 /// How the shared period of Gráficas e informes was chosen, from the Period
 /// Selector sheet (`Sy92N`). Carries the resolved [DateRange] so every tab
-/// cubit can query with it directly — only [kind] decides how
+/// cubit can query with it directly — only `kind` decides how
 /// `PeriodSelector`/`ChartPeriodRow` caption it.
 ///
 /// The `.pen` sheet is only speced for its base case (single month/year

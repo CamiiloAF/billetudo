@@ -110,7 +110,7 @@ class _NetWorthTabViewState extends State<NetWorthTabView> {
                       includeArchivedAccounts: shell.includeArchivedAccounts,
                       onChanged: (value) => context
                           .read<ReportsShellCubit>()
-                          .toggleArchivedAccounts(value),
+                          .toggleArchivedAccounts(value: value),
                     ),
                   ],
                 ),

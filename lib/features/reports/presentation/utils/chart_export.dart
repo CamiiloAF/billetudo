@@ -20,7 +20,7 @@ class ChartExport {
   /// Captures [boundaryKey]'s render object as a PNG at [pixelRatio] and
   /// hands it to the native share sheet with [shareText]. Returns `false`
   /// (without throwing) when the boundary is not yet laid out — the caller
-  /// shows [reportsExportError] to the user in that case.
+  /// shows `reportsExportError` to the user in that case.
   Future<bool> exportAndShare({
     required GlobalKey boundaryKey,
     required String fileName,

@@ -40,11 +40,11 @@ class ReportsShellCubit extends Cubit<ReportsShellState> {
     emit(state.copyWith(period: period));
   }
 
-  void toggleDebtMovements(bool value) {
+  void toggleDebtMovements({required bool value}) {
     emit(state.copyWith(includeDebtMovements: value));
   }
 
-  void toggleArchivedAccounts(bool value) {
+  void toggleArchivedAccounts({required bool value}) {
     emit(state.copyWith(includeArchivedAccounts: value));
   }
 

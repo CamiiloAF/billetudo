@@ -17,7 +17,7 @@ import '../widgets/onboarding_wallet_fan.dart';
 /// `Transactions.accountId` is `NOT NULL` — so it bridges to creating the
 /// account instead, with `bAKS6`'s generic, gate-agnostic copy
 /// (`docs/requirements/15-gate-cuenta.md` does not have its own design yet;
-/// see the TODO below).
+/// see the todo below).
 class ClosingPage extends StatelessWidget {
   const ClosingPage({
     required this.accountSkipped,

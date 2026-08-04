@@ -48,7 +48,7 @@ abstract final class ReportsPeriodFormat {
   }
 
   /// The "historial insuficiente" caption (HU-06): "N días con datos" instead
-  /// of the requested range, once [bounds.isClamped] is true.
+  /// of the requested range, once `bounds.isClamped` is true.
   static String historyCaption(
     AppLocalizations l10n,
     ChartHistoryBounds bounds,

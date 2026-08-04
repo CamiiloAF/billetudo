@@ -40,7 +40,7 @@ ChartHistoryBounds fullHistoryBounds({DateRange? requested}) {
 }
 
 /// A clamped/short-history bounds: the user's data only goes back to
-/// [earliestDataDate], well inside [requestedRange] — HU-06 "historial
+/// `earliestDataDate`, well inside `requestedRange` — HU-06 "historial
 /// insuficiente", daily granularity.
 ChartHistoryBounds shortHistoryBounds() {
   final requested = sixMonthRangeMonthly;

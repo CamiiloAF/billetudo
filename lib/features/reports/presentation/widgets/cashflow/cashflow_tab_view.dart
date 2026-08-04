@@ -118,7 +118,7 @@ class _CashflowTabViewState extends State<CashflowTabView> {
                         includeDebtMovements: shell.includeDebtMovements,
                         onChanged: (value) => context
                             .read<ReportsShellCubit>()
-                            .toggleDebtMovements(value),
+                            .toggleDebtMovements(value: value),
                       ),
                     ],
                   ],
