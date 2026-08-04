@@ -46,12 +46,33 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
       ? _Granularity.year
       : _Granularity.month;
   late DateTime _cursor = widget.initial.kind == ReportsPeriodKind.month ||
-          widget.initial.kind == ReportsPeriodKind.year
+          widget.initial.kind == ReportsPeriodKind.year ||
+          widget.initial.kind == ReportsPeriodKind.custom
       ? widget.initial.range.start
       : DateTime.now();
 
+  /// Whether the sheet opened with an active date-range filter — either a
+  /// user-picked custom range, or the app's `lastSixMonths` default, which
+  /// is *also* a specific range rather than a single month/year — and the
+  /// user hasn't yet interacted with the Mes/Año segmented control or the
+  /// stepper, both of which would replace it with a month/year filter.
+  /// Tracked separately from `widget.initial.kind` so the "aplicado"
+  /// treatment on the range row disappears the moment the user starts
+  /// interacting with Mes/Año, without waiting for `_apply`.
+  late bool _customRangeStillActive =
+      widget.initial.kind == ReportsPeriodKind.custom ||
+          widget.initial.kind == ReportsPeriodKind.lastSixMonths;
+
+  void _selectGranularity(_Granularity value) {
+    setState(() {
+      _granularity = value;
+      _customRangeStillActive = false;
+    });
+  }
+
   void _step(int delta) {
     setState(() {
+      _customRangeStillActive = false;
       _cursor = _granularity == _Granularity.month
           ? DateTime(_cursor.year, _cursor.month + delta)
           : DateTime(_cursor.year + delta);
@@ -118,8 +139,8 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
         ),
         const SizedBox(height: 16),
         SegmentedControl<_Granularity>(
-          selected: _granularity,
-          onChanged: (value) => setState(() => _granularity = value),
+          selected: _customRangeStillActive ? null : _granularity,
+          onChanged: _selectGranularity,
           segments: [
             SegmentedControlOption(
               value: _Granularity.month,
@@ -158,37 +179,104 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
           ),
         ),
         const SizedBox(height: 16),
-        InkWell(
-          onTap: _openCustomRange,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.calendarRange,
-                  size: 18,
-                  color: colors.textSecondary,
+        if (_customRangeStillActive)
+          InkWell(
+            onTap: _openCustomRange,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 14,
+              ),
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: colors.primaryOnSoftStrong,
+                  width: 1.5,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    l10n.dateFilterCustomRange,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: colors.textPrimary,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.calendarRange,
+                    size: 18,
+                    color: colors.primaryOnSoft,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.dateFilterCustomRange,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: colors.primaryOnSoftStrong,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          ReportsPeriodFormat.rangeCaption(
+                            widget.initial.range,
+                            locale,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primaryOnSoftStrong,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Icon(
-                  LucideIcons.chevronRight,
-                  size: 18,
-                  color: colors.textSecondary,
-                ),
-              ],
+                  Icon(
+                    LucideIcons.check,
+                    size: 18,
+                    color: colors.primaryOnSoft,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          InkWell(
+            onTap: _openCustomRange,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.calendarRange,
+                    size: 18,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.dateFilterCustomRange,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 18,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         const SizedBox(height: 16),
         SheetButtonsRow(
           left: OutlinedButton(

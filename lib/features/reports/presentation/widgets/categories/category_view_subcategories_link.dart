@@ -18,9 +18,10 @@ enum CategoryDrillDownLinkState {
   back,
 }
 
-/// The `Ver subcategorías`/`Atrás` pill (`guwa6`): a 44pt tappable row with a
-/// top border, closing `Card Categorías`' flat desglose (`A3zxf`). Its
-/// label, icon and interactivity follow [state]:
+/// The "Profundizar"/"Atrás" link (`guwa6`): a compact, right-aligned pill
+/// above the donut in `Card Categorías`, following the same visual pattern as
+/// `BalancesStripHeader`'s "Ver todas" link. Its label, icon and
+/// interactivity follow [state]:
 /// - [CategoryDrillDownLinkState.disabled]: no selection yet, inert.
 /// - [CategoryDrillDownLinkState.viewSubcategories]: selected category has
 ///   subcategories, tapping drills in.
@@ -55,30 +56,27 @@ class CategoryViewSubcategoriesLink extends StatelessWidget {
 
     return InkWell(
       onTap: isDisabled ? null : onTap,
-      child: Container(
-        height: 44,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: colors.border)),
-        ),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (state == CategoryDrillDownLinkState.back) ...[
-              Icon(icon, size: 15, color: tone),
-              const SizedBox(width: 4),
+              Icon(icon, size: 14, color: tone),
+              const SizedBox(width: 2),
             ],
             Text(
               label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 13,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: tone,
               ),
             ),
             if (state != CategoryDrillDownLinkState.back) ...[
-              const SizedBox(width: 4),
-              Icon(icon, size: 15, color: tone),
+              const SizedBox(width: 2),
+              Icon(icon, size: 14, color: tone),
             ],
           ],
         ),

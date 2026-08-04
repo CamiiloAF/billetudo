@@ -5,11 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/golden_helpers.dart';
 
-/// [PeriodSelectorSheet] is only speced in the `.pen` for its light base
-/// case — see the widget's own doc comment: "no dark variant exists yet
+/// [PeriodSelectorSheet]'s base case (`Sy92N`) is only speced in the `.pen`
+/// for light — see the widget's own doc comment: "no dark variant exists yet
 /// either". Per this repo's golden playbook, a widget with no dark reference
-/// in Pencil is captured light-only rather than inventing an unverified
-/// dark; the gap is called out in the QA run's `manualChecks`/notes instead.
+/// in Pencil is captured light-only rather than inventing an unverified dark;
+/// the gap is called out in the QA run's `manualChecks`/notes instead.
+///
+/// The "custom range active" state (`c3gyor` light / `XkFWg` dark, see
+/// `design-system/billetudo/pages/graficas.md`, "Sheets") IS fully speced in
+/// both themes, so it's captured light and dark below.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -21,8 +25,9 @@ void main() {
   Future<void> golden(
     WidgetTester tester,
     ReportsPeriodSelection initial,
-    String name,
-  ) async {
+    String name, {
+    Brightness brightness = Brightness.light,
+  }) async {
     setGoldenViewport(tester);
     await tester.pumpWidget(
       wrapForGolden(
@@ -32,7 +37,7 @@ void main() {
             child: const Text('open'),
           ),
         ),
-        brightness: Brightness.light,
+        brightness: brightness,
       ),
     );
     await tester.tap(find.byType(ElevatedButton));
@@ -52,15 +57,25 @@ void main() {
   });
 
   testWidgets('year granularity (light)', (tester) async {
-    // A `custom` initial selection is deliberately not covered here:
-    // `_PeriodSelectorSheetState._cursor` falls back to `DateTime.now()` for
-    // any kind other than month/year (see the widget's `late` initializer),
-    // so a custom-kind golden would render a different month every day —
-    // exactly the non-determinism goldens exist to avoid.
     await golden(
       tester,
       ReportsPeriodSelection.year(2025),
       'year_light',
     );
   });
+
+  for (final brightness in Brightness.values) {
+    final suffix = brightness == Brightness.light ? 'light' : 'dark';
+    testWidgets('custom range active ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ReportsPeriodSelection.custom(
+          start: DateTime(2026, 3, 1),
+          endExclusive: DateTime(2026, 9, 1),
+        ),
+        'custom_$suffix',
+        brightness: brightness,
+      );
+    });
+  }
 }

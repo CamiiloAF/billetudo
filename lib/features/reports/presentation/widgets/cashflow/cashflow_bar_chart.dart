@@ -53,6 +53,7 @@ class CashflowBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final locale = Localizations.localeOf(context).toString();
     const money = MoneyFormatter();
     final rodsPerGroup = includeDebtMovements ? 2 : 3;
     final labelStep = (points.length / _maxVisibleLabels).ceil().clamp(
@@ -127,7 +128,7 @@ class CashflowBarChart extends StatelessWidget {
                       return null;
                     }
                     final point = points[groupIndex];
-                    final label = _bucketLabel(point.periodStart);
+                    final label = _bucketLabel(point.periodStart, locale);
                     final amountMinor = includeDebtMovements
                         ? (rodIndex == 0
                             ? point.incomeMinor
@@ -168,7 +169,7 @@ class CashflowBarChart extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          _bucketLabel(points[index].periodStart),
+                          _bucketLabel(points[index].periodStart, locale),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight:
@@ -191,7 +192,8 @@ class CashflowBarChart extends StatelessWidget {
     );
   }
 
-  String _bucketLabel(DateTime date) => granularity == DateGranularity.daily
-      ? DateFormat('d MMM').format(date)
-      : DateFormat('MMM').format(date).toLowerCase();
+  String _bucketLabel(DateTime date, String locale) =>
+      granularity == DateGranularity.daily
+          ? DateFormat('d MMM', locale).format(date)
+          : DateFormat('MMM', locale).format(date).toLowerCase();
 }

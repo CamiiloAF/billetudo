@@ -6910,7 +6910,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportsCategoriesViewSubcategories.
   ///
   /// In es, this message translates to:
-  /// **'Ver subcategorías'**
+  /// **'Profundizar'**
   String get reportsCategoriesViewSubcategories;
 
   /// No description provided for @reportsCategoriesBack.

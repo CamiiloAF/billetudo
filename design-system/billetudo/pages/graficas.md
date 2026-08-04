@@ -38,6 +38,13 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Pieza | Claro | Oscuro |
 |---|---|---|
 | Selector de Periodo | `Sy92N` | **no construido** (hueco conocido) |
+| Selector de Periodo — rango personalizado activo | `c3gyor` | `XkFWg` |
+
+**Estado "rango personalizado activo" del Selector de Periodo** (`c3gyor`, frame separado del base `Sy92N` — mismo patrón que Transacciones usa con `mi0hB` separado de su sheet base): se muestra cuando `ReportsPeriodSelection.kind == custom`, es decir, cuando el usuario ya aplicó un rango de fechas personalizado como filtro activo.
+
+Tratamiento:
+- La fila **"Rango personalizado"** (`qiXGl`) queda resaltada: fill `$primary-soft`, borde `$primary-on-soft-strong`, ícono de check, y el texto muestra el rango real aplicado (ej. "mar – ago 2026") en vez del label genérico.
+- El segmentado Mes/Año (`RArsH/JipTk`) y el stepper (`RArsH/P3Fyb`) permanecen en su **estado normal habilitado** (opacity:1, sin fondo activo en ningún segmento) — **no** se deshabilitan ni atenúan, porque siguen siendo interactivos: tocar Mes o Año reemplaza el rango personalizado por ese filtro (cambia `kind` de `custom` a `month`/`year`).
 
 ## Componentes propios de la feature
 
@@ -140,5 +147,5 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 ## Pendientes conocidos
 
 1. **Migración de `FSL69`/`q1qGr`/`EB2TX` a `$primary-data`** — requiere aprobación del usuario; toca Presupuestos y Metas, ya aprobadas.
-2. **Variante oscura del sheet Selector de Periodo (`Sy92N`)** — no construida.
+2. **Variante oscura del sheet Selector de Periodo base (`Sy92N`)** — no construida (el estado "rango personalizado activo" ya tiene su oscuro en `XkFWg`, aprobado).
 3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas".

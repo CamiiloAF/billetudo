@@ -1323,7 +1323,7 @@
   "reportsCategoriesSubtitle": "{isSubcategory, select, true{{count, plural, one{{count} subcategory · {range}} other{{count} subcategories · {range}}}} other{{count, plural, one{{count} category · {range}} other{{count} categories · {range}}}}}",
   "reportsCategoriesTopLabel": "Top spend: {name} · {pct}%",
   "reportsCategoriesUncategorized": "No category",
-  "reportsCategoriesViewSubcategories": "See subcategories",
+  "reportsCategoriesViewSubcategories": "Drill down",
   "reportsCategoriesBack": "Back",
   "reportsCategoriesMovementsCount": "{count, plural, one{{count} movement} other{{count} movements}}",
 

@@ -68,6 +68,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     emit(
       TransactionsListState(
         filter: state.filter.copyWith(accountIds: persistedAccountIds),
+        arrivedFromReports: state.arrivedFromReports,
       ),
     );
     _subscribe();
@@ -140,6 +141,30 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// HU-06: free-text search over note and category name.
   Future<void> searchChanged(String text) =>
       updateFilter(state.filter.copyWith(searchText: text));
+
+  /// Gráficas' categories drill-down (`_reportsRoute` in `app_router.dart`)
+  /// flags this cubit instance right before the router navigates here, so
+  /// [TransactionsListState.arrivedFromReports] can drive the header's
+  /// explicit "volver a Gráficas" button. See that field's doc for why this
+  /// lives in cubit state instead of `GoRouterState.extra`.
+  void markArrivedFromReports() {
+    if (state.arrivedFromReports) {
+      return;
+    }
+    emit(state.copyWith(arrivedFromReports: true));
+  }
+
+  /// Clears the "came from Gráficas" flag: fired once the explicit back
+  /// button is used, or whenever Movimientos is reached through any other
+  /// entry point (bottom tab bar, Inicio's "ver todas"/account mini-card),
+  /// so a stale flag from an earlier visit never leaks into an unrelated
+  /// one.
+  void clearArrivedFromReports() {
+    if (!state.arrivedFromReports) {
+      return;
+    }
+    emit(state.copyWith(arrivedFromReports: false));
+  }
 
   /// Replaces the active filter (any combination of HU-06/HU-06a/HU-06b) and
   /// re-subscribes. A no-op when nothing actually changed, so a re-emission of

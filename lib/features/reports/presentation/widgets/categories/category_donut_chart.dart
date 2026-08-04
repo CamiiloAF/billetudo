@@ -90,34 +90,42 @@ class CategoryDonutChart extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (centerName != null) ...[
+          SizedBox(
+            // Constrains the label to the donut's hole (centerSpaceRadius *
+            // 2) minus some breathing room, so `TextOverflow.ellipsis` on
+            // `centerName` actually has a bound to clip against instead of
+            // growing past the ring on long category names.
+            width: size * 0.365 * 2 - 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (centerName != null) ...[
+                  Text(
+                    centerName,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                ],
                 Text(
-                  centerName,
+                  money.formatSymbol(centerAmount, currencyCode: currencyCode),
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: colors.textSecondary,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: colors.textPrimary,
                       ),
                 ),
-                const SizedBox(height: 2),
               ],
-              Text(
-                money.formatSymbol(centerAmount, currencyCode: currencyCode),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: colors.textPrimary,
-                    ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

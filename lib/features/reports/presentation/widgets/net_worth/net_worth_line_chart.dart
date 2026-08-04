@@ -27,7 +27,22 @@ class NetWorthLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final locale = Localizations.localeOf(context).toString();
     const money = MoneyFormatter();
+
+    // Only show a bottom-axis label when the bucket's month differs from
+    // the last one that got a label (or it's the final point), so daily
+    // granularity never repeats the same month on consecutive ticks.
+    final labelIndices = <int>{};
+    String? lastLabel;
+    for (var i = 0; i < points.length; i++) {
+      final label = _bucketLabel(points[i].date, locale);
+      final isLast = i == points.length - 1;
+      if (label != lastLabel || isLast) {
+        labelIndices.add(i);
+        lastLabel = label;
+      }
+    }
 
     final liquidSpots = <FlSpot>[];
     final totalSpots = <FlSpot>[];
@@ -54,7 +69,7 @@ class NetWorthLineChart extends StatelessWidget {
               getTooltipItems: (spots) => [
                 for (final spot in spots)
                   LineTooltipItem(
-                    '${_bucketLabel(points[spot.x.round()].date)}\n'
+                    '${_bucketLabel(points[spot.x.round()].date, locale)}\n'
                     '${money.formatSymbol(spot.barIndex == 0 ? points[spot.x.round()].liquidMinor : points[spot.x.round()].totalMinor, currencyCode: currencyCode)}',
                     TextStyle(
                       color: colors.surface,
@@ -66,33 +81,41 @@ class NetWorthLineChart extends StatelessWidget {
             ),
           ),
           titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(
-              
-            ),
-            rightTitles: const AxisTitles(
-              
-            ),
-            topTitles: const AxisTitles(
-              
-            ),
+            leftTitles: const AxisTitles(),
+            rightTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 24,
+                // fl_chart auto-computes its own "nice" interval (1, 2, 5,
+                // 10, 20…) when this is left null, so it only calls
+                // `getTitlesWidget` at its own evenly-spaced ticks — not once
+                // per spot index. That silently drops whichever entries in
+                // `labelIndices` don't land on one of those ticks (verified
+                // live: with 49 daily points, fl_chart chose interval 5,
+                // which skips index 17 — the "ago" transition — entirely).
+                // Forcing interval 1 makes it call back for every index, so
+                // our own dedup is what actually decides what renders.
+                interval: 1,
                 getTitlesWidget: (value, meta) {
                   final index = value.round();
                   if (index < 0 || index >= points.length) {
                     return const SizedBox.shrink();
                   }
                   final isLast = index == points.length - 1;
+                  if (!labelIndices.contains(index)) {
+                    return const SizedBox.shrink();
+                  }
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      _bucketLabel(points[index].date),
+                      _bucketLabel(points[index].date, locale),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: isLast ? FontWeight.w700 : FontWeight.w600,
-                        color: isLast ? colors.textPrimary : colors.textSecondary,
+                        color:
+                            isLast ? colors.textPrimary : colors.textSecondary,
                       ),
                     ),
                   );
@@ -109,6 +132,6 @@ class NetWorthLineChart extends StatelessWidget {
     );
   }
 
-  String _bucketLabel(DateTime date) =>
-      DateFormat('MMM').format(date).toLowerCase();
+  String _bucketLabel(DateTime date, String locale) =>
+      DateFormat('MMM', locale).format(date).toLowerCase();
 }

@@ -67,6 +67,7 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/reports/domain/entities/chart_view.dart';
 import '../../features/reports/presentation/cubit/cashflow_cubit.dart';
 import '../../features/reports/presentation/cubit/category_breakdown_cubit.dart';
 import '../../features/reports/presentation/cubit/net_worth_cubit.dart';
@@ -310,6 +311,11 @@ class GoalLinkContext {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// The Movimientos tab's index in the shell's `branches` list below — the
+/// bottom tab bar's `onSelectBranch` hook uses it to clear a stale "volver a
+/// Gráficas" flag when the user reaches Movimientos this way.
+const int _movimientosBranchIndex = 1;
+
 /// Builds the app [GoRouter]. Instantiated once during bootstrap.
 GoRouter createAppRouter() {
   return GoRouter(
@@ -317,11 +323,43 @@ GoRouter createAppRouter() {
     initialLocation: AppRoutes.home,
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            HomeShellPage(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => HomeShellPage(
+          navigationShell: navigationShell,
+          // Tapping the Movimientos tab directly (not through Gráficas'
+          // categories drill-down) clears a stale "volver a Gráficas" flag
+          // left over from an earlier visit — see `_movimientosBranch` and
+          // `_reportsRoute`'s `onOpenCategoryMovements`.
+          onSelectBranch: (index) {
+            if (index == _movimientosBranchIndex) {
+              getIt<TransactionsListCubit>().clearArrivedFromReports();
+            }
+          },
+          // System back from Movimientos' root, when it was reached through
+          // Gráficas' categories drill-down, must return to Gráficas instead
+          // of falling through to `HomeShellPage`'s default "jump to
+          // Inicio" — see `HomeShellPage.onInterceptBranchBack`'s doc for why
+          // `TransactionsPage`'s own `PopScope` can never catch this itself.
+          // Mirrors `_movimientosBranch`'s `onBackToReports` exactly.
+          onInterceptBranchBack: (index) {
+            if (index != _movimientosBranchIndex) {
+              return null;
+            }
+            final cubit = getIt<TransactionsListCubit>();
+            if (!cubit.state.arrivedFromReports) {
+              return null;
+            }
+            return () {
+              cubit.clearArrivedFromReports();
+              context.go(
+                AppRoutes.reports,
+                extra: ChartViewId.categoryBreakdown,
+              );
+            };
+          },
+        ),
         branches: [
           _inicioBranch(),
-          _movimientosBranch(),
+          _movimientosBranch(), // index 1 — see `_movimientosBranchIndex`.
           _presupuestosBranch(),
           _metasBranch(),
           _masBranch(),
@@ -358,7 +396,13 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
             create: (context) => _started(getIt<HomeCubit>(), (c) => c.start()),
             child: HomePage(
               onAddTransaction: () => context.push(AppRoutes.newTransaction),
-              onSeeAllTransactions: () => context.go(AppRoutes.transactions),
+              // Reached through the ordinary path, not Gráficas' drill-down:
+              // clears a stale "volver a Gráficas" flag left over from an
+              // earlier visit (see `_movimientosBranch`/`_reportsRoute`).
+              onSeeAllTransactions: () {
+                getIt<TransactionsListCubit>().clearArrivedFromReports();
+                context.go(AppRoutes.transactions);
+              },
               onOpenTransaction: (id) =>
                   context.push<String>(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
@@ -369,11 +413,12 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               // — then switches to the Movimientos tab so it arrives filtered.
               // `TransactionsListCubit` is a lazySingleton, so this reaches the
               // same live instance the tab holds, whether or not it was opened
-              // yet this session.
+              // yet this session. Also clears a stale "volver a Gráficas" flag
+              // (see `onSeeAllTransactions` above).
               onOpenAccountMovements: (accountId) {
-                unawaited(
-                  getIt<TransactionsListCubit>().filterByAccount(accountId),
-                );
+                final cubit = getIt<TransactionsListCubit>();
+                cubit.clearArrivedFromReports();
+                unawaited(cubit.filterByAccount(accountId));
                 context.go(AppRoutes.transactions);
               },
               // Pagos Programados is no longer a tab: stack it on the root
@@ -414,6 +459,36 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
                 onOpenAccount: (id) => context.push(AppRoutes.account(id)),
+                // Wired unconditionally: `TransactionsPage` only shows this
+                // as the header's leading button while
+                // `TransactionsListState.arrivedFromReports` is true. This
+                // `GoRoute`'s `builder` is not guaranteed to re-run on every
+                // navigation here — `StatefulShellRoute.indexedStack` skips
+                // rebuilding an already-visited branch's Navigator when the
+                // new and previous `RouteMatchList`s compare equal, and that
+                // comparison never looks at `GoRouterState.extra` — so a
+                // constructor-time null/non-null decision (the previous
+                // approach, keyed off `state.extra`) would go stale after
+                // the branch's first visit. The cubit's own state does not
+                // have that problem: Gráficas' drill-down
+                // (`_reportsRoute`/`onOpenCategoryMovements`) flags the live
+                // `TransactionsListCubit` singleton directly before
+                // navigating, so `BlocConsumer` picks it up on rebuild
+                // regardless of whether this `builder` itself re-runs.
+                onBackToReports: () {
+                  getIt<TransactionsListCubit>().clearArrivedFromReports();
+                  // Passes which tab to reopen: `_reportsRoute`'s `GoRoute`
+                  // (unlike this branch's) *does* re-run its `builder` on
+                  // every visit, so reading `state.extra` there is safe and
+                  // restores "Categorías" instead of resetting to Resumen.
+                  // Every other entry point into `/graficas` (the "Más" hub,
+                  // Inicio's chip) omits `extra`, so they keep resetting to
+                  // Resumen as before.
+                  context.go(
+                    AppRoutes.reports,
+                    extra: ChartViewId.categoryBreakdown,
+                  );
+                },
               ),
             );
           },
@@ -970,41 +1045,66 @@ GoRoute _accountsRoute() => GoRoute(
 GoRoute _reportsRoute() => GoRoute(
       path: AppRoutes.reports,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => getIt<ReportsShellCubit>()),
-          BlocProvider(create: (context) => getIt<CashflowCubit>()),
-          BlocProvider(create: (context) => getIt<NetWorthCubit>()),
-          BlocProvider(create: (context) => getIt<CategoryBreakdownCubit>()),
-          BlocProvider(create: (context) => getIt<ReportsDashboardCubit>()),
-        ],
-        child: ReportsPage(
-          onAddMovement: () => context.push(AppRoutes.newTransaction),
-          onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
-          onOpenBudget: (entry) =>
-              context.push(AppRoutes.budget(entry.budget.id)),
-          onCreateBudget: () => context.push(AppRoutes.newBudget),
-          onOpenGoal: (entry) => context.push(AppRoutes.goal(entry.goal.id)),
-          onCreateGoal: () => context.push(AppRoutes.newGoal),
-          onOpenDebts: () => context.push(AppRoutes.debts),
-          // Categorías drill-down: tapping a `CategoryBreakdownRow` filters
-          // Movimientos by that category id and the date range active in
-          // Gráficas at the moment of the tap — `DateRange.endExclusive` is
-          // half-open, so it maps to `DatePeriodFilter.custom`'s inclusive
-          // `endInclusive` by stepping back one day.
-          onOpenCategoryMovements: (categoryId, range) {
-            unawaited(
-              getIt<TransactionsListCubit>().filterByCategoryAndRange(
-                categoryId: categoryId,
-                start: range.start,
-                endInclusive:
-                    range.endExclusive.subtract(const Duration(days: 1)),
-              ),
-            );
-            context.go(AppRoutes.transactions);
-          },
-        ),
-      ),
+      builder: (context, state) {
+        // Only Movimientos' "volver a Gráficas" flow passes `extra` (see
+        // `_movimientosBranch`'s `onBackToReports`) — every other entry
+        // point (the "Más" hub, Inicio's chip) leaves it null, so this
+        // `builder` re-running on every visit only restores the tab for
+        // that one flow, never changing the default-to-Resumen behaviour
+        // elsewhere.
+        final initialTab =
+            state.extra is ChartViewId ? state.extra as ChartViewId : null;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) {
+                final cubit = getIt<ReportsShellCubit>();
+                if (initialTab != null) {
+                  cubit.selectTab(initialTab);
+                }
+                return cubit;
+              },
+            ),
+            BlocProvider(create: (context) => getIt<CashflowCubit>()),
+            BlocProvider(create: (context) => getIt<NetWorthCubit>()),
+            BlocProvider(create: (context) => getIt<CategoryBreakdownCubit>()),
+            BlocProvider(create: (context) => getIt<ReportsDashboardCubit>()),
+          ],
+          child: ReportsPage(
+            onAddMovement: () => context.push(AppRoutes.newTransaction),
+            onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+            onOpenBudget: (entry) =>
+                context.push(AppRoutes.budget(entry.budget.id)),
+            onCreateBudget: () => context.push(AppRoutes.newBudget),
+            onOpenGoal: (entry) => context.push(AppRoutes.goal(entry.goal.id)),
+            onCreateGoal: () => context.push(AppRoutes.newGoal),
+            onOpenDebts: () => context.push(AppRoutes.debts),
+            // Categorías drill-down: tapping a `CategoryBreakdownRow` filters
+            // Movimientos by that category id and the date range active in
+            // Gráficas at the moment of the tap — `DateRange.endExclusive` is
+            // half-open, so it maps to `DatePeriodFilter.custom`'s inclusive
+            // `endInclusive` by stepping back one day.
+            onOpenCategoryMovements: (categoryId, range) {
+              final transactionsCubit = getIt<TransactionsListCubit>();
+              unawaited(
+                transactionsCubit.filterByCategoryAndRange(
+                  categoryId: categoryId,
+                  start: range.start,
+                  endInclusive:
+                      range.endExclusive.subtract(const Duration(days: 1)),
+                ),
+              );
+              // Flags the live `TransactionsListCubit` singleton itself,
+              // rather than passing `extra` on the `go` below, so Movimientos'
+              // "volver a Gráficas" button shows up even when its `GoRoute`
+              // `builder` does not re-run for this navigation — see the
+              // comment on `onBackToReports` in `_movimientosBranch`.
+              transactionsCubit.markArrivedFromReports();
+              context.go(AppRoutes.transactions);
+            },
+          ),
+        );
+      },
     );
 
 // Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and

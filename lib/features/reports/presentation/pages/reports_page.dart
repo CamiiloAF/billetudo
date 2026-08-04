@@ -79,10 +79,16 @@ class _ReportsPageState extends State<ReportsPage> {
     }
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final tabLabel = switch (activeTab) {
+      ChartViewId.dashboard => l10n.reportsTabSummary,
+      ChartViewId.cashflow => l10n.reportsTabCashflow,
+      ChartViewId.netWorth => l10n.reportsTabNetWorth,
+      ChartViewId.categoryBreakdown => l10n.reportsTabCategories,
+    };
     final ok = await getIt<ChartExport>().exportAndShare(
       boundaryKey: key,
       fileName: 'billetudo-grafica-${activeTab.name}.png',
-      shareText: l10n.reportsExportShareText(l10n.moreReports),
+      shareText: l10n.reportsExportShareText(tabLabel),
     );
     if (!ok && mounted) {
       messenger

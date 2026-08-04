@@ -4247,7 +4247,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get reportsCategoriesUncategorized => 'Sin categoría';
 
   @override
-  String get reportsCategoriesViewSubcategories => 'Ver subcategorías';
+  String get reportsCategoriesViewSubcategories => 'Profundizar';
 
   @override
   String get reportsCategoriesBack => 'Atrás';

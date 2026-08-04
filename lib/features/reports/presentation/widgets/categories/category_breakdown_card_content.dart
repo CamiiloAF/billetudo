@@ -11,9 +11,9 @@ import 'category_breakdown_row.dart';
 import 'category_donut_chart.dart';
 import 'category_view_subcategories_link.dart';
 
-/// The `Card Categorías` content (HU-03): the donut, the "Mayor gasto" line
-/// and the flat desglose (`A3zxf`) closed by a single "Ver subcategorías"/
-/// "Atrás" pill.
+/// The `Card Categorías` content (HU-03): a right-aligned "Profundizar"/
+/// "Atrás" link above the donut, followed by the donut, the "Mayor gasto"
+/// line and the flat desglose (`A3zxf`).
 ///
 /// Holds its own drill-down state: the donut starts at the root breakdown
 /// and, once the user selects a root category with subcategories and taps
@@ -165,6 +165,24 @@ class _CategoryBreakdownCardContentState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Visibility(
+            // Reserves the row's height even while hidden, so the button
+            // appearing/disappearing (based on selection) never shifts the
+            // donut and the rest of the card up or down.
+            visible: linkState != CategoryDrillDownLinkState.disabled,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: CategoryViewSubcategoriesLink(
+                state: linkState,
+                onTap: drilledInto != null
+                    ? _goBack
+                    : () => _drillIn(currentItems),
+              ),
+            ),
+          ),
           Center(
             child: CategoryDonutChart(
               items: currentItems,
@@ -195,10 +213,6 @@ class _CategoryBreakdownCardContentState
             ),
             const SizedBox(height: 8),
           ],
-          CategoryViewSubcategoriesLink(
-            state: linkState,
-            onTap: drilledInto != null ? _goBack : () => _drillIn(currentItems),
-          ),
         ],
       ),
     );

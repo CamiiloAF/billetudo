@@ -4243,7 +4243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsCategoriesUncategorized => 'No category';
 
   @override
-  String get reportsCategoriesViewSubcategories => 'See subcategories';
+  String get reportsCategoriesViewSubcategories => 'Drill down';
 
   @override
   String get reportsCategoriesBack => 'Back';
