@@ -37,6 +37,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonRetry => 'Reintentar';
 
   @override
+  String get commonLoadMore => 'Ver más';
+
+  @override
   String get commonBack => 'Atrás';
 
   @override
@@ -655,6 +658,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsFilterTag => 'Etiqueta';
 
   @override
+  String get transactionsFilterBudget => 'Presupuesto';
+
+  @override
   String get transactionsSortDateDesc => 'Más recientes primero';
 
   @override
@@ -691,6 +697,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsBalanceTotalLabel => 'Saldo total';
+
+  @override
+  String transactionsBalanceTotalSemantics(String label, String amount) {
+    return '$label: $amount';
+  }
 
   @override
   String get transactionsBalanceCardBalanceLabel => 'Saldo';
@@ -989,6 +1000,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dateFilterSheetTitle => 'Filtrar por fecha';
 
   @override
+  String get budgetPeriodFilterSheetTitle => 'Filtrar por presupuesto';
+
+  @override
+  String get budgetPeriodFilterEmptyMessage => 'No tienes presupuestos activos';
+
+  @override
   String get dateFilterWeek => 'Semana';
 
   @override
@@ -1073,14 +1090,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSyncSheetSyncingMessage =>
-      'Estamos guardando tus cambios en la nube.';
+      'Estamos guardando tus cambios en la nube. Puedes seguir usando la app.';
 
   @override
   String get homeSyncSheetOfflineTitle => 'Sin conexión';
 
   @override
   String get homeSyncSheetOfflineMessage =>
-      'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.';
+      'Tus datos están guardados en este teléfono. Se sincronizarán en cuanto vuelva la conexión.';
 
   @override
   String get homeSyncSheetDismiss => 'Entendido';
@@ -1279,6 +1296,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtDetailRegisterPayment => 'Registrar abono';
 
   @override
+  String get debtDetailCompleteDebt => 'Completar deuda';
+
+  @override
   String get debtInstallmentTitle => 'Próxima cuota';
 
   @override
@@ -1467,10 +1487,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtPaymentNoteHint => 'Agregar una nota';
 
   @override
-  String get debtPaymentCategoryLabel => 'Categoría (opcional)';
+  String get debtPaymentCategoryLabel => 'Categoría';
 
   @override
-  String get debtPaymentCategoryNone => 'Sin categoría';
+  String get debtPaymentCategoryNone => 'Elige una categoría';
 
   @override
   String get debtPaymentSelectAccount => 'Elige una cuenta';
@@ -1568,8 +1588,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtActionClose => 'Cerrar deuda';
 
   @override
+  String get debtActionComplete => 'Completar deuda';
+
+  @override
+  String get debtFormErrorDirectionLocked =>
+      'No puedes cambiar la dirección de esta deuda porque ya tiene movimientos registrados además de la apertura.';
+
+  @override
   String get debtActionError =>
       'No pudimos completar la acción. Intenta de nuevo.';
+
+  @override
+  String get debtActionCloseSuccess => 'Deuda completada';
 
   @override
   String get debtCloseSheetTitle => '¿Cerrar esta deuda?';
@@ -2112,9 +2142,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get budgetLoadMore => 'Ver más';
-
-  @override
   String get budgetOneOffWindow => 'Ventana única';
 
   @override
@@ -2602,6 +2629,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'La cuota no puede superar el saldo de la deuda.';
 
   @override
+  String get scheduledPaymentFormNotFoundError =>
+      'Este pago programado ya no existe. Es posible que lo hayas eliminado.';
+
+  @override
+  String get scheduledPaymentFormSaveError =>
+      'No pudimos guardar los cambios. Intenta de nuevo.';
+
+  @override
   String get scheduledPaymentFormIntervalStepperLabel => 'Repetir cada';
 
   @override
@@ -2690,11 +2725,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get scheduledPaymentDetailHistoryEmpty =>
       'Todavía no se ha generado ningún movimiento de este pago programado.';
-
-  @override
-  String scheduledPaymentDetailHistorySeeAll(int count) {
-    return 'Ver historial completo ($count)';
-  }
 
   @override
   String get scheduledSkippedBadge => 'Omitido';
@@ -2987,4 +3017,1424 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get budgetAdjustCancelledSnackbar =>
       'Ajuste revertido — el período vuelve al monto habitual.';
+
+  @override
+  String get goalsTitle => 'Metas';
+
+  @override
+  String get goalsAdd => 'Nueva meta';
+
+  @override
+  String get goalsErrorTitle => 'No pudimos cargar tus metas';
+
+  @override
+  String get goalsEmptyMessage => 'Elige algo por lo que ahorrar';
+
+  @override
+  String get goalsEmptyDescription =>
+      'Dale un propósito a tu dinero. Empieza con una idea o crea la tuya.';
+
+  @override
+  String get goalsEmptyTemplatesTitle => 'Empieza con una plantilla';
+
+  @override
+  String get goalsEmptyCustomCta => 'Crear meta personalizada';
+
+  @override
+  String get goalsArchivedCta => 'Metas archivadas';
+
+  @override
+  String get goalsArchivedTitle => 'Metas archivadas';
+
+  @override
+  String get goalsArchivedEmptyMessage => 'Aún no has archivado ninguna meta';
+
+  @override
+  String get goalsArchivedEmptyDescription =>
+      'Cuando termines o pauses una meta, archívala: conserva su progreso y su historial, y sale de tu lista principal.';
+
+  @override
+  String goalCoherenceMessage(String amount) {
+    return 'Tus metas superan el saldo real de la cuenta por $amount';
+  }
+
+  @override
+  String goalMomentumStreak(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks semanas seguidas',
+      one: '1 semana seguida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get goalMomentumStreakSub => 'Tu mejor racha aportando. ¡Sigue así!';
+
+  @override
+  String get goalMomentumBrokenTitle => 'Retoma tu racha de ahorro';
+
+  @override
+  String goalMomentumBrokenSub(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: 'Hace $weeks semanas sin aportar · vuelve cuando quieras',
+      one: 'Hace 1 semana sin aportar · vuelve cuando quieras',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalMomentumMilestone(int pct, String goalName, String amount) {
+    return 'Próximo hito: $pct% en $goalName · faltan $amount';
+  }
+
+  @override
+  String goalCardRemaining(String amount) {
+    return 'Te faltan $amount';
+  }
+
+  @override
+  String goalCardCompleted(String amount) {
+    return 'Ahorraste $amount';
+  }
+
+  @override
+  String goalCardMeta(int pct) {
+    return '$pct% completado';
+  }
+
+  @override
+  String get goalCardChapterClosed => 'Cumplida · capítulo cerrado';
+
+  @override
+  String get goalDetailTitle => 'Meta';
+
+  @override
+  String goalDetailRemaining(String amount) {
+    return 'Te faltan $amount';
+  }
+
+  @override
+  String goalDetailAchieved(String amount) {
+    return 'Ahorraste $amount';
+  }
+
+  @override
+  String goalDetailSavedOfTarget(String saved, String target) {
+    return '$saved ahorrado de $target';
+  }
+
+  @override
+  String get goalActionsTooltip => 'Más acciones';
+
+  @override
+  String get goalEditTooltip => 'Editar meta';
+
+  @override
+  String get goalActionEditSubtitle => 'Nombre, objetivo, fecha o cuenta';
+
+  @override
+  String get goalActionArchive => 'Archivar meta';
+
+  @override
+  String get goalActionArchiveSubtitle =>
+      'Sale de la lista y conserva su historial';
+
+  @override
+  String get goalActionUnarchive => 'Desarchivar meta';
+
+  @override
+  String get goalActionUnarchiveSubtitle => 'Vuelve a tu lista principal';
+
+  @override
+  String get goalActionDeleteLabel => 'Eliminar meta';
+
+  @override
+  String get goalActionDeleteSubtitle => 'Va a la papelera; puedes deshacerlo';
+
+  @override
+  String get goalRowUnarchive => 'Desarchivar';
+
+  @override
+  String get goalRowCompletedBadge => 'Cumplida';
+
+  @override
+  String goalRowArchivedOn(String account, String date) {
+    return '$account · archivada el $date';
+  }
+
+  @override
+  String goalRowArchivedOnNoAccount(String date) {
+    return 'Archivada el $date';
+  }
+
+  @override
+  String goalRowTargetOf(String amount) {
+    return 'de $amount';
+  }
+
+  @override
+  String get goalArchiveSheetTitle => '¿Archivar esta meta?';
+
+  @override
+  String get goalArchiveSheetMessage =>
+      'Se quita de tu lista principal y deja de aceptar nuevos movimientos. Puedes desarchivarla cuando quieras.';
+
+  @override
+  String get goalArchiveConfirm => 'Archivar';
+
+  @override
+  String get goalUnarchiveSheetTitle => '¿Desarchivar esta meta?';
+
+  @override
+  String get goalUnarchiveSheetMessage =>
+      'Vuelve a tu lista principal y podrás aportar y retirar de nuevo.';
+
+  @override
+  String get goalUnarchiveConfirm => 'Desarchivar';
+
+  @override
+  String get goalDeleteSheetTitle => '¿Eliminar esta meta?';
+
+  @override
+  String get goalDeleteSheetMessage =>
+      'Se mueve a la papelera. Puedes recuperarla mientras no la elimines definitivamente.';
+
+  @override
+  String goalMovementsTitle(int count) {
+    return 'Movimientos ($count)';
+  }
+
+  @override
+  String get goalMovementsSectionTitle => 'Movimientos';
+
+  @override
+  String get goalMovementsEmpty =>
+      'Todavía no registras movimientos en esta meta.';
+
+  @override
+  String get goalMovementContribution => 'Aporte';
+
+  @override
+  String get goalMovementWithdrawal => 'Retiro';
+
+  @override
+  String get goalMovementDateLabel => 'Fecha';
+
+  @override
+  String get goalMovementNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get goalMovementNoteHint => 'Agregar una nota';
+
+  @override
+  String get goalMovementError =>
+      'No pudimos guardar el movimiento. Intenta de nuevo.';
+
+  @override
+  String goalDateToday(String date) {
+    return 'Hoy, $date';
+  }
+
+  @override
+  String get goalContributeTitle => 'Registrar aporte';
+
+  @override
+  String goalContributeTitleWithName(String name) {
+    return 'Aportar a $name';
+  }
+
+  @override
+  String get goalContributeSubtitle => 'Suma a tu progreso de la meta.';
+
+  @override
+  String get goalContributeAmountLabel => 'Aporte';
+
+  @override
+  String get goalContributeCta => 'Aportar';
+
+  @override
+  String get goalWithdrawTitle => 'Registrar retiro';
+
+  @override
+  String goalWithdrawTitleWithName(String name) {
+    return 'Retirar de $name';
+  }
+
+  @override
+  String get goalWithdrawSubtitle => 'Sacar dinero de una meta es normal.';
+
+  @override
+  String get goalWithdrawAmountLabel => 'Retiro';
+
+  @override
+  String get goalMoveFundsToggleLabel => '¿Mover dinero de una cuenta?';
+
+  @override
+  String get goalMoveFundsToggleHintContribute =>
+      'Solo registra el avance de tu meta; no mueve ninguna cuenta.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdraw =>
+      'Solo registra el retiro; no toca ninguna cuenta.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOn =>
+      'Se crea una transferencia: el saldo de la cuenta de origen baja y el de la meta sube.';
+
+  @override
+  String get goalMoveFundsToggleHintContributeOnBudget =>
+      'Se crea una transferencia hacia la cuenta de tu meta.';
+
+  @override
+  String get goalMoveFundsToggleHintWithdrawOn =>
+      'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.';
+
+  @override
+  String get goalContributeSourceAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalWithdrawDestinationAccountLabel => 'Cuenta de destino';
+
+  @override
+  String get goalAccountFieldPlaceholder => 'Elige una cuenta';
+
+  @override
+  String get goalBudgetToggleLabel => '¿Incluir en tu presupuesto?';
+
+  @override
+  String get goalBudgetToggleHintOff =>
+      'No entra en tus presupuestos ni reportes.';
+
+  @override
+  String get goalBudgetToggleHintOnContribute =>
+      'Cuenta como egreso en la cuenta de origen y como ingreso en la de tu meta.';
+
+  @override
+  String get goalBudgetToggleHintOnWithdraw =>
+      'Cuenta como ingreso en la cuenta de destino, según tus presupuestos.';
+
+  @override
+  String get goalLinkTransactionCta => 'Enlazar un movimiento';
+
+  @override
+  String goalLinkBannerTitle(String name) {
+    return 'Enlazar a $name';
+  }
+
+  @override
+  String get goalLinkBannerBody =>
+      'Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo.';
+
+  @override
+  String get goalLinkError =>
+      'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
+  String get goalWithdrawCta => 'Retirar';
+
+  @override
+  String get goalAdjustDateCta => 'Ajustar la fecha';
+
+  @override
+  String goalWithdrawAvailableLabel(String amount) {
+    return 'Disponible en la meta: $amount';
+  }
+
+  @override
+  String get goalWithdrawUseMaxCta => 'Usar todo';
+
+  @override
+  String get goalWithdrawErrorExceedsSaved =>
+      'No puedes retirar más de lo que has ahorrado en esta meta.';
+
+  @override
+  String get goalQuickAmountLabel => 'APORTE RÁPIDO';
+
+  @override
+  String get goalQuickAmountAddCta => 'Nueva';
+
+  @override
+  String get goalQuickAmountFieldLabel => 'Monto';
+
+  @override
+  String get goalQuickAmountDeletedMessage => 'Aporte rápido eliminado';
+
+  @override
+  String get goalQuickAmountUndoAction => 'Deshacer';
+
+  @override
+  String get goalNewQuickAmountTitle => 'Nuevo aporte rápido';
+
+  @override
+  String get goalNewQuickAmountSubtitle =>
+      'Guarda un monto para aportarlo con un toque la próxima vez.';
+
+  @override
+  String get goalNewQuickAmountCta => 'Crear chip';
+
+  @override
+  String get goalProjectionNoTargetDate => 'Sin fecha objetivo definida';
+
+  @override
+  String get goalProjectionOverdue =>
+      'La fecha que elegiste ya pasó y tu meta sigue en pie. Ponle una fecha nueva y volvemos a proyectarte la llegada.';
+
+  @override
+  String get goalProjectionInsufficientHistory =>
+      'Aporta un poco más para ver tu ritmo de ahorro';
+
+  @override
+  String goalProjectionMonthlyNeeded(String amount) {
+    return 'Necesitas aportar $amount al mes para llegar a tu fecha';
+  }
+
+  @override
+  String goalProjectionOnPace(String month) {
+    return 'A tu ritmo, llegas en $month';
+  }
+
+  @override
+  String goalMilestoneTitle(int pct) {
+    return '¡Llegaste al $pct%!';
+  }
+
+  @override
+  String goalMilestonePercent(int pct) {
+    return '$pct%';
+  }
+
+  @override
+  String goalMilestoneMessage(String name) {
+    return 'Sigue así con $name. Cada aporte te acerca más.';
+  }
+
+  @override
+  String get goalMilestoneCta => 'Seguir ahorrando';
+
+  @override
+  String get goalCompletedBadge => 'Meta cumplida';
+
+  @override
+  String goalCompletedTitle(String name) {
+    return '¡Cumpliste $name!';
+  }
+
+  @override
+  String goalCompletedMessage(String amount) {
+    return 'Ahorraste $amount en total. Este logro queda contigo.';
+  }
+
+  @override
+  String get goalCompletedCreateNext => 'Crear la próxima meta';
+
+  @override
+  String get goalCompletedArchive => 'Archivar meta';
+
+  @override
+  String get goalFormNewTitle => 'Nueva meta';
+
+  @override
+  String get goalFormEditTitle => 'Editar meta';
+
+  @override
+  String get goalFormTargetLabel => 'Objetivo';
+
+  @override
+  String get goalFormErrorTargetZero => 'El objetivo debe ser mayor a cero';
+
+  @override
+  String get goalFormNameLabel => 'Nombre';
+
+  @override
+  String get goalFormNameHint => 'Ej. Viaje a Cartagena';
+
+  @override
+  String get goalFormNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get goalFormAccountLabel => 'Cuenta vinculada (recomendado)';
+
+  @override
+  String get goalFormAccountHint => 'Elige una cuenta';
+
+  @override
+  String get goalFormAccountPickerTitle => 'Elige una cuenta';
+
+  @override
+  String get goalFormTargetDateLabel => 'Fecha objetivo (opcional)';
+
+  @override
+  String get goalFormTargetDateHint => 'Elegir una fecha posterior a hoy';
+
+  @override
+  String get goalFormErrorTargetDatePast => 'La fecha debe ser posterior a hoy';
+
+  @override
+  String get goalFormInitialSavedLabel =>
+      '¿Ya tienes algo ahorrado? (opcional)';
+
+  @override
+  String get goalFormCreateCta => 'Crear meta';
+
+  @override
+  String get goalFormSaveCta => 'Guardar cambios';
+
+  @override
+  String get goalCurrencySheetTitle => 'Elige la moneda';
+
+  @override
+  String get goalIconSheetTitle => 'Elegir ícono';
+
+  @override
+  String get goalIconSheetHint =>
+      'El ícono se muestra en un fondo neutro — sin color por meta.';
+
+  @override
+  String get goalFormIconAndNameLabel => 'Ícono y nombre';
+
+  @override
+  String goalFormCurrencyHintLocked(String account, String currency) {
+    return 'La moneda la define la cuenta vinculada ($account, $currency). Cambia la cuenta si necesitas otra moneda.';
+  }
+
+  @override
+  String get goalFormCurrencyHintUnlocked =>
+      'Elige la moneda de tu meta. Si vinculas una cuenta, la moneda se fija a la de esa cuenta.';
+
+  @override
+  String get goalFormInitialSavedHint =>
+      'Lo guardamos como el primer movimiento del historial, para que tu meta arranque completa.';
+
+  @override
+  String goalAccountFilterLabel(String accountName) {
+    return 'Metas en $accountName';
+  }
+
+  @override
+  String get goalAccountFilterClearTooltip => 'Quitar filtro';
+
+  @override
+  String get goalCoherenceLink => 'Ver las metas de esta cuenta';
+
+  @override
+  String goalDetailSavedOfTargetNoAccount(String saved, String target) {
+    return '$saved de $target · sin cuenta vinculada';
+  }
+
+  @override
+  String get goalDetailAccountUnavailableMessage =>
+      'La cuenta que tenías vinculada ya no está disponible. Tu historial sigue completo y esta meta pasa a avance manual.';
+
+  @override
+  String get goalDetailAccountUnavailableLink => 'Vincular otra cuenta';
+
+  @override
+  String get goalMovementDetailTitle => 'Detalle del movimiento';
+
+  @override
+  String get goalMovementDetailHint =>
+      'Puedes corregirlo o eliminarlo. Si el movimiento tiene una transferencia detrás, se actualiza junto con él.';
+
+  @override
+  String get goalMovementDetailDateLabel => 'Fecha';
+
+  @override
+  String get goalMovementDetailOriginAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalMovementDetailTransferLabel => 'Transferencia';
+
+  @override
+  String goalMovementDetailTransferValue(String origin, String destination) {
+    return '$origin → $destination';
+  }
+
+  @override
+  String get goalMovementDetailNoteLabel => 'Nota';
+
+  @override
+  String get goalMovementEditTitle => 'Editar movimiento';
+
+  @override
+  String get goalMovementEditHint =>
+      'Corrige el monto, la fecha o la nota de este movimiento. No crea ni elimina movimientos.';
+
+  @override
+  String get goalMovementAmountLabel => 'Monto';
+
+  @override
+  String get goalMovementKindContributionLower => 'aporte';
+
+  @override
+  String get goalMovementKindWithdrawalLower => 'retiro';
+
+  @override
+  String goalDeleteMovementTitle(String kind, String amount) {
+    return '¿Eliminar este $kind de $amount?';
+  }
+
+  @override
+  String goalDeleteMovementMessageTransfer(String origin, String destination) {
+    return 'El avance de la meta se recalcula sin él. Como este movimiento tiene una transferencia detrás, esa transferencia también se elimina y los saldos de $origin y $destination vuelven a como estaban.';
+  }
+
+  @override
+  String goalDeleteMovementMessageManual(String kind) {
+    return 'El avance de la meta se recalcula sin él. Este $kind fue un registro manual, así que ninguna de tus cuentas cambia de saldo.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedTransfer(
+      String kind, String goalName, String origin, String destination) {
+    return 'Este $kind hace parte de lo que completó $goalName: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. La transferencia detrás también se elimina y los saldos de $origin y $destination vuelven a como estaban.';
+  }
+
+  @override
+  String goalDeleteMovementMessageCompletedManual(
+      String kind, String goalName) {
+    return 'Este $kind hace parte de lo que completó $goalName: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.';
+  }
+
+  @override
+  String get syncStatusTitle => 'Estado de sincronización';
+
+  @override
+  String syncHeroAttentionTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios están solo en este teléfono',
+      one: '1 cambio está solo en este teléfono',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHeroAttentionKicker(String since) {
+    return 'Sin subir a la nube desde $since';
+  }
+
+  @override
+  String get syncHeroAttentionKickerNever => 'Todavía sin subir a la nube';
+
+  @override
+  String syncHeroAttentionBody(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos $countString cambios no volverían.',
+      one:
+          'Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncHeroStaleTitle => 'Sin contacto con la nube';
+
+  @override
+  String get syncHeroStaleBody =>
+      'No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.';
+
+  @override
+  String get syncHeroSyncedTitle => 'Todo está sincronizado';
+
+  @override
+  String get syncHeroSyncedKicker => 'Nada esperando para subir';
+
+  @override
+  String get syncHeroSyncedBody =>
+      'Tus datos están completos en este teléfono y también hay copia en la nube. Si cambias de teléfono, los recuperas al iniciar sesión.';
+
+  @override
+  String get syncHeroNeverTitle => 'Aún no se ha sincronizado';
+
+  @override
+  String get syncHeroNeverKicker => 'Acabas de iniciar sesión';
+
+  @override
+  String get syncHeroNeverBody =>
+      'Tus datos están completos en este teléfono. En cuanto haya conexión suben solos a la nube; no tienes que hacer nada.';
+
+  @override
+  String get syncHeroOfflineTitle => 'Sin conexión';
+
+  @override
+  String get syncHeroOfflineKicker => 'Se reanuda sola al volver la señal';
+
+  @override
+  String get syncHeroOfflineBody =>
+      'Tus datos están guardados en este teléfono y no se pierde nada mientras tanto. Lo que falte por subir se sincroniza solo en cuanto vuelva la conexión.';
+
+  @override
+  String get syncHeroOfflineCaption =>
+      'Se reintentará solo en cuanto haya conexión.';
+
+  @override
+  String get syncHeroSignedOutTitle => 'No hay sesión iniciada';
+
+  @override
+  String get syncHeroSignedOutKicker => 'Tus datos viven solo en este teléfono';
+
+  @override
+  String get syncHeroSignedOutBody =>
+      'Todo está completo aquí y la app funciona igual sin cuenta. Lo único que falta es la copia en la nube: sin ella, un cambio de teléfono o una reinstalación no tendrían de dónde recuperar tus datos.';
+
+  @override
+  String get syncSignInCta => 'Iniciar sesión';
+
+  @override
+  String get syncRetryNowCta => 'Reintentar ahora';
+
+  @override
+  String get syncSyncNowCta => 'Sincronizar ahora';
+
+  @override
+  String get syncSyncingCta => 'Sincronizando…';
+
+  @override
+  String syncLastSyncLabel(String relative) {
+    return 'Última sincronización: $relative';
+  }
+
+  @override
+  String syncLastSuccessfulSyncLabel(String relative) {
+    return 'Última sincronización exitosa: $relative';
+  }
+
+  @override
+  String get syncNeverSyncedLabel => 'Aún no se ha sincronizado';
+
+  @override
+  String get syncNoActiveSyncLabel => 'Sin sincronización activa';
+
+  @override
+  String syncTimeAgo(String duration) {
+    return 'hace $duration';
+  }
+
+  @override
+  String get syncDurationMoment => 'un momento';
+
+  @override
+  String syncDurationMinutes(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString minutos',
+      one: '1 minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationHours(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDurationDays(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSectionPending => 'Qué está esperando';
+
+  @override
+  String syncSectionPendingLink(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return 'Ver los $countString';
+  }
+
+  @override
+  String get syncSectionDiagnostics => 'Diagnóstico';
+
+  @override
+  String get syncSectionBackupAndDiagnostics => 'Copia y diagnóstico';
+
+  @override
+  String get syncSectionMeanwhile => 'Mientras tanto';
+
+  @override
+  String get syncSaveCopyTitle => 'Guardar una copia';
+
+  @override
+  String get syncSaveCopyDescription =>
+      'Un archivo con todo lo tuyo, listo para volver a cargarlo.';
+
+  @override
+  String syncSaveCopyDescriptionAttention(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Esos $countString cambios viven solo aquí. Una copia los pone a salvo.',
+      one: 'Ese cambio vive solo aquí. Una copia lo pone a salvo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSaveCopyDescriptionStale =>
+      'Lo que registres desde ahora se queda aquí hasta que vuelva el contacto. Una copia lo pone a salvo.';
+
+  @override
+  String get syncSaveCopyDescriptionSignedOut =>
+      'Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.';
+
+  @override
+  String get syncSaveCopyChip => 'Restaurable en la app';
+
+  @override
+  String get syncTechnicalLogTitle => 'Registro técnico';
+
+  @override
+  String get syncTechnicalLogSubtitle =>
+      'Para enviarlo a soporte si hace falta';
+
+  @override
+  String get syncExportExcelTitle => 'Exportar a Excel';
+
+  @override
+  String get syncExportExcelSubtitle => 'Para verlos en una hoja de cálculo';
+
+  @override
+  String get syncPendingListTitle => 'Cambios sin subir';
+
+  @override
+  String syncPendingListSummary(num count, String since) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios esperando · el más antiguo, desde $since',
+      one: '1 cambio esperando · desde $since',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncPendingRowTitle(String kind, String label) {
+    return '$kind · $label';
+  }
+
+  @override
+  String syncPendingRowMeta(num attempts, String date) {
+    final intl.NumberFormat attemptsNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String attemptsString = attemptsNumberFormat.format(attempts);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: 'Pendiente desde el $date · $attemptsString intentos',
+      one: 'Pendiente desde el $date · 1 intento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncEntityTransaction => 'Movimiento';
+
+  @override
+  String get syncEntityAccount => 'Cuenta';
+
+  @override
+  String get syncEntityBudget => 'Presupuesto';
+
+  @override
+  String get syncEntityGoal => 'Meta';
+
+  @override
+  String get syncEntityGoalContribution => 'Aporte a meta';
+
+  @override
+  String get syncEntityDebt => 'Deuda';
+
+  @override
+  String get syncEntityDebtEntry => 'Pago de deuda';
+
+  @override
+  String get syncEntityScheduledPayment => 'Pago programado';
+
+  @override
+  String get syncEntityCategory => 'Categoría';
+
+  @override
+  String get syncEntityTag => 'Etiqueta';
+
+  @override
+  String get syncEntitySettings => 'Ajustes';
+
+  @override
+  String get syncEntityOther => 'Cambio';
+
+  @override
+  String syncDetailWaiting(String duration) {
+    return 'Lleva $duration esperando';
+  }
+
+  @override
+  String syncDetailAttempts(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString intentos de subida',
+      one: '1 intento de subida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDetailRisk =>
+      'La nube todavía no tiene copia de este cambio: si reinstalas la app o cambias de teléfono, no volvería.';
+
+  @override
+  String get syncDetailRetry => 'Reintentar';
+
+  @override
+  String get syncPendingEmptyMessage => 'Nada esperando para subir';
+
+  @override
+  String get syncPendingEmptyDescription =>
+      'Todo lo que registraste ya llegó a la nube.';
+
+  @override
+  String syncLogSheetSubtitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Últimas $countString líneas · útil para soporte',
+      one: 'Última línea · útil para soporte',
+      zero: 'Aún no hay líneas · nada que reportar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncLogPrivacyNote =>
+      'El registro no incluye montos ni los nombres de tus movimientos: solo fechas, códigos y reintentos.';
+
+  @override
+  String get syncLogEmpty => 'Todavía no hay nada registrado.';
+
+  @override
+  String get syncLogCopy => 'Copiar';
+
+  @override
+  String get syncLogShare => 'Compartir';
+
+  @override
+  String get syncLogShareSubject => 'Registro de sincronización de Billetudo';
+
+  @override
+  String get syncLogCopied => 'Registro copiado';
+
+  @override
+  String syncRetrySuccess(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Todo al día · $countString cambios subidos',
+      one: 'Todo al día · 1 cambio subido',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncRetryPartial =>
+      'No se pudo subir todo. Sigue guardado en este teléfono.';
+
+  @override
+  String get syncRetryPartialAction => 'Ver detalle';
+
+  @override
+  String get homeSyncAttention => 'Cambios sin subir';
+
+  @override
+  String homeSyncSheetStalledTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString cambios están solo en este teléfono',
+      one: '1 cambio está solo en este teléfono',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeSyncSheetStalledMessage =>
+      'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.';
+
+  @override
+  String get homeSyncSheetStaleTitle => 'Sin contacto con la nube';
+
+  @override
+  String homeSyncSheetStaleMessage(String duration) {
+    return 'No hay cambios pendientes: lo que registraste ya está a salvo en la nube. Pero llevamos $duration sin conectar, así que lo que registres de ahora en adelante se queda solo en este teléfono.';
+  }
+
+  @override
+  String get homeSyncSheetTooLongTitle => 'La sincronización está tardando';
+
+  @override
+  String homeSyncSheetTooLongMessage(String duration) {
+    return 'Llevamos $duration intentando subir tus cambios. En este teléfono no falta nada; lo que aún no ocurre es la copia en la nube.';
+  }
+
+  @override
+  String get homeSyncSheetDetails => 'Ver detalles';
+
+  @override
+  String get settingsSyncStatus => 'Estado de sincronización';
+
+  @override
+  String get reportsTabSummary => 'Resumen';
+
+  @override
+  String get reportsTabCashflow => 'Flujo';
+
+  @override
+  String get reportsTabNetWorth => 'Patrimonio';
+
+  @override
+  String get reportsTabCategories => 'Categorías';
+
+  @override
+  String reportsPeriodLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Últimos $count meses',
+      one: 'Último mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodDaysWithData(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días con datos',
+      one: '$count día con datos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsPeriodSinceDate(String date) {
+    return 'Desde el $date';
+  }
+
+  @override
+  String get reportsPeriodSheetTitle => 'Filtrar periodo';
+
+  @override
+  String get reportsPeriodGranularityMonth => 'Mes';
+
+  @override
+  String get reportsPeriodGranularityYear => 'Año';
+
+  @override
+  String get reportsPeriodClear => 'Limpiar';
+
+  @override
+  String get reportsCashflowCardTitle => 'Flujo de caja';
+
+  @override
+  String get reportsCashflowCardSubtitle => 'Ingresos vs. gastos, mes a mes';
+
+  @override
+  String get reportsCashflowIncomeLabel => 'Ingresos';
+
+  @override
+  String get reportsCashflowExpenseLabel => 'Gastos';
+
+  @override
+  String get reportsCashflowDebtLegendLabel => 'Movimientos de deuda';
+
+  @override
+  String reportsCashflowPositiveLabel(String periodPhrase) {
+    return 'Ahorraste en $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowNegativeLabel(String periodPhrase) {
+    return 'Balance de $periodPhrase';
+  }
+
+  @override
+  String reportsCashflowShortHistoryLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Balance de tus primeros $count días',
+      one: 'Balance de tu primer día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsCashflowPeriodPhraseLastMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'los últimos $count meses',
+      one: 'el último mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsCashflowPeriodPhraseGeneric => 'el periodo seleccionado';
+
+  @override
+  String reportsCashflowNegativeExplainer(String amount, String periodPhrase) {
+    return 'Salió $amount más de lo que entró en $periodPhrase. Abajo puedes ver qué meses pesaron más.';
+  }
+
+  @override
+  String get reportsCashflowViewCategoriesLink => 'Ver en qué se fue';
+
+  @override
+  String reportsCashflowCurrentMonthNote(String month, int day) {
+    return '$month va en curso: llega hasta el $day.';
+  }
+
+  @override
+  String get reportsCashflowDebtToggleLabel => 'Separar movimientos de deuda';
+
+  @override
+  String get reportsCashflowDebtToggleHint =>
+      'Se muestran como una serie aparte, nunca se ocultan.';
+
+  @override
+  String get reportsCashflowShortHistoryNote =>
+      'Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.';
+
+  @override
+  String get reportsNetWorthCardTitle => 'Patrimonio';
+
+  @override
+  String get reportsNetWorthCaption =>
+      'El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.';
+
+  @override
+  String get reportsNetWorthLegendLiquid => 'Patrimonio líquido';
+
+  @override
+  String get reportsNetWorthLegendTotal => 'Patrimonio total';
+
+  @override
+  String get reportsNetWorthFigureLiquidLabel => 'Líquido';
+
+  @override
+  String get reportsNetWorthFigureTotalLabel => 'Total';
+
+  @override
+  String get reportsNetWorthInterestNote =>
+      'El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.';
+
+  @override
+  String get reportsNetWorthArchivedToggleLabel => 'Incluir cuentas archivadas';
+
+  @override
+  String get reportsNetWorthArchivedToggleHint =>
+      'Hoy quedan fuera de las dos cifras.';
+
+  @override
+  String reportsNetWorthSubtitle(String from, String to, String currency) {
+    return 'Del cierre de $from al $to · $currency';
+  }
+
+  @override
+  String get reportsCategoriesCardTitle => 'Estructura de gasto';
+
+  @override
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorías · $range',
+      one: '$count subcategoría · $range',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categorías · $range',
+      one: '$count categoría · $range',
+    );
+    String _temp2 = intl.Intl.selectLogic(
+      isSubcategory,
+      {
+        'true': '$_temp0',
+        'other': '$_temp1',
+      },
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String reportsCategoriesTopLabel(String name, int pct) {
+    return 'Mayor gasto: $name · $pct%';
+  }
+
+  @override
+  String get reportsCategoriesUncategorized => 'Sin categoría';
+
+  @override
+  String get reportsCategoriesViewSubcategories => 'Profundizar';
+
+  @override
+  String get reportsCategoriesBack => 'Atrás';
+
+  @override
+  String reportsCategoriesMovementsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos',
+      one: '$count movimiento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardBudgetsTitle => 'Presupuestos';
+
+  @override
+  String reportsDashboardBudgetsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count presupuestos activos · ciclos propios',
+      one: '$count presupuesto activo · ciclos propios',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reportsDashboardGoalsTitle => 'Metas';
+
+  @override
+  String reportsDashboardGoalsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count metas en curso',
+      one: '$count meta en curso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reportsGoalSummaryAmountOfTarget(String saved, String target) {
+    return '$saved de $target';
+  }
+
+  @override
+  String get reportsDashboardBudgetsEmptySubtitle =>
+      'Aún no has creado ninguno';
+
+  @override
+  String get reportsDashboardBudgetsEmptyMessage =>
+      'Cuando crees un presupuesto, aquí verás cuánto te queda del ciclo.';
+
+  @override
+  String get reportsDashboardGoalsEmptySubtitle => 'Aún no has creado ninguna';
+
+  @override
+  String get reportsDashboardGoalsEmptyMessage =>
+      'Tus metas de ahorro mostrarán su avance aquí, todas juntas.';
+
+  @override
+  String get reportsDashboardCrossLinkDebts => 'Ver el avance de tus deudas';
+
+  @override
+  String reportsDashboardHeroBudgetsAvailable(String amount) {
+    return '$amount disponibles';
+  }
+
+  @override
+  String reportsDashboardHeroGoalsSaved(String amount) {
+    return '$amount ahorrados';
+  }
+
+  @override
+  String get reportsEmptyTitle => 'Aún no hay movimientos en este periodo';
+
+  @override
+  String get reportsEmptyMessage =>
+      'Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.';
+
+  @override
+  String get reportsSyncNoticeMessage =>
+      'Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.';
+
+  @override
+  String get reportsExportTooltip => 'Exportar como imagen';
+
+  @override
+  String get reportsExportError =>
+      'No pudimos exportar la gráfica. Intenta de nuevo.';
+
+  @override
+  String reportsExportShareText(String title) {
+    return 'Gráfica de $title — billetudo';
+  }
+
+  @override
+  String get reportsChartSkeletonLoadingLabel => 'Cargando gráfica';
+
+  @override
+  String get accountTypeSheetTitle => 'Selecciona el tipo de cuenta';
+
+  @override
+  String get onboardingWelcomeHeadline =>
+      'Todo lo esencial. Gratis. Para siempre.';
+
+  @override
+  String get onboardingWelcomeSubhead =>
+      'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.';
+
+  @override
+  String get onboardingWelcomeCaption =>
+      'Ya dejamos categorías listas para ti.';
+
+  @override
+  String get onboardingWelcomeCta => 'Comenzar';
+
+  @override
+  String get onboardingAlreadyHaveAccount => 'Ya tengo cuenta';
+
+  @override
+  String get onboardingAccountHeadline => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingAccountSubhead =>
+      'Empieza con esta sugerencia o cámbiala a tu gusto.';
+
+  @override
+  String get onboardingAccountDefaultName => 'Ahorros';
+
+  @override
+  String get onboardingAccountCta => 'Crear cuenta';
+
+  @override
+  String get onboardingAccountSkip => 'Omitir por ahora';
+
+  @override
+  String get onboardingBackupHeadline => 'Respalda tus datos, cuando quieras';
+
+  @override
+  String get onboardingBackupBody =>
+      'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.';
+
+  @override
+  String get onboardingBackupFootnote =>
+      'Actívalo luego en Ajustes → Respaldar.';
+
+  @override
+  String get onboardingBackupCta => 'Activar respaldo';
+
+  @override
+  String get onboardingBackupSkip => 'Después';
+
+  @override
+  String get onboardingClosingHeadline => 'Tu billetera está lista';
+
+  @override
+  String get onboardingClosingSubheadWithAccount =>
+      'Registra tu primer movimiento y empieza a tomar el control de tu dinero.';
+
+  @override
+  String get onboardingClosingSubheadNoAccount =>
+      'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.';
+
+  @override
+  String get onboardingClosingCtaTransaction => 'Registra tu primer movimiento';
+
+  @override
+  String get onboardingClosingCtaAccount => 'Crea tu primera cuenta';
+
+  @override
+  String get onboardingClosingSkip => 'Lo hago después';
 }

@@ -16,6 +16,14 @@ import 'app_switch.dart';
 /// target, not just the 48x28 [AppSwitch] — that alone falls under the 44x44
 /// minimum. This was a hallway finding on the transferencia design, corrected
 /// here rather than left to each call site.
+///
+/// **Disabled state:** no frame in `billetudo.pen` shows this component
+/// disabled (`gZyEC` only has its ON look). `enabled: false` mutes the whole
+/// row — icon, label and [AppSwitch] all render with `$text-secondary`
+/// instead of `$text-primary`/`$primary`, matching the app's existing dimmed
+/// treatment for disabled controls (e.g. `CalendarDayCell`'s disabled days)
+/// — and disables the tap target, so a gated toggle (e.g. Metas' "mover
+/// dinero" without a linked account) looks, not just behaves, non-interactive.
 class ToggleField extends StatelessWidget {
   const ToggleField({
     required this.icon,
@@ -23,6 +31,7 @@ class ToggleField extends StatelessWidget {
     required this.value,
     required this.hint,
     required this.onChanged,
+    this.enabled = true,
     super.key,
   });
 
@@ -32,6 +41,10 @@ class ToggleField extends StatelessWidget {
   final String hint;
   final ValueChanged<bool> onChanged;
 
+  /// When `false`, the toggle renders dimmed and ignores taps. Defaults to
+  /// `true` so existing call sites keep their current behaviour.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -39,13 +52,14 @@ class ToggleField extends StatelessWidget {
     return Semantics(
       toggled: value,
       button: true,
+      enabled: enabled,
       label: label,
       hint: hint,
       child: Material(
         color: colors.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: InkWell(
-          onTap: () => onChanged(!value),
+          onTap: enabled ? () => onChanged(!value) : null,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Container(
             padding: const EdgeInsets.all(14),
@@ -72,7 +86,9 @@ class ToggleField extends StatelessWidget {
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: colors.textPrimary,
+                                color: enabled
+                                    ? colors.textPrimary
+                                    : colors.textSecondary,
                               ),
                             ),
                           ),
@@ -80,7 +96,7 @@ class ToggleField extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    AppSwitch(value: value),
+                    AppSwitch(value: value, enabled: enabled),
                   ],
                 ),
                 const SizedBox(height: 8),

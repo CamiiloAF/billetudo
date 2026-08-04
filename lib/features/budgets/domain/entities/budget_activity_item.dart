@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 
-/// One expense in a budget's period activity list (HU-04 detail). Enriched with
-/// everything the row draws — title, account name and the category's
-/// appearance — so it renders without a second lookup. Transfers are never
-/// here.
+/// One expense (or presupuestable income) in a budget's period activity list
+/// (HU-04 detail). Enriched with everything the row draws — title, account
+/// name and the category's appearance — so it renders without a second
+/// lookup. A plain (non-presupuestable) transfer is never here.
 class BudgetActivityItem extends Equatable {
   const BudgetActivityItem({
     required this.id,
@@ -15,6 +15,7 @@ class BudgetActivityItem extends Equatable {
     this.categoryIcon,
     this.categoryColor,
     this.note,
+    this.isIncome = false,
   });
 
   final String id;
@@ -35,6 +36,11 @@ class BudgetActivityItem extends Equatable {
   final DateTime date;
   final String? note;
 
+  /// `true` for a presupuestable income row (budget-income-counts-in-budget,
+  /// e.g. a debt repayment received): the row shows `+amount` and raises the
+  /// disponible, instead of the usual `-amount`.
+  final bool isIncome;
+
   @override
   List<Object?> get props => [
         id,
@@ -46,5 +52,6 @@ class BudgetActivityItem extends Equatable {
         currency,
         date,
         note,
+        isIncome,
       ];
 }

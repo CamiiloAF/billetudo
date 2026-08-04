@@ -32,21 +32,24 @@ void main() {
         closedAt: closedAt,
       );
 
+  void stubRegisterCashEvent() => when(
+        () => repository.registerCashEvent(
+          debtId: any(named: 'debtId'),
+          accountId: any(named: 'accountId'),
+          amountMinor: any(named: 'amountMinor'),
+          type: any(named: 'type'),
+          currency: any(named: 'currency'),
+          date: any(named: 'date'),
+          note: any(named: 'note'),
+          categoryId: any(named: 'categoryId'),
+          countsInBudget: any(named: 'countsInBudget'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+
   test('an iOwe abono resolves to an expense in the debts currency', () async {
     when(() => repository.getDebt('d1'))
         .thenAnswer((_) async => Right(debt(DebtDirection.iOwe)));
-    when(
-      () => repository.registerCashEvent(
-        debtId: any(named: 'debtId'),
-        accountId: any(named: 'accountId'),
-        amountMinor: any(named: 'amountMinor'),
-        type: any(named: 'type'),
-        currency: any(named: 'currency'),
-        date: any(named: 'date'),
-        note: any(named: 'note'),
-        categoryId: any(named: 'categoryId'),
-      ),
-    ).thenAnswer((_) async => const Right(unit));
+    stubRegisterCashEvent();
 
     await usecase(
       DebtCashEventDraft(
@@ -68,6 +71,7 @@ void main() {
         date: DateTime(2026, 5, 1),
         note: null,
         categoryId: null,
+        countsInBudget: false,
       ),
     ).called(1);
   });
@@ -75,18 +79,7 @@ void main() {
   test('an owedToMe disbursement resolves to an expense (I lent)', () async {
     when(() => repository.getDebt('d1'))
         .thenAnswer((_) async => Right(debt(DebtDirection.owedToMe)));
-    when(
-      () => repository.registerCashEvent(
-        debtId: any(named: 'debtId'),
-        accountId: any(named: 'accountId'),
-        amountMinor: any(named: 'amountMinor'),
-        type: any(named: 'type'),
-        currency: any(named: 'currency'),
-        date: any(named: 'date'),
-        note: any(named: 'note'),
-        categoryId: any(named: 'categoryId'),
-      ),
-    ).thenAnswer((_) async => const Right(unit));
+    stubRegisterCashEvent();
 
     await usecase(
       DebtCashEventDraft(
@@ -108,6 +101,70 @@ void main() {
         date: DateTime(2026, 5, 1),
         note: null,
         categoryId: null,
+        countsInBudget: false,
+      ),
+    ).called(1);
+  });
+
+  test('an iOwe disbursement resolves to income, not presupuestable',
+      () async {
+    when(() => repository.getDebt('d1'))
+        .thenAnswer((_) async => Right(debt(DebtDirection.iOwe)));
+    stubRegisterCashEvent();
+
+    await usecase(
+      DebtCashEventDraft(
+        debtId: 'd1',
+        accountId: 'a1',
+        amountMinor: 50000,
+        kind: DebtCashEventKind.disbursement,
+        date: DateTime(2026, 5, 1),
+      ),
+    );
+
+    verify(
+      () => repository.registerCashEvent(
+        debtId: 'd1',
+        accountId: 'a1',
+        amountMinor: 50000,
+        type: TransactionType.income,
+        currency: 'COP',
+        date: DateTime(2026, 5, 1),
+        note: null,
+        categoryId: null,
+        countsInBudget: false,
+      ),
+    ).called(1);
+  });
+
+  test(
+      'criterion 1: an owedToMe payment (repago recibido) resolves to income '
+      'with countsInBudget = true automatically', () async {
+    when(() => repository.getDebt('d1'))
+        .thenAnswer((_) async => Right(debt(DebtDirection.owedToMe)));
+    stubRegisterCashEvent();
+
+    await usecase(
+      DebtCashEventDraft(
+        debtId: 'd1',
+        accountId: 'a1',
+        amountMinor: 10000,
+        kind: DebtCashEventKind.payment,
+        date: DateTime(2026, 5, 1),
+      ),
+    );
+
+    verify(
+      () => repository.registerCashEvent(
+        debtId: 'd1',
+        accountId: 'a1',
+        amountMinor: 10000,
+        type: TransactionType.income,
+        currency: 'COP',
+        date: DateTime(2026, 5, 1),
+        note: null,
+        categoryId: null,
+        countsInBudget: true,
       ),
     ).called(1);
   });
@@ -157,6 +214,7 @@ void main() {
         date: any(named: 'date'),
         note: any(named: 'note'),
         categoryId: any(named: 'categoryId'),
+        countsInBudget: any(named: 'countsInBudget'),
       ),
     );
   });

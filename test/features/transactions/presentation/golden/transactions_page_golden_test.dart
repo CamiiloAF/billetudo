@@ -3,6 +3,8 @@ import 'package:billetudo/core/preferences/balance_carousel_preference_datasourc
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
+import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
+import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -166,6 +168,67 @@ void main() {
     ...items,
   ];
 
+  // Bugfix #11: with an exclusively-`expense` (or exclusively-`income`)
+  // active type filter, `TransactionGroupHeader` shows the date group's
+  // signed total instead of its "N movimientos" count. Two same-day,
+  // same-currency items each, so the shown figure is visibly a sum (not
+  // just one item's own amount).
+  final expenseOnlyItems = [
+    TransactionWithDetails(
+      transaction: buildTransaction(
+        id: 'tx-exp-1',
+        categoryId: 'cat-food',
+        amountMinor: 4500000,
+        date: DateTime(2026, 7, 15),
+      ),
+      accountName: 'Efectivo',
+      categoryName: 'Comida',
+      categoryIcon: 'utensils',
+      categoryColor: 'coral',
+    ),
+    TransactionWithDetails(
+      transaction: buildTransaction(
+        id: 'tx-exp-2',
+        categoryId: 'cat-transport',
+        amountMinor: 1200000,
+        date: DateTime(2026, 7, 15),
+      ),
+      accountName: 'Efectivo',
+      categoryName: 'Transporte',
+      categoryIcon: 'car',
+      categoryColor: 'blue',
+    ),
+  ];
+
+  final incomeOnlyItems = [
+    TransactionWithDetails(
+      transaction: buildTransaction(
+        id: 'tx-inc-1',
+        type: TransactionType.income,
+        categoryId: 'cat-salary',
+        amountMinor: 350000000,
+        date: DateTime(2026, 7, 15),
+      ),
+      accountName: 'Bancolombia',
+      categoryName: 'Salario',
+      categoryIcon: 'briefcase',
+      categoryColor: 'mint',
+    ),
+    TransactionWithDetails(
+      transaction: buildTransaction(
+        id: 'tx-inc-2',
+        type: TransactionType.income,
+        categoryId: 'cat-freelance',
+        amountMinor: 15000000,
+        date: DateTime(2026, 7, 15),
+      ),
+      accountName: 'Bancolombia',
+      categoryName: 'Freelance',
+      categoryIcon: 'briefcase',
+      categoryColor: 'mint',
+    ),
+  ];
+
   final accounts = <AccountWithBalance>[];
 
   // HU-06a's Account Chip has 3 states (`s8uIq`): a single account's own
@@ -287,6 +350,55 @@ void main() {
       );
     });
 
+    // The 6th filter chip, "Presupuesto" (criterios 1/3): coexists with the
+    // always-active Fecha chip, and — unlike it — has a genuine neutral state
+    // (`filter.hasBudgetPeriodFilter == false`) with the generic label and no
+    // badge, mirroring the Cuenta chip's own "sin filtro" look.
+    testWidgets('budget chip: no filter, neutral ($suffix)', (tester) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+        ),
+        'budget_chip_none_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Same chip, active state: `primary-soft`/`primary` pill showing the
+    // chosen budget's own name, resolved from `state.budgetOptions` the same
+    // way the Cuenta chip resolves a single selected account's name.
+    testWidgets('budget chip: budget selected, active ($suffix)',
+        (tester) async {
+      final budgetOption = BudgetPeriodOption(
+        budgetId: 'budget-1',
+        name: 'Comida',
+        icon: 'utensils',
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+      );
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+          budgetOptions: [budgetOption],
+          filter: TransactionFilter(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+          ),
+        ),
+        'budget_chip_selected_$suffix',
+        brightness: brightness,
+      );
+    });
+
     // HU-06 sort by amount (`tigaH`/`Q8gSaB` in Pencil): once
     // `TransactionFilter.sortOrder` is an amount order, `TransactionsListView`
     // drops the date-grouped headers for a flat run of `Transaction Row`s
@@ -307,6 +419,44 @@ void main() {
           ),
         ),
         'sorted_by_amount_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Bugfix #11: exclusively-`expense` type filter -> the date group badge
+    // shows the signed total ("-$57.000") instead of "2 movimientos".
+    testWidgets('group total shown: expense-only filter ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: expenseOnlyItems,
+          accounts: accounts,
+          filter: TransactionFilter(
+            types: const {TransactionType.expense},
+          ),
+        ),
+        'group_total_expense_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Bugfix #11: exclusively-`income` type filter -> the date group badge
+    // shows the signed total ("+$3.650.000") instead of "2 movimientos".
+    testWidgets('group total shown: income-only filter ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: incomeOnlyItems,
+          accounts: accounts,
+          filter: TransactionFilter(
+            types: const {TransactionType.income},
+          ),
+        ),
+        'group_total_income_$suffix',
         brightness: brightness,
       );
     });

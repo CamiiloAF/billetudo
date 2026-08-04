@@ -20,6 +20,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.primarySoft,
     required this.primaryOnSoft,
     required this.primaryOnSoftStrong,
+    required this.primaryData,
     required this.hintText,
     required this.mint,
     required this.mintSoft,
@@ -52,6 +53,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.snackbarAction,
     required this.scrim,
     required this.segmentInactiveText,
+    required this.track,
+    required this.trackOverlay,
   });
 
   final Color primary;
@@ -60,6 +63,18 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color primarySoft;
   final Color primaryOnSoft;
   final Color primaryOnSoftStrong;
+
+  /// `$primary-data`: the violet used to graph a *value* (a series, an arc,
+  /// a bar), as opposed to [primary]'s brand-identity role. Same hex as
+  /// [primary] in light (zero visual change); in dark it diverges
+  /// (`#8F7BF2` vs. `#6D4FE0`) because `$primary` dark measured exactly
+  /// 3.00:1 against `$surface` — WCAG 1.4.11's minimum with no margin.
+  /// Introduced for Gráficas e informes (HU-01/HU-02/HU-03): the "Patrimonio
+  /// total" series, its legend dot and the "Vivienda y servicios" donut arc.
+  /// Deliberately **not** yet applied to `Budget Line`/`Goal Ring` — see
+  /// `design-system/billetudo/pages/graficas.md` "Pendientes conocidos": that
+  /// migration needs its own approval.
+  final Color primaryData;
 
   /// Text/icon tone for hint tiras over `$primary-soft`. In light it matches
   /// [primaryDeep]; in dark it is a near-white lavender so it clears AA on the
@@ -115,6 +130,27 @@ class AppColors extends ThemeExtension<AppColors> {
   /// `.pen` deliberately calls out.
   final Color segmentInactiveText;
 
+  /// The surco (track) of arcs/progress bars (`$track`, new token added for
+  /// Metas' Goal Ring): calibrated ≥3:1 with the `$primary` fill in light.
+  ///
+  /// Dark diverges from `billetudo.pen`'s own `$track` value (`#101018`,
+  /// confirmed via `get_variables`): that hex is *darker* than both
+  /// `$background` (`#14141F`) and `$surface` (`#1E1E2E`), so the ring's
+  /// unfilled arc reads as ~1:1 contrast against the card it sits on —
+  /// effectively invisible. No dark frame of the Goal Ring exists in the
+  /// `.pen` to confirm an intended look, so this reuses `$border`
+  /// (`#2A2A3D`), the closest existing token that is visibly lighter than
+  /// `$surface`/`$background` in dark, matching the relationship `$track`
+  /// already has in light (lighter than the card, not darker). Flagged for
+  /// `pencil-designer` to correct the source variable.
+  final Color track;
+
+  /// A translucent white overlay (`$track-overlay`, fixed — not themed) used
+  /// for a medallion drawn atop a colored/gradient surface (e.g. Metas'
+  /// empty-state hero card), where a plain `$muted`/`$surface` fill would not
+  /// read against the gradient behind it.
+  final Color trackOverlay;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -123,6 +159,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFFEEECFB),
     primaryOnSoft: Color(0xFF6C5CE7),
     primaryOnSoftStrong: Color(0xFF5648C8),
+    primaryData: Color(0xFF6C5CE7),
     hintText: Color(0xFF5648C8),
     mint: Color(0xFF059669),
     mintSoft: Color(0xFFE6F7EF),
@@ -155,6 +192,8 @@ class AppColors extends ThemeExtension<AppColors> {
     snackbarAction: Color(0xFFA78BFA),
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF5F5D73),
+    track: Color(0xFFEEECFB),
+    trackOverlay: Color(0x33FFFFFF),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -165,6 +204,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primarySoft: Color(0xFF26243B),
     primaryOnSoft: Color(0xFFA78BFA),
     primaryOnSoftStrong: Color(0xFFA78BFA),
+    primaryData: Color(0xFF8F7BF2),
     hintText: Color(0xFFE4DEFA),
     mint: Color(0xFF34D399),
     mintSoft: Color(0xFF16321F),
@@ -197,6 +237,8 @@ class AppColors extends ThemeExtension<AppColors> {
     snackbarAction: Color(0xFF5648C8),
     scrim: Color(0x66000000),
     segmentInactiveText: Color(0xFF9A98B5),
+    track: Color(0xFF2A2A3D),
+    trackOverlay: Color(0x33FFFFFF),
   );
 
   @override
@@ -207,6 +249,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? primarySoft,
     Color? primaryOnSoft,
     Color? primaryOnSoftStrong,
+    Color? primaryData,
     Color? hintText,
     Color? mint,
     Color? mintSoft,
@@ -239,6 +282,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? snackbarAction,
     Color? scrim,
     Color? segmentInactiveText,
+    Color? track,
+    Color? trackOverlay,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -247,6 +292,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primarySoft: primarySoft ?? this.primarySoft,
       primaryOnSoft: primaryOnSoft ?? this.primaryOnSoft,
       primaryOnSoftStrong: primaryOnSoftStrong ?? this.primaryOnSoftStrong,
+      primaryData: primaryData ?? this.primaryData,
       hintText: hintText ?? this.hintText,
       mint: mint ?? this.mint,
       mintSoft: mintSoft ?? this.mintSoft,
@@ -279,6 +325,8 @@ class AppColors extends ThemeExtension<AppColors> {
       snackbarAction: snackbarAction ?? this.snackbarAction,
       scrim: scrim ?? this.scrim,
       segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
+      track: track ?? this.track,
+      trackOverlay: trackOverlay ?? this.trackOverlay,
     );
   }
 
@@ -293,6 +341,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryOnSoft: Color.lerp(primaryOnSoft, other.primaryOnSoft, t)!,
       primaryOnSoftStrong:
           Color.lerp(primaryOnSoftStrong, other.primaryOnSoftStrong, t)!,
+      primaryData: Color.lerp(primaryData, other.primaryData, t)!,
       hintText: Color.lerp(hintText, other.hintText, t)!,
       mint: Color.lerp(mint, other.mint, t)!,
       mintSoft: Color.lerp(mintSoft, other.mintSoft, t)!,
@@ -326,6 +375,8 @@ class AppColors extends ThemeExtension<AppColors> {
       scrim: Color.lerp(scrim, other.scrim, t)!,
       segmentInactiveText:
           Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
+      track: Color.lerp(track, other.track, t)!,
+      trackOverlay: Color.lerp(trackOverlay, other.trackOverlay, t)!,
     );
   }
 }

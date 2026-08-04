@@ -37,7 +37,11 @@ class DebtHeroCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              DebtDirectionPill(direction: debt.direction),
+              // Fix 5: once the debt is closed, the pill switches to the
+              // neutral/past-tense treatment — same rule `DebtCard` already
+              // applies in the closed tab (`debt_direction_pill.dart`).
+              DebtDirectionPill(
+                  direction: debt.direction, closed: debt.isClosed),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -72,7 +76,8 @@ class DebtHeroCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      DebtFormat.amount(balance.outstandingMinor, debt.currency),
+                      DebtFormat.amount(
+                          balance.outstandingMinor, debt.currency),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.headlineMedium?.copyWith(

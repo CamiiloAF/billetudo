@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
 import '../../../scheduled_payments/domain/entities/pending_scheduled_occurrence.dart';
@@ -42,12 +43,14 @@ class BudgetRepositoryImpl implements BudgetRepository {
     this._zeroBased,
     this._projectOccurrences,
     this._scopeResolver,
+    this._crash,
   );
 
   final BudgetsLocalDatasource _local;
   final BudgetProgressCalculator _progress;
   final ZeroBasedSummaryCalculator _zeroBased;
   final ProjectUpcomingOccurrences _projectOccurrences;
+  final CrashReporter _crash;
   final BudgetCategoryScopeResolver _scopeResolver;
 
   @override
@@ -639,6 +642,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         amountMinor: row.amountMinor,
         currency: row.currency,
         date: row.date,
+        isIncome: row.isIncome,
       );
 
   BudgetScheduledTemplateDetail _toScheduledTemplateDetail(
@@ -797,6 +801,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     try {
       return await body();
     } catch (e, st) {
+      await _crash.recordError(e, st, context: 'budgets query');
       return Left(
         DatabaseFailure('budgets query failed', cause: e, stackTrace: st),
       );
@@ -807,15 +812,24 @@ class BudgetRepositoryImpl implements BudgetRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'budgets stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'budgets stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'budgets stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

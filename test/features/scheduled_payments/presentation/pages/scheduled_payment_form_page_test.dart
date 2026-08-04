@@ -20,8 +20,11 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../../support/fake_note_suggestions.dart';
 
 class MockScheduledPaymentFormCubit extends MockCubit<ScheduledPaymentFormState>
     implements ScheduledPaymentFormCubit {}
@@ -89,6 +92,7 @@ void main() {
       ..registerFactory<CategoryQuickPickerCubit>(
           () => categoryQuickPickerCubit)
       ..registerFactory<ScheduledPaymentTagPickerCubit>(() => tagPickerCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);
@@ -545,6 +549,84 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Configurar cuota'), findsNothing);
       expect(find.text('abrir'), findsOneWidget);
+    });
+  });
+
+  group('guardar falla sin ValidationFailure (bugfix)', () {
+    // Reported bug: submitting an edit whose template was tombstoned from
+    // another screen (e.g. deleted while viewed from Presupuestos) returned a
+    // `NotFoundFailure`, which had no `field` to highlight, so "Guardar" just
+    // silently re-enabled with no explanation. The fix surfaces a snackbar and
+    // leaves the form for the list, since there is nothing left to save.
+    testWidgets(
+        'NotFoundFailure muestra un snackbar y navega a la lista de pagos '
+        'programados', (tester) async {
+      final controller =
+          StreamController<ScheduledPaymentFormState>.broadcast();
+      addTearDown(controller.close);
+      final ready = ScheduledPaymentFormState(
+        status: ScheduledPaymentFormStatus.ready,
+        id: 'sp-1',
+        accountId: 'acc-1',
+      );
+      when(() => cubit.state).thenReturn(ready);
+      when(() => cubit.stream).thenAnswer((_) => controller.stream);
+
+      final router = GoRouter(
+        initialLocation: '/pagos-programados/sp-1/editar',
+        routes: [
+          GoRoute(
+            path: '/pagos-programados',
+            builder: (context, state) =>
+                const Scaffold(body: Text('Lista de pagos programados')),
+          ),
+          GoRoute(
+            path: '/pagos-programados/:id/editar',
+            builder: (context, state) => BlocProvider<
+                ScheduledPaymentFormCubit>.value(
+              value: cubit,
+              child: const ScheduledPaymentFormPage(),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final failed = ready.copyWith(
+        status: ScheduledPaymentFormStatus.saving,
+      );
+      when(() => cubit.state).thenReturn(failed);
+      controller.add(failed);
+      await tester.pump();
+
+      final withFailure = ready.copyWith(
+        status: ScheduledPaymentFormStatus.ready,
+        failure: const NotFoundFailure('template not found'),
+      );
+      when(() => cubit.state).thenReturn(withFailure);
+      controller.add(withFailure);
+      await tester.pump();
+
+      expect(
+        find.text(
+          'Este pago programado ya no existe. Es posible que lo hayas '
+          'eliminado.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.text('Lista de pagos programados'), findsOneWidget);
     });
   });
 }

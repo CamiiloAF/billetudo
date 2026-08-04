@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart';
 import 'package:billetudo/features/transactions/data/repositories/tag_repository_impl.dart';
@@ -10,7 +11,10 @@ void main() {
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());
-    repository = TagRepositoryImpl(TagsLocalDatasource(database));
+    repository = TagRepositoryImpl(
+      TagsLocalDatasource(database),
+      const NoopCrashReporter(),
+    );
   });
 
   tearDown(() async => database.close());

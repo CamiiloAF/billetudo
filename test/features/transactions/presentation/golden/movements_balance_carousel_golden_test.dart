@@ -60,9 +60,12 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    // Collapsed state (Mejora #2): the compact bar "N cuentas · $total" with a
-    // chevron-down. The page goldens force `collapsed:false`, so this bar is
-    // otherwise never captured.
+    // Collapsed state (Mejora #2): the shared collapse handle (chevron-down,
+    // same top slot as expanded) above the compact bar "N cuentas · $total".
+    // The page goldens force `collapsed:false`, so this is otherwise never
+    // captured. Captures the whole [MovementsBalanceCarousel] (not just
+    // [MovementsBalanceCarouselCollapsed]) so the handle — now a sibling, not
+    // a child of the collapsed bar — is included.
     testWidgets('collapsed ($suffix)', (tester) async {
       final cubit = BalanceCarouselCubit(_FakeCarouselPrefs(collapsed: true));
       await cubit.collapse();
@@ -81,7 +84,7 @@ void main() {
       );
 
       await expectLater(
-        find.byType(MovementsBalanceCarouselCollapsed),
+        find.byType(MovementsBalanceCarousel),
         matchesGoldenFile(
           'goldens/movements_balance_carousel_collapsed_$suffix.png',
         ),

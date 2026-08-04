@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
+import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
+import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
@@ -19,6 +21,7 @@ void main() {
   late MockDeleteTransaction deleteTransaction;
   late MockRestoreTransaction restoreTransaction;
   late MockWatchAccounts watchAccounts;
+  late MockWatchBudgetPeriodOptions watchBudgetPeriodOptions;
   late MockAccountFilterPreferenceDatasource accountFilterPreferences;
 
   final entry = TransactionWithDetails(
@@ -36,8 +39,11 @@ void main() {
     deleteTransaction = MockDeleteTransaction();
     restoreTransaction = MockRestoreTransaction();
     watchAccounts = MockWatchAccounts();
+    watchBudgetPeriodOptions = MockWatchBudgetPeriodOptions();
     accountFilterPreferences = MockAccountFilterPreferenceDatasource();
     when(() => watchAccounts()).thenAnswer((_) => const Stream.empty());
+    when(() => watchBudgetPeriodOptions())
+        .thenAnswer((_) => const Stream.empty());
     // Defaults to "sin filtro guardado" so existing tests keep behaving as
     // before this datasource existed; persistence-specific tests below
     // override this per case.
@@ -52,6 +58,7 @@ void main() {
       deleteTransaction,
       restoreTransaction,
       watchAccounts,
+      watchBudgetPeriodOptions,
       accountFilterPreferences);
 
   group('carga inicial', () {
@@ -183,6 +190,31 @@ void main() {
         verify(
           () => accountFilterPreferences.writeAccountIds({'acc-9'}),
         ).called(1);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'filterByCategoryAndRange fija categoría y rango de fechas '
+      '(drill-down de Gráficas)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-mercado',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.categoryIds, {'cat-mercado'});
+        expect(cubit.state.filter.datePeriod.isCustomRange, isTrue);
+        expect(cubit.state.filter.datePeriod.start, DateTime(2026, 2));
+        expect(
+          cubit.state.filter.datePeriod.endExclusive,
+          DateTime(2026, 8),
+        );
       },
     );
 
@@ -357,6 +389,121 @@ void main() {
 
         await cubit.close();
         await accountsController.close();
+      },
+    );
+  });
+
+  group('filtro de presupuesto (Presupuesto chip)', () {
+    BudgetPeriodOption option(String id) => BudgetPeriodOption(
+          budgetId: id,
+          name: 'Comida',
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+        );
+
+    test(
+      'poda el filtro de presupuesto cuando el presupuesto elegido ya no '
+      'está activo (archivado/eliminado) en la primera emisión',
+      () async {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => const Stream.empty());
+        final optionsController =
+            StreamController<Result<List<BudgetPeriodOption>>>();
+        when(() => watchBudgetPeriodOptions())
+            .thenAnswer((_) => optionsController.stream);
+
+        final cubit = build();
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-ghost',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+          ),
+        );
+
+        // 'budget-ghost' is nowhere in the active budgets — it was archived
+        // since the filter was applied.
+        optionsController.add(Right([option('budget-1')]));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.filter.hasBudgetPeriodFilter, isFalse);
+
+        await cubit.close();
+        await optionsController.close();
+      },
+    );
+
+    test(
+      'si el presupuesto del filtro sigue activo, no se toca nada',
+      () async {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => const Stream.empty());
+        final optionsController =
+            StreamController<Result<List<BudgetPeriodOption>>>();
+        when(() => watchBudgetPeriodOptions())
+            .thenAnswer((_) => optionsController.stream);
+
+        final cubit = build();
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+          ),
+        );
+
+        optionsController.add(Right([option('budget-1')]));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.filter.hasBudgetPeriodFilter, isTrue);
+        expect(cubit.state.filter.budgetPeriod!.budgetId, 'budget-1');
+
+        await cubit.close();
+        await optionsController.close();
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'updateFilter combina budgetPeriod y datePeriod en la query emitida '
+      'a WatchTransactions, sin que uno reemplace al otro',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+          ),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.hasBudgetPeriodFilter, isTrue);
+        expect(
+          cubit.state.filter.datePeriod,
+          DatePeriodFilter.thisMonth(),
+        );
+        verify(
+          () => watchTransactions(
+            any(
+              that: predicate<TransactionFilter>(
+                (filter) =>
+                    filter.budgetPeriod?.budgetId == 'budget-1' &&
+                    filter.datePeriod == DatePeriodFilter.thisMonth(),
+              ),
+            ),
+          ),
+        ).called(1);
       },
     );
   });

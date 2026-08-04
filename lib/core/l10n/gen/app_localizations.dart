@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Reintentar'**
   String get commonRetry;
 
+  /// Etiqueta compartida del botón 'Ver más' que revela más filas de una lista paginada en el sitio (presupuestos, deudas, metas, pagos programados).
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más'**
+  String get commonLoadMore;
+
   /// Etiqueta accesible del botón atrás del Page Header.
   ///
   /// In es, this message translates to:
@@ -1208,6 +1214,12 @@ abstract class AppLocalizations {
   /// **'Etiqueta'**
   String get transactionsFilterTag;
 
+  /// No description provided for @transactionsFilterBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get transactionsFilterBudget;
+
   /// No description provided for @transactionsSortDateDesc.
   ///
   /// In es, this message translates to:
@@ -1267,6 +1279,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo total'**
   String get transactionsBalanceTotalLabel;
+
+  /// Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.
+  ///
+  /// In es, this message translates to:
+  /// **'{label}: {amount}'**
+  String transactionsBalanceTotalSemantics(String label, String amount);
 
   /// Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta.
   ///
@@ -1820,6 +1838,18 @@ abstract class AppLocalizations {
   /// **'Filtrar por fecha'**
   String get dateFilterSheetTitle;
 
+  /// No description provided for @budgetPeriodFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por presupuesto'**
+  String get budgetPeriodFilterSheetTitle;
+
+  /// No description provided for @budgetPeriodFilterEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes presupuestos activos'**
+  String get budgetPeriodFilterEmptyMessage;
+
   /// No description provided for @dateFilterWeek.
   ///
   /// In es, this message translates to:
@@ -1979,7 +2009,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSyncSheetSyncingMessage.
   ///
   /// In es, this message translates to:
-  /// **'Estamos guardando tus cambios en la nube.'**
+  /// **'Estamos guardando tus cambios en la nube. Puedes seguir usando la app.'**
   String get homeSyncSheetSyncingMessage;
 
   /// No description provided for @homeSyncSheetOfflineTitle.
@@ -1991,7 +2021,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSyncSheetOfflineMessage.
   ///
   /// In es, this message translates to:
-  /// **'Tus datos están guardados en este dispositivo. Se sincronizarán en cuanto vuelva la conexión.'**
+  /// **'Tus datos están guardados en este teléfono. Se sincronizarán en cuanto vuelva la conexión.'**
   String get homeSyncSheetOfflineMessage;
 
   /// No description provided for @homeSyncSheetDismiss.
@@ -2323,6 +2353,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Registrar abono'**
   String get debtDetailRegisterPayment;
+
+  /// No description provided for @debtDetailCompleteDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar deuda'**
+  String get debtDetailCompleteDebt;
 
   /// No description provided for @debtInstallmentTitle.
   ///
@@ -2669,13 +2705,13 @@ abstract class AppLocalizations {
   /// No description provided for @debtPaymentCategoryLabel.
   ///
   /// In es, this message translates to:
-  /// **'Categoría (opcional)'**
+  /// **'Categoría'**
   String get debtPaymentCategoryLabel;
 
   /// No description provided for @debtPaymentCategoryNone.
   ///
   /// In es, this message translates to:
-  /// **'Sin categoría'**
+  /// **'Elige una categoría'**
   String get debtPaymentCategoryNone;
 
   /// No description provided for @debtPaymentSelectAccount.
@@ -2840,11 +2876,29 @@ abstract class AppLocalizations {
   /// **'Cerrar deuda'**
   String get debtActionClose;
 
+  /// No description provided for @debtActionComplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar deuda'**
+  String get debtActionComplete;
+
+  /// No description provided for @debtFormErrorDirectionLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes cambiar la dirección de esta deuda porque ya tiene movimientos registrados además de la apertura.'**
+  String get debtFormErrorDirectionLocked;
+
   /// No description provided for @debtActionError.
   ///
   /// In es, this message translates to:
   /// **'No pudimos completar la acción. Intenta de nuevo.'**
   String get debtActionError;
+
+  /// No description provided for @debtActionCloseSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda completada'**
+  String get debtActionCloseSuccess;
 
   /// No description provided for @debtCloseSheetTitle.
   ///
@@ -3651,12 +3705,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Próximo: {date} · {accountName}'**
   String budgetScheduledRowSubtitle(String date, String accountName);
-
-  /// No description provided for @budgetLoadMore.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver más'**
-  String get budgetLoadMore;
 
   /// No description provided for @budgetOneOffWindow.
   ///
@@ -4534,6 +4582,18 @@ abstract class AppLocalizations {
   /// **'La cuota no puede superar el saldo de la deuda.'**
   String get scheduledPaymentInstallmentAmountExceedsError;
 
+  /// No description provided for @scheduledPaymentFormNotFoundError.
+  ///
+  /// In es, this message translates to:
+  /// **'Este pago programado ya no existe. Es posible que lo hayas eliminado.'**
+  String get scheduledPaymentFormNotFoundError;
+
+  /// No description provided for @scheduledPaymentFormSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar los cambios. Intenta de nuevo.'**
+  String get scheduledPaymentFormSaveError;
+
   /// No description provided for @scheduledPaymentFormIntervalStepperLabel.
   ///
   /// In es, this message translates to:
@@ -4701,12 +4761,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Todavía no se ha generado ningún movimiento de este pago programado.'**
   String get scheduledPaymentDetailHistoryEmpty;
-
-  /// No description provided for @scheduledPaymentDetailHistorySeeAll.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver historial completo ({count})'**
-  String scheduledPaymentDetailHistorySeeAll(int count);
 
   /// No description provided for @scheduledSkippedBadge.
   ///
@@ -5158,6 +5212,1988 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ajuste revertido — el período vuelve al monto habitual.'**
   String get budgetAdjustCancelledSnackbar;
+
+  /// No description provided for @goalsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas'**
+  String get goalsTitle;
+
+  /// No description provided for @goalsAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva meta'**
+  String get goalsAdd;
+
+  /// No description provided for @goalsErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus metas'**
+  String get goalsErrorTitle;
+
+  /// No description provided for @goalsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige algo por lo que ahorrar'**
+  String get goalsEmptyMessage;
+
+  /// No description provided for @goalsEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Dale un propósito a tu dinero. Empieza con una idea o crea la tuya.'**
+  String get goalsEmptyDescription;
+
+  /// No description provided for @goalsEmptyTemplatesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza con una plantilla'**
+  String get goalsEmptyTemplatesTitle;
+
+  /// No description provided for @goalsEmptyCustomCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear meta personalizada'**
+  String get goalsEmptyCustomCta;
+
+  /// No description provided for @goalsArchivedCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas archivadas'**
+  String get goalsArchivedCta;
+
+  /// No description provided for @goalsArchivedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas archivadas'**
+  String get goalsArchivedTitle;
+
+  /// No description provided for @goalsArchivedEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has archivado ninguna meta'**
+  String get goalsArchivedEmptyMessage;
+
+  /// No description provided for @goalsArchivedEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando termines o pauses una meta, archívala: conserva su progreso y su historial, y sale de tu lista principal.'**
+  String get goalsArchivedEmptyDescription;
+
+  /// No description provided for @goalCoherenceMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus metas superan el saldo real de la cuenta por {amount}'**
+  String goalCoherenceMessage(String amount);
+
+  /// No description provided for @goalMomentumStreak.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, plural, =1{1 semana seguida} other{{weeks} semanas seguidas}}'**
+  String goalMomentumStreak(int weeks);
+
+  /// No description provided for @goalMomentumStreakSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu mejor racha aportando. ¡Sigue así!'**
+  String get goalMomentumStreakSub;
+
+  /// No description provided for @goalMomentumBrokenTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Retoma tu racha de ahorro'**
+  String get goalMomentumBrokenTitle;
+
+  /// No description provided for @goalMomentumBrokenSub.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, plural, =1{Hace 1 semana sin aportar · vuelve cuando quieras} other{Hace {weeks} semanas sin aportar · vuelve cuando quieras}}'**
+  String goalMomentumBrokenSub(int weeks);
+
+  /// No description provided for @goalMomentumMilestone.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximo hito: {pct}% en {goalName} · faltan {amount}'**
+  String goalMomentumMilestone(int pct, String goalName, String amount);
+
+  /// No description provided for @goalCardRemaining.
+  ///
+  /// In es, this message translates to:
+  /// **'Te faltan {amount}'**
+  String goalCardRemaining(String amount);
+
+  /// No description provided for @goalCardCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorraste {amount}'**
+  String goalCardCompleted(String amount);
+
+  /// No description provided for @goalCardMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}% completado'**
+  String goalCardMeta(int pct);
+
+  /// No description provided for @goalCardChapterClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cumplida · capítulo cerrado'**
+  String get goalCardChapterClosed;
+
+  /// No description provided for @goalDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta'**
+  String get goalDetailTitle;
+
+  /// No description provided for @goalDetailRemaining.
+  ///
+  /// In es, this message translates to:
+  /// **'Te faltan {amount}'**
+  String goalDetailRemaining(String amount);
+
+  /// No description provided for @goalDetailAchieved.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorraste {amount}'**
+  String goalDetailAchieved(String amount);
+
+  /// No description provided for @goalDetailSavedOfTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} ahorrado de {target}'**
+  String goalDetailSavedOfTarget(String saved, String target);
+
+  /// No description provided for @goalActionsTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más acciones'**
+  String get goalActionsTooltip;
+
+  /// No description provided for @goalEditTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar meta'**
+  String get goalEditTooltip;
+
+  /// No description provided for @goalActionEditSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre, objetivo, fecha o cuenta'**
+  String get goalActionEditSubtitle;
+
+  /// No description provided for @goalActionArchive.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar meta'**
+  String get goalActionArchive;
+
+  /// No description provided for @goalActionArchiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sale de la lista y conserva su historial'**
+  String get goalActionArchiveSubtitle;
+
+  /// No description provided for @goalActionUnarchive.
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar meta'**
+  String get goalActionUnarchive;
+
+  /// No description provided for @goalActionUnarchiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a tu lista principal'**
+  String get goalActionUnarchiveSubtitle;
+
+  /// No description provided for @goalActionDeleteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar meta'**
+  String get goalActionDeleteLabel;
+
+  /// No description provided for @goalActionDeleteSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Va a la papelera; puedes deshacerlo'**
+  String get goalActionDeleteSubtitle;
+
+  /// No description provided for @goalRowUnarchive.
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar'**
+  String get goalRowUnarchive;
+
+  /// No description provided for @goalRowCompletedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cumplida'**
+  String get goalRowCompletedBadge;
+
+  /// No description provided for @goalRowArchivedOn.
+  ///
+  /// In es, this message translates to:
+  /// **'{account} · archivada el {date}'**
+  String goalRowArchivedOn(String account, String date);
+
+  /// No description provided for @goalRowArchivedOnNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivada el {date}'**
+  String goalRowArchivedOnNoAccount(String date);
+
+  /// No description provided for @goalRowTargetOf.
+  ///
+  /// In es, this message translates to:
+  /// **'de {amount}'**
+  String goalRowTargetOf(String amount);
+
+  /// No description provided for @goalArchiveSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Archivar esta meta?'**
+  String get goalArchiveSheetTitle;
+
+  /// No description provided for @goalArchiveSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quita de tu lista principal y deja de aceptar nuevos movimientos. Puedes desarchivarla cuando quieras.'**
+  String get goalArchiveSheetMessage;
+
+  /// No description provided for @goalArchiveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar'**
+  String get goalArchiveConfirm;
+
+  /// No description provided for @goalUnarchiveSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Desarchivar esta meta?'**
+  String get goalUnarchiveSheetTitle;
+
+  /// No description provided for @goalUnarchiveSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a tu lista principal y podrás aportar y retirar de nuevo.'**
+  String get goalUnarchiveSheetMessage;
+
+  /// No description provided for @goalUnarchiveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar'**
+  String get goalUnarchiveConfirm;
+
+  /// No description provided for @goalDeleteSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta meta?'**
+  String get goalDeleteSheetTitle;
+
+  /// No description provided for @goalDeleteSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Se mueve a la papelera. Puedes recuperarla mientras no la elimines definitivamente.'**
+  String get goalDeleteSheetMessage;
+
+  /// No description provided for @goalMovementsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos ({count})'**
+  String goalMovementsTitle(int count);
+
+  /// No description provided for @goalMovementsSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get goalMovementsSectionTitle;
+
+  /// No description provided for @goalMovementsEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no registras movimientos en esta meta.'**
+  String get goalMovementsEmpty;
+
+  /// No description provided for @goalMovementContribution.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte'**
+  String get goalMovementContribution;
+
+  /// No description provided for @goalMovementWithdrawal.
+  ///
+  /// In es, this message translates to:
+  /// **'Retiro'**
+  String get goalMovementWithdrawal;
+
+  /// No description provided for @goalMovementDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get goalMovementDateLabel;
+
+  /// No description provided for @goalMovementNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota (opcional)'**
+  String get goalMovementNoteLabel;
+
+  /// No description provided for @goalMovementNoteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar una nota'**
+  String get goalMovementNoteHint;
+
+  /// No description provided for @goalMovementError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar el movimiento. Intenta de nuevo.'**
+  String get goalMovementError;
+
+  /// No description provided for @goalDateToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy, {date}'**
+  String goalDateToday(String date);
+
+  /// No description provided for @goalContributeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar aporte'**
+  String get goalContributeTitle;
+
+  /// No description provided for @goalContributeTitleWithName.
+  ///
+  /// In es, this message translates to:
+  /// **'Aportar a {name}'**
+  String goalContributeTitleWithName(String name);
+
+  /// No description provided for @goalContributeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Suma a tu progreso de la meta.'**
+  String get goalContributeSubtitle;
+
+  /// No description provided for @goalContributeAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte'**
+  String get goalContributeAmountLabel;
+
+  /// No description provided for @goalContributeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Aportar'**
+  String get goalContributeCta;
+
+  /// No description provided for @goalWithdrawTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar retiro'**
+  String get goalWithdrawTitle;
+
+  /// No description provided for @goalWithdrawTitleWithName.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar de {name}'**
+  String goalWithdrawTitleWithName(String name);
+
+  /// No description provided for @goalWithdrawSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sacar dinero de una meta es normal.'**
+  String get goalWithdrawSubtitle;
+
+  /// No description provided for @goalWithdrawAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Retiro'**
+  String get goalWithdrawAmountLabel;
+
+  /// No description provided for @goalMoveFundsToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Mover dinero de una cuenta?'**
+  String get goalMoveFundsToggleLabel;
+
+  /// No description provided for @goalMoveFundsToggleHintContribute.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo registra el avance de tu meta; no mueve ninguna cuenta.'**
+  String get goalMoveFundsToggleHintContribute;
+
+  /// No description provided for @goalMoveFundsToggleHintWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo registra el retiro; no toca ninguna cuenta.'**
+  String get goalMoveFundsToggleHintWithdraw;
+
+  /// No description provided for @goalMoveFundsToggleHintContributeOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia: el saldo de la cuenta de origen baja y el de la meta sube.'**
+  String get goalMoveFundsToggleHintContributeOn;
+
+  /// No description provided for @goalMoveFundsToggleHintContributeOnBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia hacia la cuenta de tu meta.'**
+  String get goalMoveFundsToggleHintContributeOnBudget;
+
+  /// No description provided for @goalMoveFundsToggleHintWithdrawOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea una transferencia: sale de tu meta y entra a la cuenta de destino.'**
+  String get goalMoveFundsToggleHintWithdrawOn;
+
+  /// No description provided for @goalContributeSourceAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de origen'**
+  String get goalContributeSourceAccountLabel;
+
+  /// No description provided for @goalWithdrawDestinationAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de destino'**
+  String get goalWithdrawDestinationAccountLabel;
+
+  /// No description provided for @goalAccountFieldPlaceholder.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta'**
+  String get goalAccountFieldPlaceholder;
+
+  /// No description provided for @goalBudgetToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Incluir en tu presupuesto?'**
+  String get goalBudgetToggleLabel;
+
+  /// No description provided for @goalBudgetToggleHintOff.
+  ///
+  /// In es, this message translates to:
+  /// **'No entra en tus presupuestos ni reportes.'**
+  String get goalBudgetToggleHintOff;
+
+  /// No description provided for @goalBudgetToggleHintOnContribute.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta como egreso en la cuenta de origen y como ingreso en la de tu meta.'**
+  String get goalBudgetToggleHintOnContribute;
+
+  /// No description provided for @goalBudgetToggleHintOnWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta como ingreso en la cuenta de destino, según tus presupuestos.'**
+  String get goalBudgetToggleHintOnWithdraw;
+
+  /// No description provided for @goalLinkTransactionCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un movimiento'**
+  String get goalLinkTransactionCta;
+
+  /// No description provided for @goalLinkBannerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar a {name}'**
+  String goalLinkBannerTitle(String name);
+
+  /// No description provided for @goalLinkBannerBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo.'**
+  String get goalLinkBannerBody;
+
+  /// No description provided for @goalLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enlazar el movimiento. Intenta de nuevo.'**
+  String get goalLinkError;
+
+  /// No description provided for @goalWithdrawCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar'**
+  String get goalWithdrawCta;
+
+  /// No description provided for @goalAdjustDateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar la fecha'**
+  String get goalAdjustDateCta;
+
+  /// No description provided for @goalWithdrawAvailableLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible en la meta: {amount}'**
+  String goalWithdrawAvailableLabel(String amount);
+
+  /// No description provided for @goalWithdrawUseMaxCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar todo'**
+  String get goalWithdrawUseMaxCta;
+
+  /// No description provided for @goalWithdrawErrorExceedsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes retirar más de lo que has ahorrado en esta meta.'**
+  String get goalWithdrawErrorExceedsSaved;
+
+  /// No description provided for @goalQuickAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'APORTE RÁPIDO'**
+  String get goalQuickAmountLabel;
+
+  /// No description provided for @goalQuickAmountAddCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva'**
+  String get goalQuickAmountAddCta;
+
+  /// No description provided for @goalQuickAmountFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get goalQuickAmountFieldLabel;
+
+  /// No description provided for @goalQuickAmountDeletedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte rápido eliminado'**
+  String get goalQuickAmountDeletedMessage;
+
+  /// No description provided for @goalQuickAmountUndoAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer'**
+  String get goalQuickAmountUndoAction;
+
+  /// No description provided for @goalNewQuickAmountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo aporte rápido'**
+  String get goalNewQuickAmountTitle;
+
+  /// No description provided for @goalNewQuickAmountSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda un monto para aportarlo con un toque la próxima vez.'**
+  String get goalNewQuickAmountSubtitle;
+
+  /// No description provided for @goalNewQuickAmountCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear chip'**
+  String get goalNewQuickAmountCta;
+
+  /// No description provided for @goalProjectionNoTargetDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha objetivo definida'**
+  String get goalProjectionNoTargetDate;
+
+  /// No description provided for @goalProjectionOverdue.
+  ///
+  /// In es, this message translates to:
+  /// **'La fecha que elegiste ya pasó y tu meta sigue en pie. Ponle una fecha nueva y volvemos a proyectarte la llegada.'**
+  String get goalProjectionOverdue;
+
+  /// No description provided for @goalProjectionInsufficientHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporta un poco más para ver tu ritmo de ahorro'**
+  String get goalProjectionInsufficientHistory;
+
+  /// No description provided for @goalProjectionMonthlyNeeded.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas aportar {amount} al mes para llegar a tu fecha'**
+  String goalProjectionMonthlyNeeded(String amount);
+
+  /// No description provided for @goalProjectionOnPace.
+  ///
+  /// In es, this message translates to:
+  /// **'A tu ritmo, llegas en {month}'**
+  String goalProjectionOnPace(String month);
+
+  /// No description provided for @goalMilestoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Llegaste al {pct}%!'**
+  String goalMilestoneTitle(int pct);
+
+  /// No description provided for @goalMilestonePercent.
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}%'**
+  String goalMilestonePercent(int pct);
+
+  /// No description provided for @goalMilestoneMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue así con {name}. Cada aporte te acerca más.'**
+  String goalMilestoneMessage(String name);
+
+  /// No description provided for @goalMilestoneCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir ahorrando'**
+  String get goalMilestoneCta;
+
+  /// No description provided for @goalCompletedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta cumplida'**
+  String get goalCompletedBadge;
+
+  /// No description provided for @goalCompletedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Cumpliste {name}!'**
+  String goalCompletedTitle(String name);
+
+  /// No description provided for @goalCompletedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorraste {amount} en total. Este logro queda contigo.'**
+  String goalCompletedMessage(String amount);
+
+  /// No description provided for @goalCompletedCreateNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear la próxima meta'**
+  String get goalCompletedCreateNext;
+
+  /// No description provided for @goalCompletedArchive.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar meta'**
+  String get goalCompletedArchive;
+
+  /// No description provided for @goalFormNewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva meta'**
+  String get goalFormNewTitle;
+
+  /// No description provided for @goalFormEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar meta'**
+  String get goalFormEditTitle;
+
+  /// No description provided for @goalFormTargetLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivo'**
+  String get goalFormTargetLabel;
+
+  /// No description provided for @goalFormErrorTargetZero.
+  ///
+  /// In es, this message translates to:
+  /// **'El objetivo debe ser mayor a cero'**
+  String get goalFormErrorTargetZero;
+
+  /// No description provided for @goalFormNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get goalFormNameLabel;
+
+  /// No description provided for @goalFormNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. Viaje a Cartagena'**
+  String get goalFormNameHint;
+
+  /// No description provided for @goalFormNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre es obligatorio'**
+  String get goalFormNameRequired;
+
+  /// No description provided for @goalFormAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta vinculada (recomendado)'**
+  String get goalFormAccountLabel;
+
+  /// No description provided for @goalFormAccountHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta'**
+  String get goalFormAccountHint;
+
+  /// No description provided for @goalFormAccountPickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta'**
+  String get goalFormAccountPickerTitle;
+
+  /// No description provided for @goalFormTargetDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha objetivo (opcional)'**
+  String get goalFormTargetDateLabel;
+
+  /// No description provided for @goalFormTargetDateHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir una fecha posterior a hoy'**
+  String get goalFormTargetDateHint;
+
+  /// No description provided for @goalFormErrorTargetDatePast.
+  ///
+  /// In es, this message translates to:
+  /// **'La fecha debe ser posterior a hoy'**
+  String get goalFormErrorTargetDatePast;
+
+  /// No description provided for @goalFormInitialSavedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya tienes algo ahorrado? (opcional)'**
+  String get goalFormInitialSavedLabel;
+
+  /// No description provided for @goalFormCreateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear meta'**
+  String get goalFormCreateCta;
+
+  /// No description provided for @goalFormSaveCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get goalFormSaveCta;
+
+  /// No description provided for @goalCurrencySheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la moneda'**
+  String get goalCurrencySheetTitle;
+
+  /// No description provided for @goalIconSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir ícono'**
+  String get goalIconSheetTitle;
+
+  /// No description provided for @goalIconSheetHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El ícono se muestra en un fondo neutro — sin color por meta.'**
+  String get goalIconSheetHint;
+
+  /// No description provided for @goalFormIconAndNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono y nombre'**
+  String get goalFormIconAndNameLabel;
+
+  /// No description provided for @goalFormCurrencyHintLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'La moneda la define la cuenta vinculada ({account}, {currency}). Cambia la cuenta si necesitas otra moneda.'**
+  String goalFormCurrencyHintLocked(String account, String currency);
+
+  /// No description provided for @goalFormCurrencyHintUnlocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la moneda de tu meta. Si vinculas una cuenta, la moneda se fija a la de esa cuenta.'**
+  String get goalFormCurrencyHintUnlocked;
+
+  /// No description provided for @goalFormInitialSavedHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo guardamos como el primer movimiento del historial, para que tu meta arranque completa.'**
+  String get goalFormInitialSavedHint;
+
+  /// No description provided for @goalAccountFilterLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas en {accountName}'**
+  String goalAccountFilterLabel(String accountName);
+
+  /// No description provided for @goalAccountFilterClearTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar filtro'**
+  String get goalAccountFilterClearTooltip;
+
+  /// No description provided for @goalCoherenceLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver las metas de esta cuenta'**
+  String get goalCoherenceLink;
+
+  /// No description provided for @goalDetailSavedOfTargetNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} de {target} · sin cuenta vinculada'**
+  String goalDetailSavedOfTargetNoAccount(String saved, String target);
+
+  /// No description provided for @goalDetailAccountUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuenta que tenías vinculada ya no está disponible. Tu historial sigue completo y esta meta pasa a avance manual.'**
+  String get goalDetailAccountUnavailableMessage;
+
+  /// No description provided for @goalDetailAccountUnavailableLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincular otra cuenta'**
+  String get goalDetailAccountUnavailableLink;
+
+  /// No description provided for @goalMovementDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle del movimiento'**
+  String get goalMovementDetailTitle;
+
+  /// No description provided for @goalMovementDetailHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes corregirlo o eliminarlo. Si el movimiento tiene una transferencia detrás, se actualiza junto con él.'**
+  String get goalMovementDetailHint;
+
+  /// No description provided for @goalMovementDetailDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get goalMovementDetailDateLabel;
+
+  /// No description provided for @goalMovementDetailOriginAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de origen'**
+  String get goalMovementDetailOriginAccountLabel;
+
+  /// No description provided for @goalMovementDetailTransferLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get goalMovementDetailTransferLabel;
+
+  /// No description provided for @goalMovementDetailTransferValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{origin} → {destination}'**
+  String goalMovementDetailTransferValue(String origin, String destination);
+
+  /// No description provided for @goalMovementDetailNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get goalMovementDetailNoteLabel;
+
+  /// No description provided for @goalMovementEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar movimiento'**
+  String get goalMovementEditTitle;
+
+  /// No description provided for @goalMovementEditHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Corrige el monto, la fecha o la nota de este movimiento. No crea ni elimina movimientos.'**
+  String get goalMovementEditHint;
+
+  /// No description provided for @goalMovementAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get goalMovementAmountLabel;
+
+  /// No description provided for @goalMovementKindContributionLower.
+  ///
+  /// In es, this message translates to:
+  /// **'aporte'**
+  String get goalMovementKindContributionLower;
+
+  /// No description provided for @goalMovementKindWithdrawalLower.
+  ///
+  /// In es, this message translates to:
+  /// **'retiro'**
+  String get goalMovementKindWithdrawalLower;
+
+  /// No description provided for @goalDeleteMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar este {kind} de {amount}?'**
+  String goalDeleteMovementTitle(String kind, String amount);
+
+  /// No description provided for @goalDeleteMovementMessageTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'El avance de la meta se recalcula sin él. Como este movimiento tiene una transferencia detrás, esa transferencia también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.'**
+  String goalDeleteMovementMessageTransfer(String origin, String destination);
+
+  /// No description provided for @goalDeleteMovementMessageManual.
+  ///
+  /// In es, this message translates to:
+  /// **'El avance de la meta se recalcula sin él. Este {kind} fue un registro manual, así que ninguna de tus cuentas cambia de saldo.'**
+  String goalDeleteMovementMessageManual(String kind);
+
+  /// No description provided for @goalDeleteMovementMessageCompletedTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. La transferencia detrás también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.'**
+  String goalDeleteMovementMessageCompletedTransfer(
+      String kind, String goalName, String origin, String destination);
+
+  /// No description provided for @goalDeleteMovementMessageCompletedManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.'**
+  String goalDeleteMovementMessageCompletedManual(String kind, String goalName);
+
+  /// No description provided for @syncStatusTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado de sincronización'**
+  String get syncStatusTitle;
+
+  /// No description provided for @syncHeroAttentionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}'**
+  String syncHeroAttentionTitle(num count);
+
+  /// No description provided for @syncHeroAttentionKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin subir a la nube desde {since}'**
+  String syncHeroAttentionKicker(String since);
+
+  /// No description provided for @syncHeroAttentionKickerNever.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía sin subir a la nube'**
+  String get syncHeroAttentionKickerNever;
+
+  /// No description provided for @syncHeroAttentionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.} other{Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos {count} cambios no volverían.}}'**
+  String syncHeroAttentionBody(num count);
+
+  /// No description provided for @syncHeroStaleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin contacto con la nube'**
+  String get syncHeroStaleTitle;
+
+  /// No description provided for @syncHeroStaleBody.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.'**
+  String get syncHeroStaleBody;
+
+  /// No description provided for @syncHeroSyncedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo está sincronizado'**
+  String get syncHeroSyncedTitle;
+
+  /// No description provided for @syncHeroSyncedKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada esperando para subir'**
+  String get syncHeroSyncedKicker;
+
+  /// No description provided for @syncHeroSyncedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están completos en este teléfono y también hay copia en la nube. Si cambias de teléfono, los recuperas al iniciar sesión.'**
+  String get syncHeroSyncedBody;
+
+  /// No description provided for @syncHeroNeverTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no se ha sincronizado'**
+  String get syncHeroNeverTitle;
+
+  /// No description provided for @syncHeroNeverKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Acabas de iniciar sesión'**
+  String get syncHeroNeverKicker;
+
+  /// No description provided for @syncHeroNeverBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están completos en este teléfono. En cuanto haya conexión suben solos a la nube; no tienes que hacer nada.'**
+  String get syncHeroNeverBody;
+
+  /// No description provided for @syncHeroOfflineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get syncHeroOfflineTitle;
+
+  /// No description provided for @syncHeroOfflineKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Se reanuda sola al volver la señal'**
+  String get syncHeroOfflineKicker;
+
+  /// No description provided for @syncHeroOfflineBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están guardados en este teléfono y no se pierde nada mientras tanto. Lo que falte por subir se sincroniza solo en cuanto vuelva la conexión.'**
+  String get syncHeroOfflineBody;
+
+  /// No description provided for @syncHeroOfflineCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Se reintentará solo en cuanto haya conexión.'**
+  String get syncHeroOfflineCaption;
+
+  /// No description provided for @syncHeroSignedOutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay sesión iniciada'**
+  String get syncHeroSignedOutTitle;
+
+  /// No description provided for @syncHeroSignedOutKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos viven solo en este teléfono'**
+  String get syncHeroSignedOutKicker;
+
+  /// No description provided for @syncHeroSignedOutBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo está completo aquí y la app funciona igual sin cuenta. Lo único que falta es la copia en la nube: sin ella, un cambio de teléfono o una reinstalación no tendrían de dónde recuperar tus datos.'**
+  String get syncHeroSignedOutBody;
+
+  /// No description provided for @syncSignInCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar sesión'**
+  String get syncSignInCta;
+
+  /// No description provided for @syncRetryNowCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar ahora'**
+  String get syncRetryNowCta;
+
+  /// No description provided for @syncSyncNowCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar ahora'**
+  String get syncSyncNowCta;
+
+  /// No description provided for @syncSyncingCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizando…'**
+  String get syncSyncingCta;
+
+  /// No description provided for @syncLastSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización: {relative}'**
+  String syncLastSyncLabel(String relative);
+
+  /// No description provided for @syncLastSuccessfulSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización exitosa: {relative}'**
+  String syncLastSuccessfulSyncLabel(String relative);
+
+  /// No description provided for @syncNeverSyncedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no se ha sincronizado'**
+  String get syncNeverSyncedLabel;
+
+  /// No description provided for @syncNoActiveSyncLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sincronización activa'**
+  String get syncNoActiveSyncLabel;
+
+  /// No description provided for @syncTimeAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {duration}'**
+  String syncTimeAgo(String duration);
+
+  /// No description provided for @syncDurationMoment.
+  ///
+  /// In es, this message translates to:
+  /// **'un momento'**
+  String get syncDurationMoment;
+
+  /// No description provided for @syncDurationMinutes.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 minuto} other{{count} minutos}}'**
+  String syncDurationMinutes(num count);
+
+  /// No description provided for @syncDurationHours.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 hora} other{{count} horas}}'**
+  String syncDurationHours(num count);
+
+  /// No description provided for @syncDurationDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String syncDurationDays(num count);
+
+  /// No description provided for @syncSectionPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué está esperando'**
+  String get syncSectionPending;
+
+  /// No description provided for @syncSectionPendingLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver los {count}'**
+  String syncSectionPendingLink(num count);
+
+  /// No description provided for @syncSectionDiagnostics.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico'**
+  String get syncSectionDiagnostics;
+
+  /// No description provided for @syncSectionBackupAndDiagnostics.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia y diagnóstico'**
+  String get syncSectionBackupAndDiagnostics;
+
+  /// No description provided for @syncSectionMeanwhile.
+  ///
+  /// In es, this message translates to:
+  /// **'Mientras tanto'**
+  String get syncSectionMeanwhile;
+
+  /// No description provided for @syncSaveCopyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar una copia'**
+  String get syncSaveCopyTitle;
+
+  /// No description provided for @syncSaveCopyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Un archivo con todo lo tuyo, listo para volver a cargarlo.'**
+  String get syncSaveCopyDescription;
+
+  /// No description provided for @syncSaveCopyDescriptionAttention.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Ese cambio vive solo aquí. Una copia lo pone a salvo.} other{Esos {count} cambios viven solo aquí. Una copia los pone a salvo.}}'**
+  String syncSaveCopyDescriptionAttention(num count);
+
+  /// No description provided for @syncSaveCopyDescriptionStale.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que registres desde ahora se queda aquí hasta que vuelva el contacto. Una copia lo pone a salvo.'**
+  String get syncSaveCopyDescriptionStale;
+
+  /// No description provided for @syncSaveCopyDescriptionSignedOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.'**
+  String get syncSaveCopyDescriptionSignedOut;
+
+  /// No description provided for @syncSaveCopyChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurable en la app'**
+  String get syncSaveCopyChip;
+
+  /// No description provided for @syncTechnicalLogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro técnico'**
+  String get syncTechnicalLogTitle;
+
+  /// No description provided for @syncTechnicalLogSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para enviarlo a soporte si hace falta'**
+  String get syncTechnicalLogSubtitle;
+
+  /// No description provided for @syncExportExcelTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar a Excel'**
+  String get syncExportExcelTitle;
+
+  /// No description provided for @syncExportExcelSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para verlos en una hoja de cálculo'**
+  String get syncExportExcelSubtitle;
+
+  /// No description provided for @syncPendingListTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios sin subir'**
+  String get syncPendingListTitle;
+
+  /// No description provided for @syncPendingListSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio esperando · desde {since}} other{{count} cambios esperando · el más antiguo, desde {since}}}'**
+  String syncPendingListSummary(num count, String since);
+
+  /// No description provided for @syncPendingRowTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} · {label}'**
+  String syncPendingRowTitle(String kind, String label);
+
+  /// No description provided for @syncPendingRowMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{attempts, plural, =1{Pendiente desde el {date} · 1 intento} other{Pendiente desde el {date} · {attempts} intentos}}'**
+  String syncPendingRowMeta(num attempts, String date);
+
+  /// No description provided for @syncEntityTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimiento'**
+  String get syncEntityTransaction;
+
+  /// No description provided for @syncEntityAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get syncEntityAccount;
+
+  /// No description provided for @syncEntityBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get syncEntityBudget;
+
+  /// No description provided for @syncEntityGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta'**
+  String get syncEntityGoal;
+
+  /// No description provided for @syncEntityGoalContribution.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte a meta'**
+  String get syncEntityGoalContribution;
+
+  /// No description provided for @syncEntityDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get syncEntityDebt;
+
+  /// No description provided for @syncEntityDebtEntry.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago de deuda'**
+  String get syncEntityDebtEntry;
+
+  /// No description provided for @syncEntityScheduledPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago programado'**
+  String get syncEntityScheduledPayment;
+
+  /// No description provided for @syncEntityCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get syncEntityCategory;
+
+  /// No description provided for @syncEntityTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiqueta'**
+  String get syncEntityTag;
+
+  /// No description provided for @syncEntitySettings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get syncEntitySettings;
+
+  /// No description provided for @syncEntityOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio'**
+  String get syncEntityOther;
+
+  /// No description provided for @syncDetailWaiting.
+  ///
+  /// In es, this message translates to:
+  /// **'Lleva {duration} esperando'**
+  String syncDetailWaiting(String duration);
+
+  /// No description provided for @syncDetailAttempts.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 intento de subida} other{{count} intentos de subida}}'**
+  String syncDetailAttempts(num count);
+
+  /// No description provided for @syncDetailRisk.
+  ///
+  /// In es, this message translates to:
+  /// **'La nube todavía no tiene copia de este cambio: si reinstalas la app o cambias de teléfono, no volvería.'**
+  String get syncDetailRisk;
+
+  /// No description provided for @syncDetailRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get syncDetailRetry;
+
+  /// No description provided for @syncPendingEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada esperando para subir'**
+  String get syncPendingEmptyMessage;
+
+  /// No description provided for @syncPendingEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo lo que registraste ya llegó a la nube.'**
+  String get syncPendingEmptyDescription;
+
+  /// No description provided for @syncLogSheetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Aún no hay líneas · nada que reportar} =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}'**
+  String syncLogSheetSubtitle(num count);
+
+  /// No description provided for @syncLogPrivacyNote.
+  ///
+  /// In es, this message translates to:
+  /// **'El registro no incluye montos ni los nombres de tus movimientos: solo fechas, códigos y reintentos.'**
+  String get syncLogPrivacyNote;
+
+  /// No description provided for @syncLogEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay nada registrado.'**
+  String get syncLogEmpty;
+
+  /// No description provided for @syncLogCopy.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get syncLogCopy;
+
+  /// No description provided for @syncLogShare.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get syncLogShare;
+
+  /// No description provided for @syncLogShareSubject.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro de sincronización de Billetudo'**
+  String get syncLogShareSubject;
+
+  /// No description provided for @syncLogCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro copiado'**
+  String get syncLogCopied;
+
+  /// No description provided for @syncRetrySuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Todo al día · 1 cambio subido} other{Todo al día · {count} cambios subidos}}'**
+  String syncRetrySuccess(num count);
+
+  /// No description provided for @syncRetryPartial.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo subir todo. Sigue guardado en este teléfono.'**
+  String get syncRetryPartial;
+
+  /// No description provided for @syncRetryPartialAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalle'**
+  String get syncRetryPartialAction;
+
+  /// No description provided for @homeSyncAttention.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios sin subir'**
+  String get homeSyncAttention;
+
+  /// No description provided for @homeSyncSheetStalledTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}'**
+  String homeSyncSheetStalledTitle(num count);
+
+  /// No description provided for @homeSyncSheetStalledMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.'**
+  String get homeSyncSheetStalledMessage;
+
+  /// No description provided for @homeSyncSheetStaleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin contacto con la nube'**
+  String get homeSyncSheetStaleTitle;
+
+  /// No description provided for @homeSyncSheetStaleMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cambios pendientes: lo que registraste ya está a salvo en la nube. Pero llevamos {duration} sin conectar, así que lo que registres de ahora en adelante se queda solo en este teléfono.'**
+  String homeSyncSheetStaleMessage(String duration);
+
+  /// No description provided for @homeSyncSheetTooLongTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'La sincronización está tardando'**
+  String get homeSyncSheetTooLongTitle;
+
+  /// No description provided for @homeSyncSheetTooLongMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevamos {duration} intentando subir tus cambios. En este teléfono no falta nada; lo que aún no ocurre es la copia en la nube.'**
+  String homeSyncSheetTooLongMessage(String duration);
+
+  /// No description provided for @homeSyncSheetDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalles'**
+  String get homeSyncSheetDetails;
+
+  /// No description provided for @settingsSyncStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado de sincronización'**
+  String get settingsSyncStatus;
+
+  /// No description provided for @reportsTabSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get reportsTabSummary;
+
+  /// No description provided for @reportsTabCashflow.
+  ///
+  /// In es, this message translates to:
+  /// **'Flujo'**
+  String get reportsTabCashflow;
+
+  /// No description provided for @reportsTabNetWorth.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio'**
+  String get reportsTabNetWorth;
+
+  /// No description provided for @reportsTabCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get reportsTabCategories;
+
+  /// No description provided for @reportsPeriodLastMonths.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{Último mes} other{Últimos {count} meses}}'**
+  String reportsPeriodLastMonths(int count);
+
+  /// No description provided for @reportsPeriodDaysWithData.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} día con datos} other{{count} días con datos}}'**
+  String reportsPeriodDaysWithData(int count);
+
+  /// No description provided for @reportsPeriodSinceDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde el {date}'**
+  String reportsPeriodSinceDate(String date);
+
+  /// No description provided for @reportsPeriodSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar periodo'**
+  String get reportsPeriodSheetTitle;
+
+  /// No description provided for @reportsPeriodGranularityMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get reportsPeriodGranularityMonth;
+
+  /// No description provided for @reportsPeriodGranularityYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Año'**
+  String get reportsPeriodGranularityYear;
+
+  /// No description provided for @reportsPeriodClear.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar'**
+  String get reportsPeriodClear;
+
+  /// No description provided for @reportsCashflowCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Flujo de caja'**
+  String get reportsCashflowCardTitle;
+
+  /// No description provided for @reportsCashflowCardSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos vs. gastos, mes a mes'**
+  String get reportsCashflowCardSubtitle;
+
+  /// No description provided for @reportsCashflowIncomeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get reportsCashflowIncomeLabel;
+
+  /// No description provided for @reportsCashflowExpenseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get reportsCashflowExpenseLabel;
+
+  /// No description provided for @reportsCashflowDebtLegendLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos de deuda'**
+  String get reportsCashflowDebtLegendLabel;
+
+  /// No description provided for @reportsCashflowPositiveLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorraste en {periodPhrase}'**
+  String reportsCashflowPositiveLabel(String periodPhrase);
+
+  /// No description provided for @reportsCashflowNegativeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Balance de {periodPhrase}'**
+  String reportsCashflowNegativeLabel(String periodPhrase);
+
+  /// No description provided for @reportsCashflowShortHistoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{Balance de tu primer día} other{Balance de tus primeros {count} días}}'**
+  String reportsCashflowShortHistoryLabel(int count);
+
+  /// No description provided for @reportsCashflowPeriodPhraseLastMonths.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{el último mes} other{los últimos {count} meses}}'**
+  String reportsCashflowPeriodPhraseLastMonths(int count);
+
+  /// No description provided for @reportsCashflowPeriodPhraseGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'el periodo seleccionado'**
+  String get reportsCashflowPeriodPhraseGeneric;
+
+  /// No description provided for @reportsCashflowNegativeExplainer.
+  ///
+  /// In es, this message translates to:
+  /// **'Salió {amount} más de lo que entró en {periodPhrase}. Abajo puedes ver qué meses pesaron más.'**
+  String reportsCashflowNegativeExplainer(String amount, String periodPhrase);
+
+  /// No description provided for @reportsCashflowViewCategoriesLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver en qué se fue'**
+  String get reportsCashflowViewCategoriesLink;
+
+  /// No description provided for @reportsCashflowCurrentMonthNote.
+  ///
+  /// In es, this message translates to:
+  /// **'{month} va en curso: llega hasta el {day}.'**
+  String reportsCashflowCurrentMonthNote(String month, int day);
+
+  /// No description provided for @reportsCashflowDebtToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Separar movimientos de deuda'**
+  String get reportsCashflowDebtToggleLabel;
+
+  /// No description provided for @reportsCashflowDebtToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Se muestran como una serie aparte, nunca se ocultan.'**
+  String get reportsCashflowDebtToggleHint;
+
+  /// No description provided for @reportsCashflowShortHistoryNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.'**
+  String get reportsCashflowShortHistoryNote;
+
+  /// No description provided for @reportsNetWorthCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio'**
+  String get reportsNetWorthCardTitle;
+
+  /// No description provided for @reportsNetWorthCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.'**
+  String get reportsNetWorthCaption;
+
+  /// No description provided for @reportsNetWorthLegendLiquid.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio líquido'**
+  String get reportsNetWorthLegendLiquid;
+
+  /// No description provided for @reportsNetWorthLegendTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio total'**
+  String get reportsNetWorthLegendTotal;
+
+  /// No description provided for @reportsNetWorthFigureLiquidLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Líquido'**
+  String get reportsNetWorthFigureLiquidLabel;
+
+  /// No description provided for @reportsNetWorthFigureTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get reportsNetWorthFigureTotalLabel;
+
+  /// No description provided for @reportsNetWorthInterestNote.
+  ///
+  /// In es, this message translates to:
+  /// **'El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.'**
+  String get reportsNetWorthInterestNote;
+
+  /// No description provided for @reportsNetWorthArchivedToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluir cuentas archivadas'**
+  String get reportsNetWorthArchivedToggleLabel;
+
+  /// No description provided for @reportsNetWorthArchivedToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy quedan fuera de las dos cifras.'**
+  String get reportsNetWorthArchivedToggleHint;
+
+  /// No description provided for @reportsNetWorthSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Del cierre de {from} al {to} · {currency}'**
+  String reportsNetWorthSubtitle(String from, String to, String currency);
+
+  /// No description provided for @reportsCategoriesCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Estructura de gasto'**
+  String get reportsCategoriesCardTitle;
+
+  /// No description provided for @reportsCategoriesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}'**
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory);
+
+  /// No description provided for @reportsCategoriesTopLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Mayor gasto: {name} · {pct}%'**
+  String reportsCategoriesTopLabel(String name, int pct);
+
+  /// No description provided for @reportsCategoriesUncategorized.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get reportsCategoriesUncategorized;
+
+  /// No description provided for @reportsCategoriesViewSubcategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Profundizar'**
+  String get reportsCategoriesViewSubcategories;
+
+  /// No description provided for @reportsCategoriesBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Atrás'**
+  String get reportsCategoriesBack;
+
+  /// No description provided for @reportsCategoriesMovementsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} movimiento} other{{count} movimientos}}'**
+  String reportsCategoriesMovementsCount(int count);
+
+  /// No description provided for @reportsDashboardBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get reportsDashboardBudgetsTitle;
+
+  /// No description provided for @reportsDashboardBudgetsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} presupuesto activo · ciclos propios} other{{count} presupuestos activos · ciclos propios}}'**
+  String reportsDashboardBudgetsSubtitle(int count);
+
+  /// No description provided for @reportsDashboardGoalsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas'**
+  String get reportsDashboardGoalsTitle;
+
+  /// No description provided for @reportsDashboardGoalsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} meta en curso} other{{count} metas en curso}}'**
+  String reportsDashboardGoalsSubtitle(int count);
+
+  /// No description provided for @reportsGoalSummaryAmountOfTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} de {target}'**
+  String reportsGoalSummaryAmountOfTarget(String saved, String target);
+
+  /// No description provided for @reportsDashboardBudgetsEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has creado ninguno'**
+  String get reportsDashboardBudgetsEmptySubtitle;
+
+  /// No description provided for @reportsDashboardBudgetsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando crees un presupuesto, aquí verás cuánto te queda del ciclo.'**
+  String get reportsDashboardBudgetsEmptyMessage;
+
+  /// No description provided for @reportsDashboardGoalsEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has creado ninguna'**
+  String get reportsDashboardGoalsEmptySubtitle;
+
+  /// No description provided for @reportsDashboardGoalsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus metas de ahorro mostrarán su avance aquí, todas juntas.'**
+  String get reportsDashboardGoalsEmptyMessage;
+
+  /// No description provided for @reportsDashboardCrossLinkDebts.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver el avance de tus deudas'**
+  String get reportsDashboardCrossLinkDebts;
+
+  /// No description provided for @reportsDashboardHeroBudgetsAvailable.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} disponibles'**
+  String reportsDashboardHeroBudgetsAvailable(String amount);
+
+  /// No description provided for @reportsDashboardHeroGoalsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} ahorrados'**
+  String reportsDashboardHeroGoalsSaved(String amount);
+
+  /// No description provided for @reportsEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay movimientos en este periodo'**
+  String get reportsEmptyTitle;
+
+  /// No description provided for @reportsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.'**
+  String get reportsEmptyMessage;
+
+  /// No description provided for @reportsSyncNoticeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.'**
+  String get reportsSyncNoticeMessage;
+
+  /// No description provided for @reportsExportTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar como imagen'**
+  String get reportsExportTooltip;
+
+  /// No description provided for @reportsExportError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos exportar la gráfica. Intenta de nuevo.'**
+  String get reportsExportError;
+
+  /// No description provided for @reportsExportShareText.
+  ///
+  /// In es, this message translates to:
+  /// **'Gráfica de {title} — billetudo'**
+  String reportsExportShareText(String title);
+
+  /// Etiqueta accesible del estado de carga (skeleton) de una gráfica.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando gráfica'**
+  String get reportsChartSkeletonLoadingLabel;
+
+  /// No description provided for @accountTypeSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona el tipo de cuenta'**
+  String get accountTypeSheetTitle;
+
+  /// No description provided for @onboardingWelcomeHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo lo esencial. Gratis. Para siempre.'**
+  String get onboardingWelcomeHeadline;
+
+  /// No description provided for @onboardingWelcomeSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.'**
+  String get onboardingWelcomeSubhead;
+
+  /// No description provided for @onboardingWelcomeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya dejamos categorías listas para ti.'**
+  String get onboardingWelcomeCaption;
+
+  /// No description provided for @onboardingWelcomeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Comenzar'**
+  String get onboardingWelcomeCta;
+
+  /// No description provided for @onboardingAlreadyHaveAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tengo cuenta'**
+  String get onboardingAlreadyHaveAccount;
+
+  /// No description provided for @onboardingAccountHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingAccountHeadline;
+
+  /// No description provided for @onboardingAccountSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza con esta sugerencia o cámbiala a tu gusto.'**
+  String get onboardingAccountSubhead;
+
+  /// Nombre pre-llenado de la primera cuenta del onboarding (HU-02).
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorros'**
+  String get onboardingAccountDefaultName;
+
+  /// No description provided for @onboardingAccountCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear cuenta'**
+  String get onboardingAccountCta;
+
+  /// No description provided for @onboardingAccountSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir por ahora'**
+  String get onboardingAccountSkip;
+
+  /// No description provided for @onboardingBackupHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Respalda tus datos, cuando quieras'**
+  String get onboardingBackupHeadline;
+
+  /// No description provided for @onboardingBackupBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.'**
+  String get onboardingBackupBody;
+
+  /// No description provided for @onboardingBackupFootnote.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívalo luego en Ajustes → Respaldar.'**
+  String get onboardingBackupFootnote;
+
+  /// No description provided for @onboardingBackupCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar respaldo'**
+  String get onboardingBackupCta;
+
+  /// No description provided for @onboardingBackupSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Después'**
+  String get onboardingBackupSkip;
+
+  /// No description provided for @onboardingClosingHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu billetera está lista'**
+  String get onboardingClosingHeadline;
+
+  /// No description provided for @onboardingClosingSubheadWithAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento y empieza a tomar el control de tu dinero.'**
+  String get onboardingClosingSubheadWithAccount;
+
+  /// No description provided for @onboardingClosingSubheadNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.'**
+  String get onboardingClosingSubheadNoAccount;
+
+  /// No description provided for @onboardingClosingCtaTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento'**
+  String get onboardingClosingCtaTransaction;
+
+  /// No description provided for @onboardingClosingCtaAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingClosingCtaAccount;
+
+  /// No description provided for @onboardingClosingSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo hago después'**
+  String get onboardingClosingSkip;
 }
 
 class _AppLocalizationsDelegate

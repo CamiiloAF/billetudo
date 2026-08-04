@@ -10,7 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   DebtActionsSheetAction? result;
 
-  Future<void> pumpAndOpen(WidgetTester tester) async {
+  Future<void> pumpAndOpen(
+    WidgetTester tester, {
+    bool showCloseAction = true,
+    bool settled = false,
+  }) async {
     result = null;
     await tester.pumpWidget(
       MaterialApp(
@@ -25,6 +29,8 @@ void main() {
                 result = await DebtActionsSheet.show(
                   context,
                   debtName: 'Crédito vehicular',
+                  showCloseAction: showCloseAction,
+                  settled: settled,
                 );
               },
               child: const Text('open'),
@@ -73,5 +79,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(result, DebtActionsSheetAction.delete);
+  });
+
+  testWidgets(
+      '"Cerrar deuda" hides the chevron — it never navigates anywhere, it '
+      'only closes the debt', (tester) async {
+    await pumpAndOpen(tester);
+
+    final closeRow = tester.widget<SheetMenuRow>(
+      find.ancestor(
+        of: find.text('Cerrar deuda'),
+        matching: find.byType(SheetMenuRow),
+      ),
+    );
+
+    expect(closeRow.showChevron, isFalse);
+  });
+
+  group('fix 5: closed/settled debt', () {
+    testWidgets(
+        'showCloseAction=false (deuda ya cerrada) no ofrece ninguna fila de '
+        'cerrar/completar', (tester) async {
+      await pumpAndOpen(tester, showCloseAction: false);
+
+      expect(find.text('Cerrar deuda'), findsNothing);
+      expect(find.text('Completar deuda'), findsNothing);
+      expect(find.text('Editar deuda'), findsOneWidget);
+      expect(find.text('Eliminar deuda'), findsOneWidget);
+      expect(find.byType(SheetMenuRow), findsNWidgets(2));
+    });
+
+    testWidgets(
+        'settled=true (saldo en 0, aún no cerrada) muestra "Completar '
+        'deuda" en vez de "Cerrar deuda"', (tester) async {
+      await pumpAndOpen(tester, settled: true);
+
+      expect(find.text('Completar deuda'), findsOneWidget);
+      expect(find.text('Cerrar deuda'), findsNothing);
+    });
+
+    testWidgets('tocar "Completar deuda" también pops con .close',
+        (tester) async {
+      await pumpAndOpen(tester, settled: true);
+
+      await tester.tap(find.text('Completar deuda'));
+      await tester.pumpAndSettle();
+
+      expect(result, DebtActionsSheetAction.close);
+    });
   });
 }

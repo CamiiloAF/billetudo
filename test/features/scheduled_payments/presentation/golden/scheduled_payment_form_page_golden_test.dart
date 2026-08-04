@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
 import '../../../../support/golden_helpers.dart';
 
 class MockScheduledPaymentFormCubit extends MockCubit<ScheduledPaymentFormState>
@@ -92,6 +93,7 @@ void main() {
       ..registerFactory<CategoryQuickPickerCubit>(
           () => categoryQuickPickerCubit)
       ..registerFactory<ScheduledPaymentTagPickerCubit>(() => tagPickerCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);

@@ -81,7 +81,9 @@ TransactionDraft buildExpenseDraft({
 
 /// [categoryId]/[categoryKind] default to a matching income category since
 /// `TransactionDraft.validated` now requires one — pass `categoryId: null`
-/// explicitly to exercise that rejection.
+/// explicitly to exercise that rejection. [countsInBudget] defaults to `false`
+/// (most income does not count in a budget); pass `true` to exercise
+/// budget-income-counts-in-budget.
 TransactionDraft buildIncomeDraft({
   String? id,
   String accountId = 'acc-1',
@@ -91,6 +93,8 @@ TransactionDraft buildIncomeDraft({
   String currency = 'COP',
   DateTime? date,
   String? note,
+  String? goalId,
+  bool countsInBudget = false,
 }) =>
     TransactionDraft(
       id: id,
@@ -102,6 +106,8 @@ TransactionDraft buildIncomeDraft({
       type: TransactionType.income,
       date: date ?? testInstant,
       note: note,
+      goalId: goalId,
+      countsInBudget: countsInBudget,
     );
 
 /// [categoryId]/[categoryKind]/[countsInBudget] default to the plain-transfer

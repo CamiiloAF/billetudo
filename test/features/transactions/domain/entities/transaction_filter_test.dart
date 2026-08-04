@@ -12,6 +12,8 @@ void main() {
       expect(filter.hasCategoryFilter, isFalse);
       expect(filter.hasTypeFilter, isFalse);
       expect(filter.hasTagFilter, isFalse);
+      expect(filter.hasBudgetPeriodFilter, isFalse);
+      expect(filter.budgetPeriod, isNull);
       expect(filter.sortOrder, TransactionSortOrder.dateDesc);
     });
 
@@ -21,6 +23,74 @@ void main() {
 
       expect(filter.datePeriod.isCustomRange, isFalse);
       expect(filter.datePeriod.granularity, DateGranularity.month);
+    });
+  });
+
+  group('chip Presupuesto — independiente del chip Fecha', () {
+    test('con un presupuesto elegido, hasBudgetPeriodFilter se activa', () {
+      final window = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+
+      final filter = TransactionFilter(budgetPeriod: window);
+
+      expect(filter.hasBudgetPeriodFilter, isTrue);
+      expect(filter.budgetPeriod, window);
+      // El chip Fecha sigue en su default, sin verse afectado.
+      expect(filter.datePeriod.isCustomRange, isFalse);
+      expect(filter.datePeriod.granularity, DateGranularity.month);
+    });
+
+    test('copyWith con budgetPeriod no toca datePeriod ni viceversa', () {
+      final budgetWindow = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final dateWindow =
+          DatePeriodFilter.granular(DateGranularity.year, DateTime(2026, 7));
+      final base = TransactionFilter(datePeriod: dateWindow);
+
+      final withBudget = base.copyWith(budgetPeriod: budgetWindow);
+
+      expect(withBudget.budgetPeriod, budgetWindow);
+      expect(withBudget.datePeriod, dateWindow);
+    });
+
+    test('clearBudgetPeriod vuelve el filtro a null sin afectar datePeriod',
+        () {
+      final budgetWindow = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final dateWindow =
+          DatePeriodFilter.granular(DateGranularity.year, DateTime(2026, 7));
+      final withBudget = TransactionFilter(
+        datePeriod: dateWindow,
+        budgetPeriod: budgetWindow,
+      );
+
+      final cleared = withBudget.copyWith(clearBudgetPeriod: true);
+
+      expect(cleared.hasBudgetPeriodFilter, isFalse);
+      expect(cleared.budgetPeriod, isNull);
+      expect(cleared.datePeriod, dateWindow);
+    });
+
+    test('copyWith sin mencionar budgetPeriod preserva el existente', () {
+      final budgetWindow = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final base = TransactionFilter(budgetPeriod: budgetWindow);
+
+      final copy = base.copyWith(searchText: 'café');
+
+      expect(copy.budgetPeriod, budgetWindow);
     });
   });
 

@@ -2,8 +2,11 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/preferences/debt_payment_toggle_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart';
+import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_cash_event.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_cash_event_draft.dart';
+import 'package:billetudo/features/debts/domain/services/debt_category_seed.dart';
 import 'package:billetudo/features/debts/domain/usecases/register_debt_cash_event.dart';
 import 'package:billetudo/features/debts/domain/usecases/register_debt_ledger_event.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_payment_cubit.dart';
@@ -25,11 +28,14 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockTogglePreference extends Mock
     implements DebtPaymentTogglePreferenceDatasource {}
 
+class MockGetCategory extends Mock implements GetCategory {}
+
 void main() {
   late MockRegisterDebtCashEvent registerCashEvent;
   late MockRegisterDebtLedgerEvent registerLedgerEvent;
   late MockWatchAccounts watchAccounts;
   late MockTogglePreference togglePreference;
+  late MockGetCategory getCategory;
 
   final accounts = [
     buildAccountWithBalance(
@@ -37,6 +43,17 @@ void main() {
       balanceMinor: 3450000,
     ),
   ];
+
+  final seedCategory = Category(
+    id: DebtCategorySeed.iOweCategoryId,
+    name: 'Pago de préstamos',
+    kind: CategoryKind.expense,
+    sortOrder: 0,
+    createdAt: DateTime(2024),
+    updatedAt: 0,
+    icon: 'wallet',
+    color: 'mint',
+  );
 
   setUpAll(() {
     registerFallbackValue(
@@ -57,10 +74,12 @@ void main() {
     registerLedgerEvent = MockRegisterDebtLedgerEvent();
     watchAccounts = MockWatchAccounts();
     togglePreference = MockTogglePreference();
+    getCategory = MockGetCategory();
     when(() => togglePreference.writeAddToAccount(
           debtId: any(named: 'debtId'),
           addToAccount: any(named: 'addToAccount'),
         )).thenAnswer((_) async {});
+    when(() => getCategory(any())).thenAnswer((_) async => Right(seedCategory));
   });
 
   DebtPaymentCubit build() => DebtPaymentCubit(
@@ -68,11 +87,11 @@ void main() {
         registerLedgerEvent,
         watchAccounts,
         togglePreference,
+        getCategory,
       );
 
   void withAccounts(List<AccountWithBalance> list, {required bool pref}) {
-    when(watchAccounts.call)
-        .thenAnswer((_) => Stream.value(Right(list)));
+    when(watchAccounts.call).thenAnswer((_) => Stream.value(Right(list)));
     when(() => togglePreference.readAddToAccount(any()))
         .thenAnswer((_) async => pref);
   }
@@ -175,6 +194,72 @@ void main() {
             note: any(named: 'note'),
           )).called(1);
       verifyNever(() => registerCashEvent.call(any()));
+    },
+  );
+
+  blocTest<DebtPaymentCubit, DebtPaymentState>(
+    'fix 7: start preselecciona la categoría semilla según la dirección '
+    'de la deuda, con su ícono/color reales (fix: campo Categoría con '
+    'ícono fijo)',
+    setUp: () => withAccounts(accounts, pref: true),
+    build: build,
+    act: (cubit) => cubit.start(buildDebt()),
+    skip: 1,
+    expect: () => [
+      isA<DebtPaymentState>()
+          .having((s) => s.categoryId, 'categoryId', seedCategory.id)
+          .having((s) => s.categoryName, 'categoryName', seedCategory.name)
+          .having((s) => s.categoryIcon, 'categoryIcon', seedCategory.icon)
+          .having((s) => s.categoryColor, 'categoryColor', seedCategory.color),
+    ],
+    verify: (_) {
+      verify(
+        () => getCategory(DebtCategorySeed.iOweCategoryId),
+      ).called(1);
+    },
+  );
+
+  blocTest<DebtPaymentCubit, DebtPaymentState>(
+    'categorySelected propaga ícono/color de la categoría elegida en el '
+    'picker, no solo id/name',
+    setUp: () => withAccounts(accounts, pref: true),
+    build: build,
+    act: (cubit) async {
+      await cubit.start(buildDebt());
+      cubit.categorySelected(
+        id: 'cat-transporte',
+        name: 'Transporte',
+        icon: 'bus',
+        color: 'sky',
+      );
+    },
+    skip: 2,
+    expect: () => [
+      isA<DebtPaymentState>()
+          .having((s) => s.categoryId, 'categoryId', 'cat-transporte')
+          .having((s) => s.categoryName, 'categoryName', 'Transporte')
+          .having((s) => s.categoryIcon, 'categoryIcon', 'bus')
+          .having((s) => s.categoryColor, 'categoryColor', 'sky'),
+    ],
+  );
+
+  test(
+    'fix 7: canSubmit exige categoría cuando addToAccount es true, '
+    'incluso con cuenta y monto ya elegidos',
+    () {
+      final withoutCategory = DebtPaymentState(
+        debt: buildDebt(),
+        date: DateTime(2026),
+        addToAccount: true,
+        selectedAccountId: 'a1',
+        amountMinor: 1000,
+      );
+      expect(withoutCategory.canSubmit, isFalse);
+
+      final withCategory = withoutCategory.copyWith(
+        categoryId: () => 'seed-debts',
+      );
+      expect(withCategory.canSubmit, isTrue);
     },
   );
 }

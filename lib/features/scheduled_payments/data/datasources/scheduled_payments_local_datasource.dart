@@ -469,7 +469,13 @@ class ScheduledPaymentsLocalDatasource {
         _db.debts.id.equalsExp(_db.scheduledPayments.debtId),
       ),
     ])
-      ..where(_awaitingResolution)
+      // A tombstoned template (HU-05 delete) must stop surfacing its
+      // still-pending occurrence here — otherwise "Por confirmar" keeps
+      // showing a payment the user already deleted, and tapping it opens a
+      // detail/edit flow for a template that no longer exists.
+      ..where(
+        _awaitingResolution & _db.scheduledPayments.tombstonedAt.isNull(),
+      )
       ..orderBy([
         OrderingTerm.asc(
           coalesce<DateTime>([

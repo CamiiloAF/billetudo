@@ -2,14 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../core/widgets/sheet_head.dart';
 import '../../../../core/widgets/toggle_field.dart';
 import '../../../accounts/domain/entities/account.dart';
@@ -29,7 +32,6 @@ import '../widgets/transaction_amount_fixed_zone.dart';
 import '../widgets/transaction_date_field.dart';
 import '../widgets/transaction_form_field_button.dart';
 import '../widgets/transaction_header_button.dart';
-import '../widgets/transaction_note_field.dart';
 import '../widgets/transaction_tags_field.dart';
 import '../widgets/transaction_type_segmented_control.dart';
 
@@ -79,10 +81,10 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
               impact: impact,
               onCancel: () {
                 cubit.editImpactDismissed();
-                Navigator.of(context).pop();
+                _handleClose(context);
               },
               onConfirm: () {
-                Navigator.of(context).pop();
+                _handleClose(context);
                 unawaited(cubit.submit(confirmed: true));
               },
             ),
@@ -103,7 +105,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                 background: colors.muted,
                 foreground: colors.textPrimary,
                 tooltip: l10n.commonCancel,
-                onPressed: Navigator.of(context).pop,
+                onPressed: () => _handleClose(context),
               ),
             ),
             title: Text(
@@ -213,11 +215,24 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
     // Declined or dismissed: intentionally no `submit()`. A future-dated
     // movement is never persisted as a normal transaction.
   }
+
+  void _handleClose(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
+  }
 }
 
 /// The scrollable selectors of the form — everything but the anchored amount
 /// zone. Order and per-type differences follow `transacciones.md`.
-class TransactionFormScrollZone extends StatelessWidget {
+///
+/// Stateful only to own the Nota field's [FocusNode]: criterion 11 ("Monto y
+/// Nota never hold focus at once") is cross-field behaviour that belongs to
+/// this form, not to the shared `NoteAutocompleteField` — which only knows
+/// about its own suggestions overlay.
+class TransactionFormScrollZone extends StatefulWidget {
   const TransactionFormScrollZone({
     required this.state,
     required this.errorScroll,
@@ -228,9 +243,51 @@ class TransactionFormScrollZone extends StatelessWidget {
   final FormErrorScrollController errorScroll;
 
   @override
+  State<TransactionFormScrollZone> createState() =>
+      _TransactionFormScrollZoneState();
+}
+
+class _TransactionFormScrollZoneState
+    extends State<TransactionFormScrollZone> {
+  late final FocusNode _noteFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteFocusNode = FocusNode()..addListener(_handleNoteFocusChange);
+  }
+
+  void _handleNoteFocusChange() {
+    if (_noteFocusNode.hasFocus) {
+      context.read<TransactionFormCubit>().noteFocused();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TransactionFormScrollZone oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The amount zone reclaimed focus (e.g. the collapsed bar was tapped):
+    // drop the native keyboard so it does not compete with the Keypad.
+    if (widget.state.isKeypadVisible &&
+        !oldWidget.state.isKeypadVisible &&
+        _noteFocusNode.hasFocus) {
+      _noteFocusNode.unfocus();
+    }
+  }
+
+  @override
+  void dispose() {
+    _noteFocusNode.removeListener(_handleNoteFocusChange);
+    _noteFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionFormCubit>();
+    final state = widget.state;
+    final errorScroll = widget.errorScroll;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
@@ -283,11 +340,12 @@ class TransactionFormScrollZone extends StatelessWidget {
         const SizedBox(height: 8),
         TransactionDateField(date: state.date, onChanged: cubit.dateChanged),
         const SizedBox(height: 8),
-        TransactionNoteField(
-          initialNote: state.note,
-          amountHasFocus: state.isKeypadVisible,
+        NoteAutocompleteField(
+          label: l10n.transactionFormNoteLabel,
+          initialValue: state.note,
+          hint: l10n.transactionFormNoteHint,
+          focusNode: _noteFocusNode,
           onChanged: cubit.noteChanged,
-          onFocused: cubit.noteFocused,
           // Nota is the form's only system-keyboard text field, so its action
           // is "listo": confirming it just dismisses the keyboard.
           textInputAction: TextInputAction.done,
@@ -328,6 +386,28 @@ class TransactionFormScrollZone extends StatelessWidget {
             ),
           ],
         ] else ...[
+          if (state.type == TransactionType.income) ...[
+            // budget-income-counts-in-budget: same "¿Incluir en tu
+            // presupuesto?" component and copy already used for a
+            // transferencia (`Toggle Field`, `gZyEC`, reusable), reused as-is
+            // for an ingreso — no Pencil frame exists yet for this specific
+            // instance (there is no `pages/transacciones.md` entry for it),
+            // but its label/hint are generic enough ("se suma a tus
+            // presupuestos y reportes") to apply to either type without a new
+            // string. Unlike transfer, income never gates its category on
+            // this flag — the category picker above is already mandatory —
+            // so no conditional category block follows it here.
+            const SizedBox(height: 6),
+            ToggleField(
+              icon: LucideIcons.wallet,
+              label: l10n.transactionFormCountsInBudgetLabel,
+              value: state.countsInBudget,
+              hint: state.countsInBudget
+                  ? l10n.transactionFormCountsInBudgetHintOn
+                  : l10n.transactionFormCountsInBudgetHintOff,
+              onChanged: cubit.countsInBudgetChanged,
+            ),
+          ],
           const SizedBox(height: 8),
           TransactionTagsField(
             selectedIds: state.tagIds,

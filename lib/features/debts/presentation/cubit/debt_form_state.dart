@@ -61,6 +61,7 @@ class DebtFormState extends Equatable {
     this.accounts = const [],
     this.initialTransactionId,
     this.openingBaselineMinor = 0,
+    this.hasNonOpeningMovements = false,
     this.prompt,
     this.failedField,
     this.failure,
@@ -110,6 +111,17 @@ class DebtFormState extends Equatable {
   /// edit to detect whether the opening balance changed.
   final int openingBaselineMinor;
 
+  /// Whether the debt's ledger (edit only) has any event beyond its opening
+  /// (fix 9, scenario 2) — an abono/disbursement/adjustment/accrual, cash or
+  /// cash-less. `DebtEventRules` derives a cash event's sign from the debt's
+  /// CURRENT `direction` at balance-calculation time, not a stored per-event
+  /// sign, so flipping `direction` here would silently reinterpret every such
+  /// event's historical meaning. The opening movement itself is exempt: its
+  /// `type` gets re-synced to the new direction on save (item 2b), which
+  /// preserves its original meaning instead of flipping it. `false` when
+  /// creating (irrelevant) or for a debt whose only history is its opening.
+  final bool hasNonOpeningMovements;
+
   /// A sheet the page must open next (item 2 / 2b), or `null`.
   final DebtFormPrompt? prompt;
 
@@ -139,6 +151,7 @@ class DebtFormState extends Equatable {
     List<AccountWithBalance>? accounts,
     String? Function()? initialTransactionId,
     int? openingBaselineMinor,
+    bool? hasNonOpeningMovements,
     DebtFormPrompt? Function()? prompt,
     String? Function()? failedField,
     Failure? Function()? failure,
@@ -162,6 +175,8 @@ class DebtFormState extends Equatable {
             ? this.initialTransactionId
             : initialTransactionId(),
         openingBaselineMinor: openingBaselineMinor ?? this.openingBaselineMinor,
+        hasNonOpeningMovements:
+            hasNonOpeningMovements ?? this.hasNonOpeningMovements,
         prompt: prompt == null ? this.prompt : prompt(),
         failedField: failedField == null ? this.failedField : failedField(),
         failure: failure == null ? this.failure : failure(),
@@ -185,6 +200,7 @@ class DebtFormState extends Equatable {
         accounts,
         initialTransactionId,
         openingBaselineMinor,
+        hasNonOpeningMovements,
         prompt,
         failedField,
         failure,

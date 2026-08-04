@@ -141,4 +141,116 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Diciembre 2025'), findsOneWidget);
   });
+
+  group('sin initialDate (sin selección aún, ej. meta nueva sin fecha)', () {
+    Future<DateTime?> openWithoutInitialDate(WidgetTester tester) async {
+      DateTime? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    result = await DatePickerSheet.show(context);
+                  },
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      return result;
+    }
+
+    testWidgets('abre en el mes actual sin ningún día resaltado',
+        (tester) async {
+      await openWithoutInitialDate(tester);
+
+      expect(find.byType(MonthCalendar), findsOneWidget);
+      final calendar = tester.widget<MonthCalendar>(find.byType(MonthCalendar));
+      expect(calendar.selected, isNull);
+    });
+
+    testWidgets('Confirmar queda deshabilitado hasta tocar un día',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () => DatePickerSheet.show(context),
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      final confirmButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Confirmar'),
+      );
+      expect(confirmButton.onPressed, isNull);
+    });
+
+    testWidgets('tocar un día habilita Confirmar y lo devuelve',
+        (tester) async {
+      final picked = await () async {
+        DateTime? result;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light(),
+            locale: const Locale('es'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      result = await DatePickerSheet.show(context);
+                    },
+                    child: const Text('open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+
+        final today = DateTime.now();
+        await tester.tap(find.text(today.day.toString()));
+        await tester.pumpAndSettle();
+
+        final confirmButton = tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Confirmar'),
+        );
+        expect(confirmButton.onPressed, isNotNull);
+
+        await tester.tap(find.text('Confirmar'));
+        await tester.pumpAndSettle();
+        return result;
+      }();
+
+      final today = DateUtils.dateOnly(DateTime.now());
+      expect(picked, today);
+    });
+  });
 }

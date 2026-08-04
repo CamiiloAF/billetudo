@@ -83,4 +83,54 @@ void main() {
     final appSwitch = tester.widget<AppSwitch>(find.byType(AppSwitch));
     expect(appSwitch.value, isTrue);
   });
+
+  group('enabled: false (ej. Metas sin cuenta vinculada)', () {
+    Future<void> pumpDisabled(
+      WidgetTester tester, {
+      required ValueChanged<bool> onChanged,
+    }) =>
+        tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light(),
+            home: Scaffold(
+              body: ToggleField(
+                icon: LucideIcons.wallet,
+                label: 'label de prueba',
+                value: false,
+                hint: 'gated hint',
+                onChanged: onChanged,
+                enabled: false,
+              ),
+            ),
+          ),
+        );
+
+    testWidgets('tocar la fila no reporta ningún cambio', (tester) async {
+      var called = false;
+      await pumpDisabled(tester, onChanged: (_) => called = true);
+
+      await tester.tap(find.byType(ToggleField));
+      await tester.pump();
+
+      expect(called, isFalse);
+    });
+
+    testWidgets('expone enabled=false a la semántica de accesibilidad',
+        (tester) async {
+      await pumpDisabled(tester, onChanged: (_) {});
+
+      final isDisabled = tester
+          .getSemantics(find.byType(ToggleField))
+          .flagsCollection
+          .isEnabled;
+      expect(isDisabled.name, 'isFalse');
+    });
+
+    testWidgets('el AppSwitch recibe enabled=false', (tester) async {
+      await pumpDisabled(tester, onChanged: (_) {});
+
+      final appSwitch = tester.widget<AppSwitch>(find.byType(AppSwitch));
+      expect(appSwitch.enabled, isFalse);
+    });
+  });
 }

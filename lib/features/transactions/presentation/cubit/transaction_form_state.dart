@@ -116,10 +116,12 @@ class TransactionFormState extends Equatable {
 
   final Failure? failure;
 
-  /// Only meaningful while [type] is `transfer` (B-3 of the plan): whether
-  /// this transfer counts in presupuestos/reportes, which requires a
-  /// [categoryId]. Ignored for `expense`/`income` — they already always
-  /// count.
+  /// Meaningful while [type] is `transfer` (B-3 of the plan) or `income`
+  /// (budget-income-counts-in-budget): whether this transaction counts in
+  /// presupuestos/reportes. For a transfer this additionally requires a
+  /// [categoryId]; for an income it does not, since income always requires a
+  /// category regardless of this flag. Ignored for `expense` — it always
+  /// counts on its own.
   final bool countsInBudget;
 
   bool get isEditing => id != null;

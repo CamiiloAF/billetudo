@@ -1,5 +1,6 @@
 import 'dart:ui' show Locale;
 
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart' hide DebtDirection;
 import 'package:billetudo/core/l10n/app_locale.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
@@ -27,7 +28,11 @@ void main() {
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     local = DebtsLocalDatasource(db);
-    repository = DebtRepositoryImpl(local, const DebtBalanceCalculator());
+    repository = DebtRepositoryImpl(
+      local,
+      const DebtBalanceCalculator(),
+      const NoopCrashReporter(),
+    );
   });
 
   tearDown(() => db.close());

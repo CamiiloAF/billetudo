@@ -109,7 +109,37 @@ dependencies:
   # de la cuenta. Primer uso de este mecanismo en el proyecto.
   shared_preferences: ^2.3.2
 
+  # Produccion, no solo tests: `SyncErrorClassifier` necesita el tipo
+  # `http.ClientException` para reconocer un fallo de transporte. `postgrest`
+  # envuelve ahi las caidas de red, y sin ese tipo el watchdog de la cola
+  # (decision #22, docs/requirements/05-auth-sync.md) contaria estar sin senal
+  # como un rechazo del servidor y acabaria mandando a cuarentena las
+  # escrituras de un usuario que solo se quedo sin internet.
+  # Ya estaba en el arbol como transitiva de supabase; declararla explicita es
+  # lo que exige `depend_on_referenced_packages`.
+  # NO devolver a dev_dependencies: lib/ la usa en produccion.
+  http: ^1.6.0
+
+  # Share sheet nativo. Infraestructura de tres features, dos de ellas Nivel 0
+  # — no es la dependencia de un boton suelto:
+  #  1. Registro tecnico de sincronizacion (HU-08, 05-auth-sync.md): mandar el
+  #     log a soporte cuando algo se traba.
+  #  2. Export PNG de graficas (HU-05, 10-graficas-informes.md).
+  #  3. CSV, .zip y copia completa (HU-01/HU-03, 11-import-export.md).
+  #
+  # Los dos requisitos de export apoyan su promesa de privacidad en el share
+  # NATIVO: "sin pedir permisos de almacenamiento donde el share nativo baste".
+  # Sin esto habria que pedir permiso de escritura en disco — friccion y mala
+  # senal en una app de finanzas. La promesa escrita no se puede cumplir de
+  # otra forma.
+  #
+  # No contradice la regla de no enviar SDKs sin usar (ver purchases_flutter /
+  # google_mobile_ads, comentados hasta que exista su feature): esta se usa
+  # desde el dia uno, en el registro tecnico de sync.
+  share_plus: ^13.3.0
+
 dev_dependencies:
+  sentry_dart_plugin: ^3.4.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
@@ -125,15 +155,13 @@ dev_dependencies:
   # Testing (piramide: unit + cubit + mocks + e2e)
   bloc_test: ^9.1.7
   mocktail: ^1.0.4
-  # `http.testing.MockClient`, injected into `SupabaseClient(httpClient: ...)`
-  # to fake the `category_seeds`/`categories` REST responses in datasource
-  # tests without a real network call — `PostgrestFilterBuilder` implements
-  # `Future` itself, so mocktail can't stub the query-builder chain directly.
-  http: ^1.6.0
   # e2e. Versión acoplada al CLI: `dart pub global activate patrol_cli 4.5.1`
   # (patrol 4.7.x exige patrol_cli >=4.5.0 — un desajuste entre ambos falla en
   # runtime, no en tiempo de análisis). Requiere setup nativo tras `flutter create .`.
-  patrol: ^4.7.1
+  # Fijado exacto (sin ^): patrol 4.8.0 rompe el módulo nativo de Android
+  # (compileDebugKotlin: "Cannot access 'MobileAutomatorServer'") contra
+  # patrol_cli 4.5.1 — hay que subir ambos juntos, nunca solo uno.
+  patrol: 4.7.1
   integration_test:
     sdk: flutter
   # `InMemorySharedPreferencesAsync`, usado en el test del datasource de
@@ -214,3 +242,9 @@ dependency_overrides:
   # analyzer override above or its generated-code formatter breaks at
   # runtime (`ParserErrorCode` moved between analyzer majors).
   dart_style: 3.1.6
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: billetudo
+  org: camilo-agudelo

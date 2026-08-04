@@ -4,6 +4,14 @@ import 'dart:io';
 import 'package:billetudo/core/config/env.dart';
 import 'package:billetudo/core/crash/crash_reporter.dart';
 import 'package:billetudo/core/database/powersync_schema.dart';
+import 'package:billetudo/core/sync/data/datasources/sync_operation_uploader.dart';
+import 'package:billetudo/core/sync/data/datasources/sync_retry_watchdog.dart';
+import 'package:billetudo/core/sync/data/models/sync_retry_record.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_failure_kind.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_log_entry.dart';
+import 'package:billetudo/core/sync/domain/entities/sync_operation.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart';
 import 'package:billetudo/features/auth/data/datasources/powersync_connector.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -12,18 +20,93 @@ import 'package:mocktail/mocktail.dart';
 import 'package:powersync/powersync.dart' as ps;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../support/fake_sync_retry_ledger_store.dart';
+
 class MockCrashReporter extends Mock implements CrashReporter {}
+
+class MockSyncOperationUploader extends Mock implements SyncOperationUploader {}
+
+class MockSyncQuarantineRepository extends Mock
+    implements SyncQuarantineRepository {}
+
+class MockSyncLogRepository extends Mock implements SyncLogRepository {}
+
+class FakeSyncOperation extends Fake implements SyncOperation {}
+
+/// Stand-in for the timeout an HTTP client throws: anything that is not a
+/// `PostgrestException` must be classified as transient.
+class FakeTimeoutException implements Exception {
+  const FakeTimeoutException();
+
+  @override
+  String toString() => 'FakeTimeoutException: request timed out';
+}
 
 /// `PowerSyncDatabase` is an `abstract base class` with a private constructor,
 /// so it can neither be mocked nor extended from outside its library. These
 /// tests therefore drive the connector with a **real** PowerSync database on a
 /// temp file (never connected to the sync service): local writes fill the real
-/// CRUD queue, which is exactly what `uploadData` consumes. Supabase, on the
-/// other hand, is faked at the HTTP layer (`MockClient`) — the same pattern
-/// used in `seed_category_ownership_remote_datasource_test.dart`.
+/// CRUD queue, which is exactly what `uploadData` consumes.
+///
+/// The upload transport is mocked at [SyncOperationUploader]: these tests are
+/// about *how the connector reacts to a failed operation*, not about how the
+/// operation is serialized — that belongs to
+/// `test/core/sync/data/datasources/supabase_operation_uploader_test.dart`.
+///
+/// The scenario that gives this file its reason to exist: Postgres was missing
+/// `debts.closed_at`, PostgREST answered `PGRST204`, the old connector rethrew
+/// it as transient, PowerSync retried the same transaction forever and — the
+/// queue being FIFO — blocked every write of every table for three days. 89
+/// unsynced changes were lost. Every assertion below about the queue advancing
+/// is guarding exactly that.
 void main() {
   setUpAll(() {
     registerFallbackValue(StackTrace.empty);
+    registerFallbackValue(FakeSyncOperation());
+    registerFallbackValue(SyncFailureKind.transient);
+    registerFallbackValue(SyncLogEvent.uploadStarted);
+    registerFallbackValue(SyncLogLevel.info);
+  });
+
+  late MockSyncOperationUploader uploader;
+  late MockSyncQuarantineRepository quarantine;
+  late MockSyncLogRepository log;
+  late MockCrashReporter crash;
+  late FakeSyncRetryLedgerStore ledger;
+
+  setUp(() {
+    ledger = FakeSyncRetryLedgerStore();
+    uploader = MockSyncOperationUploader();
+    quarantine = MockSyncQuarantineRepository();
+    log = MockSyncLogRepository();
+    crash = MockCrashReporter();
+
+    when(() => uploader.upload(any())).thenAnswer((_) async {});
+    when(
+      () => quarantine.record(
+        operation: any(named: 'operation'),
+        kind: any(named: 'kind'),
+        errorMessage: any(named: 'errorMessage'),
+        errorCode: any(named: 'errorCode'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => log.record(
+        event: any(named: 'event'),
+        message: any(named: 'message'),
+        level: any(named: 'level'),
+        code: any(named: 'code'),
+        tableName: any(named: 'tableName'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => crash.recordError(
+        any(),
+        any(),
+        context: any(named: 'context'),
+        fatal: any(named: 'fatal'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   Future<ps.PowerSyncDatabase> openDatabase() async {
@@ -41,7 +124,7 @@ void main() {
   }
 
   /// Enqueues a CRUD entry straight into PowerSync's queue, for shapes a normal
-  /// local write cannot produce (an empty PATCH payload, a PUT with no data).
+  /// local write cannot produce (a PUT with no data).
   Future<void> enqueueRawOp(
     ps.PowerSyncDatabase db, {
     required String op,
@@ -82,17 +165,12 @@ void main() {
         },
       });
 
-  Future<SupabaseClient> buildSupabase({
-    String? signedInUserId,
-    http.Response Function(http.Request request)? responder,
-  }) async {
+  Future<SupabaseClient> buildSupabase({String? signedInUserId}) async {
     final client = SupabaseClient(
       'https://example.supabase.co',
       'anon-key',
       httpClient: MockClient(
-        (request) async =>
-            responder?.call(request) ??
-            http.Response('', 201, request: request),
+        (request) async => http.Response('', 201, request: request),
       ),
     );
     addTearDown(client.dispose);
@@ -102,53 +180,74 @@ void main() {
     return client;
   }
 
-  MockCrashReporter buildCrashReporter() {
-    final crash = MockCrashReporter();
-    when(
-      () => crash.recordError(
-        any(),
-        any(),
-        context: any(named: 'context'),
-        fatal: any(named: 'fatal'),
-      ),
-    ).thenAnswer((_) async {});
-    return crash;
+  Future<PowerSyncConnector> buildConnector({String? signedInUserId}) async {
+    final supabase = await buildSupabase(signedInUserId: signedInUserId);
+    return PowerSyncConnector(
+      supabase,
+      uploader,
+      quarantine,
+      log,
+      crash,
+      SyncRetryWatchdog(ledger),
+    );
   }
 
-  http.Response postgrestError(http.Request request, String code) =>
-      http.Response(
-        jsonEncode({
-          'code': code,
-          'message': 'boom',
-          'details': '',
-          'hint': null,
-        }),
-        code == '42501' ? 403 : 400,
-        request: request,
-        headers: {'content-type': 'application/json; charset=utf-8'},
-      );
+  PostgrestException postgrestError(String code) =>
+      PostgrestException(message: 'boom', code: code);
 
-  /// Postgrest serializes a single-row upsert as a bare object (a list when it
-  /// batches several rows); the connector always uploads one row per op.
-  Map<String, dynamic> upsertedRow(http.Request request) {
-    final body = jsonDecode(request.body);
-    return (body is List ? body.single : body) as Map<String, dynamic>;
+  /// Fails the upload of [tableName] with [error]; everything else succeeds.
+  void failUploadsOf(String tableName, Object error) {
+    when(() => uploader.upload(any())).thenAnswer((invocation) async {
+      final operation = invocation.positionalArguments.single as SyncOperation;
+      if (operation.tableName == tableName) {
+        // Reproducir el fallo REAL del backend es el punto de estos tests: el
+        // clasificador debe tratar como transitorio cualquier cosa que no sea
+        // un PostgrestException, incluidos objetos que no son Error.
+        // ignore: only_throw_errors
+        throw error;
+      }
+    });
   }
+
+  List<SyncOperation> uploadedOperations() =>
+      verify(() => uploader.upload(captureAny()))
+          .captured
+          .cast<SyncOperation>();
 
   group('fetchCredentials', () {
     test('devuelve null cuando no hay sesión (local-first, no es error)',
         () async {
-      final supabase = await buildSupabase();
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
+      final connector = await buildConnector();
 
       expect(await connector.fetchCredentials(), isNull);
+      verify(
+        () => log.record(
+          event: SyncLogEvent.connection,
+          message: any(named: 'message'),
+        ),
+      ).called(1);
+    });
+
+    test('no repite la línea de log de "sin sesión" en cada refresco',
+        () async {
+      final connector = await buildConnector();
+
+      await connector.fetchCredentials();
+      await connector.fetchCredentials();
+      await connector.fetchCredentials();
+
+      verify(
+        () => log.record(
+          event: SyncLogEvent.connection,
+          message: any(named: 'message'),
+        ),
+      ).called(1);
     });
 
     test(
       'devuelve endpoint, token y userId de la sesión activa',
       () async {
-        final supabase = await buildSupabase(signedInUserId: 'user-1');
-        final connector = PowerSyncConnector(supabase, buildCrashReporter());
+        final connector = await buildConnector(signedInUserId: 'user-1');
 
         final credentials = await connector.fetchCredentials();
 
@@ -166,8 +265,7 @@ void main() {
     test(
       'sin POWERSYNC_URL definido, el endpoint vacío es rechazado',
       () async {
-        final supabase = await buildSupabase(signedInUserId: 'user-1');
-        final connector = PowerSyncConnector(supabase, buildCrashReporter());
+        final connector = await buildConnector(signedInUserId: 'user-1');
 
         await expectLater(
           connector.fetchCredentials(),
@@ -181,139 +279,404 @@ void main() {
   });
 
   group('uploadData', () {
-    test('retorna sin tocar la red cuando la cola está vacía', () async {
-      var requests = 0;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          requests++;
-          return http.Response('', 201, request: request);
-        },
-      );
-      final crash = buildCrashReporter();
+    test('retorna sin subir nada cuando la cola está vacía', () async {
       final db = await openDatabase();
-      final connector = PowerSyncConnector(supabase, crash);
+      final connector = await buildConnector(signedInUserId: 'user-1');
 
       await connector.uploadData(db);
 
-      expect(requests, 0);
+      verifyNever(() => uploader.upload(any()));
       verifyZeroInteractions(crash);
+      verifyNever(
+        () => log.record(
+          event: SyncLogEvent.uploadStarted,
+          message: any(named: 'message'),
+        ),
+      );
     });
 
-    test(
-        'REGRESIÓN: un put sin user_id sube estampado con el id de la sesión '
-        '(sin esto Postgres responde 42501 y la fila se pierde en silencio)',
+    test('traduce la entrada de PowerSync a SyncOperation y vacía la cola',
         () async {
-      Map<String, dynamic>? uploaded;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          expect(request.method, 'POST');
-          expect(request.url.path, '/rest/v1/transactions');
-          uploaded = upsertedRow(request);
-          return http.Response('', 201, request: request);
-        },
-      );
-      final crash = buildCrashReporter();
       final db = await openDatabase();
       await db.execute(
         'INSERT INTO transactions(id, amount_minor, type, updated_at) '
         "VALUES('tx-1', 1234, 'expense', 1700000000000)",
       );
-      final connector = PowerSyncConnector(supabase, crash);
+      final connector = await buildConnector(signedInUserId: 'user-1');
 
       await connector.uploadData(db);
 
-      expect(uploaded, isNotNull);
-      expect(uploaded!['id'], 'tx-1');
-      expect(uploaded!['user_id'], 'user-1');
+      final operation = uploadedOperations().single;
+      expect(operation.tableName, 'transactions');
+      expect(operation.rowId, 'tx-1');
+      expect(operation.type, SyncOperationType.put);
       // Dinero: entero en unidades menores, jamás double.
-      expect(uploaded!['amount_minor'], 1234);
-      expect(uploaded!['amount_minor'], isA<int>());
-      expect(uploaded!['updated_at'], 1700000000000);
-      // La op se consumió de la cola local.
+      expect(operation.payload!['amount_minor'], 1234);
+      expect(operation.payload!['amount_minor'], isA<int>());
+      expect(operation.payload!['updated_at'], 1700000000000);
       expect(await queuedOps(db), 0);
       verifyZeroInteractions(crash);
     });
 
-    test('un put con user_id ajeno NO es pisado por el de la sesión', () async {
-      Map<String, dynamic>? uploaded;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          uploaded = upsertedRow(request);
-          return http.Response('', 201, request: request);
-        },
-      );
+    test('traduce un patch y un delete a su SyncOperationType', () async {
       final db = await openDatabase();
       await db.execute(
-        'INSERT INTO budgets(id, user_id) VALUES(?, ?)',
-        ['b-1', 'other-user'],
+        "INSERT INTO categories(id, name) VALUES('c-1', 'Comida')",
       );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
+      final connector = await buildConnector(signedInUserId: 'user-1');
+      await connector.uploadData(db); // consume el PUT inicial
+      await db.execute("UPDATE categories SET name='Mercado' WHERE id='c-1'");
+      await connector.uploadData(db);
+      await db.execute("DELETE FROM categories WHERE id = 'c-1'");
 
       await connector.uploadData(db);
 
-      expect(uploaded!['user_id'], 'other-user');
-      expect(uploaded!['id'], 'b-1');
+      final operations = uploadedOperations();
+      expect(operations.map((each) => each.type), [
+        SyncOperationType.put,
+        SyncOperationType.patch,
+        SyncOperationType.delete,
+      ]);
+      expect(operations[1].payload, {'name': 'Mercado'});
+      expect(operations[2].rowId, 'c-1');
+      expect(await queuedOps(db), 0);
     });
 
-    test('un put con user_id explícitamente null sí se estampa', () async {
-      Map<String, dynamic>? uploaded;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          uploaded = upsertedRow(request);
-          return http.Response('', 201, request: request);
-        },
-      );
+    test(
+        'REGRESIÓN (incidente BILLETUDO-2): PGRST204 NO se relanza, va a '
+        'cuarentena y la transacción se completa — la cola AVANZA', () async {
+      failUploadsOf('debts', postgrestError('PGRST204'));
       final db = await openDatabase();
-      await enqueueRawOp(
-        db,
-        op: 'PUT',
-        table: 'categories',
-        id: 'c-1',
-        data: {'name': 'Comida', 'user_id': null},
-      );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
+      await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+      final connector = await buildConnector(signedInUserId: 'user-1');
 
+      // 1) No se relanza: PowerSync no reintenta la misma transacción.
       await connector.uploadData(db);
 
-      expect(uploaded!['user_id'], 'user-1');
-      expect(uploaded!['name'], 'Comida');
+      // 2) La cola quedó vacía: la op dejó de bloquear a todas las tablas.
+      expect(await queuedOps(db), 0);
+
+      // 3) Y la escritura no se perdió: está en cuarentena, no descartada.
+      final captured = verify(
+        () => quarantine.record(
+          operation: captureAny(named: 'operation'),
+          kind: captureAny(named: 'kind'),
+          errorMessage: captureAny(named: 'errorMessage'),
+          errorCode: captureAny(named: 'errorCode'),
+        ),
+      ).captured;
+      expect((captured[0] as SyncOperation).tableName, 'debts');
+      expect((captured[0] as SyncOperation).rowId, 'd-1');
+      expect(captured[1], SyncFailureKind.brokenSchema);
+      expect(captured[2], contains('PGRST204'));
+      expect(captured[3], 'PGRST204');
     });
 
-    test('sin sesión activa no inventa ningún user_id', () async {
-      Map<String, dynamic>? uploaded;
-      final supabase = await buildSupabase(
-        responder: (request) {
-          uploaded = upsertedRow(request);
-          return http.Response('', 201, request: request);
-        },
-      );
+    for (final code in ['PGRST205', '42703', '42P01']) {
+      test('el esquema roto $code va a cuarentena sin bloquear la cola',
+          () async {
+        failUploadsOf('debts', postgrestError(code));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        expect(await queuedOps(db), 0);
+        verify(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: SyncFailureKind.brokenSchema,
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: code,
+          ),
+        ).called(1);
+      });
+    }
+
+    for (final code in ['22007', '23503', '42501']) {
+      test(
+          'el rechazo de dato/permiso $code va a cuarentena (no se descarta '
+          'en silencio)', () async {
+        failUploadsOf('transactions', postgrestError(code));
+        final db = await openDatabase();
+        await db.execute(
+          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        );
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        expect(await queuedOps(db), 0);
+        verify(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: SyncFailureKind.invalidData,
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: code,
+          ),
+        ).called(1);
+      });
+    }
+
+    test(
+        'AISLAMIENTO: en un batch de 3 ops, la que falla permanentemente no '
+        'impide que las otras 2 suban', () async {
+      failUploadsOf('debts', postgrestError('PGRST204'));
       final db = await openDatabase();
-      await db.execute(
-        "INSERT INTO app_settings(id, updated_at) VALUES('s-1', 1700000000000)",
-      );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
+      await db.writeTransaction((tx) async {
+        await tx.execute(
+          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        );
+        await tx.execute("INSERT INTO debts(id) VALUES('d-1')");
+        await tx.execute("INSERT INTO budgets(id) VALUES('b-1')");
+      });
+      final connector = await buildConnector(signedInUserId: 'user-1');
 
       await connector.uploadData(db);
 
-      expect(uploaded, isNotNull);
-      expect(uploaded!.containsKey('user_id'), isFalse);
-      expect(uploaded!['id'], 's-1');
+      // Se intentaron las tres, incluida la que va DESPUÉS de la que falla.
+      expect(
+        uploadedOperations().map((each) => each.tableName),
+        containsAll(<String>['transactions', 'debts', 'budgets']),
+      );
+      // Y solo la rechazada fue a cuarentena.
+      verify(
+        () => quarantine.record(
+          operation: any(named: 'operation'),
+          kind: any(named: 'kind'),
+          errorMessage: any(named: 'errorMessage'),
+          errorCode: any(named: 'errorCode'),
+        ),
+      ).called(1);
+      expect(await queuedOps(db), 0);
     });
 
-    test('un put sin opData igual sube el id y el user_id de la sesión',
+    final transientErrors = <String, Object>{
+      'SocketException (sin red)':
+          const SocketException('network is unreachable'),
+      'timeout que no es PostgrestException': const FakeTimeoutException(),
+      'error inesperado del cliente': StateError('unexpected'),
+      '5xx del backend': const PostgrestException(message: 'boom', code: '503'),
+      'PGRST301 (JWT vencido)':
+          const PostgrestException(message: 'jwt expired', code: 'PGRST301'),
+      'PostgrestException sin código':
+          const PostgrestException(message: 'boom'),
+    };
+    transientErrors.forEach((description, error) {
+      test(
+          'el fallo transitorio por $description se relanza y la transacción '
+          'NO se completa', () async {
+        failUploadsOf('transactions', error);
+        final db = await openDatabase();
+        await db.execute(
+          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        );
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await expectLater(connector.uploadData(db), throwsA(same(error)));
+
+        // La op sigue en la cola: PowerSync reintentará el batch entero.
+        expect(await queuedOps(db), 1);
+        verifyNever(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: any(named: 'kind'),
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: any(named: 'errorCode'),
+          ),
+        );
+        verify(
+          () => log.record(
+            event: SyncLogEvent.uploadRetry,
+            message: any(named: 'message'),
+            level: SyncLogLevel.warning,
+            code: any(named: 'code'),
+            tableName: 'transactions',
+          ),
+        ).called(1);
+      });
+    });
+
+    test('un fallo transitorio aborta las ops posteriores del mismo batch',
         () async {
-      Map<String, dynamic>? uploaded;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          uploaded = upsertedRow(request);
-          return http.Response('', 201, request: request);
-        },
+      failUploadsOf('transactions', const SocketException('offline'));
+      final db = await openDatabase();
+      await db.writeTransaction((tx) async {
+        await tx.execute(
+          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        );
+        await tx.execute("INSERT INTO budgets(id) VALUES('b-1')");
+      });
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await expectLater(
+        connector.uploadData(db),
+        throwsA(isA<SocketException>()),
       );
+
+      expect(
+        uploadedOperations().map((each) => each.tableName),
+        <String>['transactions'],
+      );
+      expect(await queuedOps(db), 2);
+    });
+
+    test('toda op en cuarentena se reporta al CrashReporter', () async {
+      failUploadsOf('debts', postgrestError('PGRST204'));
+      final db = await openDatabase();
+      await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await connector.uploadData(db);
+
+      final captured = verify(
+        () => crash.recordError(
+          captureAny(),
+          captureAny(),
+          context: captureAny(named: 'context'),
+          fatal: captureAny(named: 'fatal'),
+        ),
+      ).captured;
+      expect(captured[0], isA<PostgrestException>());
+      expect((captured[0] as PostgrestException).code, 'PGRST204');
+      expect(captured[1], isA<StackTrace>());
+      expect(
+        captured.whereType<String>().single,
+        allOf(
+          contains('quarantined'),
+          contains('PGRST204'),
+          contains('debts'),
+        ),
+      );
+      // Un esquema roto es un bug de despliegue que afecta a toda la tabla:
+      // se reporta como fatal para que sea accionable.
+      expect(captured.whereType<bool>().single, isTrue);
+    });
+
+    test('un rechazo de dato inválido se reporta pero NO como fatal', () async {
+      failUploadsOf('transactions', postgrestError('23503'));
+      final db = await openDatabase();
+      await db.execute(
+        "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+      );
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await connector.uploadData(db);
+
+      final captured = verify(
+        () => crash.recordError(
+          any(),
+          any(),
+          context: any(named: 'context'),
+          fatal: captureAny(named: 'fatal'),
+        ),
+      ).captured;
+      expect(captured.single, isFalse);
+    });
+
+    test('un fallo transitorio también se reporta al CrashReporter', () async {
+      failUploadsOf('transactions', const SocketException('offline'));
+      final db = await openDatabase();
+      await db.execute(
+        "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+      );
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await expectLater(
+        connector.uploadData(db),
+        throwsA(isA<SocketException>()),
+      );
+
+      final captured = verify(
+        () => crash.recordError(
+          any(),
+          any(),
+          context: captureAny(named: 'context'),
+          fatal: any(named: 'fatal'),
+        ),
+      ).captured;
+      expect(
+        captured.single,
+        allOf(
+          isA<String>(),
+          contains('retrying'),
+          isNot(contains('quarantined')),
+        ),
+      );
+    });
+
+    test('el log registra inicio y cierre con el conteo de cuarentenadas',
+        () async {
+      failUploadsOf('debts', postgrestError('PGRST204'));
+      final db = await openDatabase();
+      await db.writeTransaction((tx) async {
+        await tx.execute("INSERT INTO debts(id) VALUES('d-1')");
+        await tx.execute("INSERT INTO budgets(id) VALUES('b-1')");
+      });
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await connector.uploadData(db);
+
+      final started = verify(
+        () => log.record(
+          event: SyncLogEvent.uploadStarted,
+          message: captureAny(named: 'message'),
+        ),
+      ).captured;
+      expect(started.single, contains('2 ops'));
+
+      final finished = verify(
+        () => log.record(
+          event: SyncLogEvent.uploadFinished,
+          message: captureAny(named: 'message'),
+          level: SyncLogLevel.warning,
+        ),
+      ).captured;
+      expect(
+        finished.single,
+        allOf(contains('1 uploaded'), contains('1 quarantined')),
+      );
+    });
+
+    test('sin cuarentenadas el cierre se registra en nivel info', () async {
+      final db = await openDatabase();
+      await db.execute("INSERT INTO budgets(id) VALUES('b-1')");
+      final connector = await buildConnector(signedInUserId: 'user-1');
+
+      await connector.uploadData(db);
+
+      verify(
+        () => log.record(
+          event: SyncLogEvent.uploadFinished,
+          message: any(named: 'message'),
+          level: SyncLogLevel.info,
+        ),
+      ).called(1);
+    });
+
+    /// Deja el ledger del watchdog a un fallo de la cuarentena para
+    /// `<tableName>#<rowId>#put`: [attempts] rechazos contados cuyo primero
+    /// ocurrió hace [age].
+    void seedRetryHistory({
+      String tableName = 'debts',
+      String rowId = 'd-1',
+      int attempts = 19,
+      Duration age = const Duration(hours: 25),
+    }) {
+      final now = DateTime.now();
+      ledger.seed(
+        SyncRetryRecord(
+          key: '$tableName#$rowId#put',
+          attempts: attempts,
+          firstFailureAt: now.subtract(age),
+          lastFailureAt: now,
+          lastErrorCode: 'WEIRD-CODE',
+        ),
+      );
+    }
+
+    test('un put sin opData llega al uploader con payload nulo', () async {
       final db = await openDatabase();
       await enqueueRawOp(
         db,
@@ -321,108 +684,99 @@ void main() {
         table: 'scheduled_payments',
         id: 'sp-1',
       );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
+      final connector = await buildConnector(signedInUserId: 'user-1');
 
       await connector.uploadData(db);
 
-      expect(uploaded, {'id': 'sp-1', 'user_id': 'user-1'});
-    });
-
-    test('un patch actualiza por id y NO estampa user_id', () async {
-      final requests = <http.Request>[];
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          requests.add(request);
-          return http.Response('', 204, request: request);
-        },
-      );
-      final db = await openDatabase();
-      await db.execute(
-        "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
-      );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
-      await connector.uploadData(db); // consume el PUT inicial
-      requests.clear();
-      await db.execute(
-        "UPDATE transactions SET amount_minor = 999 WHERE id = 'tx-1'",
-      );
-
-      await connector.uploadData(db);
-
-      final patch = requests.single;
-      expect(patch.method, 'PATCH');
-      expect(patch.url.path, '/rest/v1/transactions');
-      expect(patch.url.queryParameters['id'], 'eq.tx-1');
-      expect(jsonDecode(patch.body), {'amount_minor': 999});
+      final operation = uploadedOperations().single;
+      expect(operation.rowId, 'sp-1');
+      expect(operation.type, SyncOperationType.put);
+      expect(operation.payload, isNull);
       expect(await queuedOps(db), 0);
     });
 
-    test('un patch con opData vacío no llama a Postgres pero sí completa',
-        () async {
-      var requests = 0;
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          requests++;
-          return http.Response('', 204, request: request);
-        },
-      );
-      final db = await openDatabase();
-      await enqueueRawOp(
-        db,
-        op: 'PATCH',
-        table: 'budgets',
-        id: 'b-1',
-        data: <String, dynamic>{},
-      );
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
-
-      await connector.uploadData(db);
-
-      expect(requests, 0);
-      expect(await queuedOps(db), 0);
-    });
-
-    test('un delete borra por id', () async {
-      final requests = <http.Request>[];
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          requests.add(request);
-          return http.Response('', 204, request: request);
-        },
-      );
-      final db = await openDatabase();
-      await db.execute("INSERT INTO categories(id) VALUES('c-1')");
-      final connector = PowerSyncConnector(supabase, buildCrashReporter());
-      await connector.uploadData(db); // consume el PUT inicial
-      requests.clear();
-      await db.execute("DELETE FROM categories WHERE id = 'c-1'");
-
-      await connector.uploadData(db);
-
-      final delete = requests.single;
-      expect(delete.method, 'DELETE');
-      expect(delete.url.path, '/rest/v1/categories');
-      expect(delete.url.queryParameters['id'], 'eq.c-1');
-      expect(await queuedOps(db), 0);
-    });
-
-    for (final code in ['42501', '23503', '22007']) {
+    group('watchdog de reintentos', () {
       test(
-          'un error fatal $code se reporta al CrashReporter y descarta la op '
-          '(nunca se pierde en silencio)', () async {
-        final supabase = await buildSupabase(
-          signedInUserId: 'user-1',
-          responder: (request) => postgrestError(request, code),
-        );
-        final crash = buildCrashReporter();
+          'REGRESIÓN: un código imprevisto que ya agotó las dos compuertas va '
+          'a cuarentena como stuck y la cola AVANZA', () async {
+        // La forma exacta del incidente, pero con un código que el
+        // clasificador NO conoce: sin watchdog esto se relanzaría para
+        // siempre y volvería a congelar la cola FIFO.
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
         final db = await openDatabase();
-        await db.execute(
-          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        // 1) No se relanza.
+        await connector.uploadData(db);
+
+        // 2) La cola avanza: `ps_crud` queda en 0.
+        expect(await queuedOps(db), 0);
+
+        // 3) Y la escritura no se pierde: queda en cuarentena como `stuck`.
+        final captured = verify(
+          () => quarantine.record(
+            operation: captureAny(named: 'operation'),
+            kind: captureAny(named: 'kind'),
+            errorMessage: captureAny(named: 'errorMessage'),
+            errorCode: captureAny(named: 'errorCode'),
+          ),
+        ).captured;
+        expect((captured[0] as SyncOperation).tableName, 'debts');
+        expect((captured[0] as SyncOperation).rowId, 'd-1');
+        expect(captured[1], SyncFailureKind.stuck);
+        expect(
+          captured[2],
+          allOf(
+            contains('retry watchdog'),
+            contains('20 rejections over 25h'),
+            contains('WEIRD-CODE'),
+          ),
         );
-        final connector = PowerSyncConnector(supabase, crash);
+        expect(captured[3], 'WEIRD-CODE');
+      });
+
+      test(
+          'registra el evento watchdogQuarantined, distinto del de un '
+          'rechazo clasificado', () async {
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        final captured = verify(
+          () => log.record(
+            event: SyncLogEvent.watchdogQuarantined,
+            message: captureAny(named: 'message'),
+            level: SyncLogLevel.error,
+            code: 'WEIRD-CODE',
+            tableName: 'debts',
+          ),
+        ).captured;
+        expect(captured.single, contains('stalled 20x/25h'));
+        verifyNever(
+          () => log.record(
+            event: SyncLogEvent.quarantined,
+            message: any(named: 'message'),
+            level: any(named: 'level'),
+            code: any(named: 'code'),
+            tableName: any(named: 'tableName'),
+          ),
+        );
+      });
+
+      test(
+          'se reporta al CrashReporter como fatal y con un contexto que no se '
+          'puede confundir con un rechazo clasificado', () async {
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
 
         await connector.uploadData(db);
 
@@ -431,111 +785,190 @@ void main() {
             captureAny(),
             captureAny(),
             context: captureAny(named: 'context'),
+            fatal: captureAny(named: 'fatal'),
           ),
         ).captured;
-        expect(captured[0], isA<PostgrestException>());
-        expect((captured[0] as PostgrestException).code, code);
+        expect((captured[0] as PostgrestException).code, 'WEIRD-CODE');
         expect(captured[1], isA<StackTrace>());
-        // El contexto es el de descarte, no el de reintento: los dos caminos
-        // reportan, y no deben confundirse al leerlos en el crash reporter.
         expect(
-          captured[2],
+          captured.whereType<String>().single,
           allOf(
-            isA<String>(),
-            contains(code),
-            contains('dropped'),
-            isNot(contains('retrying')),
+            contains('UNCLASSIFIED SYNC FAILURE'),
+            contains('retry watchdog'),
+            contains('20 rejections over 25h'),
+            contains('debts'),
+            // El texto del camino clasificado ("PowerSync upload quarantined
+            // a brokenSchema rejection"): si apareciera, en Sentry serían el
+            // mismo issue y este modo de falla volvería a pasar inadvertido.
+            isNot(contains('PowerSync upload quarantined')),
+            isNot(contains('is retrying')),
           ),
         );
-        expect(await queuedOps(db), 0);
+        // Llegar aquí significa que hay en producción un modo de falla que
+        // nadie previó: es la señal que faltó durante tres días.
+        expect(captured.whereType<bool>().single, isTrue);
       });
-    }
 
-    // `42P01` (undefined_table) es el caso real que motivó reportar los no
-    // fatales: una tabla que el cliente sincroniza pero que no existe en
-    // Postgres (pasó con `scheduled_payment_occurrences` y
-    // `scheduled_payment_tags`). Como la cola es FIFO y ese error nunca se
-    // resuelve solo, bloquea las escrituras de TODAS las tablas sin ningún
-    // síntoma en la app: reintentar sigue siendo lo correcto, pero tiene que
-    // dejar rastro.
-    for (final code in ['08006', '57014', '42P01']) {
+      test('tras cuarentenar, el historial del watchdog se olvida', () async {
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        expect(ledger.records, isEmpty);
+      });
+
       test(
-          'un error no fatal $code se reporta al CrashReporter, se relanza y '
-          'deja la op en la cola para reintento', () async {
-        final supabase = await buildSupabase(
-          signedInUserId: 'user-1',
-          responder: (request) => postgrestError(request, code),
-        );
-        final crash = buildCrashReporter();
+          'ANTES de las compuertas, el mismo código se relanza y la cola NO '
+          'avanza', () async {
+        failUploadsOf('transactions', postgrestError('WEIRD-CODE'));
         final db = await openDatabase();
         await db.execute(
           "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
         );
-        final connector = PowerSyncConnector(supabase, crash);
+        final connector = await buildConnector(signedInUserId: 'user-1');
 
-        // 1) Se relanza para que PowerSync reintente el batch.
         await expectLater(
           connector.uploadData(db),
-          throwsA(
-            isA<PostgrestException>().having((e) => e.code, 'code', code),
-          ),
+          throwsA(isA<PostgrestException>()),
         );
 
-        // 2) La op sigue en la cola: nunca se descarta (perdería datos).
         expect(await queuedOps(db), 1);
-
-        // 3) Y además queda registrada, con el contexto de reintento (no el
-        // de descarte fatal) y con el código dentro.
-        final captured = verify(
-          () => crash.recordError(
-            captureAny(),
-            captureAny(),
-            context: captureAny(named: 'context'),
-          ),
-        ).captured;
-        expect(captured[0], isA<PostgrestException>());
-        expect((captured[0] as PostgrestException).code, code);
-        expect(captured[1], isA<StackTrace>());
-        expect(
-          captured[2],
-          allOf(
-            isA<String>(),
-            contains(code),
-            contains('retrying'),
-            isNot(contains('dropped')),
+        expect(ledger.recordFor('transactions#tx-1#put')!.attempts, 1);
+        verifyNever(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: any(named: 'kind'),
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: any(named: 'errorCode'),
           ),
         );
       });
-    }
 
-    test('un error fatal aborta las ops restantes de la misma transacción',
-        () async {
-      final paths = <String>[];
-      final supabase = await buildSupabase(
-        signedInUserId: 'user-1',
-        responder: (request) {
-          paths.add(request.url.path);
-          if (request.url.path.endsWith('transactions')) {
-            return postgrestError(request, '42501');
-          }
-          return http.Response('', 201, request: request);
-        },
-      );
-      final crash = buildCrashReporter();
-      final db = await openDatabase();
-      await db.writeTransaction((tx) async {
-        await tx.execute(
+      test(
+          'SIN RED: con el ledger al borde del umbral, un SocketException no '
+          'cuarentena nada ni cuenta', () async {
+        // Un usuario sin conexión tiene que poder acumular reintentos
+        // indefinidamente sin que se le saque una escritura de la cola.
+        seedRetryHistory(tableName: 'transactions', rowId: 'tx-1');
+        failUploadsOf('transactions', const SocketException('offline'));
+        final db = await openDatabase();
+        await db.execute(
           "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
         );
-        await tx.execute("INSERT INTO budgets(id) VALUES('b-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await expectLater(
+          connector.uploadData(db),
+          throwsA(isA<SocketException>()),
+        );
+
+        expect(await queuedOps(db), 1);
+        expect(ledger.recordFor('transactions#tx-1#put')!.attempts, 19);
+        verifyNever(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: any(named: 'kind'),
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: any(named: 'errorCode'),
+          ),
+        );
       });
-      final connector = PowerSyncConnector(supabase, crash);
 
-      await connector.uploadData(db);
+      test('una subida exitosa olvida el historial de esa operación', () async {
+        seedRetryHistory(tableName: 'transactions', rowId: 'tx-1');
+        final db = await openDatabase();
+        await db.execute(
+          "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+        );
+        final connector = await buildConnector(signedInUserId: 'user-1');
 
-      expect(paths, ['/rest/v1/transactions']);
-      // Toda la transacción se descarta junto con la op fatal.
-      expect(await queuedOps(db), 0);
+        await connector.uploadData(db);
+
+        expect(ledger.records, isEmpty);
+      });
+
+      test('un rechazo clasificado también limpia el ledger', () async {
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('PGRST204'));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        expect(ledger.records, isEmpty);
+        verify(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: SyncFailureKind.brokenSchema,
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: 'PGRST204',
+          ),
+        ).called(1);
+      });
+
+      test('la op atascada sale del batch y el resto sube: la cola queda en 0',
+          () async {
+        seedRetryHistory();
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
+        final db = await openDatabase();
+        await db.writeTransaction((tx) async {
+          await tx.execute("INSERT INTO debts(id) VALUES('d-1')");
+          await tx.execute("INSERT INTO budgets(id) VALUES('b-1')");
+          await tx.execute(
+            "INSERT INTO transactions(id, amount_minor) VALUES('tx-1', 1234)",
+          );
+        });
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await connector.uploadData(db);
+
+        expect(await queuedOps(db), 0);
+        expect(
+          uploadedOperations().map((each) => each.tableName),
+          containsAll(<String>['debts', 'budgets', 'transactions']),
+        );
+        verify(
+          () => log.record(
+            event: SyncLogEvent.uploadFinished,
+            message: any(
+              named: 'message',
+              that: allOf(contains('2 uploaded'), contains('1 quarantined')),
+            ),
+            level: SyncLogLevel.warning,
+          ),
+        ).called(1);
+      });
+
+      test('si el ledger está roto, se sigue reintentando (falla abierto)',
+          () async {
+        // Cuarentenar por un error de disco sería sacar de la cola una
+        // escritura que quizá iba a subir bien.
+        ledger.readError = const FileSystemException('disk unreadable');
+        failUploadsOf('debts', postgrestError('WEIRD-CODE'));
+        final db = await openDatabase();
+        await db.execute("INSERT INTO debts(id) VALUES('d-1')");
+        final connector = await buildConnector(signedInUserId: 'user-1');
+
+        await expectLater(
+          connector.uploadData(db),
+          throwsA(isA<PostgrestException>()),
+        );
+
+        expect(await queuedOps(db), 1);
+        verifyNever(
+          () => quarantine.record(
+            operation: any(named: 'operation'),
+            kind: any(named: 'kind'),
+            errorMessage: any(named: 'errorMessage'),
+            errorCode: any(named: 'errorCode'),
+          ),
+        );
+      });
     });
   });
 }

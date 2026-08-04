@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/account_balance.dart';
@@ -22,10 +23,11 @@ import '../models/account_mapper.dart';
 /// stays NULL forever (HU-03).
 @LazySingleton(as: AccountRepository)
 class AccountRepositoryImpl implements AccountRepository {
-  const AccountRepositoryImpl(this._local, this._numbers);
+  const AccountRepositoryImpl(this._local, this._numbers, this._crash);
 
   final AccountsLocalDatasource _local;
   final AccountNumberLocalDatasource _numbers;
+  final CrashReporter _crash;
 
   @override
   Stream<Result<List<AccountWithBalance>>> watchActiveAccounts() =>
@@ -253,6 +255,9 @@ class AccountRepositoryImpl implements AccountRepository {
     try {
       return await body();
     } catch (e, st) {
+      // Report so the failure is never silent: dev prints it (NoopCrashReporter
+      // in debug), prod ships it to Sentry (SentryCrashReporter).
+      await _crash.recordError(e, st, context: 'accounts query');
       return Left(
         DatabaseFailure('accounts query failed', cause: e, stackTrace: st),
       );
@@ -266,15 +271,25 @@ class AccountRepositoryImpl implements AccountRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'accounts stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            // Same visibility as [_guard]: dev prints, prod ships to Sentry.
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'accounts stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'accounts stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

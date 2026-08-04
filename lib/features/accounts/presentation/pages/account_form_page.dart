@@ -65,7 +65,6 @@ class _AccountFormPageState extends State<AccountFormPage> {
                   title: state.isEditing
                       ? l10n.accountFormEditTitle
                       : l10n.accountFormNewTitle,
-                  onBack: Navigator.of(context).pop,
                   trailing: PageHeaderCircleButton(
                     icon: LucideIcons.check,
                     background: colors.primary,
@@ -153,7 +152,7 @@ class _AccountFormBodyState extends State<AccountFormBody> {
   /// state predicate says they are rendered — matching [build] exactly.
   List<FocusNode> _textFieldChain(AccountFormState state) => <FocusNode>[
         _nameFocus,
-        _institutionFocus,
+        if (state.showInstitutionField) _institutionFocus,
         if (!state.isCard && !state.isEditing) _initialBalanceFocus,
         if (state.showFullNumberField) _fullNumberFocus,
         if (state.showLast4Field) _last4Focus,
@@ -242,23 +241,25 @@ class _AccountFormBodyState extends State<AccountFormBody> {
             onSubmitted: _submitFor(_nameFocus, chain),
           ),
         ),
-        const SizedBox(height: 16),
-        KeyedSubtree(
-          key: errorScroll.keyFor(AccountDraft.fieldInstitution),
-          child: AccountFormField.text(
-            label: l10n.accountFormInstitutionLabel,
-            icon: LucideIcons.landmark,
-            hint: l10n.accountFormInstitutionHint,
-            initialValue: state.institution,
-            errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
-            maxLength: AccountDraft.maxInstitutionLength,
-            textCapitalization: TextCapitalization.words,
-            onChanged: cubit.institutionChanged,
-            focusNode: _institutionFocus,
-            textInputAction: _actionFor(_institutionFocus, chain),
-            onSubmitted: _submitFor(_institutionFocus, chain),
+        if (state.showInstitutionField) ...[
+          const SizedBox(height: 16),
+          KeyedSubtree(
+            key: errorScroll.keyFor(AccountDraft.fieldInstitution),
+            child: AccountFormField.text(
+              label: l10n.accountFormInstitutionLabel,
+              icon: LucideIcons.landmark,
+              hint: l10n.accountFormInstitutionHint,
+              initialValue: state.institution,
+              errorText: _errorFor(l10n, state, AccountDraft.fieldInstitution),
+              maxLength: AccountDraft.maxInstitutionLength,
+              textCapitalization: TextCapitalization.words,
+              onChanged: cubit.institutionChanged,
+              focusNode: _institutionFocus,
+              textInputAction: _actionFor(_institutionFocus, chain),
+              onSubmitted: _submitFor(_institutionFocus, chain),
+            ),
           ),
-        ),
+        ],
         // A card's debt lives only in "Datos de la tarjeta" (`Deuda actual`),
         // not as a top-level money field — `xdLeB`/`jg9DA` go from Moneda
         // straight into that section, with no field in between.

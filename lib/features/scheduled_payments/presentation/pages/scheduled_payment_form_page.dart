@@ -5,12 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../../../core/forms/form_error_scroll_controller.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/presentation/widgets/delete_link.dart';
 import '../../../transactions/presentation/pages/transaction_form_page.dart'
@@ -50,15 +52,45 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
     return BlocConsumer<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
-          previous.failedField != current.failedField,
+          previous.failedField != current.failedField ||
+          previous.failure != current.failure,
       listener: (context, state) {
+        final l10n = AppLocalizations.of(context);
         if (state.status == ScheduledPaymentFormStatus.saved) {
           Navigator.of(context).pop();
+          return;
         } else if (state.status == ScheduledPaymentFormStatus.deleted) {
           // The template that owned this route no longer exists: replace the
           // whole stack (form + the detail page underneath it) instead of
           // popping back into a detail screen with nothing left to show.
           GoRouter.of(context).go(AppRoutes.scheduledPayments);
+          return;
+        }
+        // A failed submit whose failure is not a `ValidationFailure` has no
+        // inline field to highlight, so it silently left the user staring at
+        // a re-enabled "Guardar" with no explanation. `NotFoundFailure` means
+        // the template was deleted from under this form (e.g. from another
+        // screen) — there is nothing left to save, so this also leaves the
+        // form instead of letting the user keep trying. Any other
+        // non-validation failure (e.g. a local database error) stays on the
+        // form so the user can retry.
+        final failure = state.failure;
+        if (failure != null && failure is! ValidationFailure) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  failure is NotFoundFailure
+                      ? l10n.scheduledPaymentFormNotFoundError
+                      : l10n.scheduledPaymentFormSaveError,
+                ),
+              ),
+            );
+          if (failure is NotFoundFailure) {
+            GoRouter.of(context).go(AppRoutes.scheduledPayments);
+          }
+          return;
         }
         _errorScroll.scrollToField(state.failedField);
       },
@@ -78,7 +110,7 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                 icon: const Icon(LucideIcons.x, size: 20),
                 color: colors.textPrimary,
                 tooltip: l10n.commonCancel,
-                onPressed: Navigator.of(context).pop,
+                onPressed: () => _handleClose(context),
               ),
             ),
             // In cuota mode the header carries a context subtitle ("Crédito
@@ -168,6 +200,14 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
         );
       },
     );
+  }
+
+  void _handleClose(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
   }
 }
 
@@ -354,24 +394,15 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           const ScheduledPaymentInstallmentBanner(),
         ],
         const SizedBox(height: 16),
-        Text(
-          l10n.transactionFormNoteLabel,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: colors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
+        NoteAutocompleteField(
+          label: l10n.transactionFormNoteLabel,
           initialValue: state.note,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(hintText: l10n.transactionFormNoteLabel),
+          hint: l10n.transactionFormNoteLabel,
           onChanged: cubit.noteChanged,
           // Nota is the form's only system-keyboard text field, so its action
           // is "listo": confirming it just dismisses the keyboard.
           textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+          onSubmitted: () => FocusScope.of(context).unfocus(),
         ),
         if (!state.isTransfer) ...[
           const SizedBox(height: 8),

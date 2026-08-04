@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/tag.dart';
 import '../../domain/repositories/tag_repository.dart';
@@ -12,9 +13,10 @@ import '../models/tag_mapper.dart';
 /// write, same as the rest of the app.
 @LazySingleton(as: TagRepository)
 class TagRepositoryImpl implements TagRepository {
-  const TagRepositoryImpl(this._local);
+  const TagRepositoryImpl(this._local, this._crash);
 
   final TagsLocalDatasource _local;
+  final CrashReporter _crash;
 
   @override
   Stream<Result<List<Tag>>> watchTags() => _guardStream(
@@ -42,6 +44,7 @@ class TagRepositoryImpl implements TagRepository {
     try {
       return await body();
     } catch (e, st) {
+      await _crash.recordError(e, st, context: 'tags query');
       return Left(
           DatabaseFailure('tags query failed', cause: e, stackTrace: st));
     }
@@ -51,15 +54,20 @@ class TagRepositoryImpl implements TagRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'tags stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            unawaited(
+              _crash.recordError(error, stackTrace, context: 'tags stream'),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'tags stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       );
 }

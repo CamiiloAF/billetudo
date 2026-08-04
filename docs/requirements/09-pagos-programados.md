@@ -105,6 +105,7 @@ Como usuario quiero elegir con cuánta anticipación me avisan de un pago próxi
 
 ## Reglas de negocio y edge cases
 
+- **Sin cuentas activas no se puede crear un pago programado** (gate de `15-gate-cuenta.md`): `ScheduledPayments.accountId` es NOT NULL. Se ofrece crear la cuenta en el momento y continuar al formulario, nunca un botón deshabilitado sin explicación. La bandeja de vencimientos y las plantillas ya existentes se siguen viendo con normalidad — el gate es solo sobre **crear**.
 - Un pago programado de `type = transfer` requiere `transferAccountId` igual que una transacción normal (ver `03-transacciones.md`).
 - El monto, la fecha y la cuenta pueden variar entre ocurrencias solo si la plantilla usa el modo manual (HU-03); el modo automático replica siempre los valores de la plantilla.
 - Una ocurrencia pendiente de confirmación (modo manual) no afecta el saldo hasta confirmarse, pero sí cuenta como compromiso futuro para "disponible para gastar".

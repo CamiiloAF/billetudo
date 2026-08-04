@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/load_more_button.dart';
 import '../../../accounts/presentation/widgets/info_card.dart';
 import '../../../accounts/presentation/widgets/info_row.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
@@ -487,19 +488,12 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
         if (state.hasMoreHistory)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: state.loadingMoreHistory
-                ? const Center(child: CircularProgressIndicator())
-                : Center(
-                    child: TextButton(
-                      onPressed: () => context
-                          .read<ScheduledPaymentDetailCubit>()
-                          .loadMoreHistory(),
-                      child: Text(
-                        l10n.scheduledPaymentDetailHistorySeeAll(
-                            state.historyTotalCount),
-                      ),
-                    ),
-                  ),
+            child: LoadMoreButton(
+              loading: state.loadingMoreHistory,
+              onPressed: () => context
+                  .read<ScheduledPaymentDetailCubit>()
+                  .loadMoreHistory(),
+            ),
           ),
       ],
     );

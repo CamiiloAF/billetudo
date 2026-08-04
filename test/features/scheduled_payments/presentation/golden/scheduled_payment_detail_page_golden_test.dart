@@ -99,6 +99,7 @@ void main() {
     bool hasEndDate = true,
     List<Tag> tags = const [],
     List<ScheduledHistoryEntry> historyRows = const [],
+    int? historyTotalCountOverride,
   }) =>
       ScheduledPaymentDetail(
         scheduledPayment: buildScheduledPayment(
@@ -119,7 +120,7 @@ void main() {
         categoryIcon: type == ScheduledPaymentType.transfer ? null : 'wifi',
         categoryColor: type == ScheduledPaymentType.transfer ? null : 'indigo',
         tags: tags,
-        historyTotalCount: historyRows.length,
+        historyTotalCount: historyTotalCountOverride ?? historyRows.length,
         generatedTransactionCount:
             historyRows.whereType<ScheduledConfirmedHistoryEntry>().length,
         history: historyRows,
@@ -185,6 +186,26 @@ void main() {
           history: historyEntries,
         ),
         'active_automatic_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Criterion 13, component compartido `LoadMoreButton`: la primera página
+    // (8) llegó, pero el total real es mayor — el botón "Ver más" aparece con
+    // el mismo look de Presupuestos/Deudas/Metas.
+    testWidgets('con más historial disponible, muestra "Ver más" ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(
+            historyRows: historyEntries,
+            historyTotalCountOverride: historyEntries.length + 12,
+          ),
+          history: historyEntries,
+        ),
+        'history_load_more_$suffix',
         brightness: brightness,
       );
     });

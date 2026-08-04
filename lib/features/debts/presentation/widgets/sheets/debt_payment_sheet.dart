@@ -11,9 +11,11 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/money_formatter.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../../categories/domain/entities/category.dart';
+import '../../../../categories/presentation/utils/category_appearance.dart';
 import '../../../../transactions/presentation/widgets/category_picker/category_select_sheet.dart';
 import '../../../domain/entities/debt.dart';
 import '../../cubit/debt_payment_cubit.dart';
@@ -177,25 +179,33 @@ class DebtPaymentSheetBody extends StatelessWidget {
                   icon: LucideIcons.calendar,
                   value: DebtFormat.relativeDate(context, l10n, state.date),
                   onTap: () => unawaited(
-                    _pickDate(context, cubit, state.date, debt.effectiveStartDate),
+                    _pickDate(
+                        context, cubit, state.date, debt.effectiveStartDate),
                   ),
                 ),
                 const SizedBox(height: 14),
                 // Nota.
-                DebtFormField.text(
+                NoteAutocompleteField(
                   key: const ValueKey('abono-note'),
                   label: l10n.debtPaymentNoteLabel,
                   icon: LucideIcons.pencil,
                   hint: l10n.debtPaymentNoteHint,
                   initialValue: state.note,
-                  textCapitalization: TextCapitalization.sentences,
                   onChanged: cubit.noteChanged,
                 ),
                 if (state.addToAccount) ...[
                   const SizedBox(height: 14),
                   DebtFormField.selector(
                     label: l10n.debtPaymentCategoryLabel,
-                    icon: LucideIcons.tag,
+                    icon: state.categoryId == null
+                        ? LucideIcons.tag
+                        : CategoryAppearance.iconFor(state.categoryIcon),
+                    iconColor: state.categoryId == null
+                        ? null
+                        : CategoryAppearance.colorFor(
+                            colors,
+                            state.categoryColor,
+                          ),
                     value: state.categoryName,
                     hint: l10n.debtPaymentCategoryNone,
                     onTap: () =>
@@ -281,7 +291,12 @@ class DebtPaymentSheetBody extends StatelessWidget {
       selectedId: state.categoryId,
     );
     if (picked != null) {
-      cubit.categorySelected(id: picked.id, name: picked.name);
+      cubit.categorySelected(
+        id: picked.id,
+        name: picked.name,
+        icon: picked.icon,
+        color: picked.color,
+      );
     }
   }
 }

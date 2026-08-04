@@ -12,9 +12,13 @@ Requerimientos funcionales de la capa gratuita y completa de la app (Nivel 0 seg
 8. [Deudas y préstamos](08-deudas.md)
 9. [Pagos programados](09-pagos-programados.md)
 10. [Gráficas e informes esenciales](10-graficas-informes.md)
-11. [Import/Export CSV](11-import-export.md)
-12. [Multi-moneda](12-multi-moneda.md)
-13. [Onboarding](13-onboarding.md)
+11. [Import/Export (portabilidad de datos)](11-import-export.md)
+12. [Multi-moneda](12-multi-moneda.md) — **diferida a Fase 1** (ver el propio documento; Fase 0 segmenta por moneda y no convierte)
+13. [Onboarding — flujo de bienvenida](13-onboarding.md)
 14. [Apariencia (dentro de Ajustes)](14-apariencia.md)
+15. [La app sin cuentas (gate "necesitas una cuenta")](15-gate-cuenta.md)
+16. [Minitutoriales (ayuda contextual por feature)](16-minitutoriales.md)
+
+Los documentos **13, 15 y 16** son las tres piezas de "enseñar la app" y se entregan en el orden **15 → 13 → 16** (ver "Orden de entrega" en `13-onboarding.md`).
 
 Ninguna de estas features puede quedar bloqueada tras anuncio o pago (regla de Nivel 0, `CLAUDE.md`). La única excepción documentada es dentro de **Gráficas e informes**: el set esencial es Nivel 0, pero las vistas avanzadas son Nivel 1/2 — ver el detalle en `10-graficas-informes.md`.

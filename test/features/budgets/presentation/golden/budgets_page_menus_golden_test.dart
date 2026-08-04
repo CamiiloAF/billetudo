@@ -83,6 +83,7 @@ void main() {
         settings: AppSettings(
           zeroBasedEnabled: envelopeEnabled,
           categoriesSeeded: true,
+          onboardingCompleted: true,
         ),
       ),
     );

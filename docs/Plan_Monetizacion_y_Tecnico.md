@@ -45,7 +45,7 @@ Estas son el corazón de la app y jamás se limitan ni llevan anuncios. Se calcu
 | Deudas y préstamos | Cálculo local |
 | **Set esencial de gráficas e informes** (flujo, balance, estructura de gasto) | Se renderizan en el dispositivo con `fl_chart`. Las visualizaciones *avanzadas más allá de X* van al Cubo B |
 | Pagos programados | Lógica local |
-| **Import/Export CSV** impecable (incluye formato Wallet/Mint) | Feature de *confianza*: "nunca te sentirás atrapado". Gratis a propósito |
+| **Import/Export** impecable: importa desde **cualquier CSV** (Wallet, Mint, tu banco) con mapeo de columnas asistido, y respaldo completo restaurable | Feature de *confianza*: "nunca te sentirás atrapado". Gratis a propósito. Detalle en `docs/requirements/11-import-export.md` |
 | Multi-moneda (con tasas cacheadas diariamente) | Una llamada de tasas al día para todos, no por usuario |
 | **Lectura de notificaciones bancarias del móvil** (Android) | Se procesa localmente; captura automática sin costo de API ni Plaid |
 | Backup local, modo oscuro, biometría | Locales |

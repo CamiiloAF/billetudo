@@ -37,10 +37,10 @@ class HomePage extends StatefulWidget {
     required this.onOpenAccounts,
     required this.onOpenAccountMovements,
     required this.onOpenScheduledPayments,
-    required this.onOpenGoals,
     required this.onOpenDebts,
     required this.onOpenReports,
     required this.onOpenLogin,
+    required this.onOpenSyncStatus,
     super.key,
   });
 
@@ -60,16 +60,16 @@ class HomePage extends StatefulWidget {
   final ValueChanged<String> onOpenAccountMovements;
 
   final VoidCallback onOpenScheduledPayments;
-
-  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable as
-  /// the last quick-access chip and from the "Más" hub.
-  final VoidCallback onOpenGoals;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
 
   /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
   /// when the app is offline with no session, so the user can back up.
   final VoidCallback onOpenLogin;
+
+  /// Opens "Estado de sincronización" from the cloud sheet (HU-08). The sheet
+  /// never navigates itself; the Home owns the destination.
+  final VoidCallback onOpenSyncStatus;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -102,11 +102,16 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _openMonthPicker(BuildContext context, HomeState state) async {
+  Future<void> _openMonthPicker(BuildContext context) async {
+    // Bugfix item 7: re-anchors "today" right before the picker opens, so a
+    // month boundary crossed while the app stayed open never freezes the
+    // ceiling (`HomeCubit.refreshCurrentMonth`).
+    final cubit = context.read<HomeCubit>();
+    cubit.refreshCurrentMonth();
     final picked = await MonthPickerSheet.show(
       context,
-      selected: state.month,
-      currentMonth: state.currentMonth,
+      selected: cubit.state.month,
+      currentMonth: cubit.state.currentMonth,
     );
     if (picked != null && context.mounted) {
       await context.read<HomeCubit>().selectMonth(picked);
@@ -145,7 +150,13 @@ class _HomePageState extends State<HomePage> {
       widget.onOpenLogin();
       return;
     }
-    unawaited(SyncStatusSheet.show(context, context.read<HomeCubit>()));
+    unawaited(
+      SyncStatusSheet.show(
+        context,
+        context.read<HomeCubit>(),
+        onOpenDetails: widget.onOpenSyncStatus,
+      ),
+    );
   }
 
   Future<void> _openAiSheet(BuildContext context) {
@@ -224,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                             spending: state.spending!,
                             budgetProgress: state.budgetProgress,
                             monthLabel: _monthLabel(context, state.month),
-                            onMonthTap: () => _openMonthPicker(context, state),
+                            onMonthTap: () => _openMonthPicker(context),
                             onCreateBudget: widget.onCreateBudget,
                           ),
                   ),
@@ -238,7 +249,6 @@ class _HomePageState extends State<HomePage> {
                       onOpenScheduledPayments: widget.onOpenScheduledPayments,
                       onOpenDebts: widget.onOpenDebts,
                       onOpenReports: widget.onOpenReports,
-                      onOpenGoals: widget.onOpenGoals,
                     ),
                   ),
                 ),

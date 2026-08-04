@@ -1296,6 +1296,7 @@ void main() {
       final debtRepository = DebtRepositoryImpl(
         DebtsLocalDatasource(database),
         const DebtBalanceCalculator(),
+        const NoopCrashReporter(),
       );
       final debt = await createDebt(
         direction: DebtDirection.iOwe,
@@ -1433,6 +1434,37 @@ void main() {
       );
       expect(item.debtStartDate, isNull);
       expect(item.confirmationMinDate, isNull);
+    });
+
+    test(
+        'watchPendingOccurrences deja de exponer la ocurrencia de una '
+        'plantilla borrada (tombstonedAt)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final beforeDelete =
+          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      expect(
+        beforeDelete.any((i) => i.scheduledPayment.id == template.id),
+        isTrue,
+      );
+
+      final deleteResult = await repository.deleteScheduledPayment(
+        template.id,
+      );
+      expect(deleteResult.isRight(), isTrue);
+
+      final afterDelete =
+          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      expect(
+        afterDelete.any((i) => i.scheduledPayment.id == template.id),
+        isFalse,
+      );
     });
   });
 

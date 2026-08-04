@@ -21,6 +21,9 @@ class DatePeriodFilter extends Equatable {
     this.anchor,
     this.customStart,
     this.customEnd,
+    this.budgetId,
+    this.budgetStart,
+    this.budgetEndExclusive,
   });
 
   factory DatePeriodFilter.granular(
@@ -56,29 +59,72 @@ class DatePeriodFilter extends Equatable {
   static DatePeriodFilter clearedToThisMonth([DateTime? now]) =>
       DatePeriodFilter.thisMonth(now);
 
-  /// `null` when [isCustomRange] is true.
+  /// A reusable `[start, endExclusive)` window anchored on a chosen budget's
+  /// current period (`BudgetPeriodWindow`), for the Movimientos "Presupuesto"
+  /// chip. Unlike `custom`, `endExclusive` here is **already exclusive** — it
+  /// comes straight from `BudgetPeriodWindow.endExclusive`, so no `+1 day` is
+  /// applied.
+  ///
+  /// This is a standalone value carried in `TransactionFilter.budgetPeriod`
+  /// (its own field) — never assigned to `TransactionFilter.datePeriod`,
+  /// which stays exclusively the Fecha chip's state (HU-06b).
+  factory DatePeriodFilter.budget({
+    required String budgetId,
+    required DateTime start,
+    required DateTime endExclusive,
+  }) {
+    final normalizedStart = _stripTime(start);
+    final normalizedEndExclusive = _stripTime(endExclusive);
+    if (normalizedEndExclusive.isBefore(normalizedStart)) {
+      throw ArgumentError.value(
+        endExclusive,
+        'endExclusive',
+        'must not be before start',
+      );
+    }
+    return DatePeriodFilter._(
+      budgetId: budgetId,
+      budgetStart: normalizedStart,
+      budgetEndExclusive: normalizedEndExclusive,
+    );
+  }
+
+  /// `null` when [isCustomRange] or [isBudgetPeriod] is true.
   final DateGranularity? granularity;
 
   /// Any date within the active granular period. `null` when [isCustomRange]
-  /// is true.
+  /// or [isBudgetPeriod] is true.
   final DateTime? anchor;
 
   /// Inclusive custom-range bounds. `null` unless this is a custom range.
   final DateTime? customStart;
   final DateTime? customEnd;
 
+  /// The budget this window was built from ([DatePeriodFilter.budget]).
+  /// `null` unless [isBudgetPeriod] is true.
+  final String? budgetId;
+  final DateTime? budgetStart;
+  final DateTime? budgetEndExclusive;
+
   bool get isCustomRange => customStart != null;
 
+  bool get isBudgetPeriod => budgetId != null;
+
   /// Inclusive start of the active period, at midnight.
-  DateTime get start =>
-      isCustomRange ? customStart! : _periodStart(granularity!, anchor!);
+  DateTime get start => isBudgetPeriod
+      ? budgetStart!
+      : isCustomRange
+          ? customStart!
+          : _periodStart(granularity!, anchor!);
 
   /// Exclusive end of the active period: the query bound is `date <
   /// endExclusive`, which naturally includes the whole last day regardless of
   /// its time component.
-  DateTime get endExclusive => isCustomRange
-      ? customEnd!.add(const Duration(days: 1))
-      : _periodEndExclusive(granularity!, anchor!);
+  DateTime get endExclusive => isBudgetPeriod
+      ? budgetEndExclusive!
+      : isCustomRange
+          ? customEnd!.add(const Duration(days: 1))
+          : _periodEndExclusive(granularity!, anchor!);
 
   /// HU-06b: one [granularity] step per tap (`direction` is `-1` previous,
   /// `1` next), applied immediately — no "Aplicar" needed. Only meaningful on
@@ -131,5 +177,13 @@ class DatePeriodFilter extends Equatable {
   }
 
   @override
-  List<Object?> get props => [granularity, anchor, customStart, customEnd];
+  List<Object?> get props => [
+        granularity,
+        anchor,
+        customStart,
+        customEnd,
+        budgetId,
+        budgetStart,
+        budgetEndExclusive,
+      ];
 }

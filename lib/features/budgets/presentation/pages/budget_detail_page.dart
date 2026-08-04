@@ -6,6 +6,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
@@ -17,7 +18,6 @@ import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
 import '../widgets/budget_adjustment_entry_card.dart';
 import '../widgets/budget_detail_skeleton_view.dart';
-import '../widgets/budget_load_more_button.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
@@ -604,7 +604,7 @@ class BudgetActivitySection extends StatelessWidget {
           ],
         if (state.hasMoreActivity) ...[
           const SizedBox(height: 18),
-          BudgetLoadMoreButton(onPressed: onLoadMore),
+          LoadMoreButton(onPressed: onLoadMore),
         ],
       ],
     );

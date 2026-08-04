@@ -85,9 +85,22 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     );
   }
 
-  /// Extension (HU-07): manually closes the debt from the overflow menu's
-  /// "Cerrar deuda" (`R97gF`). The detail stream reflects the new `closedAt`
-  /// on its own; a failure only surfaces via [DebtDetailState.actionFailure].
+  /// Reveals one more page of the ledger, following
+  /// `BudgetDetailCubit.loadMoreActivity()`'s exact pattern.
+  void loadMoreLedger() => emit(
+        state.copyWith(
+          visibleLedgerCount:
+              state.visibleLedgerCount + DebtDetailState.ledgerPageSize,
+        ),
+      );
+
+  /// Extension (HU-07): manually closes the debt from any of its three call
+  /// sites (the fixed CTA, the overflow menu's "Cerrar deuda"/"Completar
+  /// deuda", or the felicitación sheet's "Completar" button). The detail
+  /// stream reflects the new `closedAt` on its own; a failure only surfaces
+  /// via [DebtDetailState.actionFailure], and a success fires
+  /// [DebtDetailState.closeSuccess] once so the page can snackbar it
+  /// regardless of which call site triggered it.
   Future<void> closeDebt() async {
     final id = _debtId;
     if (id == null) {
@@ -99,7 +112,9 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     }
     result.fold(
       (failure) => emit(state.copyWith(actionFailure: () => failure)),
-      (_) => null,
+      (_) => emit(
+        state.copyWith(closeSuccess: () => const DebtCloseSuccess()),
+      ),
     );
   }
 
@@ -126,6 +141,11 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
   /// shows, so the same failure cannot re-trigger on an unrelated rebuild.
   void dismissActionFailure() =>
       emit(state.copyWith(actionFailure: () => null));
+
+  /// Clears a consumed [DebtDetailState.closeSuccess] after its snackbar
+  /// shows, so it cannot re-trigger on an unrelated rebuild.
+  void dismissCloseSuccess() =>
+      emit(state.copyWith(closeSuccess: () => null));
 
   /// Clears a consumed [DebtDetailState.celebration] once the page has opened
   /// its sheet, so navigating back to an already-settled-but-not-closed debt

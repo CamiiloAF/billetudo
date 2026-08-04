@@ -134,9 +134,14 @@ void main() {
         File('lib/core/router/app_router.dart').readAsStringSync();
     expect(
       routerSource,
-      contains('initialLocation: AppRoutes.home'),
+      contains('String initialLocation = AppRoutes.home'),
       reason: 'HU-01: local-first estricto — el login nunca es un gate de '
-          'entrada, la app debe abrir directo en Inicio.',
+          'entrada, `createAppRouter` sigue arrancando en Inicio por '
+          'defecto. `13-onboarding.md` es la única excepción documentada a '
+          'esta regla, y tampoco es un gate de auth: `bootstrap.dart` pasa '
+          'AppRoutes.onboarding solo cuando ShouldShowOnboarding lo pide '
+          '(evaluado una sola vez, sin depender de sesión), y el flujo de '
+          'bienvenida completo es 100% omitible y offline.',
     );
   });
 

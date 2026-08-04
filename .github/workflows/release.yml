@@ -94,6 +94,22 @@ jobs:
           SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           EOF
 
+      # Sin DSN, Env.hasSentryDsn da false y la release entera sale con
+      # NoopCrashReporter: cero telemetría, sin ningún síntoma en el build.
+      # Durante el incidente del 2026-07-28 (decisión #22 en
+      # docs/requirements/05-auth-sync.md) la telemetría fue lo único que
+      # permitió reconstruir la causa raíz; una release ciega habría dejado el
+      # bug sin diagnóstico posible.
+      # El check va dentro del run, no en un `if:`: los secrets no son
+      # accesibles en los condicionales de step de GitHub Actions.
+      - name: Warn if SENTRY_DSN is missing
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::warning::SENTRY_DSN no está configurado — la release saldría sin reporte de errores (NoopCrashReporter)."
+          fi
+
       # storeFile se resuelve con file() relativo a android/app (ver build.gradle.kts),
       # así que el .jks va justo ahí y key.properties lo referencia por nombre.
       - name: Decode release keystore & key.properties
@@ -175,6 +191,22 @@ jobs:
           POWERSYNC_URL=${{ secrets.POWERSYNC_URL }}
           SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           EOF
+
+      # Sin DSN, Env.hasSentryDsn da false y la release entera sale con
+      # NoopCrashReporter: cero telemetría, sin ningún síntoma en el build.
+      # Durante el incidente del 2026-07-28 (decisión #22 en
+      # docs/requirements/05-auth-sync.md) la telemetría fue lo único que
+      # permitió reconstruir la causa raíz; una release ciega habría dejado el
+      # bug sin diagnóstico posible.
+      # El check va dentro del run, no en un `if:`: los secrets no son
+      # accesibles en los condicionales de step de GitHub Actions.
+      - name: Warn if SENTRY_DSN is missing
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::warning::SENTRY_DSN no está configurado — la release saldría sin reporte de errores (NoopCrashReporter)."
+          fi
 
       - name: Import distribution certificate
         env:

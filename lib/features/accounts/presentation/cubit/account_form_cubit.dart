@@ -173,11 +173,15 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   /// HU-02/HU-03: a type that cannot hold a full number must not keep one
   /// around — a card would be rejected for carrying a PAN it never showed.
+  /// Switching to cash also clears any institution typed while a different
+  /// type was picked: `showInstitutionField` hides the field for cash, and a
+  /// stale value would otherwise still ride along in the draft unseen.
   void typeSelected(AccountType type) => emit(
         state.copyWith(
           type: type,
           typePickerExpanded: false,
           clearFullAccountNumber: !type.allowsFullAccountNumber,
+          institution: type == AccountType.cash ? '' : state.institution,
         ),
       );
 
@@ -212,8 +216,13 @@ class AccountFormCubit extends Cubit<AccountFormState> {
             failure: needsConfirmation ? null : failure,
           ),
         );
-      case Right():
-        emit(state.copyWith(status: AccountFormStatus.saved));
+      case Right(value: final saved):
+        // A caller can stay alive past `saved` (the onboarding flow keeps
+        // this cubit around under a route the user can pop back to), so a
+        // second `submit()` must update the just-created row instead of
+        // inserting a duplicate. Stamping `id` here is what flips
+        // `isEditing` to true for any resubmission.
+        emit(state.copyWith(id: saved.id, status: AccountFormStatus.saved));
     }
   }
 

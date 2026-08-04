@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../l10n/gen/app_localizations.dart';
+import '../router/app_router.dart';
 import '../theme/app_colors.dart';
 import 'page_header_circle_button.dart';
 
@@ -24,7 +26,9 @@ class PageHeader extends StatelessWidget {
   /// Header title. Rendered centered, bold, `textPrimary`.
   final String title;
 
-  /// Called when the back button is tapped. Defaults to `Navigator.pop`.
+  /// Called when the back button is tapped. Defaults to popping the current
+  /// route, falling back to [AppRoutes.home] when there is nothing left to
+  /// pop (e.g. this screen ended up as the only entry in the stack).
   final VoidCallback? onBack;
 
   /// Optional right-side action button (44x44, `primary` fill expected).
@@ -45,7 +49,7 @@ class PageHeader extends StatelessWidget {
             background: colors.muted,
             foreground: colors.textPrimary,
             tooltip: l10n.commonBack,
-            onPressed: onBack ?? Navigator.of(context).pop,
+            onPressed: onBack ?? () => _handleBack(context),
           ),
           Expanded(
             child: Text(
@@ -64,5 +68,13 @@ class PageHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _handleBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
   }
 }

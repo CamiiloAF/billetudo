@@ -11,16 +11,21 @@ import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
 import '../utils/date_period_label.dart';
+import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
+import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
 import '../widgets/filter_chip_pill.dart';
 import '../widgets/movements_balance_carousel.dart';
 import '../widgets/sheets/account_filter_sheet.dart';
+import '../widgets/sheets/budget_period_filter_sheet.dart';
 import '../widgets/sheets/category_filter_sheet.dart';
 import '../widgets/sheets/date_filter_sheet.dart';
 import '../widgets/sheets/tag_filter_sheet.dart';
@@ -42,6 +47,7 @@ class TransactionsPage extends StatelessWidget {
     required this.onOpenTransaction,
     required this.onOpenAccount,
     this.linkMode,
+    this.onBackToReports,
     super.key,
   });
 
@@ -50,6 +56,21 @@ class TransactionsPage extends StatelessWidget {
   /// movement to the debt instead of opening its detail. Null is the ordinary
   /// list.
   final TransactionsLinkMode? linkMode;
+
+  /// Navigates back to Gráficas e informes. Wired unconditionally by the
+  /// router, but only rendered as the header's leading button while
+  /// [TransactionsListState.arrivedFromReports] is true — i.e. right after
+  /// Gráficas' categories drill-down (a `context.go` to this branch's root,
+  /// which drops `/graficas` off the stack, so `Navigator.pop` has nothing to
+  /// return to). Visibility is state-driven, not builder-driven: a
+  /// `StatefulShellBranch` does not re-run its `GoRoute` builder on a later
+  /// `context.go` to an already-visited branch (see `app_router.dart`'s
+  /// `_movimientosBranch`), so a plain constructor-time null/non-null check
+  /// would go stale after the first visit. If both this and [linkMode] were
+  /// ever set, [linkMode]'s back button wins — its "cancel the link"
+  /// semantics are the more urgent action to expose — though in practice the
+  /// two never happen at once.
+  final VoidCallback? onBackToReports;
 
   /// Opens the new-movement form. Receives the account to preselect, or null
   /// for none: the account of the balance carousel's active card (Mejora #2)
@@ -99,120 +120,148 @@ class TransactionsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     final linkMode = this.linkMode;
-    return Scaffold(
-      // Link mode hides the FAB: the task there is to pick an existing
-      // movement, not to create one (`g0x859`).
-      floatingActionButton: linkMode != null
-          ? null
-          : AppFab(
-              icon: LucideIcons.plus,
-              tooltip: l10n.transactionsAdd,
-              onPressed: () => onAddTransaction(_preselectedAccountId(context)),
-            ),
-      body: SafeArea(
-        child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
-          listenWhen: (previous, current) =>
-              previous.pendingUndoId != current.pendingUndoId &&
-              current.pendingUndoId != null,
-          listener: (context, state) {
-            final cubit = context.read<TransactionsListCubit>();
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(l10n.transactionsUndoDeletedMessage),
-                  action: SnackBarAction(
-                    label: l10n.transactionsUndoAction,
-                    onPressed: cubit.undoDelete,
+    // Same source of truth as the leading button below: when the user
+    // arrived here from Gráficas' drill-down, the system back
+    // gesture/button must also return there instead of falling through to
+    // the Navigator's default pop (which, since this branch was reached via
+    // `context.go`, would land on Inicio — bugfix falla 3). `linkMode` is
+    // never active at the same time as `arrivedFromReports` in practice
+    // (they come from different entry points), but the `onBackToReports !=
+    // null` guard keeps this inert if that ever changes.
+    final arrivedFromReports =
+        context.watch<TransactionsListCubit>().state.arrivedFromReports;
+    final interceptSystemBack = arrivedFromReports && onBackToReports != null;
+    return PopScope(
+      canPop: !interceptSystemBack,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && interceptSystemBack) {
+          onBackToReports?.call();
+        }
+      },
+      child: Scaffold(
+        // Link mode hides the FAB: the task there is to pick an existing
+        // movement, not to create one (`g0x859`).
+        floatingActionButton: linkMode != null
+            ? null
+            : AppFab(
+                icon: LucideIcons.plus,
+                tooltip: l10n.transactionsAdd,
+                onPressed: () =>
+                    onAddTransaction(_preselectedAccountId(context)),
+              ),
+        body: SafeArea(
+          child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
+            listenWhen: (previous, current) =>
+                previous.pendingUndoId != current.pendingUndoId &&
+                current.pendingUndoId != null,
+            listener: (context, state) {
+              final cubit = context.read<TransactionsListCubit>();
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.transactionsUndoDeletedMessage),
+                    action: SnackBarAction(
+                      label: l10n.transactionsUndoAction,
+                      onPressed: cubit.undoDelete,
+                    ),
+                    persist: false,
                   ),
-                  persist: false,
-                ),
-              );
-          },
-          builder: (context, rawState) {
-            // Search and filters stay pinned; everything below — including the
-            // balance carousel (Mejora #2) — lives inside the scrollable body
-            // so it scrolls away with the list.
-            // In link mode a row tap attributes the movement to the debt; the
-            // carousel is dropped so the focus is the list to pick from.
-            // Link mode also restricts the list to the movements that may be
-            // an abono of this debt: only the required type and dated on/after
-            // the debt's creation (Deudas HU-02). Linking a movement of the
-            // wrong type or an older date would push the balance the wrong way,
-            // so those are dropped from the list entirely rather than shown and
-            // rejected on tap.
-            final state = linkMode == null
-                ? rawState
-                : rawState.copyWith(
-                    items: rawState.items
-                        .where((item) => linkMode.accepts(item.transaction))
-                        .toList(),
-                  );
-            final onRowTap = linkMode != null
-                ? linkMode.onLinkTransaction
-                : (String id) => _openTransaction(context, id);
-            final showCarousel = linkMode == null;
-            return Column(
-              children: [
-                RootTabHeader(
-                  title: l10n.transactionsTitle,
-                  // Link mode is a stacked screen with no other visible exit
-                  // (the banner no longer carries an "x"), so it gets a back
-                  // button here to never trap the user.
-                  leading: linkMode == null
-                      ? null
-                      : PageHeaderCircleButton(
-                          icon: LucideIcons.arrowLeft,
-                          background: context.colors.muted,
-                          foreground: context.colors.textPrimary,
-                          tooltip: l10n.commonBack,
-                          onPressed: linkMode.onCancel,
+                );
+            },
+            builder: (context, rawState) {
+              // Search and filters stay pinned; everything below — including the
+              // balance carousel (Mejora #2) — lives inside the scrollable body
+              // so it scrolls away with the list.
+              // In link mode a row tap attributes the movement to the debt; the
+              // carousel is dropped so the focus is the list to pick from.
+              // Link mode also restricts the list to the movements that may be
+              // an abono of this debt: only the required type and dated on/after
+              // the debt's creation (Deudas HU-02). Linking a movement of the
+              // wrong type or an older date would push the balance the wrong way,
+              // so those are dropped from the list entirely rather than shown and
+              // rejected on tap.
+              final state = linkMode == null
+                  ? rawState
+                  : rawState.copyWith(
+                      items: rawState.items
+                          .where((item) => linkMode.accepts(item.transaction))
+                          .toList(),
+                    );
+              final onRowTap = linkMode != null
+                  ? linkMode.onLinkTransaction
+                  : (String id) => _openTransaction(context, id);
+              final showCarousel = linkMode == null;
+              return Column(
+                children: [
+                  RootTabHeader(
+                    title: l10n.transactionsTitle,
+                    // Link mode is a stacked screen with no other visible exit
+                    // (the banner no longer carries an "x"), so it gets a back
+                    // button here to never trap the user.
+                    leading: linkMode != null
+                        ? PageHeaderCircleButton(
+                            icon: LucideIcons.arrowLeft,
+                            background: context.colors.muted,
+                            foreground: context.colors.textPrimary,
+                            tooltip: l10n.commonBack,
+                            onPressed: linkMode.onCancel,
+                          )
+                        : state.arrivedFromReports && onBackToReports != null
+                            ? PageHeaderCircleButton(
+                                icon: LucideIcons.arrowLeft,
+                                background: context.colors.muted,
+                                foreground: context.colors.textPrimary,
+                                tooltip: l10n.commonBack,
+                                onPressed: onBackToReports,
+                              )
+                            : null,
+                  ),
+                  TransactionsSearchRow(state: state),
+                  const SizedBox(height: 8),
+                  TransactionsFilterBar(state: state),
+                  const SizedBox(height: 8),
+                  if (linkMode != null)
+                    TransactionsLinkBanner(linkMode: linkMode),
+                  Expanded(
+                    child: switch (state.status) {
+                      TransactionsListStatus.loading =>
+                        const TransactionsLoadingView(),
+                      TransactionsListStatus.failure => TransactionsErrorView(
+                          onRetry: context.read<TransactionsListCubit>().start,
                         ),
-                ),
-                TransactionsSearchRow(state: state),
-                const SizedBox(height: 8),
-                TransactionsFilterBar(state: state),
-                const SizedBox(height: 8),
-                if (linkMode != null)
-                  TransactionsLinkBanner(linkMode: linkMode),
-                Expanded(
-                  child: switch (state.status) {
-                    TransactionsListStatus.loading =>
-                      const TransactionsLoadingView(),
-                    TransactionsListStatus.failure => TransactionsErrorView(
-                        onRetry: context.read<TransactionsListCubit>().start,
-                      ),
-                    // Empty period: the carousel is pinned above the message
-                    // (there is nothing to scroll here) so the balances stay
-                    // visible when there are accounts but no movements yet.
-                    TransactionsListStatus.ready when state.items.isEmpty =>
-                      Column(
-                        children: [
-                          if (showCarousel)
-                            MovementsBalanceCarousel(
-                              state: state,
-                              onOpenAccount: onOpenAccount,
+                      // Empty period: the carousel is pinned above the message
+                      // (there is nothing to scroll here) so the balances stay
+                      // visible when there are accounts but no movements yet.
+                      TransactionsListStatus.ready when state.items.isEmpty =>
+                        Column(
+                          children: [
+                            if (showCarousel)
+                              MovementsBalanceCarousel(
+                                state: state,
+                                onOpenAccount: onOpenAccount,
+                              ),
+                            Expanded(
+                              child: TransactionsEmptyState(
+                                message: _isUnfiltered(state.filter)
+                                    ? l10n.transactionsEmptyMessage
+                                    : l10n.transactionsEmptyPeriodMessage,
+                              ),
                             ),
-                          Expanded(
-                            child: TransactionsEmptyState(
-                              message: _isUnfiltered(state.filter)
-                                  ? l10n.transactionsEmptyMessage
-                                  : l10n.transactionsEmptyPeriodMessage,
-                            ),
-                          ),
-                        ],
-                      ),
-                    TransactionsListStatus.ready => TransactionsListView(
-                        state: state,
-                        onOpenTransaction: onRowTap,
-                        onOpenAccount: onOpenAccount,
-                        showCarousel: showCarousel,
-                      ),
-                  },
-                ),
-              ],
-            );
-          },
+                          ],
+                        ),
+                      TransactionsListStatus.ready => TransactionsListView(
+                          state: state,
+                          onOpenTransaction: onRowTap,
+                          onOpenAccount: onOpenAccount,
+                          showCarousel: showCarousel,
+                        ),
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -228,6 +277,7 @@ bool _isUnfiltered(TransactionFilter filter) =>
     !filter.hasCategoryFilter &&
     !filter.hasTypeFilter &&
     !filter.hasTagFilter &&
+    !filter.hasBudgetPeriodFilter &&
     !_hasDateFilter(filter.datePeriod);
 
 /// HU-06b's date filter has no bare "no filter" state (it always defaults to
@@ -387,9 +437,76 @@ class TransactionsFilterBar extends StatelessWidget {
               }
             },
           ),
+          const SizedBox(width: 8),
+          FilterChipPill(
+            label: _budgetChipLabel(l10n, filter, state.budgetOptions),
+            active: filter.hasBudgetPeriodFilter,
+            leadingIcon: _budgetChipIcon(filter, state.budgetOptions),
+            onTap: () async {
+              final result = await BudgetPeriodFilterSheet.show(
+                context,
+                initialBudgetId: filter.budgetPeriod?.budgetId,
+              );
+              // Null means the sheet was dismissed without "Aplicar" — keep
+              // the current filter. A non-null result always replaces it,
+              // including back to `null` when the user cleared it.
+              if (result != null) {
+                await cubit.updateFilter(
+                  filter.copyWith(
+                    budgetPeriod: result.window,
+                    clearBudgetPeriod: result.window == null,
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
+  }
+
+  /// The Presupuesto Chip's label: the chosen budget's own name once
+  /// selected, or the generic dimension label when there is no filter — the
+  /// same neutral/active split as the Category/Type/Tag chips, unlike the
+  /// Account Chip's always-active "Todas" or the Date Chip's always-active
+  /// default.
+  static String _budgetChipLabel(
+    AppLocalizations l10n,
+    TransactionFilter filter,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    final budgetId = filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return l10n.transactionsFilterBudget;
+    }
+    final selected = _selectedBudgetOption(budgetId, budgetOptions);
+    return selected?.name ?? l10n.transactionsFilterBudget;
+  }
+
+  /// The Presupuesto Chip's leading icon: the selected budget's own icon, or
+  /// none while unset (`FilterChipPill` simply omits it).
+  static IconData? _budgetChipIcon(
+    TransactionFilter filter,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    final budgetId = filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return null;
+    }
+    final selected = _selectedBudgetOption(budgetId, budgetOptions);
+    return CategoryAppearance.iconForOrPlaceholder(selected?.icon);
+  }
+
+  static BudgetPeriodOption? _selectedBudgetOption(
+    String budgetId,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    for (final option in budgetOptions) {
+      if (option.budgetId == budgetId) {
+        return option;
+      }
+    }
+    return null;
   }
 
   /// The Account Chip's label across HU-06a's 3 states: the account's own
@@ -550,6 +667,7 @@ class TransactionsListView extends StatelessWidget {
         }
         final groupIndex = index - carouselSlots;
         final group = groups[groupIndex];
+        final groupTotal = transactionGroupTotalFor(state.filter, group.items);
         return Padding(
           padding: EdgeInsets.fromLTRB(20, groupIndex == 0 ? 0 : 24, 20, 0),
           child: Column(
@@ -557,7 +675,14 @@ class TransactionsListView extends StatelessWidget {
             children: [
               TransactionGroupHeader(
                 label: transactionGroupLabel(l10n, group.date),
-                count: group.items.length,
+                count: groupTotal == null ? group.items.length : null,
+                totalLabel: groupTotal == null
+                    ? null
+                    : signedAmountLabel(
+                        amountMinor: groupTotal.amountMinor,
+                        currencyCode: groupTotal.currency,
+                        type: groupTotal.type,
+                      ),
               ),
               const SizedBox(height: 12),
               for (var i = 0; i < group.items.length; i++) ...[

@@ -96,6 +96,9 @@ Future<void> loadGoogleButtonFontFallback() async {
 /// plus the `theme`/`darkTheme` split a golden needs to pick.
 Widget wrapForGolden(Widget child, {required Brightness brightness}) {
   return MaterialApp(
+    // Goldens capture pixels for visual review; the diagonal "DEBUG" banner
+    // is harness noise, not real UI, and should never show up in one.
+    debugShowCheckedModeBanner: false,
     theme: brightness == Brightness.light ? AppTheme.light() : AppTheme.dark(),
     locale: const Locale('es'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,

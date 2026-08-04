@@ -23,8 +23,10 @@ class SegmentedControl<T> extends StatelessWidget {
   /// The ordered segments to render.
   final List<SegmentedControlOption<T>> segments;
 
-  /// The currently active segment's value.
-  final T selected;
+  /// The currently active segment's value. `null` renders every segment as
+  /// inactive (e.g. a personalized range filter is applied and no segment
+  /// represents it) while keeping them tappable.
+  final T? selected;
 
   final ValueChanged<T> onChanged;
 

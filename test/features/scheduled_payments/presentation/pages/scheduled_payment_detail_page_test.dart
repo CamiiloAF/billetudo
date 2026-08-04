@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/load_more_button.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_history_entry.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
@@ -227,6 +228,46 @@ void main() {
     await tester.pump();
 
     verify(() => cubit.recoverSkipped('occ-1')).called(1);
+  });
+
+  group('criterion 13: "Ver más" del historial (componente compartido)', () {
+    testWidgets(
+        'con más historial que el visible muestra el LoadMoreButton y lo '
+        'dispara al tocarlo', (tester) async {
+      when(() => cubit.loadMoreHistory()).thenAnswer((_) async {});
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(historyTotalCount: 20),
+          history: const [],
+        ),
+      );
+
+      expect(find.byType(LoadMoreButton), findsOneWidget);
+      expect(find.text('Ver más'), findsOneWidget);
+
+      await tester.tap(find.byType(LoadMoreButton));
+      await tester.pump();
+      verify(() => cubit.loadMoreHistory()).called(1);
+    });
+
+    testWidgets('mientras loadingMoreHistory el botón muestra su spinner',
+        (tester) async {
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(historyTotalCount: 20),
+          history: const [],
+          loadingMoreHistory: true,
+        ),
+      );
+
+      final button =
+          tester.widget<LoadMoreButton>(find.byType(LoadMoreButton));
+      expect(button.loading, isTrue);
+    });
   });
 
   testWidgets('estado de carga muestra un spinner, no la data', (tester) async {

@@ -65,7 +65,8 @@ void main() {
     await pump(
       tester,
       linkMode: TransactionsLinkMode(
-        debtLabel: 'Crédito vehicular · Yo debo',
+        bannerTitle: 'Enlazar a Crédito vehicular · Yo debo',
+        bannerBody: 'body',
         onCancel: () {},
         onLinkTransaction: (_) async {},
         requiredType: TransactionType.expense,
@@ -85,7 +86,8 @@ void main() {
     await pump(
       tester,
       linkMode: TransactionsLinkMode(
-        debtLabel: 'Crédito vehicular · Yo debo',
+        bannerTitle: 'Enlazar a Crédito vehicular · Yo debo',
+        bannerBody: 'body',
         onCancel: () => cancelled = true,
         onLinkTransaction: (_) async {},
         requiredType: TransactionType.expense,
@@ -144,7 +146,8 @@ void main() {
             onOpenTransaction: (_) async => null,
             onOpenAccount: (_) {},
             linkMode: TransactionsLinkMode(
-              debtLabel: 'Crédito · Yo debo',
+              bannerTitle: 'Enlazar a Crédito · Yo debo',
+              bannerBody: 'body',
               onCancel: () {},
               onLinkTransaction: (_) async {},
               requiredType: requiredType,

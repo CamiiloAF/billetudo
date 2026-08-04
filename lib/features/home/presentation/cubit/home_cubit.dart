@@ -5,7 +5,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
 import '../../../../core/sync/domain/entities/sync_state.dart';
-import '../../../../core/sync/domain/usecases/watch_sync_status.dart';
+import '../../../../core/sync/domain/entities/sync_status_snapshot.dart';
+import '../../../../core/sync/domain/usecases/watch_sync_status_details.dart';
+import '../../../../core/sync/presentation/utils/sync_freshness.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
@@ -32,7 +34,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchAccounts,
     this._watchMonthTransactions,
     this._watchAuthSession,
-    this._watchSyncStatus,
+    this._watchSyncStatusDetails,
     this._restoreTransaction,
     this._watchGlobalMonthlyBudgetProgress,
   ) : super(HomeState.initial(DateTime.now()));
@@ -40,14 +42,14 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchAccounts _watchAccounts;
   final WatchMonthTransactions _watchMonthTransactions;
   final WatchAuthSession _watchAuthSession;
-  final WatchSyncStatus _watchSyncStatus;
+  final WatchSyncStatusDetails _watchSyncStatusDetails;
   final RestoreTransaction _restoreTransaction;
   final WatchGlobalMonthlyBudgetProgress _watchGlobalMonthlyBudgetProgress;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
   StreamSubscription<AuthSession>? _authSub;
-  StreamSubscription<SyncState>? _syncSub;
+  StreamSubscription<SyncStatusSnapshot>? _syncSub;
   StreamSubscription<Result<BudgetWithProgress?>>? _budgetProgressSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
@@ -57,16 +59,55 @@ class HomeCubit extends Cubit<HomeState> {
   /// Subscribes with the current month. Safe to call again to retry after a
   /// failure.
   Future<void> start() async {
+    refreshCurrentMonth();
     await _accountsSub?.cancel();
     await _authSub?.cancel();
     await _syncSub?.cancel();
     await _budgetProgressSub?.cancel();
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _authSub = _watchAuthSession().listen(_onAuthSession);
-    _syncSub = _watchSyncStatus().listen(_onSyncState);
+    _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
     _budgetProgressSub =
         _watchGlobalMonthlyBudgetProgress().listen(_onBudgetProgress);
     await _subscribeTransactions(state.month);
+  }
+
+  /// Bugfix item 7: [HomeState.currentMonth] (HU-04's picker ceiling) is only
+  /// ever set once, in [HomeState.initial] — the router builds [HomeCubit]
+  /// exactly once per app session (the shell keeps every tab's branch alive
+  /// in an `IndexedStack`, same as `TransactionsListCubit`). Without this, an
+  /// app kept open across a month boundary freezes the ceiling on the month
+  /// the cubit was built in: the real current month then reads as "future"
+  /// to [selectMonth]'s guard and gets silently rejected, while a
+  /// freshly-built filter elsewhere (e.g. Movimientos, HU-06) already tracks
+  /// the new month — the two screens visibly disagree on "now".
+  ///
+  /// Called on [start] and right before the month picker opens (the exact
+  /// moment HU-04 lets the user act on "now"), so the ceiling is never more
+  /// stale than the last time either happened. When the visible month was
+  /// still tracking "today" by default (never explicitly picked), it is
+  /// re-anchored to the fresh "today" too and its stream re-subscribed —
+  /// otherwise the visible month is left untouched, since the user chose it
+  /// on purpose.
+  void refreshCurrentMonth() {
+    if (isClosed) {
+      return;
+    }
+    final now = DateTime.now();
+    final normalizedNow = DateTime(now.year, now.month);
+    if (normalizedNow == state.currentMonth) {
+      return;
+    }
+    final wasViewingToday = state.month == state.currentMonth;
+    emit(
+      state.copyWith(
+        month: wasViewingToday ? normalizedNow : state.month,
+        currentMonth: normalizedNow,
+      ),
+    );
+    if (wasViewingToday) {
+      unawaited(_subscribeTransactions(normalizedNow));
+    }
   }
 
   /// HU-07: the session updates the greeting/avatar only — it never gates the
@@ -80,18 +121,34 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// HU-10: the sync indicator is passive and independent of [HomeStatus] —
   /// being offline or mid-merge never turns the Home into an error screen.
-  void _onSyncState(SyncState syncState) {
+  ///
+  /// HU-08 adds the fourth state. Two conditions map to it, both amber:
+  /// writes held back in the quarantine, and a last successful sync older
+  /// than 24 h. The second one is the incident itself — "syncing" and
+  /// "syncing since three days ago" must not render the same, and the
+  /// indicator only has four states to say it with.
+  void _onSyncSnapshot(SyncStatusSnapshot snapshot) {
     if (isClosed) {
       return;
     }
-    final syncStatus = switch (syncState) {
+    final isStale =
+        SyncFreshness.isStale(snapshot.lastSyncedAt, now: DateTime.now());
+    final syncStatus = switch (snapshot.state) {
+      SyncState.stalled => HomeSyncStatus.attention,
+      _ when isStale => HomeSyncStatus.attention,
       SyncState.synced => HomeSyncStatus.synced,
       SyncState.syncing => HomeSyncStatus.syncing,
       SyncState.offline => HomeSyncStatus.offline,
     };
     // `failure` is re-passed on purpose: `copyWith` drops it when omitted, and
     // a sync tick must not clear a failure the body is still rendering.
-    emit(state.copyWith(syncStatus: syncStatus, failure: state.failure));
+    emit(
+      state.copyWith(
+        syncStatus: syncStatus,
+        syncSnapshot: snapshot,
+        failure: state.failure,
+      ),
+    );
   }
 
   /// HU-04: change the visible month (hero + recent feed update together).

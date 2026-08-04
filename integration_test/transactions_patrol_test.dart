@@ -34,6 +34,7 @@ import 'package:billetudo/features/accounts/presentation/widgets/info_row.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
@@ -1119,4 +1120,158 @@ void main() {
       expect(find.textContaining(r'$150.000 de $500.000'), findsNothing);
     },
   );
+
+  patrolTest(
+    'HU-06 Presupuesto: elegir un presupuesto en el nuevo chip activa el '
+    'chip con su nombre, independiente del chip Fecha',
+    ($) async {
+      await startApp($);
+      await _goToAccountsList($);
+      await _addCashAccount($, 'Efectivo');
+      await _createCategory($, 'Comida');
+
+      // Account-scoped budget: exercises the real `GetActiveBudgets` ->
+      // `WatchBudgetPeriodOptions` -> `BudgetPeriodFilterSheet` chain end to
+      // end, same helper `Fase B1+B2` above already relies on.
+      await _createAccountScopedBudget(
+        $,
+        name: 'Comida del mes',
+        amount: '500000',
+        accountName: 'Efectivo',
+      );
+      expect(find.text('Comida del mes'), findsOneWidget);
+
+      _goToTransactions($);
+      await $.tester.pumpAndSettle();
+
+      // Criterio 3: neutral state before any selection — the chip's own
+      // generic label (`transactionsFilterBudget`), not the budget's name.
+      expect(find.text('Presupuesto'), findsOneWidget);
+      // Criterio 1: the Fecha chip (default "this month", rendered as
+      // `datePeriodLabel` — e.g. "Agosto 2026", never the literal string
+      // "Este mes") coexists, unaffected.
+      final dateChipLabelBefore = _dateChipText($);
+
+      // The Presupuesto chip is the 6th in `TransactionsFilterBar`'s
+      // horizontal `SingleChildScrollView` — off-screen until scrolled into
+      // view, same reasoning as HU-07's "+ Nueva" tag chip: `find.text` still
+      // resolves the (off-screen) widget, but `tap()` at its actual painted
+      // position outside the viewport hits nothing.
+      final budgetChip = find.text('Presupuesto');
+      await $.tester.dragUntilVisible(
+        budgetChip,
+        find.byType(Scrollable).first,
+        const Offset(-200, 0),
+      );
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(budgetChip);
+      await $.tester.pumpAndSettle();
+      expect(find.text('Filtrar por presupuesto'), findsOneWidget);
+
+      // Criterio 2: the sheet lists the active budget with its name — pick
+      // it and apply.
+      await $.tester.tap(find.text('Comida del mes'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Aplicar'));
+      await $.tester.pumpAndSettle();
+
+      // Criterio 3: the chip now shows the chosen budget's own name instead
+      // of the generic label — and Fecha stayed exactly as it was
+      // (independent chips, neither replaces the other).
+      await _expectEventually($, find.text('Comida del mes'), findsOneWidget);
+      expect(find.text('Presupuesto'), findsNothing);
+      expect(find.text(dateChipLabelBefore), findsOneWidget);
+    },
+  );
+
+  patrolTest(
+    'Note autocomplete: a note typed on one transaction suggests itself on '
+    'the next, and picking it fills the field',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Comida');
+
+      _goToTransactions($);
+      await $.tester.pumpAndSettle();
+
+      // First movement: types a brand-new note by hand. Nothing in history
+      // yet, so `GetNoteSuggestions` has nothing to offer — this only
+      // establishes the history entry the second movement will match
+      // against, on the real on-device Drift database (no mocked
+      // repository).
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
+      await $.tester.pumpAndSettle();
+      await _enterAmount($, [1, 0, 0]); // $100 COP
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Comida');
+      await $.tester.enterText(find.byType(TextField), 'Almuerzo oficina');
+      await $.tester.pumpAndSettle();
+      await _saveNewTransaction($, categoryName: 'Comida');
+      await _expectEventually($, find.byType(TransactionRow), findsOneWidget);
+
+      // Second movement: typing a short prefix of that same note now shows
+      // the shared `NoteAutocompleteField` overlay with it as a suggestion.
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
+      await $.tester.pumpAndSettle();
+      await _enterAmount($, [2, 0, 0]); // $200 COP
+      await _tapAccountField($, 'Cuenta');
+      await _pickAccount($, 'Efectivo');
+      await _pickCategory($, 'Comida');
+      await $.tester.enterText(find.byType(TextField), 'Almu');
+      await $.tester.pumpAndSettle();
+
+      await _expectEventually(
+        $,
+        find.byKey(const ValueKey('note-suggestions-dropdown')),
+        findsOneWidget,
+      );
+      final suggestion = find.text('Almuerzo oficina');
+      expect(suggestion, findsOneWidget);
+
+      // Selecting it fills the field with the full note (not just the typed
+      // prefix) and closes the overlay, exactly like `onChanged` typing it
+      // out by hand would have.
+      await $.tester.tap(suggestion);
+      await $.tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('note-suggestions-dropdown')),
+        findsNothing,
+      );
+      expect(
+        $.tester
+            .widget<TextField>(find.byType(TextField))
+            .controller
+            ?.text,
+        'Almuerzo oficina',
+      );
+
+      await _saveNewTransaction($, categoryName: 'Comida');
+
+      // Both movements persisted with the same note text — `TransactionRow`
+      // prefers the note over the category name as its title, so both rows
+      // now read "Almuerzo oficina".
+      await _expectEventually(
+        $,
+        find.text('Almuerzo oficina'),
+        findsNWidgets(2),
+      );
+    },
+  );
+}
+
+/// The Fecha chip's current label (`datePeriodLabel`, e.g. "Agosto 2026"):
+/// the calendar-icon `FilterChipPill` immediately to the right of the
+/// account chip, on `TransactionsFilterBar`. Not a hardcoded string — the
+/// label depends on the device's current month, unlike the fixed "Este mes"
+/// placeholder text that only appears in `DateFilterSheet`'s own field, never
+/// on the chip itself (see `datePeriodLabel`'s own doc comment).
+String _dateChipText(PatrolIntegrationTester $) {
+  final chip = $.tester.widget<FilterChipPill>(
+    find.byWidgetPredicate(
+      (widget) => widget is FilterChipPill && widget.leadingIcon == LucideIcons.calendar,
+    ),
+  );
+  return chip.label;
 }

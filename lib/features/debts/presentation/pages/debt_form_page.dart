@@ -243,6 +243,21 @@ class _DebtFormBodyState extends State<DebtFormBody> {
           direction: state.direction,
           onChanged: cubit.directionChanged,
         ),
+        // Fix 9 (scenario 2): `UpdateDebt` blocks a direction change once the
+        // debt has movements beyond its opening — surfaced here the same way
+        // `DebtFormField`'s `errorText` reads (bodySmall/`$expense-text`),
+        // since the toggle itself has no error slot of its own.
+        if (state.failedField == DebtDraft.fieldDirection) ...[
+          const SizedBox(height: 6),
+          Text(
+            l10n.debtFormErrorDirectionLocked,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.expenseText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+        ],
         const SizedBox(height: 14),
         // Amount héroe (opening balance) + currency pill.
         DebtAmountHeroField(
@@ -316,9 +331,7 @@ class _DebtFormBodyState extends State<DebtFormBody> {
           label: l10n.debtFormDueDateLabel,
           icon: LucideIcons.calendar,
           hint: l10n.debtFormDueDateHint,
-          value: dueDate == null
-              ? null
-              : DebtFormat.dateLong(context, dueDate),
+          value: dueDate == null ? null : DebtFormat.dateLong(context, dueDate),
           errorText: state.failedField == DebtDraft.fieldDueDate
               ? l10n.debtFormErrorDueBeforeStart
               : null,
@@ -534,9 +547,7 @@ class DebtFormBottomBar extends StatelessWidget {
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: FilledButton.icon(
-        onPressed: state.isSaving
-            ? null
-            : context.read<DebtFormCubit>().submit,
+        onPressed: state.isSaving ? null : context.read<DebtFormCubit>().submit,
         style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
         icon: const Icon(LucideIcons.check, size: 18),
         label: Text(

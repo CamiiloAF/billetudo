@@ -95,6 +95,15 @@ void main() {
       expect(draft.amountMinor, 123456);
       expect(draft.amountMinor, isA<int>());
     });
+
+    test(
+      'invariante Metas: rechaza un gasto con goalId, no solo en la UI',
+      () {
+        final result = buildExpenseDraft(goalId: 'goal-1').validated();
+
+        expect(failureOf(result).field, TransactionDraft.fieldGoalId);
+      },
+    );
   });
 
   group('HU-02 — ingreso', () {
@@ -118,6 +127,16 @@ void main() {
 
       expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
     });
+
+    test(
+      'Metas: un ingreso con goalId (bono apartado a una meta) sí se acepta',
+      () {
+        final result = buildIncomeDraft(goalId: 'goal-1').validated();
+
+        expect(result.isRight(), isTrue);
+        expect(result.getRight().toNullable()!.goalId, 'goal-1');
+      },
+    );
   });
 
   group('HU-03 — transferencia', () {
@@ -197,8 +216,8 @@ void main() {
     });
 
     test(
-        'un gasto o ingreso con countsInBudget=true en el input se '
-        'normaliza a false (el flag solo aplica a transferencias)', () {
+        'un gasto con countsInBudget=true en el input se normaliza a false '
+        '(un gasto nunca cuenta como ingreso presupuestable)', () {
       final expenseResult = TransactionDraft(
         accountId: 'acc-1',
         categoryId: 'cat-expense-1',
@@ -212,6 +231,41 @@ void main() {
 
       expect(expenseResult.isRight(), isTrue);
       expect(expenseResult.getRight().toNullable()!.countsInBudget, isFalse);
+    });
+  });
+
+  group('budget-income-counts-in-budget (countsInBudget en income)', () {
+    test(
+        'countsInBudget=false (default) sobrevive tal cual para un ingreso',
+        () {
+      final result = buildIncomeDraft().validated();
+
+      expect(result.isRight(), isTrue);
+      expect(result.getRight().toNullable()!.countsInBudget, isFalse);
+    });
+
+    test(
+        'countsInBudget=true sobrevive tal cual para un ingreso, sin exigir '
+        'categoría extra (income ya la exige por su propia rama)', () {
+      final result = buildIncomeDraft(countsInBudget: true).validated();
+
+      expect(result.isRight(), isTrue);
+      final draft = result.getRight().toNullable()!;
+      expect(draft.countsInBudget, isTrue);
+      expect(draft.categoryId, 'cat-income-1');
+    });
+
+    test(
+        'un ingreso sin categoría sigue rechazado con countsInBudget=true, '
+        'igual que sin el flag — el flag no relaja la regla de income',
+        () {
+      final result = buildIncomeDraft(
+        countsInBudget: true,
+        categoryId: null,
+        categoryKind: null,
+      ).validated();
+
+      expect(failureOf(result).field, TransactionDraft.fieldCategoryId);
     });
   });
 }

@@ -29,6 +29,7 @@ class DebtDraft extends Equatable {
   static const String fieldInterestRateBps = 'interestRateBps';
   static const String fieldStartDate = 'startDate';
   static const String fieldDueDate = 'dueDate';
+  static const String fieldDirection = 'direction';
 
   static const int maxNameLength = 100;
   static const int maxCounterpartyLength = 100;
@@ -126,8 +127,7 @@ class DebtDraft extends Equatable {
     final dueDate = this.dueDate;
     if (dueDate != null) {
       final baseStart = startDate ?? DateTime.now();
-      final startDay =
-          DateTime(baseStart.year, baseStart.month, baseStart.day);
+      final startDay = DateTime(baseStart.year, baseStart.month, baseStart.day);
       final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
       if (!dueDay.isAfter(startDay)) {
         return const Left(

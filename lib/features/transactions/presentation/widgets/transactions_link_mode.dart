@@ -1,70 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/transaction.dart';
 
-/// Turns Movimientos into "link mode" (`g0x859`, Deudas HU-02): the same list,
-/// but with a banner naming the debt, the FAB hidden, and every row tap
-/// attributing that movement to the debt instead of opening its detail.
+/// Turns Movimientos into "link mode" (`g0x859`, Deudas HU-02; reused for
+/// Metas' "Enlazar un movimiento", HU-03): the same list, but with a banner
+/// naming the target (a debt or a goal), the FAB hidden, and every row tap
+/// attributing that movement to it instead of opening its detail.
 ///
-/// A plain value object so `TransactionsPage` stays decoupled from the Deudas
-/// feature — the router builds this with callbacks wired to the debt link
-/// cubit, and the page only reads it.
+/// A plain value object so `TransactionsPage` stays decoupled from both the
+/// Deudas and Metas features — each router builds this with callbacks wired
+/// to its own link cubit, and the page only reads it.
 @immutable
 class TransactionsLinkMode {
   const TransactionsLinkMode({
-    required this.debtLabel,
+    required this.bannerTitle,
+    required this.bannerBody,
     required this.onCancel,
     required this.onLinkTransaction,
-    required this.requiredType,
-    required this.notBefore,
+    this.requiredType,
+    this.notBefore,
   });
 
-  /// Already localized debt context, e.g. "Crédito vehicular · Yo debo".
-  final String debtLabel;
+  /// Already localized banner title, e.g. "Enlazar a Crédito vehicular" or
+  /// "Enlazar a Viaje a Cartagena".
+  final String bannerTitle;
+
+  /// Already localized banner body, e.g. "Elige un movimiento que ya
+  /// registraste; lo atribuimos a esta deuda/meta, no creamos uno nuevo."
+  final String bannerBody;
 
   /// Cancels link mode (the header back button).
   final VoidCallback onCancel;
 
-  /// Attributes the tapped transaction to the debt and returns once done.
+  /// Attributes the tapped transaction to the debt/goal and returns once done.
   final Future<void> Function(String transactionId) onLinkTransaction;
 
-  /// Only movements of this type may be linked as an abono (Deudas HU-02):
-  /// "Yo debo" → `expense`, "Me deben" → `income`
-  /// (`DebtEventRules.cashEventType(direction, payment)`). A movement of any
-  /// other type would push the debt's balance the wrong way, so the list hides
-  /// everything else in link mode.
-  final TransactionType requiredType;
+  /// Restricts which movement types may be linked. `null` means any type is
+  /// eligible (e.g. Metas, HU-03: any registered movement can be attributed
+  /// to a goal). Deudas (HU-02) sets this to the cash-event type the debt's
+  /// direction implies ("Yo debo" → `expense`, "Me deben" → `income`) — a
+  /// movement of any other type would push the debt's balance the wrong way.
+  final TransactionType? requiredType;
 
-  /// Movements dated before the debt started cannot be linked (HU-02): the loan
-  /// did not exist yet. This is the debt's start date (`startDate`, falling back
-  /// to `createdAt`).
-  final DateTime notBefore;
+  /// Movements dated before this cannot be linked — the debt/goal did not
+  /// exist yet. `null` means no lower bound (Metas imposes none).
+  final DateTime? notBefore;
 
-  /// Whether [transaction] is eligible to be linked as an abono: it must be
-  /// [requiredType], not already carry a debt (#4 — a movement already
-  /// attributed to a debt must not be re-linked), and not predate [notBefore]
-  /// (compared by calendar day, so a same-day movement with an earlier time
-  /// still qualifies).
+  /// Whether [transaction] is eligible to be linked: it must match
+  /// [requiredType] (when set), not already carry a debt or a goal (#4 — a
+  /// movement already attributed to one must not be re-linked to another),
+  /// and not predate [notBefore] (compared by calendar day, so a same-day
+  /// movement with an earlier time still qualifies).
   bool accepts(Transaction transaction) {
-    if (transaction.type != requiredType) {
+    if (requiredType != null && transaction.type != requiredType) {
       return false;
     }
-    // #4: a movement already attributed to a debt is not selectable and never
-    // shows in link mode.
-    if (transaction.debtId != null) {
+    // #4: a movement already attributed to a debt or a goal is not
+    // selectable and never shows in link mode.
+    if (transaction.debtId != null || transaction.goalId != null) {
       return false;
+    }
+    final floor = notBefore;
+    if (floor == null) {
+      return true;
     }
     final day = DateTime(
       transaction.date.year,
       transaction.date.month,
       transaction.date.day,
     );
-    final floor = DateTime(notBefore.year, notBefore.month, notBefore.day);
-    return !day.isBefore(floor);
+    return !day.isBefore(DateTime(floor.year, floor.month, floor.day));
   }
 }
 
@@ -80,7 +88,6 @@ class TransactionsLinkBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       child: Container(
@@ -106,7 +113,7 @@ class TransactionsLinkBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.debtLinkBannerTitle(linkMode.debtLabel),
+                    linkMode.bannerTitle,
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -115,7 +122,7 @@ class TransactionsLinkBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    l10n.debtLinkBannerBody,
+                    linkMode.bannerBody,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

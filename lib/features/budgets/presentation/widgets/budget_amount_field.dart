@@ -12,10 +12,13 @@ import '../../../../core/widgets/keyboard_done_toolbar.dart';
 /// (`EA3R5` — `$muted`, radius 10, the ISO code at 13/700 plus a
 /// `chevron-down`) that opens the currency picker.
 ///
-/// The typed figure carries the currency's own decimals (COP has none), so a
-/// prefilled amount never reads `4.500.000,00`, and it is always prefixed by
-/// the currency symbol — `KP13F` reads `$0` empty and must read `$4.500.000`
-/// filled, never a bare `4.500.000`.
+/// The prefilled/hint figure follows the currency's own display decimals
+/// (COP has none), so an empty field reads `$0` and a filled one
+/// `$4.500.000`, never `$4.500.000,00` — `KP13F`. Bugfix (2026-07-28): what the
+/// user may *type* is a separate concern (`MoneyFormatter.inputDecimals`,
+/// always two, same as `GoalAmountHeroField`/`DebtAmountHeroField`) — using the
+/// display baseline there used to silently strip any decimal the user typed,
+/// including for a non-COP currency.
 ///
 /// [MoneyInputFormatter] keeps the figure grouped while the user types
 /// (`4500000` → `4.500.000`) without moving the caret, so what is being typed
@@ -114,7 +117,14 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final decimals = MoneyFormatter.currencyDecimals(widget.currency);
+    // The hint/prefill baseline (COP shows no forced cents, `$0` not `$0,00`)
+    // is deliberately decoupled from what the user may *type*: storage always
+    // keeps two decimals, so entry must allow them in every currency — same
+    // pattern as `GoalAmountHeroField`/`DebtAmountHeroField`
+    // (`MoneyFormatter.inputDecimals`). Using `currencyDecimals` for the input
+    // formatter used to silently strip any decimal separator the user typed.
+    final displayDecimals = MoneyFormatter.currencyDecimals(widget.currency);
+    final inputDecimals = MoneyFormatter.inputDecimals(widget.currency);
     final amountMinor = widget.amountMinor;
     final errorText = widget.errorText;
     const style = TextStyle(
@@ -159,7 +169,9 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
                     onFieldSubmitted: widget.onSubmitted == null
                         ? null
                         : (_) => widget.onSubmitted!.call(),
-                    inputFormatters: [MoneyInputFormatter(decimals: decimals)],
+                    inputFormatters: [
+                      MoneyInputFormatter(decimals: inputDecimals),
+                    ],
                     style: style.copyWith(color: colors.textPrimary),
                     decoration: InputDecoration(
                       isCollapsed: true,
@@ -168,7 +180,10 @@ class _BudgetAmountFieldState extends State<BudgetAmountField> {
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
-                      hintText: _money.formatAmount(0, decimalDigits: decimals),
+                      hintText: _money.formatAmount(
+                        0,
+                        decimalDigits: displayDecimals,
+                      ),
                       hintStyle: style.copyWith(color: colors.textSecondary),
                     ),
                   ),

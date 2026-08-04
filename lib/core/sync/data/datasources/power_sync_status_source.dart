@@ -31,5 +31,11 @@ class PowerSyncStatusSource implements SyncStatusSource {
         connected: status.connected,
         uploading: status.uploading,
         downloading: status.downloading,
+        lastSyncedAt: status.lastSyncedAt,
+        // PowerSync leaves `hasSynced` null until it knows; unknown reads as
+        // "not yet", which is what a fresh install should show.
+        hasSynced: status.hasSynced ?? false,
+        uploadError: status.uploadError,
+        downloadError: status.downloadError,
       );
 }

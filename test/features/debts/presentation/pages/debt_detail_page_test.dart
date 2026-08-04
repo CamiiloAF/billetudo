@@ -1,6 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/error_state.dart';
+import 'package:billetudo/core/widgets/load_more_button.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
@@ -237,5 +238,138 @@ void main() {
     await tester.tap(find.byType(DebtLedgerRow).first);
     await tester.pump();
     expect(find.text('Este abono no movió ninguna cuenta'), findsOneWidget);
+  });
+
+  group('HU-04: paginación "Ver más" del ledger (8/+8)', () {
+    DebtDetailState buildManyRowsState(int rowCount) {
+      final ledger = [
+        for (var i = 0; i < rowCount - 1; i++)
+          buildLedgerEntry(
+            id: 'row$i',
+            kind: DebtLedgerKind.cashPayment,
+            effectMinor: -10000,
+            transactionId: 't$i',
+          ),
+        buildLedgerEntry(
+          id: 'open',
+          kind: DebtLedgerKind.opening,
+          effectMinor: 1000000,
+        ),
+      ];
+      return DebtDetailState(
+        status: DebtDetailStatus.ready,
+        detail: buildDebtDetail(
+          debt: buildDebt(id: 'd1', name: 'Tarjeta'),
+          balance: buildBalance(
+            principalMinor: 1000000,
+            totalIncreasesMinor: 1000000,
+            totalDecreasesMinor: (rowCount - 1) * 10000,
+          ),
+          ledger: ledger,
+        ),
+        runningBalances: [
+          for (var i = 0; i < rowCount - 1; i++) 1000000 - (i + 1) * 10000,
+          1000000,
+        ],
+      );
+    }
+
+    testWidgets('con 8 movimientos o menos no muestra el botón',
+        (tester) async {
+      await pump(tester, buildManyRowsState(8));
+      expect(find.byType(DebtLedgerRow), findsNWidgets(8));
+      expect(find.byType(LoadMoreButton), findsNothing);
+    });
+
+    testWidgets(
+        'con más de 8 revela sólo la primera página y el botón carga 8 más '
+        'por toque', (tester) async {
+      when(cubit.loadMoreLedger).thenReturn(null);
+      final manyRowsState = buildManyRowsState(20);
+      await pump(tester, manyRowsState);
+
+      expect(find.byType(DebtLedgerRow), findsNWidgets(8));
+      expect(find.byType(LoadMoreButton), findsOneWidget);
+
+      await tester.tap(find.byType(LoadMoreButton));
+      await tester.pump();
+      verify(cubit.loadMoreLedger).called(1);
+    });
+  });
+
+  group('fix: snackbar de éxito al completar/cerrar la deuda', () {
+    testWidgets(
+        'closeSuccess muestra "Deuda completada" y se descarta con '
+        'dismissCloseSuccess (sin importar cuál de los 3 frentes disparó '
+        'el cierre)', (tester) async {
+      whenListen(
+        cubit,
+        Stream.value(
+          readyState.copyWith(closeSuccess: () => const DebtCloseSuccess()),
+        ),
+        initialState: readyState,
+      );
+      when(cubit.dismissCloseSuccess).thenReturn(null);
+
+      await pump(tester, readyState);
+      await tester.pump();
+
+      expect(find.text('Deuda completada'), findsOneWidget);
+      verify(cubit.dismissCloseSuccess).called(1);
+    });
+  });
+
+  group('fix 5: deuda saldada (100%) pero aún no cerrada', () {
+    final settledDetail = buildDebtDetail(
+      debt: buildDebt(id: 'd1', name: 'Préstamo a mamá'),
+      balance: buildBalance(
+        principalMinor: 2000000,
+        totalIncreasesMinor: 2000000,
+        totalDecreasesMinor: 2000000,
+      ),
+      ledger: [
+        buildLedgerEntry(
+          id: 'pay',
+          kind: DebtLedgerKind.cashPayment,
+          effectMinor: -2000000,
+          transactionId: 't1',
+        ),
+        buildLedgerEntry(
+          id: 'open',
+          kind: DebtLedgerKind.opening,
+          effectMinor: 2000000,
+        ),
+      ],
+    );
+    final settledState = DebtDetailState(
+      status: DebtDetailStatus.ready,
+      detail: settledDetail,
+      runningBalances: const [0, 2000000],
+    );
+
+    testWidgets(
+        'el CTA fijo cambia a "Completar deuda" y ya no muestra "Registrar '
+        'abono"', (tester) async {
+      await pump(tester, settledState);
+      expect(find.text('Completar deuda'), findsOneWidget);
+      expect(find.text('Registrar abono'), findsNothing);
+    });
+
+    testWidgets('tocar "Completar deuda" llama a closeDebt en el cubit',
+        (tester) async {
+      when(cubit.closeDebt).thenAnswer((_) async {});
+      await pump(tester, settledState);
+
+      await tester.tap(find.text('Completar deuda'));
+      await tester.pump();
+
+      verify(cubit.closeDebt).called(1);
+    });
+
+    testWidgets('ya no muestra la card "Configurar cuota"', (tester) async {
+      await pump(tester, settledState);
+      expect(find.byType(DebtConfigureInstallmentCard), findsNothing);
+      expect(find.text('Configurar cuota'), findsNothing);
+    });
   });
 }

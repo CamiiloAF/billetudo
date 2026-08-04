@@ -12,21 +12,28 @@ import '../../../../core/theme/app_theme.dart';
 /// indistinguishable from an ordinary movement that merely shares its
 /// category.
 ///
-/// Not tappable yet: wiring navigation to the debt's own detail page would
-/// need the router to inject a callback here (same decoupling pattern as
-/// `TransactionsLinkMode`), left for a follow-up so this stays a pure
-/// read-only indicator for now.
+/// Tappable when [onTap] is set: the router wires it into the linked debt's
+/// own detail page (same decoupling pattern as `TransactionsLinkMode` —
+/// this widget never navigates itself, it only fires the callback).
 class TransactionDebtLinkBadge extends StatelessWidget {
-  const TransactionDebtLinkBadge({required this.debtName, super.key});
+  const TransactionDebtLinkBadge({
+    required this.debtName,
+    this.onTap,
+    super.key,
+  });
 
   final String debtName;
+
+  /// Opens the linked debt's detail page. `null` keeps the badge inert (e.g.
+  /// tests that only assert the read-only content).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return Container(
+    final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: colors.primarySoft,
@@ -53,6 +60,18 @@ class TransactionDebtLinkBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    final tap = onTap;
+    if (tap == null) {
+      return content;
+    }
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: tap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        child: content,
       ),
     );
   }

@@ -51,7 +51,6 @@ void main() {
     VoidCallback? onOpenScheduledPayments,
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
-    VoidCallback? onOpenGoals,
     VoidCallback? onOpenLogin,
   }) async {
     final cubit = MockHomeCubit();
@@ -77,8 +76,8 @@ void main() {
             onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
             onOpenDebts: onOpenDebts ?? () {},
             onOpenReports: onOpenReports ?? () {},
-            onOpenGoals: onOpenGoals ?? () {},
             onOpenLogin: onOpenLogin ?? () {},
+            onOpenSyncStatus: () {},
           ),
         ),
       ),
@@ -169,7 +168,7 @@ void main() {
     await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(4));
+    expect(find.byType(QuickAccessChip), findsNWidgets(3));
   });
 
   testWidgets(
@@ -178,7 +177,7 @@ void main() {
     await pumpHome(tester, HomeState.initial(month));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(4));
+    expect(find.byType(QuickAccessChip), findsNWidgets(3));
   });
 
   testWidgets(
@@ -187,7 +186,6 @@ void main() {
     var scheduledTapped = 0;
     var debtsTapped = 0;
     var reportsTapped = 0;
-    var goalsTapped = 0;
 
     await pumpHome(
       tester,
@@ -195,12 +193,11 @@ void main() {
       onOpenScheduledPayments: () => scheduledTapped++,
       onOpenDebts: () => debtsTapped++,
       onOpenReports: () => reportsTapped++,
-      onOpenGoals: () => goalsTapped++,
     );
 
     final chips =
         tester.widgetList<QuickAccessChip>(find.byType(QuickAccessChip));
-    expect(chips.length, 4);
+    expect(chips.length, 3);
 
     for (final chip in chips) {
       await tester.tap(find.byWidget(chip));
@@ -210,7 +207,6 @@ void main() {
     expect(scheduledTapped, 1);
     expect(debtsTapped, 1);
     expect(reportsTapped, 1);
-    expect(goalsTapped, 1);
   });
 
   group('icono de sync interactivo (bugfix item 6)', () {

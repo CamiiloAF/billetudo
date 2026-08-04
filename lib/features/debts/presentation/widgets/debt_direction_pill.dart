@@ -16,6 +16,12 @@ import '../utils/debt_format.dart';
 /// `$text-primary` treatment regardless of direction, with a past-tense label
 /// ("Debía"/"Me debían") — the closed list never colors a pill green, even for
 /// a debt that used to be `owedToMe` (`vaNHd`).
+///
+/// This is a documented, explicit design decision (fix 5, checked against
+/// `design-system/billetudo/pages/deudas.md` — "Debt Card en estado cerrado":
+/// pill neutro, asimetría intencional vs. the closed summary card's "Me
+/// pagaron", which does stay `$income-text` green). Not a bug — do not
+/// "correct" it back to green without re-opening that decision with the user.
 class DebtDirectionPill extends StatelessWidget {
   const DebtDirectionPill({
     required this.direction,

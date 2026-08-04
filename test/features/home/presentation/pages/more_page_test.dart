@@ -1,5 +1,5 @@
+import 'package:billetudo/core/widgets/coming_soon_badge.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
-import 'package:billetudo/features/home/presentation/widgets/coming_soon_badge.dart';
 import 'package:billetudo/features/home/presentation/widgets/more_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,8 +11,10 @@ void main() {
     WidgetTester tester, {
     VoidCallback? onAccounts,
     VoidCallback? onCategories,
+    VoidCallback? onDebts,
     VoidCallback? onScheduledPayments,
     VoidCallback? onGoals,
+    VoidCallback? onReports,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -22,8 +24,10 @@ void main() {
         MorePage(
           onOpenAccounts: onAccounts ?? () {},
           onOpenCategories: onCategories ?? () {},
+          onOpenDebts: onDebts ?? () {},
           onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenGoals: onGoals ?? () {},
+          onOpenReports: onReports ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -57,13 +61,22 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías, Pagos programados y Ajustes están vivas (sin badge Próximamente)',
+      'Cuentas, Categorías, Deudas, Pagos programados, Metas, Gráficas e '
+      'informes y Ajustes están vivas (sin badge Próximamente)',
       (tester) async {
     await pumpMore(tester);
 
-    // Four live rows, four not-yet-built ones carrying the badge (Deudas,
-    // Metas, Gráficas e informes, Importar y exportar).
-    expect(find.byType(ComingSoonBadge), findsNWidgets(4));
+    // Scroll every row into the lazy ListView's viewport before counting
+    // badges, otherwise unbuilt rows below the fold would undercount.
+    await tester.scrollUntilVisible(
+      find.text('Ajustes'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+
+    // Seven live rows, one not-yet-built one carrying the badge (Importar y
+    // exportar).
+    expect(find.byType(ComingSoonBadge), findsOneWidget);
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -81,10 +94,11 @@ void main() {
 
     expect(badgeOf('Cuentas'), isNull);
     expect(badgeOf('Categorías'), isNull);
+    expect(badgeOf('Deudas'), isNull);
     expect(badgeOf('Pagos programados'), isNull);
+    expect(badgeOf('Metas'), isNull);
+    expect(badgeOf('Gráficas e informes'), isNull);
     expect(badgeOf('Ajustes'), isNull);
-    expect(badgeOf('Deudas'), isNotNull);
-    expect(badgeOf('Metas'), isNotNull);
   });
 
   testWidgets('tocar Ajustes enruta a Ajustes', (tester) async {
@@ -137,28 +151,43 @@ void main() {
   });
 
   testWidgets(
-      'tocar Cuentas, Categorías y Pagos programados enruta a sus destinos vivos',
-      (tester) async {
+      'tocar Cuentas, Categorías, Deudas, Pagos programados y Metas enruta a '
+      'sus destinos vivos', (tester) async {
     var accounts = 0;
     var categories = 0;
+    var debts = 0;
     var scheduledPayments = 0;
+    var goals = 0;
     await pumpMore(
       tester,
       onAccounts: () => accounts++,
       onCategories: () => categories++,
+      onDebts: () => debts++,
       onScheduledPayments: () => scheduledPayments++,
+      onGoals: () => goals++,
     );
 
     await tester.tap(find.text('Cuentas'));
     await tester.pump();
     await tester.tap(find.text('Categorías'));
     await tester.pump();
+    await tester.tap(find.text('Deudas'));
+    await tester.pump();
     await tester.tap(find.text('Pagos programados'));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Metas'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(find.text('Metas'));
     await tester.pump();
 
     expect(accounts, 1);
     expect(categories, 1);
+    expect(debts, 1);
     expect(scheduledPayments, 1);
+    expect(goals, 1);
   });
 
   testWidgets('tocar un destino "Próximamente" pasa su etiqueta al callback',
@@ -166,9 +195,36 @@ void main() {
     final opened = <String>[];
     await pumpMore(tester, onComingSoon: opened.add);
 
-    await tester.tap(find.text('Deudas'));
+    // Now the second-to-last row (after "Gráficas e informes" was added
+    // above it): scrollUntilVisible alone can leave it right at the
+    // viewport edge (fails hit-testing) — ensureVisible settles it, same
+    // fix as "Cerrar sesión" below.
+    await tester.scrollUntilVisible(
+      find.text('Importar y exportar'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.ensureVisible(find.text('Importar y exportar'));
+    await tester.pump();
+    await tester.tap(find.text('Importar y exportar'));
     await tester.pump();
 
-    expect(opened, ['Deudas']);
+    expect(opened, ['Importar y exportar']);
+  });
+
+  testWidgets('tocar Gráficas e informes enruta a la feature real',
+      (tester) async {
+    var reports = 0;
+    await pumpMore(tester, onReports: () => reports++);
+
+    await tester.scrollUntilVisible(
+      find.text('Gráficas e informes'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(find.text('Gráficas e informes'));
+    await tester.pump();
+
+    expect(reports, 1);
   });
 }

@@ -68,6 +68,20 @@ void main() {
     expect(reported, -1);
   });
 
+  testWidgets(
+      'COP still accepts a typed decimal separator (bugfix: storage always '
+      'keeps two decimals, so entry must allow them in every currency, even '
+      'one whose display baseline has none)', (tester) async {
+    int? reported;
+    await pump(tester, onChanged: (value) => reported = value);
+
+    await tester.enterText(find.byType(TextFormField), '1234,56');
+    await tester.pump();
+
+    expect(find.text('1.234,56'), findsOneWidget);
+    expect(reported, 123456);
+  });
+
   testWidgets('a currency with cents keeps them', (tester) async {
     await pump(tester, amountMinor: 123456, currency: 'USD');
 

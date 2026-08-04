@@ -4,6 +4,7 @@ import 'dart:ui' show Locale;
 import 'package:drift/drift.dart' show Value;
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
 import '../../../../core/l10n/app_locale.dart';
@@ -24,6 +25,7 @@ import '../../domain/entities/debt_with_balance.dart';
 import '../../domain/entities/debts_summary.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../../domain/services/debt_balance_calculator.dart';
+import '../../domain/services/debt_category_seed.dart';
 import '../../domain/services/debt_event_rules.dart';
 import '../datasources/debts_local_datasource.dart';
 import '../models/debt_cash_event_mapper.dart';
@@ -40,25 +42,11 @@ import '../models/debt_mapper.dart';
 /// rows this repository gathers.
 @LazySingleton(as: DebtRepository)
 class DebtRepositoryImpl implements DebtRepository {
-  const DebtRepositoryImpl(this._local, this._calculator);
+  const DebtRepositoryImpl(this._local, this._calculator, this._crash);
 
   final DebtsLocalDatasource _local;
   final DebtBalanceCalculator _calculator;
-
-  /// The debt-related bucket the opening movement is auto-categorized into,
-  /// by direction — same `category_seeds` catalog `AdjustAccountBalance` reuses
-  /// for its own auto-assigned "Otros" categories. `iOwe` (a debt the user
-  /// took on) lands in "Deudas"; `owedToMe` (a loan the user gave) lands in
-  /// "Cobro de préstamos", so the movement always shows up under a real,
-  /// debt-labeled category instead of "Sin categoría".
-  static const String _iOweOpeningCategoryId = 'seed-debts';
-  static const String _owedToMeOpeningCategoryId = 'seed-loan-collections';
-
-  static String _openingCategoryId(DebtDirection direction) =>
-      switch (direction) {
-        DebtDirection.iOwe => _iOweOpeningCategoryId,
-        DebtDirection.owedToMe => _owedToMeOpeningCategoryId,
-      };
+  final CrashReporter _crash;
 
   /// This runs in `data/`, with no `BuildContext` to read the device's
   /// active locale from — same constraint HU-06 category seeding hit, so it
@@ -240,7 +228,7 @@ class DebtRepositoryImpl implements DebtRepository {
             .copyWith(principalMinor: const Value(0));
         final movementCompanion = db.TransactionsCompanion.insert(
           accountId: accountId,
-          categoryId: Value(_openingCategoryId(draft.direction)),
+          categoryId: Value(DebtCategorySeed.categoryIdFor(draft.direction)),
           amountMinor: draft.principalMinor,
           currency: draft.currency,
           type: TransactionMapper.typeToDb(type),
@@ -372,6 +360,7 @@ class DebtRepositoryImpl implements DebtRepository {
     required TransactionType type,
     required String currency,
     required DateTime date,
+    required bool countsInBudget,
     String? note,
     String? categoryId,
   }) =>
@@ -388,6 +377,7 @@ class DebtRepositoryImpl implements DebtRepository {
             note: Value(note),
             source: const Value(db.TxSource.manual),
             debtId: Value(debtId),
+            countsInBudget: Value(countsInBudget),
             createdAt: Value(now),
             updatedAt: Value(now.millisecondsSinceEpoch),
           ),
@@ -414,11 +404,27 @@ class DebtRepositoryImpl implements DebtRepository {
         if (debt == null) {
           return Left(NotFoundFailure('debt "$debtId" does not exist'));
         }
+        final transaction = await _local.getTransaction(transactionId);
+        if (transaction == null) {
+          return Left(
+            NotFoundFailure('transaction "$transactionId" does not exist'),
+          );
+        }
         final now = DateTime.now();
+        // See the interface doc: a repago recibido (owedToMe + income) forces
+        // countsInBudget = true on link, same semantics as registerCashEvent.
+        // Every other combination leaves it as-is (Value.absent()).
+        final forceCountsInBudget = DebtEventRules.countsInBudgetFor(
+          direction: DebtMapper.toEntity(debt).direction,
+          type: TransactionMapper.typeToDomain(transaction.type),
+        );
         final linked = await _local.linkTransaction(
           transactionId,
           db.TransactionsCompanion(
             debtId: Value(debtId),
+            countsInBudget: forceCountsInBudget
+                ? const Value(true)
+                : const Value.absent(),
             updatedAt: Value(now.millisecondsSinceEpoch),
           ),
         );
@@ -473,29 +479,43 @@ class DebtRepositoryImpl implements DebtRepository {
     return byDebt;
   }
 
+  /// Turns any infrastructure exception into a `Failure`, so nothing escapes
+  /// the data layer as a raw exception.
   FutureResult<T> _guard<T>(FutureResult<T> Function() body) async {
     try {
       return await body();
     } catch (e, st) {
+      // Report so the failure is never silent: dev prints it (NoopCrashReporter
+      // in debug), prod ships it to Sentry (SentryCrashReporter).
+      await _crash.recordError(e, st, context: 'debts query');
       return Left(
         DatabaseFailure('debts query failed', cause: e, stackTrace: st),
       );
     }
   }
 
+  /// Same for streams: a query error becomes a `Left` **emission** instead of
+  /// a stream error, so the cubit can render the error state without the
+  /// subscription dying.
   Stream<Result<T>> _guardStream<T>(Stream<Result<T>> source) =>
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'debts stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            // Same visibility as [_guard]: dev prints, prod ships to Sentry.
+            unawaited(
+              _crash.recordError(error, stackTrace, context: 'debts stream'),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'debts stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       );
 

@@ -1,3 +1,4 @@
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_header.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,79 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  /// HU-08 suma el cuarto estado: `cloud-alert` en `$amber`, nunca el rojo
+  /// destructivo — hay cambios esperando, nada está roto y a nadie se le está
+  /// regañando.
+  testWidgets(
+      'atención: ícono cloud-alert y label "Cambios sin subir" '
+      '(HU-08)', (tester) async {
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.attention));
+
+    expect(find.byIcon(LucideIcons.cloudAlert), findsOneWidget);
+    expect(semanticsLabelOf(tester), 'Cambios sin subir');
+  });
+
+  testWidgets('atención: el ícono va en ámbar, jamás en el rojo destructivo',
+      (tester) async {
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.attention));
+
+    final context = tester.element(find.byType(SyncIndicator));
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final icon = tester.widget<Icon>(find.byIcon(LucideIcons.cloudAlert));
+
+    expect(icon.color, colors.amber);
+    expect(icon.color, isNot(colors.expense));
+  });
+
+  /// El punto es la señal NO cromática, y no es opcional: a 18px `cloud-alert`
+  /// y `cloud-check` tienen casi la misma silueta, así que en escala de grises
+  /// el glifo solo no distingue nada.
+  testWidgets('atención: el punto está presente y solo en ese estado',
+      (tester) async {
+    Iterable<Container> dots(WidgetTester tester) => tester
+        .widgetList<Container>(
+          find.descendant(
+            of: find.byType(SyncIndicator),
+            matching: find.byType(Container),
+          ),
+        )
+        .where(
+            (c) => (c.decoration! as BoxDecoration).shape == BoxShape.circle);
+
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.attention));
+    expect(dots(tester), isNotEmpty);
+
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.synced));
+    expect(dots(tester), isEmpty);
+  });
+
+  testWidgets('atención: no gira (no es progreso, es espera)', (tester) async {
+    await tester
+        .pumpHomeWidget(const SyncIndicator(status: HomeSyncStatus.attention));
+
+    expect(controllerOf(tester).isAnimating, isFalse);
+  });
+
+  testWidgets('atención con onTap: área de toque de 44x44 (HU-08)',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      SyncIndicator(status: HomeSyncStatus.attention, onTap: () {}),
+    );
+
+    final size = tester.getSize(
+      find.descendant(
+        of: find.byType(SyncIndicator),
+        matching: find.byType(InkResponse),
+      ),
+    );
+    expect(size.width, 44);
+    expect(size.height, 44);
+  });
 
   testWidgets('sincronizando: el ícono de refresco gira (HU-10)',
       (tester) async {

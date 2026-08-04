@@ -1,3 +1,5 @@
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_cubit.dart';
+import 'package:billetudo/core/sync/presentation/cubit/sync_status_state.dart';
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
@@ -25,6 +27,9 @@ class MockAppSettingsCubit extends MockCubit<AppSettingsState>
 
 class MockThemeModeCubit extends MockCubit<ThemeMode>
     implements ThemeModeCubit {}
+
+class MockSyncStatusCubit extends MockCubit<SyncStatusState>
+    implements SyncStatusCubit {}
 
 /// Ajustes, both business states named in `design-system/billetudo/pages/auth.md`:
 ///
@@ -74,6 +79,14 @@ void main() {
       initialState: ThemeMode.system,
     );
 
+    final syncStatusCubit = MockSyncStatusCubit();
+    when(() => syncStatusCubit.state).thenReturn(const SyncStatusState());
+    whenListen(
+      syncStatusCubit,
+      const Stream<SyncStatusState>.empty(),
+      initialState: const SyncStatusState(),
+    );
+
     await pumpGolden(
       tester,
       MultiBlocProvider(
@@ -81,11 +94,13 @@ void main() {
           BlocProvider(create: (_) => AuthCubit(watchAuthSession, signOut)),
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
+          BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
         ],
         child: SettingsPage(
           onOpenLogin: () {},
           onOpenDeleteAccount: () {},
           onOpenComingSoon: (_) {},
+          onOpenSyncStatus: () {},
         ),
       ),
       brightness: brightness,

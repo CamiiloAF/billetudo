@@ -18,7 +18,9 @@
 
 ### Paleta de color
 
-35 variables definidas en `billetudo.pen` (`get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
+43 variables definidas en `billetudo.pen` (42 de color + `font-body`; ver `get_variables`), todas con soporte de tema `light`/`dark` salvo donde se indica. La tabla de abajo no las recoge todas — faltan documentar `track`, `track-overlay`, `month-chip-bg` y `primary-data` (conteo corregido el 2026-07-28: el `.md` decia 35).
+
+**`primary-data` (añadida el 2026-07-28)** es el violeta de marca **cuando pinta un dato**, no identidad: arcos de dona, series de grafica, barras de avance. Claro `#6C5CE7` (identico a `primary`, el claro no cambia); oscuro `#8F7BF2` en vez de `#6D4FE0`. Motivo: `primary` oscuro daba **exactamente 3.00:1** sobre `surface` — el minimo de WCAG 1.4.11 para objetos graficos, sin margen; `primary-data` oscuro da 4.80:1. Usar `primary` para identidad (botones, FAB, chips, tab activo) y `primary-data` para relleno de dato. **Migracion pendiente de aprobacion** (nota `p1t42T` del `.pen`): `FSL69` (barra de presupuesto), `q1qGr` y `EB2TX` (anillos de meta) siguen en `primary` y deberian migrar — eso cierra el "tema sistemico pendiente" que esta seccion anota en Accesibilidad. **Manda el `.pen`: ante cualquier duda, `get_variables`.** **Nunca hardcodear un hex en una pantalla nueva — usar siempre la variable.**
 
 | Token | Claro | Oscuro | Uso |
 |-------|-------|--------|-----|
@@ -49,7 +51,7 @@
 | `skeleton` | `#ECEBF3` | `#45455F` | **Relleno de bloques placeholder de skeleton (estados de carga).** Claro = idéntico a `border` (el skeleton claro no cambia); oscuro deliberadamente más luminoso que `border` (`#2A2A3D`) para que el skeleton se lea sin gritar (~1.9:1 sobre `background`, ~1.77:1 sobre `surface`) — `border` oscuro daba ~1.25:1, casi invisible. Usar SOLO para rellenos placeholder de skeleton, nunca para bordes/divisores reales (esos siguen en `border`). Disponible para reusar en skeletons de otras features (Cuentas/Categorías/Movimientos). |
 | `text-primary` | `#1C1B29` | `#F4F3FA` | Texto principal. |
 | `text-secondary` | `#6B6980` | `#9A98B5` | Texto secundario/metadatos. |
-| `segment-inactive-text` | `#5F5D73` | `#9A98B5` (= `text-secondary` oscuro) | Label del segmento **INACTIVO** del `Segmented Control` (`hFu41`). `text-secondary` sobre `muted` daba ~4.4:1 en claro (falla AA 4.5); este token calibrado sube a ~5.3:1 en claro manteniéndose más tenue que el activo (`text-primary` ~13:1). En oscuro reusa el valor de `text-secondary` (~6:1, ya pasaba → cero cambio visual). Mismo patrón que `expense-text`/`income-text`. Usar solo para labels inactivos de segmented controls. |
+| `segment-inactive-text` | `#5F5D73` | `#9A98B5` (= `text-secondary` oscuro) | Label del segmento **INACTIVO** del `Segmented Control` (`hFu41`). `text-secondary` sobre `muted` daba ~4.4:1 en claro (falla AA 4.5); este token calibrado sube a ~5.3:1 en claro manteniéndose más tenue que el activo (`text-primary` ~13:1). En oscuro reusa el valor de `text-secondary` (~6:1, ya pasaba → cero cambio visual). Mismo patrón que `expense-text`/`income-text`. **Alcance ampliado el 2026-07-28:** ya no es solo para segmented controls — es el token para **cualquier label o glifo apagado sobre `muted`**, incluidos los CTA en estado inerte (ej. "Sincronizando…"). `text-secondary` sobre `muted` mide **4.56:1**, que pasa AA por un 1% y solo si el texto califica como grande — un label de 15px/700 **no** califica (umbral 18.66px). Si vas a apagar texto sobre `muted`, usa este token, nunca `text-secondary`. |
 | `on-primary` | `#FFFFFF` (fijo) | — | Texto/iconos sobre superficies `primary`. Usar SIEMPRE solido, nunca traslucido (ver Accesibilidad). |
 | `income` | `#22C55E` | `#34D399` | Semantica: monto positivo/ingreso. Usado en Cuentas (deuda de tarjeta ya saldada, saldos positivos) ademas de Transacciones. |
 | `income-text` | `#166534` | `#34D399` (sin cambio) | **Usar en vez de `income` para texto de tamaño normal/mediano** (ej. `Amount Value` del formulario de Ingreso, 36-40px pero no calificando como "texto grande" por debajo de ~800 weight en algunos casos limite). Motivo: `income` (`#22C55E`) sobre `background` da solo ~2.07:1 en claro, muy por debajo de cualquier umbral WCAG. `income-text` calibrado a ~6.46:1 en claro; en oscuro `income` (`#34D399`) ya pasa por si solo asi que `income-text` reusa el mismo valor sin cambio. Mismo patron que `expense`/`expense-text`. |
@@ -63,7 +65,7 @@
 
 `mint`/`sky`/`peach` en modo claro fueron oscurecidos a proposito respecto a su primer intento (`#22C55E`/`#4C9AFF`/`#FF8A65`) — esos valores originales fallaban el contraste minimo de icono/grafico (3:1 WCAG) contra su propio `-soft`. Ver seccion Accesibilidad. Los 4 colores agregados en la ampliacion de la paleta decorativa (`coral`, `amber`, `teal`, `indigo`) se calibraron con la misma metodologia, verificando contraste ≥3:1 contra su propio `-soft` en ambos temas antes de fijar el hex final.
 
-**`coral`/`teal`/`indigo` (+ sus `-soft`) estan definidos en el `.pen` pero SIN uso actual** — se agregaron para un selector de color de cuenta que el usuario decidio descartar (las cuentas usan icono/color estandar segun su tipo, sin personalizacion). Quedan disponibles para una futura feature que necesite mas variedad de paleta decorativa (ya calibrados y verificados), no se borraron por no romper nada al dejarlos. **`amber` ya tiene uso real** (Presupuestos, HU-12: "riesgo de sobregiro proyectado" — ver `pages/presupuestos.md`), como excepcion documentada a la regla general de "prohibido semaforo por cercania al limite": ese caso es proximidad de *gasto real* ya materializado; HU-12 es una *proyeccion* de pagos aun no ejecutados, un caso distinto.
+**`teal`/`indigo` (+ sus `-soft`) estan definidos en el `.pen` pero SIN uso actual** — se agregaron para un selector de color de cuenta que el usuario decidio descartar (las cuentas usan icono/color estandar segun su tipo, sin personalizacion). Quedan disponibles para una futura feature que necesite mas variedad de paleta decorativa (ya calibrados y verificados), no se borraron por no romper nada al dejarlos. **`coral` ya tiene uso real** (Gráficas, tab Categorías: icono/barra/arco de dona de la categoria "Salud" — ver `pages/graficas.md`, es el par adyacente mas cercano a `peach` en matiz). **`amber` ya tiene uso real** (Presupuestos, HU-12: "riesgo de sobregiro proyectado" — ver `pages/presupuestos.md`), como excepcion documentada a la regla general de "prohibido semaforo por cercania al limite": ese caso es proximidad de *gasto real* ya materializado; HU-12 es una *proyeccion* de pagos aun no ejecutados, un caso distinto.
 
 **Pendiente para cuando se genere el tema oscuro de un selector de color (ej. Selector de Icono y Color de Cuentas):** el patron de "check blanco (`$on-primary`) superpuesto sobre un swatch solido" (usado para marcar el color seleccionado) pasa contraste ≥3:1 en modo CLARO contra los 8 colores de la paleta decorativa, pero en modo OSCURO solo `primary` (5.46:1) pasa — `mint`/`sky`/`peach`/`coral`/`amber`/`teal`/`indigo` se aclaran en oscuro (pensados para texto/icono sobre fondo `-soft`, no como fondo solido detras de blanco) y el check blanco cae a 1.6-3.0:1 en esos 7. **Antes de generar la copia oscura de cualquier pantalla con este patron**, verificar contraste real por swatch y, para los 7 colores que fallan con blanco, usar un check oscuro (ej. `#1C1B29`, mismo valor que `text-primary` claro) en su lugar — sobreescribir el `fill` del check por instancia segun el swatch, no asumir que `$on-primary` funciona igual en todos.
 
@@ -87,6 +89,9 @@
 - Padding de contenido de pantalla: 20px horizontal.
 - Gap entre secciones mayores: 18px. Gap entre items relacionados: 8-16px.
 - Los frames de pantalla ("Screen") usan **altura fija de 972px, igual en TODAS las pantallas** (no `fit_content`). Esto se cambio a proposito: con `fit_content` cada pantalla se encogia a su propio contenido y el "dispositivo" quedaba de tamaño distinto entre pantallas (obvio en estados con poco contenido, ej. Error), lo cual confunde al comparar mockups. El wrapper `Content` (el que va DEBAJO del status bar y ENCIMA del tab bar) usa `height:"fill_container"` para ocupar el espacio restante — así el Tab Bar siempre queda anclado al fondo real de los 972px, sin importar cuanto contenido tenga esa pantalla. Para estados con poco contenido (ej. Error), centrar el bloque de contenido dentro de `Content` con `justifyContent:"center"` en vez de dejarlo pegado arriba con espacio muerto abajo.
+- **972 es el viewport, no el techo del contenido.** Que una pantalla mida 972 en el `.pen` no significa que su contenido quepa entero sin scroll en el telefono; significa que el mockup representa lo que se ve de una vez. Cuando una pantalla scrollea, **la estructura del frame lo declara**: el `Content` se parte en dos hijos, `Zona fija — NO scrollea` y `Zona scrolleable`, cada uno con su `context` explicando que va en cada lado. Primer caso: **Graficas · Resumen** (`xZvir`/`FGzgC`/`XQVQe`/`SsnL0`), donde los Chart Tabs quedan fijos y el bloque de hero + cards + cross-link se desplaza. Nunca dejes la decision implicita: si no esta partida, `flutter-dev` la resuelve por su cuenta y `/design-fidelity-check` no la puede verificar.
+- Corolario: **crecer el frame por encima de 972 no es la salida** cuando el contenido no cabe. Se intento con Resumen (1022px, 2026-07-28) y se revirtio el mismo dia: el contenido sobrante era un control que no aplicaba a esa vista. Una pantalla que no cabe suele ser señal de que hay contenido que compactar o que sobra, no de que necesite mas alto.
+- El **gap del wrapper `Content`** es 8 en el deck de Graficas, con la unica excepcion de Resumen (14), por ser la pantalla que apila mas bloques heterogeneos. No es deriva del chrome unificado.
 
 ---
 
@@ -126,6 +131,11 @@ Chip de pregunta sugerida para el asistente "Billetudo". Texto + flecha, fondo `
 
 - Padding `[14,16]` (subido desde `[11,14]`) para cumplir el tap target minimo de 44pt de alto — hallazgo de la revision UX, corregido a nivel de componente (afecta ambas instancias/pantallas automaticamente).
 
+### Load More · Ver más (`oadHE`)
+Pill de paginacion incremental para ledgers/listas (8 iniciales + 8 por carga, controlado por codigo). Usado en Presupuestos, Deudas, Pagos Programados y Metas.
+
+- Padding vertical `13` (subido desde `12` el 2026-07-29) para alcanzar el tap target minimo de 44pt — el contenedor media 42px de alto, hallazgo de `ui-ux-reviewer`, corregido a nivel de componente (propaga a las 6 instancias).
+
 ### Tab Bar
 Navegacion inferior de 5 destinos (Inicio, Movimientos, Presupuestos, Metas, Mas), estilo flotante tipo "Liquid Glass".
 
@@ -137,11 +147,37 @@ Header de subpantalla (no es un destino de tab): boton "atras" (o "x" para modal
 
 - **Overrides tipicos:** icono del boton de atras (`arrow-left` para volver, `x` para cerrar un modal/formulario), titulo, icono del boton de accion (`plus` para agregar, `check` para guardar).
 - **Regla de navegacion:** toda pantalla con `Page Header` (boton atras/cerrar) NO lleva `Tab Bar` — son pantallas apiladas (push/modal), no destinos de tab. Solo Inicio, Transacciones/Movimientos, Presupuestos y Metas (los 5 items del Tab Bar) usan su propio header custom + `Tab Bar`.
-- **Centrado real del titulo:** boton de atras y boton de accion miden AMBOS 44x44 (antes el de atras media 40x40, descentraba el titulo en pantallas con texto largo — corregido). El `Title` usa `textGrowth:"fixed-width"` + `width:"fill_container"` + `textAlign:"center"`, nunca `textGrowth:"auto"` — asi se centra en el espacio real entre botones en vez de depender solo de que ambos lados midan igual. Si un lado no tiene accion (ej. pantallas sin boton `+`), usar un spacer `enabled:false` de 44x44 en su lugar, nunca quitar el nodo — si se quita, el titulo se descentra.
+- **Centrado real del titulo:** boton de atras y boton de accion miden AMBOS 44x44 (antes el de atras media 40x40, descentraba el titulo en pantallas con texto largo — corregido). El `Title` usa `textGrowth:"fixed-width"` + `width:"fill_container"` + `textAlign:"center"`, nunca `textGrowth:"auto"` — asi se centra en el espacio real entre botones en vez de depender solo de que ambos lados midan igual. Si un lado no tiene accion (ej. pantallas sin boton `+`), va un spacer de 44x44 en su lugar, nunca se quita el nodo — si se quita, el titulo se descentra.
+
+  > **Corregido el 2026-07-28 — esta regla decia `enabled:false` y estaba mal.** Un nodo `enabled:false` **no ocupa espacio en el layout de Pencil**, asi que el spacer aportaba 0 y el titulo quedaba **descentrado 22px** en toda instancia sin boton de accion. Medido: con el spacer apagado el `Title` mide 306px desde x=64 (centro 217, cuando el centro real es 195); con boton de accion presente mide 262px y si queda centrado.
+  >
+  > **La forma correcta**, verificada con `snapshot_layout`: spacer **`enabled:true` con `fill:[]`** (lista vacia, no un hex transparente) y el **glifo interno** en `enabled:false`. Visible para el layout, invisible para el ojo.
+  >
+  > Barrido del 2026-07-28: de ~216 instancias de `Dtm0X`, **66 estaban afectadas**. Si un titulo "se ve casi centrado", **medilo con `snapshot_layout`** en vez de confiar en el ojo — 22px no saltan a la vista, y por eso sobrevivio tanto.
 - **Variante con subtitulo (`s9gXs`, "Page Header · Con subtitulo"):** cuando la pantalla necesita una segunda linea de contexto bajo el titulo (ej. "Configurar cuota" + "Credito vehicular · Yo debo" en Deudas), usar este componente aparte — mismo chrome que `Dtm0X` pero con un `Title Group` (Title + Subtitle 13/500 `$text-secondary`, centrados, `gap:2`). Se creo como componente separado a proposito (no como slot opcional dentro de `Dtm0X`) por la regla tecnica de reestructuracion de arriba. En Flutter es el mismo Page Header con una segunda linea de texto, no un widget distinto.
 
 ### Button/Primary y Button/Secondary
 CTA principal (fill `$primary`) y secundario (outline, `$surface` + `$border`). Icono opcional a la izquierda (`enabled:false` para ocultarlo, ej. en `Button/Secondary` de "Cancelar").
+
+### Button/Neutral (`xncgz`)
+CTA solido de alto contraste sin color de marca: fill `$text-primary`, label e icono en `$background`. Mismo chrome y metrica que `Button/Primary`.
+
+**Cuando usarlo en vez de `Button/Primary`:** en pantallas donde `$primary` ya carga un **significado semantico** y teñir el CTA de violeta lo difuminaria. Caso canonico: "Estado de sincronizacion" (`pages/sincronizacion.md`), donde el violeta significa **la nube** — por eso la fila "Guardar una copia" (archivo local) usa `$teal` y el CTA de reparacion usa `Button/Neutral`. Tambien es la salida cuando un CTA de color se pelea con un fondo de estado (ej. `$amber-soft`): antes de inventar un token, probar `Button/Neutral`.
+
+**No** es un boton deshabilitado ni de menor jerarquia: pesa igual que `Button/Primary`. Para acciones opcionales corresponde `Button/Secondary`.
+
+### Sync Hero (`XxHV3`)
+Bloque hero de la familia "Estado de sincronizacion" (`pages/sincronizacion.md`). Creado el 2026-07-28 al detectar que la misma estructura estaba **copiada a mano en 9 frames** — al generar el tema oscuro habrian sido 18.
+
+Slots: `rZGDr`/`Nr8UU` (Icon Wrap + Icon), `C45uQZ` Title 19/700, `ETLeL` Kicker 13/600, `j1QIm` Body 13/500, `fwn43` Time Row (instancia de `AGZry`), `L5io11` **CTA Slot — se reemplaza entero** via `Replace()`, nunca se le cambian props, y `RBT2p` CTA Caption (apagada por defecto). Fijo: radio 24, padding 20, gap 12, wrap 48px.
+
+Root segun estado: `$surface` + `$border` en los neutros; **`$amber-soft` sin borde** en los de atencion (presencia por fondo, no por contorno — se evaluo con borde y se descarto).
+
+#### Contraste del chrome: los botones se identifican por su label (decision 2026-07-28)
+
+`Button/Secondary` no alcanza los 3:1 que WCAG 1.4.11 pide para objetos graficos, y nunca los alcanzo: `$border` sobre `$surface` mide **~1.09:1**. En estado inerte con relleno `$muted` tampoco: **1.17:1** sobre `$surface` y **1.06:1** sobre `$amber-soft`, donde el borde ni ayuda (~1.03:1, mas tenue que el relleno).
+
+**Se acepta el patron a conciencia:** el componente se identifica por su **label**, que si cumple con holgura. Es defendible bajo 1.4.11, que aplica a los elementos necesarios para identificar un control. Se documenta porque hasta hoy era un limite **heredado sin decidir**. Dos consecuencias: **ningun boton de este sistema puede depender solo de su forma para ser reconocible** (si alguna vez hay uno solo-icono, necesita otro tratamiento), y si se recalibra un token de borde **hay que revisar `Button/Secondary` entero**, no parchear la pantalla donde moleste.
 
 ### Status Bar/Android y Status Bar/iOS
 Barra de estado simulada (hora + iconos de senal/wifi/bateria) que corona cada mockup de pantalla. Dos variantes intercambiables, mismo chrome externo (`height:62`, `padding:[16,24,0,24]`, `width` override a `fill_container` por instancia).
@@ -162,7 +198,7 @@ Campo de formulario: label + caja de input (icono opcional + valor/placeholder) 
 Panel que sube desde abajo — patron obligatorio para confirmaciones/selectores en mobile (nunca modal/dialog centrado, ver regla de patrones mobile mas abajo). Estructura: `Overlay` (`fill:$scrim`, `justifyContent:end`, cubre toda la pantalla) → `Sheet` (`fill:$surface`, `cornerRadius:[28,28,0,0]` — solo esquinas superiores, `padding:[12,20,28,20]`, `gap:16`) → `Handle Wrap` (barra `$border` de agarre, centrada) + **`Content Slot`** (vacio en el componente base; cada instancia reemplaza este slot via `Replace()` con su titulo/icono/mensaje/lista/grid + fila de botones especifica).
 
 - El componente base NO impone un "Title" fijo — algunas instancias usan titulo de texto simple (ej. Selector de Moneda), otras usan icono+mensaje sin titulo (ej. Confirmar Eliminar). Cada instancia decide la forma de su contenido, el slot solo fija el chrome compartido (scrim, radios, handle, padding).
-- Instancias existentes: Confirmar Eliminar (`oymM5`), Confirmar Archivar (`o8dBmH`), Confirmar Cambio tipo/moneda (`SpjqW`), Selector de Moneda (`rCY7Q`), Selector de Dia (`tYzxA`), No se Puede Eliminar (`Yc1U2`). (El Selector de Icono y Color se descarto — las cuentas usan icono/color estandar segun tipo, sin personalizacion.)
+- Instancias existentes: Confirmar Eliminar (`oymM5`), Confirmar Archivar (`o8dBmH`), Confirmar Cambio tipo/moneda (`SpjqW`), Selector de Moneda (`rCY7Q`), Selector de Dia (`tYzxA`), No se Puede Eliminar (`Yc1U2`). (El Selector de Icono y Color se descarto — las cuentas usan icono/color estandar segun tipo, sin personalizacion.) **Mas las 7 hojas del indicador de sincronizacion** (`DUSmQ`, `uYVmf`, `n1qFs`, `MEcVH`, `W4oGp`, `T7Iw0C`, `r1qQYc` y sus gemelas oscuras) — ver `pages/sincronizacion.md`. Esta lista se queda corta con facilidad: ante la duda, buscar los `ref` a este componente en el `.pen`.
 - Al crear un nuevo bottom sheet, SIEMPRE instanciar este componente (`ref` + `Replace()` del slot) — nunca reconstruir el `Overlay`/`Sheet`/`Handle` a mano de nuevo.
 
 ### Balance Card Hero (`o8HEx`)
@@ -248,7 +284,9 @@ Chip pequeño reusado en dos contextos: selector de tipo de cuenta (Agregar Cuen
 
 ## Estados de pantalla (Inicio)
 
-Toda pantalla que carga datos de forma async debe considerar sus estados (con datos / vacio / carga; error solo si de verdad puede quedarse sin datos). **Inicio** se rediseño (composicion "actividad primero", ver `pages/inicio.md`) y es la referencia de este patron — 8 frames en `billetudo.pen` (4 estados x 2 temas):
+Toda pantalla que carga datos de forma async debe considerar sus estados (con datos / vacio / carga; error solo si de verdad puede quedarse sin datos). **Inicio** se rediseño (composicion "actividad primero", ver `pages/inicio.md`) y es la referencia de este patron — **14 frames** en `billetudo.pen` (7 pantallas x 2 temas). Los 4 estados canonicos de la tabla, mas 3 variantes de contenido: `ZMNrt`/`Tr8ZF` (Proximamente IA), `HZTCs`/`Z7WpGJ` (Proximamente Notificaciones) y `k7kv4`/`iGwrg` (Selector de mes).
+
+**Las 14 instancian `Nk9rB` (Home Header)** desde el 2026-07-28. Antes reconstruian el header a mano y el canvas acumulaba 17 iconos de sync sueltos duplicados — por eso ninguna mostraba el 4.o estado del indicador (`saRZW`). Si agregas una pantalla de Inicio, **instancia el componente**, no lo copies.
 
 | Estado | Frame claro | Frame oscuro | Que cambia |
 |--------|-------------|---------------|------------|
@@ -288,6 +326,23 @@ Fila de opt-in para una accion destructiva **opcional** dentro de una hoja cuya 
 - **Marcarlo tiene efectos fuera del componente:** muta el CTA de la hoja a `$expense` y recorta el mensaje del header para no prometer algo que la accion ya no cumple. Eso es parte del contrato del opt-in, no del frame que lo contiene.
 
 **No confundir con las filas de opcion de `K8SAG`** (paso 2 de borrar cuenta). Son affordances distintas, no variantes de estilo: alli son **radios** de una eleccion excluyente y deliberadamente **sin default** (regla de no-dark-pattern de HU-07); aca es un **checkbox** de opt-in independiente con default apagado. Se evaluo unificarlos y se descarto: obligaria a reconstruir el subarbol del indicador en cada instancia, y un componente compartido invitaria a copiar el default al lado donde esta prohibido.
+
+### Note Autocomplete (`taqc1`)
+
+Overlay de sugerencias de nota basado en historial: aparece bajo el campo "Nota" al escribir, mostrando movimientos previos cuyo texto coincide. Componente transversal — no pertenece a una sola pantalla, se usa en Transacciones, Deudas, Metas y Pagos Programados donde exista un campo de nota libre.
+
+- **Estructura:** `Field Wrap` (Label + `Input Box` con stroke `$primary` 2px mientras el campo tiene foco) + `Suggestions Dropdown` (`fill $surface`, `stroke $border` 1px, radio 14) con `Suggestion Row` (icono `history` 16px `$text-secondary` + label 14px/500 `$text-primary`) separadas por `Divider` (`$border` 1px).
+- **Altura maxima 200px con scroll interno** a partir de la 5a sugerencia (~4 filas completas + un sliver de la 5a que senala que hay mas contenido) — el overlay NO crece libremente para no tapar el resto del formulario en mobile. En Flutter: `ListView`/`SingleChildScrollView` con `maxHeight: 200` dentro del overlay.
+- **Sin coincidencias: el overlay simplemente no se muestra** — no hay un estado "sin resultados" con mensaje. El campo se comporta como input de texto libre normal. Decision de tono de marca: la ausencia de sugerencias es neutral (nota nueva), no un error que amerite copy.
+- **Icono confirmado:** `history` (lucide), una fila por sugerencia.
+- **Overrides tipicos:** contenido del `Value` del campo, lista de `Suggestion Row` (cuantas, su `Label`), altura del `Suggestions Dropdown` (crece hasta 200px segun cantidad de resultados, min. lo que ocupen las filas si son menos de 5).
+- **Implementacion:** `NoteAutocompleteField` en `lib/core/widgets/` (widget compartido, no vive dentro de una sola feature).
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Default (3 sugerencias) | `taqc1` | `LOnm3` |
+| 10 sugerencias con scroll | `otjW9` | `ETP5J` |
+| Sin coincidencias | `NdecZ` | `kS16A` |
 
 ---
 

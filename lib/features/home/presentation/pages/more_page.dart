@@ -6,14 +6,17 @@ import '../../../../core/widgets/root_tab_header.dart';
 import '../widgets/more_row.dart';
 
 /// The "Más" hub (HU-01): the entry point to every other Nivel 0 destination.
-/// Cuentas and Categorías are live; the rest are listed with a "Próximamente"
-/// badge until their own lote ships, so no Nivel 0 feature is unreachable.
+/// Cuentas, Categorías, Deudas and Metas are live; the rest are listed with a
+/// "Próximamente" badge until their own lote ships, so no Nivel 0 feature is
+/// unreachable.
 class MorePage extends StatelessWidget {
   const MorePage({
     required this.onOpenAccounts,
     required this.onOpenCategories,
+    required this.onOpenDebts,
     required this.onOpenScheduledPayments,
     required this.onOpenGoals,
+    required this.onOpenReports,
     required this.onOpenComingSoon,
     required this.onOpenSettings,
     required this.isSignedIn,
@@ -23,11 +26,10 @@ class MorePage extends StatelessWidget {
 
   final VoidCallback onOpenAccounts;
   final VoidCallback onOpenCategories;
+  final VoidCallback onOpenDebts;
   final VoidCallback onOpenScheduledPayments;
-
-  /// Metas is no longer a bottom-nav tab (bugfix item 7): it is reachable from
-  /// here and from Inicio's quick access. Today it lands on `ComingSoonPage`.
   final VoidCallback onOpenGoals;
+  final VoidCallback onOpenReports;
 
   /// Opens a stacked "Próximamente" page titled with the destination's name.
   final ValueChanged<String> onOpenComingSoon;
@@ -69,8 +71,7 @@ class MorePage extends StatelessWidget {
                     icon: LucideIcons.handCoins,
                     label: l10n.moreDebts,
                     description: l10n.moreDebtsDescription,
-                    comingSoon: true,
-                    onTap: () => onOpenComingSoon(l10n.moreDebts),
+                    onTap: onOpenDebts,
                   ),
                   MoreRow(
                     icon: LucideIcons.repeat,
@@ -78,26 +79,21 @@ class MorePage extends StatelessWidget {
                     description: l10n.moreScheduledPaymentsDescription,
                     onTap: onOpenScheduledPayments,
                   ),
-                  // Metas lost its bottom-nav tab to Pagos Programados (bugfix
-                  // item 7); it lives here and in Inicio's quick access. Still
-                  // `Próximamente` until the Metas lote ships.
                   MoreRow(
                     icon: LucideIcons.target,
                     label: l10n.navGoals,
                     description: l10n.moreGoalsDescription,
-                    comingSoon: true,
                     onTap: onOpenGoals,
                   ),
                   // Design debt: Pencil frame `gXcHt` only defines 6 rows and
-                  // omits "Gráficas e informes" — kept here because it's a real
-                  // roadmap feature (fl_chart, see CLAUDE.md); the `.pen` needs
-                  // to be updated to reflect it.
+                  // omits "Gráficas e informes" — kept here because it's a
+                  // real, now-shipped feature; the `.pen` needs to be updated
+                  // to reflect it.
                   MoreRow(
                     icon: LucideIcons.chartLine,
                     label: l10n.moreReports,
                     description: l10n.moreReportsDescription,
-                    comingSoon: true,
-                    onTap: () => onOpenComingSoon(l10n.moreReports),
+                    onTap: onOpenReports,
                   ),
                   MoreRow(
                     icon: LucideIcons.arrowUpDown,

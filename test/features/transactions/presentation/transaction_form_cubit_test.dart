@@ -697,4 +697,140 @@ void main() {
       },
     );
   });
+
+  group(
+    'budget-income-counts-in-budget: ingreso presupuestable '
+    '(countsInBudget)',
+    () {
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'countsInBudgetChanged(true) en un ingreso activa el flag',
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..typeSelected(TransactionType.income)
+            ..countsInBudgetChanged(true);
+        },
+        verify: (cubit) {
+          expect(cubit.state.countsInBudget, isTrue);
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'countsInBudgetChanged(false) en un ingreso apaga el flag sin '
+        'limpiar la categoría (a diferencia de una transferencia)',
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..typeSelected(TransactionType.income)
+            ..categorySelected('cat-inc', CategoryKind.income, 'Salario')
+            ..countsInBudgetChanged(true)
+            ..countsInBudgetChanged(false);
+        },
+        verify: (cubit) {
+          expect(cubit.state.countsInBudget, isFalse);
+          expect(cubit.state.categoryId, 'cat-inc');
+          expect(cubit.state.categoryKind, CategoryKind.income);
+          expect(cubit.state.categoryName, 'Salario');
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'alternar Ingreso -> Transferencia conserva el toggle prendido',
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..typeSelected(TransactionType.income)
+            ..countsInBudgetChanged(true)
+            ..typeSelected(TransactionType.transfer);
+        },
+        verify: (cubit) {
+          expect(cubit.state.type, TransactionType.transfer);
+          expect(cubit.state.countsInBudget, isTrue);
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'alternar Ingreso -> Gasto reinicia el toggle',
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..typeSelected(TransactionType.income)
+            ..countsInBudgetChanged(true)
+            ..typeSelected(TransactionType.expense);
+        },
+        verify: (cubit) {
+          expect(cubit.state.type, TransactionType.expense);
+          expect(cubit.state.countsInBudget, isFalse);
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'submit: ingreso con el toggle activo se persiste con '
+        'countsInBudget=true',
+        setUp: () {
+          when(() => createTransaction(any())).thenAnswer(
+            (_) async => Right(
+              buildTransaction(type: TransactionType.income),
+            ),
+          );
+          when(() => setTransactionTags(any(), any()))
+              .thenAnswer((_) async => const Right(unit));
+        },
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..accountSelected('acc-1', 'Cuenta 1')
+            ..typeSelected(TransactionType.income)
+            ..categorySelected('cat-inc', CategoryKind.income, 'Salario')
+            ..countsInBudgetChanged(true)
+            ..amountDigitPressed(1);
+          await cubit.submit();
+        },
+        verify: (cubit) {
+          expect(cubit.state.status, TransactionFormStatus.saved);
+          final captured = verify(() => createTransaction(captureAny()))
+              .captured
+              .single as TransactionDraft;
+          expect(captured.countsInBudget, isTrue);
+          expect(captured.categoryId, 'cat-inc');
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'submit: ingreso sin marcar el toggle (default) se persiste con '
+        'countsInBudget=false',
+        setUp: () {
+          when(() => createTransaction(any())).thenAnswer(
+            (_) async => Right(
+              buildTransaction(type: TransactionType.income),
+            ),
+          );
+          when(() => setTransactionTags(any(), any()))
+              .thenAnswer((_) async => const Right(unit));
+        },
+        build: build,
+        act: (cubit) async {
+          await cubit.load(null);
+          cubit
+            ..accountSelected('acc-1', 'Cuenta 1')
+            ..typeSelected(TransactionType.income)
+            ..categorySelected('cat-inc', CategoryKind.income, 'Salario')
+            ..amountDigitPressed(1);
+          await cubit.submit();
+        },
+        verify: (cubit) {
+          expect(cubit.state.status, TransactionFormStatus.saved);
+          final captured = verify(() => createTransaction(captureAny()))
+              .captured
+              .single as TransactionDraft;
+          expect(captured.countsInBudget, isFalse);
+        },
+      );
+    },
+  );
 }

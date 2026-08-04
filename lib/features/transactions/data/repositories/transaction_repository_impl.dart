@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
+import '../../../goals/domain/repositories/goal_repository.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
 import '../../domain/entities/transaction_filter.dart';
@@ -21,10 +23,23 @@ import '../models/transaction_mapper.dart';
 /// schema references a transaction's id by foreign key.
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl implements TransactionRepository {
-  const TransactionRepositoryImpl(this._local, this._tags);
+  const TransactionRepositoryImpl(
+    this._local,
+    this._tags,
+    this._goals,
+    this._crash,
+  );
 
   final TransactionsLocalDatasource _local;
   final TagsLocalDatasource _tags;
+
+  /// Metas cascade (`docs/requirements/07-metas.md` HU-08): a transaction
+  /// carrying a `goalId` may mirror a `GoalContribution`. Editing/deleting it
+  /// here must keep that movement's amount/existence in sync, orchestrated
+  /// from this repository since that is where a transaction actually
+  /// changes.
+  final GoalRepository _goals;
+  final CrashReporter _crash;
 
   @override
   Stream<Result<List<TransactionWithDetails>>> watchTransactions(
@@ -38,8 +53,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
               types: filter.types.map(TransactionMapper.typeToDb).toSet(),
               tagIds: filter.tagIds,
               searchText: filter.searchText,
-              periodStart: filter.datePeriod.start,
-              periodEndExclusive: filter.datePeriod.endExclusive,
+              periodStart: _periodStart(filter),
+              periodEndExclusive: _periodEndExclusive(filter),
               orderBy: switch (filter.sortOrder) {
                 TransactionSortOrder.dateDesc => TransactionOrderBy.dateDesc,
                 TransactionSortOrder.dateAsc => TransactionOrderBy.dateAsc,
@@ -101,6 +116,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
         if (row == null) {
           return Left(NotFoundFailure('transaction "$id" does not exist'));
         }
+        if (row.goalId != null) {
+          // No-op when this transaction backs no `GoalContribution`.
+          await _goals.syncContributionForTransactionAmount(
+            transactionId: id,
+            amountMinor: row.amountMinor,
+          );
+        }
         return Right(TransactionMapper.toEntity(row));
       });
 
@@ -113,6 +135,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
         );
         if (row == null) {
           return Left(NotFoundFailure('transaction "$id" does not exist'));
+        }
+        if (row.goalId != null) {
+          await _goals.removeContributionForTransaction(id);
         }
         return const Right(unit);
       });
@@ -146,6 +171,31 @@ class TransactionRepositoryImpl implements TransactionRepository {
         return const Right(unit);
       });
 
+  /// The Fecha chip (`filter.datePeriod`) and the Presupuesto chip
+  /// (`filter.budgetPeriod`) are independent, combinable filters (AND, not
+  /// substitution): when both are active, the effective window is their
+  /// intersection, computed here since the datasource only takes a single
+  /// `[periodStart, periodEndExclusive)` pair.
+  DateTime _periodStart(TransactionFilter filter) {
+    final budgetPeriod = filter.budgetPeriod;
+    if (budgetPeriod == null) {
+      return filter.datePeriod.start;
+    }
+    final dateStart = filter.datePeriod.start;
+    final budgetStart = budgetPeriod.start;
+    return dateStart.isAfter(budgetStart) ? dateStart : budgetStart;
+  }
+
+  DateTime _periodEndExclusive(TransactionFilter filter) {
+    final budgetPeriod = filter.budgetPeriod;
+    if (budgetPeriod == null) {
+      return filter.datePeriod.endExclusive;
+    }
+    final dateEnd = filter.datePeriod.endExclusive;
+    final budgetEnd = budgetPeriod.endExclusive;
+    return dateEnd.isBefore(budgetEnd) ? dateEnd : budgetEnd;
+  }
+
   TransactionWithDetails _toWithDetails(TransactionRowWithJoins row) =>
       TransactionWithDetails(
         transaction: TransactionMapper.toEntity(row.transaction),
@@ -164,6 +214,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       return await body();
     } catch (e, st) {
+      // Report so the failure is never silent: dev prints it (NoopCrashReporter
+      // in debug), prod ships it to Sentry (SentryCrashReporter).
+      await _crash.recordError(e, st, context: 'transactions query');
       return Left(
         DatabaseFailure(
           'transactions query failed',
@@ -181,15 +234,25 @@ class TransactionRepositoryImpl implements TransactionRepository {
       source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
-          handleError: (error, stackTrace, sink) => sink.add(
-            Left(
-              DatabaseFailure(
-                'transactions stream failed',
-                cause: error,
-                stackTrace: stackTrace,
+          handleError: (error, stackTrace, sink) {
+            // Same visibility as [_guard]: dev prints, prod ships to Sentry.
+            unawaited(
+              _crash.recordError(
+                error,
+                stackTrace,
+                context: 'transactions stream',
               ),
-            ),
-          ),
+            );
+            sink.add(
+              Left(
+                DatabaseFailure(
+                  'transactions stream failed',
+                  cause: error,
+                  stackTrace: stackTrace,
+                ),
+              ),
+            );
+          },
         ),
       );
 }

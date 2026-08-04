@@ -1,3 +1,4 @@
+import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/security/secure_storage_service.dart';
@@ -34,6 +35,7 @@ void main() {
     repository = AccountRepositoryImpl(
       AccountsLocalDatasource(db),
       AccountNumberLocalDatasource(storage),
+      const NoopCrashReporter(),
     );
   });
 
