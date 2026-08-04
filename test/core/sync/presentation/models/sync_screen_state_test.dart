@@ -93,16 +93,23 @@ void main() {
   });
 
   group('los cinco estados', () {
+    // `now` fijo, minutos después del `lastSyncedAt` por defecto de
+    // `stateWith()` (`DateTime(2026, 7, 28, 11)`) — igual que el bloque de
+    // "24 h" más abajo, para que estos tests no dependan del reloj real y no
+    // empiecen a fallar solos al cruzar las 24 h desde esa fecha fija.
+    final now = DateTime(2026, 7, 28, 11, 30);
+
     test('con pendientes: atención', () {
       expect(
-        SyncScreenState.resolve(stateWith(pending: 3), isSignedIn: true, now: DateTime.now()),
+        SyncScreenState.resolve(stateWith(pending: 3),
+            isSignedIn: true, now: now),
         SyncScreenState.attention,
       );
     });
 
     test('sin pendientes y sincronizado: todo bien', () {
       expect(
-        SyncScreenState.resolve(stateWith(), isSignedIn: true, now: DateTime.now()),
+        SyncScreenState.resolve(stateWith(), isSignedIn: true, now: now),
         SyncScreenState.healthy,
       );
     });
@@ -110,7 +117,8 @@ void main() {
     test('sin sincronizar nunca: informativo, no atención', () {
       final resolved = SyncScreenState.resolve(
         stateWith(neverSynced: true),
-        isSignedIn: true, now: DateTime.now(),
+        isSignedIn: true,
+        now: now,
       );
 
       expect(resolved, SyncScreenState.neverSynced);
@@ -121,7 +129,8 @@ void main() {
       expect(
         SyncScreenState.resolve(
           stateWith(syncState: SyncState.offline),
-          isSignedIn: true, now: DateTime.now(),
+          isSignedIn: true,
+          now: now,
         ),
         SyncScreenState.offline,
       );
@@ -129,7 +138,7 @@ void main() {
 
     test('sin sesión: sin sesión', () {
       expect(
-        SyncScreenState.resolve(stateWith(), isSignedIn: false, now: DateTime.now()),
+        SyncScreenState.resolve(stateWith(), isSignedIn: false, now: now),
         SyncScreenState.signedOut,
       );
     });
@@ -140,7 +149,8 @@ void main() {
       expect(
         SyncScreenState.resolve(
           stateWith(syncState: SyncState.syncing),
-          isSignedIn: true, now: DateTime.now(),
+          isSignedIn: true,
+          now: now,
         ),
         SyncScreenState.healthy,
       );
@@ -161,14 +171,16 @@ void main() {
     }
   });
 
-  test('sin pendientes y con más de 24 h sin sincronizar, la pantalla no '
+  test(
+      'sin pendientes y con más de 24 h sin sincronizar, la pantalla no '
       'puede decir que todo está bien', () {
     // Regresión de la contradicción entre superficies: el indicador del Home
     // se pone ámbar con este mismo dato, y una pantalla que dijera "Todo está
     // sincronizado" mientras el ícono alarma erosiona la confianza en el
     // ícono — que es lo único que hace que el usuario lo mire la próxima vez.
     final now = DateTime(2026, 7, 28, 12);
-    final state = stateWith(lastSyncedAt: now.subtract(const Duration(hours: 25)));
+    final state =
+        stateWith(lastSyncedAt: now.subtract(const Duration(hours: 25)));
 
     expect(
       SyncScreenState.resolve(state, isSignedIn: true, now: now),
