@@ -9,6 +9,7 @@ import 'package:patrol/src/platform/contracts/contracts.dart';
 import 'package:test_api/src/backend/invoker.dart';
 
 // START: GENERATED TEST IMPORTS
+import 'onboarding_patrol_test.dart' as onboarding_patrol_test;
 import 'reports_patrol_test.dart' as reports_patrol_test;
 // END: GENERATED TEST IMPORTS
 
@@ -72,6 +73,7 @@ Future<void> main() async {
   });
 
 // START: GENERATED TEST GROUPS
+  group('onboarding_patrol_test', onboarding_patrol_test.main);
   group('reports_patrol_test', reports_patrol_test.main);
 // END: GENERATED TEST GROUPS
 

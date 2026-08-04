@@ -21,4 +21,9 @@ abstract class AppSettingsRepository {
   /// Latches the onboarding default categories as seeded for this installation
   /// (HU-06). Idempotent: safe to call again.
   FutureResult<Unit> markCategoriesSeeded();
+
+  /// Latches the welcome flow as completed for this installation
+  /// (`docs/requirements/13-onboarding.md`). Idempotent: safe to call again;
+  /// the flag never turns off.
+  FutureResult<Unit> markOnboardingCompleted();
 }

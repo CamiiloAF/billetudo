@@ -7038,6 +7038,138 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cargando gráfica'**
   String get reportsChartSkeletonLoadingLabel;
+
+  /// No description provided for @accountTypeSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona el tipo de cuenta'**
+  String get accountTypeSheetTitle;
+
+  /// No description provided for @onboardingWelcomeHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo lo esencial. Gratis. Para siempre.'**
+  String get onboardingWelcomeHeadline;
+
+  /// No description provided for @onboardingWelcomeSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.'**
+  String get onboardingWelcomeSubhead;
+
+  /// No description provided for @onboardingWelcomeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya dejamos categorías listas para ti.'**
+  String get onboardingWelcomeCaption;
+
+  /// No description provided for @onboardingWelcomeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Comenzar'**
+  String get onboardingWelcomeCta;
+
+  /// No description provided for @onboardingAlreadyHaveAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tengo cuenta'**
+  String get onboardingAlreadyHaveAccount;
+
+  /// No description provided for @onboardingAccountHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingAccountHeadline;
+
+  /// No description provided for @onboardingAccountSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza con esta sugerencia o cámbiala a tu gusto.'**
+  String get onboardingAccountSubhead;
+
+  /// Nombre pre-llenado de la primera cuenta del onboarding (HU-02).
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorros'**
+  String get onboardingAccountDefaultName;
+
+  /// No description provided for @onboardingAccountCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear cuenta'**
+  String get onboardingAccountCta;
+
+  /// No description provided for @onboardingAccountSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir por ahora'**
+  String get onboardingAccountSkip;
+
+  /// No description provided for @onboardingBackupHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Respalda tus datos, cuando quieras'**
+  String get onboardingBackupHeadline;
+
+  /// No description provided for @onboardingBackupBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.'**
+  String get onboardingBackupBody;
+
+  /// No description provided for @onboardingBackupFootnote.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívalo luego en Ajustes → Respaldar.'**
+  String get onboardingBackupFootnote;
+
+  /// No description provided for @onboardingBackupCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar respaldo'**
+  String get onboardingBackupCta;
+
+  /// No description provided for @onboardingBackupSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Después'**
+  String get onboardingBackupSkip;
+
+  /// No description provided for @onboardingClosingHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu billetera está lista'**
+  String get onboardingClosingHeadline;
+
+  /// No description provided for @onboardingClosingSubheadWithAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento y empieza a tomar el control de tu dinero.'**
+  String get onboardingClosingSubheadWithAccount;
+
+  /// No description provided for @onboardingClosingSubheadNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.'**
+  String get onboardingClosingSubheadNoAccount;
+
+  /// No description provided for @onboardingClosingCtaTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento'**
+  String get onboardingClosingCtaTransaction;
+
+  /// No description provided for @onboardingClosingCtaAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingClosingCtaAccount;
+
+  /// No description provided for @onboardingClosingSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo hago después'**
+  String get onboardingClosingSkip;
 }
 
 class _AppLocalizationsDelegate

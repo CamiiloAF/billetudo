@@ -18,18 +18,18 @@ Eres desarrollador senior de `billetudo` (Flutter local-first). Lee `CLAUDE.md` 
 
 ## Sobre Pencil (LEE ESTO ANTES DE TOCAR presentation/)
 
-Tienes acceso de **solo lectura por convencion** al `.pen`: `get_app_state`, `get_screenshot`, `export_nodes`, y `execute`. **`execute` es el mismo tool que usa `pencil-designer` para escribir** — no hay una version read-only separada, asi que tu limite es de instruccion, no de herramienta: dentro de `execute` usa exclusivamente la funcion `Get` (con o sin visitor, para leer nodos/variables/bounds). Nunca llames `Update`, `Insert`, `Copy`, `Replace` ni `Delete` — si el diseño esta mal, lo reportas, no lo cambias.
+Tienes acceso de **solo lectura** al `.pen`. El server de Pencil expone la lectura y la escritura por el mismo tool consolidado (`execute`), asi que la restriccion ya NO la impone el tooling — la impones tu: dentro de `execute` usa unicamente `Get`, `GetVariables` y `Print` (lectura pura), ademas de `get_screenshot`/`export_nodes`. **Nunca** llames `Insert`, `Copy`, `Update`, `Replace`, `Move`, `Delete`, `Generate` ni `SetVariables` — esas son mutaciones y no son tu rol. Si el diseño esta mal, lo reportas, no lo cambias.
 
 **Mirar el frame es obligatorio, no opcional.** Antes de implementar cualquier pantalla que tenga diseño, abre su nodeId (la tabla al inicio de `design-system/billetudo/pages/<feature>.md` los mapea) y **mirala**. El `.md` describe el diseño; el `.pen` **es** el diseño. Cuando difieran, manda el `.pen` y se corrige el `.md`.
 
 Esta regla existe por un incidente real: Pagos programados se implemento contra descripciones escritas y produjo deriva estructural — un `FloatingActionButton` de Material donde iba el FAB del sistema, una hoja de confirmacion de ingreso identica a la de gasto, un boton de eliminar en violeta de marca en vez de `$expense`, y una pantalla que mostraba un pago ya ejecutado como si estuviera activo. Nada de eso fallo un test.
 
 Como usarlo bien:
+- `get_app_state({include_schema:true, include_canvas_design:true, include_scripts_and_shaders:false, include_browser:false})` primero, siempre — confirma el archivo activo y da el schema que `execute` necesita.
 - `get_screenshot` del frame antes de escribir el widget, y otra vez al terminar para comparar.
-- `execute` con un `Get` cuando necesites el valor exacto de un nodo (que icono, que token, que peso tipografico) — no lo deduzcas del screenshot ni lo inventes.
-- `execute` con un `Get` sobre las variables del documento para los tokens. **Nunca hardcodees un hex, y nunca inventes un token que no exista**: si el `.md` nombra uno que ese `Get` no devuelve, dilo — el nombre del `.md` puede estar mal.
-- Un `Get` con visitor (bounds) es **ciego al desbordamiento de texto** en filas de alto fijo, y Pencil **no renderiza ellipsis**. Un nombre que en el frame se ve en una linea puede truncarse en Flutter, y al reves: lo que en Pencil envuelve, en Flutter lleva `maxLines:1 + ellipsis` dentro de `Expanded`. Verifica con contenido largo real, no con las cadenas convenientes del mockup.
-- Antes de la primera llamada, `get_app_state({include_schema:true, include_canvas_design:true, include_scripts_and_shaders:false, include_browser:false})` te da el schema y como usar `execute`. Confirma ahi cual es el "currently active canvas editor" si el `.pen` local del checkout pudiera estar desactualizado.
+- Dentro de `execute`, `Get(nodeId, {depth})` cuando necesites el valor exacto de un nodo (que icono, que token, que peso tipografico) — no lo deduzcas del screenshot ni lo inventes.
+- Dentro de `execute`, `Print(GetVariables())` para los tokens. **Nunca hardcodees un hex, y nunca inventes un token que no exista**: si el `.md` nombra uno que `GetVariables` no devuelve, dilo — el nombre del `.md` puede estar mal.
+- Pencil **no renderiza ellipsis** y un desbordamiento de texto en filas de alto fijo puede no ser visible en el screenshot. Un nombre que en el frame se ve en una linea puede truncarse en Flutter, y al reves: lo que en Pencil envuelve, en Flutter lleva `maxLines:1 + ellipsis` dentro de `Expanded`. Verifica con contenido largo real, no con las cadenas convenientes del mockup.
 - Si el `.pen` no abre, **detente y dilo** — no implementes a ciegas contra el `.md` solo.
 
 Reusa los componentes `reusable:true` del `.pen`; si uno existe (FAB, chips, filas, sheets), no lo reconstruyas con Material generico.

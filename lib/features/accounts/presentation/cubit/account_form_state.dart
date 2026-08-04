@@ -125,6 +125,10 @@ class AccountFormState extends Equatable {
   /// does not accrue interest.
   bool get showInterestRateField => type != AccountType.cash;
 
+  /// Same reasoning as [showInterestRateField]: physical cash has no
+  /// institution to name. Every other type keeps the field.
+  bool get showInstitutionField => type != AccountType.cash;
+
   /// The stored number is unknown: the read failed and the user has not typed a
   /// replacement, so the empty field is hiding a value instead of stating there
   /// is none. Saving must leave the stored number alone, and the form must say

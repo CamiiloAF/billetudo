@@ -4346,4 +4346,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsChartSkeletonLoadingLabel => 'Loading chart';
+
+  @override
+  String get accountTypeSheetTitle => 'Choose the account type';
+
+  @override
+  String get onboardingWelcomeHeadline =>
+      'Everything essential. Free. Forever.';
+
+  @override
+  String get onboardingWelcomeSubhead =>
+      'Your data lives on your phone. Cloud backup is optional.';
+
+  @override
+  String get onboardingWelcomeCaption =>
+      'We already set up some categories for you.';
+
+  @override
+  String get onboardingWelcomeCta => 'Get started';
+
+  @override
+  String get onboardingAlreadyHaveAccount => 'I already have an account';
+
+  @override
+  String get onboardingAccountHeadline => 'Create your first account';
+
+  @override
+  String get onboardingAccountSubhead =>
+      'Start with this suggestion or change it to your liking.';
+
+  @override
+  String get onboardingAccountDefaultName => 'Savings';
+
+  @override
+  String get onboardingAccountCta => 'Create account';
+
+  @override
+  String get onboardingAccountSkip => 'Skip for now';
+
+  @override
+  String get onboardingBackupHeadline => 'Back up your data, whenever you want';
+
+  @override
+  String get onboardingBackupBody =>
+      'Today your data lives only on this phone. Backup is free and saves it to the cloud, ready to recover if you switch devices or reinstall — without it, it stays only here.';
+
+  @override
+  String get onboardingBackupFootnote =>
+      'Turn it on later in Settings → Back up.';
+
+  @override
+  String get onboardingBackupCta => 'Turn on backup';
+
+  @override
+  String get onboardingBackupSkip => 'Later';
+
+  @override
+  String get onboardingClosingHeadline => 'Your wallet is ready';
+
+  @override
+  String get onboardingClosingSubheadWithAccount =>
+      'Record your first movement and start taking control of your money.';
+
+  @override
+  String get onboardingClosingSubheadNoAccount =>
+      'You need an account to record movements. Create your first one in a moment.';
+
+  @override
+  String get onboardingClosingCtaTransaction => 'Record your first movement';
+
+  @override
+  String get onboardingClosingCtaAccount => 'Create your first account';
+
+  @override
+  String get onboardingClosingSkip => 'I\'ll do it later';
 }

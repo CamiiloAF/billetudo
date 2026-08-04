@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas.
+**Estado:** aprobado y terminado (claro + oscuro), tras tres rondas de corrección y tres auditorías de `ui-ux-reviewer`. Requisitos en `docs/requirements/10-graficas-informes.md`. Vive en el hub "Más" y tiene chip de acceso rápido en Inicio. Cross-link a Deudas. **Ampliación 2026-07-29/30:** 6 pantallas nuevas (5 estados de carga/vacío que faltaban + destino de "Ver subcategorías") aprobadas en claro y oscuro, auditadas por `ui-ux-reviewer` (3 hallazgos IMPORTANTE corregidos en la variante "Con dona"). **Excepción (2026-07-30, en revisión):** la interacción del donut de Categorías cambió (ver "Interacción del donut de Categorías" más abajo) — `A3zxf` fue modificado y lleva marca `🔖 EN REVISION` en el canvas junto con sus dos nuevas variantes (`tCOi4`, `d2bv47`), solo en tema claro hasta que el usuario apruebe explícitamente; `Zyd8k` (oscuro) no se toca todavía.
 
 ## Tesis (norte del diseño)
 
@@ -23,6 +23,8 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Flujo — ingresos vs. gastos mes a mes (HU-01) | `o8uzbT` | `BmKsK` |
 | Patrimonio — líquido vs. total (HU-02) | `kgM3u` | `bX4is` |
 | Categorías — dona + desglose (HU-03) | `A3zxf` | `Zyd8k` |
+| Categorías — dona, con selección (Vivienda) | `tCOi4` | **no construido** (solo claro, ver "en revisión" abajo) |
+| Categorías — dona, pill "Atrás" (subcategorías) | `d2bv47` | **no construido** (solo claro, ver "en revisión" abajo) |
 
 ### Estados (HU-06)
 | Estado | Claro | Oscuro |
@@ -33,6 +35,13 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 | Flujo — fallo de sync (no bloqueante) | `ZhpWo` | `k4SZI` |
 | Flujo — balance negativo | `V1PNE` | `p3C3D8` |
 | Resumen — vacío (sin presupuestos ni metas) | `XQVQe` | `SsnL0` |
+| Resumen — carga (skeleton) | `Mvjzq` | `a7rxu` |
+| Patrimonio — carga (skeleton) | `iWBYq` | `bzqEm` |
+| Patrimonio — vacío (sin cuentas) | `OZvwz` | `Nl2Mk` |
+| Categorías — carga (skeleton) | `s28FH` | `G8log5` |
+| Categorías — vacío (sin movimientos) | `wQcSY` | `CIUzC` |
+
+Las 5 filas nuevas (Resumen/Patrimonio/Categorías) siguen el mismo lenguaje ya validado en Flujo — mismo criterio de altura uniforme en los skeletons, mismo `Empty State`. CTA de cada vacío: Patrimonio → "Agregar cuenta" (pide cuentas, no movimientos); Categorías → "Agregar movimiento".
 
 ### Sheets
 | Pieza | Claro | Oscuro |
@@ -45,6 +54,11 @@ Todas las piezas existen en Claro y en su copia Oscuro (`Copy()+theme:{mode:"dar
 Tratamiento:
 - La fila **"Rango personalizado"** (`qiXGl`) queda resaltada: fill `$primary-soft`, borde `$primary-on-soft-strong`, ícono de check, y el texto muestra el rango real aplicado (ej. "mar – ago 2026") en vez del label genérico.
 - El segmentado Mes/Año (`RArsH/JipTk`) y el stepper (`RArsH/P3Fyb`) permanecen en su **estado normal habilitado** (opacity:1, sin fondo activo en ningún segmento) — **no** se deshabilitan ni atenúan, porque siguen siendo interactivos: tocar Mes o Año reemplaza el rango personalizado por ese filtro (cambia `kind` de `custom` a `month`/`year`).
+
+### Ver Subcategorías (destino de "Ver subcategorías")
+| Pantalla | Claro | Oscuro |
+|---|---|---|
+| Ver Subcategorías — variante C, con dona | `BfdaF` | `fqc0X` |
 
 ## Componentes propios de la feature
 
@@ -61,7 +75,7 @@ Tratamiento:
 | Chart Cross-link Card | `wvAKu` → **Cross-link Deudas Card** | Renombrado: icono y label están horneados, es de un solo caso. |
 | Goal Summary Row | `He7JZ` | Fila de meta en Resumen (anida `q1qGr`). |
 | Card Empty | `S27V2` | Vacío dentro de una tarjeta, CTA reemplazable por slot. |
-| Chart Drill Pill | `OiM6E` | Pill de drill-down del donut (44px, borde superior). 3 estados vía overrides: inerte (`$segment-inactive-text`), habilitado "Ver subcategorías" (`$primary-on-soft`, chevron-right), "Atrás" (`$primary-on-soft`, chevron-left a la izquierda vía slot `enabled:false`/`true`, no reordenando hijos). Reemplaza 3 copias inline (`guwa6`→`gbZI4`, `kjLPg`→`Ok2bd`, `FK2qi`→`Fkwo3`). |
+| Chart Drill Pill | `OiM6E` | Pill de drill-down del donut (44px, borde superior). 3 estados vía overrides: inerte (`$segment-inactive-text`), habilitado "Ver subcategorías" (`$primary-on-soft`, chevron-right), "Atrás" (`$primary-on-soft`, chevron-left a la izquierda vía slot `enabled:false`/`true`, no reordenando hijos). Reemplaza 3 copias inline (`guwa6`→`gbZI4`, `kjLPg`→`Ok2bd`, `FK2qi`→`Fkwo3`). Renombrado a "Profundizar" y reposicionado (ver "Categorías — interacción de la dona y drill-down"). |
 
 Reusados sin modificar: `Dtm0X` Page Header, `vYZJT` Status Bar, `FSL69` Budget Line, `DRc5X` Category Row, `gZyEC` Toggle Field, `hIbs3` Menu Row, `jmQO5` Empty State, `j7Zvt`/`pNjOz` botones, `q1qGr` Goal Ring/Mini.
 
@@ -117,14 +131,14 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 ### Categorías — interacción de la dona y drill-down (reemplaza el tap-and-hold)
 
-**Decisión del usuario, ya implementada** (reemplaza cualquier mención previa de "mantener presionado para revelar" en esta pantalla):
+**Decisión del usuario, ya implementada** (reemplaza cualquier mención previa de "mantener presionado para revelar" en esta pantalla, y reemplaza también la exploración alterna "Category Switch Chip"/`SspER` de destino en pantalla propia — nunca se implementó, ver más abajo):
 
 - **Tap simple con selección persistente**, no tap-and-hold: tocar un arco lo deja seleccionado (radio mayor) hasta que se toque otro arco (cambia la selección) o se vuelva a tocar el mismo (deselecciona). Nunca dos arcos resaltados a la vez.
-- **Centro de la dona**: con selección activa, muestra el **nombre de la categoría** sobre el monto gastado en ella; sin selección, vuelve a mostrar solo el total (como hoy).
-- **Pill "Ver subcategorías" / "Ir más profundo"**: deshabilitado (estilo inerte) mientras no haya ninguna sección seleccionada; habilitado con selección activa.
-- **Drill-down in-place, no pantalla nueva**: al tocar el pill con una categoría seleccionada, la misma dona y el desglose se re-renderizan con las subcategorías de esa categoría, y la selección se limpia al entrar al nuevo nivel. Esto resuelve el pendiente "destino de 'Ver subcategorías'" — nunca hubo que diseñar un destino, es el mismo frame con otro nivel de datos.
-- **Pill "Atrás"**: mismo componente que el pill de profundizar, pero en el nivel de subcategorías cambia su copy/ícono a "Atrás" (chevron hacia atrás) y regresa al nivel de categorías raíz sin selección activa (componentizado en `Chart Drill Pill` `OiM6E`, ver tabla de componentes).
-- **Tap en una card de categoría o subcategoría** (fuera de la dona, en el desglose) navega a Movimientos preseleccionando el filtro por esa categoría y el rango de fechas activo en Gráficas.
+- **Centro de la dona**: con selección activa, muestra el **nombre de la categoría** sobre el monto gastado en ella (acotado en ancho con ellipsis, para que nombres largos no se desborden del círculo); sin selección, vuelve a mostrar solo el total (como hoy).
+- **Botón "Profundizar"** (antes "Ver subcategorías"): reposicionado arriba de la dona, alineado a la derecha, estilo compacto (reemplaza la fila full-width de 44px con borde superior). **Solo aparece cuando está habilitado** (hay una sección seleccionada con subcategorías) — reserva su espacio (`Visibility(maintainSize: true)`) para no desplazar el resto del contenido al aparecer/desaparecer.
+- **Drill-down in-place, no pantalla nueva**: al tocar el botón con una categoría seleccionada, la misma dona y el desglose se re-renderizan con las subcategorías de esa categoría, y la selección se limpia al entrar al nuevo nivel. Esto resuelve el pendiente "destino de 'Ver subcategorías'" — nunca hubo que diseñar un destino, es el mismo frame con otro nivel de datos.
+- **Botón "Atrás"**: mismo componente que "Profundizar", pero en el nivel de subcategorías cambia su copy/ícono a "Atrás" (chevron hacia atrás) y regresa al nivel de categorías raíz sin selección activa (componentizado en `Chart Drill Pill` `OiM6E`, ver tabla de componentes).
+- **Tap en una card de categoría o subcategoría** (fuera de la dona, en el desglose) navega a Movimientos preseleccionando el filtro por esa categoría y el rango de fechas activo en Gráficas, y el back (botón o gesto del sistema) vuelve a esta pantalla en la pestaña Categorías, no a Inicio.
 
 ### Estados
 
@@ -133,6 +147,14 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 - **Historial insuficiente**: la vista **no finge** una serie larga. Acota el rango a lo que existe y **cambia la agregación de meses a días**. Un día sin ingresos dibuja un stub de 3px: cero ≠ sin dato.
 - **Fallo de sync**: **no** es error a pantalla completa. La gráfica se ve entera con todos sus datos y el fallo es una tira discreta en `$amber` (no `$expense`) que lleva al Estado de sincronización. Hay cambios esperando, no algo roto. Mismo criterio que `04-inicio.md` HU-10. Es una presentación distinta al mismo evento de dominio que en Inicio muestra `Sync Indicator` (`saRZW`) en el header: divergencia deliberada, documentada en el `context` de la tira.
 - **Resumen vacío**: cada tarjeta lleva su vacío con su CTA en el lugar. **Un solo CTA primario por pantalla** (nota `FR1Gz`): "Crear presupuesto" Primary, "Crear meta" Secondary — dos primarios apilados compiten y ninguno gana. Patrón reusable: dos `Card Empty` hermanas apiladas → la primera Primary, las siguientes Secondary.
+
+### Destino de "Ver subcategorías" (pendiente #3, resuelto 2026-07-29)
+
+**Variante "Con dona" (`BfdaF`)**: el link "Ver subcategorías" de la tarjeta de Categorías (`A3zxf`/`guwa6`) navega a una pantalla propia con `Page Header · Con subtítulo` (`s9gXs`, título = nombre de la categoría, subtítulo = rango vigente) y una `Report Card` (`dflhE`) con dona + desglose de subcategorías, mismo lenguaje que la dona de Categorías.
+
+**Switcher horizontal de categorías, no un link por fila**: el link real en `Card Categorías` es único, al final de la tarjeta — no hay un "ver subcategorías" por cada fila del desglose. Por eso el destino no asume que se llegó desde una categoría fija: trae un `Category Switcher` horizontal (`Category Switch Chip` × N, componente nuevo `SspER`) para cambiar de categoría sin volver atrás. Contrato de selección: 3 señales (stroke + color de ícono + color de texto), nunca el fill solo.
+
+Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista simple" (página completa sin gráfico) y variante B "hoja/bottom sheet" (mismo contenido en `Bottom Sheet Base`).
 
 ## Notas para implementación
 
@@ -148,4 +170,5 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 1. **Migración de `FSL69`/`q1qGr`/`EB2TX` a `$primary-data`** — requiere aprobación del usuario; toca Presupuestos y Metas, ya aprobadas.
 2. **Variante oscura del sheet Selector de Periodo base (`Sy92N`)** — no construida (el estado "rango personalizado activo" ya tiene su oscuro en `XkFWg`, aprobado).
-3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas".
+3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver "Categorías — interacción de la dona y drill-down".
+4. ~~Tema oscuro pendiente para las 6 pantallas nuevas de 2026-07-29~~ — resuelto 2026-07-30, ver nodeIds oscuros en "Frames".
