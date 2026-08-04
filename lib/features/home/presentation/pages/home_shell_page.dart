@@ -16,9 +16,41 @@ import '../widgets/home_tab_bar.dart';
 /// pushed above it. A back gesture from a pushed subscreen keeps popping
 /// that subscreen normally, untouched by this scope.
 class HomeShellPage extends StatelessWidget {
-  const HomeShellPage({required this.navigationShell, super.key});
+  const HomeShellPage({
+    required this.navigationShell,
+    this.onSelectBranch,
+    this.onInterceptBranchBack,
+    super.key,
+  });
 
   final StatefulNavigationShell navigationShell;
+
+  /// Optional hook fired with the tapped index right before the branch
+  /// switch itself. Lets the composition root (the router) run cross-feature
+  /// side effects tied to reaching a specific tab through the ordinary
+  /// bottom tab bar — e.g. clearing Gráficas' "volver a Gráficas" flag on
+  /// Movimientos when the user lands there this way instead of through the
+  /// categories drill-down (`app_router.dart`'s `_movimientosBranch`).
+  final void Function(int index)? onSelectBranch;
+
+  /// Queried on every system-back press, before the default "jump to Inicio"
+  /// behaviour: lets the composition root override the back gesture for the
+  /// *current* branch's root screen. Returns a callback to run instead of
+  /// the default, or `null` to fall through to it.
+  ///
+  /// This exists because `StatefulShellRoute.indexedStack`'s branches each
+  /// get their own nested `Navigator`, but go_router's Android system-back
+  /// dispatch (`GoRouterDelegate.popRoute` → `_rootNavigatorKey.currentState
+  /// ?.maybePop()`) only ever asks the *root* `Navigator` — the one this
+  /// `PopScope` sits on, since the whole `StatefulShellRoute` is a single
+  /// page on it. A branch route's own `PopScope` (e.g. `TransactionsPage`'s,
+  /// for Gráficas' "volver a Gráficas" flow) lives on a *nested* Navigator
+  /// that system back never reaches, so without this hook every
+  /// system-back press at a branch's root unconditionally falls to
+  /// `goBranch(0)` — stealing Movimientos' "volver a Gráficas" back target
+  /// and silently landing on Inicio instead (bugfix: system back from the
+  /// categories drill-down).
+  final VoidCallback? Function(int currentIndex)? onInterceptBranchBack;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +61,13 @@ class HomeShellPage extends StatelessWidget {
         body: navigationShell,
         bottomNavigationBar: HomeTabBar(
           currentIndex: navigationShell.currentIndex,
-          onSelect: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          ),
+          onSelect: (index) {
+            onSelectBranch?.call(index);
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
         ),
       ),
     );
@@ -40,6 +75,11 @@ class HomeShellPage extends StatelessWidget {
 
   Future<void> _handleBack(BuildContext context, bool didPop) async {
     if (didPop) {
+      return;
+    }
+    final intercept = onInterceptBranchBack?.call(navigationShell.currentIndex);
+    if (intercept != null) {
+      intercept();
       return;
     }
     if (navigationShell.currentIndex != 0) {

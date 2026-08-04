@@ -24,6 +24,7 @@ void main() {
         onOpenDebts: () {},
         onOpenScheduledPayments: () {},
         onOpenGoals: () {},
+        onOpenReports: () {},
         onOpenComingSoon: (_) {},
         onOpenSettings: () {},
         isSignedIn: isSignedIn,

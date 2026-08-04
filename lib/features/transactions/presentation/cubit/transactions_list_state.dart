@@ -18,6 +18,7 @@ class TransactionsListState extends Equatable {
     TransactionFilter? filter,
     this.failure,
     this.pendingUndoId,
+    this.arrivedFromReports = false,
   }) : filter = filter ?? TransactionFilter();
 
   final TransactionsListStatus status;
@@ -39,6 +40,16 @@ class TransactionsListState extends Equatable {
   /// The id of the transaction a "Deshacer" snackbar is currently offered
   /// for (HU-05). `null` once dismissed or undone.
   final String? pendingUndoId;
+
+  /// Whether this list was last reached from Gráficas e informes' categories
+  /// drill-down, so the header can offer an explicit "volver a Gráficas"
+  /// button (`app_router.dart`'s `_movimientosBranch`). Lives here — instead
+  /// of the router's `GoRouterState.extra` — because `StatefulShellRoute`
+  /// does not rebuild an already-visited branch's `GoRoute` on a later
+  /// `context.go` to the same location; the cubit's own reactive state does
+  /// not depend on that rebuild. Cleared once the button is used or the user
+  /// reaches Movimientos through any other entry point.
+  final bool arrivedFromReports;
 
   bool get isLoading => status == TransactionsListStatus.loading;
 
@@ -81,6 +92,7 @@ class TransactionsListState extends Equatable {
     Failure? failure,
     String? pendingUndoId,
     bool clearPendingUndo = false,
+    bool? arrivedFromReports,
   }) =>
       TransactionsListState(
         status: status ?? this.status,
@@ -92,9 +104,17 @@ class TransactionsListState extends Equatable {
         failure: failure,
         pendingUndoId:
             clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
+        arrivedFromReports: arrivedFromReports ?? this.arrivedFromReports,
       );
 
   @override
-  List<Object?> get props =>
-      [status, items, accounts, filter, failure, pendingUndoId];
+  List<Object?> get props => [
+        status,
+        items,
+        accounts,
+        filter,
+        failure,
+        pendingUndoId,
+        arrivedFromReports,
+      ];
 }

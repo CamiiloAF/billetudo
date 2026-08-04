@@ -14,6 +14,7 @@ void main() {
     VoidCallback? onDebts,
     VoidCallback? onScheduledPayments,
     VoidCallback? onGoals,
+    VoidCallback? onReports,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -26,6 +27,7 @@ void main() {
           onOpenDebts: onDebts ?? () {},
           onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenGoals: onGoals ?? () {},
+          onOpenReports: onReports ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -59,13 +61,22 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías, Deudas, Pagos programados, Metas y Ajustes están '
-      'vivas (sin badge Próximamente)', (tester) async {
+      'Cuentas, Categorías, Deudas, Pagos programados, Metas, Gráficas e '
+      'informes y Ajustes están vivas (sin badge Próximamente)',
+      (tester) async {
     await pumpMore(tester);
 
-    // Six live rows, two not-yet-built ones carrying the badge (Gráficas e
-    // informes, Importar y exportar).
-    expect(find.byType(ComingSoonBadge), findsNWidgets(2));
+    // Scroll every row into the lazy ListView's viewport before counting
+    // badges, otherwise unbuilt rows below the fold would undercount.
+    await tester.scrollUntilVisible(
+      find.text('Ajustes'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+
+    // Seven live rows, one not-yet-built one carrying the badge (Importar y
+    // exportar).
+    expect(find.byType(ComingSoonBadge), findsOneWidget);
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -86,6 +97,7 @@ void main() {
     expect(badgeOf('Deudas'), isNull);
     expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Metas'), isNull);
+    expect(badgeOf('Gráficas e informes'), isNull);
     expect(badgeOf('Ajustes'), isNull);
   });
 
@@ -183,6 +195,28 @@ void main() {
     final opened = <String>[];
     await pumpMore(tester, onComingSoon: opened.add);
 
+    // Now the second-to-last row (after "Gráficas e informes" was added
+    // above it): scrollUntilVisible alone can leave it right at the
+    // viewport edge (fails hit-testing) — ensureVisible settles it, same
+    // fix as "Cerrar sesión" below.
+    await tester.scrollUntilVisible(
+      find.text('Importar y exportar'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.ensureVisible(find.text('Importar y exportar'));
+    await tester.pump();
+    await tester.tap(find.text('Importar y exportar'));
+    await tester.pump();
+
+    expect(opened, ['Importar y exportar']);
+  });
+
+  testWidgets('tocar Gráficas e informes enruta a la feature real',
+      (tester) async {
+    var reports = 0;
+    await pumpMore(tester, onReports: () => reports++);
+
     await tester.scrollUntilVisible(
       find.text('Gráficas e informes'),
       100,
@@ -191,6 +225,6 @@ void main() {
     await tester.tap(find.text('Gráficas e informes'));
     await tester.pump();
 
-    expect(opened, ['Gráficas e informes']);
+    expect(reports, 1);
   });
 }

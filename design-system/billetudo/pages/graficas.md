@@ -47,6 +47,13 @@ Las 5 filas nuevas (Resumen/Patrimonio/Categorías) siguen el mismo lenguaje ya 
 | Pieza | Claro | Oscuro |
 |---|---|---|
 | Selector de Periodo | `Sy92N` | **no construido** (hueco conocido) |
+| Selector de Periodo — rango personalizado activo | `c3gyor` | `XkFWg` |
+
+**Estado "rango personalizado activo" del Selector de Periodo** (`c3gyor`, frame separado del base `Sy92N` — mismo patrón que Transacciones usa con `mi0hB` separado de su sheet base): se muestra cuando `ReportsPeriodSelection.kind == custom`, es decir, cuando el usuario ya aplicó un rango de fechas personalizado como filtro activo.
+
+Tratamiento:
+- La fila **"Rango personalizado"** (`qiXGl`) queda resaltada: fill `$primary-soft`, borde `$primary-on-soft-strong`, ícono de check, y el texto muestra el rango real aplicado (ej. "mar – ago 2026") en vez del label genérico.
+- El segmentado Mes/Año (`RArsH/JipTk`) y el stepper (`RArsH/P3Fyb`) permanecen en su **estado normal habilitado** (opacity:1, sin fondo activo en ningún segmento) — **no** se deshabilitan ni atenúan, porque siguen siendo interactivos: tocar Mes o Año reemplaza el rango personalizado por ese filtro (cambia `kind` de `custom` a `month`/`year`).
 
 ### Ver Subcategorías (destino de "Ver subcategorías")
 | Pantalla | Claro | Oscuro |
@@ -68,7 +75,7 @@ Las 5 filas nuevas (Resumen/Patrimonio/Categorías) siguen el mismo lenguaje ya 
 | Chart Cross-link Card | `wvAKu` → **Cross-link Deudas Card** | Renombrado: icono y label están horneados, es de un solo caso. |
 | Goal Summary Row | `He7JZ` | Fila de meta en Resumen (anida `q1qGr`). |
 | Card Empty | `S27V2` | Vacío dentro de una tarjeta, CTA reemplazable por slot. |
-| Category Switch Chip | `SspER` | Fila horizontal de categorías en Ver Subcategorías, con scroll horizontal (`ListView` en Flutter). Seleccionado = 3 señales: stroke `$primary-data`, ícono `$primary-data`, texto `$text-primary`. No seleccionado: sin stroke, ícono y texto en `$segment-inactive-text`. El fill (`$primary-soft` seleccionado / `$muted` no seleccionado) **no** es señal válida por sí sola — ambos tokens comparten el mismo hex en los dos temas. |
+| Chart Drill Pill | `OiM6E` | Pill de drill-down del donut (44px, borde superior). 3 estados vía overrides: inerte (`$segment-inactive-text`), habilitado "Ver subcategorías" (`$primary-on-soft`, chevron-right), "Atrás" (`$primary-on-soft`, chevron-left a la izquierda vía slot `enabled:false`/`true`, no reordenando hijos). Reemplaza 3 copias inline (`guwa6`→`gbZI4`, `kjLPg`→`Ok2bd`, `FK2qi`→`Fkwo3`). Renombrado a "Profundizar" y reposicionado (ver "Categorías — interacción de la dona y drill-down"). |
 
 Reusados sin modificar: `Dtm0X` Page Header, `vYZJT` Status Bar, `FSL69` Budget Line, `DRc5X` Category Row, `gZyEC` Toggle Field, `hIbs3` Menu Row, `jmQO5` Empty State, `j7Zvt`/`pNjOz` botones, `q1qGr` Goal Ring/Mini.
 
@@ -122,18 +129,16 @@ Descartadas: fondo `$expense-soft` (tiñe la pantalla de alarma), badge "Mes en 
 
 **Variantes de copy para l10n** (nota `Ojbfk`): la primera frase es constante en forma, la segunda depende del rango — mes único (agregación por día), varios meses, rango personalizado, historial corto. **Prohibido en estas cadenas:** "suele pasar"/"no te preocupes" (excusa), "te pasaste"/"gastaste de más" (juzga). El monto siempre con signo y cifra completa.
 
-### Interacción del donut de Categorías (2026-07-30, en revisión — solo tema claro)
+### Categorías — interacción de la dona y drill-down (reemplaza el tap-and-hold)
 
-Reemplaza la interacción anterior de "mantener presionado para revelar" (nunca llegó a dibujarse en el `.pen` ni a documentarse aquí, así que no hay nada que borrar salvo la instrucción verbal). La nueva interacción es **tap simple con selección persistente**, tres frames en `A3zxf` y sus dos variantes nuevas:
+**Decisión del usuario, ya implementada** (reemplaza cualquier mención previa de "mantener presionado para revelar" en esta pantalla, y reemplaza también la exploración alterna "Category Switch Chip"/`SspER` de destino en pantalla propia — nunca se implementó, ver más abajo):
 
-1. **Selección por tap.** Tocar un arco lo deja seleccionado: crece centrado de 156 a 180px (mismo `innerRadius` 0.73, así que el anillo se ve más grueso/prominente hacia ambos lados, sin desalinearse ni superponerse con los vecinos) hasta que el usuario toca otro arco (el nuevo pasa a agrandado, el anterior vuelve a 156px) o vuelve a tocar el mismo arco (se deselecciona, todos vuelven a 156px). **Nunca hay dos arcos resaltados a la vez.**
-2. **Centro del donut:**
-   - **Sin selección** (`A3zxf`, estado por defecto): centro muestra solo el total ("$19.190.000" / "gastado"), sin nombre de categoría — esto YA era el comportamiento existente, no cambió.
-   - **Con selección** (`tCOi4`, ej. Vivienda seleccionada): el centro cambia a nombre de categoría arriba (12/600, `$text-secondary`) y monto gastado en esa categoría abajo (16/800, `$text-primary` — mismo estilo que el total por defecto).
-3. **Pill "Ver subcategorías":** se ve deshabilitado/inerte (`$segment-inactive-text` en label e ícono, en vez de `$primary-on-soft`) cuando NO hay selección (`A3zxf`); pasa a su estilo habilitado (`$primary-on-soft`) en cuanto hay una sección seleccionada (`tCOi4`). Mismo patrón de token que usa `segment-inactive-text` para "cualquier label/glifo apagado sobre `muted`" en MASTER — aquí el pill vive sobre `$surface`, mismo criterio de "apagado" por tratamiento de color, no por opacidad.
-4. **Pill "Atrás" (`d2bv47`):** mismo componente/fila (borde superior, 44px), pero cuando el usuario ya profundizó a nivel de subcategorías (drill-down **in-place**, no navegación a otra pantalla) cambia su copy a "Atrás" y su ícono a `chevron-left`, reemplazando "Ver subcategorías"/`chevron-right`. Reemplaza el ítem "destino de 'Ver subcategorías'" de "Pendientes conocidos" — ya no es un destino, es un drill-down in-place con su propia afordancia de retroceso.
-
-**No incluido en esta revisión** (fuera de alcance de lo pedido): el listado de subcategorías en sí (`Desglose`/`qrzfK` no cambia entre variantes), y si la fila del Desglose correspondiente a la categoría seleccionada debería resaltarse también — ninguno de los dos se diseñó, quedan abiertos si se quiere profundizar.
+- **Tap simple con selección persistente**, no tap-and-hold: tocar un arco lo deja seleccionado (radio mayor) hasta que se toque otro arco (cambia la selección) o se vuelva a tocar el mismo (deselecciona). Nunca dos arcos resaltados a la vez.
+- **Centro de la dona**: con selección activa, muestra el **nombre de la categoría** sobre el monto gastado en ella (acotado en ancho con ellipsis, para que nombres largos no se desborden del círculo); sin selección, vuelve a mostrar solo el total (como hoy).
+- **Botón "Profundizar"** (antes "Ver subcategorías"): reposicionado arriba de la dona, alineado a la derecha, estilo compacto (reemplaza la fila full-width de 44px con borde superior). **Solo aparece cuando está habilitado** (hay una sección seleccionada con subcategorías) — reserva su espacio (`Visibility(maintainSize: true)`) para no desplazar el resto del contenido al aparecer/desaparecer.
+- **Drill-down in-place, no pantalla nueva**: al tocar el botón con una categoría seleccionada, la misma dona y el desglose se re-renderizan con las subcategorías de esa categoría, y la selección se limpia al entrar al nuevo nivel. Esto resuelve el pendiente "destino de 'Ver subcategorías'" — nunca hubo que diseñar un destino, es el mismo frame con otro nivel de datos.
+- **Botón "Atrás"**: mismo componente que "Profundizar", pero en el nivel de subcategorías cambia su copy/ícono a "Atrás" (chevron hacia atrás) y regresa al nivel de categorías raíz sin selección activa (componentizado en `Chart Drill Pill` `OiM6E`, ver tabla de componentes).
+- **Tap en una card de categoría o subcategoría** (fuera de la dona, en el desglose) navega a Movimientos preseleccionando el filtro por esa categoría y el rango de fechas activo en Gráficas, y el back (botón o gesto del sistema) vuelve a esta pantalla en la pestaña Categorías, no a Inicio.
 
 ### Estados
 
@@ -156,7 +161,7 @@ Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista s
 - **Patrimonio se implementa como `LineChart`**, no barras (nota `khZjH`). El `.pen` usa barras **solo** porque Pencil no puede dibujar líneas; es una aproximación declarada, no la especificación. El resto del frame (hero de dos cifras, nota del interés, toggle de archivadas, jerarquía, colores) sí es especificación.
 - **La 7ª columna "ene" del gráfico de patrimonio** no es decorativa: el neto de caja del periodo **es** el cambio del patrimonio líquido, y con solo 6 columnas esa identidad es aritméticamente imposible (el delta feb→jul solo puede valer el neto de mar–jul). La columna de partida es lo que permite que endpoints y pasos mensuales cuadren a la vez.
 - **Las figuras del hero de Resumen no usan `Chart Legend Item`** a propósito: son etiquetas de sección, no leyendas de serie. Ese componente reserva el color para keyear una serie graficada.
-- **Lectura de valores**: los gráficos no tienen ejes ni escala, así que **deben poder tocarse** para leer la magnitud (tap en barra, punto o segmento → valor y periodo). Sin eso el gráfico es decorativo y todo el peso informativo queda en el hero. **No está diseñado todavía.**
+- **Lectura de valores**: los gráficos no tienen ejes ni escala, así que **deben poder tocarse** para leer la magnitud (tap en barra, punto o segmento → valor y periodo). Sin eso el gráfico es decorativo y todo el peso informativo queda en el hero. **No está diseñado todavía**, salvo en Categorías, donde ya se resolvió con selección persistente (ver "Categorías — interacción de la dona y drill-down").
 - **Accesibilidad**: cada gráfico expone un resumen textual vía `Semantics` — un lector de pantalla no puede recorrer las barras. En la dona, `peach` y `coral` son el par adyacente más cercano (~36° de matiz): cada arco está keyeado por su fila con ícono y nombre, así que el color no es el único canal.
 - **Multimoneda está fuera de este entregable** (nota `O91yc8`): no hay rótulo de "cifra aproximada" ni segmentación por moneda. Se asume moneda única.
 - **Datos de mockup no son especificación**: son coherentes dentro de cada plantilla y entre frames que comparten hero, no globalmente.
@@ -164,7 +169,6 @@ Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista s
 ## Pendientes conocidos
 
 1. **Migración de `FSL69`/`q1qGr`/`EB2TX` a `$primary-data`** — requiere aprobación del usuario; toca Presupuestos y Metas, ya aprobadas.
-2. **Variante oscura del sheet Selector de Periodo (`Sy92N`)** — no construida.
-3. **Sin diseñar**: tooltip de lectura de valor al tocar, share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver `BfdaF` en "Decisiones cerradas".
+2. **Variante oscura del sheet Selector de Periodo base (`Sy92N`)** — no construida (el estado "rango personalizado activo" ya tiene su oscuro en `XkFWg`, aprobado).
+3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver "Categorías — interacción de la dona y drill-down".
 4. ~~Tema oscuro pendiente para las 6 pantallas nuevas de 2026-07-29~~ — resuelto 2026-07-30, ver nodeIds oscuros en "Frames".
-5. **Variante oscura de la nueva interacción del donut de Categorías** (`tCOi4`/`d2bv47` — ver "Interacción del donut de Categorías") — pendiente hasta que el usuario apruebe el tema claro.
