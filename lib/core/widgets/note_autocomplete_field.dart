@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../di/injection.dart';
 import '../notes/domain/usecases/get_note_suggestions.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'note_suggestions_dropdown.dart';
 
 /// The shared "Nota" field (`taqc1`): a free-text input that also suggests
 /// past values from history, typed in exactly once here instead of
@@ -247,7 +247,7 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
                 alignment: Alignment.topLeft,
                 child: SizedBox(
                   width: constraints.maxWidth,
-                  child: _NoteSuggestionsDropdown(
+                  child: NoteSuggestionsDropdown(
                     suggestions: _suggestions,
                     onSelected: _selectSuggestion,
                   ),
@@ -258,99 +258,6 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
           ),
         );
       },
-    );
-  }
-}
-
-/// The `Suggestions Dropdown`: grows freely up to 4 full rows, then caps at
-/// `maxHeight: 200` with internal scroll from the 5th suggestion on, so it
-/// never covers the rest of the form on mobile.
-class _NoteSuggestionsDropdown extends StatelessWidget {
-  const _NoteSuggestionsDropdown({
-    required this.suggestions,
-    required this.onSelected,
-  });
-
-  final List<String> suggestions;
-  final ValueChanged<String> onSelected;
-
-  static const double _maxHeight = 200;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final scrolls = suggestions.length > 4;
-
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        key: const ValueKey('note-suggestions-dropdown'),
-        constraints: scrolls
-            ? const BoxConstraints(maxHeight: _maxHeight)
-            : const BoxConstraints(),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusField),
-          border: Border.all(color: colors.border),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: ListView.separated(
-          padding: EdgeInsets.zero,
-          shrinkWrap: true,
-          physics: scrolls
-              ? const ClampingScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
-          itemCount: suggestions.length,
-          separatorBuilder: (context, index) =>
-              Divider(height: 1, thickness: 1, color: colors.border),
-          itemBuilder: (context, index) {
-            final suggestion = suggestions[index];
-            return _NoteSuggestionRow(
-              label: suggestion,
-              onTap: () => onSelected(suggestion),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-/// A single `Suggestion Row`: `history` icon (16px, `$text-secondary`) +
-/// label (14/500, `$text-primary`).
-class _NoteSuggestionRow extends StatelessWidget {
-  const _NoteSuggestionRow({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        child: Row(
-          children: [
-            Icon(LucideIcons.history, size: 16, color: colors.textSecondary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: colors.textPrimary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

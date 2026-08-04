@@ -430,7 +430,7 @@ if (plan.needsUi) {
     return agent(
       `Revisa la fidelidad visual completa de la feature "${plan.featureDir}" (corrida "${SLUG}") comparando cada golden test ya generado contra su nodeId real en billetudo.pen. Sigue tu playbook (.claude/agents/pencil-fidelity-reviewer.md).
 
-1. Confirma primero si existe design-system/billetudo/pages/${plan.featureDir}.md. Si NO existe, devuelve applicable=false y explica en reason — no es un fallo, la feature aun no tiene ese spec.
+1. Confirma primero si existe el spec de esta feature. TODOS los archivos bajo design-system/billetudo/pages/ estan nombrados en ESPANOL (ej. transacciones.md, metas.md, presupuestos.md, cuentas.md), NO en el nombre ingles de la carpeta de lib/features/. "${plan.featureDir}" es el nombre de carpeta en ingles — nunca lo uses tal cual como nombre de archivo. Primero intenta Glob("design-system/billetudo/pages/*.md") y elige el archivo cuyo nombre/contenido corresponda semanticamente a "${plan.featureDir}" (traduccion directa o Read rapido de las primeras lineas si el nombre no es obvio). Solo si ese Glob no produce ningun candidato razonable, devuelve applicable=false y explica en reason — no es un fallo, la feature aun no tiene ese spec.
 2. Si existe, confirma acceso real al .pen (get_app_state). Si el MCP no responde, devuelve applicable=true, accessible=false y explica en reason — no compares a ciegas contra el .md solo.
 3. Si tienes acceso: Glob sobre test/features/${plan.featureDir}/presentation/golden/goldens/*.png y compara CADA .png contra su fila en el .md (nodeId claro/oscuro segun el sufijo _light/_dark del archivo). No te limites a una muestra.
 ${note ? `\nNOTA: ${note}` : ''}
