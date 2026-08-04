@@ -60,11 +60,11 @@ PODS:
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
   - RecaptchaInterop (101.0.0)
-  - Sentry/HybridSDK (8.58.3)
-  - sentry_flutter (9.24.0):
+  - Sentry/HybridSDK (8.58.4)
+  - sentry_flutter (9.26.0):
     - Flutter
     - FlutterMacOS
-    - Sentry/HybridSDK (= 8.58.3)
+    - Sentry/HybridSDK (= 8.58.4)
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
@@ -151,8 +151,8 @@ SPEC CHECKSUMS:
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
-  Sentry: 108fdbb76299c4189af12246bf0308c09c278922
-  sentry_flutter: 8528594bf73819ef3f40c2e218e93554fc2719e6
+  Sentry: 5321d74bdd28d6f6f8beaa1ca06f1fdc746bff49
+  sentry_flutter: 01a996130a18996b59600c51e68b0e6364cde8b3
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
