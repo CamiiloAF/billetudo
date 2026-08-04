@@ -162,7 +162,11 @@ jobs:
   build-ipa:
     name: Build & upload IPA
     needs: bump-version
-    runs-on: macos-14
+    # macos-14 trae Xcode 15.4 — App Store Connect exige SDK de iOS 26+
+    # (Xcode 26+) para aceptar subidas desde 2026 ("SDK version issue",
+    # validation 409 en `xcrun altool`, ver release-0.0.4 4to intento).
+    # macos-26 es GA desde 2026-02-26 y trae Xcode 26.6 por defecto.
+    runs-on: macos-26
     permissions:
       contents: write
     steps:
