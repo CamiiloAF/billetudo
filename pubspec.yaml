@@ -158,7 +158,10 @@ dev_dependencies:
   # e2e. Versión acoplada al CLI: `dart pub global activate patrol_cli 4.5.1`
   # (patrol 4.7.x exige patrol_cli >=4.5.0 — un desajuste entre ambos falla en
   # runtime, no en tiempo de análisis). Requiere setup nativo tras `flutter create .`.
-  patrol: ^4.7.1
+  # Fijado exacto (sin ^): patrol 4.8.0 rompe el módulo nativo de Android
+  # (compileDebugKotlin: "Cannot access 'MobileAutomatorServer'") contra
+  # patrol_cli 4.5.1 — hay que subir ambos juntos, nunca solo uno.
+  patrol: 4.7.1
   integration_test:
     sdk: flutter
   # `InMemorySharedPreferencesAsync`, usado en el test del datasource de
