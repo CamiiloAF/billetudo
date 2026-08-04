@@ -1,4 +1,5 @@
 import 'package:billetudo/features/budgets/domain/entities/budget_detail_data.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_expense.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/services/budget_progress_calculator.dart';
@@ -135,5 +136,61 @@ void main() {
     // 1000 (pending Jan 10) + 1000 (projected Jan 25) = 2000, never 3000.
     expect(view.progress.scheduledMinor, 2000);
     expect(view.scheduledItems, hasLength(2));
+  });
+
+  test(
+      'criterion 6: an expense that lowered the disponible, then a '
+      'presupuestable income linked to it, brings the disponible back to '
+      'the original amount', () {
+    final budget = buildBudget(startDate: DateTime(2024, 1, 1));
+    final data = BudgetDetailData(
+      budget: budget,
+      scope: const BudgetScope.empty(),
+      expenses: [
+        BudgetExpenseDetail(
+          expense: BudgetExpense(
+            id: 'gasto',
+            accountId: 'a1',
+            amountMinor: 10000,
+            currency: 'COP',
+            date: DateTime(2024, 1, 5),
+          ),
+          title: 'Préstamo',
+          accountName: 'Efectivo',
+        ),
+        BudgetExpenseDetail(
+          expense: BudgetExpense(
+            id: 'repago',
+            accountId: 'a1',
+            amountMinor: 10000,
+            currency: 'COP',
+            date: DateTime(2024, 1, 10),
+            isIncome: true,
+          ),
+          title: 'Me pagaron',
+          accountName: 'Efectivo',
+        ),
+      ],
+      categoryChildren: const {},
+      scheduledTemplates: const [],
+      pendingScheduledOccurrences: const [],
+    );
+
+    final view = usecase.call(data, now: DateTime(2024, 1, 15), index: 0);
+
+    // The disponible (amountMinor - spentMinor) is exactly the budget's
+    // untouched target: the 10000 gasto and the 10000 repago netted to 0.
+    expect(view.progress.spentMinor, 0);
+    expect(view.progress.amountMinor - view.progress.spentMinor,
+        budget.amountMinor);
+    expect(view.activity, hasLength(2));
+    expect(
+      view.activity.firstWhere((a) => a.id == 'repago').isIncome,
+      isTrue,
+    );
+    expect(
+      view.activity.firstWhere((a) => a.id == 'gasto').isIncome,
+      isFalse,
+    );
   });
 }

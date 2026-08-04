@@ -9,6 +9,7 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../domain/entities/goal_contribution.dart';
 import '../../cubit/edit_goal_movement_cubit.dart';
 import '../../cubit/edit_goal_movement_state.dart';
@@ -137,13 +138,11 @@ class EditGoalMovementSheetBody extends StatelessWidget {
                 const SizedBox(height: 14),
                 GoalMovementFieldLabel(text: l10n.goalMovementNoteLabel),
                 const SizedBox(height: 6),
-                TextFormField(
+                NoteAutocompleteField(
                   key: const ValueKey('edit-goal-movement-note'),
                   initialValue: state.note,
-                  textCapitalization: TextCapitalization.sentences,
+                  hint: l10n.goalMovementNoteHint,
                   onChanged: cubit.noteChanged,
-                  decoration:
-                      InputDecoration(hintText: l10n.goalMovementNoteHint),
                 ),
                 if (state.failure != null && !state.isAmountFailure) ...[
                   const SizedBox(height: 8),

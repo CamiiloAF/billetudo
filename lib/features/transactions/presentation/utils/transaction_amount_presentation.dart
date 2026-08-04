@@ -8,12 +8,25 @@ import '../../domain/entities/transaction.dart';
 /// Inicio): expense `-$X`, income `+$X`, transfer unsigned. Shared by
 /// `TransactionRow` and `RecentActivityRow` so the sign convention only lives
 /// in one place.
-String transactionAmountLabel(Transaction transaction) {
+String transactionAmountLabel(Transaction transaction) => signedAmountLabel(
+      amountMinor: transaction.amountMinor,
+      currencyCode: transaction.currency,
+      type: transaction.type,
+    );
+
+/// The same sign convention as [transactionAmountLabel], but for any
+/// `amountMinor`/`currencyCode`/`type` triple — e.g. a date group's summed
+/// total (`transaction_group_total.dart`), not just a single [Transaction].
+String signedAmountLabel({
+  required int amountMinor,
+  required String currencyCode,
+  required TransactionType type,
+}) {
   final formatted = const MoneyFormatter().formatSymbol(
-    transaction.amountMinor,
-    currencyCode: transaction.currency,
+    amountMinor,
+    currencyCode: currencyCode,
   );
-  return switch (transaction.type) {
+  return switch (type) {
     TransactionType.income => '+$formatted',
     TransactionType.expense => '-$formatted',
     TransactionType.transfer => formatted,

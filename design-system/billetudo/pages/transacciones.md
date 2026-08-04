@@ -329,11 +329,11 @@ Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de ch
 | Movimientos · Var A — carrusel colapsado (barra compacta) | `rGVw1` | `uxIps` |
 | Movimientos · Var A — carrusel con tarjeta de crédito activa | `Ljf8l` | `RdbCG` |
 
-**Componentes nuevos:** `C2g9cA` "Balance Card (Movimientos)" (altura uniforme; variante cuenta normal = avatar + nombre + tipo + saldo; variante tarjeta = deuda `$expense` + cupo disponible + barra de cupo, a la misma altura). `d2TX3` "Balance Bar Colapsada" (barra fina `$surface` + borde: `layers` + "N cuentas" + "Saldo total $X" + `chevron-down`, toda tocable para reexpandir).
+**Componentes nuevos:** `C2g9cA` "Balance Card (Movimientos)" (altura uniforme; variante cuenta normal = avatar + nombre + tipo + saldo; variante tarjeta = deuda `$expense` + cupo disponible + barra de cupo, a la misma altura). `d2TX3` "Balance Bar Colapsada" (barra fina `$surface` + borde: `layers` + "N cuentas" + "Saldo total $X", toda tocable para reexpandir — el `chevron-down` que llevaba como último elemento se retiró: el indicador ahora es la manija compartida de arriba).
 
 **Comportamiento:**
 - Refleja el filtro de cuenta: **1 cuenta** → esa card centrada (sin peek, sin dots); **2+ o "Todas"** → `PageView` con peek (~28px) + dots.
-- **Colapsable:** control = manija (`$muted`) + `chevron-up` centrado arriba del carrusel → colapsa a la barra compacta `d2TX3` (`chevron-down` para reexpandir; toda la barra es tocable). Estado persistido per-device (default expandido). El colapso **unificó** la variante compacta que se había explorado como opción propia.
+- **Colapsable:** control = manija compartida (`$muted` + chevron) — **misma franja física, siempre arriba**, en ambos estados; solo cambia el ícono (`chevron-up` expandido, `chevron-down` colapsado) y el label de semántica. Toda la barra compacta `d2TX3` debajo sigue siendo tocable para reexpandir (ya no tiene chevron propio al final). Estado persistido per-device (default expandido). El colapso **unificó** la variante compacta que se había explorado como opción propia. **Fix 2026-08-03:** antes la manija vivía en posiciones distintas por estado (franja arriba en expandido, chevron al final de la fila en colapsado) — bug reportado de salto de posición al expandir/colapsar; corregido en código (`movements_balance_carousel.dart`, manija como primer hijo de la `Column` compartida) y sincronizado aquí en `.pen`.
 - **Tap en una card → detalle de esa cuenta** (`/cuentas/<id>`).
 - Saldos negativos (deuda de tarjeta) en `$expense`; positivos en `$text-primary`. 100% tokens.
 
@@ -341,7 +341,26 @@ Bloque de saldo en vivo de la(s) cuenta(s) del filtro, **debajo de la fila de ch
 
 **Código:** `MovementsBalanceCarousel` / `MovementsBalanceCard` (`lib/features/transactions/presentation/widgets/`), `BalanceCarouselCubit` (`lib/core/preferences/`, colapso + página activa, SharedPreferences per-device). El dato de saldo ya venía en `TransactionsListCubit` (`state.accounts` = `List<AccountWithBalance>`).
 
-**Fidelidad visual (2026-07-21):** el componente del carrusel (`C2g9cA`) es **fiel en claro y oscuro** contra `cgasM`/`Y0lWi`. Fix de contraste aplicado: la deuda pasó de `$expense` a `$expense-text` (16px falla 4.5:1 en oscuro). Hallazgos IMPORTANTES del reviewer son del **chrome compartido de la pantalla, no del carrusel** y son **pre-existentes** (no los introduce esta mejora): título "Movimientos" centrado en el golden vs izquierda en Pencil, y el chip de Fecha en 2º lugar (código) vs último (spec §3). **Gaps de cobertura:** los estados colapsado (`rGVw1`) y tarjeta-activa (`Ljf8l`) no tienen golden propio (los goldens de página fuerzan `collapsed:false` y cuenta activa normal).
+**Fidelidad visual (2026-07-21):** el componente del carrusel (`C2g9cA`) es **fiel en claro y oscuro** contra `cgasM`/`Y0lWi`. Fix de contraste aplicado: la deuda pasó de `$expense` a `$expense-text` (16px falla 4.5:1 en oscuro). Hallazgos IMPORTANTES del reviewer son del **chrome compartido de la pantalla, no del carrusel** y son **pre-existentes** (no los introduce esta mejora): título "Movimientos" centrado en el golden vs izquierda en Pencil, y el chip de Fecha en 2º lugar (código) vs último (spec §3). **Gaps de cobertura:** los estados colapsado (`rGVw1`) y tarjeta-activa (`Ljf8l`) no tienen golden propio (los goldens de página fuerzan `collapsed:false` y cuenta activa normal). **Nota 2026-08-03:** la verificación de fidelidad de 2026-07-21 cubrió `C2g9cA` (expandido), no la posición de la manija en el estado colapsado — ese aspecto cambió de diseño el 2026-08-03 (ver arriba) y queda **pendiente de una nueva pasada de `/design-fidelity-check`** tras la implementación.
+
+## Adición 2026-08-03 — Chip "Presupuesto" en la Lista de Movimientos
+
+> **Estado:** implementado en código (`flutter-dev` vía `/feature-dev`), tests en verde, **sin auditoría de fidelidad todavía**. La corrida de implementación buscó este archivo como `pages/transactions.md` (inglés) y no lo encontró — es `transacciones.md` (español, este archivo) — así que asumió erróneamente que no había spec ni Node IDs contra los cuales verificar y saltó el chequeo de fidelidad. Corrigiendo esa nota aquí: sí existe spec (ver "Filtro de Cuentas de la Lista" `jpARf`, `Bottom Sheet Base` `PqTUt`, `Sheet Buttons Row` `Ot4yI` arriba en este documento). Pendiente una auditoría real de `ui-ux-reviewer`/`pencil-fidelity-reviewer` antes de marcar esto como visualmente cerrado.
+
+6to `FilterChipPill` "Presupuesto" en la barra de filtros de la Lista de Movimientos (junto a Cuenta, Fecha, Categoría, Tipo, Etiqueta), **independiente del chip Fecha** — no lo reemplaza, ambos pueden estar activos a la vez (intersección AND de ventanas). Al tocarlo abre una hoja de selección única (radio, no multi-select) con los presupuestos activos del usuario y la ventana de su período vigente; aplicar filtra Movimientos por esa ventana.
+
+**Sin Node ID propio en el `.pen`** — no se diseñó un frame nuevo para este chip/hoja. Se construyó reusando estrictamente componentes ya aprobados y documentados en este archivo: el mismo estilo de `FilterChipPill` que los otros 5 chips de la barra, `Bottom Sheet Base` (`PqTUt`) como base de la hoja, una fila de selección estilo `Filter Account Row`/`AccountSelectRow` (icono + nombre + rango de fecha, marca de `check` en la seleccionada) y `Sheet Buttons Row` (`Ot4yI`) para Limpiar/Aplicar. Sin invención estructural nueva — mismo criterio que ya aplica el propio documento para los 4 sheets de selección múltiple existentes (línea 271: "sin ser un componente formal `reusable:true`, candidato a componentizar").
+
+**Comportamiento:**
+- Estado activo del chip: `primary-soft`/`primary` con el nombre del presupuesto elegido (paralelo a `hasAccountFilter`/`hasCategoryFilter`); neutro sin selección.
+- Reabrir la hoja con un presupuesto ya elegido re-resuelve su ventana vigente (no una ventana congelada en el momento de la selección).
+- Si el presupuesto seleccionado se archiva o se borra mientras el filtro está activo, se limpia automáticamente (análogo a la poda ya existente para el filtro de cuenta).
+- Estado vacío de la hoja (usuario sin presupuestos activos) sin CTA a crear uno — no bloqueante para Nivel 0.
+- Selección única, coherente con "el período de **un** presupuesto" en singular.
+
+**Código:** `BudgetPeriodFilterCubit`/`BudgetPeriodFilterSheet` (`lib/features/transactions/presentation/`), caso de uso `WatchBudgetPeriodOptions` sobre `GetActiveBudgets`/`BudgetPeriodCalculator` de `budgets/domain`. Detalle completo en `docs/dev-runs/movements-budget-period-chip.md`.
+
+**Pendiente:** correr una auditoría visual real de este chip/hoja contra `billetudo.pen` (no hay Node ID dedicado que comparar, pero sí hay que verificar que los componentes reusados se vean/comporten igual que sus referencias documentadas arriba) antes de considerar esto fidelidad-verificado.
 
 ## Adición 2026-07-24 — Transferencia presupuestable (toggle `countsInBudget`)
 

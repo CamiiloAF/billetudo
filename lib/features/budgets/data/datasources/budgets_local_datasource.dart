@@ -34,6 +34,7 @@ class BudgetExpenseRow {
     this.categoryIcon,
     this.categoryColor,
     this.note,
+    this.isIncome = false,
   });
 
   final String id;
@@ -47,6 +48,11 @@ class BudgetExpenseRow {
   final String? categoryIcon;
   final String? categoryColor;
   final String? note;
+
+  /// `true` when the row is a `type = income` transaction folded in as
+  /// presupuestable income (budget-income-counts-in-budget); `false` for a
+  /// real expense or a presupuestable transfer.
+  final bool isIncome;
 }
 
 /// One income transaction reduced to the "Modo sobres" essentials (HU-06).
@@ -243,18 +249,25 @@ class BudgetsLocalDatasource {
 
   // -- Expenses --------------------------------------------------------------
 
-  /// Every expense that could feed a budget: `type = expense`, plus a
-  /// `type = transfer` marked `countsInBudget = true` (Fase B1, the
-  /// transferencia presupuestable — `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md`
-  /// §3). Not trashed nor tombstoned, enriched with account and category
-  /// names.
+  /// Every expense (or presupuestable income) that could feed a budget:
+  /// `type = expense`, plus a `type = transfer` marked `countsInBudget = true`
+  /// (Fase B1, the transferencia presupuestable —
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3), plus a
+  /// `type = income` marked `countsInBudget = true`
+  /// (budget-income-counts-in-budget — e.g. a debt repayment received,
+  /// automatically stamped by `RegisterDebtCashEvent`/
+  /// `DebtRepositoryImpl.linkTransactionToDebt`, or any income the user opts
+  /// in manually from the transaction form). Not trashed nor tombstoned,
+  /// enriched with account and category names.
   ///
-  /// A budgetable transfer is folded in as an **origin-side expense row**:
-  /// [BudgetExpenseRow.accountId] is the transfer's origin account, so
-  /// `BudgetProgressCalculator._matchesAccountId` naturally counts it as
-  /// spend for any budget whose scope includes that origin account — no new
-  /// matching rule needed, it flows through the exact same pipeline as a
-  /// plain expense.
+  /// A budgetable transfer or a presupuestable income is folded in as an
+  /// **origin-side row**: [BudgetExpenseRow.accountId] is the transfer's
+  /// origin account (an income has no other account to pick), so
+  /// `BudgetProgressCalculator._matchesAccountId` naturally counts it for any
+  /// budget whose scope includes that account — no new matching rule needed,
+  /// it flows through the exact same pipeline as a plain expense.
+  /// [BudgetExpenseRow.isIncome] is what tells
+  /// `BudgetProgressCalculator.spentIn` to subtract instead of add.
   ///
   /// **Destination side pending:** the plan's model is symmetric (the same
   /// transfer should also count as *income* for a budget scoped to the
@@ -281,6 +294,8 @@ class BudgetsLocalDatasource {
       ..where(
         (_db.transactions.type.equalsValue(EntryType.expense) |
                 (_db.transactions.type.equalsValue(EntryType.transfer) &
+                    _db.transactions.countsInBudget.equals(true)) |
+                (_db.transactions.type.equalsValue(EntryType.income) &
                     _db.transactions.countsInBudget.equals(true))) &
             _db.transactions.deletedAt.isNull() &
             _db.transactions.tombstonedAt.isNull(),
@@ -301,6 +316,8 @@ class BudgetsLocalDatasource {
                 categoryIcon: row.readTableOrNull(_db.categories)?.icon,
                 categoryColor: row.readTableOrNull(_db.categories)?.color,
                 note: row.readTable(_db.transactions).note,
+                isIncome:
+                    row.readTable(_db.transactions).type == EntryType.income,
               ),
           ],
         );

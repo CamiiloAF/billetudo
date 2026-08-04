@@ -79,12 +79,19 @@ class TransactionDraft extends Equatable {
   /// mandatory-category rule is untouched.
   final bool isBalanceAdjustment;
 
-  /// Only meaningful for `type == transfer` (HU-B3,
-  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3): when
-  /// `true`, the transfer requires a [categoryId] and counts in
-  /// presupuestos/reportes like a normal transaction, instead of the default
-  /// neutral behaviour where a transfer never touches either. Ignored for
-  /// `expense`/`income` (they already always count).
+  /// Meaningful for `type == transfer` (HU-B3,
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3) and, as
+  /// of budget-income-counts-in-budget, for `type == income` too: for a
+  /// transfer, `true` additionally requires a [categoryId] and makes it count
+  /// in presupuestos/reportes like a normal transaction, instead of the
+  /// default neutral behaviour where a transfer never touches either. For an
+  /// income, `true` raises a matching budget's disponible instead of leaving
+  /// it untouched — the default for most income, but the deudas feature
+  /// stamps it automatically for a repago recibido, and the user can opt in
+  /// any other income (reembolsos, etc.) manually from the form. Income
+  /// already always has a category by the `expense`/`income` branch below, so
+  /// this flag never gates one for it the way it does for transfer. Ignored
+  /// (forced `false`) for `expense`, which never counts.
   final bool countsInBudget;
 
   /// Validates every business rule of HU-01/HU-02/HU-03/HU-04 and returns a
@@ -169,7 +176,14 @@ class TransactionDraft extends Equatable {
         goalId: goalId,
         debtId: debtId,
         isBalanceAdjustment: isBalanceAdjustment,
-        countsInBudget: type == TransactionType.transfer && countsInBudget,
+        // budget-income-counts-in-budget: countsInBudget now survives for
+        // `income` too, with no extra gating — `income` already always
+        // requires a category via the `expense`/`income` branch of
+        // `_validatedByType`, unlike `transfer`, which only requires one when
+        // this flag is on. `expense` still forces it off; it never counts.
+        countsInBudget: (type == TransactionType.transfer ||
+                type == TransactionType.income) &&
+            countsInBudget,
       ),
     );
   }

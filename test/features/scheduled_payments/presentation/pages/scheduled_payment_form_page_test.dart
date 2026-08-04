@@ -24,6 +24,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
+
 class MockScheduledPaymentFormCubit extends MockCubit<ScheduledPaymentFormState>
     implements ScheduledPaymentFormCubit {}
 
@@ -90,6 +92,7 @@ void main() {
       ..registerFactory<CategoryQuickPickerCubit>(
           () => categoryQuickPickerCubit)
       ..registerFactory<ScheduledPaymentTagPickerCubit>(() => tagPickerCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);

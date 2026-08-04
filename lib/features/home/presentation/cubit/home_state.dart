@@ -101,6 +101,7 @@ class HomeState extends Equatable {
   HomeState copyWith({
     HomeStatus? status,
     DateTime? month,
+    DateTime? currentMonth,
     HomeSnapshot? snapshot,
     HomeSyncStatus? syncStatus,
     SyncStatusSnapshot? syncSnapshot,
@@ -114,7 +115,7 @@ class HomeState extends Equatable {
       HomeState(
         status: status ?? this.status,
         month: month ?? this.month,
-        currentMonth: currentMonth,
+        currentMonth: currentMonth ?? this.currentMonth,
         snapshot: clearSnapshot ? null : (snapshot ?? this.snapshot),
         syncStatus: syncStatus ?? this.syncStatus,
         syncSnapshot: syncSnapshot ?? this.syncSnapshot,

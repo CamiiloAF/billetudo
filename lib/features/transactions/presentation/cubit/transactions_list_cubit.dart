@@ -7,10 +7,12 @@ import '../../../../core/error/result.dart';
 import '../../../../core/preferences/account_filter_preference_datasource.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 import '../../domain/usecases/delete_transaction.dart';
 import '../../domain/usecases/restore_transaction.dart';
+import '../../domain/usecases/watch_budget_period_options.dart';
 import '../../domain/usecases/watch_transactions.dart';
 import 'transactions_list_state.dart';
 
@@ -32,6 +34,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     this._deleteTransaction,
     this._restoreTransaction,
     this._watchAccounts,
+    this._watchBudgetPeriodOptions,
     this._accountFilterPreferences,
   ) : super(TransactionsListState());
 
@@ -39,6 +42,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   final DeleteTransaction _deleteTransaction;
   final RestoreTransaction _restoreTransaction;
   final WatchAccounts _watchAccounts;
+  final WatchBudgetPeriodOptions _watchBudgetPeriodOptions;
   final AccountFilterPreferenceDatasource _accountFilterPreferences;
 
   StreamSubscription<Result<List<TransactionWithDetails>>>? _subscription;
@@ -47,10 +51,18 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// when exactly one account is the active filter.
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
 
+  /// Kept only to resolve the Presupuesto chip's name/icon and to detect a
+  /// stale `filter.budgetPeriod` (see [_pruneStaleBudgetPeriodFilter]).
+  StreamSubscription<Result<List<BudgetPeriodOption>>>?
+      _budgetOptionsSubscription;
+
   /// Whether the persisted account filter has already been checked against
   /// the current active accounts (see [_pruneStaleAccountFilter]) — only
   /// needs doing once per `start()`, on the first accounts emission.
   bool _prunedStaleAccountFilter = false;
+
+  /// Same as [_prunedStaleAccountFilter] but for `filter.budgetPeriod`.
+  bool _prunedStaleBudgetPeriodFilter = false;
 
   /// Subscribes with the current (or default) filter. Safe to call again to
   /// retry after an error.
@@ -61,7 +73,9 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   Future<void> start() async {
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _budgetOptionsSubscription?.cancel();
     _prunedStaleAccountFilter = false;
+    _prunedStaleBudgetPeriodFilter = false;
     final persistedAccountIds =
         await _accountFilterPreferences.readAccountIds();
     emit(
@@ -88,6 +102,23 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
         },
       );
     });
+    _budgetOptionsSubscription = _watchBudgetPeriodOptions().listen((result) {
+      if (isClosed) {
+        return;
+      }
+      result.fold(
+        // Same reasoning as the account chip above: fall back to the id it
+        // already has rather than surfacing a list-wide error.
+        (failure) {},
+        (options) {
+          emit(state.copyWith(budgetOptions: options));
+          if (!_prunedStaleBudgetPeriodFilter) {
+            _prunedStaleBudgetPeriodFilter = true;
+            _pruneStaleBudgetPeriodFilter(options);
+          }
+        },
+      );
+    });
   }
 
   /// Drops any account id in the (possibly persisted) filter that no longer
@@ -105,6 +136,27 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     final validated = current.intersection(activeIds);
     if (validated.length != current.length) {
       unawaited(updateFilter(state.filter.copyWith(accountIds: validated)));
+    }
+  }
+
+  /// Drops `filter.budgetPeriod` when the budget it was built from is no
+  /// longer active — archived (`archivedAt`) or deleted since the filter was
+  /// applied. `WatchBudgetPeriodOptions` already excludes archived budgets
+  /// (via `GetActiveBudgets`), so its absence from [options] is exactly that
+  /// signal. Falls back to "sin presupuesto" (the chip's neutral state)
+  /// instead of silently keeping a ghost selection the user can no longer see
+  /// or clear in the filter sheet.
+  void _pruneStaleBudgetPeriodFilter(List<BudgetPeriodOption> options) {
+    final budgetId = state.filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return;
+    }
+    final stillActive =
+        options.any((option) => option.budgetId == budgetId);
+    if (!stillActive) {
+      unawaited(
+        updateFilter(state.filter.copyWith(clearBudgetPeriod: true)),
+      );
     }
   }
 
@@ -204,6 +256,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   Future<void> close() async {
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _budgetOptionsSubscription?.cancel();
     return super.close();
   }
 }

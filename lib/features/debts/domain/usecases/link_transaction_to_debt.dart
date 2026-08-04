@@ -8,6 +8,12 @@ import '../repositories/debt_repository.dart';
 /// makes it count in the debt's derived balance (as an abono or a disbursement
 /// per `direction` × `type`), avoiding a duplicate when the user had recorded
 /// the payment as a normal movement.
+///
+/// budget-income-counts-in-budget (criterion 3): the repository — which
+/// already has both rows in hand — decides whether linking must also force
+/// `countsInBudget = true` (see `DebtRepository.linkTransactionToDebt`'s
+/// doc). No extra orchestration is needed here: this use case's only job
+/// stays validating the ids and the debt's closed state, same as before.
 @injectable
 class LinkTransactionToDebt {
   const LinkTransactionToDebt(this._repository);

@@ -167,24 +167,35 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         // a transfer carries none by default — so any real type change must
         // drop the previously picked category, or an expense category would
         // linger on an income (item 17). Switching away from a transfer also
-        // drops a destination account that no longer applies, and resets the
-        // "cuenta en presupuesto" toggle — it is transfer-only state.
+        // drops a destination account that no longer applies.
         clearCategory: true,
         clearTransferAccount: type != TransactionType.transfer,
-        countsInBudget:
-            type == TransactionType.transfer && state.countsInBudget,
+        // The "¿Incluir en tu presupuesto?" toggle (B-3 for transfer,
+        // budget-income-counts-in-budget for income) survives across the two
+        // types it applies to — alternating Transferencia <-> Ingreso keeps
+        // whatever the user had chosen, since both types share the same
+        // "counts toward presupuestos" meaning. It only resets to `false`
+        // when the new type is `expense`, which never offers the toggle.
+        countsInBudget: (type == TransactionType.transfer ||
+                type == TransactionType.income) &&
+            state.countsInBudget,
       ),
     );
   }
 
-  /// The transfer-only "¿Incluir en tu presupuesto?" toggle (B-3). Turning it
-  /// off also drops any category picked while it was on, since a plain
-  /// transfer never carries one.
+  /// The "¿Incluir en tu presupuesto?" toggle: transfer-only for B-3, and
+  /// also income-only for budget-income-counts-in-budget (an ingreso
+  /// presupuestable raises a matching budget's disponible instead of leaving
+  /// it untouched). Turning it off drops any category picked while it was on
+  /// **only for a transfer** — a transfer's category is conditional on the
+  /// toggle (`TransactionDraft._validatedByType`). An income always requires
+  /// a category regardless of this flag, so its category must survive the
+  /// toggle being turned off.
   // ignore: avoid_positional_boolean_parameters
   void countsInBudgetChanged(bool value) => emit(
         state.copyWith(
           countsInBudget: value,
-          clearCategory: !value,
+          clearCategory: state.isTransfer && !value,
         ),
       );
 

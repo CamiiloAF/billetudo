@@ -1214,6 +1214,12 @@ abstract class AppLocalizations {
   /// **'Etiqueta'**
   String get transactionsFilterTag;
 
+  /// No description provided for @transactionsFilterBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get transactionsFilterBudget;
+
   /// No description provided for @transactionsSortDateDesc.
   ///
   /// In es, this message translates to:
@@ -1273,6 +1279,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo total'**
   String get transactionsBalanceTotalLabel;
+
+  /// Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.
+  ///
+  /// In es, this message translates to:
+  /// **'{label}: {amount}'**
+  String transactionsBalanceTotalSemantics(String label, String amount);
 
   /// Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta.
   ///
@@ -1825,6 +1837,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Filtrar por fecha'**
   String get dateFilterSheetTitle;
+
+  /// No description provided for @budgetPeriodFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por presupuesto'**
+  String get budgetPeriodFilterSheetTitle;
+
+  /// No description provided for @budgetPeriodFilterEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes presupuestos activos'**
+  String get budgetPeriodFilterEmptyMessage;
 
   /// No description provided for @dateFilterWeek.
   ///

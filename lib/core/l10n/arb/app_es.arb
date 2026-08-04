@@ -507,6 +507,8 @@
   "@transactionsFilterDate": {},
   "transactionsFilterTag": "Etiqueta",
   "@transactionsFilterTag": {},
+  "transactionsFilterBudget": "Presupuesto",
+  "@transactionsFilterBudget": {},
   "transactionsSortDateDesc": "Más recientes primero",
   "@transactionsSortDateDesc": {},
   "transactionsSortDateAsc": "Más antiguos primero",
@@ -535,6 +537,14 @@
   "transactionsBalanceTotalLabel": "Saldo total",
   "@transactionsBalanceTotalLabel": {
     "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
+  },
+  "transactionsBalanceTotalSemantics": "{label}: {amount}",
+  "@transactionsBalanceTotalSemantics": {
+    "description": "Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.",
+    "placeholders": {
+      "label": {"type": "String"},
+      "amount": {"type": "String"}
+    }
   },
   "transactionsBalanceCardBalanceLabel": "Saldo",
   "@transactionsBalanceCardBalanceLabel": {
@@ -760,6 +770,10 @@
   "@typeFilterSheetTitle": {},
   "dateFilterSheetTitle": "Filtrar por fecha",
   "@dateFilterSheetTitle": {},
+  "budgetPeriodFilterSheetTitle": "Filtrar por presupuesto",
+  "@budgetPeriodFilterSheetTitle": {},
+  "budgetPeriodFilterEmptyMessage": "No tienes presupuestos activos",
+  "@budgetPeriodFilterEmptyMessage": {},
   "dateFilterWeek": "Semana",
   "@dateFilterWeek": {},
   "dateFilterMonth": "Mes",

@@ -33,6 +33,7 @@ void main() {
     int amountMinor = 1000,
     String currency = 'COP',
     DateTime? date,
+    bool isIncome = false,
   }) =>
       BudgetExpense(
         id: id,
@@ -41,6 +42,7 @@ void main() {
         amountMinor: amountMinor,
         currency: currency,
         date: date ?? DateTime(2024, 1, 10),
+        isIncome: isIncome,
       );
 
   int spent(BudgetScope scope, List<BudgetExpense> expenses,
@@ -707,6 +709,45 @@ void main() {
 
       expect(items, hasLength(1));
       expect(items.single.date, DateTime(2024, 1, 5));
+    });
+  });
+
+  group('budget-income-counts-in-budget: presupuestable income', () {
+    test(
+        'a matched isIncome=true expense subtracts, raising the disponible '
+        'instead of lowering it', () {
+      final total = spent(const BudgetScope.empty(), [
+        expense(id: 'gasto', amountMinor: 10000),
+        expense(id: 'repago', amountMinor: 10000, isIncome: true),
+      ]);
+      // A 10000 expense followed by a 10000 presupuestable repayment nets to
+      // 0 spent — the disponible is back where it started.
+      expect(total, 0);
+    });
+
+    test(
+        'a presupuestable income out of window or scope is excluded by the '
+        'exact same rule as an expense', () {
+      const scope = BudgetScope(
+        accounts: [BudgetScopeRef(id: 'a1', referentAlive: true)],
+      );
+      final total = spent(scope, [
+        expense(id: 'in-scope', accountId: 'a1', amountMinor: 5000),
+        expense(
+          id: 'out-of-scope-income',
+          accountId: 'a2',
+          amountMinor: 5000,
+          isIncome: true,
+        ),
+        expense(
+          id: 'out-of-window-income',
+          accountId: 'a1',
+          date: DateTime(2024, 2, 1),
+          amountMinor: 5000,
+          isIncome: true,
+        ),
+      ]);
+      expect(total, 5000);
     });
   });
 

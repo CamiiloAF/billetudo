@@ -11,6 +11,7 @@ import '../../../../../core/router/app_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../../core/widgets/toggle_field.dart';
 import '../../../../categories/domain/entities/category.dart';
 import '../../../../transactions/presentation/widgets/category_picker/category_quick_picker.dart';
@@ -251,13 +252,11 @@ class GoalContributionSheetBody extends StatelessWidget {
                 const SizedBox(height: 14),
                 GoalMovementFieldLabel(text: l10n.goalMovementNoteLabel),
                 const SizedBox(height: 6),
-                TextFormField(
+                NoteAutocompleteField(
                   key: const ValueKey('goal-movement-note'),
                   initialValue: state.note,
-                  textCapitalization: TextCapitalization.sentences,
+                  hint: l10n.goalMovementNoteHint,
                   onChanged: cubit.noteChanged,
-                  decoration:
-                      InputDecoration(hintText: l10n.goalMovementNoteHint),
                 ),
                 const SizedBox(height: 4),
                 Center(

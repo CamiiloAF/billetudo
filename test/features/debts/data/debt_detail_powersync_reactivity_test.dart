@@ -111,6 +111,7 @@ void main() {
       type: TransactionType.expense,
       currency: 'COP',
       date: DateTime.now(),
+      countsInBudget: false,
     );
 
     await pumpUntil(() => live.seen.contains(60000));
@@ -135,6 +136,7 @@ void main() {
       type: TransactionType.expense,
       currency: 'COP',
       date: DateTime.now(),
+      countsInBudget: false,
     );
     await pumpUntil(() => live.seen.contains(60000));
 
@@ -173,6 +175,7 @@ void main() {
       type: TransactionType.expense,
       currency: 'COP',
       date: DateTime.now(),
+      countsInBudget: false,
     );
     await pumpUntil(() => live.seen.contains(60000));
 

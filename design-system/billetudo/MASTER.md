@@ -327,6 +327,23 @@ Fila de opt-in para una accion destructiva **opcional** dentro de una hoja cuya 
 
 **No confundir con las filas de opcion de `K8SAG`** (paso 2 de borrar cuenta). Son affordances distintas, no variantes de estilo: alli son **radios** de una eleccion excluyente y deliberadamente **sin default** (regla de no-dark-pattern de HU-07); aca es un **checkbox** de opt-in independiente con default apagado. Se evaluo unificarlos y se descarto: obligaria a reconstruir el subarbol del indicador en cada instancia, y un componente compartido invitaria a copiar el default al lado donde esta prohibido.
 
+### Note Autocomplete (`taqc1`)
+
+Overlay de sugerencias de nota basado en historial: aparece bajo el campo "Nota" al escribir, mostrando movimientos previos cuyo texto coincide. Componente transversal — no pertenece a una sola pantalla, se usa en Transacciones, Deudas, Metas y Pagos Programados donde exista un campo de nota libre.
+
+- **Estructura:** `Field Wrap` (Label + `Input Box` con stroke `$primary` 2px mientras el campo tiene foco) + `Suggestions Dropdown` (`fill $surface`, `stroke $border` 1px, radio 14) con `Suggestion Row` (icono `history` 16px `$text-secondary` + label 14px/500 `$text-primary`) separadas por `Divider` (`$border` 1px).
+- **Altura maxima 200px con scroll interno** a partir de la 5a sugerencia (~4 filas completas + un sliver de la 5a que senala que hay mas contenido) — el overlay NO crece libremente para no tapar el resto del formulario en mobile. En Flutter: `ListView`/`SingleChildScrollView` con `maxHeight: 200` dentro del overlay.
+- **Sin coincidencias: el overlay simplemente no se muestra** — no hay un estado "sin resultados" con mensaje. El campo se comporta como input de texto libre normal. Decision de tono de marca: la ausencia de sugerencias es neutral (nota nueva), no un error que amerite copy.
+- **Icono confirmado:** `history` (lucide), una fila por sugerencia.
+- **Overrides tipicos:** contenido del `Value` del campo, lista de `Suggestion Row` (cuantas, su `Label`), altura del `Suggestions Dropdown` (crece hasta 200px segun cantidad de resultados, min. lo que ocupen las filas si son menos de 5).
+- **Implementacion:** `NoteAutocompleteField` en `lib/core/widgets/` (widget compartido, no vive dentro de una sola feature).
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Default (3 sugerencias) | `taqc1` | `LOnm3` |
+| 10 sugerencias con scroll | `otjW9` | `ETP5J` |
+| Sin coincidencias | `NdecZ` | `kS16A` |
+
 ---
 
 ## Tono de marca

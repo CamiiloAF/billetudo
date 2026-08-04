@@ -12,6 +12,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/presentation/widgets/delete_link.dart';
 import '../../../transactions/presentation/pages/transaction_form_page.dart'
@@ -393,24 +394,15 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           const ScheduledPaymentInstallmentBanner(),
         ],
         const SizedBox(height: 16),
-        Text(
-          l10n.transactionFormNoteLabel,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: colors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
+        NoteAutocompleteField(
+          label: l10n.transactionFormNoteLabel,
           initialValue: state.note,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(hintText: l10n.transactionFormNoteLabel),
+          hint: l10n.transactionFormNoteLabel,
           onChanged: cubit.noteChanged,
           // Nota is the form's only system-keyboard text field, so its action
           // is "listo": confirming it just dismisses the keyboard.
           textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+          onSubmitted: () => FocusScope.of(context).unfocus(),
         ),
         if (!state.isTransfer) ...[
           const SizedBox(height: 8),

@@ -11,16 +11,21 @@ import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
 import '../utils/date_period_label.dart';
+import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
+import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
 import '../widgets/filter_chip_pill.dart';
 import '../widgets/movements_balance_carousel.dart';
 import '../widgets/sheets/account_filter_sheet.dart';
+import '../widgets/sheets/budget_period_filter_sheet.dart';
 import '../widgets/sheets/category_filter_sheet.dart';
 import '../widgets/sheets/date_filter_sheet.dart';
 import '../widgets/sheets/tag_filter_sheet.dart';
@@ -228,6 +233,7 @@ bool _isUnfiltered(TransactionFilter filter) =>
     !filter.hasCategoryFilter &&
     !filter.hasTypeFilter &&
     !filter.hasTagFilter &&
+    !filter.hasBudgetPeriodFilter &&
     !_hasDateFilter(filter.datePeriod);
 
 /// HU-06b's date filter has no bare "no filter" state (it always defaults to
@@ -387,9 +393,76 @@ class TransactionsFilterBar extends StatelessWidget {
               }
             },
           ),
+          const SizedBox(width: 8),
+          FilterChipPill(
+            label: _budgetChipLabel(l10n, filter, state.budgetOptions),
+            active: filter.hasBudgetPeriodFilter,
+            leadingIcon: _budgetChipIcon(filter, state.budgetOptions),
+            onTap: () async {
+              final result = await BudgetPeriodFilterSheet.show(
+                context,
+                initialBudgetId: filter.budgetPeriod?.budgetId,
+              );
+              // Null means the sheet was dismissed without "Aplicar" — keep
+              // the current filter. A non-null result always replaces it,
+              // including back to `null` when the user cleared it.
+              if (result != null) {
+                await cubit.updateFilter(
+                  filter.copyWith(
+                    budgetPeriod: result.window,
+                    clearBudgetPeriod: result.window == null,
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
+  }
+
+  /// The Presupuesto Chip's label: the chosen budget's own name once
+  /// selected, or the generic dimension label when there is no filter — the
+  /// same neutral/active split as the Category/Type/Tag chips, unlike the
+  /// Account Chip's always-active "Todas" or the Date Chip's always-active
+  /// default.
+  static String _budgetChipLabel(
+    AppLocalizations l10n,
+    TransactionFilter filter,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    final budgetId = filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return l10n.transactionsFilterBudget;
+    }
+    final selected = _selectedBudgetOption(budgetId, budgetOptions);
+    return selected?.name ?? l10n.transactionsFilterBudget;
+  }
+
+  /// The Presupuesto Chip's leading icon: the selected budget's own icon, or
+  /// none while unset (`FilterChipPill` simply omits it).
+  static IconData? _budgetChipIcon(
+    TransactionFilter filter,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    final budgetId = filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return null;
+    }
+    final selected = _selectedBudgetOption(budgetId, budgetOptions);
+    return CategoryAppearance.iconForOrPlaceholder(selected?.icon);
+  }
+
+  static BudgetPeriodOption? _selectedBudgetOption(
+    String budgetId,
+    List<BudgetPeriodOption> budgetOptions,
+  ) {
+    for (final option in budgetOptions) {
+      if (option.budgetId == budgetId) {
+        return option;
+      }
+    }
+    return null;
   }
 
   /// The Account Chip's label across HU-06a's 3 states: the account's own
@@ -550,6 +623,7 @@ class TransactionsListView extends StatelessWidget {
         }
         final groupIndex = index - carouselSlots;
         final group = groups[groupIndex];
+        final groupTotal = transactionGroupTotalFor(state.filter, group.items);
         return Padding(
           padding: EdgeInsets.fromLTRB(20, groupIndex == 0 ? 0 : 24, 20, 0),
           child: Column(
@@ -557,7 +631,14 @@ class TransactionsListView extends StatelessWidget {
             children: [
               TransactionGroupHeader(
                 label: transactionGroupLabel(l10n, group.date),
-                count: group.items.length,
+                count: groupTotal == null ? group.items.length : null,
+                totalLabel: groupTotal == null
+                    ? null
+                    : signedAmountLabel(
+                        amountMinor: groupTotal.amountMinor,
+                        currencyCode: groupTotal.currency,
+                        type: groupTotal.type,
+                      ),
               ),
               const SizedBox(height: 12),
               for (var i = 0; i < group.items.length; i++) ...[

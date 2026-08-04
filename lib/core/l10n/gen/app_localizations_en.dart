@@ -655,6 +655,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsFilterTag => 'Tag';
 
   @override
+  String get transactionsFilterBudget => 'Budget';
+
+  @override
   String get transactionsSortDateDesc => 'Most recent first';
 
   @override
@@ -691,6 +694,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsBalanceTotalLabel => 'Total balance';
+
+  @override
+  String transactionsBalanceTotalSemantics(String label, String amount) {
+    return '$label: $amount';
+  }
 
   @override
   String get transactionsBalanceCardBalanceLabel => 'Balance';
@@ -988,6 +996,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateFilterSheetTitle => 'Filter by date';
+
+  @override
+  String get budgetPeriodFilterSheetTitle => 'Filter by budget';
+
+  @override
+  String get budgetPeriodFilterEmptyMessage =>
+      'You don\'t have any active budgets';
 
   @override
   String get dateFilterWeek => 'Week';

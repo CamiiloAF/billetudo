@@ -13,6 +13,7 @@ import 'package:billetudo/features/transactions/domain/usecases/get_transaction_
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:billetudo/features/transactions/domain/usecases/set_transaction_tags.dart';
 import 'package:billetudo/features/transactions/domain/usecases/update_transaction.dart';
+import 'package:billetudo/features/transactions/domain/usecases/watch_budget_period_options.dart';
 import 'package:billetudo/features/transactions/domain/usecases/watch_tags.dart';
 import 'package:billetudo/features/transactions/domain/usecases/watch_transaction_detail.dart';
 import 'package:billetudo/features/transactions/domain/usecases/watch_transactions.dart';
@@ -43,6 +44,9 @@ class MockCreateTag extends Mock implements CreateTag {}
 class MockWatchTags extends Mock implements WatchTags {}
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
+
+class MockWatchBudgetPeriodOptions extends Mock
+    implements WatchBudgetPeriodOptions {}
 
 class MockWatchCategories extends Mock implements WatchCategories {}
 
