@@ -252,9 +252,7 @@ jobs:
         run: |
           PBXPROJ=ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' "$PBXPROJ"
-          sed -i '' '/CODE_SIGN_STYLE = Manual;/a\
-			PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";
-' "$PBXPROJ"
+          sed -i '' $'/CODE_SIGN_STYLE = Manual;/a\\\nPROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";' "$PBXPROJ"
           sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer"/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution"/g' "$PBXPROJ"
 
       - name: Build IPA
