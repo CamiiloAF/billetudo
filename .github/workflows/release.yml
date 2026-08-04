@@ -241,19 +241,54 @@ jobs:
       # El nombre del profile ("Billetudo App Store") debe coincidir con el que
       # crees en el portal y con ios/ExportOptionsProd.plist.
       #
-      # El pbxproj generado por Xcode no trae `PROVISIONING_PROFILE_SPECIFIER`
-      # (esa clave solo aparece una vez que eliges el perfil a mano en la UI de
-      # Xcode) ni `CODE_SIGN_IDENTITY` sin calificar (el real es
-      # `CODE_SIGN_IDENTITY[sdk=iphoneos*]`) — reemplazar esos placeholders
-      # inexistentes era un no-op silencioso: quedaba `CODE_SIGN_STYLE = Manual`
-      # sin perfil/identidad asignados, y Xcode caía de vuelta a firma
-      # automática (falla en CI con "No Accounts"/"No profiles ... found").
+      # La config "Release-prod" del target Runner (la única que
+      # `flutter build ipa --flavor prod --release` usa) no declara NINGUNA
+      # clave de firma (ni CODE_SIGN_STYLE, ni CODE_SIGN_IDENTITY, ni
+      # PROVISIONING_PROFILE_SPECIFIER) — los reemplazos de texto plano
+      # (sed) sobre placeholders que no existen ahí eran no-ops silenciosos,
+      # y esa config concreta caía al default implícito (Automatic) mientras
+      # heredaba `CODE_SIGN_IDENTITY[sdk=iphoneos*] = Apple Distribution` del
+      # nivel de proyecto, produciendo un choque ("conflicting provisioning
+      # settings") — falla en CI con "No Accounts"/"No profiles ... found" o
+      # "Runner is automatically signed... but a conflicting code signing
+      # identity ... has been manually specified".
+      #
+      # Por eso esto inserta las 3 claves directamente en el bloque
+      # XCBuildConfiguration correcto (identificado por su estructura real:
+      # name == "Release-prod" + PRODUCT_BUNDLE_IDENTIFIER sin sufijo, para
+      # no tocar RunnerTests/RunnerUITests) en vez de confiar en que ya
+      # existan placeholders que reemplazar.
       - name: Force manual signing in Xcode project
         run: |
-          PBXPROJ=ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' "$PBXPROJ"
-          sed -i '' $'/CODE_SIGN_STYLE = Manual;/a\\\nPROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";' "$PBXPROJ"
-          sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer"/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution"/g' "$PBXPROJ"
+          python3 - <<'PYEOF'
+          import re
+
+          path = "ios/Runner.xcodeproj/project.pbxproj"
+          content = open(path).read()
+
+          entry_re = re.compile(
+              r'(isa = XCBuildConfiguration;.*?buildSettings = \{\n)(.*?)'
+              r'(\t\t\t\};\n\t\t\tname = (?:"([^"]+)"|([A-Za-z0-9_.-]+));\n\t\t\};)',
+              re.S,
+          )
+
+          def inject(m):
+              head, settings, tail = m.group(1), m.group(2), m.group(3)
+              name = m.group(4) or m.group(5)
+              if name == "Release-prod" and "PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo;\n" in settings:
+                  extra = (
+                      '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
+                      '\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";\n'
+                      '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";\n'
+                  )
+                  settings = extra + settings
+              return head + settings + tail
+
+          new_content, count = entry_re.subn(inject, content)
+          assert 'PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store"' in new_content, "no se insertó la firma manual"
+          open(path, "w").write(new_content)
+          print(f"XCBuildConfiguration entries scanned: {count}")
+          PYEOF
 
       - name: Build IPA
         run: |
