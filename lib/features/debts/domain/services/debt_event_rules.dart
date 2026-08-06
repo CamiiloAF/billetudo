@@ -58,6 +58,24 @@ abstract final class DebtEventRules {
           TransactionType.income,
       };
 
+  /// Whether a cash event/link against a debt pointing [direction] that
+  /// materializes (or already is) a `Transaction` of [type] should
+  /// automatically set `countsInBudget = true` — the "presupuestable income"
+  /// rule (budget-income-counts-in-budget): a budget's disponible should be
+  /// able to rise, not just fall, when the movement is unambiguously "money I
+  /// was owed came back". Today that is exactly one pair: `owedToMe` +
+  /// `income` (I lent the money, then got paid back). Every other
+  /// (direction, type) combination — including `iOwe` + `income`, which is
+  /// "I took the loan", not a repayment I received — defaults to `false`,
+  /// unchanged from before this feature. The reverse, `owedToMe` + `expense`
+  /// ("I lent the money"), correctly stays `false` too: that side of the pair
+  /// is a real expense, not presupuestable income.
+  static bool countsInBudgetFor({
+    required DebtDirection direction,
+    required TransactionType type,
+  }) =>
+      direction == DebtDirection.owedToMe && type == TransactionType.income;
+
   /// The signed [DebtEntry.amountMinor] a cash-less ledger event of [kind]
   /// (`payment`/`disbursement`, HU-02 toggle "No") must store, given a positive
   /// [magnitudeMinor]. A `payment` reduces the debt (−), a `disbursement`

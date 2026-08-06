@@ -55,4 +55,31 @@ void main() {
 
     expect(tappedId, 'tx-1');
   });
+
+  testWidgets(
+      'a presupuestable income row (isIncome=true) shows a "+" instead '
+      'of a "-"', (tester) async {
+    final incomeItem = BudgetActivityItem(
+      id: 'tx-2',
+      title: 'Repago de préstamo',
+      accountName: 'Bancolombia',
+      amountMinor: 1000000,
+      currency: 'COP',
+      date: DateTime(2025, 7, 28),
+      categoryIcon: 'hand-coins',
+      categoryColor: 'sky',
+      isIncome: true,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: Scaffold(
+          body: BudgetActivityRow(item: incomeItem, onTap: (_) {}),
+        ),
+      ),
+    );
+
+    expect(find.textContaining(r'+$10.000'), findsOneWidget);
+    expect(find.textContaining(r'-$10.000'), findsNothing);
+  });
 }

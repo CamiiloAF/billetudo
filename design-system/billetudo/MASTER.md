@@ -65,7 +65,7 @@
 
 `mint`/`sky`/`peach` en modo claro fueron oscurecidos a proposito respecto a su primer intento (`#22C55E`/`#4C9AFF`/`#FF8A65`) — esos valores originales fallaban el contraste minimo de icono/grafico (3:1 WCAG) contra su propio `-soft`. Ver seccion Accesibilidad. Los 4 colores agregados en la ampliacion de la paleta decorativa (`coral`, `amber`, `teal`, `indigo`) se calibraron con la misma metodologia, verificando contraste ≥3:1 contra su propio `-soft` en ambos temas antes de fijar el hex final.
 
-**`coral`/`teal`/`indigo` (+ sus `-soft`) estan definidos en el `.pen` pero SIN uso actual** — se agregaron para un selector de color de cuenta que el usuario decidio descartar (las cuentas usan icono/color estandar segun su tipo, sin personalizacion). Quedan disponibles para una futura feature que necesite mas variedad de paleta decorativa (ya calibrados y verificados), no se borraron por no romper nada al dejarlos. **`amber` ya tiene uso real** (Presupuestos, HU-12: "riesgo de sobregiro proyectado" — ver `pages/presupuestos.md`), como excepcion documentada a la regla general de "prohibido semaforo por cercania al limite": ese caso es proximidad de *gasto real* ya materializado; HU-12 es una *proyeccion* de pagos aun no ejecutados, un caso distinto.
+**`teal`/`indigo` (+ sus `-soft`) estan definidos en el `.pen` pero SIN uso actual** — se agregaron para un selector de color de cuenta que el usuario decidio descartar (las cuentas usan icono/color estandar segun su tipo, sin personalizacion). Quedan disponibles para una futura feature que necesite mas variedad de paleta decorativa (ya calibrados y verificados), no se borraron por no romper nada al dejarlos. **`coral` ya tiene uso real** (Gráficas, tab Categorías: icono/barra/arco de dona de la categoria "Salud" — ver `pages/graficas.md`, es el par adyacente mas cercano a `peach` en matiz). **`amber` ya tiene uso real** (Presupuestos, HU-12: "riesgo de sobregiro proyectado" — ver `pages/presupuestos.md`), como excepcion documentada a la regla general de "prohibido semaforo por cercania al limite": ese caso es proximidad de *gasto real* ya materializado; HU-12 es una *proyeccion* de pagos aun no ejecutados, un caso distinto.
 
 **Pendiente para cuando se genere el tema oscuro de un selector de color (ej. Selector de Icono y Color de Cuentas):** el patron de "check blanco (`$on-primary`) superpuesto sobre un swatch solido" (usado para marcar el color seleccionado) pasa contraste ≥3:1 en modo CLARO contra los 8 colores de la paleta decorativa, pero en modo OSCURO solo `primary` (5.46:1) pasa — `mint`/`sky`/`peach`/`coral`/`amber`/`teal`/`indigo` se aclaran en oscuro (pensados para texto/icono sobre fondo `-soft`, no como fondo solido detras de blanco) y el check blanco cae a 1.6-3.0:1 en esos 7. **Antes de generar la copia oscura de cualquier pantalla con este patron**, verificar contraste real por swatch y, para los 7 colores que fallan con blanco, usar un check oscuro (ej. `#1C1B29`, mismo valor que `text-primary` claro) en su lugar — sobreescribir el `fill` del check por instancia segun el swatch, no asumir que `$on-primary` funciona igual en todos.
 
@@ -326,6 +326,23 @@ Fila de opt-in para una accion destructiva **opcional** dentro de una hoja cuya 
 - **Marcarlo tiene efectos fuera del componente:** muta el CTA de la hoja a `$expense` y recorta el mensaje del header para no prometer algo que la accion ya no cumple. Eso es parte del contrato del opt-in, no del frame que lo contiene.
 
 **No confundir con las filas de opcion de `K8SAG`** (paso 2 de borrar cuenta). Son affordances distintas, no variantes de estilo: alli son **radios** de una eleccion excluyente y deliberadamente **sin default** (regla de no-dark-pattern de HU-07); aca es un **checkbox** de opt-in independiente con default apagado. Se evaluo unificarlos y se descarto: obligaria a reconstruir el subarbol del indicador en cada instancia, y un componente compartido invitaria a copiar el default al lado donde esta prohibido.
+
+### Note Autocomplete (`taqc1`)
+
+Overlay de sugerencias de nota basado en historial: aparece bajo el campo "Nota" al escribir, mostrando movimientos previos cuyo texto coincide. Componente transversal — no pertenece a una sola pantalla, se usa en Transacciones, Deudas, Metas y Pagos Programados donde exista un campo de nota libre.
+
+- **Estructura:** `Field Wrap` (Label + `Input Box` con stroke `$primary` 2px mientras el campo tiene foco) + `Suggestions Dropdown` (`fill $surface`, `stroke $border` 1px, radio 14) con `Suggestion Row` (icono `history` 16px `$text-secondary` + label 14px/500 `$text-primary`) separadas por `Divider` (`$border` 1px).
+- **Altura maxima 200px con scroll interno** a partir de la 5a sugerencia (~4 filas completas + un sliver de la 5a que senala que hay mas contenido) — el overlay NO crece libremente para no tapar el resto del formulario en mobile. En Flutter: `ListView`/`SingleChildScrollView` con `maxHeight: 200` dentro del overlay.
+- **Sin coincidencias: el overlay simplemente no se muestra** — no hay un estado "sin resultados" con mensaje. El campo se comporta como input de texto libre normal. Decision de tono de marca: la ausencia de sugerencias es neutral (nota nueva), no un error que amerite copy.
+- **Icono confirmado:** `history` (lucide), una fila por sugerencia.
+- **Overrides tipicos:** contenido del `Value` del campo, lista de `Suggestion Row` (cuantas, su `Label`), altura del `Suggestions Dropdown` (crece hasta 200px segun cantidad de resultados, min. lo que ocupen las filas si son menos de 5).
+- **Implementacion:** `NoteAutocompleteField` en `lib/core/widgets/` (widget compartido, no vive dentro de una sola feature).
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Default (3 sugerencias) | `taqc1` | `LOnm3` |
+| 10 sugerencias con scroll | `otjW9` | `ETP5J` |
+| Sin coincidencias | `NdecZ` | `kS16A` |
 
 ---
 

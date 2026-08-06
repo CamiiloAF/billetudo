@@ -11,6 +11,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/money_formatter.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
+import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../../categories/domain/entities/category.dart';
@@ -184,13 +185,12 @@ class DebtPaymentSheetBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 // Nota.
-                DebtFormField.text(
+                NoteAutocompleteField(
                   key: const ValueKey('abono-note'),
                   label: l10n.debtPaymentNoteLabel,
                   icon: LucideIcons.pencil,
                   hint: l10n.debtPaymentNoteHint,
                   initialValue: state.note,
-                  textCapitalization: TextCapitalization.sentences,
                   onChanged: cubit.noteChanged,
                 ),
                 if (state.addToAccount) ...[

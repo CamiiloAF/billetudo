@@ -1,6 +1,7 @@
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/note_autocomplete_field.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -13,12 +14,13 @@ import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cu
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_state.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/transaction_note_field.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../../support/fake_note_suggestions.dart';
 
 class MockTransactionFormCubit extends MockCubit<TransactionFormState>
     implements TransactionFormCubit {}
@@ -117,6 +119,7 @@ void main() {
         () => categoryQuickPickerCubit,
       )
       ..registerFactory<TagFilterCubit>(() => tagFilterCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);
@@ -146,7 +149,7 @@ void main() {
       .any((editable) => editable.focusNode.hasFocus);
 
   Finder noteField() => find.descendant(
-        of: find.byType(TransactionNoteField),
+        of: find.byType(NoteAutocompleteField),
         matching: find.byType(TextField),
       );
 

@@ -16,6 +16,11 @@ import 'movements_balance_card.dart';
 /// handle above and pagination dots below. Collapsed, it shrinks to a single
 /// compact bar ("N cuentas · Saldo total $X"). Both the collapsed/expanded
 /// state and the active card index are owned by [BalanceCarouselCubit].
+///
+/// The [MovementsBalanceCollapseHandle] always renders in the same slot —
+/// the top strip, above whichever content is shown — so it never "jumps"
+/// position between the expanded and collapsed states; only its chevron
+/// direction changes.
 class MovementsBalanceCarousel extends StatelessWidget {
   const MovementsBalanceCarousel({
     required this.state,
@@ -38,19 +43,33 @@ class MovementsBalanceCarousel extends StatelessWidget {
     }
 
     return BlocBuilder<BalanceCarouselCubit, BalanceCarouselState>(
-      builder: (context, carousel) => carousel.collapsed
-          ? MovementsBalanceCarouselCollapsed(state: state)
-          : MovementsBalanceCarouselExpanded(
-              state: state,
-              initialPage: carousel.currentPage,
-              onOpenAccount: onOpenAccount,
+      builder: (context, carousel) {
+        final cubit = context.read<BalanceCarouselCubit>();
+        return Column(
+          children: [
+            MovementsBalanceCollapseHandle(
+              expanded: !carousel.collapsed,
+              onTap: carousel.collapsed ? cubit.expand : cubit.collapse,
             ),
+            const SizedBox(height: 2),
+            if (carousel.collapsed)
+              MovementsBalanceCarouselCollapsed(state: state)
+            else
+              MovementsBalanceCarouselExpanded(
+                state: state,
+                initialPage: carousel.currentPage,
+                onOpenAccount: onOpenAccount,
+              ),
+          ],
+        );
+      },
     );
   }
 }
 
 /// The compact one-line bar shown while the carousel is collapsed. The whole
-/// bar reexpands the carousel on tap.
+/// bar reexpands the carousel on tap; the direction cue itself lives in the
+/// shared [MovementsBalanceCollapseHandle] above, not in this row.
 class MovementsBalanceCarouselCollapsed extends StatelessWidget {
   const MovementsBalanceCarouselCollapsed({required this.state, super.key});
 
@@ -68,7 +87,7 @@ class MovementsBalanceCarouselCollapsed extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       child: Semantics(
         button: true,
         label: l10n.transactionsBalanceCarouselExpand,
@@ -119,18 +138,14 @@ class MovementsBalanceCarouselCollapsed extends StatelessWidget {
                   Text(
                     total,
                     maxLines: 1,
-                    semanticsLabel: '${l10n.transactionsBalanceTotalLabel}: '
-                        '$total',
+                    semanticsLabel: l10n.transactionsBalanceTotalSemantics(
+                      l10n.transactionsBalanceTotalLabel,
+                      total,
+                    ),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: colors.textPrimary,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    LucideIcons.chevronDown,
-                    size: 20,
-                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -217,10 +232,6 @@ class _MovementsBalanceCarouselExpandedState
 
     return Column(
       children: [
-        MovementsBalanceCollapseHandle(
-          onTap: context.read<BalanceCarouselCubit>().collapse,
-        ),
-        const SizedBox(height: 2),
         if (accounts.length == 1)
           // A lone card has no next page to peek at, so it takes the full
           // width and centres instead of hugging the left with a phantom gap.
@@ -260,10 +271,22 @@ class _MovementsBalanceCarouselExpandedState
   }
 }
 
-/// The thin `muted` pill + `chevron-up` above the cards. Tapping it collapses
-/// the carousel.
+/// The thin `muted` pill + chevron shown in the same top slot regardless of
+/// the carousel's state: `chevron-up` (tap to collapse) while [expanded],
+/// `chevron-down` (tap to expand) while collapsed. Keeping this in one fixed
+/// slot — instead of one handle above the cards and a second chevron
+/// trailing the collapsed bar — is what stops the indicator from "jumping"
+/// position between states.
 class MovementsBalanceCollapseHandle extends StatelessWidget {
-  const MovementsBalanceCollapseHandle({required this.onTap, super.key});
+  const MovementsBalanceCollapseHandle({
+    required this.expanded,
+    required this.onTap,
+    super.key,
+  });
+
+  /// Whether the carousel is currently expanded: picks the chevron direction
+  /// and the semantics label ("colapsar" vs. "expandir").
+  final bool expanded;
 
   final VoidCallback onTap;
 
@@ -274,7 +297,9 @@ class MovementsBalanceCollapseHandle extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: l10n.transactionsBalanceCarouselCollapse,
+      label: expanded
+          ? l10n.transactionsBalanceCarouselCollapse
+          : l10n.transactionsBalanceCarouselExpand,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -293,7 +318,7 @@ class MovementsBalanceCollapseHandle extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Icon(
-                LucideIcons.chevronUp,
+                expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
                 size: 18,
                 color: colors.textSecondary,
               ),

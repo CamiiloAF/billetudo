@@ -90,19 +90,25 @@ class BudgetActivityRow extends StatelessWidget {
     );
   }
 
-  /// Signed, and in `$text-primary` (not red) — the deliberate exception to the
-  /// app-wide rule that an expense renders unsigned. In the Transactions list a
-  /// row can be income, expense or transfer, so the sign would be noise; here
-  /// every row is an expense of the *same* budget sitting under an accumulated
-  /// total, and the `-` is what marks each one as a subtraction from the period
-  /// rather than a running balance. Verified node by node against
-  /// `NloPT/U6y9n/a1Pwa`, `rmROV`, `oD0A1`, `p4qBp` and their twins in `DN0GV`
-  /// and `QLn6w`: all 12 read `-$X` in `$text-primary`. Do not "fix" this back
-  /// to unsigned.
+  /// Signed, and in `$text-primary` (not red/green) — the deliberate exception
+  /// to the app-wide rule that an expense renders unsigned. In the
+  /// Transactions list a row can be income, expense or transfer, so the sign
+  /// would be noise; here every row sits under an accumulated total for the
+  /// *same* budget, and the sign is what marks whether it subtracted from or
+  /// added to the period's disponible rather than showing a running balance.
+  /// Verified node by node against `NloPT/U6y9n/a1Pwa`, `rmROV`, `oD0A1`,
+  /// `p4qBp` and their twins in `DN0GV` and `QLn6w`: all 12 read `-$X` in
+  /// `$text-primary` — every one of those is a plain expense/transfer row, the
+  /// only kind the frames model. `+$X` for [BudgetActivityItem.isIncome]
+  /// (budget-income-counts-in-budget, e.g. a debt repayment received) has no
+  /// Pencil frame yet; it follows the same `$text-primary`, unsigned-by-color
+  /// convention, only flipping the sign character to match the calculator's
+  /// own subtraction in `BudgetProgressCalculator.spentIn`. Do not "fix"
+  /// either sign back to unsigned.
   String _amountLabel() {
     final amount = const MoneyFormatter()
         .formatSymbol(item.amountMinor, currencyCode: item.currency);
-    return '-$amount';
+    return item.isIncome ? '+$amount' : '-$amount';
   }
 
   /// "Cuenta · Fecha" (`DKJaf/pjX7P`); the note tags along when there is one so

@@ -60,7 +60,7 @@ const powerSyncSchema = Schema([
     Column.integer('statement_day'),
     Column.integer('payment_due_day'),
     Column.text('card_balance_primary'),
-    // The import batch this account was created by (schemaVersion 21).
+    // The import batch this account was created by (schemaVersion 22).
     // Nullable = created by hand; see Accounts.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -72,7 +72,7 @@ const powerSyncSchema = Schema([
     Column.text('icon'),
     Column.text('color'),
     Column.integer('sort_order'),
-    // The import batch this category was created by (schemaVersion 21).
+    // The import batch this category was created by (schemaVersion 22).
     // Nullable = created by hand (or a `seed-*` catalog category); see
     // Categories.importBatchId.
     Column.text('import_batch_id'),
@@ -92,7 +92,7 @@ const powerSyncSchema = Schema([
     Column.text('goal_id'),
     Column.text('debt_id'),
     Column.integer('counts_in_budget'),
-    // The import batch this transaction was created by (schemaVersion 21).
+    // The import batch this transaction was created by (schemaVersion 22).
     // Nullable = not from an import; see Transactions.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -207,7 +207,7 @@ const powerSyncSchema = Schema([
   Table('tags', [
     Column.text('name'),
     Column.text('color'),
-    // The import batch this tag was created by (schemaVersion 21). Nullable
+    // The import batch this tag was created by (schemaVersion 22). Nullable
     // = created by hand; see Tags.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -249,9 +249,10 @@ const powerSyncSchema = Schema([
   Table('app_settings', [
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),
+    Column.integer('onboarding_completed'),
     ..._syncColumns,
   ]),
-  // One row per completed CSV import (schemaVersion 21,
+  // One row per completed CSV import (schemaVersion 22,
   // docs/requirements/11-import-export.md). Never deleted — `reverted_at`
   // marks a revert (HU-08) instead of removing the row, so the history
   // survives it.

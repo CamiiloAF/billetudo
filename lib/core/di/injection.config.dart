@@ -14,6 +14,12 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart'
 import 'package:billetudo/core/crash/crash_reporter.dart' as _i474;
 import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
+import 'package:billetudo/core/notes/data/repositories/note_suggestions_repository_impl.dart'
+    as _i670;
+import 'package:billetudo/core/notes/domain/repositories/note_suggestions_repository.dart'
+    as _i509;
+import 'package:billetudo/core/notes/domain/usecases/get_note_suggestions.dart'
+    as _i1061;
 import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart'
     as _i248;
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
@@ -492,6 +498,44 @@ import 'package:billetudo/features/import_export/presentation/cubit/restore_cubi
     as _i641;
 import 'package:billetudo/features/import_export/presentation/cubit/save_copy_cubit.dart'
     as _i401;
+import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
+    as _i522;
+import 'package:billetudo/features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart'
+    as _i394;
+import 'package:billetudo/features/onboarding/domain/usecases/should_show_onboarding.dart'
+    as _i152;
+import 'package:billetudo/features/onboarding/presentation/cubit/onboarding_flow_cubit.dart'
+    as _i9;
+import 'package:billetudo/features/reports/data/datasources/reports_local_datasource.dart'
+    as _i584;
+import 'package:billetudo/features/reports/data/repositories/reports_repository_impl.dart'
+    as _i324;
+import 'package:billetudo/features/reports/domain/repositories/reports_repository.dart'
+    as _i776;
+import 'package:billetudo/features/reports/domain/services/chart_access_guard.dart'
+    as _i385;
+import 'package:billetudo/features/reports/domain/services/resolve_effective_date_range.dart'
+    as _i323;
+import 'package:billetudo/features/reports/domain/usecases/watch_cashflow_report.dart'
+    as _i137;
+import 'package:billetudo/features/reports/domain/usecases/watch_category_breakdown_report.dart'
+    as _i645;
+import 'package:billetudo/features/reports/domain/usecases/watch_net_worth_report.dart'
+    as _i1003;
+import 'package:billetudo/features/reports/domain/usecases/watch_reports_dashboard.dart'
+    as _i118;
+import 'package:billetudo/features/reports/presentation/cubit/cashflow_cubit.dart'
+    as _i966;
+import 'package:billetudo/features/reports/presentation/cubit/category_breakdown_cubit.dart'
+    as _i667;
+import 'package:billetudo/features/reports/presentation/cubit/net_worth_cubit.dart'
+    as _i723;
+import 'package:billetudo/features/reports/presentation/cubit/reports_dashboard_cubit.dart'
+    as _i805;
+import 'package:billetudo/features/reports/presentation/cubit/reports_shell_cubit.dart'
+    as _i364;
+import 'package:billetudo/features/reports/presentation/utils/chart_export.dart'
+    as _i70;
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payment_tags_local_datasource.dart'
     as _i276;
 import 'package:billetudo/features/scheduled_payments/data/datasources/scheduled_payments_local_datasource.dart'
@@ -564,6 +608,8 @@ import 'package:billetudo/features/settings/domain/repositories/app_settings_rep
     as _i487;
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
     as _i182;
+import 'package:billetudo/features/settings/domain/usecases/set_onboarding_completed.dart'
+    as _i528;
 import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart'
     as _i636;
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart'
@@ -594,6 +640,8 @@ import 'package:billetudo/features/transactions/domain/usecases/set_transaction_
     as _i460;
 import 'package:billetudo/features/transactions/domain/usecases/update_transaction.dart'
     as _i885;
+import 'package:billetudo/features/transactions/domain/usecases/watch_budget_period_options.dart'
+    as _i479;
 import 'package:billetudo/features/transactions/domain/usecases/watch_tags.dart'
     as _i121;
 import 'package:billetudo/features/transactions/domain/usecases/watch_transaction_detail.dart'
@@ -602,6 +650,8 @@ import 'package:billetudo/features/transactions/domain/usecases/watch_transactio
     as _i832;
 import 'package:billetudo/features/transactions/presentation/cubit/account_filter_cubit.dart'
     as _i722;
+import 'package:billetudo/features/transactions/presentation/cubit/budget_period_filter_cubit.dart'
+    as _i244;
 import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart'
     as _i315;
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart'
@@ -637,6 +687,8 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     gh.factory<_i505.AutodetectColumnMapping>(
         () => const _i505.AutodetectColumnMapping());
+    gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
+        () => const _i394.ResolveDefaultCurrencyForLocale());
     gh.factory<_i450.ProjectUpcomingOccurrences>(
         () => const _i450.ProjectUpcomingOccurrences());
     gh.factory<_i604.GetTransactionEditImpact>(
@@ -684,6 +736,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i49.CsvWriterDatasource());
     gh.lazySingleton<_i672.ZipPackagerDatasource>(
         () => const _i672.ZipPackagerDatasource());
+    gh.lazySingleton<_i385.ChartAccessGuard>(
+        () => const _i385.ChartAccessGuard());
+    gh.lazySingleton<_i323.ResolveEffectiveDateRange>(
+        () => const _i323.ResolveEffectiveDateRange());
+    gh.lazySingleton<_i70.ChartExport>(() => const _i70.ChartExport());
     gh.factory<_i559.GetBudgetProgress>(() => _i559.GetBudgetProgress(
           gh<_i685.BudgetProgressCalculator>(),
           gh<_i450.ProjectUpcomingOccurrences>(),
@@ -762,6 +819,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i545.ImportBatchesLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i799.ImportDestinationsLocalDatasource>(
         () => _i799.ImportDestinationsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i584.ReportsLocalDatasource>(
+        () => _i584.ReportsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i276.ScheduledPaymentTagsLocalDatasource>(() =>
         _i276.ScheduledPaymentTagsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i928.ScheduledPaymentsLocalDatasource>(
@@ -816,10 +875,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
     gh.lazySingleton<_i418.BackupRepository>(
         () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
+    gh.lazySingleton<_i509.NoteSuggestionsRepository>(
+        () => _i670.NoteSuggestionsRepositoryImpl(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i447.ImportRepository>(() => _i719.ImportRepositoryImpl(
           gh<_i997.CsvParserDatasource>(),
           gh<_i799.ImportDestinationsLocalDatasource>(),
           gh<_i545.ImportBatchesLocalDatasource>(),
+        ));
+    gh.lazySingleton<_i776.ReportsRepository>(() => _i324.ReportsRepositoryImpl(
+          gh<_i584.ReportsLocalDatasource>(),
+          gh<_i323.ResolveEffectiveDateRange>(),
+          gh<_i1013.DebtBalanceCalculator>(),
+          gh<_i474.CrashReporter>(),
         ));
     gh.lazySingleton<_i34.GoalQuickAmountsRepository>(
         () => _i327.GoalQuickAmountsRepositoryImpl(
@@ -832,6 +899,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i542.GetMappingTemplates(gh<_i867.MappingTemplateRepository>()));
     gh.factory<_i200.SaveMappingTemplate>(
         () => _i200.SaveMappingTemplate(gh<_i867.MappingTemplateRepository>()));
+    gh.factory<_i137.WatchCashflowReport>(
+        () => _i137.WatchCashflowReport(gh<_i776.ReportsRepository>()));
+    gh.factory<_i645.WatchCategoryBreakdownReport>(() =>
+        _i645.WatchCategoryBreakdownReport(gh<_i776.ReportsRepository>()));
+    gh.factory<_i1003.WatchNetWorthReport>(
+        () => _i1003.WatchNetWorthReport(gh<_i776.ReportsRepository>()));
     gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
         _i325.AdvanceScheduledOccurrence(
             gh<_i680.ScheduledPaymentRepository>()));
@@ -937,6 +1010,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i433.PowerSyncDatabase>(),
           gh<_i872.PowerSyncConnector>(),
         ));
+    gh.factory<_i667.CategoryBreakdownCubit>(() =>
+        _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(
         () => _i885.CreateCategory(gh<_i802.CategoryRepository>()));
     gh.factory<_i968.DeleteCategory>(
@@ -1001,6 +1076,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i917.PreviewImport(gh<_i447.ImportRepository>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i528.SetOnboardingCompleted>(
+        () => _i528.SetOnboardingCompleted(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i636.SetZeroBasedEnabled>(
         () => _i636.SetZeroBasedEnabled(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
@@ -1046,6 +1123,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i237.CreateFullBackup(gh<_i418.BackupRepository>()));
     gh.factory<_i639.ParseBackupHeader>(
         () => _i639.ParseBackupHeader(gh<_i418.BackupRepository>()));
+    gh.factory<_i1061.GetNoteSuggestions>(
+        () => _i1061.GetNoteSuggestions(gh<_i509.NoteSuggestionsRepository>()));
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
           gh<_i121.WatchTags>(),
           gh<_i281.CreateTag>(),
@@ -1064,6 +1143,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i802.CategoryRepository>(),
           gh<_i487.AppSettingsRepository>(),
         ));
+    gh.factory<_i723.NetWorthCubit>(
+        () => _i723.NetWorthCubit(gh<_i1003.WatchNetWorthReport>()));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),
           gh<_i275.UpdateCategory>(),
@@ -1173,6 +1254,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i97.SkipScheduledOccurrence>(),
           gh<_i1009.SnoozeScheduledOccurrence>(),
         ));
+    gh.factory<_i966.CashflowCubit>(
+        () => _i966.CashflowCubit(gh<_i137.WatchCashflowReport>()));
     gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
           gh<_i418.BackupRepository>(),
           gh<_i639.ParseBackupHeader>(),
@@ -1248,6 +1331,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i639.ParseBackupHeader>(),
           gh<_i881.RestoreBackup>(),
         ));
+    gh.factory<_i522.CompleteOnboarding>(
+        () => _i522.CompleteOnboarding(gh<_i528.SetOnboardingCompleted>()));
     gh.factory<_i875.GoalLinkCubit>(
         () => _i875.GoalLinkCubit(gh<_i933.LinkTransactionToGoal>()));
     gh.factory<_i717.ImportBatchesCubit>(() => _i717.ImportBatchesCubit(
@@ -1300,6 +1385,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i829.GetArchivedBudgets>(),
           gh<_i405.ReactivateBudget>(),
         ));
+    gh.factory<_i364.ReportsShellCubit>(
+        () => _i364.ReportsShellCubit(gh<_i773.WatchSyncStatusDetails>()));
     gh.factory<_i170.DebtUpdateBalanceCubit>(
         () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
     gh.factory<_i843.ZeroBasedSummaryCubit>(
@@ -1310,6 +1397,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
+    gh.factory<_i152.ShouldShowOnboarding>(() => _i152.ShouldShowOnboarding(
+          gh<_i487.AppSettingsRepository>(),
+          gh<_i1067.AccountRepository>(),
+        ));
     gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
           gh<_i871.GetBudgetById>(),
           gh<_i559.GetBudgetProgress>(),
@@ -1349,6 +1440,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
     gh.factory<_i511.EditGoalMovementCubit>(
         () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
+    gh.factory<_i479.WatchBudgetPeriodOptions>(
+        () => _i479.WatchBudgetPeriodOptions(gh<_i674.GetActiveBudgets>()));
     gh.factory<_i11.ScheduledPaymentDetailCubit>(
         () => _i11.ScheduledPaymentDetailCubit(
               gh<_i470.GetScheduledPaymentDetail>(),
@@ -1365,6 +1458,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i498.DeleteAccount>(),
           gh<_i537.WipeLocalData>(),
         ));
+    gh.lazySingleton<_i9.OnboardingFlowCubit>(
+        () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
     gh.factory<_i722.ImportExportHubCubit>(() => _i722.ImportExportHubCubit(
           gh<_i925.GetLastBackupSavedAt>(),
           gh<_i813.WatchImportBatches>(),
@@ -1412,14 +1507,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
         ));
-    gh.lazySingleton<_i536.TransactionsListCubit>(
-        () => _i536.TransactionsListCubit(
-              gh<_i832.WatchTransactions>(),
-              gh<_i612.DeleteTransaction>(),
-              gh<_i177.RestoreTransaction>(),
-              gh<_i837.WatchAccounts>(),
-              gh<_i248.AccountFilterPreferenceDatasource>(),
-            ));
     gh.factory<_i457.DebtFormCubit>(() => _i457.DebtFormCubit(
           gh<_i247.CreateDebt>(),
           gh<_i398.CreateDebtWithOpeningMovement>(),
@@ -1437,6 +1524,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
+        ));
+    gh.factory<_i244.BudgetPeriodFilterCubit>(() =>
+        _i244.BudgetPeriodFilterCubit(gh<_i479.WatchBudgetPeriodOptions>()));
+    gh.factory<_i118.WatchReportsDashboard>(() => _i118.WatchReportsDashboard(
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i529.WatchGoals>(),
         ));
     gh.factory<_i701.GoalDetailCubit>(() => _i701.GoalDetailCubit(
           gh<_i678.WatchGoalDetail>(),
@@ -1480,6 +1573,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i574.DeleteAccount>(),
           gh<_i486.SecureClipboard>(),
         ));
+    gh.factory<_i805.ReportsDashboardCubit>(
+        () => _i805.ReportsDashboardCubit(gh<_i118.WatchReportsDashboard>()));
+    gh.lazySingleton<_i536.TransactionsListCubit>(
+        () => _i536.TransactionsListCubit(
+              gh<_i832.WatchTransactions>(),
+              gh<_i612.DeleteTransaction>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i479.WatchBudgetPeriodOptions>(),
+              gh<_i248.AccountFilterPreferenceDatasource>(),
+            ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),

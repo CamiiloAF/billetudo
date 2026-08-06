@@ -1,7 +1,7 @@
 # Patrol e2e needs the Podfile's deployment target to match Xcode's Build
 # Settings for every target (Runner, RunnerTests, RunnerUITests) — a mismatch
 # is the #1 cause of "iOS deployment version" build failures per Patrol's FAQ.
-platform :ios, '13.0'
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

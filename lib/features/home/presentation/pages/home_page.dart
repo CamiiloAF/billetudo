@@ -102,11 +102,16 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _openMonthPicker(BuildContext context, HomeState state) async {
+  Future<void> _openMonthPicker(BuildContext context) async {
+    // Bugfix item 7: re-anchors "today" right before the picker opens, so a
+    // month boundary crossed while the app stayed open never freezes the
+    // ceiling (`HomeCubit.refreshCurrentMonth`).
+    final cubit = context.read<HomeCubit>();
+    cubit.refreshCurrentMonth();
     final picked = await MonthPickerSheet.show(
       context,
-      selected: state.month,
-      currentMonth: state.currentMonth,
+      selected: cubit.state.month,
+      currentMonth: cubit.state.currentMonth,
     );
     if (picked != null && context.mounted) {
       await context.read<HomeCubit>().selectMonth(picked);
@@ -230,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                             spending: state.spending!,
                             budgetProgress: state.budgetProgress,
                             monthLabel: _monthLabel(context, state.month),
-                            onMonthTap: () => _openMonthPicker(context, state),
+                            onMonthTap: () => _openMonthPicker(context),
                             onCreateBudget: widget.onCreateBudget,
                           ),
                   ),

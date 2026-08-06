@@ -6,6 +6,15 @@ import 'package:mocktail/mocktail.dart';
 import '../debt_test_fixtures.dart';
 import 'debt_repository_mock.dart';
 
+// budget-income-counts-in-budget (criterion 3): whether linking forces
+// countsInBudget = true is a repository-level decision (see
+// `DebtRepository.linkTransactionToDebt`'s doc) — the repository reads both
+// the debt and the transaction to decide, neither of which this use case's
+// signature carries. That behaviour is covered end-to-end against a real
+// in-memory Drift db in
+// `test/features/debts/data/repositories/debt_repository_impl_test.dart`.
+// This use case's own contract stays the same: validate ids, reject a
+// closed debt, delegate.
 void main() {
   late MockDebtRepository repository;
   late LinkTransactionToDebt usecase;

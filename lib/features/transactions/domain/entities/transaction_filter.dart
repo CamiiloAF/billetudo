@@ -24,6 +24,7 @@ class TransactionFilter extends Equatable {
     Set<TransactionType> types = const <TransactionType>{},
     Set<String> tagIds = const <String>{},
     DatePeriodFilter? datePeriod,
+    this.budgetPeriod,
     this.sortOrder = TransactionSortOrder.dateDesc,
   })  : accountIds = Set.unmodifiable(accountIds),
         categoryIds = Set.unmodifiable(categoryIds),
@@ -42,12 +43,20 @@ class TransactionFilter extends Equatable {
   final Set<String> tagIds;
 
   final DatePeriodFilter datePeriod;
+
+  /// The "Presupuesto" chip's window (built via [DatePeriodFilter.budget]),
+  /// entirely independent from [datePeriod] (the Fecha chip): `null` is its
+  /// default/cleared state, unlike `datePeriod`, which is never null. Both
+  /// windows apply together, by intersection (AND), when present.
+  final DatePeriodFilter? budgetPeriod;
+
   final TransactionSortOrder sortOrder;
 
   bool get hasAccountFilter => accountIds.isNotEmpty;
   bool get hasCategoryFilter => categoryIds.isNotEmpty;
   bool get hasTypeFilter => types.isNotEmpty;
   bool get hasTagFilter => tagIds.isNotEmpty;
+  bool get hasBudgetPeriodFilter => budgetPeriod != null;
 
   TransactionFilter copyWith({
     String? searchText,
@@ -56,6 +65,11 @@ class TransactionFilter extends Equatable {
     Set<TransactionType>? types,
     Set<String>? tagIds,
     DatePeriodFilter? datePeriod,
+    // A nullable field needs an explicit "clear" flag to tell "leave it
+    // as-is" apart from "set it to null" — same shape as
+    // `TransactionsListState.clearPendingUndo`.
+    DatePeriodFilter? budgetPeriod,
+    bool clearBudgetPeriod = false,
     TransactionSortOrder? sortOrder,
   }) =>
       TransactionFilter(
@@ -65,6 +79,8 @@ class TransactionFilter extends Equatable {
         types: types ?? this.types,
         tagIds: tagIds ?? this.tagIds,
         datePeriod: datePeriod ?? this.datePeriod,
+        budgetPeriod:
+            clearBudgetPeriod ? null : (budgetPeriod ?? this.budgetPeriod),
         sortOrder: sortOrder ?? this.sortOrder,
       );
 
@@ -107,6 +123,7 @@ class TransactionFilter extends Equatable {
         types,
         tagIds,
         datePeriod,
+        budgetPeriod,
         sortOrder,
       ];
 }

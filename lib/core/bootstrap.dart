@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/categories/domain/usecases/seed_default_categories.dart';
+import '../features/onboarding/domain/usecases/should_show_onboarding.dart';
 import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
 import 'bootstrap/app_bootstrap_gate.dart';
 import 'bootstrap/first_launch_offline_gate.dart';
@@ -15,6 +16,7 @@ import 'crash/sentry_crash_reporter.dart';
 import 'database/database_connection.dart';
 import 'di/injection.dart';
 import 'error/result.dart';
+import 'router/app_router.dart';
 
 /// Shared entry point: mounts [AppBootstrapGate] (which shows the splash
 /// screen) immediately, then does the actual setup — bindings, Supabase,
@@ -36,7 +38,7 @@ import 'error/result.dart';
 /// wiring up (that now happens asynchronously inside [_initApp], behind the
 /// splash screen), so they resolve [CrashReporter] lazily and tolerate it not
 /// being registered yet — see [_reportBootError].
-Future<void> bootstrap(Widget Function() builder) async {
+Future<void> bootstrap(Widget Function({String initialLocation}) builder) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final gate = AppBootstrapGate(init: () => _initApp(builder));
@@ -92,7 +94,9 @@ Future<void> _reportBootError(
 /// Does the actual bootstrap work behind the splash screen shown by
 /// [AppBootstrapGate], then resolves to the widget-building function the real
 /// app should be mounted with.
-Future<Widget Function()> _initApp(Widget Function() builder) async {
+Future<Widget Function()> _initApp(
+  Widget Function({String initialLocation}) builder,
+) async {
   // Must run before `configureDependencies()`: the DI graph exposes
   // `Supabase.instance.client` synchronously (see `register_module.dart`),
   // which requires this to have completed already.
@@ -129,10 +133,39 @@ Future<Widget Function()> _initApp(Widget Function() builder) async {
   // and let the user in — those aren't the network-availability problem this
   // screen exists for.
   final seedResult = await getIt<SeedDefaultCategories>()();
-  var effectiveBuilder = builder;
+
+  // `13-onboarding.md`, "El gate se evalúa una sola vez por arranque, tras
+  // el bootstrap": decides once, here, whether the welcome flow should be
+  // the first thing the user sees, and hands it to `builder` (`BilletudoApp`)
+  // as its router's `initialLocation`. Not a `redirect`: `app_router.dart`
+  // never re-checks the latch after this point, so a remote change to
+  // `onboardingCompleted` arriving mid-session cannot yank the user off the
+  // screen they are on. A failure reading the latch (e.g. a local DB error)
+  // falls back to Home rather than blocking the app on a screen no
+  // requirement asks for — the same "log it and let the user in" posture
+  // the category-seeding branch below takes for its own non-network
+  // failures.
+  final onboardingResult = await getIt<ShouldShowOnboarding>()();
+  final shouldShowOnboarding = onboardingResult.fold((failure) {
+    unawaited(
+      crash.recordError(
+        failure,
+        StackTrace.current,
+        context: 'shouldShowOnboarding',
+      ),
+    );
+    return false;
+  }, (shouldShow) => shouldShow);
+  final initialLocation =
+      shouldShowOnboarding ? AppRoutes.onboarding : AppRoutes.home;
+  Widget Function() effectiveBuilder =
+      () => builder(initialLocation: initialLocation);
+
   if (seedResult case Left(value: final failure)) {
     if (failure is NetworkFailure) {
-      effectiveBuilder = () => FirstLaunchOfflineGate(builder: builder);
+      effectiveBuilder = () => FirstLaunchOfflineGate(
+            builder: () => builder(initialLocation: initialLocation),
+          );
     } else {
       unawaited(
         crash.recordError(

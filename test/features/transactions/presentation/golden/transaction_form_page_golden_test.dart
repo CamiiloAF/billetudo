@@ -23,6 +23,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
 import '../../../../support/golden_helpers.dart';
 
 class MockTransactionFormCubit extends MockCubit<TransactionFormState>
@@ -158,6 +159,7 @@ void main() {
         () => categoryQuickPickerCubit,
       )
       ..registerFactory<TagFilterCubit>(() => tagFilterCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);
@@ -203,6 +205,31 @@ void main() {
           type: TransactionType.income,
         ),
         'create_income_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // budget-income-counts-in-budget (AC7): unlike transfer, income never
+    // gates its category on this toggle (the category picker above is
+    // already mandatory for income), so there is no conditional block to
+    // reveal here — only the hint copy changes between off/on. This case
+    // covers the "on" business state that "create income, empty" (off,
+    // default) does not.
+    testWidgets('create income, counts in budget on ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.income,
+          accountId: 'acc-1',
+          accountName: 'Efectivo',
+          categoryId: 'cat-1',
+          categoryName: 'Salario',
+          categoryKind: CategoryKind.income,
+          countsInBudget: true,
+        ),
+        'create_income_counts_in_budget_$suffix',
         brightness: brightness,
       );
     });

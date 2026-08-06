@@ -22,7 +22,11 @@ void main() {
     mergeLocalData = MockMergeLocalData();
   });
 
-  Future<void> pumpMerge(WidgetTester tester, {VoidCallback? onDone}) =>
+  Future<void> pumpMerge(
+    WidgetTester tester, {
+    VoidCallback? onDone,
+    String? ctaLabel,
+  }) =>
       tester.pumpAuthWidget(
         BlocProvider(
           create: (_) {
@@ -30,7 +34,10 @@ void main() {
             unawaited(cubit.start());
             return cubit;
           },
-          child: MergeConfirmationPage(onDone: onDone ?? () {}),
+          child: MergeConfirmationPage(
+            onDone: onDone ?? () {},
+            ctaLabel: ctaLabel,
+          ),
         ),
         wrapInScaffold: false,
       );
@@ -69,6 +76,34 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Ir a mis finanzas'));
+    await tester.pump();
+
+    expect(done, isTrue);
+  });
+
+  testWidgets(
+      'HU-07: con ctaLabel override (closesFlow: false desde el '
+      'onboarding), el CTA usa ese texto en vez de "Ir a mis finanzas"',
+      (tester) async {
+    const summary = MergeSummary(
+      accountsCount: 1,
+      transactionsCount: 1,
+      categoriesCount: 1,
+    );
+    when(() => mergeLocalData()).thenAnswer((_) async => const Right(summary));
+
+    var done = false;
+    await pumpMerge(
+      tester,
+      onDone: () => done = true,
+      ctaLabel: 'Continuar',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ir a mis finanzas'), findsNothing);
+    expect(find.text('Continuar'), findsOneWidget);
+
+    await tester.tap(find.text('Continuar'));
     await tester.pump();
 
     expect(done, isTrue);

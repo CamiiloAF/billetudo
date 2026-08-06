@@ -17,6 +17,7 @@ class MorePage extends StatelessWidget {
     required this.onOpenScheduledPayments,
     required this.onOpenGoals,
     required this.onOpenImportExport,
+    required this.onOpenReports,
     required this.onOpenComingSoon,
     required this.onOpenSettings,
     required this.isSignedIn,
@@ -30,6 +31,7 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenGoals;
   final VoidCallback onOpenImportExport;
+  final VoidCallback onOpenReports;
 
   /// Opens a stacked "Próximamente" page titled with the destination's name.
   final ValueChanged<String> onOpenComingSoon;
@@ -86,15 +88,14 @@ class MorePage extends StatelessWidget {
                     onTap: onOpenGoals,
                   ),
                   // Design debt: Pencil frame `gXcHt` only defines 6 rows and
-                  // omits "Gráficas e informes" — kept here because it's a real
-                  // roadmap feature (fl_chart, see CLAUDE.md); the `.pen` needs
-                  // to be updated to reflect it.
+                  // omits "Gráficas e informes" — kept here because it's a
+                  // real, now-shipped feature; the `.pen` needs to be updated
+                  // to reflect it.
                   MoreRow(
                     icon: LucideIcons.chartLine,
                     label: l10n.moreReports,
                     description: l10n.moreReportsDescription,
-                    comingSoon: true,
-                    onTap: () => onOpenComingSoon(l10n.moreReports),
+                    onTap: onOpenReports,
                   ),
                   MoreRow(
                     icon: LucideIcons.arrowUpDown,

@@ -744,6 +744,13 @@ class AppSettings extends Table with _SyncColumns {
   /// next launch. This is the install-lifetime guarantee — `hasAnyCategory` only
   /// reflects the current row count, which is not enough.
   BoolColumn get categoriesSeeded => boolean().clientDefault(() => false)();
+
+  /// One-shot latch: the onboarding flow (`lib/features/onboarding/`) has
+  /// been completed once for this installation. Set to true after the user
+  /// finishes (or explicitly skips) onboarding and never cleared, so the
+  /// flow does not reappear on a later launch. Same pattern as
+  /// [categoriesSeeded].
+  BoolColumn get onboardingCompleted => boolean().clientDefault(() => false)();
 }
 
 // ---------------------------------------------------------------------------
@@ -777,7 +784,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1229,7 +1236,20 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(goalQuickAmounts);
           }
 
-          // v20 -> v21: Import/Export (docs/requirements/11-import-export.md).
+          // v20 -> v21: `AppSettings` gains `onboardingCompleted`, a one-shot
+          // latch so the onboarding flow (`lib/features/onboarding/`) runs
+          // once per installation and never reappears. No `addColumn` — see
+          // the note on `from < 12` above: `appSettings` is a PowerSync-
+          // managed view, and `powerSyncSchema` (`powersync_schema.dart`)
+          // already declares `onboarding_completed`, so PowerSync recreates
+          // the view with the column present before this migration runs.
+          // Nothing else to do here: the column has a client default of
+          // `false`, so the singleton row keeps that value with no backfill.
+          if (from < 21) {
+            // No `addColumn` — see comment above.
+          }
+
+          // v21 -> v22: Import/Export (docs/requirements/11-import-export.md).
           // New `ImportBatches` table (one row per completed CSV import,
           // never deleted — `revertedAt` marks a revert instead, HU-08) plus
           // a nullable `importBatchId` on every table an import can create
@@ -1247,7 +1267,7 @@ class AppDatabase extends _$AppDatabase {
           // PowerSync recreates each view with it present the next time the
           // app opens, before Drift's migration runs. Nullable column, no
           // backfill needed.
-          if (from < 21) {
+          if (from < 22) {
             await m.createTable(importBatches);
           }
         },

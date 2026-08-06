@@ -5,14 +5,17 @@ import 'package:billetudo/features/accounts/domain/entities/account_balance.dart
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_node.dart';
+import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
 import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/account_filter_cubit.dart';
+import 'package:billetudo/features/transactions/presentation/cubit/budget_period_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/account_filter_sheet.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/sheets/budget_period_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/category_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/confirm_delete_transaction_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/date_filter_sheet.dart';
@@ -40,6 +43,9 @@ class MockTagFilterCubit extends MockCubit<TagFilterState>
 
 class MockDateFilterCubit extends MockCubit<DateFilterState>
     implements DateFilterCubit {}
+
+class MockBudgetPeriodFilterCubit extends MockCubit<BudgetPeriodFilterState>
+    implements BudgetPeriodFilterCubit {}
 
 final DateTime _instant = DateTime(2026, 7, 15);
 final int _instantMillis = _instant.millisecondsSinceEpoch;
@@ -337,6 +343,82 @@ void main() {
             initialEnd: DateTime(2026, 7, 9),
           ),
           'date_range_picker_$suffix',
+          brightness: brightness,
+        );
+      });
+    });
+
+    group('budget period filter ($suffix)', () {
+      final food = BudgetPeriodOption(
+        budgetId: 'budget-1',
+        name: 'Comida',
+        icon: 'utensils',
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+      );
+      final transport = BudgetPeriodOption(
+        budgetId: 'budget-2',
+        name: 'Transporte',
+        icon: 'bus',
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+      );
+
+      testWidgets('active budgets, none selected', (tester) async {
+        final cubit = MockBudgetPeriodFilterCubit();
+        when(() => cubit.start(any())).thenAnswer((_) async {});
+        when(cubit.close).thenAnswer((_) async {});
+        when(() => cubit.state).thenReturn(
+          BudgetPeriodFilterState(
+            status: BudgetPeriodFilterStatus.ready,
+            options: [food, transport],
+          ),
+        );
+        getIt.registerFactory<BudgetPeriodFilterCubit>(() => cubit);
+
+        await golden(
+          tester,
+          BudgetPeriodFilterSheet.show,
+          'budget_period_filter_none_selected_$suffix',
+          brightness: brightness,
+        );
+      });
+
+      testWidgets('active budgets, one selected', (tester) async {
+        final cubit = MockBudgetPeriodFilterCubit();
+        when(() => cubit.start(any())).thenAnswer((_) async {});
+        when(cubit.close).thenAnswer((_) async {});
+        when(() => cubit.state).thenReturn(
+          BudgetPeriodFilterState(
+            status: BudgetPeriodFilterStatus.ready,
+            options: [food, transport],
+            selectedBudgetId: 'budget-1',
+          ),
+        );
+        getIt.registerFactory<BudgetPeriodFilterCubit>(() => cubit);
+
+        await golden(
+          tester,
+          (context) =>
+              BudgetPeriodFilterSheet.show(context, initialBudgetId: 'budget-1'),
+          'budget_period_filter_selected_$suffix',
+          brightness: brightness,
+        );
+      });
+
+      testWidgets('no active budgets, empty state', (tester) async {
+        final cubit = MockBudgetPeriodFilterCubit();
+        when(() => cubit.start(any())).thenAnswer((_) async {});
+        when(cubit.close).thenAnswer((_) async {});
+        when(() => cubit.state).thenReturn(
+          const BudgetPeriodFilterState(status: BudgetPeriodFilterStatus.ready),
+        );
+        getIt.registerFactory<BudgetPeriodFilterCubit>(() => cubit);
+
+        await golden(
+          tester,
+          BudgetPeriodFilterSheet.show,
+          'budget_period_filter_empty_$suffix',
           brightness: brightness,
         );
       });

@@ -53,7 +53,16 @@ class GetBudgetProgress {
           detail,
     ]..sort((a, b) => b.expense.date.compareTo(a.expense.date));
 
-    final spent = matched.fold<int>(0, (sum, d) => sum + d.expense.amountMinor);
+    // budget-income-counts-in-budget: a matched presupuestable income row
+    // subtracts instead of adds, same net-of-income rule as
+    // `BudgetProgressCalculator.spentIn` (kept in sync manually — this fold
+    // duplicates it because it also needs to keep the sorted `matched` list
+    // for `activity` below, not just the total).
+    final spent = matched.fold<int>(
+      0,
+      (sum, d) =>
+          sum + (d.expense.isIncome ? -d.expense.amountMinor : d.expense.amountMinor),
+    );
 
     // A past window is closed history: nothing "programado" is still owed
     // inside it (criterion 7), regardless of a stale `pending` occurrence
@@ -104,6 +113,7 @@ class GetBudgetProgress {
             currency: detail.expense.currency,
             date: detail.expense.date,
             note: detail.note,
+            isIncome: detail.expense.isIncome,
           ),
       ],
       scheduledItems: scheduledItems,

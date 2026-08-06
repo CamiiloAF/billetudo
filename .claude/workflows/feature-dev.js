@@ -132,7 +132,7 @@ const FIDELITY_SCHEMA = {
   required: ['applicable', 'accessible', 'reason', 'findings', 'gapsMdWithoutGolden', 'gapsGoldenWithoutMd'],
   properties: {
     applicable: { type: 'boolean', description: 'false si la feature no tiene design-system/billetudo/pages/<feature>.md todavia (sin frame que auditar) — no es un fallo, es N/A' },
-    accessible: { type: 'boolean', description: 'true solo si pudiste leer el .pen real (get_editor_state) y comparar goldens reales contra nodeId; false si el MCP de Pencil no respondio' },
+    accessible: { type: 'boolean', description: 'true solo si pudiste leer el .pen real (get_app_state) y comparar goldens reales contra nodeId; false si el MCP de Pencil no respondio' },
     reason: { type: 'string' },
     findings: {
       type: 'array',
@@ -227,7 +227,7 @@ if (plan.needsUi) {
   const pencilCheck = await agent(
     `Antes de que flutter-dev implemente la capa presentation/ de la corrida "${SLUG}" (${plan.goal}), verifica que tienes acceso FUNCIONAL y REAL al archivo .pen de billetudo — no basta con que exista el spec .md.
 
-Pasos: llama a mcp__pencil__get_editor_state (include_schema:true si no conoces el schema todavia), y luego intenta localizar y ver (mcp__pencil__get_screenshot o mcp__pencil__batch_get) la o las pantallas relevantes a este objetivo dentro del canvas. Revisa tambien si existe design-system/billetudo/pages/<feature>.md correspondiente.
+Pasos: llama a mcp__pencil__get_app_state (include_schema:true, include_canvas_design:true, include_scripts_and_shaders:false, include_browser:false si no conoces el schema todavia), y luego intenta localizar y ver (mcp__pencil__get_screenshot o, dentro de mcp__pencil__execute, Get) la o las pantallas relevantes a este objetivo dentro del canvas. Revisa tambien si existe design-system/billetudo/pages/<feature>.md correspondiente.
 
 Devuelve accessible=true SOLO si lograste ver el diseño real (frames del canvas), no solo leer el .md. Si el MCP de Pencil no responde, el archivo no carga, o no encuentras las pantallas de esta feature en el canvas, accessible=false y explica la causa exacta en reason.`,
     { label: 'pencil-access-check', phase: 'Plan', schema: PENCIL_ACCESS_SCHEMA, agentType: 'ui-ux-reviewer', effort: 'low' },
@@ -430,8 +430,8 @@ if (plan.needsUi) {
     return agent(
       `Revisa la fidelidad visual completa de la feature "${plan.featureDir}" (corrida "${SLUG}") comparando cada golden test ya generado contra su nodeId real en billetudo.pen. Sigue tu playbook (.claude/agents/pencil-fidelity-reviewer.md).
 
-1. Confirma primero si existe design-system/billetudo/pages/${plan.featureDir}.md. Si NO existe, devuelve applicable=false y explica en reason — no es un fallo, la feature aun no tiene ese spec.
-2. Si existe, confirma acceso real al .pen (get_editor_state). Si el MCP no responde, devuelve applicable=true, accessible=false y explica en reason — no compares a ciegas contra el .md solo.
+1. Confirma primero si existe el spec de esta feature. TODOS los archivos bajo design-system/billetudo/pages/ estan nombrados en ESPANOL (ej. transacciones.md, metas.md, presupuestos.md, cuentas.md), NO en el nombre ingles de la carpeta de lib/features/. "${plan.featureDir}" es el nombre de carpeta en ingles — nunca lo uses tal cual como nombre de archivo. Primero intenta Glob("design-system/billetudo/pages/*.md") y elige el archivo cuyo nombre/contenido corresponda semanticamente a "${plan.featureDir}" (traduccion directa o Read rapido de las primeras lineas si el nombre no es obvio). Solo si ese Glob no produce ningun candidato razonable, devuelve applicable=false y explica en reason — no es un fallo, la feature aun no tiene ese spec.
+2. Si existe, confirma acceso real al .pen (get_app_state). Si el MCP no responde, devuelve applicable=true, accessible=false y explica en reason — no compares a ciegas contra el .md solo.
 3. Si tienes acceso: Glob sobre test/features/${plan.featureDir}/presentation/golden/goldens/*.png y compara CADA .png contra su fila en el .md (nodeId claro/oscuro segun el sufijo _light/_dark del archivo). No te limites a una muestra.
 ${note ? `\nNOTA: ${note}` : ''}
 Devuelve {applicable, accessible, reason, findings[{severity,golden,nodeId,description}], gapsMdWithoutGolden[], gapsGoldenWithoutMd[]}. Severidad: CRITICO (un usuario lo notaria de inmediato: componente equivocado, layout roto, color fuera de paleta), IMPORTANTE (divergencia real acotada: spacing, peso de fuente, icono equivocado), MENOR (sutil/discutible). No inventes hallazgos para tener contenido.`,

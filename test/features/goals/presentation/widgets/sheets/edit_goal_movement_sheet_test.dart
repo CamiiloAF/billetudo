@@ -1,3 +1,4 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_contribution.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../../support/fake_note_suggestions.dart';
 import '../../../../../support/golden_helpers.dart';
 import '../../goals_presentation_fixtures.dart';
 
@@ -28,7 +30,10 @@ void main() {
 
   setUp(() {
     updateGoalMovement = MockUpdateGoalMovement();
+    registerFakeNoteSuggestions();
   });
+
+  tearDown(getIt.reset);
 
   EditGoalMovementCubit buildCubit() =>
       EditGoalMovementCubit(updateGoalMovement)

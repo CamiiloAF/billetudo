@@ -7,10 +7,13 @@ import '../../../../core/error/result.dart';
 import '../../../../core/preferences/account_filter_preference_datasource.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../domain/entities/budget_period_option.dart';
+import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 import '../../domain/usecases/delete_transaction.dart';
 import '../../domain/usecases/restore_transaction.dart';
+import '../../domain/usecases/watch_budget_period_options.dart';
 import '../../domain/usecases/watch_transactions.dart';
 import 'transactions_list_state.dart';
 
@@ -32,6 +35,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     this._deleteTransaction,
     this._restoreTransaction,
     this._watchAccounts,
+    this._watchBudgetPeriodOptions,
     this._accountFilterPreferences,
   ) : super(TransactionsListState());
 
@@ -39,6 +43,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   final DeleteTransaction _deleteTransaction;
   final RestoreTransaction _restoreTransaction;
   final WatchAccounts _watchAccounts;
+  final WatchBudgetPeriodOptions _watchBudgetPeriodOptions;
   final AccountFilterPreferenceDatasource _accountFilterPreferences;
 
   StreamSubscription<Result<List<TransactionWithDetails>>>? _subscription;
@@ -47,10 +52,18 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// when exactly one account is the active filter.
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
 
+  /// Kept only to resolve the Presupuesto chip's name/icon and to detect a
+  /// stale `filter.budgetPeriod` (see [_pruneStaleBudgetPeriodFilter]).
+  StreamSubscription<Result<List<BudgetPeriodOption>>>?
+      _budgetOptionsSubscription;
+
   /// Whether the persisted account filter has already been checked against
   /// the current active accounts (see [_pruneStaleAccountFilter]) — only
   /// needs doing once per `start()`, on the first accounts emission.
   bool _prunedStaleAccountFilter = false;
+
+  /// Same as [_prunedStaleAccountFilter] but for `filter.budgetPeriod`.
+  bool _prunedStaleBudgetPeriodFilter = false;
 
   /// Subscribes with the current (or default) filter. Safe to call again to
   /// retry after an error.
@@ -61,12 +74,15 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   Future<void> start() async {
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _budgetOptionsSubscription?.cancel();
     _prunedStaleAccountFilter = false;
+    _prunedStaleBudgetPeriodFilter = false;
     final persistedAccountIds =
         await _accountFilterPreferences.readAccountIds();
     emit(
       TransactionsListState(
         filter: state.filter.copyWith(accountIds: persistedAccountIds),
+        arrivedFromReports: state.arrivedFromReports,
       ),
     );
     _subscribe();
@@ -84,6 +100,23 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
           if (!_prunedStaleAccountFilter) {
             _prunedStaleAccountFilter = true;
             _pruneStaleAccountFilter(accounts);
+          }
+        },
+      );
+    });
+    _budgetOptionsSubscription = _watchBudgetPeriodOptions().listen((result) {
+      if (isClosed) {
+        return;
+      }
+      result.fold(
+        // Same reasoning as the account chip above: fall back to the id it
+        // already has rather than surfacing a list-wide error.
+        (failure) {},
+        (options) {
+          emit(state.copyWith(budgetOptions: options));
+          if (!_prunedStaleBudgetPeriodFilter) {
+            _prunedStaleBudgetPeriodFilter = true;
+            _pruneStaleBudgetPeriodFilter(options);
           }
         },
       );
@@ -108,6 +141,27 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     }
   }
 
+  /// Drops `filter.budgetPeriod` when the budget it was built from is no
+  /// longer active — archived (`archivedAt`) or deleted since the filter was
+  /// applied. `WatchBudgetPeriodOptions` already excludes archived budgets
+  /// (via `GetActiveBudgets`), so its absence from [options] is exactly that
+  /// signal. Falls back to "sin presupuesto" (the chip's neutral state)
+  /// instead of silently keeping a ghost selection the user can no longer see
+  /// or clear in the filter sheet.
+  void _pruneStaleBudgetPeriodFilter(List<BudgetPeriodOption> options) {
+    final budgetId = state.filter.budgetPeriod?.budgetId;
+    if (budgetId == null) {
+      return;
+    }
+    final stillActive =
+        options.any((option) => option.budgetId == budgetId);
+    if (!stillActive) {
+      unawaited(
+        updateFilter(state.filter.copyWith(clearBudgetPeriod: true)),
+      );
+    }
+  }
+
   /// Bugfix item 8: pins the account filter to exactly [accountId] (dropping
   /// every other selected account), used when the user taps that account's
   /// mini-card in Inicio's "Mis cuentas" strip. Routes through [updateFilter]
@@ -116,9 +170,53 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   Future<void> filterByAccount(String accountId) =>
       updateFilter(state.filter.copyWith(accountIds: {accountId}));
 
+  /// Reports' Categorías tab (HU-03 drill-down): pins the category filter to
+  /// exactly [categoryId] and the date filter to the `[start, endInclusive]`
+  /// window active in Gráficas at the moment of the tap, used when the user
+  /// taps a `CategoryBreakdownRow`. Mirrors [filterByAccount]'s pattern so
+  /// the router never builds `TransactionFilter` itself.
+  Future<void> filterByCategoryAndRange({
+    required String categoryId,
+    required DateTime start,
+    required DateTime endInclusive,
+  }) =>
+      updateFilter(
+        state.filter.copyWith(
+          categoryIds: {categoryId},
+          datePeriod: DatePeriodFilter.custom(
+            start: start,
+            end: endInclusive,
+          ),
+        ),
+      );
+
   /// HU-06: free-text search over note and category name.
   Future<void> searchChanged(String text) =>
       updateFilter(state.filter.copyWith(searchText: text));
+
+  /// Gráficas' categories drill-down (`_reportsRoute` in `app_router.dart`)
+  /// flags this cubit instance right before the router navigates here, so
+  /// [TransactionsListState.arrivedFromReports] can drive the header's
+  /// explicit "volver a Gráficas" button. See that field's doc for why this
+  /// lives in cubit state instead of `GoRouterState.extra`.
+  void markArrivedFromReports() {
+    if (state.arrivedFromReports) {
+      return;
+    }
+    emit(state.copyWith(arrivedFromReports: true));
+  }
+
+  /// Clears the "came from Gráficas" flag: fired once the explicit back
+  /// button is used, or whenever Movimientos is reached through any other
+  /// entry point (bottom tab bar, Inicio's "ver todas"/account mini-card),
+  /// so a stale flag from an earlier visit never leaks into an unrelated
+  /// one.
+  void clearArrivedFromReports() {
+    if (!state.arrivedFromReports) {
+      return;
+    }
+    emit(state.copyWith(arrivedFromReports: false));
+  }
 
   /// Replaces the active filter (any combination of HU-06/HU-06a/HU-06b) and
   /// re-subscribes. A no-op when nothing actually changed, so a re-emission of
@@ -204,6 +302,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   Future<void> close() async {
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _budgetOptionsSubscription?.cancel();
     return super.close();
   }
 }

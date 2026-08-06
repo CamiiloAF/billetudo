@@ -86,7 +86,11 @@ abstract class DebtRepository {
 
   /// HU-02 (toggle "Sí"): creates a `Transaction` carrying the debt id, which
   /// moves [accountId] and enters the derived balance. [type]/[currency] are
-  /// resolved by the caller from the debt's direction.
+  /// resolved by the caller from the debt's direction. [countsInBudget]
+  /// (budget-income-counts-in-budget) is resolved by the caller too, via
+  /// `DebtEventRules.countsInBudgetFor` — `true` only for a repago recibido
+  /// (`owedToMe` + `income`), so it raises a covering budget's disponible
+  /// without the user touching a toggle.
   FutureResult<Unit> registerCashEvent({
     required String debtId,
     required String accountId,
@@ -94,6 +98,7 @@ abstract class DebtRepository {
     required TransactionType type,
     required String currency,
     required DateTime date,
+    required bool countsInBudget,
     String? note,
     String? categoryId,
   });
@@ -105,6 +110,18 @@ abstract class DebtRepository {
   /// HU-02 (Fase 0): attributes an existing `Transaction` to a debt by setting
   /// its `debtId`. The movement already moved its account; this only makes it
   /// count towards the debt's derived balance.
+  ///
+  /// budget-income-counts-in-budget (criterion 3): when the transaction being
+  /// linked is `type = income` and the debt's `direction` is `owedToMe` — the
+  /// same "repago recibido" semantics as [registerCashEvent] —
+  /// `countsInBudget` is **forced** to `true`, not merely defaulted: linking
+  /// an existing income to a debt after the fact means "this was a loan
+  /// repayment all along", which should raise a covering budget's disponible
+  /// exactly as if the user had used the cash-event flow from the start,
+  /// overriding whatever the transaction's toggle held before (most likely
+  /// `false`, since nothing suggested it was debt-related yet). Every other
+  /// (direction, type) combination leaves `countsInBudget` untouched — linking
+  /// alone never flips it off.
   FutureResult<Unit> linkTransactionToDebt({
     required String transactionId,
     required String debtId,

@@ -246,6 +246,44 @@ void main() {
     },
   );
 
+  // Bugfix item 7: `currentMonth` (HU-04's ceiling) used to be set once, in
+  // `HomeState.initial`, and never touched again — a `copyWith` call could
+  // not even change it. An app kept open across a month boundary froze the
+  // ceiling on a stale month, silently rejecting the real current month in
+  // `selectMonth`'s guard while a freshly-built filter elsewhere (Movimientos)
+  // already tracked "today" — the two screens visibly disagreed.
+  blocTest<HomeCubit, HomeState>(
+    'refreshCurrentMonth re-ancla "hoy" y el mes visible si seguía en el '
+    'default (bugfix 7)',
+    setUp: stubReady,
+    build: build,
+    // Simulates a cubit that has lived long enough for the real month to
+    // move past the one it was built in.
+    seed: () => HomeState.initial(DateTime(2020)),
+    act: (cubit) => cubit.refreshCurrentMonth(),
+    verify: (cubit) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month);
+      expect(cubit.state.currentMonth, today);
+      expect(cubit.state.month, today);
+    },
+  );
+
+  blocTest<HomeCubit, HomeState>(
+    'refreshCurrentMonth no mueve un mes explícito ya elegido por el usuario '
+    '(bugfix 7)',
+    setUp: stubReady,
+    build: build,
+    seed: () =>
+        HomeState(month: DateTime(2019, 6), currentMonth: DateTime(2020)),
+    act: (cubit) => cubit.refreshCurrentMonth(),
+    verify: (cubit) {
+      final now = DateTime.now();
+      expect(cubit.state.currentMonth, DateTime(now.year, now.month));
+      expect(cubit.state.month, DateTime(2019, 6));
+    },
+  );
+
   blocTest<HomeCubit, HomeState>(
     'la sesión con nombre puebla user sin gatear el status (HU-07)',
     setUp: () {

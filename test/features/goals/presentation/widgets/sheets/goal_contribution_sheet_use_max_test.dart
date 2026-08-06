@@ -1,3 +1,4 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../../support/fake_note_suggestions.dart';
 import '../../../../../support/golden_helpers.dart';
 
 class MockContributeToGoal extends Mock implements ContributeToGoal {}
@@ -34,7 +36,10 @@ void main() {
     when(() => watchAccounts()).thenAnswer(
       (_) => Stream.value(const Right<Failure, List<AccountWithBalance>>([])),
     );
+    registerFakeNoteSuggestions();
   });
+
+  tearDown(getIt.reset);
 
   GoalContributionCubit buildCubit() => GoalContributionCubit(
         MockContributeToGoal(),

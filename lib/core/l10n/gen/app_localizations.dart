@@ -1220,6 +1220,12 @@ abstract class AppLocalizations {
   /// **'Etiqueta'**
   String get transactionsFilterTag;
 
+  /// No description provided for @transactionsFilterBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get transactionsFilterBudget;
+
   /// No description provided for @transactionsSortDateDesc.
   ///
   /// In es, this message translates to:
@@ -1279,6 +1285,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Saldo total'**
   String get transactionsBalanceTotalLabel;
+
+  /// Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.
+  ///
+  /// In es, this message translates to:
+  /// **'{label}: {amount}'**
+  String transactionsBalanceTotalSemantics(String label, String amount);
 
   /// Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta.
   ///
@@ -1831,6 +1843,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Filtrar por fecha'**
   String get dateFilterSheetTitle;
+
+  /// No description provided for @budgetPeriodFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por presupuesto'**
+  String get budgetPeriodFilterSheetTitle;
+
+  /// No description provided for @budgetPeriodFilterEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes presupuestos activos'**
+  String get budgetPeriodFilterEmptyMessage;
 
   /// No description provided for @dateFilterWeek.
   ///
@@ -7781,6 +7805,517 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'omitidas'**
   String get importExportRestoreSkipped;
+
+  /// No description provided for @reportsTabSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get reportsTabSummary;
+
+  /// No description provided for @reportsTabCashflow.
+  ///
+  /// In es, this message translates to:
+  /// **'Flujo'**
+  String get reportsTabCashflow;
+
+  /// No description provided for @reportsTabNetWorth.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio'**
+  String get reportsTabNetWorth;
+
+  /// No description provided for @reportsTabCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get reportsTabCategories;
+
+  /// No description provided for @reportsPeriodLastMonths.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{Último mes} other{Últimos {count} meses}}'**
+  String reportsPeriodLastMonths(int count);
+
+  /// No description provided for @reportsPeriodDaysWithData.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} día con datos} other{{count} días con datos}}'**
+  String reportsPeriodDaysWithData(int count);
+
+  /// No description provided for @reportsPeriodSinceDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde el {date}'**
+  String reportsPeriodSinceDate(String date);
+
+  /// No description provided for @reportsPeriodSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar periodo'**
+  String get reportsPeriodSheetTitle;
+
+  /// No description provided for @reportsPeriodGranularityMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get reportsPeriodGranularityMonth;
+
+  /// No description provided for @reportsPeriodGranularityYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Año'**
+  String get reportsPeriodGranularityYear;
+
+  /// No description provided for @reportsPeriodClear.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar'**
+  String get reportsPeriodClear;
+
+  /// No description provided for @reportsCashflowCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Flujo de caja'**
+  String get reportsCashflowCardTitle;
+
+  /// No description provided for @reportsCashflowCardSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos vs. gastos, mes a mes'**
+  String get reportsCashflowCardSubtitle;
+
+  /// No description provided for @reportsCashflowIncomeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get reportsCashflowIncomeLabel;
+
+  /// No description provided for @reportsCashflowExpenseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get reportsCashflowExpenseLabel;
+
+  /// No description provided for @reportsCashflowDebtLegendLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos de deuda'**
+  String get reportsCashflowDebtLegendLabel;
+
+  /// No description provided for @reportsCashflowPositiveLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorraste en {periodPhrase}'**
+  String reportsCashflowPositiveLabel(String periodPhrase);
+
+  /// No description provided for @reportsCashflowNegativeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Balance de {periodPhrase}'**
+  String reportsCashflowNegativeLabel(String periodPhrase);
+
+  /// No description provided for @reportsCashflowShortHistoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{Balance de tu primer día} other{Balance de tus primeros {count} días}}'**
+  String reportsCashflowShortHistoryLabel(int count);
+
+  /// No description provided for @reportsCashflowPeriodPhraseLastMonths.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{el último mes} other{los últimos {count} meses}}'**
+  String reportsCashflowPeriodPhraseLastMonths(int count);
+
+  /// No description provided for @reportsCashflowPeriodPhraseGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'el periodo seleccionado'**
+  String get reportsCashflowPeriodPhraseGeneric;
+
+  /// No description provided for @reportsCashflowNegativeExplainer.
+  ///
+  /// In es, this message translates to:
+  /// **'Salió {amount} más de lo que entró en {periodPhrase}. Abajo puedes ver qué meses pesaron más.'**
+  String reportsCashflowNegativeExplainer(String amount, String periodPhrase);
+
+  /// No description provided for @reportsCashflowViewCategoriesLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver en qué se fue'**
+  String get reportsCashflowViewCategoriesLink;
+
+  /// No description provided for @reportsCashflowCurrentMonthNote.
+  ///
+  /// In es, this message translates to:
+  /// **'{month} va en curso: llega hasta el {day}.'**
+  String reportsCashflowCurrentMonthNote(String month, int day);
+
+  /// No description provided for @reportsCashflowDebtToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Separar movimientos de deuda'**
+  String get reportsCashflowDebtToggleLabel;
+
+  /// No description provided for @reportsCashflowDebtToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Se muestran como una serie aparte, nunca se ocultan.'**
+  String get reportsCashflowDebtToggleHint;
+
+  /// No description provided for @reportsCashflowShortHistoryNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.'**
+  String get reportsCashflowShortHistoryNote;
+
+  /// No description provided for @reportsNetWorthCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio'**
+  String get reportsNetWorthCardTitle;
+
+  /// No description provided for @reportsNetWorthCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.'**
+  String get reportsNetWorthCaption;
+
+  /// No description provided for @reportsNetWorthLegendLiquid.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio líquido'**
+  String get reportsNetWorthLegendLiquid;
+
+  /// No description provided for @reportsNetWorthLegendTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio total'**
+  String get reportsNetWorthLegendTotal;
+
+  /// No description provided for @reportsNetWorthFigureLiquidLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Líquido'**
+  String get reportsNetWorthFigureLiquidLabel;
+
+  /// No description provided for @reportsNetWorthFigureTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get reportsNetWorthFigureTotalLabel;
+
+  /// No description provided for @reportsNetWorthInterestNote.
+  ///
+  /// In es, this message translates to:
+  /// **'El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.'**
+  String get reportsNetWorthInterestNote;
+
+  /// No description provided for @reportsNetWorthArchivedToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluir cuentas archivadas'**
+  String get reportsNetWorthArchivedToggleLabel;
+
+  /// No description provided for @reportsNetWorthArchivedToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy quedan fuera de las dos cifras.'**
+  String get reportsNetWorthArchivedToggleHint;
+
+  /// No description provided for @reportsNetWorthSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Del cierre de {from} al {to} · {currency}'**
+  String reportsNetWorthSubtitle(String from, String to, String currency);
+
+  /// No description provided for @reportsCategoriesCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Estructura de gasto'**
+  String get reportsCategoriesCardTitle;
+
+  /// No description provided for @reportsCategoriesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}'**
+  String reportsCategoriesSubtitle(
+      int count, String range, String isSubcategory);
+
+  /// No description provided for @reportsCategoriesTopLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Mayor gasto: {name} · {pct}%'**
+  String reportsCategoriesTopLabel(String name, int pct);
+
+  /// No description provided for @reportsCategoriesUncategorized.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get reportsCategoriesUncategorized;
+
+  /// No description provided for @reportsCategoriesViewSubcategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Profundizar'**
+  String get reportsCategoriesViewSubcategories;
+
+  /// No description provided for @reportsCategoriesBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Atrás'**
+  String get reportsCategoriesBack;
+
+  /// No description provided for @reportsCategoriesMovementsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} movimiento} other{{count} movimientos}}'**
+  String reportsCategoriesMovementsCount(int count);
+
+  /// No description provided for @reportsDashboardBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get reportsDashboardBudgetsTitle;
+
+  /// No description provided for @reportsDashboardBudgetsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} presupuesto activo · ciclos propios} other{{count} presupuestos activos · ciclos propios}}'**
+  String reportsDashboardBudgetsSubtitle(int count);
+
+  /// No description provided for @reportsDashboardGoalsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas'**
+  String get reportsDashboardGoalsTitle;
+
+  /// No description provided for @reportsDashboardGoalsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, one{{count} meta en curso} other{{count} metas en curso}}'**
+  String reportsDashboardGoalsSubtitle(int count);
+
+  /// No description provided for @reportsGoalSummaryAmountOfTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{saved} de {target}'**
+  String reportsGoalSummaryAmountOfTarget(String saved, String target);
+
+  /// No description provided for @reportsDashboardBudgetsEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has creado ninguno'**
+  String get reportsDashboardBudgetsEmptySubtitle;
+
+  /// No description provided for @reportsDashboardBudgetsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando crees un presupuesto, aquí verás cuánto te queda del ciclo.'**
+  String get reportsDashboardBudgetsEmptyMessage;
+
+  /// No description provided for @reportsDashboardGoalsEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has creado ninguna'**
+  String get reportsDashboardGoalsEmptySubtitle;
+
+  /// No description provided for @reportsDashboardGoalsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus metas de ahorro mostrarán su avance aquí, todas juntas.'**
+  String get reportsDashboardGoalsEmptyMessage;
+
+  /// No description provided for @reportsDashboardCrossLinkDebts.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver el avance de tus deudas'**
+  String get reportsDashboardCrossLinkDebts;
+
+  /// No description provided for @reportsDashboardHeroBudgetsAvailable.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} disponibles'**
+  String reportsDashboardHeroBudgetsAvailable(String amount);
+
+  /// No description provided for @reportsDashboardHeroGoalsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} ahorrados'**
+  String reportsDashboardHeroGoalsSaved(String amount);
+
+  /// No description provided for @reportsEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay movimientos en este periodo'**
+  String get reportsEmptyTitle;
+
+  /// No description provided for @reportsEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.'**
+  String get reportsEmptyMessage;
+
+  /// No description provided for @reportsSyncNoticeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.'**
+  String get reportsSyncNoticeMessage;
+
+  /// No description provided for @reportsExportTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar como imagen'**
+  String get reportsExportTooltip;
+
+  /// No description provided for @reportsExportError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos exportar la gráfica. Intenta de nuevo.'**
+  String get reportsExportError;
+
+  /// No description provided for @reportsExportShareText.
+  ///
+  /// In es, this message translates to:
+  /// **'Gráfica de {title} — billetudo'**
+  String reportsExportShareText(String title);
+
+  /// Etiqueta accesible del estado de carga (skeleton) de una gráfica.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando gráfica'**
+  String get reportsChartSkeletonLoadingLabel;
+
+  /// No description provided for @accountTypeSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona el tipo de cuenta'**
+  String get accountTypeSheetTitle;
+
+  /// No description provided for @onboardingWelcomeHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo lo esencial. Gratis. Para siempre.'**
+  String get onboardingWelcomeHeadline;
+
+  /// No description provided for @onboardingWelcomeSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.'**
+  String get onboardingWelcomeSubhead;
+
+  /// No description provided for @onboardingWelcomeCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya dejamos categorías listas para ti.'**
+  String get onboardingWelcomeCaption;
+
+  /// No description provided for @onboardingWelcomeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Comenzar'**
+  String get onboardingWelcomeCta;
+
+  /// No description provided for @onboardingAlreadyHaveAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tengo cuenta'**
+  String get onboardingAlreadyHaveAccount;
+
+  /// No description provided for @onboardingAccountHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingAccountHeadline;
+
+  /// No description provided for @onboardingAccountSubhead.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza con esta sugerencia o cámbiala a tu gusto.'**
+  String get onboardingAccountSubhead;
+
+  /// Nombre pre-llenado de la primera cuenta del onboarding (HU-02).
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorros'**
+  String get onboardingAccountDefaultName;
+
+  /// No description provided for @onboardingAccountCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear cuenta'**
+  String get onboardingAccountCta;
+
+  /// No description provided for @onboardingAccountSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir por ahora'**
+  String get onboardingAccountSkip;
+
+  /// No description provided for @onboardingBackupHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Respalda tus datos, cuando quieras'**
+  String get onboardingBackupHeadline;
+
+  /// No description provided for @onboardingBackupBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.'**
+  String get onboardingBackupBody;
+
+  /// No description provided for @onboardingBackupFootnote.
+  ///
+  /// In es, this message translates to:
+  /// **'Actívalo luego en Ajustes → Respaldar.'**
+  String get onboardingBackupFootnote;
+
+  /// No description provided for @onboardingBackupCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar respaldo'**
+  String get onboardingBackupCta;
+
+  /// No description provided for @onboardingBackupSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Después'**
+  String get onboardingBackupSkip;
+
+  /// No description provided for @onboardingClosingHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu billetera está lista'**
+  String get onboardingClosingHeadline;
+
+  /// No description provided for @onboardingClosingSubheadWithAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento y empieza a tomar el control de tu dinero.'**
+  String get onboardingClosingSubheadWithAccount;
+
+  /// No description provided for @onboardingClosingSubheadNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.'**
+  String get onboardingClosingSubheadNoAccount;
+
+  /// No description provided for @onboardingClosingCtaTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu primer movimiento'**
+  String get onboardingClosingCtaTransaction;
+
+  /// No description provided for @onboardingClosingCtaAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get onboardingClosingCtaAccount;
+
+  /// No description provided for @onboardingClosingSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo hago después'**
+  String get onboardingClosingSkip;
 }
 
 class _AppLocalizationsDelegate

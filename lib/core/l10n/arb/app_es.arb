@@ -510,6 +510,8 @@
   "@transactionsFilterDate": {},
   "transactionsFilterTag": "Etiqueta",
   "@transactionsFilterTag": {},
+  "transactionsFilterBudget": "Presupuesto",
+  "@transactionsFilterBudget": {},
   "transactionsSortDateDesc": "Más recientes primero",
   "@transactionsSortDateDesc": {},
   "transactionsSortDateAsc": "Más antiguos primero",
@@ -538,6 +540,14 @@
   "transactionsBalanceTotalLabel": "Saldo total",
   "@transactionsBalanceTotalLabel": {
     "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
+  },
+  "transactionsBalanceTotalSemantics": "{label}: {amount}",
+  "@transactionsBalanceTotalSemantics": {
+    "description": "Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.",
+    "placeholders": {
+      "label": {"type": "String"},
+      "amount": {"type": "String"}
+    }
   },
   "transactionsBalanceCardBalanceLabel": "Saldo",
   "@transactionsBalanceCardBalanceLabel": {
@@ -763,6 +773,10 @@
   "@typeFilterSheetTitle": {},
   "dateFilterSheetTitle": "Filtrar por fecha",
   "@dateFilterSheetTitle": {},
+  "budgetPeriodFilterSheetTitle": "Filtrar por presupuesto",
+  "@budgetPeriodFilterSheetTitle": {},
+  "budgetPeriodFilterEmptyMessage": "No tienes presupuestos activos",
+  "@budgetPeriodFilterEmptyMessage": {},
   "dateFilterWeek": "Semana",
   "@dateFilterWeek": {},
   "dateFilterMonth": "Mes",
@@ -3063,5 +3077,250 @@
   "importExportRestoreUpdated": "actualizadas",
   "@importExportRestoreUpdated": {},
   "importExportRestoreSkipped": "omitidas",
-  "@importExportRestoreSkipped": {}
+  "@importExportRestoreSkipped": {},
+
+  "reportsTabSummary": "Resumen",
+  "@reportsTabSummary": {},
+  "reportsTabCashflow": "Flujo",
+  "@reportsTabCashflow": {},
+  "reportsTabNetWorth": "Patrimonio",
+  "@reportsTabNetWorth": {},
+  "reportsTabCategories": "Categorías",
+  "@reportsTabCategories": {},
+
+  "reportsPeriodLastMonths": "{count, plural, one{Último mes} other{Últimos {count} meses}}",
+  "@reportsPeriodLastMonths": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsPeriodDaysWithData": "{count, plural, one{{count} día con datos} other{{count} días con datos}}",
+  "@reportsPeriodDaysWithData": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsPeriodSinceDate": "Desde el {date}",
+  "@reportsPeriodSinceDate": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "reportsPeriodSheetTitle": "Filtrar periodo",
+  "@reportsPeriodSheetTitle": {},
+  "reportsPeriodGranularityMonth": "Mes",
+  "@reportsPeriodGranularityMonth": {},
+  "reportsPeriodGranularityYear": "Año",
+  "@reportsPeriodGranularityYear": {},
+  "reportsPeriodClear": "Limpiar",
+  "@reportsPeriodClear": {},
+
+  "reportsCashflowCardTitle": "Flujo de caja",
+  "@reportsCashflowCardTitle": {},
+  "reportsCashflowCardSubtitle": "Ingresos vs. gastos, mes a mes",
+  "@reportsCashflowCardSubtitle": {},
+  "reportsCashflowIncomeLabel": "Ingresos",
+  "@reportsCashflowIncomeLabel": {},
+  "reportsCashflowExpenseLabel": "Gastos",
+  "@reportsCashflowExpenseLabel": {},
+  "reportsCashflowDebtLegendLabel": "Movimientos de deuda",
+  "@reportsCashflowDebtLegendLabel": {},
+  "reportsCashflowPositiveLabel": "Ahorraste en {periodPhrase}",
+  "@reportsCashflowPositiveLabel": {
+    "placeholders": { "periodPhrase": { "type": "String" } }
+  },
+  "reportsCashflowNegativeLabel": "Balance de {periodPhrase}",
+  "@reportsCashflowNegativeLabel": {
+    "placeholders": { "periodPhrase": { "type": "String" } }
+  },
+  "reportsCashflowShortHistoryLabel": "{count, plural, one{Balance de tu primer día} other{Balance de tus primeros {count} días}}",
+  "@reportsCashflowShortHistoryLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsCashflowPeriodPhraseLastMonths": "{count, plural, one{el último mes} other{los últimos {count} meses}}",
+  "@reportsCashflowPeriodPhraseLastMonths": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsCashflowPeriodPhraseGeneric": "el periodo seleccionado",
+  "@reportsCashflowPeriodPhraseGeneric": {},
+  "reportsCashflowNegativeExplainer": "Salió {amount} más de lo que entró en {periodPhrase}. Abajo puedes ver qué meses pesaron más.",
+  "@reportsCashflowNegativeExplainer": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "periodPhrase": { "type": "String" }
+    }
+  },
+  "reportsCashflowViewCategoriesLink": "Ver en qué se fue",
+  "@reportsCashflowViewCategoriesLink": {},
+  "reportsCashflowCurrentMonthNote": "{month} va en curso: llega hasta el {day}.",
+  "@reportsCashflowCurrentMonthNote": {
+    "placeholders": {
+      "month": { "type": "String" },
+      "day": { "type": "int" }
+    }
+  },
+  "reportsCashflowDebtToggleLabel": "Separar movimientos de deuda",
+  "@reportsCashflowDebtToggleLabel": {},
+  "reportsCashflowDebtToggleHint": "Se muestran como una serie aparte, nunca se ocultan.",
+  "@reportsCashflowDebtToggleHint": {},
+  "reportsCashflowShortHistoryNote": "Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.",
+  "@reportsCashflowShortHistoryNote": {},
+
+  "reportsNetWorthCardTitle": "Patrimonio",
+  "@reportsNetWorthCardTitle": {},
+  "reportsNetWorthCaption": "El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.",
+  "@reportsNetWorthCaption": {},
+  "reportsNetWorthLegendLiquid": "Patrimonio líquido",
+  "@reportsNetWorthLegendLiquid": {},
+  "reportsNetWorthLegendTotal": "Patrimonio total",
+  "@reportsNetWorthLegendTotal": {},
+  "reportsNetWorthFigureLiquidLabel": "Líquido",
+  "@reportsNetWorthFigureLiquidLabel": {},
+  "reportsNetWorthFigureTotalLabel": "Total",
+  "@reportsNetWorthFigureTotalLabel": {},
+  "reportsNetWorthInterestNote": "El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.",
+  "@reportsNetWorthInterestNote": {},
+  "reportsNetWorthArchivedToggleLabel": "Incluir cuentas archivadas",
+  "@reportsNetWorthArchivedToggleLabel": {},
+  "reportsNetWorthArchivedToggleHint": "Hoy quedan fuera de las dos cifras.",
+  "@reportsNetWorthArchivedToggleHint": {},
+  "reportsNetWorthSubtitle": "Del cierre de {from} al {to} · {currency}",
+  "@reportsNetWorthSubtitle": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "to": { "type": "String" },
+      "currency": { "type": "String" }
+    }
+  },
+
+  "reportsCategoriesCardTitle": "Estructura de gasto",
+  "@reportsCategoriesCardTitle": {},
+  "reportsCategoriesSubtitle": "{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}",
+  "@reportsCategoriesSubtitle": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "range": { "type": "String" },
+      "isSubcategory": { "type": "String" }
+    }
+  },
+  "reportsCategoriesTopLabel": "Mayor gasto: {name} · {pct}%",
+  "@reportsCategoriesTopLabel": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "pct": { "type": "int" }
+    }
+  },
+  "reportsCategoriesUncategorized": "Sin categoría",
+  "@reportsCategoriesUncategorized": {},
+  "reportsCategoriesViewSubcategories": "Profundizar",
+  "@reportsCategoriesViewSubcategories": {},
+  "reportsCategoriesBack": "Atrás",
+  "@reportsCategoriesBack": {},
+  "reportsCategoriesMovementsCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
+  "@reportsCategoriesMovementsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "reportsDashboardBudgetsTitle": "Presupuestos",
+  "@reportsDashboardBudgetsTitle": {},
+  "reportsDashboardBudgetsSubtitle": "{count, plural, one{{count} presupuesto activo · ciclos propios} other{{count} presupuestos activos · ciclos propios}}",
+  "@reportsDashboardBudgetsSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsDashboardGoalsTitle": "Metas",
+  "@reportsDashboardGoalsTitle": {},
+  "reportsDashboardGoalsSubtitle": "{count, plural, one{{count} meta en curso} other{{count} metas en curso}}",
+  "@reportsDashboardGoalsSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsGoalSummaryAmountOfTarget": "{saved} de {target}",
+  "@reportsGoalSummaryAmountOfTarget": {
+    "placeholders": {
+      "saved": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "reportsDashboardBudgetsEmptySubtitle": "Aún no has creado ninguno",
+  "@reportsDashboardBudgetsEmptySubtitle": {},
+  "reportsDashboardBudgetsEmptyMessage": "Cuando crees un presupuesto, aquí verás cuánto te queda del ciclo.",
+  "@reportsDashboardBudgetsEmptyMessage": {},
+  "reportsDashboardGoalsEmptySubtitle": "Aún no has creado ninguna",
+  "@reportsDashboardGoalsEmptySubtitle": {},
+  "reportsDashboardGoalsEmptyMessage": "Tus metas de ahorro mostrarán su avance aquí, todas juntas.",
+  "@reportsDashboardGoalsEmptyMessage": {},
+  "reportsDashboardCrossLinkDebts": "Ver el avance de tus deudas",
+  "@reportsDashboardCrossLinkDebts": {},
+  "reportsDashboardHeroBudgetsAvailable": "{amount} disponibles",
+  "@reportsDashboardHeroBudgetsAvailable": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "reportsDashboardHeroGoalsSaved": "{amount} ahorrados",
+  "@reportsDashboardHeroGoalsSaved": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+
+  "reportsEmptyTitle": "Aún no hay movimientos en este periodo",
+  "@reportsEmptyTitle": {},
+  "reportsEmptyMessage": "Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.",
+  "@reportsEmptyMessage": {},
+  "reportsSyncNoticeMessage": "Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.",
+  "@reportsSyncNoticeMessage": {},
+
+  "reportsExportTooltip": "Exportar como imagen",
+  "@reportsExportTooltip": {},
+  "reportsExportError": "No pudimos exportar la gráfica. Intenta de nuevo.",
+  "@reportsExportError": {},
+  "reportsExportShareText": "Gráfica de {title} — billetudo",
+  "@reportsExportShareText": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "reportsChartSkeletonLoadingLabel": "Cargando gráfica",
+  "@reportsChartSkeletonLoadingLabel": {
+    "description": "Etiqueta accesible del estado de carga (skeleton) de una gráfica."
+  },
+
+  "accountTypeSheetTitle": "Selecciona el tipo de cuenta",
+  "@accountTypeSheetTitle": {},
+  "onboardingWelcomeHeadline": "Todo lo esencial. Gratis. Para siempre.",
+  "@onboardingWelcomeHeadline": {},
+  "onboardingWelcomeSubhead": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+  "@onboardingWelcomeSubhead": {},
+  "onboardingWelcomeCaption": "Ya dejamos categorías listas para ti.",
+  "@onboardingWelcomeCaption": {},
+  "onboardingWelcomeCta": "Comenzar",
+  "@onboardingWelcomeCta": {},
+  "onboardingAlreadyHaveAccount": "Ya tengo cuenta",
+  "@onboardingAlreadyHaveAccount": {},
+  "onboardingAccountHeadline": "Crea tu primera cuenta",
+  "@onboardingAccountHeadline": {},
+  "onboardingAccountSubhead": "Empieza con esta sugerencia o cámbiala a tu gusto.",
+  "@onboardingAccountSubhead": {},
+  "onboardingAccountDefaultName": "Ahorros",
+  "@onboardingAccountDefaultName": {
+    "description": "Nombre pre-llenado de la primera cuenta del onboarding (HU-02)."
+  },
+  "onboardingAccountCta": "Crear cuenta",
+  "@onboardingAccountCta": {},
+  "onboardingAccountSkip": "Omitir por ahora",
+  "@onboardingAccountSkip": {},
+  "onboardingBackupHeadline": "Respalda tus datos, cuando quieras",
+  "@onboardingBackupHeadline": {},
+  "onboardingBackupBody": "Hoy tus datos viven solo en este teléfono. El respaldo es gratis y los guarda en la nube, listos para recuperarlos si cambias de equipo o reinstalas — sin él, se quedan únicamente aquí.",
+  "@onboardingBackupBody": {},
+  "onboardingBackupFootnote": "Actívalo luego en Ajustes → Respaldar.",
+  "@onboardingBackupFootnote": {},
+  "onboardingBackupCta": "Activar respaldo",
+  "@onboardingBackupCta": {},
+  "onboardingBackupSkip": "Después",
+  "@onboardingBackupSkip": {},
+  "onboardingClosingHeadline": "Tu billetera está lista",
+  "@onboardingClosingHeadline": {},
+  "onboardingClosingSubheadWithAccount": "Registra tu primer movimiento y empieza a tomar el control de tu dinero.",
+  "@onboardingClosingSubheadWithAccount": {},
+  "onboardingClosingSubheadNoAccount": "Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.",
+  "@onboardingClosingSubheadNoAccount": {},
+  "onboardingClosingCtaTransaction": "Registra tu primer movimiento",
+  "@onboardingClosingCtaTransaction": {},
+  "onboardingClosingCtaAccount": "Crea tu primera cuenta",
+  "@onboardingClosingCtaAccount": {},
+  "onboardingClosingSkip": "Lo hago después",
+  "@onboardingClosingSkip": {}
 }

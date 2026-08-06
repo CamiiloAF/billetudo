@@ -360,6 +360,7 @@ class DebtRepositoryImpl implements DebtRepository {
     required TransactionType type,
     required String currency,
     required DateTime date,
+    required bool countsInBudget,
     String? note,
     String? categoryId,
   }) =>
@@ -376,6 +377,7 @@ class DebtRepositoryImpl implements DebtRepository {
             note: Value(note),
             source: const Value(db.TxSource.manual),
             debtId: Value(debtId),
+            countsInBudget: Value(countsInBudget),
             createdAt: Value(now),
             updatedAt: Value(now.millisecondsSinceEpoch),
           ),
@@ -402,11 +404,27 @@ class DebtRepositoryImpl implements DebtRepository {
         if (debt == null) {
           return Left(NotFoundFailure('debt "$debtId" does not exist'));
         }
+        final transaction = await _local.getTransaction(transactionId);
+        if (transaction == null) {
+          return Left(
+            NotFoundFailure('transaction "$transactionId" does not exist'),
+          );
+        }
         final now = DateTime.now();
+        // See the interface doc: a repago recibido (owedToMe + income) forces
+        // countsInBudget = true on link, same semantics as registerCashEvent.
+        // Every other combination leaves it as-is (Value.absent()).
+        final forceCountsInBudget = DebtEventRules.countsInBudgetFor(
+          direction: DebtMapper.toEntity(debt).direction,
+          type: TransactionMapper.typeToDomain(transaction.type),
+        );
         final linked = await _local.linkTransaction(
           transactionId,
           db.TransactionsCompanion(
             debtId: Value(debtId),
+            countsInBudget: forceCountsInBudget
+                ? const Value(true)
+                : const Value.absent(),
             updatedAt: Value(now.millisecondsSinceEpoch),
           ),
         );

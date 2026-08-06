@@ -106,7 +106,7 @@ class AccountSelectRow extends StatelessWidget {
                       ? Icon(
                           LucideIcons.check,
                           size: 18,
-                          color: colors.primary,
+                          color: colors.primaryOnSoft,
                         )
                       : null,
                 ),

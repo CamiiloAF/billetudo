@@ -53,8 +53,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
               types: filter.types.map(TransactionMapper.typeToDb).toSet(),
               tagIds: filter.tagIds,
               searchText: filter.searchText,
-              periodStart: filter.datePeriod.start,
-              periodEndExclusive: filter.datePeriod.endExclusive,
+              periodStart: _periodStart(filter),
+              periodEndExclusive: _periodEndExclusive(filter),
               orderBy: switch (filter.sortOrder) {
                 TransactionSortOrder.dateDesc => TransactionOrderBy.dateDesc,
                 TransactionSortOrder.dateAsc => TransactionOrderBy.dateAsc,
@@ -170,6 +170,31 @@ class TransactionRepositoryImpl implements TransactionRepository {
         await _tags.replaceTags(transactionId, tagIds, DateTime.now());
         return const Right(unit);
       });
+
+  /// The Fecha chip (`filter.datePeriod`) and the Presupuesto chip
+  /// (`filter.budgetPeriod`) are independent, combinable filters (AND, not
+  /// substitution): when both are active, the effective window is their
+  /// intersection, computed here since the datasource only takes a single
+  /// `[periodStart, periodEndExclusive)` pair.
+  DateTime _periodStart(TransactionFilter filter) {
+    final budgetPeriod = filter.budgetPeriod;
+    if (budgetPeriod == null) {
+      return filter.datePeriod.start;
+    }
+    final dateStart = filter.datePeriod.start;
+    final budgetStart = budgetPeriod.start;
+    return dateStart.isAfter(budgetStart) ? dateStart : budgetStart;
+  }
+
+  DateTime _periodEndExclusive(TransactionFilter filter) {
+    final budgetPeriod = filter.budgetPeriod;
+    if (budgetPeriod == null) {
+      return filter.datePeriod.endExclusive;
+    }
+    final dateEnd = filter.datePeriod.endExclusive;
+    final budgetEnd = budgetPeriod.endExclusive;
+    return dateEnd.isBefore(budgetEnd) ? dateEnd : budgetEnd;
+  }
 
   TransactionWithDetails _toWithDetails(TransactionRowWithJoins row) =>
       TransactionWithDetails(

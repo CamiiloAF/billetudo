@@ -15,6 +15,7 @@ void main() {
     VoidCallback? onScheduledPayments,
     VoidCallback? onGoals,
     VoidCallback? onImportExport,
+    VoidCallback? onReports,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
     VoidCallback? onSignOut,
@@ -28,6 +29,7 @@ void main() {
           onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenGoals: onGoals ?? () {},
           onOpenImportExport: onImportExport ?? () {},
+          onOpenReports: onReports ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
           isSignedIn: isSignedIn,
@@ -61,14 +63,24 @@ void main() {
   });
 
   testWidgets(
-      'Cuentas, Categorías, Deudas, Pagos programados, Metas, Importar y '
-      'exportar y Ajustes están vivas (sin badge Próximamente)', (tester) async {
+      'Cuentas, Categorías, Deudas, Pagos programados, Metas, Gráficas e '
+      'informes, Importar y exportar y Ajustes están vivas (sin badge '
+      'Próximamente)',
+      (tester) async {
     await pumpMore(tester);
 
-    // Seven live rows, one not-yet-built one carrying the badge (Gráficas e
-    // informes). Importar y exportar shipped its presentation layer, so it
-    // is no longer a "Próximamente" destination.
-    expect(find.byType(ComingSoonBadge), findsOneWidget);
+    // Scroll every row into the lazy ListView's viewport before counting
+    // badges, otherwise unbuilt rows below the fold would undercount.
+    await tester.scrollUntilVisible(
+      find.text('Ajustes'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+
+    // All eight rows are live now — Gráficas e informes and Importar y
+    // exportar both shipped their presentation layer, so no row carries the
+    // "Próximamente" badge anymore.
+    expect(find.byType(ComingSoonBadge), findsNothing);
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -89,6 +101,7 @@ void main() {
     expect(badgeOf('Deudas'), isNull);
     expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Metas'), isNull);
+    expect(badgeOf('Gráficas e informes'), isNull);
     expect(badgeOf('Importar y exportar'), isNull);
     expect(badgeOf('Ajustes'), isNull);
   });
@@ -192,10 +205,10 @@ void main() {
     expect(importExport, 1);
   });
 
-  testWidgets('tocar un destino "Próximamente" pasa su etiqueta al callback',
+  testWidgets('tocar Gráficas e informes enruta a la feature real',
       (tester) async {
-    final opened = <String>[];
-    await pumpMore(tester, onComingSoon: opened.add);
+    var reports = 0;
+    await pumpMore(tester, onReports: () => reports++);
 
     await tester.scrollUntilVisible(
       find.text('Gráficas e informes'),
@@ -205,6 +218,6 @@ void main() {
     await tester.tap(find.text('Gráficas e informes'));
     await tester.pump();
 
-    expect(opened, ['Gráficas e informes']);
+    expect(reports, 1);
   });
 }

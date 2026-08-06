@@ -4,6 +4,7 @@ import 'package:billetudo/app.dart';
 import 'package:billetudo/core/config/env.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/router/app_router.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -50,6 +51,37 @@ Future<void> resetLocalDatabase() async {
 /// `SupabaseClient` synchronously off of them (see `register_module.dart`),
 /// so both must complete first or the DI graph throws.
 Future<void> startApp(PatrolIntegrationTester $) async {
+  await _prepareCleanBoot($);
+  await $.pumpWidgetAndSettle(const BilletudoApp());
+}
+
+/// Same clean-install boot as [startApp], but mounts [BilletudoApp] with
+/// `initialLocation: AppRoutes.onboarding` instead of relying on its default
+/// (`AppRoutes.home`).
+///
+/// `startApp` cannot exercise the welcome flow at all: unlike a real launch
+/// (`bootstrap.dart`'s `_initApp`, which calls `ShouldShowOnboarding` and
+/// feeds its result into `BilletudoApp.initialLocation` before the widget
+/// tree exists), this harness pumps `BilletudoApp` directly and skips
+/// `bootstrap.dart` entirely (see this file's own `startApp` doc comment —
+/// Patrol's docs say a test must not install `bootstrap.dart`'s
+/// `FlutterError.onError` handlers). `BilletudoApp()`'s default parameter
+/// then always lands on Home, regardless of `AppSettings.onboardingCompleted`
+/// — every existing Patrol scenario in this repo, including this file's own
+/// `startApp`, has therefore never actually rendered `WelcomePage`. A fresh
+/// install's `onboardingCompleted` really is `false` (a plain
+/// `clientDefault`), so pinning the location here reproduces exactly the
+/// route `bootstrap.dart` would have chosen for this same clean database
+/// state, without needing to reimplement its `ShouldShowOnboarding` call in
+/// the test harness too.
+Future<void> startOnboardingApp(PatrolIntegrationTester $) async {
+  await _prepareCleanBoot($);
+  await $.pumpWidgetAndSettle(
+    const BilletudoApp(initialLocation: AppRoutes.onboarding),
+  );
+}
+
+Future<void> _prepareCleanBoot(PatrolIntegrationTester $) async {
   await _previousPowerSyncDatabase?.close();
   await resetLocalDatabase();
   await getIt.reset();
@@ -66,5 +98,4 @@ Future<void> startApp(PatrolIntegrationTester $) async {
   // locale so the suite is deterministic regardless of the device/emulator
   // language (Android emulators default to en-US).
   $.tester.platformDispatcher.localesTestValue = const [Locale('es', 'CO')];
-  await $.pumpWidgetAndSettle(const BilletudoApp());
 }

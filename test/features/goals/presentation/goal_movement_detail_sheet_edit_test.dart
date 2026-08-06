@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../support/fake_note_suggestions.dart';
 import 'goals_presentation_fixtures.dart';
 
 class MockGoalMovementDetailCubit extends MockCubit<GoalMovementDetailState>
@@ -53,6 +54,7 @@ void main() {
     getIt
       ..registerFactory<GoalMovementDetailCubit>(() => detailCubit)
       ..registerFactory<EditGoalMovementCubit>(() => editCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);

@@ -1,7 +1,7 @@
 {
   "_readme": "Versioned snapshot of the `public` schema in Supabase, table -> sorted column names. Consumed by test/core/database/schema_parity_test.dart so CI can detect drift between lib/core/database/powersync_schema.dart and the real database WITHOUT hitting the network. Do not edit by hand: refresh it with `dart run tool/check_schema_parity.dart --refresh` (needs DATABASE_URL) and commit the diff together with the migration in supabase/migrations/ that caused it.",
-  "generatedAt": "2026-07-28",
-  "source": "supabase prod, schema `public`, after 20260701000000_baseline + 20260724000000_debts_closed_at + 20260728000000_goals_v19_contributions",
+  "generatedAt": "2026-08-06",
+  "source": "supabase prod, schema `public`, after 20260701000000_baseline + 20260724000000_debts_closed_at + 20260728000000_goals_v19_contributions + 20260728120000_goal_quick_amounts + 20260729000000_app_settings_onboarding_completed + 20260729000000_import_batches + 20260730000000_delete_account_data_include_import_batches + 20260806115714_add_featured_budget_id_to_app_settings (refreshed manually via Supabase MCP, no psql/DATABASE_URL available in this session)",
   "tables": {
     "accounts": [
       "archived",
@@ -13,6 +13,7 @@
       "deleted_at",
       "icon",
       "id",
+      "import_batch_id",
       "initial_balance_minor",
       "institution",
       "interest_rate_bps",
@@ -30,7 +31,9 @@
       "categories_seeded",
       "created_at",
       "deleted_at",
+      "featured_budget_id",
       "id",
+      "onboarding_completed",
       "tombstoned_at",
       "updated_at",
       "user_id",
@@ -92,6 +95,7 @@
       "deleted_at",
       "icon",
       "id",
+      "import_batch_id",
       "kind",
       "name",
       "parent_id",
@@ -157,6 +161,16 @@
       "updated_at",
       "user_id"
     ],
+    "goal_quick_amounts": [
+      "amount_minor",
+      "created_at",
+      "deleted_at",
+      "goal_id",
+      "id",
+      "tombstoned_at",
+      "updated_at",
+      "user_id"
+    ],
     "goals": [
       "account_id",
       "archived_at",
@@ -172,6 +186,20 @@
       "saved_minor",
       "target_date",
       "target_minor",
+      "tombstoned_at",
+      "updated_at",
+      "user_id"
+    ],
+    "import_batches": [
+      "created_at",
+      "deleted_at",
+      "file_name",
+      "id",
+      "imported_at",
+      "reverted_at",
+      "rows_imported",
+      "rows_skipped",
+      "template_name",
       "tombstoned_at",
       "updated_at",
       "user_id"
@@ -226,6 +254,7 @@
       "created_at",
       "deleted_at",
       "id",
+      "import_batch_id",
       "name",
       "tombstoned_at",
       "updated_at",
@@ -253,22 +282,13 @@
       "deleted_at",
       "goal_id",
       "id",
+      "import_batch_id",
       "note",
       "scheduled_payment_id",
       "source",
       "tombstoned_at",
       "transfer_account_id",
       "type",
-      "updated_at",
-      "user_id"
-    ],
-    "goal_quick_amounts": [
-      "amount_minor",
-      "created_at",
-      "deleted_at",
-      "goal_id",
-      "id",
-      "tombstoned_at",
       "updated_at",
       "user_id"
     ]

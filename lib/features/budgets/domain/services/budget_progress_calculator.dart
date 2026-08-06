@@ -25,9 +25,15 @@ import '../entities/budget_scope.dart';
 class BudgetProgressCalculator {
   const BudgetProgressCalculator();
 
-  /// Total matched expense in [window], in cents. [categoryChildren] maps an
-  /// (alive) category id to its (alive) direct children, so a scoped root also
-  /// counts its subcategories' spend.
+  /// Total matched expense in [window], in cents — net of any presupuestable
+  /// income (budget-income-counts-in-budget): a matched `BudgetExpense` with
+  /// `isIncome = true` (e.g. a debt repayment received, `countsInBudget =
+  /// true`) is **subtracted** instead of added, so it raises the disponible
+  /// instead of lowering it, using the exact same scope/window match
+  /// ([matches]) as any expense or presupuestable transfer — no separate
+  /// matching rule. [categoryChildren] maps an (alive) category id to its
+  /// (alive) direct children, so a scoped root also counts its subcategories'
+  /// spend.
   int spentIn({
     required Budget budget,
     required BudgetScope scope,
@@ -47,7 +53,7 @@ class BudgetProgressCalculator {
         expandedCategories: expandedCategories,
         expense: expense,
       )) {
-        total += expense.amountMinor;
+        total += expense.isIncome ? -expense.amountMinor : expense.amountMinor;
       }
     }
     return total;

@@ -47,18 +47,27 @@ class RegisterDebtCashEvent {
             ),
           );
         }
+        final type = DebtEventRules.cashEventType(
+          direction: debt.direction,
+          kind: draft.kind,
+        );
         return _repository.registerCashEvent(
           debtId: debt.id,
           accountId: draft.accountId,
           amountMinor: draft.amountMinor,
-          type: DebtEventRules.cashEventType(
-            direction: debt.direction,
-            kind: draft.kind,
-          ),
+          type: type,
           currency: debt.currency,
           date: draft.date,
           note: draft.note,
           categoryId: draft.categoryId,
+          // Criterion 1: a repago recibido (owedToMe + payment, which
+          // resolves to `income` above) must raise a covering budget's
+          // disponible automatically — the user never has to find and flip a
+          // toggle for money that unambiguously came back to them.
+          countsInBudget: DebtEventRules.countsInBudgetFor(
+            direction: debt.direction,
+            type: type,
+          ),
         );
       },
     );

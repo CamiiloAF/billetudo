@@ -127,4 +127,79 @@ void main() {
       expect(cleared.start, DateTime(2026, 7));
     });
   });
+
+  group('ventana de un presupuesto (chip Presupuesto)', () {
+    test('reusa [start, endExclusive) directamente, sin sumar un día', () {
+      final window = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+
+      expect(window.isBudgetPeriod, isTrue);
+      expect(window.isCustomRange, isFalse);
+      expect(window.granularity, isNull);
+      expect(window.budgetId, 'budget-1');
+      expect(window.start, DateTime(2026, 7, 1));
+      expect(window.endExclusive, DateTime(2026, 8, 1));
+    });
+
+    test('rechaza una ventana con fin anterior al inicio', () {
+      expect(
+        () => DatePeriodFilter.budget(
+          budgetId: 'budget-1',
+          start: DateTime(2026, 8, 1),
+          endExclusive: DateTime(2026, 7, 1),
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('dos ventanas del mismo presupuesto y rango son iguales', () {
+      final a = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final b = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+
+      expect(a, b);
+    });
+
+    test('un presupuesto distinto o una ventana distinta no son iguales', () {
+      final base = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final otherBudget = DatePeriodFilter.budget(
+        budgetId: 'budget-2',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+      final otherWindow = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 6, 1),
+        endExclusive: DateTime(2026, 7, 1),
+      );
+
+      expect(base, isNot(otherBudget));
+      expect(base, isNot(otherWindow));
+    });
+
+    test('no tiene granularidad ni stepper, igual que un rango personalizado',
+        () {
+      final window = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+
+      expect(() => window.stepped(1), throwsStateError);
+    });
+  });
 }

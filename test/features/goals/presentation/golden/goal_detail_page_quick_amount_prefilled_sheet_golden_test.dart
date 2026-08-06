@@ -16,6 +16,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
 import '../../../../support/golden_helpers.dart';
 import '../../../accounts/account_fixtures.dart';
 import '../goals_presentation_fixtures.dart';
@@ -71,6 +72,7 @@ void main() {
     getIt.registerFactory<GoalContributionCubit>(
       () => GoalContributionCubit(contribute, withdraw, watchAccounts),
     );
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);

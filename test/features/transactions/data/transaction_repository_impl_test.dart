@@ -482,6 +482,96 @@ void main() {
       expect(emissions.last, [tagged.id]);
       expect(emissions.last, isNot(contains(untagged.id)));
     });
+
+    group('chip Presupuesto — intersección AND con el chip Fecha', () {
+      test(
+          'el filtro de presupuesto acota a su ventana, sin que el chip '
+          'Fecha (más amplio) lo estreche (HU-06)', () async {
+        final inside = await createTransaction(
+          expenseDraft(date: DateTime(2026, 7, 10)),
+        );
+        await createTransaction(expenseDraft(date: DateTime(2026, 6, 20)));
+
+        final result = await repository
+            .watchTransactions(
+              TransactionFilter(
+                // El chip Fecha sigue en su default (mes en curso real); se
+                // amplía aquí a un rango que cubre de sobra la ventana del
+                // presupuesto, para que la intersección la deje intacta y la
+                // prueba aísle el efecto del chip Presupuesto solo.
+                datePeriod: DatePeriodFilter.custom(
+                  start: DateTime(2026, 1, 1),
+                  end: DateTime(2026, 12, 31),
+                ),
+                budgetPeriod: DatePeriodFilter.budget(
+                  budgetId: 'budget-1',
+                  start: DateTime(2026, 7),
+                  endExclusive: DateTime(2026, 8),
+                ),
+              ),
+            )
+            .first;
+
+        expect(
+          result.getRight().toNullable()!.map((t) => t.transaction.id),
+          [inside.id],
+        );
+      });
+
+      test(
+          'con ambos chips activos, solo pasan las transacciones dentro de '
+          'la intersección de las dos ventanas', () async {
+        // Fecha: julio completo. Presupuesto: 15 jul - 15 ago (una ventana
+        // corrida que se solapa parcialmente con julio).
+        final overlap = await createTransaction(
+          expenseDraft(date: DateTime(2026, 7, 20)),
+        );
+        // Dentro de julio (Fecha) pero fuera del presupuesto (antes del 15).
+        await createTransaction(expenseDraft(date: DateTime(2026, 7, 5)));
+        // Dentro del presupuesto pero fuera de julio (Fecha).
+        await createTransaction(expenseDraft(date: DateTime(2026, 8, 1)));
+
+        final result = await repository
+            .watchTransactions(
+              TransactionFilter(
+                datePeriod: _julyPeriod(),
+                budgetPeriod: DatePeriodFilter.budget(
+                  budgetId: 'budget-1',
+                  start: DateTime(2026, 7, 15),
+                  endExclusive: DateTime(2026, 8, 15),
+                ),
+              ),
+            )
+            .first;
+
+        expect(
+          result.getRight().toNullable()!.map((t) => t.transaction.id),
+          [overlap.id],
+        );
+      });
+
+      test(
+          'una intersección vacía (ventanas que no se tocan) devuelve una '
+          'lista vacía, no un error', () async {
+        await createTransaction(expenseDraft(date: DateTime(2026, 7, 10)));
+
+        final result = await repository
+            .watchTransactions(
+              TransactionFilter(
+                datePeriod: _julyPeriod(),
+                budgetPeriod: DatePeriodFilter.budget(
+                  budgetId: 'budget-1',
+                  start: DateTime(2026, 1),
+                  endExclusive: DateTime(2026, 2),
+                ),
+              ),
+            )
+            .first;
+
+        expect(result.isRight(), isTrue);
+        expect(result.getRight().toNullable(), isEmpty);
+      });
+    });
   });
 
   group('setTransactionTags (HU-07)', () {

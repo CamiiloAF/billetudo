@@ -86,6 +86,51 @@ void main() {
     });
   });
 
+  group('countsInBudgetFor', () {
+    test(
+        'owedToMe + income (a repago recibido) counts in budget, raising '
+        'the disponible', () {
+      expect(
+        DebtEventRules.countsInBudgetFor(
+          direction: DebtDirection.owedToMe,
+          type: TransactionType.income,
+        ),
+        isTrue,
+      );
+    });
+
+    test('every other direction × type combination stays false', () {
+      expect(
+        DebtEventRules.countsInBudgetFor(
+          direction: DebtDirection.iOwe,
+          type: TransactionType.income,
+        ),
+        isFalse,
+      );
+      expect(
+        DebtEventRules.countsInBudgetFor(
+          direction: DebtDirection.iOwe,
+          type: TransactionType.expense,
+        ),
+        isFalse,
+      );
+      expect(
+        DebtEventRules.countsInBudgetFor(
+          direction: DebtDirection.owedToMe,
+          type: TransactionType.expense,
+        ),
+        isFalse,
+      );
+      expect(
+        DebtEventRules.countsInBudgetFor(
+          direction: DebtDirection.iOwe,
+          type: TransactionType.transfer,
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('ledgerEventAmount', () {
     test('disbursement is positive, payment is negative', () {
       expect(

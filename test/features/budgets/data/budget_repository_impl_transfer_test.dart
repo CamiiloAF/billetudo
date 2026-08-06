@@ -94,6 +94,42 @@ void main() {
             ),
           );
 
+  Future<void> insertIncome({
+    required String accountId,
+    required int amountMinor,
+    required bool countsInBudget,
+    String? categoryId,
+  }) =>
+      database.into(database.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              categoryId: Value(categoryId),
+              amountMinor: amountMinor,
+              currency: 'COP',
+              type: EntryType.income,
+              date: DateTime(now.year, now.month, now.day),
+              countsInBudget: Value(countsInBudget),
+              updatedAt: const Value(0),
+            ),
+          );
+
+  Future<void> insertExpense({
+    required String accountId,
+    required int amountMinor,
+    String? categoryId,
+  }) =>
+      database.into(database.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              categoryId: Value(categoryId),
+              amountMinor: amountMinor,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(now.year, now.month, now.day),
+              updatedAt: const Value(0),
+            ),
+          );
+
   int spentMinorOf(
     List<BudgetWithProgress> budgets,
     String budgetId,
@@ -209,5 +245,67 @@ void main() {
     final budgets = result.getRight().toNullable()!;
 
     expect(spentMinorOf(budgets, budgetId), 50000);
+  });
+
+  group('budget-income-counts-in-budget', () {
+    test(
+        'criterion 6: a presupuestable income cancels out a prior expense of '
+        'the same amount, restoring the disponible', () async {
+      final account = await createAccount('Nequi');
+      final category = await createExpenseCategory('Préstamos');
+      final budgetId = await createBudgetScopedTo({account.id});
+
+      await insertExpense(
+        accountId: account.id,
+        amountMinor: 10000,
+        categoryId: category.id,
+      );
+      await insertIncome(
+        accountId: account.id,
+        amountMinor: 10000,
+        countsInBudget: true,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 0);
+    });
+
+    test('countsInBudget=false income never counts (default behaviour)',
+        () async {
+      final account = await createAccount('Nequi');
+      final budgetId = await createBudgetScopedTo({account.id});
+
+      await insertIncome(
+        accountId: account.id,
+        amountMinor: 10000,
+        countsInBudget: false,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 0);
+    });
+
+    test(
+        'a presupuestable income whose account is out of scope does not '
+        'count', () async {
+      final account = await createAccount('Nequi');
+      final outOfScope = await createAccount('Efectivo');
+      final budgetId = await createBudgetScopedTo({outOfScope.id});
+
+      await insertIncome(
+        accountId: account.id,
+        amountMinor: 10000,
+        countsInBudget: true,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 0);
+    });
   });
 }

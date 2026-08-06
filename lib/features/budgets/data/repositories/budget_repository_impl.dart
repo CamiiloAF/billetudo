@@ -642,6 +642,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         amountMinor: row.amountMinor,
         currency: row.currency,
         date: row.date,
+        isIncome: row.isIncome,
       );
 
   BudgetScheduledTemplateDetail _toScheduledTemplateDetail(

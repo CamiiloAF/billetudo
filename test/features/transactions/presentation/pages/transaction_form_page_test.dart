@@ -30,6 +30,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
+
 class MockTransactionFormCubit extends MockCubit<TransactionFormState>
     implements TransactionFormCubit {}
 
@@ -173,6 +175,7 @@ void main() {
         () => categoryQuickPickerCubit,
       )
       ..registerFactory<TagFilterCubit>(() => tagFilterCubit);
+    registerFakeNoteSuggestions();
   });
 
   tearDown(getIt.reset);
@@ -444,14 +447,77 @@ void main() {
 
   group('B-3: transferencia presupuestable (toggle countsInBudget)', () {
     testWidgets(
-        'gasto/ingreso nunca muestran el toggle "¿Incluir en tu '
-        'presupuesto?" (es transfer-only)', (tester) async {
+        'gasto nunca muestra el toggle "¿Incluir en tu presupuesto?"',
+        (tester) async {
       await pumpForm(
         tester,
         TransactionFormState(status: TransactionFormStatus.ready),
       );
 
       expect(find.byType(ToggleField), findsNothing);
+    });
+
+    // budget-income-counts-in-budget (AC7): unlike gasto, ingreso does show
+    // the toggle — the user can mark other incomes (reembolsos, etc.)
+    // presupuestable without going through Deudas.
+    testWidgets(
+        'ingreso sí muestra el toggle "¿Incluir en tu presupuesto?", sin '
+        'un selector de categoría condicional adicional (la categoría ya '
+        'es obligatoria para todo ingreso)', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.income,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(find.text('¿Incluir en tu presupuesto?'), findsOneWidget);
+      expect(
+        find.text('Actívala para que se sume a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      // Only the one, always-mandatory CategoryQuickPicker — no second one
+      // conditionally revealed by the toggle, unlike transfer.
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
+    });
+
+    testWidgets(
+        'ingreso con el toggle encendido conserva un solo selector de '
+        'categoría y muestra el hint ON', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.income,
+          countsInBudget: true,
+        ),
+      );
+
+      expect(find.byType(ToggleField), findsOneWidget);
+      expect(
+        find.text('Se suma a tus presupuestos y reportes.'),
+        findsOneWidget,
+      );
+      expect(find.byType(CategoryQuickPicker), findsOneWidget);
+    });
+
+    testWidgets(
+        'tocar el toggle en un ingreso se lo reporta al cubit con el valor '
+        'opuesto', (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          type: TransactionType.income,
+        ),
+      );
+
+      await tester.tap(find.byType(ToggleField));
+      await tester.pump();
+
+      verify(() => cubit.countsInBudgetChanged(true)).called(1);
     });
 
     testWidgets(

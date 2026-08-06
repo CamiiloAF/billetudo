@@ -1,3 +1,4 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
 import '../../../accounts/account_fixtures.dart';
 import '../debts_presentation_fixtures.dart';
 
@@ -41,7 +43,12 @@ void main() {
         date: DateTime(2026, 7, 22),
       );
 
-  setUp(() => cubit = MockDebtPaymentCubit());
+  setUp(() {
+    cubit = MockDebtPaymentCubit();
+    registerFakeNoteSuggestions();
+  });
+
+  tearDown(getIt.reset);
 
   Future<void> pump(WidgetTester tester, DebtPaymentState state) async {
     await tester.binding.setSurfaceSize(const Size(420, 1600));
