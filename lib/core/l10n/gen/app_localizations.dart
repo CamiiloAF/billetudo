@@ -7575,8 +7575,8 @@ abstract class AppLocalizations {
   /// No description provided for @importExportSummarySeeSkipped.
   ///
   /// In es, this message translates to:
-  /// **'Ver {count} omitidas y por qué'**
-  String importExportSummarySeeSkipped(int count);
+  /// **'Ver omitidas'**
+  String get importExportSummarySeeSkipped;
 
   /// No description provided for @importExportSkippedSheetTitle.
   ///

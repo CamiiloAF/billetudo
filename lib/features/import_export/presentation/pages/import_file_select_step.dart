@@ -7,15 +7,13 @@ import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../core/widgets/neutral_button.dart';
 import '../../../../core/widgets/sheet_buttons_row.dart';
 
-/// HU-05 entry (`W2hiZK`/`rsBfI`): a modal-bottom-sheet-styled step
-/// ("Cancelar" + "Elegir archivo") that triggers the OS's native file
-/// picker. The picker itself is system UI, not designed in Pencil.
+/// Former HU-05 entry sheet (`W2hiZK`/`rsBfI`, marked OBSOLETO en
+/// `billetudo.pen`, decisión 2026-08-06): `ImportFlowPage` no longer shows
+/// this as the wizard's entry step — "Importar desde un CSV" opens the OS's
+/// native file picker directly, with no intermediate sheet.
 ///
-/// `ImportFlowPage` renders this inside its own scrim-backed sheet chrome
-/// (see `_ImportFileSelectSheetChrome`) rather than a real
-/// `showModalBottomSheet` route: the wizard's cubit state and this step live
-/// on the same routed page, so a nested modal route would fight with
-/// `ImportFlowCubit`'s own step transitions once a file is picked.
+/// Kept only as `ImportFlowBody`'s defensive fallback for the (should never
+/// happen) case of reaching the mapping step without a parsed sample.
 class ImportFileSelectStep extends StatelessWidget {
   const ImportFileSelectStep({
     required this.onPickFile,

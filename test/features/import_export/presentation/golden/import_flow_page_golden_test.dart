@@ -137,15 +137,6 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('select file entry ($suffix)', (tester) async {
-      await golden(
-        tester,
-        const ImportFlowState(),
-        'file_select_$suffix',
-        brightness: brightness,
-      );
-    });
-
     testWidgets('mapping columns ($suffix)', (tester) async {
       await golden(
         tester,

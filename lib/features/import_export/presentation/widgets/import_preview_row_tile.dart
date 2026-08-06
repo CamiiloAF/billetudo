@@ -19,6 +19,7 @@ class ImportPreviewRowTile extends StatelessWidget {
     required this.selectable,
     this.checked = false,
     this.onChanged,
+    this.note,
     this.reason,
     this.reasonColor,
     super.key,
@@ -31,6 +32,11 @@ class ImportPreviewRowTile extends StatelessWidget {
   final bool selectable;
   final bool checked;
   final ValueChanged<bool>? onChanged;
+
+  /// The imported row's own note/description (`zJKYH` in `zAusB`). `null`
+  /// hides the line entirely — mirrors Pencil's `enabled:false` for rows
+  /// without a note, rather than showing an empty line.
+  final String? note;
 
   /// Already localized reason line. `null` hides it (a clean valid row).
   final String? reason;
@@ -97,6 +103,19 @@ class ImportPreviewRowTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (note case final note?) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    note,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ],
                 if (reason case final reason?) ...[
                   const SizedBox(height: 3),
                   Text(

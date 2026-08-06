@@ -115,6 +115,7 @@ class _ImportPreviewStepState extends State<ImportPreviewStep> {
                   checked: widget.includedRowNumbers.contains(row.rowNumber),
                   onChanged: (checked) =>
                       widget.onToggleRow(row.rowNumber, included: checked),
+                  note: row.note,
                   reason: row.status == ImportRowStatus.duplicateExact
                       ? l10n.importExportDuplicateExact
                       : (row.status == ImportRowStatus.duplicateProbable
@@ -136,6 +137,7 @@ class _ImportPreviewStepState extends State<ImportPreviewStep> {
                       ImportPreviewRowTile(
                         title: l10n.importExportRowNumber(row.rowNumber),
                         selectable: false,
+                        note: row.note,
                         reason: _issueLabel(l10n, row),
                         reasonColor: colors.expenseText,
                       ),

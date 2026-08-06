@@ -3,24 +3,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../cubit/import_flow_cubit.dart';
 import '../cubit/import_flow_state.dart';
 import '../widgets/import_flow_body.dart';
-import 'import_file_select_step.dart';
 
 /// The import wizard shell (HU-05/06/07, `jfq0l`/`pjdLI`): one `PageHeader`
 /// whose subtitle shows the numbered step, hosting each step's body.
 ///
-/// The entry step (`W2hiZK`/`rsBfI`) is a modal bottom sheet in Pencil, not a
-/// pushed page — rendered here as a scrim-backed sheet anchored to the
-/// bottom instead of the numbered-step `PageHeader` chrome the rest of the
-/// wizard uses.
-class ImportFlowPage extends StatelessWidget {
+/// The entry step (previously `W2hiZK`/`rsBfI`, now marked OBSOLETO en
+/// `billetudo.pen`, decisión 2026-08-06) no longer renders an intermediate
+/// sheet — tapping "Importar desde un CSV" opens the OS's native file
+/// picker directly. `_pickTriggered` guards against re-opening the picker
+/// on every rebuild while it's still on `fileSelect`; if the user backs out
+/// of the picker (`pickFile` returns without moving past `fileSelect`),
+/// [onDone] pops back to the hub instead of leaving a dead screen behind.
+class ImportFlowPage extends StatefulWidget {
   const ImportFlowPage({required this.onDone, super.key});
 
   final VoidCallback onDone;
+
+  @override
+  State<ImportFlowPage> createState() => _ImportFlowPageState();
+}
+
+class _ImportFlowPageState extends State<ImportFlowPage> {
+  bool _pickTriggered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,26 +38,21 @@ class ImportFlowPage extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<ImportFlowCubit>();
 
-        if (state.step == ImportFlowStep.fileSelect && state.runStatus == ImportFlowRunStatus.idle) {
-          return Scaffold(
-            backgroundColor: context.colors.scrim,
-            body: SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-                  decoration: BoxDecoration(
-                    color: context.colors.surface,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(AppTheme.sheetRadius),
-                    ),
-                  ),
-                  child: ImportFileSelectStep(onPickFile: cubit.pickFile, onCancel: onDone),
-                ),
-              ),
-            ),
-          );
+        if (state.step == ImportFlowStep.fileSelect &&
+            state.runStatus == ImportFlowRunStatus.idle) {
+          if (!_pickTriggered) {
+            _pickTriggered = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              await cubit.pickFile();
+              if (!mounted) {
+                return;
+              }
+              if (cubit.state.step == ImportFlowStep.fileSelect) {
+                widget.onDone();
+              }
+            });
+          }
+          return Scaffold(backgroundColor: context.colors.background);
         }
 
         return PopScope(
@@ -65,7 +68,7 @@ class ImportFlowPage extends StatelessWidget {
                     onBack: state.isWorking ? () {} : null,
                   ),
                   Expanded(
-                    child: ImportFlowBody(state: state, cubit: cubit, onDone: onDone),
+                    child: ImportFlowBody(state: state, cubit: cubit, onDone: widget.onDone),
                   ),
                 ],
               ),

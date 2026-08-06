@@ -111,7 +111,7 @@ class ImportSummaryStep extends StatelessWidget {
                   left: OutlinedButton(
                     onPressed: () => ImportSkippedSheet.show(context, summary: summary),
                     child: Text(
-                      l10n.importExportSummarySeeSkipped(_totalSkipped(summary)),
+                      l10n.importExportSummarySeeSkipped,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

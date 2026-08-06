@@ -4569,9 +4569,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get importExportSummaryTagsCreated => 'etiquetas creadas';
 
   @override
-  String importExportSummarySeeSkipped(int count) {
-    return 'Ver $count omitidas y por qué';
-  }
+  String get importExportSummarySeeSkipped => 'Ver omitidas';
 
   @override
   String get importExportSkippedSheetTitle => 'Lo que no se importó';

@@ -1430,7 +1430,7 @@
   "importExportSummaryAccountsCreated": "accounts created",
   "importExportSummaryCategoriesCreated": "categories created",
   "importExportSummaryTagsCreated": "tags created",
-  "importExportSummarySeeSkipped": "See {count} skipped and why",
+  "importExportSummarySeeSkipped": "See skipped",
   "importExportSkippedSheetTitle": "What didn't get imported",
   "importExportSkippedDuplicateReason": "{count} for a possible duplicate: same id, or same amount and date, as a transaction you already had.",
   "importExportSkippedErrorReason": "{count} for data we couldn't read: an incomplete or invalid date, amount or account in the file.",
