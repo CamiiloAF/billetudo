@@ -1574,6 +1574,30 @@ abstract class AppLocalizations {
   /// **'Mes siguiente'**
   String get datePickerNextMonth;
 
+  /// Tooltip/semántica del label 'mes año' del calendario, que abre la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir año'**
+  String get datePickerSelectYear;
+
+  /// Tooltip del botón que retrocede el bloque de años visible en la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Años anteriores'**
+  String get datePickerPreviousYears;
+
+  /// Tooltip del botón que avanza el bloque de años visible en la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Años siguientes'**
+  String get datePickerNextYears;
+
+  /// Tooltip/semántica del rango de años en la vista de selección de año, que cierra esa vista sin elegir uno.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a los meses'**
+  String get datePickerBackToMonths;
+
   /// No description provided for @transactionFormExpandAmount.
   ///
   /// In es, this message translates to:
@@ -3771,6 +3795,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Acciones del presupuesto'**
   String get budgetDetailActionsSubtitle;
+
+  /// No description provided for @budgetActionUseAsFeatured.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar como destacado en Inicio'**
+  String get budgetActionUseAsFeatured;
+
+  /// No description provided for @budgetActionUseAsFeaturedSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplaza al presupuesto que tengas destacado, si hay uno.'**
+  String get budgetActionUseAsFeaturedSubtitle;
+
+  /// No description provided for @budgetActionRemoveFeatured.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar de Inicio'**
+  String get budgetActionRemoveFeatured;
 
   /// No description provided for @budgetDeleteConfirmMessage.
   ///
@@ -6882,6 +6924,13 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get reportsNetWorthFigureTotalLabel;
 
+  /// Texto para lectores de pantalla del Hero Patrimonio: figuras líquido y total.
+  ///
+  /// In es, this message translates to:
+  /// **'{liquidLabel}: {liquidAmount}. {totalLabel}: {totalAmount}.'**
+  String reportsNetWorthHeroSemantics(String liquidLabel, String liquidAmount,
+      String totalLabel, String totalAmount);
+
   /// No description provided for @reportsNetWorthInterestNote.
   ///
   /// In es, this message translates to:
@@ -6930,6 +6979,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin categoría'**
   String get reportsCategoriesUncategorized;
+
+  /// Texto para lectores de pantalla de una fila del desglose por categoría: nombre, porcentaje y monto.
+  ///
+  /// In es, this message translates to:
+  /// **'{name}, {pct}%, {amount}'**
+  String reportsCategoriesRowSemantics(String name, int pct, String amount);
+
+  /// Porcentaje formateado para figuras de Gráficas (desglose de categorías, metas del resumen).
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}%'**
+  String reportsPercentValue(int pct);
 
   /// No description provided for @reportsCategoriesViewSubcategories.
   ///
@@ -7062,6 +7123,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cargando gráfica'**
   String get reportsChartSkeletonLoadingLabel;
+
+  /// Label del filtro de cuentas de Gráficas cuando no hay selección (todas incluidas).
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las cuentas'**
+  String get reportsAccountFilterAll;
+
+  /// Label del filtro de cuentas de Gráficas con una selección parcial.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
+  String reportsAccountFilterSelected(int count);
 
   /// No description provided for @accountTypeSheetTitle.
   ///

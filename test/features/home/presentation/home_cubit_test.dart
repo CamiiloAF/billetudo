@@ -11,7 +11,7 @@ import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
-import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -34,8 +34,8 @@ class MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
-class MockWatchGlobalMonthlyBudgetProgress extends Mock
-    implements WatchGlobalMonthlyBudgetProgress {}
+class MockWatchFeaturedBudgetProgress extends Mock
+    implements WatchFeaturedBudgetProgress {}
 
 void main() {
   late MockWatchAccounts watchAccounts;
@@ -43,7 +43,7 @@ void main() {
   late MockWatchAuthSession watchAuthSession;
   late MockWatchSyncStatus watchSyncStatus;
   late MockRestoreTransaction restoreTransaction;
-  late MockWatchGlobalMonthlyBudgetProgress watchGlobalMonthlyBudgetProgress;
+  late MockWatchFeaturedBudgetProgress watchFeaturedBudgetProgress;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -61,7 +61,7 @@ void main() {
     watchAuthSession = MockWatchAuthSession();
     watchSyncStatus = MockWatchSyncStatus();
     restoreTransaction = MockRestoreTransaction();
-    watchGlobalMonthlyBudgetProgress = MockWatchGlobalMonthlyBudgetProgress();
+    watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
@@ -72,7 +72,7 @@ void main() {
     when(() => restoreTransaction(any()))
         .thenAnswer((_) async => const Right(unit));
     // Default: no qualifying budget; individual tests override.
-    when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+    when(() => watchFeaturedBudgetProgress()).thenAnswer(
       (_) => Stream<Result<BudgetWithProgress?>>.value(const Right(null)),
     );
   });
@@ -83,7 +83,7 @@ void main() {
         watchAuthSession,
         watchSyncStatus,
         restoreTransaction,
-        watchGlobalMonthlyBudgetProgress,
+        watchFeaturedBudgetProgress,
       );
 
   void stubReady() {
@@ -474,7 +474,7 @@ void main() {
         .thenAnswer((_) => txController.stream);
     when(() => watchAuthSession()).thenAnswer((_) => authController.stream);
     when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
-    when(() => watchGlobalMonthlyBudgetProgress())
+    when(() => watchFeaturedBudgetProgress())
         .thenAnswer((_) => budgetProgressController.stream);
 
     final cubit = build();
@@ -498,7 +498,7 @@ void main() {
       'expone budgetProgress cuando hay un presupuesto global mensual vigente',
       setUp: () {
         stubReady();
-        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+        when(() => watchFeaturedBudgetProgress()).thenAnswer(
           (_) => Stream<Result<BudgetWithProgress?>>.value(
             Right(buildHomeBudgetProgress()),
           ),
@@ -532,7 +532,7 @@ void main() {
       'un presupuesto vigente para el mes actual',
       setUp: () {
         stubReady();
-        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+        when(() => watchFeaturedBudgetProgress()).thenAnswer(
           (_) => Stream<Result<BudgetWithProgress?>>.value(
             Right(buildHomeBudgetProgress()),
           ),

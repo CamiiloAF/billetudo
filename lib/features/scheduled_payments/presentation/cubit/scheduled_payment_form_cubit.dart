@@ -152,6 +152,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     String? scheduledPaymentId,
     DateTime? debtCreatedAt,
     int? debtOutstandingMinor,
+    DateTime? debtDueDate,
   }) async {
     await load(scheduledPaymentId);
     if (isClosed || state.status != ScheduledPaymentFormStatus.ready) {
@@ -167,6 +168,12 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
         debtIsIOwe: debtIsIOwe,
         debtCreatedAt: debtCreatedAt,
         debtOutstandingMinor: debtOutstandingMinor,
+        // Prefill "fecha en que termina" from the debt's own due date, but
+        // only when creating a brand-new cuota (no existing template's
+        // `endDate` to preserve): `load` already restored it for an edit,
+        // and leaving it untouched here would silently overwrite the user's
+        // saved choice. The user can still change it afterwards.
+        endDate: scheduledPaymentId == null ? debtDueDate : state.endDate,
       ),
     );
   }

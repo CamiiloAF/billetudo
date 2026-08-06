@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -8,6 +9,7 @@ import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_balance.dart';
 import '../../domain/entities/debt_detail.dart';
 import '../../domain/services/debt_interest_calculator.dart';
+import '../../domain/usecases/accrue_interest.dart';
 import '../../domain/usecases/close_debt.dart';
 import '../../domain/usecases/delete_debt.dart';
 import '../../domain/usecases/watch_debt_detail.dart';
@@ -28,12 +30,14 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     this._interestCalculator,
     this._closeDebt,
     this._deleteDebt,
+    this._accrueInterest,
   ) : super(const DebtDetailState());
 
   final WatchDebtDetail _watchDebtDetail;
   final DebtInterestCalculator _interestCalculator;
   final CloseDebt _closeDebt;
   final DeleteDebt _deleteDebt;
+  final AccrueInterest _accrueInterest;
 
   StreamSubscription<Result<DebtDetail>>? _subscription;
   String? _debtId;
@@ -45,13 +49,70 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
   /// debt never celebrates on arrival.
   bool? _wasSettled;
 
+  /// Re-entrancy guard: `true` while an `_accrueIfAuto()` call is in flight
+  /// for [_debtId]. Without it, a second `start()` (double tap on retry)
+  /// firing before the first pass finishes would read the same pre-write
+  /// `lastAccrualDate`/balance and post a duplicate `interestAccrual` row —
+  /// this only guards re-entrancy *within this cubit*; the atomic
+  /// transaction in `AccrueInterest`/`DebtRepositoryImpl.accrueInterestAtomic`
+  /// is what guards a concurrent call from a different cubit instance (e.g.
+  /// `DebtsListCubit` accruing the same debt while its list is still
+  /// iterating).
+  bool _accruing = false;
+
   /// Subscribes to the debt's detail stream. Safe to call again to retry.
   Future<void> start(String debtId) async {
     _debtId = debtId;
     _wasSettled = null;
     await _subscription?.cancel();
     emit(const DebtDetailState());
+    if (!_accruing) {
+      _accruing = true;
+      try {
+        await _accrueIfAuto(debtId);
+      } finally {
+        _accruing = false;
+      }
+    }
+    if (isClosed) {
+      return;
+    }
     _subscription = _watchDebtDetail(debtId).listen(_onDetail);
+  }
+
+  /// Brings this debt's interest up to date (HU-06) before its first render
+  /// — for a user who opens the detail directly without passing through the
+  /// list first, where `DebtsListCubit` already ran its own pass. A one-shot
+  /// peek at the stream's first emission, not a subscription: only an
+  /// auto-accrual, still-open debt needs the write, so a manual-mode debt
+  /// never calls `AccrueInterest` at all. The `listen` above then simply
+  /// sees whatever this write changed, `watchDebtDetail` being a reactive
+  /// query.
+  Future<void> _accrueIfAuto(String debtId) async {
+    Result<DebtDetail>? result;
+    try {
+      result = await _watchDebtDetail(debtId).first;
+    } catch (_) {
+      return;
+    }
+    final debt = result.fold((failure) => null, (detail) => detail.debt);
+    if (debt == null ||
+        debt.accrualMode != DebtAccrualMode.auto ||
+        debt.isClosed) {
+      return;
+    }
+    final accrualResult =
+        await _accrueInterest(debtId: debtId, upTo: DateTime.now());
+    accrualResult.fold(
+      // A failed accrual is not fatal — the detail still renders with
+      // whatever balance is already persisted — but it must not be
+      // silently swallowed, or a real bug here (e.g. a rejected write)
+      // would go unnoticed.
+      (failure) => debugPrint(
+        'DebtDetailCubit: AccrueInterest failed for debt $debtId: $failure',
+      ),
+      (_) {},
+    );
   }
 
   /// Retries the last load after a failure. The debt id lives in the route, not

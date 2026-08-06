@@ -663,6 +663,22 @@
   "@datePickerPreviousMonth": {},
   "datePickerNextMonth": "Mes siguiente",
   "@datePickerNextMonth": {},
+  "datePickerSelectYear": "Elegir año",
+  "@datePickerSelectYear": {
+    "description": "Tooltip/semántica del label 'mes año' del calendario, que abre la vista de selección de año."
+  },
+  "datePickerPreviousYears": "Años anteriores",
+  "@datePickerPreviousYears": {
+    "description": "Tooltip del botón que retrocede el bloque de años visible en la vista de selección de año."
+  },
+  "datePickerNextYears": "Años siguientes",
+  "@datePickerNextYears": {
+    "description": "Tooltip del botón que avanza el bloque de años visible en la vista de selección de año."
+  },
+  "datePickerBackToMonths": "Volver a los meses",
+  "@datePickerBackToMonths": {
+    "description": "Tooltip/semántica del rango de años en la vista de selección de año, que cierra esa vista sin elegir uno."
+  },
   "transactionFormExpandAmount": "Editar monto",
   "@transactionFormExpandAmount": {},
   "transactionFormCollapseAmount": "Ocultar teclado",
@@ -1616,6 +1632,12 @@
   "@budgetActionAdjustAmount": {},
   "budgetDetailActionsSubtitle": "Acciones del presupuesto",
   "@budgetDetailActionsSubtitle": {},
+  "budgetActionUseAsFeatured": "Usar como destacado en Inicio",
+  "@budgetActionUseAsFeatured": {},
+  "budgetActionUseAsFeaturedSubtitle": "Reemplaza al presupuesto que tengas destacado, si hay uno.",
+  "@budgetActionUseAsFeaturedSubtitle": {},
+  "budgetActionRemoveFeatured": "Quitar de Inicio",
+  "@budgetActionRemoveFeatured": {},
   "budgetDeleteConfirmMessage": "Este presupuesto se eliminará. Podrás deshacerlo justo después de eliminar.",
   "@budgetDeleteConfirmMessage": {},
   "budgetFormNewTitle": "Nuevo presupuesto",
@@ -2796,6 +2818,16 @@
   "@reportsNetWorthFigureLiquidLabel": {},
   "reportsNetWorthFigureTotalLabel": "Total",
   "@reportsNetWorthFigureTotalLabel": {},
+  "reportsNetWorthHeroSemantics": "{liquidLabel}: {liquidAmount}. {totalLabel}: {totalAmount}.",
+  "@reportsNetWorthHeroSemantics": {
+    "description": "Texto para lectores de pantalla del Hero Patrimonio: figuras líquido y total.",
+    "placeholders": {
+      "liquidLabel": { "type": "String" },
+      "liquidAmount": { "type": "String" },
+      "totalLabel": { "type": "String" },
+      "totalAmount": { "type": "String" }
+    }
+  },
   "reportsNetWorthInterestNote": "El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.",
   "@reportsNetWorthInterestNote": {},
   "reportsNetWorthArchivedToggleLabel": "Incluir cuentas archivadas",
@@ -2830,6 +2862,20 @@
   },
   "reportsCategoriesUncategorized": "Sin categoría",
   "@reportsCategoriesUncategorized": {},
+  "reportsCategoriesRowSemantics": "{name}, {pct}%, {amount}",
+  "@reportsCategoriesRowSemantics": {
+    "description": "Texto para lectores de pantalla de una fila del desglose por categoría: nombre, porcentaje y monto.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "pct": { "type": "int" },
+      "amount": { "type": "String" }
+    }
+  },
+  "reportsPercentValue": "{pct}%",
+  "@reportsPercentValue": {
+    "description": "Porcentaje formateado para figuras de Gráficas (desglose de categorías, metas del resumen).",
+    "placeholders": { "pct": { "type": "int" } }
+  },
   "reportsCategoriesViewSubcategories": "Profundizar",
   "@reportsCategoriesViewSubcategories": {},
   "reportsCategoriesBack": "Atrás",
@@ -2899,6 +2945,18 @@
   "reportsChartSkeletonLoadingLabel": "Cargando gráfica",
   "@reportsChartSkeletonLoadingLabel": {
     "description": "Etiqueta accesible del estado de carga (skeleton) de una gráfica."
+  },
+
+  "reportsAccountFilterAll": "Todas las cuentas",
+  "@reportsAccountFilterAll": {
+    "description": "Label del filtro de cuentas de Gráficas cuando no hay selección (todas incluidas)."
+  },
+  "reportsAccountFilterSelected": "{count, plural, =1{1 cuenta} other{{count} cuentas}}",
+  "@reportsAccountFilterSelected": {
+    "description": "Label del filtro de cuentas de Gráficas con una selección parcial.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   },
 
   "accountTypeSheetTitle": "Selecciona el tipo de cuenta",

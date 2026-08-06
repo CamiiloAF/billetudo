@@ -423,6 +423,45 @@ void main() {
     );
 
     blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'crear una cuota nueva con debtDueDate prellena "fecha en que termina" '
+      'con la fecha de vencimiento de la deuda',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right(<AccountWithBalance>[_accountWithBalance(id: 'acc-1')]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        debtId: 'debt-1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+        debtDueDate: DateTime(2027, 1, 15),
+      ),
+      verify: (cubit) {
+        expect(cubit.state.endDate, DateTime(2027, 1, 15));
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'crear una cuota nueva sin debtDueDate deja "fecha en que termina" '
+      'vacía',
+      setUp: () => when(() => watchAccounts()).thenAnswer(
+        (_) => Stream.value(
+          Right(<AccountWithBalance>[_accountWithBalance(id: 'acc-1')]),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        debtId: 'debt-1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+      ),
+      verify: (cubit) {
+        expect(cubit.state.endDate, isNull);
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
       'editar una cuota existente carga sus campos y superpone el contexto de '
       'la deuda',
       setUp: () {
@@ -455,6 +494,38 @@ void main() {
         expect(cubit.state.debtId, 'debt-1');
         expect(cubit.state.debtName, 'Crédito vehicular');
         expect(cubit.state.categoryId, 'cat-1');
+      },
+    );
+
+    blocTest<ScheduledPaymentFormCubit, ScheduledPaymentFormState>(
+      'editar una cuota existente conserva su "fecha en que termina" propia '
+      'aunque la deuda tenga otra fecha de vencimiento',
+      setUp: () => when(() => getScheduledPaymentDetail('sp-1')).thenAnswer(
+        (_) => Stream.value(
+          Right(
+            ScheduledPaymentDetail(
+              scheduledPayment: buildScheduledPayment(
+                id: 'sp-1',
+                categoryId: 'cat-1',
+                debtId: 'debt-1',
+                endDate: DateTime(2026, 12, 1),
+              ),
+              accountName: 'Bancolombia',
+              historyTotalCount: 0,
+            ),
+          ),
+        ),
+      ),
+      build: build,
+      act: (cubit) => cubit.loadForDebtCuota(
+        scheduledPaymentId: 'sp-1',
+        debtId: 'debt-1',
+        debtName: 'Crédito vehicular',
+        debtIsIOwe: true,
+        debtDueDate: DateTime(2027, 1, 15),
+      ),
+      verify: (cubit) {
+        expect(cubit.state.endDate, DateTime(2026, 12, 1));
       },
     );
   });

@@ -16,8 +16,10 @@
 // actually exercises each card's real chart, not an `EmptyState` placeholder.
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
 import 'package:billetudo/features/reports/presentation/pages/reports_page.dart';
+import 'package:billetudo/features/reports/presentation/widgets/account_filter_row.dart';
 import 'package:billetudo/features/reports/presentation/widgets/period_selector.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
@@ -113,6 +115,86 @@ Future<void> _seedTwoCategoriesOfData() async {
           note: const Value('nota transporte drill'),
         ),
       );
+}
+
+/// Seeds two accounts and a single shared expense category, each account
+/// with its own current-month transaction against that category (distinct
+/// `note`s so the two rows are distinguishable). Used by the cuentas-filter
+/// scenario (criteria 2-8 of "Gráficas — filtro de cuentas y drill-down"):
+/// sharing one category between two accounts is what lets a tap on that
+/// category row's drill-down prove the propagated `accountIds` (criterion
+/// 7) actually narrowed the result, rather than just the categoryId already
+/// covered by `_seedTwoCategoriesOfData`'s scenario.
+Future<(String accountAId, String accountBId)> _seedSharedCategoryTwoAccounts() async {
+  final db = getIt<AppDatabase>();
+  final accountA = await db.into(db.accounts).insertReturning(
+        AccountsCompanion.insert(
+          name: 'Cuenta A filtro',
+          type: AccountType.cash,
+          currency: 'COP',
+        ),
+      );
+  final accountB = await db.into(db.accounts).insertReturning(
+        AccountsCompanion.insert(
+          name: 'Cuenta B filtro',
+          type: AccountType.cash,
+          currency: 'COP',
+        ),
+      );
+  final category = await db.into(db.categories).insertReturning(
+        CategoriesCompanion.insert(
+          name: 'Mercado filtro',
+          kind: CategoryKind.expense,
+        ),
+      );
+  final now = DateTime.now();
+  final firstOfMonth = DateTime(now.year, now.month);
+  await db.into(db.transactions).insert(
+        TransactionsCompanion.insert(
+          accountId: accountA.id,
+          categoryId: Value(category.id),
+          amountMinor: 50000,
+          currency: 'COP',
+          type: EntryType.expense,
+          date: firstOfMonth,
+          note: const Value('nota cuenta A filtro'),
+        ),
+      );
+  await db.into(db.transactions).insert(
+        TransactionsCompanion.insert(
+          accountId: accountB.id,
+          categoryId: Value(category.id),
+          amountMinor: 30000,
+          currency: 'COP',
+          type: EntryType.expense,
+          date: firstOfMonth,
+          note: const Value('nota cuenta B filtro'),
+        ),
+      );
+  return (accountA.id, accountB.id);
+}
+
+/// Opens Gráficas' own cuentas filter (`AccountFilterRow`, criterion 2),
+/// selects exactly [accountName] and applies — same
+/// `AccountSelectRow`/"Aplicar" contract `AccountFilterSheet` already uses in
+/// Movimientos (`transactions_patrol_test.dart`'s HU-06a scenario), since
+/// Gráficas reuses that very sheet rather than a new component.
+Future<void> _filterReportsByAccount(
+  PatrolIntegrationTester $,
+  String accountName,
+) async {
+  await $.tester.tap(find.byType(AccountFilterRow));
+  await $.tester.pumpAndSettle();
+  expect(find.text('Filtrar por cuenta'), findsOneWidget);
+
+  final rowFinder = find.byWidgetPredicate(
+    (widget) => widget is AccountSelectRow && widget.account.name == accountName,
+  );
+  await $.tester.tap(rowFinder);
+  await $.tester.pumpAndSettle();
+
+  await $.tester.tap(find.text('Aplicar'));
+  await $.tester.pumpAndSettle();
 }
 
 /// Reaches Gráficas e informes from the "Más" hub row (criterion 27): the
@@ -292,6 +374,49 @@ void main() {
       );
       expect(find.text('nota transporte drill'), findsOneWidget);
       expect(find.text('nota mercado drill'), findsNothing);
+    },
+  );
+
+  patrolTest(
+    'el filtro de cuentas de Gráficas recalcula Categorías y se propaga al '
+    'drill-down hacia Movimientos (criterios 2, 4, 7)',
+    ($) async {
+      await startApp($);
+      await _seedSharedCategoryTwoAccounts();
+
+      await _goToReportsFromMoreHub($);
+      await $.tester.tap(find.text('Categorías'));
+      await $.tester.pumpAndSettle();
+
+      // Default (criterion 3): both accounts' movements are included, so
+      // the shared category shows a single combined row.
+      expect(find.text('Mercado filtro'), findsOneWidget);
+      final chip = $.tester.widget<AccountFilterRow>(
+        find.byType(AccountFilterRow),
+      );
+      expect(chip.selected, isEmpty);
+
+      // Criterion 2/4: narrow to "Cuenta A filtro" only — the category
+      // breakdown recalculates without leaving the tab.
+      await _filterReportsByAccount($, 'Cuenta A filtro');
+      expect(find.text('Mercado filtro'), findsOneWidget);
+
+      // Criterion 7: tapping the row now carries both the categoryId *and*
+      // the active cuentas filter into Movimientos — only Cuenta A's
+      // movement is visible, even though the category also has one from
+      // Cuenta B (proving the restriction came from `accountIds`, not just
+      // `categoryId`, which alone would show both).
+      await $.tester.tap(find.text('Mercado filtro'));
+      await $.tester.pumpAndSettle();
+      expect(find.byType(TransactionsPage), findsOneWidget);
+
+      await _expectEventually(
+        $,
+        find.byType(TransactionRow),
+        findsOneWidget,
+      );
+      expect(find.text('nota cuenta A filtro'), findsOneWidget);
+      expect(find.text('nota cuenta B filtro'), findsNothing);
     },
   );
 }

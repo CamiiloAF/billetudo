@@ -13,7 +13,7 @@ import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
-import '../../../budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import '../../../budgets/domain/usecases/watch_featured_budget_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_snapshot.dart';
@@ -21,9 +21,11 @@ import '../../domain/usecases/watch_month_transactions.dart';
 import 'home_state.dart';
 
 /// Orchestrates the Home (HU-03/HU-04/HU-05): it watches the active accounts,
-/// the visible month's transactions and the qualifying global-monthly budget
-/// (`aOhoY`), then folds the latest emissions into a [HomeSnapshot] (pure
-/// aggregation lives in the entity).
+/// the visible month's transactions and the featured budget's progress
+/// (`aOhoY`; the user's manual pick from Ajustes, or the qualifying
+/// global-monthly budget as fallback — see `WatchFeaturedBudgetProgress`),
+/// then folds the latest emissions into a [HomeSnapshot] (pure aggregation
+/// lives in the entity).
 ///
 /// Talks only to use cases — never a repository or a DAO. The month is the
 /// Home's navigation unit (HU-04); changing it re-subscribes the transactions
@@ -36,7 +38,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchAuthSession,
     this._watchSyncStatusDetails,
     this._restoreTransaction,
-    this._watchGlobalMonthlyBudgetProgress,
+    this._watchFeaturedBudgetProgress,
   ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
@@ -44,7 +46,7 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchAuthSession _watchAuthSession;
   final WatchSyncStatusDetails _watchSyncStatusDetails;
   final RestoreTransaction _restoreTransaction;
-  final WatchGlobalMonthlyBudgetProgress _watchGlobalMonthlyBudgetProgress;
+  final WatchFeaturedBudgetProgress _watchFeaturedBudgetProgress;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
@@ -68,7 +70,7 @@ class HomeCubit extends Cubit<HomeState> {
     _authSub = _watchAuthSession().listen(_onAuthSession);
     _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
     _budgetProgressSub =
-        _watchGlobalMonthlyBudgetProgress().listen(_onBudgetProgress);
+        _watchFeaturedBudgetProgress().listen(_onBudgetProgress);
     await _subscribeTransactions(state.month);
   }
 

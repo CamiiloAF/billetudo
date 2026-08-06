@@ -7,6 +7,7 @@ import '../../../../core/error/result.dart';
 import '../../../../core/preferences/account_filter_preference_datasource.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../categories/domain/usecases/get_category_subtree_ids.dart';
 import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
@@ -37,6 +38,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     this._watchAccounts,
     this._watchBudgetPeriodOptions,
     this._accountFilterPreferences,
+    this._getCategorySubtreeIds,
   ) : super(TransactionsListState());
 
   final WatchTransactions _watchTransactions;
@@ -45,6 +47,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   final WatchAccounts _watchAccounts;
   final WatchBudgetPeriodOptions _watchBudgetPeriodOptions;
   final AccountFilterPreferenceDatasource _accountFilterPreferences;
+  final GetCategorySubtreeIds _getCategorySubtreeIds;
 
   StreamSubscription<Result<List<TransactionWithDetails>>>? _subscription;
 
@@ -72,16 +75,28 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// survives closing and reopening the app — every other filter dimension
   /// resets with the cubit, by design.
   Future<void> start() async {
+    // Gráficas' categories drill-down (`filterByCategoryAndRange`) sets
+    // `arrivedFromReports` synchronously *before* the router navigates here
+    // — which is what re-triggers this `start()` on the very same cubit
+    // instance, since Movimientos' `GoRoute.builder` calls it on every
+    // visit. Both `filterByCategoryAndRange` and this `start()` run as
+    // unawaited, concurrent async calls with no ordering guarantee between
+    // their `emit`s; `arrivedFromReports` already being `true` here is the
+    // signal that a filter was *just* applied and must not be clobbered by
+    // this call's persisted-account-filter read below, whichever one's
+    // `emit` happens to land last.
+    final preserveAccountIds = state.arrivedFromReports;
     await _subscription?.cancel();
     await _accountsSubscription?.cancel();
     await _budgetOptionsSubscription?.cancel();
     _prunedStaleAccountFilter = false;
     _prunedStaleBudgetPeriodFilter = false;
-    final persistedAccountIds =
-        await _accountFilterPreferences.readAccountIds();
+    final accountIds = preserveAccountIds
+        ? state.filter.accountIds
+        : await _accountFilterPreferences.readAccountIds();
     emit(
       TransactionsListState(
-        filter: state.filter.copyWith(accountIds: persistedAccountIds),
+        filter: state.filter.copyWith(accountIds: accountIds),
         arrivedFromReports: state.arrivedFromReports,
       ),
     );
@@ -171,24 +186,46 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
       updateFilter(state.filter.copyWith(accountIds: {accountId}));
 
   /// Reports' Categorías tab (HU-03 drill-down): pins the category filter to
-  /// exactly [categoryId] and the date filter to the `[start, endInclusive]`
-  /// window active in Gráficas at the moment of the tap, used when the user
-  /// taps a `CategoryBreakdownRow`. Mirrors [filterByAccount]'s pattern so
-  /// the router never builds `TransactionFilter` itself.
+  /// [categoryId] — expanded to itself + every active subcategory
+  /// (`GetCategorySubtreeIds`) when it is a root, since a root's own
+  /// movements are tagged with a subcategory's id, never the root's, so a
+  /// plain `{categoryId}` filter would match nothing — the date filter to
+  /// the `[start, endInclusive]` window active in Gráficas at the moment of
+  /// the tap, and the account filter to Gráficas' own cuentas filter, used
+  /// when the user taps a `CategoryBreakdownRow`. Mirrors [filterByAccount]'s
+  /// pattern so the router never builds `TransactionFilter` itself.
+  /// [accountIds] is inclusive-empty — the default (empty) applies no
+  /// account restriction, same as Gráficas' own filter with nothing
+  /// selected.
+  ///
+  /// A failure resolving the subtree (e.g. the category was deleted between
+  /// the tap and this call) falls back to filtering by [categoryId] alone,
+  /// rather than dropping the filter entirely.
   Future<void> filterByCategoryAndRange({
     required String categoryId,
     required DateTime start,
     required DateTime endInclusive,
-  }) =>
-      updateFilter(
-        state.filter.copyWith(
-          categoryIds: {categoryId},
-          datePeriod: DatePeriodFilter.custom(
-            start: start,
-            end: endInclusive,
-          ),
+    Set<String> accountIds = const <String>{},
+  }) async {
+    final subtreeResult = await _getCategorySubtreeIds(categoryId);
+    final categoryIds = switch (subtreeResult) {
+      Left() => {categoryId},
+      Right(value: final ids) => ids,
+    };
+    if (isClosed) {
+      return;
+    }
+    await updateFilter(
+      state.filter.copyWith(
+        categoryIds: categoryIds,
+        datePeriod: DatePeriodFilter.custom(
+          start: start,
+          end: endInclusive,
         ),
-      );
+        accountIds: accountIds,
+      ),
+    );
+  }
 
   /// HU-06: free-text search over note and category name.
   Future<void> searchChanged(String text) =>

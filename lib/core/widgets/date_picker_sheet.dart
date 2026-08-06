@@ -86,6 +86,12 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
     });
   }
 
+  void _yearSelected(int year) {
+    setState(() {
+      _visibleMonth = DateTime(year, _visibleMonth.month);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -115,6 +121,7 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
           onDaySelected: (date) => setState(() => _selected = date),
           onPreviousMonth: _showPreviousMonth,
           onNextMonth: _showNextMonth,
+          onYearSelected: _yearSelected,
           disabledBefore: widget.disabledBefore,
           disabledAfter: widget.disabledAfter,
         ),

@@ -695,6 +695,15 @@ class AppSettings extends Table with _SyncColumns {
   /// flow does not reappear on a later launch. Same pattern as
   /// [categoriesSeeded].
   BoolColumn get onboardingCompleted => boolean().clientDefault(() => false)();
+
+  /// Manually picked budget to feature on the Home hero card
+  /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+  /// Null (the default, including every installation that predates this
+  /// column) falls back to the automatic global+monthly selection in
+  /// `BudgetHeroSelector`. References `Budgets.id` loosely (no FK — an
+  /// archived/deleted budget simply stops matching in the selector, no
+  /// cleanup needed here).
+  TextColumn get featuredBudgetId => text().nullable()();
 }
 
 // ---------------------------------------------------------------------------
@@ -727,7 +736,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1217,6 +1226,24 @@ class AppDatabase extends _$AppDatabase {
               'UPDATE app_settings SET onboarding_completed = 0 '
               'WHERE onboarding_completed IS NULL',
             );
+          }
+
+          // v22 -> v23: `AppSettings` gains `featuredBudgetId`, the
+          // user-picked budget to feature on the Home hero card
+          // (design-system/billetudo/pages/ajustes.md). No `addColumn` —
+          // see the note on `from < 12` above: `appSettings` is a
+          // PowerSync-managed view, and `powerSyncSchema`
+          // (`powersync_schema.dart`) already declares
+          // `featured_budget_id`, so PowerSync recreates the view with the
+          // column present before this migration runs. Unlike
+          // `onboarding_completed` (`from < 22` above), no backfill is
+          // needed here: the column is nullable in Dart
+          // (`TextColumn.nullable()`), so a pre-existing row with no
+          // `featured_budget_id` key in its PowerSync JSON blob just reads
+          // as `null` — the automatic-selection fallback this column is
+          // designed to have anyway (criterion 1).
+          if (from < 23) {
+            // No `addColumn` — see comment above.
           }
         },
       );

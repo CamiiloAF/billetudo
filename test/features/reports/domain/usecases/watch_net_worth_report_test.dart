@@ -32,6 +32,15 @@ void main() {
     },
   );
 
+  test(
+    'defaults `accountIds` to empty (todas las cuentas incluidas, criterion 3)',
+    () {
+      final params = WatchNetWorthReportParams(range: range);
+
+      expect(params.accountIds, isEmpty);
+    },
+  );
+
   test('delegates to the repository with the given params', () {
     final series = NetWorthSeries(
       points: const [],
@@ -48,11 +57,16 @@ void main() {
       () => repository.watchNetWorth(
         range: range,
         includeArchivedAccounts: true,
+        accountIds: const {'acc-1'},
       ),
     ).thenAnswer((_) => Stream.value(Right(series)));
 
     final result = usecase(
-      WatchNetWorthReportParams(range: range, includeArchivedAccounts: true),
+      WatchNetWorthReportParams(
+        range: range,
+        includeArchivedAccounts: true,
+        accountIds: const {'acc-1'},
+      ),
     );
 
     expect(result, emits(Right<Failure, NetWorthSeries>(series)));

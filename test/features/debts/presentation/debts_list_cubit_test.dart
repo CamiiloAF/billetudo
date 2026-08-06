@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_entry.dart';
 import 'package:billetudo/features/debts/domain/entities/debts_summary.dart';
+import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart';
 import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debts_list_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debts_list_state.dart';
@@ -12,8 +16,11 @@ import 'debts_presentation_fixtures.dart';
 
 class MockWatchDebts extends Mock implements WatchDebts {}
 
+class MockAccrueInterest extends Mock implements AccrueInterest {}
+
 void main() {
   late MockWatchDebts watchDebts;
+  late MockAccrueInterest accrueInterest;
 
   final summary = DebtsSummary.from([
     buildDebtWithBalance(
@@ -26,9 +33,14 @@ void main() {
     ),
   ]);
 
-  setUp(() => watchDebts = MockWatchDebts());
+  setUp(() {
+    watchDebts = MockWatchDebts();
+    accrueInterest = MockAccrueInterest();
+    when(() => accrueInterest.call(debtId: any(named: 'debtId'), upTo: any(named: 'upTo')))
+        .thenAnswer((_) async => const Right(null));
+  });
 
-  DebtsListCubit build() => DebtsListCubit(watchDebts);
+  DebtsListCubit build() => DebtsListCubit(watchDebts, accrueInterest);
 
   blocTest<DebtsListCubit, DebtsListState>(
     'emite loading y luego ready con el resumen',
@@ -164,6 +176,113 @@ void main() {
               68000,
             ),
       ],
+    );
+  });
+
+  group('AccrueInterest (HU-06)', () {
+    blocTest<DebtsListCubit, DebtsListState>(
+      'start() accrues interest for an open auto-mode debt before listening',
+      setUp: () {
+        final autoSummary = DebtsSummary.from([
+          buildDebtWithBalance(
+            debt: buildDebt(id: 'auto-1', accrualMode: DebtAccrualMode.auto),
+          ),
+        ]);
+        when(watchDebts.call).thenAnswer((_) => Stream.value(Right(autoSummary)));
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (_) => verify(
+        () => accrueInterest.call(
+          debtId: 'auto-1',
+          upTo: any(named: 'upTo'),
+        ),
+      ).called(1),
+    );
+
+    blocTest<DebtsListCubit, DebtsListState>(
+      'start() never accrues interest for a manual-mode debt',
+      setUp: () {
+        final manualSummary = DebtsSummary.from([
+          buildDebtWithBalance(
+            debt: buildDebt(id: 'manual-1'),
+          ),
+        ]);
+        when(watchDebts.call)
+            .thenAnswer((_) => Stream.value(Right(manualSummary)));
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (_) => verifyNever(
+        () => accrueInterest.call(
+          debtId: any(named: 'debtId'),
+          upTo: any(named: 'upTo'),
+        ),
+      ),
+    );
+
+    blocTest<DebtsListCubit, DebtsListState>(
+      'start() never accrues interest for a closed auto-mode debt',
+      setUp: () {
+        final closedSummary = DebtsSummary.from([
+          buildDebtWithBalance(
+            debt: buildDebt(
+              id: 'closed-auto',
+              accrualMode: DebtAccrualMode.auto,
+              closedAt: DateTime(2026, 6, 1),
+            ),
+          ),
+        ]);
+        when(watchDebts.call)
+            .thenAnswer((_) => Stream.value(Right(closedSummary)));
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (_) => verifyNever(
+        () => accrueInterest.call(
+          debtId: any(named: 'debtId'),
+          upTo: any(named: 'upTo'),
+        ),
+      ),
+    );
+
+    test(
+      're-entrancy guard: calling start() twice before the first accrual '
+      'pass finishes only accrues each open auto debt once',
+      () async {
+        final completer = Completer<Result<DebtEntry?>>();
+        when(
+          () => accrueInterest.call(
+            debtId: any(named: 'debtId'),
+            upTo: any(named: 'upTo'),
+          ),
+        ).thenAnswer((_) => completer.future);
+        final autoSummary = DebtsSummary.from([
+          buildDebtWithBalance(
+            debt: buildDebt(id: 'auto-1', accrualMode: DebtAccrualMode.auto),
+          ),
+        ]);
+        when(watchDebts.call)
+            .thenAnswer((_) => Stream.value(Right(autoSummary)));
+
+        final cubit = DebtsListCubit(watchDebts, accrueInterest);
+        addTearDown(cubit.close);
+
+        // Neither await completes before the accrual resolves — mirrors a
+        // double tap on retry / repeated pull-to-refresh.
+        final firstStart = cubit.start();
+        final secondStart = cubit.start();
+        completer.complete(const Right(null));
+        await firstStart;
+        await secondStart;
+
+        verify(
+          () => accrueInterest.call(
+            debtId: 'auto-1',
+            upTo: any(named: 'upTo'),
+          ),
+        ).called(1);
+      },
     );
   });
 }

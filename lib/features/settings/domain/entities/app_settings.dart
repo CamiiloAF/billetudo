@@ -11,13 +11,15 @@ class AppSettings extends Equatable {
     required this.zeroBasedEnabled,
     required this.categoriesSeeded,
     required this.onboardingCompleted,
+    this.featuredBudgetId,
   });
 
   /// Sensible default before the singleton row has been read.
   const AppSettings.defaults()
       : zeroBasedEnabled = false,
         categoriesSeeded = false,
-        onboardingCompleted = false;
+        onboardingCompleted = false,
+        featuredBudgetId = null;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -33,18 +35,31 @@ class AppSettings extends Equatable {
   /// active account when first evaluated. Never turns off again.
   final bool onboardingCompleted;
 
+  /// Manually picked budget to feature on the Home hero card
+  /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+  /// Null (the default) falls back to the automatic global+monthly selection
+  /// in `BudgetHeroSelector`. Loosely references `Budgets.id` — an
+  /// archived/deleted budget simply stops matching in the selector.
+  final String? featuredBudgetId;
+
   AppSettings copyWith({
     bool? zeroBasedEnabled,
     bool? categoriesSeeded,
     bool? onboardingCompleted,
+    String? featuredBudgetId,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
         categoriesSeeded: categoriesSeeded ?? this.categoriesSeeded,
         onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+        featuredBudgetId: featuredBudgetId ?? this.featuredBudgetId,
       );
 
   @override
-  List<Object?> get props =>
-      [zeroBasedEnabled, categoriesSeeded, onboardingCompleted];
+  List<Object?> get props => [
+        zeroBasedEnabled,
+        categoriesSeeded,
+        onboardingCompleted,
+        featuredBudgetId,
+      ];
 }

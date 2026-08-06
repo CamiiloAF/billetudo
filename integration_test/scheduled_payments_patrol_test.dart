@@ -259,6 +259,48 @@ Future<void> _pickFutureDate(
   await $.tester.pumpAndSettle();
 }
 
+/// Opens [label]'s date field, jumps to [year] through the shared calendar's
+/// new year-selection view (tapping the "mes año" header label instead of
+/// paging month by month), picks [day] there, and confirms — end-to-end
+/// coverage (multiple screens: form -> `DatePickerSheet` -> `CalendarYearGrid`
+/// -> back to the form) for the "calendar-fix-height-and-year-nav" change
+/// that a widget test alone cannot give: the real on-device sheet transition.
+Future<void> _pickDateViaYearView(
+  PatrolIntegrationTester $, {
+  required String label,
+  required int year,
+  int day = 10,
+}) async {
+  final field = find.byWidgetPredicate(
+    (widget) => widget is ScheduledPaymentDateField && widget.label == label,
+  );
+  await _scrollUntilVisible($, field);
+  await $.tester.tap(field);
+  await $.tester.pumpAndSettle();
+
+  // The header label reads "<mes> <año>" (e.g. "Julio 2026") — whatever
+  // month/year the sheet opened on; find it by its `Tooltip` instead of
+  // hardcoding today's month name.
+  final headerLabel = find.byTooltip('Elegir año');
+  await $.tester.tap(headerLabel);
+  await $.tester.pumpAndSettle();
+
+  // The 12-year page the view opens on is centred on today's year, not
+  // [year] — page forward (bounded) until [year]'s cell is on screen.
+  final yearCell = find.text('$year');
+  for (var attempt = 0; attempt < 10 && yearCell.evaluate().isEmpty; attempt++) {
+    await $.tester.tap(find.byTooltip('Años siguientes'));
+    await $.tester.pumpAndSettle();
+  }
+  await $.tester.tap(yearCell);
+  await $.tester.pumpAndSettle();
+
+  await $.tester.tap(find.text('$day'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Confirmar'));
+  await $.tester.pumpAndSettle();
+}
+
 /// Scrolls to and taps the form's "Guardar" save button (the header's
 /// circular check, `TransactionHeaderButton` with tooltip `commonSave`) —
 /// unambiguous on this page, unlike Cuentas' form which carries a second,
@@ -525,6 +567,43 @@ void main() {
       await $.tester.pumpAndSettle();
 
       expect(find.text('Spotify'), findsNothing);
+    },
+  );
+
+  patrolTest(
+    'HU calendar-fix-height-and-year-nav: el label de mes abre la vista de '
+    'año y la fecha elegida ahí se guarda en el pago programado',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Streaming');
+
+      _goToScheduledPayments($);
+      await $.tester.pumpAndSettle();
+      await _openNewScheduledPaymentForm($);
+      await _enterAmount($, [4, 0, 0]); // $400 COP
+      await _pickAccountField($, 'Cuenta', 'Efectivo');
+      await _pickCategory($, 'Streaming');
+      await _enterNote($, 'Spotify');
+
+      await _pickDateViaYearView($, label: 'Primer pago', year: 2028);
+
+      // The date field now shows "10 ago 2028" (or whatever locale-formatted
+      // day the calendar landed on), proving the year picked in the
+      // year-selection view — not the month the sheet originally opened
+      // on — is what got applied to the form.
+      final dateFieldValue = find.byWidgetPredicate(
+        (widget) =>
+            widget is Text &&
+            widget.data != null &&
+            widget.data!.contains('2028'),
+      );
+      expect(dateFieldValue, findsWidgets);
+
+      await _submitScheduledPaymentForm($);
+
+      expect(find.text('Spotify'), findsOneWidget);
+      expect(find.text('-\$400'), findsOneWidget);
     },
   );
 }

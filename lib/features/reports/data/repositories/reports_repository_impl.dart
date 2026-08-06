@@ -57,6 +57,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
   Stream<Result<CashflowSeries>> watchCashflow({
     required DateRange range,
     required bool includeDebtMovements,
+    required Set<String> accountIds,
   }) =>
       _guardStream(
         _switchLatest(_local.watchEarliestDataDate(), (earliestDataDate) {
@@ -70,6 +71,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
                 start: effective.start,
                 endExclusive: effective.endExclusive,
                 granularity: effective.granularity,
+                accountIds: accountIds,
               )
               .map(
                 (rows) => Right<Failure, CashflowSeries>(
@@ -88,7 +90,8 @@ class ReportsRepositoryImpl implements ReportsRepository {
     final points = [
       for (final start in _bucketStarts(bounds.effectiveRange))
         () {
-          final row = byKey[_formatBucketKey(start, bounds.effectiveRange.granularity)];
+          final row =
+              byKey[_formatBucketKey(start, bounds.effectiveRange.granularity)];
           return CashflowPoint(
             periodStart: start,
             incomeMinor: row?.incomeMinor ?? 0,
@@ -113,6 +116,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
   Stream<Result<NetWorthSeries>> watchNetWorth({
     required DateRange range,
     required bool includeArchivedAccounts,
+    required Set<String> accountIds,
   }) =>
       _guardStream(
         _switchLatest(_local.watchEarliestDataDate(), (earliestDataDate) {
@@ -126,26 +130,31 @@ class ReportsRepositoryImpl implements ReportsRepository {
             [
               _local.watchAccountsOpeningBalanceSum(
                 includeArchived: includeArchivedAccounts,
+                accountIds: accountIds,
               ),
               _local.watchOriginEffectBefore(
                 effective.start,
                 includeArchived: includeArchivedAccounts,
+                accountIds: accountIds,
               ),
               _local.watchDestinationEffectBefore(
                 effective.start,
                 includeArchived: includeArchivedAccounts,
+                accountIds: accountIds,
               ),
               _local.watchOriginEffectBuckets(
                 start: effective.start,
                 endExclusive: effective.endExclusive,
                 granularity: effective.granularity,
                 includeArchived: includeArchivedAccounts,
+                accountIds: accountIds,
               ),
               _local.watchDestinationEffectBuckets(
                 start: effective.start,
                 endExclusive: effective.endExclusive,
                 granularity: effective.granularity,
                 includeArchived: includeArchivedAccounts,
+                accountIds: accountIds,
               ),
               _local.watchAliveDebts(),
               _local.watchDebtEntriesBefore(effective.endExclusive),
@@ -189,8 +198,12 @@ class ReportsRepositoryImpl implements ReportsRepository {
     required List<db.Transaction> cashEvents,
   }) {
     final effective = bounds.effectiveRange;
-    final originByKey = {for (final row in originBuckets) row.bucketKey: row.deltaMinor};
-    final destByKey = {for (final row in destBuckets) row.bucketKey: row.deltaMinor};
+    final originByKey = {
+      for (final row in originBuckets) row.bucketKey: row.deltaMinor
+    };
+    final destByKey = {
+      for (final row in destBuckets) row.bucketKey: row.deltaMinor
+    };
 
     final bucketStarts = _bucketStarts(effective);
     final boundaries = [...bucketStarts, effective.endExclusive];
@@ -229,7 +242,8 @@ class ReportsRepositoryImpl implements ReportsRepository {
         NetWorthPoint(
           date: cutoff,
           liquidMinor: liquid,
-          totalMinor: liquid - pending.iOwePendingMinor + pending.owedToMePendingMinor,
+          totalMinor:
+              liquid - pending.iOwePendingMinor + pending.owedToMePendingMinor,
         ),
       );
     }
@@ -283,16 +297,18 @@ class ReportsRepositoryImpl implements ReportsRepository {
   @override
   Stream<Result<CategoryBreakdown>> watchCategoryBreakdown({
     required DateRange range,
+    required Set<String> accountIds,
   }) =>
       _guardStream(
         _local
             .watchCategoryExpenseRows(
               start: range.start,
               endExclusive: range.endExclusive,
+              accountIds: accountIds,
             )
             .asyncMap(
-              (rows) async =>
-                  Right<Failure, CategoryBreakdown>(await _buildCategoryBreakdown(rows, range)),
+              (rows) async => Right<Failure, CategoryBreakdown>(
+                  await _buildCategoryBreakdown(rows, range)),
             ),
       );
 
@@ -305,11 +321,35 @@ class ReportsRepositoryImpl implements ReportsRepository {
         if (row.categoryId != null) row.categoryId!,
     ];
     final categories = await _local.getCategoriesByIds(ids);
-    final categoryById = {for (final category in categories) category.id: category};
+    final categoryById = {
+      for (final category in categories) category.id: category
+    };
+
+    // A root category with no expense rows of its own (only its
+    // subcategories were spent against, e.g. because the active account
+    // filter excludes the root's own direct movements) never enters `ids`
+    // above, so it would otherwise resolve to a null name/icon. Backfill it
+    // here from the parentId of whatever subcategories did resolve.
+    final missingRootIds = {
+      for (final category in categories)
+        if (category.parentId != null &&
+            !categoryById.containsKey(category.parentId))
+          category.parentId!,
+    };
+    if (missingRootIds.isNotEmpty) {
+      final missingRoots =
+          await _local.getCategoriesByIds(missingRootIds.toList());
+      for (final root in missingRoots) {
+        categoryById[root.id] = root;
+      }
+    }
 
     final rootTotals = <String, int>{};
+    final rootCounts = <String, int>{};
     final subtotalsByRoot = <String, Map<String, int>>{};
+    final subcountsByRoot = <String, Map<String, int>>{};
     var uncategorizedMinor = 0;
+    var uncategorizedCount = 0;
     var total = 0;
 
     for (final row in rows) {
@@ -317,14 +357,19 @@ class ReportsRepositoryImpl implements ReportsRepository {
       final categoryId = row.categoryId;
       if (categoryId == null) {
         uncategorizedMinor += row.amountMinor;
+        uncategorizedCount += row.movementCount;
         continue;
       }
       final category = categoryById[categoryId];
       final rootId = category?.parentId ?? categoryId;
       rootTotals[rootId] = (rootTotals[rootId] ?? 0) + row.amountMinor;
+      rootCounts[rootId] = (rootCounts[rootId] ?? 0) + row.movementCount;
       if (category?.parentId != null) {
         final subtotals = subtotalsByRoot.putIfAbsent(rootId, () => {});
         subtotals[categoryId] = (subtotals[categoryId] ?? 0) + row.amountMinor;
+        final subcounts = subcountsByRoot.putIfAbsent(rootId, () => {});
+        subcounts[categoryId] =
+            (subcounts[categoryId] ?? 0) + row.movementCount;
       }
     }
 
@@ -336,6 +381,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
           icon: categoryById[entry.key]?.icon,
           color: categoryById[entry.key]?.color,
           amountMinor: entry.value,
+          movementCount: rootCounts[entry.key] ?? 0,
           subcategories: [
             for (final sub in (subtotalsByRoot[entry.key] ?? const {}).entries)
               CategoryBreakdownItem(
@@ -344,6 +390,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
                 icon: categoryById[sub.key]?.icon,
                 color: categoryById[sub.key]?.color,
                 amountMinor: sub.value,
+                movementCount: subcountsByRoot[entry.key]?[sub.key] ?? 0,
               ),
           ]..sort((a, b) => b.amountMinor.compareTo(a.amountMinor)),
         ),
@@ -355,6 +402,7 @@ class ReportsRepositoryImpl implements ReportsRepository {
           categoryId: null,
           name: null,
           amountMinor: uncategorizedMinor,
+          movementCount: uncategorizedCount,
         ),
       );
     }
@@ -408,7 +456,8 @@ class ReportsRepositoryImpl implements ReportsRepository {
   // rxdart dependency in this project).
   // ---------------------------------------------------------------------
 
-  Stream<Result<T>> _guardStream<T>(Stream<Result<T>> source) => source.transform(
+  Stream<Result<T>> _guardStream<T>(Stream<Result<T>> source) =>
+      source.transform(
         StreamTransformer<Result<T>, Result<T>>.fromHandlers(
           handleData: (data, sink) => sink.add(data),
           handleError: (error, stackTrace, sink) {

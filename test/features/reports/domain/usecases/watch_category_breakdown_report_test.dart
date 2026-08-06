@@ -22,20 +22,41 @@ void main() {
     usecase = WatchCategoryBreakdownReport(repository);
   });
 
-  test('delegates to the repository with the given range', () {
+  test(
+    'defaults `accountIds` to empty (todas las cuentas incluidas, criterion 3)',
+    () {
+      final params = WatchCategoryBreakdownReportParams(range: range);
+
+      expect(params.accountIds, isEmpty);
+    },
+  );
+
+  test('delegates to the repository with the given range and accountIds', () {
     final breakdown = CategoryBreakdown(
       items: const [],
       totalMinor: 0,
       range: range,
     );
-    when(() => repository.watchCategoryBreakdown(range: range))
-        .thenAnswer((_) => Stream.value(Right(breakdown)));
+    when(
+      () => repository.watchCategoryBreakdown(
+        range: range,
+        accountIds: const {'acc-1'},
+      ),
+    ).thenAnswer((_) => Stream.value(Right(breakdown)));
 
     final result = usecase(
-      WatchCategoryBreakdownReportParams(range: range),
+      WatchCategoryBreakdownReportParams(
+        range: range,
+        accountIds: const {'acc-1'},
+      ),
     );
 
     expect(result, emits(Right<Failure, CategoryBreakdown>(breakdown)));
-    verify(() => repository.watchCategoryBreakdown(range: range)).called(1);
+    verify(
+      () => repository.watchCategoryBreakdown(
+        range: range,
+        accountIds: const {'acc-1'},
+      ),
+    ).called(1);
   });
 }

@@ -9,21 +9,7 @@ import 'package:patrol/src/platform/contracts/contracts.dart';
 import 'package:test_api/src/backend/invoker.dart';
 
 // START: GENERATED TEST IMPORTS
-import 'accounts_patrol_test.dart' as accounts_patrol_test;
-import 'auth_patrol_test.dart' as auth_patrol_test;
-import 'budget_income_counts_in_budget_patrol_test.dart' as budget_income_counts_in_budget_patrol_test;
-import 'budgets_patrol_test.dart' as budgets_patrol_test;
-import 'categories_patrol_test.dart' as categories_patrol_test;
-import 'debts_installment_patrol_test.dart' as debts_installment_patrol_test;
-import 'debts_lifecycle_patrol_test.dart' as debts_lifecycle_patrol_test;
-import 'debts_patrol_test.dart' as debts_patrol_test;
-import 'goals_patrol_test.dart' as goals_patrol_test;
-import 'home_patrol_test.dart' as home_patrol_test;
-import 'onboarding_patrol_test.dart' as onboarding_patrol_test;
 import 'reports_patrol_test.dart' as reports_patrol_test;
-import 'scheduled_payments_patrol_test.dart' as scheduled_payments_patrol_test;
-import 'settings_patrol_test.dart' as settings_patrol_test;
-import 'transactions_patrol_test.dart' as transactions_patrol_test;
 // END: GENERATED TEST IMPORTS
 
 Future<void> main() async {
@@ -86,21 +72,7 @@ Future<void> main() async {
   });
 
 // START: GENERATED TEST GROUPS
-  group('accounts_patrol_test', accounts_patrol_test.main);
-  group('auth_patrol_test', auth_patrol_test.main);
-  group('budget_income_counts_in_budget_patrol_test', budget_income_counts_in_budget_patrol_test.main);
-  group('budgets_patrol_test', budgets_patrol_test.main);
-  group('categories_patrol_test', categories_patrol_test.main);
-  group('debts_installment_patrol_test', debts_installment_patrol_test.main);
-  group('debts_lifecycle_patrol_test', debts_lifecycle_patrol_test.main);
-  group('debts_patrol_test', debts_patrol_test.main);
-  group('goals_patrol_test', goals_patrol_test.main);
-  group('home_patrol_test', home_patrol_test.main);
-  group('onboarding_patrol_test', onboarding_patrol_test.main);
   group('reports_patrol_test', reports_patrol_test.main);
-  group('scheduled_payments_patrol_test', scheduled_payments_patrol_test.main);
-  group('settings_patrol_test', settings_patrol_test.main);
-  group('transactions_patrol_test', transactions_patrol_test.main);
 // END: GENERATED TEST GROUPS
 
   final dartTestGroup = await testExplorationCompleter.future;

@@ -859,6 +859,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get datePickerNextMonth => 'Next month';
 
   @override
+  String get datePickerSelectYear => 'Choose year';
+
+  @override
+  String get datePickerPreviousYears => 'Previous years';
+
+  @override
+  String get datePickerNextYears => 'Next years';
+
+  @override
+  String get datePickerBackToMonths => 'Back to months';
+
+  @override
   String get transactionFormExpandAmount => 'Edit amount';
 
   @override
@@ -2167,6 +2179,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetDetailActionsSubtitle => 'Budget actions';
+
+  @override
+  String get budgetActionUseAsFeatured => 'Feature on Home';
+
+  @override
+  String get budgetActionUseAsFeaturedSubtitle =>
+      'Replaces the budget you currently have featured, if any.';
+
+  @override
+  String get budgetActionRemoveFeatured => 'Remove from Home';
 
   @override
   String get budgetDeleteConfirmMessage =>
@@ -4206,6 +4228,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsNetWorthFigureTotalLabel => 'Total';
 
   @override
+  String reportsNetWorthHeroSemantics(String liquidLabel, String liquidAmount,
+      String totalLabel, String totalAmount) {
+    return '$liquidLabel: $liquidAmount. $totalLabel: $totalAmount.';
+  }
+
+  @override
   String get reportsNetWorthInterestNote =>
       'A debt\'s interest lowers your net worth, but it doesn\'t show in Cash flow: it\'s not money that left an account.';
 
@@ -4256,6 +4284,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsCategoriesUncategorized => 'No category';
+
+  @override
+  String reportsCategoriesRowSemantics(String name, int pct, String amount) {
+    return '$name, $pct%, $amount';
+  }
+
+  @override
+  String reportsPercentValue(int pct) {
+    return '$pct%';
+  }
 
   @override
   String get reportsCategoriesViewSubcategories => 'Drill down';
@@ -4361,6 +4399,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsChartSkeletonLoadingLabel => 'Loading chart';
+
+  @override
+  String get reportsAccountFilterAll => 'All accounts';
+
+  @override
+  String reportsAccountFilterSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get accountTypeSheetTitle => 'Choose the account type';

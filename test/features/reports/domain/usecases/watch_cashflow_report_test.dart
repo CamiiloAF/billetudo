@@ -30,6 +30,15 @@ void main() {
     expect(params.includeDebtMovements, isTrue);
   });
 
+  test(
+    'defaults `accountIds` to empty (todas las cuentas incluidas, criterion 3)',
+    () {
+      final params = WatchCashflowReportParams(range: range);
+
+      expect(params.accountIds, isEmpty);
+    },
+  );
+
   test('delegates to the repository with the given params', () {
     final series = CashflowSeries(
       points: const [],
@@ -43,16 +52,28 @@ void main() {
       ),
     );
     when(
-      () => repository.watchCashflow(range: range, includeDebtMovements: false),
+      () => repository.watchCashflow(
+        range: range,
+        includeDebtMovements: false,
+        accountIds: const {'acc-1'},
+      ),
     ).thenAnswer((_) => Stream.value(Right(series)));
 
     final result = usecase(
-      WatchCashflowReportParams(range: range, includeDebtMovements: false),
+      WatchCashflowReportParams(
+        range: range,
+        includeDebtMovements: false,
+        accountIds: const {'acc-1'},
+      ),
     );
 
     expect(result, emits(Right<Failure, CashflowSeries>(series)));
     verify(
-      () => repository.watchCashflow(range: range, includeDebtMovements: false),
+      () => repository.watchCashflow(
+        range: range,
+        includeDebtMovements: false,
+        accountIds: const {'acc-1'},
+      ),
     ).called(1);
   });
 }

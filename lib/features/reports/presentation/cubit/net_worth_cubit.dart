@@ -19,6 +19,7 @@ class NetWorthCubit extends Cubit<NetWorthState> {
   Future<void> load({
     required DateRange range,
     required bool includeArchivedAccounts,
+    Set<String> accountIds = const <String>{},
   }) async {
     await _subscription?.cancel();
     emit(const NetWorthState());
@@ -26,6 +27,7 @@ class NetWorthCubit extends Cubit<NetWorthState> {
       WatchNetWorthReportParams(
         range: range,
         includeArchivedAccounts: includeArchivedAccounts,
+        accountIds: accountIds,
       ),
     ).listen((result) {
       if (isClosed) {

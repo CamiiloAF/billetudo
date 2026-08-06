@@ -16,23 +16,32 @@ import '../entities/net_worth_series.dart';
 abstract class ReportsRepository {
   /// HU-01: income/expense/net per bucket. [includeDebtMovements] mirrors the
   /// "movimientos de deuda" toggle (default `true` = integrated).
+  /// [accountIds] is Gráficas' cuentas filter (criterion 4): **inclusive-empty**,
+  /// same shape as `TransactionFilter.accountIds` — empty means "todas las
+  /// cuentas activas", never "ninguna".
   Stream<Result<CashflowSeries>> watchCashflow({
     required DateRange range,
     required bool includeDebtMovements,
+    required Set<String> accountIds,
   });
 
   /// HU-02: líquido vs. total, reconstructed at each point in time.
   /// [includeArchivedAccounts] mirrors the "incluir cuentas archivadas"
-  /// toggle (default `false`).
+  /// toggle (default `false`). [accountIds] (criterion 5, inclusive-empty)
+  /// scopes only the líquido side; the deuda side (HU-02) is always fully
+  /// included regardless of this filter (criterion 6).
   Stream<Result<NetWorthSeries>> watchNetWorth({
     required DateRange range,
     required bool includeArchivedAccounts,
+    required Set<String> accountIds,
   });
 
   /// HU-03: gasto agrupado por categoría raíz (+ "Sin categoría"), with each
   /// root's subcategories nested for the expand action. No rango limit.
+  /// [accountIds] is Gráficas' cuentas filter (criterion 4, inclusive-empty).
   Stream<Result<CategoryBreakdown>> watchCategoryBreakdown({
     required DateRange range,
+    required Set<String> accountIds,
   });
 
   /// The earliest `date` among alive, in-scope transactions — the input

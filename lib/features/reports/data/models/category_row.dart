@@ -7,8 +7,13 @@ class CategoryExpenseRow {
   const CategoryExpenseRow({
     required this.categoryId,
     required this.amountMinor,
+    required this.movementCount,
   });
 
   final String? categoryId;
   final int amountMinor;
+
+  /// Number of transactions rolled up into this row (`A3zxf`'s "N
+  /// movimientos" subtitle).
+  final int movementCount;
 }

@@ -237,6 +237,7 @@ const powerSyncSchema = Schema([
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),
     Column.integer('onboarding_completed'),
+    Column.text('featured_budget_id'),
     ..._syncColumns,
   ]),
 ]);

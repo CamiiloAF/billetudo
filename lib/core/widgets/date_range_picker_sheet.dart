@@ -91,6 +91,12 @@ class _DateRangePickerSheetState extends State<DateRangePickerSheet> {
     Navigator.of(context).pop(DateTimeRange(start: _start, end: _end));
   }
 
+  void _yearSelected(int year) {
+    setState(() {
+      _visibleMonth = DateTime(year, _visibleMonth.month);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -135,6 +141,7 @@ class _DateRangePickerSheetState extends State<DateRangePickerSheet> {
           onDaySelected: _daySelected,
           onPreviousMonth: _showPreviousMonth,
           onNextMonth: _showNextMonth,
+          onYearSelected: _yearSelected,
         ),
         const SizedBox(height: 16),
         SheetButtonsRow(

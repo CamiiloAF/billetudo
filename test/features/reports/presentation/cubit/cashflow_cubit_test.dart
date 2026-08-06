@@ -86,6 +86,31 @@ void main() {
     ],
   );
 
+  blocTest<CashflowCubit, CashflowState>(
+    'load forwards accountIds to the usecase params',
+    build: () {
+      when(() => watchCashflowReport(any())).thenAnswer(
+        (_) => Stream.value(Right(series)),
+      );
+      return CashflowCubit(watchCashflowReport);
+    },
+    act: (cubit) => cubit.load(
+      range: range,
+      includeDebtMovements: true,
+      accountIds: const {'acc-1'},
+    ),
+    verify: (_) {
+      verify(
+        () => watchCashflowReport(
+          WatchCashflowReportParams(
+            range: range,
+            accountIds: const {'acc-1'},
+          ),
+        ),
+      ).called(1);
+    },
+  );
+
   test('a second load cancels the previous subscription: no stale emission',
       () async {
     final firstController = StreamController<Result<CashflowSeries>>();

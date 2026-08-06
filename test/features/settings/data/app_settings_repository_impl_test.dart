@@ -82,6 +82,47 @@ void main() {
     });
   });
 
+  group('setFeaturedBudgetId', () {
+    test('persists the picked budget id and reflects it in _toEntity',
+        () async {
+      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+
+      final result = await repository.getSettings();
+
+      expect(result.getRight().toNullable()!.featuredBudgetId, 'budget-1');
+    });
+
+    test('clears the pick back to null ("Automatico")', () async {
+      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+      await repository.setFeaturedBudgetId(budgetId: null);
+
+      final result = await repository.getSettings();
+
+      expect(result.getRight().toNullable()!.featuredBudgetId, isNull);
+    });
+
+    test('stamps updatedAt on write', () async {
+      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+      final first = await database.select(database.appSettings).getSingle();
+
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      await repository.setFeaturedBudgetId(budgetId: 'budget-2');
+      final second = await database.select(database.appSettings).getSingle();
+
+      expect(second.updatedAt, greaterThan(first.updatedAt));
+    });
+
+    test('upserts the singleton row instead of creating a second one',
+        () async {
+      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+
+      final rows = await database.select(database.appSettings).get();
+
+      expect(rows, hasLength(1));
+      expect(rows.single.id, AppSettingsLocalDatasource.singletonId);
+    });
+  });
+
   group('markOnboardingCompleted', () {
     test('turns the latch on and upserts the singleton row', () async {
       await repository.markOnboardingCompleted();

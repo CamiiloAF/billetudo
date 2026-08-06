@@ -4,6 +4,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_period_window.
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/budget_featured_badge.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_line.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -39,11 +40,15 @@ void main() {
         ),
       );
 
-  Future<void> pump(WidgetTester tester, BudgetWithProgress value) =>
+  Future<void> pump(
+    WidgetTester tester,
+    BudgetWithProgress value, {
+    bool isFeatured = false,
+  }) =>
       tester.pumpAppWidget(
         SizedBox(
           width: 350,
-          child: BudgetLine(entry: value, onTap: () {}),
+          child: BudgetLine(entry: value, onTap: () {}, isFeatured: isFeatured),
         ),
       );
 
@@ -187,6 +192,26 @@ void main() {
       );
       expect(bar.scheduledAtRisk, isTrue);
       expect(bar.scheduledFraction, greaterThan(0));
+    });
+
+    testWidgets(
+        'draws no `sEyU6` star badge when it is not the featured budget',
+        (tester) async {
+      await pump(tester, entry(name: 'Mercado', spentMinor: 492000));
+
+      expect(find.byType(BudgetFeaturedBadge), findsNothing);
+    });
+
+    testWidgets(
+        'draws the `sEyU6` star badge when it is the featured budget',
+        (tester) async {
+      await pump(
+        tester,
+        entry(name: 'Mercado del mes', spentMinor: 492000),
+        isFeatured: true,
+      );
+
+      expect(find.byType(BudgetFeaturedBadge), findsOneWidget);
     });
   });
 }

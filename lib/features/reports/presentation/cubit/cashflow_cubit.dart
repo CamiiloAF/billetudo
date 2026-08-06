@@ -21,6 +21,7 @@ class CashflowCubit extends Cubit<CashflowState> {
   Future<void> load({
     required DateRange range,
     required bool includeDebtMovements,
+    Set<String> accountIds = const <String>{},
   }) async {
     await _subscription?.cancel();
     emit(const CashflowState());
@@ -28,6 +29,7 @@ class CashflowCubit extends Cubit<CashflowState> {
       WatchCashflowReportParams(
         range: range,
         includeDebtMovements: includeDebtMovements,
+        accountIds: accountIds,
       ),
     ).listen((result) {
       if (isClosed) {

@@ -26,4 +26,9 @@ abstract class AppSettingsRepository {
   /// (`docs/requirements/13-onboarding.md`). Idempotent: safe to call again;
   /// the flag never turns off.
   FutureResult<Unit> markOnboardingCompleted();
+
+  /// Sets (or clears, with `null`) the budget manually featured on the Home
+  /// hero card (`design-system/billetudo/pages/ajustes.md`, "Presupuesto
+  /// destacado"). `null` restores the automatic global+monthly selection.
+  FutureResult<Unit> setFeaturedBudgetId({required String? budgetId});
 }

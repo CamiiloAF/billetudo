@@ -10,11 +10,16 @@ import 'package:mocktail/mocktail.dart';
 
 import 'debt_repository_mock.dart';
 
+typedef _BuildEntry = DebtEntryDraft? Function(DebtAccrualContext);
+
 void main() {
   late MockDebtRepository repository;
   late AccrueInterest usecase;
 
-  setUpAll(registerDebtFallbacks);
+  setUpAll(() {
+    registerDebtFallbacks();
+    registerFallbackValue((DebtAccrualContext _) => null);
+  });
 
   setUp(() {
     repository = MockDebtRepository();
@@ -44,44 +49,64 @@ void main() {
         updatedAt: 0,
       );
 
-  test('posts a positive interest entry with the rate snapshot', () async {
-    when(() => repository.getAccrualContext('d1')).thenAnswer(
-      (_) async => Right(
-        DebtAccrualContext(
-          debt: autoDebt(),
-          rawOutstandingMinor: 1000000,
-          lastAccrualDate: DateTime(2026, 1, 1),
-        ),
+  /// Stubs `accrueInterestAtomic` the same way the real repository behaves:
+  /// it runs the captured `buildEntry` against [freshContext] (standing in
+  /// for what a fresh in-transaction read would produce) and turns a
+  /// non-null draft into a persisted entry.
+  void stubAtomic(DebtAccrualContext freshContext) {
+    when(
+      () => repository.accrueInterestAtomic(
+        debtId: any(named: 'debtId'),
+        buildEntry: any(named: 'buildEntry'),
       ),
+    ).thenAnswer((invocation) async {
+      final buildEntry =
+          invocation.namedArguments[#buildEntry]! as _BuildEntry;
+      final draft = buildEntry(freshContext);
+      if (draft == null) {
+        return const Right(null);
+      }
+      return Right(anyEntry());
+    });
+  }
+
+  test('posts a positive interest entry with the rate snapshot', () async {
+    final context = DebtAccrualContext(
+      debt: autoDebt(),
+      rawOutstandingMinor: 1000000,
+      lastAccrualDate: DateTime(2026, 1, 1),
     );
-    when(() => repository.addDebtEntry(any()))
-        .thenAnswer((_) async => Right(anyEntry()));
+    when(() => repository.getAccrualContext('d1'))
+        .thenAnswer((_) async => Right(context));
+    stubAtomic(context);
 
     await usecase(debtId: 'd1', upTo: DateTime(2026, 1, 2)); // 1 day
 
-    final captured =
-        verify(() => repository.addDebtEntry(captureAny())).captured.single
-            as DebtEntryDraft;
-    expect(captured.kind, DebtEntryKind.interestAccrual);
-    expect(captured.amountMinor, 1000); // 0.1% of 1,000,000 for one day
-    expect(captured.rateBpsSnapshot, 3650);
+    final captured = verify(
+      () => repository.accrueInterestAtomic(
+        debtId: 'd1',
+        buildEntry: captureAny(named: 'buildEntry'),
+      ),
+    ).captured.single as _BuildEntry;
+    final draft = captured(context)!;
+    expect(draft.kind, DebtEntryKind.interestAccrual);
+    expect(draft.amountMinor, 1000); // 0.1% of 1,000,000 for one day
+    expect(draft.rateBpsSnapshot, 3650);
   });
 
   test('is a no-op when no days elapsed', () async {
-    when(() => repository.getAccrualContext('d1')).thenAnswer(
-      (_) async => Right(
-        DebtAccrualContext(
-          debt: autoDebt(),
-          rawOutstandingMinor: 1000000,
-          lastAccrualDate: DateTime(2026, 1, 2),
-        ),
-      ),
+    final context = DebtAccrualContext(
+      debt: autoDebt(),
+      rawOutstandingMinor: 1000000,
+      lastAccrualDate: DateTime(2026, 1, 2),
     );
+    when(() => repository.getAccrualContext('d1'))
+        .thenAnswer((_) async => Right(context));
+    stubAtomic(context);
 
     final result = await usecase(debtId: 'd1', upTo: DateTime(2026, 1, 2));
 
     expect(result.getRight().toNullable(), isNull);
-    verifyNever(() => repository.addDebtEntry(any()));
   });
 
   test('rejects a manual-mode debt', () async {
@@ -107,7 +132,12 @@ void main() {
     final result = await usecase(debtId: 'd1', upTo: DateTime(2026, 2, 1));
 
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
-    verifyNever(() => repository.addDebtEntry(any()));
+    verifyNever(
+      () => repository.accrueInterestAtomic(
+        debtId: any(named: 'debtId'),
+        buildEntry: any(named: 'buildEntry'),
+      ),
+    );
   });
 
   test('rejects auto mode without a rate', () async {
@@ -141,6 +171,40 @@ void main() {
     final failure = result.getLeft().toNullable();
     expect(failure, isA<ValidationFailure>());
     expect((failure! as ValidationFailure).field, 'closedAt');
-    verifyNever(() => repository.addDebtEntry(any()));
+    verifyNever(
+      () => repository.accrueInterestAtomic(
+        debtId: any(named: 'debtId'),
+        buildEntry: any(named: 'buildEntry'),
+      ),
+    );
   });
+
+  test(
+    'a concurrent write that already advanced lastAccrualDate makes the '
+    'fresh re-read yield no more interest, and buildEntry posts nothing',
+    () async {
+      // The initial read (what the use case validates against) still shows
+      // interest owed for a full day...
+      final staleContext = DebtAccrualContext(
+        debt: autoDebt(),
+        rawOutstandingMinor: 1000000,
+        lastAccrualDate: DateTime(2026, 1, 1),
+      );
+      when(() => repository.getAccrualContext('d1'))
+          .thenAnswer((_) async => Right(staleContext));
+      // ...but the transaction's own fresh read (as another concurrent
+      // caller would have left it after committing first) shows the accrual
+      // already caught up to `upTo`.
+      final freshContext = DebtAccrualContext(
+        debt: autoDebt(),
+        rawOutstandingMinor: 1000000,
+        lastAccrualDate: DateTime(2026, 1, 2),
+      );
+      stubAtomic(freshContext);
+
+      final result = await usecase(debtId: 'd1', upTo: DateTime(2026, 1, 2));
+
+      expect(result.getRight().toNullable(), isNull);
+    },
+  );
 }

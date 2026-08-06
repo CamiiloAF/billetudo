@@ -10,6 +10,7 @@ import '../../cubit/reports_shell_cubit.dart';
 import '../../cubit/reports_shell_state.dart';
 import '../../models/reports_period_selection.dart';
 import '../../utils/reports_period_format.dart';
+import '../account_filter_row.dart';
 import '../chart_period_row.dart';
 import '../sheets/period_selector_sheet.dart';
 import '../states/chart_sync_notice_strip.dart';
@@ -48,6 +49,7 @@ class _NetWorthTabViewState extends State<NetWorthTabView> {
       context.read<NetWorthCubit>().load(
         range: shell.period.range,
         includeArchivedAccounts: shell.includeArchivedAccounts,
+        accountIds: shell.accountIds,
       ),
     );
   }
@@ -67,7 +69,8 @@ class _NetWorthTabViewState extends State<NetWorthTabView> {
     return BlocListener<ReportsShellCubit, ReportsShellState>(
       listenWhen: (previous, current) =>
           previous.period != current.period ||
-          previous.includeArchivedAccounts != current.includeArchivedAccounts,
+          previous.includeArchivedAccounts != current.includeArchivedAccounts ||
+          previous.accountIds != current.accountIds,
       listener: (context, shell) => _load(shell),
       child: BlocBuilder<ReportsShellCubit, ReportsShellState>(
         builder: (context, shell) {
@@ -92,6 +95,13 @@ class _NetWorthTabViewState extends State<NetWorthTabView> {
                               locale,
                             ),
                       onTapSelector: () => _openPeriodSelector(shell.period),
+                    ),
+                    const SizedBox(height: 8),
+                    AccountFilterRow(
+                      selected: shell.accountIds,
+                      onChanged: (accountIds) => context
+                          .read<ReportsShellCubit>()
+                          .updateAccountFilter(accountIds),
                     ),
                     const SizedBox(height: 8),
                     if (shell.hasSyncNotice) ...[

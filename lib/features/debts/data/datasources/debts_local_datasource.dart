@@ -124,6 +124,15 @@ class DebtsLocalDatasource {
 
   // -- Writes --
 
+  /// Runs [action] inside a single Drift transaction (BEGIN/COMMIT, with the
+  /// underlying single-writer connection serializing any concurrent caller
+  /// against it). Used by `DebtRepositoryImpl.accrueInterestAtomic` so the
+  /// interest-accrual read-then-write cannot interleave with another
+  /// concurrent accrual for the same debt — same pattern as
+  /// [createDebtWithOpeningMovement] below.
+  Future<T> transaction<T>(Future<T> Function() action) =>
+      _db.transaction(action);
+
   Future<Debt> insertDebt(DebtsCompanion companion) =>
       _db.into(_db.debts).insertReturning(companion);
 

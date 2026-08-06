@@ -14,8 +14,10 @@ class ReportsShellState extends Equatable {
     ReportsPeriodSelection? period,
     this.includeDebtMovements = true,
     this.includeArchivedAccounts = false,
+    Set<String> accountIds = const <String>{},
     this.syncState = SyncState.offline,
-  }) : period = period ?? ReportsPeriodSelection.lastSixMonths();
+  })  : period = period ?? ReportsPeriodSelection.lastSixMonths(),
+        accountIds = Set.unmodifiable(accountIds);
 
   final ChartViewId activeTab;
   final ReportsPeriodSelection period;
@@ -25,6 +27,12 @@ class ReportsShellState extends Equatable {
 
   /// HU-02 "Incluir cuentas archivadas" toggle. Default `false` = excluded.
   final bool includeArchivedAccounts;
+
+  /// Gráficas' cuentas filter, shared by Flujo, Patrimonio and Categorías
+  /// (never Resumen — D2). Inclusive-empty: an empty set means "todas las
+  /// cuentas activas", the default with no visible badge — same shape as
+  /// `TransactionFilter.accountIds`.
+  final Set<String> accountIds;
 
   /// Drives the "fallo de sync" tira (HU-06): shown when this is
   /// [SyncState.stalled] — same domain signal as Home's `Sync Indicator`
@@ -38,6 +46,7 @@ class ReportsShellState extends Equatable {
     ReportsPeriodSelection? period,
     bool? includeDebtMovements,
     bool? includeArchivedAccounts,
+    Set<String>? accountIds,
     SyncState? syncState,
   }) =>
       ReportsShellState(
@@ -46,6 +55,7 @@ class ReportsShellState extends Equatable {
         includeDebtMovements: includeDebtMovements ?? this.includeDebtMovements,
         includeArchivedAccounts:
             includeArchivedAccounts ?? this.includeArchivedAccounts,
+        accountIds: accountIds ?? this.accountIds,
         syncState: syncState ?? this.syncState,
       );
 
@@ -55,6 +65,7 @@ class ReportsShellState extends Equatable {
         period,
         includeDebtMovements,
         includeArchivedAccounts,
+        accountIds,
         syncState,
       ];
 }

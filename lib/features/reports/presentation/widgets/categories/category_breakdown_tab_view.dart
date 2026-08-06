@@ -11,6 +11,7 @@ import '../../cubit/reports_shell_cubit.dart';
 import '../../cubit/reports_shell_state.dart';
 import '../../models/reports_period_selection.dart';
 import '../../utils/reports_period_format.dart';
+import '../account_filter_row.dart';
 import '../chart_period_row.dart';
 import '../sheets/period_selector_sheet.dart';
 import '../states/chart_sync_notice_strip.dart';
@@ -29,9 +30,10 @@ class CategoryBreakdownTabView extends StatefulWidget {
   final VoidCallback onAddMovement;
   final VoidCallback onOpenSyncStatus;
 
-  /// Navigates to Movimientos filtered by the tapped row's category id and
-  /// the active Gráficas period (start/endExclusive), if provided.
-  final void Function(String categoryId, DateRange range)?
+  /// Navigates to Movimientos filtered by the tapped row's category id, the
+  /// active Gráficas period (start/endExclusive) and the active cuentas
+  /// filter (criterion 7), if provided.
+  final void Function(String categoryId, DateRange range, Set<String> accountIds)?
       onOpenCategoryMovements;
 
   /// See `ReportCard.boundaryKey`.
@@ -51,7 +53,10 @@ class _CategoryBreakdownTabViewState extends State<CategoryBreakdownTabView> {
 
   void _load(ReportsShellState shell) {
     unawaited(
-      context.read<CategoryBreakdownCubit>().load(range: shell.period.range),
+      context.read<CategoryBreakdownCubit>().load(
+        range: shell.period.range,
+        accountIds: shell.accountIds,
+      ),
     );
   }
 
@@ -68,7 +73,9 @@ class _CategoryBreakdownTabViewState extends State<CategoryBreakdownTabView> {
     final locale = Localizations.localeOf(context).toString();
 
     return BlocListener<ReportsShellCubit, ReportsShellState>(
-      listenWhen: (previous, current) => previous.period != current.period,
+      listenWhen: (previous, current) =>
+          previous.period != current.period ||
+          previous.accountIds != current.accountIds,
       listener: (context, shell) => _load(shell),
       child: BlocBuilder<ReportsShellCubit, ReportsShellState>(
         builder: (context, shell) {
@@ -91,6 +98,13 @@ class _CategoryBreakdownTabViewState extends State<CategoryBreakdownTabView> {
                       onTapSelector: () => _openPeriodSelector(shell.period),
                     ),
                     const SizedBox(height: 8),
+                    AccountFilterRow(
+                      selected: shell.accountIds,
+                      onChanged: (accountIds) => context
+                          .read<ReportsShellCubit>()
+                          .updateAccountFilter(accountIds),
+                    ),
+                    const SizedBox(height: 8),
                     if (shell.hasSyncNotice) ...[
                       ChartSyncNoticeStrip(onTap: widget.onOpenSyncStatus),
                       const SizedBox(height: 8),
@@ -105,6 +119,7 @@ class _CategoryBreakdownTabViewState extends State<CategoryBreakdownTabView> {
                               : (categoryId) => widget.onOpenCategoryMovements!(
                                     categoryId,
                                     shell.period.range,
+                                    shell.accountIds,
                                   ),
                       boundaryKey: widget.cardBoundaryKey,
                     ),

@@ -346,6 +346,41 @@ void main() {
           brightness: brightness,
         );
       });
+
+      // The new year-selection view: tapping the "mes año" header label
+      // swaps the month grid for a 12-year page, still inside the same
+      // range sheet.
+      testWidgets('custom range picker sheet, year selection view open',
+          (tester) async {
+        setGoldenViewport(tester);
+        await tester.pumpWidget(
+          wrapForGolden(
+            Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => DateRangePickerSheet.show(
+                  context,
+                  initialStart: DateTime(2026, 7, 3),
+                  initialEnd: DateTime(2026, 7, 9),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+            brightness: brightness,
+          ),
+        );
+        await tester.tap(find.byType(ElevatedButton));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Julio 2026'));
+        await tester.pumpAndSettle();
+
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile(
+            'goldens/sheet_date_range_picker_year_view_$suffix.png',
+          ),
+        );
+      });
     });
 
     group('budget period filter ($suffix)', () {

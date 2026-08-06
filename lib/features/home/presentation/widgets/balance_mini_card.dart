@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
-import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
-import '../../../accounts/presentation/widgets/account_type_avatar.dart';
+import 'mini_type_icon.dart';
 
 /// One card of the Home "Mis cuentas" strip (`EVe8a`, bugfix item 8): the
 /// account's type icon+colour, its name and its balance. Fixed 158-wide so the
@@ -48,7 +47,7 @@ class BalanceMiniCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _MiniTypeIcon(type: account.type),
+                    MiniTypeIcon(type: account.type),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -84,31 +83,6 @@ class BalanceMiniCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// The mini card's 30×30 rounded-square type glyph (`r8QG5`): smaller and
-/// squarer than the list's circular `AccountTypeAvatar`, but the same
-/// icon+colour mapping via [AccountTypePresentation].
-class _MiniTypeIcon extends StatelessWidget {
-  const _MiniTypeIcon({required this.type});
-
-  final AccountType type;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        color: type.softColor(colors),
-        // `r8QG5` is a rounded square at radius 10 — smaller than any shared
-        // token, so it stays a literal here.
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(type.icon, color: type.color(colors), size: 16),
     );
   }
 }

@@ -47,9 +47,9 @@ class ReportsPage extends StatefulWidget {
   final VoidCallback onCreateGoal;
   final VoidCallback onOpenDebts;
 
-  /// Navigates to Movimientos filtered by a tapped category row and the
-  /// active Gráficas period, from the Categorías tab.
-  final void Function(String categoryId, DateRange range)?
+  /// Navigates to Movimientos filtered by a tapped category row, the active
+  /// Gráficas period and the active cuentas filter, from the Categorías tab.
+  final void Function(String categoryId, DateRange range, Set<String> accountIds)?
       onOpenCategoryMovements;
 
   @override

@@ -122,14 +122,18 @@ void main() {
           granularity: DateGranularity.monthly,
         );
 
-        final integrated = (await repository
-                .watchCashflow(range: range, includeDebtMovements: true)
-                .first)
+        final integrated = (await repository.watchCashflow(
+          range: range,
+          includeDebtMovements: true,
+          accountIds: const {},
+        ).first)
             .getRight()
             .toNullable()!;
-        final segregated = (await repository
-                .watchCashflow(range: range, includeDebtMovements: false)
-                .first)
+        final segregated = (await repository.watchCashflow(
+          range: range,
+          includeDebtMovements: false,
+          accountIds: const {},
+        ).first)
             .getRight()
             .toNullable()!;
 
@@ -158,10 +162,13 @@ void main() {
         granularity: DateGranularity.monthly,
       );
 
-      final result =
-          (await repository.watchCashflow(range: range, includeDebtMovements: true).first)
-              .getRight()
-              .toNullable()!;
+      final result = (await repository.watchCashflow(
+        range: range,
+        includeDebtMovements: true,
+        accountIds: const {},
+      ).first)
+          .getRight()
+          .toNullable()!;
 
       expect(result.isEmpty, isTrue);
     });
@@ -192,9 +199,11 @@ void main() {
         granularity: DateGranularity.monthly,
       );
 
-      final series = (await repository
-              .watchNetWorth(range: range, includeArchivedAccounts: false)
-              .first)
+      final series = (await repository.watchNetWorth(
+        range: range,
+        includeArchivedAccounts: false,
+        accountIds: const {},
+      ).first)
           .getRight()
           .toNullable()!;
 
@@ -230,14 +239,18 @@ void main() {
         granularity: DateGranularity.monthly,
       );
 
-      final excluding = (await repository
-              .watchNetWorth(range: range, includeArchivedAccounts: false)
-              .first)
+      final excluding = (await repository.watchNetWorth(
+        range: range,
+        includeArchivedAccounts: false,
+        accountIds: const {},
+      ).first)
           .getRight()
           .toNullable()!;
-      final including = (await repository
-              .watchNetWorth(range: range, includeArchivedAccounts: true)
-              .first)
+      final including = (await repository.watchNetWorth(
+        range: range,
+        includeArchivedAccounts: true,
+        accountIds: const {},
+      ).first)
           .getRight()
           .toNullable()!;
 
@@ -247,10 +260,80 @@ void main() {
       // elsewhere in this test.
       expect(archived.archived, isTrue);
     });
+
+    test(
+      'accountIds (criterion 5) narrows líquido (opening + effects) but '
+      'never the deuda side (criterion 6)',
+      () async {
+        final selected = await createAccount(
+          name: 'Seleccionada',
+          initialBalanceMinor: 200000,
+        );
+        final excluded = await createAccount(
+          name: 'Excluida',
+          initialBalanceMinor: 50000,
+        );
+        final debt = await createDebt(
+          direction: DebtDirection.iOwe,
+          principalMinor: 300000,
+          startDate: DateTime(2026, 6, 1),
+        );
+        await createTx(
+          accountId: selected.id,
+          type: EntryType.income,
+          amountMinor: 10000,
+          date: DateTime(2026, 7, 5),
+        );
+        await createTx(
+          accountId: excluded.id,
+          type: EntryType.income,
+          amountMinor: 999999,
+          date: DateTime(2026, 7, 5),
+        );
+
+        final range = DateRange(
+          start: DateTime(2026, 6),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+        );
+
+        final all = (await repository.watchNetWorth(
+          range: range,
+          includeArchivedAccounts: false,
+          accountIds: const {},
+        ).first)
+            .getRight()
+            .toNullable()!;
+        final onlySelected = (await repository.watchNetWorth(
+          range: range,
+          includeArchivedAccounts: false,
+          accountIds: {selected.id},
+        ).first)
+            .getRight()
+            .toNullable()!;
+
+        // Líquido narrows to only the selected account's opening + effects.
+        expect(all.points.first.liquidMinor, 200000 + 50000);
+        expect(onlySelected.points.first.liquidMinor, 200000);
+        expect(onlySelected.points.last.liquidMinor, 200000 + 10000);
+
+        // The deuda component of `totalMinor` (liquid - pending) stays
+        // identical regardless of the account filter (criterion 6).
+        final allDebtComponent =
+            all.points.first.totalMinor - all.points.first.liquidMinor;
+        final selectedDebtComponent = onlySelected.points.first.totalMinor -
+            onlySelected.points.first.liquidMinor;
+        expect(selectedDebtComponent, allDebtComponent);
+        expect(allDebtComponent, -300000);
+        // Silence unused-variable warning.
+        expect(debt.direction, DebtDirection.iOwe);
+      },
+    );
   });
 
   group('watchCategoryBreakdown', () {
-    test('groups subcategories under their root and keeps "Sin categoría" '
+    test(
+        'groups subcategories under their root and keeps "Sin categoría" '
         'separate', () async {
       final account = await createAccount();
       final root = await createCategory('Mercado');
@@ -285,22 +368,124 @@ void main() {
         granularity: DateGranularity.monthly,
       );
 
-      final breakdown =
-          (await repository.watchCategoryBreakdown(range: range).first)
-              .getRight()
-              .toNullable()!;
+      final breakdown = (await repository
+              .watchCategoryBreakdown(range: range, accountIds: const {}).first)
+          .getRight()
+          .toNullable()!;
 
       expect(breakdown.totalMinor, 42000);
       final rootItem =
           breakdown.items.firstWhere((item) => item.categoryId == root.id);
       expect(rootItem.amountMinor, 35000);
+      expect(rootItem.movementCount, 2);
       expect(rootItem.subcategories, hasLength(1));
       expect(rootItem.subcategories.single.amountMinor, 15000);
+      expect(rootItem.subcategories.single.movementCount, 1);
 
       final uncategorized =
           breakdown.items.firstWhere((item) => item.categoryId == null);
       expect(uncategorized.amountMinor, 7000);
+      expect(uncategorized.movementCount, 1);
       expect(uncategorized.name, isNull);
+    });
+
+    test('accountIds (criterion 4) restricts the breakdown to that account',
+        () async {
+      final selected = await createAccount(name: 'Seleccionada');
+      final excluded = await createAccount(name: 'Excluida');
+      final category = await createCategory('Mercado');
+      await createTx(
+        accountId: selected.id,
+        type: EntryType.expense,
+        amountMinor: 5000,
+        date: DateTime(2026, 7, 5),
+        categoryId: category.id,
+      );
+      await createTx(
+        accountId: excluded.id,
+        type: EntryType.expense,
+        amountMinor: 9000,
+        date: DateTime(2026, 7, 5),
+        categoryId: category.id,
+      );
+
+      final range = DateRange(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+      );
+
+      final all = (await repository
+              .watchCategoryBreakdown(range: range, accountIds: const {}).first)
+          .getRight()
+          .toNullable()!;
+      final onlySelected = (await repository.watchCategoryBreakdown(
+        range: range,
+        accountIds: {selected.id},
+      ).first)
+          .getRight()
+          .toNullable()!;
+
+      expect(all.totalMinor, 14000);
+      expect(onlySelected.totalMinor, 5000);
+    });
+
+    test(
+        // Bug 1 regression: a root category with no expense rows of its own
+        // (an active account filter excludes its own direct movements, only
+        // a subcategory's rows survive) must still resolve its name/icon —
+        // not fall back to the null placeholder.
+        'a root category with no direct expense rows of its own still '
+        'resolves its name/icon via its subcategory (criterion 4 + no '
+        "root's own movements)", () async {
+      final rootAccount = await createAccount(name: 'Cuenta raíz');
+      final subAccount = await createAccount(name: 'Cuenta sub');
+      final root = await createCategory('Hogar');
+      final sub = await createCategory('Mercado', parentId: root.id);
+
+      // The root's own movement lives in `rootAccount`, excluded by the
+      // active account filter below — only the subcategory's movement (in
+      // `subAccount`) survives the filter.
+      await createTx(
+        accountId: rootAccount.id,
+        type: EntryType.expense,
+        amountMinor: 20000,
+        date: DateTime(2026, 7, 5),
+        categoryId: root.id,
+      );
+      await createTx(
+        accountId: subAccount.id,
+        type: EntryType.expense,
+        amountMinor: 15000,
+        date: DateTime(2026, 7, 6),
+        categoryId: sub.id,
+      );
+
+      final range = DateRange(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+      );
+
+      final breakdown = (await repository.watchCategoryBreakdown(
+        range: range,
+        accountIds: {subAccount.id},
+      ).first)
+          .getRight()
+          .toNullable()!;
+
+      expect(breakdown.totalMinor, 15000);
+      final rootItem =
+          breakdown.items.firstWhere((item) => item.categoryId == root.id);
+      // The root itself has no row in `rows` (its movement was filtered
+      // out), only its subcategory does — `name`/`icon` must still resolve.
+      // `createCategory` above does not set an icon (nullable column), so
+      // the assertion that matters is `name` resolving at all — proof the
+      // root row was actually fetched via the backfill, not left as the
+      // `categoryById[rootId] == null` placeholder Bug 1 produced.
+      expect(rootItem.name, 'Hogar');
+      expect(rootItem.amountMinor, 15000);
+      expect(rootItem.subcategories.single.name, 'Mercado');
     });
   });
 }

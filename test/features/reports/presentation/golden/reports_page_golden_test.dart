@@ -44,6 +44,7 @@ class MockCashflowCubit extends MockCubit<CashflowState>
   Future<void> load({
     required DateRange range,
     required bool includeDebtMovements,
+    Set<String> accountIds = const <String>{},
   }) async {}
 }
 
@@ -53,13 +54,17 @@ class MockNetWorthCubit extends MockCubit<NetWorthState>
   Future<void> load({
     required DateRange range,
     required bool includeArchivedAccounts,
+    Set<String> accountIds = const <String>{},
   }) async {}
 }
 
 class MockCategoryBreakdownCubit extends MockCubit<CategoryBreakdownState>
     implements CategoryBreakdownCubit {
   @override
-  Future<void> load({required DateRange range}) async {}
+  Future<void> load({
+    required DateRange range,
+    Set<String> accountIds = const <String>{},
+  }) async {}
 }
 
 class MockReportsDashboardCubit extends MockCubit<ReportsDashboardState>
@@ -234,6 +239,26 @@ void main() {
         'cashflow_positive_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        cashflowState: CashflowState(
+          status: CashflowStatus.ready,
+          series: positiveCashflowSeries(),
+        ),
+      );
+    });
+
+    testWidgets('cashflow: filtro de cuentas activo ($suffix)', (
+      tester,
+    ) async {
+      // Criterion 2: the account filter control renders in its
+      // non-default (badged) state.
+      await golden(
+        tester,
+        'cashflow_account_filter_active_$suffix',
+        brightness: brightness,
+        shellState: ReportsShellState(
+          activeTab: ChartViewId.cashflow,
+          accountIds: const {'acc-1', 'acc-2'},
+        ),
         cashflowState: CashflowState(
           status: CashflowStatus.ready,
           series: positiveCashflowSeries(),

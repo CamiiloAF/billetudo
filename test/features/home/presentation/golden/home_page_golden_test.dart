@@ -114,16 +114,25 @@ void main() {
         tester,
         readyWith([
           buildActivity(
-              id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+            id: 'tx-1',
+            categoryName: 'Mercado',
+            categoryIcon: 'shopping-cart',
+            categoryColor: 'mint',
+            amountMinor: 45000,
+          ),
           buildActivity(
             id: 'tx-2',
             categoryName: 'Transporte',
+            categoryIcon: 'car',
+            categoryColor: 'sky',
             amountMinor: 8000,
             date: DateTime(2026, 7, 10),
           ),
           buildActivity(
             id: 'tx-3',
             categoryName: 'Restaurantes',
+            categoryIcon: 'coffee',
+            categoryColor: 'amber',
             amountMinor: 32000,
             date: DateTime(2026, 7, 5),
           ),
@@ -132,6 +141,8 @@ void main() {
           buildActivity(
             id: 'tx-4',
             categoryName: 'Salario',
+            categoryIcon: 'wallet',
+            categoryColor: 'mint',
             amountMinor: 250000,
             type: TransactionType.income,
             date: DateTime(2026, 7, 1),
@@ -148,10 +159,17 @@ void main() {
         readyWith(
           [
             buildActivity(
-                id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+              id: 'tx-1',
+              categoryName: 'Mercado',
+              categoryIcon: 'shopping-cart',
+              categoryColor: 'mint',
+              amountMinor: 45000,
+            ),
             buildActivity(
               id: 'tx-2',
               categoryName: 'Transporte',
+              categoryIcon: 'car',
+              categoryColor: 'sky',
               amountMinor: 8000,
               date: DateTime(2026, 7, 10),
             ),
@@ -175,10 +193,17 @@ void main() {
         readyWith(
           [
             buildActivity(
-                id: 'tx-1', categoryName: 'Mercado', amountMinor: 45000),
+              id: 'tx-1',
+              categoryName: 'Mercado',
+              categoryIcon: 'shopping-cart',
+              categoryColor: 'mint',
+              amountMinor: 45000,
+            ),
             buildActivity(
               id: 'tx-2',
               categoryName: 'Transporte',
+              categoryIcon: 'car',
+              categoryColor: 'sky',
               amountMinor: 8000,
               date: DateTime(2026, 7, 10),
             ),

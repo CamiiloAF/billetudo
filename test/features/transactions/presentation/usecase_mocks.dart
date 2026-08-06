@@ -2,6 +2,7 @@ import 'package:billetudo/core/preferences/account_filter_preference_datasource.
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
+import 'package:billetudo/features/categories/domain/usecases/get_category_subtree_ids.dart';
 import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
@@ -49,6 +50,9 @@ class MockWatchBudgetPeriodOptions extends Mock
     implements WatchBudgetPeriodOptions {}
 
 class MockWatchCategories extends Mock implements WatchCategories {}
+
+class MockGetCategorySubtreeIds extends Mock
+    implements GetCategorySubtreeIds {}
 
 class MockAccountFilterPreferenceDatasource extends Mock
     implements AccountFilterPreferenceDatasource {}

@@ -37,8 +37,9 @@ class BudgetsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final envelopeEnabled =
-        context.watch<AppSettingsCubit>().state.zeroBasedEnabled;
+    final settingsState = context.watch<AppSettingsCubit>().state;
+    final envelopeEnabled = settingsState.zeroBasedEnabled;
+    final featuredBudgetId = settingsState.featuredBudgetId;
     final ZeroBasedSummary? summary = envelopeEnabled
         ? context.watch<ZeroBasedSummaryCubit>().state.summary
         : null;
@@ -80,6 +81,7 @@ class BudgetsPage extends StatelessWidget {
                       onAddBudget: onAddBudget,
                       header: envelopeHeader,
                       envelopeMode: envelopeEnabled,
+                      featuredBudgetId: featuredBudgetId,
                     ),
                 },
               ),
@@ -241,6 +243,7 @@ class BudgetsListView extends StatelessWidget {
     required this.onAddBudget,
     this.header,
     this.envelopeMode = false,
+    this.featuredBudgetId,
     super.key,
   });
 
@@ -254,6 +257,11 @@ class BudgetsListView extends StatelessWidget {
   /// In "Modo sobres" the rows read "Asignado" and the list is denser
   /// (`D1G5hl`: card padding 16, gap 12 vs. the normal list's 18/18).
   final bool envelopeMode;
+
+  /// The budget manually featured on the Home hero, if any
+  /// (`AppSettings.featuredBudgetId`) — the row matching this id draws the
+  /// `sEyU6` star badge.
+  final String? featuredBudgetId;
 
   @override
   Widget build(BuildContext context) {
@@ -280,6 +288,7 @@ class BudgetsListView extends StatelessWidget {
         return BudgetLine(
           entry: entry,
           envelopeMode: envelopeMode,
+          isFeatured: entry.budget.id == featuredBudgetId,
           onTap: () => onOpenBudget(entry.budget.id),
         );
       },

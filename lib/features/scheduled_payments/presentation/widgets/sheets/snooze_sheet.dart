@@ -204,6 +204,9 @@ class _MonthCalendarBridgeState extends State<MonthCalendarBridge> {
         () => _visibleMonth =
             DateTime(_visibleMonth.year, _visibleMonth.month + 1),
       ),
+      onYearSelected: (year) => setState(
+        () => _visibleMonth = DateTime(year, _visibleMonth.month),
+      ),
     );
   }
 }

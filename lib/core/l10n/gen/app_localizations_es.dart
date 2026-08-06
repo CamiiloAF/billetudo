@@ -861,6 +861,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get datePickerNextMonth => 'Mes siguiente';
 
   @override
+  String get datePickerSelectYear => 'Elegir año';
+
+  @override
+  String get datePickerPreviousYears => 'Años anteriores';
+
+  @override
+  String get datePickerNextYears => 'Años siguientes';
+
+  @override
+  String get datePickerBackToMonths => 'Volver a los meses';
+
+  @override
   String get transactionFormExpandAmount => 'Editar monto';
 
   @override
@@ -2173,6 +2185,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetDetailActionsSubtitle => 'Acciones del presupuesto';
+
+  @override
+  String get budgetActionUseAsFeatured => 'Usar como destacado en Inicio';
+
+  @override
+  String get budgetActionUseAsFeaturedSubtitle =>
+      'Reemplaza al presupuesto que tengas destacado, si hay uno.';
+
+  @override
+  String get budgetActionRemoveFeatured => 'Quitar de Inicio';
 
   @override
   String get budgetDeleteConfirmMessage =>
@@ -4209,6 +4231,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get reportsNetWorthFigureTotalLabel => 'Total';
 
   @override
+  String reportsNetWorthHeroSemantics(String liquidLabel, String liquidAmount,
+      String totalLabel, String totalAmount) {
+    return '$liquidLabel: $liquidAmount. $totalLabel: $totalAmount.';
+  }
+
+  @override
   String get reportsNetWorthInterestNote =>
       'El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.';
 
@@ -4259,6 +4287,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportsCategoriesUncategorized => 'Sin categoría';
+
+  @override
+  String reportsCategoriesRowSemantics(String name, int pct, String amount) {
+    return '$name, $pct%, $amount';
+  }
+
+  @override
+  String reportsPercentValue(int pct) {
+    return '$pct%';
+  }
 
   @override
   String get reportsCategoriesViewSubcategories => 'Profundizar';
@@ -4363,6 +4401,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportsChartSkeletonLoadingLabel => 'Cargando gráfica';
+
+  @override
+  String get reportsAccountFilterAll => 'Todas las cuentas';
+
+  @override
+  String reportsAccountFilterSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cuentas',
+      one: '1 cuenta',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get accountTypeSheetTitle => 'Selecciona el tipo de cuenta';

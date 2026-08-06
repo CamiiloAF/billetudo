@@ -28,11 +28,12 @@ class NetWorthHero extends StatelessWidget {
     const money = MoneyFormatter();
 
     return Semantics(
-      label:
-          '${l10n.reportsNetWorthFigureLiquidLabel}: '
-          '${money.formatSymbol(liquidMinor, currencyCode: currencyCode)}. '
-          '${l10n.reportsNetWorthFigureTotalLabel}: '
-          '${money.formatSymbol(totalMinor, currencyCode: currencyCode)}.',
+      label: l10n.reportsNetWorthHeroSemantics(
+        l10n.reportsNetWorthFigureLiquidLabel,
+        money.formatSymbol(liquidMinor, currencyCode: currencyCode),
+        l10n.reportsNetWorthFigureTotalLabel,
+        money.formatSymbol(totalMinor, currencyCode: currencyCode),
+      ),
       container: true,
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),

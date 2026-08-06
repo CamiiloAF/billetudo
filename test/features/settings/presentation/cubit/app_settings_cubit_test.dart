@@ -1,4 +1,9 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
@@ -11,21 +16,67 @@ import 'usecase_mocks.dart';
 void main() {
   late MockGetAppSettings getAppSettings;
   late MockSetZeroBasedEnabled setZeroBasedEnabled;
+  late MockGetActiveBudgets getActiveBudgets;
+  late MockSetFeaturedBudget setFeaturedBudget;
 
-  const enabledSettings =
-      AppSettings(
-        zeroBasedEnabled: true,
-        categoriesSeeded: false,
-        onboardingCompleted: false,
-      );
+  const enabledSettings = AppSettings(
+    zeroBasedEnabled: true,
+    categoriesSeeded: false,
+    onboardingCompleted: false,
+  );
+
+  const featuredSettings = AppSettings(
+    zeroBasedEnabled: true,
+    categoriesSeeded: false,
+    onboardingCompleted: false,
+    featuredBudgetId: 'budget-1',
+  );
+
+  final budget = BudgetWithProgress(
+    budget: Budget(
+      id: 'budget-1',
+      name: 'Vacaciones',
+      amountMinor: 600000,
+      currency: 'COP',
+      period: BudgetPeriod.monthly,
+      startDate: DateTime(2026, 7, 1),
+      recurring: true,
+      rollover: false,
+      createdAt: DateTime(2026, 7, 1),
+      updatedAt: 0,
+    ),
+    scope: const BudgetScope.empty(),
+    window: BudgetPeriodWindow(
+      start: DateTime(2026, 7, 1),
+      endExclusive: DateTime(2026, 8, 1),
+      index: 0,
+      status: BudgetWindowStatus.current,
+      hasPrevious: false,
+      hasNext: true,
+    ),
+    progress: const BudgetProgress(
+      amountMinor: 600000,
+      spentMinor: 300000,
+      daysLeft: 12,
+    ),
+  );
 
   setUp(() {
     getAppSettings = MockGetAppSettings();
     setZeroBasedEnabled = MockSetZeroBasedEnabled();
+    getActiveBudgets = MockGetActiveBudgets();
+    setFeaturedBudget = MockSetFeaturedBudget();
+    // Default: no active budgets; individual tests override.
+    when(getActiveBudgets.call)
+        .thenAnswer((_) => Stream.value(const Right([])));
   });
 
-  AppSettingsCubit build() =>
-      AppSettingsCubit(getAppSettings, setZeroBasedEnabled);
+  AppSettingsCubit build() => AppSettingsCubit(
+        getAppSettings,
+        setZeroBasedEnabled,
+        getActiveBudgets,
+        setFeaturedBudget,
+      );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
     'HU-06: emits the settings the use case streams',
@@ -58,5 +109,55 @@ void main() {
     act: (cubit) => cubit.setZeroBasedEnabled(enabled: true),
     expect: () => <AppSettingsState>[],
     verify: (_) => verify(() => setZeroBasedEnabled(enabled: true)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'start also emits the active budgets for the "Presupuesto destacado" '
+    'select sheet',
+    setUp: () {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(enabledSettings)));
+      when(getActiveBudgets.call)
+          .thenAnswer((_) => Stream.value(Right([budget])));
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    expect: () => [
+      const AppSettingsState(settings: enabledSettings),
+      AppSettingsState(settings: enabledSettings, activeBudgets: [budget]),
+    ],
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'exposes the featured budget id vigente from settings',
+    setUp: () => when(getAppSettings.call)
+        .thenAnswer((_) => Stream.value(const Right(featuredSettings))),
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) =>
+        expect(cubit.state.featuredBudgetId, 'budget-1'),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setFeaturedBudget delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(() => setFeaturedBudget(budgetId: 'budget-1'))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setFeaturedBudget('budget-1'),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setFeaturedBudget(budgetId: 'budget-1')).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setFeaturedBudget(null) delegates to the use case to restore '
+    '"Automático"',
+    setUp: () => when(() => setFeaturedBudget(budgetId: null))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setFeaturedBudget(null),
+    expect: () => <AppSettingsState>[],
+    verify: (_) => verify(() => setFeaturedBudget(budgetId: null)).called(1),
   );
 }

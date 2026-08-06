@@ -12,6 +12,7 @@ class CategoryBreakdownItem extends Equatable {
     required this.categoryId,
     required this.name,
     required this.amountMinor,
+    this.movementCount = 0,
     this.icon,
     this.color,
     this.subcategories = const [],
@@ -33,6 +34,11 @@ class CategoryBreakdownItem extends Equatable {
   /// con caja, all in this category (or its subtree, for a root row).
   final int amountMinor;
 
+  /// Number of transactions rolled up into [amountMinor] (`A3zxf`'s "N
+  /// movimientos" row subtitle). For a root row, the sum of its own
+  /// movements plus every subcategory's.
+  final int movementCount;
+
   /// Only populated on root rows; empty on subcategory rows and on "Sin
   /// categoría". HU-03: "permite expandir a subcategorías".
   final List<CategoryBreakdownItem> subcategories;
@@ -46,6 +52,7 @@ class CategoryBreakdownItem extends Equatable {
         icon,
         color,
         amountMinor,
+        movementCount,
         subcategories,
       ];
 }

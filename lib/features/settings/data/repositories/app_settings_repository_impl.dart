@@ -51,6 +51,18 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
   }
 
   @override
+  FutureResult<Unit> setFeaturedBudgetId({required String? budgetId}) async {
+    try {
+      await _local.setFeaturedBudgetId(budgetId: budgetId, now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  @override
   FutureResult<Unit> markCategoriesSeeded() async {
     try {
       await _local.markCategoriesSeeded(now: DateTime.now());
@@ -80,6 +92,7 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
           zeroBasedEnabled: row.zeroBasedEnabled,
           categoriesSeeded: row.categoriesSeeded,
           onboardingCompleted: row.onboardingCompleted,
+          featuredBudgetId: row.featuredBudgetId,
         );
 
   StreamTransformer<Result<AppSettings>, Result<AppSettings>> _guardStream() =>

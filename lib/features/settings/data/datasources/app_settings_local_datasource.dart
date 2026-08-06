@@ -58,6 +58,20 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Sets (or clears, with `null`) the singleton's `featuredBudgetId`.
+  /// `Value(budgetId)` (not `Value.absent()`) so passing `null` explicitly
+  /// clears the column back to "Automatico" instead of leaving it untouched.
+  Future<void> setFeaturedBudgetId({
+    required String? budgetId,
+    required DateTime now,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          featuredBudgetId: Value(budgetId),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
   /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
   /// #14, docs/requirements/05-auth-sync.md) and SQLite rejects

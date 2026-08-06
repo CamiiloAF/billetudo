@@ -12,7 +12,7 @@ import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart'
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
-import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -37,8 +37,8 @@ class _MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class _MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
-class _MockWatchGlobalMonthlyBudgetProgress extends Mock
-    implements WatchGlobalMonthlyBudgetProgress {}
+class _MockWatchFeaturedBudgetProgress extends Mock
+    implements WatchFeaturedBudgetProgress {}
 
 void main() {
   setUpAll(() {
@@ -55,8 +55,8 @@ void main() {
     final watchAuthSession = _MockWatchAuthSession();
     final watchSyncStatus = _MockWatchSyncStatus();
     final restoreTransaction = _MockRestoreTransaction();
-    final watchGlobalMonthlyBudgetProgress =
-        _MockWatchGlobalMonthlyBudgetProgress();
+    final watchFeaturedBudgetProgress =
+        _MockWatchFeaturedBudgetProgress();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -69,7 +69,7 @@ void main() {
     when(watchSyncStatus.call).thenAnswer(
       (_) => const Stream<SyncStatusSnapshot>.empty(),
     );
-    when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
+    when(watchFeaturedBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
     );
     getIt
@@ -80,7 +80,7 @@ void main() {
           watchAuthSession,
           watchSyncStatus,
           restoreTransaction,
-          watchGlobalMonthlyBudgetProgress,
+          watchFeaturedBudgetProgress,
         ),
       )
       // `BilletudoApp` resolves `ThemeModeCubit` from `getIt` directly, not
