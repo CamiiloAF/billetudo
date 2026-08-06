@@ -7236,6 +7236,144 @@ abstract class AppLocalizations {
   /// **'Todo coincide con lo que ya tienes'**
   String get importExportDestinationsNoneTitle;
 
+  /// No description provided for @importExportDestinationsAllInvalidTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada por resolver todavía'**
+  String get importExportDestinationsAllInvalidTitle;
+
+  /// No description provided for @importExportDestinationsAllInvalidBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna de las {count} filas se pudo leer con el mapeo actual — revisa el paso anterior antes de seguir.'**
+  String importExportDestinationsAllInvalidBody(int count);
+
+  /// No description provided for @importExportDestinationsReviewMappingCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar mapeo'**
+  String get importExportDestinationsReviewMappingCta;
+
+  /// No description provided for @importExportMappingModeAutomatic.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get importExportMappingModeAutomatic;
+
+  /// No description provided for @importExportMappingModeManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get importExportMappingModeManual;
+
+  /// No description provided for @importExportMappingModeAutoSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así vamos a leer tu archivo'**
+  String get importExportMappingModeAutoSummaryTitle;
+
+  /// No description provided for @importExportMappingModeAutoConfirmCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar mapeo'**
+  String get importExportMappingModeAutoConfirmCta;
+
+  /// No description provided for @importExportMappingModeAutoIncompleteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Nos falta identificar fecha, monto o cuenta — cambia a Manual para mapearlos.'**
+  String get importExportMappingModeAutoIncompleteHint;
+
+  /// No description provided for @importExportDateFormatOptionIso.
+  ///
+  /// In es, this message translates to:
+  /// **'AAAA-MM-DD'**
+  String get importExportDateFormatOptionIso;
+
+  /// No description provided for @importExportDateFormatOptionDmySlash.
+  ///
+  /// In es, this message translates to:
+  /// **'DD/MM/AAAA'**
+  String get importExportDateFormatOptionDmySlash;
+
+  /// No description provided for @importExportDateFormatOptionDmyDash.
+  ///
+  /// In es, this message translates to:
+  /// **'DD-MM-AAAA'**
+  String get importExportDateFormatOptionDmyDash;
+
+  /// No description provided for @importExportDateFormatOptionDmyDot.
+  ///
+  /// In es, this message translates to:
+  /// **'DD.MM.AAAA'**
+  String get importExportDateFormatOptionDmyDot;
+
+  /// No description provided for @importExportDateFormatOptionMdySlash.
+  ///
+  /// In es, this message translates to:
+  /// **'MM/DD/AAAA'**
+  String get importExportDateFormatOptionMdySlash;
+
+  /// No description provided for @importExportDateFormatOptionMdyDash.
+  ///
+  /// In es, this message translates to:
+  /// **'MM-DD-AAAA'**
+  String get importExportDateFormatOptionMdyDash;
+
+  /// No description provided for @importExportDateFormatOptionMdyDot.
+  ///
+  /// In es, this message translates to:
+  /// **'MM.DD.AAAA'**
+  String get importExportDateFormatOptionMdyDot;
+
+  /// No description provided for @importExportDateFormatPreviewUnreadable.
+  ///
+  /// In es, this message translates to:
+  /// **'\"{value}\" no se pudo leer con este formato'**
+  String importExportDateFormatPreviewUnreadable(String value);
+
+  /// No description provided for @importExportTypeValuesResultIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como ingreso'**
+  String get importExportTypeValuesResultIncome;
+
+  /// No description provided for @importExportTypeValuesResultExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como gasto'**
+  String get importExportTypeValuesResultExpense;
+
+  /// No description provided for @importExportTypeValuesResultTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como transferencia'**
+  String get importExportTypeValuesResultTransfer;
+
+  /// No description provided for @importExportTypeValuesResultNoMatch.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos clasificar tu primera fila con estos valores'**
+  String get importExportTypeValuesResultNoMatch;
+
+  /// No description provided for @importExportTypeValuesIncomeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"ingreso\"'**
+  String get importExportTypeValuesIncomeLabel;
+
+  /// No description provided for @importExportTypeValuesExpenseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"gasto\"'**
+  String get importExportTypeValuesExpenseLabel;
+
+  /// No description provided for @importExportTypeValuesTransferLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"transferencia\"'**
+  String get importExportTypeValuesTransferLabel;
+
   /// No description provided for @importExportDestinationNotFound.
   ///
   /// In es, this message translates to:

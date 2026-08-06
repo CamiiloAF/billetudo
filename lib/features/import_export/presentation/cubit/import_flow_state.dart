@@ -4,6 +4,7 @@ import '../../../../core/error/result.dart';
 import '../../domain/entities/column_mapping.dart';
 import '../../domain/entities/csv_dialect.dart';
 import '../../domain/entities/import_destination.dart';
+import '../../domain/entities/import_mapping_mode.dart';
 import '../../domain/entities/import_preview.dart';
 import '../../domain/entities/import_summary.dart';
 import '../../domain/entities/mapping_template.dart';
@@ -35,6 +36,7 @@ class ImportFlowState extends Equatable {
     this.sample,
     this.dialect = const CsvDialect(),
     this.mapping = const ColumnMapping(columns: {}),
+    this.mappingMode = ImportMappingMode.automatic,
     this.matchedTemplateName,
     this.templates = const [],
     this.accountOverrides = const {},
@@ -57,6 +59,13 @@ class ImportFlowState extends Equatable {
   final ParsedCsvSample? sample;
   final CsvDialect dialect;
   final ColumnMapping mapping;
+
+  /// Governs the mapping step's view (HU-05/06): [ImportMappingMode.automatic]
+  /// shows the autodetected mapping as a short summary to confirm in one tap;
+  /// [ImportMappingMode.manual] exposes every column and the three format
+  /// fields for hand-tuning. Reset to `automatic` on every new file (`_loadFile`)
+  /// — each file gets its own fresh chance at the one-tap path.
+  final ImportMappingMode mappingMode;
 
   /// Non-null when a saved template recognized this file's headers outright
   /// (HU-06).
@@ -94,6 +103,7 @@ class ImportFlowState extends Equatable {
     ParsedCsvSample? sample,
     CsvDialect? dialect,
     ColumnMapping? mapping,
+    ImportMappingMode? mappingMode,
     String? matchedTemplateName,
     bool clearMatchedTemplateName = false,
     List<MappingTemplate>? templates,
@@ -116,6 +126,7 @@ class ImportFlowState extends Equatable {
         sample: sample ?? this.sample,
         dialect: dialect ?? this.dialect,
         mapping: mapping ?? this.mapping,
+        mappingMode: mappingMode ?? this.mappingMode,
         matchedTemplateName: clearMatchedTemplateName
             ? null
             : (matchedTemplateName ?? this.matchedTemplateName),
@@ -141,6 +152,7 @@ class ImportFlowState extends Equatable {
         sample,
         dialect,
         mapping,
+        mappingMode,
         matchedTemplateName,
         templates,
         accountOverrides,

@@ -97,6 +97,70 @@ void main() {
     });
   });
 
+  group('archivo con encabezado propio pero valores de otra app (bug real)', () {
+    test(
+      'encabezados coinciden con el vocabulario propio pero los valores de '
+      'muestra de la columna "tipo" son ajenos (ej. Wallet/BudgetBakers): '
+      'typeValues queda null y la columna de tipo no se marca mapeada, para '
+      'que la fila caiga al parseo por signo del monto en vez de fallar como '
+      'invalidType en el 100% de las filas',
+      () {
+        final headers = CsvVocabulary.es.transactionHeaderRow;
+        final typeIndex = headers.indexOf('tipo');
+        final sampleRows = [
+          [for (var i = 0; i < headers.length; i++) if (i == typeIndex) 'Gastos' else 'x'],
+          [for (var i = 0; i < headers.length; i++) if (i == typeIndex) 'Ingresos' else 'x'],
+        ];
+
+        final result = usecase(
+          headers: headers,
+          detectedDialect: dialect,
+          sampleRows: sampleRows,
+        );
+
+        expect(result.mapping.typeValues, isNull);
+        expect(result.mapping.hasTypeColumn, isFalse);
+        expect(result.mapping.columnFor(ImportField.type), isNull);
+        // fecha/monto/cuenta siguen autodetectados normalmente — solo la
+        // columna de tipo queda sin mapear.
+        expect(result.mapping.isComplete, isTrue);
+      },
+    );
+
+    test(
+      'si al menos una fila de muestra sí coincide con el vocabulario propio, '
+      'la columna de tipo se mapea normalmente',
+      () {
+        final headers = CsvVocabulary.es.transactionHeaderRow;
+        final typeIndex = headers.indexOf('tipo');
+        final sampleRows = [
+          [for (var i = 0; i < headers.length; i++) if (i == typeIndex) 'Gastos' else 'x'],
+          [for (var i = 0; i < headers.length; i++) if (i == typeIndex) 'gasto' else 'x'],
+        ];
+
+        final result = usecase(
+          headers: headers,
+          detectedDialect: dialect,
+          sampleRows: sampleRows,
+        );
+
+        expect(result.mapping.hasTypeColumn, isTrue);
+        expect(result.mapping.typeValues, CsvVocabulary.es.typeValues);
+      },
+    );
+
+    test('sin filas de muestra (archivo vacío), se confía en el encabezado', () {
+      final result = usecase(
+        headers: CsvVocabulary.es.transactionHeaderRow,
+        detectedDialect: dialect,
+        sampleRows: const [],
+      );
+
+      expect(result.mapping.hasTypeColumn, isTrue);
+      expect(result.mapping.typeValues, CsvVocabulary.es.typeValues);
+    });
+  });
+
   group('plantillas guardadas (HU-06)', () {
     test('una plantilla cuyos encabezados coinciden se usa directamente', () {
       final template = MappingTemplate(

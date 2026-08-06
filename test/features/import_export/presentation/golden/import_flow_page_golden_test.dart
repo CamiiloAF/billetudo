@@ -3,6 +3,7 @@ import 'package:billetudo/features/import_export/domain/entities/csv_dialect.dar
 import 'package:billetudo/features/import_export/domain/entities/import_batch.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_destination.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_entry_type.dart';
+import 'package:billetudo/features/import_export/domain/entities/import_mapping_mode.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview_row.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_row_issue.dart';
@@ -159,6 +160,21 @@ void main() {
       );
     });
 
+    testWidgets('mapping columns, manual mode ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ImportFlowState(
+          step: ImportFlowStep.mapping,
+          sample: sample,
+          mapping: mapping,
+          mappingMode: ImportMappingMode.manual,
+        ),
+        'mapping_manual_$suffix',
+        brightness: brightness,
+        size: tallGoldenPhoneSize(height: 1400),
+      );
+    });
+
     testWidgets('mapping columns, template matched ($suffix)', (tester) async {
       await golden(
         tester,
@@ -185,6 +201,36 @@ void main() {
         brightness: brightness,
       );
     });
+
+    testWidgets(
+      'resolve destinations, every row invalid — never "todo coincide" ($suffix)',
+      (tester) async {
+        await golden(
+          tester,
+          ImportFlowState(
+            step: ImportFlowStep.destinations,
+            preview: const ImportPreview(
+              rows: [
+                ImportPreviewRow(
+                  rowNumber: 2,
+                  status: ImportRowStatus.invalid,
+                  includedByDefault: false,
+                  invalidIssue: ImportRowIssue.invalidType,
+                ),
+                ImportPreviewRow(
+                  rowNumber: 3,
+                  status: ImportRowStatus.invalid,
+                  includedByDefault: false,
+                  invalidIssue: ImportRowIssue.invalidType,
+                ),
+              ],
+            ),
+          ),
+          'destinations_all_invalid_$suffix',
+          brightness: brightness,
+        );
+      },
+    );
 
     testWidgets('final preview, severity hierarchy ($suffix)', (tester) async {
       await golden(

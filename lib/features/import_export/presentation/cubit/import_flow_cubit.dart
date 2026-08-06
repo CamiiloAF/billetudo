@@ -7,6 +7,7 @@ import '../../domain/entities/cancellation_token.dart';
 import '../../domain/entities/column_mapping.dart';
 import '../../domain/entities/csv_dialect.dart';
 import '../../domain/entities/import_destination.dart';
+import '../../domain/entities/import_mapping_mode.dart';
 import '../../domain/entities/import_preview.dart';
 import '../../domain/entities/import_summary.dart';
 import '../../domain/entities/mapping_template.dart';
@@ -116,6 +117,7 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
       headers: sample.headers,
       detectedDialect: sample.dialect,
       savedTemplates: templates,
+      sampleRows: sample.sampleRows,
     );
 
     emit(
@@ -125,6 +127,7 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
         templates: templates,
         dialect: autodetected.dialect,
         mapping: autodetected.mapping,
+        mappingMode: ImportMappingMode.automatic,
         matchedTemplateName: autodetected.matchedTemplateName,
         clearMatchedTemplateName: autodetected.matchedTemplateName == null,
         step: ImportFlowStep.mapping,
@@ -150,6 +153,51 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
       emit(state.copyWith(mapping: state.mapping.copyWith(typeValues: values)));
 
   void setDialect(CsvDialect dialect) => emit(state.copyWith(dialect: dialect));
+
+  /// Switches the mapping step between its one-tap "Automático" summary and
+  /// the fully manual column-by-column view.
+  void setMappingMode(ImportMappingMode mode) =>
+      emit(state.copyWith(mappingMode: mode));
+
+  /// Applies the date-format sheet's choice (order + separator) to the
+  /// current dialect, leaving the decimal convention untouched.
+  void applyDateFormat(DateComponentOrder order, DateSeparatorChar separator) =>
+      emit(
+        state.copyWith(
+          dialect: state.dialect.copyWith(dateOrder: order, dateSeparator: separator),
+        ),
+      );
+
+  /// Applies the decimal-convention sheet's choice, leaving the date format
+  /// untouched.
+  void applyDecimalConvention(DecimalConvention convention) => emit(
+        state.copyWith(dialect: state.dialect.copyWith(decimalConvention: convention)),
+      );
+
+  /// Applies the type-values sheet's "columna de tipo" choice: maps
+  /// [columnIndex] to [ImportField.type] (dropping it from wherever it was
+  /// mapped before, same rule as [setFieldForColumn]) and records [values] as
+  /// the literals that mean income/expense/transfer in that column.
+  void applyTypeColumn(int columnIndex, TypeColumnValues values) {
+    final columns = Map<ImportField, int>.from(state.mapping.columns)
+      ..removeWhere((_, index) => index == columnIndex)
+      ..[ImportField.type] = columnIndex;
+    emit(
+      state.copyWith(
+        mapping: ColumnMapping(columns: columns, typeValues: values),
+      ),
+    );
+  }
+
+  /// Applies the type-values sheet's "signo del monto" choice: unmaps
+  /// [ImportField.type] entirely and clears [ColumnMapping.typeValues], so
+  /// `PreviewImport` falls back to reading the amount's sign as the
+  /// income/expense direction.
+  void applyAmountSignMode() {
+    final columns = Map<ImportField, int>.from(state.mapping.columns)
+      ..remove(ImportField.type);
+    emit(state.copyWith(mapping: ColumnMapping(columns: columns)));
+  }
 
   /// Advances to "Resolver destinos" by running the first pass of
   /// `PreviewImport` with no overrides — every unmatched name starts as

@@ -1,6 +1,9 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/import_export/domain/entities/column_mapping.dart';
+import 'package:billetudo/features/import_export/domain/entities/csv_dialect.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_batch.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_destination.dart';
+import 'package:billetudo/features/import_export/domain/entities/import_mapping_mode.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview_row.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_summary.dart';
@@ -214,6 +217,97 @@ void main() {
         isA<ImportFlowState>()
             .having((s) => s.runStatus, 'runStatus', ImportFlowRunStatus.idle)
             .having((s) => s.step, 'step', ImportFlowStep.summary),
+      ],
+    );
+  });
+
+  group('mapping mode + format sheets — HU-05/06', () {
+    blocTest<ImportFlowCubit, ImportFlowState>(
+      'setMappingMode cambia entre Automático y Manual',
+      build: build,
+      act: (cubit) => cubit.setMappingMode(ImportMappingMode.manual),
+      expect: () => [
+        isA<ImportFlowState>()
+            .having((s) => s.mappingMode, 'mappingMode', ImportMappingMode.manual),
+      ],
+    );
+
+    blocTest<ImportFlowCubit, ImportFlowState>(
+      'applyDateFormat actualiza el orden y separador del dialecto sin tocar la convención decimal',
+      build: build,
+      seed: () => const ImportFlowState(
+        dialect: CsvDialect(decimalConvention: DecimalConvention.comma),
+      ),
+      act: (cubit) => cubit.applyDateFormat(
+        DateComponentOrder.dayMonthYear,
+        DateSeparatorChar.slash,
+      ),
+      expect: () => [
+        isA<ImportFlowState>()
+            .having((s) => s.dialect.dateOrder, 'dateOrder', DateComponentOrder.dayMonthYear)
+            .having((s) => s.dialect.dateSeparator, 'dateSeparator', DateSeparatorChar.slash)
+            .having(
+              (s) => s.dialect.decimalConvention,
+              'decimalConvention',
+              DecimalConvention.comma,
+            ),
+      ],
+    );
+
+    blocTest<ImportFlowCubit, ImportFlowState>(
+      'applyDecimalConvention actualiza solo la convención decimal',
+      build: build,
+      act: (cubit) => cubit.applyDecimalConvention(DecimalConvention.comma),
+      expect: () => [
+        isA<ImportFlowState>().having(
+          (s) => s.dialect.decimalConvention,
+          'decimalConvention',
+          DecimalConvention.comma,
+        ),
+      ],
+    );
+
+    blocTest<ImportFlowCubit, ImportFlowState>(
+      'applyTypeColumn mapea la columna a tipo y fija los literales, reemplazando cualquier '
+      'mapeo previo de esa columna',
+      build: build,
+      seed: () => const ImportFlowState(
+        mapping: ColumnMapping(columns: {ImportField.note: 2}),
+      ),
+      act: (cubit) => cubit.applyTypeColumn(
+        2,
+        const TypeColumnValues(income: 'Ingresos', expense: 'Gastos', transfer: 'Transferencia'),
+      ),
+      expect: () => [
+        isA<ImportFlowState>()
+            .having((s) => s.mapping.columnFor(ImportField.type), 'type column', 2)
+            .having((s) => s.mapping.columnFor(ImportField.note), 'note column', isNull)
+            .having(
+              (s) => s.mapping.typeValues,
+              'typeValues',
+              const TypeColumnValues(
+                income: 'Ingresos',
+                expense: 'Gastos',
+                transfer: 'Transferencia',
+              ),
+            ),
+      ],
+    );
+
+    blocTest<ImportFlowCubit, ImportFlowState>(
+      'applyAmountSignMode desmapea tipo y limpia los literales',
+      build: build,
+      seed: () => const ImportFlowState(
+        mapping: ColumnMapping(
+          columns: {ImportField.type: 1},
+          typeValues: TypeColumnValues(income: 'Ingresos', expense: 'Gastos', transfer: 'T'),
+        ),
+      ),
+      act: (cubit) => cubit.applyAmountSignMode(),
+      expect: () => [
+        isA<ImportFlowState>()
+            .having((s) => s.mapping.hasTypeColumn, 'hasTypeColumn', isFalse)
+            .having((s) => s.mapping.typeValues, 'typeValues', isNull),
       ],
     );
   });

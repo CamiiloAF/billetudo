@@ -68,9 +68,16 @@ class ImportFlowBody extends StatelessWidget {
         }
         return ImportMappingStep(
           sample: sample,
+          dialect: state.dialect,
           mapping: state.mapping,
+          mappingMode: state.mappingMode,
           matchedTemplateName: state.matchedTemplateName,
+          onMappingModeChanged: cubit.setMappingMode,
           onFieldChanged: cubit.setFieldForColumn,
+          onDateFormatChanged: cubit.applyDateFormat,
+          onDecimalConventionChanged: cubit.applyDecimalConvention,
+          onTypeColumnChanged: cubit.applyTypeColumn,
+          onAmountSignModeChanged: cubit.applyAmountSignMode,
           onConfirm: cubit.confirmMapping,
         );
       case ImportFlowStep.destinations:
@@ -93,6 +100,7 @@ class ImportFlowBody extends StatelessWidget {
           loadExistingSubcategories: cubit.loadExistingSubcategories,
           loadExistingTags: cubit.loadExistingTags,
           onConfirm: cubit.confirmDestinations,
+          onReviewMapping: () => cubit.goToStep(ImportFlowStep.mapping),
         );
       case ImportFlowStep.preview:
         final preview = state.preview;

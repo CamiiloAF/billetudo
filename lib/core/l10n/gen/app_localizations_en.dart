@@ -4372,6 +4372,88 @@ class AppLocalizationsEn extends AppLocalizations {
       'Everything matches what you already have';
 
   @override
+  String get importExportDestinationsAllInvalidTitle =>
+      'Nothing to resolve yet';
+
+  @override
+  String importExportDestinationsAllInvalidBody(int count) {
+    return 'None of the $count rows could be read with the current mapping — go back and check the previous step before continuing.';
+  }
+
+  @override
+  String get importExportDestinationsReviewMappingCta => 'Review mapping';
+
+  @override
+  String get importExportMappingModeAutomatic => 'Automatic';
+
+  @override
+  String get importExportMappingModeManual => 'Manual';
+
+  @override
+  String get importExportMappingModeAutoSummaryTitle =>
+      'Here\'s how we\'ll read your file';
+
+  @override
+  String get importExportMappingModeAutoConfirmCta => 'Confirm mapping';
+
+  @override
+  String get importExportMappingModeAutoIncompleteHint =>
+      'We still can\'t tell date, amount or account apart — switch to Manual to map them.';
+
+  @override
+  String get importExportDateFormatOptionIso => 'YYYY-MM-DD';
+
+  @override
+  String get importExportDateFormatOptionDmySlash => 'DD/MM/YYYY';
+
+  @override
+  String get importExportDateFormatOptionDmyDash => 'DD-MM-YYYY';
+
+  @override
+  String get importExportDateFormatOptionDmyDot => 'DD.MM.YYYY';
+
+  @override
+  String get importExportDateFormatOptionMdySlash => 'MM/DD/YYYY';
+
+  @override
+  String get importExportDateFormatOptionMdyDash => 'MM-DD-YYYY';
+
+  @override
+  String get importExportDateFormatOptionMdyDot => 'MM.DD.YYYY';
+
+  @override
+  String importExportDateFormatPreviewUnreadable(String value) {
+    return '\"$value\" couldn\'t be read with this format';
+  }
+
+  @override
+  String get importExportTypeValuesResultIncome =>
+      'This row would read as income';
+
+  @override
+  String get importExportTypeValuesResultExpense =>
+      'This row would read as an expense';
+
+  @override
+  String get importExportTypeValuesResultTransfer =>
+      'This row would read as a transfer';
+
+  @override
+  String get importExportTypeValuesResultNoMatch =>
+      'We couldn\'t classify your first row with these values';
+
+  @override
+  String get importExportTypeValuesIncomeLabel => 'Value that means \"income\"';
+
+  @override
+  String get importExportTypeValuesExpenseLabel =>
+      'Value that means \"expense\"';
+
+  @override
+  String get importExportTypeValuesTransferLabel =>
+      'Value that means \"transfer\"';
+
+  @override
   String get importExportDestinationNotFound =>
       'Doesn\'t exist in your app yet';
 

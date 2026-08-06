@@ -104,4 +104,56 @@ void main() {
       );
     });
   });
+
+  group('CsvDateParser.parse — sufijo de hora (exportaciones de terceros)', () {
+    test('ISO con hora "2026-07-05 22:14:10" parsea solo la fecha', () {
+      final parsed = CsvDateParser.parse(
+        '2026-07-05 22:14:10',
+        order: DateComponentOrder.isoYmd,
+        separator: DateSeparatorChar.dash,
+      );
+
+      expect(parsed!.date, DateTime(2026, 7, 5));
+    });
+
+    test('DMY con hora "05/07/2026 22:14:10" parsea solo la fecha', () {
+      final parsed = CsvDateParser.parse(
+        '05/07/2026 22:14:10',
+        order: DateComponentOrder.dayMonthYear,
+        separator: DateSeparatorChar.slash,
+      );
+
+      expect(parsed!.date, DateTime(2026, 7, 5));
+    });
+
+    test('MDY con hora "07/25/2026 08:00:00" parsea solo la fecha', () {
+      final parsed = CsvDateParser.parse(
+        '07/25/2026 08:00:00',
+        order: DateComponentOrder.monthDayYear,
+        separator: DateSeparatorChar.slash,
+      );
+
+      expect(parsed!.date, DateTime(2026, 7, 25));
+    });
+
+    test('con punto como separador y hora, también parsea solo la fecha', () {
+      final parsed = CsvDateParser.parse(
+        '05.07.2026 22:14',
+        order: DateComponentOrder.dayMonthYear,
+        separator: DateSeparatorChar.dot,
+      );
+
+      expect(parsed!.date, DateTime(2026, 7, 5));
+    });
+
+    test('sin sufijo de hora el comportamiento no cambia', () {
+      final parsed = CsvDateParser.parse(
+        '2026-07-05',
+        order: DateComponentOrder.isoYmd,
+        separator: DateSeparatorChar.dash,
+      );
+
+      expect(parsed!.date, DateTime(2026, 7, 5));
+    });
+  });
 }

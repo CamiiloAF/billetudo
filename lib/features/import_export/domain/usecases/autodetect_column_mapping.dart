@@ -20,6 +20,7 @@ class AutodetectColumnMapping {
     required List<String> headers,
     required CsvDialect detectedDialect,
     List<MappingTemplate> savedTemplates = const [],
+    List<List<String>> sampleRows = const [],
   }) {
     final normalizedHeaders = headers.map(normalizeForMatching).toList();
 
@@ -45,16 +46,27 @@ class AutodetectColumnMapping {
         }
         final label = normalizeForMatching(vocabulary.transactionHeaders[column]!);
         final index = normalizedHeaders.indexOf(label);
-        if (index != -1) {
-          columns[field] = index;
-          if (field == ImportField.type) {
-            // Own-format autodetection (HU-05 "un toque"): the `tipo`/`type`
-            // header matched this vocabulary, so its canonical
-            // ingreso/gasto/transferencia (or income/expense/transfer)
-            // literals are the values that column actually contains.
-            typeValues = vocabulary.typeValues;
-          }
+        if (index == -1) {
+          continue;
         }
+        if (field == ImportField.type) {
+          // Own-format autodetection (HU-05 "un toque") is only valid if the
+          // column's actual values look like this vocabulary's
+          // ingreso/gasto/transferencia (or income/expense/transfer)
+          // literals — a foreign export (e.g. Wallet/BudgetBakers) can reuse
+          // the header text `tipo`/`type` for values ("Gastos"/"Ingresos")
+          // that mean nothing to `ImportRepositoryImpl.parseRow`. Matching by
+          // header alone there produced a false "complete" mapping that
+          // failed every single row as `invalidType` instead of falling back
+          // to the amount's sign. So leave the column unmapped (available for
+          // manual mapping) unless at least one sampled value actually
+          // matches.
+          if (!_sampleValuesMatchVocabulary(sampleRows, index, vocabulary.typeValues)) {
+            continue;
+          }
+          typeValues = vocabulary.typeValues;
+        }
+        columns[field] = index;
       }
     }
 
@@ -62,6 +74,35 @@ class AutodetectColumnMapping {
       mapping: ColumnMapping(columns: columns, typeValues: typeValues),
       dialect: detectedDialect,
     );
+  }
+
+  /// True when at least one sample row has a non-empty value in [columnIndex]
+  /// that matches (case-insensitively) one of [values]'s three literals.
+  /// With no sample rows at all (e.g. an empty file) there is nothing to
+  /// validate against, so the header match alone is trusted.
+  bool _sampleValuesMatchVocabulary(
+    List<List<String>> sampleRows,
+    int columnIndex,
+    TypeColumnValues values,
+  ) {
+    if (sampleRows.isEmpty) {
+      return true;
+    }
+    final candidates = {
+      values.income.toLowerCase(),
+      values.expense.toLowerCase(),
+      values.transfer.toLowerCase(),
+    };
+    for (final row in sampleRows) {
+      if (columnIndex >= row.length) {
+        continue;
+      }
+      final raw = row[columnIndex].trim().toLowerCase();
+      if (raw.isNotEmpty && candidates.contains(raw)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// `budgetable`/`source` (HU-01 export-only columns) have no [ImportField]

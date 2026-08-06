@@ -109,9 +109,12 @@ void main() {
       await $.tester.tap(find.text('Elegir archivo'));
       await $.tester.pumpAndSettle();
 
-      // Mapping step: own vocabulary fully autodetected, just confirm.
+      // Mapping step: own vocabulary fully autodetected — defaults to the
+      // "Automático" toggle, whose CTA reads "Confirmar mapeo" (not
+      // "Continuar", that label is Manual mode's) — just confirm.
       expect(find.text('Mapeo de columnas'), findsOneWidget);
-      await $.tester.tap(find.text('Continuar'));
+      expect(find.text('Automático'), findsOneWidget);
+      await $.tester.tap(find.text('Confirmar mapeo'));
       await $.tester.pumpAndSettle();
 
       // Destinations step: "Cuenta E2E" and "Mercado E2E" are both new,
@@ -121,8 +124,11 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // Final preview: one valid, non-duplicate row, checked by default.
+      // `ImportPreviewStep`'s CTA is `importExportImportRowsCta(count)`
+      // ("Importar {count} movimientos"), not a fixed "Confirmar
+      // importación" label — this scenario always has exactly one row.
       expect(find.text('Vista previa'), findsOneWidget);
-      await $.tester.tap(find.text('Confirmar importación'));
+      await $.tester.tap(find.text('Importar 1 movimientos'));
       await $.tester.pumpAndSettle();
 
       // Summary: the write committed inside ConfirmImport's single

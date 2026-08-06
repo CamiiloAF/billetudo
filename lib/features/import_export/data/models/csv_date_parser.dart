@@ -28,9 +28,15 @@ abstract final class CsvDateParser {
       return null;
     }
 
+    // Some third-party exports (e.g. Wallet/BudgetBakers) append a
+    // space-separated time-of-day (`2026-07-05 22:14:10`) to the date cell.
+    // The mapping only ever asks for a date format, so only the date part
+    // before the first space is parsed — the time, if any, is discarded.
+    final datePart = trimmed.split(' ').first;
+
     final separatorChar =
         order == DateComponentOrder.isoYmd ? '-' : _charOf(separator);
-    final parts = trimmed.split(separatorChar);
+    final parts = datePart.split(separatorChar);
     if (parts.length != 3) {
       return null;
     }
