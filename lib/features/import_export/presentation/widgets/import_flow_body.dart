@@ -41,6 +41,7 @@ class ImportFlowBody extends StatelessWidget {
         actionIcon: IoErrorIcons.chooseAnotherFile,
         onAction: cubit.dismissError,
         onCancel: onDone,
+        stackButtons: true,
       );
     }
     if (state.isWorking) {

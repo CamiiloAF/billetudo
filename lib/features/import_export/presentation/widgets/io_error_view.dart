@@ -24,6 +24,7 @@ class IoErrorView extends StatelessWidget {
     required this.actionIcon,
     required this.onAction,
     this.onCancel,
+    this.stackButtons = false,
     super.key,
   });
 
@@ -42,6 +43,14 @@ class IoErrorView extends StatelessWidget {
 
   /// Closes the whole flow instead of retrying. `null` omits the button.
   final VoidCallback? onCancel;
+
+  /// Stacks "Cancelar" above [actionLabel] instead of the default 50/50
+  /// `Sheet Buttons Row` split — for a caller whose [actionLabel] is long
+  /// enough to truncate at half-width (ej. "Elegir otro archivo" vs.
+  /// "Reintentar"). Same fix already applied to "Deshacer importación"
+  /// (MASTER.md, "CTA destructivo con label largo"): prioritize readable
+  /// text over keeping the 50/50 layout.
+  final bool stackButtons;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +74,21 @@ class IoErrorView extends StatelessWidget {
               messageFontSize: 14,
             ),
             const SizedBox(height: 20),
-            if (onCancel case final onCancel?)
+            if (onCancel case final onCancel? when stackButtons)
+              Column(
+                children: [
+                  SizedBox(width: double.infinity, child: action),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: onCancel,
+                      child: Text(l10n.commonCancel),
+                    ),
+                  ),
+                ],
+              )
+            else if (onCancel case final onCancel?)
               SheetButtonsRow(
                 left: OutlinedButton(onPressed: onCancel, child: Text(l10n.commonCancel)),
                 right: action,

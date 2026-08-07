@@ -82,6 +82,7 @@ class RestoreBody extends StatelessWidget {
           actionIcon: IoErrorIcons.chooseAnotherFile,
           onAction: cubit.dismissError,
           onCancel: onDone,
+          stackButtons: true,
         );
       case RestoreStep.done:
         final summary = state.summary!;
