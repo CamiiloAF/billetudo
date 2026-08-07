@@ -137,21 +137,11 @@ class BudgetDetailPage extends StatelessWidget {
     }
     final id = budget.id;
     final settings = context.read<AppSettingsCubit>();
-    // The RESOLVED pick (same `BudgetHeroSelector.pick` Home's hero and the
-    // list's star badge use, `budgets_list_cubit.dart`), never the raw
-    // `AppSettings.featuredBudgetId` alone — a budget only featured via the
-    // automatic global+monthly fallback (no manual pick) must still read as
-    // "featured" here, or the sheet offers the wrong toggle direction.
-    final resolvedFeatured = BudgetHeroSelector.pick(
-      settings.state.activeBudgets,
-      mode: settings.state.settings.featuredBudgetMode,
-      featuredBudgetId: settings.state.featuredBudgetId,
-    );
-    final isFeatured = resolvedFeatured?.budget.id == id;
     final action = await BudgetDetailActionsSheet.show(
       context,
       budgetName: budget.name,
-      isFeatured: isFeatured,
+      budgetId: id,
+      settingsCubit: settings,
     );
     if (action == null || !context.mounted) {
       return;
@@ -160,6 +150,22 @@ class BudgetDetailPage extends StatelessWidget {
       case BudgetDetailAction.edit:
         onEdit(id);
       case BudgetDetailAction.toggleFeatured:
+        // Resolved fresh here, not reused from a value captured when the
+        // sheet was opened: the RESOLVED pick (same `BudgetHeroSelector.pick`
+        // Home's hero and the list's star badge use,
+        // `budgets_list_cubit.dart`), never the raw
+        // `AppSettings.featuredBudgetId` alone — a budget only featured via
+        // the automatic global+monthly fallback (no manual pick) must still
+        // read as "featured" here, or this toggles the wrong direction. By
+        // the time the user has read the sheet and tapped a row,
+        // `AppSettingsCubit`'s stream has had every chance to emit its real
+        // value, closing the race a static snapshot at open-time could not.
+        final resolvedFeatured = BudgetHeroSelector.pick(
+          settings.state.activeBudgets,
+          mode: settings.state.settings.featuredBudgetMode,
+          featuredBudgetId: settings.state.featuredBudgetId,
+        );
+        final isFeatured = resolvedFeatured?.budget.id == id;
         // No confirmation: the sheet's own subtitle already warns that
         // marking a new one silently replaces the previous featured budget.
         // Removing goes through `ClearFeaturedBudget` (mode `none`), never
