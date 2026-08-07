@@ -67,11 +67,19 @@ class HomeHeroCard extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final amount = const MoneyFormatter().formatSymbol(
-      spending.displayTotalMinor,
-      currencyCode: spending.displayCurrency,
-    );
     final progress = budgetProgress;
+    // With a featured budget, the amount must reflect ITS window (which can
+    // be anchored on any day, e.g. "27 jul – 26 ago"), never the calendar
+    // month total `spending` carries — that one only applies to the
+    // no-budget-featured fallback caption/state below.
+    final amount = const MoneyFormatter().formatSymbol(
+      progress != null
+          ? progress.progress.spentMinor
+          : spending.displayTotalMinor,
+      currencyCode: progress != null
+          ? progress.budget.currency
+          : spending.displayCurrency,
+    );
 
     final card = Container(
       width: double.infinity,
@@ -273,15 +281,28 @@ class HeroPeriodChevron extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final button = PageHeaderCircleButton(
+      icon: icon,
+      background: colors.surface,
+      foreground: colors.textPrimary,
+      tooltip: tooltip,
+      onPressed: onPressed,
+    );
     return Opacity(
       opacity: onPressed == null ? 0.4 : 1,
-      child: PageHeaderCircleButton(
-        icon: icon,
-        background: colors.surface,
-        foreground: colors.textPrimary,
-        tooltip: tooltip,
-        onPressed: onPressed,
-      ),
+      // Disabled means "no window to step to" — a no-op `InkWell` (see
+      // `PageHeaderCircleButton`) does not claim the tap, so without this it
+      // falls through the gesture arena to the whole-card `InkWell` around
+      // `HomeHeroCard` and wrongly opens the featured budget's detail. An
+      // opaque `GestureDetector` with a no-op `onTap` absorbs it instead —
+      // the chevron does nothing, exactly as a disabled control should.
+      child: onPressed == null
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+              child: button,
+            )
+          : button,
     );
   }
 }

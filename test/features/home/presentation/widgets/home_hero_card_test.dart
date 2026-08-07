@@ -154,6 +154,27 @@ void main() {
     });
 
     testWidgets(
+        'regresión: el monto usa spentMinor de la ventana del presupuesto, '
+        'no el total del mes calendario cuando difieren (ej. presupuesto '
+        'anclado el 27)', (tester) async {
+      // `spending` mimics the current-calendar-month total the cubit always
+      // computes as a fallback; `budgetProgress.spentMinor` is the featured
+      // budget's own (differently-anchored) window total. They must not be
+      // conflated — the hero's big amount is what is "spent" in the
+      // budget's real period, not August's calendar total.
+      final budgetProgress = buildHomeBudgetProgress(
+        amountMinor: 600000,
+        spentMinor: 150000,
+      );
+      await tester.pumpHomeWidget(
+        hero(spendingWith(900000), budgetProgress: budgetProgress),
+      );
+
+      expect(find.textContaining('1.500'), findsOneWidget);
+      expect(find.textContaining('9.000'), findsNothing);
+    });
+
+    testWidgets(
         'diseño xBv3N: muestra el kicker "Gastado" sobre el monto en vez '
         'de la leyenda "Gastado en <mes>"', (tester) async {
       final budgetProgress = buildHomeBudgetProgress();
@@ -175,8 +196,7 @@ void main() {
 
       // Vertical order on screen (criterion 3): balance → stepper → budget
       // progress bar, never the old top/bottom placement.
-      final amountY =
-          tester.getTopLeft(find.textContaining('3.000').first).dy;
+      final amountY = tester.getTopLeft(find.textContaining('3.000').first).dy;
       final stepperY = tester.getTopLeft(find.byType(HeroPeriodStepper)).dy;
       final progressY =
           tester.getTopLeft(find.byType(HomeHeroBudgetProgress)).dy;
@@ -213,6 +233,32 @@ void main() {
       await tester.pump();
       expect(nextTapped, 1);
       expect(previousTapped, 0);
+    });
+
+    testWidgets(
+        'regresión: tocar un chevron deshabilitado no dispara onOpenBudget '
+        '(el tap no debe caer al InkWell del hero)', (tester) async {
+      var openBudgetTapped = 0;
+      var previousTapped = 0;
+      // hasPrevious: false at the fixture window bounds, so the left
+      // chevron renders disabled.
+      final budgetProgress = buildHomeBudgetProgress();
+      await tester.pumpHomeWidget(
+        hero(
+          spendingWith(300000),
+          budgetProgress: budgetProgress,
+          onOpenBudget: () => openBudgetTapped++,
+          onPreviousPeriod: () => previousTapped++,
+        ),
+      );
+
+      await tester.tap(find.byType(HeroPeriodChevron).first);
+      await tester.pump();
+
+      expect(previousTapped, 0);
+      expect(openBudgetTapped, 0,
+          reason: 'a disabled chevron must swallow the tap, not let it '
+              "fall through to the card's own onOpenBudget");
     });
 
     testWidgets('criterio 6: tocar el hero dispara onOpenBudget',
