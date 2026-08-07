@@ -1400,6 +1400,24 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
   String transactionsFilterAccountsSelected(int count);
 
+  /// Etiqueta del chip de categoría cuando hay una o más categorías activas como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 categoría} other{{count} categorías}}'**
+  String transactionsFilterCategoriesSelected(int count);
+
+  /// Etiqueta del chip de tipo cuando hay uno o más tipos activos como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 tipo} other{{count} tipos}}'**
+  String transactionsFilterTypeSelected(int count);
+
+  /// Etiqueta del chip de etiqueta cuando hay una o más etiquetas activas como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 etiqueta} other{{count} etiquetas}}'**
+  String transactionsFilterTagSelected(int count);
+
   /// Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2).
   ///
   /// In es, this message translates to:

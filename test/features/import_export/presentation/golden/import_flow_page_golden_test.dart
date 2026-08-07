@@ -222,17 +222,9 @@ void main() {
     // longer render on this page — they moved into `ImportRunSheet`
     // (`import_run_sheet_golden_test.dart`, decision 2026-08-07: `Aa1ek`/
     // `XRBVa`, `d9wzVg`/`VHJP8` and `TmHSC`/`HbEJc` all instance
-    // `Bottom Sheet Base` in `billetudo.pen`, not this page's chrome). Only
-    // the initial file-parse error (still surfaced inline, `step` stays
-    // `fileSelect`) is left below.
-
-    testWidgets('unreadable file error ($suffix)', (tester) async {
-      await golden(
-        tester,
-        const ImportFlowState(runStatus: ImportFlowRunStatus.error),
-        'error_unreadable_$suffix',
-        brightness: brightness,
-      );
-    });
+    // `Bottom Sheet Base` in `billetudo.pen`, not this page's chrome). The
+    // initial file-parse error moved out too, the same day: `ImportPickSheet`
+    // (`import_pick_sheet_golden_test.dart`) owns it entirely before this
+    // page is ever pushed, so it never renders here anymore either.
   }
 }

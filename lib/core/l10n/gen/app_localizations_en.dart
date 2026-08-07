@@ -771,6 +771,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String transactionsFilterCategoriesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories',
+      one: '1 category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transactionsFilterTypeSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count types',
+      one: '1 type',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transactionsFilterTagSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags',
+      one: '1 tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get transactionsBalanceTotalLabel => 'Total balance';
 
   @override

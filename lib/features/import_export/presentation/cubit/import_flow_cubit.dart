@@ -401,7 +401,4 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
   void cancel() => _cancellationToken?.cancel();
 
   void goToStep(ImportFlowStep step) => emit(state.copyWith(step: step));
-
-  void dismissError() =>
-      emit(state.copyWith(runStatus: ImportFlowRunStatus.idle));
 }

@@ -138,7 +138,7 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.categoryIds.isEmpty
                             ? l10n.transactionsFilterCategories
-                            : '${l10n.transactionsFilterCategories} (${range.categoryIds.length})',
+                            : l10n.transactionsFilterCategoriesSelected(range.categoryIds.length),
                         active: range.categoryIds.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
@@ -161,7 +161,7 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.types.isEmpty
                             ? l10n.transactionsFilterType
-                            : '${l10n.transactionsFilterType} (${range.types.length})',
+                            : l10n.transactionsFilterTypeSelected(range.types.length),
                         active: range.types.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
@@ -180,7 +180,7 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.tagIds.isEmpty
                             ? l10n.transactionsFilterTag
-                            : '${l10n.transactionsFilterTag} (${range.tagIds.length})',
+                            : l10n.transactionsFilterTagSelected(range.tagIds.length),
                         active: range.tagIds.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {

@@ -79,6 +79,7 @@ import '../../features/import_export/presentation/pages/export_page.dart';
 import '../../features/import_export/presentation/pages/import_batches_page.dart';
 import '../../features/import_export/presentation/pages/import_export_hub_page.dart';
 import '../../features/import_export/presentation/pages/import_flow_page.dart';
+import '../../features/import_export/presentation/widgets/sheets/import_pick_sheet.dart';
 import '../../features/import_export/presentation/widgets/sheets/restore_sheet.dart';
 import '../../features/import_export/presentation/widgets/sheets/save_copy_sheet.dart';
 import '../../features/onboarding/domain/entities/onboarding_progress.dart';
@@ -1457,7 +1458,7 @@ GoRoute _importExportRoute() => GoRoute(
         child: ImportExportHubPage(
           onSaveCopy: () => unawaited(SaveCopySheet.show(context)),
           onExportCsv: () => context.push(AppRoutes.exportCsv),
-          onImportCsv: () => context.push(AppRoutes.importCsv),
+          onImportCsv: () => unawaited(_openImportFlow(context)),
           onRestore: () => unawaited(RestoreSheet.show(context)),
           onSeeImportHistory: () => context.push(AppRoutes.importBatches),
           onOpenBatch: (_) => context.push(AppRoutes.importBatches),
@@ -1476,8 +1477,12 @@ GoRoute _importExportRoute() => GoRoute(
         GoRoute(
           path: 'importar',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => getIt<ImportFlowCubit>()..reset(),
+          // `state.extra` is always the already-parsed `ImportFlowCubit`
+          // `ImportPickSheet.show` handed to `_openImportFlow` — this route
+          // is only ever pushed from there (`onImportCsv` above), never
+          // linked to directly.
+          builder: (context, state) => BlocProvider<ImportFlowCubit>.value(
+            value: state.extra! as ImportFlowCubit,
             child: ImportFlowPage(onDone: () => context.pop()),
           ),
         ),
@@ -1492,6 +1497,25 @@ GoRoute _importExportRoute() => GoRoute(
         ),
       ],
     );
+
+/// Drives `ImportPickSheet` (native file picker, then its own error sheet on
+/// an unreadable file) and only pushes the wizard route once a file actually
+/// parsed — `ImportPickSheet` never touches `AppRoutes` itself. Closes the
+/// cubit either way: if nothing was returned there is nothing to close
+/// besides what `ImportPickSheet` already closed, and once the pushed route
+/// pops back off the stack the wizard is done with it too.
+Future<void> _openImportFlow(BuildContext context) async {
+  final cubit = await ImportPickSheet.show(context);
+  if (cubit == null) {
+    return;
+  }
+  if (!context.mounted) {
+    await cubit.close();
+    return;
+  }
+  await context.push(AppRoutes.importCsv, extra: cubit);
+  await cubit.close();
+}
 
 // The welcome flow (`13-onboarding.md`): four screens under `/bienvenida`,
 // each its own `GoRoute` (not a `PageView` inside one route) so the Android

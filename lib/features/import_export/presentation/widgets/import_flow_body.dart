@@ -12,7 +12,6 @@ import '../pages/import_file_select_step.dart';
 import '../pages/import_mapping_step.dart';
 import '../pages/import_preview_step.dart';
 import 'blocking_progress_view.dart';
-import 'io_error_view.dart';
 import 'sheets/import_run_sheet.dart';
 
 /// The body of `ImportFlowPage` for the current [ImportFlowState] — routes
@@ -24,7 +23,10 @@ import 'sheets/import_run_sheet.dart';
 /// failure or the closing summary (`d9wzVg`/`TmHSC`/`Aa1ek`) — are not
 /// rendered here: they are `Bottom Sheet Base` in `billetudo.pen`
 /// (`ImportRunSheet`, opened by the preview step's "Importar" tap), not
-/// this page's body.
+/// this page's body. Neither is the initial file-parse error (`a5XdP`/
+/// `qWIvy`, decision 2026-08-07): `ImportPickSheet` owns it entirely before
+/// this page is ever pushed, so `ImportFlowPage` only ever reaches this body
+/// with a file already parsed.
 class ImportFlowBody extends StatelessWidget {
   const ImportFlowBody({
     required this.state,
@@ -42,24 +44,6 @@ class ImportFlowBody extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
-    // `committing`'s error lands here with `step` still `preview` (the only
-    // point in the wizard that call happens from) — that one is
-    // `ImportRunSheet`'s to show, already open when it occurs. Every other
-    // error (the initial file parse, or the quick preview-generation calls
-    // below) still renders inline on this page.
-    if (state.runStatus == ImportFlowRunStatus.error &&
-        state.step != ImportFlowStep.preview) {
-      return IoErrorView(
-        icon: IoErrorIcons.unreadableFile,
-        title: l10n.importExportIoErrorUnreadableTitle,
-        message: l10n.importExportIoErrorUnreadableBody,
-        actionLabel: l10n.importExportChooseAnotherFile,
-        actionIcon: IoErrorIcons.chooseAnotherFile,
-        onAction: cubit.dismissError,
-        onCancel: onDone,
-        stackButtons: true,
-      );
-    }
     if (state.runStatus == ImportFlowRunStatus.working) {
       return BlockingProgressView(
         icon: LucideIcons.fileInput,
@@ -73,8 +57,8 @@ class ImportFlowBody extends StatelessWidget {
 
     switch (state.step) {
       case ImportFlowStep.fileSelect:
-        // `ImportFlowPage` renders the entry step's own scrim/sheet chrome
-        // and never delegates to this body while idle on this step.
+        // Defensive only: `ImportPickSheet` never pushes `ImportFlowPage`
+        // until a file already parsed (`state.step` is `mapping` by then).
         return const SizedBox.shrink();
       case ImportFlowStep.mapping:
         final sample = state.sample;
