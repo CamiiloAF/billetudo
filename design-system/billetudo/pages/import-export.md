@@ -29,13 +29,19 @@ El hub resuelve esa tensión con jerarquía visual, no con texto: la copia local
 
 | Paso | Pantalla | Claro | Oscuro |
 |---|---|---|---|
-| Entrada | Seleccionar archivo | `W2hiZK` | `rsBfI` |
-| 1/4 (chrome interno "2/4"*) | Mapeo de columnas | `drEA1` | `y19Ij` |
+| Entrada | Seleccionar archivo | `W2hiZK` (OBSOLETO — ver nota) | `rsBfI` (OBSOLETO — ver nota) |
+| 1/4 (chrome interno "2/4"*) | Mapeo de columnas — Manual (con toggle) | `drEA1` | `y19Ij` |
+| 1/4 | Mapeo de columnas — Automático | `UuTCz` | `a1ESaS` |
+| 1/4 | Mapeo de columnas — Automático, plantilla reconocida | `HBdCo` | `lHG0E` |
 | 2/4 | Resolver destinos | `kYBYa` | `u8TSNH` |
 | 3/4 | Vista previa final — Var 2 · Jerarquía por severidad | `ScJz3` | `L82zyd` |
 | 4/4 | Resumen final | `XRBVa` | `Aa1ek` |
 
 \* El header interno de cada paso numera "2/4"–"4/4" porque cuenta "Seleccionar archivo" como paso 1 implícito; no renumerar sin revisar los 4 headers a la vez (en ambos temas).
+
+**Toggle Automático/Manual (agregado 2026-08-06):** el paso de mapeo ahora tiene un `Segmented Control` (`hFu41`) de 2 opciones arriba del bloque de contenido, en los tres estados de arriba — instanciado con el 3er segmento del componente como spacer inerte (`enabled:false`, 0×0) para repartir el ancho 50/50 entre "Automático"/"Manual". En modo Automático **no se muestra el desglose columna por columna** (decisión explícita del usuario, 2026-08-06) — solo el resumen de formato + la tarjeta de vista previa en vivo; el detalle completo se verifica en el paso 3 (Vista previa final). El banner de "plantilla reconocida" (`HBdCo`/`lHG0E`) reusa `Privacy Note Strip` (`YAUFx`) vía `descendants` (`fill:$mint-soft`, ícono `badge-check` en `$mint`, texto en `$mint-text`) — no es un componente nuevo.
+
+**Entrada — `W2hiZK`/`rsBfI` obsoletos (decisión 2026-08-06):** el CTA "Importar desde un CSV" del hub ya no abre esta hoja — abre el selector de archivos nativo del SO directamente. Los frames se conservan como referencia histórica del patrón de hoja de entrada, ya renombrados con prefijo "OBSOLETO —" en el `.pen`.
 
 ### Importaciones — historial y reversión (HU-08)
 
@@ -76,6 +82,8 @@ El hub resuelve esa tensión con jerarquía visual, no con texto: la copia local
 **`sOBO3` — Column Mapping Row.** Fila de mapeo de columnas (HU-05/HU-06). Overrides: Source (columna detectada), Badge (`Obligatorio`/`Opcional`, en `$segment-inactive-text` sobre `$muted` — nunca `$text-secondary`, insuficiente en ese par), Value (campo destino), Preview (solo campos con formato: fecha/monto/tipo).
 
 **`J2L8Z` — Destination Resolve Row.** Fila de resolución de destino (HU-06). Toggle "Crear nueva"/"Mapear a existente" con padding vertical `[14,8]` (mínimo 44pt de alto — no `[10,8]`, que da 36px y falla el tap target). Overrides: Icon, Name, fill de cada segmento del toggle, Mapped Box (solo si "Mapear a existente" está activo).
+
+**Picker de "Mapear a existente" — decisión por tipo de destino (2026-08-06):** para **categorías**, la hoja debe instanciar `Category Select Sheet` (`SfSln`) tal cual — ya resuelve título, búsqueda, jerarquía padre/subcategoría y selección única, exactamente el contrato de este flujo. **No** usar una lista genérica ad-hoc para categorías (bug real encontrado en producción: `ExistingDestinationPickerSheet` con `SheetActionRow.bare` no tiene jerarquía ni íconos, y produjo un overflow visible). Para **cuentas** y **etiquetas** (sin selector propio equivalente en el sistema), `ExistingDestinationPickerSheet` sigue siendo válido.
 
 **`zAusB` — Import Preview Row.** Fila con checkbox de la vista previa final (HU-06/HU-07). Candidatos a duplicado: checkbox desmarcado por defecto. Filas inválidas: `Leading` reemplazado por completo (`Replace()`) con ícono `circle-x` en `$expense-text`, no interactivo — **nunca** dejar el checkbox por defecto en una fila inválida, se lee como seleccionable cuando no lo es.
 

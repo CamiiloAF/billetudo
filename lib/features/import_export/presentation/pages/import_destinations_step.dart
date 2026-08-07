@@ -5,10 +5,12 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/neutral_button.dart';
 import '../../domain/entities/import_destination.dart';
+import '../../domain/entities/import_entry_type.dart';
 import '../../domain/entities/import_preview.dart';
 import '../../domain/entities/import_preview_row.dart';
 import '../../domain/entities/named_entity.dart';
 import '../../domain/utils/text_normalizer.dart';
+import '../widgets/privacy_note_strip.dart';
 import '../widgets/unresolved_destination_row.dart';
 
 /// One unresolved name found in the CSV (HU-06 "resolución de destinos").
@@ -19,6 +21,7 @@ class UnresolvedDestination {
     required this.icon,
     required this.kind,
     this.parentRootId,
+    this.isExpense = true,
   });
 
   final String key;
@@ -29,6 +32,13 @@ class UnresolvedDestination {
   /// Set only for subcategories whose root already resolved to an existing
   /// category — needed to fetch that root's existing subcategories.
   final String? parentRootId;
+
+  /// Only meaningful for [DestinationKind.category]/[DestinationKind.subcategory]:
+  /// which category tree to offer in the "mapear a existente" picker
+  /// (`CategorySelectSheet`). Derived from the row's own [ImportEntryType]
+  /// where the destination was first found; defaults to `true` (expense) for
+  /// rows without a resolved type yet.
+  final bool isExpense;
 }
 
 enum DestinationKind { account, category, subcategory, tag }
@@ -81,22 +91,31 @@ class ImportDestinationsStep extends StatelessWidget {
   List<UnresolvedDestination> _collect() {
     final byKey = <String, UnresolvedDestination>{};
     for (final row in preview.rows) {
-      _add(byKey, row.accountDestination, DestinationKind.account, LucideIcons.landmark);
+      final isExpense = row.type != ImportEntryType.income;
+      _add(byKey, row.accountDestination, DestinationKind.account, LucideIcons.landmark, isExpense);
       _add(
         byKey,
         row.transferAccountDestination,
         DestinationKind.account,
         LucideIcons.landmark,
+        isExpense,
       );
-      _add(byKey, row.categoryDestination, DestinationKind.category, LucideIcons.shapes);
+      _add(
+        byKey,
+        row.categoryDestination,
+        DestinationKind.category,
+        LucideIcons.shapes,
+        isExpense,
+      );
       _add(
         byKey,
         row.subcategoryDestination,
         DestinationKind.subcategory,
         LucideIcons.shapes,
+        isExpense,
       );
       for (final tagDestination in row.tagDestinations) {
-        _add(byKey, tagDestination, DestinationKind.tag, LucideIcons.tag);
+        _add(byKey, tagDestination, DestinationKind.tag, LucideIcons.tag, isExpense);
       }
     }
     return byKey.values.toList();
@@ -107,6 +126,7 @@ class ImportDestinationsStep extends StatelessWidget {
     ImportDestination? destination,
     DestinationKind kind,
     IconData icon,
+    bool isExpense,
   ) {
     if (destination is! NewImportDestination) {
       return;
@@ -122,6 +142,7 @@ class ImportDestinationsStep extends StatelessWidget {
       name: destination.name,
       icon: icon,
       kind: kind,
+      isExpense: isExpense,
     );
   }
 
@@ -197,34 +218,90 @@ class ImportDestinationsStep extends StatelessWidget {
       );
     }
 
+    // HU-06 (`kYBYa`/`u8TSNH`): grouped by kind — accounts, then categories
+    // and subcategories together under one "Categorías" header, then tags —
+    // never a flat list, so the user reads what they're resolving in
+    // context instead of a shuffled bag of names.
+    final accounts = unresolved.where((d) => d.kind == DestinationKind.account).toList();
+    final categories = unresolved
+        .where((d) => d.kind == DestinationKind.category || d.kind == DestinationKind.subcategory)
+        .toList();
+    final tags = unresolved.where((d) => d.kind == DestinationKind.tag).toList();
+
     return Column(
       children: [
         Expanded(
-          child: ListView.separated(
+          child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
-            itemCount: unresolved.length,
-            separatorBuilder: (context, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => UnresolvedDestinationRow(
-              item: unresolved[index],
-              overrides: switch (unresolved[index].kind) {
-                DestinationKind.account => accountOverrides,
-                DestinationKind.category => categoryOverrides,
-                DestinationKind.subcategory => subcategoryOverrides,
-                DestinationKind.tag => tagOverrides,
-              },
-              onOverride: switch (unresolved[index].kind) {
-                DestinationKind.account => onAccountOverride,
-                DestinationKind.category => onCategoryOverride,
-                DestinationKind.subcategory => onSubcategoryOverride,
-                DestinationKind.tag => onTagOverride,
-              },
-              loadExisting: switch (unresolved[index].kind) {
-                DestinationKind.account => loadExistingAccounts,
-                DestinationKind.category => () => loadExistingRootCategories(isExpense: true),
-                DestinationKind.subcategory => () => loadExistingSubcategories(''),
-                DestinationKind.tag => loadExistingTags,
-              },
-            ),
+            children: [
+              if (accounts.isNotEmpty) ...[
+                Text(
+                  l10n.importExportDestinationsSectionAccounts,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < accounts.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  UnresolvedDestinationRow(
+                    item: accounts[i],
+                    overrides: accountOverrides,
+                    onOverride: onAccountOverride,
+                    loadExisting: loadExistingAccounts,
+                  ),
+                ],
+                const SizedBox(height: 14),
+              ],
+              if (categories.isNotEmpty) ...[
+                Text(
+                  l10n.importExportDestinationsSectionCategories,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < categories.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  UnresolvedDestinationRow(
+                    item: categories[i],
+                    overrides: categories[i].kind == DestinationKind.category
+                        ? categoryOverrides
+                        : subcategoryOverrides,
+                    onOverride: categories[i].kind == DestinationKind.category
+                        ? onCategoryOverride
+                        : onSubcategoryOverride,
+                    loadExisting: categories[i].kind == DestinationKind.category
+                        ? () => loadExistingRootCategories(isExpense: categories[i].isExpense)
+                        : () => loadExistingSubcategories(''),
+                  ),
+                ],
+                const SizedBox(height: 14),
+              ],
+              if (tags.isNotEmpty) ...[
+                Text(
+                  l10n.importExportDestinationsSectionTags,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < tags.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  UnresolvedDestinationRow(
+                    item: tags[i],
+                    overrides: tagOverrides,
+                    onOverride: onTagOverride,
+                    loadExisting: loadExistingTags,
+                  ),
+                ],
+                const SizedBox(height: 14),
+              ],
+              PrivacyNoteStrip(text: l10n.importExportDestinationsNewAccountsNote),
+            ],
           ),
         ),
         Padding(

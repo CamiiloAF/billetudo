@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -18,6 +19,7 @@ class ImportBatchesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
 
     return Scaffold(
       body: SafeArea(
@@ -34,6 +36,9 @@ class ImportBatchesPage extends StatelessWidget {
                     return ErrorState(
                       title: l10n.importExportBatchesErrorTitle,
                       onRetry: () => context.read<ImportBatchesCubit>().start(),
+                      // Neutral CTA, not `$primary` — `$primary` reads as
+                      // "the cloud" in this 100%-local feature.
+                      neutralCta: true,
                     );
                   }
                   if (state.isEmpty) {
@@ -41,6 +46,9 @@ class ImportBatchesPage extends StatelessWidget {
                       icon: LucideIcons.fileInput,
                       message: l10n.importExportBatchesEmptyTitle,
                       description: l10n.importExportBatchesEmptyBody,
+                      // Neutral, not `$primary` — same rule as above.
+                      iconColor: colors.textSecondary,
+                      iconBackground: colors.muted,
                     );
                   }
                   return ListView.separated(

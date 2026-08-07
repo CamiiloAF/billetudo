@@ -51,8 +51,16 @@ class LocalCopyHeroCard extends StatelessWidget {
                     Text(
                       l10n.importExportHeroTitle,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
+                        fontSize: 19,
                         fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      l10n.importExportHeroKicker,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colors.teal,
                       ),
                     ),
                   ],

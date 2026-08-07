@@ -33,6 +33,12 @@ class ImportExportEmptyHub extends StatelessWidget {
               ctaLabel: l10n.importExportEmptyImportCta,
               ctaIcon: LucideIcons.fileInput,
               onCta: onImportCsv,
+              // `$mint` = importar, never `$primary` — this feature's whole
+              // point is "nunca te sentirás atrapado" and violet means "the
+              // cloud" everywhere else in the product.
+              iconColor: colors.mint,
+              iconBackground: colors.mintSoft,
+              neutralCta: true,
             ),
             const SizedBox(height: 20),
             SyncSectionHeader(title: l10n.importExportSectionOtherOptions),

@@ -51,6 +51,10 @@ class ImportExportHubPage extends StatelessWidget {
                       title: l10n.importExportHubErrorTitle,
                       onRetry: () =>
                           context.read<ImportExportHubCubit>().start(),
+                      // `$primary` is reserved for "the cloud" everywhere
+                      // else — this feature never wears it on its own
+                      // elements (design-system/billetudo/pages/import-export.md).
+                      neutralCta: true,
                     );
                   }
                   if (!state.hasAnyTransactions) {

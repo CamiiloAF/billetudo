@@ -7,10 +7,25 @@ import '../../../../core/theme/app_colors.dart';
 /// `lock` icon and the HU-03 privacy disclaimer — the copy goes unencrypted
 /// and without the account number, said once, without alarm.
 class PrivacyNoteStrip extends StatelessWidget {
-  const PrivacyNoteStrip({required this.text, super.key});
+  const PrivacyNoteStrip({
+    required this.text,
+    this.icon = LucideIcons.lock,
+    this.iconColor,
+    this.textColor,
+    this.background,
+    super.key,
+  });
 
   /// Already localized.
   final String text;
+
+  /// `null` keeps the component's own default (`lock`) — the HU-06 "plantilla
+  /// reconocida" banner (`HBdCo`/`lHG0E`) overrides to `badge-check` via
+  /// `descendants`, same component reused, not a new one.
+  final IconData icon;
+  final Color? iconColor;
+  final Color? textColor;
+  final Color? background;
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +36,13 @@ class PrivacyNoteStrip extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
-        color: colors.muted,
+        color: background ?? colors.muted,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(LucideIcons.lock, size: 16, color: colors.textPrimary),
+          Icon(icon, size: 16, color: iconColor ?? colors.textPrimary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -36,7 +51,7 @@ class PrivacyNoteStrip extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 height: 1.45,
-                color: colors.textPrimary,
+                color: textColor ?? colors.textPrimary,
               ),
             ),
           ),

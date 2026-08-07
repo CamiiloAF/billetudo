@@ -35,7 +35,7 @@ class ExportPage extends StatelessWidget {
           body: SafeArea(
             child: Column(
               children: [
-                PageHeader(title: l10n.importExportExportCsvTitle),
+                PageHeader(title: l10n.importExportExportPageTitle),
                 Expanded(
                   child: BlocConsumer<ExportCubit, ExportState>(
                     listenWhen: (previous, current) =>
@@ -54,6 +54,11 @@ class ExportPage extends StatelessWidget {
                           icon: LucideIcons.fileSpreadsheet,
                           message: l10n.importExportExportEmptyTitle,
                           description: l10n.importExportExportEmptyBody,
+                          // Neutral, not `$primary` — this empty state has no
+                          // CTA, and `$primary` reads as "the cloud" in this
+                          // 100%-local feature.
+                          iconColor: context.colors.textSecondary,
+                          iconBackground: context.colors.muted,
                         );
                       }
                       if (state.runStatus == ExportRunStatus.running) {

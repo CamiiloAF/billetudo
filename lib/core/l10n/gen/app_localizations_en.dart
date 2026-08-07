@@ -4070,7 +4070,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importExportHubErrorTitle => 'We couldn\'t load this screen';
 
   @override
-  String get importExportHeroTitle => 'Local copy';
+  String get importExportHeroTitle => 'Save a copy of your data';
+
+  @override
+  String get importExportHeroKicker => 'A .billetudo.json file';
 
   @override
   String get importExportCloudNote =>
@@ -4101,6 +4104,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importExportExportCsvTitle => 'Export to CSV';
+
+  @override
+  String get importExportExportPageTitle => 'Export your data';
 
   @override
   String get importExportExportCsvSubtitle =>
@@ -4244,7 +4250,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importExportProgressHint =>
-      'Don\'t close the app while this finishes.';
+      'Don\'t close the app while this finishes. You can cancel without losing what you already had.';
 
   @override
   String get importExportIoErrorWriteTitle => 'We couldn\'t save the file';
@@ -4482,16 +4488,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importExportDestinationsPickerEmpty => 'You don\'t have any yet';
 
   @override
+  String get importExportDestinationsSectionAccounts => 'Accounts';
+
+  @override
+  String get importExportDestinationsSectionCategories => 'Categories';
+
+  @override
+  String get importExportDestinationsSectionTags => 'Tags';
+
+  @override
+  String get importExportDestinationsNewAccountsNote =>
+      'Accounts you create here start at \$0 with type Other — their real balance is rebuilt from the transactions you import.';
+
+  @override
   String get importExportStatRead => 'read';
 
   @override
-  String get importExportStatWillImport => 'will import';
+  String get importExportStatWillImport => 'to import';
 
   @override
-  String get importExportStatDuplicates => 'possible duplicates';
+  String get importExportStatDuplicates => 'duplicates';
 
   @override
-  String get importExportStatErrors => 'with errors';
+  String get importExportStatErrors => 'invalid';
 
   @override
   String get importExportOmitAllDuplicates => 'Skip all';
@@ -4543,28 +4562,57 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String importExportDuplicatesSectionTitle(int count) {
+    return 'Possible duplicates ($count)';
+  }
+
+  @override
+  String get importExportSaveTemplateToggleLabel =>
+      'Save this mapping template';
+
+  @override
+  String get importExportSaveTemplateToggleHint =>
+      'You\'ll reuse it with a tap next time you import from this same source.';
+
+  @override
+  String get importExportSaveTemplateNameLabel => 'Template name';
+
+  @override
+  String get importExportSaveTemplateNameHint => 'E.g. Bank CSV';
+
+  @override
   String get importExportSummaryTitle => 'Import complete';
 
   @override
-  String get importExportSummaryImported => 'imported';
+  String importExportSummarySubtitle(String fileName) {
+    return '$fileName was processed and is already available in your transactions.';
+  }
 
   @override
-  String get importExportSummarySkippedDuplicate => 'duplicates skipped';
+  String get importExportSummaryImported => 'Imported';
 
   @override
-  String get importExportSummarySkippedError => 'errors skipped';
+  String get importExportSummarySkippedDuplicate => 'Skipped as duplicates';
 
   @override
-  String get importExportSummaryAccountsCreated => 'accounts created';
+  String get importExportSummarySkippedError => 'Skipped due to errors';
 
   @override
-  String get importExportSummaryCategoriesCreated => 'categories created';
+  String get importExportSummaryAccountsCreated => 'Accounts created';
 
   @override
-  String get importExportSummaryTagsCreated => 'tags created';
+  String get importExportSummaryCategoriesCreated => 'Categories created';
+
+  @override
+  String get importExportSummaryTagsCreated => 'Tags created';
 
   @override
   String get importExportSummarySeeSkipped => 'See skipped';
+
+  @override
+  String importExportSummarySeeSkippedWithCount(int count) {
+    return 'See $count skipped and why';
+  }
 
   @override
   String get importExportSkippedSheetTitle => 'What didn\'t get imported';
@@ -4605,6 +4653,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importExportUndoConfirmCta => 'Undo import';
 
   @override
+  String get importExportUndoConfirmKeepNote =>
+      'Accounts and categories this import created are kept when you undo it — only the transactions it brought in are removed.';
+
+  @override
   String get importExportRestorePickFileBody =>
       'Choose a .billetudo.json file to see what it holds before restoring anything.';
 
@@ -4614,6 +4666,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String importExportRestoreSummaryTitle(String date) {
     return 'Copy from $date';
+  }
+
+  @override
+  String get importExportRestoreSheetTitle => 'Restore copy';
+
+  @override
+  String importExportRestoreSheetSubtitle(
+      String date, int version, String appVersion) {
+    return 'Copy from $date · version $version · made with Billetudo $appVersion';
   }
 
   @override

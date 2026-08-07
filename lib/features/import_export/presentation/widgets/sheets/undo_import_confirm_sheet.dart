@@ -5,6 +5,7 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../domain/entities/import_batch.dart';
+import '../privacy_note_strip.dart';
 
 /// HU-08's "Deshacer esta importación" confirmation (`l1twf`/`r59P4P`).
 ///
@@ -56,7 +57,12 @@ class UndoImportConfirmSheet extends StatelessWidget {
             color: colors.textSecondary,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+        // `KGHzS`: what happens to accounts/categories this batch created —
+        // never mentioned before, and a real question for anyone who kept
+        // using them since ("¿deshacer también borra la cuenta que creó?").
+        PrivacyNoteStrip(text: l10n.importExportUndoConfirmKeepNote),
+        const SizedBox(height: 16),
         Column(
           children: [
             SizedBox(

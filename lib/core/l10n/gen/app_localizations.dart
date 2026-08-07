@@ -6705,8 +6705,14 @@ abstract class AppLocalizations {
   /// No description provided for @importExportHeroTitle.
   ///
   /// In es, this message translates to:
-  /// **'Copia local'**
+  /// **'Guardar una copia de tus datos'**
   String get importExportHeroTitle;
+
+  /// No description provided for @importExportHeroKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Un archivo .billetudo.json'**
+  String get importExportHeroKicker;
 
   /// No description provided for @importExportCloudNote.
   ///
@@ -6755,6 +6761,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Exportar a CSV'**
   String get importExportExportCsvTitle;
+
+  /// No description provided for @importExportExportPageTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar tus datos'**
+  String get importExportExportPageTitle;
 
   /// No description provided for @importExportExportCsvSubtitle.
   ///
@@ -6999,7 +7011,7 @@ abstract class AppLocalizations {
   /// No description provided for @importExportProgressHint.
   ///
   /// In es, this message translates to:
-  /// **'No cierres la app mientras esto termina.'**
+  /// **'No cierres la app mientras esto termina. Puedes cancelar sin perder lo que ya tenías.'**
   String get importExportProgressHint;
 
   /// No description provided for @importExportIoErrorWriteTitle.
@@ -7422,6 +7434,30 @@ abstract class AppLocalizations {
   /// **'Todavía no tienes ninguna'**
   String get importExportDestinationsPickerEmpty;
 
+  /// No description provided for @importExportDestinationsSectionAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get importExportDestinationsSectionAccounts;
+
+  /// No description provided for @importExportDestinationsSectionCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get importExportDestinationsSectionCategories;
+
+  /// No description provided for @importExportDestinationsSectionTags.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get importExportDestinationsSectionTags;
+
+  /// No description provided for @importExportDestinationsNewAccountsNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas que crees aquí empiezan en \$0 y tipo Otra — su saldo real se reconstruye con las transacciones que importes.'**
+  String get importExportDestinationsNewAccountsNote;
+
   /// No description provided for @importExportStatRead.
   ///
   /// In es, this message translates to:
@@ -7431,19 +7467,19 @@ abstract class AppLocalizations {
   /// No description provided for @importExportStatWillImport.
   ///
   /// In es, this message translates to:
-  /// **'se importan'**
+  /// **'a importar'**
   String get importExportStatWillImport;
 
   /// No description provided for @importExportStatDuplicates.
   ///
   /// In es, this message translates to:
-  /// **'posibles duplicados'**
+  /// **'repetidos'**
   String get importExportStatDuplicates;
 
   /// No description provided for @importExportStatErrors.
   ///
   /// In es, this message translates to:
-  /// **'con error'**
+  /// **'inválidas'**
   String get importExportStatErrors;
 
   /// No description provided for @importExportOmitAllDuplicates.
@@ -7530,46 +7566,82 @@ abstract class AppLocalizations {
   /// **'Importar {count} movimientos'**
   String importExportImportRowsCta(int count);
 
+  /// No description provided for @importExportDuplicatesSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Posibles duplicados ({count})'**
+  String importExportDuplicatesSectionTitle(int count);
+
+  /// No description provided for @importExportSaveTemplateToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar esta plantilla de mapeo'**
+  String get importExportSaveTemplateToggleLabel;
+
+  /// No description provided for @importExportSaveTemplateToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'La usarás con un toque la próxima vez que importes de este mismo origen.'**
+  String get importExportSaveTemplateToggleHint;
+
+  /// No description provided for @importExportSaveTemplateNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la plantilla'**
+  String get importExportSaveTemplateNameLabel;
+
+  /// No description provided for @importExportSaveTemplateNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. Bancolombia CSV'**
+  String get importExportSaveTemplateNameHint;
+
   /// No description provided for @importExportSummaryTitle.
   ///
   /// In es, this message translates to:
   /// **'Importación completa'**
   String get importExportSummaryTitle;
 
+  /// No description provided for @importExportSummarySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{fileName} se procesó y ya está disponible en tus movimientos.'**
+  String importExportSummarySubtitle(String fileName);
+
   /// No description provided for @importExportSummaryImported.
   ///
   /// In es, this message translates to:
-  /// **'importadas'**
+  /// **'Importadas'**
   String get importExportSummaryImported;
 
   /// No description provided for @importExportSummarySkippedDuplicate.
   ///
   /// In es, this message translates to:
-  /// **'por duplicado'**
+  /// **'Omitidas por duplicado'**
   String get importExportSummarySkippedDuplicate;
 
   /// No description provided for @importExportSummarySkippedError.
   ///
   /// In es, this message translates to:
-  /// **'por error'**
+  /// **'Omitidas por error'**
   String get importExportSummarySkippedError;
 
   /// No description provided for @importExportSummaryAccountsCreated.
   ///
   /// In es, this message translates to:
-  /// **'cuentas creadas'**
+  /// **'Cuentas creadas'**
   String get importExportSummaryAccountsCreated;
 
   /// No description provided for @importExportSummaryCategoriesCreated.
   ///
   /// In es, this message translates to:
-  /// **'categorías creadas'**
+  /// **'Categorías creadas'**
   String get importExportSummaryCategoriesCreated;
 
   /// No description provided for @importExportSummaryTagsCreated.
   ///
   /// In es, this message translates to:
-  /// **'etiquetas creadas'**
+  /// **'Etiquetas creadas'**
   String get importExportSummaryTagsCreated;
 
   /// No description provided for @importExportSummarySeeSkipped.
@@ -7577,6 +7649,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver omitidas'**
   String get importExportSummarySeeSkipped;
+
+  /// No description provided for @importExportSummarySeeSkippedWithCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver {count} omitidas y por qué'**
+  String importExportSummarySeeSkippedWithCount(int count);
 
   /// No description provided for @importExportSkippedSheetTitle.
   ///
@@ -7638,6 +7716,12 @@ abstract class AppLocalizations {
   /// **'Deshacer importación'**
   String get importExportUndoConfirmCta;
 
+  /// No description provided for @importExportUndoConfirmKeepNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas y categorías que creó esta importación se conservan al deshacerla — solo se eliminan las transacciones que trajo.'**
+  String get importExportUndoConfirmKeepNote;
+
   /// No description provided for @importExportRestorePickFileBody.
   ///
   /// In es, this message translates to:
@@ -7655,6 +7739,19 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Copia del {date}'**
   String importExportRestoreSummaryTitle(String date);
+
+  /// No description provided for @importExportRestoreSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar copia'**
+  String get importExportRestoreSheetTitle;
+
+  /// No description provided for @importExportRestoreSheetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia del {date} · versión {version} · creada con Billetudo {appVersion}'**
+  String importExportRestoreSheetSubtitle(
+      String date, int version, String appVersion);
 
   /// No description provided for @importExportRestoreRowCounts.
   ///

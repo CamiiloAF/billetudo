@@ -7,7 +7,7 @@ import '../../../../core/widgets/neutral_button.dart';
 import '../../../../core/widgets/sheet_buttons_row.dart';
 import '../../domain/entities/import_summary.dart';
 import '../widgets/sheets/import_skipped_sheet.dart';
-import '../widgets/stat_chip.dart';
+import '../widgets/summary_stats_card.dart';
 
 /// HU-06 closing summary (`XRBVa`/`Aa1ek`, chrome "4/4"): what was imported,
 /// omitted (and why) and created.
@@ -40,7 +40,7 @@ class ImportSummaryStep extends StatelessWidget {
                         color: colors.mintSoft,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(LucideIcons.checkCheck, size: 32, color: colors.mint),
+                      child: Icon(LucideIcons.check, size: 32, color: colors.mint),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -48,56 +48,47 @@ class ImportSummaryStep extends StatelessWidget {
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.importExportSummarySubtitle(summary.batch.fileName),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        color: colors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                alignment: WrapAlignment.center,
+              SummaryStatsCard(
                 children: [
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.rowsImported}',
-                      label: l10n.importExportSummaryImported,
-                    ),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummaryImported,
+                    value: '${summary.rowsImported}',
                   ),
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.rowsSkippedDuplicate}',
-                      label: l10n.importExportSummarySkippedDuplicate,
-                    ),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummarySkippedDuplicate,
+                    value: '${summary.rowsSkippedDuplicate}',
                   ),
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.rowsSkippedError}',
-                      label: l10n.importExportSummarySkippedError,
-                    ),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummarySkippedError,
+                    value: '${summary.rowsSkippedError}',
                   ),
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.accountsCreated}',
-                      label: l10n.importExportSummaryAccountsCreated,
-                    ),
+                  const SummaryStatsDivider(),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummaryAccountsCreated,
+                    value: '${summary.accountsCreated}',
                   ),
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.categoriesCreated}',
-                      label: l10n.importExportSummaryCategoriesCreated,
-                    ),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummaryCategoriesCreated,
+                    value: '${summary.categoriesCreated}',
                   ),
-                  SizedBox(
-                    width: 110,
-                    child: StatChip(
-                      value: '${summary.tagsCreated}',
-                      label: l10n.importExportSummaryTagsCreated,
-                    ),
+                  SummaryStatsRow(
+                    label: l10n.importExportSummaryTagsCreated,
+                    value: '${summary.tagsCreated}',
                   ),
                 ],
               ),
@@ -111,7 +102,7 @@ class ImportSummaryStep extends StatelessWidget {
                   left: OutlinedButton(
                     onPressed: () => ImportSkippedSheet.show(context, summary: summary),
                     child: Text(
-                      l10n.importExportSummarySeeSkipped,
+                      l10n.importExportSummarySeeSkippedWithCount(_totalSkipped(summary)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

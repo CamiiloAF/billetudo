@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
+import 'neutral_button.dart';
 
 /// The `Empty State` component (`jmQO5`): icon circle + message + optional
 /// subtitle + optional CTA.
@@ -20,6 +21,9 @@ class EmptyState extends StatelessWidget {
     this.ctaLabel,
     this.ctaIcon = LucideIcons.plus,
     this.onCta,
+    this.iconColor,
+    this.iconBackground,
+    this.neutralCta = false,
     super.key,
   });
 
@@ -55,6 +59,19 @@ class EmptyState extends StatelessWidget {
   final IconData ctaIcon;
   final VoidCallback? onCta;
 
+  /// Overrides the icon-wrap glyph colour. `null` keeps the component's
+  /// default `$primary-on-soft` — every feature except Import/Export, where
+  /// violet means "the cloud" and this empty state must never borrow it
+  /// (`design-system/billetudo/pages/import-export.md`).
+  final Color? iconColor;
+
+  /// Overrides the icon-wrap fill. `null` keeps the default `$primary-soft`.
+  final Color? iconBackground;
+
+  /// Renders the CTA as [NeutralButton] (solid `$text-primary`) instead of
+  /// the themed `FilledButton` (`$primary`). Same reason as [iconColor].
+  final bool neutralCta;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -72,10 +89,10 @@ class EmptyState extends StatelessWidget {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                color: colors.primarySoft,
+                color: iconBackground ?? colors.primarySoft,
                 borderRadius: BorderRadius.circular(44),
               ),
-              child: Icon(icon, size: 40, color: colors.primaryOnSoft),
+              child: Icon(icon, size: 40, color: iconColor ?? colors.primaryOnSoft),
             ),
             const SizedBox(height: 16),
             ConstrainedBox(
@@ -110,18 +127,24 @@ class EmptyState extends StatelessWidget {
             ),
             if (ctaLabel != null) ...[
               const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: onCta,
-                // The theme only imposes the height, so this CTA has to ask for
-                // its 220pt width from the frame. A minimum rather than a fixed
-                // width, so a long label or a large text scale grows it instead
-                // of overflowing.
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(_ctaMinWidth, 52),
+              if (neutralCta && onCta != null)
+                SizedBox(
+                  width: _ctaMinWidth,
+                  child: NeutralButton(label: ctaLabel, icon: ctaIcon, onPressed: onCta!),
+                )
+              else
+                FilledButton.icon(
+                  onPressed: onCta,
+                  // The theme only imposes the height, so this CTA has to ask for
+                  // its 220pt width from the frame. A minimum rather than a fixed
+                  // width, so a long label or a large text scale grows it instead
+                  // of overflowing.
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(_ctaMinWidth, 52),
+                  ),
+                  icon: Icon(ctaIcon, size: 18),
+                  label: Text(ctaLabel),
                 ),
-                icon: Icon(ctaIcon, size: 18),
-                label: Text(ctaLabel),
-              ),
             ],
           ],
         ),

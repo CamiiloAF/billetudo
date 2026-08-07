@@ -17,20 +17,23 @@ import '../widgets/column_mapping_row.dart';
 import '../widgets/import_format_field.dart';
 import '../widgets/import_live_preview_card.dart';
 import '../widgets/import_mapping_mode_toggle.dart';
+import '../widgets/privacy_note_strip.dart';
 import '../widgets/sheets/import_date_format_sheet.dart';
 import '../widgets/sheets/import_decimal_format_sheet.dart';
 import '../widgets/sheets/import_field_picker_sheet.dart';
 import '../widgets/sheets/import_type_values_sheet.dart';
 
-/// HU-05/06 mapping step (`drEA1`/`y19Ij`, chrome "2/4"): an Automático/Manual
-/// toggle gates between the one-tap "confirm what we detected" summary and
-/// the full column-by-column view — "Formato detectado" (the current
-/// dialect), a live preview of the first real row, then one
-/// [ColumnMappingRow] per raw CSV header letting the user pick which
-/// canonical field it fills. Neither the toggle nor the tappable format
-/// fields exist in `billetudo.pen` yet (`design-system/billetudo/pages/
-/// import-export.md` "Pendientes"/"Interacciones no diseñadas en Pencil") —
-/// built here against the shared `Segmented Toggle`/`Bottom Sheet Base`
+/// HU-05/06 mapping step (`drEA1`/`y19Ij`, chrome "2/4"; toggle frames
+/// `UuTCz`/`a1ESaS` automático, `HBdCo`/`lHG0E` plantilla reconocida): an
+/// Automático/Manual toggle gates between the one-tap "confirm what we
+/// detected" summary (no column-by-column breakdown, per the 2026-08-06
+/// design decision) and the full column-by-column view — "Formato
+/// detectado" (the current dialect), a live preview of the first real row,
+/// then one [ColumnMappingRow] per raw CSV header letting the user pick
+/// which canonical field it fills. The tappable format fields' own sheets
+/// (date/decimal/type) are not designed in `billetudo.pen`
+/// (`design-system/billetudo/pages/import-export.md` "Interacciones no
+/// diseñadas en Pencil") — built here against the shared `Bottom Sheet Base`
 /// pieces the rest of this feature already uses.
 class ImportMappingStep extends StatelessWidget {
   const ImportMappingStep({
@@ -67,6 +70,16 @@ class ImportMappingStep extends StatelessWidget {
   final VoidCallback onAmountSignModeChanged;
   final VoidCallback onConfirm;
 
+  /// `sOBO3` "Column Mapping Row": the live "Vista previa" caption only
+  /// renders for fields with a format worth double-checking (fecha/monto/
+  /// tipo) — not for a plain string like cuenta or descripción, which never
+  /// gets reinterpreted.
+  static const Set<ImportField> _previewableFields = {
+    ImportField.date,
+    ImportField.amount,
+    ImportField.type,
+  };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -77,21 +90,15 @@ class ImportMappingStep extends StatelessWidget {
         if (matchedTemplateName case final name?)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-              decoration: BoxDecoration(
-                color: colors.mintSoft,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                l10n.importExportTemplateMatched(name),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: colors.mintText,
-                ),
-              ),
+            // `HBdCo`/`lHG0E`: the "plantilla reconocida" banner reuses
+            // `Privacy Note Strip` (`YAUFx`) via `descendants` — not a new
+            // component.
+            child: PrivacyNoteStrip(
+              text: l10n.importExportTemplateMatched(name),
+              icon: LucideIcons.badgeCheck,
+              iconColor: colors.mint,
+              textColor: colors.mintText,
+              background: colors.mintSoft,
             ),
           ),
         Padding(
@@ -171,7 +178,9 @@ class ImportMappingStep extends StatelessWidget {
                                 : (ColumnMapping.requiredFields.contains(field)
                                     ? l10n.importExportFieldRequired
                                     : l10n.importExportFieldOptional),
-                            preview: sampleValue == null || sampleValue.isEmpty
+                            preview: sampleValue == null ||
+                                    sampleValue.isEmpty ||
+                                    !_previewableFields.contains(field)
                                 ? null
                                 : l10n.importExportFieldPreview(sampleValue),
                             onTap: () => _pickField(context, index),

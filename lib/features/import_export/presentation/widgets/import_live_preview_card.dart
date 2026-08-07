@@ -33,7 +33,11 @@ class ImportLivePreviewCard extends StatelessWidget {
       return value.isEmpty ? null : value;
     }
 
+    // `cBSZp`: the note leads the line ("{nota} · {fecha} · {tipo} ·
+    // {monto} · {cuenta} · {categoría}") — it's what most reliably tells the
+    // user "yes, this is the right row", ahead of the parsed values.
     final parts = [
+      valueFor(ImportField.note),
       valueFor(ImportField.date),
       valueFor(ImportField.type),
       valueFor(ImportField.amount),

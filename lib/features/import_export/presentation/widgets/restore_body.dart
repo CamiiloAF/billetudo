@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/neutral_button.dart';
+import '../../../../core/widgets/sheet_buttons_row.dart';
 import '../../domain/entities/restore_mode.dart';
 import '../cubit/restore_cubit.dart';
 import '../cubit/restore_state.dart';
@@ -165,16 +166,50 @@ class RestoreBody extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
                 children: [
-                  Text(
-                    l10n.importExportRestoreSummaryTitle(
-                      DateFormat.yMMMMd(l10n.localeName).format(header.createdAt),
+                  // `XPjIZ` Sheet Icon Header: icon + title + a subtitle that
+                  // says exactly which copy this is (date, format version,
+                  // app version it was made with) — a plain title alone left
+                  // that out (`uUGXf`/`weAqZ`).
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          alignment: Alignment.center,
+                          decoration:
+                              BoxDecoration(color: colors.tealSoft, shape: BoxShape.circle),
+                          child: Icon(LucideIcons.rotateCcw, color: colors.teal, size: 26),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.importExportRestoreSheetTitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.importExportRestoreSheetSubtitle(
+                            DateFormat.yMMMMd(l10n.localeName).format(header.createdAt),
+                            header.formatVersion,
+                            header.appVersion,
+                          ),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                                color: colors.textPrimary,
+                              ),
+                        ),
+                      ],
                     ),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
@@ -255,9 +290,12 @@ class RestoreBody extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: NeutralButton(
+              child: SheetButtonsRow(
+                left: OutlinedButton(
+                  onPressed: onDone,
+                  child: Text(l10n.commonCancel),
+                ),
+                right: NeutralButton(
                   label: l10n.importExportRestoreCta,
                   icon: LucideIcons.rotateCcw,
                   onPressed: state.mode == RestoreMode.replaceAll
