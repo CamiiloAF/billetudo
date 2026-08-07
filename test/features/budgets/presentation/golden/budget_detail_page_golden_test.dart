@@ -1,10 +1,14 @@
 import 'package:billetudo/features/budgets/domain/entities/budget_period_view.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/pending_budget_adjustment.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_cubit.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_state.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budget_detail_page.dart';
+import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +20,9 @@ import 'budget_golden_fixtures.dart';
 
 class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
     implements BudgetDetailCubit {}
+
+class MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
 
 /// The budget detail: hero + period activity + the floating period stepper
 /// (`PeriodStepperPill`).
@@ -57,6 +64,12 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 /// The whole hero is auditable: its days-left caption now comes from
 /// `BudgetProgress.daysLeft` (domain), not from `DateTime.now()` inside
 /// `build`, so it is deterministic across runs.
+///
+/// `detail_featured` (dedicated case at the bottom) covers
+/// `BudgetFeaturedBadge` over the hero (`j35Yt/GWXRK`): every other case in
+/// this file drives `AppSettingsCubit` into "no featured budget" (`golden`'s
+/// `isFeatured` defaults to `false`), so together they cover both the
+/// present and absent branches of the badge.
 void main() {
   late MockBudgetDetailCubit cubit;
 
@@ -76,12 +89,48 @@ void main() {
     required Brightness brightness,
     bool settle = true,
     double height = 844,
+    bool isFeatured = false,
   }) async {
     when(() => cubit.state).thenReturn(state);
+    // The hero resolves "am I featured?" reactively from `AppSettingsCubit`
+    // (`BudgetHeroSelector.pick`, `budget_detail_page.dart:413`), the same
+    // source `BudgetDetailActionsSheet`'s golden mocks — never a static bool
+    // on `BudgetDetailState`. `manual` mode + a matching `featuredBudgetId`
+    // features the state's own budget regardless of its scope/period, so a
+    // custom-scoped fixture like `healthyEntry` (not eligible for the
+    // `automatic` global-monthly pick) can still be driven into "featured"
+    // deterministically.
+    final settingsCubit = MockAppSettingsCubit();
+    when(() => settingsCubit.state).thenReturn(
+      AppSettingsState(
+        settings: AppSettings(
+          zeroBasedEnabled: false,
+          categoriesSeeded: true,
+          onboardingCompleted: true,
+          featuredBudgetMode: isFeatured
+              ? FeaturedBudgetMode.manual
+              : FeaturedBudgetMode.none,
+          featuredBudgetId: isFeatured ? state.budget?.id : null,
+        ),
+        activeBudgets: isFeatured && state.budget != null && state.view != null
+            ? [
+                BudgetWithProgress(
+                  budget: state.budget!,
+                  scope: state.scope ?? const BudgetScope.empty(),
+                  window: state.view!.window,
+                  progress: state.view!.progress,
+                ),
+              ]
+            : const <BudgetWithProgress>[],
+      ),
+    );
     await pumpGolden(
       tester,
-      BlocProvider<BudgetDetailCubit>.value(
-        value: cubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<BudgetDetailCubit>.value(value: cubit),
+          BlocProvider<AppSettingsCubit>.value(value: settingsCubit),
+        ],
         child: BudgetDetailPage(
           onEdit: (_) {},
           onClosed: () {},
@@ -286,6 +335,24 @@ void main() {
         const BudgetDetailState(status: BudgetDetailStatus.failure),
         'detail_error_$suffix',
         brightness: brightness,
+      );
+    });
+
+    // `BudgetFeaturedBadge` (`j35Yt/GWXRK`) over the hero, resolved
+    // reactively from `AppSettingsCubit` via `BudgetHeroSelector.pick`
+    // (`budget_detail_page.dart:413-419`) — never a static field on
+    // `BudgetDetailState`. Every other case above already exercises the
+    // "not featured" branch (`isFeatured` defaults to `false`), so this is
+    // the sole dedicated "featured" case, confirming the badge appears in
+    // the hero's top-right corner without overflow.
+    testWidgets('detalle de presupuesto destacado en Inicio ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        readyState(healthyEntry),
+        'detail_featured_$suffix',
+        brightness: brightness,
+        isFeatured: true,
       );
     });
   }

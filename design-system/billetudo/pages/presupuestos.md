@@ -215,14 +215,16 @@ Mecanismo **override por período** (no "fork"): el presupuesto sigue siendo **u
 | Sheet — acción "Quitar de Inicio" (estado ON, frame de referencia `R2vWv`) | `n5eE9` |
 | Lista — badge de destacado, nodo interno de `Budget Line` | `FSL69` → `WFz6L` |
 | Lista — instancia visible del badge (ejemplo) | `s833Gk` → `brz28` |
+| Detalle — badge sobre el hero (copia del badge de `WFz6L`, mismo componente) | `NloPT` → `j35Yt` → `GWXRK` |
 
 **Discoverability (hallazgo de producto, 2026-08-07):** el acceso a esta feature está a 3 toques de profundidad (lista → detalle → `⋮`) y el badge de la lista históricamente solo reflejaba el pick manual, no el fallback automático — el usuario no tenía forma de saber, desde la lista, cuál presupuesto alimentaba de hecho el hero de Inicio. Enfoque de solución aprobado (combinado, ninguna pieza fuerza el uso de la feature):
 1. **Auto-default no forzado:** el primer presupuesto que crea un usuario queda destacado automáticamente (lógica de dominio, no de este `.md`).
 2. **Etiqueta con el nombre del presupuesto en el hero de Inicio** (ver `pages/inicio.md` § "Etiqueta de presupuesto destacado en el Hero") — reemplaza un intento anterior de kicker tipo pill/botón, descartado por competir con el stepper de período y por chevron engañoso (mismo destino que tocar el resto del hero).
 3. **Minitutorial corto** disparado al crear el *segundo* presupuesto (momento en que la ambigüedad "¿cuál se destaca?" aparece por primera vez) — reusa el patrón `subFlowTutorial` ya existente en `lib/features/tutorials/`, sin pieza visual nueva en Pencil.
 4. **Fix del badge de la lista:** debe compararse contra el resultado de `BudgetHeroSelector.pick` (fallback incluido), no contra `AppSettings.featuredBudgetId` crudo.
+5. **Badge también en el hero del detalle** (`NloPT` → `j35Yt` → `GWXRK`, copia del mismo componente que `WFz6L`): consistencia visual — el mismo presupuesto que se ve destacado en la lista y en el hero de Inicio también lo muestra al entrar a su propio detalle. Offset ajustado (`x:322` en vez de `x:326` de la lista) por el padding/`cornerRadius` distintos del hero (20/24 vs. 18/`radiusLarge` de la card de lista).
 
-**Pendiente/decisión abierta:** tema oscuro de estas piezas, solo tras aprobación explícita del claro (ya dada) — construir en la próxima sesión siguiendo el gate de MASTER (paridad estructural, tokens por tema, sin hex hardcodeado).
+**Estado:** las 5 piezas — tema claro **aprobado e implementado** en Flutter. Tema oscuro de estas piezas sigue pendiente (construir en otra sesión, siguiendo el gate de MASTER: paridad estructural, tokens por tema, sin hex hardcodeado).
 
 ## Tema oscuro — notas de implementación
 

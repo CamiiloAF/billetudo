@@ -20,6 +20,7 @@ import '../utils/budget_format.dart';
 import '../widgets/budget_activity_row.dart';
 import '../widgets/budget_adjustment_entry_card.dart';
 import '../widgets/budget_detail_skeleton_view.dart';
+import '../widgets/budget_featured_badge.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
@@ -406,7 +407,18 @@ class BudgetDetailHero extends StatelessWidget {
       currencyCode: budget.currency,
     );
 
-    return Container(
+    // Resolved the same way as `_openActions`'s `isFeatured` check
+    // (`BudgetHeroSelector.pick`, domain): this is the sole source of truth
+    // for "which budget is featured", never re-derived here.
+    final settings = context.watch<AppSettingsCubit>();
+    final resolvedFeatured = BudgetHeroSelector.pick(
+      settings.state.activeBudgets,
+      mode: settings.state.settings.featuredBudgetMode,
+      featuredBudgetId: settings.state.featuredBudgetId,
+    );
+    final isFeatured = resolvedFeatured?.budget.id == budget.id;
+
+    final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colors.surface,
@@ -562,6 +574,26 @@ class BudgetDetailHero extends StatelessWidget {
           ],
         ],
       ),
+    );
+
+    if (!isFeatured) {
+      return card;
+    }
+    // Same badge, same "negative Positioned + Clip.none" pattern as
+    // `BudgetLine` (`budget_line.dart:226-239`), offset recalibrated for
+    // this hero's own padding (20 vs the list's 18): `j35Yt/GWXRK` places
+    // the badge at `x:322` inside a 350-wide hero (right: 350-322-22 = 6),
+    // a touch further in than the list's `right: 2`.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        card,
+        const Positioned(
+          top: -8,
+          right: 6,
+          child: BudgetFeaturedBadge(),
+        ),
+      ],
     );
   }
 }

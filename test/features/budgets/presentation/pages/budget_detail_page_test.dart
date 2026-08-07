@@ -6,6 +6,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_scheduled_item
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_cubit.dart';
 import 'package:billetudo/features/budgets/presentation/cubit/budget_detail_state.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budget_detail_page.dart';
+import 'package:billetudo/features/budgets/presentation/widgets/budget_featured_badge.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/sheets/budget_scheduled_sheet.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -232,6 +233,64 @@ void main() {
       verify(() => settingsCubit.setFeaturedBudget(globalEntry.budget.id))
           .called(1);
       verifyNever(settingsCubit.clearFeaturedBudget);
+    });
+  });
+
+  group('hero "BudgetFeaturedBadge" (resolved via BudgetHeroSelector.pick)',
+      () {
+    MockAppSettingsCubit buildSettingsCubit({
+      required FeaturedBudgetMode mode,
+      String? featuredBudgetId,
+    }) {
+      final settingsCubit = MockAppSettingsCubit();
+      when(() => settingsCubit.state).thenReturn(
+        AppSettingsState(
+          settings: AppSettings(
+            zeroBasedEnabled: false,
+            categoriesSeeded: true,
+            onboardingCompleted: true,
+            featuredBudgetId: featuredBudgetId,
+            featuredBudgetMode: mode,
+          ),
+          // `readyState()` (shared with the tests above) renders
+          // `healthyEntry`'s budget, so it must be the one `activeBudgets`
+          // exposes for `BudgetHeroSelector.pick`'s manual match to resolve
+          // against.
+          activeBudgets: [healthyEntry],
+        ),
+      );
+      return settingsCubit;
+    }
+
+    testWidgets(
+        'a budget featured (manual pick matches this budget) renders '
+        'BudgetFeaturedBadge over the hero', (tester) async {
+      final settingsCubit = buildSettingsCubit(
+        mode: FeaturedBudgetMode.manual,
+        featuredBudgetId: healthyEntry.budget.id,
+      );
+
+      await pump(
+        tester,
+        readyState(scheduledMinor: 0),
+        settingsCubit: settingsCubit,
+      );
+
+      expect(find.byType(BudgetFeaturedBadge), findsOneWidget);
+    });
+
+    testWidgets(
+        'a budget not featured (mode: none) renders no BudgetFeaturedBadge',
+        (tester) async {
+      final settingsCubit = buildSettingsCubit(mode: FeaturedBudgetMode.none);
+
+      await pump(
+        tester,
+        readyState(scheduledMinor: 0),
+        settingsCubit: settingsCubit,
+      );
+
+      expect(find.byType(BudgetFeaturedBadge), findsNothing);
     });
   });
 }

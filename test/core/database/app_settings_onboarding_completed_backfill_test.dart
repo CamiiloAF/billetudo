@@ -22,6 +22,12 @@ import 'package:flutter_test/flutter_test.dart';
 /// that silently yields NULL for a missing JSON key. The table is rebuilt by
 /// hand below (same name/columns, `onboarding_completed` nullable) so the
 /// NULL row can actually exist, matching what the real view allows.
+///
+/// `featured_budget_mode` (schemaVersion 26) is included too, even though
+/// this test predates it, purely so the generated non-nullable mapper for
+/// that column doesn't crash on an unrelated missing column while reading
+/// the row — it is pre-populated so it never participates in the
+/// `onboarding_completed` NULL scenario under test here.
 void main() {
   late AppDatabase database;
 
@@ -39,13 +45,14 @@ void main() {
         zero_based_enabled INTEGER NOT NULL,
         categories_seeded INTEGER NOT NULL,
         onboarding_completed INTEGER,
-        show_help_on_section_entry INTEGER
+        show_help_on_section_entry INTEGER,
+        featured_budget_mode TEXT NOT NULL DEFAULT 'automatic'
       )
     ''');
     await database.customStatement('''
       INSERT INTO app_settings
-        (id, created_at, updated_at, zero_based_enabled, categories_seeded, onboarding_completed, show_help_on_section_entry)
-      VALUES ('app', 0, 0, 0, 0, NULL, NULL)
+        (id, created_at, updated_at, zero_based_enabled, categories_seeded, onboarding_completed, show_help_on_section_entry, featured_budget_mode)
+      VALUES ('app', 0, 0, 0, 0, NULL, NULL, 'automatic')
     ''');
   });
 
