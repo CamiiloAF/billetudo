@@ -4768,13 +4768,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get importExportRestoreDoneTitle => 'Restauración completa';
 
   @override
-  String get importExportRestoreCreated => 'creadas';
+  String get importExportRestoreCreated => 'Creadas';
 
   @override
-  String get importExportRestoreUpdated => 'actualizadas';
+  String get importExportRestoreUpdated => 'Actualizadas';
 
   @override
-  String get importExportRestoreSkipped => 'omitidas';
+  String get importExportRestoreSkipped => 'Omitidas';
 
   @override
   String get reportsTabSummary => 'Resumen';

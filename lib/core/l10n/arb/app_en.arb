@@ -1484,9 +1484,9 @@
   "importExportRestoreExecutionErrorTitle": "We couldn't complete the restore",
   "importExportRestoreExecutionErrorBody": "The file was valid, but something failed partway through. The restore is cancelled entirely when that happens — your current data was not changed. Try again.",
   "importExportRestoreDoneTitle": "Restore complete",
-  "importExportRestoreCreated": "created",
-  "importExportRestoreUpdated": "updated",
-  "importExportRestoreSkipped": "skipped",
+  "importExportRestoreCreated": "Created",
+  "importExportRestoreUpdated": "Updated",
+  "importExportRestoreSkipped": "Skipped",
 
   "reportsTabSummary": "Summary",
   "reportsTabCashflow": "Cash flow",

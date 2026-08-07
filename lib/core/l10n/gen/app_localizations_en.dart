@@ -4762,13 +4762,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importExportRestoreDoneTitle => 'Restore complete';
 
   @override
-  String get importExportRestoreCreated => 'created';
+  String get importExportRestoreCreated => 'Created';
 
   @override
-  String get importExportRestoreUpdated => 'updated';
+  String get importExportRestoreUpdated => 'Updated';
 
   @override
-  String get importExportRestoreSkipped => 'skipped';
+  String get importExportRestoreSkipped => 'Skipped';
 
   @override
   String get reportsTabSummary => 'Summary';

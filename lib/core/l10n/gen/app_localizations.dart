@@ -7900,19 +7900,19 @@ abstract class AppLocalizations {
   /// No description provided for @importExportRestoreCreated.
   ///
   /// In es, this message translates to:
-  /// **'creadas'**
+  /// **'Creadas'**
   String get importExportRestoreCreated;
 
   /// No description provided for @importExportRestoreUpdated.
   ///
   /// In es, this message translates to:
-  /// **'actualizadas'**
+  /// **'Actualizadas'**
   String get importExportRestoreUpdated;
 
   /// No description provided for @importExportRestoreSkipped.
   ///
   /// In es, this message translates to:
-  /// **'omitidas'**
+  /// **'Omitidas'**
   String get importExportRestoreSkipped;
 
   /// No description provided for @reportsTabSummary.
