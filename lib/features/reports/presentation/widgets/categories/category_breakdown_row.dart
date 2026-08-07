@@ -56,8 +56,11 @@ class CategoryBreakdownRow extends StatelessWidget {
         : CategoryAppearance.iconFor(item.icon);
 
     return Semantics(
-      label: '$name, $pct%, '
-          '${money.formatSymbol(item.amountMinor, currencyCode: currencyCode)}',
+      label: l10n.reportsCategoriesRowSemantics(
+        name,
+        pct,
+        money.formatSymbol(item.amountMinor, currencyCode: currencyCode),
+      ),
       button: onTap != null,
       child: InkWell(
         onTap: onTap,
@@ -93,8 +96,9 @@ class CategoryBreakdownRow extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          money.formatSymbol(item.amountMinor,
-                              currencyCode: currencyCode),
+                          l10n.reportsCategoriesMovementsCount(
+                            item.movementCount,
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -105,13 +109,27 @@ class CategoryBreakdownRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '$pct%',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: colors.textPrimary,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        money.formatSymbol(item.amountMinor,
+                            currencyCode: currencyCode),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        l10n.reportsPercentValue(pct),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

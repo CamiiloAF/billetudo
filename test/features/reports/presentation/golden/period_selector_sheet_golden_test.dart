@@ -33,7 +33,8 @@ void main() {
       wrapForGolden(
         Builder(
           builder: (context) => ElevatedButton(
-            onPressed: () => PeriodSelectorSheet.show(context, initial: initial),
+            onPressed: () =>
+                PeriodSelectorSheet.show(context, initial: initial),
             child: const Text('open'),
           ),
         ),
@@ -53,6 +54,23 @@ void main() {
       tester,
       ReportsPeriodSelection.lastSixMonths(now: DateTime(2025, 7, 15)),
       'month_light',
+    );
+  });
+
+  /// `Sy92N`'s pure base case: no highlighted "Rango personalizado" row.
+  /// Reaching it requires an initial selection whose `kind` is neither
+  /// `custom` nor `lastSixMonths` (both trigger the "aplicado" treatment —
+  /// see `_customRangeStillActive`'s doc comment) — `month`/`year` are the
+  /// only two. `month_light` above intentionally covers the app's actual
+  /// default (`lastSixMonths`, which *does* highlight), so this golden fills
+  /// the coverage gap for the sheet's un-highlighted state instead of
+  /// replacing it.
+  testWidgets('month granularity, no active range filter (light)',
+      (tester) async {
+    await golden(
+      tester,
+      ReportsPeriodSelection.month(DateTime(2025, 7, 15)),
+      'month_no_range_filter_light',
     );
   });
 

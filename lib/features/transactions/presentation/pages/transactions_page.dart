@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -10,6 +12,8 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/budget_period_option.dart';
@@ -91,6 +95,18 @@ class TransactionsPage extends StatelessWidget {
   /// shows a card per displayed account. Read at tap time from the carousel
   /// cubit's remembered page, clamped in case the filter shrank the set, and
   /// null only when no account is shown.
+  /// HU-02/HU-03 of `15-gate-cuenta.md`: without any active account the FAB
+  /// opens the bridge sheet instead of a form that could not save anyway.
+  Future<void> _addTransaction(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.movement,
+    );
+    if (canProceed && context.mounted) {
+      onAddTransaction(_preselectedAccountId(context));
+    }
+  }
+
   static String? _preselectedAccountId(BuildContext context) {
     final displayed =
         context.read<TransactionsListCubit>().state.displayedAccounts;
@@ -146,8 +162,7 @@ class TransactionsPage extends StatelessWidget {
             : AppFab(
                 icon: LucideIcons.plus,
                 tooltip: l10n.transactionsAdd,
-                onPressed: () =>
-                    onAddTransaction(_preselectedAccountId(context)),
+                onPressed: () => unawaited(_addTransaction(context)),
               ),
         body: SafeArea(
           child: BlocConsumer<TransactionsListCubit, TransactionsListState>(

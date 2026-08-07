@@ -1,7 +1,11 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/app_fab.dart';
 import 'package:billetudo/core/widgets/root_tab_header.dart';
+import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
+import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_summary.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/pending_occurrences_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/pending_occurrences_state.dart';
@@ -29,6 +33,11 @@ class MockScheduledPaymentsListCubit
 class MockPendingOccurrencesCubit extends MockCubit<PendingOccurrencesState>
     implements PendingOccurrencesCubit {}
 
+class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
+
+class MockWatchActiveAccountsCount extends Mock
+    implements WatchActiveAccountsCount {}
+
 void main() {
   late MockScheduledPaymentsListCubit listCubit;
   late MockPendingOccurrencesCubit pendingCubit;
@@ -53,6 +62,7 @@ void main() {
     ),
     ValueChanged<String>? onOpenScheduledPayment,
     bool showBackButton = true,
+    VoidCallback? onAddScheduledPayment,
   }) async {
     when(() => listCubit.state).thenReturn(listState);
     when(() => listCubit.stream)
@@ -72,7 +82,7 @@ void main() {
             BlocProvider<PendingOccurrencesCubit>.value(value: pendingCubit),
           ],
           child: ScheduledPaymentsPage(
-            onAddScheduledPayment: () {},
+            onAddScheduledPayment: onAddScheduledPayment ?? () {},
             onOpenScheduledPayment: onOpenScheduledPayment ?? (_) {},
             onOpenPending: () {},
             showBackButton: showBackButton,
@@ -425,5 +435,58 @@ void main() {
     await tester.pump();
 
     expect(opened, 'sp-finished');
+  });
+
+  group('gate de cuenta en el FAB (15-gate-cuenta.md HU-01)', () {
+    void registerAccountGate({required bool hasAny}) {
+      final hasAnyActiveAccount = MockHasAnyActiveAccount();
+      when(hasAnyActiveAccount.call)
+          .thenAnswer((_) => Stream.value(hasAny));
+      getIt.registerFactory<HasAnyActiveAccount>(() => hasAnyActiveAccount);
+      final watchActiveAccountsCount = MockWatchActiveAccountsCount();
+      when(watchActiveAccountsCount.call)
+          .thenAnswer((_) => Stream.value(hasAny ? 1 : 0));
+      getIt.registerFactory<WatchActiveAccountsCount>(
+        () => watchActiveAccountsCount,
+      );
+    }
+
+    tearDown(getIt.reset);
+
+    testWidgets(
+        'sin cuentas activas, el FAB abre el puente en vez de '
+        'onAddScheduledPayment', (tester) async {
+      registerAccountGate(hasAny: false);
+      var tapped = 0;
+      await pumpPage(
+        tester,
+        const ScheduledPaymentsListState(status: ScheduledPaymentsListStatus.ready),
+        onAddScheduledPayment: () => tapped++,
+      );
+
+      await tester.tap(find.byType(AppFab));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AccountGateBridgeSheet), findsOneWidget);
+      expect(tapped, 0);
+    });
+
+    testWidgets(
+        'con al menos una cuenta activa, el FAB invoca '
+        'onAddScheduledPayment directamente', (tester) async {
+      registerAccountGate(hasAny: true);
+      var tapped = 0;
+      await pumpPage(
+        tester,
+        const ScheduledPaymentsListState(status: ScheduledPaymentsListStatus.ready),
+        onAddScheduledPayment: () => tapped++,
+      );
+
+      await tester.tap(find.byType(AppFab));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AccountGateBridgeSheet), findsNothing);
+      expect(tapped, 1);
+    });
   });
 }

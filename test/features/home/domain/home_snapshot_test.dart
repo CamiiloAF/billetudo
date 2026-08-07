@@ -148,6 +148,46 @@ void main() {
   });
 
   test(
+      'recentTransactions, cuando se pasa, decide el feed reciente '
+      'independiente del mes de spending (HU-05)', () {
+    final snapshot = HomeSnapshot.from(
+      month: month,
+      accounts: [buildActiveAccount()],
+      // Spending stays anchored to `month` (julio): this is what the hero's
+      // total counts.
+      transactions: [
+        buildActivity(id: 'july-1', date: DateTime(2026, 7, 5)),
+      ],
+      // The recent feed is a wholly different, unbound source — a movement
+      // from a different month altogether must still show up here.
+      recentTransactions: [
+        buildActivity(id: 'august-1', date: DateTime(2026, 8, 1)),
+        buildActivity(id: 'june-1', date: DateTime(2026, 6, 15)),
+      ],
+    );
+
+    expect(
+      snapshot.recentActivity.map((e) => e.transaction.id),
+      ['august-1', 'june-1'],
+      reason: 'recentActivity must come from recentTransactions, not from '
+          'the month-scoped `transactions` used for spending',
+    );
+    expect(snapshot.spending.displayTotalMinor, 10000);
+  });
+
+  test(
+      'recentTransactions omitido: se conserva el comportamiento previo '
+      '(deriva de transactions)', () {
+    final snapshot = HomeSnapshot.from(
+      month: month,
+      accounts: [buildActiveAccount()],
+      transactions: [buildActivity(id: 'a')],
+    );
+
+    expect(snapshot.recentActivity.map((e) => e.transaction.id), ['a']);
+  });
+
+  test(
       'multi-moneda: el hero muestra la moneda de mayor total (sin sumar '
       'cruzado)', () {
     final snapshot = HomeSnapshot.from(

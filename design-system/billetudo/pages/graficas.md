@@ -172,3 +172,11 @@ Descartadas en esta ronda (borradas del canvas al elegir C): variante A "lista s
 2. **Variante oscura del sheet Selector de Periodo base (`Sy92N`)** — no construida (el estado "rango personalizado activo" ya tiene su oscuro en `XkFWg`, aprobado).
 3. **Sin diseñar**: tooltip de lectura de valor al tocar (salvo Categorías, ver arriba), share sheet del sistema tras el ícono de export, hoja de rango personalizado más allá del caso base, variante ON del toggle "Incluir cuentas archivadas". ~~Destino de "Ver subcategorías"~~ — resuelto, ver "Categorías — interacción de la dona y drill-down".
 4. ~~Tema oscuro pendiente para las 6 pantallas nuevas de 2026-07-29~~ — resuelto 2026-07-30, ver nodeIds oscuros en "Frames".
+
+## Apéndice — detalle archivado del canvas (aseo 2026-08-04)
+
+Contenido de notas cerradas del `.pen` que no estaba tejido en la prosa de arriba; se archiva aquí antes de borrarlas del canvas.
+
+- **Export en el header, ícono (nota `jeEeC`)**: se eligió `image-down` sobre `share-2` porque la acción que el usuario reconoce es "guardar la imagen de esta gráfica" — el share sheet del sistema es solo el vehículo, no la intención. Los ~60px que se liberaron del footer de tabs al remover una barra redundante se repartieron al gráfico en Flujo/Patrimonio, y en Categorías los absorbió la barra de `Category Row`.
+- **Estados propios de Resumen (nota `lmvPQ`)**: de los tres estados (vacío/carga/error), solo el **vacío** es propio de Resumen y aprobado con HU-06 (ver "Resumen vacío" arriba). Carga y error se heredan del mismo lenguaje ya validado en Presupuestos y Metas — no se diseñaron variantes nuevas para Resumen.
+- **Rango compartido no se resetea en el cross-link (nota `Jqrol`)**: al tocar "Ver en qué se fue" desde Flujo/balance negativo hacia Categorías, el rango de fechas activo (ej. "Últimos 6 meses") **no cambia** — se conserva porque Categorías necesita mostrar el mismo total de gastos que motivó el salto. Pendiente sin resolver, y posiblemente ya superado: la hoja del Period Selector (elegir mes / últimos N meses / rango personalizado) fuera del caso base — verificar si `Sy92N` ya lo cubre antes de tratarlo como hueco real.

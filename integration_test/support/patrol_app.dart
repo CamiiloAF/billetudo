@@ -6,6 +6,7 @@ import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:patrol/patrol.dart';
@@ -98,4 +99,38 @@ Future<void> _prepareCleanBoot(PatrolIntegrationTester $) async {
   // locale so the suite is deterministic regardless of the device/emulator
   // language (Android emulators default to en-US).
   $.tester.platformDispatcher.localesTestValue = const [Locale('es', 'CO')];
+}
+
+/// Dismisses the HU-01 minitutorial sheet if it auto-showed
+/// (`docs/requirements/16-minitutoriales.md` criterion 1) right after
+/// arriving at Presupuestos/Metas/Deudas/Pagos programados for the first
+/// time in a scenario.
+///
+/// [startApp] always boots against a fresh database: `TutorialViews` is
+/// empty and `AppSettings.showHelpOnSectionEntry` defaults to `true`, so the
+/// very first visit to any of those 4 screens in *every* scenario
+/// auto-shows its tutorial sheet — the sheet is a full-screen modal that
+/// would otherwise swallow the next `tap`/`enterText` this suite issues.
+/// Call this once right after navigating to one of those screens, before
+/// interacting with it.
+///
+/// A bounded poll, not a plain `pumpAndSettle`: `TutorialGateCubit.evaluate`
+/// awaits a real on-device Drift query (`HasSeenTutorial`) before opening
+/// the sheet, so the modal route can still be a few frames away from
+/// `showModalBottomSheet` actually pushing — same reasoning as this file's
+/// sibling suites' own `_pumpUntilFound` helpers. No-ops (and costs at most
+/// this poll's budget) on a screen's *second* visit in the same scenario,
+/// where the tutorial was already marked seen and never shows again.
+Future<void> dismissAutoTutorialIfShown(
+  PatrolIntegrationTester $, {
+  int maxFrames = 20,
+}) async {
+  final gotIt = find.text('Entendido');
+  for (var i = 0; i < maxFrames && gotIt.evaluate().isEmpty; i++) {
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
+  if (gotIt.evaluate().isNotEmpty) {
+    await $.tester.tap(gotIt.first);
+    await $.tester.pumpAndSettle();
+  }
 }

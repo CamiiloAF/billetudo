@@ -18,6 +18,16 @@ abstract class TransactionRepository {
     TransactionFilter filter,
   );
 
+  /// HU-05 "Movimientos recientes": every active transaction across every
+  /// account, with **no** date/period bound — unlike [watchTransactions],
+  /// which always requires one (`TransactionFilter.datePeriod` has no "no
+  /// filter" state). Home's recent-activity feed is a literal activity feed,
+  /// decoupled from any month/period being navigated elsewhere on the screen.
+  /// Same trash/tombstone exclusion as [watchTransactions]; ordered newest
+  /// first. Callers cap the row count themselves (`HomeSnapshot.from` applies
+  /// `HomeSnapshot.recentActivityLimit`) — this returns everything.
+  Stream<Result<List<TransactionWithDetails>>> watchRecentTransactions();
+
   /// One transaction with its enriched display data (HU-08). Re-emits on
   /// every relevant change (including its tags).
   Stream<Result<TransactionWithDetails>> watchTransactionDetail(String id);

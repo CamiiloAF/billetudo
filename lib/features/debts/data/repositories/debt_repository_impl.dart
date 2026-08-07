@@ -395,6 +395,34 @@ class DebtRepositoryImpl implements DebtRepository {
       });
 
   @override
+  FutureResult<DebtEntry?> accrueInterestAtomic({
+    required String debtId,
+    required DebtEntryDraft? Function(DebtAccrualContext context) buildEntry,
+  }) =>
+      _guard(
+        () => _local.transaction<Result<DebtEntry?>>(() async {
+          // Re-read inside the transaction: any concurrent call that
+          // committed first is now visible here, so `buildEntry` sees the
+          // fresh `lastAccrualDate`/outstanding instead of the stale
+          // snapshot the use case validated against.
+          final contextResult = await getAccrualContext(debtId);
+          return contextResult.fold<FutureResult<DebtEntry?>>(
+            (failure) async => Left(failure),
+            (context) async {
+              final draft = buildEntry(context);
+              if (draft == null) {
+                return const Right(null);
+              }
+              final row = await _local.insertEntry(
+                DebtEntryMapper.toInsertCompanion(draft, now: DateTime.now()),
+              );
+              return Right(DebtEntryMapper.toEntity(row));
+            },
+          );
+        }),
+      );
+
+  @override
   FutureResult<Unit> linkTransactionToDebt({
     required String transactionId,
     required String debtId,

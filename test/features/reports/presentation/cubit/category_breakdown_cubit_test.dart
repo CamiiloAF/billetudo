@@ -58,4 +58,26 @@ void main() {
       ),
     ],
   );
+
+  blocTest<CategoryBreakdownCubit, CategoryBreakdownState>(
+    'load forwards accountIds to the usecase params',
+    build: () {
+      when(() => watchCategoryBreakdownReport(any())).thenAnswer(
+        (_) => Stream.value(Right(breakdown)),
+      );
+      return CategoryBreakdownCubit(watchCategoryBreakdownReport);
+    },
+    act: (cubit) =>
+        cubit.load(range: range, accountIds: const {'acc-1'}),
+    verify: (_) {
+      verify(
+        () => watchCategoryBreakdownReport(
+          WatchCategoryBreakdownReportParams(
+            range: range,
+            accountIds: const {'acc-1'},
+          ),
+        ),
+      ).called(1);
+    },
+  );
 }

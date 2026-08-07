@@ -45,6 +45,22 @@ class ReportsLocalDatasource {
       a.tombstonedAt.isNull() &
       (includeArchived ? const Constant(true) : a.archived.equals(false));
 
+  /// The Gráficas account filter (criterion 4/5): **inclusive-empty**, same
+  /// shape as `TransactionFilter.accountIds` — an empty set means "no filter
+  /// on this dimension" (every in-scope account), never "match nothing".
+  /// Applied per-query against whichever account column that query already
+  /// joins on (origin vs. destination for patrimonio's two independent
+  /// legs), so a transfer with one leg in the selection and one out still
+  /// contributes only the in-scope leg — matching how `includeArchived`
+  /// already treats those two legs independently.
+  Expression<bool> _accountFilter(
+    Expression<String> accountIdColumn,
+    Set<String> accountIds,
+  ) =>
+      accountIds.isEmpty
+          ? const Constant(true)
+          : accountIdColumn.isIn(accountIds);
+
   /// Buckets by the device's local wall-clock date, never UTC: `Transactions
   /// .date` is stored as a unix timestamp, and `strftime` on it without a
   /// `localtime` modifier reads day/month boundaries in UTC — which shifts a
@@ -98,6 +114,7 @@ class ReportsLocalDatasource {
     required DateTime start,
     required DateTime endExclusive,
     required DateGranularity granularity,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -134,6 +151,7 @@ class ReportsLocalDatasource {
       ..where(
         _aliveTx(t) &
             _inScopeAccount(a) &
+            _accountFilter(t.accountId, accountIds) &
             t.date.isBiggerOrEqualValue(start) &
             t.date.isSmallerThanValue(endExclusive) &
             (isIncomeNonDebt |
@@ -174,17 +192,22 @@ class ReportsLocalDatasource {
 
   /// Σ `initialBalanceMinor` over in-scope accounts — the static part of the
   /// baseline every point-in-time balance is built from.
-  Stream<int> watchAccountsOpeningBalanceSum({required bool includeArchived}) {
+  Stream<int> watchAccountsOpeningBalanceSum({
+    required bool includeArchived,
+    required Set<String> accountIds,
+  }) {
     final sum = _db.accounts.initialBalanceMinor.sum();
     final query = _db.selectOnly(_db.accounts)
       ..addColumns([sum])
       ..where(
-        _netWorthScopeAccount(_db.accounts, includeArchived: includeArchived),
+        _netWorthScopeAccount(_db.accounts, includeArchived: includeArchived) &
+            _accountFilter(_db.accounts.id, accountIds),
       );
     return query.map((row) => row.read(sum) ?? 0).watchSingle();
   }
 
-  Expression<int> _originEffect($TransactionsTable t) => CaseWhenExpression<int>(
+  Expression<int> _originEffect($TransactionsTable t) =>
+      CaseWhenExpression<int>(
         cases: [
           CaseWhen(t.type.equalsValue(EntryType.income), then: t.amountMinor),
         ],
@@ -196,6 +219,7 @@ class ReportsLocalDatasource {
   Stream<int> watchOriginEffectBefore(
     DateTime before, {
     required bool includeArchived,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -207,6 +231,7 @@ class ReportsLocalDatasource {
       ..where(
         _aliveTx(t) &
             _netWorthScopeAccount(a, includeArchived: includeArchived) &
+            _accountFilter(t.accountId, accountIds) &
             t.date.isSmallerThanValue(before),
       );
     return query.map((row) => row.read(effect) ?? 0).watchSingle();
@@ -218,6 +243,7 @@ class ReportsLocalDatasource {
   Stream<int> watchDestinationEffectBefore(
     DateTime before, {
     required bool includeArchived,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -230,6 +256,7 @@ class ReportsLocalDatasource {
         _aliveTx(t) &
             t.type.equalsValue(EntryType.transfer) &
             _netWorthScopeAccount(a, includeArchived: includeArchived) &
+            _accountFilter(t.transferAccountId, accountIds) &
             t.date.isSmallerThanValue(before),
       );
     return query.map((row) => row.read(sum) ?? 0).watchSingle();
@@ -242,6 +269,7 @@ class ReportsLocalDatasource {
     required DateTime endExclusive,
     required DateGranularity granularity,
     required bool includeArchived,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -254,6 +282,7 @@ class ReportsLocalDatasource {
       ..where(
         _aliveTx(t) &
             _netWorthScopeAccount(a, includeArchived: includeArchived) &
+            _accountFilter(t.accountId, accountIds) &
             t.date.isBiggerOrEqualValue(start) &
             t.date.isSmallerThanValue(endExclusive),
       )
@@ -276,6 +305,7 @@ class ReportsLocalDatasource {
     required DateTime endExclusive,
     required DateGranularity granularity,
     required bool includeArchived,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -289,6 +319,7 @@ class ReportsLocalDatasource {
         _aliveTx(t) &
             t.type.equalsValue(EntryType.transfer) &
             _netWorthScopeAccount(a, includeArchived: includeArchived) &
+            _accountFilter(t.transferAccountId, accountIds) &
             t.date.isBiggerOrEqualValue(start) &
             t.date.isSmallerThanValue(endExclusive),
       )
@@ -310,10 +341,9 @@ class ReportsLocalDatasource {
 
   /// Every alive debt (`deletedAt`/`tombstonedAt` null) — the universe the
   /// point-in-time ledger reconstruction runs over.
-  Stream<List<Debt>> watchAliveDebts() =>
-      (_db.select(_db.debts)
-            ..where((d) => d.deletedAt.isNull() & d.tombstonedAt.isNull()))
-          .watch();
+  Stream<List<Debt>> watchAliveDebts() => (_db.select(_db.debts)
+        ..where((d) => d.deletedAt.isNull() & d.tombstonedAt.isNull()))
+      .watch();
 
   /// Every alive `DebtEntry` dated before [endExclusive] — bounded to the
   /// series' own end, never the whole table's history beyond what a chart
@@ -352,6 +382,7 @@ class ReportsLocalDatasource {
   Stream<List<CategoryExpenseRow>> watchCategoryExpenseRows({
     required DateTime start,
     required DateTime endExclusive,
+    required Set<String> accountIds,
   }) {
     final t = _db.transactions;
     final a = _db.accounts;
@@ -364,13 +395,15 @@ class ReportsLocalDatasource {
     final counted = isExpenseNonDebt | isCountedTransfer | isDebtMovement;
 
     final sum = t.amountMinor.sum();
+    final count = t.id.count();
     final query = _db.selectOnly(_db.transactions).join([
       innerJoin(a, a.id.equalsExp(t.accountId)),
     ])
-      ..addColumns([t.categoryId, sum])
+      ..addColumns([t.categoryId, sum, count])
       ..where(
         _aliveTx(t) &
             _inScopeAccount(a) &
+            _accountFilter(t.accountId, accountIds) &
             t.date.isBiggerOrEqualValue(start) &
             t.date.isSmallerThanValue(endExclusive) &
             counted,
@@ -383,6 +416,7 @@ class ReportsLocalDatasource {
               CategoryExpenseRow(
                 categoryId: row.read(t.categoryId),
                 amountMinor: row.read(sum) ?? 0,
+                movementCount: row.read(count) ?? 0,
               ),
           ],
         );

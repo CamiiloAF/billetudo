@@ -21,8 +21,11 @@ import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/sign_out_sheet_cubit.dart';
 import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_sign_out_sheet.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
-import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
@@ -40,14 +43,21 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class MockWatchRecentTransactions extends Mock
+    implements WatchRecentTransactions {}
+
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
-class MockWatchGlobalMonthlyBudgetProgress extends Mock
-    implements WatchGlobalMonthlyBudgetProgress {}
+class MockWatchFeaturedBudgetProgress extends Mock
+    implements WatchFeaturedBudgetProgress {}
+
+class MockGetBudgetById extends Mock implements GetBudgetById {}
+
+class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -105,15 +115,21 @@ void main() {
   setUp(() {
     final watchAccounts = MockWatchAccounts();
     final watchMonthTransactions = MockWatchMonthTransactions();
+    final watchRecentTransactions = MockWatchRecentTransactions();
     final watchAuthSession = MockWatchAuthSession();
     final watchSyncStatus = MockWatchSyncStatus();
     final restoreTransaction = MockRestoreTransaction();
-    final watchGlobalMonthlyBudgetProgress =
-        MockWatchGlobalMonthlyBudgetProgress();
+    final watchFeaturedBudgetProgress =
+        MockWatchFeaturedBudgetProgress();
+    final getBudgetById = MockGetBudgetById();
+    final getBudgetProgress = MockGetBudgetProgress();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
     when(() => watchMonthTransactions(any())).thenAnswer(
+      (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
+    );
+    when(watchRecentTransactions.call).thenAnswer(
       (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
     );
     when(watchSyncStatus.call)
@@ -123,7 +139,7 @@ void main() {
       (_) => const Stream<AuthSession>.empty(),
     );
     when(() => watchAuthSession.current).thenReturn(signedIn);
-    when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
+    when(watchFeaturedBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
     );
 
@@ -134,10 +150,13 @@ void main() {
         () => HomeCubit(
           watchAccounts,
           watchMonthTransactions,
+          watchRecentTransactions,
           watchAuthSession,
           watchSyncStatus,
           restoreTransaction,
-          watchGlobalMonthlyBudgetProgress,
+          watchFeaturedBudgetProgress,
+          getBudgetById,
+          getBudgetProgress,
         ),
       )
       ..registerFactory<AuthCubit>(

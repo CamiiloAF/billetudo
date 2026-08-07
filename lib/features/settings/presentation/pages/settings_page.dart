@@ -18,6 +18,7 @@ import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
 import '../widgets/sheets/envelope_info_sheet.dart';
+import '../widgets/show_help_on_entry_field.dart';
 
 /// Ajustes (`jDaUb` sin sesión / `aaQBp` con sesión): "Cuenta y respaldo" +
 /// "Preferencias", closing on "Eliminar cuenta" pushed to the very bottom of
@@ -114,6 +115,17 @@ class SettingsPage extends StatelessWidget {
                         label: l10n.settingsCurrency,
                         sublabel: l10n.settingsCurrencySubtitle,
                         onTap: () => onOpenComingSoon(l10n.settingsCurrency),
+                      ),
+                      const SizedBox(height: 12),
+                      BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                        builder: (context, settings) => ShowHelpOnEntryField(
+                          enabled: settings.showHelpOnSectionEntry,
+                          onChanged: (value) => unawaited(
+                            context
+                                .read<AppSettingsCubit>()
+                                .setShowHelpOnSectionEntry(enabled: value),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       Material(

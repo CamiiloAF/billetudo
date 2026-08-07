@@ -133,6 +133,70 @@ void main() {
     expect(picked, isNull);
   });
 
+  testWidgets(
+      'la altura del sheet no cambia entre un mes de 4 filas y uno de 6',
+      (tester) async {
+    // February 2026 starts on a Sunday and only needs 4 visible weeks;
+    // August 2026 needs 6 — the fixed 6-row grid keeps the sheet's height
+    // identical between them.
+    await openPicker(tester, initialDate: DateTime(2026, 2, 10));
+    final fourRowHeight =
+        tester.getSize(find.byType(DatePickerSheet)).height;
+
+    await tester.tap(find.byTooltip('Mes siguiente'));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(find.byTooltip('Mes siguiente'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Agosto 2026'), findsOneWidget);
+    final sixRowHeight = tester.getSize(find.byType(DatePickerSheet)).height;
+
+    expect(fourRowHeight, closeTo(sixRowHeight, 1));
+  });
+
+  testWidgets(
+      'tocar el label de mes abre la vista de año sin perder la selección',
+      (tester) async {
+    await openPicker(tester, initialDate: DateTime(2026, 7, 15));
+
+    await tester.tap(find.text('20'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Julio 2026'));
+    await tester.pumpAndSettle();
+
+    // Month grid is gone, replaced by the year grid.
+    expect(find.text('20'), findsNothing);
+    expect(find.text('2026'), findsOneWidget);
+
+    await tester.tap(find.text('2020'));
+    await tester.pumpAndSettle();
+
+    // Back on the month view, positioned on July 2020, previous day
+    // selection (20) is preserved.
+    expect(find.text('Julio 2020'), findsOneWidget);
+    final calendar = tester.widget<MonthCalendar>(find.byType(MonthCalendar));
+    expect(calendar.selected, DateTime(2026, 7, 20));
+
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('tocar el rango de años vuelve a la vista de mes sin elegir',
+      (tester) async {
+    await openPicker(tester, initialDate: DateTime(2026, 7, 15));
+
+    await tester.tap(find.text('Julio 2026'));
+    await tester.pumpAndSettle();
+    expect(find.text('2026'), findsOneWidget);
+
+    await tester.tap(find.text('2016–2027'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Julio 2026'), findsOneWidget);
+  });
+
   testWidgets('los chevrons cambian de mes con wrap de año', (tester) async {
     await openPicker(tester, initialDate: DateTime(2026, 1, 10));
 

@@ -17,8 +17,6 @@ void main() {
     await loadMaterialIconsFont();
   });
 
-  final month = DateTime(2026, 7);
-
   /// [syncedAgo] y [quarantined] son el detalle que la hoja necesita: la fila
   /// de "última sincronización" se muestra en los cinco estados, y el estado
   /// de atención cambia de copy según su causa (registros trabados vs. una
@@ -30,8 +28,6 @@ void main() {
     SyncState snapshotState = SyncState.synced,
   }) =>
       HomeState(
-        month: month,
-        currentMonth: month,
         status: HomeStatus.ready,
         syncStatus: status,
         syncSnapshot: SyncStatusSnapshot(

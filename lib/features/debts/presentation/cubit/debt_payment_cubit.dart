@@ -94,6 +94,32 @@ class DebtPaymentCubit extends Cubit<DebtPaymentState> {
     );
   }
 
+  Future<List<AccountWithBalance>> _loadAccounts() async {
+    final result = await _watchAccounts().first;
+    return result.fold((_) => <AccountWithBalance>[], (list) => list);
+  }
+
+  /// `15-gate-cuenta.md`: the "¿Agregar a una cuenta?" gate is informative,
+  /// not blocking — the caller only reaches this after the user created an
+  /// account from the bridge sheet while `state.accounts` was empty. Reloads
+  /// the list so the switch (and the account row it reveals) reflect the new
+  /// account without needing to close and reopen the sheet, mirroring
+  /// `GoalFormCubit.refreshAccounts()`.
+  Future<void> refreshAccounts() async {
+    final accounts = await _loadAccounts();
+    if (isClosed) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        accounts: accounts,
+        selectedAccountId: () =>
+            state.selectedAccountId ??
+            (accounts.isEmpty ? null : accounts.first.account.id),
+      ),
+    );
+  }
+
   void amountChanged(int amountMinor) =>
       emit(state.copyWith(amountMinor: amountMinor));
 

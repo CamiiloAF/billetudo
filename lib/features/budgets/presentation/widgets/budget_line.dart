@@ -8,6 +8,7 @@ import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/budget_with_progress.dart';
 import '../utils/budget_format.dart';
+import 'budget_featured_badge.dart';
 import 'budget_progress_bar.dart';
 
 /// The `Budget Line` component (`FSL69`): 3 data points + bar (HU-04).
@@ -21,6 +22,7 @@ class BudgetLine extends StatelessWidget {
     required this.entry,
     required this.onTap,
     this.envelopeMode = false,
+    this.isFeatured = false,
     super.key,
   });
 
@@ -32,6 +34,12 @@ class BudgetLine extends StatelessWidget {
   /// what is left (`D1G5hl` overrides `avgVb`/`doPZl` this way), and the card
   /// is denser (padding 16 instead of 18).
   final bool envelopeMode;
+
+  /// Whether this is the budget manually featured on the Home hero
+  /// (`design-system/billetudo/pages/presupuestos.md`, "Destacar presupuesto
+  /// en Inicio"). Draws the `sEyU6` star badge over the card's top-right
+  /// corner — no extra border, the badge is the only differentiator.
+  final bool isFeatured;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +94,7 @@ class BudgetLine extends StatelessWidget {
       BudgetFormat.temporalAnchor(l10n, entry.budget, entry.window, locale),
     ].join(' · ');
 
-    return InkWell(
+    final card = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: Container(
@@ -213,6 +221,21 @@ class BudgetLine extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (!isFeatured) {
+      return card;
+    }
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        card,
+        const Positioned(
+          top: -8,
+          right: 2,
+          child: BudgetFeaturedBadge(),
+        ),
+      ],
     );
   }
 }

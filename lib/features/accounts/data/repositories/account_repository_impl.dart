@@ -34,6 +34,11 @@ class AccountRepositoryImpl implements AccountRepository {
       _watchList(archived: false);
 
   @override
+  Stream<Result<int>> watchActiveAccountsCount() => _guardStream(
+        _local.watchActiveAccountsCount().map(Right.new),
+      );
+
+  @override
   Stream<Result<List<AccountWithBalance>>> watchArchivedAccounts() =>
       _watchList(archived: true);
 

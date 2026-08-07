@@ -208,6 +208,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal(
         $,
         name: 'Viaje a Cartagena',
@@ -244,6 +245,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal($, name: 'Fondo de emergencia', targetWhole: '1000000');
 
       await _openOnlyGoal($);
@@ -292,6 +294,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal($, name: 'Portátil nuevo', targetWhole: '1000000');
 
       await _openOnlyGoal($);
@@ -334,6 +337,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal($, name: 'Meta chiquita', targetWhole: '500');
 
       await _openOnlyGoal($);
@@ -385,6 +389,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal($, name: 'Colchón financiero', targetWhole: '2000000');
 
       await _openOnlyGoal($);
@@ -434,6 +439,7 @@ void main() {
 
       _goToGoals($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createGoal($, name: 'Meta a borrar', targetWhole: '300000');
 
       await _openOnlyGoal($);

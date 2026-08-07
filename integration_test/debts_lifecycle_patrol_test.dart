@@ -212,6 +212,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createDebt($, name: 'Deuda pendiente', openingWhole: '600');
 
       // Still $600 pending, 0% paid: closing here must freeze exactly that.
@@ -256,6 +257,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createDebt($, name: 'Deuda chica', openingWhole: '500');
 
       await _openOnlyDebt($);
@@ -301,6 +303,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createDebt(
         $,
         name: 'Préstamo a Andrés',
@@ -331,6 +334,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createDebt($, name: 'Deuda chica', openingWhole: '500');
 
       await _openOnlyDebt($);
@@ -367,6 +371,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _createDebt($, name: 'Deuda cerrada', openingWhole: '400');
 
       await _openOnlyDebt($);
@@ -403,6 +408,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
 
       // Debt A (iOwe): abono $200 of $600, then closed manually with $400
       // still pending. Its contribution to "Pagué" is the $200 actually

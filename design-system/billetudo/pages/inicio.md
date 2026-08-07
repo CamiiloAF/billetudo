@@ -83,8 +83,24 @@ Bottom-sheets y elementos que se accionan desde el Home, todos en claro + oscuro
 - **Componente `Month Cell` (`DB3bz`):** celda de mes (mismo espíritu que `Day Cell`). Estados: seleccionado (fill `$primary` + texto `$on-primary`), normal (`$text-primary`), y futuro/deshabilitado (`$text-secondary` + `opacity:0.4`). La flecha del navegador de año que solo lleva a meses futuros se atenúa (`opacity:0.35`).
 - **Indicador de sync (HU-10):** vive en el componente `Home Header` (`vYdCt`), así que aparece en las 8 pantallas del Home y en ambos temas. Icono `cloud-check` discreto (`$text-secondary`) junto a la campana. Es **informativo/pasivo** (no es tap target; si a futuro se abre un detalle de sync, envolver en 44pt en Flutter). 3 estados (referencia `KpeGp`): Sincronizado (`cloud-check`), Sincronizando (`refresh-cw`), Sin conexión (`cloud-off`) — discretos y en tono positivo (offline no alarmante; local-first, datos a salvo).
 
+## Hero Period Stepper — reemplazo del selector de mes (aprobado, tema claro)
+
+**Contexto del cambio:** el hero de Inicio reemplaza su selector de mes calendario (`MonthSelectorChip`/`MonthPickerSheet`, eliminados) por un **stepper de período** que navega la ventana REAL del presupuesto destacado (`BudgetPeriodWindow`, con ancla de día personalizada) cuando hay uno. "Movimientos recientes" ya no se filtra por mes.
+
+- **Variante elegida — "B: Adaptada on-primary".** Vive integrada directo sobre el degradado del hero (no una pastilla `$surface` separada como el stepper de Presupuestos). Chevrones en círculos `$surface` sólido (44×44) con ícono `$text-primary` — mismo patrón ya aprobado del botón de campana del Header. Rango de fechas 13px/700 `$on-primary`, texto de estado "· vigente" 13px `$on-primary` (subido de 12 a 13px por holgura de contraste, mismo criterio ya documentado para el texto secundario del hero).
+- **Posición:** en medio del bloque del hero — balance (con kicker "Gastado" 12px/600 `$on-primary` restituido sobre el monto) → stepper de período → barra de progreso. Se descartaron arriba (le robaba protagonismo al monto) y abajo (dejaba sin contexto el periodo hasta el final).
+- **Ajustes de layout:** gaps reducidos en `Content` (16→12), `Hero` (14→10) y filas de Movimientos (14→10) para acomodar el contenido nuevo sin overflow.
+- **Cuándo se muestra:** solo si hay presupuesto destacado (automático o manual) con progreso visible. Sin presupuesto destacado, el hero no muestra stepper y cae al total del mes calendario actual.
+- **Interacción:** tocar el hero completo (cuando hay presupuesto destacado) navega al detalle de ese presupuesto — no a una lista de movimientos filtrados.
+- **Nodo IDs de referencia:** frame final `xBv3N` ("Inicio — Hero Period Stepper (Final, tema claro)"), kicker `zoZcf`/`Pi7t6`, stepper `diOFU`, chevrones `a09pi`/`A11npZ`, texto de estado `b9eQy`.
+- **Estado:** tema claro **aprobado**. Tema oscuro pendiente (se construye después, solo tras esta aprobación explícita ya dada).
+- **Pendiente de portar:** los ajustes de gap y el stepper completo aún no están portados a los frames canónicos de Inicio (`aOhoY`/`A9v7s` desactualizados; `LktTm`/`AVgUv` son los V2 vigentes con la tira "Mis cuentas" — deuda de fidelidad ya anotada, este cambio la extiende).
+
+> **Nota:** este stepper reemplaza el selector de mes documentado en "Interacciones y sub-pantallas" (`k7kv4`/`iGwrg`, `Month Cell` `DB3bz`) para el hero de Inicio. Esa sección se deja intacta como referencia histórica hasta que el reemplazo se porte a los frames canónicos y se limpie formalmente.
+
 ## Pendientes
 
+- **Portar Hero Period Stepper a los frames canónicos + tema oscuro:** el stepper aprobado en `xBv3N` (ver sección "Hero Period Stepper") reemplaza el selector de mes calendario; falta portarlo a `aOhoY`/`A9v7s`/`LktTm`/`AVgUv` (o al frame que quede como canónico tras resolver esa deuda de fidelidad) y generar la copia oscura, solo después de que esta migración esté cerrada en claro.
 - **Acceso rápido — replicar a Vacío/Carga y a tema oscuro:** la fila `Quick Access A` solo existe hoy en `aOhoY` y `A9v7s` (tema claro). Falta insertarla en `DliNF`/`AmifS` (vacío/carga, mismo tratamiento chrome-fijo) y generar su copia oscura junto con el resto de la pantalla, al final del flujo de diseño (ver "Orden de lectura" en `CLAUDE.md`).
 - **Orden de accesos configurable (futuro, fuera de alcance de este diseño):** el usuario quiere poder reordenar los 4 accesos directos desde Ajustes más adelante. No cambia el diseño visual del chip ni de la fila — es una feature de datos/preferencias de usuario. Ver nota en `docs/requirements/04-inicio.md` § Pendiente.
 - **Implementación en Flutter** (`flutter-dev`): el diseño está completo en Pencil (claro + oscuro); pasar a código con este doc + `docs/requirements/04-inicio.md`, incluyendo el cableado de destinos y el comportamiento de scroll del FAB (documentado arriba en la estructura).

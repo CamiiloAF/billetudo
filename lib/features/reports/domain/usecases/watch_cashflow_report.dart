@@ -17,6 +17,7 @@ class WatchCashflowReport {
       _repository.watchCashflow(
         range: params.range,
         includeDebtMovements: params.includeDebtMovements,
+        accountIds: params.accountIds,
       );
 }
 
@@ -24,6 +25,7 @@ class WatchCashflowReportParams extends Equatable {
   const WatchCashflowReportParams({
     required this.range,
     this.includeDebtMovements = true,
+    this.accountIds = const <String>{},
   });
 
   final DateRange range;
@@ -33,6 +35,11 @@ class WatchCashflowReportParams extends Equatable {
   /// the total.
   final bool includeDebtMovements;
 
+  /// Gráficas' cuentas filter (criterion 4): inclusive-empty, default
+  /// `{}` = todas las cuentas activas incluidas (no regression from the
+  /// pre-filter behaviour).
+  final Set<String> accountIds;
+
   @override
-  List<Object?> get props => [range, includeDebtMovements];
+  List<Object?> get props => [range, includeDebtMovements, accountIds];
 }

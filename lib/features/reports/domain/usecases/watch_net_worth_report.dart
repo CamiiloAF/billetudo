@@ -18,6 +18,7 @@ class WatchNetWorthReport {
       _repository.watchNetWorth(
         range: params.range,
         includeArchivedAccounts: params.includeArchivedAccounts,
+        accountIds: params.accountIds,
       );
 }
 
@@ -25,6 +26,7 @@ class WatchNetWorthReportParams extends Equatable {
   const WatchNetWorthReportParams({
     required this.range,
     this.includeArchivedAccounts = false,
+    this.accountIds = const <String>{},
   });
 
   final DateRange range;
@@ -32,6 +34,11 @@ class WatchNetWorthReportParams extends Equatable {
   /// Default `false` (HU-02 default: archived accounts excluded).
   final bool includeArchivedAccounts;
 
+  /// Gráficas' cuentas filter (criterion 5): inclusive-empty, scopes only
+  /// the líquido side — the deuda side always stays fully included
+  /// (criterion 6), regardless of this set.
+  final Set<String> accountIds;
+
   @override
-  List<Object?> get props => [range, includeArchivedAccounts];
+  List<Object?> get props => [range, includeArchivedAccounts, accountIds];
 }

@@ -10,7 +10,8 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: DebtCelebrationStat(value: r'$4.200.000', label: 'Total pagado'),
+            body: DebtCelebrationStat(
+                value: r'$4.200.000', label: 'Total pagado'),
           ),
         ),
       );

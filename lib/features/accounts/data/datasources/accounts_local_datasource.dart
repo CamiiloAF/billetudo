@@ -52,6 +52,22 @@ class AccountsLocalDatasource {
   Stream<List<AccountWithMovementRows>> watchAccount(String id) =>
       _watchJoined((accounts) => accounts.id.equals(id));
 
+  /// `COUNT` of active accounts, re-emitting on every insert/update/delete to
+  /// `Accounts` — the same reactivity [watchAccounts] gets, without the
+  /// transactions join it needs for balances. Backs the account gate (HU-02):
+  /// it only ever needs to know "is there at least one", not the accounts
+  /// themselves.
+  Stream<int> watchActiveAccountsCount() {
+    final count = _db.accounts.id.count();
+    final query = _db.selectOnly(_db.accounts)
+      ..addColumns([count])
+      ..where(
+        _db.accounts.tombstonedAt.isNull() &
+            _db.accounts.archived.equals(false),
+      );
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
+
   Future<Account?> getAccount(String id) => (_db.select(_db.accounts)
         ..where((a) => a.id.equals(id) & a.tombstonedAt.isNull()))
       .getSingleOrNull();

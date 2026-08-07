@@ -29,6 +29,7 @@ import 'support/patrol_app.dart';
 Future<void> _openNewBudgetForm(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Presupuestos'));
   await $.tester.pumpAndSettle();
+  await dismissAutoTutorialIfShown($);
   await $.tester.tap(find.byTooltip('Nuevo presupuesto'));
   await $.tester.pumpAndSettle();
 }

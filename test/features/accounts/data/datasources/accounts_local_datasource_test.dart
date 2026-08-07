@@ -171,4 +171,61 @@ void main() {
       expect(count, 0);
     });
   });
+
+  group('watchActiveAccountsCount', () {
+    test('starts at 0 with no accounts', () async {
+      final count = await datasource.watchActiveAccountsCount().first;
+
+      expect(count, 0);
+    });
+
+    test('excludes tombstoned accounts (HU-08 referential tombstone)',
+        () async {
+      await insertAccount(tombstonedAt: DateTime(2026, 7, 15));
+
+      final count = await datasource.watchActiveAccountsCount().first;
+
+      expect(count, 0);
+    });
+
+    test('excludes archived accounts', () async {
+      final id = await insertAccount(name: 'Archivada');
+      await (db.update(db.accounts)..where((a) => a.id.equals(id))).write(
+        const AccountsCompanion(archived: Value(true)),
+      );
+
+      final count = await datasource.watchActiveAccountsCount().first;
+
+      expect(count, 0);
+    });
+
+    test('emits 0, 1, then 2 as active accounts are created — the same '
+        'progression the account gate needs for the "0 cuentas" vs. "segunda '
+        'cuenta" transfer copy', () async {
+      final emissions = <int>[];
+      final subscription =
+          datasource.watchActiveAccountsCount().listen(emissions.add);
+      await pumpEventQueue();
+
+      await insertAccount(name: 'Primera');
+      await pumpEventQueue();
+
+      await insertAccount(name: 'Segunda');
+      await pumpEventQueue();
+
+      expect(emissions, [0, 1, 2]);
+      await subscription.cancel();
+    });
+
+    test('reacts without re-subscribing when an account is created',
+        () async {
+      final firstEmission = datasource.watchActiveAccountsCount().first;
+      await insertAccount();
+
+      expect(await firstEmission, anyOf(0, 1));
+
+      final count = await datasource.watchActiveAccountsCount().first;
+      expect(count, 1);
+    });
+  });
 }

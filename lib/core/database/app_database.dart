@@ -751,6 +751,52 @@ class AppSettings extends Table with _SyncColumns {
   /// flow does not reappear on a later launch. Same pattern as
   /// [categoriesSeeded].
   BoolColumn get onboardingCompleted => boolean().clientDefault(() => false)();
+
+  /// Manually picked budget to feature on the Home hero card
+  /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+  /// Null (the default, including every installation that predates this
+  /// column) falls back to the automatic global+monthly selection in
+  /// `BudgetHeroSelector`. References `Budgets.id` loosely (no FK — an
+  /// archived/deleted budget simply stops matching in the selector, no
+  /// cleanup needed here).
+  TextColumn get featuredBudgetId => text().nullable()();
+
+  /// Global on/off for the contextual help minitutorials (screen + sub-flow
+  /// sheets): whether a tutorial the user hasn't seen yet is allowed to pop
+  /// up automatically on entry. Defaults to `true`. Turning it off does NOT
+  /// hide "Ver ayuda" in each screen's overflow menu, which always works —
+  /// it only stops sheets from appearing unprompted. Turning it back ON from
+  /// off resets every row in [TutorialViews] (see `SetTutorialsEnabled`), so
+  /// every tutorial shows again once.
+  BoolColumn get showHelpOnSectionEntry =>
+      boolean().clientDefault(() => true)();
+}
+
+/// One row per tutorial key the current installation's user has already
+/// dismissed (contextual help minitutorials: 4 screen-level + 7 sub-flow
+/// sheets — see `lib/features/tutorials/`). Presence of a row for a given
+/// [id] means "already seen"; there is no boolean column to flip.
+///
+/// [id] is NOT a random UUID like every other `_SyncColumns` table: it is
+/// the tutorial's own stable key (e.g. `'budgets_screen'`,
+/// `'debt_link_movement'`, see `TutorialKey`), so `hasSeen(key)` is a plain
+/// row lookup by that key. `clientDefault`'s UUID generator is intentionally
+/// NOT used here.
+///
+/// DEVIATION FROM `_SyncColumns` (documented on purpose, same shape as
+/// `AppSettings`'s "singleton with a well-known id" deviation above): unlike
+/// `AppSettings`, this table is NOT a singleton — it holds up to 11 rows,
+/// one per tutorial key ever seen — but each `id` is still a small fixed
+/// value repeated across every user who has seen that tutorial. In Postgres
+/// this table's primary key MUST be the composite `(id, user_id)`, never
+/// `id` alone: a plain `id` PK would collide the moment a second user sees
+/// the same tutorial (identical bug class to the seed-categories issue,
+/// docs/requirements/05-auth-sync.md decision #19). Locally this SQLite view
+/// keeps a single-column PK on `id` because one installation only ever holds
+/// one user's rows at a time.
+class TutorialViews extends Table with _SyncColumns {
+  @override
+  TextColumn get id => text()();
 }
 
 // ---------------------------------------------------------------------------
@@ -778,13 +824,14 @@ class AppSettings extends Table with _SyncColumns {
     BudgetPeriodOverrides,
     AppSettings,
     ImportBatches,
+    TutorialViews,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 25;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1243,13 +1290,90 @@ class AppDatabase extends _$AppDatabase {
           // managed view, and `powerSyncSchema` (`powersync_schema.dart`)
           // already declares `onboarding_completed`, so PowerSync recreates
           // the view with the column present before this migration runs.
-          // Nothing else to do here: the column has a client default of
-          // `false`, so the singleton row keeps that value with no backfill.
+          //
+          // WRONG ASSUMPTION (this comment originally claimed "the column has
+          // a client default of `false`, so the singleton row keeps that
+          // value with no backfill" — confirmed false 2026-08-04 on a real
+          // device, BILLETUDO-9/BILLETUDO-A): `clientDefault` only runs when
+          // Drift *inserts* a row through its typed API; it never backfills
+          // an already-existing row. A singleton created before this column
+          // existed has no `onboarding_completed` key in its PowerSync JSON
+          // blob at all, so `json_extract` reads SQL NULL — Drift's generated
+          // mapper does a non-nullable `!` on that and crashes
+          // (`$AppSettingsTable.map`, `TypeError: Null check operator used on
+          // a null value`) every time that row is read, not just once. The
+          // `from < 12` rule ("only a genuine backfill... belongs in
+          // onUpgrade") applied here too; see the `from < 22` backfill below.
           if (from < 21) {
             // No `addColumn` — see comment above.
           }
 
-          // v21 -> v22: Import/Export (docs/requirements/11-import-export.md).
+          // v21 -> v22: backfills `onboarding_completed` for any singleton
+          // row that predates it (see the corrected note on `from < 21`
+          // above). Bumping schemaVersion (not amending the v20->v21 block)
+          // so this backfill actually re-runs for installs already sitting
+          // at v21 with the broken row — `onUpgrade` only replays blocks
+          // between the device's current `user_version` and this new one.
+          // Safe against a view via its `INSTEAD OF` trigger (same pattern as
+          // `from < 12`'s `scheduled_payments` backfill).
+          if (from < 22) {
+            await m.database.customStatement(
+              'UPDATE app_settings SET onboarding_completed = 0 '
+              'WHERE onboarding_completed IS NULL',
+            );
+          }
+
+          // v22 -> v23: `AppSettings` gains `featuredBudgetId`, the
+          // user-picked budget to feature on the Home hero card
+          // (design-system/billetudo/pages/ajustes.md). No `addColumn` —
+          // see the note on `from < 12` above: `appSettings` is a
+          // PowerSync-managed view, and `powerSyncSchema`
+          // (`powersync_schema.dart`) already declares
+          // `featured_budget_id`, so PowerSync recreates the view with the
+          // column present before this migration runs. Unlike
+          // `onboarding_completed` (`from < 22` above), no backfill is
+          // needed here: the column is nullable in Dart
+          // (`TextColumn.nullable()`), so a pre-existing row with no
+          // `featured_budget_id` key in its PowerSync JSON blob just reads
+          // as `null` — the automatic-selection fallback this column is
+          // designed to have anyway (criterion 1).
+          if (from < 23) {
+            // No `addColumn` — see comment above.
+          }
+
+          // v23 -> v24: contextual help minitutorials.
+          //  1. New `TutorialViews` table: one row per tutorial key the
+          //     user has dismissed. Additive table only, no existing data
+          //     to migrate — `createTable` (`CREATE TABLE IF NOT EXISTS`)
+          //     is safe even though `powerSyncSchema` may have already
+          //     created the backing view, same as every other new table
+          //     added since PowerSync was wired (see `goalQuickAmounts`,
+          //     `from < 20`, for the same pattern).
+          //  2. `AppSettings` gains `showHelpOnSectionEntry` (bool, default
+          //     true). No `addColumn` — see the note on `from < 12` above:
+          //     `appSettings` is a PowerSync-managed view, and
+          //     `powerSyncSchema` (`powersync_schema.dart`) already
+          //     declares `show_help_on_section_entry`, so PowerSync
+          //     recreates the view with the column present before this
+          //     migration runs. UNLIKE `featuredBudgetId` (`from < 23`
+          //     above) this column is NOT nullable in Dart, so — learning
+          //     from the exact crash `onboardingCompleted` hit
+          //     (`from < 22` above, BILLETUDO-9/BILLETUDO-A) — any
+          //     pre-existing singleton row with no
+          //     `show_help_on_section_entry` key in its PowerSync JSON blob
+          //     is explicitly backfilled to `1` (true, the documented
+          //     default) here in the SAME version bump that adds the
+          //     column, instead of shipping the crash and fixing it one
+          //     version later like that column did.
+          if (from < 24) {
+            await m.createTable(tutorialViews);
+            await m.database.customStatement(
+              'UPDATE app_settings SET show_help_on_section_entry = 1 '
+              'WHERE show_help_on_section_entry IS NULL',
+            );
+          }
+
+          // v24 -> v25: Import/Export (docs/requirements/11-import-export.md).
           // New `ImportBatches` table (one row per completed CSV import,
           // never deleted — `revertedAt` marks a revert instead, HU-08) plus
           // a nullable `importBatchId` on every table an import can create
@@ -1267,7 +1391,7 @@ class AppDatabase extends _$AppDatabase {
           // PowerSync recreates each view with it present the next time the
           // app opens, before Drift's migration runs. Nullable column, no
           // backfill needed.
-          if (from < 22) {
+          if (from < 25) {
             await m.createTable(importBatches);
           }
         },

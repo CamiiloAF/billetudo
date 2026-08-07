@@ -16,6 +16,12 @@ abstract class AccountRepository {
   /// transactions.
   Stream<Result<List<AccountWithBalance>>> watchActiveAccounts();
 
+  /// Count of active accounts (not archived, not tombstoned). Lighter than
+  /// [watchActiveAccounts] for consumers that only need "how many", like the
+  /// account gate (HU-02 of `docs/requirements/15-gate-cuenta.md`): no
+  /// transaction join, no balance calculation, just a `COUNT`.
+  Stream<Result<int>> watchActiveAccountsCount();
+
   /// Archived accounts with their balance, ordered by `sortOrder` (HU-07).
   Stream<Result<List<AccountWithBalance>>> watchArchivedAccounts();
 

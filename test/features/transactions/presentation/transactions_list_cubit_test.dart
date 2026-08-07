@@ -23,6 +23,7 @@ void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchBudgetPeriodOptions watchBudgetPeriodOptions;
   late MockAccountFilterPreferenceDatasource accountFilterPreferences;
+  late MockGetCategorySubtreeIds getCategorySubtreeIds;
 
   final entry = TransactionWithDetails(
     transaction: buildTransaction(),
@@ -41,6 +42,7 @@ void main() {
     watchAccounts = MockWatchAccounts();
     watchBudgetPeriodOptions = MockWatchBudgetPeriodOptions();
     accountFilterPreferences = MockAccountFilterPreferenceDatasource();
+    getCategorySubtreeIds = MockGetCategorySubtreeIds();
     when(() => watchAccounts()).thenAnswer((_) => const Stream.empty());
     when(() => watchBudgetPeriodOptions())
         .thenAnswer((_) => const Stream.empty());
@@ -51,6 +53,13 @@ void main() {
         .thenAnswer((_) async => const <String>{});
     when(() => accountFilterPreferences.writeAccountIds(any()))
         .thenAnswer((_) async {});
+    // Defaults to "no expansion needed" (a subcategory, or a root with no
+    // subcategories) so existing tests keep behaving as before this use
+    // case existed; drill-down-specific tests below override this per case.
+    when(() => getCategorySubtreeIds(any())).thenAnswer(
+      (invocation) async =>
+          Right({invocation.positionalArguments.first as String}),
+    );
   });
 
   TransactionsListCubit build() => TransactionsListCubit(
@@ -59,7 +68,8 @@ void main() {
       restoreTransaction,
       watchAccounts,
       watchBudgetPeriodOptions,
-      accountFilterPreferences);
+      accountFilterPreferences,
+      getCategorySubtreeIds);
 
   group('carga inicial', () {
     blocTest<TransactionsListCubit, TransactionsListState>(
@@ -215,6 +225,85 @@ void main() {
           cubit.state.filter.datePeriod.endExclusive,
           DateTime(2026, 8),
         );
+        // Default (criterion 8): Gráficas' cuentas filter en "todas" no
+        // aplica ninguna restricción de cuenta en Movimientos.
+        expect(cubit.state.filter.accountIds, isEmpty);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'filterByCategoryAndRange propaga el subconjunto de cuentas de '
+      'Gráficas (criterion 7)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-mercado',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+          accountIds: const {'acc-1', 'acc-2'},
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.categoryIds, {'cat-mercado'});
+        expect(cubit.state.filter.accountIds, {'acc-1', 'acc-2'});
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      // Bug 2 regression: a root category whose own movements are tagged
+      // with a subcategory's id (never its own) must expand to itself +
+      // every active subcategory before filtering — a plain
+      // `{categoryId}` filter would match nothing.
+      'filterByCategoryAndRange expande una categoría raíz a sus '
+      'subcategorías (drill-down desde una raíz sin movimientos propios)',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        when(() => getCategorySubtreeIds('cat-hogar')).thenAnswer(
+          (_) async => const Right({'cat-hogar', 'cat-hogar-mercado'}),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-hogar',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+        );
+      },
+      verify: (cubit) {
+        expect(
+          cubit.state.filter.categoryIds,
+          {'cat-hogar', 'cat-hogar-mercado'},
+        );
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'filterByCategoryAndRange cae de vuelta a solo categoryId si la '
+      'expansión de subcategorías falla',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        when(() => getCategorySubtreeIds('cat-borrada')).thenAnswer(
+          (_) async => const Left(NotFoundFailure('category not found')),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-borrada',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.categoryIds, {'cat-borrada'});
       },
     );
 
@@ -389,6 +478,58 @@ void main() {
 
         await cubit.close();
         await accountsController.close();
+      },
+    );
+  });
+
+  group('start() y el flujo "llegó desde Gráficas" (Bug 3, race)', () {
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'start() no pisa el accountIds recién aplicado por '
+      'filterByCategoryAndRange cuando arrivedFromReports ya es true — '
+      'la persistencia en disco no gana la carrera',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        // The persisted preference disagrees with what Gráficas just set —
+        // if start() wins the race, this stale value leaks through.
+        when(() => accountFilterPreferences.readAccountIds())
+            .thenAnswer((_) async => const {'acc-persisted'});
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.filterByCategoryAndRange(
+          categoryId: 'cat-mercado',
+          start: DateTime(2026, 2),
+          endInclusive: DateTime(2026, 7, 31),
+          accountIds: const {'acc-graficas'},
+        );
+        cubit.markArrivedFromReports();
+        // Mirrors the router: Movimientos' `GoRoute.builder` calls `start()`
+        // again on the very same singleton right after the filter above and
+        // `markArrivedFromReports()` already landed synchronously.
+        await cubit.start();
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.accountIds, {'acc-graficas'});
+        expect(cubit.state.filter.categoryIds, {'cat-mercado'});
+        expect(cubit.state.arrivedFromReports, isTrue);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'start() sí restaura el accountIds persistido cuando no viene de '
+      'Gráficas (entrada normal)',
+      setUp: () {
+        when(() => watchTransactions(any()))
+            .thenAnswer((_) => Stream.value(Right([entry])));
+        when(() => accountFilterPreferences.readAccountIds())
+            .thenAnswer((_) async => const {'acc-persisted'});
+      },
+      build: build,
+      act: (cubit) => cubit.start(),
+      verify: (cubit) {
+        expect(cubit.state.filter.accountIds, {'acc-persisted'});
+        expect(cubit.state.arrivedFromReports, isFalse);
       },
     );
   });

@@ -4,16 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/golden_helpers.dart';
 
-/// The detail overflow ("⋮") sheet: Editar · Cerrar (guardar en histórico) ·
+/// The detail overflow ("⋮") sheet: Editar · Usar como destacado en Inicio
+/// (o Quitar de Inicio) · Ajustar monto · Cerrar (guardar en histórico) ·
 /// Eliminar (en `$expense-text`).
 ///
 /// Pencil row (`design-system/billetudo/pages/presupuestos.md`):
-/// `detail_actions` → `G26c4T` / `f1WviW` (Sheet — acciones del detalle ⋮).
+/// `detail_actions` → `G26c4T` / `f1WviW` (Sheet — acciones del detalle ⋮);
+/// the "Destacar en Inicio" row is `gFBcD` (OFF) / `yaRtv` (ON).
 ///
-/// The sheet is stateless — it offers the same three actions for every budget
-/// (recurrente, una única vez, sobregastado), so there is a single business
-/// state to capture per theme. Opened through a real trigger so the golden
-/// includes the scrim, the drag handle and the `BottomSheetBase` chrome.
+/// The sheet has one piece of business state — `isFeatured` — so both values
+/// get their own golden per theme. Opened through a real trigger so the
+/// golden includes the scrim, the drag handle and the `BottomSheetBase`
+/// chrome.
 void main() {
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
@@ -24,6 +26,7 @@ void main() {
     WidgetTester tester,
     String name, {
     required Brightness brightness,
+    required bool isFeatured,
   }) async {
     setGoldenViewport(tester);
     await tester.pumpWidget(
@@ -33,6 +36,7 @@ void main() {
             onPressed: () => BudgetDetailActionsSheet.show(
               context,
               budgetName: 'Mercado del mes',
+              isFeatured: isFeatured,
             ),
             child: const Text('open'),
           ),
@@ -51,8 +55,24 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('acciones del detalle ($suffix)', (tester) async {
-      await golden(tester, 'detail_actions_$suffix', brightness: brightness);
+    testWidgets('acciones del detalle, no destacado ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'detail_actions_$suffix',
+        brightness: brightness,
+        isFeatured: false,
+      );
+    });
+
+    testWidgets('acciones del detalle, ya destacado ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        'detail_actions_featured_$suffix',
+        brightness: brightness,
+        isFeatured: true,
+      );
     });
   }
 }

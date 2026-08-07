@@ -13,6 +13,7 @@ import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubi
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
+import 'package:billetudo/features/settings/presentation/widgets/show_help_on_entry_field.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -265,5 +266,104 @@ void main() {
 
     verify(() => themeModeCubit.setThemeMode(ThemeMode.dark)).called(1);
     expect(opened, isEmpty);
+  });
+
+  // HU-04 (`docs/requirements/16-minitutoriales.md`): the "Mostrar ayuda al
+  // entrar a una sección" switch in Preferencias. Plain on/off, no side
+  // effects on the tutorials' "seen" registry and no SnackBar.
+  group('"Mostrar ayuda al entrar a una sección" (HU-04, minitutoriales)', () {
+    testWidgets(
+        'criterion 9: encendida por defecto (showHelpOnSectionEntry '
+        'true)', (tester) async {
+      when(() => appSettingsCubit.state).thenReturn(
+        const AppSettingsState(showHelpOnSectionEntry: true),
+      );
+      whenListen(
+        appSettingsCubit,
+        const Stream<AppSettingsState>.empty(),
+        initialState: const AppSettingsState(showHelpOnSectionEntry: true),
+      );
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.text('Mostrar ayuda al entrar a una sección'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+
+      final switchFinder = find.descendant(
+        of: find.byType(ShowHelpOnEntryField),
+        matching: find.byType(Switch),
+      );
+      final aSwitch = tester.widget<Switch>(switchFinder);
+      expect(aSwitch.value, isTrue);
+    });
+
+    testWidgets(
+        'apagarla llama setShowHelpOnSectionEntry(false) y NO muestra '
+        'SnackBar', (tester) async {
+      when(() => appSettingsCubit.state).thenReturn(
+        const AppSettingsState(showHelpOnSectionEntry: true),
+      );
+      whenListen(
+        appSettingsCubit,
+        const Stream<AppSettingsState>.empty(),
+        initialState: const AppSettingsState(showHelpOnSectionEntry: true),
+      );
+      when(() => appSettingsCubit.setShowHelpOnSectionEntry(enabled: false))
+          .thenAnswer((_) async {});
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.text('Mostrar ayuda al entrar a una sección'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+      await tester.tap(find.descendant(
+        of: find.byType(ShowHelpOnEntryField),
+        matching: find.byType(Switch),
+      ));
+      await tester.pump();
+
+      verify(() => appSettingsCubit.setShowHelpOnSectionEntry(enabled: false))
+          .called(1);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets(
+        'reactivarla desde apagada llama setShowHelpOnSectionEntry(true) y '
+        'NO muestra SnackBar', (tester) async {
+      when(() => appSettingsCubit.state).thenReturn(
+        const AppSettingsState(showHelpOnSectionEntry: false),
+      );
+      whenListen(
+        appSettingsCubit,
+        const Stream<AppSettingsState>.empty(),
+        initialState: const AppSettingsState(showHelpOnSectionEntry: false),
+      );
+      when(() => appSettingsCubit.setShowHelpOnSectionEntry(enabled: true))
+          .thenAnswer((_) async {});
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.text('Mostrar ayuda al entrar a una sección'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+      await tester.tap(find.descendant(
+        of: find.byType(ShowHelpOnEntryField),
+        matching: find.byType(Switch),
+      ));
+      await tester.pump();
+
+      verify(() => appSettingsCubit.setShowHelpOnSectionEntry(enabled: true))
+          .called(1);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Dialog), findsNothing);
+    });
   });
 }

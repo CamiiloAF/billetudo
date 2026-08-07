@@ -56,7 +56,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('iOwe copy: title, message with the debt name, and the '
+  testWidgets(
+      'iOwe copy: title, message with the debt name, and the '
       '"Total pagado" stat label', (tester) async {
     await pumpAndOpen(tester, celebrationFor(DebtDirection.iOwe));
 
@@ -67,7 +68,8 @@ void main() {
     expect(find.byType(DebtCelebrationStat), findsNWidgets(2));
   });
 
-  testWidgets('owedToMe copy: title, message, and the "Total cobrado" stat '
+  testWidgets(
+      'owedToMe copy: title, message, and the "Total cobrado" stat '
       'label', (tester) async {
     await pumpAndOpen(tester, celebrationFor(DebtDirection.owedToMe));
 

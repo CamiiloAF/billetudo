@@ -10,6 +10,7 @@ import '../../cubit/reports_shell_cubit.dart';
 import '../../cubit/reports_shell_state.dart';
 import '../../models/reports_period_selection.dart';
 import '../../utils/reports_period_format.dart';
+import '../account_filter_row.dart';
 import '../chart_period_row.dart';
 import '../sheets/period_selector_sheet.dart';
 import '../states/chart_sync_notice_strip.dart';
@@ -51,6 +52,7 @@ class _CashflowTabViewState extends State<CashflowTabView> {
       context.read<CashflowCubit>().load(
         range: shell.period.range,
         includeDebtMovements: shell.includeDebtMovements,
+        accountIds: shell.accountIds,
       ),
     );
   }
@@ -70,7 +72,8 @@ class _CashflowTabViewState extends State<CashflowTabView> {
     return BlocListener<ReportsShellCubit, ReportsShellState>(
       listenWhen: (previous, current) =>
           previous.period != current.period ||
-          previous.includeDebtMovements != current.includeDebtMovements,
+          previous.includeDebtMovements != current.includeDebtMovements ||
+          previous.accountIds != current.accountIds,
       listener: (context, shell) => _load(shell),
       child: BlocBuilder<ReportsShellCubit, ReportsShellState>(
         builder: (context, shell) {
@@ -99,6 +102,13 @@ class _CashflowTabViewState extends State<CashflowTabView> {
                               locale,
                             ),
                       onTapSelector: () => _openPeriodSelector(shell.period),
+                    ),
+                    const SizedBox(height: 8),
+                    AccountFilterRow(
+                      selected: shell.accountIds,
+                      onChanged: (accountIds) => context
+                          .read<ReportsShellCubit>()
+                          .updateAccountFilter(accountIds),
                     ),
                     const SizedBox(height: 8),
                     if (shell.hasSyncNotice) ...[

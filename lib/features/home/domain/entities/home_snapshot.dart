@@ -5,9 +5,15 @@ import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import 'month_spending.dart';
 
-/// Everything the Home renders for the selected month (HU-03/HU-05): the hero's
-/// spending total and the recent-activity feed, both derived from the same
-/// month of transactions plus the set of active accounts.
+/// Everything the Home renders (HU-03/HU-05): the hero's spending total for
+/// the selected month, and the recent-activity feed.
+///
+/// The two are **not** derived from the same source: [spending] stays scoped
+/// to the given month (or to the featured budget's own period window, chosen
+/// by the caller), while [recentActivity] is a literal activity feed with no
+/// month/period bound of its own — see `WatchRecentTransactions` and the
+/// `recentTransactions` parameter of [HomeSnapshot.from]. Both still filter
+/// down to the set of active [accounts].
 ///
 /// Pure aggregation lives here (a `from` factory), so it is unit-testable
 /// without a cubit, a repository or Flutter.
@@ -29,7 +35,9 @@ class HomeSnapshot extends Equatable {
   /// The most recent movements of active accounts (HU-05): a literal activity
   /// feed — income, expense **and** transfer — ordered newest first and capped
   /// at [recentActivityLimit]. Unlike [spending], it applies no expense-only
-  /// exclusion.
+  /// exclusion, and (per [HomeSnapshot.from]'s `recentTransactions` param) no
+  /// month/period filter either — it is deliberately decoupled from whatever
+  /// period the hero is navigating.
   final List<TransactionWithDetails> recentActivity;
 
   /// The active global (no account/category scope) monthly budget's progress
@@ -54,6 +62,11 @@ class HomeSnapshot extends Equatable {
     required Iterable<AccountWithBalance> accounts,
     BudgetWithProgress? budgetProgress,
     String fallbackCurrency = 'COP',
+    // The unbound source for `recentActivity` (`WatchRecentTransactions`,
+    // HU-05): when omitted, [transactions] is reused so a caller that has not
+    // migrated yet keeps its previous (month-scoped) behavior — the decoupling
+    // only takes effect once a caller actually supplies this.
+    Iterable<TransactionWithDetails>? recentTransactions,
   }) {
     final accountList = accounts.toList();
     final activeAccountIds = {
@@ -66,7 +79,7 @@ class HomeSnapshot extends Equatable {
         ? accountList.first.account.currency
         : fallbackCurrency;
 
-    final recent = transactions
+    final recent = (recentTransactions ?? transactions)
         .where(
             (entry) => activeAccountIds.contains(entry.transaction.accountId))
         .toList()

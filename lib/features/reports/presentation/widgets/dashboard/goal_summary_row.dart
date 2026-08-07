@@ -74,7 +74,7 @@ class GoalSummaryRow extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '${entry.displayedPercent}%',
+              l10n.reportsPercentValue(entry.displayedPercent),
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

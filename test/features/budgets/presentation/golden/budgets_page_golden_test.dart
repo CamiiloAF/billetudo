@@ -78,6 +78,7 @@ void main() {
     bool envelopeEnabled = false,
     bool settle = true,
     double height = 1000,
+    String? featuredBudgetId,
   }) async {
     when(() => listCubit.state).thenReturn(state);
     when(() => envelopeCubit.state)
@@ -88,6 +89,7 @@ void main() {
           zeroBasedEnabled: envelopeEnabled,
           categoriesSeeded: true,
           onboardingCompleted: true,
+          featuredBudgetId: featuredBudgetId,
         ),
       ),
     );
@@ -132,6 +134,18 @@ void main() {
     testWidgets('lista con datos ($suffix)', (tester) async {
       await golden(tester, withData, 'list_with_data_$suffix',
           brightness: brightness);
+    });
+
+    testWidgets(
+        'lista con presupuesto destacado en Inicio ($suffix, `sEyU6`)',
+        (tester) async {
+      await golden(
+        tester,
+        withData,
+        'list_featured_$suffix',
+        brightness: brightness,
+        featuredBudgetId: globalEntry.budget.id,
+      );
     });
 
     testWidgets('lista vacía ($suffix)', (tester) async {

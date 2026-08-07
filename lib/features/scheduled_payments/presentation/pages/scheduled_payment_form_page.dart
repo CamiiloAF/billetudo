@@ -19,6 +19,8 @@ import '../../../transactions/presentation/pages/transaction_form_page.dart'
     show AccountPickerField;
 import '../../../transactions/presentation/widgets/category_picker/category_quick_picker.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
 import '../cubit/scheduled_payment_form_cubit.dart';
@@ -98,7 +100,7 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
         final l10n = AppLocalizations.of(context);
         final cubit = context.read<ScheduledPaymentFormCubit>();
         final colors = context.colors;
-        return Scaffold(
+        final Widget scaffold = Scaffold(
           appBar: AppBar(
             leadingWidth: 60,
             // `J0DSIm` draws the form's ✕ as a bare icon — unlike the
@@ -197,6 +199,17 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                     ],
                   ),
                 ),
+        );
+        // Configuring a debt's cuota programada gets its own minitutorial the
+        // first time this screen opens for one (`docs/requirements/
+        // 16-minitutoriales.md` HU-02) — a plain scheduled payment never
+        // shows it.
+        if (!state.isDebtInstallment) {
+          return scaffold;
+        }
+        return TutorialAutoShow(
+          tutorialKey: TutorialKey.debtScheduledInstallment,
+          child: scaffold,
         );
       },
     );

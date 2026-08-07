@@ -9,6 +9,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
@@ -284,6 +285,50 @@ void main() {
         ),
         'with_data_with_pending_$suffix',
         brightness: brightness,
+      );
+    });
+
+    // HU-03 (`design-system/billetudo/pages/minitutoriales.md`): Pagos
+    // programados' header gained a "⋮" (replacing an empty action spacer)
+    // that opens `ScheduledPaymentsMenuSheet`, whose only row is
+    // "Ver ayuda" — captured through a real tap so the golden shows the
+    // sheet + scrim over the page, same as `budgets_page_menus_golden_test`.
+    testWidgets('menú ⋮ (Ver ayuda) ($suffix)', (tester) async {
+      when(() => listCubit.state).thenReturn(
+        ScheduledPaymentsListState(
+          status: ScheduledPaymentsListStatus.ready,
+          items: items,
+          finishedItems: finishedItems,
+        ),
+      );
+      when(() => pendingCubit.state).thenReturn(
+        const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
+      );
+      await pumpGolden(
+        tester,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<ScheduledPaymentsListCubit>.value(value: listCubit),
+            BlocProvider<PendingOccurrencesCubit>.value(value: pendingCubit),
+          ],
+          child: ScheduledPaymentsPage(
+            onAddScheduledPayment: () {},
+            onOpenScheduledPayment: (_) {},
+            onOpenPending: () {},
+            // Only the bottom-nav tab root (`showBackButton: false`) carries
+            // the "⋮" — the stacked-screen `Page Header` this test file's
+            // other states use has no menu at all.
+            showBackButton: false,
+          ),
+        ),
+        brightness: brightness,
+        size: tallGoldenPhoneSize(height: 1400),
+      );
+      await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/scheduled_payments_page_menu_$suffix.png'),
       );
     });
   }

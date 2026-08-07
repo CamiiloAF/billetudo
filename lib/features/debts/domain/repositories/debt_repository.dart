@@ -107,6 +107,23 @@ abstract class DebtRepository {
   /// payment/disbursement, interest accrual, or manual adjustment).
   FutureResult<DebtEntry> addDebtEntry(DebtEntryDraft draft);
 
+  /// HU-06: the read-then-write half of `AccrueInterest` that must be atomic.
+  /// Re-reads [DebtAccrualContext] and, if [buildEntry] decides something
+  /// should post, inserts it — both inside a single Drift transaction, so two
+  /// concurrent callers can never both read the same stale
+  /// `lastAccrualDate`/outstanding and each post their own `interestAccrual`
+  /// row for the same span. [buildEntry] returns `null` to post nothing (e.g.
+  /// the freshly re-read context now yields zero or negative interest,
+  /// because a just-committed concurrent call already advanced
+  /// `lastAccrualDate`). The caller (`AccrueInterest`) is responsible for the
+  /// debt-state validations (closed, accrual mode, rate) against its own
+  /// initial read — those do not change across a concurrent accrual, so they
+  /// stay outside the transaction.
+  FutureResult<DebtEntry?> accrueInterestAtomic({
+    required String debtId,
+    required DebtEntryDraft? Function(DebtAccrualContext context) buildEntry,
+  });
+
   /// HU-02 (Fase 0): attributes an existing `Transaction` to a debt by setting
   /// its `debtId`. The movement already moved its account; this only makes it
   /// count towards the debt's derived balance.

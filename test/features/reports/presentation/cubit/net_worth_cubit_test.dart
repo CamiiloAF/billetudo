@@ -62,6 +62,28 @@ void main() {
   );
 
   blocTest<NetWorthCubit, NetWorthState>(
+    'load forwards accountIds to the usecase params',
+    build: () {
+      when(() => watchNetWorthReport(any())).thenAnswer(
+        (_) => Stream.value(Right(series)),
+      );
+      return NetWorthCubit(watchNetWorthReport);
+    },
+    act: (cubit) => cubit.load(
+      range: range,
+      includeArchivedAccounts: false,
+      accountIds: const {'acc-1'},
+    ),
+    verify: (_) {
+      verify(
+        () => watchNetWorthReport(
+          WatchNetWorthReportParams(range: range, accountIds: const {'acc-1'}),
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<NetWorthCubit, NetWorthState>(
     'emits failure when the stream produces a Left',
     build: () {
       when(() => watchNetWorthReport(any())).thenAnswer(

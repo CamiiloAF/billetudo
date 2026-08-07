@@ -12,8 +12,11 @@ import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart'
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
-import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
@@ -31,14 +34,21 @@ class _MockThemeModeCubit extends MockCubit<ThemeMode>
 class _MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class _MockWatchRecentTransactions extends Mock
+    implements WatchRecentTransactions {}
+
 class _MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class _MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class _MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
-class _MockWatchGlobalMonthlyBudgetProgress extends Mock
-    implements WatchGlobalMonthlyBudgetProgress {}
+class _MockWatchFeaturedBudgetProgress extends Mock
+    implements WatchFeaturedBudgetProgress {}
+
+class _MockGetBudgetById extends Mock implements GetBudgetById {}
+
+class _MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
 void main() {
   setUpAll(() {
@@ -52,15 +62,21 @@ void main() {
     // whose streams never emit, so the app stays on the loading state (no DB).
     final watchAccounts = _MockWatchAccounts();
     final watchMonthTransactions = _MockWatchMonthTransactions();
+    final watchRecentTransactions = _MockWatchRecentTransactions();
     final watchAuthSession = _MockWatchAuthSession();
     final watchSyncStatus = _MockWatchSyncStatus();
     final restoreTransaction = _MockRestoreTransaction();
-    final watchGlobalMonthlyBudgetProgress =
-        _MockWatchGlobalMonthlyBudgetProgress();
+    final watchFeaturedBudgetProgress =
+        _MockWatchFeaturedBudgetProgress();
+    final getBudgetById = _MockGetBudgetById();
+    final getBudgetProgress = _MockGetBudgetProgress();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
     when(() => watchMonthTransactions(any())).thenAnswer(
+      (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
+    );
+    when(watchRecentTransactions.call).thenAnswer(
       (_) => const Stream<Result<List<TransactionWithDetails>>>.empty(),
     );
     when(watchAuthSession.call).thenAnswer(
@@ -69,7 +85,7 @@ void main() {
     when(watchSyncStatus.call).thenAnswer(
       (_) => const Stream<SyncStatusSnapshot>.empty(),
     );
-    when(watchGlobalMonthlyBudgetProgress.call).thenAnswer(
+    when(watchFeaturedBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
     );
     getIt
@@ -77,10 +93,13 @@ void main() {
         () => HomeCubit(
           watchAccounts,
           watchMonthTransactions,
+          watchRecentTransactions,
           watchAuthSession,
           watchSyncStatus,
           restoreTransaction,
-          watchGlobalMonthlyBudgetProgress,
+          watchFeaturedBudgetProgress,
+          getBudgetById,
+          getBudgetProgress,
         ),
       )
       // `BilletudoApp` resolves `ThemeModeCubit` from `getIt` directly, not

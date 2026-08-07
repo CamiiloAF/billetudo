@@ -17,14 +17,24 @@ class WatchCategoryBreakdownReport {
   Stream<Result<CategoryBreakdown>> call(
     WatchCategoryBreakdownReportParams params,
   ) =>
-      _repository.watchCategoryBreakdown(range: params.range);
+      _repository.watchCategoryBreakdown(
+        range: params.range,
+        accountIds: params.accountIds,
+      );
 }
 
 class WatchCategoryBreakdownReportParams extends Equatable {
-  const WatchCategoryBreakdownReportParams({required this.range});
+  const WatchCategoryBreakdownReportParams({
+    required this.range,
+    this.accountIds = const <String>{},
+  });
 
   final DateRange range;
 
+  /// Gráficas' cuentas filter (criterion 4): inclusive-empty, default `{}`
+  /// = todas las cuentas activas incluidas.
+  final Set<String> accountIds;
+
   @override
-  List<Object?> get props => [range];
+  List<Object?> get props => [range, accountIds];
 }

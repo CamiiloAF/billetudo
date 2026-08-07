@@ -19,11 +19,14 @@ class CategoryBreakdownCubit extends Cubit<CategoryBreakdownState> {
 
   StreamSubscription<dynamic>? _subscription;
 
-  Future<void> load({required DateRange range}) async {
+  Future<void> load({
+    required DateRange range,
+    Set<String> accountIds = const <String>{},
+  }) async {
     await _subscription?.cancel();
     emit(const CategoryBreakdownState());
     _subscription = _watchCategoryBreakdownReport(
-      WatchCategoryBreakdownReportParams(range: range),
+      WatchCategoryBreakdownReportParams(range: range, accountIds: accountIds),
     ).listen((result) {
       if (isClosed) {
         return;

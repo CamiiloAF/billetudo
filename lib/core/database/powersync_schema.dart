@@ -1,6 +1,6 @@
 // PowerSync's client-side schema (decision #6, docs/requirements/05-auth-sync.md).
 //
-// This mirrors the 15 tables in `app_database.dart` that carry `_SyncColumns`
+// This mirrors the tables in `app_database.dart` that carry `_SyncColumns`
 // — same table and column names (snake_case), matching the Postgres schema
 // created for HU-04/HU-05 sync. There is no codegen deriving one schema from
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
@@ -60,7 +60,7 @@ const powerSyncSchema = Schema([
     Column.integer('statement_day'),
     Column.integer('payment_due_day'),
     Column.text('card_balance_primary'),
-    // The import batch this account was created by (schemaVersion 22).
+    // The import batch this account was created by (schemaVersion 25).
     // Nullable = created by hand; see Accounts.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -72,7 +72,7 @@ const powerSyncSchema = Schema([
     Column.text('icon'),
     Column.text('color'),
     Column.integer('sort_order'),
-    // The import batch this category was created by (schemaVersion 22).
+    // The import batch this category was created by (schemaVersion 25).
     // Nullable = created by hand (or a `seed-*` catalog category); see
     // Categories.importBatchId.
     Column.text('import_batch_id'),
@@ -92,7 +92,7 @@ const powerSyncSchema = Schema([
     Column.text('goal_id'),
     Column.text('debt_id'),
     Column.integer('counts_in_budget'),
-    // The import batch this transaction was created by (schemaVersion 22).
+    // The import batch this transaction was created by (schemaVersion 25).
     // Nullable = not from an import; see Transactions.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -207,7 +207,7 @@ const powerSyncSchema = Schema([
   Table('tags', [
     Column.text('name'),
     Column.text('color'),
-    // The import batch this tag was created by (schemaVersion 22). Nullable
+    // The import batch this tag was created by (schemaVersion 25). Nullable
     // = created by hand; see Tags.importBatchId.
     Column.text('import_batch_id'),
     ..._syncColumns,
@@ -250,9 +250,21 @@ const powerSyncSchema = Schema([
     Column.integer('zero_based_enabled'),
     Column.integer('categories_seeded'),
     Column.integer('onboarding_completed'),
+    Column.text('featured_budget_id'),
+    // Global on/off for contextual help minitutorials (schemaVersion 24).
+    // Defaults to true; see AppSettings.showHelpOnSectionEntry.
+    Column.integer('show_help_on_section_entry'),
     ..._syncColumns,
   ]),
-  // One row per completed CSV import (schemaVersion 22,
+  // Contextual help minitutorials: one row per tutorial key the user has
+  // dismissed (schemaVersion 24). `id` is the tutorial's own stable key
+  // (e.g. 'budgets_screen'), not a random UUID; see TutorialViews. No
+  // extra columns beyond `_syncColumns` — a row's mere existence is the
+  // "already seen" flag.
+  Table('tutorial_views', [
+    ..._syncColumns,
+  ]),
+  // One row per completed CSV import (schemaVersion 25,
   // docs/requirements/11-import-export.md). Never deleted — `reverted_at`
   // marks a revert (HU-08) instead of removing the row, so the history
   // survives it.

@@ -296,6 +296,126 @@ abstract class AppLocalizations {
   /// **'Cargando tus cuentas'**
   String get accountsLoading;
 
+  /// Botón secundario de la hoja puente 'necesitas una cuenta' (15-gate-cuenta.md).
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get accountGateNotNow;
+
+  /// No description provided for @accountGateCreateAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear cuenta'**
+  String get accountGateCreateAccount;
+
+  /// No description provided for @accountGateMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera cuenta'**
+  String get accountGateMovementTitle;
+
+  /// No description provided for @accountGateMovementMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar movimientos necesitas una cuenta activa. Créala ahora y seguimos justo con tu movimiento.'**
+  String get accountGateMovementMessage;
+
+  /// No description provided for @accountGateTransferZeroTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas dos cuentas para transferir'**
+  String get accountGateTransferZeroTitle;
+
+  /// No description provided for @accountGateTransferZeroMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes ninguna. Crea la primera para empezar (luego te pedimos la segunda).'**
+  String get accountGateTransferZeroMessage;
+
+  /// No description provided for @accountGateTransferOneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas una segunda cuenta'**
+  String get accountGateTransferOneTitle;
+
+  /// No description provided for @accountGateTransferOneMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tienes una cuenta activa. Crea otra para completar la transferencia entre ellas.'**
+  String get accountGateTransferOneMessage;
+
+  /// No description provided for @accountGateScheduledPaymentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea una cuenta para tu pago programado'**
+  String get accountGateScheduledPaymentTitle;
+
+  /// No description provided for @accountGateScheduledPaymentMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Los pagos programados salen de una cuenta. Créala ahora y seguimos armando el tuyo.'**
+  String get accountGateScheduledPaymentMessage;
+
+  /// No description provided for @accountGateDebtCashTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas una cuenta para este movimiento'**
+  String get accountGateDebtCashTitle;
+
+  /// No description provided for @accountGateDebtCashMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Este abono o desembolso mueve dinero real, así que hace falta una cuenta. Créala y seguimos con tu deuda.'**
+  String get accountGateDebtCashMessage;
+
+  /// No description provided for @accountGateGoalMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas una cuenta para este aporte'**
+  String get accountGateGoalMovementTitle;
+
+  /// No description provided for @accountGateGoalMovementMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Mover dinero real hacia o desde tu meta requiere una cuenta. Créala y seguimos.'**
+  String get accountGateGoalMovementMessage;
+
+  /// No description provided for @accountGateLinkMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay movimientos para enlazar'**
+  String get accountGateLinkMovementTitle;
+
+  /// No description provided for @accountGateLinkMovementMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar requiere elegir entre tus movimientos, y esos nacen de una cuenta. Crea la primera y seguimos.'**
+  String get accountGateLinkMovementMessage;
+
+  /// No description provided for @accountGateBudgetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea una cuenta para tu presupuesto'**
+  String get accountGateBudgetTitle;
+
+  /// No description provided for @accountGateBudgetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Los presupuestos se arman sobre tus cuentas reales. Crea la primera y seguimos armando el tuyo.'**
+  String get accountGateBudgetMessage;
+
+  /// No description provided for @accountGateGoalLinkedAccountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincula una cuenta a tu meta'**
+  String get accountGateGoalLinkedAccountTitle;
+
+  /// No description provided for @accountGateGoalLinkedAccountMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Es opcional: puedes crear tu meta sin cuenta vinculada. Si quieres asociarla a una cuenta real, créala aquí.'**
+  String get accountGateGoalLinkedAccountMessage;
+
   /// No description provided for @accountTypeCash.
   ///
   /// In es, this message translates to:
@@ -1580,6 +1700,30 @@ abstract class AppLocalizations {
   /// **'Mes siguiente'**
   String get datePickerNextMonth;
 
+  /// Tooltip/semántica del label 'mes año' del calendario, que abre la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir año'**
+  String get datePickerSelectYear;
+
+  /// Tooltip del botón que retrocede el bloque de años visible en la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Años anteriores'**
+  String get datePickerPreviousYears;
+
+  /// Tooltip del botón que avanza el bloque de años visible en la vista de selección de año.
+  ///
+  /// In es, this message translates to:
+  /// **'Años siguientes'**
+  String get datePickerNextYears;
+
+  /// Tooltip/semántica del rango de años en la vista de selección de año, que cierra esa vista sin elegir uno.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a los meses'**
+  String get datePickerBackToMonths;
+
   /// No description provided for @transactionFormExpandAmount.
   ///
   /// In es, this message translates to:
@@ -2041,6 +2185,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Gastado en {month}'**
   String homeSpentInMonth(String month);
+
+  /// Rótulo corto sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N): aclara que el número es lo gastado, no un saldo.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastado'**
+  String get homeHeroSpentKicker;
 
   /// No description provided for @homeBudgetInvitation.
   ///
@@ -3777,6 +3927,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Acciones del presupuesto'**
   String get budgetDetailActionsSubtitle;
+
+  /// No description provided for @budgetActionUseAsFeatured.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar como destacado en Inicio'**
+  String get budgetActionUseAsFeatured;
+
+  /// No description provided for @budgetActionUseAsFeaturedSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplaza al presupuesto que tengas destacado, si hay uno.'**
+  String get budgetActionUseAsFeaturedSubtitle;
+
+  /// No description provided for @budgetActionRemoveFeatured.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar de Inicio'**
+  String get budgetActionRemoveFeatured;
 
   /// No description provided for @budgetDeleteConfirmMessage.
   ///
@@ -8113,6 +8281,13 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get reportsNetWorthFigureTotalLabel;
 
+  /// Texto para lectores de pantalla del Hero Patrimonio: figuras líquido y total.
+  ///
+  /// In es, this message translates to:
+  /// **'{liquidLabel}: {liquidAmount}. {totalLabel}: {totalAmount}.'**
+  String reportsNetWorthHeroSemantics(String liquidLabel, String liquidAmount,
+      String totalLabel, String totalAmount);
+
   /// No description provided for @reportsNetWorthInterestNote.
   ///
   /// In es, this message translates to:
@@ -8161,6 +8336,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin categoría'**
   String get reportsCategoriesUncategorized;
+
+  /// Texto para lectores de pantalla de una fila del desglose por categoría: nombre, porcentaje y monto.
+  ///
+  /// In es, this message translates to:
+  /// **'{name}, {pct}%, {amount}'**
+  String reportsCategoriesRowSemantics(String name, int pct, String amount);
+
+  /// Porcentaje formateado para figuras de Gráficas (desglose de categorías, metas del resumen).
+  ///
+  /// In es, this message translates to:
+  /// **'{pct}%'**
+  String reportsPercentValue(int pct);
 
   /// No description provided for @reportsCategoriesViewSubcategories.
   ///
@@ -8294,6 +8481,18 @@ abstract class AppLocalizations {
   /// **'Cargando gráfica'**
   String get reportsChartSkeletonLoadingLabel;
 
+  /// Label del filtro de cuentas de Gráficas cuando no hay selección (todas incluidas).
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las cuentas'**
+  String get reportsAccountFilterAll;
+
+  /// Label del filtro de cuentas de Gráficas con una selección parcial.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
+  String reportsAccountFilterSelected(int count);
+
   /// No description provided for @accountTypeSheetTitle.
   ///
   /// In es, this message translates to:
@@ -8425,6 +8624,474 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Lo hago después'**
   String get onboardingClosingSkip;
+
+  /// No description provided for @tutorialGotIt.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get tutorialGotIt;
+
+  /// No description provided for @tutorialsMenuViewHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver ayuda'**
+  String get tutorialsMenuViewHelp;
+
+  /// No description provided for @budgetsMenuViewHelpSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Repasa cómo funcionan los presupuestos'**
+  String get budgetsMenuViewHelpSubtitle;
+
+  /// No description provided for @goalsMenuViewHelpSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Repasa cómo funcionan las metas'**
+  String get goalsMenuViewHelpSubtitle;
+
+  /// No description provided for @debtsMenuViewHelpSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Repasa cómo funcionan las deudas'**
+  String get debtsMenuViewHelpSubtitle;
+
+  /// No description provided for @scheduledPaymentsMenuViewHelpSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Repasa cómo funcionan los pagos programados'**
+  String get scheduledPaymentsMenuViewHelpSubtitle;
+
+  /// No description provided for @goalsMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get goalsMenuTooltip;
+
+  /// No description provided for @goalsMenuOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones'**
+  String get goalsMenuOptions;
+
+  /// No description provided for @goalsMenuArchived.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver archivados'**
+  String get goalsMenuArchived;
+
+  /// No description provided for @debtsMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get debtsMenuTooltip;
+
+  /// No description provided for @debtsMenuOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones'**
+  String get debtsMenuOptions;
+
+  /// No description provided for @scheduledPaymentsMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get scheduledPaymentsMenuTooltip;
+
+  /// No description provided for @scheduledPaymentsMenuOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones'**
+  String get scheduledPaymentsMenuOptions;
+
+  /// No description provided for @settingsShowHelpOnEntry.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar ayuda al entrar a una sección'**
+  String get settingsShowHelpOnEntry;
+
+  /// No description provided for @settingsShowHelpOnEntrySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Explica cada sección la primera vez que entras.'**
+  String get settingsShowHelpOnEntrySubtitle;
+
+  /// No description provided for @tutorialBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así funcionan los presupuestos'**
+  String get tutorialBudgetsTitle;
+
+  /// No description provided for @tutorialBudgetsPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Un presupuesto por período'**
+  String get tutorialBudgetsPoint1Heading;
+
+  /// No description provided for @tutorialBudgetsPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Defines un monto para gastar en un período (semanal, quincenal, mensual o solo por esta vez) y ves cuánto te queda mientras avanza.'**
+  String get tutorialBudgetsPoint1Body;
+
+  /// No description provided for @tutorialBudgetsPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Con el alcance que tú eliges'**
+  String get tutorialBudgetsPoint2Heading;
+
+  /// No description provided for @tutorialBudgetsPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede cubrir todo tu gasto, o enfocarse solo en una cuenta o categoría en particular.'**
+  String get tutorialBudgetsPoint2Body;
+
+  /// No description provided for @tutorialBudgetsPoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'El modo sobres, para más control'**
+  String get tutorialBudgetsPoint3Heading;
+
+  /// No description provided for @tutorialBudgetsPoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.'**
+  String get tutorialBudgetsPoint3Body;
+
+  /// No description provided for @tutorialBudgetsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear mi primer presupuesto'**
+  String get tutorialBudgetsCta;
+
+  /// No description provided for @tutorialGoalsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así funcionan las metas'**
+  String get tutorialGoalsTitle;
+
+  /// No description provided for @tutorialGoalsPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Para qué sirve una meta'**
+  String get tutorialGoalsPoint1Heading;
+
+  /// No description provided for @tutorialGoalsPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Úsala para ahorrar para algo puntual, como un viaje, un fondo de emergencia o un regalo, y ver tu avance en cualquier momento.'**
+  String get tutorialGoalsPoint1Body;
+
+  /// No description provided for @tutorialGoalsPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'El avance se arma con tus aportes'**
+  String get tutorialGoalsPoint2Heading;
+
+  /// No description provided for @tutorialGoalsPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada vez que registras un aporte, tu progreso sube. No es un número que tú edites: es la suma de lo que has ido aportando.'**
+  String get tutorialGoalsPoint2Body;
+
+  /// No description provided for @tutorialGoalsPoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Un aporte puede mover dinero, o no'**
+  String get tutorialGoalsPoint3Heading;
+
+  /// No description provided for @tutorialGoalsPoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes aportar moviendo dinero real de una cuenta, o solo dejarlo anotado sin tocar tu saldo (útil si ya guardaste ese dinero en otro lado).'**
+  String get tutorialGoalsPoint3Body;
+
+  /// No description provided for @tutorialGoalsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear mi primera meta'**
+  String get tutorialGoalsCta;
+
+  /// No description provided for @tutorialDebtsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así funcionan las deudas'**
+  String get tutorialDebtsTitle;
+
+  /// No description provided for @tutorialDebtsPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Para qué sirve una deuda'**
+  String get tutorialDebtsPoint1Heading;
+
+  /// No description provided for @tutorialDebtsPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Lleva el control del dinero que debes (a un banco, una tarjeta o una persona) o que te deben a ti, sin tener que hacer cuentas a mano.'**
+  String get tutorialDebtsPoint1Body;
+
+  /// No description provided for @tutorialDebtsPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú registras, la app calcula'**
+  String get tutorialDebtsPoint2Heading;
+
+  /// No description provided for @tutorialDebtsPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Anotas lo que pediste prestado, lo que has abonado y los intereses que se suman, y la app calcula sola cuánto falta por pagar.'**
+  String get tutorialDebtsPoint2Body;
+
+  /// No description provided for @tutorialDebtsPoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Un abono puede mover dinero, o no'**
+  String get tutorialDebtsPoint3Heading;
+
+  /// No description provided for @tutorialDebtsPoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes descontar un abono de una de tus cuentas, o solo anotarlo sin mover dinero (útil si alguien más pagó por ti, o si fue en efectivo).'**
+  String get tutorialDebtsPoint3Body;
+
+  /// No description provided for @tutorialDebtsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar mi primera deuda'**
+  String get tutorialDebtsCta;
+
+  /// No description provided for @tutorialScheduledPaymentsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así funcionan los pagos programados'**
+  String get tutorialScheduledPaymentsTitle;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Para qué sirven'**
+  String get tutorialScheduledPaymentsPoint1Heading;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Sirven para no olvidar pagos que se repiten, como el arriendo, una suscripción o una cuota, y dejar que la app los registre por ti si quieres.'**
+  String get tutorialScheduledPaymentsPoint1Body;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático o manual'**
+  String get tutorialScheduledPaymentsPoint2Heading;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Uno automático se registra solo en su fecha. Uno manual te avisa y tú confirmas antes de que cuente (útil si el monto cambia cada vez).'**
+  String get tutorialScheduledPaymentsPoint2Body;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'La bandeja de vencimientos'**
+  String get tutorialScheduledPaymentsPoint3Heading;
+
+  /// No description provided for @tutorialScheduledPaymentsPoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahí ves todos tus pagos pendientes en un solo lugar y los confirmas cuando te llegan.'**
+  String get tutorialScheduledPaymentsPoint3Body;
+
+  /// No description provided for @tutorialScheduledPaymentsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Programar mi primer pago'**
+  String get tutorialScheduledPaymentsCta;
+
+  /// No description provided for @tutorialDebtLinkMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un movimiento existente'**
+  String get tutorialDebtLinkMovementTitle;
+
+  /// No description provided for @tutorialDebtLinkMovementPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'No crea un movimiento nuevo'**
+  String get tutorialDebtLinkMovementPoint1Heading;
+
+  /// No description provided for @tutorialDebtLinkMovementPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Atribuye uno que ya registraste, para no duplicar.'**
+  String get tutorialDebtLinkMovementPoint1Body;
+
+  /// No description provided for @tutorialGoalLinkMovementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un movimiento existente'**
+  String get tutorialGoalLinkMovementTitle;
+
+  /// No description provided for @tutorialGoalLinkMovementPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'No crea un movimiento nuevo'**
+  String get tutorialGoalLinkMovementPoint1Heading;
+
+  /// No description provided for @tutorialGoalLinkMovementPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Atribuye uno que ya registraste, para no duplicar.'**
+  String get tutorialGoalLinkMovementPoint1Body;
+
+  /// No description provided for @tutorialDebtPaymentToggleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Agregar el abono a una cuenta?'**
+  String get tutorialDebtPaymentToggleTitle;
+
+  /// No description provided for @tutorialDebtPaymentTogglePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Si eliges \"Sí\"'**
+  String get tutorialDebtPaymentTogglePoint1Heading;
+
+  /// No description provided for @tutorialDebtPaymentTogglePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El abono también descuenta el monto de la cuenta que elijas, como una transacción real.'**
+  String get tutorialDebtPaymentTogglePoint1Body;
+
+  /// No description provided for @tutorialDebtPaymentTogglePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Si eliges \"No\"'**
+  String get tutorialDebtPaymentTogglePoint2Heading;
+
+  /// No description provided for @tutorialDebtPaymentTogglePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'La deuda baja igual, pero no se toca ningún saldo (útil si pagaste en efectivo o alguien más pagó por ti).'**
+  String get tutorialDebtPaymentTogglePoint2Body;
+
+  /// No description provided for @tutorialGoalContributionToggleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Mover dinero de una cuenta?'**
+  String get tutorialGoalContributionToggleTitle;
+
+  /// No description provided for @tutorialGoalContributionTogglePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Si eliges \"Sí\"'**
+  String get tutorialGoalContributionTogglePoint1Heading;
+
+  /// No description provided for @tutorialGoalContributionTogglePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El aporte descuenta el monto real de una cuenta, como una transferencia.'**
+  String get tutorialGoalContributionTogglePoint1Body;
+
+  /// No description provided for @tutorialGoalContributionTogglePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Si eliges \"No\"'**
+  String get tutorialGoalContributionTogglePoint2Heading;
+
+  /// No description provided for @tutorialGoalContributionTogglePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El aporte solo queda anotado en la meta, sin tocar ningún saldo (útil si ya guardaste ese dinero en otro lado).'**
+  String get tutorialGoalContributionTogglePoint2Body;
+
+  /// No description provided for @tutorialDebtScheduledInstallmentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuota vive en Pagos programados'**
+  String get tutorialDebtScheduledInstallmentTitle;
+
+  /// No description provided for @tutorialDebtScheduledInstallmentPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Se configura aquí, se confirma allá'**
+  String get tutorialDebtScheduledInstallmentPoint1Heading;
+
+  /// No description provided for @tutorialDebtScheduledInstallmentPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'La configuras desde esta deuda, pero se confirma desde la bandeja de Pagos programados, como cualquier otro pago.'**
+  String get tutorialDebtScheduledInstallmentPoint1Body;
+
+  /// No description provided for @tutorialDebtScheduledInstallmentPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Un solo movimiento, dos efectos'**
+  String get tutorialDebtScheduledInstallmentPoint2Heading;
+
+  /// No description provided for @tutorialDebtScheduledInstallmentPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Al confirmarla, un solo movimiento baja el saldo de tu cuenta y abona a la deuda al mismo tiempo.'**
+  String get tutorialDebtScheduledInstallmentPoint2Body;
+
+  /// No description provided for @tutorialBudgetableTransferTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Contar esta transferencia en tu presupuesto?'**
+  String get tutorialBudgetableTransferTitle;
+
+  /// No description provided for @tutorialBudgetableTransferPoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Para qué sirve marcarla'**
+  String get tutorialBudgetableTransferPoint1Heading;
+
+  /// No description provided for @tutorialBudgetableTransferPoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Algunas transferencias sí son parte de tu plan de gasto, aunque no sean un gasto real (por ejemplo, mover dinero a la cuenta que usas para gastar en el mes).'**
+  String get tutorialBudgetableTransferPoint1Body;
+
+  /// No description provided for @tutorialBudgetableTransferPoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué cambia al marcarla'**
+  String get tutorialBudgetableTransferPoint2Heading;
+
+  /// No description provided for @tutorialBudgetableTransferPoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se resta de tu presupuesto igual que un gasto, aunque el dinero siga siendo tuyo, solo que en otra cuenta.'**
+  String get tutorialBudgetableTransferPoint2Body;
+
+  /// No description provided for @tutorialEnvelopeModeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así funciona el modo sobres'**
+  String get tutorialEnvelopeModeTitle;
+
+  /// No description provided for @tutorialEnvelopeModePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Para qué sirve'**
+  String get tutorialEnvelopeModePoint1Heading;
+
+  /// No description provided for @tutorialEnvelopeModePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.'**
+  String get tutorialEnvelopeModePoint1Body;
+
+  /// No description provided for @tutorialEnvelopeModePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué cambia en la pantalla'**
+  String get tutorialEnvelopeModePoint2Heading;
+
+  /// No description provided for @tutorialEnvelopeModePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.'**
+  String get tutorialEnvelopeModePoint2Body;
 }
 
 class _AppLocalizationsDelegate

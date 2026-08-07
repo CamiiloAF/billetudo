@@ -1,5 +1,9 @@
+import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart';
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart';
+import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart';
+import 'package:billetudo/features/tutorials/domain/usecases/set_tutorials_enabled.dart';
+import 'package:billetudo/features/tutorials/domain/usecases/watch_help_enabled.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// The cubit only ever talks to use cases, so these are the only seams the
@@ -8,3 +12,11 @@ import 'package:mocktail/mocktail.dart';
 class MockGetAppSettings extends Mock implements GetAppSettings {}
 
 class MockSetZeroBasedEnabled extends Mock implements SetZeroBasedEnabled {}
+
+class MockGetActiveBudgets extends Mock implements GetActiveBudgets {}
+
+class MockSetFeaturedBudget extends Mock implements SetFeaturedBudget {}
+
+class MockWatchHelpEnabled extends Mock implements WatchHelpEnabled {}
+
+class MockSetTutorialsEnabled extends Mock implements SetTutorialsEnabled {}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,6 +11,8 @@ import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/segmented_control.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../cubit/debts_list_cubit.dart';
 import '../cubit/debts_list_state.dart';
 import '../widgets/debt_card.dart';
@@ -17,6 +21,7 @@ import '../widgets/debt_closed_summary_card.dart';
 import '../widgets/debt_skeleton_box.dart';
 import '../widgets/debt_summary_card.dart';
 import '../widgets/debt_summary_card_skeleton.dart';
+import '../widgets/sheets/debts_menu_sheet.dart';
 
 /// The debts list (`rPgbX`/`qfpUI`/`hp9rU`/`d64hv`): a per-currency summary
 /// card on top, then a flat list of `DebtCard`s. A stacked subsection with a
@@ -31,23 +36,59 @@ class DebtsListPage extends StatelessWidget {
   final VoidCallback onAddDebt;
   final ValueChanged<String> onOpenDebt;
 
+  Future<void> _openMenu(BuildContext context) async {
+    final action = await DebtsMenuSheet.show(context);
+    if (action == null || !context.mounted) {
+      return;
+    }
+    switch (action) {
+      case DebtsMenuAction.viewHelp:
+        await reopenTutorial(
+          context,
+          TutorialKey.debtsScreen,
+          onCta: (context) => onAddDebt(),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
-    return Scaffold(
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.debtsScreen,
+      onCta: (context) => onAddDebt(),
+      child: Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             PageHeader(
               title: l10n.debtsTitle,
-              trailing: PageHeaderCircleButton(
-                icon: LucideIcons.plus,
-                background: colors.primary,
-                foreground: colors.onPrimary,
-                tooltip: l10n.debtsAdd,
-                onPressed: onAddDebt,
+              // Left Group (back button) + 2 actions on the right (`⋮` then
+              // `+`), same order as `BudgetsPageHeader`/`GoalsPageHeader` —
+              // no `billetudo.pen` frame exists yet for this specific header
+              // shape, so this mirrors the already-approved sibling layout.
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.ellipsisVertical,
+                    background: colors.muted,
+                    foreground: colors.textPrimary,
+                    tooltip: l10n.debtsMenuTooltip,
+                    iconSize: 20,
+                    onPressed: () => unawaited(_openMenu(context)),
+                  ),
+                  const SizedBox(width: 8),
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.plus,
+                    background: colors.primary,
+                    foreground: colors.onPrimary,
+                    tooltip: l10n.debtsAdd,
+                    onPressed: onAddDebt,
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -69,6 +110,7 @@ class DebtsListPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

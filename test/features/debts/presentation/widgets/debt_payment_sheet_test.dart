@@ -2,6 +2,9 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
+import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_type_avatar.dart';
 import 'package:billetudo/features/categories/presentation/utils/category_appearance.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_payment_cubit.dart';
@@ -22,6 +25,11 @@ import '../debts_presentation_fixtures.dart';
 
 class MockDebtPaymentCubit extends MockCubit<DebtPaymentState>
     implements DebtPaymentCubit {}
+
+class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
+
+class MockWatchActiveAccountsCount extends Mock
+    implements WatchActiveAccountsCount {}
 
 void main() {
   late MockDebtPaymentCubit cubit;
@@ -104,6 +112,58 @@ void main() {
       find.text('¿Ya lo registraste? Enlaza un movimiento'),
       findsOneWidget,
     );
+  });
+
+  group('gate de cuenta en el toggle "con caja" (15-gate-cuenta.md HU-02)',
+      () {
+    void registerAccountGate({required bool hasAny}) {
+      final hasAnyActiveAccount = MockHasAnyActiveAccount();
+      when(hasAnyActiveAccount.call)
+          .thenAnswer((_) => Stream.value(hasAny));
+      getIt.registerFactory<HasAnyActiveAccount>(() => hasAnyActiveAccount);
+      final watchActiveAccountsCount = MockWatchActiveAccountsCount();
+      when(watchActiveAccountsCount.call)
+          .thenAnswer((_) => Stream.value(hasAny ? 1 : 0));
+      getIt.registerFactory<WatchActiveAccountsCount>(
+        () => watchActiveAccountsCount,
+      );
+    }
+
+    testWidgets(
+        'sin ninguna cuenta activa, encender el toggle abre el puente en '
+        'vez de revelar el selector de cuenta', (tester) async {
+      registerAccountGate(hasAny: false);
+      await pump(tester, stateWith(addToAccount: false));
+
+      await tester.tap(find.byType(DebtCashSwitch));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AccountGateBridgeSheet), findsOneWidget);
+      verifyNever(() => cubit.addToAccountChanged(any()));
+    });
+
+    testWidgets('con al menos una cuenta activa, el toggle cambia directo',
+        (tester) async {
+      registerAccountGate(hasAny: true);
+      await pump(tester, stateWith(addToAccount: false));
+
+      await tester.tap(find.byType(DebtCashSwitch));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AccountGateBridgeSheet), findsNothing);
+      verify(() => cubit.addToAccountChanged(true)).called(1);
+    });
+
+    testWidgets('apagar el toggle nunca pasa por el gate', (tester) async {
+      registerAccountGate(hasAny: false);
+      await pump(tester, stateWith(addToAccount: true));
+
+      await tester.tap(find.byType(DebtCashSwitch));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AccountGateBridgeSheet), findsNothing);
+      verify(() => cubit.addToAccountChanged(false)).called(1);
+    });
   });
 
   group('fix: ícono real de categoría (antes tag fijo)', () {

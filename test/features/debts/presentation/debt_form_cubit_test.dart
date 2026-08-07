@@ -232,9 +232,9 @@ void main() {
   );
 
   blocTest<DebtFormCubit, DebtFormState>(
-    'submit sin cuentas crea la deuda directamente y llega a saved',
-    setUp: () => when(() => createDebt.call(any()))
-        .thenAnswer((_) async => Right(buildDebt())),
+    'submit con saldo positivo y sin cuentas ofrece igual el registro '
+    'inicial (item 2): el gate de cuenta solo llega si el usuario elige '
+    '"elegir cuenta" (15-gate-cuenta.md)',
     build: build,
     seed: () => const DebtFormState(
       status: DebtFormStatus.ready,
@@ -243,12 +243,29 @@ void main() {
     ),
     act: (cubit) => cubit.submit(),
     expect: () => [
-      isA<DebtFormState>()
-          .having((s) => s.status, 'status', DebtFormStatus.saving),
-      isA<DebtFormState>()
-          .having((s) => s.status, 'status', DebtFormStatus.saved),
+      isA<DebtFormState>().having(
+        (s) => s.prompt,
+        'prompt',
+        const DebtChooseRegistroPrompt(),
+      ),
     ],
-    verify: (_) => verify(() => createDebt.call(any())).called(1),
+    verify: (_) => verifyNever(() => createDebt.call(any())),
+  );
+
+  blocTest<DebtFormCubit, DebtFormState>(
+    'refreshAccounts recarga la lista de cuentas activas',
+    setUp: () => when(() => watchAccounts.call())
+        .thenAnswer((_) => Stream.value(Right([account]))),
+    build: build,
+    seed: () => const DebtFormState(
+      status: DebtFormStatus.ready,
+      name: 'Préstamo',
+      amountMinor: 500000,
+    ),
+    act: (cubit) => cubit.refreshAccounts(),
+    expect: () => [
+      isA<DebtFormState>().having((s) => s.accounts, 'accounts', [account]),
+    ],
   );
 
   blocTest<DebtFormCubit, DebtFormState>(

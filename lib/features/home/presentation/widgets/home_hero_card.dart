@@ -5,13 +5,20 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../budgets/domain/entities/budget.dart';
+import '../../../budgets/domain/entities/budget_period_window.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
+import '../../../budgets/presentation/utils/budget_format.dart';
 import '../../domain/entities/month_spending.dart';
 import 'home_hero_budget_progress.dart';
 
-/// The compact hero (HU-03): "Gastado en <mes>", the month total, a month
-/// selector chip and one of three states below the amount — a budget progress
-/// bar, an invitation to budget, or "aún no hay gastos".
+/// The compact hero (HU-03): the spent total, and one of three states below
+/// the amount — a budget progress bar, an invitation to budget, or "aún no
+/// hay gastos". [monthLabel] and its "Gastado en <mes>" caption only apply
+/// without a featured budget (criterion 5): once one exists, the header row
+/// becomes [HeroPeriodStepper] instead, navigating the budget's own period
+/// window rather than a calendar month (HU-05).
 ///
 /// It never invents a spending cap: without a budget the app knows no limit,
 /// so instead of a fake progress bar it nudges the budgeting habit. With a
@@ -21,36 +28,60 @@ class HomeHeroCard extends StatelessWidget {
   const HomeHeroCard({
     required this.spending,
     required this.monthLabel,
-    required this.onMonthTap,
     required this.onCreateBudget,
     this.budgetProgress,
+    this.onOpenBudget,
+    this.onPreviousPeriod,
+    this.onNextPeriod,
     super.key,
   });
 
   final MonthSpending spending;
 
-  /// The active global-monthly budget's progress for the visible month
-  /// (HU-03, `aOhoY`), or `null` when none qualifies — see
-  /// `WatchGlobalMonthlyBudgetProgress`.
+  /// The featured budget's progress for the period the stepper is currently
+  /// showing (HU-03/HU-05, `aOhoY`), or `null` when none is featured — see
+  /// `WatchFeaturedBudgetProgress`. Its `window` drives [HeroPeriodStepper]'s
+  /// label and chevrons.
   final BudgetWithProgress? budgetProgress;
 
-  /// The visible month, already localized (e.g. "julio").
+  /// The current calendar month, already localized (e.g. "julio") — only
+  /// used for the "Gastado en <mes>" caption when [budgetProgress] is `null`
+  /// (criterion 5's fallback; no navigation, always "now").
   final String monthLabel;
 
-  final VoidCallback onMonthTap;
   final VoidCallback onCreateBudget;
+
+  /// Tapping the hero navigates to the featured budget's detail (criterion
+  /// 6). Only meaningful (and only wired by the caller) when [budgetProgress]
+  /// is not `null`.
+  final VoidCallback? onOpenBudget;
+
+  /// HU-05: steps [budgetProgress]'s window back/forward. Only called by
+  /// [HeroPeriodStepper]'s chevrons, which already gate on
+  /// `window.hasPrevious`/`hasNext`.
+  final VoidCallback? onPreviousPeriod;
+  final VoidCallback? onNextPeriod;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final progress = budgetProgress;
+    // With a featured budget, the amount must reflect ITS window (which can
+    // be anchored on any day, e.g. "27 jul – 26 ago"), never the calendar
+    // month total `spending` carries — that one only applies to the
+    // no-budget-featured fallback caption/state below.
     final amount = const MoneyFormatter().formatSymbol(
-      spending.displayTotalMinor,
-      currencyCode: spending.displayCurrency,
+      progress != null
+          ? progress.progress.spentMinor
+          : spending.displayTotalMinor,
+      currencyCode: progress != null
+          ? progress.budget.currency
+          : spending.displayCurrency,
     );
 
-    return Container(
+    final card = Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -64,21 +95,35 @@ class HomeHeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.homeSpentInMonth(monthLabel),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          // Without a featured budget, the fallback caption ("Gastado en
+          // <mes>") already names the month above the amount — unchanged
+          // from before this pass.
+          if (progress == null) ...[
+            Text(
+              l10n.homeSpentInMonth(monthLabel),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w600,
               ),
-              MonthSelectorChip(label: monthLabel, onTap: onMonthTap),
-            ],
-          ),
-          const SizedBox(height: 12),
+            ),
+            const SizedBox(height: 12),
+          ] else ...[
+            // "Gastado" kicker (xBv3N `zoZcf`): with a budget featured, the
+            // stepper takes the caption's old spot below the amount instead
+            // (criterion 3), so the amount needs its own short label
+            // resolving "¿es gasto o saldo?" right above it.
+            Text(
+              l10n.homeHeroSpentKicker,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+          ],
           Text(
             amount,
             maxLines: 1,
@@ -88,8 +133,17 @@ class HomeHeroCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 12),
-          if (budgetProgress case final progress?)
+          if (progress != null) ...[
+            const SizedBox(height: 10),
+            HeroPeriodStepper(
+              budget: progress.budget,
+              window: progress.window,
+              onPrevious: onPreviousPeriod ?? () {},
+              onNext: onNextPeriod ?? () {},
+            ),
+          ],
+          const SizedBox(height: 10),
+          if (progress != null)
             HomeHeroBudgetProgress(
               progress: progress.progress,
               currency: progress.budget.currency,
@@ -107,52 +161,148 @@ class HomeHeroCard extends StatelessWidget {
         ],
       ),
     );
+
+    if (progress == null) {
+      return card;
+    }
+    // Criterion 6: tapping the hero opens the featured budget's own detail —
+    // never a movements list. `Material` + `InkWell` wrap the gradient
+    // container from the outside so the ripple draws over it without hiding
+    // the gradient underneath.
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppTheme.sheetRadius),
+      child: InkWell(
+        onTap: onOpenBudget,
+        borderRadius: BorderRadius.circular(AppTheme.sheetRadius),
+        child: card,
+      ),
+    );
   }
 }
 
-/// The tappable month pill in the hero (HU-04), sized to a ≥44pt tap target.
-class MonthSelectorChip extends StatelessWidget {
-  const MonthSelectorChip({
-    required this.label,
-    required this.onTap,
+/// The hero's period stepper (HU-05, `xBv3N` `diOFU`), replacing the old
+/// calendar-month chip once a budget is featured. It sits directly on the
+/// gradient — no pill/card of its own (the "isla" `$surface` container was
+/// explicitly reviewed and dropped, `p4nEEU`). Two 44pt `$surface` chevron
+/// circles (same shape as the header's bell button, `PageHeaderCircleButton`)
+/// flank the budget's real period range and status
+/// (`BudgetFormat.stepperRange`/`stepperState`, e.g. "21 jul – 20 ago ·
+/// vigente") — never a calendar month name. Chevrons dim to 40% at the
+/// budget's bounds, same convention as the detail screen's
+/// `PeriodStepperPill`.
+class HeroPeriodStepper extends StatelessWidget {
+  const HeroPeriodStepper({
+    required this.budget,
+    required this.window,
+    required this.onPrevious,
+    required this.onNext,
     super.key,
   });
 
-  final String label;
-  final VoidCallback onTap;
+  final Budget budget;
+  final BudgetPeriodWindow window;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    return Material(
-      color: colors.onPrimary.withValues(alpha: 0.16),
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+
+    return Row(
+      children: [
+        HeroPeriodChevron(
+          icon: LucideIcons.chevronLeft,
+          tooltip: l10n.budgetPeriodPreviousTooltip,
+          onPressed: window.hasPrevious ? onPrevious : null,
+        ),
+        Expanded(
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colors.onPrimary,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  BudgetFormat.stepperRange(l10n, budget, window, locale),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: colors.onPrimary,
+                  ),
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(
-                LucideIcons.chevronDown,
-                size: 18,
-                color: colors.onPrimary,
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  BudgetFormat.stepperState(l10n, budget, window, locale),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colors.onPrimary,
+                  ),
+                ),
               ),
             ],
           ),
         ),
-      ),
+        HeroPeriodChevron(
+          icon: LucideIcons.chevronRight,
+          tooltip: l10n.budgetPeriodNextTooltip,
+          onPressed: window.hasNext ? onNext : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// One chevron of [HeroPeriodStepper]: the shared 44pt circle button, solid
+/// `$surface` fill with a `$text-primary` icon (`xBv3N` `a09pi`/`A11npZ`) —
+/// same treatment as the Home header's bell button — dimmed to 40% when there
+/// is no window to step to, same rule as the detail screen's
+/// `PeriodStepperChevron`.
+class HeroPeriodChevron extends StatelessWidget {
+  const HeroPeriodChevron({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    super.key,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final button = PageHeaderCircleButton(
+      icon: icon,
+      background: colors.surface,
+      foreground: colors.textPrimary,
+      tooltip: tooltip,
+      onPressed: onPressed,
+    );
+    return Opacity(
+      opacity: onPressed == null ? 0.4 : 1,
+      // Disabled means "no window to step to" — a no-op `InkWell` (see
+      // `PageHeaderCircleButton`) does not claim the tap, so without this it
+      // falls through the gesture arena to the whole-card `InkWell` around
+      // `HomeHeroCard` and wrongly opens the featured budget's detail. An
+      // opaque `GestureDetector` with a no-op `onTap` absorbs it instead —
+      // the chevron does nothing, exactly as a disabled control should.
+      child: onPressed == null
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+              child: button,
+            )
+          : button,
     );
   }
 }

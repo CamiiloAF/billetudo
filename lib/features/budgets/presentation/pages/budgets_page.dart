@@ -9,8 +9,12 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../../settings/presentation/widgets/sheets/envelope_info_sheet.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/zero_based_summary.dart';
 import '../cubit/budgets_list_cubit.dart';
 import '../cubit/budgets_list_state.dart';
@@ -35,10 +39,26 @@ class BudgetsPage extends StatelessWidget {
   final ValueChanged<String> onOpenBudget;
   final VoidCallback onOpenHistory;
 
+  /// `15-gate-cuenta.md` HU-04: without any active account this opens the
+  /// bridge sheet directly over the Presupuestos list instead of pushing
+  /// `/presupuestos/nuevo` first — pushing first left a black/empty screen
+  /// behind the sheet while `AccountGatedRoute` resolved the same check one
+  /// frame later. Mirrors `transactions_page.dart`'s `_addTransaction`.
+  Future<void> _addBudget(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.budget,
+    );
+    if (canProceed && context.mounted) {
+      onAddBudget();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final envelopeEnabled =
-        context.watch<AppSettingsCubit>().state.zeroBasedEnabled;
+    final settingsState = context.watch<AppSettingsCubit>().state;
+    final envelopeEnabled = settingsState.zeroBasedEnabled;
+    final featuredBudgetId = settingsState.featuredBudgetId;
     final ZeroBasedSummary? summary = envelopeEnabled
         ? context.watch<ZeroBasedSummaryCubit>().state.summary
         : null;
@@ -53,12 +73,15 @@ class BudgetsPage extends StatelessWidget {
             ),
           );
 
-    return Scaffold(
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.budgetsScreen,
+      onCta: (context) => unawaited(_addBudget(context)),
+      child: Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             BudgetsPageHeader(
-              onAddBudget: onAddBudget,
+              onAddBudget: () => unawaited(_addBudget(context)),
               onOpenHistory: onOpenHistory,
               envelopeEnabled: envelopeEnabled,
             ),
@@ -71,21 +94,23 @@ class BudgetsPage extends StatelessWidget {
                     ),
                   BudgetsListStatus.ready when state.budgets.isEmpty =>
                     BudgetsEmptyView(
-                      onAddBudget: onAddBudget,
+                      onAddBudget: () => unawaited(_addBudget(context)),
                       header: envelopeHeader,
                     ),
                   BudgetsListStatus.ready => BudgetsListView(
                       state: state,
                       onOpenBudget: onOpenBudget,
-                      onAddBudget: onAddBudget,
+                      onAddBudget: () => unawaited(_addBudget(context)),
                       header: envelopeHeader,
                       envelopeMode: envelopeEnabled,
+                      featuredBudgetId: featuredBudgetId,
                     ),
                 },
               ),
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -131,6 +156,14 @@ class BudgetsPageHeader extends StatelessWidget {
             await settings.setZeroBasedEnabled(enabled: true);
           }
         }
+      case BudgetsMenuAction.viewHelp:
+        // HU-03: reopening never marks anything seen and never re-evaluates
+        // the gate, unlike the automatic first-access show.
+        await reopenTutorial(
+          context,
+          TutorialKey.budgetsScreen,
+          onCta: (context) => onAddBudget(),
+        );
     }
   }
 
@@ -241,6 +274,7 @@ class BudgetsListView extends StatelessWidget {
     required this.onAddBudget,
     this.header,
     this.envelopeMode = false,
+    this.featuredBudgetId,
     super.key,
   });
 
@@ -254,6 +288,11 @@ class BudgetsListView extends StatelessWidget {
   /// In "Modo sobres" the rows read "Asignado" and the list is denser
   /// (`D1G5hl`: card padding 16, gap 12 vs. the normal list's 18/18).
   final bool envelopeMode;
+
+  /// The budget manually featured on the Home hero, if any
+  /// (`AppSettings.featuredBudgetId`) — the row matching this id draws the
+  /// `sEyU6` star badge.
+  final String? featuredBudgetId;
 
   @override
   Widget build(BuildContext context) {
@@ -280,6 +319,7 @@ class BudgetsListView extends StatelessWidget {
         return BudgetLine(
           entry: entry,
           envelopeMode: envelopeMode,
+          isFeatured: entry.budget.id == featuredBudgetId,
           onTap: () => onOpenBudget(entry.budget.id),
         );
       },

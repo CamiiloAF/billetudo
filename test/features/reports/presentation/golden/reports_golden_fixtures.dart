@@ -60,7 +60,7 @@ ChartHistoryBounds shortHistoryBounds() {
 
 List<CashflowPoint> buildCashflowPoints({
   required List<(int income, int expense, int debtIncome, int debtExpense)>
-  amounts,
+      amounts,
   DateTime? start,
 }) {
   final base = start ?? DateTime(2025, 1);
@@ -78,52 +78,52 @@ List<CashflowPoint> buildCashflowPoints({
 
 /// 6 monthly buckets, net positive (income > expense every month).
 CashflowSeries positiveCashflowSeries() => CashflowSeries(
-  points: buildCashflowPoints(
-    amounts: const [
-      (3200000, 2100000, 0, 0),
-      (3200000, 2400000, 0, 0),
-      (3400000, 2000000, 150000, 100000),
-      (3200000, 2600000, 0, 0),
-      (3500000, 2200000, 0, 200000),
-      (3300000, 2500000, 0, 0),
-    ],
-  ),
-  includeDebtMovements: true,
-  bounds: fullHistoryBounds(),
-);
+      points: buildCashflowPoints(
+        amounts: const [
+          (3200000, 2100000, 0, 0),
+          (3200000, 2400000, 0, 0),
+          (3400000, 2000000, 150000, 100000),
+          (3200000, 2600000, 0, 0),
+          (3500000, 2200000, 0, 200000),
+          (3300000, 2500000, 0, 0),
+        ],
+      ),
+      includeDebtMovements: true,
+      bounds: fullHistoryBounds(),
+    );
 
 /// 6 monthly buckets, net negative — criterion 26 (never `$expense`,
 /// two-frase explainer + "Ver en qué se fue" link).
 CashflowSeries negativeCashflowSeries() => CashflowSeries(
-  points: buildCashflowPoints(
-    amounts: const [
-      (2000000, 2900000, 0, 0),
-      (2100000, 3100000, 0, 0),
-      (1900000, 3400000, 0, 0),
-      (2200000, 2800000, 0, 0),
-      (2000000, 3200000, 0, 0),
-      (1800000, 3600000, 100000, 0),
-    ],
-  ),
-  includeDebtMovements: true,
-  bounds: fullHistoryBounds(),
-);
+      points: buildCashflowPoints(
+        amounts: const [
+          (2000000, 2900000, 0, 0),
+          (2100000, 3100000, 0, 0),
+          (1900000, 3400000, 0, 0),
+          (2200000, 2800000, 0, 0),
+          (2000000, 3200000, 0, 0),
+          (1800000, 3600000, 100000, 0),
+        ],
+      ),
+      includeDebtMovements: true,
+      bounds: fullHistoryBounds(),
+    );
 
 /// Zero everywhere — HU-06 "vacío".
 CashflowSeries emptyCashflowSeries() => CashflowSeries(
-  points: buildCashflowPoints(
-    amounts: const [
-      (0, 0, 0, 0),
-      (0, 0, 0, 0),
-      (0, 0, 0, 0),
-      (0, 0, 0, 0),
-      (0, 0, 0, 0),
-      (0, 0, 0, 0),
-    ],
-  ),
-  includeDebtMovements: true,
-  bounds: fullHistoryBounds(),
-);
+      points: buildCashflowPoints(
+        amounts: const [
+          (0, 0, 0, 0),
+          (0, 0, 0, 0),
+          (0, 0, 0, 0),
+          (0, 0, 0, 0),
+          (0, 0, 0, 0),
+          (0, 0, 0, 0),
+        ],
+      ),
+      includeDebtMovements: true,
+      bounds: fullHistoryBounds(),
+    );
 
 /// Short-history clamp (HU-06), daily buckets over the last 10 days of data.
 CashflowSeries shortHistoryCashflowSeries() {
@@ -160,24 +160,24 @@ List<NetWorthPoint> _netWorthPoints(
 }
 
 NetWorthSeries netWorthSeriesWithData() => NetWorthSeries(
-  points: _netWorthPoints(const [
-    (8000000, 6500000),
-    (8300000, 6900000),
-    (8600000, 7100000),
-    (9000000, 7600000),
-    (9400000, 8000000),
-    (9800000, 8500000),
-    (10200000, 9000000),
-  ]),
-  includeArchivedAccounts: false,
-  bounds: fullHistoryBounds(),
-);
+      points: _netWorthPoints(const [
+        (8000000, 6500000),
+        (8300000, 6900000),
+        (8600000, 7100000),
+        (9000000, 7600000),
+        (9400000, 8000000),
+        (9800000, 8500000),
+        (10200000, 9000000),
+      ]),
+      includeArchivedAccounts: false,
+      bounds: fullHistoryBounds(),
+    );
 
 NetWorthSeries emptyNetWorthSeries() => NetWorthSeries(
-  points: _netWorthPoints(const [(0, 0), (0, 0)]),
-  includeArchivedAccounts: false,
-  bounds: fullHistoryBounds(),
-);
+      points: _netWorthPoints(const [(0, 0), (0, 0)]),
+      includeArchivedAccounts: false,
+      bounds: fullHistoryBounds(),
+    );
 
 NetWorthSeries shortHistoryNetWorthSeries() {
   final bounds = shortHistoryBounds();
@@ -198,6 +198,7 @@ CategoryBreakdown categoryBreakdownWithData() {
     icon: 'shopping-cart',
     color: 'mint',
     amountMinor: 1450000,
+    movementCount: 47,
     subcategories: [
       CategoryBreakdownItem(
         categoryId: 'cat-mercado-supermercado',
@@ -205,6 +206,7 @@ CategoryBreakdown categoryBreakdownWithData() {
         icon: 'shopping-cart',
         color: 'mint',
         amountMinor: 1050000,
+        movementCount: 34,
       ),
       CategoryBreakdownItem(
         categoryId: 'cat-mercado-mercado-local',
@@ -212,6 +214,7 @@ CategoryBreakdown categoryBreakdownWithData() {
         icon: 'shopping-bag',
         color: 'mint',
         amountMinor: 400000,
+        movementCount: 13,
       ),
     ],
   );
@@ -221,6 +224,7 @@ CategoryBreakdown categoryBreakdownWithData() {
     icon: 'bus',
     color: 'sky',
     amountMinor: 620000,
+    movementCount: 22,
   );
   const restaurants = CategoryBreakdownItem(
     categoryId: 'cat-restaurantes',
@@ -228,11 +232,13 @@ CategoryBreakdown categoryBreakdownWithData() {
     icon: 'utensils-crossed',
     color: 'peach',
     amountMinor: 480000,
+    movementCount: 18,
   );
   const uncategorized = CategoryBreakdownItem(
     categoryId: null,
     name: null,
     amountMinor: 90000,
+    movementCount: 3,
   );
   return CategoryBreakdown(
     items: const [groceries, transport, restaurants, uncategorized],
@@ -242,40 +248,41 @@ CategoryBreakdown categoryBreakdownWithData() {
 }
 
 CategoryBreakdown emptyCategoryBreakdown() => CategoryBreakdown(
-  items: const [],
-  totalMinor: 0,
-  range: sixMonthRangeMonthly,
-);
+      items: const [],
+      totalMinor: 0,
+      range: sixMonthRangeMonthly,
+    );
 
 BudgetWithProgress dashboardBudget() => BudgetWithProgress(
-  budget: buildBudget(
-    id: 'budget-mercado',
-    name: 'Mercado',
-    amountMinor: 1500000,
-    icon: 'shopping-cart',
-    startDate: DateTime(2025, 6, 1),
-  ),
-  scope: const BudgetScope(),
-  window: BudgetPeriodWindow(
-    start: DateTime(2025, 6, 1),
-    endExclusive: DateTime(2025, 7, 1),
-    index: 5,
-    status: BudgetWindowStatus.current,
-    hasPrevious: true,
-    hasNext: false,
-  ),
-  progress: const BudgetProgress(
-    amountMinor: 1500000,
-    spentMinor: 1035000,
-    daysLeft: 12,
-  ),
-);
+      budget: buildBudget(
+        id: 'budget-mercado',
+        name: 'Mercado',
+        amountMinor: 1500000,
+        icon: 'shopping-cart',
+        startDate: DateTime(2025, 6, 1),
+      ),
+      scope: const BudgetScope(),
+      window: BudgetPeriodWindow(
+        start: DateTime(2025, 6, 1),
+        endExclusive: DateTime(2025, 7, 1),
+        index: 5,
+        status: BudgetWindowStatus.current,
+        hasPrevious: true,
+        hasNext: false,
+      ),
+      progress: const BudgetProgress(
+        amountMinor: 1500000,
+        spentMinor: 1035000,
+        daysLeft: 12,
+      ),
+    );
 
 GoalWithProgress dashboardGoal() => buildGoalWithProgress(
-  goal: buildGoal(id: 'goal-viaje', name: 'Viaje a Cartagena', targetMinor: 3000000),
-  savedMinor: 1800000,
-  displayedPercent: 60,
-);
+      goal: buildGoal(
+          id: 'goal-viaje', name: 'Viaje a Cartagena', targetMinor: 3000000),
+      savedMinor: 1800000,
+      displayedPercent: 60,
+    );
 
 ReportsDashboard dashboardWithData() =>
     ReportsDashboard(budgets: [dashboardBudget()], goals: [dashboardGoal()]);

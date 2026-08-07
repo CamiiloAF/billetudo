@@ -540,6 +540,37 @@ void main() {
     });
   });
 
+  group('watchActiveAccountsCount (gate de cuenta, HU-02)', () {
+    test('cuenta solo las activas: excluye archivadas y borradas', () async {
+      await createAccount(bankDraft);
+      final archived = await createAccount(bankDraft);
+      final deleted = await createAccount(bankDraft);
+      await repository.setArchived(archived.id, archived: true);
+      await repository.softDeleteAccount(deleted.id);
+
+      final result = await repository.watchActiveAccountsCount().first;
+
+      expect(result, const Right<Failure, int>(1));
+    });
+
+    test('reacciona sin re-suscribirse cuando se crea la primera cuenta',
+        () async {
+      final emissions = <Result<int>>[];
+      final subscription =
+          repository.watchActiveAccountsCount().listen(emissions.add);
+      await pumpEventQueue();
+
+      await createAccount(bankDraft);
+      await pumpEventQueue();
+
+      expect(
+        emissions,
+        [const Right<Failure, int>(0), const Right<Failure, int>(1)],
+      );
+      await subscription.cancel();
+    });
+  });
+
   group('softDeleteAccount (HU-08)', () {
     test('el borrado es lógico: la fila sobrevive y no rompe el FK', () async {
       final account = await createAccount(bankDraft);

@@ -10,6 +10,7 @@ import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../domain/entities/budget_scope.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
@@ -134,9 +135,12 @@ class BudgetDetailPage extends StatelessWidget {
       return;
     }
     final id = budget.id;
+    final settings = context.read<AppSettingsCubit>();
+    final isFeatured = settings.state.featuredBudgetId == id;
     final action = await BudgetDetailActionsSheet.show(
       context,
       budgetName: budget.name,
+      isFeatured: isFeatured,
     );
     if (action == null || !context.mounted) {
       return;
@@ -144,6 +148,10 @@ class BudgetDetailPage extends StatelessWidget {
     switch (action) {
       case BudgetDetailAction.edit:
         onEdit(id);
+      case BudgetDetailAction.toggleFeatured:
+        // No confirmation: the sheet's own subtitle already warns that
+        // marking a new one silently replaces the previous featured budget.
+        await settings.setFeaturedBudget(isFeatured ? null : id);
       case BudgetDetailAction.adjustAmount:
         await _openAdjustAmountSheet(context);
       case BudgetDetailAction.close:

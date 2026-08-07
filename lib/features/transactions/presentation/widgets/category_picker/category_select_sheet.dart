@@ -10,6 +10,7 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/router/app_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/text_normalizer.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_head.dart';
 import '../../../../../core/widgets/sheet_list_viewport.dart';
@@ -105,18 +106,24 @@ class _CategorySelectSheetBodyState extends State<CategorySelectSheetBody> {
   /// Filters the tree by name: a root is kept when it or any of its
   /// subcategories match; a matched root keeps all its subcategories, an
   /// unmatched one only the matching ones. Data only — no widgets.
+  ///
+  /// Both the query and the category names are diacritic- and
+  /// case-normalized before comparing, so e.g. "prestamos" matches
+  /// "Préstamos".
   List<CategoryNode> _visibleNodes(List<CategoryNode> nodes) {
-    final query = _query.trim().toLowerCase();
+    final query = normalizeForSearch(_query.trim());
     if (query.isEmpty) {
       return nodes;
     }
     final result = <CategoryNode>[];
     for (final node in nodes) {
-      final rootMatches = node.root.name.toLowerCase().contains(query);
+      final rootMatches = normalizeForSearch(node.root.name).contains(query);
       final subs = rootMatches
           ? node.subcategories
           : node.subcategories
-              .where((sub) => sub.name.toLowerCase().contains(query))
+              .where(
+                (sub) => normalizeForSearch(sub.name).contains(query),
+              )
               .toList();
       if (rootMatches || subs.isNotEmpty) {
         result.add(CategoryNode(root: node.root, subcategories: subs));

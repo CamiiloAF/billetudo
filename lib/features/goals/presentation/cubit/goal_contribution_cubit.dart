@@ -63,6 +63,19 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
     return result.fold((_) => const <AccountWithBalance>[], (list) => list);
   }
 
+  /// `15-gate-cuenta.md`: the "¿Mover dinero de una cuenta?" gate is
+  /// informative, not blocking — the caller only reaches this after the user
+  /// created an account from the bridge sheet while `state.accounts` was
+  /// empty. Reloads the list so the account picker it reveals right after
+  /// has something to show, mirroring `GoalFormCubit.refreshAccounts()`.
+  Future<void> refreshAccounts() async {
+    final accounts = await _loadAccounts();
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(accounts: accounts));
+  }
+
   void amountChanged(int amountMinor) =>
       emit(state.copyWith(amountMinor: amountMinor));
 

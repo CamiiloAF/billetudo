@@ -106,13 +106,12 @@ void main() {
         transferAccountId: dest.id,
       );
 
-      final rows = await datasource
-          .watchCashflowBuckets(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-            granularity: DateGranularity.monthly,
-          )
-          .first;
+      final rows = await datasource.watchCashflowBuckets(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+        accountIds: const {},
+      ).first;
 
       expect(rows, isEmpty);
     });
@@ -133,13 +132,12 @@ void main() {
           categoryId: category.id,
         );
 
-        final rows = await datasource
-            .watchCashflowBuckets(
-              start: DateTime(2026, 7),
-              endExclusive: DateTime(2026, 8),
-              granularity: DateGranularity.monthly,
-            )
-            .first;
+        final rows = await datasource.watchCashflowBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          accountIds: const {},
+        ).first;
 
         expect(rows, hasLength(1));
         expect(rows.single.incomeMinor, 0);
@@ -147,8 +145,7 @@ void main() {
       },
     );
 
-    test('a debt-linked movement counts by default (income/expense)',
-        () async {
+    test('a debt-linked movement counts by default (income/expense)', () async {
       final account = await createAccount();
       final debt = await createDebt();
       await createTx(
@@ -159,13 +156,12 @@ void main() {
         debtId: debt.id,
       );
 
-      final rows = await datasource
-          .watchCashflowBuckets(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-            granularity: DateGranularity.monthly,
-          )
-          .first;
+      final rows = await datasource.watchCashflowBuckets(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+        accountIds: const {},
+      ).first;
 
       expect(rows, hasLength(1));
       // Debt movements are returned in their own field so the repository can
@@ -209,13 +205,12 @@ void main() {
         date: DateTime(2026, 7, 5),
       );
 
-      final rows = await datasource
-          .watchCashflowBuckets(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-            granularity: DateGranularity.monthly,
-          )
-          .first;
+      final rows = await datasource.watchCashflowBuckets(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+        accountIds: const {},
+      ).first;
 
       expect(rows, isEmpty);
     });
@@ -235,16 +230,16 @@ void main() {
         date: DateTime(2026, 7, 6),
       );
 
-      final rows = await datasource
-          .watchCashflowBuckets(
-            start: DateTime(2026, 7, 5),
-            endExclusive: DateTime(2026, 7, 7),
-            granularity: DateGranularity.daily,
-          )
-          .first;
+      final rows = await datasource.watchCashflowBuckets(
+        start: DateTime(2026, 7, 5),
+        endExclusive: DateTime(2026, 7, 7),
+        granularity: DateGranularity.daily,
+        accountIds: const {},
+      ).first;
 
       expect(rows, hasLength(2));
-      expect(rows.map((r) => r.bucketKey), containsAll(['2026-07-05', '2026-07-06']));
+      expect(rows.map((r) => r.bucketKey),
+          containsAll(['2026-07-05', '2026-07-06']));
     });
 
     test(
@@ -266,13 +261,12 @@ void main() {
           date: DateTime(2026, 7, 31, 23),
         );
 
-        final rows = await datasource
-            .watchCashflowBuckets(
-              start: DateTime(2026, 7),
-              endExclusive: DateTime(2026, 8),
-              granularity: DateGranularity.monthly,
-            )
-            .first;
+        final rows = await datasource.watchCashflowBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          accountIds: const {},
+        ).first;
 
         expect(rows, hasLength(1));
         expect(rows.single.bucketKey, '2026-07');
@@ -281,8 +275,7 @@ void main() {
   });
 
   group('watchCategoryExpenseRows', () {
-    test('a debt movement with no category falls in the null bucket',
-        () async {
+    test('a debt movement with no category falls in the null bucket', () async {
       final account = await createAccount();
       final debt = await createDebt();
       await createTx(
@@ -293,16 +286,16 @@ void main() {
         debtId: debt.id,
       );
 
-      final rows = await datasource
-          .watchCategoryExpenseRows(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-          )
-          .first;
+      final rows = await datasource.watchCategoryExpenseRows(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        accountIds: const {},
+      ).first;
 
       expect(rows, hasLength(1));
       expect(rows.single.categoryId, isNull);
       expect(rows.single.amountMinor, 7000);
+      expect(rows.single.movementCount, 1);
     });
 
     test('normal expense groups by its own categoryId', () async {
@@ -315,17 +308,24 @@ void main() {
         date: DateTime(2026, 7, 10),
         categoryId: category.id,
       );
+      await createTx(
+        accountId: account.id,
+        type: EntryType.expense,
+        amountMinor: 2000,
+        date: DateTime(2026, 7, 11),
+        categoryId: category.id,
+      );
 
-      final rows = await datasource
-          .watchCategoryExpenseRows(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-          )
-          .first;
+      final rows = await datasource.watchCategoryExpenseRows(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        accountIds: const {},
+      ).first;
 
       expect(rows, hasLength(1));
       expect(rows.single.categoryId, category.id);
-      expect(rows.single.amountMinor, 3000);
+      expect(rows.single.amountMinor, 5000);
+      expect(rows.single.movementCount, 2);
     });
 
     test('an uncounted transfer never appears', () async {
@@ -339,19 +339,20 @@ void main() {
         transferAccountId: dest.id,
       );
 
-      final rows = await datasource
-          .watchCategoryExpenseRows(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-          )
-          .first;
+      final rows = await datasource.watchCategoryExpenseRows(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        accountIds: const {},
+      ).first;
 
       expect(rows, isEmpty);
     });
   });
 
-  group('watchAliveDebts / watchDebtEntriesBefore / watchDebtCashEventsBefore', () {
-    test('DebtEntries never leak into cashflow or category queries, but are '
+  group('watchAliveDebts / watchDebtEntriesBefore / watchDebtCashEventsBefore',
+      () {
+    test(
+        'DebtEntries never leak into cashflow or category queries, but are '
         'exposed for patrimonio', () async {
       final debt = await createDebt(principalMinor: 100000);
       await database.into(database.debtEntries).insertReturning(
@@ -364,19 +365,17 @@ void main() {
             ),
           );
 
-      final cashflowRows = await datasource
-          .watchCashflowBuckets(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-            granularity: DateGranularity.monthly,
-          )
-          .first;
-      final categoryRows = await datasource
-          .watchCategoryExpenseRows(
-            start: DateTime(2026, 7),
-            endExclusive: DateTime(2026, 8),
-          )
-          .first;
+      final cashflowRows = await datasource.watchCashflowBuckets(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        granularity: DateGranularity.monthly,
+        accountIds: const {},
+      ).first;
+      final categoryRows = await datasource.watchCategoryExpenseRows(
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+        accountIds: const {},
+      ).first;
       final entries =
           await datasource.watchDebtEntriesBefore(DateTime(2026, 8)).first;
 
@@ -411,18 +410,24 @@ void main() {
         date: DateTime(2026, 7, 10),
       );
 
-      final openingExcluding = await datasource
-          .watchAccountsOpeningBalanceSum(includeArchived: false)
-          .first;
-      final openingIncluding = await datasource
-          .watchAccountsOpeningBalanceSum(includeArchived: true)
-          .first;
-      final originBeforeExcluding = await datasource
-          .watchOriginEffectBefore(DateTime(2026, 8), includeArchived: false)
-          .first;
-      final originBeforeIncluding = await datasource
-          .watchOriginEffectBefore(DateTime(2026, 8), includeArchived: true)
-          .first;
+      final openingExcluding = await datasource.watchAccountsOpeningBalanceSum(
+        includeArchived: false,
+        accountIds: const {},
+      ).first;
+      final openingIncluding = await datasource.watchAccountsOpeningBalanceSum(
+        includeArchived: true,
+        accountIds: const {},
+      ).first;
+      final originBeforeExcluding = await datasource.watchOriginEffectBefore(
+        DateTime(2026, 8),
+        includeArchived: false,
+        accountIds: const {},
+      ).first;
+      final originBeforeIncluding = await datasource.watchOriginEffectBefore(
+        DateTime(2026, 8),
+        includeArchived: true,
+        accountIds: const {},
+      ).first;
 
       expect(openingExcluding, 100000);
       expect(openingIncluding, 150000);
@@ -441,20 +446,171 @@ void main() {
         transferAccountId: dest.id,
       );
 
-      final originBefore = await datasource
-          .watchOriginEffectBefore(DateTime(2026, 8), includeArchived: false)
-          .first;
-      final destBefore = await datasource
-          .watchDestinationEffectBefore(
-            DateTime(2026, 8),
-            includeArchived: false,
-          )
-          .first;
+      final originBefore = await datasource.watchOriginEffectBefore(
+        DateTime(2026, 8),
+        includeArchived: false,
+        accountIds: const {},
+      ).first;
+      final destBefore = await datasource.watchDestinationEffectBefore(
+        DateTime(2026, 8),
+        includeArchived: false,
+        accountIds: const {},
+      ).first;
 
       expect(originBefore, -15000);
       expect(destBefore, 15000);
       // Between two in-scope accounts, the net effect on total liquid is 0.
       expect(originBefore + destBefore, 0);
     });
+
+    test(
+      'accountIds (criterion 5) scopes each leg independently: the origin '
+      'query filters by accountId, the destination query by '
+      'transferAccountId',
+      () async {
+        final origin = await createAccount(name: 'Origen');
+        final dest = await createAccount(name: 'Destino');
+        final other = await createAccount(name: 'Otra');
+        await createTx(
+          accountId: origin.id,
+          type: EntryType.transfer,
+          amountMinor: 15000,
+          date: DateTime(2026, 7, 10),
+          transferAccountId: dest.id,
+        );
+        await createTx(
+          accountId: other.id,
+          type: EntryType.income,
+          amountMinor: 500,
+          date: DateTime(2026, 7, 10),
+        );
+
+        final originOnlyOther = await datasource.watchOriginEffectBefore(
+          DateTime(2026, 8),
+          includeArchived: false,
+          accountIds: {other.id},
+        ).first;
+        final originOnlyOrigin = await datasource.watchOriginEffectBefore(
+          DateTime(2026, 8),
+          includeArchived: false,
+          accountIds: {origin.id},
+        ).first;
+        final destOnlyDest = await datasource.watchDestinationEffectBefore(
+          DateTime(2026, 8),
+          includeArchived: false,
+          accountIds: {dest.id},
+        ).first;
+        final destOnlyOther = await datasource.watchDestinationEffectBefore(
+          DateTime(2026, 8),
+          includeArchived: false,
+          accountIds: {other.id},
+        ).first;
+
+        expect(originOnlyOther, 500);
+        expect(originOnlyOrigin, -15000);
+        expect(destOnlyDest, 15000);
+        expect(destOnlyOther, 0);
+
+        final openingSum = await datasource.watchAccountsOpeningBalanceSum(
+          includeArchived: false,
+          accountIds: {origin.id},
+        ).first;
+        expect(openingSum, 0);
+      },
+    );
+
+    test(
+      'accountIds (criterion 4) also scopes the bucketed cashflow and '
+      'category queries',
+      () async {
+        final selected = await createAccount(name: 'Seleccionada');
+        final excluded = await createAccount(name: 'Excluida');
+        final category = await createCategory('Mercado');
+        await createTx(
+          accountId: selected.id,
+          type: EntryType.expense,
+          amountMinor: 5000,
+          date: DateTime(2026, 7, 10),
+          categoryId: category.id,
+        );
+        await createTx(
+          accountId: excluded.id,
+          type: EntryType.expense,
+          amountMinor: 9000,
+          date: DateTime(2026, 7, 10),
+          categoryId: category.id,
+        );
+
+        final cashflowRows = await datasource.watchCashflowBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          accountIds: {selected.id},
+        ).first;
+        final categoryRows = await datasource.watchCategoryExpenseRows(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          accountIds: {selected.id},
+        ).first;
+
+        expect(cashflowRows, hasLength(1));
+        expect(cashflowRows.single.expenseMinor, 5000);
+        expect(categoryRows, hasLength(1));
+        expect(categoryRows.single.amountMinor, 5000);
+      },
+    );
+
+    test(
+      'accountIds (criterion 5) also scopes the bucketed origin/destination '
+      'effect queries',
+      () async {
+        final origin = await createAccount(name: 'Origen');
+        final dest = await createAccount(name: 'Destino');
+        await createTx(
+          accountId: origin.id,
+          type: EntryType.transfer,
+          amountMinor: 15000,
+          date: DateTime(2026, 7, 10),
+          transferAccountId: dest.id,
+        );
+
+        final originBuckets = await datasource.watchOriginEffectBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          includeArchived: false,
+          accountIds: {origin.id},
+        ).first;
+        final originBucketsExcluded = await datasource.watchOriginEffectBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          includeArchived: false,
+          accountIds: {dest.id},
+        ).first;
+        final destBuckets = await datasource.watchDestinationEffectBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          includeArchived: false,
+          accountIds: {dest.id},
+        ).first;
+        final destBucketsExcluded =
+            await datasource.watchDestinationEffectBuckets(
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+          granularity: DateGranularity.monthly,
+          includeArchived: false,
+          accountIds: {origin.id},
+        ).first;
+
+        expect(originBuckets, hasLength(1));
+        expect(originBuckets.single.deltaMinor, -15000);
+        expect(originBucketsExcluded, isEmpty);
+        expect(destBuckets, hasLength(1));
+        expect(destBuckets.single.deltaMinor, 15000);
+        expect(destBucketsExcluded, isEmpty);
+      },
+    );
   });
 }

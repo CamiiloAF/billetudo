@@ -54,15 +54,24 @@ class TransactionsLocalDatasource {
       _db.transactions.deletedAt.isNull() &
       _db.transactions.tombstonedAt.isNull();
 
+  /// [periodStart]/[periodEndExclusive] are optional: when either is `null`,
+  /// no date `WHERE` clause is applied at all — the query is unbounded in
+  /// time (e.g. the Home's "most recent movements", which is not gated by
+  /// any period). [limit] caps the result count at the SQL level; `null`
+  /// (the default) returns every match, same as before this param existed.
   Stream<List<TransactionRowWithJoins>> watchTransactions({
     Set<String> accountIds = const <String>{},
     Set<String> categoryIds = const <String>{},
     Set<EntryType> types = const <EntryType>{},
     Set<String> tagIds = const <String>{},
     String searchText = '',
-    required DateTime periodStart,
-    required DateTime periodEndExclusive,
+    // `null` on both means "no date bound at all" — used by
+    // `watchRecentTransactions` (Home's "Movimientos recientes", HU-05),
+    // which is deliberately not scoped to any month/period.
+    DateTime? periodStart,
+    DateTime? periodEndExclusive,
     TransactionOrderBy orderBy = TransactionOrderBy.dateDesc,
+    int? limit,
   }) {
     final transferAccounts = _db.alias(_db.accounts, 'transfer_accounts');
 
@@ -92,8 +101,7 @@ class TransactionsLocalDatasource {
     ])
       ..where(
         _alive &
-            _db.transactions.date.isBiggerOrEqualValue(periodStart) &
-            _db.transactions.date.isSmallerThanValue(periodEndExclusive) &
+            _matchesPeriod(periodStart, periodEndExclusive) &
             _matchesAny(
               accountIds,
               () =>
@@ -133,7 +141,27 @@ class TransactionsLocalDatasource {
         OrderingTerm.asc(_db.transactions.id),
       ]);
 
-    return query.watch().map(_groupByTransaction);
+    // [limit] is applied in Dart, after [_groupByTransaction] folds the
+    // tag-join fan-out back into one row per transaction — a SQL `LIMIT`
+    // here would cut mid-transaction across its tag rows and undercount
+    // distinct transactions.
+    return query.watch().map((rows) {
+      final grouped = _groupByTransaction(rows);
+      return limit == null ? grouped : grouped.take(limit).toList();
+    });
+  }
+
+  /// No date bound at all when either edge is `null` (unbounded query, e.g.
+  /// the Home's recent-activity feed); both edges otherwise.
+  Expression<bool> _matchesPeriod(
+    DateTime? periodStart,
+    DateTime? periodEndExclusive,
+  ) {
+    if (periodStart == null || periodEndExclusive == null) {
+      return const Constant(true);
+    }
+    return _db.transactions.date.isBiggerOrEqualValue(periodStart) &
+        _db.transactions.date.isSmallerThanValue(periodEndExclusive);
   }
 
   /// HU-08: the same join as [watchTransactions], narrowed to one id.

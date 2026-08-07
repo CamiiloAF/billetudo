@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 
 /// The "Modo sobres" row in Ajustes (HU-06): icon + label + a "¿Qué es?" link
 /// that opens the info sheet, closed by a switch that persists the flag. Opt-in
@@ -19,6 +23,23 @@ class EnvelopeModeField extends StatelessWidget {
   final bool enabled;
   final ValueChanged<bool> onChanged;
   final VoidCallback onWhatIs;
+
+  /// Turning the switch on may show its own minitutorial first
+  /// (`docs/requirements/16-minitutoriales.md` HU-02) — skipped outright if
+  /// the Presupuestos screen tutorial has already been seen, since that one
+  /// already covers "Modo sobres" (the no-repeat rule this sub-flow calls
+  /// out explicitly). Turning it off never shows anything.
+  Future<void> _handleChanged(BuildContext context, bool value) async {
+    onChanged(value);
+    if (!value) {
+      return;
+    }
+    await maybeShowTutorial(
+      context,
+      TutorialKey.envelopeMode,
+      skipIfSeen: TutorialKey.budgetsScreen,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +104,11 @@ class EnvelopeModeField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Switch(value: enabled, onChanged: onChanged),
+              Switch(
+                value: enabled,
+                onChanged: (value) =>
+                    unawaited(_handleChanged(context, value)),
+              ),
             ],
           ),
         ),

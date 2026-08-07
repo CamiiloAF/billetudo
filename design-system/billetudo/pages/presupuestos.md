@@ -193,6 +193,30 @@ Mecanismo **override por período** (no "fork"): el presupuesto sigue siendo **u
 
 > Nota de migración: la descripción anterior ("fork de 3 partes", "solo el próximo período") quedó obsoleta — el `.pen` (`pkshL`) y el código (tabla `BudgetPeriodOverrides`, cubit de detalle propagando `periodStart` de la ventana visible) mandan sobre este `.md`.
 
+## Destacar presupuesto en Inicio
+
+**Estado:** tema claro **aprobado** por el usuario. Tema oscuro **pendiente** — se construye después, solo tras esta aprobación explícita (ya dada).
+
+**Patrón elegido:** acción de alternar dentro del sheet de acciones del detalle (`⋮`), no un toggle en la lista ni una fila aparte.
+
+- **Sheet — acciones del detalle** (`JR1Xp`/`Z72OIH`, ver sección "Detalle de presupuesto"), fila nueva entre "Editar" y "Ajustar monto — este período", ícono `star`:
+  - **Estado OFF** (`gFBcD`): label **"Usar como destacado en Inicio"** + subtítulo de exclusividad **"Reemplaza al presupuesto que tengas destacado, si hay uno."** (12/500 `$text-secondary`) — comunica antes de tocar que la acción es excluyente, sin sorpresas.
+  - **Estado ON** (`yaRtv`): label **"Quitar de Inicio"**, sin subtítulo (ya es evidente qué hace).
+  - Icon-wrap y tipografía siguen el mismo patrón que el resto de filas del sheet (icon-wrap `$muted` 38/r12, título 15/600 `$text-primary`).
+
+- **Señal visual en la lista** (`sEyU6`, componente `Budget Line` `FSL69`): badge circular de estrella superpuesto en la esquina superior derecha de la card del presupuesto destacado — 22×22px, fill `$primary`, stroke `$background` 2px (separa el badge del fondo de la card, no del borde de la card), ícono `star` 12px en `$on-primary`. **Sin borde de card adicional** — la card destacada usa el mismo `$surface`/`$border` que cualquier otra; el único diferenciador es el badge.
+
+**Regla de negocio:** solo puede haber **un** presupuesto destacado a la vez. Marcar uno nuevo desmarca automáticamente el anterior (no hay estado "varios destacados"). El subtítulo del estado OFF en el sheet es justamente el aviso de esa exclusividad antes de confirmar.
+
+**Nodo IDs finales:**
+| Pieza | Node ID |
+|---|---|
+| Sheet — acción "Usar como destacado" (estado OFF) | `gFBcD` |
+| Sheet — acción "Quitar de Inicio" (estado ON) | `yaRtv` |
+| Lista — badge de destacado sobre `Budget Line` | `sEyU6` |
+
+**Pendiente/decisión abierta:** tema oscuro de estas 3 piezas — no construir hasta nueva aprobación explícita del claro si hubiera cambios; en este caso el claro ya fue aprobado, así que el oscuro puede iniciarse en la próxima sesión siguiendo el gate de MASTER (paridad estructural, tokens por tema, sin hex hardcodeado).
+
 ## Tema oscuro — notas de implementación
 
 - **Paridad estructural:** cada frame oscuro es idéntico en layout/contenido/tokens a su par claro (verificado en auditoría). No divergir.

@@ -11,6 +11,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
@@ -21,7 +23,6 @@ import '../widgets/home_hero_skeleton.dart';
 import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
-import '../widgets/sheets/month_picker_sheet.dart';
 import '../widgets/sheets/sync_status_sheet.dart';
 
 /// The Inicio tab (feature 04): header, hero, quick access, recent activity,
@@ -34,6 +35,7 @@ class HomePage extends StatefulWidget {
     required this.onSeeAllTransactions,
     required this.onOpenTransaction,
     required this.onCreateBudget,
+    required this.onOpenBudget,
     required this.onOpenAccounts,
     required this.onOpenAccountMovements,
     required this.onOpenScheduledPayments,
@@ -51,6 +53,10 @@ class HomePage extends StatefulWidget {
   /// (the deleted transaction's id, or `null`).
   final Future<String?> Function(String id) onOpenTransaction;
   final VoidCallback onCreateBudget;
+
+  /// Criterion 6: tapping the hero when a budget is featured opens *that*
+  /// budget's own detail (`AppRoutes.budget`) — never a movements list.
+  final ValueChanged<String> onOpenBudget;
 
   /// HU-05b: quick-access chip destinations.
   final VoidCallback onOpenAccounts;
@@ -102,22 +108,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _openMonthPicker(BuildContext context) async {
-    // Bugfix item 7: re-anchors "today" right before the picker opens, so a
-    // month boundary crossed while the app stayed open never freezes the
-    // ceiling (`HomeCubit.refreshCurrentMonth`).
-    final cubit = context.read<HomeCubit>();
-    cubit.refreshCurrentMonth();
-    final picked = await MonthPickerSheet.show(
-      context,
-      selected: cubit.state.month,
-      currentMonth: cubit.state.currentMonth,
-    );
-    if (picked != null && context.mounted) {
-      await context.read<HomeCubit>().selectMonth(picked);
-    }
-  }
-
   Future<void> _openBellSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -159,6 +149,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// HU-02 gated by `15-gate-cuenta.md`: without any active account the FAB
+  /// (and the empty-state's own CTA, which reuses this) opens the bridge
+  /// sheet instead of the movement form — the button itself always stays
+  /// live and tappable, never disabled.
+  Future<void> _addTransaction(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.movement,
+    );
+    if (canProceed) {
+      widget.onAddTransaction();
+    }
+  }
+
   Future<void> _openAiSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -183,7 +187,7 @@ class _HomePageState extends State<HomePage> {
           child: AppFab(
             icon: LucideIcons.plus,
             tooltip: l10n.transactionsAdd,
-            onPressed: widget.onAddTransaction,
+            onPressed: () => unawaited(_addTransaction(context)),
           ),
         ),
       ),
@@ -234,9 +238,28 @@ class _HomePageState extends State<HomePage> {
                         : HomeHeroCard(
                             spending: state.spending!,
                             budgetProgress: state.budgetProgress,
-                            monthLabel: _monthLabel(context, state.month),
-                            onMonthTap: () => _openMonthPicker(context),
+                            // Only ever the fallback caption (criterion 5):
+                            // `HomeHeroCard` ignores it once a budget is
+                            // featured, in favor of `HeroPeriodStepper`'s
+                            // real window label. Sourced from the snapshot's
+                            // own `spending.month` (always "now"'s calendar
+                            // month, per `HomeCubit.start`) rather than a
+                            // direct clock read, so this stays deterministic
+                            // and in sync with what `spending` itself counts.
+                            monthLabel: _monthLabel(
+                              context,
+                              state.spending?.month ?? DateTime.now(),
+                            ),
                             onCreateBudget: widget.onCreateBudget,
+                            onOpenBudget: state.budgetProgress == null
+                                ? null
+                                : () => widget.onOpenBudget(
+                                      state.budgetProgress!.budget.id,
+                                    ),
+                            onPreviousPeriod: () =>
+                                context.read<HomeCubit>().previousPeriod(),
+                            onNextPeriod: () =>
+                                context.read<HomeCubit>().nextPeriod(),
                           ),
                   ),
                 ),
@@ -306,7 +329,9 @@ class _HomePageState extends State<HomePage> {
           return [
             SliverFillRemaining(
               hasScrollBody: false,
-              child: HomeMovementsEmptyState(onAdd: widget.onAddTransaction),
+              child: HomeMovementsEmptyState(
+                onAdd: () => unawaited(_addTransaction(context)),
+              ),
             ),
           ];
         }
@@ -323,9 +348,24 @@ class _HomePageState extends State<HomePage> {
                   ),
                 const SizedBox(height: 16),
                 AiBanner(onTap: () => _openAiSheet(context)),
-                const SizedBox(height: 96),
               ],
             ),
+          ),
+          // Pencil's spacer below the banner is `height:fill_container`
+          // (`docs`/`pages/inicio.md` § 7): it must grow to at least fill
+          // whatever viewport space is left, not just reserve a fixed 96px —
+          // a fixed `SizedBox` inside the list only guarantees that gap when
+          // the content already overflows the viewport. With a short list
+          // (few recent movements) the content falls short of the screen and
+          // the FAB, docked at a fixed bottom-right position, ends up
+          // floating directly over the last row instead of the empty space
+          // below it (the fidelity finding this fixes: the FAB covering
+          // "Salario"'s amount). `SliverFillRemaining` guarantees at least
+          // the remaining viewport height while still respecting the 96px
+          // floor when content is already long enough to scroll.
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: SizedBox(height: 96),
           ),
         ];
     }

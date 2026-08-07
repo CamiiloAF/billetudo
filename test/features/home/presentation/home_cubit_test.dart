@@ -10,9 +10,17 @@ import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_detail_data.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_period_view.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
-import 'package:billetudo/features/budgets/domain/usecases/watch_global_monthly_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -28,22 +36,32 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class MockWatchRecentTransactions extends Mock
+    implements WatchRecentTransactions {}
+
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockWatchSyncStatus extends Mock implements WatchSyncStatusDetails {}
 
 class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 
-class MockWatchGlobalMonthlyBudgetProgress extends Mock
-    implements WatchGlobalMonthlyBudgetProgress {}
+class MockWatchFeaturedBudgetProgress extends Mock
+    implements WatchFeaturedBudgetProgress {}
+
+class MockGetBudgetById extends Mock implements GetBudgetById {}
+
+class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
+  late MockWatchRecentTransactions watchRecentTransactions;
   late MockWatchAuthSession watchAuthSession;
   late MockWatchSyncStatus watchSyncStatus;
   late MockRestoreTransaction restoreTransaction;
-  late MockWatchGlobalMonthlyBudgetProgress watchGlobalMonthlyBudgetProgress;
+  late MockWatchFeaturedBudgetProgress watchFeaturedBudgetProgress;
+  late MockGetBudgetById getBudgetById;
+  late MockGetBudgetProgress getBudgetProgress;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -53,15 +71,58 @@ void main() {
     provider: AuthProvider.google,
   );
 
-  setUpAll(() => registerFallbackValue(DateTime(2026)));
+  /// A minimal `BudgetDetailData` for a global-monthly budget, matching
+  /// `buildHomeBudgetProgress`'s profile — the reactive bundle
+  /// `GetBudgetById` would stream once the featured budget is known.
+  BudgetDetailData buildDetailData({String id = 'budget-1'}) =>
+      BudgetDetailData(
+        budget: buildHomeBudgetProgress(id: id).budget,
+        scope: const BudgetScope.empty(),
+        expenses: const [],
+        categoryChildren: const {},
+        scheduledTemplates: const [],
+        pendingScheduledOccurrences: const [],
+      );
+
+  BudgetPeriodView buildView({
+    required int index,
+    required bool hasPrevious,
+    required bool hasNext,
+    int spentMinor = 300000,
+    int amountMinor = 600000,
+  }) =>
+      BudgetPeriodView(
+        window: BudgetPeriodWindow(
+          start: DateTime(2026, 7 + index),
+          endExclusive: DateTime(2026, 8 + index),
+          index: index,
+          status: BudgetWindowStatus.current,
+          hasPrevious: hasPrevious,
+          hasNext: hasNext,
+        ),
+        progress: BudgetProgress(
+          amountMinor: amountMinor,
+          spentMinor: spentMinor,
+          daysLeft: 12,
+        ),
+        activity: const [],
+      );
+
+  setUpAll(() {
+    registerFallbackValue(DateTime(2026));
+    registerFallbackValue(buildDetailData());
+  });
 
   setUp(() {
     watchAccounts = MockWatchAccounts();
     watchMonthTransactions = MockWatchMonthTransactions();
+    watchRecentTransactions = MockWatchRecentTransactions();
     watchAuthSession = MockWatchAuthSession();
     watchSyncStatus = MockWatchSyncStatus();
     restoreTransaction = MockRestoreTransaction();
-    watchGlobalMonthlyBudgetProgress = MockWatchGlobalMonthlyBudgetProgress();
+    watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
+    getBudgetById = MockGetBudgetById();
+    getBudgetProgress = MockGetBudgetProgress();
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
@@ -71,8 +132,12 @@ void main() {
         .thenAnswer((_) => const Stream<SyncStatusSnapshot>.empty());
     when(() => restoreTransaction(any()))
         .thenAnswer((_) async => const Right(unit));
+    when(() => watchRecentTransactions()).thenAnswer(
+      (_) =>
+          Stream<Result<List<TransactionWithDetails>>>.value(Right(activity)),
+    );
     // Default: no qualifying budget; individual tests override.
-    when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
+    when(() => watchFeaturedBudgetProgress()).thenAnswer(
       (_) => Stream<Result<BudgetWithProgress?>>.value(const Right(null)),
     );
   });
@@ -80,10 +145,13 @@ void main() {
   HomeCubit build() => HomeCubit(
         watchAccounts,
         watchMonthTransactions,
+        watchRecentTransactions,
         watchAuthSession,
         watchSyncStatus,
         restoreTransaction,
-        watchGlobalMonthlyBudgetProgress,
+        watchFeaturedBudgetProgress,
+        getBudgetById,
+        getBudgetProgress,
       );
 
   void stubReady() {
@@ -94,6 +162,44 @@ void main() {
       (_) =>
           Stream<Result<List<TransactionWithDetails>>>.value(Right(activity)),
     );
+  }
+
+  /// Wires the featured-budget chain (`WatchFeaturedBudgetProgress` →
+  /// `GetBudgetById` → `GetBudgetProgress`) for [id], serving [current] as
+  /// the "index null" view and [byIndex] for any explicit index navigated to
+  /// (HU-05's stepper).
+  void stubFeaturedBudget({
+    String id = 'budget-1',
+    required BudgetPeriodView current,
+    Map<int, BudgetPeriodView> byIndex = const {},
+  }) {
+    final data = buildDetailData(id: id);
+    when(() => watchFeaturedBudgetProgress()).thenAnswer(
+      (_) => Stream<Result<BudgetWithProgress?>>.value(
+        Right(
+          BudgetWithProgress(
+            budget: data.budget,
+            scope: data.scope,
+            window: current.window,
+            progress: current.progress,
+          ),
+        ),
+      ),
+    );
+    when(() => getBudgetById(id)).thenAnswer(
+      (_) => Stream<Result<BudgetDetailData>>.value(Right(data)),
+    );
+    when(() => getBudgetProgress(any(), now: any(named: 'now'), index: null))
+        .thenReturn(current);
+    for (final entry in byIndex.entries) {
+      when(
+        () => getBudgetProgress(
+          any(),
+          now: any(named: 'now'),
+          index: entry.key,
+        ),
+      ).thenReturn(entry.value);
+    }
   }
 
   blocTest<HomeCubit, HomeState>(
@@ -110,7 +216,7 @@ void main() {
   );
 
   blocTest<HomeCubit, HomeState>(
-    'espera a ambos streams antes de salir de loading',
+    'espera a todos los streams antes de salir de loading',
     setUp: () {
       when(() => watchAccounts()).thenAnswer(
         (_) => Stream<Result<List<AccountWithBalance>>>.value(Right(accounts)),
@@ -153,6 +259,11 @@ void main() {
           const Right(<TransactionWithDetails>[]),
         ),
       );
+      when(() => watchRecentTransactions()).thenAnswer(
+        (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+          const Right(<TransactionWithDetails>[]),
+        ),
+      );
     },
     build: build,
     act: (cubit) => cubit.start(),
@@ -162,125 +273,36 @@ void main() {
     },
   );
 
+  // Criterion 1: "Movimientos recientes" is decoupled from any month —
+  // covered end to end (real repositories) by
+  // `watch_month_transactions_vs_movimientos_test.dart`. Here the cubit-level
+  // guarantee is that the recent feed comes from `WatchRecentTransactions`,
+  // not `WatchMonthTransactions` (never re-subscribed, never touched by
+  // period navigation below).
   blocTest<HomeCubit, HomeState>(
-    'cambiar a un mes pasado re-suscribe las transacciones (HU-04)',
-    setUp: stubReady,
-    build: build,
-    act: (cubit) async {
-      await cubit.start();
-      await cubit.selectMonth(DateTime(2026));
-    },
-    verify: (cubit) {
-      expect(cubit.state.month, DateTime(2026));
-      verify(() => watchMonthTransactions(any())).called(2);
-    },
-  );
-
-  blocTest<HomeCubit, HomeState>(
-    'seleccionar el mismo mes no re-suscribe las transacciones (HU-04)',
-    setUp: stubReady,
-    build: build,
-    act: (cubit) async {
-      await cubit.start();
-      await cubit.selectMonth(cubit.state.currentMonth);
-    },
-    verify: (cubit) {
-      // Same month is a no-op: only the initial subscription happened.
-      verify(() => watchMonthTransactions(any())).called(1);
-      expect(cubit.state.status, HomeStatus.ready);
-    },
-  );
-
-  blocTest<HomeCubit, HomeState>(
-    'cambiar de mes pasa por loading antes de traer el nuevo mes (HU-04)',
+    'el feed reciente viene de WatchRecentTransactions, no de las '
+    'transacciones del mes',
     setUp: () {
       when(() => watchAccounts()).thenAnswer(
         (_) => Stream<Result<List<AccountWithBalance>>>.value(Right(accounts)),
       );
-      // First subscription lands data; the second (past month) never emits, so
-      // the cubit is caught mid-transition in loading.
-      var call = 0;
-      when(() => watchMonthTransactions(any())).thenAnswer((_) {
-        call++;
-        return call == 1
-            ? Stream<Result<List<TransactionWithDetails>>>.value(
-                Right(activity))
-            : const Stream<Result<List<TransactionWithDetails>>>.empty();
-      });
+      when(() => watchMonthTransactions(any())).thenAnswer(
+        (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+          const Right(<TransactionWithDetails>[]),
+        ),
+      );
+      when(() => watchRecentTransactions()).thenAnswer(
+        (_) =>
+            Stream<Result<List<TransactionWithDetails>>>.value(Right(activity)),
+      );
     },
     build: build,
-    act: (cubit) async {
-      await cubit.start();
-      await cubit.selectMonth(DateTime(2026));
-    },
+    act: (cubit) => cubit.start(),
     verify: (cubit) {
-      expect(cubit.state.month, DateTime(2026));
-      expect(cubit.state.status, HomeStatus.loading);
-    },
-  );
-
-  blocTest<HomeCubit, HomeState>(
-    'el mes por defecto es el mes en curso (HU-04)',
-    setUp: stubReady,
-    build: build,
-    verify: (cubit) {
-      final now = DateTime.now();
-      expect(cubit.state.month, DateTime(now.year, now.month));
-      expect(cubit.state.currentMonth, cubit.state.month);
-      expect(cubit.state.syncStatus, HomeSyncStatus.synced);
-    },
-  );
-
-  blocTest<HomeCubit, HomeState>(
-    'no navega a un mes futuro (HU-04)',
-    setUp: stubReady,
-    build: build,
-    act: (cubit) async {
-      await cubit.start();
-      final future = DateTime(cubit.state.currentMonth.year + 1);
-      await cubit.selectMonth(future);
-    },
-    verify: (cubit) {
-      expect(cubit.state.month, cubit.state.currentMonth);
+      expect(cubit.state.recentActivity, hasLength(1));
+      // The month-scoped stream is only ever queried once, for `now` — never
+      // re-subscribed, since there is no navigable "visible month" anymore.
       verify(() => watchMonthTransactions(any())).called(1);
-    },
-  );
-
-  // Bugfix item 7: `currentMonth` (HU-04's ceiling) used to be set once, in
-  // `HomeState.initial`, and never touched again — a `copyWith` call could
-  // not even change it. An app kept open across a month boundary froze the
-  // ceiling on a stale month, silently rejecting the real current month in
-  // `selectMonth`'s guard while a freshly-built filter elsewhere (Movimientos)
-  // already tracked "today" — the two screens visibly disagreed.
-  blocTest<HomeCubit, HomeState>(
-    'refreshCurrentMonth re-ancla "hoy" y el mes visible si seguía en el '
-    'default (bugfix 7)',
-    setUp: stubReady,
-    build: build,
-    // Simulates a cubit that has lived long enough for the real month to
-    // move past the one it was built in.
-    seed: () => HomeState.initial(DateTime(2020)),
-    act: (cubit) => cubit.refreshCurrentMonth(),
-    verify: (cubit) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month);
-      expect(cubit.state.currentMonth, today);
-      expect(cubit.state.month, today);
-    },
-  );
-
-  blocTest<HomeCubit, HomeState>(
-    'refreshCurrentMonth no mueve un mes explícito ya elegido por el usuario '
-    '(bugfix 7)',
-    setUp: stubReady,
-    build: build,
-    seed: () =>
-        HomeState(month: DateTime(2019, 6), currentMonth: DateTime(2020)),
-    act: (cubit) => cubit.refreshCurrentMonth(),
-    verify: (cubit) {
-      final now = DateTime.now();
-      expect(cubit.state.currentMonth, DateTime(now.year, now.month));
-      expect(cubit.state.month, DateTime(2019, 6));
     },
   );
 
@@ -460,59 +482,83 @@ void main() {
     );
   });
 
-  test('cerrar el cubit cancela las cinco suscripciones', () async {
+  test('cerrar el cubit cancela las siete suscripciones', () async {
     final accountsController =
         StreamController<Result<List<AccountWithBalance>>>.broadcast();
-    final txController =
+    final monthTxController =
+        StreamController<Result<List<TransactionWithDetails>>>.broadcast();
+    final recentTxController =
         StreamController<Result<List<TransactionWithDetails>>>.broadcast();
     final authController = StreamController<AuthSession>.broadcast();
     final syncController = StreamController<SyncStatusSnapshot>.broadcast();
     final budgetProgressController =
         StreamController<Result<BudgetWithProgress?>>.broadcast();
+    final budgetDataController =
+        StreamController<Result<BudgetDetailData>>.broadcast();
     when(() => watchAccounts()).thenAnswer((_) => accountsController.stream);
     when(() => watchMonthTransactions(any()))
-        .thenAnswer((_) => txController.stream);
+        .thenAnswer((_) => monthTxController.stream);
+    when(() => watchRecentTransactions())
+        .thenAnswer((_) => recentTxController.stream);
     when(() => watchAuthSession()).thenAnswer((_) => authController.stream);
     when(() => watchSyncStatus()).thenAnswer((_) => syncController.stream);
-    when(() => watchGlobalMonthlyBudgetProgress())
+    when(() => watchFeaturedBudgetProgress())
         .thenAnswer((_) => budgetProgressController.stream);
 
     final cubit = build();
     await cubit.start();
+    // Feature the budget mid-flight so the second-level subscription
+    // (`getBudgetById`) is live too, then close and check it unwinds as well.
+    final data = buildDetailData();
+    when(() => getBudgetById('budget-1'))
+        .thenAnswer((_) => budgetDataController.stream);
+    budgetProgressController.add(
+      Right(
+        BudgetWithProgress(
+          budget: data.budget,
+          scope: data.scope,
+          window: buildView(index: 0, hasPrevious: false, hasNext: true)
+              .window,
+          progress:
+              buildView(index: 0, hasPrevious: false, hasNext: true).progress,
+        ),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
     await cubit.close();
 
     expect(accountsController.hasListener, isFalse);
-    expect(txController.hasListener, isFalse);
+    expect(monthTxController.hasListener, isFalse);
+    expect(recentTxController.hasListener, isFalse);
     expect(authController.hasListener, isFalse);
     expect(syncController.hasListener, isFalse);
     expect(budgetProgressController.hasListener, isFalse);
+    expect(budgetDataController.hasListener, isFalse);
     await accountsController.close();
-    await txController.close();
+    await monthTxController.close();
+    await recentTxController.close();
     await authController.close();
     await syncController.close();
     await budgetProgressController.close();
+    await budgetDataController.close();
   });
 
-  group('presupuesto global mensual en el hero (HU-03, aOhoY)', () {
+  group('presupuesto destacado en el hero (HU-03/HU-05, aOhoY)', () {
     blocTest<HomeCubit, HomeState>(
-      'expone budgetProgress cuando hay un presupuesto global mensual vigente',
+      'expone budgetProgress cuando hay un presupuesto destacado vigente',
       setUp: () {
         stubReady();
-        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
-          (_) => Stream<Result<BudgetWithProgress?>>.value(
-            Right(buildHomeBudgetProgress()),
-          ),
+        stubFeaturedBudget(
+          current: buildView(index: 0, hasPrevious: false, hasNext: true),
         );
       },
       build: build,
       act: (cubit) => cubit.start(),
       verify: (cubit) {
         expect(cubit.state.status, HomeStatus.ready);
-        expect(cubit.state.snapshot?.budgetProgress, isNotNull);
-        expect(
-            cubit.state.snapshot?.budgetProgress?.progress.amountMinor, 600000);
-        expect(
-            cubit.state.snapshot?.budgetProgress?.progress.spentMinor, 300000);
+        expect(cubit.state.budgetProgress, isNotNull);
+        expect(cubit.state.budgetProgress?.progress.amountMinor, 600000);
+        expect(cubit.state.budgetProgress?.progress.spentMinor, 300000);
       },
     );
 
@@ -523,34 +569,95 @@ void main() {
       act: (cubit) => cubit.start(),
       verify: (cubit) {
         expect(cubit.state.status, HomeStatus.ready);
-        expect(cubit.state.snapshot?.budgetProgress, isNull);
+        expect(cubit.state.budgetProgress, isNull);
       },
     );
 
     blocTest<HomeCubit, HomeState>(
-      'al navegar a un mes pasado, budgetProgress queda en null aunque haya '
-      'un presupuesto vigente para el mes actual',
+      'criterio 4: nextPeriod navega a la ventana siguiente '
+      '(GetBudgetProgress con index+1)',
       setUp: () {
         stubReady();
-        when(() => watchGlobalMonthlyBudgetProgress()).thenAnswer(
-          (_) => Stream<Result<BudgetWithProgress?>>.value(
-            Right(buildHomeBudgetProgress()),
-          ),
+        stubFeaturedBudget(
+          current: buildView(index: 0, hasPrevious: false, hasNext: true),
+          byIndex: {
+            1: buildView(
+              index: 1,
+              hasPrevious: true,
+              hasNext: false,
+              spentMinor: 450000,
+            ),
+          },
         );
       },
       build: build,
       act: (cubit) async {
         await cubit.start();
-        final past = DateTime(
-          cubit.state.currentMonth.year,
-          cubit.state.currentMonth.month - 1,
-        );
-        await cubit.selectMonth(past);
+        // `WatchFeaturedBudgetProgress` → `GetBudgetById` is a two-hop
+        // reactive chain (see `HomeCubit`'s class docs): `start()` only
+        // awaits the subscriptions themselves, not their first emissions —
+        // flush the queued microtasks so the featured budget is actually
+        // known before stepping its period.
+        await Future<void>.delayed(Duration.zero);
+        cubit.nextPeriod();
       },
       verify: (cubit) {
-        expect(cubit.state.status, HomeStatus.ready);
-        expect(cubit.state.snapshot?.budgetProgress, isNull);
+        expect(cubit.state.budgetProgress?.window.index, 1);
+        expect(cubit.state.budgetProgress?.progress.spentMinor, 450000);
+        expect(cubit.state.budgetProgress?.window.hasNext, isFalse);
       },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'criterio 4: previousPeriod es un no-op en el borde (hasPrevious '
+      'false)',
+      setUp: () {
+        stubReady();
+        stubFeaturedBudget(
+          current: buildView(index: 0, hasPrevious: false, hasNext: true),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        cubit.previousPeriod();
+      },
+      verify: (cubit) {
+        expect(cubit.state.budgetProgress?.window.index, 0);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'sin presupuesto destacado: nextPeriod/previousPeriod son no-op',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        cubit.nextPeriod();
+        cubit.previousPeriod();
+      },
+      verify: (cubit) => expect(cubit.state.budgetProgress, isNull),
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'la lista de recientes no se re-suscribe al navegar el período '
+      '(criterio 1)',
+      setUp: () {
+        stubReady();
+        stubFeaturedBudget(
+          current: buildView(index: 0, hasPrevious: false, hasNext: true),
+          byIndex: {
+            1: buildView(index: 1, hasPrevious: true, hasNext: false),
+          },
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        cubit.nextPeriod();
+      },
+      verify: (_) => verify(() => watchRecentTransactions()).called(1),
     );
   });
 }

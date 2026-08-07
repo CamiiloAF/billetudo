@@ -243,6 +243,38 @@ void main() {
     ],
   );
 
+  blocTest<DebtPaymentCubit, DebtPaymentState>(
+    'refreshAccounts recarga la lista de cuentas tras crear una desde el '
+    'gate ("¿Agregar a una cuenta?", 15-gate-cuenta.md) y preselecciona la '
+    'primera si aún no había ninguna elegida',
+    setUp: () {
+      var call = 0;
+      when(watchAccounts.call).thenAnswer((_) {
+        call += 1;
+        // The first call happens inside `start` (mirrors "sin cuentas"); the
+        // second inside `refreshAccounts` (mirrors the account just created
+        // from the gate) — they must differ, or `Cubit`'s Equatable check on
+        // `DebtPaymentState` would swallow the second emit as a no-op.
+        return Stream.value(
+          Right(call == 1 ? const <AccountWithBalance>[] : accounts),
+        );
+      });
+      when(() => togglePreference.readAddToAccount(any()))
+          .thenAnswer((_) async => false);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.start(buildDebt());
+      await cubit.refreshAccounts();
+    },
+    skip: 2,
+    expect: () => [
+      isA<DebtPaymentState>()
+          .having((s) => s.accounts, 'accounts', accounts)
+          .having((s) => s.selectedAccountId, 'selectedAccountId', 'a1'),
+    ],
+  );
+
   test(
     'fix 7: canSubmit exige categoría cuando addToAccount es true, '
     'incluso con cuenta y monto ya elegidos',

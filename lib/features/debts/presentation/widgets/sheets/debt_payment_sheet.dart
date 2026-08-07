@@ -13,10 +13,14 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../../categories/domain/entities/category.dart';
 import '../../../../categories/presentation/utils/category_appearance.dart';
 import '../../../../transactions/presentation/widgets/category_picker/category_select_sheet.dart';
+import '../../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../../domain/entities/debt.dart';
 import '../../cubit/debt_payment_cubit.dart';
 import '../../cubit/debt_payment_state.dart';
@@ -163,8 +167,13 @@ class DebtPaymentSheetBody extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
-                // Switch row.
-                DebtAddToAccountRow(state: state, cubit: cubit),
+                // Switch row. First time this control renders, its own
+                // minitutorial explains "No" still lowers the debt
+                // (`docs/requirements/16-minitutoriales.md` HU-02).
+                TutorialAutoShow(
+                  tutorialKey: TutorialKey.debtPaymentToggle,
+                  child: DebtAddToAccountRow(state: state, cubit: cubit),
+                ),
                 if (state.addToAccount) ...[
                   const SizedBox(height: 10),
                   DebtSelectedAccountRow(
@@ -310,6 +319,37 @@ class DebtAddToAccountRow extends StatelessWidget {
   final DebtPaymentState state;
   final DebtPaymentCubit cubit;
 
+  /// HU-02 gated by `15-gate-cuenta.md`: an abono "con caja" generates a real
+  /// `Transaction`, so without any active account this opens the bridge
+  /// sheet instead of just revealing a selector with nothing to pick.
+  Future<void> _toggleAddToAccount(
+    BuildContext context,
+    DebtPaymentCubit cubit,
+    bool value,
+  ) async {
+    if (!value) {
+      cubit.addToAccountChanged(false);
+      return;
+    }
+    final hadAccounts = cubit.state.accounts.isNotEmpty;
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.debtCash,
+    );
+    if (!canProceed) {
+      return;
+    }
+    // The bridge sheet only opens when `state.accounts` was empty; a fresh
+    // account was created in the meantime, so the cubit's list is stale
+    // until reloaded — otherwise the switch flips on but the account row
+    // below it still shows nothing to pick (bug: looked "stuck" without
+    // closing and reopening the sheet).
+    if (!hadAccounts) {
+      await cubit.refreshAccounts();
+    }
+    cubit.addToAccountChanged(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -347,7 +387,8 @@ class DebtAddToAccountRow extends StatelessWidget {
         const SizedBox(width: 12),
         DebtCashSwitch(
           value: state.addToAccount,
-          onChanged: cubit.addToAccountChanged,
+          onChanged: (value) =>
+              unawaited(_toggleAddToAccount(context, cubit, value)),
         ),
       ],
     );

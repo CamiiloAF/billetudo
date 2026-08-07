@@ -19,6 +19,8 @@ TransactionWithDetails buildActivity({
   String accountName = 'Bancolombia',
   String? categoryId,
   String? categoryName,
+  String? categoryIcon,
+  String? categoryColor,
   int amountMinor = 10000,
   String currency = 'COP',
   TransactionType type = TransactionType.expense,
@@ -38,6 +40,8 @@ TransactionWithDetails buildActivity({
       ),
       accountName: accountName,
       categoryName: categoryName,
+      categoryIcon: categoryIcon,
+      categoryColor: categoryColor,
     );
 
 AccountWithBalance buildActiveAccount({
@@ -53,9 +57,10 @@ AccountWithBalance buildActiveAccount({
 Account buildAccount({String id = 'acc-1', String currency = 'COP'}) =>
     accounts.buildAccount(id: id, currency: currency);
 
-/// A global-monthly [BudgetWithProgress] (the only profile Home's hero cares
-/// about — see `WatchGlobalMonthlyBudgetProgress`), so Home tests only state
-/// the amount/spend they care about.
+/// A global-monthly [BudgetWithProgress] (the default profile Home's hero
+/// falls back to when no budget is manually featured — see
+/// `WatchFeaturedBudgetProgress`), so Home tests only state the amount/spend
+/// they care about.
 BudgetWithProgress buildHomeBudgetProgress({
   String id = 'budget-1',
   String name = 'Presupuesto general',
