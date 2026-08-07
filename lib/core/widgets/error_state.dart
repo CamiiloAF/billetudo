@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'neutral_button.dart';
 
 /// The `Error State` component (`ECG7D`): a neutral card with a retry.
 ///
@@ -20,6 +21,7 @@ class ErrorState extends StatelessWidget {
     required this.title,
     required this.onRetry,
     this.description,
+    this.neutralCta = false,
     super.key,
   });
 
@@ -35,6 +37,13 @@ class ErrorState extends StatelessWidget {
   final String? description;
 
   final VoidCallback onRetry;
+
+  /// Renders the retry CTA as [NeutralButton] (solid `$text-primary`)
+  /// instead of the themed `FilledButton` (`$primary`). Import/Export uses
+  /// this: `$primary` means "the cloud" in this product, and this feature is
+  /// 100% local, so it never wears violet
+  /// (`design-system/billetudo/pages/import-export.md`).
+  final bool neutralCta;
 
   @override
   Widget build(BuildContext context) {
@@ -96,14 +105,21 @@ class ErrorState extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              // `inZFU` hugs its label, which is what the theme gives by
-              // default: it imposes the 52pt height and the 20pt side padding,
-              // never a width.
-              FilledButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(LucideIcons.refreshCw, size: 18),
-                label: Text(l10n.commonRetry),
-              ),
+              if (neutralCta)
+                NeutralButton(
+                  label: l10n.commonRetry,
+                  icon: LucideIcons.refreshCw,
+                  onPressed: onRetry,
+                )
+              else
+                // `inZFU` hugs its label, which is what the theme gives by
+                // default: it imposes the 52pt height and the 20pt side
+                // padding, never a width.
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(LucideIcons.refreshCw, size: 18),
+                  label: Text(l10n.commonRetry),
+                ),
             ],
           ),
         ),

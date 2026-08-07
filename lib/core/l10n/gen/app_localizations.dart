@@ -194,6 +194,12 @@ abstract class AppLocalizations {
   /// **'Listo'**
   String get commonDone;
 
+  /// No description provided for @commonRecommended.
+  ///
+  /// In es, this message translates to:
+  /// **'Recomendado'**
+  String get commonRecommended;
+
   /// No description provided for @commonCreate.
   ///
   /// In es, this message translates to:
@@ -1393,6 +1399,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{1 cuenta} other{{count} cuentas}}'**
   String transactionsFilterAccountsSelected(int count);
+
+  /// Etiqueta del chip de categoría cuando hay una o más categorías activas como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 categoría} other{{count} categorías}}'**
+  String transactionsFilterCategoriesSelected(int count);
+
+  /// Etiqueta del chip de tipo cuando hay uno o más tipos activos como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 tipo} other{{count} tipos}}'**
+  String transactionsFilterTypeSelected(int count);
+
+  /// Etiqueta del chip de etiqueta cuando hay una o más etiquetas activas como filtro.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 etiqueta} other{{count} etiquetas}}'**
+  String transactionsFilterTagSelected(int count);
 
   /// Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2).
   ///
@@ -3259,7 +3283,7 @@ abstract class AppLocalizations {
   /// No description provided for @moreImportExportDescription.
   ///
   /// In es, this message translates to:
-  /// **'Respalda o trae tus datos'**
+  /// **'Guarda una copia o trae tus datos'**
   String get moreImportExportDescription;
 
   /// No description provided for @moreSettings.
@@ -6851,6 +6875,1231 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Estado de sincronización'**
   String get settingsSyncStatus;
+
+  /// No description provided for @importExportHubTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar y exportar'**
+  String get importExportHubTitle;
+
+  /// No description provided for @importExportHubErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar esta pantalla'**
+  String get importExportHubErrorTitle;
+
+  /// No description provided for @importExportHeroTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar una copia de tus datos'**
+  String get importExportHeroTitle;
+
+  /// No description provided for @importExportHeroKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Un archivo .billetudo.json'**
+  String get importExportHeroKicker;
+
+  /// No description provided for @importExportCloudNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Es distinto al respaldo en la nube: esta copia queda en tu dispositivo y no necesita cuenta.'**
+  String get importExportCloudNote;
+
+  /// No description provided for @importExportHeroBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos, cuentas, presupuestos, metas, deudas y pagos programados en un solo archivo tuyo. Si cambias de teléfono, la app lo vuelve a cargar tal cual.'**
+  String get importExportHeroBody;
+
+  /// No description provided for @importExportCopyStatusLastSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Última copia: {date}'**
+  String importExportCopyStatusLastSaved(String date);
+
+  /// No description provided for @importExportCopyStatusNeverSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has guardado una copia'**
+  String get importExportCopyStatusNeverSaved;
+
+  /// No description provided for @importExportSaveCopyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar una copia'**
+  String get importExportSaveCopyCta;
+
+  /// No description provided for @importExportPrivacyNote.
+  ///
+  /// In es, this message translates to:
+  /// **'La copia se guarda sin cifrar y sin el número de cuenta. Tú eliges dónde la guardas.'**
+  String get importExportPrivacyNote;
+
+  /// No description provided for @importExportSectionOtherActions.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar e importar'**
+  String get importExportSectionOtherActions;
+
+  /// No description provided for @importExportExportCsvTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar a CSV'**
+  String get importExportExportCsvTitle;
+
+  /// No description provided for @importExportExportPageTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar tus datos'**
+  String get importExportExportPageTitle;
+
+  /// No description provided for @importExportExportCsvSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para Excel o Sheets · no restaura la app'**
+  String get importExportExportCsvSubtitle;
+
+  /// No description provided for @importExportImportCsvTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar desde un CSV'**
+  String get importExportImportCsvTitle;
+
+  /// No description provided for @importExportImportCsvSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu banco, Wallet, Mint o cualquier archivo'**
+  String get importExportImportCsvSubtitle;
+
+  /// No description provided for @importExportRestoreTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar desde una copia'**
+  String get importExportRestoreTitle;
+
+  /// No description provided for @importExportRestoreSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a cargar un archivo .billetudo.json'**
+  String get importExportRestoreSubtitle;
+
+  /// No description provided for @importExportSectionRecentImports.
+  ///
+  /// In es, this message translates to:
+  /// **'Importaciones recientes'**
+  String get importExportSectionRecentImports;
+
+  /// No description provided for @importExportSeeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todas'**
+  String get importExportSeeAll;
+
+  /// No description provided for @importExportBatchMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} movimientos · {relative}'**
+  String importExportBatchMeta(int count, String relative);
+
+  /// No description provided for @importExportBatchRevertedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Revertida'**
+  String get importExportBatchRevertedBadge;
+
+  /// No description provided for @importExportRelativeDays.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {n} días'**
+  String importExportRelativeDays(int n);
+
+  /// No description provided for @importExportRelativeHours.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {n} horas'**
+  String importExportRelativeHours(int n);
+
+  /// No description provided for @importExportRelativeJustNow.
+  ///
+  /// In es, this message translates to:
+  /// **'hace un momento'**
+  String get importExportRelativeJustNow;
+
+  /// No description provided for @importExportEmptyHeroTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Trae tu historial'**
+  String get importExportEmptyHeroTitle;
+
+  /// No description provided for @importExportEmptyHeroBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Importa un CSV de Wallet, Mint o tu banco y tú decides qué es cada columna. Si vienes de otro teléfono, restaura tu copia y vuelve todo tal cual.'**
+  String get importExportEmptyHeroBody;
+
+  /// No description provided for @importExportEmptyImportCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar un CSV'**
+  String get importExportEmptyImportCta;
+
+  /// No description provided for @importExportSectionOtherOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Otras opciones'**
+  String get importExportSectionOtherOptions;
+
+  /// No description provided for @importExportEmptyExportRowTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar y guardar copias'**
+  String get importExportEmptyExportRowTitle;
+
+  /// No description provided for @importExportEmptyExportRowSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Se activan con tu primer movimiento. Ahí podrás sacar un CSV o guardar una copia con todo. Es distinto al respaldo en la nube: la copia queda en tu dispositivo.'**
+  String get importExportEmptyExportRowSubtitle;
+
+  /// No description provided for @importExportExportEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tienes movimientos para exportar'**
+  String get importExportExportEmptyTitle;
+
+  /// No description provided for @importExportExportEmptyBody.
+  ///
+  /// In es, this message translates to:
+  /// **'En cuanto registres tu primer movimiento, podrás exportarlo.'**
+  String get importExportExportEmptyBody;
+
+  /// No description provided for @importExportScopeTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Transacciones'**
+  String get importExportScopeTransactions;
+
+  /// No description provided for @importExportScopeTransactionsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluye tus movimientos en el archivo'**
+  String get importExportScopeTransactionsHint;
+
+  /// No description provided for @importExportScopeAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get importExportScopeAccounts;
+
+  /// No description provided for @importExportScopeAccountsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluye tu estructura de cuentas'**
+  String get importExportScopeAccountsHint;
+
+  /// No description provided for @importExportScopeCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get importExportScopeCategories;
+
+  /// No description provided for @importExportScopeCategoriesHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluye tu estructura de categorías'**
+  String get importExportScopeCategoriesHint;
+
+  /// No description provided for @importExportAllHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el histórico'**
+  String get importExportAllHistory;
+
+  /// No description provided for @importExportAllHistoryHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ignora el filtro de fechas y exporta todo'**
+  String get importExportAllHistoryHint;
+
+  /// No description provided for @importExportPickDateRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir rango de fechas'**
+  String get importExportPickDateRange;
+
+  /// No description provided for @importExportZipNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Al elegir más de uno, se entrega un solo archivo .zip.'**
+  String get importExportZipNotice;
+
+  /// No description provided for @importExportExportCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar'**
+  String get importExportExportCta;
+
+  /// No description provided for @importExportFiltersTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros de transacciones'**
+  String get importExportFiltersTitle;
+
+  /// No description provided for @importExportFiltersSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo aplican si exportas Transacciones.'**
+  String get importExportFiltersSubtitle;
+
+  /// No description provided for @importExportFilterSearchPlaceholder.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por texto'**
+  String get importExportFilterSearchPlaceholder;
+
+  /// No description provided for @importExportFilterAllAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las cuentas'**
+  String get importExportFilterAllAccounts;
+
+  /// No description provided for @importExportProgressExportingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportando tus datos…'**
+  String get importExportProgressExportingTitle;
+
+  /// No description provided for @importExportProgressImportingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importando tus movimientos…'**
+  String get importExportProgressImportingTitle;
+
+  /// No description provided for @importExportProgressRestoringTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurando tu copia…'**
+  String get importExportProgressRestoringTitle;
+
+  /// No description provided for @importExportProgressSavingCopyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando tu copia…'**
+  String get importExportProgressSavingCopyTitle;
+
+  /// No description provided for @importExportProgressCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'{processed} de {total} filas'**
+  String importExportProgressCaption(int processed, int total);
+
+  /// No description provided for @importExportProgressHint.
+  ///
+  /// In es, this message translates to:
+  /// **'No cierres la app mientras esto termina. Puedes cancelar sin perder lo que ya tenías.'**
+  String get importExportProgressHint;
+
+  /// No description provided for @importExportIoErrorWriteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar el archivo'**
+  String get importExportIoErrorWriteTitle;
+
+  /// No description provided for @importExportIoErrorWriteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede ser falta de espacio o de permiso para escribir en tu dispositivo. Eliminamos el archivo parcial para no dejar nada a medias — tus datos en la app están a salvo.'**
+  String get importExportIoErrorWriteBody;
+
+  /// No description provided for @importExportIoErrorUnreadableTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos leer este archivo'**
+  String get importExportIoErrorUnreadableTitle;
+
+  /// No description provided for @importExportIoErrorUnreadableBody.
+  ///
+  /// In es, this message translates to:
+  /// **'No parece un CSV válido, o está vacío. Prueba exportarlo otra vez desde tu banco o la otra app. Tus datos en Billetudo siguen intactos.'**
+  String get importExportIoErrorUnreadableBody;
+
+  /// No description provided for @importExportChooseAnotherFile.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir otro archivo'**
+  String get importExportChooseAnotherFile;
+
+  /// No description provided for @importExportSelectFileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona tu archivo CSV'**
+  String get importExportSelectFileTitle;
+
+  /// No description provided for @importExportSelectFileBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepta cualquier CSV: tú decides qué es cada columna en el siguiente paso.'**
+  String get importExportSelectFileBody;
+
+  /// No description provided for @importExportSelectFileCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir archivo'**
+  String get importExportSelectFileCta;
+
+  /// No description provided for @importExportStepMapping.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapeo de columnas'**
+  String get importExportStepMapping;
+
+  /// No description provided for @importExportStepDestinations.
+  ///
+  /// In es, this message translates to:
+  /// **'Resolver destinos'**
+  String get importExportStepDestinations;
+
+  /// No description provided for @importExportStepPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa'**
+  String get importExportStepPreview;
+
+  /// No description provided for @importExportStepSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get importExportStepSummary;
+
+  /// No description provided for @importExportTemplateMatched.
+  ///
+  /// In es, this message translates to:
+  /// **'Reconocimos el formato de \"{name}\" — confirma para continuar'**
+  String importExportTemplateMatched(String name);
+
+  /// No description provided for @importExportFieldNotUsed.
+  ///
+  /// In es, this message translates to:
+  /// **'No usar'**
+  String get importExportFieldNotUsed;
+
+  /// No description provided for @importExportFieldRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Obligatorio'**
+  String get importExportFieldRequired;
+
+  /// No description provided for @importExportFieldOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Opcional'**
+  String get importExportFieldOptional;
+
+  /// No description provided for @importExportFieldPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa: {value}'**
+  String importExportFieldPreview(String value);
+
+  /// No description provided for @importExportFormatDetectedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato detectado'**
+  String get importExportFormatDetectedTitle;
+
+  /// No description provided for @importExportFormatDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato de fecha'**
+  String get importExportFormatDateLabel;
+
+  /// No description provided for @importExportFormatDecimalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Convención decimal'**
+  String get importExportFormatDecimalLabel;
+
+  /// No description provided for @importExportFormatSignLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto o ingreso se expresa con'**
+  String get importExportFormatSignLabel;
+
+  /// No description provided for @importExportDateOrderYmd.
+  ///
+  /// In es, this message translates to:
+  /// **'AAAA/MM/DD'**
+  String get importExportDateOrderYmd;
+
+  /// No description provided for @importExportDateOrderDmy.
+  ///
+  /// In es, this message translates to:
+  /// **'DD/MM/AAAA'**
+  String get importExportDateOrderDmy;
+
+  /// No description provided for @importExportDateOrderMdy.
+  ///
+  /// In es, this message translates to:
+  /// **'MM/DD/AAAA'**
+  String get importExportDateOrderMdy;
+
+  /// No description provided for @importExportDecimalDot.
+  ///
+  /// In es, this message translates to:
+  /// **'1.234,56 → 1234.56 (punto decimal)'**
+  String get importExportDecimalDot;
+
+  /// No description provided for @importExportDecimalComma.
+  ///
+  /// In es, this message translates to:
+  /// **'1.234,56 (coma decimal)'**
+  String get importExportDecimalComma;
+
+  /// No description provided for @importExportSignByTypeColumn.
+  ///
+  /// In es, this message translates to:
+  /// **'Columna tipo (ingreso o gasto)'**
+  String get importExportSignByTypeColumn;
+
+  /// No description provided for @importExportSignByAmountSign.
+  ///
+  /// In es, this message translates to:
+  /// **'Signo del monto (negativo = gasto)'**
+  String get importExportSignByAmountSign;
+
+  /// No description provided for @importExportLivePreviewLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Así queda tu primera fila real'**
+  String get importExportLivePreviewLabel;
+
+  /// No description provided for @importExportFieldsSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Campos'**
+  String get importExportFieldsSectionTitle;
+
+  /// No description provided for @importExportFieldPickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué campo es esta columna?'**
+  String get importExportFieldPickerTitle;
+
+  /// No description provided for @importExportFieldId.
+  ///
+  /// In es, this message translates to:
+  /// **'Id'**
+  String get importExportFieldId;
+
+  /// No description provided for @importExportFieldDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get importExportFieldDate;
+
+  /// No description provided for @importExportFieldAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get importExportFieldAmount;
+
+  /// No description provided for @importExportFieldType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get importExportFieldType;
+
+  /// No description provided for @importExportFieldCurrency.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda'**
+  String get importExportFieldCurrency;
+
+  /// No description provided for @importExportFieldAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get importExportFieldAccount;
+
+  /// No description provided for @importExportFieldTransferAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta destino'**
+  String get importExportFieldTransferAccount;
+
+  /// No description provided for @importExportFieldCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get importExportFieldCategory;
+
+  /// No description provided for @importExportFieldSubcategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Subcategoría'**
+  String get importExportFieldSubcategory;
+
+  /// No description provided for @importExportFieldNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get importExportFieldNote;
+
+  /// No description provided for @importExportFieldTags.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get importExportFieldTags;
+
+  /// No description provided for @importExportDestinationsNoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo coincide con lo que ya tienes'**
+  String get importExportDestinationsNoneTitle;
+
+  /// No description provided for @importExportDestinationsAllInvalidTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada por resolver todavía'**
+  String get importExportDestinationsAllInvalidTitle;
+
+  /// No description provided for @importExportDestinationsAllInvalidBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna de las {count} filas se pudo leer con el mapeo actual — revisa el paso anterior antes de seguir.'**
+  String importExportDestinationsAllInvalidBody(int count);
+
+  /// No description provided for @importExportDestinationsReviewMappingCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar mapeo'**
+  String get importExportDestinationsReviewMappingCta;
+
+  /// No description provided for @importExportMappingModeAutomatic.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get importExportMappingModeAutomatic;
+
+  /// No description provided for @importExportMappingModeManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Manual'**
+  String get importExportMappingModeManual;
+
+  /// No description provided for @importExportMappingModeAutoSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Así vamos a leer tu archivo'**
+  String get importExportMappingModeAutoSummaryTitle;
+
+  /// No description provided for @importExportMappingModeAutoConfirmCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar mapeo'**
+  String get importExportMappingModeAutoConfirmCta;
+
+  /// No description provided for @importExportMappingModeAutoIncompleteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Nos falta identificar fecha, monto o cuenta — cambia a Manual para mapearlos.'**
+  String get importExportMappingModeAutoIncompleteHint;
+
+  /// No description provided for @importExportDateFormatOptionIso.
+  ///
+  /// In es, this message translates to:
+  /// **'AAAA-MM-DD'**
+  String get importExportDateFormatOptionIso;
+
+  /// No description provided for @importExportDateFormatOptionDmySlash.
+  ///
+  /// In es, this message translates to:
+  /// **'DD/MM/AAAA'**
+  String get importExportDateFormatOptionDmySlash;
+
+  /// No description provided for @importExportDateFormatOptionDmyDash.
+  ///
+  /// In es, this message translates to:
+  /// **'DD-MM-AAAA'**
+  String get importExportDateFormatOptionDmyDash;
+
+  /// No description provided for @importExportDateFormatOptionDmyDot.
+  ///
+  /// In es, this message translates to:
+  /// **'DD.MM.AAAA'**
+  String get importExportDateFormatOptionDmyDot;
+
+  /// No description provided for @importExportDateFormatOptionMdySlash.
+  ///
+  /// In es, this message translates to:
+  /// **'MM/DD/AAAA'**
+  String get importExportDateFormatOptionMdySlash;
+
+  /// No description provided for @importExportDateFormatOptionMdyDash.
+  ///
+  /// In es, this message translates to:
+  /// **'MM-DD-AAAA'**
+  String get importExportDateFormatOptionMdyDash;
+
+  /// No description provided for @importExportDateFormatOptionMdyDot.
+  ///
+  /// In es, this message translates to:
+  /// **'MM.DD.AAAA'**
+  String get importExportDateFormatOptionMdyDot;
+
+  /// No description provided for @importExportDateFormatPreviewUnreadable.
+  ///
+  /// In es, this message translates to:
+  /// **'\"{value}\" no se pudo leer con este formato'**
+  String importExportDateFormatPreviewUnreadable(String value);
+
+  /// No description provided for @importExportTypeValuesResultIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como ingreso'**
+  String get importExportTypeValuesResultIncome;
+
+  /// No description provided for @importExportTypeValuesResultExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como gasto'**
+  String get importExportTypeValuesResultExpense;
+
+  /// No description provided for @importExportTypeValuesResultTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta fila se leería como transferencia'**
+  String get importExportTypeValuesResultTransfer;
+
+  /// No description provided for @importExportTypeValuesResultNoMatch.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos clasificar tu primera fila con estos valores'**
+  String get importExportTypeValuesResultNoMatch;
+
+  /// No description provided for @importExportTypeValuesIncomeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"ingreso\"'**
+  String get importExportTypeValuesIncomeLabel;
+
+  /// No description provided for @importExportTypeValuesExpenseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"gasto\"'**
+  String get importExportTypeValuesExpenseLabel;
+
+  /// No description provided for @importExportTypeValuesTransferLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor que significa \"transferencia\"'**
+  String get importExportTypeValuesTransferLabel;
+
+  /// No description provided for @importExportDestinationNotFound.
+  ///
+  /// In es, this message translates to:
+  /// **'No existe todavía en tu app'**
+  String get importExportDestinationNotFound;
+
+  /// No description provided for @importExportDestinationCreateNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear nueva'**
+  String get importExportDestinationCreateNew;
+
+  /// No description provided for @importExportDestinationMapExisting.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapear a existente'**
+  String get importExportDestinationMapExisting;
+
+  /// No description provided for @importExportDestinationsPickerEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tienes ninguna'**
+  String get importExportDestinationsPickerEmpty;
+
+  /// No description provided for @importExportDestinationsSectionAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get importExportDestinationsSectionAccounts;
+
+  /// No description provided for @importExportDestinationsSectionCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get importExportDestinationsSectionCategories;
+
+  /// No description provided for @importExportDestinationsSectionTags.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get importExportDestinationsSectionTags;
+
+  /// No description provided for @importExportDestinationsNewAccountsNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas que crees aquí empiezan en \$0 y tipo Otra — su saldo real se reconstruye con las transacciones que importes.'**
+  String get importExportDestinationsNewAccountsNote;
+
+  /// No description provided for @importExportStatRead.
+  ///
+  /// In es, this message translates to:
+  /// **'leídas'**
+  String get importExportStatRead;
+
+  /// No description provided for @importExportStatWillImport.
+  ///
+  /// In es, this message translates to:
+  /// **'a importar'**
+  String get importExportStatWillImport;
+
+  /// No description provided for @importExportStatDuplicates.
+  ///
+  /// In es, this message translates to:
+  /// **'repetidos'**
+  String get importExportStatDuplicates;
+
+  /// No description provided for @importExportStatErrors.
+  ///
+  /// In es, this message translates to:
+  /// **'inválidas'**
+  String get importExportStatErrors;
+
+  /// No description provided for @importExportOmitAllDuplicates.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir todos'**
+  String get importExportOmitAllDuplicates;
+
+  /// No description provided for @importExportIncludeAllDuplicates.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar todos'**
+  String get importExportIncludeAllDuplicates;
+
+  /// No description provided for @importExportDuplicateExact.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya está importada'**
+  String get importExportDuplicateExact;
+
+  /// No description provided for @importExportDuplicateProbable.
+  ///
+  /// In es, this message translates to:
+  /// **'Posible duplicado: mismo monto y fecha'**
+  String get importExportDuplicateProbable;
+
+  /// No description provided for @importExportInvalidRowsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver {n} filas con error'**
+  String importExportInvalidRowsCount(int n);
+
+  /// No description provided for @importExportRowNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Fila {n}'**
+  String importExportRowNumber(int n);
+
+  /// No description provided for @importExportIssueMissingAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta la cuenta'**
+  String get importExportIssueMissingAccount;
+
+  /// No description provided for @importExportIssueMissingDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta la fecha'**
+  String get importExportIssueMissingDate;
+
+  /// No description provided for @importExportIssueInvalidDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha no reconocida'**
+  String get importExportIssueInvalidDate;
+
+  /// No description provided for @importExportIssueMissingAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta el monto'**
+  String get importExportIssueMissingAmount;
+
+  /// No description provided for @importExportIssueInvalidAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto no reconocido'**
+  String get importExportIssueInvalidAmount;
+
+  /// No description provided for @importExportIssueInvalidType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo no reconocido'**
+  String get importExportIssueInvalidType;
+
+  /// No description provided for @importExportConfirmImportCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar importación'**
+  String get importExportConfirmImportCta;
+
+  /// No description provided for @importExportImportRowsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar {count} movimientos'**
+  String importExportImportRowsCta(int count);
+
+  /// No description provided for @importExportDuplicatesSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Posibles duplicados ({count})'**
+  String importExportDuplicatesSectionTitle(int count);
+
+  /// No description provided for @importExportSaveTemplateToggleLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar esta plantilla de mapeo'**
+  String get importExportSaveTemplateToggleLabel;
+
+  /// No description provided for @importExportSaveTemplateToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'La usarás con un toque la próxima vez que importes de este mismo origen.'**
+  String get importExportSaveTemplateToggleHint;
+
+  /// No description provided for @importExportSaveTemplateNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la plantilla'**
+  String get importExportSaveTemplateNameLabel;
+
+  /// No description provided for @importExportSaveTemplateNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. Bancolombia CSV'**
+  String get importExportSaveTemplateNameHint;
+
+  /// No description provided for @importExportSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importación completa'**
+  String get importExportSummaryTitle;
+
+  /// No description provided for @importExportSummarySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{fileName} se procesó y ya está disponible en tus movimientos.'**
+  String importExportSummarySubtitle(String fileName);
+
+  /// No description provided for @importExportSummaryImported.
+  ///
+  /// In es, this message translates to:
+  /// **'Importadas'**
+  String get importExportSummaryImported;
+
+  /// No description provided for @importExportSummarySkippedDuplicate.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitidas por duplicado'**
+  String get importExportSummarySkippedDuplicate;
+
+  /// No description provided for @importExportSummarySkippedError.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitidas por error'**
+  String get importExportSummarySkippedError;
+
+  /// No description provided for @importExportSummaryAccountsCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas creadas'**
+  String get importExportSummaryAccountsCreated;
+
+  /// No description provided for @importExportSummaryCategoriesCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías creadas'**
+  String get importExportSummaryCategoriesCreated;
+
+  /// No description provided for @importExportSummaryTagsCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas creadas'**
+  String get importExportSummaryTagsCreated;
+
+  /// No description provided for @importExportSummarySeeSkipped.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver omitidas'**
+  String get importExportSummarySeeSkipped;
+
+  /// No description provided for @importExportSummarySeeSkippedWithCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver {count} omitidas y por qué'**
+  String importExportSummarySeeSkippedWithCount(int count);
+
+  /// No description provided for @importExportSkippedSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que no se importó'**
+  String get importExportSkippedSheetTitle;
+
+  /// No description provided for @importExportSkippedDuplicateReason.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} por posible duplicado: mismo id, o mismo monto y fecha, que un movimiento que ya tenías.'**
+  String importExportSkippedDuplicateReason(int count);
+
+  /// No description provided for @importExportSkippedErrorReason.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} por un dato que no pudimos leer: fecha, monto o cuenta incompletos o inválidos en el archivo.'**
+  String importExportSkippedErrorReason(int count);
+
+  /// No description provided for @importExportBatchesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importaciones'**
+  String get importExportBatchesTitle;
+
+  /// No description provided for @importExportBatchesErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus importaciones'**
+  String get importExportBatchesErrorTitle;
+
+  /// No description provided for @importExportBatchesEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has importado nada'**
+  String get importExportBatchesEmptyTitle;
+
+  /// No description provided for @importExportBatchesEmptyBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando importes un archivo, aparecerá aquí.'**
+  String get importExportBatchesEmptyBody;
+
+  /// No description provided for @importExportUndoConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Deshacer esta importación?'**
+  String get importExportUndoConfirmTitle;
+
+  /// No description provided for @importExportUndoConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quitarán las {count} filas que trajo \"{file}\". Lo que sigas usando fuera de esta importación se conserva.'**
+  String importExportUndoConfirmBody(String file, int count);
+
+  /// No description provided for @importExportUndoConfirmCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer importación'**
+  String get importExportUndoConfirmCta;
+
+  /// No description provided for @importExportUndoConfirmKeepNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas y categorías que creó esta importación se conservan al deshacerla — solo se eliminan las transacciones que trajo.'**
+  String get importExportUndoConfirmKeepNote;
+
+  /// No description provided for @importExportRestorePickFileBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un archivo .billetudo.json para ver qué trae antes de restaurar nada.'**
+  String get importExportRestorePickFileBody;
+
+  /// No description provided for @importExportRestorePickFileCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir archivo'**
+  String get importExportRestorePickFileCta;
+
+  /// No description provided for @importExportRestoreSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia del {date}'**
+  String importExportRestoreSummaryTitle(String date);
+
+  /// No description provided for @importExportRestoreSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar copia'**
+  String get importExportRestoreSheetTitle;
+
+  /// No description provided for @importExportRestoreSheetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia del {date} · versión {version} · creada con Billetudo {appVersion}'**
+  String importExportRestoreSheetSubtitle(
+      String date, int version, String appVersion);
+
+  /// No description provided for @importExportRestoreRowCounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Trae {n} filas en total'**
+  String importExportRestoreRowCounts(int n);
+
+  /// No description provided for @importExportRestoreStatAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'cuentas'**
+  String get importExportRestoreStatAccounts;
+
+  /// No description provided for @importExportRestoreStatCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'categorías'**
+  String get importExportRestoreStatCategories;
+
+  /// No description provided for @importExportRestoreStatTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'movimientos'**
+  String get importExportRestoreStatTransactions;
+
+  /// No description provided for @importExportRestoreStatBudgets.
+  ///
+  /// In es, this message translates to:
+  /// **'presupuestos'**
+  String get importExportRestoreStatBudgets;
+
+  /// No description provided for @importExportRestoreStatGoals.
+  ///
+  /// In es, this message translates to:
+  /// **'metas'**
+  String get importExportRestoreStatGoals;
+
+  /// No description provided for @importExportRestoreStatDebts.
+  ///
+  /// In es, this message translates to:
+  /// **'deudas'**
+  String get importExportRestoreStatDebts;
+
+  /// No description provided for @importExportRestoreChoiceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué hacemos con tus datos actuales?'**
+  String get importExportRestoreChoiceLabel;
+
+  /// No description provided for @importExportRestoreChoiceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Fusionar combina por id: lo nuevo se crea, lo existente se actualiza. Reemplazar todo borra tus datos actuales (y los de la nube, si tienes sesión) y deja solo el contenido de la copia.'**
+  String get importExportRestoreChoiceHint;
+
+  /// No description provided for @importExportReplaceAllConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta acción no se puede deshacer'**
+  String get importExportReplaceAllConfirmTitle;
+
+  /// No description provided for @importExportReplaceAllConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas a reemplazar TODOS tus datos actuales por los de la copia del {date}. Si tienes sesión iniciada, esto también borra tus datos en la nube.'**
+  String importExportReplaceAllConfirmBody(String date);
+
+  /// No description provided for @importExportRestoreModeMerge.
+  ///
+  /// In es, this message translates to:
+  /// **'Fusionar'**
+  String get importExportRestoreModeMerge;
+
+  /// No description provided for @importExportRestoreModeMergeHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Combina con lo que ya tienes. No duplica si repites la restauración.'**
+  String get importExportRestoreModeMergeHint;
+
+  /// No description provided for @importExportRestoreModeReplace.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplazar todo'**
+  String get importExportRestoreModeReplace;
+
+  /// No description provided for @importExportRestoreCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar'**
+  String get importExportRestoreCta;
+
+  /// No description provided for @importExportRestoreModeReplaceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Borra tus datos locales y deja exactamente lo que trae la copia. Irreversible.'**
+  String get importExportRestoreModeReplaceHint;
+
+  /// No description provided for @importExportReplaceAllAck.
+  ///
+  /// In es, this message translates to:
+  /// **'Entiendo que esto borra mis datos actuales, incluida la nube si tengo sesión iniciada, y no se puede deshacer.'**
+  String get importExportReplaceAllAck;
+
+  /// No description provided for @importExportRestoreConfirmMergeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar y fusionar'**
+  String get importExportRestoreConfirmMergeCta;
+
+  /// No description provided for @importExportRestoreConfirmReplaceCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplazar todo'**
+  String get importExportRestoreConfirmReplaceCta;
+
+  /// No description provided for @importExportRestoreErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos validar este archivo'**
+  String get importExportRestoreErrorTitle;
+
+  /// No description provided for @importExportRestoreErrorBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede que no sea una copia de Billetudo o que sea de una versión más nueva. Tus datos en la app siguen intactos.'**
+  String get importExportRestoreErrorBody;
+
+  /// No description provided for @importExportRestoreExecutionErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos completar la restauración'**
+  String get importExportRestoreExecutionErrorTitle;
+
+  /// No description provided for @importExportRestoreExecutionErrorBody.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo era válido, pero algo falló a mitad de camino. La restauración se cancela por completo cuando eso pasa — tus datos actuales no se modificaron. Intenta de nuevo.'**
+  String get importExportRestoreExecutionErrorBody;
+
+  /// No description provided for @importExportRestoreDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restauración completa'**
+  String get importExportRestoreDoneTitle;
+
+  /// No description provided for @importExportRestoreCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Creadas'**
+  String get importExportRestoreCreated;
+
+  /// No description provided for @importExportRestoreUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizadas'**
+  String get importExportRestoreUpdated;
+
+  /// No description provided for @importExportRestoreSkipped.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitidas'**
+  String get importExportRestoreSkipped;
 
   /// No description provided for @reportsTabSummary.
   ///

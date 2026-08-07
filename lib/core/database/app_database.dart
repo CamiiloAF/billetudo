@@ -221,6 +221,13 @@ class Accounts extends Table with _SyncColumns {
   /// Which figure to highlight on a card ('debt'/'available', HU-04).
   /// Stored as text via textEnum for parity with Postgres.
   TextColumn get cardBalancePrimary => textEnum<CardBalanceView>().nullable()();
+
+  /// The import batch this account was created by, when it came from a CSV
+  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// (or predates the feature). Lets a whole import be reverted without
+  /// heuristics (HU-08).
+  TextColumn get importBatchId =>
+      text().nullable().references(ImportBatches, #id)();
 }
 
 /// Hierarchical categories (parentId points to another category = subcategory).
@@ -234,6 +241,13 @@ class Categories extends Table with _SyncColumns {
   TextColumn get icon => text().nullable()();
   TextColumn get color => text().nullable()();
   IntColumn get sortOrder => integer().clientDefault(() => 0)();
+
+  /// The import batch this category was created by, when it came from a CSV
+  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// (or predates the feature), including every `seed-*` catalog category.
+  /// Lets a whole import be reverted without heuristics (HU-08).
+  TextColumn get importBatchId =>
+      text().nullable().references(ImportBatches, #id)();
 }
 
 /// Transactions (income, expenses and transfers between accounts).
@@ -271,6 +285,14 @@ class Transactions extends Table with _SyncColumns {
   /// instead of being excluded by default. Always `false` for income/expense
   /// (unused there). See docs/plan-cuentas-tipos-y-transferencias-presupuestables.md §3.
   BoolColumn get countsInBudget => boolean().clientDefault(() => false)();
+
+  /// The import batch this transaction was created by, when it came from a
+  /// CSV import (docs/requirements/11-import-export.md). Null = created by
+  /// hand/voice/OCR/notification/scheduled. Lets a whole import be reverted
+  /// without the `source = imported` + time-window heuristic (which breaks
+  /// with two same-day imports), see HU-08.
+  TextColumn get importBatchId =>
+      text().nullable().references(ImportBatches, #id)();
 }
 
 /// User-named budgets with a configurable scope (accounts + categories via the
@@ -538,6 +560,40 @@ class GoalQuickAmounts extends Table with _SyncColumns {
 class Tags extends Table with _SyncColumns {
   TextColumn get name => text().withLength(min: 1, max: 60)();
   TextColumn get color => text().nullable()();
+
+  /// The import batch this row was created by, when it came from a CSV
+  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// (or predates the feature). Lets a whole import be reverted without
+  /// heuristics (HU-08).
+  TextColumn get importBatchId =>
+      text().nullable().references(ImportBatches, #id)();
+}
+
+/// One row per completed import (CSV, docs/requirements/11-import-export.md).
+/// Never deleted: it is the undo target for HU-08 ("revertir importación"),
+/// so its presence in the history must survive the revert itself —
+/// [revertedAt] marks that instead of removing the row.
+class ImportBatches extends Table with _SyncColumns {
+  /// Name of the imported file, so the batch is recognizable in the history.
+  TextColumn get fileName => text().withLength(min: 1, max: 255)();
+
+  /// Mapping template used for this import (HU-06). Null = no template
+  /// (one-off manual mapping).
+  TextColumn get templateName => text().nullable()();
+
+  /// When the import ran. Distinct from `createdAt` only for clarity of
+  /// intent (the row itself is created at that same moment).
+  DateTimeColumn get importedAt => dateTime()();
+
+  /// Rows actually created by this import.
+  IntColumn get rowsImported => integer()();
+
+  /// Rows skipped (duplicate or error), so the summary survives the session.
+  IntColumn get rowsSkipped => integer()();
+
+  /// Set when the user reverts this batch (HU-08). Null = still in effect.
+  /// The batch row itself is never deleted, so reverting can be audited.
+  DateTimeColumn get revertedAt => dateTime().nullable()();
 }
 
 /// N:N relation between transactions and tags.
@@ -767,6 +823,7 @@ class TutorialViews extends Table with _SyncColumns {
     BudgetCategories,
     BudgetPeriodOverrides,
     AppSettings,
+    ImportBatches,
     TutorialViews,
   ],
 )
@@ -774,7 +831,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1314,6 +1371,28 @@ class AppDatabase extends _$AppDatabase {
               'UPDATE app_settings SET show_help_on_section_entry = 1 '
               'WHERE show_help_on_section_entry IS NULL',
             );
+          }
+
+          // v24 -> v25: Import/Export (docs/requirements/11-import-export.md).
+          // New `ImportBatches` table (one row per completed CSV import,
+          // never deleted — `revertedAt` marks a revert instead, HU-08) plus
+          // a nullable `importBatchId` on every table an import can create
+          // rows in (`Transactions`, `Accounts`, `Categories`, `Tags`), so a
+          // batch can be reverted by id without the
+          // `source = imported` + time-window heuristic (breaks with two
+          // same-day imports, and doesn't cover accounts/categories, which
+          // have no `source`).
+          //
+          // `createTable` is safe for the brand new table (`CREATE TABLE IF
+          // NOT EXISTS`). No `addColumn` for `import_batch_id` on the four
+          // existing tables — see the note on `from < 12` above: they are
+          // PowerSync-managed views, and `powerSyncSchema`
+          // (`powersync_schema.dart`) already declares the new column, so
+          // PowerSync recreates each view with it present the next time the
+          // app opens, before Drift's migration runs. Nullable column, no
+          // backfill needed.
+          if (from < 25) {
+            await m.createTable(importBatches);
           }
         },
       );

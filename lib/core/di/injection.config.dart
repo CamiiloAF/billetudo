@@ -414,6 +414,100 @@ import 'package:billetudo/features/home/domain/usecases/watch_recent_transaction
     as _i188;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
     as _i199;
+import 'package:billetudo/features/import_export/data/datasources/backup_json_datasource.dart'
+    as _i716;
+import 'package:billetudo/features/import_export/data/datasources/backup_status_local_datasource.dart'
+    as _i525;
+import 'package:billetudo/features/import_export/data/datasources/csv_parser_datasource.dart'
+    as _i997;
+import 'package:billetudo/features/import_export/data/datasources/csv_writer_datasource.dart'
+    as _i49;
+import 'package:billetudo/features/import_export/data/datasources/export_local_datasource.dart'
+    as _i505;
+import 'package:billetudo/features/import_export/data/datasources/import_batches_local_datasource.dart'
+    as _i545;
+import 'package:billetudo/features/import_export/data/datasources/import_destinations_local_datasource.dart'
+    as _i799;
+import 'package:billetudo/features/import_export/data/datasources/mapping_templates_local_datasource.dart'
+    as _i476;
+import 'package:billetudo/features/import_export/data/datasources/zip_packager_datasource.dart'
+    as _i672;
+import 'package:billetudo/features/import_export/data/repositories/backup_repository_impl.dart'
+    as _i393;
+import 'package:billetudo/features/import_export/data/repositories/backup_status_repository_impl.dart'
+    as _i220;
+import 'package:billetudo/features/import_export/data/repositories/export_repository_impl.dart'
+    as _i548;
+import 'package:billetudo/features/import_export/data/repositories/import_batch_repository_impl.dart'
+    as _i27;
+import 'package:billetudo/features/import_export/data/repositories/import_repository_impl.dart'
+    as _i719;
+import 'package:billetudo/features/import_export/data/repositories/mapping_template_repository_impl.dart'
+    as _i1025;
+import 'package:billetudo/features/import_export/domain/repositories/backup_repository.dart'
+    as _i418;
+import 'package:billetudo/features/import_export/domain/repositories/backup_status_repository.dart'
+    as _i24;
+import 'package:billetudo/features/import_export/domain/repositories/export_repository.dart'
+    as _i742;
+import 'package:billetudo/features/import_export/domain/repositories/import_batch_repository.dart'
+    as _i108;
+import 'package:billetudo/features/import_export/domain/repositories/import_repository.dart'
+    as _i447;
+import 'package:billetudo/features/import_export/domain/repositories/mapping_template_repository.dart'
+    as _i867;
+import 'package:billetudo/features/import_export/domain/usecases/autodetect_column_mapping.dart'
+    as _i505;
+import 'package:billetudo/features/import_export/domain/usecases/confirm_import.dart'
+    as _i601;
+import 'package:billetudo/features/import_export/domain/usecases/create_full_backup.dart'
+    as _i237;
+import 'package:billetudo/features/import_export/domain/usecases/export_accounts_categories_csv.dart'
+    as _i783;
+import 'package:billetudo/features/import_export/domain/usecases/export_transactions_csv.dart'
+    as _i527;
+import 'package:billetudo/features/import_export/domain/usecases/get_existing_accounts_for_import.dart'
+    as _i788;
+import 'package:billetudo/features/import_export/domain/usecases/get_existing_root_categories_for_import.dart'
+    as _i444;
+import 'package:billetudo/features/import_export/domain/usecases/get_existing_subcategories_for_import.dart'
+    as _i812;
+import 'package:billetudo/features/import_export/domain/usecases/get_existing_tags_for_import.dart'
+    as _i166;
+import 'package:billetudo/features/import_export/domain/usecases/get_last_backup_saved_at.dart'
+    as _i925;
+import 'package:billetudo/features/import_export/domain/usecases/get_mapping_templates.dart'
+    as _i542;
+import 'package:billetudo/features/import_export/domain/usecases/mark_backup_saved.dart'
+    as _i936;
+import 'package:billetudo/features/import_export/domain/usecases/parse_backup_header.dart'
+    as _i639;
+import 'package:billetudo/features/import_export/domain/usecases/parse_csv_headers.dart'
+    as _i894;
+import 'package:billetudo/features/import_export/domain/usecases/preview_import.dart'
+    as _i917;
+import 'package:billetudo/features/import_export/domain/usecases/restore_backup.dart'
+    as _i881;
+import 'package:billetudo/features/import_export/domain/usecases/save_mapping_template.dart'
+    as _i200;
+import 'package:billetudo/features/import_export/domain/usecases/undo_import_batch.dart'
+    as _i367;
+import 'package:billetudo/features/import_export/domain/usecases/watch_import_batches.dart'
+    as _i813;
+import 'package:billetudo/features/import_export/domain/usecases/zip_export_files.dart'
+    as _i480;
+import 'package:billetudo/features/import_export/presentation/cubit/export_cubit.dart'
+    as _i325;
+import 'package:billetudo/features/import_export/presentation/cubit/import_batches_cubit.dart'
+    as _i717;
+import 'package:billetudo/features/import_export/presentation/cubit/import_export_hub_cubit.dart'
+    as _i722;
+import 'package:billetudo/features/import_export/presentation/cubit/import_flow_cubit.dart'
+    as _i465;
+import 'package:billetudo/features/import_export/presentation/cubit/restore_cubit.dart'
+    as _i641;
+import 'package:billetudo/features/import_export/presentation/cubit/save_copy_cubit.dart'
+    as _i401;
 import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
     as _i522;
 import 'package:billetudo/features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart'
@@ -552,6 +646,8 @@ import 'package:billetudo/features/transactions/domain/usecases/delete_transacti
     as _i612;
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
     as _i604;
+import 'package:billetudo/features/transactions/domain/usecases/has_any_transaction.dart'
+    as _i296;
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart'
     as _i177;
 import 'package:billetudo/features/transactions/domain/usecases/set_transaction_tags.dart'
@@ -623,6 +719,8 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final registerModule = _$RegisterModule();
+    gh.factory<_i505.AutodetectColumnMapping>(
+        () => const _i505.AutodetectColumnMapping());
     gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
         () => const _i394.ResolveDefaultCurrencyForLocale());
     gh.factory<_i450.ProjectUpcomingOccurrences>(
@@ -666,6 +764,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i903.GoalProgressCalculator());
     gh.lazySingleton<_i881.GoalProjectionCalculator>(
         () => const _i881.GoalProjectionCalculator());
+    gh.lazySingleton<_i997.CsvParserDatasource>(
+        () => const _i997.CsvParserDatasource());
+    gh.lazySingleton<_i49.CsvWriterDatasource>(
+        () => const _i49.CsvWriterDatasource());
+    gh.lazySingleton<_i672.ZipPackagerDatasource>(
+        () => const _i672.ZipPackagerDatasource());
     gh.lazySingleton<_i385.ChartAccessGuard>(
         () => const _i385.ChartAccessGuard());
     gh.lazySingleton<_i323.ResolveEffectiveDateRange>(
@@ -688,15 +792,30 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i525.BackupStatusLocalDatasource>(() =>
+        _i525.BackupStatusLocalDatasource(gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
+        _i476.MappingTemplatesLocalDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
         _i226.SeedCategoryOwnershipRemoteDatasource(
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i867.MappingTemplateRepository>(
+        () => _i1025.MappingTemplateRepositoryImpl(
+              gh<_i476.MappingTemplatesLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i190.SyncOperationUploader>(
         () => _i257.SupabaseOperationUploader(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i766.SyncStorageDirectory>(
         () => const _i766.AppDocumentsSyncStorageDirectory());
+    gh.lazySingleton<_i24.BackupStatusRepository>(
+        () => _i220.BackupStatusRepositoryImpl(
+              gh<_i525.BackupStatusLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i407.ThemeModeCubit>(
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
@@ -728,6 +847,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i60.GoalQuickAmountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i822.GoalsLocalDatasource>(
         () => _i822.GoalsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i716.BackupJsonDatasource>(
+        () => _i716.BackupJsonDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i505.ExportLocalDatasource>(
+        () => _i505.ExportLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i545.ImportBatchesLocalDatasource>(
+        () => _i545.ImportBatchesLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i799.ImportDestinationsLocalDatasource>(
+        () => _i799.ImportDestinationsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i584.ReportsLocalDatasource>(
         () => _i584.ReportsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i276.ScheduledPaymentTagsLocalDatasource>(() =>
@@ -784,8 +911,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i77.WatchSyncLog(gh<_i666.SyncLogRepository>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
+    gh.lazySingleton<_i418.BackupRepository>(
+        () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
     gh.lazySingleton<_i509.NoteSuggestionsRepository>(
         () => _i670.NoteSuggestionsRepositoryImpl(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i447.ImportRepository>(() => _i719.ImportRepositoryImpl(
+          gh<_i997.CsvParserDatasource>(),
+          gh<_i799.ImportDestinationsLocalDatasource>(),
+          gh<_i545.ImportBatchesLocalDatasource>(),
+        ));
     gh.lazySingleton<_i776.ReportsRepository>(() => _i324.ReportsRepositoryImpl(
           gh<_i584.ReportsLocalDatasource>(),
           gh<_i323.ResolveEffectiveDateRange>(),
@@ -799,6 +933,10 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
+    gh.factory<_i542.GetMappingTemplates>(
+        () => _i542.GetMappingTemplates(gh<_i867.MappingTemplateRepository>()));
+    gh.factory<_i200.SaveMappingTemplate>(
+        () => _i200.SaveMappingTemplate(gh<_i867.MappingTemplateRepository>()));
     gh.factory<_i137.WatchCashflowReport>(
         () => _i137.WatchCashflowReport(gh<_i776.ReportsRepository>()));
     gh.factory<_i645.WatchCategoryBreakdownReport>(() =>
@@ -861,6 +999,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i136.SyncRetryWatchdog(gh<_i390.SyncRetryLedgerStore>()));
     gh.factory<_i504.SnoozeSheetCubit>(
         () => _i504.SnoozeSheetCubit(gh<_i1009.SnoozeScheduledOccurrence>()));
+    gh.lazySingleton<_i108.ImportBatchRepository>(
+        () => _i27.ImportBatchRepositoryImpl(
+              gh<_i545.ImportBatchesLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.factory<_i824.ScheduledPaymentTagPickerCubit>(
         () => _i824.ScheduledPaymentTagPickerCubit(
               gh<_i889.GetTags>(),
@@ -886,6 +1029,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i666.SyncLogRepository>(),
           gh<_i474.CrashReporter>(),
           gh<_i136.SyncRetryWatchdog>(),
+        ));
+    gh.lazySingleton<_i742.ExportRepository>(() => _i548.ExportRepositoryImpl(
+          gh<_i505.ExportLocalDatasource>(),
+          gh<_i49.CsvWriterDatasource>(),
+          gh<_i672.ZipPackagerDatasource>(),
         ));
     gh.factory<_i793.PendingOccurrencesCubit>(
         () => _i793.PendingOccurrencesCubit(
@@ -949,8 +1097,26 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i130.SyncStatusSource>(),
               gh<_i400.SyncQuarantineRepository>(),
             ));
+    gh.factory<_i925.GetLastBackupSavedAt>(
+        () => _i925.GetLastBackupSavedAt(gh<_i24.BackupStatusRepository>()));
+    gh.factory<_i936.MarkBackupSaved>(
+        () => _i936.MarkBackupSaved(gh<_i24.BackupStatusRepository>()));
     gh.lazySingleton<_i487.AppSettingsRepository>(() =>
         _i733.AppSettingsRepositoryImpl(gh<_i95.AppSettingsLocalDatasource>()));
+    gh.factory<_i601.ConfirmImport>(
+        () => _i601.ConfirmImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i788.GetExistingAccountsForImport>(
+        () => _i788.GetExistingAccountsForImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i444.GetExistingRootCategoriesForImport>(() =>
+        _i444.GetExistingRootCategoriesForImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i812.GetExistingSubcategoriesForImport>(() =>
+        _i812.GetExistingSubcategoriesForImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i166.GetExistingTagsForImport>(
+        () => _i166.GetExistingTagsForImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i894.ParseCsvHeaders>(
+        () => _i894.ParseCsvHeaders(gh<_i447.ImportRepository>()));
+    gh.factory<_i917.PreviewImport>(
+        () => _i917.PreviewImport(gh<_i447.ImportRepository>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i643.SetFeaturedBudget>(
@@ -994,6 +1160,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i696.GoalRepository>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i237.CreateFullBackup>(
+        () => _i237.CreateFullBackup(gh<_i418.BackupRepository>()));
+    gh.factory<_i639.ParseBackupHeader>(
+        () => _i639.ParseBackupHeader(gh<_i418.BackupRepository>()));
     gh.factory<_i1061.GetNoteSuggestions>(
         () => _i1061.GetNoteSuggestions(gh<_i509.NoteSuggestionsRepository>()));
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
@@ -1030,11 +1200,21 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i747.GenerateDueScheduledPayments>(),
               gh<_i274.GetFinishedScheduledPayments>(),
             ));
+    gh.factory<_i783.ExportAccountsCategoriesCsv>(
+        () => _i783.ExportAccountsCategoriesCsv(gh<_i742.ExportRepository>()));
+    gh.factory<_i527.ExportTransactionsCsv>(
+        () => _i527.ExportTransactionsCsv(gh<_i742.ExportRepository>()));
+    gh.factory<_i480.ZipExportFiles>(
+        () => _i480.ZipExportFiles(gh<_i742.ExportRepository>()));
     gh.factory<_i141.ParentCategoryPickerCubit>(
         () => _i141.ParentCategoryPickerCubit(
               gh<_i172.WatchParentCandidates>(),
               gh<_i722.WatchCategories>(),
             ));
+    gh.factory<_i367.UndoImportBatch>(
+        () => _i367.UndoImportBatch(gh<_i108.ImportBatchRepository>()));
+    gh.factory<_i813.WatchImportBatches>(
+        () => _i813.WatchImportBatches(gh<_i108.ImportBatchRepository>()));
     gh.factory<_i696.SyncStatusCubit>(() => _i696.SyncStatusCubit(
           gh<_i773.WatchSyncStatusDetails>(),
           gh<_i239.WatchQuarantinedOperations>(),
@@ -1117,6 +1297,15 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i966.CashflowCubit>(
         () => _i966.CashflowCubit(gh<_i137.WatchCashflowReport>()));
+    gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
+          gh<_i418.BackupRepository>(),
+          gh<_i639.ParseBackupHeader>(),
+        ));
+    gh.factory<_i325.ExportCubit>(() => _i325.ExportCubit(
+          gh<_i527.ExportTransactionsCsv>(),
+          gh<_i783.ExportAccountsCategoriesCsv>(),
+          gh<_i480.ZipExportFiles>(),
+        ));
     gh.factory<_i498.DeleteAccount>(
         () => _i498.DeleteAccount(gh<_i913.AuthRepository>()));
     gh.factory<_i916.MergeLocalData>(
@@ -1153,6 +1342,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.CreateTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i612.DeleteTransaction>(
         () => _i612.DeleteTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i296.HasAnyTransaction>(
+        () => _i296.HasAnyTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i177.RestoreTransaction>(
         () => _i177.RestoreTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i460.SetTransactionTags>(
@@ -1191,10 +1382,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1047.WithdrawFromGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
+    gh.factory<_i641.RestoreCubit>(() => _i641.RestoreCubit(
+          gh<_i639.ParseBackupHeader>(),
+          gh<_i881.RestoreBackup>(),
+        ));
     gh.factory<_i522.CompleteOnboarding>(
         () => _i522.CompleteOnboarding(gh<_i528.SetOnboardingCompleted>()));
     gh.factory<_i875.GoalLinkCubit>(
         () => _i875.GoalLinkCubit(gh<_i933.LinkTransactionToGoal>()));
+    gh.factory<_i717.ImportBatchesCubit>(() => _i717.ImportBatchesCubit(
+          gh<_i813.WatchImportBatches>(),
+          gh<_i367.UndoImportBatch>(),
+        ));
     gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
           gh<_i526.CreateBudget>(),
           gh<_i857.UpdateBudget>(),
@@ -1202,12 +1401,33 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i722.WatchCategories>(),
           gh<_i795.BudgetCategoryScopeResolver>(),
         ));
+    gh.factory<_i465.ImportFlowCubit>(() => _i465.ImportFlowCubit(
+          gh<_i894.ParseCsvHeaders>(),
+          gh<_i505.AutodetectColumnMapping>(),
+          gh<_i542.GetMappingTemplates>(),
+          gh<_i917.PreviewImport>(),
+          gh<_i601.ConfirmImport>(),
+          gh<_i200.SaveMappingTemplate>(),
+          gh<_i788.GetExistingAccountsForImport>(),
+          gh<_i444.GetExistingRootCategoriesForImport>(),
+          gh<_i812.GetExistingSubcategoriesForImport>(),
+          gh<_i166.GetExistingTagsForImport>(),
+        ));
     gh.factory<_i143.GoalMovementDetailCubit>(
         () => _i143.GoalMovementDetailCubit(
               gh<_i34.GetGoalMovementAccounts>(),
               gh<_i525.RemoveGoalMovement>(),
               gh<_i612.DeleteTransaction>(),
             ));
+    gh.factory<_i722.ImportExportHubCubit>(() => _i722.ImportExportHubCubit(
+          gh<_i925.GetLastBackupSavedAt>(),
+          gh<_i813.WatchImportBatches>(),
+          gh<_i296.HasAnyTransaction>(),
+        ));
+    gh.factory<_i401.SaveCopyCubit>(() => _i401.SaveCopyCubit(
+          gh<_i237.CreateFullBackup>(),
+          gh<_i936.MarkBackupSaved>(),
+        ));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
