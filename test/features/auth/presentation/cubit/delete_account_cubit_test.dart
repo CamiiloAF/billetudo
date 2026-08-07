@@ -3,7 +3,7 @@ import 'package:billetudo/features/auth/domain/entities/delete_account_scope.dar
 import 'package:billetudo/features/auth/domain/entities/local_data_choice.dart';
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart';
 import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart';
-import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
+import 'package:billetudo/features/auth/domain/usecases/wipe_local_data_after_deletion.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -12,19 +12,19 @@ import 'package:mocktail/mocktail.dart';
 
 class MockDeleteAccount extends Mock implements DeleteAccount {}
 
-class MockWipeLocalData extends Mock implements WipeLocalData {}
+class MockWipeLocalDataAfterDeletion extends Mock
+    implements WipeLocalDataAfterDeletion {}
 
-class MockGetDeleteAccountScope extends Mock
-    implements GetDeleteAccountScope {}
+class MockGetDeleteAccountScope extends Mock implements GetDeleteAccountScope {}
 
 void main() {
   late MockDeleteAccount deleteAccount;
-  late MockWipeLocalData wipeLocalData;
+  late MockWipeLocalDataAfterDeletion wipeLocalData;
   late MockGetDeleteAccountScope getDeleteAccountScope;
 
   setUp(() {
     deleteAccount = MockDeleteAccount();
-    wipeLocalData = MockWipeLocalData();
+    wipeLocalData = MockWipeLocalDataAfterDeletion();
     getDeleteAccountScope = MockGetDeleteAccountScope();
     when(() => getDeleteAccountScope())
         .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal);

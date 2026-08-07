@@ -5,7 +5,7 @@ import '../../../../core/error/failure.dart';
 import '../../domain/entities/local_data_choice.dart';
 import '../../domain/usecases/delete_account.dart';
 import '../../domain/usecases/get_delete_account_scope.dart';
-import '../../domain/usecases/wipe_local_data.dart';
+import '../../domain/usecases/wipe_local_data_after_deletion.dart';
 import 'delete_account_state.dart';
 
 /// Drives the 3-step "Eliminar cuenta" flow (HU-07): irreversible cloud
@@ -18,12 +18,12 @@ import 'delete_account_state.dart';
 class DeleteAccountCubit extends Cubit<DeleteAccountState> {
   DeleteAccountCubit(
     this._deleteAccount,
-    this._wipeLocalData,
+    this._wipeLocalDataAfterDeletion,
     this._getDeleteAccountScope,
   ) : super(const DeleteAccountState());
 
   final DeleteAccount _deleteAccount;
-  final WipeLocalData _wipeLocalData;
+  final WipeLocalDataAfterDeletion _wipeLocalDataAfterDeletion;
   final GetDeleteAccountScope _getDeleteAccountScope;
 
   /// Resolves [DeleteAccountState.scope]. The caller (`DeleteAccountFlow`)
@@ -96,7 +96,7 @@ class DeleteAccountCubit extends Cubit<DeleteAccountState> {
     }
 
     emit(state.copyWith(status: DeleteAccountStatus.loading));
-    final result = await _wipeLocalData();
+    final result = await _wipeLocalDataAfterDeletion();
     if (isClosed) {
       return;
     }

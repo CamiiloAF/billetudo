@@ -46,8 +46,9 @@ import 'wipe_local_data.dart';
 /// Supabase, decisión #12 in `docs/requirements/05-auth-sync.md`) the sign-out
 /// and wipe still succeeded, and the reset latch means the next launch seeds
 /// again anyway. We only log the failure via [CrashReporter], mirroring how
-/// `bootstrap.dart` treats a seed failure as non-fatal. Only HU-06's wipe path
-/// re-seeds; account deletion (HU-07) is out of scope and doesn't pass here.
+/// `bootstrap.dart` treats a seed failure as non-fatal. Account deletion
+/// (HU-07) applies the same rule via its own
+/// `WipeLocalDataAfterDeletion` use case, not this one.
 @injectable
 class SignOutWithLocalDataChoice {
   const SignOutWithLocalDataChoice(

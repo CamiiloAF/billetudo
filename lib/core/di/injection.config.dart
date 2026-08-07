@@ -184,6 +184,8 @@ import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart'
     as _i716;
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart'
     as _i537;
+import 'package:billetudo/features/auth/domain/usecases/wipe_local_data_after_deletion.dart'
+    as _i633;
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart'
     as _i629;
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart'
@@ -1217,6 +1219,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i525.RemoveGoalMovement>(),
               gh<_i612.DeleteTransaction>(),
             ));
+    gh.factory<_i633.WipeLocalDataAfterDeletion>(
+        () => _i633.WipeLocalDataAfterDeletion(
+              gh<_i537.WipeLocalData>(),
+              gh<_i693.SeedDefaultCategories>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
@@ -1246,6 +1254,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
+        ));
+    gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
+          gh<_i498.DeleteAccount>(),
+          gh<_i633.WipeLocalDataAfterDeletion>(),
+          gh<_i186.GetDeleteAccountScope>(),
         ));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
@@ -1320,11 +1333,6 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i9.OnboardingFlowCubit>(
         () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
-    gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
-          gh<_i498.DeleteAccount>(),
-          gh<_i537.WipeLocalData>(),
-          gh<_i186.GetDeleteAccountScope>(),
-        ));
     gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
           gh<_i1003.WatchDebtDetail>(),
           gh<_i255.DebtInterestCalculator>(),
