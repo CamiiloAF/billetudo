@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:billetudo/core/database/app_database.dart';
+import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/features/import_export/data/datasources/backup_json_datasource.dart';
 import 'package:billetudo/features/import_export/domain/entities/cancellation_token.dart';
 import 'package:billetudo/features/import_export/domain/entities/restore_mode.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -310,6 +311,136 @@ void main() {
       expect(result.isLeft(), isTrue);
       final accounts = await targetDb.select(targetDb.accounts).get();
       expect(accounts, isEmpty);
+    });
+  });
+
+  group('restore — HU-04, contra una base real respaldada por PowerSync', () {
+    // Regression: every other test in this file uses `AppDatabase(
+    // NativeDatabase.memory())` — plain SQLite, real tables. Production
+    // opens `AppDatabase` on top of a `PowerSyncDatabase` connection
+    // instead (decision #6, `05-auth-sync.md`): every synced table there is
+    // actually a VIEW with `INSTEAD OF` triggers, not a real table. SQLite
+    // refuses to run an UPSERT (`INSERT ... ON CONFLICT DO UPDATE`, what
+    // `insertOnConflictUpdate` generates) against a view — "cannot UPSERT a
+    // view" — a restriction plain-SQLite tests can never see. This caused a
+    // 100%-reproducible failure on every real restore, in both modes, that
+    // 19 passing tests above never caught. `_insertRow` now uses
+    // `InsertMode.insertOrReplace` (the older, trigger-compatible syntax)
+    // instead — these tests open a real `PowerSyncDatabase` to prove it.
+    late Directory powerSyncTempDir;
+
+    setUpAll(() {
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    });
+
+    setUp(() {
+      powerSyncTempDir = Directory.systemTemp.createTempSync('billetudo_ps_backup_test');
+    });
+
+    tearDown(() {
+      if (powerSyncTempDir.existsSync()) {
+        powerSyncTempDir.deleteSync(recursive: true);
+      }
+    });
+
+    Future<AppDatabase> openPowerSyncBackedDb(String fileName) async {
+      final powerSyncDb = await openPowerSyncDatabase(
+        path: p.join(powerSyncTempDir.path, fileName),
+      );
+      return AppDatabase(driftConnection(powerSyncDb));
+    }
+
+    test(
+        'modo reemplazar todo: cuenta + transacción se restauran en una base '
+        'vacía sin lanzar "cannot UPSERT a view"', () async {
+      final realSourceDb = await openPowerSyncBackedDb('source.sqlite');
+      final realSourceDatasource = BackupJsonDatasource(realSourceDb);
+      addTearDown(realSourceDb.close);
+
+      const accountId = 'acc-1';
+      const categoryId = 'cat-1';
+      await realSourceDb.into(realSourceDb.accounts).insert(
+            AccountsCompanion.insert(
+              id: const Value(accountId),
+              name: 'Nequi',
+              type: AccountType.cash,
+              currency: 'COP',
+            ),
+          );
+      await realSourceDb.into(realSourceDb.categories).insert(
+            CategoriesCompanion.insert(
+              id: const Value(categoryId),
+              name: 'Comida y bebidas',
+              kind: CategoryKind.expense,
+            ),
+          );
+      await realSourceDb.into(realSourceDb.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              categoryId: const Value(categoryId),
+              amountMinor: 5000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 1, 1),
+            ),
+          );
+      final path = p.join(powerSyncTempDir.path, 'copia.billetudo.json');
+      await realSourceDatasource.createFullBackup(path);
+
+      final realTargetDb = await openPowerSyncBackedDb('target.sqlite');
+      final realTargetDatasource = BackupJsonDatasource(realTargetDb);
+      addTearDown(realTargetDb.close);
+
+      final result = await realTargetDatasource.restore(path, mode: RestoreMode.replaceAll);
+
+      expect(result.isRight(), isTrue, reason: '${result.getLeft().toNullable()}');
+      final accounts = await realTargetDb.select(realTargetDb.accounts).get();
+      final categories = await realTargetDb.select(realTargetDb.categories).get();
+      final transactions = await realTargetDb.select(realTargetDb.transactions).get();
+      expect(accounts, hasLength(1));
+      expect(categories, hasLength(1));
+      expect(transactions, hasLength(1));
+    });
+
+    test(
+        'modo fusionar: una fila existente se actualiza sin lanzar '
+        '"cannot UPSERT a view"', () async {
+      const accountId = 'acc-1';
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      final realTargetDb = await openPowerSyncBackedDb('target.sqlite');
+      final realTargetDatasource = BackupJsonDatasource(realTargetDb);
+      addTearDown(realTargetDb.close);
+      await realTargetDb.into(realTargetDb.accounts).insert(
+            AccountsCompanion.insert(
+              id: const Value(accountId),
+              name: 'Nombre viejo',
+              type: AccountType.cash,
+              currency: 'COP',
+              updatedAt: Value(now),
+            ),
+          );
+
+      final realSourceDb = await openPowerSyncBackedDb('source.sqlite');
+      final realSourceDatasource = BackupJsonDatasource(realSourceDb);
+      addTearDown(realSourceDb.close);
+      await realSourceDb.into(realSourceDb.accounts).insert(
+            AccountsCompanion.insert(
+              id: const Value(accountId),
+              name: 'Nombre nuevo',
+              type: AccountType.cash,
+              currency: 'COP',
+              updatedAt: Value(now + 10000),
+            ),
+          );
+      final path = p.join(powerSyncTempDir.path, 'copia.billetudo.json');
+      await realSourceDatasource.createFullBackup(path);
+
+      final result = await realTargetDatasource.restore(path, mode: RestoreMode.merge);
+
+      expect(result.isRight(), isTrue, reason: '${result.getLeft().toNullable()}');
+      final accounts = await realTargetDb.select(realTargetDb.accounts).get();
+      expect(accounts.single.name, 'Nombre nuevo');
     });
   });
 }

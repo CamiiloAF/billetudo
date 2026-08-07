@@ -259,71 +259,71 @@ class BackupJsonDatasource {
       case 'accounts':
         await _db
             .into(_db.accounts)
-            .insertOnConflictUpdate(db.Account.fromJson(json));
+            .insert(db.Account.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'categories':
         await _db
             .into(_db.categories)
-            .insertOnConflictUpdate(db.Category.fromJson(json));
+            .insert(db.Category.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'transactions':
         await _db
             .into(_db.transactions)
-            .insertOnConflictUpdate(db.Transaction.fromJson(json));
+            .insert(db.Transaction.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'budgets':
-        await _db.into(_db.budgets).insertOnConflictUpdate(db.Budget.fromJson(json));
+        await _db.into(_db.budgets).insert(db.Budget.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'goals':
-        await _db.into(_db.goals).insertOnConflictUpdate(db.Goal.fromJson(json));
+        await _db.into(_db.goals).insert(db.Goal.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'goalContributions':
         await _db
             .into(_db.goalContributions)
-            .insertOnConflictUpdate(db.GoalContribution.fromJson(json));
+            .insert(db.GoalContribution.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'goalQuickAmounts':
         await _db
             .into(_db.goalQuickAmounts)
-            .insertOnConflictUpdate(db.GoalQuickAmount.fromJson(json));
+            .insert(db.GoalQuickAmount.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'debts':
-        await _db.into(_db.debts).insertOnConflictUpdate(db.Debt.fromJson(json));
+        await _db.into(_db.debts).insert(db.Debt.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'debtEntries':
         await _db
             .into(_db.debtEntries)
-            .insertOnConflictUpdate(db.DebtEntry.fromJson(json));
+            .insert(db.DebtEntry.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'scheduledPayments':
         await _db
             .into(_db.scheduledPayments)
-            .insertOnConflictUpdate(db.ScheduledPayment.fromJson(json));
+            .insert(db.ScheduledPayment.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'tags':
-        await _db.into(_db.tags).insertOnConflictUpdate(db.Tag.fromJson(json));
+        await _db.into(_db.tags).insert(db.Tag.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'transactionTags':
         await _db
             .into(_db.transactionTags)
-            .insertOnConflictUpdate(db.TransactionTag.fromJson(json));
+            .insert(db.TransactionTag.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'scheduledPaymentTags':
         await _db
             .into(_db.scheduledPaymentTags)
-            .insertOnConflictUpdate(db.ScheduledPaymentTag.fromJson(json));
+            .insert(db.ScheduledPaymentTag.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'scheduledPaymentOccurrences':
         await _db
             .into(_db.scheduledPaymentOccurrences)
-            .insertOnConflictUpdate(db.ScheduledPaymentOccurrence.fromJson(json));
+            .insert(db.ScheduledPaymentOccurrence.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'budgetAccounts':
         await _db
             .into(_db.budgetAccounts)
-            .insertOnConflictUpdate(db.BudgetAccount.fromJson(json));
+            .insert(db.BudgetAccount.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'budgetCategories':
         await _db
             .into(_db.budgetCategories)
-            .insertOnConflictUpdate(db.BudgetCategory.fromJson(json));
+            .insert(db.BudgetCategory.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'budgetPeriodOverrides':
         await _db
             .into(_db.budgetPeriodOverrides)
-            .insertOnConflictUpdate(db.BudgetPeriodOverrideRow.fromJson(json));
+            .insert(db.BudgetPeriodOverrideRow.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'appSettings':
         await _db
             .into(_db.appSettings)
-            .insertOnConflictUpdate(db.AppSetting.fromJson(json));
+            .insert(db.AppSetting.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'importBatches':
         await _db
             .into(_db.importBatches)
-            .insertOnConflictUpdate(db.ImportBatche.fromJson(json));
+            .insert(db.ImportBatche.fromJson(json), mode: InsertMode.insertOrReplace);
       default:
         throw StateError('unknown backup table "$name"');
     }
