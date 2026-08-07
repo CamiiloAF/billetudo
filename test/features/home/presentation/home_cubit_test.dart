@@ -482,6 +482,112 @@ void main() {
     );
   });
 
+  group('selectMonth navega el mes visible del fallback (HU-04)', () {
+    blocTest<HomeCubit, HomeState>(
+      're-suscribe watchMonthTransactions al nuevo mes y actualiza el '
+      'snapshot',
+      setUp: () {
+        when(() => watchAccounts()).thenAnswer(
+          (_) => Stream<Result<List<AccountWithBalance>>>.value(
+            Right(accounts),
+          ),
+        );
+        // `start()` always seeds `_visibleMonth` from the real `DateTime.now()`
+        // — stub it broadly, then override the specific target month picked
+        // below (mocktail matches the most specific/last-registered stub).
+        when(() => watchMonthTransactions(any())).thenAnswer(
+          (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+            Right(activity),
+          ),
+        );
+        final junActivity = [buildActivity(id: 'tx-jun', amountMinor: 55000)];
+        when(() => watchMonthTransactions(DateTime(2026, 6))).thenAnswer(
+          (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+            Right(junActivity),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        cubit.selectMonth(DateTime(2026, 6, 15));
+      },
+      verify: (cubit) {
+        expect(cubit.state.spending?.month, DateTime(2026, 6));
+        expect(cubit.state.spending?.displayTotalMinor, 55000);
+        verify(() => watchMonthTransactions(DateTime(2026, 6))).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'normaliza cualquier día del mes al primero antes de comparar: un día '
+      'distinto dentro del mismo mes ya visible no re-suscribe',
+      setUp: stubReady,
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        final now = DateTime.now();
+        // Same year/month `start()` already subscribed to, different day —
+        // must normalize to the same key and no-op.
+        cubit.selectMonth(DateTime(now.year, now.month, 28));
+      },
+      verify: (cubit) {
+        verify(() => watchMonthTransactions(any())).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'seleccionar el mismo mes ya visible es un no-op: no re-suscribe',
+      setUp: () {
+        when(() => watchAccounts()).thenAnswer(
+          (_) => Stream<Result<List<AccountWithBalance>>>.value(
+            Right(accounts),
+          ),
+        );
+        final now = DateTime.now();
+        when(() => watchMonthTransactions(DateTime(now.year, now.month)))
+            .thenAnswer(
+          (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+            Right(activity),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        final now = DateTime.now();
+        cubit.selectMonth(DateTime(now.year, now.month, 5));
+      },
+      verify: (_) => verify(() => watchMonthTransactions(any())).called(1),
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'un mes elegido no toca la lista de recientes (criterio 1)',
+      setUp: () {
+        when(() => watchAccounts()).thenAnswer(
+          (_) => Stream<Result<List<AccountWithBalance>>>.value(
+            Right(accounts),
+          ),
+        );
+        when(() => watchMonthTransactions(any())).thenAnswer(
+          (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+            Right(activity),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        cubit.selectMonth(DateTime(2026, 3));
+      },
+      verify: (_) => verify(() => watchRecentTransactions()).called(1),
+    );
+  });
+
   test('cerrar el cubit cancela las siete suscripciones', () async {
     final accountsController =
         StreamController<Result<List<AccountWithBalance>>>.broadcast();

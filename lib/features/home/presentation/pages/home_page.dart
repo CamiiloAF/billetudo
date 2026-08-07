@@ -23,6 +23,7 @@ import '../widgets/home_hero_skeleton.dart';
 import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
+import '../widgets/sheets/month_picker_sheet.dart';
 import '../widgets/sheets/sync_status_sheet.dart';
 
 /// The Inicio tab (feature 04): header, hero, quick access, recent activity,
@@ -114,6 +115,22 @@ class _HomePageState extends State<HomePage> {
       context,
       icon: LucideIcons.bell,
       message: l10n.homeNotificationsSheetMessage,
+    );
+  }
+
+  /// HU-04: opens the fallback hero's month picker (no budget featured).
+  /// [visibleMonth] seeds the sheet's initial year/selection; picking a
+  /// month calls [HomeCubit.selectMonth] straight away, the sheet closes
+  /// itself.
+  Future<void> _openMonthPickerSheet(
+    BuildContext context,
+    DateTime visibleMonth,
+  ) {
+    final cubit = context.read<HomeCubit>();
+    return MonthPickerSheet.show(
+      context,
+      initialMonth: visibleMonth,
+      onMonthSelected: cubit.selectMonth,
     );
   }
 
@@ -260,6 +277,10 @@ class _HomePageState extends State<HomePage> {
                                 context.read<HomeCubit>().previousPeriod(),
                             onNextPeriod: () =>
                                 context.read<HomeCubit>().nextPeriod(),
+                            onOpenMonthPicker: () => _openMonthPickerSheet(
+                              context,
+                              state.spending?.month ?? DateTime.now(),
+                            ),
                           ),
                   ),
                 ),

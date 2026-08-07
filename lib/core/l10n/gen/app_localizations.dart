@@ -2264,6 +2264,24 @@ abstract class AppLocalizations {
   /// **'Selecciona el mes'**
   String get homeMonthPickerTitle;
 
+  /// Tooltip/semántica del chip de mes del hero cuando no hay presupuesto destacado; abre la hoja de selección de mes.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar mes'**
+  String get homeMonthChipTooltip;
+
+  /// Tooltip del botón que retrocede un año en la hoja de selección de mes del hero.
+  ///
+  /// In es, this message translates to:
+  /// **'Año anterior'**
+  String get homeMonthPickerPreviousYear;
+
+  /// Tooltip del botón que avanza un año en la hoja de selección de mes del hero.
+  ///
+  /// In es, this message translates to:
+  /// **'Año siguiente'**
+  String get homeMonthPickerNextYear;
+
   /// No description provided for @homeAiBanner.
   ///
   /// In es, this message translates to:

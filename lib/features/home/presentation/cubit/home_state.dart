@@ -41,11 +41,12 @@ class HomeState extends Equatable {
     this.pendingUndoId,
   });
 
-  /// No navigable "visible month" survives this redesign: "Movimientos
-  /// recientes" is unbound (criterion 1) and the hero, without a featured
-  /// budget, always shows the current calendar month with no selector
-  /// (criterion 5) — there is nothing left to seed from `now` besides the
-  /// zero-argument default below.
+  /// "Movimientos recientes" stays unbound (criterion 1) regardless of the
+  /// hero's visible month. The hero's own visible calendar month (HU-04,
+  /// when no budget is featured) lives in `HomeCubit._visibleMonth`, not
+  /// here — this state only ever exposes it indirectly via
+  /// `spending.month` once a snapshot lands, so there is nothing left to
+  /// seed from `now` besides the zero-argument default below.
   factory HomeState.initial(DateTime now) => const HomeState();
 
   final HomeStatus status;

@@ -55,6 +55,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.segmentInactiveText,
     required this.track,
     required this.trackOverlay,
+    required this.monthChipBg,
   });
 
   final Color primary;
@@ -151,6 +152,13 @@ class AppColors extends ThemeExtension<AppColors> {
   /// read against the gradient behind it.
   final Color trackOverlay;
 
+  /// The month-selector chip's own fill (`$month-chip-bg`, fixed — not
+  /// themed, per `get_variables`): a translucent black overlay drawn atop
+  /// the hero's gradient in the Home hero's no-featured-budget state
+  /// (`A9v7s`, `HC Month`), where the chip needs to read against the
+  /// gradient without a themed surface color underneath.
+  final Color monthChipBg;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -194,6 +202,7 @@ class AppColors extends ThemeExtension<AppColors> {
     segmentInactiveText: Color(0xFF5F5D73),
     track: Color(0xFFEEECFB),
     trackOverlay: Color(0x33FFFFFF),
+    monthChipBg: Color(0x40000000),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -239,6 +248,7 @@ class AppColors extends ThemeExtension<AppColors> {
     segmentInactiveText: Color(0xFF9A98B5),
     track: Color(0xFF2A2A3D),
     trackOverlay: Color(0x33FFFFFF),
+    monthChipBg: Color(0x40000000),
   );
 
   @override
@@ -284,6 +294,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? segmentInactiveText,
     Color? track,
     Color? trackOverlay,
+    Color? monthChipBg,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -327,6 +338,7 @@ class AppColors extends ThemeExtension<AppColors> {
       segmentInactiveText: segmentInactiveText ?? this.segmentInactiveText,
       track: track ?? this.track,
       trackOverlay: trackOverlay ?? this.trackOverlay,
+      monthChipBg: monthChipBg ?? this.monthChipBg,
     );
   }
 
@@ -377,6 +389,7 @@ class AppColors extends ThemeExtension<AppColors> {
           Color.lerp(segmentInactiveText, other.segmentInactiveText, t)!,
       track: Color.lerp(track, other.track, t)!,
       trackOverlay: Color.lerp(trackOverlay, other.trackOverlay, t)!,
+      monthChipBg: Color.lerp(monthChipBg, other.monthChipBg, t)!,
     );
   }
 }

@@ -55,10 +55,13 @@ class HomeCubit extends Cubit<HomeState> {
 
   final WatchAccounts _watchAccounts;
 
-  /// Fallback-only: the current calendar month's transactions, feeding the
-  /// hero's spending total when no budget is featured (criterion 5). Fixed to
-  /// "now" for the cubit's lifetime — there is no month picker to navigate it
-  /// anymore (HU-04's calendar picker was retired with this redesign).
+  /// Fallback-only: the visible calendar month's transactions, feeding the
+  /// hero's spending total when no budget is featured (criterion 5). HU-04's
+  /// month picker (`MonthSelectorChip`/`MonthPickerSheet`) navigates it via
+  /// [selectMonth], which re-subscribes this stream to the picked month —
+  /// mirrors [previousPeriod]/[nextPeriod]'s re-subscription for the
+  /// featured-budget case, just against a plain calendar month instead of a
+  /// `BudgetPeriodWindow`.
   final WatchMonthTransactions _watchMonthTransactions;
   final WatchRecentTransactions _watchRecentTransactions;
   final WatchAuthSession _watchAuthSession;
@@ -79,6 +82,13 @@ class HomeCubit extends Cubit<HomeState> {
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastMonthTransactions;
   Result<List<TransactionWithDetails>>? _lastRecentTransactions;
+
+  /// HU-04: the calendar month [_watchMonthTransactions] is currently
+  /// subscribed to — "now"'s month until [selectMonth] moves it. Only
+  /// meaningful for the no-featured-budget fallback; it plays no part once a
+  /// budget is featured (that case navigates its own period window instead,
+  /// see [_periodIndex]).
+  late DateTime _visibleMonth;
 
   /// The featured budget's id currently driving [_featuredBudgetDataSub], or
   /// `null` when none is featured. Tracked so a change of *which* budget is
@@ -115,11 +125,10 @@ class HomeCubit extends Cubit<HomeState> {
     _lastFeaturedResult = null;
 
     final now = DateTime.now();
+    _visibleMonth = DateTime(now.year, now.month);
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _monthTxSub =
-        _watchMonthTransactions(DateTime(now.year, now.month)).listen(
-      _onMonthTransactions,
-    );
+        _watchMonthTransactions(_visibleMonth).listen(_onMonthTransactions);
     _recentTxSub = _watchRecentTransactions().listen(_onRecentTransactions);
     _authSub = _watchAuthSession().listen(_onAuthSession);
     _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
@@ -256,7 +265,8 @@ class HomeCubit extends Cubit<HomeState> {
     if (data == null) {
       return;
     }
-    final view = _getBudgetProgress(data, now: DateTime.now(), index: _periodIndex);
+    final view =
+        _getBudgetProgress(data, now: DateTime.now(), index: _periodIndex);
     // Keep the resolved index so navigation is relative to what is shown.
     _periodIndex = view.window.index;
     _lastFeaturedResult = Right(
@@ -292,6 +302,30 @@ class HomeCubit extends Cubit<HomeState> {
     _emitFeaturedView();
   }
 
+  /// HU-04: jumps the fallback hero's visible calendar month straight to
+  /// [month] (any day within it), picked from `MonthPickerSheet`'s grid.
+  /// Only meaningful without a featured budget — see [_visibleMonth]'s docs.
+  ///
+  /// Re-subscribes [_watchMonthTransactions] to the new month and resets
+  /// [_lastMonthTransactions] until its first emission, same convention
+  /// [_onFeaturedBudgetProgress] uses when [_featuredBudgetId] changes:
+  /// [_recompute] must not emit against the outgoing month's stale data
+  /// while the new stream is still catching up.
+  void selectMonth(DateTime month) {
+    if (isClosed) {
+      return;
+    }
+    final normalized = DateTime(month.year, month.month);
+    if (normalized == _visibleMonth) {
+      return;
+    }
+    _visibleMonth = normalized;
+    _lastMonthTransactions = null;
+    unawaited(_monthTxSub?.cancel());
+    _monthTxSub =
+        _watchMonthTransactions(normalized).listen(_onMonthTransactions);
+  }
+
   void _recompute() {
     if (isClosed) {
       return;
@@ -316,9 +350,8 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
 
-    final now = DateTime.now();
     final snapshot = HomeSnapshot.from(
-      month: DateTime(now.year, now.month),
+      month: _visibleMonth,
       transactions: monthTransactions.getRight().toNullable() ?? const [],
       accounts: accounts.getRight().toNullable() ?? const [],
       recentTransactions: recentTransactions.getRight().toNullable(),

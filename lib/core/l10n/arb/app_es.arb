@@ -998,6 +998,18 @@
   "@homeLoading": {},
   "homeMonthPickerTitle": "Selecciona el mes",
   "@homeMonthPickerTitle": {},
+  "homeMonthChipTooltip": "Cambiar mes",
+  "@homeMonthChipTooltip": {
+    "description": "Tooltip/semántica del chip de mes del hero cuando no hay presupuesto destacado; abre la hoja de selección de mes."
+  },
+  "homeMonthPickerPreviousYear": "Año anterior",
+  "@homeMonthPickerPreviousYear": {
+    "description": "Tooltip del botón que retrocede un año en la hoja de selección de mes del hero."
+  },
+  "homeMonthPickerNextYear": "Año siguiente",
+  "@homeMonthPickerNextYear": {
+    "description": "Tooltip del botón que avanza un año en la hoja de selección de mes del hero."
+  },
   "homeAiBanner": "Pronto: pregúntale a Billetudo",
   "@homeAiBanner": {},
   "homeAiSheetMessage": "Pronto podrás preguntarle a Billetudo sobre tu plata en lenguaje natural.",

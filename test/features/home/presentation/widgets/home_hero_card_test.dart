@@ -2,6 +2,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/home/domain/entities/month_spending.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_budget_progress.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart';
+import 'package:billetudo/features/home/presentation/widgets/month_selector_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -26,6 +27,7 @@ void main() {
     VoidCallback? onOpenBudget,
     VoidCallback? onPreviousPeriod,
     VoidCallback? onNextPeriod,
+    VoidCallback? onOpenMonthPicker,
     BudgetWithProgress? budgetProgress,
   }) =>
       HomeHeroCard(
@@ -35,19 +37,46 @@ void main() {
         onOpenBudget: onOpenBudget,
         onPreviousPeriod: onPreviousPeriod,
         onNextPeriod: onNextPeriod,
+        onOpenMonthPicker: onOpenMonthPicker,
         budgetProgress: budgetProgress,
       );
 
   testWidgets(
-      'sin presupuesto: muestra "Gastado en <mes>" y el monto, sin selector',
-      (tester) async {
-    await tester.pumpHomeWidget(hero(spendingWith(126900)));
+      'sin presupuesto: muestra "Gastado en <mes>" y el monto, con el '
+      'MonthSelectorChip (HU-04, restaurado)', (tester) async {
+    await tester.pumpHomeWidget(
+      hero(spendingWith(126900), onOpenMonthPicker: () {}),
+    );
 
     expect(find.text('Gastado en Julio'), findsOneWidget);
     // 126900 cents => 1.269 COP (COP shows no decimals), from an int.
     expect(find.textContaining('1.269'), findsOneWidget);
-    // Criterion 5: no period selector at all without a featured budget.
+    // Criterion 5: no budget-period stepper without a featured budget — the
+    // calendar-month chip takes its spot instead.
     expect(find.byType(HeroPeriodStepper), findsNothing);
+    expect(find.byType(MonthSelectorChip), findsOneWidget);
+  });
+
+  testWidgets(
+      'sin presupuesto: tocar el MonthSelectorChip dispara onOpenMonthPicker',
+      (tester) async {
+    var tapped = 0;
+    await tester.pumpHomeWidget(
+      hero(spendingWith(126900), onOpenMonthPicker: () => tapped++),
+    );
+
+    await tester.tap(find.byType(MonthSelectorChip));
+    await tester.pump();
+
+    expect(tapped, 1);
+  });
+
+  testWidgets(
+      'sin presupuesto y sin onOpenMonthPicker: no renderiza el chip '
+      '(nada que tocar)', (tester) async {
+    await tester.pumpHomeWidget(hero(spendingWith(126900)));
+
+    expect(find.byType(MonthSelectorChip), findsNothing);
   });
 
   testWidgets(
@@ -134,6 +163,23 @@ void main() {
       );
 
       expect(find.textContaining('12'), findsOneWidget);
+    });
+
+    testWidgets(
+        'con budgetProgress: nunca renderiza el MonthSelectorChip, aunque '
+        'se le pase onOpenMonthPicker — el stepper toma su lugar',
+        (tester) async {
+      final budgetProgress = buildHomeBudgetProgress();
+      await tester.pumpHomeWidget(
+        hero(
+          spendingWith(300000),
+          budgetProgress: budgetProgress,
+          onOpenMonthPicker: () {},
+        ),
+      );
+
+      expect(find.byType(MonthSelectorChip), findsNothing);
+      expect(find.byType(HeroPeriodStepper), findsOneWidget);
     });
 
     testWidgets(

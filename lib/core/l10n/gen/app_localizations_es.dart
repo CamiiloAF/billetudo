@@ -1249,6 +1249,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeMonthPickerTitle => 'Selecciona el mes';
 
   @override
+  String get homeMonthChipTooltip => 'Cambiar mes';
+
+  @override
+  String get homeMonthPickerPreviousYear => 'Año anterior';
+
+  @override
+  String get homeMonthPickerNextYear => 'Año siguiente';
+
+  @override
   String get homeAiBanner => 'Pronto: pregúntale a Billetudo';
 
   @override

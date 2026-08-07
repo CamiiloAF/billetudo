@@ -16,9 +16,11 @@ import 'package:billetudo/features/home/presentation/widgets/ai_banner.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_header.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_skeleton.dart';
+import 'package:billetudo/features/home/presentation/widgets/month_selector_chip.dart';
 import 'package:billetudo/features/home/presentation/widgets/quick_access_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_skeleton_row.dart';
+import 'package:billetudo/features/home/presentation/widgets/sheets/month_picker_sheet.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/sync_status_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
@@ -374,11 +376,26 @@ void main() {
   });
 
   group('hero con presupuesto destacado — stepper de período (HU-05)', () {
-    testWidgets('sin presupuesto destacado: no hay picker de mes ni stepper',
-        (tester) async {
+    testWidgets(
+        'sin presupuesto destacado: hay MonthSelectorChip (HU-04), nunca el '
+        'stepper de presupuesto', (tester) async {
       await pumpHome(tester, readyWith([buildActivity()]));
 
       expect(find.byType(HeroPeriodStepper), findsNothing);
+      expect(find.byType(MonthSelectorChip), findsOneWidget);
+    });
+
+    testWidgets(
+        'con presupuesto destacado: el stepper reemplaza el '
+        'MonthSelectorChip', (tester) async {
+      final budgetProgress = buildHomeBudgetProgress();
+      await pumpHome(
+        tester,
+        readyWith([buildActivity()], budgetProgress: budgetProgress),
+      );
+
+      expect(find.byType(HeroPeriodStepper), findsOneWidget);
+      expect(find.byType(MonthSelectorChip), findsNothing);
     });
 
     testWidgets('criterio 6: tocar el hero navega a AppRoutes.budget(id)',
@@ -417,6 +434,46 @@ void main() {
 
       verify(cubit.nextPeriod).called(1);
       verifyNever(cubit.previousPeriod);
+    });
+  });
+
+  group('picker de mes del hero, sin presupuesto destacado (HU-04)', () {
+    testWidgets(
+        'tocar el MonthSelectorChip abre MonthPickerSheet, seeded con el '
+        'mes visible del snapshot', (tester) async {
+      await pumpHome(tester, readyWith([buildActivity()]));
+
+      await tester.tap(find.byType(MonthSelectorChip));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MonthPickerSheet), findsOneWidget);
+      // `readyWith`'s snapshot month is July 2026 (`month` at the top of
+      // this file) — the sheet must seed its selection from it, not "now".
+      expect(find.text('2026'), findsOneWidget);
+    });
+
+    testWidgets(
+        'elegir un mes en la hoja llama a HomeCubit.selectMonth y cierra '
+        'la hoja', (tester) async {
+      final cubit = MockHomeCubit();
+      when(() => cubit.selectMonth(any())).thenReturn(null);
+      await pumpHome(
+        tester,
+        readyWith([buildActivity()]),
+        cubit: cubit,
+      );
+
+      await tester.tap(find.byType(MonthSelectorChip));
+      await tester.pumpAndSettle();
+      expect(find.byType(MonthPickerSheet), findsOneWidget);
+
+      // Julio is already selected (the fixture month); tap a different,
+      // enabled month cell — Junio ("Jun"), one column to the left.
+      await tester.tap(find.text('Jun'));
+      await tester.pumpAndSettle();
+
+      verify(() => cubit.selectMonth(DateTime(2026, 6))).called(1);
+      expect(find.byType(MonthPickerSheet), findsNothing);
     });
   });
 }

@@ -12,13 +12,15 @@ import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/presentation/utils/budget_format.dart';
 import '../../domain/entities/month_spending.dart';
 import 'home_hero_budget_progress.dart';
+import 'month_selector_chip.dart';
 
 /// The compact hero (HU-03): the spent total, and one of three states below
 /// the amount — a budget progress bar, an invitation to budget, or "aún no
-/// hay gastos". [monthLabel] and its "Gastado en <mes>" caption only apply
-/// without a featured budget (criterion 5): once one exists, the header row
-/// becomes [HeroPeriodStepper] instead, navigating the budget's own period
-/// window rather than a calendar month (HU-05).
+/// hay gastos". [monthLabel] and its "Gastado en <mes>" caption, plus
+/// [MonthSelectorChip] (HU-04), only apply without a featured budget
+/// (criterion 5): once one exists, the header row becomes
+/// [HeroPeriodStepper] instead, navigating the budget's own period window
+/// rather than a calendar month (HU-05).
 ///
 /// It never invents a spending cap: without a budget the app knows no limit,
 /// so instead of a fake progress bar it nudges the budgeting habit. With a
@@ -33,6 +35,7 @@ class HomeHeroCard extends StatelessWidget {
     this.onOpenBudget,
     this.onPreviousPeriod,
     this.onNextPeriod,
+    this.onOpenMonthPicker,
     super.key,
   });
 
@@ -44,9 +47,9 @@ class HomeHeroCard extends StatelessWidget {
   /// label and chevrons.
   final BudgetWithProgress? budgetProgress;
 
-  /// The current calendar month, already localized (e.g. "julio") — only
-  /// used for the "Gastado en <mes>" caption when [budgetProgress] is `null`
-  /// (criterion 5's fallback; no navigation, always "now").
+  /// The visible calendar month, already localized (e.g. "julio") — used for
+  /// both the "Gastado en <mes>" caption and [MonthSelectorChip]'s own label
+  /// when [budgetProgress] is `null` (criterion 5's fallback, HU-04).
   final String monthLabel;
 
   final VoidCallback onCreateBudget;
@@ -61,6 +64,11 @@ class HomeHeroCard extends StatelessWidget {
   /// `window.hasPrevious`/`hasNext`.
   final VoidCallback? onPreviousPeriod;
   final VoidCallback? onNextPeriod;
+
+  /// HU-04: opens the month picker sheet. Only wired (and only rendered, via
+  /// [MonthSelectorChip]) when [budgetProgress] is `null` — with a featured
+  /// budget the same spot navigates its period window instead.
+  final VoidCallback? onOpenMonthPicker;
 
   @override
   Widget build(BuildContext context) {
@@ -96,15 +104,31 @@ class HomeHeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Without a featured budget, the fallback caption ("Gastado en
-          // <mes>") already names the month above the amount — unchanged
-          // from before this pass.
+          // <mes>") names the month above the amount, and `HC Month`
+          // (`A9v7s`) shares the row so the user can still navigate months
+          // (HU-04) — restored after the period-stepper redesign, which only
+          // ever replaces this row when a budget IS featured.
           if (progress == null) ...[
-            Text(
-              l10n.homeSpentInMonth(monthLabel),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onPrimary,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.homeSpentInMonth(monthLabel),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (onOpenMonthPicker case final onOpenMonthPicker?) ...[
+                  const SizedBox(width: 8),
+                  MonthSelectorChip(
+                    label: monthLabel,
+                    onTap: onOpenMonthPicker,
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 12),
           ] else ...[
