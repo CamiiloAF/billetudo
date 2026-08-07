@@ -14,6 +14,7 @@ import 'blocking_progress_view.dart';
 import 'io_error_view.dart';
 import 'restore_choice_toggle.dart';
 import 'stat_chip.dart';
+import 'summary_stats_card.dart';
 
 /// The body of `RestorePage` for the current [RestoreState] — routes to
 /// pick-file, running, error, summary, the escalated "Reemplazar todo"
@@ -90,10 +91,19 @@ class RestoreBody extends StatelessWidget {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                 children: [
                   Center(
-                    child: Icon(LucideIcons.checkCheck, size: 48, color: colors.teal),
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colors.tealSoft,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(LucideIcons.check, size: 32, color: colors.teal),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Center(
@@ -105,32 +115,20 @@ class RestoreBody extends StatelessWidget {
                           ?.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    alignment: WrapAlignment.center,
+                  const SizedBox(height: 20),
+                  SummaryStatsCard(
                     children: [
-                      SizedBox(
-                        width: 110,
-                        child: StatChip(
-                          value: '${summary.totalCreated}',
-                          label: l10n.importExportRestoreCreated,
-                        ),
+                      SummaryStatsRow(
+                        label: l10n.importExportRestoreCreated,
+                        value: '${summary.totalCreated}',
                       ),
-                      SizedBox(
-                        width: 110,
-                        child: StatChip(
-                          value: '${summary.totalUpdated}',
-                          label: l10n.importExportRestoreUpdated,
-                        ),
+                      SummaryStatsRow(
+                        label: l10n.importExportRestoreUpdated,
+                        value: '${summary.totalUpdated}',
                       ),
-                      SizedBox(
-                        width: 110,
-                        child: StatChip(
-                          value: '${summary.totalSkipped}',
-                          label: l10n.importExportRestoreSkipped,
-                        ),
+                      SummaryStatsRow(
+                        label: l10n.importExportRestoreSkipped,
+                        value: '${summary.totalSkipped}',
                       ),
                     ],
                   ),
