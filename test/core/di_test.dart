@@ -17,6 +17,8 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
@@ -35,6 +37,11 @@ void main() {
     // Supabase instance to build — same as `bootstrap.dart` does before
     // `configureDependencies()`.
     SharedPreferences.setMockInitialValues({});
+    // Async counterpart of the line above — covers datasources built on
+    // `SharedPreferencesAsync` (e.g. `EverSignedInDatasource`), which the
+    // legacy mock above doesn't reach.
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
     await Supabase.initialize(
       url: 'https://test.supabase.co',
       publishableKey: 'test-anon-key',
