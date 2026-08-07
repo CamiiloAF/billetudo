@@ -75,13 +75,12 @@ import '../../features/import_export/presentation/cubit/export_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_batches_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_export_hub_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_flow_cubit.dart';
-import '../../features/import_export/presentation/cubit/save_copy_cubit.dart';
 import '../../features/import_export/presentation/pages/export_page.dart';
 import '../../features/import_export/presentation/pages/import_batches_page.dart';
 import '../../features/import_export/presentation/pages/import_export_hub_page.dart';
 import '../../features/import_export/presentation/pages/import_flow_page.dart';
-import '../../features/import_export/presentation/pages/save_copy_page.dart';
 import '../../features/import_export/presentation/widgets/sheets/restore_sheet.dart';
+import '../../features/import_export/presentation/widgets/sheets/save_copy_sheet.dart';
 import '../../features/onboarding/domain/entities/onboarding_progress.dart';
 import '../../features/onboarding/domain/entities/onboarding_step.dart';
 import '../../features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart';
@@ -175,7 +174,6 @@ abstract final class AppRoutes {
   static const String exportCsv = '$importExport/exportar';
   static const String importCsv = '$importExport/importar';
   static const String importBatches = '$importExport/importaciones';
-  static const String saveCopy = '$importExport/guardar-copia';
 
   /// The new-movement form preselecting [accountId] — used when the movements
   /// list is filtered down to a single account (HU-06a). The form still lets
@@ -1457,7 +1455,7 @@ GoRoute _importExportRoute() => GoRoute(
         create: (context) =>
             _started(getIt<ImportExportHubCubit>(), (c) => c.start()),
         child: ImportExportHubPage(
-          onSaveCopy: () => context.push(AppRoutes.saveCopy),
+          onSaveCopy: () => unawaited(SaveCopySheet.show(context)),
           onExportCsv: () => context.push(AppRoutes.exportCsv),
           onImportCsv: () => context.push(AppRoutes.importCsv),
           onRestore: () => unawaited(RestoreSheet.show(context)),
@@ -1490,15 +1488,6 @@ GoRoute _importExportRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<ImportBatchesCubit>(), (c) => c.start()),
             child: const ImportBatchesPage(),
-          ),
-        ),
-        GoRoute(
-          path: 'guardar-copia',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) =>
-                _started(getIt<SaveCopyCubit>(), (c) => c.start()),
-            child: SaveCopyPage(onDone: () => context.pop()),
           ),
         ),
       ],

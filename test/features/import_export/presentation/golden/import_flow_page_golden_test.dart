@@ -1,13 +1,11 @@
 import 'package:billetudo/features/import_export/domain/entities/column_mapping.dart';
 import 'package:billetudo/features/import_export/domain/entities/csv_dialect.dart';
-import 'package:billetudo/features/import_export/domain/entities/import_batch.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_destination.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_entry_type.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_mapping_mode.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_preview_row.dart';
 import 'package:billetudo/features/import_export/domain/entities/import_row_issue.dart';
-import 'package:billetudo/features/import_export/domain/entities/import_summary.dart';
 import 'package:billetudo/features/import_export/domain/entities/parsed_csv_sample.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/import_flow_cubit.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/import_flow_state.dart';
@@ -25,7 +23,7 @@ class MockImportFlowCubit extends MockCubit<ImportFlowState> implements ImportFl
 void main() {
   late MockImportFlowCubit cubit;
 
-  final sample = const ParsedCsvSample(
+  const sample = ParsedCsvSample(
     headers: ['FECHA_MOV', 'MONTO_COP', 'CUENTA', 'DESCRIPCION'],
     sampleRows: [
       ['2026-07-01', '19.99', 'Bancolombia', 'Mercado'],
@@ -34,7 +32,7 @@ void main() {
     totalDataRowCount: 42,
   );
 
-  final mapping = const ColumnMapping(
+  const mapping = ColumnMapping(
     columns: {
       ImportField.date: 0,
       ImportField.amount: 1,
@@ -77,31 +75,13 @@ void main() {
         amountMinor: 5000,
         type: ImportEntryType.expense,
       ),
-      ImportPreviewRow(
+      const ImportPreviewRow(
         rowNumber: 4,
         status: ImportRowStatus.invalid,
         includedByDefault: false,
         invalidIssue: ImportRowIssue.missingAmount,
       ),
     ],
-  );
-
-  final summary = ImportSummary(
-    batch: ImportBatch(
-      id: 'batch-1',
-      fileName: 'movimientos-banco.csv',
-      importedAt: DateTime(2026, 7, 1),
-      rowsImported: 40,
-      rowsSkipped: 2,
-      createdAt: DateTime(2026, 7, 1),
-      updatedAt: 0,
-    ),
-    rowsImported: 40,
-    rowsSkippedDuplicate: 1,
-    rowsSkippedError: 1,
-    accountsCreated: 1,
-    categoriesCreated: 2,
-    tagsCreated: 0,
   );
 
   setUpAll(() async {
@@ -141,7 +121,7 @@ void main() {
     testWidgets('mapping columns ($suffix)', (tester) async {
       await golden(
         tester,
-        ImportFlowState(
+        const ImportFlowState(
           step: ImportFlowStep.mapping,
           sample: sample,
           mapping: mapping,
@@ -155,7 +135,7 @@ void main() {
     testWidgets('mapping columns, manual mode ($suffix)', (tester) async {
       await golden(
         tester,
-        ImportFlowState(
+        const ImportFlowState(
           step: ImportFlowStep.mapping,
           sample: sample,
           mapping: mapping,
@@ -170,7 +150,7 @@ void main() {
     testWidgets('mapping columns, template matched ($suffix)', (tester) async {
       await golden(
         tester,
-        ImportFlowState(
+        const ImportFlowState(
           step: ImportFlowStep.mapping,
           sample: sample,
           mapping: mapping,
@@ -199,9 +179,9 @@ void main() {
       (tester) async {
         await golden(
           tester,
-          ImportFlowState(
+          const ImportFlowState(
             step: ImportFlowStep.destinations,
-            preview: const ImportPreview(
+            preview: ImportPreview(
               rows: [
                 ImportPreviewRow(
                   rowNumber: 2,
@@ -238,28 +218,13 @@ void main() {
       );
     });
 
-    testWidgets('final summary ($suffix)', (tester) async {
-      await golden(
-        tester,
-        ImportFlowState(step: ImportFlowStep.summary, summary: summary),
-        'summary_$suffix',
-        brightness: brightness,
-      );
-    });
-
-    testWidgets('importing, blocking progress ($suffix)', (tester) async {
-      await golden(
-        tester,
-        const ImportFlowState(
-          runStatus: ImportFlowRunStatus.committing,
-          processed: 25,
-          total: 40,
-        ),
-        'progress_$suffix',
-        brightness: brightness,
-        settle: false,
-      );
-    });
+    // The closing summary and the commit's own blocking progress/error no
+    // longer render on this page — they moved into `ImportRunSheet`
+    // (`import_run_sheet_golden_test.dart`, decision 2026-08-07: `Aa1ek`/
+    // `XRBVa`, `d9wzVg`/`VHJP8` and `TmHSC`/`HbEJc` all instance
+    // `Bottom Sheet Base` in `billetudo.pen`, not this page's chrome). Only
+    // the initial file-parse error (still surfaced inline, `step` stays
+    // `fileSelect`) is left below.
 
     testWidgets('unreadable file error ($suffix)', (tester) async {
       await golden(

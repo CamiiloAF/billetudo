@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -11,13 +8,13 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../cubit/export_cubit.dart';
 import '../cubit/export_state.dart';
-import '../widgets/blocking_progress_view.dart';
 import '../widgets/export_form.dart';
-import '../widgets/io_error_view.dart';
 
 /// HU-01/HU-02: choose what to export (transactions/accounts/categories),
-/// optionally filtered, then hand the result to the share sheet (`zFLrC`/
-/// `h6ZQQw`/`calDR`).
+/// optionally filtered (`zFLrC`/`h6ZQQw`/`calDR`), then hand the result to
+/// the share sheet. The write itself — blocking progress and a write
+/// failure — is `ExportRunSheet`, a modal opened by `ExportForm`'s CTA
+/// (`Bottom Sheet Base` in `billetudo.pen`, not this page's chrome).
 class ExportPage extends StatelessWidget {
   const ExportPage({super.key});
 
@@ -25,71 +22,33 @@ class ExportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return BlocBuilder<ExportCubit, ExportState>(
-      buildWhen: (previous, current) => previous.runStatus != current.runStatus,
-      builder: (context, runStatusState) => PopScope(
-        // HU-01/HU-09: the blocking progress overlay disables the back
-        // gesture while a write is running — the only way out is "Cancelar".
-        canPop: runStatusState.runStatus != ExportRunStatus.running,
-        child: Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                PageHeader(title: l10n.importExportExportPageTitle),
-                Expanded(
-                  child: BlocConsumer<ExportCubit, ExportState>(
-                    listenWhen: (previous, current) =>
-                        previous.resultFilePath != current.resultFilePath ||
-                        previous.runStatus != current.runStatus,
-                    listener: (context, state) {
-                      if (state.resultFilePath case final path?) {
-                        unawaited(context.read<ExportCubit>().shareResult(path));
-                      }
-                    },
-                    builder: (context, state) {
-                      if (!state.hasAnyTransactions &&
-                          !state.scope.includeAccounts &&
-                          !state.scope.includeCategories) {
-                        return EmptyState(
-                          icon: LucideIcons.fileSpreadsheet,
-                          message: l10n.importExportExportEmptyTitle,
-                          description: l10n.importExportExportEmptyBody,
-                          // Neutral, not `$primary` — this empty state has no
-                          // CTA, and `$primary` reads as "the cloud" in this
-                          // 100%-local feature.
-                          iconColor: context.colors.textSecondary,
-                          iconBackground: context.colors.muted,
-                        );
-                      }
-                      if (state.runStatus == ExportRunStatus.running) {
-                        return BlockingProgressView(
-                          icon: LucideIcons.fileSpreadsheet,
-                          iconColor: context.colors.sky,
-                          iconBackground: context.colors.skySoft,
-                          title: l10n.importExportProgressExportingTitle,
-                          processed: state.processed,
-                          total: state.total,
-                          onCancel: () => context.read<ExportCubit>().cancel(),
-                        );
-                      }
-                      if (state.runStatus == ExportRunStatus.error) {
-                        return IoErrorView(
-                          icon: IoErrorIcons.writeFailure,
-                          title: l10n.importExportIoErrorWriteTitle,
-                          message: l10n.importExportIoErrorWriteBody,
-                          actionLabel: l10n.commonRetry,
-                          actionIcon: IoErrorIcons.retry,
-                          onAction: () => context.read<ExportCubit>().dismissError(),
-                          onCancel: () => context.pop(),
-                        );
-                      }
-                      return ExportForm(state: state);
-                    },
-                  ),
-                ),
-              ],
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            PageHeader(title: l10n.importExportExportPageTitle),
+            Expanded(
+              child: BlocBuilder<ExportCubit, ExportState>(
+                builder: (context, state) {
+                  if (!state.hasAnyTransactions &&
+                      !state.scope.includeAccounts &&
+                      !state.scope.includeCategories) {
+                    return EmptyState(
+                      icon: LucideIcons.fileSpreadsheet,
+                      message: l10n.importExportExportEmptyTitle,
+                      description: l10n.importExportExportEmptyBody,
+                      // Neutral, not `$primary` — this empty state has no
+                      // CTA, and `$primary` reads as "the cloud" in this
+                      // 100%-local feature.
+                      iconColor: context.colors.textSecondary,
+                      iconBackground: context.colors.muted,
+                    );
+                  }
+                  return ExportForm(state: state);
+                },
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

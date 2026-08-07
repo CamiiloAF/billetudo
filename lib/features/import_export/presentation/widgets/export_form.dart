@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +19,7 @@ import '../../domain/entities/import_entry_type.dart';
 import '../cubit/export_cubit.dart';
 import '../cubit/export_state.dart';
 import 'export_filter_chip.dart';
+import 'sheets/export_run_sheet.dart';
 
 /// The scope-picking form of `ExportPage` (HU-01/HU-02): which data to
 /// export, its "Filtros de transacciones" (only live when "Transacciones" is
@@ -237,7 +240,9 @@ class ExportForm extends StatelessWidget {
           label: l10n.importExportExportCta,
           icon: LucideIcons.share2,
           enabled: scope.selectionCount,
-          onPressed: () => cubit.confirm(language: l10n.localeName),
+          onPressed: () => unawaited(
+            ExportRunSheet.show(context, cubit: cubit, language: l10n.localeName),
+          ),
         ),
       ],
     );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -9,12 +11,20 @@ import '../pages/import_destinations_step.dart';
 import '../pages/import_file_select_step.dart';
 import '../pages/import_mapping_step.dart';
 import '../pages/import_preview_step.dart';
-import '../pages/import_summary_step.dart';
 import 'blocking_progress_view.dart';
 import 'io_error_view.dart';
+import 'sheets/import_run_sheet.dart';
 
 /// The body of `ImportFlowPage` for the current [ImportFlowState] — routes
-/// to the right wizard step, the error state or the blocking progress view.
+/// to the right wizard step (mapping/destinations/preview, each its own
+/// full page under `jfq0l`/`pjdLI`) or the lightweight loading spinner
+/// between them.
+///
+/// The final commit and what follows it — blocking progress, a write
+/// failure or the closing summary (`d9wzVg`/`TmHSC`/`Aa1ek`) — are not
+/// rendered here: they are `Bottom Sheet Base` in `billetudo.pen`
+/// (`ImportRunSheet`, opened by the preview step's "Importar" tap), not
+/// this page's body.
 class ImportFlowBody extends StatelessWidget {
   const ImportFlowBody({
     required this.state,
@@ -32,7 +42,13 @@ class ImportFlowBody extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
-    if (state.runStatus == ImportFlowRunStatus.error) {
+    // `committing`'s error lands here with `step` still `preview` (the only
+    // point in the wizard that call happens from) — that one is
+    // `ImportRunSheet`'s to show, already open when it occurs. Every other
+    // error (the initial file parse, or the quick preview-generation calls
+    // below) still renders inline on this page.
+    if (state.runStatus == ImportFlowRunStatus.error &&
+        state.step != ImportFlowStep.preview) {
       return IoErrorView(
         icon: IoErrorIcons.unreadableFile,
         title: l10n.importExportIoErrorUnreadableTitle,
@@ -44,16 +60,14 @@ class ImportFlowBody extends StatelessWidget {
         stackButtons: true,
       );
     }
-    if (state.isWorking) {
-      final committing = state.runStatus == ImportFlowRunStatus.committing;
+    if (state.runStatus == ImportFlowRunStatus.working) {
       return BlockingProgressView(
         icon: LucideIcons.fileInput,
         iconColor: colors.mint,
         iconBackground: colors.mintSoft,
         title: l10n.importExportProgressImportingTitle,
-        processed: committing ? state.processed : 0,
-        total: committing ? state.total : 0,
-        onCancel: committing ? cubit.cancel : null,
+        processed: 0,
+        total: 0,
       );
     }
 
@@ -114,14 +128,21 @@ class ImportFlowBody extends StatelessWidget {
           onToggleRow: cubit.toggleRow,
           onIncludeAllDuplicates: cubit.includeAllDuplicates,
           onOmitAllDuplicates: cubit.omitAllDuplicates,
-          onConfirm: cubit.confirm,
+          onConfirm: ({saveTemplateAs}) => unawaited(
+            ImportRunSheet.show(
+              context,
+              cubit: cubit,
+              onDone: onDone,
+              saveTemplateAs: saveTemplateAs,
+            ),
+          ),
         );
       case ImportFlowStep.summary:
-        final summary = state.summary;
-        if (summary == null) {
-          return const SizedBox.shrink();
-        }
-        return ImportSummaryStep(summary: summary, onDone: onDone);
+        // `ImportRunSheet` (opened by the preview step's "Importar" tap)
+        // owns the closing summary — the page underneath keeps whatever it
+        // last rendered (`preview`, the step `confirm` never leaves) while
+        // it's covered by the sheet's scrim.
+        return const SizedBox.shrink();
     }
   }
 }

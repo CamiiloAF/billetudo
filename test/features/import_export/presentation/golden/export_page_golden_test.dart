@@ -1,4 +1,3 @@
-import 'package:billetudo/core/error/failure.dart';
 import 'package:billetudo/features/import_export/domain/entities/export_scope.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/export_cubit.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/export_state.dart';
@@ -72,27 +71,10 @@ void main() {
       );
     });
 
-    testWidgets('running, progress ($suffix)', (tester) async {
-      await golden(
-        tester,
-        const ExportState(
-          runStatus: ExportRunStatus.running,
-          processed: 420,
-          total: 1200,
-        ),
-        'progress_$suffix',
-        brightness: brightness,
-        settle: false,
-      );
-    });
-
-    testWidgets('write failure ($suffix)', (tester) async {
-      await golden(
-        tester,
-        const ExportState(runStatus: ExportRunStatus.error, failure: IoFailure('boom')),
-        'error_$suffix',
-        brightness: brightness,
-      );
-    });
+    // The export write's own blocking progress/error no longer render on
+    // this page — they moved into `ExportRunSheet`
+    // (`export_run_sheet_golden_test.dart`, decision 2026-08-07: `xdG9q`/
+    // `dSkbx` and `TmHSC`/`HbEJc` instance `Bottom Sheet Base` in
+    // `billetudo.pen`, not this page's `Page Header` chrome).
   }
 }

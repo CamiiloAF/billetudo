@@ -9,7 +9,13 @@ import '../cubit/import_flow_state.dart';
 import '../widgets/import_flow_body.dart';
 
 /// The import wizard shell (HU-05/06/07, `jfq0l`/`pjdLI`): one `PageHeader`
-/// whose subtitle shows the numbered step, hosting each step's body.
+/// whose subtitle shows the numbered step, hosting the mapping/destinations/
+/// preview steps' bodies — the only steps that are actually pages in
+/// `billetudo.pen`. The final commit and what follows it (blocking progress,
+/// a write failure, the closing summary) are `Bottom Sheet Base` instead
+/// (`ImportRunSheet`, opened by the preview step's "Importar" tap, corrected
+/// 2026-08-07 alongside `RestoreSheet`) — this page stays mounted underneath
+/// it, covered by its scrim.
 ///
 /// The entry step (previously `W2hiZK`/`rsBfI`, now marked OBSOLETO en
 /// `billetudo.pen`, decisión 2026-08-06) no longer renders an intermediate
