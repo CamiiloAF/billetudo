@@ -5,7 +5,7 @@ import '../../domain/entities/tutorial_content.dart';
 import '../../domain/entities/tutorial_key.dart';
 
 /// Resolves a [TutorialKey] to its localized [TutorialContent] — the "content
-/// map" `TutorialContent`'s own class doc refers to. Every one of the 11
+/// map" `TutorialContent`'s own class doc refers to. Every one of the 12
 /// tutorials' copy comes only from `AppLocalizations` (never a hardcoded
 /// literal), per `docs/requirements/16-minitutoriales.md`'s "Localizados
 /// (es + en)" rule.
@@ -191,6 +191,21 @@ abstract final class TutorialContentCatalog {
             TutorialPoint(
               heading: l10n.tutorialEnvelopeModePoint2Heading,
               body: l10n.tutorialEnvelopeModePoint2Body,
+            ),
+          ],
+        ),
+      TutorialKey.budgetFeaturedChoice => TutorialContent(
+          key: key,
+          title: l10n.tutorialBudgetFeaturedChoiceTitle,
+          iconName: 'star',
+          points: [
+            TutorialPoint(
+              heading: l10n.tutorialBudgetFeaturedChoicePoint1Heading,
+              body: l10n.tutorialBudgetFeaturedChoicePoint1Body,
+            ),
+            TutorialPoint(
+              heading: l10n.tutorialBudgetFeaturedChoicePoint2Heading,
+              body: l10n.tutorialBudgetFeaturedChoicePoint2Body,
             ),
           ],
         ),

@@ -11,6 +11,7 @@ import '../../../categories/domain/usecases/watch_categories.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_detail_data.dart';
 import '../../domain/services/budget_category_scope_resolver.dart';
+import '../../domain/usecases/count_active_budgets.dart';
 import '../../domain/usecases/create_budget.dart';
 import '../../domain/usecases/get_budget_by_id.dart';
 import '../../domain/usecases/update_budget.dart';
@@ -29,6 +30,7 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
     this._getBudgetById,
     this._watchCategories,
     this._scopeResolver,
+    this._countActiveBudgets,
   ) : super(BudgetFormState.loading());
 
   final CreateBudget _createBudget;
@@ -36,6 +38,11 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
   final GetBudgetById _getBudgetById;
   final WatchCategories _watchCategories;
   final BudgetCategoryScopeResolver _scopeResolver;
+
+  /// Only queried right after a successful *creation* (never an edit) to
+  /// detect "this was the second active budget" — see
+  /// [BudgetFormState.showFeaturedChoiceTutorial].
+  final CountActiveBudgets _countActiveBudgets;
 
   // The live category tree, kept only to translate between the picker's
   // materialized selection and the canonical scope stored on the budget (fix
@@ -217,6 +224,7 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
     }
     emit(state.copyWith(submitting: true));
 
+    final wasCreating = !state.isEditing;
     final draft = state.toDraft();
     final result = state.isEditing
         ? await _updateBudget(draft)
@@ -224,12 +232,29 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
     if (isClosed) {
       return;
     }
+    // Only a fresh creation can be "the second active budget" — editing
+    // never changes that count, and re-checking it every save would be
+    // pointless work.
+    final isSecondBudget =
+        wasCreating && result.isRight() && await _isSecondActiveBudget();
+    if (isClosed) {
+      return;
+    }
     emit(
       result.fold(
         (failure) => state.copyWith(submitting: false, failure: failure),
-        (budget) => state.copyWith(submitting: false, savedId: budget.id),
+        (budget) => state.copyWith(
+          submitting: false,
+          savedId: budget.id,
+          showFeaturedChoiceTutorial: isSecondBudget,
+        ),
       ),
     );
+  }
+
+  Future<bool> _isSecondActiveBudget() async {
+    final countResult = await _countActiveBudgets();
+    return countResult.fold((failure) => false, (count) => count == 2);
   }
 
   @override

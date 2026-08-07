@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -11,6 +13,8 @@ import '../../../../core/widgets/segmented_control.dart';
 import '../../../accounts/presentation/widgets/sheets/currency_picker_sheet.dart';
 import '../../../transactions/presentation/widgets/sheets/account_filter_sheet.dart';
 import '../../../transactions/presentation/widgets/sheets/category_filter_sheet.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/budget_draft.dart';
 import '../cubit/budget_form_cubit.dart';
 import '../cubit/budget_form_state.dart';
@@ -44,6 +48,24 @@ class BudgetFormPage extends StatefulWidget {
 class _BudgetFormPageState extends State<BudgetFormPage> {
   final FormErrorScrollController _errorScroll = FormErrorScrollController();
 
+  /// On a successful save, shows the "¿cuál se destaca?" minitutorial first
+  /// (only when [BudgetFormState.showFeaturedChoiceTutorial] is set — the
+  /// user's just-created *second* active budget) and pops only after the
+  /// user dismisses it, so the sheet reads over this screen rather than the
+  /// list underneath.
+  Future<void> _popAfterOptionalTutorial(
+    BuildContext context,
+    BudgetFormState state,
+  ) async {
+    if (state.showFeaturedChoiceTutorial) {
+      await maybeShowTutorial(context, TutorialKey.budgetFeaturedChoice);
+      if (!context.mounted) {
+        return;
+      }
+    }
+    Navigator.of(context).pop(state.savedId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<BudgetFormCubit, BudgetFormState>(
@@ -52,7 +74,7 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
           previous.failedField != current.failedField,
       listener: (context, state) {
         if (state.savedId != null) {
-          Navigator.of(context).pop(state.savedId);
+          unawaited(_popAfterOptionalTutorial(context, state));
           return;
         }
         _errorScroll.scrollToField(state.failedField);

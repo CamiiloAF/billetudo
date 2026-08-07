@@ -1198,6 +1198,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeHeroSpentKicker => 'Gastado';
 
   @override
+  String homeHeroSpentInFeaturedBudget(String budgetName) {
+    return 'Gastado en $budgetName';
+  }
+
+  @override
   String get homeBudgetInvitation =>
       'Define un presupuesto para ver cuánto te queda este mes';
 
@@ -4881,4 +4886,24 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutorialEnvelopeModePoint2Body =>
       'En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.';
+
+  @override
+  String get tutorialBudgetFeaturedChoiceTitle =>
+      'Elige qué presupuesto destacar';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint1Heading =>
+      'Uno a la vez en Inicio';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint1Body =>
+      'El presupuesto destacado es el que ves en la portada de Inicio. Ahora que tienes más de uno, puedes elegir cuál.';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint2Heading =>
+      'Cámbialo cuando quieras';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint2Body =>
+      'Entra a un presupuesto y usa el menú ⋮ para marcarlo como destacado o quitarlo. Es reversible en cualquier momento.';
 }

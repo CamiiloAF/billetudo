@@ -58,7 +58,6 @@ class BudgetsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final settingsState = context.watch<AppSettingsCubit>().state;
     final envelopeEnabled = settingsState.zeroBasedEnabled;
-    final featuredBudgetId = settingsState.featuredBudgetId;
     final ZeroBasedSummary? summary = envelopeEnabled
         ? context.watch<ZeroBasedSummaryCubit>().state.summary
         : null;
@@ -77,40 +76,40 @@ class BudgetsPage extends StatelessWidget {
       tutorialKey: TutorialKey.budgetsScreen,
       onCta: (context) => unawaited(_addBudget(context)),
       child: Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            BudgetsPageHeader(
-              onAddBudget: () => unawaited(_addBudget(context)),
-              onOpenHistory: onOpenHistory,
-              envelopeEnabled: envelopeEnabled,
-            ),
-            Expanded(
-              child: BlocBuilder<BudgetsListCubit, BudgetsListState>(
-                builder: (context, state) => switch (state.status) {
-                  BudgetsListStatus.loading => const BudgetsLoadingView(),
-                  BudgetsListStatus.failure => BudgetsErrorView(
-                      onRetry: context.read<BudgetsListCubit>().start,
-                    ),
-                  BudgetsListStatus.ready when state.budgets.isEmpty =>
-                    BudgetsEmptyView(
-                      onAddBudget: () => unawaited(_addBudget(context)),
-                      header: envelopeHeader,
-                    ),
-                  BudgetsListStatus.ready => BudgetsListView(
-                      state: state,
-                      onOpenBudget: onOpenBudget,
-                      onAddBudget: () => unawaited(_addBudget(context)),
-                      header: envelopeHeader,
-                      envelopeMode: envelopeEnabled,
-                      featuredBudgetId: featuredBudgetId,
-                    ),
-                },
+        body: SafeArea(
+          child: Column(
+            children: [
+              BudgetsPageHeader(
+                onAddBudget: () => unawaited(_addBudget(context)),
+                onOpenHistory: onOpenHistory,
+                envelopeEnabled: envelopeEnabled,
               ),
-            ),
-          ],
+              Expanded(
+                child: BlocBuilder<BudgetsListCubit, BudgetsListState>(
+                  builder: (context, state) => switch (state.status) {
+                    BudgetsListStatus.loading => const BudgetsLoadingView(),
+                    BudgetsListStatus.failure => BudgetsErrorView(
+                        onRetry: context.read<BudgetsListCubit>().start,
+                      ),
+                    BudgetsListStatus.ready when state.budgets.isEmpty =>
+                      BudgetsEmptyView(
+                        onAddBudget: () => unawaited(_addBudget(context)),
+                        header: envelopeHeader,
+                      ),
+                    BudgetsListStatus.ready => BudgetsListView(
+                        state: state,
+                        onOpenBudget: onOpenBudget,
+                        onAddBudget: () => unawaited(_addBudget(context)),
+                        header: envelopeHeader,
+                        envelopeMode: envelopeEnabled,
+                        featuredBudgetId: state.featuredBudgetId,
+                      ),
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -289,9 +288,10 @@ class BudgetsListView extends StatelessWidget {
   /// (`D1G5hl`: card padding 16, gap 12 vs. the normal list's 18/18).
   final bool envelopeMode;
 
-  /// The budget manually featured on the Home hero, if any
-  /// (`AppSettings.featuredBudgetId`) — the row matching this id draws the
-  /// `sEyU6` star badge.
+  /// The budget `BudgetHeroSelector.pick` actually resolves for Home's hero
+  /// (`BudgetsListState.featuredBudgetId`, manual pick or automatic
+  /// fallback) — the row matching this id draws the `sEyU6` star badge, same
+  /// visual regardless of whether the selection is manual or automatic.
   final String? featuredBudgetId;
 
   @override

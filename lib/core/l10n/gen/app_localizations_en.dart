@@ -1197,6 +1197,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeroSpentKicker => 'Spent';
 
   @override
+  String homeHeroSpentInFeaturedBudget(String budgetName) {
+    return 'Spent on $budgetName';
+  }
+
+  @override
   String get homeBudgetInvitation =>
       'Set a budget to see how much you have left this month';
 
@@ -4877,4 +4882,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialEnvelopeModePoint2Body =>
       'Instead of one free-form amount, you see how much is left in each category on its own.';
+
+  @override
+  String get tutorialBudgetFeaturedChoiceTitle =>
+      'Choose which budget to feature';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint1Heading =>
+      'One at a time on Home';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint1Body =>
+      'The featured budget is the one shown on Home\'s hero. Now that you have more than one, you get to pick which.';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint2Heading => 'Change it anytime';
+
+  @override
+  String get tutorialBudgetFeaturedChoicePoint2Body =>
+      'Open a budget and use its ⋮ menu to feature it or remove it. It\'s reversible whenever you want.';
 }

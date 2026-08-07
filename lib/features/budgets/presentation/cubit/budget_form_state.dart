@@ -29,6 +29,7 @@ class BudgetFormState extends Equatable {
     this.categoryIds = const {},
     this.submitting = false,
     this.savedId,
+    this.showFeaturedChoiceTutorial = false,
     this.failure,
   });
 
@@ -66,6 +67,12 @@ class BudgetFormState extends Equatable {
 
   /// Set once the save succeeds, so the page can pop.
   final String? savedId;
+
+  /// Set alongside [savedId], only when this creation was the user's
+  /// *second* active budget — the page shows the "¿cuál se destaca?"
+  /// minitutorial before popping (`TutorialKey.budgetFeaturedChoice`). Always
+  /// `false` while editing.
+  final bool showFeaturedChoiceTutorial;
   final Failure? failure;
 
   bool get isEditing => id != null;
@@ -129,6 +136,7 @@ class BudgetFormState extends Equatable {
     Set<String>? categoryIds,
     bool? submitting,
     String? savedId,
+    bool showFeaturedChoiceTutorial = false,
     Failure? failure,
   }) =>
       BudgetFormState(
@@ -149,6 +157,7 @@ class BudgetFormState extends Equatable {
         categoryIds: categoryIds ?? this.categoryIds,
         submitting: submitting ?? this.submitting,
         savedId: savedId,
+        showFeaturedChoiceTutorial: showFeaturedChoiceTutorial,
         failure: failure,
       );
 
@@ -169,6 +178,7 @@ class BudgetFormState extends Equatable {
         categoryIds,
         submitting,
         savedId,
+        showFeaturedChoiceTutorial,
         failure,
       ];
 }

@@ -19,7 +19,7 @@ enum TutorialSheetResult {
 }
 
 /// The one shared minitutorial sheet (`docs/requirements/16-minitutoriales.md`)
-/// every one of the 11 tutorials renders through — parameterized by
+/// every one of the 12 tutorials renders through — parameterized by
 /// [TutorialContent], never a bespoke widget per feature.
 ///
 /// Two shapes, driven by [TutorialContent.hasNavigationCta]:

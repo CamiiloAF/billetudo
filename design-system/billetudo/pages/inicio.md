@@ -98,11 +98,25 @@ Bottom-sheets y elementos que se accionan desde el Home, todos en claro + oscuro
 
 > **Nota:** este stepper reemplaza el selector de mes solo cuando hay presupuesto destacado con progreso visible (`progress != null`). Sin presupuesto destacado, el chip + hoja documentados en "Interacciones y sub-pantallas" (`k7kv4`/`iGwrg`, `Month Cell` `DB3bz`) siguen siendo el diseño **vigente**, no histórico — es el fallback activo del hero, ver nota de "Cuándo se muestra" arriba.
 
+## Etiqueta de presupuesto destacado en el Hero (aprobado, tema claro)
+
+**Contexto:** hallazgo de producto sobre discoverability — el usuario no tenía forma de saber, mirando el hero de Inicio, qué presupuesto específico alimentaba el monto/progreso mostrado (ver `pages/presupuestos.md` § "Destacar presupuesto en Inicio" → "Discoverability"). Primer intento: un kicker tipo pill/botón tocable con chevron ("★ Mercado del mes ›"). Descartado por `ui-ux-reviewer` y el usuario: en `aOhoY`/`LktTm` competía con el chip de mes viejo, y en `xBv3N` el chevron sugería un destino de navegación distinto al del resto del hero (que ya es tocable en su totalidad hacia el mismo lugar) — confuso.
+
+**Solución aprobada:** texto plano informativo, mismo tratamiento tipográfico que el resto del texto secundario del hero (12px/600, `$on-primary`), sin fondo/ícono/chevron — no es un control independiente, es una etiqueta.
+
+- `aOhoY`: nuevo nodo `ZnfMf` ("Featured Budget Label", "Mercado del mes") como primer hijo de `Hero` (`IVytg`), encima de "Gastado en julio".
+- `LktTm`: nuevo nodo `c4q4mY`, mismo tratamiento, en `Hero` (`wl9OW`).
+- `xBv3N` (ya tiene el stepper de período): no se agregó línea nueva — se reutilizó el kicker "Gastado" existente (`zoZcf`), cuyo contenido pasó de `"Gastado"` a `"Gastado en Mercado del mes"`, para no competir en espacio vertical con el stepper de abajo.
+- **Cuándo se muestra:** solo cuando hay presupuesto destacado con progreso visible — mismo condicional que el resto del bloque de progreso/stepper.
+- **Interacción:** ninguna propia — es texto informativo; tocar el hero (en su totalidad) sigue navegando al detalle del presupuesto destacado, sin ambigüedad de "dos controles".
+- **Estado:** tema claro **aprobado** por el usuario (2026-08-07). Tema oscuro pendiente.
+
 ## Pendientes
 
 - **Portar Hero Period Stepper a los frames canónicos + tema oscuro:** el stepper aprobado en `xBv3N` (ver sección "Hero Period Stepper") reemplaza el chip de mes **solo cuando hay presupuesto destacado**; falta portarlo a `aOhoY`/`A9v7s`/`LktTm`/`AVgUv` (o al frame que quede como canónico tras resolver esa deuda de fidelidad) y generar la copia oscura, solo después de que esta migración esté cerrada en claro. El caso sin presupuesto destacado no se toca — sigue usando el chip ya presente en esos mismos frames.
-- **Restaurar en Flutter el selector de mes para el caso sin presupuesto destacado:** `lib/features/home/presentation/widgets/home_hero_card.dart` (rama `progress == null`) perdió la navegación de mes al eliminarse `MonthSelectorChip`/`MonthPickerSheet`/`MonthCell` del código en el mismo cambio que introdujo el stepper — el diseño en Pencil (`A9v7s` chip + `k7kv4`/`iGwrg` hoja + `DB3bz` celda) nunca cambió y sigue siendo la referencia a implementar.
+- ~~**Restaurar en Flutter el selector de mes para el caso sin presupuesto destacado**~~ — resuelto: `MonthSelectorChip`/`MonthPickerSheet`/`MonthCell` restaurados en `lib/features/home/presentation/widgets/`, cableados en `home_hero_card.dart`/`home_page.dart`/`home_cubit.dart` (commit `2f4ac2c`).
 - **Acceso rápido — replicar a Vacío/Carga y a tema oscuro:** la fila `Quick Access A` solo existe hoy en `aOhoY` y `A9v7s` (tema claro). Falta insertarla en `DliNF`/`AmifS` (vacío/carga, mismo tratamiento chrome-fijo) y generar su copia oscura junto con el resto de la pantalla, al final del flujo de diseño (ver "Orden de lectura" en `CLAUDE.md`).
 - **Orden de accesos configurable (futuro, fuera de alcance de este diseño):** el usuario quiere poder reordenar los 4 accesos directos desde Ajustes más adelante. No cambia el diseño visual del chip ni de la fila — es una feature de datos/preferencias de usuario. Ver nota en `docs/requirements/04-inicio.md` § Pendiente.
 - **Implementación en Flutter** (`flutter-dev`): el diseño está completo en Pencil (claro + oscuro); pasar a código con este doc + `docs/requirements/04-inicio.md`, incluyendo el cableado de destinos y el comportamiento de scroll del FAB (documentado arriba en la estructura).
+- **Implementar la etiqueta de presupuesto destacado en el Hero** (ver sección arriba, diseño claro aprobado) + el resto del paquete de discoverability de `pages/presupuestos.md` § "Discoverability": fix del mismatch del badge en la lista (comparar contra `BudgetHeroSelector.pick`, no contra el pick manual crudo), regla de negocio de auto-selección del primer presupuesto creado, y minitutorial corto al crear el segundo presupuesto.
 - **Override redundante:** el padding del chip de mes (`j6OObr` `[15,12]`) quedó como override de instancia en los 3 hero con contenido además de estar ya en el componente `Hero Compact` — cosmético, theme-agnóstico, sin impacto.

@@ -132,12 +132,16 @@ class HomeHeroCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
           ] else ...[
-            // "Gastado" kicker (xBv3N `zoZcf`): with a budget featured, the
-            // stepper takes the caption's old spot below the amount instead
-            // (criterion 3), so the amount needs its own short label
-            // resolving "¿es gasto o saldo?" right above it.
+            // "Gastado en <presupuesto>" kicker (xBv3N `zoZcf`): with a
+            // budget featured, the stepper takes the caption's old spot
+            // below the amount instead (criterion 3), so the amount needs
+            // its own short label resolving "¿es gasto o saldo?" right
+            // above it — and, per the discoverability fix
+            // (`pages/presupuestos.md` § "Discoverability"), naming WHICH
+            // budget it is, instead of a plain "Gastado" that left the user
+            // guessing what fed the hero.
             Text(
-              l10n.homeHeroSpentKicker,
+              l10n.homeHeroSpentInFeaturedBudget(progress.budget.name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(

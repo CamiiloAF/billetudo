@@ -298,6 +298,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
       });
 
   @override
+  FutureResult<int> countActiveBudgets() =>
+      _guard(() async => Right(await _local.countActiveBudgets()));
+
+  @override
   FutureResult<Budget> createBudget(BudgetDraft draft) => _guard(() async {
         final now = DateTime.now();
         final row = await _local.insertBudget(

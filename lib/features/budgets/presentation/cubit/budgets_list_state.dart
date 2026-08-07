@@ -12,11 +12,20 @@ class BudgetsListState extends Equatable {
     this.status = BudgetsListStatus.loading,
     this.budgets = const [],
     this.failure,
+    this.featuredBudgetId,
   });
 
   final BudgetsListStatus status;
   final List<BudgetWithProgress> budgets;
   final Failure? failure;
+
+  /// The budget `BudgetHeroSelector.pick` actually resolves for Home's hero
+  /// — manual pick if still active, otherwise the automatic global+monthly
+  /// fallback. Drives the list's star badge (`BudgetLine.isFeatured`) so it
+  /// never disagrees with what the hero shows, regardless of whether the
+  /// selection is manual or automatic (`design-system/billetudo/pages/
+  /// presupuestos.md`, "Destacar presupuesto en Inicio").
+  final String? featuredBudgetId;
 
   bool get isLoading => status == BudgetsListStatus.loading;
 
@@ -26,13 +35,17 @@ class BudgetsListState extends Equatable {
     BudgetsListStatus? status,
     List<BudgetWithProgress>? budgets,
     Failure? failure,
+    String? Function()? featuredBudgetId,
   }) =>
       BudgetsListState(
         status: status ?? this.status,
         budgets: budgets ?? this.budgets,
         failure: failure,
+        featuredBudgetId: featuredBudgetId != null
+            ? featuredBudgetId()
+            : this.featuredBudgetId,
       );
 
   @override
-  List<Object?> get props => [status, budgets, failure];
+  List<Object?> get props => [status, budgets, failure, featuredBudgetId];
 }

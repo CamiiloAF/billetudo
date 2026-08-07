@@ -221,14 +221,17 @@ void main() {
     });
 
     testWidgets(
-        'diseño xBv3N: muestra el kicker "Gastado" sobre el monto en vez '
-        'de la leyenda "Gastado en <mes>"', (tester) async {
-      final budgetProgress = buildHomeBudgetProgress();
+        'discoverability: muestra el kicker "Gastado en <presupuesto>" '
+        'nombrando el presupuesto destacado, no un "Gastado" plano ni la '
+        'leyenda del mes calendario', (tester) async {
+      final budgetProgress =
+          buildHomeBudgetProgress(name: 'Mercado del mes');
       await tester.pumpHomeWidget(
         hero(spendingWith(300000), budgetProgress: budgetProgress),
       );
 
-      expect(find.text('Gastado'), findsOneWidget);
+      expect(find.text('Gastado en Mercado del mes'), findsOneWidget);
+      expect(find.text('Gastado'), findsNothing);
       expect(find.text('Gastado en Julio'), findsNothing);
     });
 

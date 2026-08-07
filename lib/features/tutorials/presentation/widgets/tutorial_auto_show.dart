@@ -12,7 +12,7 @@ import '../utils/tutorial_content_catalog.dart';
 
 /// Evaluates [key] (via [TutorialGateCubit]) and, if it qualifies, shows its
 /// sheet and marks it seen — the exact "evaluate, then show, then mark seen,
-/// then optionally navigate" sequence every one of the 11 trigger points
+/// then optionally navigate" sequence every one of the 12 trigger points
 /// needs, whether it fires on mount ([TutorialAutoShow]) or on a specific
 /// user action (e.g. flipping "Modo sobres" on).
 ///
@@ -31,7 +31,7 @@ import '../utils/tutorial_content_catalog.dart';
 ///
 /// No-ops silently (never throws) when the tutorials feature's DI graph is
 /// not registered — true in production (bootstrapped once at app start) but
-/// not in most existing widget tests for the 11 screens/sub-flows this wires
+/// not in most existing widget tests for the 12 screens/sub-flows this wires
 /// into, which build their widget under test directly without
 /// `configureDependencies()`. Those tests were never about minitutorials, so
 /// their pages/sheets should keep working exactly as before rather than
@@ -66,9 +66,7 @@ Future<void> maybeShowTutorial(
 
   final result = await TutorialSheet.show(context, content);
   await getIt<MarkTutorialSeen>()(key);
-  if (result == TutorialSheetResult.cta &&
-      onCta != null &&
-      context.mounted) {
+  if (result == TutorialSheetResult.cta && onCta != null && context.mounted) {
     await onCta(context);
   }
 }

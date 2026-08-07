@@ -379,6 +379,7 @@
   "homeSyncSheetDismiss": "Got it",
   "homeSpentInMonth": "Spent in {month}",
   "homeHeroSpentKicker": "Spent",
+  "homeHeroSpentInFeaturedBudget": "Spent on {budgetName}",
   "homeBudgetInvitation": "Set a budget to see how much you have left this month",
   "homeNoSpendingYet": "No spending yet this month",
   "homeHeroBudgetProgress": "{pct}% of {amount}",
@@ -1747,5 +1748,15 @@
   "tutorialEnvelopeModePoint2Heading": "What changes on the screen",
   "@tutorialEnvelopeModePoint2Heading": {},
   "tutorialEnvelopeModePoint2Body": "Instead of one free-form amount, you see how much is left in each category on its own.",
-  "@tutorialEnvelopeModePoint2Body": {}
+  "@tutorialEnvelopeModePoint2Body": {},
+  "tutorialBudgetFeaturedChoiceTitle": "Choose which budget to feature",
+  "@tutorialBudgetFeaturedChoiceTitle": {},
+  "tutorialBudgetFeaturedChoicePoint1Heading": "One at a time on Home",
+  "@tutorialBudgetFeaturedChoicePoint1Heading": {},
+  "tutorialBudgetFeaturedChoicePoint1Body": "The featured budget is the one shown on Home's hero. Now that you have more than one, you get to pick which.",
+  "@tutorialBudgetFeaturedChoicePoint1Body": {},
+  "tutorialBudgetFeaturedChoicePoint2Heading": "Change it anytime",
+  "@tutorialBudgetFeaturedChoicePoint2Heading": {},
+  "tutorialBudgetFeaturedChoicePoint2Body": "Open a budget and use its ⋮ menu to feature it or remove it. It's reversible whenever you want.",
+  "@tutorialBudgetFeaturedChoicePoint2Body": {}
 }

@@ -1,4 +1,4 @@
-/// The 11 stable contextual-help minitutorials (`docs/requirements/16-minitutoriales.md`).
+/// The 12 stable contextual-help minitutorials (`docs/requirements/16-minitutoriales.md`).
 ///
 /// [id] is the value persisted as `TutorialViews.id` — a small fixed string,
 /// NOT a random UUID, so it stays stable across app versions and is shared
@@ -48,7 +48,14 @@ enum TutorialKey {
   /// HU-02 — Turning on "Modo sobres" (zero-based) from its settings
   /// toggle. Skipped when the Presupuestos screen tutorial ([budgetsScreen])
   /// has already been seen (no-chaining rule already covers the concept).
-  envelopeMode('tutorial-envelope-mode');
+  envelopeMode('tutorial-envelope-mode'),
+
+  /// HU-02 — Creating a user's *second* active budget
+  /// (`design-system/billetudo/pages/presupuestos.md`, "Discoverability"):
+  /// the moment the "¿cuál se destaca en Inicio?" ambiguity first appears —
+  /// the first budget was already auto-featured with no user action needed,
+  /// so nothing to explain existed before this point.
+  budgetFeaturedChoice('tutorial-budget-featured-choice');
 
   const TutorialKey(this.id);
 
@@ -64,7 +71,7 @@ enum TutorialKey {
     scheduledPaymentsScreen,
   };
 
-  /// The 7 HU-02 sub-flow tutorials — short, no navigation CTA.
+  /// The 8 HU-02 sub-flow tutorials — short, no navigation CTA.
   static const Set<TutorialKey> subFlowTutorials = {
     debtLinkMovement,
     goalLinkMovement,
@@ -73,6 +80,7 @@ enum TutorialKey {
     debtScheduledInstallment,
     budgetableTransfer,
     envelopeMode,
+    budgetFeaturedChoice,
   };
 
   /// Whether this is one of the 4 HU-01 screen tutorials (vs. a HU-02

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Criterion 12 (`docs/requirements/16-minitutoriales.md`): every one of the
-/// 11 tutorials is localized through `AppLocalizations`, and screen
+/// 12 tutorials is localized through `AppLocalizations`, and screen
 /// tutorials (HU-01) carry a navigation CTA while sub-flow ones (HU-02)
 /// never do — [TutorialContentCatalog.of] is the single place that maps a
 /// [TutorialKey] to its copy, so this is the only test that would catch a

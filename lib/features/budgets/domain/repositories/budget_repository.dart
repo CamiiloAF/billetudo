@@ -35,6 +35,11 @@ abstract class BudgetRepository {
 
   FutureResult<Budget> getBudget(String id);
 
+  /// One-shot count of active budgets (neither closed nor trashed) — used by
+  /// `CreateBudget` to detect "this will be the user's first active budget"
+  /// so it can auto-feature it on Home without a full list/progress read.
+  FutureResult<int> countActiveBudgets();
+
   /// Persists a new budget and its scope join rows (HU-01). Draft is expected
   /// validated.
   FutureResult<Budget> createBudget(BudgetDraft draft);

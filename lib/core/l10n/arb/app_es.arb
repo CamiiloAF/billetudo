@@ -946,6 +946,16 @@
   "@homeHeroSpentKicker": {
     "description": "Rótulo corto sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N): aclara que el número es lo gastado, no un saldo."
   },
+  "homeHeroSpentInFeaturedBudget": "Gastado en {budgetName}",
+  "@homeHeroSpentInFeaturedBudget": {
+    "description": "Rótulo sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N `zoZcf`): reemplaza el kicker corto 'Gastado' con el nombre del presupuesto, para que el usuario sepa qué presupuesto alimenta el hero sin tocar nada (discoverability, pages/presupuestos.md).",
+    "placeholders": {
+      "budgetName": {
+        "type": "String",
+        "example": "Mercado del mes"
+      }
+    }
+  },
   "homeBudgetInvitation": "Define un presupuesto para ver cuánto te queda este mes",
   "@homeBudgetInvitation": {},
   "homeNoSpendingYet": "Aún no hay gastos este mes",
@@ -4040,5 +4050,15 @@
   "tutorialEnvelopeModePoint2Heading": "Qué cambia en la pantalla",
   "@tutorialEnvelopeModePoint2Heading": {},
   "tutorialEnvelopeModePoint2Body": "En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.",
-  "@tutorialEnvelopeModePoint2Body": {}
+  "@tutorialEnvelopeModePoint2Body": {},
+  "tutorialBudgetFeaturedChoiceTitle": "Elige qué presupuesto destacar",
+  "@tutorialBudgetFeaturedChoiceTitle": {},
+  "tutorialBudgetFeaturedChoicePoint1Heading": "Uno a la vez en Inicio",
+  "@tutorialBudgetFeaturedChoicePoint1Heading": {},
+  "tutorialBudgetFeaturedChoicePoint1Body": "El presupuesto destacado es el que ves en la portada de Inicio. Ahora que tienes más de uno, puedes elegir cuál.",
+  "@tutorialBudgetFeaturedChoicePoint1Body": {},
+  "tutorialBudgetFeaturedChoicePoint2Heading": "Cámbialo cuando quieras",
+  "@tutorialBudgetFeaturedChoicePoint2Heading": {},
+  "tutorialBudgetFeaturedChoicePoint2Body": "Entra a un presupuesto y usa el menú ⋮ para marcarlo como destacado o quitarlo. Es reversible en cualquier momento.",
+  "@tutorialBudgetFeaturedChoicePoint2Body": {}
 }

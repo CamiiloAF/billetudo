@@ -32,7 +32,7 @@ class TutorialContent extends Equatable {
     this.ctaLabel,
   });
 
-  /// Which of the 11 tutorials this content is for — drives "seen" tracking.
+  /// Which of the 12 tutorials this content is for — drives "seen" tracking.
   final TutorialKey key;
 
   final String title;

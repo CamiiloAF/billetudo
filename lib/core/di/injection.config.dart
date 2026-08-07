@@ -212,6 +212,8 @@ import 'package:billetudo/features/budgets/domain/usecases/cancel_budget_adjustm
     as _i1054;
 import 'package:billetudo/features/budgets/domain/usecases/close_budget.dart'
     as _i1008;
+import 'package:billetudo/features/budgets/domain/usecases/count_active_budgets.dart'
+    as _i33;
 import 'package:billetudo/features/budgets/domain/usecases/create_budget.dart'
     as _i526;
 import 'package:billetudo/features/budgets/domain/usecases/delete_budget.dart'
@@ -1062,8 +1064,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1054.CancelBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i1008.CloseBudget>(
         () => _i1008.CloseBudget(gh<_i1023.BudgetRepository>()));
-    gh.factory<_i526.CreateBudget>(
-        () => _i526.CreateBudget(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i33.CountActiveBudgets>(
+        () => _i33.CountActiveBudgets(gh<_i1023.BudgetRepository>()));
     gh.factory<_i210.DeleteBudget>(
         () => _i210.DeleteBudget(gh<_i1023.BudgetRepository>()));
     gh.factory<_i674.GetActiveBudgets>(
@@ -1206,12 +1208,9 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i522.CompleteOnboarding(gh<_i528.SetOnboardingCompleted>()));
     gh.factory<_i875.GoalLinkCubit>(
         () => _i875.GoalLinkCubit(gh<_i933.LinkTransactionToGoal>()));
-    gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
-          gh<_i526.CreateBudget>(),
-          gh<_i857.UpdateBudget>(),
-          gh<_i871.GetBudgetById>(),
-          gh<_i722.WatchCategories>(),
-          gh<_i795.BudgetCategoryScopeResolver>(),
+    gh.factory<_i526.CreateBudget>(() => _i526.CreateBudget(
+          gh<_i1023.BudgetRepository>(),
+          gh<_i643.SetFeaturedBudget>(),
         ));
     gh.factory<_i143.GoalMovementDetailCubit>(
         () => _i143.GoalMovementDetailCubit(
@@ -1251,10 +1250,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
     gh.factory<_i843.ZeroBasedSummaryCubit>(
         () => _i843.ZeroBasedSummaryCubit(gh<_i458.GetZeroBasedSummary>()));
-    gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
-          gh<_i674.GetActiveBudgets>(),
-          gh<_i613.ReconcileBudgetScopes>(),
-        ));
     gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
           gh<_i498.DeleteAccount>(),
           gh<_i633.WipeLocalDataAfterDeletion>(),
@@ -1262,6 +1257,11 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
+    gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i613.ReconcileBudgetScopes>(),
+          gh<_i241.WatchFeaturedBudgetProgress>(),
+        ));
     gh.factory<_i152.ShouldShowOnboarding>(() => _i152.ShouldShowOnboarding(
           gh<_i487.AppSettingsRepository>(),
           gh<_i1067.AccountRepository>(),
@@ -1421,6 +1421,14 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
+    gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
+          gh<_i526.CreateBudget>(),
+          gh<_i857.UpdateBudget>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i722.WatchCategories>(),
+          gh<_i795.BudgetCategoryScopeResolver>(),
+          gh<_i33.CountActiveBudgets>(),
+        ));
     gh.factory<_i492.GoalContributionCubit>(() => _i492.GoalContributionCubit(
           gh<_i1023.ContributeToGoal>(),
           gh<_i1047.WithdrawFromGoal>(),

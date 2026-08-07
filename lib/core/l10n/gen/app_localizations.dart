@@ -2186,6 +2186,12 @@ abstract class AppLocalizations {
   /// **'Gastado'**
   String get homeHeroSpentKicker;
 
+  /// Rótulo sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N `zoZcf`): reemplaza el kicker corto 'Gastado' con el nombre del presupuesto, para que el usuario sepa qué presupuesto alimenta el hero sin tocar nada (discoverability, pages/presupuestos.md).
+  ///
+  /// In es, this message translates to:
+  /// **'Gastado en {budgetName}'**
+  String homeHeroSpentInFeaturedBudget(String budgetName);
+
   /// No description provided for @homeBudgetInvitation.
   ///
   /// In es, this message translates to:
@@ -7927,6 +7933,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.'**
   String get tutorialEnvelopeModePoint2Body;
+
+  /// No description provided for @tutorialBudgetFeaturedChoiceTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige qué presupuesto destacar'**
+  String get tutorialBudgetFeaturedChoiceTitle;
+
+  /// No description provided for @tutorialBudgetFeaturedChoicePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Uno a la vez en Inicio'**
+  String get tutorialBudgetFeaturedChoicePoint1Heading;
+
+  /// No description provided for @tutorialBudgetFeaturedChoicePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El presupuesto destacado es el que ves en la portada de Inicio. Ahora que tienes más de uno, puedes elegir cuál.'**
+  String get tutorialBudgetFeaturedChoicePoint1Body;
+
+  /// No description provided for @tutorialBudgetFeaturedChoicePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámbialo cuando quieras'**
+  String get tutorialBudgetFeaturedChoicePoint2Heading;
+
+  /// No description provided for @tutorialBudgetFeaturedChoicePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Entra a un presupuesto y usa el menú ⋮ para marcarlo como destacado o quitarlo. Es reversible en cualquier momento.'**
+  String get tutorialBudgetFeaturedChoicePoint2Body;
 }
 
 class _AppLocalizationsDelegate

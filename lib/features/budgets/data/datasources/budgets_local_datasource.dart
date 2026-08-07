@@ -167,6 +167,20 @@ class BudgetsLocalDatasource {
   Future<void> hardDeleteBudget(String id) =>
       (_db.delete(_db.budgets)..where((b) => b.id.equals(id))).go();
 
+  /// `COUNT` of active budgets (neither closed nor trashed), a one-shot read
+  /// so `CreateBudget` can tell "is the one I'm about to insert the first
+  /// active budget" without pulling the whole list/progress
+  /// ([watchActiveBudgets] already does that reactively, but is overkill for
+  /// a single boolean check on write) — auto-featuring the first budget
+  /// (`design-system/billetudo/pages/presupuestos.md`, "Discoverability").
+  Future<int> countActiveBudgets() {
+    final count = _db.budgets.id.count();
+    final query = _db.selectOnly(_db.budgets)
+      ..addColumns([count])
+      ..where(_db.budgets.archivedAt.isNull() & _budgetAlive(_db.budgets));
+    return query.map((row) => row.read(count) ?? 0).getSingle();
+  }
+
   // -- Scope -----------------------------------------------------------------
 
   /// Account scope rows of every budget (alive join rows), with a `referentAlive`
