@@ -32,6 +32,26 @@
   "accountsArchivedEmptyMessage": "You haven't archived any account yet",
   "accountsUnarchive": "Unarchive",
   "accountsLoading": "Loading your accounts",
+  "accountGateNotNow": "Not now",
+  "accountGateCreateAccount": "Create account",
+  "accountGateMovementTitle": "Create your first account",
+  "accountGateMovementMessage": "To record movements you need an active account. Create it now and we'll continue right where you left off.",
+  "accountGateTransferZeroTitle": "You need two accounts to transfer",
+  "accountGateTransferZeroMessage": "You don't have any yet. Create the first one to start (we'll ask for the second one next).",
+  "accountGateTransferOneTitle": "You need a second account",
+  "accountGateTransferOneMessage": "You already have one active account. Create another to complete the transfer between them.",
+  "accountGateScheduledPaymentTitle": "Create an account for your scheduled payment",
+  "accountGateScheduledPaymentMessage": "Scheduled payments come out of an account. Create it now and we'll keep building yours.",
+  "accountGateDebtCashTitle": "You need an account for this movement",
+  "accountGateDebtCashMessage": "This payment or disbursement moves real money, so it needs an account. Create it and we'll continue with your debt.",
+  "accountGateGoalMovementTitle": "You need an account for this contribution",
+  "accountGateGoalMovementMessage": "Moving real money to or from your goal requires an account. Create it and we'll continue.",
+  "accountGateLinkMovementTitle": "There are no movements to link yet",
+  "accountGateLinkMovementMessage": "Linking means choosing among your movements, and those come from an account. Create the first one and we'll continue.",
+  "accountGateBudgetTitle": "Create an account for your budget",
+  "accountGateBudgetMessage": "Budgets are built on top of your real accounts. Create the first one and we'll keep building yours.",
+  "accountGateGoalLinkedAccountTitle": "Link an account to your goal",
+  "accountGateGoalLinkedAccountMessage": "It's optional: you can create your goal without a linked account. If you want to tie it to a real account, create it here.",
   "accountTypeCash": "Cash",
   "accountTypeBank": "Checking account",
   "accountTypeCard": "Credit card",
@@ -44,11 +64,19 @@
   "accountBalanceAdjustTitle": "Adjust balance",
   "accountBalanceAdjustCurrent": "Current balance: {amount}",
   "@accountBalanceAdjustCurrent": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustCurrentDebt": "Current debt: {amount}",
   "@accountBalanceAdjustCurrentDebt": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustNewLabel": "New desired balance",
   "accountBalanceAdjustNewDebtLabel": "New debt",
@@ -56,7 +84,11 @@
   "accountBalanceAdjustRegisterTitle": "Register adjustment",
   "accountBalanceAdjustRegisterBody": "We create a movement dated today for the difference ({diff}). It counts toward your reports and budgets.",
   "@accountBalanceAdjustRegisterBody": {
-    "placeholders": { "diff": { "type": "String" } }
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustCorrectTitle": "Correct opening balance",
   "accountBalanceAdjustCorrectBody": "We adjust your starting balance so it matches. No movement is created.",
@@ -254,8 +286,12 @@
   "transactionFormDateValue": "{prefix}, {date}",
   "@transactionFormDateValue": {
     "placeholders": {
-      "prefix": {"type": "String"},
-      "date": {"type": "String"}
+      "prefix": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "datePickerTitle": "Choose date",
@@ -384,30 +420,54 @@
   "debtDirectionOwedToMe": "Owed to me",
   "debtProgressPaid": "{pct}% paid",
   "@debtProgressPaid": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtProgressCollected": "{pct}% collected",
   "@debtProgressCollected": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtAmountOf": "of {amount}",
   "@debtAmountOf": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtDueOn": "Due {date}",
   "@debtDueOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtPercentValue": "{pct}%",
   "@debtPercentValue": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtDetailBalanceLabel": "Outstanding balance",
   "debtDetailPaidLabel": "paid",
   "debtDetailCollectedLabel": "collected",
   "debtDetailGrowth": "Grows ~{amount}/day",
   "@debtDetailGrowth": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtDetailEstimated": "estimated",
   "debtDetailUpdateBalance": "Update balance",
@@ -417,7 +477,11 @@
   "debtInstallmentTitle": "Next installment",
   "debtInstallmentBadge": "Installment · {date}",
   "@debtInstallmentBadge": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtInstallmentScheduledBadge": "Scheduled payment",
   "debtConfigureInstallmentTitle": "Set up installment",
@@ -430,7 +494,11 @@
   "debtLedgerAdjustment": "Balance updated",
   "debtLedgerRunning": "Balance {amount}",
   "@debtLedgerRunning": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtLedgerTagEstimated": "Estimated",
   "debtLedgerTagNoAccount": "Doesn't affect accounts",
@@ -548,7 +616,6 @@
   "moreSettings": "Settings",
   "moreSettingsDescription": "Preferences and your account",
   "moreSignOut": "Sign out",
-
   "authContinueWithGoogle": "Continue with Google",
   "authContinueWithApple": "Continue with Apple",
   "authContinueWithoutAccount": "Continue without an account",
@@ -558,7 +625,6 @@
   "authGoogleLoading": "Connecting to Google…",
   "authGoogleErrorSnackbar": "We couldn't sign you in with Google",
   "authAppleErrorSnackbar": "We couldn't sign you in with Apple",
-
   "authMergeTitle": "Your data is safe",
   "authMergeSubtitle": "We combined everything you already had saved with your account. Nothing was lost along the way.",
   "authMergeStatAccounts": "Accounts",
@@ -568,7 +634,6 @@
   "authMergeCta": "Go to my finances",
   "authMergeErrorTitle": "We couldn't merge your data",
   "authMergeErrorMessage": "Your data is still safe on this device. Try again once you have a connection.",
-
   "authSignOutSheetTitle": "Sign out",
   "authSignOutSheetMessage": "Your accounts and transactions will stay saved on this phone. You'll stop syncing until you sign in again.",
   "authSignOutSheetMessageDeleting": "You'll stop syncing until you sign in again.",
@@ -580,7 +645,6 @@
   "authSignOutUnsyncedBody": "{count, plural, =1{1 change is still saved only on this phone. If you delete now, that change won't make it to the cloud.} other{{count} changes are still saved only on this phone. If you delete now, those changes won't make it to the cloud.}}",
   "authSignOutWipeErrorMessage": "We signed you out, but couldn't delete this phone's data. It's still here.",
   "authSignOutFailedMessage": "We couldn't sign you out, so nothing was deleted from this phone. Please try again.",
-
   "authDeleteStep1Title": "Delete your account",
   "authDeleteStep1Message": "This action is irreversible. All your cloud data will be permanently deleted: accounts, transactions, categories and everything else tied to your account.",
   "authDeleteStep1Cta": "Delete account",
@@ -596,10 +660,8 @@
   "authDeleteStep3Title": "Done, your account was deleted",
   "authDeleteStep3Subtitle": "We no longer have any of your data in the cloud. You can keep using billetudo whenever you want, with or without an account.",
   "authDeleteStep3Cta": "Go to home",
-
   "authSessionProviderGoogle": "Signed in with Google",
   "authSessionProviderApple": "Signed in with Apple",
-
   "settingsTitle": "Settings",
   "settingsAccountSection": "Account and backup",
   "settingsBackupTitle": "Back up to the cloud",
@@ -613,7 +675,6 @@
   "settingsCurrency": "Currency",
   "settingsCurrencySubtitle": "Choose the currency you log your transactions in",
   "settingsDeleteAccount": "Delete account",
-
   "budgetsTitle": "Budgets",
   "budgetsAdd": "New budget",
   "budgetsNewCta": "+ New budget",
@@ -629,68 +690,120 @@
   "budgetAtRiskLabel": "Could exceed by",
   "budgetResetsOn": "resets on {date}",
   "@budgetResetsOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetEndsOn": "ends on {date}",
   "@budgetEndsOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetScopeGlobal": "All spending",
   "budgetScopeStranded": "No valid scope",
   "budgetScopeAccounts": "{count, plural, one{{count} account} other{{count} accounts}}",
   "@budgetScopeAccounts": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetScopeCategories": "{count, plural, one{{count} category} other{{count} categories}}",
   "@budgetScopeCategories": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetPercent": "{pct}%",
   "@budgetPercent": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "budgetDaysLeft": "{count, plural, =0{Last day} one{{count} day left} other{{count} days left}}",
   "@budgetDaysLeft": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetEndsInDays": "{count, plural, =0{Last day} one{Ends in {count} day} other{Ends in {count} days}}",
   "@budgetEndsInDays": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetProgressBreakdown": "{spent} of {amount}",
   "@budgetProgressBreakdown": {
     "placeholders": {
-      "spent": { "type": "String" },
-      "amount": { "type": "String" }
+      "spent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "budgetActivityTitle": "This period's transactions",
   "budgetActivityCount": "{count, plural, one{{count} transaction} other{{count} transactions}}",
   "@budgetActivityCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetActivityEmpty": "No transactions in this period",
   "budgetScheduledLabel": "Scheduled",
   "budgetScheduledEntrySub": "{count, plural, one{{count} upcoming payment} other{{count} upcoming payments}}",
   "@budgetScheduledEntrySub": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetScheduledEntrySubRisk": "Would go over budget by {amount}",
   "@budgetScheduledEntrySubRisk": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetScheduledCaption": "+ {amount} scheduled (reaches {pct}% if it goes through)",
   "@budgetScheduledCaption": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "pct": { "type": "int" }
+      "amount": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
     }
   },
   "budgetScheduledCaptionRisk": "+ {amount} scheduled — would go over budget by {overage}",
   "@budgetScheduledCaptionRisk": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "overage": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "overage": {
+        "type": "String"
+      }
     }
   },
   "budgetScheduledFreeCaption": "{amount} would be free if you approve the scheduled payments",
@@ -698,15 +811,23 @@
   "budgetScheduledSheetSeeAll": "See all scheduled payments",
   "budgetScheduledSheetHint": "{amount} of what's set aside this period.",
   "@budgetScheduledSheetHint": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetScheduledSheetEmpty": "No scheduled payments in this period yet",
   "budgetScheduledRowSubtitle": "Next: {date} · {accountName}",
   "@budgetScheduledRowSubtitle": {
     "description": "Subtitle of a scheduled payment row within a budget: date of the next occurrence and its associated account.",
     "placeholders": {
-      "date": { "type": "String" },
-      "accountName": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "accountName": {
+        "type": "String"
+      }
     }
   },
   "budgetOneOffWindow": "Single window",
@@ -759,7 +880,11 @@
   "budgetScopeAllCategories": "All categories",
   "budgetFormThresholdRow": "Alert me at {pct}% of the budget",
   "@budgetFormThresholdRow": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "budgetFormThresholdOff": "Don't alert me",
   "budgetFormCreateCta": "Create budget",
@@ -784,7 +909,11 @@
   "budgetFormLoading": "Loading the form",
   "budgetClosedOn": "Closed {date}",
   "@budgetClosedOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetsHistorySubtitle": "Closed budgets",
   "budgetsHistoryHint": "You keep them without deleting. Reactivate them whenever you want.",
@@ -796,31 +925,55 @@
   "budgetsEnvelopeBadge": "Envelope mode",
   "budgetsEnvelopeIncome": "Income {income}",
   "@budgetsEnvelopeIncome": {
-    "placeholders": { "income": { "type": "String" } }
+    "placeholders": {
+      "income": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeAssigned": "Assigned {assigned}",
   "@budgetsEnvelopeAssigned": {
-    "placeholders": { "assigned": { "type": "String" } }
+    "placeholders": {
+      "assigned": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeNudge": "Almost there: give the remaining {amount} a job.",
   "@budgetsEnvelopeNudge": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeNudgeOver": "You assigned {amount} more than came in. Adjust an envelope whenever you like.",
   "@budgetsEnvelopeNudgeOver": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetAssignedLabel": "Assigned",
   "budgetReactivate": "Reactivate",
   "budgetResultWithin": "Ended within budget",
   "budgetResultOverspent": "Over by {amount}",
   "@budgetResultOverspent": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "deleteImpactBudgets": "{count, plural, =1{Used in 1 budget.} other{Used in {count} budgets.}}",
   "@deleteImpactBudgets": {
     "description": "Neutral notice: how many budgets use the account/category being deleted. The budget is not cascade-deleted.",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settingsEnvelopeMode": "Envelope mode",
   "settingsEnvelopeModeSubtitle": "Split your entire income into envelopes",
@@ -867,42 +1020,72 @@
   "@scheduledPaymentDetailConfirmNowError": {},
   "scheduledPaymentDetailRecurrenceOnce": "Just once on {date}",
   "@scheduledPaymentDetailRecurrenceOnce": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "scheduledPaymentDetailRecurrenceForever": "Repeats {unit} from {date}, forever",
   "@scheduledPaymentDetailRecurrenceForever": {
     "placeholders": {
-      "unit": { "type": "String" },
-      "date": { "type": "String" }
+      "unit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "scheduledPaymentDetailRecurrenceUntil": "Repeats {unit} from {date}, until {endDate}",
   "@scheduledPaymentDetailRecurrenceUntil": {
     "placeholders": {
-      "unit": { "type": "String" },
-      "date": { "type": "String" },
-      "endDate": { "type": "String" }
+      "unit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "endDate": {
+        "type": "String"
+      }
     }
   },
   "scheduledRecurrenceUnitDaily": "every day",
   "scheduledRecurrenceUnitDailyInterval": "every {interval} days",
   "@scheduledRecurrenceUnitDailyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitWeekly": "every week",
   "scheduledRecurrenceUnitWeeklyInterval": "every {interval} weeks",
   "@scheduledRecurrenceUnitWeeklyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitMonthly": "every month",
   "scheduledRecurrenceUnitMonthlyInterval": "every {interval} months",
   "@scheduledRecurrenceUnitMonthlyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitYearly": "every year",
   "scheduledRecurrenceUnitYearlyInterval": "every {interval} years",
   "@scheduledRecurrenceUnitYearlyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPaymentDetailModeLabel": "Recording mode",
   "scheduledPaymentDetailModeAutomatic": "Automatic",
@@ -940,7 +1123,11 @@
   "scheduledDueOneDayAgo": "1 day ago",
   "scheduledDueDaysAgo": "{count} days ago",
   "@scheduledDueDaysAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledFinishedCount": "Finished · {count}",
   "scheduledFinishedCaption": "They no longer create transactions. The ones they already created stay in your accounts.",
@@ -1013,17 +1200,29 @@
   "budgetAdjustSheetTitle": "Adjust amount",
   "budgetAdjustCurrentAmountInline": "Current {amount}",
   "@budgetAdjustCurrentAmountInline": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetAdjustNewAmountLabel": "New amount · {range}",
   "@budgetAdjustNewAmountLabel": {
-    "placeholders": { "range": { "type": "String" } }
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
   },
   "budgetAdjustExplainer": "On {resumeDate} it goes back to {originalAmount} automatically.",
   "@budgetAdjustExplainer": {
     "placeholders": {
-      "resumeDate": { "type": "String" },
-      "originalAmount": { "type": "String" }
+      "resumeDate": {
+        "type": "String"
+      },
+      "originalAmount": {
+        "type": "String"
+      }
     }
   },
   "budgetAdjustApplyCta": "Apply changes",
@@ -1032,8 +1231,12 @@
   "budgetAdjustBannerSub": "{amount} · {range}",
   "@budgetAdjustBannerSub": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "range": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
     }
   },
   "budgetAdjustScheduledSnackbar": "Adjustment scheduled for the selected period.",
@@ -1198,7 +1401,6 @@
   "goalDeleteMovementMessageManual": "The goal's progress is recalculated without it. This {kind} was a manual entry, so none of your accounts change balance.",
   "goalDeleteMovementMessageCompletedTransfer": "This {kind} is part of what completed {goalName}: deleting it puts the goal back in progress until you complete it again. The transfer behind it is also deleted and {origin}'s and {destination}'s balances go back to what they were.",
   "goalDeleteMovementMessageCompletedManual": "This {kind} is part of what completed {goalName}: deleting it puts the goal back in progress until you complete it again. It was a manual entry, so none of your accounts change balance.",
-
   "syncStatusTitle": "Sync status",
   "syncHeroAttentionTitle": "{count, plural, =1{1 change is only on this phone} other{{count} changes are only on this phone}}",
   "syncHeroAttentionKicker": "Not uploaded to the cloud since {since}",
@@ -1288,12 +1490,10 @@
   "homeSyncSheetTooLongMessage": "We have been trying to upload your changes for {duration}. Nothing is missing on this phone; what has not happened yet is the copy in the cloud.",
   "homeSyncSheetDetails": "See details",
   "settingsSyncStatus": "Sync status",
-
   "reportsTabSummary": "Summary",
   "reportsTabCashflow": "Cash flow",
   "reportsTabNetWorth": "Net worth",
   "reportsTabCategories": "Categories",
-
   "reportsPeriodLastMonths": "{count, plural, one{Last month} other{Last {count} months}}",
   "reportsPeriodDaysWithData": "{count, plural, one{{count} day with data} other{{count} days with data}}",
   "reportsPeriodSinceDate": "Since {date}",
@@ -1301,7 +1501,6 @@
   "reportsPeriodGranularityMonth": "Month",
   "reportsPeriodGranularityYear": "Year",
   "reportsPeriodClear": "Clear",
-
   "reportsCashflowCardTitle": "Cash flow",
   "reportsCashflowCardSubtitle": "Income vs. expenses, month by month",
   "reportsCashflowIncomeLabel": "Income",
@@ -1318,7 +1517,6 @@
   "reportsCashflowDebtToggleLabel": "Separate debt movements",
   "reportsCashflowDebtToggleHint": "Shown as a separate series, never hidden.",
   "reportsCashflowShortHistoryNote": "We adjusted the view to the days you already logged. Once you complete your first month, you'll see the month-by-month comparison.",
-
   "reportsNetWorthCardTitle": "Net worth",
   "reportsNetWorthCaption": "Liquid is what you can use today. Total subtracts what you owe and adds what you're owed.",
   "reportsNetWorthLegendLiquid": "Liquid net worth",
@@ -1330,7 +1528,6 @@
   "reportsNetWorthArchivedToggleLabel": "Include archived accounts",
   "reportsNetWorthArchivedToggleHint": "Today they're left out of both figures.",
   "reportsNetWorthSubtitle": "From the close of {from} to {to} · {currency}",
-
   "reportsCategoriesCardTitle": "Spending breakdown",
   "reportsCategoriesSubtitle": "{isSubcategory, select, true{{count, plural, one{{count} subcategory · {range}} other{{count} subcategories · {range}}}} other{{count, plural, one{{count} category · {range}} other{{count} categories · {range}}}}}",
   "reportsCategoriesTopLabel": "Top spend: {name} · {pct}%",
@@ -1340,7 +1537,6 @@
   "reportsCategoriesViewSubcategories": "Drill down",
   "reportsCategoriesBack": "Back",
   "reportsCategoriesMovementsCount": "{count, plural, one{{count} movement} other{{count} movements}}",
-
   "reportsDashboardBudgetsTitle": "Budgets",
   "reportsDashboardBudgetsSubtitle": "{count, plural, one{{count} active budget · own cycles} other{{count} active budgets · own cycles}}",
   "reportsDashboardGoalsTitle": "Goals",
@@ -1353,19 +1549,15 @@
   "reportsDashboardCrossLinkDebts": "See how your debts are progressing",
   "reportsDashboardHeroBudgetsAvailable": "{amount} available",
   "reportsDashboardHeroGoalsSaved": "{amount} saved",
-
   "reportsEmptyTitle": "No movements yet in this period",
   "reportsEmptyMessage": "Log an expense or income and you'll see how your money moves month by month here.",
   "reportsSyncNoticeMessage": "You have unsynced changes. What you see here is complete and saved on your phone.",
-
   "reportsExportTooltip": "Export as image",
   "reportsExportError": "We couldn't export the chart. Try again.",
   "reportsExportShareText": "{title} chart — billetudo",
   "reportsChartSkeletonLoadingLabel": "Loading chart",
-
   "reportsAccountFilterAll": "All accounts",
   "reportsAccountFilterSelected": "{count, plural, =1{1 account} other{{count} accounts}}",
-
   "accountTypeSheetTitle": "Choose the account type",
   "onboardingWelcomeHeadline": "Everything essential. Free. Forever.",
   "onboardingWelcomeSubhead": "Your data lives on your phone. Cloud backup is optional.",
@@ -1387,5 +1579,161 @@
   "onboardingClosingSubheadNoAccount": "You need an account to record movements. Create your first one in a moment.",
   "onboardingClosingCtaTransaction": "Record your first movement",
   "onboardingClosingCtaAccount": "Create your first account",
-  "onboardingClosingSkip": "I'll do it later"
+  "onboardingClosingSkip": "I'll do it later",
+  "tutorialGotIt": "Got it",
+  "@tutorialGotIt": {},
+  "tutorialsMenuViewHelp": "View help",
+  "@tutorialsMenuViewHelp": {},
+  "budgetsMenuViewHelpSubtitle": "Go over how budgets work",
+  "@budgetsMenuViewHelpSubtitle": {},
+  "goalsMenuViewHelpSubtitle": "Go over how goals work",
+  "@goalsMenuViewHelpSubtitle": {},
+  "debtsMenuViewHelpSubtitle": "Go over how debts work",
+  "@debtsMenuViewHelpSubtitle": {},
+  "scheduledPaymentsMenuViewHelpSubtitle": "Go over how scheduled payments work",
+  "@scheduledPaymentsMenuViewHelpSubtitle": {},
+  "goalsMenuTooltip": "More options",
+  "@goalsMenuTooltip": {},
+  "goalsMenuOptions": "Options",
+  "@goalsMenuOptions": {},
+  "goalsMenuArchived": "View archived",
+  "@goalsMenuArchived": {},
+  "debtsMenuTooltip": "More options",
+  "@debtsMenuTooltip": {},
+  "debtsMenuOptions": "Options",
+  "@debtsMenuOptions": {},
+  "scheduledPaymentsMenuTooltip": "More options",
+  "@scheduledPaymentsMenuTooltip": {},
+  "scheduledPaymentsMenuOptions": "Options",
+  "@scheduledPaymentsMenuOptions": {},
+  "settingsShowHelpOnEntry": "Show help when entering a section",
+  "@settingsShowHelpOnEntry": {},
+  "settingsShowHelpOnEntrySubtitle": "Explains each section the first time you open it.",
+  "@settingsShowHelpOnEntrySubtitle": {},
+  "tutorialBudgetsTitle": "How budgets work",
+  "@tutorialBudgetsTitle": {},
+  "tutorialBudgetsPoint1Heading": "One budget per period",
+  "@tutorialBudgetsPoint1Heading": {},
+  "tutorialBudgetsPoint1Body": "You set an amount to spend in a period (weekly, biweekly, monthly, or just once) and see how much is left as it goes.",
+  "@tutorialBudgetsPoint1Body": {},
+  "tutorialBudgetsPoint2Heading": "With whatever scope you choose",
+  "@tutorialBudgetsPoint2Heading": {},
+  "tutorialBudgetsPoint2Body": "It can cover all your spending, or focus on just one account or category.",
+  "@tutorialBudgetsPoint2Body": {},
+  "tutorialBudgetsPoint3Heading": "Envelope mode, for more control",
+  "@tutorialBudgetsPoint3Heading": {},
+  "tutorialBudgetsPoint3Body": "Spread your whole income across your categories, so every dollar has a job from the start.",
+  "@tutorialBudgetsPoint3Body": {},
+  "tutorialBudgetsCta": "Create my first budget",
+  "@tutorialBudgetsCta": {},
+  "tutorialGoalsTitle": "How goals work",
+  "@tutorialGoalsTitle": {},
+  "tutorialGoalsPoint1Heading": "What a goal is for",
+  "@tutorialGoalsPoint1Heading": {},
+  "tutorialGoalsPoint1Body": "Use it to save for something specific, like a trip, an emergency fund, or a gift, and see your progress anytime.",
+  "@tutorialGoalsPoint1Body": {},
+  "tutorialGoalsPoint2Heading": "Progress is built from your contributions",
+  "@tutorialGoalsPoint2Heading": {},
+  "tutorialGoalsPoint2Body": "Every time you log a contribution, your progress goes up. It's not a number you edit — it's the sum of what you've contributed.",
+  "@tutorialGoalsPoint2Body": {},
+  "tutorialGoalsPoint3Heading": "A contribution can move money, or not",
+  "@tutorialGoalsPoint3Heading": {},
+  "tutorialGoalsPoint3Body": "You can contribute by moving real money from an account, or just log it without touching your balance (handy if you already set that money aside elsewhere).",
+  "@tutorialGoalsPoint3Body": {},
+  "tutorialGoalsCta": "Create my first goal",
+  "@tutorialGoalsCta": {},
+  "tutorialDebtsTitle": "How debts work",
+  "@tutorialDebtsTitle": {},
+  "tutorialDebtsPoint1Heading": "What a debt is for",
+  "@tutorialDebtsPoint1Heading": {},
+  "tutorialDebtsPoint1Body": "Keep track of money you owe (to a bank, a card, or a person) or that's owed to you, without doing the math by hand.",
+  "@tutorialDebtsPoint1Body": {},
+  "tutorialDebtsPoint2Heading": "You log it, the app does the math",
+  "@tutorialDebtsPoint2Heading": {},
+  "tutorialDebtsPoint2Body": "You note what you borrowed, what you've paid off, and any interest that adds up, and the app figures out how much is left to pay on its own.",
+  "@tutorialDebtsPoint2Body": {},
+  "tutorialDebtsPoint3Heading": "A payment can move money, or not",
+  "@tutorialDebtsPoint3Heading": {},
+  "tutorialDebtsPoint3Body": "You can deduct a payment from one of your accounts, or just log it without moving money (handy if someone else paid for you, or it was in cash).",
+  "@tutorialDebtsPoint3Body": {},
+  "tutorialDebtsCta": "Register my first debt",
+  "@tutorialDebtsCta": {},
+  "tutorialScheduledPaymentsTitle": "How scheduled payments work",
+  "@tutorialScheduledPaymentsTitle": {},
+  "tutorialScheduledPaymentsPoint1Heading": "What they're for",
+  "@tutorialScheduledPaymentsPoint1Heading": {},
+  "tutorialScheduledPaymentsPoint1Body": "They help you not forget payments that repeat, like rent, a subscription, or an installment, and let the app log them for you if you want.",
+  "@tutorialScheduledPaymentsPoint1Body": {},
+  "tutorialScheduledPaymentsPoint2Heading": "Automatic or manual",
+  "@tutorialScheduledPaymentsPoint2Heading": {},
+  "tutorialScheduledPaymentsPoint2Body": "An automatic one logs itself on its date. A manual one alerts you and you confirm it before it counts (handy if the amount changes each time).",
+  "@tutorialScheduledPaymentsPoint2Body": {},
+  "tutorialScheduledPaymentsPoint3Heading": "The due-dates tray",
+  "@tutorialScheduledPaymentsPoint3Heading": {},
+  "tutorialScheduledPaymentsPoint3Body": "That's where you see all your pending payments in one place and confirm them when they're due.",
+  "@tutorialScheduledPaymentsPoint3Body": {},
+  "tutorialScheduledPaymentsCta": "Schedule my first payment",
+  "@tutorialScheduledPaymentsCta": {},
+  "tutorialDebtLinkMovementTitle": "Link an existing transaction",
+  "@tutorialDebtLinkMovementTitle": {},
+  "tutorialDebtLinkMovementPoint1Heading": "It doesn't create a new transaction",
+  "@tutorialDebtLinkMovementPoint1Heading": {},
+  "tutorialDebtLinkMovementPoint1Body": "It attributes one you already logged, so it isn't duplicated.",
+  "@tutorialDebtLinkMovementPoint1Body": {},
+  "tutorialGoalLinkMovementTitle": "Link an existing transaction",
+  "@tutorialGoalLinkMovementTitle": {},
+  "tutorialGoalLinkMovementPoint1Heading": "It doesn't create a new transaction",
+  "@tutorialGoalLinkMovementPoint1Heading": {},
+  "tutorialGoalLinkMovementPoint1Body": "It attributes one you already logged, so it isn't duplicated.",
+  "@tutorialGoalLinkMovementPoint1Body": {},
+  "tutorialDebtPaymentToggleTitle": "Add the payment to an account?",
+  "@tutorialDebtPaymentToggleTitle": {},
+  "tutorialDebtPaymentTogglePoint1Heading": "If you choose \"Yes\"",
+  "@tutorialDebtPaymentTogglePoint1Heading": {},
+  "tutorialDebtPaymentTogglePoint1Body": "The payment also deducts the amount from the account you choose, like a real transaction.",
+  "@tutorialDebtPaymentTogglePoint1Body": {},
+  "tutorialDebtPaymentTogglePoint2Heading": "If you choose \"No\"",
+  "@tutorialDebtPaymentTogglePoint2Heading": {},
+  "tutorialDebtPaymentTogglePoint2Body": "The debt still goes down, but no balance is touched (handy if you paid in cash or someone else paid for you).",
+  "@tutorialDebtPaymentTogglePoint2Body": {},
+  "tutorialGoalContributionToggleTitle": "Move money from an account?",
+  "@tutorialGoalContributionToggleTitle": {},
+  "tutorialGoalContributionTogglePoint1Heading": "If you choose \"Yes\"",
+  "@tutorialGoalContributionTogglePoint1Heading": {},
+  "tutorialGoalContributionTogglePoint1Body": "The contribution deducts the real amount from an account, like a transfer.",
+  "@tutorialGoalContributionTogglePoint1Body": {},
+  "tutorialGoalContributionTogglePoint2Heading": "If you choose \"No\"",
+  "@tutorialGoalContributionTogglePoint2Heading": {},
+  "tutorialGoalContributionTogglePoint2Body": "The contribution is only logged on the goal, without touching any balance (handy if you already set that money aside elsewhere).",
+  "@tutorialGoalContributionTogglePoint2Body": {},
+  "tutorialDebtScheduledInstallmentTitle": "The installment lives in Scheduled payments",
+  "@tutorialDebtScheduledInstallmentTitle": {},
+  "tutorialDebtScheduledInstallmentPoint1Heading": "Set it up here, confirm it there",
+  "@tutorialDebtScheduledInstallmentPoint1Heading": {},
+  "tutorialDebtScheduledInstallmentPoint1Body": "You set it up from this debt, but it's confirmed from the Scheduled payments tray, like any other payment.",
+  "@tutorialDebtScheduledInstallmentPoint1Body": {},
+  "tutorialDebtScheduledInstallmentPoint2Heading": "One transaction, two effects",
+  "@tutorialDebtScheduledInstallmentPoint2Heading": {},
+  "tutorialDebtScheduledInstallmentPoint2Body": "When you confirm it, a single transaction lowers your account balance and pays down the debt at the same time.",
+  "@tutorialDebtScheduledInstallmentPoint2Body": {},
+  "tutorialBudgetableTransferTitle": "Count this transfer in your budget?",
+  "@tutorialBudgetableTransferTitle": {},
+  "tutorialBudgetableTransferPoint1Heading": "Why you'd mark it",
+  "@tutorialBudgetableTransferPoint1Heading": {},
+  "tutorialBudgetableTransferPoint1Body": "Some transfers really are part of your spending plan, even if they're not a real expense (for example, moving money to the account you use to spend during the month).",
+  "@tutorialBudgetableTransferPoint1Body": {},
+  "tutorialBudgetableTransferPoint2Heading": "What changes when you mark it",
+  "@tutorialBudgetableTransferPoint2Heading": {},
+  "tutorialBudgetableTransferPoint2Body": "It's subtracted from your budget just like an expense, even though the money is still yours — just in another account.",
+  "@tutorialBudgetableTransferPoint2Body": {},
+  "tutorialEnvelopeModeTitle": "How envelope mode works",
+  "@tutorialEnvelopeModeTitle": {},
+  "tutorialEnvelopeModePoint1Heading": "What it's for",
+  "@tutorialEnvelopeModePoint1Heading": {},
+  "tutorialEnvelopeModePoint1Body": "Spread your whole income across your categories, so every dollar has a job from the start.",
+  "@tutorialEnvelopeModePoint1Body": {},
+  "tutorialEnvelopeModePoint2Heading": "What changes on the screen",
+  "@tutorialEnvelopeModePoint2Heading": {},
+  "tutorialEnvelopeModePoint2Body": "Instead of one free-form amount, you see how much is left in each category on its own.",
+  "@tutorialEnvelopeModePoint2Body": {}
 }

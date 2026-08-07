@@ -13,8 +13,12 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../../../core/widgets/toggle_field.dart';
+import '../../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../../categories/domain/entities/category.dart';
 import '../../../../transactions/presentation/widgets/category_picker/category_quick_picker.dart';
+import '../../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../../domain/entities/goal_contribution.dart';
 import '../../cubit/goal_contribution_cubit.dart';
 import '../../cubit/goal_contribution_state.dart';
@@ -191,12 +195,20 @@ class GoalContributionSheetBody extends StatelessWidget {
                 ],
                 if (state.hasLinkedAccount) ...[
                   const SizedBox(height: 10),
-                  ToggleField(
-                    icon: LucideIcons.arrowLeftRight,
-                    label: l10n.goalMoveFundsToggleLabel,
-                    value: state.moveMoney,
-                    hint: _moveFundsHint(l10n, state),
-                    onChanged: cubit.toggleMoveMoney,
+                  // First time this control renders, its own minitutorial
+                  // explains earmarking vs. an actual transfer
+                  // (`docs/requirements/16-minitutoriales.md` HU-02).
+                  TutorialAutoShow(
+                    tutorialKey: TutorialKey.goalContributionToggle,
+                    child: ToggleField(
+                      icon: LucideIcons.arrowLeftRight,
+                      label: l10n.goalMoveFundsToggleLabel,
+                      value: state.moveMoney,
+                      hint: _moveFundsHint(l10n, state),
+                      onChanged: (value) => unawaited(
+                        _toggleMoveMoney(context, cubit, value),
+                      ),
+                    ),
                   ),
                   if (state.moveMoney) ...[
                     const SizedBox(height: 14),
@@ -343,6 +355,37 @@ class GoalContributionSheetBody extends StatelessWidget {
     if (picked != null) {
       cubit.dateChanged(picked);
     }
+  }
+
+  /// HU-03/HU-04 gated by `15-gate-cuenta.md`: turning the toggle to Sí
+  /// generates a real transfer, so without any active account this opens the
+  /// bridge sheet instead of just revealing an account selector that would
+  /// have nothing to pick.
+  Future<void> _toggleMoveMoney(
+    BuildContext context,
+    GoalContributionCubit cubit,
+    bool value,
+  ) async {
+    if (!value) {
+      cubit.toggleMoveMoney(false);
+      return;
+    }
+    final hadAccounts = cubit.state.accounts.isNotEmpty;
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.goalMovement,
+    );
+    if (!canProceed) {
+      return;
+    }
+    // The bridge sheet only opens when `state.accounts` was empty; a fresh
+    // account was created in the meantime, so the cubit's list is stale
+    // until reloaded — otherwise the toggle flips on but the account picker
+    // it reveals still has nothing to show.
+    if (!hadAccounts) {
+      await cubit.refreshAccounts();
+    }
+    cubit.toggleMoveMoney(true);
   }
 
   Future<void> _pickAccount(

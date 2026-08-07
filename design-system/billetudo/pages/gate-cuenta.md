@@ -2,7 +2,21 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** tema claro aprobado y auditado por `ui-ux-reviewer` para las 8 superficies de HU-03 (patrón base + transferencia 0/1 cuentas + encadenamiento + pago programado + deuda con caja + meta con movimiento + enlazar movimiento). Pendiente: tema oscuro — no se construye hasta que el claro esté 100% cerrado, y ya lo está. Requisitos en `docs/requirements/15-gate-cuenta.md`.
+**Estado: diseño cerrado, claro + oscuro, auditado por `ui-ux-reviewer` en ambos temas.** Listo para `flutter-dev`. Requisitos en `docs/requirements/15-gate-cuenta.md`.
+
+## Tema oscuro
+
+Copias 1:1 de las 7 superficies (`Zjsfz`, `XYfSq`, `goGwA`, `G0mfgY`, `K6bGhq`, `xU4uz`, `oHAVJ`) generadas con `Copy(...,{theme:{mode:'dark'}})`, sin overrides manuales de color — recoloreo automático por variable. `j0YXVo` (la anotación de encadenamiento) no se copió a oscuro a propósito: es documentación interna de flujo, no una pantalla que el usuario vea. Auditoría sin hallazgos: cero hex hardcodeado, fidelidad estructural exacta contra el claro, sin overflow/clipping nuevo.
+
+| Claro | Oscuro |
+|---|---|
+| `Zjsfz` | `xQ0Je` |
+| `XYfSq` | `rYNtV` |
+| `goGwA` | `qG7Xu` |
+| `G0mfgY` | `U1jF9l` |
+| `K6bGhq` | `NHnn9` |
+| `xU4uz` | `Yeiha` |
+| `oHAVJ` | `sQfVw` |
 
 ## Tesis (norte del diseño)
 
@@ -24,6 +38,8 @@ Todos en tema Claro por ahora (oscuro pendiente).
 | Copy — Deuda con caja (desembolso/abono que mueve dinero) · 0 cuentas | "Necesitas una cuenta para este movimiento" | `K6bGhq` |
 | Copy — Meta con movimiento de dinero · 0 cuentas | "Necesitas una cuenta para este aporte" | `xU4uz` |
 | Copy — Enlazar movimiento existente · 0 cuentas | "Aún no hay movimientos para enlazar" | `oHAVJ` |
+| Copy — Presupuesto (bloqueante, decisión revertida 2026-08-06) · 0 cuentas | "Crea una cuenta para tu presupuesto" | `flt4U` |
+| Copy — Meta, vincular cuenta (informativa, NO bloqueante) · 0 cuentas | "Vincula una cuenta a tu meta" | `kOr4c` |
 
 ## Componentes reutilizados (sin componentes nuevos)
 
@@ -46,7 +62,13 @@ Toda la hoja se construyó con componentes `reusable:true` ya existentes — no 
 
 Pasó sin hallazgos críticos ni importantes sobre el patrón base y las 3 superficies de referencia iniciales (`Zjsfz`, `XYfSq`, `goGwA`). Confirmó explícitamente que el tratamiento de "botones dobles" no se lee como confirmación destructiva (paleta `$primary` vs. `$expense` de "Confirmar Eliminar"), cero iconografía prohibida, y touch targets ~48px de alto. Único hallazgo menor — la anotación `j0YXVo` no se distinguía como diagrama a simple vista — corregido con el kicker `S03SB` ("⚠ DIAGRAMA — NO IMPLEMENTAR TAL CUAL").
 
+## Superficies agregadas 2026-08-06 (bugs reales encontrados en producción)
+
+- **Presupuestos pasó de "no se bloquea" a bloqueante** — decisión de producto explícita del usuario tras probar la app: toda la creación de presupuestos exige cuenta activa, incluido el alcance "Todo" (que en rigor no referencia ninguna cuenta puntual — se prioriza consistencia de flujo sobre esa posibilidad de dominio). Ver nota en `docs/requirements/15-gate-cuenta.md`. Implementado como guarda de router en `/presupuestos/nuevo`.
+- **Meta — vincular cuenta:** el campo "Cuenta vinculada (recomendado)" del formulario de Metas era un no-op silencioso al tocarlo sin cuentas activas — bug real, no una decisión de diseño. Se corrigió para mostrar la hoja puente de forma informativa (no bloqueante): crear la meta sin cuenta sigue funcionando igual que siempre.
+
 ## Pendiente / fuera de alcance de Pencil
 
 - **El formulario de creación de cuenta embebido en la hoja** no se rediseñó — es el mismo de `pages/cuentas.md` (HU-01), solo referenciado, no reconstruido en este documento.
-- **Tema oscuro:** no se construye hasta que el claro quede 100% cerrado — ya lo está para las 8 superficies de HU-03; queda pendiente pasar a tema oscuro cuando el flujo de la feature lo indique.
+- **Tema oscuro:** no se construye hasta que el claro quede 100% cerrado. Las 8 superficies originales ya lo tienen; `flt4U` (Presupuesto) y `kOr4c` (Meta) quedan pendientes de su pasada de oscuro.
+- **Auditoría de `ui-ux-reviewer`** sobre `flt4U`/`kOr4c`: no corrida todavía, quedó pendiente tras la aprobación directa del usuario.

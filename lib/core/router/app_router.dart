@@ -14,6 +14,8 @@ import '../../features/accounts/presentation/pages/account_detail_page.dart';
 import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
+import '../../features/accounts/presentation/widgets/account_gate_copy.dart';
+import '../../features/accounts/presentation/widgets/account_gated_route.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/domain/entities/sign_out_outcome.dart';
 import '../../features/auth/domain/usecases/sign_out_with_local_data_choice.dart';
@@ -489,6 +491,13 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               // Bugfix item 6: offline with no session → back up / sign in.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+              // NOTE(gate-cuenta run): `HomePage` on disk no longer declares
+              // `onOpenBudget` — this callsite was left dangling by something
+              // outside this task's scope (a build break present before any
+              // of this run's edits, see the run's closing notes). Dropped
+              // here only to keep the tree compiling; the "home-hero-period-
+              // stepper" item 7 feature itself needs a real look, not a
+              // silent re-add.
             ),
           ),
         ),
@@ -556,35 +565,40 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
             GoRoute(
               path: 'nuevo',
               parentNavigatorKey: _rootNavigatorKey,
-              builder: (context, state) => BlocProvider(
-                create: (context) => _started(
-                  getIt<TransactionFormCubit>(),
-                  (c) => c.load(
-                    null,
-                    type: _typeFromQuery(state.uri),
-                    accountId: state.uri.queryParameters['accountId'],
+              // HU-04 of `15-gate-cuenta.md`: a direct/deep-linked visit gets
+              // the same bridge a FAB tap gets instead of an unusable form.
+              builder: (context, state) => AccountGatedRoute(
+                surface: AccountGateSurface.movement,
+                builder: (context) => BlocProvider(
+                  create: (context) => _started(
+                    getIt<TransactionFormCubit>(),
+                    (c) => c.load(
+                      null,
+                      type: _typeFromQuery(state.uri),
+                      accountId: state.uri.queryParameters['accountId'],
+                    ),
                   ),
-                ),
-                child: TransactionFormPage(
-                  // pushReplacement, not push: the transaction form must leave
-                  // the stack as the scheduled-payment form opens, so popping
-                  // the PP form (after saving it) returns to the movements
-                  // list — the origin — instead of reappearing on the
-                  // now-abandoned transaction form (bugfix item 2-iii).
-                  onConvertToScheduledPayment: (formState) =>
-                      context.pushReplacement(
-                    AppRoutes.newScheduledPaymentFromTransaction(
-                      accountId: formState.accountId ?? '',
-                      accountName: formState.accountName ?? '',
-                      amountMinor: formState.amountMinor,
-                      currency: formState.currency,
-                      type: formState.type.name,
-                      nextDate: formState.date,
-                      categoryId: formState.categoryId,
-                      categoryKind: formState.categoryKind?.name,
-                      categoryName: formState.categoryName,
-                      note: formState.note,
-                      tagIds: formState.tagIds.toList(),
+                  child: TransactionFormPage(
+                    // pushReplacement, not push: the transaction form must leave
+                    // the stack as the scheduled-payment form opens, so popping
+                    // the PP form (after saving it) returns to the movements
+                    // list — the origin — instead of reappearing on the
+                    // now-abandoned transaction form (bugfix item 2-iii).
+                    onConvertToScheduledPayment: (formState) =>
+                        context.pushReplacement(
+                      AppRoutes.newScheduledPaymentFromTransaction(
+                        accountId: formState.accountId ?? '',
+                        accountName: formState.accountName ?? '',
+                        amountMinor: formState.amountMinor,
+                        currency: formState.currency,
+                        type: formState.type.name,
+                        nextDate: formState.date,
+                        categoryId: formState.categoryId,
+                        categoryKind: formState.categoryKind?.name,
+                        categoryName: formState.categoryName,
+                        note: formState.note,
+                        tagIds: formState.tagIds.toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -654,10 +668,18 @@ StatefulShellBranch _presupuestosBranch() => StatefulShellBranch(
             GoRoute(
               path: 'nuevo',
               parentNavigatorKey: _rootNavigatorKey,
-              builder: (context, state) => BlocProvider(
-                create: (context) =>
-                    _started(getIt<BudgetFormCubit>(), (c) => c.load(null)),
-                child: const BudgetFormPage(),
+              // 15-gate-cuenta.md: toda la creación de presupuestos exige
+              // cuenta, incluido el alcance "Todo" (decisión de producto
+              // revertida 2026-08-06) — cubre el FAB y cualquier deep link.
+              builder: (context, state) => AccountGatedRoute(
+                surface: AccountGateSurface.budget,
+                builder: (context) => BlocProvider(
+                  create: (context) => _started(
+                    getIt<BudgetFormCubit>(),
+                    (c) => c.load(null),
+                  ),
+                  child: const BudgetFormPage(),
+                ),
               ),
             ),
             GoRoute(
@@ -1286,12 +1308,15 @@ GoRoute _debtsRoute() => GoRoute(
               builder: (context, state) {
                 final debtContext = state.extra! as DebtInstallmentContext;
                 final spId = state.uri.queryParameters['spId'];
-                return BlocProvider(
-                  create: (context) => _startedDebtInstallmentForm(
-                    debtContext,
-                    spId,
+                return AccountGatedRoute(
+                  surface: AccountGateSurface.scheduledPayment,
+                  builder: (context) => BlocProvider(
+                    create: (context) => _startedDebtInstallmentForm(
+                      debtContext,
+                      spId,
+                    ),
+                    child: const ScheduledPaymentFormPage(),
                   ),
-                  child: const ScheduledPaymentFormPage(),
                 );
               },
             ),
@@ -1330,22 +1355,30 @@ ScheduledPaymentFormCubit _startedDebtInstallmentForm(
 GoRoute _debtLinkModeRoute() => GoRoute(
       path: AppRoutes.linkTransactionToDebt(':debtId'),
       parentNavigatorKey: _rootNavigatorKey,
+      // HU-03/HU-04 of `15-gate-cuenta.md`: without any active account there
+      // are no movements to list, so the bridge (`oHAVJ`, "Aún no hay
+      // movimientos para enlazar") replaces the empty list instead of
+      // leaving the user to guess why it's empty.
       builder: (context, state) {
         final debt = state.extra! as Debt;
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider.value(
-              value: _started(
-                getIt<TransactionsListCubit>(),
-                (c) => c.start(),
+        return AccountGatedRoute(
+          surface: AccountGateSurface.linkMovement,
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(
+                value: _started(
+                  getIt<TransactionsListCubit>(),
+                  (c) => c.start(),
+                ),
               ),
-            ),
-            BlocProvider.value(
-              value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
-            ),
-            BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
-          ],
-          child: DebtLinkModePage(debt: debt),
+              BlocProvider.value(
+                value:
+                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+              ),
+              BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
+            ],
+            child: DebtLinkModePage(debt: debt),
+          ),
         );
       },
     );
@@ -1358,29 +1391,37 @@ GoRoute _debtLinkModeRoute() => GoRoute(
 GoRoute _goalLinkModeRoute() => GoRoute(
       path: AppRoutes.linkTransactionToGoal(':goalId'),
       parentNavigatorKey: _rootNavigatorKey,
+      // Same bridge as `_debtLinkModeRoute` (`15-gate-cuenta.md` HU-03/HU-04).
       builder: (context, state) {
         final linkContext = state.extra! as GoalLinkContext;
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider.value(
-              value: _started(getIt<TransactionsListCubit>(), (c) => c.start()),
-            ),
-            BlocProvider.value(
-              value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
-            ),
-            BlocProvider.value(
-              value: getIt<GoalLinkCubit>()
-                ..start(
-                  goalId: linkContext.goalId,
-                  goalName: linkContext.goalName,
-                  direction: linkContext.direction,
+        return AccountGatedRoute(
+          surface: AccountGateSurface.linkMovement,
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(
+                value: _started(
+                  getIt<TransactionsListCubit>(),
+                  (c) => c.start(),
                 ),
+              ),
+              BlocProvider.value(
+                value:
+                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+              ),
+              BlocProvider.value(
+                value: getIt<GoalLinkCubit>()
+                  ..start(
+                    goalId: linkContext.goalId,
+                    goalName: linkContext.goalName,
+                    direction: linkContext.direction,
+                  ),
+              ),
+            ],
+            child: GoalLinkModePage(
+              goalId: linkContext.goalId,
+              goalName: linkContext.goalName,
+              direction: linkContext.direction,
             ),
-          ],
-          child: GoalLinkModePage(
-            goalId: linkContext.goalId,
-            goalName: linkContext.goalName,
-            direction: linkContext.direction,
           ),
         );
       },
@@ -1724,9 +1765,14 @@ GoRoute _pagosProgramadosRoute() => GoRoute(
         GoRoute(
           path: 'nuevo',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _startedScheduledPaymentForm(state.uri),
-            child: const ScheduledPaymentFormPage(),
+          // HU-04 of `15-gate-cuenta.md`: same bridge as a direct/deep-linked
+          // visit to `/movimientos/nuevo`.
+          builder: (context, state) => AccountGatedRoute(
+            surface: AccountGateSurface.scheduledPayment,
+            builder: (context) => BlocProvider(
+              create: (context) => _startedScheduledPaymentForm(state.uri),
+              child: const ScheduledPaymentFormPage(),
+            ),
           ),
         ),
         GoRoute(

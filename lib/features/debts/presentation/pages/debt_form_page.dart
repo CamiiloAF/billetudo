@@ -12,6 +12,8 @@ import '../../../../core/utils/money_input_formatter.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/segmented_control.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_draft.dart';
 import '../cubit/debt_form_cubit.dart';
@@ -100,17 +102,33 @@ class DebtFormPage extends StatelessWidget {
           case DebtInitialRegistroChoice.soloDeuda:
             unawaited(cubit.chooseSoloDeuda());
           case DebtInitialRegistroChoice.chooseAccount:
-            // Defensive (edge case E): the registro prompt is only offered when
-            // there is at least one account (see `DebtFormCubit.submit`), so
-            // "elegir cuenta" can never reach an empty picker. If the set became
-            // empty meanwhile, abort instead of opening a blank picker.
-            if (state.accounts.isEmpty) {
-              cubit.cancelPrompt();
-              return;
+            // `15-gate-cuenta.md` HU-03: "elegir cuenta" needs a real account
+            // to move the opening movement into. Without one, offer the
+            // bridge first instead of opening a blank picker.
+            var accounts = state.accounts;
+            if (accounts.isEmpty) {
+              final canProceed = await showAccountGateIfNeeded(
+                context,
+                AccountGateSurface.debtCash,
+              );
+              if (!context.mounted) {
+                return;
+              }
+              if (!canProceed) {
+                // HU-01: cancelling the bridge leaves the user exactly where
+                // they were, nothing created or changed.
+                cubit.cancelPrompt();
+                return;
+              }
+              await cubit.refreshAccounts();
+              if (!context.mounted) {
+                return;
+              }
+              accounts = cubit.state.accounts;
             }
             final accountId = await DebtAccountPickerSheet.show(
               context,
-              accounts: state.accounts,
+              accounts: accounts,
               // Creating a debt must not pre-select an account: the opening
               // movement lands real money on whichever account the user picks,
               // so that choice is explicit (unlike the abono sheet, which may

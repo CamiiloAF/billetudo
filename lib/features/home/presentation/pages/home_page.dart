@@ -11,6 +11,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
@@ -159,6 +161,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// HU-02 gated by `15-gate-cuenta.md`: without any active account the FAB
+  /// (and the empty-state's own CTA, which reuses this) opens the bridge
+  /// sheet instead of the movement form — the button itself always stays
+  /// live and tappable, never disabled.
+  Future<void> _addTransaction(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.movement,
+    );
+    if (canProceed) {
+      widget.onAddTransaction();
+    }
+  }
+
   Future<void> _openAiSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ComingSoonSheet.show(
@@ -183,7 +199,7 @@ class _HomePageState extends State<HomePage> {
           child: AppFab(
             icon: LucideIcons.plus,
             tooltip: l10n.transactionsAdd,
-            onPressed: widget.onAddTransaction,
+            onPressed: () => unawaited(_addTransaction(context)),
           ),
         ),
       ),
@@ -306,7 +322,9 @@ class _HomePageState extends State<HomePage> {
           return [
             SliverFillRemaining(
               hasScrollBody: false,
-              child: HomeMovementsEmptyState(onAdd: widget.onAddTransaction),
+              child: HomeMovementsEmptyState(
+                onAdd: () => unawaited(_addTransaction(context)),
+              ),
             ),
           ];
         }

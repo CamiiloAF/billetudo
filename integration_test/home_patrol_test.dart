@@ -13,6 +13,7 @@
 // would drive the shell.
 import 'package:billetudo/core/widgets/coming_soon_page.dart';
 import 'package:billetudo/features/accounts/presentation/pages/accounts_page.dart';
+import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budgets_page.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
@@ -109,16 +110,20 @@ void main() {
   );
 
   patrolTest(
-    'HU-02: el FAB abre el formulario de nueva transacción',
+    'HU-02 gateada (15-gate-cuenta.md): en un install fresco sin cuentas, '
+    'el FAB abre el puente de cuenta en vez del formulario',
     ($) async {
       await startApp($);
+      await _pumpUntilFound($, find.text('Aún no registras movimientos'));
 
-      // The FAB is the primary capture entry point (HU-02): it opens the
-      // new-transaction form on the root navigator, above the tab bar.
+      // The FAB is the primary capture entry point (HU-02), but a fresh
+      // install has zero active accounts: `15-gate-cuenta.md` HU-02/HU-04
+      // intercepts before the new-transaction form ever mounts.
       await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
 
-      expect(find.byType(TransactionFormPage), findsOneWidget);
+      expect(find.byType(AccountGateBridgeSheet), findsOneWidget);
+      expect(find.byType(TransactionFormPage), findsNothing);
     },
   );
 }

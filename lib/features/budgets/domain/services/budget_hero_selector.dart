@@ -14,9 +14,17 @@ import '../entities/budget_with_progress.dart';
 /// 2. **Automatic**: the single active budget, if any, that is both global
 ///    (no account/category scope, `BudgetScope.isGlobal`) and on the
 ///    [BudgetPeriod.monthly] cadence — the same profile Home has always
-///    shown. Nothing enforces a single global-monthly budget at creation
-///    time, so when more than one qualifies this picks the most recently
-///    **created** one. Deterministic, not a hard product rule.
+///    shown. A budget's [Budget.startDate] is a "freely chosen anchor" (see
+///    its docs): the automatic pick never required, and must never require,
+///    that anchor to fall on the 1st of the month — a global-monthly budget
+///    anchored on, say, the 27th is picked exactly the same as one anchored
+///    on the 1st, and in both cases [BudgetWithProgress.window] already
+///    carries its **real** `BudgetPeriodWindow` (e.g. `27 jul – 26 ago`),
+///    never a calendar month — the caller (Home's hero) must read the
+///    window from there, not assume a calendar month of its own. Nothing
+///    enforces a single global-monthly budget at creation time, so when more
+///    than one qualifies this picks the most recently **created** one.
+///    Deterministic, not a hard product rule.
 class BudgetHeroSelector {
   const BudgetHeroSelector._();
 
@@ -39,9 +47,7 @@ class BudgetHeroSelector {
   ) {
     BudgetWithProgress? best;
     for (final entry in budgets) {
-      final isEligible =
-          entry.scope.isGlobal && entry.budget.period == BudgetPeriod.monthly;
-      if (!isEligible) {
+      if (!_isGlobalMonthly(entry)) {
         continue;
       }
       if (best == null ||
@@ -51,4 +57,12 @@ class BudgetHeroSelector {
     }
     return best;
   }
+
+  /// Global scope + monthly cadence — deliberately silent on the anchor day
+  /// ([Budget.startDate] can be any day of the month). Naming this its own
+  /// predicate (instead of an inline `isEligible` local) makes that omission
+  /// a documented decision instead of something the next reader has to
+  /// verify by re-deriving it from the period calculator.
+  static bool _isGlobalMonthly(BudgetWithProgress entry) =>
+      entry.scope.isGlobal && entry.budget.period == BudgetPeriod.monthly;
 }

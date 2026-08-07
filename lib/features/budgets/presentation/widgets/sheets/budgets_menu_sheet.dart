@@ -6,7 +6,7 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_action_row.dart';
 
 /// What the list's overflow ("⋮") offers (`TmOGV` / `tFZyK`).
-enum BudgetsMenuAction { history, toggleEnvelope, envelopeInfo }
+enum BudgetsMenuAction { history, toggleEnvelope, envelopeInfo, viewHelp }
 
 /// The budgets list overflow menu: a bottom sheet (`Bottom Sheet Base`
 /// `PqTUt`), never a Material `PopupMenuButton`.
@@ -62,6 +62,12 @@ class BudgetsMenuSheet extends StatelessWidget {
           title: l10n.envelopeInfoTitle,
           onTap: () =>
               Navigator.of(context).pop(BudgetsMenuAction.envelopeInfo),
+        ),
+        SheetActionRow(
+          icon: LucideIcons.circleHelp,
+          title: l10n.tutorialsMenuViewHelp,
+          subtitle: l10n.budgetsMenuViewHelpSubtitle,
+          onTap: () => Navigator.of(context).pop(BudgetsMenuAction.viewHelp),
         ),
       ],
     );

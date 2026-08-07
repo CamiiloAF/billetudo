@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -5,8 +7,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
+import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../cubit/scheduled_payments_list_cubit.dart';
 import '../cubit/scheduled_payments_list_state.dart';
 import '../widgets/scheduled_finished_filter_view.dart';
@@ -15,6 +22,7 @@ import '../widgets/scheduled_payments_error_view.dart';
 import '../widgets/scheduled_payments_list_view.dart';
 import '../widgets/scheduled_payments_loading_view.dart';
 import '../widgets/scheduled_payments_no_active_view.dart';
+import '../widgets/sheets/scheduled_payments_menu_sheet.dart';
 
 /// The "próximos vencimientos" list (HU-04): active templates ordered by
 /// `nextDate` ascending, with an "Activos · N" / "Terminados · N" chip pair
@@ -42,6 +50,34 @@ class ScheduledPaymentsPage extends StatelessWidget {
   /// pop to, so the router passes `false` and the page uses the left-aligned
   /// [RootTabHeader] shared by the other tab roots instead.
   final bool showBackButton;
+
+  /// HU-01 gated by `15-gate-cuenta.md`: `ScheduledPayments.accountId` is
+  /// NOT NULL, so without any active account this opens the bridge sheet
+  /// instead of a form that could never save.
+  Future<void> _addScheduledPayment(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.scheduledPayment,
+    );
+    if (canProceed) {
+      onAddScheduledPayment();
+    }
+  }
+
+  Future<void> _openMenu(BuildContext context) async {
+    final action = await ScheduledPaymentsMenuSheet.show(context);
+    if (action == null || !context.mounted) {
+      return;
+    }
+    switch (action) {
+      case ScheduledPaymentsMenuAction.viewHelp:
+        await reopenTutorial(
+          context,
+          TutorialKey.scheduledPaymentsScreen,
+          onCta: (context) => unawaited(_addScheduledPayment(context)),
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,11 +116,13 @@ class ScheduledPaymentsPage extends StatelessWidget {
               when state.items.isEmpty && state.finishedCount > 0 =>
             ScheduledPaymentsNoActiveView(
               state: state,
-              onAdd: onAddScheduledPayment,
+              onAdd: () => unawaited(_addScheduledPayment(context)),
               onFilterSelected: cubit.showFilter,
             ),
           ScheduledPaymentsListStatus.ready when state.items.isEmpty =>
-            ScheduledPaymentsEmptyView(onAdd: onAddScheduledPayment),
+            ScheduledPaymentsEmptyView(
+              onAdd: () => unawaited(_addScheduledPayment(context)),
+            ),
           ScheduledPaymentsListStatus.ready => ScheduledPaymentsListView(
               state: state,
               onOpenScheduledPayment: onOpenScheduledPayment,
@@ -99,12 +137,30 @@ class ScheduledPaymentsPage extends StatelessWidget {
         ? content
         : Column(
             children: [
-              RootTabHeader(title: l10n.scheduledPaymentsTitle),
+              RootTabHeader(
+                title: l10n.scheduledPaymentsTitle,
+                // Was an empty `Action Spacer`: the tab root now carries the
+                // same `⋮` "Ver ayuda" affordance as the other 3 HU-01
+                // screens (criterion 6).
+                actions: [
+                  PageHeaderCircleButton(
+                    icon: LucideIcons.ellipsisVertical,
+                    background: colors.muted,
+                    foreground: colors.textPrimary,
+                    tooltip: l10n.scheduledPaymentsMenuTooltip,
+                    iconSize: 20,
+                    onPressed: () => unawaited(_openMenu(context)),
+                  ),
+                ],
+              ),
               Expanded(child: content),
             ],
           );
 
-    return Scaffold(
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.scheduledPaymentsScreen,
+      onCta: (context) => unawaited(_addScheduledPayment(context)),
+      child: Scaffold(
       appBar: showBackButton
           ? AppBar(
               // `Dtm0X`: the back affordance is an `arrow-left` inside a
@@ -126,9 +182,10 @@ class ScheduledPaymentsPage extends StatelessWidget {
       floatingActionButton: AppFab(
         icon: LucideIcons.plus,
         tooltip: l10n.scheduledPaymentsAdd,
-        onPressed: onAddScheduledPayment,
+        onPressed: () => unawaited(_addScheduledPayment(context)),
       ),
       body: SafeArea(child: body),
+      ),
     );
   }
 }

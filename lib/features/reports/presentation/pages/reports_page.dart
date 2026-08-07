@@ -9,6 +9,8 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../goals/domain/entities/goal_with_progress.dart';
 import '../../domain/entities/chart_view.dart';
@@ -65,6 +67,22 @@ class _ReportsPageState extends State<ReportsPage> {
   void initState() {
     super.initState();
     unawaited(context.read<ReportsShellCubit>().start());
+  }
+
+  /// `15-gate-cuenta.md` HU-04: the dashboard's "Crear presupuesto" CTA
+  /// pushes the same `/presupuestos/nuevo` route as the Presupuestos tab's
+  /// own "+" — without any active account it must open the bridge sheet
+  /// here too, instead of letting the route push happen first and flash an
+  /// empty screen behind it while `AccountGatedRoute` resolves the same
+  /// check. Mirrors `BudgetsPage._addBudget`.
+  Future<void> _createBudget(BuildContext context) async {
+    final canProceed = await showAccountGateIfNeeded(
+      context,
+      AccountGateSurface.budget,
+    );
+    if (canProceed && context.mounted) {
+      widget.onCreateBudget();
+    }
   }
 
   Future<void> _export(ChartViewId activeTab) async {
@@ -134,7 +152,8 @@ class _ReportsPageState extends State<ReportsPage> {
                     child: switch (shell.activeTab) {
                       ChartViewId.dashboard => ReportsDashboardTabView(
                           onTapBudget: widget.onOpenBudget,
-                          onCreateBudget: widget.onCreateBudget,
+                          onCreateBudget: () =>
+                              unawaited(_createBudget(context)),
                           onTapGoal: widget.onOpenGoal,
                           onCreateGoal: widget.onCreateGoal,
                           onOpenDebts: widget.onOpenDebts,

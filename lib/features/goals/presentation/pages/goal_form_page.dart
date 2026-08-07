@@ -8,6 +8,8 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/date_picker_sheet.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../domain/entities/goal_draft.dart';
 import '../cubit/goal_form_cubit.dart';
 import '../cubit/goal_form_state.dart';
@@ -259,17 +261,38 @@ class GoalFormBody extends StatelessWidget {
     }
   }
 
+  /// `15-gate-cuenta.md`: "Cuenta vinculada" stays optional — creating the
+  /// goal without one keeps working (`submit()` never depends on
+  /// `state.accounts`) — but tapping the field with zero accounts must not
+  /// be a silent no-op. Offers the bridge sheet informatively; cancelling it
+  /// ("Ahora no") leaves the form exactly as it was, while creating an
+  /// account reloads the list and opens the picker right away.
   Future<void> _pickAccount(
     BuildContext context,
     GoalFormCubit cubit,
     GoalFormState state,
   ) async {
-    if (state.accounts.isEmpty) {
+    var accounts = state.accounts;
+    if (accounts.isEmpty) {
+      final canProceed = await showAccountGateIfNeeded(
+        context,
+        AccountGateSurface.goalLinkedAccount,
+      );
+      if (!canProceed || !context.mounted) {
+        return;
+      }
+      await cubit.refreshAccounts();
+      accounts = cubit.state.accounts;
+      if (accounts.isEmpty) {
+        return;
+      }
+    }
+    if (!context.mounted) {
       return;
     }
     final picked = await GoalAccountPickerSheet.show(
       context,
-      accounts: state.accounts,
+      accounts: accounts,
       selectedId: state.accountId,
     );
     if (picked != null) {

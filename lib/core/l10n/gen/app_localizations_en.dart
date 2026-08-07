@@ -112,6 +112,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountsLoading => 'Loading your accounts';
 
   @override
+  String get accountGateNotNow => 'Not now';
+
+  @override
+  String get accountGateCreateAccount => 'Create account';
+
+  @override
+  String get accountGateMovementTitle => 'Create your first account';
+
+  @override
+  String get accountGateMovementMessage =>
+      'To record movements you need an active account. Create it now and we\'ll continue right where you left off.';
+
+  @override
+  String get accountGateTransferZeroTitle =>
+      'You need two accounts to transfer';
+
+  @override
+  String get accountGateTransferZeroMessage =>
+      'You don\'t have any yet. Create the first one to start (we\'ll ask for the second one next).';
+
+  @override
+  String get accountGateTransferOneTitle => 'You need a second account';
+
+  @override
+  String get accountGateTransferOneMessage =>
+      'You already have one active account. Create another to complete the transfer between them.';
+
+  @override
+  String get accountGateScheduledPaymentTitle =>
+      'Create an account for your scheduled payment';
+
+  @override
+  String get accountGateScheduledPaymentMessage =>
+      'Scheduled payments come out of an account. Create it now and we\'ll keep building yours.';
+
+  @override
+  String get accountGateDebtCashTitle =>
+      'You need an account for this movement';
+
+  @override
+  String get accountGateDebtCashMessage =>
+      'This payment or disbursement moves real money, so it needs an account. Create it and we\'ll continue with your debt.';
+
+  @override
+  String get accountGateGoalMovementTitle =>
+      'You need an account for this contribution';
+
+  @override
+  String get accountGateGoalMovementMessage =>
+      'Moving real money to or from your goal requires an account. Create it and we\'ll continue.';
+
+  @override
+  String get accountGateLinkMovementTitle =>
+      'There are no movements to link yet';
+
+  @override
+  String get accountGateLinkMovementMessage =>
+      'Linking means choosing among your movements, and those come from an account. Create the first one and we\'ll continue.';
+
+  @override
+  String get accountGateBudgetTitle => 'Create an account for your budget';
+
+  @override
+  String get accountGateBudgetMessage =>
+      'Budgets are built on top of your real accounts. Create the first one and we\'ll keep building yours.';
+
+  @override
+  String get accountGateGoalLinkedAccountTitle =>
+      'Link an account to your goal';
+
+  @override
+  String get accountGateGoalLinkedAccountMessage =>
+      'It\'s optional: you can create your goal without a linked account. If you want to tie it to a real account, create it here.';
+
+  @override
   String get accountTypeCash => 'Cash';
 
   @override
@@ -4487,4 +4562,276 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingClosingSkip => 'I\'ll do it later';
+
+  @override
+  String get tutorialGotIt => 'Got it';
+
+  @override
+  String get tutorialsMenuViewHelp => 'View help';
+
+  @override
+  String get budgetsMenuViewHelpSubtitle => 'Go over how budgets work';
+
+  @override
+  String get goalsMenuViewHelpSubtitle => 'Go over how goals work';
+
+  @override
+  String get debtsMenuViewHelpSubtitle => 'Go over how debts work';
+
+  @override
+  String get scheduledPaymentsMenuViewHelpSubtitle =>
+      'Go over how scheduled payments work';
+
+  @override
+  String get goalsMenuTooltip => 'More options';
+
+  @override
+  String get goalsMenuOptions => 'Options';
+
+  @override
+  String get goalsMenuArchived => 'View archived';
+
+  @override
+  String get debtsMenuTooltip => 'More options';
+
+  @override
+  String get debtsMenuOptions => 'Options';
+
+  @override
+  String get scheduledPaymentsMenuTooltip => 'More options';
+
+  @override
+  String get scheduledPaymentsMenuOptions => 'Options';
+
+  @override
+  String get settingsShowHelpOnEntry => 'Show help when entering a section';
+
+  @override
+  String get settingsShowHelpOnEntrySubtitle =>
+      'Explains each section the first time you open it.';
+
+  @override
+  String get tutorialBudgetsTitle => 'How budgets work';
+
+  @override
+  String get tutorialBudgetsPoint1Heading => 'One budget per period';
+
+  @override
+  String get tutorialBudgetsPoint1Body =>
+      'You set an amount to spend in a period (weekly, biweekly, monthly, or just once) and see how much is left as it goes.';
+
+  @override
+  String get tutorialBudgetsPoint2Heading => 'With whatever scope you choose';
+
+  @override
+  String get tutorialBudgetsPoint2Body =>
+      'It can cover all your spending, or focus on just one account or category.';
+
+  @override
+  String get tutorialBudgetsPoint3Heading => 'Envelope mode, for more control';
+
+  @override
+  String get tutorialBudgetsPoint3Body =>
+      'Spread your whole income across your categories, so every dollar has a job from the start.';
+
+  @override
+  String get tutorialBudgetsCta => 'Create my first budget';
+
+  @override
+  String get tutorialGoalsTitle => 'How goals work';
+
+  @override
+  String get tutorialGoalsPoint1Heading => 'What a goal is for';
+
+  @override
+  String get tutorialGoalsPoint1Body =>
+      'Use it to save for something specific, like a trip, an emergency fund, or a gift, and see your progress anytime.';
+
+  @override
+  String get tutorialGoalsPoint2Heading =>
+      'Progress is built from your contributions';
+
+  @override
+  String get tutorialGoalsPoint2Body =>
+      'Every time you log a contribution, your progress goes up. It\'s not a number you edit — it\'s the sum of what you\'ve contributed.';
+
+  @override
+  String get tutorialGoalsPoint3Heading =>
+      'A contribution can move money, or not';
+
+  @override
+  String get tutorialGoalsPoint3Body =>
+      'You can contribute by moving real money from an account, or just log it without touching your balance (handy if you already set that money aside elsewhere).';
+
+  @override
+  String get tutorialGoalsCta => 'Create my first goal';
+
+  @override
+  String get tutorialDebtsTitle => 'How debts work';
+
+  @override
+  String get tutorialDebtsPoint1Heading => 'What a debt is for';
+
+  @override
+  String get tutorialDebtsPoint1Body =>
+      'Keep track of money you owe (to a bank, a card, or a person) or that\'s owed to you, without doing the math by hand.';
+
+  @override
+  String get tutorialDebtsPoint2Heading => 'You log it, the app does the math';
+
+  @override
+  String get tutorialDebtsPoint2Body =>
+      'You note what you borrowed, what you\'ve paid off, and any interest that adds up, and the app figures out how much is left to pay on its own.';
+
+  @override
+  String get tutorialDebtsPoint3Heading => 'A payment can move money, or not';
+
+  @override
+  String get tutorialDebtsPoint3Body =>
+      'You can deduct a payment from one of your accounts, or just log it without moving money (handy if someone else paid for you, or it was in cash).';
+
+  @override
+  String get tutorialDebtsCta => 'Register my first debt';
+
+  @override
+  String get tutorialScheduledPaymentsTitle => 'How scheduled payments work';
+
+  @override
+  String get tutorialScheduledPaymentsPoint1Heading => 'What they\'re for';
+
+  @override
+  String get tutorialScheduledPaymentsPoint1Body =>
+      'They help you not forget payments that repeat, like rent, a subscription, or an installment, and let the app log them for you if you want.';
+
+  @override
+  String get tutorialScheduledPaymentsPoint2Heading => 'Automatic or manual';
+
+  @override
+  String get tutorialScheduledPaymentsPoint2Body =>
+      'An automatic one logs itself on its date. A manual one alerts you and you confirm it before it counts (handy if the amount changes each time).';
+
+  @override
+  String get tutorialScheduledPaymentsPoint3Heading => 'The due-dates tray';
+
+  @override
+  String get tutorialScheduledPaymentsPoint3Body =>
+      'That\'s where you see all your pending payments in one place and confirm them when they\'re due.';
+
+  @override
+  String get tutorialScheduledPaymentsCta => 'Schedule my first payment';
+
+  @override
+  String get tutorialDebtLinkMovementTitle => 'Link an existing transaction';
+
+  @override
+  String get tutorialDebtLinkMovementPoint1Heading =>
+      'It doesn\'t create a new transaction';
+
+  @override
+  String get tutorialDebtLinkMovementPoint1Body =>
+      'It attributes one you already logged, so it isn\'t duplicated.';
+
+  @override
+  String get tutorialGoalLinkMovementTitle => 'Link an existing transaction';
+
+  @override
+  String get tutorialGoalLinkMovementPoint1Heading =>
+      'It doesn\'t create a new transaction';
+
+  @override
+  String get tutorialGoalLinkMovementPoint1Body =>
+      'It attributes one you already logged, so it isn\'t duplicated.';
+
+  @override
+  String get tutorialDebtPaymentToggleTitle => 'Add the payment to an account?';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint1Heading => 'If you choose \"Yes\"';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint1Body =>
+      'The payment also deducts the amount from the account you choose, like a real transaction.';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint2Heading => 'If you choose \"No\"';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint2Body =>
+      'The debt still goes down, but no balance is touched (handy if you paid in cash or someone else paid for you).';
+
+  @override
+  String get tutorialGoalContributionToggleTitle =>
+      'Move money from an account?';
+
+  @override
+  String get tutorialGoalContributionTogglePoint1Heading =>
+      'If you choose \"Yes\"';
+
+  @override
+  String get tutorialGoalContributionTogglePoint1Body =>
+      'The contribution deducts the real amount from an account, like a transfer.';
+
+  @override
+  String get tutorialGoalContributionTogglePoint2Heading =>
+      'If you choose \"No\"';
+
+  @override
+  String get tutorialGoalContributionTogglePoint2Body =>
+      'The contribution is only logged on the goal, without touching any balance (handy if you already set that money aside elsewhere).';
+
+  @override
+  String get tutorialDebtScheduledInstallmentTitle =>
+      'The installment lives in Scheduled payments';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint1Heading =>
+      'Set it up here, confirm it there';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint1Body =>
+      'You set it up from this debt, but it\'s confirmed from the Scheduled payments tray, like any other payment.';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint2Heading =>
+      'One transaction, two effects';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint2Body =>
+      'When you confirm it, a single transaction lowers your account balance and pays down the debt at the same time.';
+
+  @override
+  String get tutorialBudgetableTransferTitle =>
+      'Count this transfer in your budget?';
+
+  @override
+  String get tutorialBudgetableTransferPoint1Heading => 'Why you\'d mark it';
+
+  @override
+  String get tutorialBudgetableTransferPoint1Body =>
+      'Some transfers really are part of your spending plan, even if they\'re not a real expense (for example, moving money to the account you use to spend during the month).';
+
+  @override
+  String get tutorialBudgetableTransferPoint2Heading =>
+      'What changes when you mark it';
+
+  @override
+  String get tutorialBudgetableTransferPoint2Body =>
+      'It\'s subtracted from your budget just like an expense, even though the money is still yours — just in another account.';
+
+  @override
+  String get tutorialEnvelopeModeTitle => 'How envelope mode works';
+
+  @override
+  String get tutorialEnvelopeModePoint1Heading => 'What it\'s for';
+
+  @override
+  String get tutorialEnvelopeModePoint1Body =>
+      'Spread your whole income across your categories, so every dollar has a job from the start.';
+
+  @override
+  String get tutorialEnvelopeModePoint2Heading => 'What changes on the screen';
+
+  @override
+  String get tutorialEnvelopeModePoint2Body =>
+      'Instead of one free-form amount, you see how much is left in each category on its own.';
 }

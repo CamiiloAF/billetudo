@@ -307,6 +307,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       expect(find.text('Aún no tienes deudas registradas'), findsOneWidget);
 
       await _openNewDebtForm($);
@@ -336,6 +337,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
 
       await _selectDirection($, 'Me deben');
@@ -360,6 +362,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Crédito carro');
@@ -403,6 +406,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Deuda con Sara');
@@ -457,6 +461,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _selectDirection($, 'Me deben');
       await _enterHeroAmount($, '900'); // $900 COP
@@ -511,6 +516,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Crédito carro');
@@ -549,6 +555,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Tarjeta');
@@ -580,6 +587,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '500'); // $500 COP
       await _enterDebtName($, 'Deuda chica');
@@ -605,6 +613,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Crédito viejo');
@@ -633,6 +642,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Deuda a borrar');
@@ -689,6 +699,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '1000'); // $1.000 COP opening
       await _enterDebtName($, 'Historial');
@@ -737,6 +748,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '900'); // $900 COP principal
       await _enterDebtName($, 'Préstamo con interés');
@@ -809,6 +821,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Crédito carro');
@@ -853,6 +866,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600'); // $600 COP
       await _enterDebtName($, 'Deuda sola');
@@ -881,6 +895,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600');
       await _enterDebtName($, 'Crédito carro');
@@ -918,6 +933,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600');
       await _enterDebtName($, 'Crédito carro');
@@ -954,6 +970,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600');
       await _enterDebtName($, 'Crédito carro');
@@ -993,6 +1010,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       // Leave the opening at 0; only fill the name.
       await _enterDebtName($, 'Sin monto');
@@ -1033,6 +1051,7 @@ void main() {
       // movements in play are the two we seed next.
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '900');
       await _enterDebtName($, 'Deuda A');
@@ -1106,6 +1125,7 @@ void main() {
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewDebtForm($);
       await _enterHeroAmount($, '600');
       await _enterDebtName($, 'Crédito vehicular');

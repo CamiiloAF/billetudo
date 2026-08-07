@@ -7,6 +7,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
@@ -138,6 +139,31 @@ void main() {
         const DebtsListState(status: DebtsListStatus.failure),
         'error_$suffix',
         brightness: brightness,
+      );
+    });
+
+    // HU-03 (`design-system/billetudo/pages/minitutoriales.md`): Deudas'
+    // header gained a "⋮" that opens `DebtsMenuSheet`, whose only row is
+    // "Ver ayuda" — captured through a real tap so the golden shows the
+    // sheet + scrim over the page, same as `budgets_page_menus_golden_test`.
+    testWidgets('menú ⋮ (Ver ayuda) ($suffix)', (tester) async {
+      when(() => cubit.state).thenReturn(
+        DebtsListState(status: DebtsListStatus.ready, summary: summary),
+      );
+      await pumpGolden(
+        tester,
+        BlocProvider<DebtsListCubit>.value(
+          value: cubit,
+          child: DebtsListPage(onAddDebt: () {}, onOpenDebt: (_) {}),
+        ),
+        brightness: brightness,
+        size: tallGoldenPhoneSize(height: 1400),
+      );
+      await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/debts_list_page_menu_$suffix.png'),
       );
     });
   }

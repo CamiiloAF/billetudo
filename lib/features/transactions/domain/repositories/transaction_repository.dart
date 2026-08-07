@@ -18,6 +18,15 @@ abstract class TransactionRepository {
     TransactionFilter filter,
   );
 
+  /// The most recent movements across every account, with no date filter at
+  /// all (Home's "Movimientos recientes", decoupled from any month/period —
+  /// unlike [watchTransactions], which always needs a `TransactionFilter`).
+  /// Always excludes rows with `deletedAt != null`, newest first, capped at
+  /// [limit].
+  Stream<Result<List<TransactionWithDetails>>> watchRecentTransactions({
+    int limit,
+  });
+
   /// One transaction with its enriched display data (HU-08). Re-emits on
   /// every relevant change (including its tags).
   Stream<Result<TransactionWithDetails>> watchTransactionDetail(String id);

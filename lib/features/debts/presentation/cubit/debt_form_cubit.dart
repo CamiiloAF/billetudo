@@ -243,9 +243,12 @@ class DebtFormCubit extends Cubit<DebtFormState> {
       return;
     }
 
-    // Create: offer the registro inicial when there is a positive opening
-    // figure and at least one account to move; otherwise create the debt alone.
-    if (state.amountMinor > 0 && state.accounts.isNotEmpty) {
+    // Create: always offer the registro inicial when there is a positive
+    // opening figure (`15-gate-cuenta.md`) — whether or not there is an
+    // account yet. Choosing "solo la deuda" never needs one; the account gate
+    // only comes up if the user picks "elegir cuenta" and has none (see
+    // `debt_form_page.dart`'s `DebtInitialRegistroChoice.chooseAccount`).
+    if (state.amountMinor > 0) {
       emit(
         state.copyWith(
           failedField: () => null,
@@ -255,6 +258,17 @@ class DebtFormCubit extends Cubit<DebtFormState> {
     } else {
       await _createSoloDeuda();
     }
+  }
+
+  /// Reloads the active accounts (e.g. after the account gate bridge created
+  /// one from within the "elegir cuenta" flow), mirroring
+  /// `DebtPaymentCubit.refreshAccounts()`/`GoalFormCubit.refreshAccounts()`.
+  Future<void> refreshAccounts() async {
+    final accounts = await _loadAccounts();
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(accounts: accounts));
   }
 
   Future<void> _submitEdit(DebtDraft draft) async {

@@ -38,13 +38,14 @@ void main() {
         user_id TEXT,
         zero_based_enabled INTEGER NOT NULL,
         categories_seeded INTEGER NOT NULL,
-        onboarding_completed INTEGER
+        onboarding_completed INTEGER,
+        show_help_on_section_entry INTEGER
       )
     ''');
     await database.customStatement('''
       INSERT INTO app_settings
-        (id, created_at, updated_at, zero_based_enabled, categories_seeded, onboarding_completed)
-      VALUES ('app', 0, 0, 0, 0, NULL)
+        (id, created_at, updated_at, zero_based_enabled, categories_seeded, onboarding_completed, show_help_on_section_entry)
+      VALUES ('app', 0, 0, 0, 0, NULL, NULL)
     ''');
   });
 
@@ -70,10 +71,17 @@ void main() {
         'UPDATE app_settings SET onboarding_completed = 0 '
         'WHERE onboarding_completed IS NULL',
       );
+      // The exact statement the `from < 24` migration block runs for the
+      // same class of NULL-key bug on `show_help_on_section_entry`.
+      await database.customStatement(
+        'UPDATE app_settings SET show_help_on_section_entry = 1 '
+        'WHERE show_help_on_section_entry IS NULL',
+      );
 
       final row = await database.select(database.appSettings).getSingleOrNull();
       expect(row, isNotNull);
       expect(row!.onboardingCompleted, isFalse);
+      expect(row.showHelpOnSectionEntry, isTrue);
     },
   );
 }

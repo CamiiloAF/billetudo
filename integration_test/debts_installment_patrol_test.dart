@@ -142,6 +142,7 @@ Future<void> _createDebtAndOpen(
 }) async {
   _goToDebts($);
   await $.tester.pumpAndSettle();
+  await dismissAutoTutorialIfShown($);
   await $.tester.tap(find.byTooltip('Agregar deuda'));
   await $.tester.pumpAndSettle();
   await _enterHeroAmount($, openingWhole);
@@ -357,6 +358,7 @@ void main() {
       // and the chip lives inside that card.
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       expect(find.byType(ScheduledCard), findsOneWidget);
       expect(find.byType(ScheduledDebtChip), findsOneWidget);
       expect(find.text('Deuda'), findsWidgets);
@@ -568,8 +570,7 @@ void main() {
       // defensive floor holds; it can never predate the debt.
       final txDay = DateTime(tx.date.year, tx.date.month, tx.date.day);
       final startDate = debt.startDate!;
-      final startDay =
-          DateTime(startDate.year, startDate.month, startDate.day);
+      final startDay = DateTime(startDate.year, startDate.month, startDate.day);
       expect(txDay.isBefore(startDay), isFalse);
     },
   );

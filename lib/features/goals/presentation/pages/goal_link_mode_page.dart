@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../transactions/presentation/pages/transactions_page.dart';
 import '../../../transactions/presentation/widgets/transactions_link_mode.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/goal_contribution.dart';
 import '../cubit/goal_link_cubit.dart';
 
@@ -27,19 +29,22 @@ class GoalLinkModePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return TransactionsPage(
-      // The FAB is hidden and the row/account taps below are unused in link
-      // mode, so these are inert stubs.
-      onAddTransaction: (_) {},
-      onOpenTransaction: (_) async => null,
-      onOpenAccount: (_) {},
-      linkMode: TransactionsLinkMode(
-        bannerTitle: l10n.goalLinkBannerTitle(goalName),
-        bannerBody: l10n.goalLinkBannerBody,
-        onCancel: () => Navigator.of(context).pop(),
-        onLinkTransaction: (transactionId) => _link(context, transactionId),
-        // Any movement type is eligible (HU-03): unlike a debt's abono, a
-        // goal movement carries no cash-direction constraint.
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.goalLinkMovement,
+      child: TransactionsPage(
+        // The FAB is hidden and the row/account taps below are unused in link
+        // mode, so these are inert stubs.
+        onAddTransaction: (_) {},
+        onOpenTransaction: (_) async => null,
+        onOpenAccount: (_) {},
+        linkMode: TransactionsLinkMode(
+          bannerTitle: l10n.goalLinkBannerTitle(goalName),
+          bannerBody: l10n.goalLinkBannerBody,
+          onCancel: () => Navigator.of(context).pop(),
+          onLinkTransaction: (transactionId) => _link(context, transactionId),
+          // Any movement type is eligible (HU-03): unlike a debt's abono, a
+          // goal movement carries no cash-direction constraint.
+        ),
       ),
     );
   }

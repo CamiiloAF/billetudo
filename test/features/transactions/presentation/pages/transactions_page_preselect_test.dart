@@ -1,5 +1,8 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
+import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
+import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_state.dart';
@@ -15,6 +18,11 @@ import '../../../categories/presentation/widgets/pump_widget.dart';
 
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
+
+class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
+
+class MockWatchActiveAccountsCount extends Mock
+    implements WatchActiveAccountsCount {}
 
 class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
   @override
@@ -46,7 +54,23 @@ void main() {
     ),
   ];
 
-  setUp(() => listCubit = MockTransactionsListCubit());
+  setUp(() {
+    listCubit = MockTransactionsListCubit();
+    // The FAB now runs through the account gate (`15-gate-cuenta.md`)
+    // before opening the form: an already-active account lets it through
+    // straight away, matching every other test here that expects
+    // `onAddTransaction` to fire.
+    final hasAnyActiveAccount = MockHasAnyActiveAccount();
+    when(hasAnyActiveAccount.call).thenAnswer((_) => Stream.value(true));
+    getIt.registerFactory<HasAnyActiveAccount>(() => hasAnyActiveAccount);
+    final watchActiveAccountsCount = MockWatchActiveAccountsCount();
+    when(watchActiveAccountsCount.call).thenAnswer((_) => Stream.value(1));
+    getIt.registerFactory<WatchActiveAccountsCount>(
+      () => watchActiveAccountsCount,
+    );
+  });
+
+  tearDown(getIt.reset);
 
   Future<String?> pumpAndTapFab(
     WidgetTester tester, {
@@ -77,7 +101,9 @@ void main() {
     );
 
     await tester.tap(find.byIcon(LucideIcons.plus));
-    await tester.pump();
+    // The gate check is async now (`showAccountGateIfNeeded`), so the FAB's
+    // callback lands a couple of microtasks later than a single `pump()`.
+    await tester.pumpAndSettle();
     expect(called, isTrue, reason: 'el FAB debe invocar onAddTransaction');
     return captured;
   }

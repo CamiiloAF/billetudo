@@ -98,6 +98,48 @@
   "@accountsLoading": {
     "description": "Etiqueta accesible del estado de carga (skeletons)."
   },
+  "accountGateNotNow": "Ahora no",
+  "@accountGateNotNow": {
+    "description": "Botón secundario de la hoja puente 'necesitas una cuenta' (15-gate-cuenta.md)."
+  },
+  "accountGateCreateAccount": "Crear cuenta",
+  "@accountGateCreateAccount": {},
+  "accountGateMovementTitle": "Crea tu primera cuenta",
+  "@accountGateMovementTitle": {},
+  "accountGateMovementMessage": "Para registrar movimientos necesitas una cuenta activa. Créala ahora y seguimos justo con tu movimiento.",
+  "@accountGateMovementMessage": {},
+  "accountGateTransferZeroTitle": "Necesitas dos cuentas para transferir",
+  "@accountGateTransferZeroTitle": {},
+  "accountGateTransferZeroMessage": "Aún no tienes ninguna. Crea la primera para empezar (luego te pedimos la segunda).",
+  "@accountGateTransferZeroMessage": {},
+  "accountGateTransferOneTitle": "Necesitas una segunda cuenta",
+  "@accountGateTransferOneTitle": {},
+  "accountGateTransferOneMessage": "Ya tienes una cuenta activa. Crea otra para completar la transferencia entre ellas.",
+  "@accountGateTransferOneMessage": {},
+  "accountGateScheduledPaymentTitle": "Crea una cuenta para tu pago programado",
+  "@accountGateScheduledPaymentTitle": {},
+  "accountGateScheduledPaymentMessage": "Los pagos programados salen de una cuenta. Créala ahora y seguimos armando el tuyo.",
+  "@accountGateScheduledPaymentMessage": {},
+  "accountGateDebtCashTitle": "Necesitas una cuenta para este movimiento",
+  "@accountGateDebtCashTitle": {},
+  "accountGateDebtCashMessage": "Este abono o desembolso mueve dinero real, así que hace falta una cuenta. Créala y seguimos con tu deuda.",
+  "@accountGateDebtCashMessage": {},
+  "accountGateGoalMovementTitle": "Necesitas una cuenta para este aporte",
+  "@accountGateGoalMovementTitle": {},
+  "accountGateGoalMovementMessage": "Mover dinero real hacia o desde tu meta requiere una cuenta. Créala y seguimos.",
+  "@accountGateGoalMovementMessage": {},
+  "accountGateLinkMovementTitle": "Aún no hay movimientos para enlazar",
+  "@accountGateLinkMovementTitle": {},
+  "accountGateLinkMovementMessage": "Enlazar requiere elegir entre tus movimientos, y esos nacen de una cuenta. Crea la primera y seguimos.",
+  "@accountGateLinkMovementMessage": {},
+  "accountGateBudgetTitle": "Crea una cuenta para tu presupuesto",
+  "@accountGateBudgetTitle": {},
+  "accountGateBudgetMessage": "Los presupuestos se arman sobre tus cuentas reales. Crea la primera y seguimos armando el tuyo.",
+  "@accountGateBudgetMessage": {},
+  "accountGateGoalLinkedAccountTitle": "Vincula una cuenta a tu meta",
+  "@accountGateGoalLinkedAccountTitle": {},
+  "accountGateGoalLinkedAccountMessage": "Es opcional: puedes crear tu meta sin cuenta vinculada. Si quieres asociarla a una cuenta real, créala aquí.",
+  "@accountGateGoalLinkedAccountMessage": {},
   "accountTypeCash": "Efectivo",
   "@accountTypeCash": {},
   "accountTypeBank": "Cuenta corriente",
@@ -120,11 +162,19 @@
   "@accountBalanceAdjustTitle": {},
   "accountBalanceAdjustCurrent": "Saldo actual: {amount}",
   "@accountBalanceAdjustCurrent": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustCurrentDebt": "Deuda actual: {amount}",
   "@accountBalanceAdjustCurrentDebt": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustNewLabel": "Nuevo saldo deseado",
   "@accountBalanceAdjustNewLabel": {},
@@ -136,7 +186,11 @@
   "@accountBalanceAdjustRegisterTitle": {},
   "accountBalanceAdjustRegisterBody": "Creamos un movimiento con fecha de hoy por la diferencia ({diff}). Suma a tus reportes y presupuestos.",
   "@accountBalanceAdjustRegisterBody": {
-    "placeholders": { "diff": { "type": "String" } }
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      }
+    }
   },
   "accountBalanceAdjustCorrectTitle": "Corregir saldo inicial",
   "@accountBalanceAdjustCorrectTitle": {},
@@ -542,8 +596,12 @@
   "@transactionsBalanceTotalSemantics": {
     "description": "Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.",
     "placeholders": {
-      "label": {"type": "String"},
-      "amount": {"type": "String"}
+      "label": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "transactionsBalanceCardBalanceLabel": "Saldo",
@@ -651,8 +709,12 @@
   "@transactionFormDateValue": {
     "description": "Valor mostrado en el campo Fecha, ej. 'Hoy, 13 jul'.",
     "placeholders": {
-      "prefix": {"type": "String"},
-      "date": {"type": "String"}
+      "prefix": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "datePickerTitle": "Elegir fecha",
@@ -888,7 +950,9 @@
   "@homeHeroBudgetProgress": {
     "description": "Caption izquierdo de la barra de progreso del hero con presupuesto (HU-03, aOhoY): porcentaje gastado del presupuesto global mensual y su monto total.",
     "placeholders": {
-      "pct": { "type": "int" },
+      "pct": {
+        "type": "int"
+      },
       "amount": {
         "type": "String",
         "example": "$3.000.000"
@@ -899,7 +963,9 @@
   "@homeHeroBudgetDaysLeft": {
     "description": "Caption derecho de la barra de progreso del hero con presupuesto (HU-03, aOhoY): días que quedan del periodo mensual vigente.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "homeQuickAccessTitle": "Acceso rápido",
@@ -984,24 +1050,44 @@
   "@debtDirectionOwedToMe": {},
   "debtProgressPaid": "{pct}% pagado",
   "@debtProgressPaid": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtProgressCollected": "{pct}% cobrado",
   "@debtProgressCollected": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtAmountOf": "de {amount}",
   "@debtAmountOf": {
     "description": "Monto original de la deuda bajo el saldo pendiente. El monto llega ya formateado.",
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtDueOn": "Vence {date}",
   "@debtDueOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtPercentValue": "{pct}%",
   "@debtPercentValue": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "debtDetailBalanceLabel": "Saldo pendiente",
   "@debtDetailBalanceLabel": {},
@@ -1012,7 +1098,11 @@
   "debtDetailGrowth": "Crece ~{amount}/día",
   "@debtDetailGrowth": {
     "description": "Interés diario estimado de la deuda. El monto llega ya formateado.",
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtDetailEstimated": "estimado",
   "@debtDetailEstimated": {},
@@ -1028,7 +1118,11 @@
   "@debtInstallmentTitle": {},
   "debtInstallmentBadge": "Cuota · {date}",
   "@debtInstallmentBadge": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtInstallmentScheduledBadge": "Pago programado",
   "@debtInstallmentScheduledBadge": {},
@@ -1051,7 +1145,11 @@
   "debtLedgerRunning": "Saldo {amount}",
   "@debtLedgerRunning": {
     "description": "Saldo corrido de la deuda tras un asiento. El monto llega ya formateado.",
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtLedgerTagEstimated": "Estimado",
   "@debtLedgerTagEstimated": {},
@@ -1118,8 +1216,12 @@
   "debtCurrencyPill": "{code} · {name}",
   "@debtCurrencyPill": {
     "placeholders": {
-      "code": { "type": "String" },
-      "name": { "type": "String" }
+      "code": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "debtDeleteSheetTitle": "¿Eliminar esta deuda?",
@@ -1130,13 +1232,21 @@
   "@debtContext": {
     "description": "Subtítulo de contexto: nombre de la deuda y su dirección.",
     "placeholders": {
-      "name": { "type": "String" },
-      "direction": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "direction": {
+        "type": "String"
+      }
     }
   },
   "debtDateToday": "Hoy, {date}",
   "@debtDateToday": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtPaymentTitle": "Registrar abono",
   "@debtPaymentTitle": {},
@@ -1168,7 +1278,9 @@
   "@debtOpeningMovementNote": {
     "description": "Nota autogenerada del movimiento de apertura de una deuda, cuando el usuario elige registrarlo en una cuenta. No editable por widgets: se resuelve sin BuildContext (AppLocale.resolveLanguageCode) porque se escribe desde data/.",
     "placeholders": {
-      "debtName": { "type": "String" }
+      "debtName": {
+        "type": "String"
+      }
     }
   },
   "debtPaymentCta": "Registrar abono",
@@ -1193,7 +1305,11 @@
   "@debtUpdateBalanceError": {},
   "debtLinkBannerTitle": "Enlazar a {debt}",
   "@debtLinkBannerTitle": {
-    "placeholders": { "debt": { "type": "String" } }
+    "placeholders": {
+      "debt": {
+        "type": "String"
+      }
+    }
   },
   "debtLinkBannerBody": "Elige un movimiento que ya registraste; lo atribuimos a esta deuda, no creamos uno nuevo.",
   "@debtLinkBannerBody": {},
@@ -1212,8 +1328,12 @@
   "debtUpdateRegistroMessage": "Cambiar el saldo de apertura actualizará el registro inicial de {from} a {to}.",
   "@debtUpdateRegistroMessage": {
     "placeholders": {
-      "from": {"type": "String"},
-      "to": {"type": "String"}
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
     }
   },
   "debtUpdateRegistroConfirm": "Actualizar",
@@ -1239,24 +1359,40 @@
   "debtCloseSheetMessageIOwe": "Le debes {amount} a {counterparty}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
   "@debtCloseSheetMessageIOwe": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "counterparty": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "counterparty": {
+        "type": "String"
+      }
     }
   },
   "debtCloseSheetMessageIOweNoCounterparty": "Debes {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando pagarla.",
   "@debtCloseSheetMessageIOweNoCounterparty": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtCloseSheetMessageOwedToMe": "{counterparty} te debe {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
   "@debtCloseSheetMessageOwedToMe": {
     "placeholders": {
-      "counterparty": { "type": "String" },
-      "amount": { "type": "String" }
+      "counterparty": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "debtCloseSheetMessageOwedToMeNoCounterparty": "Te deben {amount}. Al cerrarla, dejará de aparecer en tus deudas activas y no te seguirá recordando cobrarla.",
   "@debtCloseSheetMessageOwedToMeNoCounterparty": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "debtCloseInfoLabel": "Saldo pendiente al cerrar",
   "@debtCloseInfoLabel": {},
@@ -1269,17 +1405,29 @@
   "debtCelebrationMessageIOwe": "Terminaste de pagar {name}. En total pagaste {amount} en {duration}.",
   "@debtCelebrationMessageIOwe": {
     "placeholders": {
-      "name": { "type": "String" },
-      "amount": { "type": "String" },
-      "duration": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
     }
   },
   "debtCelebrationMessageOwedToMe": "Terminaste de cobrar {name}. En total cobraste {amount} en {duration}.",
   "@debtCelebrationMessageOwedToMe": {
     "placeholders": {
-      "name": { "type": "String" },
-      "amount": { "type": "String" },
-      "duration": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
     }
   },
   "debtCelebrationStatTotalPaidIOwe": "Total pagado",
@@ -1294,11 +1442,19 @@
   "@debtCelebrationComplete": {},
   "debtDurationMonths": "{count, plural, =1{1 mes} other{{count} meses}}",
   "@debtDurationMonths": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "debtDurationDays": "{count, plural, =1{1 día} other{{count} días}}",
   "@debtDurationDays": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "debtDirectionIOwePast": "Debía",
   "@debtDirectionIOwePast": {},
@@ -1306,11 +1462,19 @@
   "@debtDirectionOwedToMePast": {},
   "debtCardStatusPaid": "Pagada · {date}",
   "@debtCardStatusPaid": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtCardStatusClosed": "Cerrada · {date}",
   "@debtCardStatusClosed": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "debtsTabActive": "Activas",
   "@debtsTabActive": {},
@@ -1344,7 +1508,6 @@
   "@moreSettingsDescription": {},
   "moreSignOut": "Cerrar sesión",
   "@moreSignOut": {},
-
   "authContinueWithGoogle": "Continuar con Google",
   "@authContinueWithGoogle": {},
   "authContinueWithApple": "Continuar con Apple",
@@ -1363,7 +1526,6 @@
   "@authGoogleErrorSnackbar": {},
   "authAppleErrorSnackbar": "No pudimos iniciar sesión con Apple",
   "@authAppleErrorSnackbar": {},
-
   "authMergeTitle": "Tus datos están a salvo",
   "@authMergeTitle": {},
   "authMergeSubtitle": "Combinamos todo lo que ya tenías guardado con tu cuenta. Nada se perdió en el camino.",
@@ -1382,7 +1544,6 @@
   "@authMergeErrorTitle": {},
   "authMergeErrorMessage": "Tus datos siguen a salvo en este dispositivo. Intenta de nuevo cuando tengas conexión.",
   "@authMergeErrorMessage": {},
-
   "authSignOutSheetTitle": "Cerrar sesión",
   "@authSignOutSheetTitle": {},
   "authSignOutSheetMessage": "Tus cuentas y movimientos seguirán guardados en este teléfono. Dejarás de sincronizar hasta que vuelvas a iniciar sesión.",
@@ -1422,7 +1583,6 @@
   "@authSignOutFailedMessage": {
     "description": "HU-06: el cierre de sesión falló, por lo que el borrado se canceló. Deja claro que los datos siguen intactos para que el usuario reintente."
   },
-
   "authDeleteStep1Title": "Eliminar tu cuenta",
   "@authDeleteStep1Title": {},
   "authDeleteStep1Message": "Esta acción es irreversible. Se borrarán para siempre todos tus datos en la nube: cuentas, movimientos, categorías y todo lo demás asociado a tu cuenta.",
@@ -1453,12 +1613,10 @@
   "@authDeleteStep3Subtitle": {},
   "authDeleteStep3Cta": "Ir al inicio",
   "@authDeleteStep3Cta": {},
-
   "authSessionProviderGoogle": "Sesión iniciada con Google",
   "@authSessionProviderGoogle": {},
   "authSessionProviderApple": "Sesión iniciada con Apple",
   "@authSessionProviderApple": {},
-
   "settingsTitle": "Ajustes",
   "@settingsTitle": {},
   "settingsAccountSection": "Cuenta y respaldo",
@@ -1485,7 +1643,6 @@
   "@settingsCurrencySubtitle": {},
   "settingsDeleteAccount": "Eliminar cuenta",
   "@settingsDeleteAccount": {},
-
   "budgetsTitle": "Presupuestos",
   "@budgetsTitle": {},
   "budgetsAdd": "Nuevo presupuesto",
@@ -1514,11 +1671,19 @@
   "@budgetAtRiskLabel": {},
   "budgetResetsOn": "se reinicia el {date}",
   "@budgetResetsOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetEndsOn": "termina el {date}",
   "@budgetEndsOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetScopeGlobal": "Todo el gasto",
   "@budgetScopeGlobal": {},
@@ -1526,36 +1691,64 @@
   "@budgetScopeStranded": {},
   "budgetScopeAccounts": "{count, plural, one{{count} cuenta} other{{count} cuentas}}",
   "@budgetScopeAccounts": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetScopeCategories": "{count, plural, one{{count} categoría} other{{count} categorías}}",
   "@budgetScopeCategories": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetPercent": "{pct}%",
   "@budgetPercent": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "budgetDaysLeft": "{count, plural, =0{Último día} one{Resta {count} día} other{Restan {count} días}}",
   "@budgetDaysLeft": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetEndsInDays": "{count, plural, =0{Último día} one{Termina en {count} día} other{Termina en {count} días}}",
   "@budgetEndsInDays": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetProgressBreakdown": "{spent} de {amount}",
   "@budgetProgressBreakdown": {
     "placeholders": {
-      "spent": { "type": "String" },
-      "amount": { "type": "String" }
+      "spent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "budgetActivityTitle": "Movimientos del periodo",
   "@budgetActivityTitle": {},
   "budgetActivityCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
   "@budgetActivityCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
@@ -1563,31 +1756,49 @@
   "@budgetScheduledLabel": {},
   "budgetScheduledEntrySub": "{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}",
   "@budgetScheduledEntrySub": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "budgetScheduledEntrySubRisk": "Excedería el presupuesto por {amount}",
   "@budgetScheduledEntrySubRisk": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetScheduledCaption": "+ {amount} programado (llega a {pct}% si se ejecuta)",
   "@budgetScheduledCaption": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "pct": { "type": "int" }
+      "amount": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
     }
   },
   "budgetScheduledCaptionRisk": "+ {amount} programado — excedería el presupuesto por {overage}",
   "@budgetScheduledCaptionRisk": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "overage": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "overage": {
+        "type": "String"
+      }
     }
   },
   "budgetScheduledFreeCaption": "{amount} quedarían libres si apruebas los programados",
   "@budgetScheduledFreeCaption": {
     "description": "Sublínea del hero del detalle de presupuesto: cuánto quedaría libre tras aprobar los pagos programados del período. Solo cuando el margen es no negativo.",
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "budgetScheduledSheetTitle": "Pagos programados del período",
@@ -1598,7 +1809,11 @@
   },
   "budgetScheduledSheetHint": "Suman {amount} de lo reservado este período.",
   "@budgetScheduledSheetHint": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetScheduledSheetEmpty": "Aún no tienes pagos programados en este período",
   "@budgetScheduledSheetEmpty": {},
@@ -1606,8 +1821,12 @@
   "@budgetScheduledRowSubtitle": {
     "description": "Subtítulo de una fila de pago programado dentro del presupuesto: fecha de la próxima ocurrencia y la cuenta asociada.",
     "placeholders": {
-      "date": { "type": "String" },
-      "accountName": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "accountName": {
+        "type": "String"
+      }
     }
   },
   "budgetOneOffWindow": "Ventana única",
@@ -1650,7 +1869,14 @@
   "@budgetFormIconNameLabel": {},
   "budgetFormRowValue": "{label}: {value}",
   "@budgetFormRowValue": {
-    "placeholders": { "label": { "type": "String" }, "value": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "budgetFormScopeAllHint": "Incluye todo tu gasto: todas las cuentas y categorías.",
   "@budgetFormScopeAllHint": {},
@@ -1710,7 +1936,11 @@
   "@budgetScopeAllCategories": {},
   "budgetFormThresholdRow": "Avisarme al {pct}% del presupuesto",
   "@budgetFormThresholdRow": {
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "budgetFormThresholdOff": "No avisarme",
   "@budgetFormThresholdOff": {},
@@ -1756,7 +1986,11 @@
   "@budgetFormLoading": {},
   "budgetClosedOn": "Cerrado {date}",
   "@budgetClosedOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "budgetsHistorySubtitle": "Presupuestos cerrados",
   "@budgetsHistorySubtitle": {},
@@ -1776,19 +2010,35 @@
   "@budgetsEnvelopeBadge": {},
   "budgetsEnvelopeIncome": "Ingreso {income}",
   "@budgetsEnvelopeIncome": {
-    "placeholders": { "income": { "type": "String" } }
+    "placeholders": {
+      "income": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeAssigned": "Asignado {assigned}",
   "@budgetsEnvelopeAssigned": {
-    "placeholders": { "assigned": { "type": "String" } }
+    "placeholders": {
+      "assigned": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeNudge": "Casi lo logras: dale un trabajo a los {amount} restantes.",
   "@budgetsEnvelopeNudge": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetsEnvelopeNudgeOver": "Asignaste {amount} más de lo que entró. Ajusta un sobre cuando quieras.",
   "@budgetsEnvelopeNudgeOver": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetAssignedLabel": "Asignado",
   "@budgetAssignedLabel": {},
@@ -1798,12 +2048,20 @@
   "@budgetResultWithin": {},
   "budgetResultOverspent": "Excedido por {amount}",
   "@budgetResultOverspent": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "deleteImpactBudgets": "{count, plural, =1{Se usa en 1 presupuesto.} other{Se usa en {count} presupuestos.}}",
   "@deleteImpactBudgets": {
     "description": "Aviso neutral: cuántos presupuestos usan la cuenta/categoría que se va a eliminar. No se elimina el presupuesto en cascada.",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settingsEnvelopeMode": "Modo sobres",
   "@settingsEnvelopeMode": {},
@@ -1875,7 +2133,11 @@
   "@scheduledPaymentsErrorLocalFirst": {},
   "scheduledPaymentsActiveCount": "Activos · {count}",
   "@scheduledPaymentsActiveCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPendingTitle": "Por confirmar",
   "@scheduledPendingTitle": {},
@@ -1900,8 +2162,12 @@
   "scheduledGuidedReviewPosition": "Pago {position} de {total}",
   "@scheduledGuidedReviewPosition": {
     "placeholders": {
-      "position": { "type": "int" },
-      "total": { "type": "int" }
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "scheduledUndoSkipMessage": "Pago omitido",
@@ -2004,7 +2270,11 @@
   "@scheduledPaymentDetailTitle": {},
   "scheduledPaymentDetailNextPayment": "Próximo pago: {date}",
   "@scheduledPaymentDetailNextPayment": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "scheduledPaymentDetailHistoryTitle": "Historial",
   "@scheduledPaymentDetailHistoryTitle": {},
@@ -2020,46 +2290,76 @@
   "@scheduledPaymentDetailHeroLabel": {},
   "scheduledPaymentDetailRecurrenceOnce": "Una sola vez el {date}",
   "@scheduledPaymentDetailRecurrenceOnce": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "scheduledPaymentDetailRecurrenceForever": "Se repite {unit} desde el {date}, para siempre",
   "@scheduledPaymentDetailRecurrenceForever": {
     "placeholders": {
-      "unit": { "type": "String" },
-      "date": { "type": "String" }
+      "unit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "scheduledPaymentDetailRecurrenceUntil": "Se repite {unit} desde el {date}, hasta el {endDate}",
   "@scheduledPaymentDetailRecurrenceUntil": {
     "placeholders": {
-      "unit": { "type": "String" },
-      "date": { "type": "String" },
-      "endDate": { "type": "String" }
+      "unit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "endDate": {
+        "type": "String"
+      }
     }
   },
   "scheduledRecurrenceUnitDaily": "cada día",
   "@scheduledRecurrenceUnitDaily": {},
   "scheduledRecurrenceUnitDailyInterval": "cada {interval} días",
   "@scheduledRecurrenceUnitDailyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitWeekly": "cada semana",
   "@scheduledRecurrenceUnitWeekly": {},
   "scheduledRecurrenceUnitWeeklyInterval": "cada {interval} semanas",
   "@scheduledRecurrenceUnitWeeklyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitMonthly": "cada mes",
   "@scheduledRecurrenceUnitMonthly": {},
   "scheduledRecurrenceUnitMonthlyInterval": "cada {interval} meses",
   "@scheduledRecurrenceUnitMonthlyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledRecurrenceUnitYearly": "cada año",
   "@scheduledRecurrenceUnitYearly": {},
   "scheduledRecurrenceUnitYearlyInterval": "cada {interval} años",
   "@scheduledRecurrenceUnitYearlyInterval": {
-    "placeholders": { "interval": { "type": "int" } }
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPaymentDetailModeLabel": "Modo de registro",
   "@scheduledPaymentDetailModeLabel": {},
@@ -2095,7 +2395,11 @@
   "@scheduledPaymentBridgeDecline": {},
   "scheduledFinishedCount": "Terminados · {count}",
   "@scheduledFinishedCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledFinishedCaption": "Ya no generan movimientos. Los que crearon siguen en tus cuentas.",
   "@scheduledFinishedCaption": {},
@@ -2105,21 +2409,37 @@
   "@scheduledFinishedErrorTitle": {},
   "scheduledFinishedLastPayment": "Último pago · {date}",
   "@scheduledFinishedLastPayment": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "scheduledPaymentsNoActiveMessage": "Por ahora no tienes pagos programados activos",
   "@scheduledPaymentsNoActiveMessage": {},
   "scheduledPaymentsNoActiveDescription": "{count, plural, one{Tu pago terminado sigue disponible en «Terminados».} other{Tus {count} pagos terminados siguen disponibles en «Terminados».}}",
   "@scheduledPaymentsNoActiveDescription": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPendingCardOverflow": "Ver los otros {count} pendientes",
   "@scheduledPendingCardOverflow": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPendingCardTitle": "Por confirmar {count}",
   "@scheduledPendingCardTitle": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledPendingCardCaption": "Aún no afectan tu saldo",
   "@scheduledPendingCardCaption": {},
@@ -2133,32 +2453,50 @@
   "@scheduledDueOneDayAgo": {},
   "scheduledDueDaysAgo": "hace {count} días",
   "@scheduledDueDaysAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledDueInDays": "en {count} días",
   "@scheduledDueInDays": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scheduledDueInOneDay": "en 1 día",
   "@scheduledDueInOneDay": {},
   "scheduledConfirmationSheetScopeNote": "Lo que edites aplica solo a este pago. La plantilla sigue igual y el próximo mes vuelve a proponer {amount}.",
   "@scheduledConfirmationSheetScopeNote": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "scheduledConfirmationSheetAccumulatedTitle": "Tienes {count} pagos de {template} sin confirmar",
   "@scheduledConfirmationSheetAccumulatedTitle": {
     "placeholders": {
-      "count": { "type": "int" },
-      "template": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "template": {
+        "type": "String"
+      }
     }
   },
   "scheduledConfirmationSheetAccumulatedSub": "Ahora confirmas la más antigua, del {date}. {others, plural, =1{La otra sigue en tu lista.} other{Las otras {others} siguen en tu lista.}}",
   "@scheduledConfirmationSheetAccumulatedSub": {
     "placeholders": {
-      "date": { "type": "String" },
-      "others": { "type": "int" }
+      "date": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
     }
   },
   "scheduledConfirmationSheetAmountLabel": "Monto a registrar",
@@ -2188,24 +2526,38 @@
   "scheduledSnoozeContextLine": "Vencía el {date} · muévelo hacia adelante",
   "@scheduledSnoozeContextLine": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "budgetAdjustSheetTitle": "Ajustar monto",
   "@budgetAdjustSheetTitle": {},
   "budgetAdjustCurrentAmountInline": "Actual {amount}",
   "@budgetAdjustCurrentAmountInline": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "budgetAdjustNewAmountLabel": "Nuevo monto · {range}",
   "@budgetAdjustNewAmountLabel": {
-    "placeholders": { "range": { "type": "String" } }
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
   },
   "budgetAdjustExplainer": "El {resumeDate} vuelve a {originalAmount} automáticamente.",
   "@budgetAdjustExplainer": {
     "placeholders": {
-      "resumeDate": { "type": "String" },
-      "originalAmount": { "type": "String" }
+      "resumeDate": {
+        "type": "String"
+      },
+      "originalAmount": {
+        "type": "String"
+      }
     }
   },
   "budgetAdjustApplyCta": "Aplicar cambios",
@@ -2217,8 +2569,12 @@
   "budgetAdjustBannerSub": "{amount} · {range}",
   "@budgetAdjustBannerSub": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "range": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
     }
   },
   "budgetAdjustScheduledSnackbar": "Ajuste programado para el período seleccionado.",
@@ -2250,39 +2606,102 @@
   "goalsArchivedEmptyDescription": "Cuando termines o pauses una meta, archívala: conserva su progreso y su historial, y sale de tu lista principal.",
   "@goalsArchivedEmptyDescription": {},
   "goalCoherenceMessage": "Tus metas superan el saldo real de la cuenta por {amount}",
-  "@goalCoherenceMessage": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalCoherenceMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalMomentumStreak": "{weeks, plural, =1{1 semana seguida} other{{weeks} semanas seguidas}}",
-  "@goalMomentumStreak": {"placeholders": {"weeks": {"type": "int"}}},
+  "@goalMomentumStreak": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
   "goalMomentumStreakSub": "Tu mejor racha aportando. ¡Sigue así!",
   "@goalMomentumStreakSub": {},
   "goalMomentumBrokenTitle": "Retoma tu racha de ahorro",
   "@goalMomentumBrokenTitle": {},
   "goalMomentumBrokenSub": "{weeks, plural, =1{Hace 1 semana sin aportar · vuelve cuando quieras} other{Hace {weeks} semanas sin aportar · vuelve cuando quieras}}",
-  "@goalMomentumBrokenSub": {"placeholders": {"weeks": {"type": "int"}}},
+  "@goalMomentumBrokenSub": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
   "goalMomentumMilestone": "Próximo hito: {pct}% en {goalName} · faltan {amount}",
   "@goalMomentumMilestone": {
     "placeholders": {
-      "pct": {"type": "int"},
-      "goalName": {"type": "String"},
-      "amount": {"type": "String"}
+      "pct": {
+        "type": "int"
+      },
+      "goalName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "goalCardRemaining": "Te faltan {amount}",
-  "@goalCardRemaining": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalCardRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalCardCompleted": "Ahorraste {amount}",
-  "@goalCardCompleted": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalCardCompleted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalCardMeta": "{pct}% completado",
-  "@goalCardMeta": {"placeholders": {"pct": {"type": "int"}}},
+  "@goalCardMeta": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
   "goalCardChapterClosed": "Cumplida · capítulo cerrado",
   "@goalCardChapterClosed": {},
   "goalDetailTitle": "Meta",
   "@goalDetailTitle": {},
   "goalDetailRemaining": "Te faltan {amount}",
-  "@goalDetailRemaining": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalDetailRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalDetailAchieved": "Ahorraste {amount}",
-  "@goalDetailAchieved": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalDetailAchieved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalDetailSavedOfTarget": "{saved} ahorrado de {target}",
-  "@goalDetailSavedOfTarget": {"placeholders": {"saved": {"type": "String"}, "target": {"type": "String"}}},
+  "@goalDetailSavedOfTarget": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "goalActionsTooltip": "Más acciones",
   "@goalActionsTooltip": {},
   "goalEditTooltip": "Editar meta",
@@ -2306,11 +2725,32 @@
   "goalRowCompletedBadge": "Cumplida",
   "@goalRowCompletedBadge": {},
   "goalRowArchivedOn": "{account} · archivada el {date}",
-  "@goalRowArchivedOn": {"placeholders": {"account": {"type": "String"}, "date": {"type": "String"}}},
+  "@goalRowArchivedOn": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "goalRowArchivedOnNoAccount": "Archivada el {date}",
-  "@goalRowArchivedOnNoAccount": {"placeholders": {"date": {"type": "String"}}},
+  "@goalRowArchivedOnNoAccount": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "goalRowTargetOf": "de {amount}",
-  "@goalRowTargetOf": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalRowTargetOf": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalArchiveSheetTitle": "¿Archivar esta meta?",
   "@goalArchiveSheetTitle": {},
   "goalArchiveSheetMessage": "Se quita de tu lista principal y deja de aceptar nuevos movimientos. Puedes desarchivarla cuando quieras.",
@@ -2328,7 +2768,13 @@
   "goalDeleteSheetMessage": "Se mueve a la papelera. Puedes recuperarla mientras no la elimines definitivamente.",
   "@goalDeleteSheetMessage": {},
   "goalMovementsTitle": "Movimientos ({count})",
-  "@goalMovementsTitle": {"placeholders": {"count": {"type": "int"}}},
+  "@goalMovementsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "goalMovementsSectionTitle": "Movimientos",
   "@goalMovementsSectionTitle": {},
   "goalMovementsEmpty": "Todavía no registras movimientos en esta meta.",
@@ -2346,11 +2792,23 @@
   "goalMovementError": "No pudimos guardar el movimiento. Intenta de nuevo.",
   "@goalMovementError": {},
   "goalDateToday": "Hoy, {date}",
-  "@goalDateToday": {"placeholders": {"date": {"type": "String"}}},
+  "@goalDateToday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "goalContributeTitle": "Registrar aporte",
   "@goalContributeTitle": {},
   "goalContributeTitleWithName": "Aportar a {name}",
-  "@goalContributeTitleWithName": {"placeholders": {"name": {"type": "String"}}},
+  "@goalContributeTitleWithName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "goalContributeSubtitle": "Suma a tu progreso de la meta.",
   "@goalContributeSubtitle": {},
   "goalContributeAmountLabel": "Aporte",
@@ -2360,7 +2818,13 @@
   "goalWithdrawTitle": "Registrar retiro",
   "@goalWithdrawTitle": {},
   "goalWithdrawTitleWithName": "Retirar de {name}",
-  "@goalWithdrawTitleWithName": {"placeholders": {"name": {"type": "String"}}},
+  "@goalWithdrawTitleWithName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "goalWithdrawSubtitle": "Sacar dinero de una meta es normal.",
   "@goalWithdrawSubtitle": {},
   "goalWithdrawAmountLabel": "Retiro",
@@ -2394,7 +2858,13 @@
   "goalLinkTransactionCta": "Enlazar un movimiento",
   "@goalLinkTransactionCta": {},
   "goalLinkBannerTitle": "Enlazar a {name}",
-  "@goalLinkBannerTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@goalLinkBannerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "goalLinkBannerBody": "Elige un movimiento que ya registraste; lo atribuimos a esta meta, no creamos uno nuevo.",
   "@goalLinkBannerBody": {},
   "goalLinkError": "No pudimos enlazar el movimiento. Intenta de nuevo.",
@@ -2404,7 +2874,13 @@
   "goalAdjustDateCta": "Ajustar la fecha",
   "@goalAdjustDateCta": {},
   "goalWithdrawAvailableLabel": "Disponible en la meta: {amount}",
-  "@goalWithdrawAvailableLabel": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalWithdrawAvailableLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalWithdrawUseMaxCta": "Usar todo",
   "@goalWithdrawUseMaxCta": {},
   "goalWithdrawErrorExceedsSaved": "No puedes retirar más de lo que has ahorrado en esta meta.",
@@ -2432,23 +2908,65 @@
   "goalProjectionInsufficientHistory": "Aporta un poco más para ver tu ritmo de ahorro",
   "@goalProjectionInsufficientHistory": {},
   "goalProjectionMonthlyNeeded": "Necesitas aportar {amount} al mes para llegar a tu fecha",
-  "@goalProjectionMonthlyNeeded": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalProjectionMonthlyNeeded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalProjectionOnPace": "A tu ritmo, llegas en {month}",
-  "@goalProjectionOnPace": {"placeholders": {"month": {"type": "String"}}},
+  "@goalProjectionOnPace": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "goalMilestoneTitle": "¡Llegaste al {pct}%!",
-  "@goalMilestoneTitle": {"placeholders": {"pct": {"type": "int"}}},
+  "@goalMilestoneTitle": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
   "goalMilestonePercent": "{pct}%",
-  "@goalMilestonePercent": {"placeholders": {"pct": {"type": "int"}}},
+  "@goalMilestonePercent": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
   "goalMilestoneMessage": "Sigue así con {name}. Cada aporte te acerca más.",
-  "@goalMilestoneMessage": {"placeholders": {"name": {"type": "String"}}},
+  "@goalMilestoneMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "goalMilestoneCta": "Seguir ahorrando",
   "@goalMilestoneCta": {},
   "goalCompletedBadge": "Meta cumplida",
   "@goalCompletedBadge": {},
   "goalCompletedTitle": "¡Cumpliste {name}!",
-  "@goalCompletedTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@goalCompletedTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "goalCompletedMessage": "Ahorraste {amount} en total. Este logro queda contigo.",
-  "@goalCompletedMessage": {"placeholders": {"amount": {"type": "String"}}},
+  "@goalCompletedMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalCompletedCreateNext": "Crear la próxima meta",
   "@goalCompletedCreateNext": {},
   "goalCompletedArchive": "Archivar meta",
@@ -2494,19 +3012,43 @@
   "goalFormIconAndNameLabel": "Ícono y nombre",
   "@goalFormIconAndNameLabel": {},
   "goalFormCurrencyHintLocked": "La moneda la define la cuenta vinculada ({account}, {currency}). Cambia la cuenta si necesitas otra moneda.",
-  "@goalFormCurrencyHintLocked": {"placeholders": {"account": {"type": "String"}, "currency": {"type": "String"}}},
+  "@goalFormCurrencyHintLocked": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "goalFormCurrencyHintUnlocked": "Elige la moneda de tu meta. Si vinculas una cuenta, la moneda se fija a la de esa cuenta.",
   "@goalFormCurrencyHintUnlocked": {},
   "goalFormInitialSavedHint": "Lo guardamos como el primer movimiento del historial, para que tu meta arranque completa.",
   "@goalFormInitialSavedHint": {},
   "goalAccountFilterLabel": "Metas en {accountName}",
-  "@goalAccountFilterLabel": {"placeholders": {"accountName": {"type": "String"}}},
+  "@goalAccountFilterLabel": {
+    "placeholders": {
+      "accountName": {
+        "type": "String"
+      }
+    }
+  },
   "goalAccountFilterClearTooltip": "Quitar filtro",
   "@goalAccountFilterClearTooltip": {},
   "goalCoherenceLink": "Ver las metas de esta cuenta",
   "@goalCoherenceLink": {},
   "goalDetailSavedOfTargetNoAccount": "{saved} de {target} · sin cuenta vinculada",
-  "@goalDetailSavedOfTargetNoAccount": {"placeholders": {"saved": {"type": "String"}, "target": {"type": "String"}}},
+  "@goalDetailSavedOfTargetNoAccount": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "goalDetailAccountUnavailableMessage": "La cuenta que tenías vinculada ya no está disponible. Tu historial sigue completo y esta meta pasa a avance manual.",
   "@goalDetailAccountUnavailableMessage": {},
   "goalDetailAccountUnavailableLink": "Vincular otra cuenta",
@@ -2522,7 +3064,16 @@
   "goalMovementDetailTransferLabel": "Transferencia",
   "@goalMovementDetailTransferLabel": {},
   "goalMovementDetailTransferValue": "{origin} → {destination}",
-  "@goalMovementDetailTransferValue": {"placeholders": {"origin": {"type": "String"}, "destination": {"type": "String"}}},
+  "@goalMovementDetailTransferValue": {
+    "placeholders": {
+      "origin": {
+        "type": "String"
+      },
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
   "goalMovementDetailNoteLabel": "Nota",
   "@goalMovementDetailNoteLabel": {},
   "goalMovementEditTitle": "Editar movimiento",
@@ -2536,26 +3087,93 @@
   "goalMovementKindWithdrawalLower": "retiro",
   "@goalMovementKindWithdrawalLower": {},
   "goalDeleteMovementTitle": "¿Eliminar este {kind} de {amount}?",
-  "@goalDeleteMovementTitle": {"placeholders": {"kind": {"type": "String"}, "amount": {"type": "String"}}},
+  "@goalDeleteMovementTitle": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "goalDeleteMovementMessageTransfer": "El avance de la meta se recalcula sin él. Como este movimiento tiene una transferencia detrás, esa transferencia también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.",
-  "@goalDeleteMovementMessageTransfer": {"placeholders": {"origin": {"type": "String"}, "destination": {"type": "String"}}},
+  "@goalDeleteMovementMessageTransfer": {
+    "placeholders": {
+      "origin": {
+        "type": "String"
+      },
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
   "goalDeleteMovementMessageManual": "El avance de la meta se recalcula sin él. Este {kind} fue un registro manual, así que ninguna de tus cuentas cambia de saldo.",
-  "@goalDeleteMovementMessageManual": {"placeholders": {"kind": {"type": "String"}}},
+  "@goalDeleteMovementMessageManual": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
   "goalDeleteMovementMessageCompletedTransfer": "Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. La transferencia detrás también se elimina y los saldos de {origin} y {destination} vuelven a como estaban.",
-  "@goalDeleteMovementMessageCompletedTransfer": {"placeholders": {"kind": {"type": "String"}, "goalName": {"type": "String"}, "origin": {"type": "String"}, "destination": {"type": "String"}}},
+  "@goalDeleteMovementMessageCompletedTransfer": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "goalName": {
+        "type": "String"
+      },
+      "origin": {
+        "type": "String"
+      },
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
   "goalDeleteMovementMessageCompletedManual": "Este {kind} hace parte de lo que completó {goalName}: al eliminarlo, la meta vuelve a estar en curso hasta que la completes de nuevo. Fue un registro manual, así que ninguna de tus cuentas cambia de saldo.",
-  "@goalDeleteMovementMessageCompletedManual": {"placeholders": {"kind": {"type": "String"}, "goalName": {"type": "String"}}},
-
+  "@goalDeleteMovementMessageCompletedManual": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "goalName": {
+        "type": "String"
+      }
+    }
+  },
   "syncStatusTitle": "Estado de sincronización",
   "@syncStatusTitle": {},
   "syncHeroAttentionTitle": "{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}",
-  "@syncHeroAttentionTitle": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncHeroAttentionTitle": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncHeroAttentionKicker": "Sin subir a la nube desde {since}",
-  "@syncHeroAttentionKicker": {"placeholders": {"since": {"type": "String"}}},
+  "@syncHeroAttentionKicker": {
+    "placeholders": {
+      "since": {
+        "type": "String"
+      }
+    }
+  },
   "syncHeroAttentionKickerNever": "Todavía sin subir a la nube",
   "@syncHeroAttentionKickerNever": {},
   "syncHeroAttentionBody": "{count, plural, =1{Lo tenemos completo aquí. Mientras no suba, la nube no tiene copia de él: si cambias de teléfono o reinstalas la app, ese cambio no volvería.} other{Los tenemos completos aquí. Mientras no suban, la nube no tiene copia de ellos: si cambias de teléfono o reinstalas la app, esos {count} cambios no volverían.}}",
-  "@syncHeroAttentionBody": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncHeroAttentionBody": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncHeroStaleTitle": "Sin contacto con la nube",
   "@syncHeroStaleTitle": {},
   "syncHeroStaleBody": "No hay cambios esperando: lo que registraste ya está a salvo en la nube. Pero mientras no haya contacto, lo que registres de ahora en adelante se queda solo en este teléfono.",
@@ -2595,27 +3213,73 @@
   "syncSyncingCta": "Sincronizando…",
   "@syncSyncingCta": {},
   "syncLastSyncLabel": "Última sincronización: {relative}",
-  "@syncLastSyncLabel": {"placeholders": {"relative": {"type": "String"}}},
+  "@syncLastSyncLabel": {
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      }
+    }
+  },
   "syncLastSuccessfulSyncLabel": "Última sincronización exitosa: {relative}",
-  "@syncLastSuccessfulSyncLabel": {"placeholders": {"relative": {"type": "String"}}},
+  "@syncLastSuccessfulSyncLabel": {
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      }
+    }
+  },
   "syncNeverSyncedLabel": "Aún no se ha sincronizado",
   "@syncNeverSyncedLabel": {},
   "syncNoActiveSyncLabel": "Sin sincronización activa",
   "@syncNoActiveSyncLabel": {},
   "syncTimeAgo": "hace {duration}",
-  "@syncTimeAgo": {"placeholders": {"duration": {"type": "String"}}},
+  "@syncTimeAgo": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "syncDurationMoment": "un momento",
   "@syncDurationMoment": {},
   "syncDurationMinutes": "{count, plural, =1{1 minuto} other{{count} minutos}}",
-  "@syncDurationMinutes": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncDurationMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncDurationHours": "{count, plural, =1{1 hora} other{{count} horas}}",
-  "@syncDurationHours": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncDurationHours": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncDurationDays": "{count, plural, =1{1 día} other{{count} días}}",
-  "@syncDurationDays": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncDurationDays": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncSectionPending": "Qué está esperando",
   "@syncSectionPending": {},
   "syncSectionPendingLink": "Ver los {count}",
-  "@syncSectionPendingLink": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncSectionPendingLink": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncSectionDiagnostics": "Diagnóstico",
   "@syncSectionDiagnostics": {},
   "syncSectionBackupAndDiagnostics": "Copia y diagnóstico",
@@ -2627,7 +3291,14 @@
   "syncSaveCopyDescription": "Un archivo con todo lo tuyo, listo para volver a cargarlo.",
   "@syncSaveCopyDescription": {},
   "syncSaveCopyDescriptionAttention": "{count, plural, =1{Ese cambio vive solo aquí. Una copia lo pone a salvo.} other{Esos {count} cambios viven solo aquí. Una copia los pone a salvo.}}",
-  "@syncSaveCopyDescriptionAttention": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncSaveCopyDescriptionAttention": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncSaveCopyDescriptionStale": "Lo que registres desde ahora se queda aquí hasta que vuelva el contacto. Una copia lo pone a salvo.",
   "@syncSaveCopyDescriptionStale": {},
   "syncSaveCopyDescriptionSignedOut": "Sin cuenta, un archivo de copia es la única forma de no depender de este teléfono.",
@@ -2645,11 +3316,40 @@
   "syncPendingListTitle": "Cambios sin subir",
   "@syncPendingListTitle": {},
   "syncPendingListSummary": "{count, plural, =1{1 cambio esperando · desde {since}} other{{count} cambios esperando · el más antiguo, desde {since}}}",
-  "@syncPendingListSummary": {"placeholders": {"count": {"type": "num", "format": "compact"}, "since": {"type": "String"}}},
+  "@syncPendingListSummary": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      },
+      "since": {
+        "type": "String"
+      }
+    }
+  },
   "syncPendingRowTitle": "{kind} · {label}",
-  "@syncPendingRowTitle": {"placeholders": {"kind": {"type": "String"}, "label": {"type": "String"}}},
+  "@syncPendingRowTitle": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "syncPendingRowMeta": "{attempts, plural, =1{Pendiente desde el {date} · 1 intento} other{Pendiente desde el {date} · {attempts} intentos}}",
-  "@syncPendingRowMeta": {"placeholders": {"attempts": {"type": "num", "format": "compact"}, "date": {"type": "String"}}},
+  "@syncPendingRowMeta": {
+    "placeholders": {
+      "attempts": {
+        "type": "num",
+        "format": "compact"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "syncEntityTransaction": "Movimiento",
   "@syncEntityTransaction": {},
   "syncEntityAccount": "Cuenta",
@@ -2675,9 +3375,22 @@
   "syncEntityOther": "Cambio",
   "@syncEntityOther": {},
   "syncDetailWaiting": "Lleva {duration} esperando",
-  "@syncDetailWaiting": {"placeholders": {"duration": {"type": "String"}}},
+  "@syncDetailWaiting": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "syncDetailAttempts": "{count, plural, =1{1 intento de subida} other{{count} intentos de subida}}",
-  "@syncDetailAttempts": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncDetailAttempts": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncDetailRisk": "La nube todavía no tiene copia de este cambio: si reinstalas la app o cambias de teléfono, no volvería.",
   "@syncDetailRisk": {},
   "syncDetailRetry": "Reintentar",
@@ -2687,7 +3400,14 @@
   "syncPendingEmptyDescription": "Todo lo que registraste ya llegó a la nube.",
   "@syncPendingEmptyDescription": {},
   "syncLogSheetSubtitle": "{count, plural, =0{Aún no hay líneas · nada que reportar} =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}",
-  "@syncLogSheetSubtitle": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncLogSheetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncLogPrivacyNote": "El registro no incluye montos ni los nombres de tus movimientos: solo fechas, códigos y reintentos.",
   "@syncLogPrivacyNote": {},
   "syncLogEmpty": "Todavía no hay nada registrado.",
@@ -2701,7 +3421,14 @@
   "syncLogCopied": "Registro copiado",
   "@syncLogCopied": {},
   "syncRetrySuccess": "{count, plural, =1{Todo al día · 1 cambio subido} other{Todo al día · {count} cambios subidos}}",
-  "@syncRetrySuccess": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@syncRetrySuccess": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "syncRetryPartial": "No se pudo subir todo. Sigue guardado en este teléfono.",
   "@syncRetryPartial": {},
   "syncRetryPartialAction": "Ver detalle",
@@ -2709,22 +3436,40 @@
   "homeSyncAttention": "Cambios sin subir",
   "@homeSyncAttention": {},
   "homeSyncSheetStalledTitle": "{count, plural, =1{1 cambio está solo en este teléfono} other{{count} cambios están solo en este teléfono}}",
-  "@homeSyncSheetStalledTitle": {"placeholders": {"count": {"type": "num", "format": "compact"}}},
+  "@homeSyncSheetStalledTitle": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "homeSyncSheetStalledMessage": "No pudimos guardarlos en la nube. Aquí están completos, pero la nube todavía no tiene copia de ellos.",
   "@homeSyncSheetStalledMessage": {},
   "homeSyncSheetStaleTitle": "Sin contacto con la nube",
   "@homeSyncSheetStaleTitle": {},
   "homeSyncSheetStaleMessage": "No hay cambios pendientes: lo que registraste ya está a salvo en la nube. Pero llevamos {duration} sin conectar, así que lo que registres de ahora en adelante se queda solo en este teléfono.",
-  "@homeSyncSheetStaleMessage": {"placeholders": {"duration": {"type": "String"}}},
+  "@homeSyncSheetStaleMessage": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "homeSyncSheetTooLongTitle": "La sincronización está tardando",
   "@homeSyncSheetTooLongTitle": {},
   "homeSyncSheetTooLongMessage": "Llevamos {duration} intentando subir tus cambios. En este teléfono no falta nada; lo que aún no ocurre es la copia en la nube.",
-  "@homeSyncSheetTooLongMessage": {"placeholders": {"duration": {"type": "String"}}},
+  "@homeSyncSheetTooLongMessage": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "homeSyncSheetDetails": "Ver detalles",
   "@homeSyncSheetDetails": {},
   "settingsSyncStatus": "Estado de sincronización",
   "@settingsSyncStatus": {},
-
   "reportsTabSummary": "Resumen",
   "@reportsTabSummary": {},
   "reportsTabCashflow": "Flujo",
@@ -2733,18 +3478,29 @@
   "@reportsTabNetWorth": {},
   "reportsTabCategories": "Categorías",
   "@reportsTabCategories": {},
-
   "reportsPeriodLastMonths": "{count, plural, one{Último mes} other{Últimos {count} meses}}",
   "@reportsPeriodLastMonths": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsPeriodDaysWithData": "{count, plural, one{{count} día con datos} other{{count} días con datos}}",
   "@reportsPeriodDaysWithData": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsPeriodSinceDate": "Desde el {date}",
   "@reportsPeriodSinceDate": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "reportsPeriodSheetTitle": "Filtrar periodo",
   "@reportsPeriodSheetTitle": {},
@@ -2754,7 +3510,6 @@
   "@reportsPeriodGranularityYear": {},
   "reportsPeriodClear": "Limpiar",
   "@reportsPeriodClear": {},
-
   "reportsCashflowCardTitle": "Flujo de caja",
   "@reportsCashflowCardTitle": {},
   "reportsCashflowCardSubtitle": "Ingresos vs. gastos, mes a mes",
@@ -2767,27 +3522,47 @@
   "@reportsCashflowDebtLegendLabel": {},
   "reportsCashflowPositiveLabel": "Ahorraste en {periodPhrase}",
   "@reportsCashflowPositiveLabel": {
-    "placeholders": { "periodPhrase": { "type": "String" } }
+    "placeholders": {
+      "periodPhrase": {
+        "type": "String"
+      }
+    }
   },
   "reportsCashflowNegativeLabel": "Balance de {periodPhrase}",
   "@reportsCashflowNegativeLabel": {
-    "placeholders": { "periodPhrase": { "type": "String" } }
+    "placeholders": {
+      "periodPhrase": {
+        "type": "String"
+      }
+    }
   },
   "reportsCashflowShortHistoryLabel": "{count, plural, one{Balance de tu primer día} other{Balance de tus primeros {count} días}}",
   "@reportsCashflowShortHistoryLabel": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsCashflowPeriodPhraseLastMonths": "{count, plural, one{el último mes} other{los últimos {count} meses}}",
   "@reportsCashflowPeriodPhraseLastMonths": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsCashflowPeriodPhraseGeneric": "el periodo seleccionado",
   "@reportsCashflowPeriodPhraseGeneric": {},
   "reportsCashflowNegativeExplainer": "Salió {amount} más de lo que entró en {periodPhrase}. Abajo puedes ver qué meses pesaron más.",
   "@reportsCashflowNegativeExplainer": {
     "placeholders": {
-      "amount": { "type": "String" },
-      "periodPhrase": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "periodPhrase": {
+        "type": "String"
+      }
     }
   },
   "reportsCashflowViewCategoriesLink": "Ver en qué se fue",
@@ -2795,8 +3570,12 @@
   "reportsCashflowCurrentMonthNote": "{month} va en curso: llega hasta el {day}.",
   "@reportsCashflowCurrentMonthNote": {
     "placeholders": {
-      "month": { "type": "String" },
-      "day": { "type": "int" }
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "reportsCashflowDebtToggleLabel": "Separar movimientos de deuda",
@@ -2805,7 +3584,6 @@
   "@reportsCashflowDebtToggleHint": {},
   "reportsCashflowShortHistoryNote": "Ajustamos la vista a los días que ya registraste. Cuando completes tu primer mes, verás la comparación mes a mes.",
   "@reportsCashflowShortHistoryNote": {},
-
   "reportsNetWorthCardTitle": "Patrimonio",
   "@reportsNetWorthCardTitle": {},
   "reportsNetWorthCaption": "El líquido es lo que puedes usar hoy. El total resta lo que debes y suma lo que te deben.",
@@ -2822,10 +3600,18 @@
   "@reportsNetWorthHeroSemantics": {
     "description": "Texto para lectores de pantalla del Hero Patrimonio: figuras líquido y total.",
     "placeholders": {
-      "liquidLabel": { "type": "String" },
-      "liquidAmount": { "type": "String" },
-      "totalLabel": { "type": "String" },
-      "totalAmount": { "type": "String" }
+      "liquidLabel": {
+        "type": "String"
+      },
+      "liquidAmount": {
+        "type": "String"
+      },
+      "totalLabel": {
+        "type": "String"
+      },
+      "totalAmount": {
+        "type": "String"
+      }
     }
   },
   "reportsNetWorthInterestNote": "El interés de una deuda baja tu patrimonio, pero no aparece en Flujo: no es plata que salió de una cuenta.",
@@ -2837,27 +3623,42 @@
   "reportsNetWorthSubtitle": "Del cierre de {from} al {to} · {currency}",
   "@reportsNetWorthSubtitle": {
     "placeholders": {
-      "from": { "type": "String" },
-      "to": { "type": "String" },
-      "currency": { "type": "String" }
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
     }
   },
-
   "reportsCategoriesCardTitle": "Estructura de gasto",
   "@reportsCategoriesCardTitle": {},
   "reportsCategoriesSubtitle": "{isSubcategory, select, true{{count, plural, one{{count} subcategoría · {range}} other{{count} subcategorías · {range}}}} other{{count, plural, one{{count} categoría · {range}} other{{count} categorías · {range}}}}}",
   "@reportsCategoriesSubtitle": {
     "placeholders": {
-      "count": { "type": "int" },
-      "range": { "type": "String" },
-      "isSubcategory": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "range": {
+        "type": "String"
+      },
+      "isSubcategory": {
+        "type": "String"
+      }
     }
   },
   "reportsCategoriesTopLabel": "Mayor gasto: {name} · {pct}%",
   "@reportsCategoriesTopLabel": {
     "placeholders": {
-      "name": { "type": "String" },
-      "pct": { "type": "int" }
+      "name": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
     }
   },
   "reportsCategoriesUncategorized": "Sin categoría",
@@ -2866,15 +3667,25 @@
   "@reportsCategoriesRowSemantics": {
     "description": "Texto para lectores de pantalla de una fila del desglose por categoría: nombre, porcentaje y monto.",
     "placeholders": {
-      "name": { "type": "String" },
-      "pct": { "type": "int" },
-      "amount": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "reportsPercentValue": "{pct}%",
   "@reportsPercentValue": {
     "description": "Porcentaje formateado para figuras de Gráficas (desglose de categorías, metas del resumen).",
-    "placeholders": { "pct": { "type": "int" } }
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
   },
   "reportsCategoriesViewSubcategories": "Profundizar",
   "@reportsCategoriesViewSubcategories": {},
@@ -2882,26 +3693,41 @@
   "@reportsCategoriesBack": {},
   "reportsCategoriesMovementsCount": "{count, plural, one{{count} movimiento} other{{count} movimientos}}",
   "@reportsCategoriesMovementsCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "reportsDashboardBudgetsTitle": "Presupuestos",
   "@reportsDashboardBudgetsTitle": {},
   "reportsDashboardBudgetsSubtitle": "{count, plural, one{{count} presupuesto activo · ciclos propios} other{{count} presupuestos activos · ciclos propios}}",
   "@reportsDashboardBudgetsSubtitle": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsDashboardGoalsTitle": "Metas",
   "@reportsDashboardGoalsTitle": {},
   "reportsDashboardGoalsSubtitle": "{count, plural, one{{count} meta en curso} other{{count} metas en curso}}",
   "@reportsDashboardGoalsSubtitle": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reportsGoalSummaryAmountOfTarget": "{saved} de {target}",
   "@reportsGoalSummaryAmountOfTarget": {
     "placeholders": {
-      "saved": { "type": "String" },
-      "target": { "type": "String" }
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
     }
   },
   "reportsDashboardBudgetsEmptySubtitle": "Aún no has creado ninguno",
@@ -2917,36 +3743,41 @@
   "reportsDashboardHeroBudgetsAvailable": "{amount} disponibles",
   "@reportsDashboardHeroBudgetsAvailable": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "reportsDashboardHeroGoalsSaved": "{amount} ahorrados",
   "@reportsDashboardHeroGoalsSaved": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
-
   "reportsEmptyTitle": "Aún no hay movimientos en este periodo",
   "@reportsEmptyTitle": {},
   "reportsEmptyMessage": "Registra un gasto o un ingreso y aquí verás cómo se mueve tu plata mes a mes.",
   "@reportsEmptyMessage": {},
   "reportsSyncNoticeMessage": "Hay cambios sin sincronizar. Lo que ves aquí está completo y guardado en tu teléfono.",
   "@reportsSyncNoticeMessage": {},
-
   "reportsExportTooltip": "Exportar como imagen",
   "@reportsExportTooltip": {},
   "reportsExportError": "No pudimos exportar la gráfica. Intenta de nuevo.",
   "@reportsExportError": {},
   "reportsExportShareText": "Gráfica de {title} — billetudo",
   "@reportsExportShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "reportsChartSkeletonLoadingLabel": "Cargando gráfica",
   "@reportsChartSkeletonLoadingLabel": {
     "description": "Etiqueta accesible del estado de carga (skeleton) de una gráfica."
   },
-
   "reportsAccountFilterAll": "Todas las cuentas",
   "@reportsAccountFilterAll": {
     "description": "Label del filtro de cuentas de Gráficas cuando no hay selección (todas incluidas)."
@@ -2955,10 +3786,11 @@
   "@reportsAccountFilterSelected": {
     "description": "Label del filtro de cuentas de Gráficas con una selección parcial.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "accountTypeSheetTitle": "Selecciona el tipo de cuenta",
   "@accountTypeSheetTitle": {},
   "onboardingWelcomeHeadline": "Todo lo esencial. Gratis. Para siempre.",
@@ -3004,5 +3836,161 @@
   "onboardingClosingCtaAccount": "Crea tu primera cuenta",
   "@onboardingClosingCtaAccount": {},
   "onboardingClosingSkip": "Lo hago después",
-  "@onboardingClosingSkip": {}
+  "@onboardingClosingSkip": {},
+  "tutorialGotIt": "Entendido",
+  "@tutorialGotIt": {},
+  "tutorialsMenuViewHelp": "Ver ayuda",
+  "@tutorialsMenuViewHelp": {},
+  "budgetsMenuViewHelpSubtitle": "Repasa cómo funcionan los presupuestos",
+  "@budgetsMenuViewHelpSubtitle": {},
+  "goalsMenuViewHelpSubtitle": "Repasa cómo funcionan las metas",
+  "@goalsMenuViewHelpSubtitle": {},
+  "debtsMenuViewHelpSubtitle": "Repasa cómo funcionan las deudas",
+  "@debtsMenuViewHelpSubtitle": {},
+  "scheduledPaymentsMenuViewHelpSubtitle": "Repasa cómo funcionan los pagos programados",
+  "@scheduledPaymentsMenuViewHelpSubtitle": {},
+  "goalsMenuTooltip": "Más opciones",
+  "@goalsMenuTooltip": {},
+  "goalsMenuOptions": "Opciones",
+  "@goalsMenuOptions": {},
+  "goalsMenuArchived": "Ver archivados",
+  "@goalsMenuArchived": {},
+  "debtsMenuTooltip": "Más opciones",
+  "@debtsMenuTooltip": {},
+  "debtsMenuOptions": "Opciones",
+  "@debtsMenuOptions": {},
+  "scheduledPaymentsMenuTooltip": "Más opciones",
+  "@scheduledPaymentsMenuTooltip": {},
+  "scheduledPaymentsMenuOptions": "Opciones",
+  "@scheduledPaymentsMenuOptions": {},
+  "settingsShowHelpOnEntry": "Mostrar ayuda al entrar a una sección",
+  "@settingsShowHelpOnEntry": {},
+  "settingsShowHelpOnEntrySubtitle": "Explica cada sección la primera vez que entras.",
+  "@settingsShowHelpOnEntrySubtitle": {},
+  "tutorialBudgetsTitle": "Así funcionan los presupuestos",
+  "@tutorialBudgetsTitle": {},
+  "tutorialBudgetsPoint1Heading": "Un presupuesto por período",
+  "@tutorialBudgetsPoint1Heading": {},
+  "tutorialBudgetsPoint1Body": "Defines un monto para gastar en un período (semanal, quincenal, mensual o solo por esta vez) y ves cuánto te queda mientras avanza.",
+  "@tutorialBudgetsPoint1Body": {},
+  "tutorialBudgetsPoint2Heading": "Con el alcance que tú eliges",
+  "@tutorialBudgetsPoint2Heading": {},
+  "tutorialBudgetsPoint2Body": "Puede cubrir todo tu gasto, o enfocarse solo en una cuenta o categoría en particular.",
+  "@tutorialBudgetsPoint2Body": {},
+  "tutorialBudgetsPoint3Heading": "El modo sobres, para más control",
+  "@tutorialBudgetsPoint3Heading": {},
+  "tutorialBudgetsPoint3Body": "Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.",
+  "@tutorialBudgetsPoint3Body": {},
+  "tutorialBudgetsCta": "Crear mi primer presupuesto",
+  "@tutorialBudgetsCta": {},
+  "tutorialGoalsTitle": "Así funcionan las metas",
+  "@tutorialGoalsTitle": {},
+  "tutorialGoalsPoint1Heading": "Para qué sirve una meta",
+  "@tutorialGoalsPoint1Heading": {},
+  "tutorialGoalsPoint1Body": "Úsala para ahorrar para algo puntual, como un viaje, un fondo de emergencia o un regalo, y ver tu avance en cualquier momento.",
+  "@tutorialGoalsPoint1Body": {},
+  "tutorialGoalsPoint2Heading": "El avance se arma con tus aportes",
+  "@tutorialGoalsPoint2Heading": {},
+  "tutorialGoalsPoint2Body": "Cada vez que registras un aporte, tu progreso sube. No es un número que tú edites: es la suma de lo que has ido aportando.",
+  "@tutorialGoalsPoint2Body": {},
+  "tutorialGoalsPoint3Heading": "Un aporte puede mover dinero, o no",
+  "@tutorialGoalsPoint3Heading": {},
+  "tutorialGoalsPoint3Body": "Puedes aportar moviendo dinero real de una cuenta, o solo dejarlo anotado sin tocar tu saldo (útil si ya guardaste ese dinero en otro lado).",
+  "@tutorialGoalsPoint3Body": {},
+  "tutorialGoalsCta": "Crear mi primera meta",
+  "@tutorialGoalsCta": {},
+  "tutorialDebtsTitle": "Así funcionan las deudas",
+  "@tutorialDebtsTitle": {},
+  "tutorialDebtsPoint1Heading": "Para qué sirve una deuda",
+  "@tutorialDebtsPoint1Heading": {},
+  "tutorialDebtsPoint1Body": "Lleva el control del dinero que debes (a un banco, una tarjeta o una persona) o que te deben a ti, sin tener que hacer cuentas a mano.",
+  "@tutorialDebtsPoint1Body": {},
+  "tutorialDebtsPoint2Heading": "Tú registras, la app calcula",
+  "@tutorialDebtsPoint2Heading": {},
+  "tutorialDebtsPoint2Body": "Anotas lo que pediste prestado, lo que has abonado y los intereses que se suman, y la app calcula sola cuánto falta por pagar.",
+  "@tutorialDebtsPoint2Body": {},
+  "tutorialDebtsPoint3Heading": "Un abono puede mover dinero, o no",
+  "@tutorialDebtsPoint3Heading": {},
+  "tutorialDebtsPoint3Body": "Puedes descontar un abono de una de tus cuentas, o solo anotarlo sin mover dinero (útil si alguien más pagó por ti, o si fue en efectivo).",
+  "@tutorialDebtsPoint3Body": {},
+  "tutorialDebtsCta": "Registrar mi primera deuda",
+  "@tutorialDebtsCta": {},
+  "tutorialScheduledPaymentsTitle": "Así funcionan los pagos programados",
+  "@tutorialScheduledPaymentsTitle": {},
+  "tutorialScheduledPaymentsPoint1Heading": "Para qué sirven",
+  "@tutorialScheduledPaymentsPoint1Heading": {},
+  "tutorialScheduledPaymentsPoint1Body": "Sirven para no olvidar pagos que se repiten, como el arriendo, una suscripción o una cuota, y dejar que la app los registre por ti si quieres.",
+  "@tutorialScheduledPaymentsPoint1Body": {},
+  "tutorialScheduledPaymentsPoint2Heading": "Automático o manual",
+  "@tutorialScheduledPaymentsPoint2Heading": {},
+  "tutorialScheduledPaymentsPoint2Body": "Uno automático se registra solo en su fecha. Uno manual te avisa y tú confirmas antes de que cuente (útil si el monto cambia cada vez).",
+  "@tutorialScheduledPaymentsPoint2Body": {},
+  "tutorialScheduledPaymentsPoint3Heading": "La bandeja de vencimientos",
+  "@tutorialScheduledPaymentsPoint3Heading": {},
+  "tutorialScheduledPaymentsPoint3Body": "Ahí ves todos tus pagos pendientes en un solo lugar y los confirmas cuando te llegan.",
+  "@tutorialScheduledPaymentsPoint3Body": {},
+  "tutorialScheduledPaymentsCta": "Programar mi primer pago",
+  "@tutorialScheduledPaymentsCta": {},
+  "tutorialDebtLinkMovementTitle": "Enlazar un movimiento existente",
+  "@tutorialDebtLinkMovementTitle": {},
+  "tutorialDebtLinkMovementPoint1Heading": "No crea un movimiento nuevo",
+  "@tutorialDebtLinkMovementPoint1Heading": {},
+  "tutorialDebtLinkMovementPoint1Body": "Atribuye uno que ya registraste, para no duplicar.",
+  "@tutorialDebtLinkMovementPoint1Body": {},
+  "tutorialGoalLinkMovementTitle": "Enlazar un movimiento existente",
+  "@tutorialGoalLinkMovementTitle": {},
+  "tutorialGoalLinkMovementPoint1Heading": "No crea un movimiento nuevo",
+  "@tutorialGoalLinkMovementPoint1Heading": {},
+  "tutorialGoalLinkMovementPoint1Body": "Atribuye uno que ya registraste, para no duplicar.",
+  "@tutorialGoalLinkMovementPoint1Body": {},
+  "tutorialDebtPaymentToggleTitle": "¿Agregar el abono a una cuenta?",
+  "@tutorialDebtPaymentToggleTitle": {},
+  "tutorialDebtPaymentTogglePoint1Heading": "Si eliges \"Sí\"",
+  "@tutorialDebtPaymentTogglePoint1Heading": {},
+  "tutorialDebtPaymentTogglePoint1Body": "El abono también descuenta el monto de la cuenta que elijas, como una transacción real.",
+  "@tutorialDebtPaymentTogglePoint1Body": {},
+  "tutorialDebtPaymentTogglePoint2Heading": "Si eliges \"No\"",
+  "@tutorialDebtPaymentTogglePoint2Heading": {},
+  "tutorialDebtPaymentTogglePoint2Body": "La deuda baja igual, pero no se toca ningún saldo (útil si pagaste en efectivo o alguien más pagó por ti).",
+  "@tutorialDebtPaymentTogglePoint2Body": {},
+  "tutorialGoalContributionToggleTitle": "¿Mover dinero de una cuenta?",
+  "@tutorialGoalContributionToggleTitle": {},
+  "tutorialGoalContributionTogglePoint1Heading": "Si eliges \"Sí\"",
+  "@tutorialGoalContributionTogglePoint1Heading": {},
+  "tutorialGoalContributionTogglePoint1Body": "El aporte descuenta el monto real de una cuenta, como una transferencia.",
+  "@tutorialGoalContributionTogglePoint1Body": {},
+  "tutorialGoalContributionTogglePoint2Heading": "Si eliges \"No\"",
+  "@tutorialGoalContributionTogglePoint2Heading": {},
+  "tutorialGoalContributionTogglePoint2Body": "El aporte solo queda anotado en la meta, sin tocar ningún saldo (útil si ya guardaste ese dinero en otro lado).",
+  "@tutorialGoalContributionTogglePoint2Body": {},
+  "tutorialDebtScheduledInstallmentTitle": "La cuota vive en Pagos programados",
+  "@tutorialDebtScheduledInstallmentTitle": {},
+  "tutorialDebtScheduledInstallmentPoint1Heading": "Se configura aquí, se confirma allá",
+  "@tutorialDebtScheduledInstallmentPoint1Heading": {},
+  "tutorialDebtScheduledInstallmentPoint1Body": "La configuras desde esta deuda, pero se confirma desde la bandeja de Pagos programados, como cualquier otro pago.",
+  "@tutorialDebtScheduledInstallmentPoint1Body": {},
+  "tutorialDebtScheduledInstallmentPoint2Heading": "Un solo movimiento, dos efectos",
+  "@tutorialDebtScheduledInstallmentPoint2Heading": {},
+  "tutorialDebtScheduledInstallmentPoint2Body": "Al confirmarla, un solo movimiento baja el saldo de tu cuenta y abona a la deuda al mismo tiempo.",
+  "@tutorialDebtScheduledInstallmentPoint2Body": {},
+  "tutorialBudgetableTransferTitle": "¿Contar esta transferencia en tu presupuesto?",
+  "@tutorialBudgetableTransferTitle": {},
+  "tutorialBudgetableTransferPoint1Heading": "Para qué sirve marcarla",
+  "@tutorialBudgetableTransferPoint1Heading": {},
+  "tutorialBudgetableTransferPoint1Body": "Algunas transferencias sí son parte de tu plan de gasto, aunque no sean un gasto real (por ejemplo, mover dinero a la cuenta que usas para gastar en el mes).",
+  "@tutorialBudgetableTransferPoint1Body": {},
+  "tutorialBudgetableTransferPoint2Heading": "Qué cambia al marcarla",
+  "@tutorialBudgetableTransferPoint2Heading": {},
+  "tutorialBudgetableTransferPoint2Body": "Se resta de tu presupuesto igual que un gasto, aunque el dinero siga siendo tuyo, solo que en otra cuenta.",
+  "@tutorialBudgetableTransferPoint2Body": {},
+  "tutorialEnvelopeModeTitle": "Así funciona el modo sobres",
+  "@tutorialEnvelopeModeTitle": {},
+  "tutorialEnvelopeModePoint1Heading": "Para qué sirve",
+  "@tutorialEnvelopeModePoint1Heading": {},
+  "tutorialEnvelopeModePoint1Body": "Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.",
+  "@tutorialEnvelopeModePoint1Body": {},
+  "tutorialEnvelopeModePoint2Heading": "Qué cambia en la pantalla",
+  "@tutorialEnvelopeModePoint2Heading": {},
+  "tutorialEnvelopeModePoint2Body": "En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.",
+  "@tutorialEnvelopeModePoint2Body": {}
 }

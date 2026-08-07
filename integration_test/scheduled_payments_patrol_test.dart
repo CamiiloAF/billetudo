@@ -288,7 +288,9 @@ Future<void> _pickDateViaYearView(
   // The 12-year page the view opens on is centred on today's year, not
   // [year] — page forward (bounded) until [year]'s cell is on screen.
   final yearCell = find.text('$year');
-  for (var attempt = 0; attempt < 10 && yearCell.evaluate().isEmpty; attempt++) {
+  for (var attempt = 0;
+      attempt < 10 && yearCell.evaluate().isEmpty;
+      attempt++) {
     await $.tester.tap(find.byTooltip('Años siguientes'));
     await $.tester.pumpAndSettle();
   }
@@ -343,6 +345,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       expect(find.text('Nuevo pago programado'), findsOneWidget);
 
@@ -371,6 +374,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       await _enterAmount($, [3, 0, 0]); // $300 COP
       await _pickAccountField($, 'Cuenta', 'Efectivo');
@@ -419,6 +423,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       await _enterAmount($, [8, 0, 0]); // $800 COP
       await _pickAccountField($, 'Cuenta', 'Efectivo');
@@ -475,6 +480,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       await _enterAmount($, [6, 0, 0]); // $600 COP
       await _pickAccountField($, 'Cuenta', 'Efectivo');
@@ -530,6 +536,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       await _enterAmount($, [4, 0, 0]); // $400 COP
       await _pickAccountField($, 'Cuenta', 'Efectivo');
@@ -580,6 +587,7 @@ void main() {
 
       _goToScheduledPayments($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await _openNewScheduledPaymentForm($);
       await _enterAmount($, [4, 0, 0]); // $400 COP
       await _pickAccountField($, 'Cuenta', 'Efectivo');

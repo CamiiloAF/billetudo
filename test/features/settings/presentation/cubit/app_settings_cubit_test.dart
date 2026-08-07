@@ -18,6 +18,8 @@ void main() {
   late MockSetZeroBasedEnabled setZeroBasedEnabled;
   late MockGetActiveBudgets getActiveBudgets;
   late MockSetFeaturedBudget setFeaturedBudget;
+  late MockWatchHelpEnabled watchHelpEnabled;
+  late MockSetTutorialsEnabled setTutorialsEnabled;
 
   const enabledSettings = AppSettings(
     zeroBasedEnabled: true,
@@ -66,9 +68,15 @@ void main() {
     setZeroBasedEnabled = MockSetZeroBasedEnabled();
     getActiveBudgets = MockGetActiveBudgets();
     setFeaturedBudget = MockSetFeaturedBudget();
+    watchHelpEnabled = MockWatchHelpEnabled();
+    setTutorialsEnabled = MockSetTutorialsEnabled();
     // Default: no active budgets; individual tests override.
     when(getActiveBudgets.call)
         .thenAnswer((_) => Stream.value(const Right([])));
+    // Default: help preference already on, matching `AppSettingsState`'s own
+    // default — most tests never touch this preference.
+    when(watchHelpEnabled.call)
+        .thenAnswer((_) => Stream.value(const Right(true)));
   });
 
   AppSettingsCubit build() => AppSettingsCubit(
@@ -76,6 +84,8 @@ void main() {
         setZeroBasedEnabled,
         getActiveBudgets,
         setFeaturedBudget,
+        watchHelpEnabled,
+        setTutorialsEnabled,
       );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -159,5 +169,31 @@ void main() {
     act: (cubit) => cubit.setFeaturedBudget(null),
     expect: () => <AppSettingsState>[],
     verify: (_) => verify(() => setFeaturedBudget(budgetId: null)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'start also exposes AppSettings.showHelpOnSectionEntry (HU-04)',
+    setUp: () {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(enabledSettings)));
+      when(watchHelpEnabled.call)
+          .thenAnswer((_) => Stream.value(const Right(false)));
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    verify: (cubit) =>
+        expect(cubit.state.showHelpOnSectionEntry, isFalse),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setShowHelpOnSectionEntry delegates to SetTutorialsEnabled instead of '
+    'emitting directly: the help-enabled stream is the source of truth',
+    setUp: () => when(() => setTutorialsEnabled(enabled: true))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setShowHelpOnSectionEntry(enabled: true),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setTutorialsEnabled(enabled: true)).called(1),
   );
 }

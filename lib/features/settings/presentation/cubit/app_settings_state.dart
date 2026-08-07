@@ -9,6 +9,7 @@ class AppSettingsState extends Equatable {
   const AppSettingsState({
     this.settings = const AppSettings.defaults(),
     this.activeBudgets = const [],
+    this.showHelpOnSectionEntry = true,
   });
 
   final AppSettings settings;
@@ -17,6 +18,15 @@ class AppSettingsState extends Equatable {
   /// offered by the "Presupuesto destacado" select sheet, alongside
   /// "Automático".
   final List<BudgetWithProgress> activeBudgets;
+
+  /// "Mostrar ayuda al entrar a una sección" (`docs/requirements/
+  /// 16-minitutoriales.md` HU-04). Lives outside [AppSettings] on purpose —
+  /// it is `TutorialsRepository`'s own `AppSettings.showHelpOnSectionEntry`
+  /// column, read through `WatchHelpEnabled`, not through
+  /// `AppSettingsRepository` — so this cubit stays the single place Ajustes
+  /// asks for every one of its toggles without needing to know which
+  /// repository backs which column.
+  final bool showHelpOnSectionEntry;
 
   bool get zeroBasedEnabled => settings.zeroBasedEnabled;
 
@@ -27,12 +37,15 @@ class AppSettingsState extends Equatable {
   AppSettingsState copyWith({
     AppSettings? settings,
     List<BudgetWithProgress>? activeBudgets,
+    bool? showHelpOnSectionEntry,
   }) =>
       AppSettingsState(
         settings: settings ?? this.settings,
         activeBudgets: activeBudgets ?? this.activeBudgets,
+        showHelpOnSectionEntry:
+            showHelpOnSectionEntry ?? this.showHelpOnSectionEntry,
       );
 
   @override
-  List<Object?> get props => [settings, activeBudgets];
+  List<Object?> get props => [settings, activeBudgets, showHelpOnSectionEntry];
 }

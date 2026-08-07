@@ -112,6 +112,81 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountsLoading => 'Cargando tus cuentas';
 
   @override
+  String get accountGateNotNow => 'Ahora no';
+
+  @override
+  String get accountGateCreateAccount => 'Crear cuenta';
+
+  @override
+  String get accountGateMovementTitle => 'Crea tu primera cuenta';
+
+  @override
+  String get accountGateMovementMessage =>
+      'Para registrar movimientos necesitas una cuenta activa. Créala ahora y seguimos justo con tu movimiento.';
+
+  @override
+  String get accountGateTransferZeroTitle =>
+      'Necesitas dos cuentas para transferir';
+
+  @override
+  String get accountGateTransferZeroMessage =>
+      'Aún no tienes ninguna. Crea la primera para empezar (luego te pedimos la segunda).';
+
+  @override
+  String get accountGateTransferOneTitle => 'Necesitas una segunda cuenta';
+
+  @override
+  String get accountGateTransferOneMessage =>
+      'Ya tienes una cuenta activa. Crea otra para completar la transferencia entre ellas.';
+
+  @override
+  String get accountGateScheduledPaymentTitle =>
+      'Crea una cuenta para tu pago programado';
+
+  @override
+  String get accountGateScheduledPaymentMessage =>
+      'Los pagos programados salen de una cuenta. Créala ahora y seguimos armando el tuyo.';
+
+  @override
+  String get accountGateDebtCashTitle =>
+      'Necesitas una cuenta para este movimiento';
+
+  @override
+  String get accountGateDebtCashMessage =>
+      'Este abono o desembolso mueve dinero real, así que hace falta una cuenta. Créala y seguimos con tu deuda.';
+
+  @override
+  String get accountGateGoalMovementTitle =>
+      'Necesitas una cuenta para este aporte';
+
+  @override
+  String get accountGateGoalMovementMessage =>
+      'Mover dinero real hacia o desde tu meta requiere una cuenta. Créala y seguimos.';
+
+  @override
+  String get accountGateLinkMovementTitle =>
+      'Aún no hay movimientos para enlazar';
+
+  @override
+  String get accountGateLinkMovementMessage =>
+      'Enlazar requiere elegir entre tus movimientos, y esos nacen de una cuenta. Crea la primera y seguimos.';
+
+  @override
+  String get accountGateBudgetTitle => 'Crea una cuenta para tu presupuesto';
+
+  @override
+  String get accountGateBudgetMessage =>
+      'Los presupuestos se arman sobre tus cuentas reales. Crea la primera y seguimos armando el tuyo.';
+
+  @override
+  String get accountGateGoalLinkedAccountTitle =>
+      'Vincula una cuenta a tu meta';
+
+  @override
+  String get accountGateGoalLinkedAccountMessage =>
+      'Es opcional: puedes crear tu meta sin cuenta vinculada. Si quieres asociarla a una cuenta real, créala aquí.';
+
+  @override
   String get accountTypeCash => 'Efectivo';
 
   @override
@@ -4489,4 +4564,277 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingClosingSkip => 'Lo hago después';
+
+  @override
+  String get tutorialGotIt => 'Entendido';
+
+  @override
+  String get tutorialsMenuViewHelp => 'Ver ayuda';
+
+  @override
+  String get budgetsMenuViewHelpSubtitle =>
+      'Repasa cómo funcionan los presupuestos';
+
+  @override
+  String get goalsMenuViewHelpSubtitle => 'Repasa cómo funcionan las metas';
+
+  @override
+  String get debtsMenuViewHelpSubtitle => 'Repasa cómo funcionan las deudas';
+
+  @override
+  String get scheduledPaymentsMenuViewHelpSubtitle =>
+      'Repasa cómo funcionan los pagos programados';
+
+  @override
+  String get goalsMenuTooltip => 'Más opciones';
+
+  @override
+  String get goalsMenuOptions => 'Opciones';
+
+  @override
+  String get goalsMenuArchived => 'Ver archivados';
+
+  @override
+  String get debtsMenuTooltip => 'Más opciones';
+
+  @override
+  String get debtsMenuOptions => 'Opciones';
+
+  @override
+  String get scheduledPaymentsMenuTooltip => 'Más opciones';
+
+  @override
+  String get scheduledPaymentsMenuOptions => 'Opciones';
+
+  @override
+  String get settingsShowHelpOnEntry => 'Mostrar ayuda al entrar a una sección';
+
+  @override
+  String get settingsShowHelpOnEntrySubtitle =>
+      'Explica cada sección la primera vez que entras.';
+
+  @override
+  String get tutorialBudgetsTitle => 'Así funcionan los presupuestos';
+
+  @override
+  String get tutorialBudgetsPoint1Heading => 'Un presupuesto por período';
+
+  @override
+  String get tutorialBudgetsPoint1Body =>
+      'Defines un monto para gastar en un período (semanal, quincenal, mensual o solo por esta vez) y ves cuánto te queda mientras avanza.';
+
+  @override
+  String get tutorialBudgetsPoint2Heading => 'Con el alcance que tú eliges';
+
+  @override
+  String get tutorialBudgetsPoint2Body =>
+      'Puede cubrir todo tu gasto, o enfocarse solo en una cuenta o categoría en particular.';
+
+  @override
+  String get tutorialBudgetsPoint3Heading => 'El modo sobres, para más control';
+
+  @override
+  String get tutorialBudgetsPoint3Body =>
+      'Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.';
+
+  @override
+  String get tutorialBudgetsCta => 'Crear mi primer presupuesto';
+
+  @override
+  String get tutorialGoalsTitle => 'Así funcionan las metas';
+
+  @override
+  String get tutorialGoalsPoint1Heading => 'Para qué sirve una meta';
+
+  @override
+  String get tutorialGoalsPoint1Body =>
+      'Úsala para ahorrar para algo puntual, como un viaje, un fondo de emergencia o un regalo, y ver tu avance en cualquier momento.';
+
+  @override
+  String get tutorialGoalsPoint2Heading => 'El avance se arma con tus aportes';
+
+  @override
+  String get tutorialGoalsPoint2Body =>
+      'Cada vez que registras un aporte, tu progreso sube. No es un número que tú edites: es la suma de lo que has ido aportando.';
+
+  @override
+  String get tutorialGoalsPoint3Heading => 'Un aporte puede mover dinero, o no';
+
+  @override
+  String get tutorialGoalsPoint3Body =>
+      'Puedes aportar moviendo dinero real de una cuenta, o solo dejarlo anotado sin tocar tu saldo (útil si ya guardaste ese dinero en otro lado).';
+
+  @override
+  String get tutorialGoalsCta => 'Crear mi primera meta';
+
+  @override
+  String get tutorialDebtsTitle => 'Así funcionan las deudas';
+
+  @override
+  String get tutorialDebtsPoint1Heading => 'Para qué sirve una deuda';
+
+  @override
+  String get tutorialDebtsPoint1Body =>
+      'Lleva el control del dinero que debes (a un banco, una tarjeta o una persona) o que te deben a ti, sin tener que hacer cuentas a mano.';
+
+  @override
+  String get tutorialDebtsPoint2Heading => 'Tú registras, la app calcula';
+
+  @override
+  String get tutorialDebtsPoint2Body =>
+      'Anotas lo que pediste prestado, lo que has abonado y los intereses que se suman, y la app calcula sola cuánto falta por pagar.';
+
+  @override
+  String get tutorialDebtsPoint3Heading => 'Un abono puede mover dinero, o no';
+
+  @override
+  String get tutorialDebtsPoint3Body =>
+      'Puedes descontar un abono de una de tus cuentas, o solo anotarlo sin mover dinero (útil si alguien más pagó por ti, o si fue en efectivo).';
+
+  @override
+  String get tutorialDebtsCta => 'Registrar mi primera deuda';
+
+  @override
+  String get tutorialScheduledPaymentsTitle =>
+      'Así funcionan los pagos programados';
+
+  @override
+  String get tutorialScheduledPaymentsPoint1Heading => 'Para qué sirven';
+
+  @override
+  String get tutorialScheduledPaymentsPoint1Body =>
+      'Sirven para no olvidar pagos que se repiten, como el arriendo, una suscripción o una cuota, y dejar que la app los registre por ti si quieres.';
+
+  @override
+  String get tutorialScheduledPaymentsPoint2Heading => 'Automático o manual';
+
+  @override
+  String get tutorialScheduledPaymentsPoint2Body =>
+      'Uno automático se registra solo en su fecha. Uno manual te avisa y tú confirmas antes de que cuente (útil si el monto cambia cada vez).';
+
+  @override
+  String get tutorialScheduledPaymentsPoint3Heading =>
+      'La bandeja de vencimientos';
+
+  @override
+  String get tutorialScheduledPaymentsPoint3Body =>
+      'Ahí ves todos tus pagos pendientes en un solo lugar y los confirmas cuando te llegan.';
+
+  @override
+  String get tutorialScheduledPaymentsCta => 'Programar mi primer pago';
+
+  @override
+  String get tutorialDebtLinkMovementTitle => 'Enlazar un movimiento existente';
+
+  @override
+  String get tutorialDebtLinkMovementPoint1Heading =>
+      'No crea un movimiento nuevo';
+
+  @override
+  String get tutorialDebtLinkMovementPoint1Body =>
+      'Atribuye uno que ya registraste, para no duplicar.';
+
+  @override
+  String get tutorialGoalLinkMovementTitle => 'Enlazar un movimiento existente';
+
+  @override
+  String get tutorialGoalLinkMovementPoint1Heading =>
+      'No crea un movimiento nuevo';
+
+  @override
+  String get tutorialGoalLinkMovementPoint1Body =>
+      'Atribuye uno que ya registraste, para no duplicar.';
+
+  @override
+  String get tutorialDebtPaymentToggleTitle =>
+      '¿Agregar el abono a una cuenta?';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint1Heading => 'Si eliges \"Sí\"';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint1Body =>
+      'El abono también descuenta el monto de la cuenta que elijas, como una transacción real.';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint2Heading => 'Si eliges \"No\"';
+
+  @override
+  String get tutorialDebtPaymentTogglePoint2Body =>
+      'La deuda baja igual, pero no se toca ningún saldo (útil si pagaste en efectivo o alguien más pagó por ti).';
+
+  @override
+  String get tutorialGoalContributionToggleTitle =>
+      '¿Mover dinero de una cuenta?';
+
+  @override
+  String get tutorialGoalContributionTogglePoint1Heading => 'Si eliges \"Sí\"';
+
+  @override
+  String get tutorialGoalContributionTogglePoint1Body =>
+      'El aporte descuenta el monto real de una cuenta, como una transferencia.';
+
+  @override
+  String get tutorialGoalContributionTogglePoint2Heading => 'Si eliges \"No\"';
+
+  @override
+  String get tutorialGoalContributionTogglePoint2Body =>
+      'El aporte solo queda anotado en la meta, sin tocar ningún saldo (útil si ya guardaste ese dinero en otro lado).';
+
+  @override
+  String get tutorialDebtScheduledInstallmentTitle =>
+      'La cuota vive en Pagos programados';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint1Heading =>
+      'Se configura aquí, se confirma allá';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint1Body =>
+      'La configuras desde esta deuda, pero se confirma desde la bandeja de Pagos programados, como cualquier otro pago.';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint2Heading =>
+      'Un solo movimiento, dos efectos';
+
+  @override
+  String get tutorialDebtScheduledInstallmentPoint2Body =>
+      'Al confirmarla, un solo movimiento baja el saldo de tu cuenta y abona a la deuda al mismo tiempo.';
+
+  @override
+  String get tutorialBudgetableTransferTitle =>
+      '¿Contar esta transferencia en tu presupuesto?';
+
+  @override
+  String get tutorialBudgetableTransferPoint1Heading =>
+      'Para qué sirve marcarla';
+
+  @override
+  String get tutorialBudgetableTransferPoint1Body =>
+      'Algunas transferencias sí son parte de tu plan de gasto, aunque no sean un gasto real (por ejemplo, mover dinero a la cuenta que usas para gastar en el mes).';
+
+  @override
+  String get tutorialBudgetableTransferPoint2Heading =>
+      'Qué cambia al marcarla';
+
+  @override
+  String get tutorialBudgetableTransferPoint2Body =>
+      'Se resta de tu presupuesto igual que un gasto, aunque el dinero siga siendo tuyo, solo que en otra cuenta.';
+
+  @override
+  String get tutorialEnvelopeModeTitle => 'Así funciona el modo sobres';
+
+  @override
+  String get tutorialEnvelopeModePoint1Heading => 'Para qué sirve';
+
+  @override
+  String get tutorialEnvelopeModePoint1Body =>
+      'Reparte todo tu ingreso entre tus categorías, para que cada peso ya tenga un destino desde el inicio.';
+
+  @override
+  String get tutorialEnvelopeModePoint2Heading => 'Qué cambia en la pantalla';
+
+  @override
+  String get tutorialEnvelopeModePoint2Body =>
+      'En vez de un solo monto libre, ves cuánto le queda a cada categoría por separado.';
 }

@@ -87,6 +87,37 @@ void main() {
     test('returns null when no active budget qualifies', () {
       expect(BudgetHeroSelector.pick(const []), isNull);
     });
+
+    test(
+        'picks a global-monthly budget anchored on a day other than 1, and '
+        'keeps its real (non-calendar-month) window — bugfix '
+        'home-hero-period-stepper', () {
+      final anchoredWindow = BudgetPeriodWindow(
+        start: DateTime(2026, 7, 27),
+        endExclusive: DateTime(2026, 8, 27),
+        index: 3,
+        status: BudgetWindowStatus.current,
+        hasPrevious: true,
+        hasNext: true,
+      );
+      final anchored = BudgetWithProgress(
+        budget: buildBudget(
+          id: 'b-anchored',
+          period: BudgetPeriod.monthly,
+          startDate: DateTime(2026, 4, 27),
+          createdAt: DateTime(2026, 6, 1),
+        ),
+        scope: const BudgetScope.empty(),
+        window: anchoredWindow,
+        progress: progress,
+      );
+
+      final result = BudgetHeroSelector.pick([anchored]);
+
+      expect(result?.budget.id, 'b-anchored');
+      expect(result?.window, anchoredWindow);
+      expect(result?.window.start, DateTime(2026, 7, 27));
+    });
   });
 
   group('with a featuredBudgetId (manual pick)', () {

@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../transactions/presentation/pages/transactions_page.dart';
 import '../../../transactions/presentation/widgets/transactions_link_mode.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_cash_event.dart';
 import '../../domain/services/debt_event_rules.dart';
@@ -21,28 +23,31 @@ class DebtLinkModePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return TransactionsPage(
-      // The FAB is hidden and the row/account taps below are unused in link
-      // mode, so these are inert stubs.
-      onAddTransaction: (_) {},
-      onOpenTransaction: (_) async => null,
-      onOpenAccount: (_) {},
-      linkMode: TransactionsLinkMode(
-        // Just the name: the direction ("· Yo debo") confuses more than it
-        // helps while picking a movement to attribute.
-        bannerTitle: l10n.debtLinkBannerTitle(debt.name),
-        bannerBody: l10n.debtLinkBannerBody,
-        onCancel: () => Navigator.of(context).pop(),
-        onLinkTransaction: (transactionId) =>
-            _link(context, transactionId),
-        // Only the movements that can be an abono of this debt are linkable:
-        // "Yo debo" → gastos, "Me deben" → ingresos (HU-02), and never one
-        // dated before the debt existed.
-        requiredType: DebtEventRules.cashEventType(
-          direction: debt.direction,
-          kind: DebtCashEventKind.payment,
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.debtLinkMovement,
+      child: TransactionsPage(
+        // The FAB is hidden and the row/account taps below are unused in link
+        // mode, so these are inert stubs.
+        onAddTransaction: (_) {},
+        onOpenTransaction: (_) async => null,
+        onOpenAccount: (_) {},
+        linkMode: TransactionsLinkMode(
+          // Just the name: the direction ("· Yo debo") confuses more than it
+          // helps while picking a movement to attribute.
+          bannerTitle: l10n.debtLinkBannerTitle(debt.name),
+          bannerBody: l10n.debtLinkBannerBody,
+          onCancel: () => Navigator.of(context).pop(),
+          onLinkTransaction: (transactionId) =>
+              _link(context, transactionId),
+          // Only the movements that can be an abono of this debt are linkable:
+          // "Yo debo" → gastos, "Me deben" → ingresos (HU-02), and never one
+          // dated before the debt existed.
+          requiredType: DebtEventRules.cashEventType(
+            direction: debt.direction,
+            kind: DebtCashEventKind.payment,
+          ),
+          notBefore: debt.effectiveStartDate,
         ),
-        notBefore: debt.effectiveStartDate,
       ),
     );
   }

@@ -2,7 +2,40 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** tema claro aprobado y auditado por `ui-ux-reviewer` para las 4 pantallas de HU-01 y los 7 sub-flujos de HU-02 — alcance completo del requerimiento en tema claro, salvo el ajuste de Ajustes (HU-04). Pendiente: HU-04, componentizar `Points Card` como `reusable:true` (7 instancias ya construidas sin extraer el patrón común), y tema oscuro. Requisitos en `docs/requirements/16-minitutoriales.md`.
+**Estado: diseño cerrado, claro + oscuro, auditado por `ui-ux-reviewer` en ambos temas.** Listo para `flutter-dev`. Requisitos en `docs/requirements/16-minitutoriales.md`.
+
+## Tema oscuro
+
+Copias 1:1 vía `Copy(...,{theme:{mode:'dark'}})`, sin overrides manuales de color, auditadas sin hallazgos (cero hex hardcodeado, fidelidad estructural exacta, ícono `⋮` a 20px consistente, sin overflow/clipping nuevo).
+
+**HU-01:** `H0eSz6`→`swNUR` (Presupuestos), `cn6bt`→`FymG2` (Metas), `v1ol5`→`LTt5a` (Deudas), `fxKYb`→`vaaqR` (Pagos programados).
+
+**HU-02:** `TPEgi`→`s6IFj8`, `d9Urm0`→`ZHzhI`, `pkMHa`→`UiTri`, `v4RWSm`→`VOU3m`, `kNH0I`→`R8SxE`, `xUQIp`→`zQ0rp`, `qObeL`→`nkwUi`. El demo `uTvJ2` no se copió a oscuro (superado por la sincronización real en `cOcbC`, sin valor de producción).
+
+**HU-03 (menús `⋮` completos, oscuro):** `c9tyn1`→`V46Bbp` (Metas), `lTUQr`→`LftRt` (Deudas), `Q2GpD`→`AdVCt` (Pagos programados). Más las ediciones directas dentro de frames de producción oscuros ya aprobados: `cOcbC`/nodo `yW2GM` (fila "Ver ayuda" en Presupuestos), `zQj6Z`/nodo `D75jj` (botón `⋮` en Metas), `fXBWg` (header de Deudas reconstruido con el patrón Left Group + spacer, igual que el claro), `L3GvO`/nodo `O0DU5` (botón `⋮` en Pagos programados).
+
+**HU-04 (Ajustes, oscuro):** `TQHmY`/nodo `JHldK` (con sesión), `j4JYF`/nodo `XQekD` (sin sesión) — misma fila "Mostrar ayuda" insertada en los frames de producción oscuros ya aprobados.
+
+**Deuda técnica preexistente detectada durante la auditoría (no atribuible a este trabajo, no bloqueante):** `fXBWg` y `rPgbX` (Deudas, claro) comparten un clipping de lista ya existente antes de este cambio; `TQHmY`/`j4JYF` y sus gemelos claros comparten un clipping de "SH Link" (elemento `enabled:false`) también preexistente. Queda para quien audite Deudas/Ajustes por separado.
+
+## HU-03 — Reapertura vía menú `⋮` (cerrado, claro + oscuro)
+
+Presupuestos ya tenía `⋮` en su pantalla principal; Metas, Deudas y Pagos programados no — se les agregó, cambio de estructura sobre pantallas de producción ya cerradas de esas 3 features (documentado también en sus respectivos `pages/<feature>.md` si aplica).
+
+| Pantalla | Header | Botón `⋮` | Menú "Ver ayuda" |
+|---|---|---|---|
+| Presupuestos | `TmOGV` (ya existía) | `HqZOy` | `TmOGV` → fila `wjeGO` |
+| Metas | `sNItj` | `kwIRq` (nuevo, orden `⋮ → Archive → +`) | `c9tyn1` → fila `ZncCT` |
+| Deudas | `REKRV` (`Page Header`) | `hhqFE` (nuevo) | `lTUQr` → fila `Gu5fX` |
+| Pagos programados | `c196T3` | `MANKK` (reemplazó un `Action Spacer` vacío) | `Q2GpD` → fila `xINsA` |
+
+**Componente `Action Ver ayuda`** (`z4xpk`, `reusable:true`): icon-wrap 38px `$muted` + `circle-help` 19px + Label fijo "Ver ayuda" + Sub por instancia. Reemplazó las 4 filas construidas a mano (no se tocó el demo `uTvJ2`, que puede quedar como referencia o actualizarse después sin urgencia).
+
+**Decisión de layout — Deudas necesitó un patrón nuevo:** `Page Header` con 2 acciones a la derecha (`⋮` + `+`) rompe el spacer simple de 44×44 ya documentado para "un lado sin acción" — hace falta espejar el grupo completo. Documentado como precedente reutilizable en `MASTER.md`, sección "Page Header" ("Left Group + spacer invisible").
+
+**Ícono `⋮` unificado a 20px** en los 4 botones (Deudas y Pagos programados heredaban 18px del componente base `Page Header`, corregido por override de instancia sin propagar al componente).
+
+**Pendiente de sincronizar (no bloqueante, fuera de este cierre):** la fila "Ver ayuda" del menú de Presupuestos falta en su gemelo oscuro (`cOcbC`) y en la variante "modo activo" (`tFZyK`) — se agrega en la pasada de tema oscuro.
 
 ## Tesis (norte del diseño)
 
@@ -105,7 +138,7 @@ Los 7 sub-flujos de la tabla de HU-02 están completos:
 
 ## Componentes reutilizados
 
-Construida sobre `Bottom Sheet Base` (`PqTUt`), `Button/Primary` (`j7Zvt`) y `Button/Secondary` (`pNjOz`). El patrón de tarjeta con viñetas (badge circular con un punto `•` + fila con divisor) es nuevo de esta feature — no se componentizó todavía como `reusable:true` porque las 4 instancias actuales viven en frames separados sin extraer el patrón común; se componentiza antes de escalarlo a los 7 tutoriales de sub-flujo (HU-02) restantes, siguiendo el criterio ya aplicado en otras features del sistema (ver nota en `pages/onboarding.md` sobre el mismo tipo de decisión con el badge Plus/Check).
+Construida sobre `Bottom Sheet Base` (`PqTUt`), `Button/Primary` (`j7Zvt`) y `Button/Secondary` (`pNjOz`). El patrón de tarjeta con viñetas se componentizó como **`Points Card`** (`WuP5d`, envolvente: `$surface`, `cornerRadius:16`, `stroke:$border`, padding 16) + **`Point Row`** (`dP46y`, unidad repetible: badge circular `•` en `$primary-soft`/`$primary-on-soft-strong` + heading 14/700 + body 13/500, con divisor inferior que se desactiva en la última fila de cada tarjeta) — mismo mecanismo de slot reemplazable que ya usa `Bottom Sheet Base` para su `Content Slot`, soporta de 1 a 3 puntos según la tarjeta. Reemplazó las 11 instancias construidas a mano sin cambio visual (verificado por comparación de capturas antes/después).
 
 ## Decisiones cerradas durante el diseño (no repetir la discusión)
 

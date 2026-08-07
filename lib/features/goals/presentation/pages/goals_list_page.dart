@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -6,6 +8,8 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/services/goal_starter_templates.dart';
 import '../cubit/goals_list_cubit.dart';
 import '../cubit/goals_list_state.dart';
@@ -15,6 +19,7 @@ import '../widgets/goal_coherence_banner.dart';
 import '../widgets/goal_empty_hero_card.dart';
 import '../widgets/goal_momentum_header.dart';
 import '../widgets/goal_starter_template_card.dart';
+import '../widgets/sheets/goals_menu_sheet.dart';
 
 /// The goals list (HU-11): its own `GoalsPageHeader` (no back arrow — this is
 /// a tab root, see `app_router.dart`'s "Metas is a tab root now") with the
@@ -37,11 +42,17 @@ class GoalsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return TutorialAutoShow(
+      tutorialKey: TutorialKey.goalsScreen,
+      onCta: (context) => onAddGoal(),
+      child: Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            GoalsPageHeader(onAddGoal: onAddGoal),
+            GoalsPageHeader(
+              onAddGoal: onAddGoal,
+              onOpenArchived: onOpenArchived,
+            ),
             Expanded(
               child: BlocBuilder<GoalsListCubit, GoalsListState>(
                 builder: (context, state) => switch (state.status) {
@@ -55,7 +66,6 @@ class GoalsListPage extends StatelessWidget {
                   GoalsListStatus.ready => GoalsListView(
                       state: state,
                       onOpenGoal: onOpenGoal,
-                      onOpenArchived: onOpenArchived,
                     ),
                 },
               ),
@@ -63,19 +73,40 @@ class GoalsListPage extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
 
-/// The list's own header (`TNx20`'s `tjtML`): "Metas" left-aligned bold, a
-/// single `+` action button on the right — **no back arrow**, unlike the
-/// shared `PageHeader` (that one is for stacked detail/form screens). This is
-/// the root of the "Metas" tab, same precedent as Presupuestos'
-/// `BudgetsPageHeader`.
+/// The list's own header (Pencil `sNItj`): "Metas" left-aligned bold, then
+/// `⋮ → Archived Goals Button → +` — **no back arrow**, unlike the shared
+/// `PageHeader` (that one is for stacked detail/form screens). This is the
+/// root of the "Metas" tab, same precedent as Presupuestos' `BudgetsPageHeader`.
 class GoalsPageHeader extends StatelessWidget {
-  const GoalsPageHeader({required this.onAddGoal, super.key});
+  const GoalsPageHeader({
+    required this.onAddGoal,
+    required this.onOpenArchived,
+    super.key,
+  });
 
   final void Function([GoalStarterTemplate? template]) onAddGoal;
+  final VoidCallback onOpenArchived;
+
+  /// `⋮ → Archived Goals Button → +` order, per `sNItj`.
+  Future<void> _openMenu(BuildContext context) async {
+    final action = await GoalsMenuSheet.show(context);
+    if (action == null || !context.mounted) {
+      return;
+    }
+    switch (action) {
+      case GoalsMenuAction.viewHelp:
+        await reopenTutorial(
+          context,
+          TutorialKey.goalsScreen,
+          onCta: (context) => onAddGoal(),
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +126,23 @@ class GoalsPageHeader extends StatelessWidget {
                   ),
             ),
           ),
+          PageHeaderCircleButton(
+            icon: LucideIcons.ellipsisVertical,
+            background: colors.muted,
+            foreground: colors.textPrimary,
+            tooltip: l10n.goalsMenuTooltip,
+            iconSize: 20,
+            onPressed: () => unawaited(_openMenu(context)),
+          ),
+          const SizedBox(width: 8),
+          PageHeaderCircleButton(
+            icon: LucideIcons.archive,
+            background: colors.muted,
+            foreground: colors.textPrimary,
+            tooltip: l10n.goalsArchivedCta,
+            onPressed: onOpenArchived,
+          ),
+          const SizedBox(width: 8),
           PageHeaderCircleButton(
             icon: LucideIcons.plus,
             background: colors.primary,
@@ -190,19 +238,14 @@ class GoalsListView extends StatelessWidget {
   const GoalsListView({
     required this.state,
     required this.onOpenGoal,
-    required this.onOpenArchived,
     super.key,
   });
 
   final GoalsListState state;
   final ValueChanged<String> onOpenGoal;
-  final VoidCallback onOpenArchived;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colors = context.colors;
     final cubit = context.read<GoalsListCubit>();
     final momentum = state.momentum;
     final isFiltered = state.isFiltered;
@@ -242,22 +285,6 @@ class GoalsListView extends StatelessWidget {
           GoalCard(
             entry: visibleGoals[i],
             onTap: () => onOpenGoal(visibleGoals[i].goal.id),
-          ),
-        ],
-        if (!isFiltered) ...[
-          const SizedBox(height: 20),
-          Center(
-            child: TextButton(
-              onPressed: onOpenArchived,
-              child: Text(
-                l10n.goalsArchivedCta,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textSecondary,
-                ),
-              ),
-            ),
           ),
         ],
       ],

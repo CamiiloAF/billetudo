@@ -48,12 +48,17 @@ Como usuario sin cuentas quiero poder seguir usando todo lo que no necesita una,
 |---|---|
 | Registrar movimiento — ingreso, gasto y transferencia (`03`), incluido el FAB del Home (`04` HU-02) y el acceso rápido | `Transactions.accountId` es NOT NULL |
 | Transferencia (`03` HU-03) | Exige **dos** cuentas activas |
-| Crear pago programado (`09` HU-01) | `ScheduledPayments.accountId` es NOT NULL |
+| Crear pago programado (`09` HU-01), **incluida la cuota de una deuda** (`08` HU-03, reusa el mismo formulario) | `ScheduledPayments.accountId` es NOT NULL |
 | Deuda **con desembolso registrado** y **abono que mueve dinero** (`08` HU-02) | La rama con caja genera una `Transaction` |
 | Aporte/retiro de meta con el toggle "¿Mover dinero de una cuenta?" en **Sí** (`07` HU-03/HU-04) | Genera una transferencia real |
 | Enlazar un movimiento existente a una deuda o a una meta (`08` HU-02, `07` HU-03) | Sin cuentas no hay movimientos que listar |
+| **Crear presupuesto** (`06` HU-01) — decisión revertida 2026-08-06, ver nota abajo | Decisión de producto: bloquea toda la creación, no solo el alcance "Personalizado" |
 
-**No se bloquean:** crear categorías, presupuestos, metas (sin cuenta vinculada), deudas **sin** desembolso, aportes de meta de seguimiento puro, abonos de deuda sin caja, importar datos (`11-import-export.md` — un import puede traer justamente las cuentas), gráficas (vacías) y todo Ajustes, incluido iniciar sesión.
+**No se bloquean:** crear categorías, metas (sin cuenta vinculada), deudas **sin** desembolso, aportes de meta de seguimiento puro, abonos de deuda sin caja, importar datos (`11-import-export.md` — un import puede traer justamente las cuentas), gráficas (vacías) y todo Ajustes, incluido iniciar sesión.
+
+> **Presupuestos — decisión revertida (2026-08-06).** Hasta esta fecha, presupuestos estaba en "no se bloquean" porque un presupuesto con alcance "Todo" no referencia ninguna cuenta específica — tiene sentido de dominio crearlo sin cuentas. El usuario decidió explícitamente cambiar esto a bloqueante: **toda** la creación de presupuestos exige al menos una cuenta activa, incluido el alcance "Todo", no solo cuando se elige "Personalizado". No se revierte el razonamiento de dominio (sigue siendo cierto que "Todo" no necesita ninguna cuenta puntual) — es una decisión de producto que prioriza consistencia de flujo sobre esa posibilidad técnica.
+>
+> **Vincular una cuenta a una meta ya en progreso no es un bloqueo, es una ayuda opcional.** El campo "Cuenta vinculada (recomendado)" del formulario de Metas sigue sin ser obligatorio (crear la meta sin cuenta sigue funcionando, ver arriba) — pero si el usuario lo toca sin tener cuentas, en vez de quedar como un no-op silencioso, se le ofrece la misma hoja puente de forma informativa: crea una si quiere, o sigue sin vincular ninguna. No usa el mecanismo de bloqueo estándar (no impide nada si cancela).
 
 **Criterio general:** se bloquea la **rama** que necesita cuenta, nunca la feature entera. Metas y Deudas funcionan sin cuentas por diseño y así deben seguir.
 

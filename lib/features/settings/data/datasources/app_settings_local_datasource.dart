@@ -58,6 +58,24 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Updates the singleton's [showHelpOnSectionEntry] (contextual-help
+  /// minitutorials, `docs/requirements/16-minitutoriales.md` HU-04).
+  /// Paralelo a [setZeroBasedEnabled]. Note: `tutorials`' own
+  /// `TutorialViewsLocalDatasource` also writes this same column directly
+  /// (documented there) to avoid a cross-feature `data/` dependency — both
+  /// target the identical singleton row and constant id, so the two never
+  /// diverge.
+  Future<void> setShowHelpOnSectionEntry({
+    required bool showHelpOnSectionEntry,
+    required DateTime now,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          showHelpOnSectionEntry: Value(showHelpOnSectionEntry),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// Sets (or clears, with `null`) the singleton's `featuredBudgetId`.
   /// `Value(budgetId)` (not `Value.absent()`) so passing `null` explicitly
   /// clears the column back to "Automatico" instead of leaving it untouched.

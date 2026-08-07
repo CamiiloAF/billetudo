@@ -71,3 +71,34 @@ selector de tema, es del componente base y afecta también a Transacciones. Ver 
 `docs/bugfixes.md`. No bloquea esta feature; se corrige a nivel de componente por separado.
 
 Diseño (claro + oscuro, con/sin sesión) cerrado. Listo para `flutter-dev`.
+
+## Mostrar ayuda al entrar a una sección (HU-04 de `16-minitutoriales.md`)
+
+Fila nueva en la sección "Preferencias", después de "Moneda" — mismo tratamiento visual que
+esa fila y que "Apariencia" (`cornerRadius:14`, `padding:[14,16]`, `stroke:$border`, `Icon Wrap`
+44px `$primary-soft`/ícono `$primary-on-soft` 22px). Switch a la derecha instanciando el
+componente reusable `Switch` (`bWezV`), encendido por defecto — decisión de HU-04 del
+requerimiento.
+
+Label: "Mostrar ayuda al entrar a una sección". Sublabel (una sola línea, por consistencia de
+ritmo con las filas vecinas): "Explica cada sección la primera vez que entras." — se descartó
+una versión más larga que también mencionaba la fila "Ver ayuda" del menú `⋮` (HU-03 de
+`pages/minitutoriales.md`) por redundante: el usuario la descubre ahí directamente, no hace
+falta que el toggle se la anticipe.
+
+**Advertencia al reactivar, sin diálogo modal:** al pasar el switch de apagado a encendido,
+aparece un `Snackbar` (`zSTlU`) de una sola línea: "Vas a ver de nuevo las ayudas que ya
+cerraste" — sin acción "Deshacer" (no aplica), se cierra solo. Cumple el criterio explícito del
+requerimiento de advertir "en una línea, sin diálogo de confirmación pesado".
+
+### Node IDs (tema claro)
+
+| Estado de sesión | Frame Ajustes | Fila "Mostrar ayuda" |
+|---|---|---|
+| Con sesión | `aaQBp` | `qtGSz` |
+| Sin sesión | `jDaUb` | `fHxwL` |
+
+Tema oscuro: pendiente — no se construye hasta aprobación explícita del claro (ya aprobado en
+esta ronda, falta la pasada de oscuro). Auditado por `ui-ux-reviewer`: sin hallazgos tras
+corregir el sublabel largo y fusionar la fila en el frame real (ver revisión en
+`pages/minitutoriales.md`).

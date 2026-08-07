@@ -79,6 +79,7 @@ Future<void> _createGlobalBudget(
 }) async {
   _goToBudgets($);
   await $.tester.pumpAndSettle();
+  await dismissAutoTutorialIfShown($);
   await $.tester.tap(find.byTooltip('Nuevo presupuesto'));
   await $.tester.pumpAndSettle();
   await $.tester.enterText(find.byType(TextFormField).first, name);
@@ -155,6 +156,7 @@ void main() {
       // scope matches every account.
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await $.tester.tap(find.byTooltip('Agregar deuda'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Me deben'));
@@ -194,6 +196,7 @@ void main() {
       // disponible.
       _goToBudgets($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       expect(find.text(r'$700'), findsOneWidget);
 
       // Register the repayment ("Registrar abono" on an owedToMe debt reads
@@ -202,6 +205,7 @@ void main() {
       // user to flip.
       _goToDebts($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       await $.tester.tap(find.byType(DebtCard));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Registrar abono'));
@@ -259,6 +263,7 @@ void main() {
       // original $1.000, not stuck at $700.
       _goToBudgets($);
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
       expect(find.text(r'$1.000'), findsOneWidget);
       expect(find.text(r'$700'), findsNothing);
 

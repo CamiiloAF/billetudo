@@ -18,9 +18,13 @@ import '../../../../core/widgets/toggle_field.dart';
 import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/presentation/cubit/accounts_list_cubit.dart';
 import '../../../accounts/presentation/cubit/accounts_list_state.dart';
+import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
+import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../accounts/presentation/widgets/account_select_row.dart';
 import '../../../accounts/presentation/widgets/account_type_avatar.dart';
 import '../../../categories/domain/entities/category.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
 import '../cubit/transaction_form_cubit.dart';
@@ -357,14 +361,21 @@ class _TransactionFormScrollZoneState
           // the pen's `mdI7m`/`zbkXB`/`Np9SU` spacer (6 here + the 6+6
           // already contributed by the `SizedBox`s around it).
           const SizedBox(height: 6),
-          ToggleField(
-            icon: LucideIcons.wallet,
-            label: l10n.transactionFormCountsInBudgetLabel,
-            value: state.countsInBudget,
-            hint: state.countsInBudget
-                ? l10n.transactionFormCountsInBudgetHintOn
-                : l10n.transactionFormCountsInBudgetHintOff,
-            onChanged: cubit.countsInBudgetChanged,
+          // First time this control renders on a transfer, its own
+          // minitutorial explains why a transfer can count in a budget
+          // without being an expense (`docs/requirements/
+          // 16-minitutoriales.md` HU-02).
+          TutorialAutoShow(
+            tutorialKey: TutorialKey.budgetableTransfer,
+            child: ToggleField(
+              icon: LucideIcons.wallet,
+              label: l10n.transactionFormCountsInBudgetLabel,
+              value: state.countsInBudget,
+              hint: state.countsInBudget
+                  ? l10n.transactionFormCountsInBudgetHintOn
+                  : l10n.transactionFormCountsInBudgetHintOff,
+              onChanged: cubit.countsInBudgetChanged,
+            ),
           ),
           if (state.countsInBudget) ...[
             const SizedBox(height: 8),
@@ -517,6 +528,8 @@ class TransferAccountsGroupBody extends StatelessWidget {
                     state.failedField == TransactionDraft.fieldTransferAccountId
                         ? l10n.transactionErrorTransferAccount
                         : null,
+                beforeOpen: () =>
+                    showAccountGateIfNeeded(context, AccountGateSurface.transfer),
               ),
             ),
           ],
@@ -579,6 +592,7 @@ class AccountPickerField extends StatelessWidget {
     this.excludingId,
     this.inlineIcon,
     this.errorText,
+    this.beforeOpen,
     super.key,
   });
 
@@ -601,6 +615,13 @@ class AccountPickerField extends StatelessWidget {
   /// account picked).
   final String? errorText;
 
+  /// Runs before the picker sheet opens; resolving to `false` aborts instead
+  /// of opening it. The transferencia "destino" field uses this for
+  /// `15-gate-cuenta.md`'s account gate: with just one active account total,
+  /// the picker (which excludes the "origen" account) would open empty, so
+  /// the gate's "segunda cuenta" bridge (`goGwA`) runs first instead.
+  final Future<bool> Function()? beforeOpen;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -611,6 +632,12 @@ class AccountPickerField extends StatelessWidget {
       inlineIcon: inlineIcon ?? LucideIcons.wallet,
       errorText: errorText,
       onTap: () async {
+        if (beforeOpen != null) {
+          final canOpen = await beforeOpen!();
+          if (!context.mounted || !canOpen) {
+            return;
+          }
+        }
         // Drop the system keyboard before opening the sheet so it does not
         // spring back when the picker closes (device keyboard-UX fix).
         await dismissSystemKeyboard(context);

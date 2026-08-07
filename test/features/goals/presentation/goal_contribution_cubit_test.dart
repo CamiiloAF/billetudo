@@ -91,6 +91,39 @@ void main() {
   );
 
   blocTest<GoalContributionCubit, GoalContributionState>(
+    'refreshAccounts recarga la lista de cuentas tras crear una desde el '
+    'gate ("¿Mover dinero de una cuenta?", 15-gate-cuenta.md)',
+    setUp: () {
+      var call = 0;
+      when(() => watchAccounts()).thenAnswer((_) {
+        call += 1;
+        // The first call happens inside `start` (mirrors "sin cuentas"); the
+        // second inside `refreshAccounts` (mirrors the account just created
+        // from the gate) — they must differ, or `Cubit`'s Equatable check on
+        // `GoalContributionState` would swallow the second emit as a no-op.
+        return Stream.value(
+          Right(call == 1 ? const <AccountWithBalance>[] : accounts),
+        );
+      });
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.start(
+        goalId: 'g1',
+        goalName: 'Viaje a Cartagena',
+        direction: GoalMovementDirection.contribution,
+        currency: 'COP',
+      );
+      await cubit.refreshAccounts();
+    },
+    skip: 1,
+    expect: () => [
+      isA<GoalContributionState>()
+          .having((s) => s.accounts, 'accounts', accounts),
+    ],
+  );
+
+  blocTest<GoalContributionCubit, GoalContributionState>(
     'un retiro que excede el máximo no habilita el submit (canSubmit)',
     build: build,
     act: (cubit) async {

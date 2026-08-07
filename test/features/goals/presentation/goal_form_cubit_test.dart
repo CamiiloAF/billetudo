@@ -17,6 +17,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../accounts/account_fixtures.dart';
+
 class MockCreateGoal extends Mock implements CreateGoal {}
 
 class MockUpdateGoal extends Mock implements UpdateGoal {}
@@ -154,6 +156,39 @@ void main() {
           .having((s) => s.status, 'status', GoalFormStatus.saving),
       isA<GoalFormState>()
           .having((s) => s.status, 'status', GoalFormStatus.deleted),
+    ],
+  );
+
+  blocTest<GoalFormCubit, GoalFormState>(
+    'refreshAccounts recarga la lista de cuentas tras crear una desde el '
+    'gate ("Cuenta vinculada", 15-gate-cuenta.md)',
+    setUp: () {
+      final account = buildAccountWithBalance(
+        account: buildAccount(id: 'a1', name: 'Ahorros'),
+        balanceMinor: 0,
+      );
+      var call = 0;
+      when(watchAccounts.call).thenAnswer((_) {
+        call += 1;
+        // First call (inside `load`) mirrors the "sin cuentas" starting
+        // point; the second (inside `refreshAccounts`) mirrors the account
+        // just created from the gate — the two must differ, or `Cubit`'s
+        // equality check on `GoalFormState` (Equatable) would swallow the
+        // second emit as a no-op.
+        return Stream.value(
+          Right(call == 1 ? const <AccountWithBalance>[] : [account]),
+        );
+      });
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load(null);
+      await cubit.refreshAccounts();
+    },
+    skip: 1,
+    expect: () => [
+      isA<GoalFormState>()
+          .having((s) => s.accounts, 'accounts', hasLength(1)),
     ],
   );
 }

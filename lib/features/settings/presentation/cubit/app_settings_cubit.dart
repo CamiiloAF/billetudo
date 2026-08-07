@@ -6,6 +6,8 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/usecases/get_active_budgets.dart';
+import '../../../tutorials/domain/usecases/set_tutorials_enabled.dart';
+import '../../../tutorials/domain/usecases/watch_help_enabled.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/usecases/get_app_settings.dart';
 import '../../domain/usecases/set_featured_budget.dart';
@@ -22,6 +24,11 @@ import 'app_settings_state.dart';
 /// featured budget stops appearing as a selectable — and stops being
 /// highlighted as selected — the moment it drops out of that stream, with no
 /// extra cleanup.
+///
+/// "Mostrar ayuda al entrar a una sección" (`docs/requirements/
+/// 16-minitutoriales.md` HU-04) rides along here too: it is the same kind of
+/// account-level preference as "Modo sobres", just backed by
+/// `TutorialsRepository` instead of `AppSettingsRepository`.
 @injectable
 class AppSettingsCubit extends Cubit<AppSettingsState> {
   AppSettingsCubit(
@@ -29,19 +36,25 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._setZeroBasedEnabled,
     this._getActiveBudgets,
     this._setFeaturedBudget,
+    this._watchHelpEnabled,
+    this._setTutorialsEnabled,
   ) : super(const AppSettingsState());
 
   final GetAppSettings _getAppSettings;
   final SetZeroBasedEnabled _setZeroBasedEnabled;
   final GetActiveBudgets _getActiveBudgets;
   final SetFeaturedBudget _setFeaturedBudget;
+  final WatchHelpEnabled _watchHelpEnabled;
+  final SetTutorialsEnabled _setTutorialsEnabled;
 
   StreamSubscription<Result<AppSettings>>? _settingsSubscription;
   StreamSubscription<Result<List<BudgetWithProgress>>>? _budgetsSubscription;
+  StreamSubscription<Result<bool>>? _helpEnabledSubscription;
 
   Future<void> start() async {
     await _settingsSubscription?.cancel();
     await _budgetsSubscription?.cancel();
+    await _helpEnabledSubscription?.cancel();
     _settingsSubscription = _getAppSettings().listen((result) {
       if (isClosed) {
         return;
@@ -60,6 +73,15 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
         (budgets) => emit(state.copyWith(activeBudgets: budgets)),
       );
     });
+    _helpEnabledSubscription = _watchHelpEnabled().listen((result) {
+      if (isClosed) {
+        return;
+      }
+      result.fold(
+        (_) {},
+        (enabled) => emit(state.copyWith(showHelpOnSectionEntry: enabled)),
+      );
+    });
   }
 
   /// Persists the "Modo sobres" flag (HU-06). The stream re-emits the stored
@@ -73,10 +95,18 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   Future<void> setFeaturedBudget(String? budgetId) =>
       _setFeaturedBudget(budgetId: budgetId);
 
+  /// Persists "Mostrar ayuda al entrar a una sección" (HU-04). Turning it
+  /// back on also resets every tutorial's "seen" registry — that business
+  /// rule lives in [SetTutorialsEnabled], not here; the stream re-emits the
+  /// stored value the same way [setZeroBasedEnabled] does.
+  Future<void> setShowHelpOnSectionEntry({required bool enabled}) =>
+      _setTutorialsEnabled(enabled: enabled);
+
   @override
   Future<void> close() async {
     await _settingsSubscription?.cancel();
     await _budgetsSubscription?.cancel();
+    await _helpEnabledSubscription?.cancel();
     return super.close();
   }
 }

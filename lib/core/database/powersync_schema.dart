@@ -1,6 +1,6 @@
 // PowerSync's client-side schema (decision #6, docs/requirements/05-auth-sync.md).
 //
-// This mirrors the 15 tables in `app_database.dart` that carry `_SyncColumns`
+// This mirrors the tables in `app_database.dart` that carry `_SyncColumns`
 // — same table and column names (snake_case), matching the Postgres schema
 // created for HU-04/HU-05 sync. There is no codegen deriving one schema from
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
@@ -238,6 +238,17 @@ const powerSyncSchema = Schema([
     Column.integer('categories_seeded'),
     Column.integer('onboarding_completed'),
     Column.text('featured_budget_id'),
+    // Global on/off for contextual help minitutorials (schemaVersion 24).
+    // Defaults to true; see AppSettings.showHelpOnSectionEntry.
+    Column.integer('show_help_on_section_entry'),
+    ..._syncColumns,
+  ]),
+  // Contextual help minitutorials: one row per tutorial key the user has
+  // dismissed (schemaVersion 24). `id` is the tutorial's own stable key
+  // (e.g. 'budgets_screen'), not a random UUID; see TutorialViews. No
+  // extra columns beyond `_syncColumns` — a row's mere existence is the
+  // "already seen" flag.
+  Table('tutorial_views', [
     ..._syncColumns,
   ]),
 ]);

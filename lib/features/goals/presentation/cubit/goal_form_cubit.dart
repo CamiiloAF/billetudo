@@ -99,6 +99,19 @@ class GoalFormCubit extends Cubit<GoalFormState> {
     return result.fold((_) => const <AccountWithBalance>[], (list) => list);
   }
 
+  /// `15-gate-cuenta.md`: the "Cuenta vinculada" field's gate is informative,
+  /// not blocking — the caller only reaches this after the user created an
+  /// account from the bridge sheet while `state.accounts` was empty. Reloads
+  /// the list so the picker the caller opens right after has something to
+  /// show, mirroring `DebtFormCubit.refreshAccounts()`.
+  Future<void> refreshAccounts() async {
+    final accounts = await _loadAccounts();
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(accounts: accounts));
+  }
+
   void nameChanged(String name) => emit(
         state.copyWith(
           name: name,
