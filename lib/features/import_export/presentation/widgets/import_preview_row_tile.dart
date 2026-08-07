@@ -76,7 +76,7 @@ class ImportPreviewRowTile extends StatelessWidget {
                   ),
                 ),
                 child: checked
-                    ? Icon(LucideIcons.check, size: 16, color: colors.onPrimary)
+                    ? Icon(LucideIcons.check, size: 16, color: colors.background)
                     : null,
               ),
             )
