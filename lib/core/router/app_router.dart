@@ -73,14 +73,13 @@ import '../../features/import_export/presentation/cubit/export_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_batches_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_export_hub_cubit.dart';
 import '../../features/import_export/presentation/cubit/import_flow_cubit.dart';
-import '../../features/import_export/presentation/cubit/restore_cubit.dart';
 import '../../features/import_export/presentation/cubit/save_copy_cubit.dart';
 import '../../features/import_export/presentation/pages/export_page.dart';
 import '../../features/import_export/presentation/pages/import_batches_page.dart';
 import '../../features/import_export/presentation/pages/import_export_hub_page.dart';
 import '../../features/import_export/presentation/pages/import_flow_page.dart';
-import '../../features/import_export/presentation/pages/restore_page.dart';
 import '../../features/import_export/presentation/pages/save_copy_page.dart';
+import '../../features/import_export/presentation/widgets/sheets/restore_sheet.dart';
 import '../../features/onboarding/domain/entities/onboarding_progress.dart';
 import '../../features/onboarding/domain/entities/onboarding_step.dart';
 import '../../features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart';
@@ -174,7 +173,6 @@ abstract final class AppRoutes {
   static const String exportCsv = '$importExport/exportar';
   static const String importCsv = '$importExport/importar';
   static const String importBatches = '$importExport/importaciones';
-  static const String restoreCopy = '$importExport/restaurar';
   static const String saveCopy = '$importExport/guardar-copia';
 
   /// The new-movement form preselecting [accountId] — used when the movements
@@ -1377,7 +1375,7 @@ GoRoute _importExportRoute() => GoRoute(
           onSaveCopy: () => context.push(AppRoutes.saveCopy),
           onExportCsv: () => context.push(AppRoutes.exportCsv),
           onImportCsv: () => context.push(AppRoutes.importCsv),
-          onRestore: () => context.push(AppRoutes.restoreCopy),
+          onRestore: () => unawaited(RestoreSheet.show(context)),
           onSeeImportHistory: () => context.push(AppRoutes.importBatches),
           onOpenBatch: (_) => context.push(AppRoutes.importBatches),
         ),
@@ -1410,18 +1408,11 @@ GoRoute _importExportRoute() => GoRoute(
           ),
         ),
         GoRoute(
-          path: 'restaurar',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (context) => getIt<RestoreCubit>()..reset(),
-            child: RestorePage(onDone: () => context.go(AppRoutes.importExport)),
-          ),
-        ),
-        GoRoute(
           path: 'guardar-copia',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => BlocProvider(
-            create: (context) => _started(getIt<SaveCopyCubit>(), (c) => c.start()),
+            create: (context) =>
+                _started(getIt<SaveCopyCubit>(), (c) => c.start()),
             child: SaveCopyPage(onDone: () => context.pop()),
           ),
         ),

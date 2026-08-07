@@ -1,9 +1,10 @@
+import 'package:billetudo/core/widgets/bottom_sheet_base.dart';
 import 'package:billetudo/features/import_export/domain/entities/backup_header.dart';
 import 'package:billetudo/features/import_export/domain/entities/restore_mode.dart';
 import 'package:billetudo/features/import_export/domain/entities/restore_summary.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/restore_cubit.dart';
 import 'package:billetudo/features/import_export/presentation/cubit/restore_state.dart';
-import 'package:billetudo/features/import_export/presentation/pages/restore_page.dart';
+import 'package:billetudo/features/import_export/presentation/widgets/sheets/restore_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,6 +15,21 @@ import '../../../../support/golden_helpers.dart';
 
 class MockRestoreCubit extends MockCubit<RestoreState> implements RestoreCubit {}
 
+/// HU-04's restore flow, now a modal sheet (`RestoreSheetBody`, decision
+/// 2026-08-06) instead of a full page (`restore_page.dart`, removed). Covers
+/// every step the sheet renders itself — `RestoreStep.pickFile` is excluded
+/// on purpose: `RestoreSheet.show` never opens the sheet on that step (it
+/// only shows up defensively, rendering `SizedBox.shrink()`), same reasoning
+/// `import_flow_page_test.dart` used to drop its own "select file entry"
+/// golden in favor of a behavior test.
+///
+/// Rendered by wiring `RestoreSheetBody` directly to a mocked cubit inside a
+/// real `showModalBottomSheet` (scrim, drag handle and the `[28,28,0,0]`
+/// bottom sheet theme included) instead of going through
+/// `RestoreSheet.show`/`getIt`: the sheet's own `BlocProvider` resolves its
+/// cubit from the DI container and the native file picker, neither of which
+/// a golden test has any reason to stand up (same pattern
+/// `confirmation_sheet_golden_test.dart` follows).
 void main() {
   late MockRestoreCubit cubit;
 
@@ -36,6 +52,7 @@ void main() {
     disableGoogleFontsRuntimeFetching();
     await loadMaterialIconsFont();
   });
+
   setUp(() => cubit = MockRestoreCubit());
 
   Future<void> golden(
@@ -44,29 +61,42 @@ void main() {
     String name, {
     required Brightness brightness,
     bool settle = true,
+    Size size = goldenPhoneSize,
   }) async {
     when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
-      tester,
-      BlocProvider<RestoreCubit>.value(
-        value: cubit,
-        child: RestorePage(onDone: () {}),
+    setGoldenViewport(tester, size);
+    await tester.pumpWidget(
+      wrapForGolden(
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (context) => BlocProvider<RestoreCubit>.value(
+                value: cubit,
+                child: const BottomSheetBase(child: RestoreSheetBody()),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+        brightness: brightness,
       ),
-      brightness: brightness,
-      settle: settle,
     );
+    await tester.tap(find.byType(ElevatedButton));
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
     await expectLater(
-      find.byType(RestorePage),
-      matchesGoldenFile('goldens/restore_page_$name.png'),
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/sheet_restore_$name.png'),
     );
   }
 
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
-
-    testWidgets('pick file entry ($suffix)', (tester) async {
-      await golden(tester, const RestoreState(), 'pick_file_$suffix', brightness: brightness);
-    });
 
     testWidgets('summary, merge chosen ($suffix)', (tester) async {
       await golden(

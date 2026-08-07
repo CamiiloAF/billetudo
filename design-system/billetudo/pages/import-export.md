@@ -53,11 +53,15 @@ El hub resuelve esa tensión con jerarquía visual, no con texto: la copia local
 
 ### Restaurar copia (HU-04)
 
+**Arquitectura de navegación (corregida 2026-08-07):** los 3 estados de abajo, más progreso/listo/error (que reusan el patrón compartido, ver "Progreso y errores" abajo), instancian todos `Bottom Sheet Base` (`PqTUt`) — es una **hoja modal**, no una página con ruta propia. La implementación original (workflow que construyó la feature) los había hecho página completa con `Page Header`; se corrigió a `RestoreSheet`/`RestoreSheetBody` (`lib/features/import_export/presentation/widgets/sheets/restore_sheet.dart`), disparada directo desde el hub — ya no existe la ruta `restaurar` en `app_router.dart`. Tocar "Restaurar desde una copia" abre el selector de archivos nativo DIRECTO (sin paso intermedio, mismo patrón que la entrada de CSV); solo si se elige un archivo válido se abre la hoja, con su contenido rotando entre resumen/elección → confirmación de reemplazar (si aplica) → progreso → listo/error, todo dentro de la MISMA hoja. No dismisible por scrim/drag mientras `running` (mismo criterio de "progreso bloqueante" del resto de la feature).
+
 | Estado | Claro | Oscuro |
 |---|---|---|
 | Resumen y elección Fusionar/Reemplazar | `uUGXf` | `weAqZ` |
 | Confirmación escalonada de Reemplazar — confirmado | `MjNwC` | `j6uYYz` |
 | Confirmación escalonada de Reemplazar — estado inicial (inerte) | `NY5o6` | `DbfG1` |
+
+**Pendiente (mismo hallazgo, alcance mayor, sin resolver todavía):** el Resumen final de Import (`Aa1ek`/`XRBVa`) y el patrón compartido de Progreso/Error (`xdG9q`/`dSkbx`, `d9wzVg`/`VHJP8`, `TmHSC`/`HbEJc`, `a5XdP`/`qWIvy`) usado también dentro de `ImportFlowPage`/`ExportPage`/`SaveCopyPage` tienen el MISMO problema (son `PqTUt` en Pencil, hoy página completa en código) — no se corrigieron en esta pasada, solo Restaurar.
 
 ### Export (HU-01/HU-02)
 

@@ -13,6 +13,13 @@ import '../widgets/replace_all_ack_row.dart';
 /// own step, not embedded at the bottom of the mode-choice summary — a
 /// warning icon, an irreversibility notice and a checkbox that must be
 /// checked before the destructive `$expense` CTA enables.
+///
+/// A direct `Column(mainAxisSize: MainAxisSize.min)` — not centered inside
+/// an unbounded-height parent — so the modal sheet it renders inside
+/// (`RestoreSheet`) sizes to this content instead of stretching to fill the
+/// screen; same shape `UndoImportConfirmSheet` already uses for another
+/// confirmation sheet. No extra horizontal padding either: `BottomSheetBase`
+/// already provides it.
 class RestoreReplaceAllConfirmStep extends StatelessWidget {
   const RestoreReplaceAllConfirmStep({
     required this.header,
@@ -34,42 +41,38 @@ class RestoreReplaceAllConfirmStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SheetMessage(
-              icon: LucideIcons.triangleAlert,
-              iconColor: colors.expense,
-              iconBackground: colors.expenseSoft,
-              title: l10n.importExportReplaceAllConfirmTitle,
-              message: l10n.importExportReplaceAllConfirmBody(
-                DateFormat.yMMMMd(l10n.localeName).format(header.createdAt),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ReplaceAllAckRow(
-              text: l10n.importExportReplaceAllAck,
-              checked: acknowledged,
-              onTap: () => onAcknowledgedChanged(!acknowledged),
-            ),
-            const SizedBox(height: 20),
-            SheetButtonsRow(
-              left: OutlinedButton(onPressed: onCancel, child: Text(l10n.commonCancel)),
-              right: FilledButton.icon(
-                style: acknowledged
-                    ? FilledButton.styleFrom(backgroundColor: colors.expense)
-                    : null,
-                onPressed: acknowledged ? onConfirm : null,
-                icon: const Icon(LucideIcons.replace, size: 18),
-                label: Text(l10n.importExportRestoreConfirmReplaceCta),
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetMessage(
+          icon: LucideIcons.triangleAlert,
+          iconColor: colors.expense,
+          iconBackground: colors.expenseSoft,
+          title: l10n.importExportReplaceAllConfirmTitle,
+          message: l10n.importExportReplaceAllConfirmBody(
+            DateFormat.yMMMMd(l10n.localeName).format(header.createdAt),
+          ),
         ),
-      ),
+        const SizedBox(height: 20),
+        ReplaceAllAckRow(
+          text: l10n.importExportReplaceAllAck,
+          checked: acknowledged,
+          onTap: () => onAcknowledgedChanged(!acknowledged),
+        ),
+        const SizedBox(height: 20),
+        SheetButtonsRow(
+          left: OutlinedButton(
+              onPressed: onCancel, child: Text(l10n.commonCancel)),
+          right: FilledButton.icon(
+            style: acknowledged
+                ? FilledButton.styleFrom(backgroundColor: colors.expense)
+                : null,
+            onPressed: acknowledged ? onConfirm : null,
+            icon: const Icon(LucideIcons.replace, size: 18),
+            label: Text(l10n.importExportRestoreConfirmReplaceCta),
+          ),
+        ),
+      ],
     );
   }
 }
