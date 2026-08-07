@@ -18,11 +18,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
 void main() {
-  final month = DateTime(2026, 7);
-
   HomeState stateWith(HomeSyncStatus status) => HomeState(
-        month: month,
-        currentMonth: month,
         status: HomeStatus.ready,
         syncStatus: status,
       );
@@ -57,8 +53,6 @@ void main() {
     SyncState snapshotState = SyncState.synced,
   }) =>
       HomeState(
-        month: month,
-        currentMonth: month,
         status: HomeStatus.ready,
         syncStatus: status,
         syncSnapshot: SyncStatusSnapshot(

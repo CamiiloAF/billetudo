@@ -378,6 +378,7 @@
   "homeSyncSheetOfflineMessage": "Your data is saved on this phone. It'll sync as soon as the connection is back.",
   "homeSyncSheetDismiss": "Got it",
   "homeSpentInMonth": "Spent in {month}",
+  "homeHeroSpentKicker": "Spent",
   "homeBudgetInvitation": "Set a budget to see how much you have left this month",
   "homeNoSpendingYet": "No spending yet this month",
   "homeHeroBudgetProgress": "{pct}% of {amount}",

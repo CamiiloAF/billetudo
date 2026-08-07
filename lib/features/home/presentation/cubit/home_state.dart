@@ -32,8 +32,6 @@ enum HomeSyncStatus {
 
 class HomeState extends Equatable {
   const HomeState({
-    required this.month,
-    required this.currentMonth,
     this.status = HomeStatus.loading,
     this.snapshot,
     this.syncStatus = HomeSyncStatus.synced,
@@ -43,23 +41,16 @@ class HomeState extends Equatable {
     this.pendingUndoId,
   });
 
-  /// The month currently visible (first day, at midnight). Defaults to
-  /// [currentMonth] (HU-04).
-  factory HomeState.initial(DateTime now) {
-    final month = DateTime(now.year, now.month);
-    return HomeState(month: month, currentMonth: month);
-  }
+  /// No navigable "visible month" survives this redesign: "Movimientos
+  /// recientes" is unbound (criterion 1) and the hero, without a featured
+  /// budget, always shows the current calendar month with no selector
+  /// (criterion 5) — there is nothing left to seed from `now` besides the
+  /// zero-argument default below.
+  factory HomeState.initial(DateTime now) => const HomeState();
 
   final HomeStatus status;
 
-  /// The visible month (HU-04). Drives both the hero and the recent feed.
-  final DateTime month;
-
-  /// The current calendar month: the ceiling of the month picker (future
-  /// months are disabled, HU-04).
-  final DateTime currentMonth;
-
-  /// Present once data has landed for [month].
+  /// Present once data has landed.
   final HomeSnapshot? snapshot;
 
   final HomeSyncStatus syncStatus;
@@ -83,7 +74,11 @@ class HomeState extends Equatable {
 
   MonthSpending? get spending => snapshot?.spending;
 
-  /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`).
+  /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`). Its
+  /// `window` is the period the hero's stepper is currently showing — the
+  /// budget detail's own current window when the user has not navigated, or
+  /// whatever period `HomeCubit.previousPeriod`/`HomeCubit.nextPeriod`
+  /// stepped to since (HU-05).
   BudgetWithProgress? get budgetProgress => snapshot?.budgetProgress;
 
   List<TransactionWithDetails> get recentActivity =>
@@ -95,13 +90,11 @@ class HomeState extends Equatable {
 
   bool get isLoading => status == HomeStatus.loading;
 
-  /// HU-08: welcome/empty state — no movements at all in [month].
+  /// HU-08: welcome/empty state — no movements at all recently.
   bool get isEmpty => status == HomeStatus.ready && (snapshot?.isEmpty ?? true);
 
   HomeState copyWith({
     HomeStatus? status,
-    DateTime? month,
-    DateTime? currentMonth,
     HomeSnapshot? snapshot,
     HomeSyncStatus? syncStatus,
     SyncStatusSnapshot? syncSnapshot,
@@ -114,8 +107,6 @@ class HomeState extends Equatable {
   }) =>
       HomeState(
         status: status ?? this.status,
-        month: month ?? this.month,
-        currentMonth: currentMonth ?? this.currentMonth,
         snapshot: clearSnapshot ? null : (snapshot ?? this.snapshot),
         syncStatus: syncStatus ?? this.syncStatus,
         syncSnapshot: syncSnapshot ?? this.syncSnapshot,
@@ -130,8 +121,6 @@ class HomeState extends Equatable {
   @override
   List<Object?> get props => [
         status,
-        month,
-        currentMonth,
         snapshot,
         syncStatus,
         syncSnapshot,

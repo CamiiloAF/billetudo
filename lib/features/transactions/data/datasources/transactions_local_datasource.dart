@@ -65,6 +65,9 @@ class TransactionsLocalDatasource {
     Set<EntryType> types = const <EntryType>{},
     Set<String> tagIds = const <String>{},
     String searchText = '',
+    // `null` on both means "no date bound at all" — used by
+    // `watchRecentTransactions` (Home's "Movimientos recientes", HU-05),
+    // which is deliberately not scoped to any month/period.
     DateTime? periodStart,
     DateTime? periodEndExclusive,
     TransactionOrderBy orderBy = TransactionOrderBy.dateDesc,

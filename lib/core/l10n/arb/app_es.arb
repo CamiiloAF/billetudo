@@ -942,6 +942,10 @@
       }
     }
   },
+  "homeHeroSpentKicker": "Gastado",
+  "@homeHeroSpentKicker": {
+    "description": "Rótulo corto sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N): aclara que el número es lo gastado, no un saldo."
+  },
   "homeBudgetInvitation": "Define un presupuesto para ver cuánto te queda este mes",
   "@homeBudgetInvitation": {},
   "homeNoSpendingYet": "Aún no hay gastos este mes",

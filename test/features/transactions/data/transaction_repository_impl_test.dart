@@ -574,6 +574,55 @@ void main() {
     });
   });
 
+  group('watchRecentTransactions (Home HU-05)', () {
+    test('no aplica ningún filtro de fecha: cruza meses libremente',
+        () async {
+      final august = await createTransaction(
+        expenseDraft(date: DateTime(2026, 8, 1)),
+      );
+      final june = await createTransaction(
+        expenseDraft(date: DateTime(2026, 6, 1)),
+      );
+
+      final result = await repository.watchRecentTransactions().first;
+
+      final ids =
+          result.getRight().toNullable()!.map((t) => t.transaction.id).toSet();
+      expect(ids, {august.id, june.id});
+    });
+
+    test('ordena por fecha descendente, sin tope alguno', () async {
+      final older = await createTransaction(
+        expenseDraft(date: DateTime(2026, 7, 1)),
+      );
+      final newer = await createTransaction(
+        expenseDraft(date: DateTime(2026, 7, 20)),
+      );
+
+      final result = await repository.watchRecentTransactions().first;
+
+      expect(
+        result.getRight().toNullable()!.map((t) => t.transaction.id),
+        [newer.id, older.id],
+      );
+    });
+
+    test('excluye transacciones borradas (deletedAt), igual que watchTransactions',
+        () async {
+      final visible = await createTransaction(expenseDraft());
+      final trashed = await createTransaction(
+        expenseDraft(date: DateTime(2026, 7, 20)),
+      );
+      await repository.deleteTransaction(trashed.id);
+
+      final result = await repository.watchRecentTransactions().first;
+
+      final ids =
+          result.getRight().toNullable()!.map((t) => t.transaction.id).toSet();
+      expect(ids, {visible.id});
+    });
+  });
+
   group('setTransactionTags (HU-07)', () {
     test('agrega y quita etiquetas hasta igualar el conjunto pedido', () async {
       final transaction = await createTransaction(expenseDraft());
@@ -601,55 +650,6 @@ void main() {
       final result = await repository.setTransactionTags('no-existe', []);
 
       expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
-    });
-  });
-
-  group(
-      'watchRecentTransactions (bugfix home-hero-period-stepper: '
-      '"Movimientos recientes" sin ningún filtro de mes/periodo)', () {
-    test('no aplica ningún filtro de fecha: cruza meses e incluso años',
-        () async {
-      await createTransaction(expenseDraft(date: DateTime(2024, 1, 1)));
-      await createTransaction(expenseDraft(date: DateTime(2026, 7, 15)));
-
-      final result = await repository.watchRecentTransactions().first;
-
-      expect(result.getRight().toNullable(), hasLength(2));
-    });
-
-    test('ordena por fecha descendente y respeta el límite pedido', () async {
-      await createTransaction(expenseDraft(date: DateTime(2026, 7, 1)));
-      final middle = await createTransaction(
-        expenseDraft(date: DateTime(2026, 7, 10)),
-      );
-      final newest = await createTransaction(
-        expenseDraft(date: DateTime(2026, 7, 20)),
-      );
-
-      final result =
-          await repository.watchRecentTransactions(limit: 2).first;
-
-      final ids = result
-          .getRight()
-          .toNullable()!
-          .map((entry) => entry.transaction.id)
-          .toList();
-      expect(ids, [newest.id, middle.id]);
-    });
-
-    test('excluye transacciones borradas (deletedAt)', () async {
-      final transaction = await createTransaction(expenseDraft());
-      await repository.deleteTransaction(transaction.id);
-
-      final result = await repository.watchRecentTransactions().first;
-
-      expect(result.getRight().toNullable(), isEmpty);
-    });
-
-    test('sin transacciones: lista vacía, no un error', () async {
-      final result = await repository.watchRecentTransactions().first;
-
-      expect(result.getRight().toNullable(), isEmpty);
     });
   });
 

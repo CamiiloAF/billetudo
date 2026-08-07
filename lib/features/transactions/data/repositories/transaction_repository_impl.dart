@@ -67,12 +67,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
       );
 
   @override
-  Stream<Result<List<TransactionWithDetails>>> watchRecentTransactions({
-    int limit = 5,
-  }) =>
+  Stream<Result<List<TransactionWithDetails>>> watchRecentTransactions() =>
       _guardStream(
         _local
-            .watchTransactions(limit: limit)
+            .watchTransactions()
             .map((rows) => Right(rows.map(_toWithDetails).toList())),
       );
 

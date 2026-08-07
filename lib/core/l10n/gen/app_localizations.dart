@@ -2180,6 +2180,12 @@ abstract class AppLocalizations {
   /// **'Gastado en {month}'**
   String homeSpentInMonth(String month);
 
+  /// Rótulo corto sobre el monto grande del hero cuando hay un presupuesto destacado (HU-05, xBv3N): aclara que el número es lo gastado, no un saldo.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastado'**
+  String get homeHeroSpentKicker;
+
   /// No description provided for @homeBudgetInvitation.
   ///
   /// In es, this message translates to:

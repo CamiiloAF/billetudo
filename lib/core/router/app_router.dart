@@ -460,6 +460,10 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onOpenTransaction: (id) =>
                   context.push<String>(AppRoutes.transaction(id)),
               onCreateBudget: () => context.go(AppRoutes.budgets),
+              // Criterion 6: tapping the hero with a featured budget opens
+              // that budget's own detail — same destination as Gráficas'
+              // `onOpenBudget`.
+              onOpenBudget: (id) => context.push(AppRoutes.budget(id)),
               onOpenAccounts: () => context.push(AppRoutes.accounts),
               // Bugfix item 8: tapping an account's mini-card pins the
               // Movimientos account filter (HU-06a) to just that account —

@@ -1195,6 +1195,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get homeHeroSpentKicker => 'Gastado';
+
+  @override
   String get homeBudgetInvitation =>
       'Define un presupuesto para ver cuánto te queda este mes';
 
