@@ -17,6 +17,7 @@ import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/accounts/presentation/widgets/account_gate_copy.dart';
 import '../../features/accounts/presentation/widgets/account_gated_route.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
+import '../../features/auth/domain/entities/delete_account_scope.dart';
 import '../../features/auth/domain/entities/sign_out_outcome.dart';
 import '../../features/auth/domain/usecases/sign_out_with_local_data_choice.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
@@ -918,6 +919,12 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
               path: 'cuenta-eliminada',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (context, state) => AccountDeletedPage(
+                // Defaults to `cloudAndLocal` (the truthful "cloud + local"
+                // copy) if this route is somehow reached without `extra` —
+                // `DeleteAccountFlow.start` always pushes it below.
+                scope: state.extra is DeleteAccountScope
+                    ? state.extra! as DeleteAccountScope
+                    : DeleteAccountScope.cloudAndLocal,
                 onGoHome: () => context.go(AppRoutes.home),
               ),
             ),
@@ -990,7 +997,8 @@ GoRoute _settingsRoute() => GoRoute(
           onOpenLogin: () => context.push(AppRoutes.login),
           onOpenDeleteAccount: () => DeleteAccountFlow.start(
             context,
-            onFinished: () => context.push(AppRoutes.accountDeleted),
+            onFinished: (scope) =>
+                context.push(AppRoutes.accountDeleted, extra: scope),
           ),
           onOpenComingSoon: (title) =>
               context.push(AppRoutes.comingSoonTitled(title)),

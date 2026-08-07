@@ -1962,12 +1962,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'There was a problem connecting to the server and we couldn\'t complete the request. Your data is still safe on this device — try again.';
 
   @override
+  String get authDeleteStep1SignedOutWarningTitle => 'You\'re not signed in';
+
+  @override
+  String get authDeleteStep1SignedOutWarningBody =>
+      'If you also want to delete your cloud account, sign in first. If you continue without signing in, we\'ll only delete the information stored on this device.';
+
+  @override
   String get authDeleteStep2Title =>
       'What should we do with your data on this phone?';
 
   @override
   String get authDeleteStep2Subtitle =>
       'Your cloud account has already been deleted. Choose what happens to what\'s still saved here, on this device.';
+
+  @override
+  String get authDeleteStep2LocalOnlySubtitle =>
+      'You weren\'t signed in, so we\'re only going to delete what\'s saved on this device — your cloud account wasn\'t affected. Choose what happens to the local data.';
+
+  @override
+  String get authDeleteStep2NeverSignedInSubtitle =>
+      'You\'ve never signed in on this device, so there\'s no cloud account. Choose what happens to what\'s saved here.';
 
   @override
   String get authDeleteStep2KeepTitle => 'Keep my data on this device';
@@ -1992,6 +2007,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authDeleteStep3Subtitle =>
       'We no longer have any of your data in the cloud. You can keep using billetudo whenever you want, with or without an account.';
+
+  @override
+  String get authDeleteStep3LocalOnlyTitle =>
+      'Done, we deleted your data on this device';
+
+  @override
+  String get authDeleteStep3LocalOnlySubtitle =>
+      'Since you weren\'t signed in, your cloud account still exists. If you also want to delete it, sign in and repeat this process.';
+
+  @override
+  String get authDeleteStep3NeverSignedInTitle =>
+      'Done, we deleted your data on this device';
+
+  @override
+  String get authDeleteStep3NeverSignedInSubtitle =>
+      'We deleted the information saved on this device. You can keep using billetudo whenever you want, with or without an account.';
 
   @override
   String get authDeleteStep3Cta => 'Go to home';

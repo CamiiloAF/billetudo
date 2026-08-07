@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/local_data_choice.dart';
 import '../../domain/usecases/delete_account.dart';
+import '../../domain/usecases/get_delete_account_scope.dart';
 import '../../domain/usecases/wipe_local_data.dart';
 import 'delete_account_state.dart';
 
@@ -15,11 +16,26 @@ import 'delete_account_state.dart';
 /// `AuthCubit` there's no reason for this to outlive one run of the flow.
 @injectable
 class DeleteAccountCubit extends Cubit<DeleteAccountState> {
-  DeleteAccountCubit(this._deleteAccount, this._wipeLocalData)
-      : super(const DeleteAccountState());
+  DeleteAccountCubit(
+    this._deleteAccount,
+    this._wipeLocalData,
+    this._getDeleteAccountScope,
+  ) : super(const DeleteAccountState());
 
   final DeleteAccount _deleteAccount;
   final WipeLocalData _wipeLocalData;
+  final GetDeleteAccountScope _getDeleteAccountScope;
+
+  /// Resolves [DeleteAccountState.scope]. The caller (`DeleteAccountFlow`)
+  /// awaits this *before* showing paso 1, so its warning copy is correct from
+  /// the very first frame instead of flashing in after the sheet opens.
+  Future<void> loadScope() async {
+    final scope = await _getDeleteAccountScope();
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(scope: scope));
+  }
 
   /// Paso 1: deletes the cloud account. On success, advances to paso 2.
   Future<void> confirmDelete() async {
@@ -43,8 +59,9 @@ class DeleteAccountCubit extends Cubit<DeleteAccountState> {
       if (isClosed) {
         return;
       }
-      // Reached until PowerSync/Supabase are wired — see
-      // AuthRepositoryImpl.deleteAccount.
+      // Safety net for anything the repository doesn't already turn into a
+      // `Left` (e.g. an unexpected exception from the Supabase SDK itself) —
+      // see AuthRepositoryImpl.deleteAccount.
       emit(
         state.copyWith(
           status: DeleteAccountStatus.error,

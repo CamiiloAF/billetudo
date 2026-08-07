@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart';
+import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart';
@@ -33,6 +34,9 @@ class MockLocalDataWipeDatasource extends Mock
 class MockLocalDataOwnershipDatasource extends Mock
     implements LocalDataOwnershipDatasource {}
 
+class MockEverSignedInDatasource extends Mock
+    implements EverSignedInDatasource {}
+
 class MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class MockFunctionsClient extends Mock implements FunctionsClient {}
@@ -47,6 +51,7 @@ void main() {
   late MockLocalDataSummaryDatasource summaries;
   late MockLocalDataWipeDatasource wipe;
   late MockLocalDataOwnershipDatasource ownership;
+  late MockEverSignedInDatasource everSignedIn;
   late MockSupabaseClient supabase;
   late MockFunctionsClient functions;
   late MockGoTrueClient auth;
@@ -74,6 +79,7 @@ void main() {
       summaries,
       wipe,
       ownership,
+      everSignedIn,
       supabase,
       powerSync,
       connector,
@@ -111,6 +117,7 @@ void main() {
     summaries = MockLocalDataSummaryDatasource();
     wipe = MockLocalDataWipeDatasource();
     ownership = MockLocalDataOwnershipDatasource();
+    everSignedIn = MockEverSignedInDatasource();
     supabase = MockSupabaseClient();
     functions = MockFunctionsClient();
     auth = MockGoTrueClient();
@@ -141,6 +148,9 @@ void main() {
     when(() => connector.fetchCredentials()).thenAnswer((_) async => null);
     when(() => connector.getCredentialsCached()).thenAnswer((_) async => null);
     when(() => connector.prefetchCredentials()).thenAnswer((_) async => null);
+    when(() => everSignedIn.read()).thenAnswer((_) async => false);
+    when(() => everSignedIn.markSignedIn()).thenAnswer((_) async {});
+    when(() => everSignedIn.clear()).thenAnswer((_) async {});
 
     repository = buildRepository();
   });
@@ -319,6 +329,8 @@ void main() {
       'invokes the delete-account Edge Function and clears the local '
       'session on success',
       () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
         when(() => functions.invoke('delete-account')).thenAnswer(
           (_) async => const FunctionResponse(
             data: {'success': true},
@@ -326,7 +338,7 @@ void main() {
           ),
         );
 
-        final result = await repository.deleteAccount();
+        final result = await signedIn.deleteAccount();
 
         expect(result, const Right<Failure, Unit>(unit));
         verify(() => functions.invoke('delete-account')).called(1);
@@ -369,6 +381,8 @@ void main() {
       'maps a body that reports success: false without keeping a local '
       'session',
       () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
         when(() => functions.invoke('delete-account')).thenAnswer(
           (_) async => const FunctionResponse(
             data: {'error': 'unexpected shape'},
@@ -376,7 +390,7 @@ void main() {
           ),
         );
 
-        final result = await repository.deleteAccount();
+        final result = await signedIn.deleteAccount();
 
         expect(result, isA<Left<Failure, Unit>>());
         expect((result as Left).value, isA<NetworkFailure>());
@@ -388,6 +402,8 @@ void main() {
       'maps a FunctionException to a NetworkFailure carrying the server '
       'error message',
       () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
         when(() => functions.invoke('delete-account')).thenThrow(
           const FunctionException(
             status: 401,
@@ -395,7 +411,7 @@ void main() {
           ),
         );
 
-        final result = await repository.deleteAccount();
+        final result = await signedIn.deleteAccount();
 
         expect(result, isA<Left<Failure, Unit>>());
         final failure = (result as Left).value as NetworkFailure;
@@ -405,9 +421,29 @@ void main() {
     );
 
     test(
+      'returns Right(unit) without calling the delete-account Edge Function '
+      'when there is no active session (regression: deleting the account '
+      'used to fail for a user who never signed in or already signed out)',
+      () async {
+        // `repository` was built in setUp with `currentSession` == null, i.e.
+        // signed out — no `when(() => functions.invoke(...))` stub is set up
+        // on purpose, so a call to it would throw a MissingStubError and fail
+        // this test.
+        expect(repository.currentSession.isSignedIn, isFalse);
+
+        final result = await repository.deleteAccount();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verifyNever(() => functions.invoke(any()));
+      },
+    );
+
+    test(
       'keeps the dataDeleted signal in the failure message when the rows '
       'were wiped but deleting the auth user failed',
       () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
         when(() => functions.invoke('delete-account')).thenThrow(
           const FunctionException(
             status: 500,
@@ -418,11 +454,114 @@ void main() {
           ),
         );
 
-        final result = await repository.deleteAccount();
+        final result = await signedIn.deleteAccount();
 
         final failure = (result as Left).value as NetworkFailure;
         expect(failure.message, contains('auth.admin.deleteUser failed'));
         expect(failure.message, contains('dataDeleted'));
+      },
+    );
+  });
+
+  group('hasEverSignedIn (HU-07 scope)', () {
+    test(
+      'reads false before any sign-in, without touching the datasource '
+      'beyond the read',
+      () async {
+        final result = await repository.hasEverSignedIn();
+
+        expect(result, isFalse);
+      },
+    );
+
+    test(
+      'marks the device as ever-signed-in on a successful Google sign-in',
+      () async {
+        when(() => google.signIn()).thenAnswer(
+          (_) async => const SocialCredential(
+            providerUserId: 'google-1',
+            displayName: 'Ana',
+            idToken: 'id-token',
+          ),
+        );
+        when(
+          () => auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: 'id-token',
+          ),
+        ).thenAnswer(
+          (_) async => AuthResponse(user: supabaseUser(id: 'user-1')),
+        );
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result.isRight(), isTrue);
+        verify(() => everSignedIn.markSignedIn()).called(1);
+      },
+    );
+
+    test(
+      'stays true after signOut — signOut must never clear the flag',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+
+        final result = await signedIn.signOut();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verifyNever(() => everSignedIn.clear());
+      },
+    );
+
+    test(
+      'clears the flag only after a successful deleteAccount with an active '
+      'session',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        when(() => functions.invoke('delete-account')).thenAnswer(
+          (_) async => const FunctionResponse(
+            data: {'success': true},
+            status: 200,
+          ),
+        );
+
+        final result = await signedIn.deleteAccount();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verify(() => everSignedIn.clear()).called(1);
+      },
+    );
+
+    test(
+      'does not clear the flag when deleteAccount has no active session to '
+      'call the Edge Function with (regression: this path is a Right no-op)',
+      () async {
+        expect(repository.currentSession.isSignedIn, isFalse);
+
+        final result = await repository.deleteAccount();
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verifyNever(() => everSignedIn.clear());
+      },
+    );
+
+    test(
+      'does not clear the flag when the Edge Function reports failure',
+      () async {
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+        when(() => functions.invoke('delete-account')).thenAnswer(
+          (_) async => const FunctionResponse(
+            data: {'error': 'unexpected shape'},
+            status: 200,
+          ),
+        );
+
+        final result = await signedIn.deleteAccount();
+
+        expect(result.isLeft(), isTrue);
+        verifyNever(() => everSignedIn.clear());
       },
     );
   });

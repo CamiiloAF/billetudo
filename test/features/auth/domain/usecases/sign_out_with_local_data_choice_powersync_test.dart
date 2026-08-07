@@ -7,6 +7,7 @@ import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/database/powersync_schema.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart';
+import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart';
@@ -34,6 +35,9 @@ class MockLocalDataSummaryDatasource extends Mock
 
 class MockLocalDataOwnershipDatasource extends Mock
     implements LocalDataOwnershipDatasource {}
+
+class MockEverSignedInDatasource extends Mock
+    implements EverSignedInDatasource {}
 
 class MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -122,6 +126,10 @@ void main() {
     when(connector.fetchCredentials).thenAnswer((_) async => null);
     when(connector.getCredentialsCached).thenAnswer((_) async => null);
     when(connector.prefetchCredentials).thenAnswer((_) async => null);
+    final everSignedIn = MockEverSignedInDatasource();
+    when(everSignedIn.read).thenAnswer((_) async => false);
+    when(everSignedIn.markSignedIn).thenAnswer((_) async {});
+    when(everSignedIn.clear).thenAnswer((_) async {});
 
     // Cada pieza que toca datos locales es real: el datasource del wipe, el
     // repositorio, y los dos casos de uso que HU-06 encadena. Solo se mockea
@@ -132,6 +140,7 @@ void main() {
       MockLocalDataSummaryDatasource(),
       LocalDataWipeDatasource(powerSync),
       MockLocalDataOwnershipDatasource(),
+      everSignedIn,
       supabase,
       powerSync,
       connector,

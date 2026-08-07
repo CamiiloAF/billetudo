@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../domain/entities/delete_account_scope.dart';
 import '../cubit/delete_account_cubit.dart';
 import '../cubit/delete_account_state.dart';
 import 'sheets/confirm_delete_account_sheet.dart';
@@ -18,9 +19,16 @@ class DeleteAccountFlow {
 
   static Future<void> start(
     BuildContext context, {
-    required VoidCallback onFinished,
+    required void Function(DeleteAccountScope scope) onFinished,
   }) async {
     final cubit = getIt<DeleteAccountCubit>();
+
+    // Resolved before paso 1 even opens, so its warning copy (a device that
+    // signed out of a real cloud account) is correct on the first frame.
+    await cubit.loadScope();
+    if (!context.mounted) {
+      return;
+    }
 
     await ConfirmDeleteAccountSheet.show(context, cubit);
     if (cubit.state.step != DeleteAccountStep.localDataChoice) {
@@ -35,6 +43,6 @@ class DeleteAccountFlow {
       return; // still choosing / failed wiping local data
     }
 
-    onFinished();
+    onFinished(cubit.state.scope ?? DeleteAccountScope.cloudAndLocal);
   }
 }

@@ -3,20 +3,55 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/delete_account_scope.dart';
 
 /// HU-07 paso 3 (`sqm4I`): the closing screen of account deletion, neutral
-/// tone. Deliberately only talks about the cloud — never what happened to
-/// local data, so the copy reads true no matter which choice was made in
-/// paso 2.
+/// tone. Only [DeleteAccountScope.cloudAndLocal] talks about the cloud —
+/// that is the one scope where this run actually contacted the server and
+/// can truthfully say the cloud account is gone.
+///
+/// [DeleteAccountScope.localOnlySignedOut] and
+/// [DeleteAccountScope.localOnlyNeverSignedIn] both stay local-only, but for
+/// different reasons and with different copy:
+/// - `localOnlySignedOut`: this device signed out of a real cloud account
+///   and this run never reached it, so the screen must say only local data
+///   was cleared instead of implying the cloud account is gone (paso 1's
+///   `ConfirmDeleteAccountSheet` already warned about this before the user
+///   chose to continue).
+/// - `localOnlyNeverSignedIn`: `everSignedIn` is a local-only flag with no
+///   server check, so this device may in fact have a real cloud account
+///   (reinstall, second device, a sign-in race) that this run never
+///   contacted. The copy must not claim "no data left in the cloud" —
+///   that asserts something never verified — so it says only that this
+///   device's local data was cleared, without mentioning the cloud at all.
 class AccountDeletedPage extends StatelessWidget {
-  const AccountDeletedPage({required this.onGoHome, super.key});
+  const AccountDeletedPage({
+    required this.scope,
+    required this.onGoHome,
+    super.key,
+  });
 
+  final DeleteAccountScope scope;
   final VoidCallback onGoHome;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final isLocalOnlyAfterSignOut =
+        scope == DeleteAccountScope.localOnlySignedOut;
+    final isLocalOnlyNeverSignedIn =
+        scope == DeleteAccountScope.localOnlyNeverSignedIn;
+    final title = isLocalOnlyAfterSignOut
+        ? l10n.authDeleteStep3LocalOnlyTitle
+        : isLocalOnlyNeverSignedIn
+            ? l10n.authDeleteStep3NeverSignedInTitle
+            : l10n.authDeleteStep3Title;
+    final subtitle = isLocalOnlyAfterSignOut
+        ? l10n.authDeleteStep3LocalOnlySubtitle
+        : isLocalOnlyNeverSignedIn
+            ? l10n.authDeleteStep3NeverSignedInSubtitle
+            : l10n.authDeleteStep3Subtitle;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -45,7 +80,7 @@ class AccountDeletedPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        l10n.authDeleteStep3Title,
+                        title,
                         textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme
@@ -54,7 +89,7 @@ class AccountDeletedPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        l10n.authDeleteStep3Subtitle,
+                        subtitle,
                         textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme

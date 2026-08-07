@@ -8,8 +8,7 @@ import '../entities/merge_summary.dart';
 /// Implemented in `data/` over the official Google/Apple SDKs for the
 /// client-side half of sign-in, Supabase for the session/account, and
 /// PowerSync for sync (see `docs/requirements/05-auth-sync.md`). [deleteAccount]
-/// still needs a Supabase Edge Function that doesn't exist yet — it throws
-/// `UnimplementedError` until that lands; see `AuthRepositoryImpl`.
+/// calls a Supabase Edge Function (`delete-account`); see `AuthRepositoryImpl`.
 ///
 /// Signing in is always optional (HU-01): nothing in this contract may be
 /// called to gate access to a Nivel 0 feature.
@@ -36,10 +35,24 @@ abstract class AuthRepository {
 
   /// HU-07: deletes the user's account and all of their data in Supabase,
   /// synchronously and irreversibly. Does not touch local data — that is a
-  /// separate, explicit choice (see [wipeLocalData]).
+  /// separate, explicit choice (see [wipeLocalData]). Without an active
+  /// session (the user never signed in, or already signed out) there is no
+  /// session to call the server with, so this returns success without
+  /// calling it, and the caller still proceeds to [wipeLocalData]'s choice —
+  /// even if a real cloud account still exists (see [hasEverSignedIn], and
+  /// `GetDeleteAccountScope` in `domain/usecases`, which is what decides
+  /// whether the UI needs to warn about that before this is even called).
   FutureResult<Unit> deleteAccount();
 
   /// HU-07 paso 2, when the user picks "Borrar también los datos de este
   /// dispositivo": wipes every local row on this device.
   FutureResult<Unit> wipeLocalData();
+
+  /// Whether this device has ever completed a successful sign-in, even if it
+  /// later called [signOut]. Unlike [currentSession], this survives signing
+  /// out — it only clears once [deleteAccount] really deletes the cloud
+  /// account. Lets HU-07 tell apart a device that never had a cloud account
+  /// from one that signed out of a real one, so "Eliminar cuenta" never
+  /// implies the cloud account is gone when it was only skipped.
+  Future<bool> hasEverSignedIn();
 }

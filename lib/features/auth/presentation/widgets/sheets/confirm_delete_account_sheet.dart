@@ -8,12 +8,21 @@ import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/sheet_buttons_row.dart';
 import '../../cubit/delete_account_cubit.dart';
 import '../../cubit/delete_account_state.dart';
+import 'unsynced_changes_warning.dart';
 
 /// HU-07 paso 1 (`j8ZdEx` confirm / `T1YkkA` error): the only genuinely
 /// destructive sheet of this feature — `$expense` tone, irreversibility
 /// spelled out plainly. Swaps in place to the neutral error variant
 /// (`wifi-off`, "No pudimos eliminar tu cuenta") if [DeleteAccountCubit]
 /// reports a failure, instead of stacking a second sheet.
+///
+/// When [DeleteAccountState.isLocalOnlyAfterSignOut] is true (signed out on
+/// this device but it signed in before), this also renders a warning above
+/// the buttons: continuing here only deletes local data, not the cloud
+/// account, unless the user signs back in first. It does not block the
+/// user — they can still continue, it is just an informed, explicit choice
+/// (never a dark pattern; the cloud account is not silently claimed as
+/// deleted either).
 ///
 /// Closes itself once the cubit advances past this step; the caller only
 /// needs to await [show] and then read the cubit's state to decide what
@@ -65,6 +74,13 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
                 title: l10n.authDeleteStep1Title,
                 message: l10n.authDeleteStep1Message,
               ),
+            if (!hasError && state.isLocalOnlyAfterSignOut) ...[
+              const SizedBox(height: 16),
+              UnsyncedChangesWarning(
+                title: l10n.authDeleteStep1SignedOutWarningTitle,
+                body: l10n.authDeleteStep1SignedOutWarningBody,
+              ),
+            ],
             const SizedBox(height: 24),
             SheetButtonsRow(
               left: OutlinedButton(

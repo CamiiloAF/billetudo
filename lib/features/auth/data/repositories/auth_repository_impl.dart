@@ -11,6 +11,7 @@ import '../../domain/entities/auth_user.dart';
 import '../../domain/entities/merge_summary.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/apple_auth_datasource.dart';
+import '../datasources/ever_signed_in_datasource.dart';
 import '../datasources/google_auth_datasource.dart';
 import '../datasources/local_data_ownership_datasource.dart';
 import '../datasources/local_data_summary_datasource.dart';
@@ -31,6 +32,7 @@ class AuthRepositoryImpl implements AuthRepository {
     this._summaries,
     this._wipe,
     this._ownership,
+    this._everSignedIn,
     this._supabase,
     this._powerSync,
     this._connector,
@@ -62,6 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final LocalDataSummaryDatasource _summaries;
   final LocalDataWipeDatasource _wipe;
   final LocalDataOwnershipDatasource _ownership;
+  final EverSignedInDatasource _everSignedIn;
   final SupabaseClient _supabase;
   final PowerSyncDatabase _powerSync;
   final PowerSyncConnector _connector;
@@ -217,6 +220,10 @@ class AuthRepositoryImpl implements AuthRepository {
       _current = AuthSession.signedIn(user);
       _controller.add(_current);
       _connectPowerSync();
+      // Marks this device as having had a cloud account, so HU-07 can tell a
+      // later `signOut` apart from never having signed in at all. Never
+      // undone by `signOut` — only a real cloud deletion below clears it.
+      await _everSignedIn.markSignedIn();
       return Right(user);
     } on AuthException catch (e, stackTrace) {
       return Left(NetworkFailure(e.message, cause: e, stackTrace: stackTrace));
@@ -352,6 +359,21 @@ class AuthRepositoryImpl implements AuthRepository {
     // attaches the current session's JWT as the `Authorization` header on
     // its own (via `SupabaseClient`'s internal `AuthHttpClient`), so there is
     // nothing to build by hand here.
+    //
+    // Signing in is always optional (HU-01), so without a live session there
+    // is no session for `functions.invoke` to attach a JWT to, and calling it
+    // anyway just fails with an auth error that reads as "we couldn't reach
+    // the server" — skip straight to success and let paso 2 (local data
+    // choice) run exactly as it does for a signed-in user. This is correct
+    // for a device that never signed in, but it is *also* what a device that
+    // signed out of a real account falls into: it may still have a live
+    // cloud account this call simply cannot reach. This method cannot tell
+    // the two apart, and it should not try to — `GetDeleteAccountScope`
+    // (domain) reads `hasEverSignedIn()` to warn the UI *before* this runs,
+    // so the difference is surfaced honestly instead of papered over here.
+    if (!_current.isSignedIn) {
+      return const Right(unit);
+    }
     try {
       final response = await _supabase.functions.invoke('delete-account');
       final data = response.data;
@@ -365,6 +387,10 @@ class AuthRepositoryImpl implements AuthRepository {
       // completed deletion into an error the user could read as "nothing
       // happened".
       await _clearLocalSession(force: true);
+      // The cloud account really is gone now, so a future signed-out run of
+      // this same flow must go back to reading as "never had one" — not keep
+      // warning about an account that no longer exists.
+      await _everSignedIn.clear();
       return const Right(unit);
     } on FunctionException catch (e, stackTrace) {
       return Left(
@@ -400,4 +426,7 @@ class AuthRepositoryImpl implements AuthRepository {
     await _wipe.wipeAll();
     return const Right(unit);
   }
+
+  @override
+  Future<bool> hasEverSignedIn() => _everSignedIn.read();
 }

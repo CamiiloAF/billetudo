@@ -1,6 +1,8 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/auth/domain/entities/delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/entities/local_data_choice.dart';
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart';
+import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_state.dart';
@@ -12,17 +14,27 @@ class MockDeleteAccount extends Mock implements DeleteAccount {}
 
 class MockWipeLocalData extends Mock implements WipeLocalData {}
 
+class MockGetDeleteAccountScope extends Mock
+    implements GetDeleteAccountScope {}
+
 void main() {
   late MockDeleteAccount deleteAccount;
   late MockWipeLocalData wipeLocalData;
+  late MockGetDeleteAccountScope getDeleteAccountScope;
 
   setUp(() {
     deleteAccount = MockDeleteAccount();
     wipeLocalData = MockWipeLocalData();
+    getDeleteAccountScope = MockGetDeleteAccountScope();
+    when(() => getDeleteAccountScope())
+        .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal);
   });
 
-  DeleteAccountCubit build() =>
-      DeleteAccountCubit(deleteAccount, wipeLocalData);
+  DeleteAccountCubit build() => DeleteAccountCubit(
+        deleteAccount,
+        wipeLocalData,
+        getDeleteAccountScope,
+      );
 
   blocTest<DeleteAccountCubit, DeleteAccountState>(
     'HU-07 paso 1: confirmDelete exitoso avanza a localDataChoice',
@@ -34,6 +46,24 @@ void main() {
       const DeleteAccountState(status: DeleteAccountStatus.loading),
       const DeleteAccountState(step: DeleteAccountStep.localDataChoice),
     ],
+  );
+
+  blocTest<DeleteAccountCubit, DeleteAccountState>(
+    'HU-07 paso 1: sin sesión activa, confirmDelete avanza a localDataChoice '
+    'sin pasar por error (regresión: AuthRepositoryImpl.deleteAccount ahora '
+    'devuelve Right(unit) de inmediato cuando no hay sesión, sin invocar la '
+    'Edge Function)',
+    build: build,
+    setUp: () =>
+        when(() => deleteAccount()).thenAnswer((_) async => const Right(unit)),
+    act: (cubit) => cubit.confirmDelete(),
+    expect: () => [
+      const DeleteAccountState(status: DeleteAccountStatus.loading),
+      const DeleteAccountState(step: DeleteAccountStep.localDataChoice),
+    ],
+    verify: (_) {
+      verify(() => deleteAccount()).called(1);
+    },
   );
 
   blocTest<DeleteAccountCubit, DeleteAccountState>(
@@ -112,4 +142,52 @@ void main() {
     },
     expect: () => <DeleteAccountState>[],
   );
+
+  group('loadScope (HU-07 scope)', () {
+    blocTest<DeleteAccountCubit, DeleteAccountState>(
+      'expone cloudAndLocal cuando hay sesión activa',
+      build: build,
+      setUp: () => when(() => getDeleteAccountScope())
+          .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal),
+      act: (cubit) => cubit.loadScope(),
+      expect: () => [
+        const DeleteAccountState(scope: DeleteAccountScope.cloudAndLocal),
+      ],
+      verify: (cubit) {
+        expect(cubit.state.isLocalOnlyAfterSignOut, isFalse);
+      },
+    );
+
+    blocTest<DeleteAccountCubit, DeleteAccountState>(
+      'expone localOnlyNeverSignedIn cuando nunca hubo sesión en el '
+      'dispositivo',
+      build: build,
+      setUp: () => when(() => getDeleteAccountScope())
+          .thenAnswer((_) async => DeleteAccountScope.localOnlyNeverSignedIn),
+      act: (cubit) => cubit.loadScope(),
+      expect: () => [
+        const DeleteAccountState(
+          scope: DeleteAccountScope.localOnlyNeverSignedIn,
+        ),
+      ],
+      verify: (cubit) {
+        expect(cubit.state.isLocalOnlyAfterSignOut, isFalse);
+      },
+    );
+
+    blocTest<DeleteAccountCubit, DeleteAccountState>(
+      'expone localOnlySignedOut cuando el dispositivo firmó sesión antes '
+      'pero ahora está deslogueado',
+      build: build,
+      setUp: () => when(() => getDeleteAccountScope())
+          .thenAnswer((_) async => DeleteAccountScope.localOnlySignedOut),
+      act: (cubit) => cubit.loadScope(),
+      expect: () => [
+        const DeleteAccountState(scope: DeleteAccountScope.localOnlySignedOut),
+      ],
+      verify: (cubit) {
+        expect(cubit.state.isLocalOnlyAfterSignOut, isTrue);
+      },
+    );
+  });
 }

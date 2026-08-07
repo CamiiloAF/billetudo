@@ -3484,6 +3484,18 @@ abstract class AppLocalizations {
   /// **'Hubo un problema para conectar con el servidor y no pudimos completar la solicitud. Tus datos siguen a salvo en este dispositivo — intenta de nuevo.'**
   String get authDeleteStep1ErrorMessage;
 
+  /// HU-07 paso 1: aviso cuando el dispositivo cerró sesión pero antes tuvo una cuenta en la nube (everSignedIn=true). Se muestra antes de continuar para que la elección de borrar solo lo local sea informada.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay una sesión iniciada'**
+  String get authDeleteStep1SignedOutWarningTitle;
+
+  /// HU-07 paso 1: cuerpo del aviso de sesión cerrada con cuenta previa en la nube.
+  ///
+  /// In es, this message translates to:
+  /// **'Si también quieres eliminar tu cuenta en la nube, inicia sesión primero. Si continúas sin iniciar sesión, solo eliminaremos la información guardada en este dispositivo.'**
+  String get authDeleteStep1SignedOutWarningBody;
+
   /// No description provided for @authDeleteStep2Title.
   ///
   /// In es, this message translates to:
@@ -3495,6 +3507,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tu cuenta en la nube ya fue eliminada. Elige qué pasa con lo que queda guardado aquí, en este dispositivo.'**
   String get authDeleteStep2Subtitle;
+
+  /// HU-07 paso 2: variante del subtítulo cuando el dispositivo cerró sesión con una cuenta previa en la nube (no se llamó al servidor).
+  ///
+  /// In es, this message translates to:
+  /// **'No iniciaste sesión, así que solo vamos a borrar lo guardado en este dispositivo — tu cuenta en la nube no se vio afectada. Elige qué pasa con la información local.'**
+  String get authDeleteStep2LocalOnlySubtitle;
+
+  /// HU-07 paso 2: variante del subtítulo cuando el dispositivo nunca inició sesión, así que no existe (ni existió) una cuenta en la nube.
+  ///
+  /// In es, this message translates to:
+  /// **'Nunca iniciaste sesión en este dispositivo, así que no hay una cuenta en la nube. Elige qué pasa con la información guardada aquí.'**
+  String get authDeleteStep2NeverSignedInSubtitle;
 
   /// No description provided for @authDeleteStep2KeepTitle.
   ///
@@ -3537,6 +3561,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ya no tenemos ningún dato tuyo en la nube. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.'**
   String get authDeleteStep3Subtitle;
+
+  /// HU-07 paso 3: título cuando solo se borró lo local (dispositivo sin sesión, con una cuenta previa en la nube que no se tocó).
+  ///
+  /// In es, this message translates to:
+  /// **'Listo, borramos tus datos de este dispositivo'**
+  String get authDeleteStep3LocalOnlyTitle;
+
+  /// HU-07 paso 3: subtítulo cuando solo se borró lo local; deja claro que la cuenta en la nube no fue tocada.
+  ///
+  /// In es, this message translates to:
+  /// **'Como no iniciaste sesión, tu cuenta en la nube sigue existiendo. Si también quieres eliminarla, inicia sesión y repite este proceso.'**
+  String get authDeleteStep3LocalOnlySubtitle;
+
+  /// HU-07 paso 3: título cuando el dispositivo nunca inició sesión, así que no existe (ni existió) una cuenta en la nube que mencionar.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo, borramos tus datos de este dispositivo'**
+  String get authDeleteStep3NeverSignedInTitle;
+
+  /// HU-07 paso 3: subtítulo cuando el dispositivo nunca inició sesión; no menciona la nube porque nunca existió una cuenta ahí.
+  ///
+  /// In es, this message translates to:
+  /// **'Borramos la información guardada en este dispositivo. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.'**
+  String get authDeleteStep3NeverSignedInSubtitle;
 
   /// No description provided for @authDeleteStep3Cta.
   ///

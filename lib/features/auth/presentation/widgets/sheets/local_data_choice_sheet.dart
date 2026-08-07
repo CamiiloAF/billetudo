@@ -56,7 +56,19 @@ class LocalDataChoiceSheet extends StatelessWidget {
               iconColor: colors.primaryOnSoft,
               iconBackground: colors.primarySoft,
               title: l10n.authDeleteStep2Title,
-              message: l10n.authDeleteStep2Subtitle,
+              // A device that signed out of a real cloud account never had
+              // paso 1 call it (`AuthRepositoryImpl.deleteAccount` skips the
+              // Edge Function without a session) — this must not claim it
+              // "ya fue eliminada" the way the truthful cloud-deletion copy
+              // does for a signed-in run. A device that never signed in has
+              // no cloud account at all, so it needs its own copy too —
+              // reusing the sign-out variant would falsely imply one exists
+              // ("tu cuenta en la nube no se vio afectada").
+              message: state.isLocalOnlyAfterSignOut
+                  ? l10n.authDeleteStep2LocalOnlySubtitle
+                  : state.isLocalOnlyNeverSignedIn
+                      ? l10n.authDeleteStep2NeverSignedInSubtitle
+                      : l10n.authDeleteStep2Subtitle,
               messageColor: colors.textSecondary,
               messageFontSize: 14,
             ),

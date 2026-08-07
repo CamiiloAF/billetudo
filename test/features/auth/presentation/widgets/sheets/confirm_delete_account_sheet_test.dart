@@ -1,9 +1,12 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/widgets/sheet_buttons_row.dart';
+import 'package:billetudo/features/auth/domain/entities/delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart';
+import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:billetudo/features/auth/presentation/widgets/sheets/confirm_delete_account_sheet.dart';
+import 'package:billetudo/features/auth/presentation/widgets/sheets/unsynced_changes_warning.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,15 +19,26 @@ class MockDeleteAccount extends Mock implements DeleteAccount {}
 
 class MockWipeLocalData extends Mock implements WipeLocalData {}
 
+class MockGetDeleteAccountScope extends Mock
+    implements GetDeleteAccountScope {}
+
 void main() {
   late MockDeleteAccount deleteAccount;
   late MockWipeLocalData wipeLocalData;
+  late MockGetDeleteAccountScope getDeleteAccountScope;
   late DeleteAccountCubit cubit;
 
   setUp(() {
     deleteAccount = MockDeleteAccount();
     wipeLocalData = MockWipeLocalData();
-    cubit = DeleteAccountCubit(deleteAccount, wipeLocalData);
+    getDeleteAccountScope = MockGetDeleteAccountScope();
+    when(() => getDeleteAccountScope())
+        .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal);
+    cubit = DeleteAccountCubit(
+      deleteAccount,
+      wipeLocalData,
+      getDeleteAccountScope,
+    );
   });
 
   testWidgets(
@@ -101,5 +115,57 @@ void main() {
     expect(find.byIcon(LucideIcons.wifiOff), findsOneWidget);
     expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
     expect(find.text('Reintentar'), findsOneWidget);
+  });
+
+  testWidgets(
+      'HU-07: muestra el aviso de sesión cerrada cuando scope es '
+      'localOnlySignedOut', (tester) async {
+    when(() => getDeleteAccountScope())
+        .thenAnswer((_) async => DeleteAccountScope.localOnlySignedOut);
+    await cubit.loadScope();
+
+    await tester.pumpAuthWidget(
+      BlocProvider.value(
+        value: cubit,
+        child: const ConfirmDeleteAccountSheet(),
+      ),
+    );
+
+    expect(find.byType(UnsyncedChangesWarning), findsOneWidget);
+  });
+
+  testWidgets(
+      'HU-07: no muestra el aviso de sesión cerrada cuando scope es '
+      'cloudAndLocal', (tester) async {
+    when(() => getDeleteAccountScope())
+        .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal);
+    await cubit.loadScope();
+
+    await tester.pumpAuthWidget(
+      BlocProvider.value(
+        value: cubit,
+        child: const ConfirmDeleteAccountSheet(),
+      ),
+    );
+
+    expect(find.byType(UnsyncedChangesWarning), findsNothing);
+  });
+
+  testWidgets(
+      'HU-07: no muestra el aviso de sesión cerrada cuando scope es '
+      'localOnlyNeverSignedIn (nunca hubo cuenta en la nube)', (tester) async {
+    when(() => getDeleteAccountScope()).thenAnswer(
+      (_) async => DeleteAccountScope.localOnlyNeverSignedIn,
+    );
+    await cubit.loadScope();
+
+    await tester.pumpAuthWidget(
+      BlocProvider.value(
+        value: cubit,
+        child: const ConfirmDeleteAccountSheet(),
+      ),
+    );
+
+    expect(find.byType(UnsyncedChangesWarning), findsNothing);
   });
 }

@@ -1,5 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/auth/domain/entities/delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart';
+import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/delete_account_state.dart';
@@ -16,18 +18,30 @@ class MockDeleteAccount extends Mock implements DeleteAccount {}
 
 class MockWipeLocalData extends Mock implements WipeLocalData {}
 
+class MockGetDeleteAccountScope extends Mock
+    implements GetDeleteAccountScope {}
+
 void main() {
   late MockDeleteAccount deleteAccount;
   late MockWipeLocalData wipeLocalData;
+  late MockGetDeleteAccountScope getDeleteAccountScope;
   late DeleteAccountCubit cubit;
 
   setUp(() async {
     deleteAccount = MockDeleteAccount();
     wipeLocalData = MockWipeLocalData();
+    getDeleteAccountScope = MockGetDeleteAccountScope();
+    when(() => getDeleteAccountScope())
+        .thenAnswer((_) async => DeleteAccountScope.cloudAndLocal);
     when(() => deleteAccount()).thenAnswer((_) async => const Right(unit));
-    cubit = DeleteAccountCubit(deleteAccount, wipeLocalData);
+    cubit = DeleteAccountCubit(
+      deleteAccount,
+      wipeLocalData,
+      getDeleteAccountScope,
+    );
     // Drives the cubit to paso 2 through its real paso-1 transition, rather
     // than poking `emit` directly (protected outside the cubit).
+    await cubit.loadScope();
     await cubit.confirmDelete();
     expect(cubit.state.step, DeleteAccountStep.localDataChoice);
   });
@@ -134,5 +148,100 @@ void main() {
 
     verifyNever(() => wipeLocalData());
     expect(cubit.state.step, DeleteAccountStep.done);
+  });
+
+  group('HU-07: copy por scope', () {
+    testWidgets(
+        'cloudAndLocal: el subtítulo afirma que la cuenta en la nube ya fue '
+        'eliminada', (tester) async {
+      await tester.pumpAuthWidget(
+        BlocProvider.value(
+          value: cubit,
+          child: const LocalDataChoiceSheet(),
+        ),
+      );
+
+      expect(
+        find.textContaining('Tu cuenta en la nube ya fue eliminada'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        'localOnlySignedOut: el subtítulo NO afirma que la cuenta en la nube '
+        'fue eliminada, deja claro que solo se borra lo local', (
+      tester,
+    ) async {
+      when(() => getDeleteAccountScope())
+          .thenAnswer((_) async => DeleteAccountScope.localOnlySignedOut);
+      final signedOutCubit = DeleteAccountCubit(
+        deleteAccount,
+        wipeLocalData,
+        getDeleteAccountScope,
+      );
+      await signedOutCubit.loadScope();
+      await signedOutCubit.confirmDelete();
+      expect(signedOutCubit.state.step, DeleteAccountStep.localDataChoice);
+
+      await tester.pumpAuthWidget(
+        BlocProvider.value(
+          value: signedOutCubit,
+          child: const LocalDataChoiceSheet(),
+        ),
+      );
+
+      expect(
+        find.textContaining('Tu cuenta en la nube ya fue eliminada'),
+        findsNothing,
+      );
+      expect(
+        find.textContaining('tu cuenta en la nube no se vio afectada'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        'localOnlyNeverSignedIn: el subtítulo NO afirma que la cuenta en la '
+        'nube fue eliminada ni menciona una cuenta en la nube que nunca '
+        'existió', (
+      tester,
+    ) async {
+      when(() => getDeleteAccountScope()).thenAnswer(
+        (_) async => DeleteAccountScope.localOnlyNeverSignedIn,
+      );
+      final neverSignedInCubit = DeleteAccountCubit(
+        deleteAccount,
+        wipeLocalData,
+        getDeleteAccountScope,
+      );
+      await neverSignedInCubit.loadScope();
+      await neverSignedInCubit.confirmDelete();
+      expect(
+        neverSignedInCubit.state.step,
+        DeleteAccountStep.localDataChoice,
+      );
+
+      await tester.pumpAuthWidget(
+        BlocProvider.value(
+          value: neverSignedInCubit,
+          child: const LocalDataChoiceSheet(),
+        ),
+      );
+
+      expect(
+        find.textContaining('Tu cuenta en la nube ya fue eliminada'),
+        findsNothing,
+      );
+      expect(
+        find.textContaining('cuenta en la nube no se vio afectada'),
+        findsNothing,
+        reason: 'ese dispositivo nunca inició sesión, así que nunca hubo '
+            'una cuenta en la nube que "no se haya visto afectada"',
+      );
+      expect(
+        find.textContaining('Nunca iniciaste sesión en este dispositivo'),
+        findsOneWidget,
+      );
+    });
   });
 }

@@ -148,6 +148,8 @@ import 'package:billetudo/features/accounts/presentation/cubit/archived_accounts
     as _i958;
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
     as _i22;
+import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart'
+    as _i464;
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart'
     as _i235;
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart'
@@ -166,6 +168,8 @@ import 'package:billetudo/features/auth/domain/repositories/auth_repository.dart
     as _i913;
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart'
     as _i498;
+import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart'
+    as _i186;
 import 'package:billetudo/features/auth/domain/usecases/merge_local_data.dart'
     as _i916;
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_apple.dart'
@@ -688,6 +692,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i207.ThemePreferenceDatasource>(() =>
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i464.EverSignedInDatasource>(
+        () => _i464.EverSignedInDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
         _i226.SeedCategoryOwnershipRemoteDatasource(
             gh<_i454.SupabaseClient>()));
@@ -887,22 +893,23 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i474.CrashReporter>(),
           gh<_i136.SyncRetryWatchdog>(),
         ));
-    gh.factory<_i793.PendingOccurrencesCubit>(
-        () => _i793.PendingOccurrencesCubit(
-              gh<_i551.GetPendingOccurrences>(),
-              gh<_i964.UndoSkipScheduledOccurrence>(),
-              gh<_i319.UndoSnoozeScheduledOccurrence>(),
-            ));
     gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
           gh<_i235.GoogleAuthDatasource>(),
           gh<_i22.AppleAuthDatasource>(),
           gh<_i835.LocalDataSummaryDatasource>(),
           gh<_i173.LocalDataWipeDatasource>(),
           gh<_i718.LocalDataOwnershipDatasource>(),
+          gh<_i464.EverSignedInDatasource>(),
           gh<_i454.SupabaseClient>(),
           gh<_i433.PowerSyncDatabase>(),
           gh<_i872.PowerSyncConnector>(),
         ));
+    gh.factory<_i793.PendingOccurrencesCubit>(
+        () => _i793.PendingOccurrencesCubit(
+              gh<_i551.GetPendingOccurrences>(),
+              gh<_i964.UndoSkipScheduledOccurrence>(),
+              gh<_i319.UndoSnoozeScheduledOccurrence>(),
+            ));
     gh.factory<_i667.CategoryBreakdownCubit>(() =>
         _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(
@@ -1119,6 +1126,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i966.CashflowCubit(gh<_i137.WatchCashflowReport>()));
     gh.factory<_i498.DeleteAccount>(
         () => _i498.DeleteAccount(gh<_i913.AuthRepository>()));
+    gh.factory<_i186.GetDeleteAccountScope>(
+        () => _i186.GetDeleteAccountScope(gh<_i913.AuthRepository>()));
     gh.factory<_i916.MergeLocalData>(
         () => _i916.MergeLocalData(gh<_i913.AuthRepository>()));
     gh.factory<_i888.SignInWithApple>(
@@ -1309,12 +1318,13 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i964.UndoSkipScheduledOccurrence>(),
               gh<_i97.SkipScheduledOccurrence>(),
             ));
+    gh.lazySingleton<_i9.OnboardingFlowCubit>(
+        () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
     gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
           gh<_i498.DeleteAccount>(),
           gh<_i537.WipeLocalData>(),
+          gh<_i186.GetDeleteAccountScope>(),
         ));
-    gh.lazySingleton<_i9.OnboardingFlowCubit>(
-        () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
     gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
           gh<_i1003.WatchDebtDetail>(),
           gh<_i255.DebtInterestCalculator>(),

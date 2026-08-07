@@ -1966,12 +1966,28 @@ class AppLocalizationsEs extends AppLocalizations {
       'Hubo un problema para conectar con el servidor y no pudimos completar la solicitud. Tus datos siguen a salvo en este dispositivo — intenta de nuevo.';
 
   @override
+  String get authDeleteStep1SignedOutWarningTitle =>
+      'No hay una sesión iniciada';
+
+  @override
+  String get authDeleteStep1SignedOutWarningBody =>
+      'Si también quieres eliminar tu cuenta en la nube, inicia sesión primero. Si continúas sin iniciar sesión, solo eliminaremos la información guardada en este dispositivo.';
+
+  @override
   String get authDeleteStep2Title =>
       '¿Qué hacemos con tus datos en este teléfono?';
 
   @override
   String get authDeleteStep2Subtitle =>
       'Tu cuenta en la nube ya fue eliminada. Elige qué pasa con lo que queda guardado aquí, en este dispositivo.';
+
+  @override
+  String get authDeleteStep2LocalOnlySubtitle =>
+      'No iniciaste sesión, así que solo vamos a borrar lo guardado en este dispositivo — tu cuenta en la nube no se vio afectada. Elige qué pasa con la información local.';
+
+  @override
+  String get authDeleteStep2NeverSignedInSubtitle =>
+      'Nunca iniciaste sesión en este dispositivo, así que no hay una cuenta en la nube. Elige qué pasa con la información guardada aquí.';
 
   @override
   String get authDeleteStep2KeepTitle =>
@@ -1998,6 +2014,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get authDeleteStep3Subtitle =>
       'Ya no tenemos ningún dato tuyo en la nube. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.';
+
+  @override
+  String get authDeleteStep3LocalOnlyTitle =>
+      'Listo, borramos tus datos de este dispositivo';
+
+  @override
+  String get authDeleteStep3LocalOnlySubtitle =>
+      'Como no iniciaste sesión, tu cuenta en la nube sigue existiendo. Si también quieres eliminarla, inicia sesión y repite este proceso.';
+
+  @override
+  String get authDeleteStep3NeverSignedInTitle =>
+      'Listo, borramos tus datos de este dispositivo';
+
+  @override
+  String get authDeleteStep3NeverSignedInSubtitle =>
+      'Borramos la información guardada en este dispositivo. Puedes seguir usando billetudo cuando quieras, con o sin cuenta.';
 
   @override
   String get authDeleteStep3Cta => 'Ir al inicio';
