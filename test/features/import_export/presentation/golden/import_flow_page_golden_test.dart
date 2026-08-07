@@ -67,6 +67,7 @@ void main() {
         date: DateTime(2026, 7, 1),
         amountMinor: 1999,
         type: ImportEntryType.expense,
+        note: 'Mercado de la semana',
       ),
       ImportPreviewRow(
         rowNumber: 3,
