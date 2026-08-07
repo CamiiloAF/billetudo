@@ -230,6 +230,51 @@ void main() {
       expect(accounts.single.name, 'De la copia');
     });
 
+    test(
+        'modo reemplazar todo: una transacción se restaura junto con la '
+        'cuenta que referencia, en una base vacía', () async {
+      // Regression: restore() used to reuse `backupTableNames` (children
+      // before parents — correct for the delete pass, wrong for insert) to
+      // insert rows too, so `transactions` was merged before `accounts`. On
+      // a database with nothing local — exactly what "reemplazar todo"
+      // leaves right before this insert pass runs — inserting a transaction
+      // whose `accountId` doesn't exist yet violates the FK and the whole
+      // restore fails.
+      const accountId = 'acc-1';
+      await sourceDb.into(sourceDb.accounts).insert(
+            AccountsCompanion.insert(
+              id: Value(accountId),
+              name: 'Nequi',
+              type: AccountType.cash,
+              currency: 'COP',
+            ),
+          );
+      await sourceDb.into(sourceDb.transactions).insert(
+            TransactionsCompanion.insert(
+              accountId: accountId,
+              amountMinor: 5000,
+              currency: 'COP',
+              type: EntryType.expense,
+              date: DateTime(2026, 1, 1),
+            ),
+          );
+      final path = p.join(tempDir.path, 'copia.billetudo.json');
+      await sourceDatasource.createFullBackup(path);
+
+      final targetDb = AppDatabase(NativeDatabase.memory());
+      final targetDatasource = BackupJsonDatasource(targetDb);
+      addTearDown(targetDb.close);
+
+      final result = await targetDatasource.restore(path, mode: RestoreMode.replaceAll);
+
+      expect(result.isRight(), isTrue, reason: '${result.getLeft().toNullable()}');
+      final accounts = await targetDb.select(targetDb.accounts).get();
+      final transactions = await targetDb.select(targetDb.transactions).get();
+      expect(accounts, hasLength(1));
+      expect(transactions, hasLength(1));
+      expect(transactions.single.accountId, accountId);
+    });
+
     test('cancelar a medio restaurar no deja ninguna tabla mezclada (rollback)',
         () async {
       await sourceDb.into(sourceDb.accounts).insert(
@@ -246,7 +291,7 @@ void main() {
       final targetDatasource = BackupJsonDatasource(targetDb);
       addTearDown(targetDb.close);
       final token = CancellationToken();
-      final accountsIndex = backupTableNames.indexOf('accounts');
+      final accountsIndex = restoreInsertOrder.indexOf('accounts');
 
       final result = await targetDatasource.restore(
         path,

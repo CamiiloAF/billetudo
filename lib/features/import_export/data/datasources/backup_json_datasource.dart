@@ -46,6 +46,38 @@ const List<String> backupTableNames = [
   'appSettings',
 ];
 
+/// The reverse of [backupTableNames]: parents before children, with
+/// `appSettings` kept last (it can reference `budgets` via
+/// `featuredBudgetId`). Restoring/merging must insert in THIS order — a
+/// child row referencing a parent that has not been inserted yet (ej.
+/// `transactions.accountId` pointing at an `Accounts` row) is a real bug,
+/// not a cosmetic one: `restore()` used to reuse [backupTableNames] for
+/// both the delete pass (correctly children-first) AND the insert pass
+/// (incorrectly children-first too), so restoring into an empty database —
+/// exactly what "reemplazar todo" does right before restoring — inserted
+/// children ahead of the parents they reference.
+const List<String> restoreInsertOrder = [
+  'importBatches',
+  'accounts',
+  'categories',
+  'tags',
+  'budgets',
+  'goals',
+  'debts',
+  'scheduledPayments',
+  'transactions',
+  'budgetPeriodOverrides',
+  'budgetCategories',
+  'budgetAccounts',
+  'goalQuickAmounts',
+  'goalContributions',
+  'debtEntries',
+  'scheduledPaymentOccurrences',
+  'scheduledPaymentTags',
+  'transactionTags',
+  'appSettings',
+];
+
 /// Reads/writes the `.billetudo.json` full copy (HU-03/HU-04), table by
 /// table, straight off `AppDatabase` — a copy of raw storage state
 /// (`deletedAt`/`tombstonedAt` included), which is why this reads Drift
@@ -168,7 +200,9 @@ class BackupJsonDatasource {
           if (cancellationToken?.isCancelled ?? false) {
             throw const OperationCancelledException();
           }
-          final name = backupTableNames[i];
+          // Parents before children (restoreInsertOrder) — the reverse of
+          // the delete pass above, which is correctly children-first.
+          final name = restoreInsertOrder[i];
           final rows = (tables[name] as List<dynamic>?) ?? const [];
           result[name] = await _mergeTable(name, rows);
           onProgress?.call(i + 1, totalTables);

@@ -4751,6 +4751,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'It might not be a Billetudo copy, or it may be from a newer version. Your data in the app is untouched.';
 
   @override
+  String get importExportRestoreExecutionErrorTitle =>
+      'We couldn\'t complete the restore';
+
+  @override
+  String get importExportRestoreExecutionErrorBody =>
+      'The file was valid, but something failed partway through. The restore is cancelled entirely when that happens — your current data was not changed. Try again.';
+
+  @override
   String get importExportRestoreDoneTitle => 'Restore complete';
 
   @override

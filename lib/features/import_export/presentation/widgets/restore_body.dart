@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/neutral_button.dart';
@@ -75,10 +76,21 @@ class RestoreBody extends StatelessWidget {
           onCancel: cubit.cancel,
         );
       case RestoreStep.error:
+        // Two very different failures share this step: the file's header
+        // never validated (state.failure is IoFailure/ValidationFailure —
+        // "this isn't a valid copy"), or the header was fine but the actual
+        // restore transaction failed partway (DatabaseFailure) and rolled
+        // back. Telling the user "invalid file" for the second case is
+        // actively misleading — the file was fine, something else broke.
+        final isExecutionFailure = state.failure is DatabaseFailure;
         return IoErrorView(
           icon: IoErrorIcons.unreadableFile,
-          title: l10n.importExportRestoreErrorTitle,
-          message: l10n.importExportRestoreErrorBody,
+          title: isExecutionFailure
+              ? l10n.importExportRestoreExecutionErrorTitle
+              : l10n.importExportRestoreErrorTitle,
+          message: isExecutionFailure
+              ? l10n.importExportRestoreExecutionErrorBody
+              : l10n.importExportRestoreErrorBody,
           actionLabel: l10n.importExportChooseAnotherFile,
           actionIcon: IoErrorIcons.chooseAnotherFile,
           onAction: cubit.dismissError,

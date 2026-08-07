@@ -7879,6 +7879,18 @@ abstract class AppLocalizations {
   /// **'Puede que no sea una copia de Billetudo o que sea de una versión más nueva. Tus datos en la app siguen intactos.'**
   String get importExportRestoreErrorBody;
 
+  /// No description provided for @importExportRestoreExecutionErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos completar la restauración'**
+  String get importExportRestoreExecutionErrorTitle;
+
+  /// No description provided for @importExportRestoreExecutionErrorBody.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo era válido, pero algo falló a mitad de camino. La restauración se cancela por completo cuando eso pasa — tus datos actuales no se modificaron. Intenta de nuevo.'**
+  String get importExportRestoreExecutionErrorBody;
+
   /// No description provided for @importExportRestoreDoneTitle.
   ///
   /// In es, this message translates to:

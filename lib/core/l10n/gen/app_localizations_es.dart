@@ -4757,6 +4757,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Puede que no sea una copia de Billetudo o que sea de una versión más nueva. Tus datos en la app siguen intactos.';
 
   @override
+  String get importExportRestoreExecutionErrorTitle =>
+      'No pudimos completar la restauración';
+
+  @override
+  String get importExportRestoreExecutionErrorBody =>
+      'El archivo era válido, pero algo falló a mitad de camino. La restauración se cancela por completo cuando eso pasa — tus datos actuales no se modificaron. Intenta de nuevo.';
+
+  @override
   String get importExportRestoreDoneTitle => 'Restauración completa';
 
   @override
