@@ -406,6 +406,8 @@ import 'package:billetudo/features/goals/presentation/cubit/goals_list_cubit.dar
     as _i29;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
     as _i426;
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart'
+    as _i188;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
     as _i199;
 import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
@@ -1110,6 +1112,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i426.WatchMonthTransactions>(
         () => _i426.WatchMonthTransactions(gh<_i654.TransactionRepository>()));
+    gh.factory<_i188.WatchRecentTransactions>(
+        () => _i188.WatchRecentTransactions(gh<_i654.TransactionRepository>()));
     gh.factory<_i990.CreateTransaction>(
         () => _i990.CreateTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i612.DeleteTransaction>(
@@ -1330,14 +1334,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
         ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i716.WatchAuthSession>(),
-          gh<_i773.WatchSyncStatusDetails>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i241.WatchFeaturedBudgetProgress>(),
-        ));
     gh.factory<_i244.BudgetPeriodFilterCubit>(() =>
         _i244.BudgetPeriodFilterCubit(gh<_i479.WatchBudgetPeriodOptions>()));
     gh.factory<_i118.WatchReportsDashboard>(() => _i118.WatchReportsDashboard(
@@ -1404,6 +1400,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i837.WatchAccounts>(),
           gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
           gh<_i382.GetCategory>(),
+        ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i188.WatchRecentTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i241.WatchFeaturedBudgetProgress>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
         ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),

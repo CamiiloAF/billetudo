@@ -12,104 +12,119 @@ import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
+import '../../../budgets/domain/entities/budget_detail_data.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
+import '../../../budgets/domain/usecases/get_budget_by_id.dart';
+import '../../../budgets/domain/usecases/get_budget_progress.dart';
 import '../../../budgets/domain/usecases/watch_featured_budget_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
+import '../../domain/usecases/watch_recent_transactions.dart';
 import 'home_state.dart';
 
 /// Orchestrates the Home (HU-03/HU-04/HU-05): it watches the active accounts,
-/// the visible month's transactions and the featured budget's progress
-/// (`aOhoY`; the user's manual pick from Ajustes, or the qualifying
-/// global-monthly budget as fallback — see `WatchFeaturedBudgetProgress`),
-/// then folds the latest emissions into a [HomeSnapshot] (pure aggregation
-/// lives in the entity).
+/// "Movimientos recientes" (a literal, period-unbound activity feed — see
+/// `WatchRecentTransactions`) and the featured budget's progress for its
+/// **navigable** period window (the user's manual pick from Ajustes, or the
+/// qualifying global-monthly budget as fallback — see
+/// `WatchFeaturedBudgetProgress`), then folds the latest emissions into a
+/// [HomeSnapshot] (pure aggregation lives in the entity).
 ///
-/// Talks only to use cases — never a repository or a DAO. The month is the
-/// Home's navigation unit (HU-04); changing it re-subscribes the transactions
-/// stream while the accounts and budget-progress streams stay put.
+/// Talks only to use cases — never a repository or a DAO. Two independent
+/// things can change what the hero shows: which budget is featured (an
+/// external event — Ajustes, or the budget being archived/deleted) and the
+/// period index the user is navigating within it (HU-05's stepper, same
+/// pattern as `BudgetDetailCubit`: [_getBudgetById] + [_getBudgetProgress]).
+/// "Movimientos recientes" is decoupled from both — it never re-subscribes on
+/// either change.
 @injectable
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit(
     this._watchAccounts,
     this._watchMonthTransactions,
+    this._watchRecentTransactions,
     this._watchAuthSession,
     this._watchSyncStatusDetails,
     this._restoreTransaction,
     this._watchFeaturedBudgetProgress,
+    this._getBudgetById,
+    this._getBudgetProgress,
   ) : super(HomeState.initial(DateTime.now()));
 
   final WatchAccounts _watchAccounts;
+
+  /// Fallback-only: the current calendar month's transactions, feeding the
+  /// hero's spending total when no budget is featured (criterion 5). Fixed to
+  /// "now" for the cubit's lifetime — there is no month picker to navigate it
+  /// anymore (HU-04's calendar picker was retired with this redesign).
   final WatchMonthTransactions _watchMonthTransactions;
+  final WatchRecentTransactions _watchRecentTransactions;
   final WatchAuthSession _watchAuthSession;
   final WatchSyncStatusDetails _watchSyncStatusDetails;
   final RestoreTransaction _restoreTransaction;
   final WatchFeaturedBudgetProgress _watchFeaturedBudgetProgress;
+  final GetBudgetById _getBudgetById;
+  final GetBudgetProgress _getBudgetProgress;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
-  StreamSubscription<Result<List<TransactionWithDetails>>>? _transactionsSub;
+  StreamSubscription<Result<List<TransactionWithDetails>>>? _monthTxSub;
+  StreamSubscription<Result<List<TransactionWithDetails>>>? _recentTxSub;
   StreamSubscription<AuthSession>? _authSub;
   StreamSubscription<SyncStatusSnapshot>? _syncSub;
-  StreamSubscription<Result<BudgetWithProgress?>>? _budgetProgressSub;
+  StreamSubscription<Result<BudgetWithProgress?>>? _featuredBudgetSub;
+  StreamSubscription<Result<BudgetDetailData>>? _featuredBudgetDataSub;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
-  Result<List<TransactionWithDetails>>? _lastTransactions;
-  Result<BudgetWithProgress?>? _lastBudgetProgress;
+  Result<List<TransactionWithDetails>>? _lastMonthTransactions;
+  Result<List<TransactionWithDetails>>? _lastRecentTransactions;
 
-  /// Subscribes with the current month. Safe to call again to retry after a
+  /// The featured budget's id currently driving [_featuredBudgetDataSub], or
+  /// `null` when none is featured. Tracked so a change of *which* budget is
+  /// featured resets the navigated period back to "current".
+  String? _featuredBudgetId;
+
+  /// The navigated period index for the featured budget; `null` follows the
+  /// current period until the user steps away from it — same convention as
+  /// `BudgetDetailCubit`.
+  int? _periodIndex;
+
+  BudgetDetailData? _featuredBudgetData;
+
+  /// `Right(null)` when no budget is featured, `Right(view)` once the
+  /// featured budget's navigated window has been computed, `Left` on
+  /// failure. `null` only until the featured-budget stream's first emission
+  /// (kept out of [_recompute]'s readiness check, same convention as the
+  /// accounts/transactions results).
+  Result<BudgetWithProgress?>? _lastFeaturedResult;
+
+  /// Subscribes every stream once. Safe to call again to retry after a
   /// failure.
   Future<void> start() async {
-    refreshCurrentMonth();
     await _accountsSub?.cancel();
+    await _monthTxSub?.cancel();
+    await _recentTxSub?.cancel();
     await _authSub?.cancel();
     await _syncSub?.cancel();
-    await _budgetProgressSub?.cancel();
+    await _featuredBudgetSub?.cancel();
+    await _featuredBudgetDataSub?.cancel();
+    _featuredBudgetId = null;
+    _periodIndex = null;
+    _featuredBudgetData = null;
+    _lastFeaturedResult = null;
+
+    final now = DateTime.now();
     _accountsSub = _watchAccounts().listen(_onAccounts);
+    _monthTxSub =
+        _watchMonthTransactions(DateTime(now.year, now.month)).listen(
+      _onMonthTransactions,
+    );
+    _recentTxSub = _watchRecentTransactions().listen(_onRecentTransactions);
     _authSub = _watchAuthSession().listen(_onAuthSession);
     _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
-    _budgetProgressSub =
-        _watchFeaturedBudgetProgress().listen(_onBudgetProgress);
-    await _subscribeTransactions(state.month);
-  }
-
-  /// Bugfix item 7: [HomeState.currentMonth] (HU-04's picker ceiling) is only
-  /// ever set once, in [HomeState.initial] — the router builds [HomeCubit]
-  /// exactly once per app session (the shell keeps every tab's branch alive
-  /// in an `IndexedStack`, same as `TransactionsListCubit`). Without this, an
-  /// app kept open across a month boundary freezes the ceiling on the month
-  /// the cubit was built in: the real current month then reads as "future"
-  /// to [selectMonth]'s guard and gets silently rejected, while a
-  /// freshly-built filter elsewhere (e.g. Movimientos, HU-06) already tracks
-  /// the new month — the two screens visibly disagree on "now".
-  ///
-  /// Called on [start] and right before the month picker opens (the exact
-  /// moment HU-04 lets the user act on "now"), so the ceiling is never more
-  /// stale than the last time either happened. When the visible month was
-  /// still tracking "today" by default (never explicitly picked), it is
-  /// re-anchored to the fresh "today" too and its stream re-subscribed —
-  /// otherwise the visible month is left untouched, since the user chose it
-  /// on purpose.
-  void refreshCurrentMonth() {
-    if (isClosed) {
-      return;
-    }
-    final now = DateTime.now();
-    final normalizedNow = DateTime(now.year, now.month);
-    if (normalizedNow == state.currentMonth) {
-      return;
-    }
-    final wasViewingToday = state.month == state.currentMonth;
-    emit(
-      state.copyWith(
-        month: wasViewingToday ? normalizedNow : state.month,
-        currentMonth: normalizedNow,
-      ),
-    );
-    if (wasViewingToday) {
-      unawaited(_subscribeTransactions(normalizedNow));
-    }
+    _featuredBudgetSub =
+        _watchFeaturedBudgetProgress().listen(_onFeaturedBudgetProgress);
   }
 
   /// HU-07: the session updates the greeting/avatar only — it never gates the
@@ -153,36 +168,128 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  /// HU-04: change the visible month (hero + recent feed update together).
-  /// Future months are rejected — the picker disables them, this is the guard.
-  Future<void> selectMonth(DateTime month) async {
-    final normalized = DateTime(month.year, month.month);
-    if (normalized == state.month || normalized.isAfter(state.currentMonth)) {
-      return;
-    }
-    _lastTransactions = null;
-    emit(state.copyWith(month: normalized, status: HomeStatus.loading));
-    await _subscribeTransactions(normalized);
-  }
-
-  Future<void> _subscribeTransactions(DateTime month) async {
-    await _transactionsSub?.cancel();
-    _transactionsSub = _watchMonthTransactions(month).listen(_onTransactions);
-  }
-
   void _onAccounts(Result<List<AccountWithBalance>> result) {
     _lastAccounts = result;
     _recompute();
   }
 
-  void _onTransactions(Result<List<TransactionWithDetails>> result) {
-    _lastTransactions = result;
+  void _onMonthTransactions(Result<List<TransactionWithDetails>> result) {
+    _lastMonthTransactions = result;
     _recompute();
   }
 
-  void _onBudgetProgress(Result<BudgetWithProgress?> result) {
-    _lastBudgetProgress = result;
+  void _onRecentTransactions(Result<List<TransactionWithDetails>> result) {
+    _lastRecentTransactions = result;
     _recompute();
+  }
+
+  /// Tracks *which* budget (if any) is featured. This use case deliberately
+  /// only answers the "current window" question (see its own class docs); the
+  /// moment the featured id changes — including from/to `null`, e.g. the
+  /// previous pick got archived or deleted — the navigated period resets and
+  /// this cubit takes over navigation via [_getBudgetById]/[_getBudgetProgress].
+  void _onFeaturedBudgetProgress(Result<BudgetWithProgress?> result) {
+    if (isClosed) {
+      return;
+    }
+    final newId = result.getRight().toNullable()?.budget.id;
+    // `_lastFeaturedResult == null` guards the very first emission: with no
+    // budget featured, `newId` reads `null`, same as the untouched
+    // `_featuredBudgetId` default — without this guard that first "no
+    // budget" emission would be mistaken for "unchanged, nothing to do" and
+    // never reach `_recompute`, leaving the cubit stuck in loading forever.
+    if (_lastFeaturedResult != null && newId == _featuredBudgetId) {
+      // Same budget still featured: a failure here still needs to surface,
+      // but a benign re-emission (e.g. the settings stream ticking) must not
+      // reset the period the user is navigating.
+      if (result.isLeft()) {
+        _lastFeaturedResult = result;
+        _recompute();
+      }
+      return;
+    }
+
+    _featuredBudgetId = newId;
+    _periodIndex = null;
+    _featuredBudgetData = null;
+    unawaited(_featuredBudgetDataSub?.cancel());
+
+    if (newId == null) {
+      _lastFeaturedResult = const Right(null);
+      _recompute();
+      return;
+    }
+
+    if (result.isLeft()) {
+      _lastFeaturedResult = result;
+      _recompute();
+      return;
+    }
+
+    _featuredBudgetDataSub =
+        _getBudgetById(newId).listen(_onFeaturedBudgetData);
+  }
+
+  void _onFeaturedBudgetData(Result<BudgetDetailData> result) {
+    if (isClosed) {
+      return;
+    }
+    result.fold(
+      (failure) {
+        _lastFeaturedResult = Left(failure);
+        _recompute();
+      },
+      (data) {
+        _featuredBudgetData = data;
+        _emitFeaturedView();
+      },
+    );
+  }
+
+  /// Recomputes the featured budget's view for [_periodIndex] (or the current
+  /// period when `null`) and folds it into [_lastFeaturedResult] as a
+  /// [BudgetWithProgress] — the same shape `WatchFeaturedBudgetProgress`
+  /// produces for the "current" case, so downstream (the snapshot, the hero)
+  /// never needs to know navigation happened.
+  void _emitFeaturedView() {
+    final data = _featuredBudgetData;
+    if (data == null) {
+      return;
+    }
+    final view = _getBudgetProgress(data, now: DateTime.now(), index: _periodIndex);
+    // Keep the resolved index so navigation is relative to what is shown.
+    _periodIndex = view.window.index;
+    _lastFeaturedResult = Right(
+      BudgetWithProgress(
+        budget: data.budget,
+        scope: data.scope,
+        window: view.window,
+        progress: view.progress,
+      ),
+    );
+    _recompute();
+  }
+
+  /// HU-05: step the hero's stepper to the previous period of the featured
+  /// budget, if any.
+  void previousPeriod() {
+    final window = _lastFeaturedResult?.getRight().toNullable()?.window;
+    if (window == null || !window.hasPrevious) {
+      return;
+    }
+    _periodIndex = window.index - 1;
+    _emitFeaturedView();
+  }
+
+  /// HU-05: step the hero's stepper to the next period of the featured
+  /// budget, if any.
+  void nextPeriod() {
+    final window = _lastFeaturedResult?.getRight().toNullable()?.window;
+    if (window == null || !window.hasNext) {
+      return;
+    }
+    _periodIndex = window.index + 1;
+    _emitFeaturedView();
   }
 
   void _recompute() {
@@ -190,41 +297,40 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     final accounts = _lastAccounts;
-    final transactions = _lastTransactions;
-    final budgetProgress = _lastBudgetProgress;
-    if (accounts == null || transactions == null || budgetProgress == null) {
+    final monthTransactions = _lastMonthTransactions;
+    final recentTransactions = _lastRecentTransactions;
+    final featured = _lastFeaturedResult;
+    if (accounts == null ||
+        monthTransactions == null ||
+        recentTransactions == null ||
+        featured == null) {
       return;
     }
 
     final failure = accounts.getLeft().toNullable() ??
-        transactions.getLeft().toNullable() ??
-        budgetProgress.getLeft().toNullable();
+        monthTransactions.getLeft().toNullable() ??
+        recentTransactions.getLeft().toNullable() ??
+        featured.getLeft().toNullable();
     if (failure != null) {
       emit(state.copyWith(status: HomeStatus.failure, failure: failure));
       return;
     }
 
-    // The budget's progress is always computed against its real current
-    // window (`now`), so it is only meaningful while viewing today's month —
-    // browsing a past month would otherwise show a stale "current" bar for a
-    // window that does not cover it (HU-03/HU-04 boundary; not a documented
-    // edge case, kept deterministic).
-    final isViewingCurrentMonth = state.month == state.currentMonth;
-
+    final now = DateTime.now();
     final snapshot = HomeSnapshot.from(
-      month: state.month,
-      transactions: transactions.getRight().toNullable() ?? const [],
+      month: DateTime(now.year, now.month),
+      transactions: monthTransactions.getRight().toNullable() ?? const [],
       accounts: accounts.getRight().toNullable() ?? const [],
-      budgetProgress:
-          isViewingCurrentMonth ? budgetProgress.getRight().toNullable() : null,
+      recentTransactions: recentTransactions.getRight().toNullable(),
+      budgetProgress: featured.getRight().toNullable(),
     );
     emit(state.copyWith(status: HomeStatus.ready, snapshot: snapshot));
   }
 
   /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the
-  /// transaction detail page opened from Home's recent activity. The month's
-  /// transactions stream itself removes the row once `deletedAt` lands, so
-  /// this only tracks the undo affordance.
+  /// transaction detail page opened from Home's recent activity. The recent
+  /// feed itself removes the row once `deletedAt` lands, so this only tracks
+  /// the undo affordance.
   void notifyExternalDelete(String id) {
     if (isClosed) {
       return;
@@ -253,10 +359,12 @@ class HomeCubit extends Cubit<HomeState> {
   @override
   Future<void> close() async {
     await _accountsSub?.cancel();
-    await _transactionsSub?.cancel();
+    await _monthTxSub?.cancel();
+    await _recentTxSub?.cancel();
     await _authSub?.cancel();
     await _syncSub?.cancel();
-    await _budgetProgressSub?.cancel();
+    await _featuredBudgetSub?.cancel();
+    await _featuredBudgetDataSub?.cancel();
     return super.close();
   }
 }

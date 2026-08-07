@@ -21,38 +21,32 @@ import 'package:billetudo/features/goals/domain/services/goal_momentum_calculato
 import 'package:billetudo/features/goals/domain/services/goal_progress_calculator.dart';
 import 'package:billetudo/features/goals/domain/services/goal_projection_calculator.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
-import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart';
 import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart';
 import 'package:billetudo/features/transactions/data/repositories/transaction_repository_impl.dart';
-import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart'
     as domain;
 import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
-import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
-import 'package:billetudo/features/transactions/domain/usecases/watch_transactions.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockSecureStorageService extends Mock implements SecureStorageService {}
 
-/// Reproduces bugfix item 7 end to end with the real repositories wired
-/// together (no mocked transaction/account data): a real Drift account, a
-/// real "Arriendo" expense on 1 de agosto, and both consumers of
-/// [TransactionRepositoryImpl] — the Home unit ([WatchMonthTransactions]) and
-/// Movimientos' own unit ([WatchTransactions], through its default filter —
-/// "este mes") — queried the same way each screen actually queries them.
-///
-/// The point of this test is to prove (or disprove) a divergence at the
-/// query/aggregation level, as opposed to a runtime-only UI/state timing
-/// issue that a pure unit test cannot see.
+/// Was bugfix item 7 ("Home y Movimientos ven el mismo gasto del mes"),
+/// covered by comparing `WatchMonthTransactions` against `WatchTransactions`.
+/// That coupling is retired on purpose: "Movimientos recientes" is no longer
+/// scoped to a month at all — it is a literal, unbound activity feed
+/// (`WatchRecentTransactions`). This test now documents the replacement
+/// invariant end to end with the real repositories wired together (no mocked
+/// transaction/account data): a movement from a month **other than** the one
+/// the hero happens to be showing must still reach `HomeSnapshot.recentActivity`.
 void main() {
   late AppDatabase db;
   late AccountRepositoryImpl accountRepository;
   late TransactionRepositoryImpl transactionRepository;
-  late WatchMonthTransactions watchMonthTransactions;
-  late WatchTransactions watchTransactions;
+  late WatchRecentTransactions watchRecentTransactions;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
@@ -81,15 +75,14 @@ void main() {
       ),
       const NoopCrashReporter(),
     );
-    watchMonthTransactions = WatchMonthTransactions(transactionRepository);
-    watchTransactions = WatchTransactions(transactionRepository);
+    watchRecentTransactions = WatchRecentTransactions(transactionRepository);
   });
 
   tearDown(() => db.close());
 
   test(
-    'Home (WatchMonthTransactions) y Movimientos (WatchTransactions, "este '
-    'mes") ven el mismo gasto de agosto en la misma cuenta activa',
+    '"Movimientos recientes" incluye un gasto de un mes distinto al que '
+    'muestra el hero — el feed no está acotado por mes',
     () async {
       final account = await accountRepository
           .createAccount(
@@ -108,8 +101,10 @@ void main() {
             ),
           );
 
-      final month = DateTime(2026, 8);
-      final txDate = DateTime(2026, 8, 1);
+      // The hero is viewing agosto, but the movement itself happened in
+      // julio — a month the hero is not currently showing.
+      final heroMonth = DateTime(2026, 8);
+      final txDate = DateTime(2026, 7, 1);
 
       await transactionRepository.createTransaction(
         TransactionDraft(
@@ -127,44 +122,39 @@ void main() {
           .watchActiveAccounts()
           .first
           .then((r) => r.getRight().toNullable()!);
-      expect(
-        accounts.map((e) => e.account.id),
-        contains(account.id),
-        reason: 'the account must be active, same as the Movimientos strip',
-      );
 
-      final homeTransactions = await watchMonthTransactions(month)
+      final recent = await watchRecentTransactions()
           .first
           .then((r) => r.getRight().toNullable()!);
-      // Same shape Movimientos' default filter builds via
-      // `TransactionFilter()`/`DatePeriodFilter.thisMonth()`, anchored on
-      // the same month instead of the real wall clock so the test does not
-      // depend on when it happens to run.
-      final movimientosTransactions = await watchTransactions(
-        TransactionFilter(
-          datePeriod: DatePeriodFilter.thisMonth(month),
-        ),
-      ).first.then((r) => r.getRight().toNullable()!);
-
       expect(
-        homeTransactions.map((e) => e.transaction.id),
-        movimientosTransactions.map((e) => e.transaction.id),
-        reason: 'both screens must see the exact same set of transactions '
-            'for the same month',
+        recent,
+        hasLength(1),
+        reason: 'watchRecentTransactions applies no date/period bound at all',
       );
-      expect(homeTransactions, hasLength(1));
 
       final snapshot = HomeSnapshot.from(
-        month: month,
-        transactions: homeTransactions,
+        month: heroMonth,
+        // The hero's own spending total stays scoped to `heroMonth` — this
+        // list is intentionally empty, agosto has no movements of its own.
+        transactions: const [],
         accounts: accounts,
+        recentTransactions: recent,
+      );
+
+      expect(
+        snapshot.recentActivity.map((e) => e.transaction.id),
+        recent.map((e) => e.transaction.id),
+        reason: "julio's movement must reach the feed even while the hero "
+            'shows agosto',
       );
       expect(
         snapshot.isEmpty,
         isFalse,
         reason: 'the movement must reach the recent-activity feed',
       );
-      expect(snapshot.spending.displayTotalMinor, 73000000);
+      // The hero's spending stays $0 for agosto — unaffected by julio's
+      // movement, which only fed the unbound recent-activity list.
+      expect(snapshot.spending.displayTotalMinor, 0);
     },
   );
 }

@@ -3,12 +3,14 @@ import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/widgets/ai_banner.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_header.dart';
+import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_skeleton.dart';
 import 'package:billetudo/features/home/presentation/widgets/quick_access_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_row.dart';
@@ -30,14 +32,17 @@ void main() {
 
   final month = DateTime(2026, 7);
 
-  HomeState readyWith(List<dynamic> transactions) => HomeState(
-        month: month,
-        currentMonth: month,
+  HomeState readyWith(
+    List<dynamic> transactions, {
+    BudgetWithProgress? budgetProgress,
+  }) =>
+      HomeState(
         status: HomeStatus.ready,
         snapshot: HomeSnapshot.from(
           month: month,
           accounts: [buildActiveAccount()],
           transactions: transactions.cast(),
+          budgetProgress: budgetProgress,
         ),
       );
 
@@ -52,10 +57,16 @@ void main() {
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
     VoidCallback? onOpenLogin,
+    ValueChanged<String>? onOpenBudget,
+    MockHomeCubit? cubit,
   }) async {
-    final cubit = MockHomeCubit();
-    when(() => cubit.state).thenReturn(state);
-    whenListen(cubit, const Stream<HomeState>.empty(), initialState: state);
+    final homeCubit = cubit ?? MockHomeCubit();
+    when(() => homeCubit.state).thenReturn(state);
+    whenListen(
+      homeCubit,
+      const Stream<HomeState>.empty(),
+      initialState: state,
+    );
 
     await tester.pumpWidget(
       MaterialApp(
@@ -65,12 +76,13 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider<HomeCubit>.value(
-          value: cubit,
+          value: homeCubit,
           child: HomePage(
             onAddTransaction: () {},
             onSeeAllTransactions: () {},
             onOpenTransaction: (_) async => null,
             onCreateBudget: () {},
+            onOpenBudget: onOpenBudget ?? (_) {},
             onOpenAccounts: onOpenAccounts ?? () {},
             onOpenAccountMovements: onOpenAccountMovements ?? (_) {},
             onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
@@ -264,6 +276,53 @@ void main() {
 
       expect(find.byType(SyncStatusSheet), findsOneWidget);
       expect(find.text('Todo a salvo'), findsOneWidget);
+    });
+  });
+
+  group('hero con presupuesto destacado — stepper de período (HU-05)', () {
+    testWidgets('sin presupuesto destacado: no hay picker de mes ni stepper',
+        (tester) async {
+      await pumpHome(tester, readyWith([buildActivity()]));
+
+      expect(find.byType(HeroPeriodStepper), findsNothing);
+    });
+
+    testWidgets('criterio 6: tocar el hero navega a AppRoutes.budget(id)',
+        (tester) async {
+      final budgetProgress = buildHomeBudgetProgress(id: 'budget-42');
+      var openedId = '';
+      await pumpHome(
+        tester,
+        readyWith([buildActivity()], budgetProgress: budgetProgress),
+        onOpenBudget: (id) => openedId = id,
+      );
+
+      await tester.tap(find.byType(HomeHeroCard));
+      await tester.pump();
+
+      expect(openedId, 'budget-42');
+    });
+
+    testWidgets(
+        'criterio 4: los chevrons del stepper llaman a '
+        'HomeCubit.previousPeriod/nextPeriod', (tester) async {
+      final cubit = MockHomeCubit();
+      when(cubit.previousPeriod).thenReturn(null);
+      when(cubit.nextPeriod).thenReturn(null);
+      final budgetProgress = buildHomeBudgetProgress();
+      await pumpHome(
+        tester,
+        readyWith([buildActivity()], budgetProgress: budgetProgress),
+        cubit: cubit,
+      );
+
+      // The fixture window has `hasNext: true` — only the trailing chevron
+      // is enabled.
+      await tester.tap(find.byType(HeroPeriodChevron).last);
+      await tester.pump();
+
+      verify(cubit.nextPeriod).called(1);
+      verifyNever(cubit.previousPeriod);
     });
   });
 }

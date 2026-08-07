@@ -7,8 +7,11 @@ import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart'
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -23,6 +26,9 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
 
+class MockWatchRecentTransactions extends Mock
+    implements WatchRecentTransactions {}
+
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
 class MockWatchSyncStatusDetails extends Mock
@@ -33,6 +39,10 @@ class MockRestoreTransaction extends Mock implements RestoreTransaction {}
 class MockWatchFeaturedBudgetProgress extends Mock
     implements WatchFeaturedBudgetProgress {}
 
+class MockGetBudgetById extends Mock implements GetBudgetById {}
+
+class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
+
 /// El cuarto estado del indicador del Home (HU-08). Cubre **dos** condiciones,
 /// las dos ámbar: cambios retenidos en la cuarentena, y una última
 /// sincronización exitosa de más de 24 h. La segunda es el incidente en
@@ -41,20 +51,26 @@ class MockWatchFeaturedBudgetProgress extends Mock
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
+  late MockWatchRecentTransactions watchRecentTransactions;
   late MockWatchAuthSession watchAuthSession;
   late MockWatchSyncStatusDetails watchSyncStatus;
   late MockRestoreTransaction restoreTransaction;
   late MockWatchFeaturedBudgetProgress watchFeaturedBudgetProgress;
+  late MockGetBudgetById getBudgetById;
+  late MockGetBudgetProgress getBudgetProgress;
 
   setUpAll(() => registerFallbackValue(DateTime(2026)));
 
   setUp(() {
     watchAccounts = MockWatchAccounts();
     watchMonthTransactions = MockWatchMonthTransactions();
+    watchRecentTransactions = MockWatchRecentTransactions();
     watchAuthSession = MockWatchAuthSession();
     watchSyncStatus = MockWatchSyncStatusDetails();
     restoreTransaction = MockRestoreTransaction();
     watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
+    getBudgetById = MockGetBudgetById();
+    getBudgetProgress = MockGetBudgetProgress();
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
     when(() => restoreTransaction(any()))
@@ -72,6 +88,11 @@ void main() {
         Right([buildActivity(amountMinor: 82000)]),
       ),
     );
+    when(() => watchRecentTransactions()).thenAnswer(
+      (_) => Stream<Result<List<TransactionWithDetails>>>.value(
+        Right([buildActivity(amountMinor: 82000)]),
+      ),
+    );
   });
 
   /// Runs the cubit against a single snapshot and returns the resulting
@@ -82,10 +103,13 @@ void main() {
     final cubit = HomeCubit(
       watchAccounts,
       watchMonthTransactions,
+      watchRecentTransactions,
       watchAuthSession,
       watchSyncStatus,
       restoreTransaction,
       watchFeaturedBudgetProgress,
+      getBudgetById,
+      getBudgetProgress,
     );
     addTearDown(cubit.close);
     await cubit.start();
@@ -245,10 +269,13 @@ void main() {
     final cubit = HomeCubit(
       watchAccounts,
       watchMonthTransactions,
+      watchRecentTransactions,
       watchAuthSession,
       watchSyncStatus,
       restoreTransaction,
       watchFeaturedBudgetProgress,
+      getBudgetById,
+      getBudgetProgress,
     );
     addTearDown(cubit.close);
     await cubit.start();

@@ -60,8 +60,11 @@ class TransactionsLocalDatasource {
     Set<EntryType> types = const <EntryType>{},
     Set<String> tagIds = const <String>{},
     String searchText = '',
-    required DateTime periodStart,
-    required DateTime periodEndExclusive,
+    // `null` on both means "no date bound at all" — used by
+    // `watchRecentTransactions` (Home's "Movimientos recientes", HU-05),
+    // which is deliberately not scoped to any month/period.
+    DateTime? periodStart,
+    DateTime? periodEndExclusive,
     TransactionOrderBy orderBy = TransactionOrderBy.dateDesc,
   }) {
     final transferAccounts = _db.alias(_db.accounts, 'transfer_accounts');
@@ -92,8 +95,7 @@ class TransactionsLocalDatasource {
     ])
       ..where(
         _alive &
-            _db.transactions.date.isBiggerOrEqualValue(periodStart) &
-            _db.transactions.date.isSmallerThanValue(periodEndExclusive) &
+            _matchesPeriod(periodStart, periodEndExclusive) &
             _matchesAny(
               accountIds,
               () =>
@@ -203,6 +205,20 @@ class TransactionsLocalDatasource {
             ..where((t) => t.id.equals(id) & t.tombstonedAt.isNull()))
           .writeReturning(companion)
           .then((rows) => rows.isEmpty ? null : rows.first);
+
+  /// `true` (no-op filter) when either bound is `null` — the caller wants no
+  /// date restriction at all (see [watchTransactions]'s doc on
+  /// `periodStart`/`periodEndExclusive`).
+  Expression<bool> _matchesPeriod(
+    DateTime? periodStart,
+    DateTime? periodEndExclusive,
+  ) {
+    if (periodStart == null || periodEndExclusive == null) {
+      return const Constant(true);
+    }
+    return _db.transactions.date.isBiggerOrEqualValue(periodStart) &
+        _db.transactions.date.isSmallerThanValue(periodEndExclusive);
+  }
 
   /// `true` (no-op filter) when [values] is empty — every `Set` filter is
   /// inclusive-empty (HU-06a/06): "match everything", not "match nothing".

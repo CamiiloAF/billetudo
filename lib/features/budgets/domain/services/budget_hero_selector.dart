@@ -34,6 +34,14 @@ class BudgetHeroSelector {
     return _pickGlobalMonthly(budgets);
   }
 
+  /// Indifferent to the anchor day-of-month **by design**: the automatic pick
+  /// only compares `budget.period`/`scope.isGlobal` eligibility and
+  /// `createdAt` recency, never `budget.startDate`'s day. Home's hero (once it
+  /// navigates the featured budget's own real period window, `BudgetPeriodWindow`
+  /// / `BudgetPeriodCalculator`, instead of a calendar month) already reads the
+  /// budget's true anchor from that window, so this selector has no reason to
+  /// also weigh the anchor day — doing so would just duplicate, and could
+  /// disagree with, the window math. No behavior change here.
   static BudgetWithProgress? _pickGlobalMonthly(
     List<BudgetWithProgress> budgets,
   ) {

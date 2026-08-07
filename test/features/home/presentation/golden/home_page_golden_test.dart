@@ -29,8 +29,6 @@ void main() {
     BudgetWithProgress? budgetProgress,
   }) =>
       HomeState(
-        month: month,
-        currentMonth: month,
         status: HomeStatus.ready,
         user: user,
         snapshot: HomeSnapshot.from(
@@ -66,6 +64,7 @@ void main() {
           onSeeAllTransactions: () {},
           onOpenTransaction: (_) async => null,
           onCreateBudget: () {},
+          onOpenBudget: (_) {},
           onOpenAccounts: () {},
           onOpenAccountMovements: (_) {},
           onOpenScheduledPayments: () {},
