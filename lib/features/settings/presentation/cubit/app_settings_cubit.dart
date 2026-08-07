@@ -9,6 +9,7 @@ import '../../../budgets/domain/usecases/get_active_budgets.dart';
 import '../../../tutorials/domain/usecases/set_tutorials_enabled.dart';
 import '../../../tutorials/domain/usecases/watch_help_enabled.dart';
 import '../../domain/entities/app_settings.dart';
+import '../../domain/usecases/clear_featured_budget.dart';
 import '../../domain/usecases/get_app_settings.dart';
 import '../../domain/usecases/set_featured_budget.dart';
 import '../../domain/usecases/set_zero_based_enabled.dart';
@@ -36,6 +37,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._setZeroBasedEnabled,
     this._getActiveBudgets,
     this._setFeaturedBudget,
+    this._clearFeaturedBudget,
     this._watchHelpEnabled,
     this._setTutorialsEnabled,
   ) : super(const AppSettingsState());
@@ -44,6 +46,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   final SetZeroBasedEnabled _setZeroBasedEnabled;
   final GetActiveBudgets _getActiveBudgets;
   final SetFeaturedBudget _setFeaturedBudget;
+  final ClearFeaturedBudget _clearFeaturedBudget;
   final WatchHelpEnabled _watchHelpEnabled;
   final SetTutorialsEnabled _setTutorialsEnabled;
 
@@ -89,11 +92,15 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   Future<void> setZeroBasedEnabled({required bool enabled}) =>
       _setZeroBasedEnabled(enabled: enabled);
 
-  /// Picks (or clears, with `null` for "Automático") the budget featured on
-  /// the Home hero card. The settings stream re-emits the stored value, so no
-  /// manual state juggling is needed here either.
-  Future<void> setFeaturedBudget(String? budgetId) =>
+  /// Manually picks the budget featured on the Home hero card. The settings
+  /// stream re-emits the stored value, so no manual state juggling is needed
+  /// here either.
+  Future<void> setFeaturedBudget(String budgetId) =>
       _setFeaturedBudget(budgetId: budgetId);
+
+  /// Clears the featured budget (`FeaturedBudgetMode.none`): no featured
+  /// budget on Home, and no automatic fallback either.
+  Future<void> clearFeaturedBudget() => _clearFeaturedBudget();
 
   /// Persists "Mostrar ayuda al entrar a una sección" (HU-04). Turning it
   /// back on also resets every tutorial's "seen" registry — that business

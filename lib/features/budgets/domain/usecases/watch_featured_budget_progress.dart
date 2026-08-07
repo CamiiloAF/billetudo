@@ -76,6 +76,7 @@ class WatchFeaturedBudgetProgress {
           (budgetList) => settingsResult.map(
             (appSettings) => BudgetHeroSelector.pick(
               budgetList,
+              mode: appSettings.featuredBudgetMode,
               featuredBudgetId: appSettings.featuredBudgetId,
             ),
           ),

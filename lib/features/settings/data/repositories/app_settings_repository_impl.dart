@@ -51,9 +51,21 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
   }
 
   @override
-  FutureResult<Unit> setFeaturedBudgetId({required String? budgetId}) async {
+  FutureResult<Unit> setFeaturedBudget({required String budgetId}) async {
     try {
-      await _local.setFeaturedBudgetId(budgetId: budgetId, now: DateTime.now());
+      await _local.setFeaturedBudget(budgetId: budgetId, now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  @override
+  FutureResult<Unit> clearFeaturedBudget() async {
+    try {
+      await _local.clearFeaturedBudget(now: DateTime.now());
       return const Right(unit);
     } catch (e, st) {
       return Left(
@@ -93,7 +105,19 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
           categoriesSeeded: row.categoriesSeeded,
           onboardingCompleted: row.onboardingCompleted,
           featuredBudgetId: row.featuredBudgetId,
+          featuredBudgetMode: _toFeaturedBudgetMode(row.featuredBudgetMode),
         );
+
+  /// Maps the Drift `FeaturedBudgetMode` (row) to the pure domain copy
+  /// (`FeaturedBudgetMode` in `domain/entities/app_settings.dart`) — the two
+  /// enums are kept separate on purpose so `domain/` never depends on Drift,
+  /// same convention as `AccountType`.
+  FeaturedBudgetMode _toFeaturedBudgetMode(db.FeaturedBudgetMode mode) =>
+      switch (mode) {
+        db.FeaturedBudgetMode.automatic => FeaturedBudgetMode.automatic,
+        db.FeaturedBudgetMode.manual => FeaturedBudgetMode.manual,
+        db.FeaturedBudgetMode.none => FeaturedBudgetMode.none,
+      };
 
   StreamTransformer<Result<AppSettings>, Result<AppSettings>> _guardStream() =>
       StreamTransformer<Result<AppSettings>, Result<AppSettings>>.fromHandlers(

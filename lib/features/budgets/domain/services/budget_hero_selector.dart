@@ -1,3 +1,5 @@
+import '../../../settings/domain/entities/app_settings.dart'
+    show FeaturedBudgetMode;
 import '../entities/budget.dart';
 import '../entities/budget_with_progress.dart';
 
@@ -5,13 +7,15 @@ import '../entities/budget_with_progress.dart';
 /// hero card (`docs/requirements/04-inicio.md`,
 /// `design-system/billetudo/pages/ajustes.md`).
 ///
-/// Two selection modes, tried in order:
-/// 1. **Explicit** (`AppSettings.featuredBudgetId`): the user picked one in
+/// Bifurcates on `AppSettings.featuredBudgetMode`:
+/// 0. **`none`**: the user explicitly wants no featured budget. Returns
+///    `null` immediately, without evaluating the automatic fallback below.
+/// 1. **`manual`** (`AppSettings.featuredBudgetId`): the user picked one in
 ///    Ajustes. Only honored while it is still active — an archived or
 ///    deleted budget simply falls through to the automatic pick below, with
 ///    no error and no stale reference kept anywhere (criterion 4/5 of the
 ///    "presupuesto destacado" entrega).
-/// 2. **Automatic**: the single active budget, if any, that is both global
+/// 2. **`automatic`**: the single active budget, if any, that is both global
 ///    (no account/category scope, `BudgetScope.isGlobal`) and on the
 ///    [BudgetPeriod.monthly] cadence — the same profile Home has always
 ///    shown. A budget's [Budget.startDate] is a "freely chosen anchor" (see
@@ -30,9 +34,13 @@ class BudgetHeroSelector {
 
   static BudgetWithProgress? pick(
     List<BudgetWithProgress> budgets, {
+    required FeaturedBudgetMode mode,
     String? featuredBudgetId,
   }) {
-    if (featuredBudgetId != null) {
+    if (mode == FeaturedBudgetMode.none) {
+      return null;
+    }
+    if (mode == FeaturedBudgetMode.manual && featuredBudgetId != null) {
       for (final entry in budgets) {
         if (entry.budget.id == featuredBudgetId) {
           return entry;

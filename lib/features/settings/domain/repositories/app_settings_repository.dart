@@ -27,8 +27,13 @@ abstract class AppSettingsRepository {
   /// the flag never turns off.
   FutureResult<Unit> markOnboardingCompleted();
 
-  /// Sets (or clears, with `null`) the budget manually featured on the Home
-  /// hero card (`design-system/billetudo/pages/ajustes.md`, "Presupuesto
-  /// destacado"). `null` restores the automatic global+monthly selection.
-  FutureResult<Unit> setFeaturedBudgetId({required String? budgetId});
+  /// Manually picks the budget featured on the Home hero card
+  /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+  /// Sets `AppSettings.featuredBudgetMode` to `manual` alongside the id.
+  FutureResult<Unit> setFeaturedBudget({required String budgetId});
+
+  /// Clears the featured budget: `AppSettings.featuredBudgetMode` goes to
+  /// `none` (the user explicitly wants no featured budget, and no automatic
+  /// fallback) and `featuredBudgetId` is reset to `null`.
+  FutureResult<Unit> clearFeaturedBudget();
 }

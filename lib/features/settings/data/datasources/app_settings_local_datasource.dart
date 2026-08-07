@@ -76,16 +76,28 @@ class AppSettingsLocalDatasource {
         ),
       );
 
-  /// Sets (or clears, with `null`) the singleton's `featuredBudgetId`.
-  /// `Value(budgetId)` (not `Value.absent()`) so passing `null` explicitly
-  /// clears the column back to "Automatico" instead of leaving it untouched.
-  Future<void> setFeaturedBudgetId({
-    required String? budgetId,
+  /// Sets the singleton's `featuredBudgetId` to an explicit manual pick and
+  /// flips `featuredBudgetMode` to `manual` in the same write, so the two
+  /// columns never disagree (an id with a stale `automatic`/`none` mode).
+  Future<void> setFeaturedBudget({
+    required String budgetId,
     required DateTime now,
   }) =>
       _write(
         AppSettingsCompanion(
           featuredBudgetId: Value(budgetId),
+          featuredBudgetMode: const Value(FeaturedBudgetMode.manual),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
+  /// Clears the featured budget entirely: `featuredBudgetMode` goes to
+  /// `none` (no automatic fallback either — see `FeaturedBudgetMode`) and
+  /// `featuredBudgetId` is reset to `null` since it stops being relevant.
+  Future<void> clearFeaturedBudget({required DateTime now}) => _write(
+        AppSettingsCompanion(
+          featuredBudgetId: const Value(null),
+          featuredBudgetMode: const Value(FeaturedBudgetMode.none),
           updatedAt: Value(now.millisecondsSinceEpoch),
         ),
       );

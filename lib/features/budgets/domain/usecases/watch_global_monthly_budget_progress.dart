@@ -1,6 +1,8 @@
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../settings/domain/entities/app_settings.dart'
+    show FeaturedBudgetMode;
 import '../entities/budget_with_progress.dart';
 import '../repositories/budget_repository.dart';
 import '../services/budget_hero_selector.dart';
@@ -22,7 +24,17 @@ class WatchGlobalMonthlyBudgetProgress {
 
   final BudgetRepository _repository;
 
-  Stream<Result<BudgetWithProgress?>> call() => _repository
-      .watchActiveBudgets()
-      .map((result) => result.map(BudgetHeroSelector.pick));
+  Stream<Result<BudgetWithProgress?>> call() =>
+      _repository.watchActiveBudgets().map(
+            (result) => result.map(
+              // Always `automatic`: this use case deliberately ignores
+              // `AppSettings.featuredBudgetMode`/`featuredBudgetId` — it only
+              // ever answers the automatic global+monthly pick, never a
+              // manual override or `none`.
+              (budgets) => BudgetHeroSelector.pick(
+                budgets,
+                mode: FeaturedBudgetMode.automatic,
+              ),
+            ),
+          );
 }

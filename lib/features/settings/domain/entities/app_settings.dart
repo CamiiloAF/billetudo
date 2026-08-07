@@ -1,5 +1,20 @@
 import 'package:equatable/equatable.dart';
 
+/// How [AppSettings.featuredBudgetId] is resolved for the Home hero card
+/// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+/// Mirrors the Drift `FeaturedBudgetMode` enum (`app_database.dart`) as text
+/// parity with Postgres — this is the pure domain copy, the same convention
+/// `AccountType` (`accounts/domain/entities/account.dart`) already follows so
+/// `domain/` never depends on Drift.
+///
+///  - `automatic` (default): the pre-existing fallback — the single active
+///    budget, if any, that is both global and monthly (`BudgetHeroSelector`).
+///  - `manual`: [AppSettings.featuredBudgetId] picks the budget (falling back
+///    to `automatic` if it is no longer active/valid).
+///  - `none`: the user explicitly wants no featured budget on Home, with no
+///    automatic fallback either.
+enum FeaturedBudgetMode { automatic, manual, none }
+
 /// Account-level app preferences that sync across devices (a single row in
 /// Drift's `AppSettings`, id `'app'`).
 ///
@@ -12,6 +27,7 @@ class AppSettings extends Equatable {
     required this.categoriesSeeded,
     required this.onboardingCompleted,
     this.featuredBudgetId,
+    this.featuredBudgetMode = FeaturedBudgetMode.automatic,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -19,7 +35,8 @@ class AppSettings extends Equatable {
       : zeroBasedEnabled = false,
         categoriesSeeded = false,
         onboardingCompleted = false,
-        featuredBudgetId = null;
+        featuredBudgetId = null,
+        featuredBudgetMode = FeaturedBudgetMode.automatic;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -42,17 +59,22 @@ class AppSettings extends Equatable {
   /// archived/deleted budget simply stops matching in the selector.
   final String? featuredBudgetId;
 
+  /// Explicit resolution mode for [featuredBudgetId] — see [FeaturedBudgetMode].
+  final FeaturedBudgetMode featuredBudgetMode;
+
   AppSettings copyWith({
     bool? zeroBasedEnabled,
     bool? categoriesSeeded,
     bool? onboardingCompleted,
     String? featuredBudgetId,
+    FeaturedBudgetMode? featuredBudgetMode,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
         categoriesSeeded: categoriesSeeded ?? this.categoriesSeeded,
         onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
         featuredBudgetId: featuredBudgetId ?? this.featuredBudgetId,
+        featuredBudgetMode: featuredBudgetMode ?? this.featuredBudgetMode,
       );
 
   @override
@@ -61,5 +83,6 @@ class AppSettings extends Equatable {
         categoriesSeeded,
         onboardingCompleted,
         featuredBudgetId,
+        featuredBudgetMode,
       ];
 }

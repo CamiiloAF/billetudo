@@ -624,6 +624,8 @@ import 'package:billetudo/features/settings/data/repositories/app_settings_repos
     as _i733;
 import 'package:billetudo/features/settings/domain/repositories/app_settings_repository.dart'
     as _i487;
+import 'package:billetudo/features/settings/domain/usecases/clear_featured_budget.dart'
+    as _i594;
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
     as _i182;
 import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart'
@@ -1128,6 +1130,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i894.ParseCsvHeaders(gh<_i447.ImportRepository>()));
     gh.factory<_i917.PreviewImport>(
         () => _i917.PreviewImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i594.ClearFeaturedBudget>(
+        () => _i594.ClearFeaturedBudget(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i643.SetFeaturedBudget>(
@@ -1527,14 +1531,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i739.WatchActiveAccountsCount(gh<_i1067.AccountRepository>()));
     gh.factory<_i545.WatchArchivedAccounts>(
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
-    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
-          gh<_i182.GetAppSettings>(),
-          gh<_i636.SetZeroBasedEnabled>(),
-          gh<_i674.GetActiveBudgets>(),
-          gh<_i643.SetFeaturedBudget>(),
-          gh<_i895.WatchHelpEnabled>(),
-          gh<_i134.SetTutorialsEnabled>(),
-        ));
     gh.factory<_i511.EditGoalMovementCubit>(
         () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
     gh.factory<_i479.WatchBudgetPeriodOptions>(
@@ -1614,6 +1610,15 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i644.DeleteDebt>(),
           gh<_i1003.WatchDebtDetail>(),
           gh<_i837.WatchAccounts>(),
+        ));
+    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
+          gh<_i182.GetAppSettings>(),
+          gh<_i636.SetZeroBasedEnabled>(),
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i643.SetFeaturedBudget>(),
+          gh<_i594.ClearFeaturedBudget>(),
+          gh<_i895.WatchHelpEnabled>(),
+          gh<_i134.SetTutorialsEnabled>(),
         ));
     gh.factory<_i597.ArchivedGoalsCubit>(() => _i597.ArchivedGoalsCubit(
           gh<_i711.WatchArchivedGoals>(),

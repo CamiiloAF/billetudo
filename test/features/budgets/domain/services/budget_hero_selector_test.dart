@@ -5,6 +5,8 @@ import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart'
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/budgets/domain/services/budget_hero_selector.dart';
+import 'package:billetudo/features/settings/domain/entities/app_settings.dart'
+    show FeaturedBudgetMode;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../budget_fixtures.dart';
@@ -49,7 +51,10 @@ void main() {
     test('picks the global-monthly budget when it is the only one', () {
       final target = entry(id: 'b1', createdAt: DateTime(2026, 6, 1));
 
-      expect(BudgetHeroSelector.pick([target]), target);
+      expect(
+        BudgetHeroSelector.pick([target], mode: FeaturedBudgetMode.automatic),
+        target,
+      );
     });
 
     test('ignores budgets scoped to an account (not global)', () {
@@ -61,7 +66,10 @@ void main() {
         createdAt: DateTime(2026, 6, 1),
       );
 
-      expect(BudgetHeroSelector.pick([scoped]), isNull);
+      expect(
+        BudgetHeroSelector.pick([scoped], mode: FeaturedBudgetMode.automatic),
+        isNull,
+      );
     });
 
     test('ignores global budgets on a non-monthly period', () {
@@ -71,7 +79,10 @@ void main() {
         createdAt: DateTime(2026, 6, 1),
       );
 
-      expect(BudgetHeroSelector.pick([weekly]), isNull);
+      expect(
+        BudgetHeroSelector.pick([weekly], mode: FeaturedBudgetMode.automatic),
+        isNull,
+      );
     });
 
     test('breaks ties by the most recently created qualifying budget', () {
@@ -79,13 +90,19 @@ void main() {
       final newer = entry(id: 'newer', createdAt: DateTime(2026, 6, 15));
       final middle = entry(id: 'middle', createdAt: DateTime(2026, 3, 1));
 
-      final result = BudgetHeroSelector.pick([older, newer, middle]);
+      final result = BudgetHeroSelector.pick(
+        [older, newer, middle],
+        mode: FeaturedBudgetMode.automatic,
+      );
 
       expect(result?.budget.id, 'newer');
     });
 
     test('returns null when no active budget qualifies', () {
-      expect(BudgetHeroSelector.pick(const []), isNull);
+      expect(
+        BudgetHeroSelector.pick(const [], mode: FeaturedBudgetMode.automatic),
+        isNull,
+      );
     });
 
     test(
@@ -112,7 +129,10 @@ void main() {
         progress: progress,
       );
 
-      final result = BudgetHeroSelector.pick([anchored]);
+      final result = BudgetHeroSelector.pick(
+        [anchored],
+        mode: FeaturedBudgetMode.automatic,
+      );
 
       expect(result?.budget.id, 'b-anchored');
       expect(result?.window, anchoredWindow);
@@ -134,6 +154,7 @@ void main() {
 
       final result = BudgetHeroSelector.pick(
         [autoWinner, featured],
+        mode: FeaturedBudgetMode.manual,
         featuredBudgetId: 'featured',
       );
 
@@ -147,6 +168,7 @@ void main() {
 
       final result = BudgetHeroSelector.pick(
         [autoWinner],
+        mode: FeaturedBudgetMode.manual,
         featuredBudgetId: 'no-longer-active',
       );
 
@@ -165,7 +187,42 @@ void main() {
 
       final result = BudgetHeroSelector.pick(
         [scoped],
+        mode: FeaturedBudgetMode.manual,
         featuredBudgetId: 'gone',
+      );
+
+      expect(result, isNull);
+    });
+  });
+
+  group('mode: none', () {
+    test(
+        'returns null even when a budget would qualify for the automatic '
+        'fallback', () {
+      final wouldQualify = entry(
+        id: 'would-qualify',
+        createdAt: DateTime(2026, 6, 1),
+      );
+
+      final result = BudgetHeroSelector.pick(
+        [wouldQualify],
+        mode: FeaturedBudgetMode.none,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('returns null even when a manual featuredBudgetId is also passed '
+        '(mode wins, the fallback is never evaluated)', () {
+      final wouldQualify = entry(
+        id: 'would-qualify',
+        createdAt: DateTime(2026, 6, 1),
+      );
+
+      final result = BudgetHeroSelector.pick(
+        [wouldQualify],
+        mode: FeaturedBudgetMode.none,
+        featuredBudgetId: 'would-qualify',
       );
 
       expect(result, isNull);

@@ -18,6 +18,7 @@ void main() {
   late MockSetZeroBasedEnabled setZeroBasedEnabled;
   late MockGetActiveBudgets getActiveBudgets;
   late MockSetFeaturedBudget setFeaturedBudget;
+  late MockClearFeaturedBudget clearFeaturedBudget;
   late MockWatchHelpEnabled watchHelpEnabled;
   late MockSetTutorialsEnabled setTutorialsEnabled;
 
@@ -32,6 +33,7 @@ void main() {
     categoriesSeeded: false,
     onboardingCompleted: false,
     featuredBudgetId: 'budget-1',
+    featuredBudgetMode: FeaturedBudgetMode.manual,
   );
 
   final budget = BudgetWithProgress(
@@ -68,6 +70,7 @@ void main() {
     setZeroBasedEnabled = MockSetZeroBasedEnabled();
     getActiveBudgets = MockGetActiveBudgets();
     setFeaturedBudget = MockSetFeaturedBudget();
+    clearFeaturedBudget = MockClearFeaturedBudget();
     watchHelpEnabled = MockWatchHelpEnabled();
     setTutorialsEnabled = MockSetTutorialsEnabled();
     // Default: no active budgets; individual tests override.
@@ -84,6 +87,7 @@ void main() {
         setZeroBasedEnabled,
         getActiveBudgets,
         setFeaturedBudget,
+        clearFeaturedBudget,
         watchHelpEnabled,
         setTutorialsEnabled,
       );
@@ -161,14 +165,14 @@ void main() {
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
-    'setFeaturedBudget(null) delegates to the use case to restore '
-    '"Automático"',
-    setUp: () => when(() => setFeaturedBudget(budgetId: null))
+    'clearFeaturedBudget delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(clearFeaturedBudget.call)
         .thenAnswer((_) async => const Right(unit)),
     build: build,
-    act: (cubit) => cubit.setFeaturedBudget(null),
+    act: (cubit) => cubit.clearFeaturedBudget(),
     expect: () => <AppSettingsState>[],
-    verify: (_) => verify(() => setFeaturedBudget(budgetId: null)).called(1),
+    verify: (_) => verify(clearFeaturedBudget.call).called(1),
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(

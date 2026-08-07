@@ -82,31 +82,25 @@ void main() {
     });
   });
 
-  group('setFeaturedBudgetId', () {
-    test('persists the picked budget id and reflects it in _toEntity',
-        () async {
-      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+  group('setFeaturedBudget', () {
+    test(
+        'persists the picked budget id, flips featuredBudgetMode to manual, '
+        'and reflects both in _toEntity', () async {
+      await repository.setFeaturedBudget(budgetId: 'budget-1');
 
       final result = await repository.getSettings();
+      final settings = result.getRight().toNullable()!;
 
-      expect(result.getRight().toNullable()!.featuredBudgetId, 'budget-1');
-    });
-
-    test('clears the pick back to null ("Automatico")', () async {
-      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
-      await repository.setFeaturedBudgetId(budgetId: null);
-
-      final result = await repository.getSettings();
-
-      expect(result.getRight().toNullable()!.featuredBudgetId, isNull);
+      expect(settings.featuredBudgetId, 'budget-1');
+      expect(settings.featuredBudgetMode, FeaturedBudgetMode.manual);
     });
 
     test('stamps updatedAt on write', () async {
-      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+      await repository.setFeaturedBudget(budgetId: 'budget-1');
       final first = await database.select(database.appSettings).getSingle();
 
       await Future<void>.delayed(const Duration(milliseconds: 5));
-      await repository.setFeaturedBudgetId(budgetId: 'budget-2');
+      await repository.setFeaturedBudget(budgetId: 'budget-2');
       final second = await database.select(database.appSettings).getSingle();
 
       expect(second.updatedAt, greaterThan(first.updatedAt));
@@ -114,12 +108,39 @@ void main() {
 
     test('upserts the singleton row instead of creating a second one',
         () async {
-      await repository.setFeaturedBudgetId(budgetId: 'budget-1');
+      await repository.setFeaturedBudget(budgetId: 'budget-1');
 
       final rows = await database.select(database.appSettings).get();
 
       expect(rows, hasLength(1));
       expect(rows.single.id, AppSettingsLocalDatasource.singletonId);
+    });
+  });
+
+  group('clearFeaturedBudget', () {
+    test(
+        'resets featuredBudgetId to null and featuredBudgetMode to none, '
+        'not automatic', () async {
+      await repository.setFeaturedBudget(budgetId: 'budget-1');
+
+      await repository.clearFeaturedBudget();
+
+      final result = await repository.getSettings();
+      final settings = result.getRight().toNullable()!;
+
+      expect(settings.featuredBudgetId, isNull);
+      expect(settings.featuredBudgetMode, FeaturedBudgetMode.none);
+    });
+
+    test('stamps updatedAt on write', () async {
+      await repository.setFeaturedBudget(budgetId: 'budget-1');
+      final first = await database.select(database.appSettings).getSingle();
+
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      await repository.clearFeaturedBudget();
+      final second = await database.select(database.appSettings).getSingle();
+
+      expect(second.updatedAt, greaterThan(first.updatedAt));
     });
   });
 

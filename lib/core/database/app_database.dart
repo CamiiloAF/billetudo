@@ -112,6 +112,15 @@ enum ScheduledOccurrenceStatus { pending, confirmed, skipped, snoozed }
 /// Stored as text (textEnum) for readable parity with Postgres.
 enum CardBalanceView { debt, available }
 
+/// How `AppSettings.featuredBudgetId` is resolved for the Home hero card
+/// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
+/// `featuredBudgetId` alone only distinguished two cases (null = automatic
+/// fallback, an id = manual pick); this adds the explicit third state where
+/// the user wants no featured budget at all and no automatic fallback
+/// either. Only meaningful when `manual`: `featuredBudgetId` is then read as
+/// the chosen budget. Stored as text via textEnum for parity with Postgres.
+enum FeaturedBudgetMode { automatic, manual, none }
+
 // ---------------------------------------------------------------------------
 // Mixin with the shared sync columns (UUID id + timestamps + soft delete)
 // ---------------------------------------------------------------------------
@@ -761,6 +770,17 @@ class AppSettings extends Table with _SyncColumns {
   /// cleanup needed here).
   TextColumn get featuredBudgetId => text().nullable()();
 
+  /// Explicit resolution mode for the featured budget (HU pending, see
+  /// `FeaturedBudgetMode`): `automatic` (default, the pre-existing fallback
+  /// behavior when [featuredBudgetId] is null), `manual` ([featuredBudgetId]
+  /// picks the budget), or `none` (the user explicitly wants no featured
+  /// budget and no automatic fallback). Only relevant when it is `manual`
+  /// does [featuredBudgetId] get read. Defaults to `automatic` so every
+  /// installation that predates this column keeps today's behavior
+  /// unchanged.
+  TextColumn get featuredBudgetMode => textEnum<FeaturedBudgetMode>()
+      .clientDefault(() => FeaturedBudgetMode.automatic.name)();
+
   /// Global on/off for the contextual help minitutorials (screen + sub-flow
   /// sheets): whether a tutorial the user hasn't seen yet is allowed to pop
   /// up automatically on entry. Defaults to `true`. Turning it off does NOT
@@ -831,7 +851,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1393,6 +1413,31 @@ class AppDatabase extends _$AppDatabase {
           // backfill needed.
           if (from < 25) {
             await m.createTable(importBatches);
+          }
+
+          // v25 -> v26: `AppSettings` gains `featuredBudgetMode`, the
+          // explicit third state for the Home hero card's featured budget
+          // (see `FeaturedBudgetMode`): `featuredBudgetId` alone only told
+          // apart "automatic fallback" (null) from "manual pick" (an id),
+          // with no way to say "no featured budget, and no automatic
+          // fallback either". No `addColumn` — see the note on `from < 12`
+          // above: `appSettings` is a PowerSync-managed view, and
+          // `powerSyncSchema` (`powersync_schema.dart`) already declares
+          // `featured_budget_mode`, so PowerSync recreates the view with the
+          // column present before this migration runs. This column is NOT
+          // nullable in Dart (`textEnum<FeaturedBudgetMode>()`, default
+          // `automatic`), so — learning from the exact crash
+          // `onboardingCompleted` hit (`from < 22` above,
+          // BILLETUDO-9/BILLETUDO-A) — any pre-existing singleton row with no
+          // `featured_budget_mode` key in its PowerSync JSON blob is
+          // explicitly backfilled to `'automatic'` here in the SAME version
+          // bump that adds the column, matching today's pre-existing
+          // behavior (null `featuredBudgetId` = automatic fallback).
+          if (from < 26) {
+            await m.database.customStatement(
+              "UPDATE app_settings SET featured_budget_mode = 'automatic' "
+              'WHERE featured_budget_mode IS NULL',
+            );
           }
         },
       );

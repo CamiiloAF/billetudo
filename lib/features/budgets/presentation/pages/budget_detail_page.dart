@@ -12,6 +12,7 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../domain/entities/budget_scope.dart';
+import '../../domain/services/budget_hero_selector.dart';
 import '../cubit/budget_detail_cubit.dart';
 import '../cubit/budget_detail_state.dart';
 import '../utils/budget_adjustment_windows.dart';
@@ -136,7 +137,17 @@ class BudgetDetailPage extends StatelessWidget {
     }
     final id = budget.id;
     final settings = context.read<AppSettingsCubit>();
-    final isFeatured = settings.state.featuredBudgetId == id;
+    // The RESOLVED pick (same `BudgetHeroSelector.pick` Home's hero and the
+    // list's star badge use, `budgets_list_cubit.dart`), never the raw
+    // `AppSettings.featuredBudgetId` alone — a budget only featured via the
+    // automatic global+monthly fallback (no manual pick) must still read as
+    // "featured" here, or the sheet offers the wrong toggle direction.
+    final resolvedFeatured = BudgetHeroSelector.pick(
+      settings.state.activeBudgets,
+      mode: settings.state.settings.featuredBudgetMode,
+      featuredBudgetId: settings.state.featuredBudgetId,
+    );
+    final isFeatured = resolvedFeatured?.budget.id == id;
     final action = await BudgetDetailActionsSheet.show(
       context,
       budgetName: budget.name,
@@ -151,7 +162,14 @@ class BudgetDetailPage extends StatelessWidget {
       case BudgetDetailAction.toggleFeatured:
         // No confirmation: the sheet's own subtitle already warns that
         // marking a new one silently replaces the previous featured budget.
-        await settings.setFeaturedBudget(isFeatured ? null : id);
+        // Removing goes through `ClearFeaturedBudget` (mode `none`), never
+        // `SetFeaturedBudget(null)` — that would silently re-enable the
+        // automatic fallback instead of showing "sin presupuesto".
+        if (isFeatured) {
+          await settings.clearFeaturedBudget();
+        } else {
+          await settings.setFeaturedBudget(id);
+        }
       case BudgetDetailAction.adjustAmount:
         await _openAdjustAmountSheet(context);
       case BudgetDetailAction.close:

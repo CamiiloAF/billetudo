@@ -254,6 +254,10 @@ const powerSyncSchema = Schema([
     // Global on/off for contextual help minitutorials (schemaVersion 24).
     // Defaults to true; see AppSettings.showHelpOnSectionEntry.
     Column.integer('show_help_on_section_entry'),
+    // Explicit resolution mode for the featured budget above: 'automatic'
+    // (default) | 'manual' | 'none' (schemaVersion 26). See
+    // AppSettings.featuredBudgetMode / FeaturedBudgetMode.
+    Column.text('featured_budget_mode'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has

@@ -98,6 +98,7 @@ void main() {
             categoriesSeeded: true,
             onboardingCompleted: true,
             featuredBudgetId: 'featured',
+            featuredBudgetMode: FeaturedBudgetMode.manual,
           ),
         ),
       ),
@@ -124,6 +125,7 @@ void main() {
             categoriesSeeded: true,
             onboardingCompleted: true,
             featuredBudgetId: 'gone',
+            featuredBudgetMode: FeaturedBudgetMode.manual,
           ),
         ),
       ),
@@ -166,6 +168,59 @@ void main() {
     final result = await useCase().first;
 
     expect(result.getLeft().toNullable(), failure);
+  });
+
+  test(
+      'round-trip: manually featuring a budget then clearing it stays null '
+      '(mode: none), even with a single active global-monthly budget that '
+      'would otherwise auto-qualify', () async {
+    final onlyGlobalMonthly = entry(id: 'b1', createdAt: DateTime(2026, 6, 1));
+    when(() => budgetRepository.watchActiveBudgets()).thenAnswer(
+      (_) => Stream<Result<List<BudgetWithProgress>>>.value(
+        Right([onlyGlobalMonthly]),
+      ),
+    );
+    final settingsController = StreamController<Result<AppSettings>>();
+    when(() => settingsRepository.watchSettings())
+        .thenAnswer((_) => settingsController.stream);
+
+    final emissions = <Result<BudgetWithProgress?>>[];
+    final subscription = useCase().listen(emissions.add);
+
+    // Manually featured — same single budget, just picked explicitly.
+    settingsController.add(
+      const Right(
+        AppSettings(
+          zeroBasedEnabled: false,
+          categoriesSeeded: true,
+          onboardingCompleted: true,
+          featuredBudgetId: 'b1',
+          featuredBudgetMode: FeaturedBudgetMode.manual,
+        ),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    // Cleared: `ClearFeaturedBudget` sets mode `none`, not `automatic` — the
+    // single global-monthly budget must NOT be auto-picked back.
+    settingsController.add(
+      const Right(
+        AppSettings(
+          zeroBasedEnabled: false,
+          categoriesSeeded: true,
+          onboardingCompleted: true,
+          featuredBudgetMode: FeaturedBudgetMode.none,
+        ),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    await subscription.cancel();
+    await settingsController.close();
+
+    expect(emissions, hasLength(2));
+    expect(emissions[0].getRight().toNullable()?.budget.id, 'b1');
+    expect(emissions[1].getRight().toNullable(), isNull);
   });
 
   test('propagates a settings repository failure as Left', () async {
