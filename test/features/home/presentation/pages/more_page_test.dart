@@ -14,6 +14,7 @@ void main() {
     VoidCallback? onDebts,
     VoidCallback? onScheduledPayments,
     VoidCallback? onGoals,
+    VoidCallback? onImportExport,
     VoidCallback? onReports,
     ValueChanged<String>? onComingSoon,
     VoidCallback? onSettings,
@@ -27,6 +28,7 @@ void main() {
           onOpenDebts: onDebts ?? () {},
           onOpenScheduledPayments: onScheduledPayments ?? () {},
           onOpenGoals: onGoals ?? () {},
+          onOpenImportExport: onImportExport ?? () {},
           onOpenReports: onReports ?? () {},
           onOpenComingSoon: onComingSoon ?? (_) {},
           onOpenSettings: onSettings ?? () {},
@@ -62,7 +64,8 @@ void main() {
 
   testWidgets(
       'Cuentas, Categorías, Deudas, Pagos programados, Metas, Gráficas e '
-      'informes y Ajustes están vivas (sin badge Próximamente)',
+      'informes, Importar y exportar y Ajustes están vivas (sin badge '
+      'Próximamente)',
       (tester) async {
     await pumpMore(tester);
 
@@ -74,9 +77,10 @@ void main() {
       scrollable: find.byType(Scrollable),
     );
 
-    // Seven live rows, one not-yet-built one carrying the badge (Importar y
-    // exportar).
-    expect(find.byType(ComingSoonBadge), findsOneWidget);
+    // All eight rows are live now — Gráficas e informes and Importar y
+    // exportar both shipped their presentation layer, so no row carries the
+    // "Próximamente" badge anymore.
+    expect(find.byType(ComingSoonBadge), findsNothing);
 
     ComingSoonBadge? badgeOf(String label) {
       final row = find.ancestor(
@@ -98,6 +102,7 @@ void main() {
     expect(badgeOf('Pagos programados'), isNull);
     expect(badgeOf('Metas'), isNull);
     expect(badgeOf('Gráficas e informes'), isNull);
+    expect(badgeOf('Importar y exportar'), isNull);
     expect(badgeOf('Ajustes'), isNull);
   });
 
@@ -158,6 +163,7 @@ void main() {
     var debts = 0;
     var scheduledPayments = 0;
     var goals = 0;
+    var importExport = 0;
     await pumpMore(
       tester,
       onAccounts: () => accounts++,
@@ -165,6 +171,7 @@ void main() {
       onDebts: () => debts++,
       onScheduledPayments: () => scheduledPayments++,
       onGoals: () => goals++,
+      onImportExport: () => importExport++,
     );
 
     await tester.tap(find.text('Cuentas'));
@@ -182,34 +189,20 @@ void main() {
     );
     await tester.tap(find.text('Metas'));
     await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Importar y exportar'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(find.text('Importar y exportar'));
+    await tester.pump();
 
     expect(accounts, 1);
     expect(categories, 1);
     expect(debts, 1);
     expect(scheduledPayments, 1);
     expect(goals, 1);
-  });
-
-  testWidgets('tocar un destino "Próximamente" pasa su etiqueta al callback',
-      (tester) async {
-    final opened = <String>[];
-    await pumpMore(tester, onComingSoon: opened.add);
-
-    // Now the second-to-last row (after "Gráficas e informes" was added
-    // above it): scrollUntilVisible alone can leave it right at the
-    // viewport edge (fails hit-testing) — ensureVisible settles it, same
-    // fix as "Cerrar sesión" below.
-    await tester.scrollUntilVisible(
-      find.text('Importar y exportar'),
-      100,
-      scrollable: find.byType(Scrollable),
-    );
-    await tester.ensureVisible(find.text('Importar y exportar'));
-    await tester.pump();
-    await tester.tap(find.text('Importar y exportar'));
-    await tester.pump();
-
-    expect(opened, ['Importar y exportar']);
+    expect(importExport, 1);
   });
 
   testWidgets('tocar Gráficas e informes enruta a la feature real',

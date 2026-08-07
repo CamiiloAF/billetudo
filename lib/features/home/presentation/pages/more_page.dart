@@ -16,6 +16,7 @@ class MorePage extends StatelessWidget {
     required this.onOpenDebts,
     required this.onOpenScheduledPayments,
     required this.onOpenGoals,
+    required this.onOpenImportExport,
     required this.onOpenReports,
     required this.onOpenComingSoon,
     required this.onOpenSettings,
@@ -29,6 +30,7 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenGoals;
+  final VoidCallback onOpenImportExport;
   final VoidCallback onOpenReports;
 
   /// Opens a stacked "Próximamente" page titled with the destination's name.
@@ -99,8 +101,7 @@ class MorePage extends StatelessWidget {
                     icon: LucideIcons.arrowUpDown,
                     label: l10n.moreImportExport,
                     description: l10n.moreImportExportDescription,
-                    comingSoon: true,
-                    onTap: () => onOpenComingSoon(l10n.moreImportExport),
+                    onTap: onOpenImportExport,
                   ),
                   MoreRow(
                     icon: LucideIcons.settings,

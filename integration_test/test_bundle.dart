@@ -9,7 +9,7 @@ import 'package:patrol/src/platform/contracts/contracts.dart';
 import 'package:test_api/src/backend/invoker.dart';
 
 // START: GENERATED TEST IMPORTS
-import 'home_hero_period_patrol_test.dart' as home_hero_period_patrol_test;
+import 'import_export_patrol_test.dart' as import_export_patrol_test;
 // END: GENERATED TEST IMPORTS
 
 Future<void> main() async {
@@ -72,7 +72,7 @@ Future<void> main() async {
   });
 
 // START: GENERATED TEST GROUPS
-  group('home_hero_period_patrol_test', home_hero_period_patrol_test.main);
+  group('import_export_patrol_test', import_export_patrol_test.main);
 // END: GENERATED TEST GROUPS
 
   final dartTestGroup = await testExplorationCompleter.future;

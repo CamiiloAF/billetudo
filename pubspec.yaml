@@ -138,6 +138,15 @@ dependencies:
   # desde el dia uno, en el registro tecnico de sync.
   share_plus: ^13.3.0
 
+  # --- Import/export (docs/requirements/11-import-export.md) ---
+  # csv: RFC 4180 parse/write for HU-01/02/05/06 (the interoperability half).
+  # archive: zips the CSVs together when the user exports more than one kind
+  # in the same flow (HU-02). file_picker: native file picker to select a CSV
+  # or a `.billetudo.json` copy to import/restore (HU-04/HU-05).
+  csv: ^6.0.0
+  archive: ^4.0.4
+  file_picker: ^12.0.0-beta.7
+
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:
@@ -155,6 +164,11 @@ dev_dependencies:
   # Testing (piramide: unit + cubit + mocks + e2e)
   bloc_test: ^9.1.7
   mocktail: ^1.0.4
+  # Solo para stubear `PathProviderPlatform.instance` en tests de cubits que
+  # llaman getTemporaryDirectory() (export/save-copy) sin canal de plataforma
+  # real. Ya es dependencia transitiva de path_provider; se declara explícita
+  # porque el analyzer lo exige.
+  path_provider_platform_interface: ^2.1.2
   # e2e. Versión acoplada al CLI: `dart pub global activate patrol_cli 4.5.1`
   # (patrol 4.7.x exige patrol_cli >=4.5.0 — un desajuste entre ambos falla en
   # runtime, no en tiempo de análisis). Requiere setup nativo tras `flutter create .`.

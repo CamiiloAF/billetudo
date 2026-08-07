@@ -28,6 +28,12 @@ abstract class TransactionRepository {
   /// `HomeSnapshot.recentActivityLimit`) — this returns everything.
   Stream<Result<List<TransactionWithDetails>>> watchRecentTransactions();
 
+  /// `COUNT` of active (non-trashed) transactions across every account, no
+  /// date bound at all — backs "does the user have any movement yet"
+  /// (Import/Export's hub and export form empty states), which only needs to
+  /// know "is there at least one", not the transactions themselves.
+  Stream<Result<int>> watchActiveTransactionsCount();
+
   /// One transaction with its enriched display data (HU-08). Re-emits on
   /// every relevant change (including its tags).
   Stream<Result<TransactionWithDetails>> watchTransactionDetail(String id);

@@ -24,6 +24,7 @@ void main() {
         onOpenDebts: () {},
         onOpenScheduledPayments: () {},
         onOpenGoals: () {},
+        onOpenImportExport: () {},
         onOpenReports: () {},
         onOpenComingSoon: (_) {},
         onOpenSettings: () {},

@@ -54,6 +54,20 @@ class TransactionsLocalDatasource {
       _db.transactions.deletedAt.isNull() &
       _db.transactions.tombstonedAt.isNull();
 
+  /// `COUNT` of active (non-trashed, non-tombstoned) transactions,
+  /// re-emitting on every insert/update/delete to `Transactions` — the same
+  /// reactivity [watchTransactions] gets, without any join. Backs "does the
+  /// user have any movement yet at all" (Import/Export's hub `Am9cg` and
+  /// export form `calDR` empty states), which only ever needs to know "is
+  /// there at least one", not the transactions themselves.
+  Stream<int> watchActiveTransactionsCount() {
+    final count = _db.transactions.id.count();
+    final query = _db.selectOnly(_db.transactions)
+      ..addColumns([count])
+      ..where(_alive);
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
+
   /// [periodStart]/[periodEndExclusive] are optional: when either is `null`,
   /// no date `WHERE` clause is applied at all — the query is unbounded in
   /// time (e.g. the Home's "most recent movements", which is not gated by

@@ -72,6 +72,17 @@ import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/home_shell_page.dart';
 import '../../features/home/presentation/pages/more_page.dart';
+import '../../features/import_export/presentation/cubit/export_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_batches_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_export_hub_cubit.dart';
+import '../../features/import_export/presentation/cubit/import_flow_cubit.dart';
+import '../../features/import_export/presentation/pages/export_page.dart';
+import '../../features/import_export/presentation/pages/import_batches_page.dart';
+import '../../features/import_export/presentation/pages/import_export_hub_page.dart';
+import '../../features/import_export/presentation/pages/import_flow_page.dart';
+import '../../features/import_export/presentation/widgets/sheets/import_pick_sheet.dart';
+import '../../features/import_export/presentation/widgets/sheets/restore_sheet.dart';
+import '../../features/import_export/presentation/widgets/sheets/save_copy_sheet.dart';
 import '../../features/onboarding/domain/entities/onboarding_progress.dart';
 import '../../features/onboarding/domain/entities/onboarding_step.dart';
 import '../../features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart';
@@ -99,6 +110,7 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payments_
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
+import '../../features/transactions/domain/usecases/has_any_transaction.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import '../../features/transactions/presentation/cubit/transactions_list_cubit.dart';
@@ -161,6 +173,10 @@ abstract final class AppRoutes {
   static const String reports = '/graficas';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
+  static const String importExport = '/mas/importar-exportar';
+  static const String exportCsv = '$importExport/exportar';
+  static const String importCsv = '$importExport/importar';
+  static const String importBatches = '$importExport/importaciones';
 
   /// The new-movement form preselecting [accountId] — used when the movements
   /// list is filtered down to a single account (HU-06a). The form still lets
@@ -432,6 +448,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _debtsRoute(),
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
+      _importExportRoute(),
       _reportsRoute(),
       // The welcome flow (`13-onboarding.md`): a sibling of the shell route,
       // same reasoning as the routes above — it must render without the tab
@@ -892,6 +909,7 @@ StatefulShellBranch _masBranch() => StatefulShellBranch(
                     context.push(AppRoutes.scheduledPayments),
                 // Metas is a tab root now: switch to its branch.
                 onOpenGoals: () => context.go(AppRoutes.goals),
+                onOpenImportExport: () => context.push(AppRoutes.importExport),
                 // The "Más" hub is a "start fresh" entry point too — see the
                 // matching comment on Inicio's chip above.
                 onOpenReports: () {
@@ -1064,11 +1082,7 @@ GoRoute _syncStatusRoute() => GoRoute(
             // its own: two surfaces for the same thing would eventually drift
             // apart on the very wording (copy vs. backup) this screen cannot
             // afford to blur.
-            onSaveCopy: () => context.push(
-              AppRoutes.comingSoonTitled(
-                AppLocalizations.of(context).moreImportExport,
-              ),
-            ),
+            onSaveCopy: () => context.push(AppRoutes.importExport),
             onOpenComingSoon: (title) =>
                 context.push(AppRoutes.comingSoonTitled(title)),
           ),
@@ -1438,6 +1452,112 @@ GoRoute _goalLinkModeRoute() => GoRoute(
         );
       },
     );
+
+// Import/Export (`docs/requirements/11-import-export.md`): the hub is
+// reached from "Más" → Gestión and from Sincronización's "Guardar una copia"
+// row, so it lives as a root-navigator sibling like Cuentas/Categorías —
+// never inside a `StatefulShellBranch` (a `Page Header` and the `Tab Bar`
+// are mutually exclusive, MASTER.md).
+GoRoute _importExportRoute() => GoRoute(
+      path: AppRoutes.importExport,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<ImportExportHubCubit>(), (c) => c.start()),
+        // `Builder`, not the outer `context`: that one is the route
+        // builder's own context, an ANCESTOR of the `BlocProvider` above
+        // (it's the context the provider is inserted *below*), so
+        // `context.read<ImportExportHubCubit>()` from it can never find the
+        // cubit — ancestor lookup only walks up, never down. `_saveCopy`
+        // needs a context that is a descendant of the provider instead.
+        child: Builder(
+          builder: (context) => ImportExportHubPage(
+            onSaveCopy: () => unawaited(_saveCopy(context)),
+            onExportCsv: () => context.push(AppRoutes.exportCsv),
+            onImportCsv: () => unawaited(_openImportFlow(context)),
+            onRestore: () => unawaited(RestoreSheet.show(context)),
+            onSeeImportHistory: () => context.push(AppRoutes.importBatches),
+            onOpenBatch: (_) => context.push(AppRoutes.importBatches),
+          ),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'exportar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) {
+              final cubit = getIt<ExportCubit>();
+              unawaited(
+                getIt<HasAnyTransaction>().call().first.then(
+                      (hasAnyTransactions) => cubit.start(
+                        hasAnyTransactions: hasAnyTransactions,
+                      ),
+                    ),
+              );
+              return cubit;
+            },
+            child: const ExportPage(),
+          ),
+        ),
+        GoRoute(
+          path: 'importar',
+          parentNavigatorKey: _rootNavigatorKey,
+          // `state.extra` is always the already-parsed `ImportFlowCubit`
+          // `ImportPickSheet.show` handed to `_openImportFlow` — this route
+          // is only ever pushed from there (`onImportCsv` above), never
+          // linked to directly.
+          builder: (context, state) => BlocProvider<ImportFlowCubit>.value(
+            value: state.extra! as ImportFlowCubit,
+            child: ImportFlowPage(onDone: () => context.pop()),
+          ),
+        ),
+        GoRoute(
+          path: 'importaciones',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<ImportBatchesCubit>(), (c) => c.start()),
+            child: const ImportBatchesPage(),
+          ),
+        ),
+      ],
+    );
+
+/// Opens `SaveCopySheet`, then feeds its result straight back to the hub's
+/// already-mounted `ImportExportHubCubit` (`context.read`, same context the
+/// route builder gave the hub page) so the hero card reflects "última copia"
+/// without waiting for a full [ImportExportHubCubit.start] refresh — the hub
+/// route provides that cubit, but `showModalBottomSheet` does not hand it
+/// down into the sheet's own subtree, so `SaveCopySheet` cannot reach it
+/// itself (same reasoning `RestoreSheet`/`ExportRunSheet`/`ImportRunSheet`
+/// already follow, each providing what its sheet needs explicitly).
+Future<void> _saveCopy(BuildContext context) async {
+  final hubCubit = context.read<ImportExportHubCubit>();
+  final savedAt = await SaveCopySheet.show(context);
+  if (savedAt != null) {
+    hubCubit.markBackupJustSaved(savedAt);
+  }
+}
+
+/// Drives `ImportPickSheet` (native file picker, then its own error sheet on
+/// an unreadable file) and only pushes the wizard route once a file actually
+/// parsed — `ImportPickSheet` never touches `AppRoutes` itself. Closes the
+/// cubit either way: if nothing was returned there is nothing to close
+/// besides what `ImportPickSheet` already closed, and once the pushed route
+/// pops back off the stack the wizard is done with it too.
+Future<void> _openImportFlow(BuildContext context) async {
+  final cubit = await ImportPickSheet.show(context);
+  if (cubit == null) {
+    return;
+  }
+  if (!context.mounted) {
+    await cubit.close();
+    return;
+  }
+  await context.push(AppRoutes.importCsv, extra: cubit);
+  await cubit.close();
+}
 
 // The welcome flow (`13-onboarding.md`): four screens under `/bienvenida`,
 // each its own `GoRoute` (not a `PageView` inside one route) so the Android

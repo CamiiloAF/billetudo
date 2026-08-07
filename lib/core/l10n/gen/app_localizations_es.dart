@@ -58,6 +58,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonDone => 'Listo';
 
   @override
+  String get commonRecommended => 'Recomendado';
+
+  @override
   String get commonCreate => 'Crear';
 
   @override
@@ -766,6 +769,39 @@ class AppLocalizationsEs extends AppLocalizations {
       locale: localeName,
       other: '$count cuentas',
       one: '1 cuenta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transactionsFilterCategoriesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categorías',
+      one: '1 categoría',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transactionsFilterTypeSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tipos',
+      one: '1 tipo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transactionsFilterTagSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count etiquetas',
+      one: '1 etiqueta',
     );
     return '$_temp0';
   }
@@ -1843,7 +1879,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moreImportExport => 'Importar y exportar';
 
   @override
-  String get moreImportExportDescription => 'Respalda o trae tus datos';
+  String get moreImportExportDescription => 'Guarda una copia o trae tus datos';
 
   @override
   String get moreSettings => 'Ajustes';
@@ -4209,6 +4245,715 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSyncStatus => 'Estado de sincronización';
+
+  @override
+  String get importExportHubTitle => 'Importar y exportar';
+
+  @override
+  String get importExportHubErrorTitle => 'No pudimos cargar esta pantalla';
+
+  @override
+  String get importExportHeroTitle => 'Guardar una copia de tus datos';
+
+  @override
+  String get importExportHeroKicker => 'Un archivo .billetudo.json';
+
+  @override
+  String get importExportCloudNote =>
+      'Es distinto al respaldo en la nube: esta copia queda en tu dispositivo y no necesita cuenta.';
+
+  @override
+  String get importExportHeroBody =>
+      'Movimientos, cuentas, presupuestos, metas, deudas y pagos programados en un solo archivo tuyo. Si cambias de teléfono, la app lo vuelve a cargar tal cual.';
+
+  @override
+  String importExportCopyStatusLastSaved(String date) {
+    return 'Última copia: $date';
+  }
+
+  @override
+  String get importExportCopyStatusNeverSaved =>
+      'Aún no has guardado una copia';
+
+  @override
+  String get importExportSaveCopyCta => 'Guardar una copia';
+
+  @override
+  String get importExportPrivacyNote =>
+      'La copia se guarda sin cifrar y sin el número de cuenta. Tú eliges dónde la guardas.';
+
+  @override
+  String get importExportSectionOtherActions => 'Exportar e importar';
+
+  @override
+  String get importExportExportCsvTitle => 'Exportar a CSV';
+
+  @override
+  String get importExportExportPageTitle => 'Exportar tus datos';
+
+  @override
+  String get importExportExportCsvSubtitle =>
+      'Para Excel o Sheets · no restaura la app';
+
+  @override
+  String get importExportImportCsvTitle => 'Importar desde un CSV';
+
+  @override
+  String get importExportImportCsvSubtitle =>
+      'Tu banco, Wallet, Mint o cualquier archivo';
+
+  @override
+  String get importExportRestoreTitle => 'Restaurar desde una copia';
+
+  @override
+  String get importExportRestoreSubtitle =>
+      'Vuelve a cargar un archivo .billetudo.json';
+
+  @override
+  String get importExportSectionRecentImports => 'Importaciones recientes';
+
+  @override
+  String get importExportSeeAll => 'Ver todas';
+
+  @override
+  String importExportBatchMeta(int count, String relative) {
+    return '$count movimientos · $relative';
+  }
+
+  @override
+  String get importExportBatchRevertedBadge => 'Revertida';
+
+  @override
+  String importExportRelativeDays(int n) {
+    return 'hace $n días';
+  }
+
+  @override
+  String importExportRelativeHours(int n) {
+    return 'hace $n horas';
+  }
+
+  @override
+  String get importExportRelativeJustNow => 'hace un momento';
+
+  @override
+  String get importExportEmptyHeroTitle => 'Trae tu historial';
+
+  @override
+  String get importExportEmptyHeroBody =>
+      'Importa un CSV de Wallet, Mint o tu banco y tú decides qué es cada columna. Si vienes de otro teléfono, restaura tu copia y vuelve todo tal cual.';
+
+  @override
+  String get importExportEmptyImportCta => 'Importar un CSV';
+
+  @override
+  String get importExportSectionOtherOptions => 'Otras opciones';
+
+  @override
+  String get importExportEmptyExportRowTitle => 'Exportar y guardar copias';
+
+  @override
+  String get importExportEmptyExportRowSubtitle =>
+      'Se activan con tu primer movimiento. Ahí podrás sacar un CSV o guardar una copia con todo. Es distinto al respaldo en la nube: la copia queda en tu dispositivo.';
+
+  @override
+  String get importExportExportEmptyTitle =>
+      'Todavía no tienes movimientos para exportar';
+
+  @override
+  String get importExportExportEmptyBody =>
+      'En cuanto registres tu primer movimiento, podrás exportarlo.';
+
+  @override
+  String get importExportScopeTransactions => 'Transacciones';
+
+  @override
+  String get importExportScopeTransactionsHint =>
+      'Incluye tus movimientos en el archivo';
+
+  @override
+  String get importExportScopeAccounts => 'Cuentas';
+
+  @override
+  String get importExportScopeAccountsHint =>
+      'Incluye tu estructura de cuentas';
+
+  @override
+  String get importExportScopeCategories => 'Categorías';
+
+  @override
+  String get importExportScopeCategoriesHint =>
+      'Incluye tu estructura de categorías';
+
+  @override
+  String get importExportAllHistory => 'Todo el histórico';
+
+  @override
+  String get importExportAllHistoryHint =>
+      'Ignora el filtro de fechas y exporta todo';
+
+  @override
+  String get importExportPickDateRange => 'Elegir rango de fechas';
+
+  @override
+  String get importExportZipNotice =>
+      'Al elegir más de uno, se entrega un solo archivo .zip.';
+
+  @override
+  String get importExportExportCta => 'Exportar';
+
+  @override
+  String get importExportFiltersTitle => 'Filtros de transacciones';
+
+  @override
+  String get importExportFiltersSubtitle =>
+      'Solo aplican si exportas Transacciones.';
+
+  @override
+  String get importExportFilterSearchPlaceholder => 'Buscar por texto';
+
+  @override
+  String get importExportFilterAllAccounts => 'Todas las cuentas';
+
+  @override
+  String get importExportProgressExportingTitle => 'Exportando tus datos…';
+
+  @override
+  String get importExportProgressImportingTitle =>
+      'Importando tus movimientos…';
+
+  @override
+  String get importExportProgressRestoringTitle => 'Restaurando tu copia…';
+
+  @override
+  String get importExportProgressSavingCopyTitle => 'Guardando tu copia…';
+
+  @override
+  String importExportProgressCaption(int processed, int total) {
+    return '$processed de $total filas';
+  }
+
+  @override
+  String get importExportProgressHint =>
+      'No cierres la app mientras esto termina. Puedes cancelar sin perder lo que ya tenías.';
+
+  @override
+  String get importExportIoErrorWriteTitle => 'No pudimos guardar el archivo';
+
+  @override
+  String get importExportIoErrorWriteBody =>
+      'Puede ser falta de espacio o de permiso para escribir en tu dispositivo. Eliminamos el archivo parcial para no dejar nada a medias — tus datos en la app están a salvo.';
+
+  @override
+  String get importExportIoErrorUnreadableTitle =>
+      'No pudimos leer este archivo';
+
+  @override
+  String get importExportIoErrorUnreadableBody =>
+      'No parece un CSV válido, o está vacío. Prueba exportarlo otra vez desde tu banco o la otra app. Tus datos en Billetudo siguen intactos.';
+
+  @override
+  String get importExportChooseAnotherFile => 'Elegir otro archivo';
+
+  @override
+  String get importExportSelectFileTitle => 'Selecciona tu archivo CSV';
+
+  @override
+  String get importExportSelectFileBody =>
+      'Acepta cualquier CSV: tú decides qué es cada columna en el siguiente paso.';
+
+  @override
+  String get importExportSelectFileCta => 'Elegir archivo';
+
+  @override
+  String get importExportStepMapping => 'Mapeo de columnas';
+
+  @override
+  String get importExportStepDestinations => 'Resolver destinos';
+
+  @override
+  String get importExportStepPreview => 'Vista previa';
+
+  @override
+  String get importExportStepSummary => 'Resumen';
+
+  @override
+  String importExportTemplateMatched(String name) {
+    return 'Reconocimos el formato de \"$name\" — confirma para continuar';
+  }
+
+  @override
+  String get importExportFieldNotUsed => 'No usar';
+
+  @override
+  String get importExportFieldRequired => 'Obligatorio';
+
+  @override
+  String get importExportFieldOptional => 'Opcional';
+
+  @override
+  String importExportFieldPreview(String value) {
+    return 'Vista previa: $value';
+  }
+
+  @override
+  String get importExportFormatDetectedTitle => 'Formato detectado';
+
+  @override
+  String get importExportFormatDateLabel => 'Formato de fecha';
+
+  @override
+  String get importExportFormatDecimalLabel => 'Convención decimal';
+
+  @override
+  String get importExportFormatSignLabel => 'Gasto o ingreso se expresa con';
+
+  @override
+  String get importExportDateOrderYmd => 'AAAA/MM/DD';
+
+  @override
+  String get importExportDateOrderDmy => 'DD/MM/AAAA';
+
+  @override
+  String get importExportDateOrderMdy => 'MM/DD/AAAA';
+
+  @override
+  String get importExportDecimalDot => '1.234,56 → 1234.56 (punto decimal)';
+
+  @override
+  String get importExportDecimalComma => '1.234,56 (coma decimal)';
+
+  @override
+  String get importExportSignByTypeColumn => 'Columna tipo (ingreso o gasto)';
+
+  @override
+  String get importExportSignByAmountSign =>
+      'Signo del monto (negativo = gasto)';
+
+  @override
+  String get importExportLivePreviewLabel => 'Así queda tu primera fila real';
+
+  @override
+  String get importExportFieldsSectionTitle => 'Campos';
+
+  @override
+  String get importExportFieldPickerTitle => '¿Qué campo es esta columna?';
+
+  @override
+  String get importExportFieldId => 'Id';
+
+  @override
+  String get importExportFieldDate => 'Fecha';
+
+  @override
+  String get importExportFieldAmount => 'Monto';
+
+  @override
+  String get importExportFieldType => 'Tipo';
+
+  @override
+  String get importExportFieldCurrency => 'Moneda';
+
+  @override
+  String get importExportFieldAccount => 'Cuenta';
+
+  @override
+  String get importExportFieldTransferAccount => 'Cuenta destino';
+
+  @override
+  String get importExportFieldCategory => 'Categoría';
+
+  @override
+  String get importExportFieldSubcategory => 'Subcategoría';
+
+  @override
+  String get importExportFieldNote => 'Nota';
+
+  @override
+  String get importExportFieldTags => 'Etiquetas';
+
+  @override
+  String get importExportDestinationsNoneTitle =>
+      'Todo coincide con lo que ya tienes';
+
+  @override
+  String get importExportDestinationsAllInvalidTitle =>
+      'Nada por resolver todavía';
+
+  @override
+  String importExportDestinationsAllInvalidBody(int count) {
+    return 'Ninguna de las $count filas se pudo leer con el mapeo actual — revisa el paso anterior antes de seguir.';
+  }
+
+  @override
+  String get importExportDestinationsReviewMappingCta => 'Revisar mapeo';
+
+  @override
+  String get importExportMappingModeAutomatic => 'Automático';
+
+  @override
+  String get importExportMappingModeManual => 'Manual';
+
+  @override
+  String get importExportMappingModeAutoSummaryTitle =>
+      'Así vamos a leer tu archivo';
+
+  @override
+  String get importExportMappingModeAutoConfirmCta => 'Confirmar mapeo';
+
+  @override
+  String get importExportMappingModeAutoIncompleteHint =>
+      'Nos falta identificar fecha, monto o cuenta — cambia a Manual para mapearlos.';
+
+  @override
+  String get importExportDateFormatOptionIso => 'AAAA-MM-DD';
+
+  @override
+  String get importExportDateFormatOptionDmySlash => 'DD/MM/AAAA';
+
+  @override
+  String get importExportDateFormatOptionDmyDash => 'DD-MM-AAAA';
+
+  @override
+  String get importExportDateFormatOptionDmyDot => 'DD.MM.AAAA';
+
+  @override
+  String get importExportDateFormatOptionMdySlash => 'MM/DD/AAAA';
+
+  @override
+  String get importExportDateFormatOptionMdyDash => 'MM-DD-AAAA';
+
+  @override
+  String get importExportDateFormatOptionMdyDot => 'MM.DD.AAAA';
+
+  @override
+  String importExportDateFormatPreviewUnreadable(String value) {
+    return '\"$value\" no se pudo leer con este formato';
+  }
+
+  @override
+  String get importExportTypeValuesResultIncome =>
+      'Esta fila se leería como ingreso';
+
+  @override
+  String get importExportTypeValuesResultExpense =>
+      'Esta fila se leería como gasto';
+
+  @override
+  String get importExportTypeValuesResultTransfer =>
+      'Esta fila se leería como transferencia';
+
+  @override
+  String get importExportTypeValuesResultNoMatch =>
+      'No pudimos clasificar tu primera fila con estos valores';
+
+  @override
+  String get importExportTypeValuesIncomeLabel =>
+      'Valor que significa \"ingreso\"';
+
+  @override
+  String get importExportTypeValuesExpenseLabel =>
+      'Valor que significa \"gasto\"';
+
+  @override
+  String get importExportTypeValuesTransferLabel =>
+      'Valor que significa \"transferencia\"';
+
+  @override
+  String get importExportDestinationNotFound => 'No existe todavía en tu app';
+
+  @override
+  String get importExportDestinationCreateNew => 'Crear nueva';
+
+  @override
+  String get importExportDestinationMapExisting => 'Mapear a existente';
+
+  @override
+  String get importExportDestinationsPickerEmpty => 'Todavía no tienes ninguna';
+
+  @override
+  String get importExportDestinationsSectionAccounts => 'Cuentas';
+
+  @override
+  String get importExportDestinationsSectionCategories => 'Categorías';
+
+  @override
+  String get importExportDestinationsSectionTags => 'Etiquetas';
+
+  @override
+  String get importExportDestinationsNewAccountsNote =>
+      'Las cuentas que crees aquí empiezan en \$0 y tipo Otra — su saldo real se reconstruye con las transacciones que importes.';
+
+  @override
+  String get importExportStatRead => 'leídas';
+
+  @override
+  String get importExportStatWillImport => 'a importar';
+
+  @override
+  String get importExportStatDuplicates => 'repetidos';
+
+  @override
+  String get importExportStatErrors => 'inválidas';
+
+  @override
+  String get importExportOmitAllDuplicates => 'Omitir todos';
+
+  @override
+  String get importExportIncludeAllDuplicates => 'Importar todos';
+
+  @override
+  String get importExportDuplicateExact => 'Ya está importada';
+
+  @override
+  String get importExportDuplicateProbable =>
+      'Posible duplicado: mismo monto y fecha';
+
+  @override
+  String importExportInvalidRowsCount(int n) {
+    return 'Ver $n filas con error';
+  }
+
+  @override
+  String importExportRowNumber(int n) {
+    return 'Fila $n';
+  }
+
+  @override
+  String get importExportIssueMissingAccount => 'Falta la cuenta';
+
+  @override
+  String get importExportIssueMissingDate => 'Falta la fecha';
+
+  @override
+  String get importExportIssueInvalidDate => 'Fecha no reconocida';
+
+  @override
+  String get importExportIssueMissingAmount => 'Falta el monto';
+
+  @override
+  String get importExportIssueInvalidAmount => 'Monto no reconocido';
+
+  @override
+  String get importExportIssueInvalidType => 'Tipo no reconocido';
+
+  @override
+  String get importExportConfirmImportCta => 'Confirmar importación';
+
+  @override
+  String importExportImportRowsCta(int count) {
+    return 'Importar $count movimientos';
+  }
+
+  @override
+  String importExportDuplicatesSectionTitle(int count) {
+    return 'Posibles duplicados ($count)';
+  }
+
+  @override
+  String get importExportSaveTemplateToggleLabel =>
+      'Guardar esta plantilla de mapeo';
+
+  @override
+  String get importExportSaveTemplateToggleHint =>
+      'La usarás con un toque la próxima vez que importes de este mismo origen.';
+
+  @override
+  String get importExportSaveTemplateNameLabel => 'Nombre de la plantilla';
+
+  @override
+  String get importExportSaveTemplateNameHint => 'Ej. Bancolombia CSV';
+
+  @override
+  String get importExportSummaryTitle => 'Importación completa';
+
+  @override
+  String importExportSummarySubtitle(String fileName) {
+    return '$fileName se procesó y ya está disponible en tus movimientos.';
+  }
+
+  @override
+  String get importExportSummaryImported => 'Importadas';
+
+  @override
+  String get importExportSummarySkippedDuplicate => 'Omitidas por duplicado';
+
+  @override
+  String get importExportSummarySkippedError => 'Omitidas por error';
+
+  @override
+  String get importExportSummaryAccountsCreated => 'Cuentas creadas';
+
+  @override
+  String get importExportSummaryCategoriesCreated => 'Categorías creadas';
+
+  @override
+  String get importExportSummaryTagsCreated => 'Etiquetas creadas';
+
+  @override
+  String get importExportSummarySeeSkipped => 'Ver omitidas';
+
+  @override
+  String importExportSummarySeeSkippedWithCount(int count) {
+    return 'Ver $count omitidas y por qué';
+  }
+
+  @override
+  String get importExportSkippedSheetTitle => 'Lo que no se importó';
+
+  @override
+  String importExportSkippedDuplicateReason(int count) {
+    return '$count por posible duplicado: mismo id, o mismo monto y fecha, que un movimiento que ya tenías.';
+  }
+
+  @override
+  String importExportSkippedErrorReason(int count) {
+    return '$count por un dato que no pudimos leer: fecha, monto o cuenta incompletos o inválidos en el archivo.';
+  }
+
+  @override
+  String get importExportBatchesTitle => 'Importaciones';
+
+  @override
+  String get importExportBatchesErrorTitle =>
+      'No pudimos cargar tus importaciones';
+
+  @override
+  String get importExportBatchesEmptyTitle => 'Aún no has importado nada';
+
+  @override
+  String get importExportBatchesEmptyBody =>
+      'Cuando importes un archivo, aparecerá aquí.';
+
+  @override
+  String get importExportUndoConfirmTitle => '¿Deshacer esta importación?';
+
+  @override
+  String importExportUndoConfirmBody(String file, int count) {
+    return 'Se quitarán las $count filas que trajo \"$file\". Lo que sigas usando fuera de esta importación se conserva.';
+  }
+
+  @override
+  String get importExportUndoConfirmCta => 'Deshacer importación';
+
+  @override
+  String get importExportUndoConfirmKeepNote =>
+      'Las cuentas y categorías que creó esta importación se conservan al deshacerla — solo se eliminan las transacciones que trajo.';
+
+  @override
+  String get importExportRestorePickFileBody =>
+      'Elige un archivo .billetudo.json para ver qué trae antes de restaurar nada.';
+
+  @override
+  String get importExportRestorePickFileCta => 'Elegir archivo';
+
+  @override
+  String importExportRestoreSummaryTitle(String date) {
+    return 'Copia del $date';
+  }
+
+  @override
+  String get importExportRestoreSheetTitle => 'Restaurar copia';
+
+  @override
+  String importExportRestoreSheetSubtitle(
+      String date, int version, String appVersion) {
+    return 'Copia del $date · versión $version · creada con Billetudo $appVersion';
+  }
+
+  @override
+  String importExportRestoreRowCounts(int n) {
+    return 'Trae $n filas en total';
+  }
+
+  @override
+  String get importExportRestoreStatAccounts => 'cuentas';
+
+  @override
+  String get importExportRestoreStatCategories => 'categorías';
+
+  @override
+  String get importExportRestoreStatTransactions => 'movimientos';
+
+  @override
+  String get importExportRestoreStatBudgets => 'presupuestos';
+
+  @override
+  String get importExportRestoreStatGoals => 'metas';
+
+  @override
+  String get importExportRestoreStatDebts => 'deudas';
+
+  @override
+  String get importExportRestoreChoiceLabel =>
+      '¿Qué hacemos con tus datos actuales?';
+
+  @override
+  String get importExportRestoreChoiceHint =>
+      'Fusionar combina por id: lo nuevo se crea, lo existente se actualiza. Reemplazar todo borra tus datos actuales (y los de la nube, si tienes sesión) y deja solo el contenido de la copia.';
+
+  @override
+  String get importExportReplaceAllConfirmTitle =>
+      'Esta acción no se puede deshacer';
+
+  @override
+  String importExportReplaceAllConfirmBody(String date) {
+    return 'Vas a reemplazar TODOS tus datos actuales por los de la copia del $date. Si tienes sesión iniciada, esto también borra tus datos en la nube.';
+  }
+
+  @override
+  String get importExportRestoreModeMerge => 'Fusionar';
+
+  @override
+  String get importExportRestoreModeMergeHint =>
+      'Combina con lo que ya tienes. No duplica si repites la restauración.';
+
+  @override
+  String get importExportRestoreModeReplace => 'Reemplazar todo';
+
+  @override
+  String get importExportRestoreCta => 'Restaurar';
+
+  @override
+  String get importExportRestoreModeReplaceHint =>
+      'Borra tus datos locales y deja exactamente lo que trae la copia. Irreversible.';
+
+  @override
+  String get importExportReplaceAllAck =>
+      'Entiendo que esto borra mis datos actuales, incluida la nube si tengo sesión iniciada, y no se puede deshacer.';
+
+  @override
+  String get importExportRestoreConfirmMergeCta => 'Restaurar y fusionar';
+
+  @override
+  String get importExportRestoreConfirmReplaceCta => 'Reemplazar todo';
+
+  @override
+  String get importExportRestoreErrorTitle => 'No pudimos validar este archivo';
+
+  @override
+  String get importExportRestoreErrorBody =>
+      'Puede que no sea una copia de Billetudo o que sea de una versión más nueva. Tus datos en la app siguen intactos.';
+
+  @override
+  String get importExportRestoreExecutionErrorTitle =>
+      'No pudimos completar la restauración';
+
+  @override
+  String get importExportRestoreExecutionErrorBody =>
+      'El archivo era válido, pero algo falló a mitad de camino. La restauración se cancela por completo cuando eso pasa — tus datos actuales no se modificaron. Intenta de nuevo.';
+
+  @override
+  String get importExportRestoreDoneTitle => 'Restauración completa';
+
+  @override
+  String get importExportRestoreCreated => 'Creadas';
+
+  @override
+  String get importExportRestoreUpdated => 'Actualizadas';
+
+  @override
+  String get importExportRestoreSkipped => 'Omitidas';
 
   @override
   String get reportsTabSummary => 'Resumen';
