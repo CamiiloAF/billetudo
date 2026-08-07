@@ -62,7 +62,13 @@ class SaveCopyCubit extends Cubit<SaveCopyState> {
         if (isClosed) {
           return;
         }
-        emit(state.copyWith(status: SaveCopyStatus.done, resultFilePath: path));
+        emit(
+          state.copyWith(
+            status: SaveCopyStatus.done,
+            resultFilePath: path,
+            savedAt: header.createdAt,
+          ),
+        );
       },
     );
   }

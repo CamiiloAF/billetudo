@@ -70,6 +70,7 @@ void main() {
       expect(cubit.state.processed, 19);
       expect(cubit.state.total, 19);
       expect(cubit.state.status, SaveCopyStatus.done);
+      expect(cubit.state.savedAt, header.createdAt);
     },
   );
 

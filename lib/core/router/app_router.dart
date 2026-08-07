@@ -109,6 +109,7 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payments_
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
+import '../../features/transactions/domain/usecases/has_any_transaction.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import '../../features/transactions/presentation/cubit/transactions_list_cubit.dart';
@@ -1455,13 +1456,21 @@ GoRoute _importExportRoute() => GoRoute(
       builder: (context, state) => BlocProvider(
         create: (context) =>
             _started(getIt<ImportExportHubCubit>(), (c) => c.start()),
-        child: ImportExportHubPage(
-          onSaveCopy: () => unawaited(SaveCopySheet.show(context)),
-          onExportCsv: () => context.push(AppRoutes.exportCsv),
-          onImportCsv: () => unawaited(_openImportFlow(context)),
-          onRestore: () => unawaited(RestoreSheet.show(context)),
-          onSeeImportHistory: () => context.push(AppRoutes.importBatches),
-          onOpenBatch: (_) => context.push(AppRoutes.importBatches),
+        // `Builder`, not the outer `context`: that one is the route
+        // builder's own context, an ANCESTOR of the `BlocProvider` above
+        // (it's the context the provider is inserted *below*), so
+        // `context.read<ImportExportHubCubit>()` from it can never find the
+        // cubit — ancestor lookup only walks up, never down. `_saveCopy`
+        // needs a context that is a descendant of the provider instead.
+        child: Builder(
+          builder: (context) => ImportExportHubPage(
+            onSaveCopy: () => unawaited(_saveCopy(context)),
+            onExportCsv: () => context.push(AppRoutes.exportCsv),
+            onImportCsv: () => unawaited(_openImportFlow(context)),
+            onRestore: () => unawaited(RestoreSheet.show(context)),
+            onSeeImportHistory: () => context.push(AppRoutes.importBatches),
+            onOpenBatch: (_) => context.push(AppRoutes.importBatches),
+          ),
         ),
       ),
       routes: [
@@ -1469,8 +1478,17 @@ GoRoute _importExportRoute() => GoRoute(
           path: 'exportar',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => BlocProvider(
-            create: (context) =>
-                getIt<ExportCubit>()..start(hasAnyTransactions: true),
+            create: (context) {
+              final cubit = getIt<ExportCubit>();
+              unawaited(
+                getIt<HasAnyTransaction>().call().first.then(
+                      (hasAnyTransactions) => cubit.start(
+                        hasAnyTransactions: hasAnyTransactions,
+                      ),
+                    ),
+              );
+              return cubit;
+            },
             child: const ExportPage(),
           ),
         ),
@@ -1497,6 +1515,22 @@ GoRoute _importExportRoute() => GoRoute(
         ),
       ],
     );
+
+/// Opens `SaveCopySheet`, then feeds its result straight back to the hub's
+/// already-mounted `ImportExportHubCubit` (`context.read`, same context the
+/// route builder gave the hub page) so the hero card reflects "última copia"
+/// without waiting for a full [ImportExportHubCubit.start] refresh — the hub
+/// route provides that cubit, but `showModalBottomSheet` does not hand it
+/// down into the sheet's own subtree, so `SaveCopySheet` cannot reach it
+/// itself (same reasoning `RestoreSheet`/`ExportRunSheet`/`ImportRunSheet`
+/// already follow, each providing what its sheet needs explicitly).
+Future<void> _saveCopy(BuildContext context) async {
+  final hubCubit = context.read<ImportExportHubCubit>();
+  final savedAt = await SaveCopySheet.show(context);
+  if (savedAt != null) {
+    hubCubit.markBackupJustSaved(savedAt);
+  }
+}
 
 /// Drives `ImportPickSheet` (native file picker, then its own error sheet on
 /// an unreadable file) and only pushes the wizard route once a file actually

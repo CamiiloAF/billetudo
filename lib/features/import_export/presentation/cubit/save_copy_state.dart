@@ -11,6 +11,7 @@ class SaveCopyState extends Equatable {
     this.processed = 0,
     this.total = 0,
     this.resultFilePath,
+    this.savedAt,
     this.failure,
   });
 
@@ -22,6 +23,12 @@ class SaveCopyState extends Equatable {
   final int total;
 
   final String? resultFilePath;
+
+  /// The backup's `createdAt` once [SaveCopyStatus.done] is reached — what
+  /// `SaveCopySheet.show` hands back to its caller so the hub's hero card can
+  /// update without waiting for a full refresh.
+  final DateTime? savedAt;
+
   final Failure? failure;
 
   SaveCopyState copyWith({
@@ -30,6 +37,7 @@ class SaveCopyState extends Equatable {
     int? total,
     String? resultFilePath,
     bool clearResult = false,
+    DateTime? savedAt,
     Failure? failure,
   }) =>
       SaveCopyState(
@@ -37,9 +45,11 @@ class SaveCopyState extends Equatable {
         processed: processed ?? this.processed,
         total: total ?? this.total,
         resultFilePath: clearResult ? null : (resultFilePath ?? this.resultFilePath),
+        savedAt: savedAt ?? this.savedAt,
         failure: failure,
       );
 
   @override
-  List<Object?> get props => [status, processed, total, resultFilePath, failure];
+  List<Object?> get props =>
+      [status, processed, total, resultFilePath, savedAt, failure];
 }

@@ -623,6 +623,26 @@ void main() {
     });
   });
 
+  group('watchActiveTransactionsCount (Import/Export empty states)', () {
+    test('emite 0 cuando no hay ninguna transacción', () async {
+      final result = await repository.watchActiveTransactionsCount().first;
+
+      expect(result.getRight().toNullable(), 0);
+    });
+
+    test('cuenta transacciones activas, excluyendo las borradas', () async {
+      await createTransaction(expenseDraft());
+      final trashed = await createTransaction(
+        expenseDraft(date: DateTime(2026, 7, 20)),
+      );
+      await repository.deleteTransaction(trashed.id);
+
+      final result = await repository.watchActiveTransactionsCount().first;
+
+      expect(result.getRight().toNullable(), 1);
+    });
+  });
+
   group('setTransactionTags (HU-07)', () {
     test('agrega y quita etiquetas hasta igualar el conjunto pedido', () async {
       final transaction = await createTransaction(expenseDraft());

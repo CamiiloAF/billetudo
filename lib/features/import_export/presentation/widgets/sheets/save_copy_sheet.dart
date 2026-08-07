@@ -22,7 +22,12 @@ import '../io_error_view.dart';
 class SaveCopySheet {
   const SaveCopySheet._();
 
-  static Future<void> show(BuildContext context) async {
+  /// Returns the backup's `createdAt` once the sheet closes after a
+  /// successful save, or `null` if the user cancelled or it ended in error —
+  /// so the caller (the router, which is the layer already reaching into
+  /// `ImportExportHubCubit`) can update the hub's hero card without this
+  /// feature importing that cubit directly.
+  static Future<DateTime?> show(BuildContext context) async {
     final cubit = getIt<SaveCopyCubit>();
     unawaited(cubit.start());
     await showModalBottomSheet<void>(
@@ -38,7 +43,9 @@ class SaveCopySheet {
         child: const BottomSheetBase(child: SaveCopySheetBody()),
       ),
     );
+    final savedAt = cubit.state.savedAt;
     await cubit.close();
+    return savedAt;
   }
 }
 

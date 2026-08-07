@@ -646,6 +646,8 @@ import 'package:billetudo/features/transactions/domain/usecases/delete_transacti
     as _i612;
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
     as _i604;
+import 'package:billetudo/features/transactions/domain/usecases/has_any_transaction.dart'
+    as _i296;
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart'
     as _i177;
 import 'package:billetudo/features/transactions/domain/usecases/set_transaction_tags.dart'
@@ -1340,6 +1342,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.CreateTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i612.DeleteTransaction>(
         () => _i612.DeleteTransaction(gh<_i654.TransactionRepository>()));
+    gh.factory<_i296.HasAnyTransaction>(
+        () => _i296.HasAnyTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i177.RestoreTransaction>(
         () => _i177.RestoreTransaction(gh<_i654.TransactionRepository>()));
     gh.factory<_i460.SetTransactionTags>(
@@ -1415,6 +1419,11 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i525.RemoveGoalMovement>(),
               gh<_i612.DeleteTransaction>(),
             ));
+    gh.factory<_i722.ImportExportHubCubit>(() => _i722.ImportExportHubCubit(
+          gh<_i925.GetLastBackupSavedAt>(),
+          gh<_i813.WatchImportBatches>(),
+          gh<_i296.HasAnyTransaction>(),
+        ));
     gh.factory<_i401.SaveCopyCubit>(() => _i401.SaveCopyCubit(
           gh<_i237.CreateFullBackup>(),
           gh<_i936.MarkBackupSaved>(),
@@ -1532,10 +1541,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i939.CloseDebt>(),
           gh<_i644.DeleteDebt>(),
           gh<_i103.AccrueInterest>(),
-        ));
-    gh.factory<_i722.ImportExportHubCubit>(() => _i722.ImportExportHubCubit(
-          gh<_i925.GetLastBackupSavedAt>(),
-          gh<_i813.WatchImportBatches>(),
         ));
     gh.factory<_i829.TutorialGateCubit>(() => _i829.TutorialGateCubit(
           gh<_i781.HasSeenTutorial>(),

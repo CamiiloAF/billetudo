@@ -56,6 +56,46 @@ void main() {
     verify(() => cubit.start()).called(1);
   });
 
+  testWidgets(
+    'show returns savedAt so the caller can update the hub without a full '
+    'refresh (bug: markBackupJustSaved was never called from anywhere)',
+    (tester) async {
+      final savedAt = DateTime(2026, 8, 7, 10, 30);
+      when(() => cubit.state).thenReturn(
+        SaveCopyState(status: SaveCopyStatus.done, savedAt: savedAt),
+      );
+
+      DateTime? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                result = await SaveCopySheet.show(context);
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump();
+
+      // `done` never renders — `SaveCopySheetBody`'s listener reacts to
+      // `resultFilePath`, which this stubbed state does not set, so nothing
+      // pops the sheet on its own here. Pop it directly to let `show`
+      // resolve, same as the real flow does once the share sheet closes.
+      Navigator.of(tester.element(find.byType(SaveCopySheetBody))).pop();
+      await tester.pumpAndSettle();
+
+      expect(result, savedAt);
+    },
+  );
+
   testWidgets('closes the cubit once the sheet is dismissed', (tester) async {
     when(() => cubit.state).thenReturn(const SaveCopyState(status: SaveCopyStatus.error));
 

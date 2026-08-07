@@ -75,6 +75,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       );
 
   @override
+  Stream<Result<int>> watchActiveTransactionsCount() => _guardStream(
+        _local.watchActiveTransactionsCount().map(Right.new),
+      );
+
+  @override
   Stream<Result<TransactionWithDetails>> watchTransactionDetail(String id) =>
       _guardStream(
         _local.watchTransactionDetail(id).map((rows) {

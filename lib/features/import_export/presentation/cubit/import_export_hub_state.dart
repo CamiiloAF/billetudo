@@ -7,9 +7,9 @@ enum ImportExportHubStatus { loading, ready, failure }
 
 /// The Hub screen (`oSWz9`/`qDCvi`/`Am9cg`): Variant B "Copia protagonista".
 /// `hasAnyTransactions == false` renders the third state (`Am9cg`,
-/// brand-new user) — this feature has no way to know the transaction count
-/// itself, so the caller (the page, wired from the router) tells the cubit
-/// via `ImportExportHubCubit.start`.
+/// brand-new user) — `ImportExportHubCubit` keeps this in sync by
+/// subscribing to `HasAnyTransaction` itself, so importing a CSV in the same
+/// session flips the hub out of the empty state without a re-navigation.
 class ImportExportHubState extends Equatable {
   const ImportExportHubState({
     this.status = ImportExportHubStatus.loading,
