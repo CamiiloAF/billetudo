@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -102,7 +103,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
       return;
     }
     final accrualResult =
-        await _accrueInterest(debtId: debtId, upTo: DateTime.now());
+        await _accrueInterest(debtId: debtId, upTo: clock.now());
     accrualResult.fold(
       // A failed accrual is not fatal — the detail still renders with
       // whatever balance is already persisted — but it must not be
@@ -205,8 +206,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
 
   /// Clears a consumed [DebtDetailState.closeSuccess] after its snackbar
   /// shows, so it cannot re-trigger on an unrelated rebuild.
-  void dismissCloseSuccess() =>
-      emit(state.copyWith(closeSuccess: () => null));
+  void dismissCloseSuccess() => emit(state.copyWith(closeSuccess: () => null));
 
   /// Clears a consumed [DebtDetailState.celebration] once the page has opened
   /// its sheet, so navigating back to an already-settled-but-not-closed debt
@@ -227,7 +227,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     return DebtSettledCelebration(
       debt: detail.debt,
       totalPaidMinor: detail.balance.totalDecreasesMinor,
-      settledAt: DateTime.now(),
+      settledAt: clock.now(),
     );
   }
 

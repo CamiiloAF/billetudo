@@ -40,11 +40,13 @@ void main() {
   });
   setUp(() => cubit = MockScheduledPaymentDetailCubit());
 
-  // `ScheduledDueInChip` compares `nextDate` against `DateTime.now()` at
-  // render time, so a fixture date built relative to "today" keeps the "en N
-  // días" text stable across days instead of drifting with a hardcoded date.
+  // `ScheduledDueInChip` compares `nextDate` against `clock.now()` at render
+  // time; the pump below fixes that clock to [goldenReferenceNow], so the
+  // fixture builds its "today" from the same reference instead of the real
+  // wall clock — otherwise the "en N días" text would drift the day this
+  // suite runs on a different date than the one baked into the PNG.
   DateTime inDays(int days) {
-    final now = DateTime.now();
+    final now = goldenReferenceNow;
     return DateTime(now.year, now.month, now.day).add(Duration(days: days));
   }
 
@@ -143,7 +145,7 @@ void main() {
     bool settle = true,
   }) async {
     when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       BlocProvider<ScheduledPaymentDetailCubit>.value(
         value: cubit,

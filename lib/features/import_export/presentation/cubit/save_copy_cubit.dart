@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
@@ -28,7 +29,7 @@ class SaveCopyCubit extends Cubit<SaveCopyState> {
     emit(const SaveCopyState(status: SaveCopyStatus.running));
 
     final tempDir = await getTemporaryDirectory();
-    final today = DateTime.now();
+    final today = clock.now();
     final stamp =
         '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final path = p.join(tempDir.path, 'billetudo-copia-$stamp.billetudo.json');

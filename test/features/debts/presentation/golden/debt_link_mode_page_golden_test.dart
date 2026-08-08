@@ -91,7 +91,7 @@ void main() {
         accounts: const [],
       ),
     );
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       MultiBlocProvider(
         providers: [

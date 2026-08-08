@@ -51,7 +51,11 @@ void main() {
     required Brightness brightness,
   }) async {
     when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
+    // `ImportBatchesPage` renders each row's "hace X días" from
+    // `clock.now().difference(batch.importedAt)` — pinning the clock keeps
+    // that label (and its pixel diff) from drifting a day at a time as this
+    // golden ages, same fix as `transaction_form_page_golden_test.dart`.
+    await pumpWithFixedClock(
       tester,
       BlocProvider<ImportBatchesCubit>.value(
         value: cubit,

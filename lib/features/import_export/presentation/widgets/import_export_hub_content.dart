@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -102,7 +103,7 @@ class ImportExportHubContent extends StatelessWidget {
 
   String _relativeTime(BuildContext context, DateTime at) {
     final l10n = AppLocalizations.of(context);
-    final diff = DateTime.now().difference(at);
+    final diff = clock.now().difference(at);
     if (diff.inDays >= 1) {
       return l10n.importExportRelativeDays(diff.inDays);
     }

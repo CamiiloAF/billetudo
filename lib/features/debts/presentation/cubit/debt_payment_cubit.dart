@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -33,7 +34,7 @@ class DebtPaymentCubit extends Cubit<DebtPaymentState> {
     this._watchAccounts,
     this._togglePreference,
     this._getCategory,
-  ) : super(DebtPaymentState(debt: _placeholder, date: DateTime.now()));
+  ) : super(DebtPaymentState(debt: _placeholder, date: clock.now()));
 
   final RegisterDebtCashEvent _registerCashEvent;
   final RegisterDebtLedgerEvent _registerLedgerEvent;
@@ -55,7 +56,7 @@ class DebtPaymentCubit extends Cubit<DebtPaymentState> {
   /// Loads the active accounts, the remembered toggle default, and the
   /// direction-appropriate seed category (fix 7) for [debt].
   Future<void> start(Debt debt) async {
-    emit(DebtPaymentState(debt: debt, date: DateTime.now()));
+    emit(DebtPaymentState(debt: debt, date: clock.now()));
 
     final accountsResult = await _watchAccounts().first;
     final addToAccount = await _togglePreference.readAddToAccount(debt.id);

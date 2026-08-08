@@ -39,7 +39,11 @@ void main() {
     required Brightness brightness,
   }) async {
     when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
+    // `ImportExportHubContent._relativeTime` reads `clock.now()` for the
+    // "hace X días" caption under the last backup / latest batch rows —
+    // pinning the clock keeps it from drifting a day at a time as this
+    // golden ages, same fix as `transaction_form_page_golden_test.dart`.
+    await pumpWithFixedClock(
       tester,
       BlocProvider<ImportExportHubCubit>.value(
         value: cubit,

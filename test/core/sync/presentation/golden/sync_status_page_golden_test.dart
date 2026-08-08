@@ -32,8 +32,9 @@ void main() {
   });
 
   // Fixed instants so the relative phrasing ("hace 3 días") is deterministic:
-  // the widget reads `DateTime.now()`, so the fixture has to be an offset.
-  final now = DateTime.now();
+  // the widget reads `clock.now()`, so the fixture has to be an offset from
+  // the same fixed reference the pump wraps below.
+  final now = goldenReferenceNow;
 
   PendingSyncChange change(int index, String note) =>
       PendingSyncChange.fromOperation(
@@ -113,7 +114,7 @@ void main() {
     );
     when(cubit.acknowledgeRetryOutcome).thenReturn(null);
 
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       BlocProvider<SyncStatusCubit>.value(
         value: cubit,

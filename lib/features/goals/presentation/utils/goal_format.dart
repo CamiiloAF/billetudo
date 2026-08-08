@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -56,7 +57,7 @@ abstract final class GoalFormat {
     AppLocalizations l10n,
     DateTime date,
   ) {
-    final now = DateTime.now();
+    final now = clock.now();
     final isToday =
         date.year == now.year && date.month == now.month && date.day == now.day;
     final short = dateShort(context, date);
@@ -67,7 +68,7 @@ abstract final class GoalFormat {
   /// HU-05's "a tu ritmo, llegas en marzo" copy.
   static String monthYear(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context).toString();
-    final now = DateTime.now();
+    final now = clock.now();
     return date.year == now.year
         ? DateFormat.MMMM(locale).format(date)
         : DateFormat.yMMMM(locale).format(date);

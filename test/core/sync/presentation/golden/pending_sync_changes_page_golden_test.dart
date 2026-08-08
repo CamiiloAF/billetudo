@@ -26,7 +26,7 @@ void main() {
     await loadMaterialIconsFont();
   });
 
-  final now = DateTime.now();
+  final now = goldenReferenceNow;
 
   PendingSyncChange change(int index) {
     final (table, label) = switch (index % 4) {
@@ -75,7 +75,7 @@ void main() {
         ),
       );
 
-      await pumpGolden(
+      await pumpWithFixedClock(
         tester,
         BlocProvider<SyncStatusCubit>.value(
           value: cubit,
@@ -111,7 +111,7 @@ void main() {
         ),
       );
 
-      await pumpGolden(
+      await pumpWithFixedClock(
         tester,
         BlocProvider<SyncStatusCubit>.value(
           value: cubit,

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -100,8 +101,8 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
   /// following `BudgetDetailCubit.loadMoreActivity()`'s exact pattern.
   void loadMoreMovements() => emit(
         state.copyWith(
-          visibleMovementsCount: state.visibleMovementsCount +
-              GoalDetailState.movementsPageSize,
+          visibleMovementsCount:
+              state.visibleMovementsCount + GoalDetailState.movementsPageSize,
         ),
       );
 
@@ -116,7 +117,7 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
     final result = await _contributeToGoal(
       goalId: id,
       amountMinor: amountMinor,
-      date: DateTime.now(),
+      date: clock.now(),
     );
     return result.map((movement) => movement.$2);
   }

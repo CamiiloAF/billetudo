@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -190,7 +191,7 @@ class ScheduledCard extends StatelessWidget {
     final dueIn = ScheduledPaymentFormat.dueInLabel(
       l10n,
       nextDate,
-      today: DateTime.now(),
+      today: clock.now(),
     );
     return '$date · $dueIn';
   }
@@ -290,7 +291,7 @@ class ScheduledDueInChip extends StatelessWidget {
         ScheduledPaymentFormat.dueInLabel(
           l10n,
           nextDate,
-          today: DateTime.now(),
+          today: clock.now(),
         ),
         style: theme.textTheme.labelSmall?.copyWith(
           color: colors.primaryOnSoftStrong,

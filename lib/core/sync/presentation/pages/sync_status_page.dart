@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -108,7 +109,7 @@ class SyncStatusPage extends StatelessWidget {
                   final screenState = SyncScreenState.resolve(
                     state,
                     isSignedIn: isSignedIn,
-                    now: DateTime.now(),
+                    now: clock.now(),
                   );
                   final cubit = context.read<SyncStatusCubit>();
 

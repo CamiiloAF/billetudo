@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -45,7 +46,7 @@ class TransactionDateField extends StatelessWidget {
   String _label(BuildContext context, AppLocalizations l10n) {
     final locale = Localizations.localeOf(context).toString();
     final dayLabel = DateFormat('d MMM', locale).format(date);
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(clock.now());
     final day = DateUtils.dateOnly(date);
     final difference = today.difference(day).inDays;
     final prefix = switch (difference) {

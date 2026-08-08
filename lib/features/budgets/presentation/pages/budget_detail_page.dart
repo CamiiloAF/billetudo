@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -203,8 +204,7 @@ class BudgetDetailPage extends StatelessWidget {
       return;
     }
     final pending = cubit.state.pendingAdjustment;
-    final windows =
-        BudgetAdjustmentWindows(budget, view.window, DateTime.now());
+    final windows = BudgetAdjustmentWindows(budget, view.window, clock.now());
     final result = await BudgetAdjustAmountSheet.show(
       context,
       currentAmountMinor: budget.amountMinor,
@@ -518,7 +518,7 @@ class BudgetDetailHero extends StatelessWidget {
                 ),
               ),
               // The days left come from the domain's already-computed
-              // `progress.daysLeft`, never from `DateTime.now()` in `build`:
+              // `progress.daysLeft`, never from `clock.now()` in `build`:
               // that made the widget non-deterministic (and printed "Último
               // día" in every golden). Absent on a period that is not the
               // running one.

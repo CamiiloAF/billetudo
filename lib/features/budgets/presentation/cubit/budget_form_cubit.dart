@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -60,7 +61,7 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
   Future<void> load(String? id) async {
     _watchCategoryTree();
     if (id == null) {
-      emit(BudgetFormState.initial(DateTime.now()));
+      emit(BudgetFormState.initial(clock.now()));
       return;
     }
 

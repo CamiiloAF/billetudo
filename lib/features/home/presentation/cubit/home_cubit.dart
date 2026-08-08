@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -51,7 +52,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchFeaturedBudgetProgress,
     this._getBudgetById,
     this._getBudgetProgress,
-  ) : super(HomeState.initial(DateTime.now()));
+  ) : super(HomeState.initial(clock.now()));
 
   final WatchAccounts _watchAccounts;
 
@@ -124,7 +125,7 @@ class HomeCubit extends Cubit<HomeState> {
     _featuredBudgetData = null;
     _lastFeaturedResult = null;
 
-    final now = DateTime.now();
+    final now = clock.now();
     _visibleMonth = DateTime(now.year, now.month);
     _accountsSub = _watchAccounts().listen(_onAccounts);
     _monthTxSub =
@@ -158,7 +159,7 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     final isStale =
-        SyncFreshness.isStale(snapshot.lastSyncedAt, now: DateTime.now());
+        SyncFreshness.isStale(snapshot.lastSyncedAt, now: clock.now());
     final syncStatus = switch (snapshot.state) {
       SyncState.stalled => HomeSyncStatus.attention,
       _ when isStale => HomeSyncStatus.attention,
@@ -266,7 +267,7 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     final view =
-        _getBudgetProgress(data, now: DateTime.now(), index: _periodIndex);
+        _getBudgetProgress(data, now: clock.now(), index: _periodIndex);
     // Keep the resolved index so navigation is relative to what is shown.
     _periodIndex = view.window.index;
     _lastFeaturedResult = Right(

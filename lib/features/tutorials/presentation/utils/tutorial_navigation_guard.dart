@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
@@ -28,10 +29,9 @@ class TutorialNavigationGuard {
   /// records the claim) when no other tutorial claimed it within [window];
   /// returns `false` otherwise, meaning the caller must not show its sheet.
   bool claim({DateTime? now}) {
-    final resolvedNow = now ?? DateTime.now();
+    final resolvedNow = now ?? clock.now();
     final lastClaimAt = _lastClaimAt;
-    if (lastClaimAt != null &&
-        resolvedNow.difference(lastClaimAt) < window) {
+    if (lastClaimAt != null && resolvedNow.difference(lastClaimAt) < window) {
       return false;
     }
     _lastClaimAt = resolvedNow;

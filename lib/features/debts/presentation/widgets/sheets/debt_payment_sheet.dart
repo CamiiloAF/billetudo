@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -277,7 +278,7 @@ class DebtPaymentSheetBody extends StatelessWidget {
       // An abono can never predate the debt's start date (HU-02): the loan did
       // not exist before it started.
       disabledBefore: DateUtils.dateOnly(floorDate),
-      disabledAfter: DateTime.now(),
+      disabledAfter: clock.now(),
     );
     if (picked != null) {
       cubit.dateChanged(picked);

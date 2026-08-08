@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -413,9 +414,9 @@ class _DebtFormBodyState extends State<DebtFormBody> {
     }
     final picked = await DatePickerSheet.show(
       context,
-      initialDate: current ?? DateTime.now(),
+      initialDate: current ?? clock.now(),
       // A debt cannot start in the future; no lower bound.
-      disabledAfter: DateTime.now(),
+      disabledAfter: clock.now(),
     );
     if (picked != null) {
       cubit.startDateChanged(picked);
@@ -433,7 +434,7 @@ class _DebtFormBodyState extends State<DebtFormBody> {
     }
     final picked = await DatePickerSheet.show(
       context,
-      initialDate: current ?? DateTime.now(),
+      initialDate: current ?? clock.now(),
     );
     if (picked != null) {
       cubit.dueDateChanged(picked);

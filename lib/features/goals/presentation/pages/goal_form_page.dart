@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -153,7 +154,8 @@ class GoalFormBody extends StatelessWidget {
             locked: isCurrencyLocked,
             onTap: isCurrencyLocked
                 ? null
-                : () => unawaited(_pickCurrency(context, cubit, state.currency)),
+                : () =>
+                    unawaited(_pickCurrency(context, cubit, state.currency)),
           ),
         ),
         const SizedBox(height: 6),
@@ -177,9 +179,8 @@ class GoalFormBody extends StatelessWidget {
           value: _selectedAccountName(state),
           hint: l10n.goalFormAccountHint,
           onTap: () => unawaited(_pickAccount(context, cubit, state)),
-          onClear: state.accountId == null
-              ? null
-              : () => cubit.accountChanged(null),
+          onClear:
+              state.accountId == null ? null : () => cubit.accountChanged(null),
         ),
         const SizedBox(height: 14),
         GoalFieldLabel(l10n.goalFormTargetDateLabel),
@@ -193,7 +194,8 @@ class GoalFormBody extends StatelessWidget {
           errorText: state.failedField == GoalDraft.fieldTargetDate
               ? l10n.goalFormErrorTargetDatePast
               : null,
-          onTap: () => unawaited(_pickTargetDate(context, cubit, state.targetDate)),
+          onTap: () =>
+              unawaited(_pickTargetDate(context, cubit, state.targetDate)),
           onClear: state.targetDate == null
               ? null
               : () => cubit.targetDateChanged(null),
@@ -255,7 +257,8 @@ class GoalFormBody extends StatelessWidget {
     GoalFormCubit cubit,
     String current,
   ) async {
-    final picked = await GoalCurrencyPickerSheet.show(context, selected: current);
+    final picked =
+        await GoalCurrencyPickerSheet.show(context, selected: current);
     if (picked != null) {
       cubit.currencyChanged(picked);
     }
@@ -308,7 +311,7 @@ class GoalFormBody extends StatelessWidget {
     final picked = await DatePickerSheet.show(
       context,
       initialDate: current,
-      disabledBefore: DateTime.now(),
+      disabledBefore: clock.now(),
     );
     if (picked != null) {
       cubit.targetDateChanged(picked);
@@ -476,7 +479,8 @@ class GoalFormBottomBar extends StatelessWidget {
         onPressed: state.isSaving ? null : context.read<GoalFormCubit>().submit,
         style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
         icon: const Icon(LucideIcons.check, size: 18),
-        label: Text(state.isEditing ? l10n.goalFormSaveCta : l10n.goalFormCreateCta),
+        label: Text(
+            state.isEditing ? l10n.goalFormSaveCta : l10n.goalFormCreateCta),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -59,9 +60,8 @@ class ScheduledPaymentDateField extends StatelessWidget {
         final minDate = this.minDate;
         final picked = await DatePickerSheet.show(
           context,
-          initialDate: date ?? DateTime.now(),
-          disabledBefore:
-              minDate == null ? null : DateUtils.dateOnly(minDate),
+          initialDate: date ?? clock.now(),
+          disabledBefore: minDate == null ? null : DateUtils.dateOnly(minDate),
         );
         if (picked != null) {
           onChanged(picked);

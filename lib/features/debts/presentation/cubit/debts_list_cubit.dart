@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -75,7 +76,7 @@ class DebtsListCubit extends Cubit<DebtsListState> {
     if (summary == null) {
       return;
     }
-    final now = DateTime.now();
+    final now = clock.now();
     for (final item in summary.openDebts) {
       if (item.debt.accrualMode != DebtAccrualMode.auto) {
         continue;

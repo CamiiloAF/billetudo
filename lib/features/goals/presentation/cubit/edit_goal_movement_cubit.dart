@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -19,7 +20,7 @@ class EditGoalMovementCubit extends Cubit<EditGoalMovementState> {
             goalName: '',
             direction: GoalMovementDirection.contribution,
             currency: 'COP',
-            date: DateTime.now(),
+            date: clock.now(),
           ),
         );
 

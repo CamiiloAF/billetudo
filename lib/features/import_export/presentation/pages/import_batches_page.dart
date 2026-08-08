@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -54,7 +55,8 @@ class ImportBatchesPage extends StatelessWidget {
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                     itemCount: state.batches.length,
-                    separatorBuilder: (context, _) => const SizedBox(height: 10),
+                    separatorBuilder: (context, _) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final batch = state.batches[index];
                       return ImportBatchRow(
@@ -62,7 +64,7 @@ class ImportBatchesPage extends StatelessWidget {
                         metaLabel: l10n.importExportBatchMeta(
                           batch.rowsImported,
                           l10n.importExportRelativeDays(
-                            DateTime.now().difference(batch.importedAt).inDays,
+                            clock.now().difference(batch.importedAt).inDays,
                           ),
                         ),
                         reverted: batch.isReverted,
@@ -70,12 +72,15 @@ class ImportBatchesPage extends StatelessWidget {
                         onTap: batch.isReverted
                             ? () {}
                             : () async {
-                                final confirmed = await UndoImportConfirmSheet.show(
+                                final confirmed =
+                                    await UndoImportConfirmSheet.show(
                                   context,
                                   batch: batch,
                                 );
                                 if (confirmed == true && context.mounted) {
-                                  await context.read<ImportBatchesCubit>().undo(batch.id);
+                                  await context
+                                      .read<ImportBatchesCubit>()
+                                      .undo(batch.id);
                                 }
                               },
                       );

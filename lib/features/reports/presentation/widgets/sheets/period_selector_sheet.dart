@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -49,7 +50,7 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
           widget.initial.kind == ReportsPeriodKind.year ||
           widget.initial.kind == ReportsPeriodKind.custom
       ? widget.initial.range.start
-      : DateTime.now();
+      : clock.now();
 
   /// Whether the sheet opened with an active date-range filter — either a
   /// user-picked custom range, or the app's `lastSixMonths` default, which
@@ -80,12 +81,13 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
   }
 
   Future<void> _openCustomRange() async {
-    final now = DateTime.now();
+    final now = clock.now();
     final result = await DateRangePickerSheet.show(
       context,
       initialStart: widget.initial.range.start,
       initialEnd: widget.initial.range.endExclusive
-          .subtract(const Duration(days: 1)).isBefore(now)
+              .subtract(const Duration(days: 1))
+              .isBefore(now)
           ? widget.initial.range.endExclusive.subtract(const Duration(days: 1))
           : now,
     );
@@ -162,7 +164,8 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
           ),
           child: Row(
             children: [
-              PeriodStepperButton(icon: LucideIcons.chevronLeft, onTap: () => _step(-1)),
+              PeriodStepperButton(
+                  icon: LucideIcons.chevronLeft, onTap: () => _step(-1)),
               Expanded(
                 child: Text(
                   periodLabel,
@@ -174,7 +177,8 @@ class _PeriodSelectorSheetState extends State<PeriodSelectorSheet> {
                   ),
                 ),
               ),
-              PeriodStepperButton(icon: LucideIcons.chevronRight, onTap: () => _step(1)),
+              PeriodStepperButton(
+                  icon: LucideIcons.chevronRight, onTap: () => _step(1)),
             ],
           ),
         ),

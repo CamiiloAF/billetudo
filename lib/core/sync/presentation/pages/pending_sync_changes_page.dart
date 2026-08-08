@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -48,7 +49,7 @@ class PendingSyncChangesPage extends StatelessWidget {
                       : SyncRelativeTime.since(
                           l10n,
                           changes.first.pendingSince,
-                          now: DateTime.now(),
+                          now: clock.now(),
                         );
 
                   // Reaching this screen with nothing waiting is good news, so

@@ -18,6 +18,7 @@ import 'package:billetudo/features/transactions/presentation/cubit/transaction_f
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_form_state.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -164,25 +165,36 @@ void main() {
 
   tearDown(getIt.reset);
 
+  // `TransactionFormState`'s constructor defaults an unset `date` to
+  // `clock.now()` (create-mode's "today" default), and `TransactionDateField`
+  // separately reads `clock.now()` at build time to decide the "Hoy, ..."
+  // prefix — both must resolve under the same frozen clock, or the state
+  // built at test time (evaluated eagerly, outside any pump) reads the real
+  // wall clock while the widget renders against whatever the pump freezes,
+  // drifting the golden's date label a little more every day. `buildState`
+  // is therefore a callback, not a prebuilt value, so its evaluation happens
+  // inside the frozen `withClock` zone below, same as the render.
   Future<void> golden(
     WidgetTester tester,
-    TransactionFormState state,
+    TransactionFormState Function() buildState,
     String name, {
     required Brightness brightness,
   }) async {
-    when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
-      tester,
-      BlocProvider<TransactionFormCubit>.value(
-        value: cubit,
-        child: const TransactionFormPage(),
-      ),
-      brightness: brightness,
-    );
-    await expectLater(
-      find.byType(TransactionFormPage),
-      matchesGoldenFile('goldens/transaction_form_page_$name.png'),
-    );
+    await withClock(Clock.fixed(goldenReferenceNow), () async {
+      when(() => cubit.state).thenReturn(buildState());
+      await pumpGolden(
+        tester,
+        BlocProvider<TransactionFormCubit>.value(
+          value: cubit,
+          child: const TransactionFormPage(),
+        ),
+        brightness: brightness,
+      );
+      await expectLater(
+        find.byType(TransactionFormPage),
+        matchesGoldenFile('goldens/transaction_form_page_$name.png'),
+      );
+    });
   }
 
   for (final brightness in Brightness.values) {
@@ -191,7 +203,7 @@ void main() {
     testWidgets('create expense, empty ($suffix)', (tester) async {
       await golden(
         tester,
-        TransactionFormState(status: TransactionFormStatus.ready),
+        () => TransactionFormState(status: TransactionFormStatus.ready),
         'create_expense_$suffix',
         brightness: brightness,
       );
@@ -200,7 +212,7 @@ void main() {
     testWidgets('create income, empty ($suffix)', (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           type: TransactionType.income,
         ),
@@ -219,7 +231,7 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           type: TransactionType.income,
           accountId: 'acc-1',
@@ -237,7 +249,7 @@ void main() {
     testWidgets('create transfer, empty ($suffix)', (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           type: TransactionType.transfer,
         ),
@@ -255,7 +267,7 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           type: TransactionType.transfer,
           accountId: 'acc-1',
@@ -275,7 +287,7 @@ void main() {
     testWidgets('edit expense, filled ($suffix)', (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           id: 'tx-1',
           accountId: 'acc-1',
@@ -295,7 +307,7 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           amountMinor: 1250000,
           focusedField: TransactionFormFocusedField.amount,
@@ -309,7 +321,7 @@ void main() {
         (tester) async {
       await golden(
         tester,
-        TransactionFormState(
+        () => TransactionFormState(
           status: TransactionFormStatus.ready,
           failure: const ValidationFailure(
             'an account is required',
@@ -330,29 +342,35 @@ void main() {
     // capture genuine focus, not just the collapsed zone on its own.
     testWidgets('note field focused, amount zone collapsed ($suffix)',
         (tester) async {
-      when(() => cubit.state).thenReturn(
-        TransactionFormState(
-          status: TransactionFormStatus.ready,
-          amountMinor: 4500000,
-          note: 'Almuerzo con el equipo',
-          focusedField: TransactionFormFocusedField.note,
-        ),
-      );
-      await pumpGolden(
-        tester,
-        BlocProvider<TransactionFormCubit>.value(
-          value: cubit,
-          child: const TransactionFormPage(),
-        ),
-        brightness: brightness,
-      );
-      await tester.tap(find.byType(TextField));
-      await tester.pumpAndSettle();
-      await expectLater(
-        find.byType(TransactionFormPage),
-        matchesGoldenFile(
-            'goldens/transaction_form_page_note_active_$suffix.png'),
-      );
+      // Same eager-evaluation hazard as `golden()` above: the state's `date`
+      // default and the field's own `clock.now()` read at build time must
+      // resolve under the same frozen clock, so the whole body (state
+      // construction included) runs inside `withClock`.
+      await withClock(Clock.fixed(goldenReferenceNow), () async {
+        when(() => cubit.state).thenReturn(
+          TransactionFormState(
+            status: TransactionFormStatus.ready,
+            amountMinor: 4500000,
+            note: 'Almuerzo con el equipo',
+            focusedField: TransactionFormFocusedField.note,
+          ),
+        );
+        await pumpGolden(
+          tester,
+          BlocProvider<TransactionFormCubit>.value(
+            value: cubit,
+            child: const TransactionFormPage(),
+          ),
+          brightness: brightness,
+        );
+        await tester.tap(find.byType(TextField));
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(TransactionFormPage),
+          matchesGoldenFile(
+              'goldens/transaction_form_page_note_active_$suffix.png'),
+        );
+      });
     });
   }
 }

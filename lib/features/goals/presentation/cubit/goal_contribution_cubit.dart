@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -22,7 +23,7 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
             goalName: '',
             direction: GoalMovementDirection.contribution,
             currency: 'COP',
-            date: DateTime.now(),
+            date: clock.now(),
           ),
         );
 
@@ -47,7 +48,7 @@ class GoalContributionCubit extends Cubit<GoalContributionState> {
         currency: currency,
         maxWithdrawableMinor: maxWithdrawableMinor,
         amountMinor: initialAmountMinor,
-        date: DateTime.now(),
+        date: clock.now(),
         hasLinkedAccount: hasLinkedAccount,
       ),
     );

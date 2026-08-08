@@ -10,6 +10,7 @@ import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/sync_status_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,7 +60,7 @@ void main() {
           state: snapshotState,
           quarantinedCount: quarantined,
           lastSyncedAt:
-              syncedAgo == null ? null : DateTime.now().subtract(syncedAgo),
+              syncedAgo == null ? null : clock.now().subtract(syncedAgo),
           hasSyncedEver: syncedAgo != null,
         ),
       );

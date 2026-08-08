@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -490,7 +491,7 @@ class DebtFormCubit extends Cubit<DebtFormState> {
 
   /// Today at day precision — a new debt's default start date.
   static DateTime _today() {
-    final now = DateTime.now();
+    final now = clock.now();
     return DateTime(now.year, now.month, now.day);
   }
 

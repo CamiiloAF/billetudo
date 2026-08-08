@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -156,7 +157,7 @@ class DateFilterSheetBody extends StatelessWidget {
     DateFilterCubit cubit,
     DatePeriodFilter filter,
   ) async {
-    final now = DateTime.now();
+    final now = clock.now();
     final initialStart = filter.isCustomRange ? filter.start : now;
     final initialEnd = filter.isCustomRange
         ? filter.endExclusive.subtract(const Duration(days: 1))

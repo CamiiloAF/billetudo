@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -62,7 +63,7 @@ class SyncStatusSheet extends StatelessWidget {
           previous.syncSnapshot != current.syncSnapshot,
       builder: (context, state) {
         final snapshot = state.syncSnapshot;
-        final now = DateTime.now();
+        final now = clock.now();
         final lastSyncedAt = snapshot.lastSyncedAt;
         final isStale = SyncFreshness.isStale(lastSyncedAt, now: now);
         final relative = lastSyncedAt == null
@@ -87,7 +88,7 @@ class SyncStatusSheet extends StatelessWidget {
           // is even trying would be the same lie the incident behind HU-08
           // was built to stop the app from telling.
           HomeSyncStatus.attention
-                when !isStalled && snapshot.state == SyncState.syncing =>
+              when !isStalled && snapshot.state == SyncState.syncing =>
             (
               LucideIcons.hourglass,
               l10n.homeSyncSheetTooLongTitle,

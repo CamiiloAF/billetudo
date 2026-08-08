@@ -4,6 +4,7 @@ import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/sync_status_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -33,7 +34,7 @@ void main() {
         syncSnapshot: SyncStatusSnapshot(
           state: snapshotState,
           quarantinedCount: quarantined,
-          lastSyncedAt: DateTime.now().subtract(syncedAgo),
+          lastSyncedAt: goldenReferenceNow.subtract(syncedAgo),
           hasSyncedEver: true,
         ),
       );
@@ -56,31 +57,34 @@ void main() {
       initialState: state,
     );
 
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () => SyncStatusSheet.show(
-              context,
-              cubit,
-              // Los estados de atención son los únicos que ofrecen la salida a
-              // "Estado de sincronización": sin este callback la hoja se
-              // dibujaría con un solo botón y el golden no sería el frame.
-              onOpenDetails: withDetails ? () {} : null,
+    await withClock(Clock.fixed(goldenReferenceNow), () async {
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => SyncStatusSheet.show(
+                context,
+                cubit,
+                // Los estados de atención son los únicos que ofrecen la
+                // salida a "Estado de sincronización": sin este callback la
+                // hoja se dibujaría con un solo botón y el golden no sería
+                // el frame.
+                onOpenDetails: withDetails ? () {} : null,
+              ),
+              child: const Text('open'),
             ),
-            child: const Text('open'),
           ),
+          brightness: brightness,
         ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/sync_status_sheet_$name.png'),
-    );
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/sync_status_sheet_$name.png'),
+      );
+    });
   }
 
   for (final brightness in Brightness.values) {

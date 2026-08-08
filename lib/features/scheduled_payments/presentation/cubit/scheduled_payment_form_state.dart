@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/result.dart';
@@ -47,7 +48,7 @@ class ScheduledPaymentFormState extends Equatable {
     this.debtCreatedAt,
     this.debtOutstandingMinor,
     this.failure,
-  }) : nextDate = nextDate ?? DateTime.now();
+  }) : nextDate = nextDate ?? clock.now();
 
   static const String defaultCurrency = 'COP';
 

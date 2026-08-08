@@ -20,8 +20,10 @@ void main() {
 
   // Fixed relative-to-today date, same reasoning as the page golden: keeps
   // the "en N días" countdown pill stable across days instead of drifting.
+  // Built from [goldenReferenceNow], the same reference the pump below fixes
+  // `clock.now()` to, so the widget's render-time comparison matches.
   DateTime inDays(int days) {
-    final now = DateTime.now();
+    final now = goldenReferenceNow;
     return DateTime(now.year, now.month, now.day).add(Duration(days: days));
   }
 
@@ -31,7 +33,7 @@ void main() {
     String name, {
     required Brightness brightness,
   }) async {
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       Padding(padding: const EdgeInsets.all(16), child: child),
       brightness: brightness,

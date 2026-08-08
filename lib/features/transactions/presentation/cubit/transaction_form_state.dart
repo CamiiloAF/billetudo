@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' show DateUtils;
 
@@ -46,7 +47,7 @@ class TransactionFormState extends Equatable {
     this.editImpact,
     this.failure,
     this.countsInBudget = false,
-  }) : date = date ?? DateTime.now();
+  }) : date = date ?? clock.now();
 
   /// `null` when creating; the transaction id when editing.
   final String? id;
@@ -135,7 +136,7 @@ class TransactionFormState extends Equatable {
     if (isEditing) {
       return false;
     }
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(clock.now());
     return DateUtils.dateOnly(date).isAfter(today);
   }
 

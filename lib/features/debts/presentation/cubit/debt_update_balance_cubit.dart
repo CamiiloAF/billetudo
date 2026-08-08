@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -16,7 +17,7 @@ class DebtUpdateBalanceCubit extends Cubit<DebtUpdateBalanceState> {
             debt: _placeholder,
             currentOutstandingMinor: 0,
             targetMinor: 0,
-            date: DateTime.now(),
+            date: clock.now(),
           ),
         );
 
@@ -41,7 +42,7 @@ class DebtUpdateBalanceCubit extends Cubit<DebtUpdateBalanceState> {
         debt: debt,
         currentOutstandingMinor: currentOutstandingMinor,
         targetMinor: currentOutstandingMinor,
-        date: DateTime.now(),
+        date: clock.now(),
       ),
     );
   }

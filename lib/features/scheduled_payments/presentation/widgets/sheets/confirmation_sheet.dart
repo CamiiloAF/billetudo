@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -703,7 +704,7 @@ class ConfirmationSheetFields extends StatelessWidget {
                       // payments pass `null` here and keep no lower bound.
                       disabledBefore:
                           minDate == null ? null : DateUtils.dateOnly(minDate!),
-                      disabledAfter: DateUtils.dateOnly(DateTime.now()),
+                      disabledAfter: DateUtils.dateOnly(clock.now()),
                     );
                     if (picked != null) {
                       onDateChanged(picked);

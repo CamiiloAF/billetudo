@@ -42,7 +42,7 @@ void main() {
   late MockPendingOccurrencesCubit pendingCubit;
 
   DateTime inDays(int days) {
-    final now = DateTime.now();
+    final now = goldenReferenceNow;
     return DateTime(now.year, now.month, now.day).add(Duration(days: days));
   }
 
@@ -136,7 +136,7 @@ void main() {
   }) async {
     when(() => listCubit.state).thenReturn(listState);
     when(() => pendingCubit.state).thenReturn(pendingState);
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       MultiBlocProvider(
         providers: [
@@ -304,7 +304,7 @@ void main() {
       when(() => pendingCubit.state).thenReturn(
         const PendingOccurrencesState(status: PendingOccurrencesStatus.ready),
       );
-      await pumpGolden(
+      await pumpWithFixedClock(
         tester,
         MultiBlocProvider(
           providers: [

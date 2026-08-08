@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -65,7 +66,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
           status: ScheduledPaymentFormStatus.ready,
           accountId: initialAccountId,
           accountName: initialAccountName,
-          nextDate: DateTime.now(),
+          nextDate: clock.now(),
         ),
       );
       return;

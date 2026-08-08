@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -237,7 +238,7 @@ class BudgetDetailCubit extends Cubit<BudgetDetailState> {
     if (data == null) {
       return;
     }
-    final view = _getBudgetProgress(data, now: DateTime.now(), index: _index);
+    final view = _getBudgetProgress(data, now: clock.now(), index: _index);
     // Keep the resolved index so navigation is relative to what is shown.
     _index = view.window.index;
     emit(

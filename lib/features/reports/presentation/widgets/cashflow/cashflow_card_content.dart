@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -75,20 +76,24 @@ class CashflowCardContent extends StatelessWidget {
     final totalIncomeMerged = points.fold<int>(
       0,
       (sum, p) =>
-          sum + p.incomeMinor + (shell.includeDebtMovements ? p.debtIncomeMinor : 0),
+          sum +
+          p.incomeMinor +
+          (shell.includeDebtMovements ? p.debtIncomeMinor : 0),
     );
     final totalExpenseMerged = points.fold<int>(
       0,
       (sum, p) =>
-          sum + p.expenseMinor + (shell.includeDebtMovements ? p.debtExpenseMinor : 0),
+          sum +
+          p.expenseMinor +
+          (shell.includeDebtMovements ? p.debtExpenseMinor : 0),
     );
     final net = totalIncomeMerged - totalExpenseMerged;
 
     final isShortHistory = series.bounds.isClamped;
-    final periodPhrase = !isShortHistory &&
-            shell.period.kind == ReportsPeriodKind.lastSixMonths
-        ? l10n.reportsCashflowPeriodPhraseLastMonths(6)
-        : l10n.reportsCashflowPeriodPhraseGeneric;
+    final periodPhrase =
+        !isShortHistory && shell.period.kind == ReportsPeriodKind.lastSixMonths
+            ? l10n.reportsCashflowPeriodPhraseLastMonths(6)
+            : l10n.reportsCashflowPeriodPhraseGeneric;
     final shortHistoryDays = series.bounds.effectiveRange.endExclusive
         .difference(series.bounds.effectiveRange.start)
         .inDays;
@@ -147,7 +152,7 @@ class CashflowCardContent extends StatelessWidget {
                 DateFormat.MMM(Localizations.localeOf(context).toString())
                     .format(points.last.periodStart)
                     .toLowerCase(),
-                DateTime.now().day,
+                clock.now().day,
               ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 11,
@@ -168,11 +173,12 @@ class CashflowCardContent extends StatelessWidget {
     if (effectiveRange.granularity != domain.DateGranularity.monthly) {
       return false;
     }
-    final now = DateTime.now();
+    final now = clock.now();
     final lastBucketStart = DateTime(
       effectiveRange.endExclusive.year,
       effectiveRange.endExclusive.month - 1,
     );
-    return lastBucketStart.year == now.year && lastBucketStart.month == now.month;
+    return lastBucketStart.year == now.year &&
+        lastBucketStart.month == now.month;
   }
 }

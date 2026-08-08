@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -88,10 +89,10 @@ class ExportForm extends StatelessWidget {
               children: [
                 Text(
                   l10n.importExportFiltersTitle,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.4),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -107,7 +108,8 @@ class ExportForm extends StatelessWidget {
                   enabled: filtersEnabled,
                   onChanged: cubit.setSearchText,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(LucideIcons.search, size: 18, color: colors.textSecondary),
+                    prefixIcon: Icon(LucideIcons.search,
+                        size: 18, color: colors.textSecondary),
                     hintText: l10n.importExportFilterSearchPlaceholder,
                   ),
                 ),
@@ -119,7 +121,8 @@ class ExportForm extends StatelessWidget {
                         leadingIcon: LucideIcons.wallet,
                         label: range.accountIds.isEmpty
                             ? l10n.importExportFilterAllAccounts
-                            : l10n.transactionsFilterAccountsSelected(range.accountIds.length),
+                            : l10n.transactionsFilterAccountsSelected(
+                                range.accountIds.length),
                         active: range.accountIds.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
@@ -138,7 +141,8 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.categoryIds.isEmpty
                             ? l10n.transactionsFilterCategories
-                            : l10n.transactionsFilterCategoriesSelected(range.categoryIds.length),
+                            : l10n.transactionsFilterCategoriesSelected(
+                                range.categoryIds.length),
                         active: range.categoryIds.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
@@ -161,16 +165,19 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.types.isEmpty
                             ? l10n.transactionsFilterType
-                            : l10n.transactionsFilterTypeSelected(range.types.length),
+                            : l10n.transactionsFilterTypeSelected(
+                                range.types.length),
                         active: range.types.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
                           final selected = await TypeFilterSheet.show(
                             context,
-                            initialSelected: range.types.map(_toTransactionType).toSet(),
+                            initialSelected:
+                                range.types.map(_toTransactionType).toSet(),
                           );
                           if (selected != null) {
-                            cubit.setTypeFilter(selected.map(_toImportEntryType).toSet());
+                            cubit.setTypeFilter(
+                                selected.map(_toImportEntryType).toSet());
                           }
                         },
                       ),
@@ -180,7 +187,8 @@ class ExportForm extends StatelessWidget {
                       child: ExportFilterChip(
                         label: range.tagIds.isEmpty
                             ? l10n.transactionsFilterTag
-                            : l10n.transactionsFilterTagSelected(range.tagIds.length),
+                            : l10n.transactionsFilterTagSelected(
+                                range.tagIds.length),
                         active: range.tagIds.isNotEmpty,
                         enabled: filtersEnabled,
                         onTap: () async {
@@ -211,11 +219,11 @@ class ExportForm extends StatelessWidget {
                     onPressed: !filtersEnabled
                         ? null
                         : () async {
-                            final now = DateTime.now();
+                            final now = clock.now();
                             final applied = await DateRangePickerSheet.show(
                               context,
-                              initialStart:
-                                  range.startDate ?? DateTime(now.year, now.month - 1, now.day),
+                              initialStart: range.startDate ??
+                                  DateTime(now.year, now.month - 1, now.day),
                               initialEnd: range.endDate ?? now,
                             );
                             if (applied != null) {
@@ -241,7 +249,8 @@ class ExportForm extends StatelessWidget {
           icon: LucideIcons.share2,
           enabled: scope.selectionCount,
           onPressed: () => unawaited(
-            ExportRunSheet.show(context, cubit: cubit, language: l10n.localeName),
+            ExportRunSheet.show(context,
+                cubit: cubit, language: l10n.localeName),
           ),
         ),
       ],

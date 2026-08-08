@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
@@ -63,7 +64,8 @@ class ExportCubit extends Cubit<ExportState> {
   void setSearchText(String value) => emit(
         state.copyWith(
           scope: _copyScope(
-            transactionFilter: state.scope.transactionFilter.copyWith(searchText: value),
+            transactionFilter:
+                state.scope.transactionFilter.copyWith(searchText: value),
           ),
         ),
       );
@@ -71,7 +73,8 @@ class ExportCubit extends Cubit<ExportState> {
   void setAccountFilter(Set<String> accountIds) => emit(
         state.copyWith(
           scope: _copyScope(
-            transactionFilter: state.scope.transactionFilter.copyWith(accountIds: accountIds),
+            transactionFilter:
+                state.scope.transactionFilter.copyWith(accountIds: accountIds),
           ),
         ),
       );
@@ -79,8 +82,8 @@ class ExportCubit extends Cubit<ExportState> {
   void setCategoryFilter(Set<String> categoryIds) => emit(
         state.copyWith(
           scope: _copyScope(
-            transactionFilter:
-                state.scope.transactionFilter.copyWith(categoryIds: categoryIds),
+            transactionFilter: state.scope.transactionFilter
+                .copyWith(categoryIds: categoryIds),
           ),
         ),
       );
@@ -88,7 +91,8 @@ class ExportCubit extends Cubit<ExportState> {
   void setTypeFilter(Set<ImportEntryType> types) => emit(
         state.copyWith(
           scope: _copyScope(
-            transactionFilter: state.scope.transactionFilter.copyWith(types: types),
+            transactionFilter:
+                state.scope.transactionFilter.copyWith(types: types),
           ),
         ),
       );
@@ -96,7 +100,8 @@ class ExportCubit extends Cubit<ExportState> {
   void setTagFilter(Set<String> tagIds) => emit(
         state.copyWith(
           scope: _copyScope(
-            transactionFilter: state.scope.transactionFilter.copyWith(tagIds: tagIds),
+            transactionFilter:
+                state.scope.transactionFilter.copyWith(tagIds: tagIds),
           ),
         ),
       );
@@ -109,7 +114,8 @@ class ExportCubit extends Cubit<ExportState> {
     TransactionExportFilter? transactionFilter,
   }) =>
       ExportScope(
-        includeTransactions: includeTransactions ?? state.scope.includeTransactions,
+        includeTransactions:
+            includeTransactions ?? state.scope.includeTransactions,
         includeAccounts: includeAccounts ?? state.scope.includeAccounts,
         includeCategories: includeCategories ?? state.scope.includeCategories,
         allHistory: allHistory ?? state.scope.allHistory,
@@ -143,7 +149,7 @@ class ExportCubit extends Cubit<ExportState> {
 
     final vocabulary = language == 'en' ? CsvVocabulary.en : CsvVocabulary.es;
     final tempDir = await getTemporaryDirectory();
-    final today = DateTime.now();
+    final today = clock.now();
     final stamp =
         '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
@@ -255,10 +261,12 @@ class ExportCubit extends Cubit<ExportState> {
     if (isClosed) {
       return;
     }
-    final cancelled = failure is IoFailure && failure.reason == IoFailureReason.cancelled;
+    final cancelled =
+        failure is IoFailure && failure.reason == IoFailureReason.cancelled;
     emit(
       state.copyWith(
-        runStatus: cancelled ? ExportRunStatus.cancelled : ExportRunStatus.error,
+        runStatus:
+            cancelled ? ExportRunStatus.cancelled : ExportRunStatus.error,
         failure: cancelled ? null : failure,
       ),
     );

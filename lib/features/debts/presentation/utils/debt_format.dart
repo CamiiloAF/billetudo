@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -108,7 +109,7 @@ abstract final class DebtFormat {
     AppLocalizations l10n,
     DateTime date,
   ) {
-    final now = DateTime.now();
+    final now = clock.now();
     final isToday =
         date.year == now.year && date.month == now.month && date.day == now.day;
     final short = dateShort(context, date);

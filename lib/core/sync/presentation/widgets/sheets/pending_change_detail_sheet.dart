@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -81,7 +82,7 @@ class PendingChangeDetailSheet extends StatelessWidget {
         ? kind
         : l10n.syncPendingRowTitle(kind, change.label!);
     final subtitle = _subtitle(l10n, locale);
-    final waiting = DateTime.now().difference(change.pendingSince);
+    final waiting = clock.now().difference(change.pendingSince);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -63,12 +64,14 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
   Future<List<NamedEntity>> loadExistingAccounts() =>
       _getExistingAccounts().then((r) => r.fold((_) => const [], (v) => v));
 
-  Future<List<NamedEntity>> loadExistingRootCategories({required bool isExpense}) =>
+  Future<List<NamedEntity>> loadExistingRootCategories(
+          {required bool isExpense}) =>
       _getExistingRootCategories(isExpense: isExpense)
           .then((r) => r.fold((_) => const [], (v) => v));
 
   Future<List<NamedEntity>> loadExistingSubcategories(String parentId) =>
-      _getExistingSubcategories(parentId).then((r) => r.fold((_) => const [], (v) => v));
+      _getExistingSubcategories(parentId)
+          .then((r) => r.fold((_) => const [], (v) => v));
 
   Future<List<NamedEntity>> loadExistingTags() =>
       _getExistingTags().then((r) => r.fold((_) => const [], (v) => v));
@@ -99,7 +102,8 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
     );
 
     final templatesResult = await _getMappingTemplates();
-    final templates = templatesResult.fold((_) => <MappingTemplate>[], (t) => t);
+    final templates =
+        templatesResult.fold((_) => <MappingTemplate>[], (t) => t);
 
     final sampleResult = await _parseCsvHeaders(path);
     if (isClosed) {
@@ -164,14 +168,16 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
   void applyDateFormat(DateComponentOrder order, DateSeparatorChar separator) =>
       emit(
         state.copyWith(
-          dialect: state.dialect.copyWith(dateOrder: order, dateSeparator: separator),
+          dialect: state.dialect
+              .copyWith(dateOrder: order, dateSeparator: separator),
         ),
       );
 
   /// Applies the decimal-convention sheet's choice, leaving the date format
   /// untouched.
   void applyDecimalConvention(DecimalConvention convention) => emit(
-        state.copyWith(dialect: state.dialect.copyWith(decimalConvention: convention)),
+        state.copyWith(
+            dialect: state.dialect.copyWith(decimalConvention: convention)),
       );
 
   /// Applies the type-values sheet's "columna de tipo" choice: maps
@@ -212,14 +218,16 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
   // -- Step 3: destination resolution --
 
   void setAccountOverride(String key, ImportDestination destination) {
-    final overrides = Map<String, ImportDestination>.from(state.accountOverrides)
-      ..[key] = destination;
+    final overrides =
+        Map<String, ImportDestination>.from(state.accountOverrides)
+          ..[key] = destination;
     emit(state.copyWith(accountOverrides: overrides));
   }
 
   void setCategoryOverride(String key, ImportDestination destination) {
-    final overrides = Map<String, ImportDestination>.from(state.categoryOverrides)
-      ..[key] = destination;
+    final overrides =
+        Map<String, ImportDestination>.from(state.categoryOverrides)
+          ..[key] = destination;
     emit(state.copyWith(categoryOverrides: overrides));
   }
 
@@ -261,7 +269,8 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
       return;
     }
     if (result case Left(value: final failure)) {
-      emit(state.copyWith(runStatus: ImportFlowRunStatus.error, failure: failure));
+      emit(state.copyWith(
+          runStatus: ImportFlowRunStatus.error, failure: failure));
       return;
     }
     final preview = (result as Right<Failure, ImportPreview>).value;
@@ -335,7 +344,7 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
           headerNames: state.sample?.headers ?? const [],
           dialect: state.dialect,
           mapping: state.mapping,
-          savedAt: DateTime.now(),
+          savedAt: clock.now(),
         ),
       );
     }
@@ -381,7 +390,8 @@ class ImportFlowCubit extends Cubit<ImportFlowState> {
                 runStatus: ImportFlowRunStatus.idle,
                 step: ImportFlowStep.preview,
               )
-            : state.copyWith(runStatus: ImportFlowRunStatus.error, failure: failure),
+            : state.copyWith(
+                runStatus: ImportFlowRunStatus.error, failure: failure),
       );
       return;
     }

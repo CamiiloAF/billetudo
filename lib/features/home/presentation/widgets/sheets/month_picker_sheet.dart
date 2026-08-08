@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -15,7 +16,7 @@ import '../year_nav_button.dart';
 ///
 /// Any month strictly after the real current month is disabled — the app
 /// has no data for the future — so [MonthPickerSheet] computes that floor
-/// itself against `DateTime.now()` rather than trusting a caller-supplied
+/// itself against `clock.now()` rather than trusting a caller-supplied
 /// flag, per the design's "no hardcodees el mes futuro" note.
 class MonthPickerSheet extends StatefulWidget {
   const MonthPickerSheet({
@@ -57,7 +58,7 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toString();
-    final now = DateTime.now();
+    final now = clock.now();
     final nextYearDisabled = _visibleYear >= now.year;
 
     final gridRows = <Widget>[];

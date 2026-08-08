@@ -11,6 +11,7 @@ import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.da
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_state.dart';
 import 'package:billetudo/features/goals/presentation/pages/goal_detail_page.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -126,30 +127,37 @@ void main() {
     ),
   );
 
+  // The real cubits this test exercises (GoalContributionCubit's default
+  // date, GoalDetailPage's relative "hace X días" history captions) read
+  // `clock.now()` during build/tap, so the whole pump sequence must run
+  // under a frozen clock — not just the final capture — to keep the
+  // committed PNGs stable across real-world days.
   Future<void> openSheetFromChip(
     WidgetTester tester,
     String chipLabel, {
     required Brightness brightness,
-  }) async {
-    when(() => detailCubit.state).thenReturn(readyState);
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        BlocProvider<GoalDetailCubit>.value(
-          value: detailCubit,
-          child: GoalDetailPage(
-            onEdit: (_) {},
-            onOpenCompletedCelebration: (_) {},
-            onOpenMilestone: (_, __) {},
+  }) {
+    return withClock(Clock.fixed(goldenReferenceNow), () async {
+      when(() => detailCubit.state).thenReturn(readyState);
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          BlocProvider<GoalDetailCubit>.value(
+            value: detailCubit,
+            child: GoalDetailPage(
+              onEdit: (_) {},
+              onOpenCompletedCelebration: (_) {},
+              onOpenMilestone: (_, __) {},
+            ),
           ),
+          brightness: brightness,
         ),
-        brightness: brightness,
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text(chipLabel));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(chipLabel));
+      await tester.pumpAndSettle();
+    });
   }
 
   for (final brightness in Brightness.values) {

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -34,7 +35,7 @@ List<TransactionDateGroup> groupTransactionsByDate(
 
 /// "Hoy"/"Ayer"/the formatted date — [date] is already stripped to midnight.
 String transactionGroupLabel(AppLocalizations l10n, DateTime date) {
-  final today = DateUtils.dateOnly(DateTime.now());
+  final today = DateUtils.dateOnly(clock.now());
   if (DateUtils.isSameDay(date, today)) {
     return l10n.transactionsGroupToday;
   }

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/date_range.dart';
@@ -22,7 +23,7 @@ class ReportsPeriodSelection extends Equatable {
   /// The screen's default (HU-01): trailing 6 calendar months including the
   /// current one, e.g. opened in July 2026 → February through July.
   factory ReportsPeriodSelection.lastSixMonths({DateTime? now}) {
-    final today = now ?? DateTime.now();
+    final today = now ?? clock.now();
     final endExclusive = DateTime(today.year, today.month + 1);
     final start = DateTime(today.year, today.month - 5);
     return ReportsPeriodSelection(

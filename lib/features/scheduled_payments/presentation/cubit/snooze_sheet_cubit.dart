@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -13,8 +14,7 @@ import 'snooze_sheet_state.dart';
 class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
   SnoozeSheetCubit(this._snoozeOccurrence)
       : super(
-          SnoozeSheetState(
-              minDate: DateTime.now(), selectedDate: DateTime.now()),
+          SnoozeSheetState(minDate: clock.now(), selectedDate: clock.now()),
         );
 
   final SnoozeScheduledOccurrence _snoozeOccurrence;
@@ -34,7 +34,7 @@ class SnoozeSheetCubit extends Cubit<SnoozeSheetState> {
   }) {
     _scheduledPaymentId = scheduledPaymentId;
     _occurrenceDate = occurrenceDate;
-    final floor = _laterOf(occurrenceDate, today ?? DateTime.now());
+    final floor = _laterOf(occurrenceDate, today ?? clock.now());
     final firstSelectable = DateTime(floor.year, floor.month, floor.day + 1);
     emit(
       SnoozeSheetState(minDate: firstSelectable, selectedDate: firstSelectable),

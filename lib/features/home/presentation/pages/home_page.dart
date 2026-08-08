@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -265,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                             // and in sync with what `spending` itself counts.
                             monthLabel: _monthLabel(
                               context,
-                              state.spending?.month ?? DateTime.now(),
+                              state.spending?.month ?? clock.now(),
                             ),
                             onCreateBudget: widget.onCreateBudget,
                             onOpenBudget: state.budgetProgress == null
@@ -279,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                                 context.read<HomeCubit>().nextPeriod(),
                             onOpenMonthPicker: () => _openMonthPickerSheet(
                               context,
-                              state.spending?.month ?? DateTime.now(),
+                              state.spending?.month ?? clock.now(),
                             ),
                           ),
                   ),

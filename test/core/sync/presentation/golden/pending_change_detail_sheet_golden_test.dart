@@ -6,6 +6,7 @@ import 'package:billetudo/core/sync/presentation/cubit/sync_status_state.dart';
 import 'package:billetudo/core/sync/presentation/models/pending_sync_change.dart';
 import 'package:billetudo/core/sync/presentation/widgets/sheets/pending_change_detail_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,7 +28,7 @@ void main() {
     await loadMaterialIconsFont();
   });
 
-  final now = DateTime.now();
+  final now = goldenReferenceNow;
 
   PendingSyncChange change({required bool withAmount}) =>
       PendingSyncChange.fromOperation(
@@ -69,26 +70,28 @@ void main() {
       initialState: const SyncStatusState(),
     );
 
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () =>
-                PendingChangeDetailSheet.show(context, cubit, value),
-            child: const Text('open'),
+    await withClock(Clock.fixed(now), () async {
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () =>
+                  PendingChangeDetailSheet.show(context, cubit, value),
+              child: const Text('open'),
+            ),
           ),
+          brightness: brightness,
         ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/pending_change_detail_sheet_$name.png'),
-    );
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/pending_change_detail_sheet_$name.png'),
+      );
+    });
   }
 
   for (final brightness in Brightness.values) {

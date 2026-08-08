@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FontLoader, rootBundle;
 import 'package:flutter_test/flutter_test.dart';
@@ -130,4 +131,42 @@ Future<void> pumpGolden(
   } else {
     await tester.pump();
   }
+}
+
+/// The reference "today" every golden that reads `clock.now()` (directly or
+/// through a cubit/widget it renders) is pinned to. Arbitrary but fixed:
+/// picking a real date only matters so the committed PNGs show a plausible
+/// "hace 2 días"/"vence en 5 días" caption, not because any test asserts on
+/// this exact value.
+final DateTime goldenReferenceNow = DateTime(2026, 8, 7, 12);
+
+/// Same choreography as [pumpGolden], but runs the pump under
+/// `withClock(Clock.fixed(fixedNow), ...)` so any `clock.now()` the widget
+/// tree resolves during build — directly, or indirectly through a cubit that
+/// was NOT mocked with a static state — reads [fixedNow] instead of the real
+/// wall clock.
+///
+/// Without this, a golden whose widget computes a relative label ("hace 3
+/// días", the days left in a period, a default form date) from `clock.now()`
+/// would drift and mismatch its committed PNG on every later run, exactly
+/// the failure mode `package:clock` was adopted to close. Prefer this over
+/// wrapping `pumpGolden` by hand in every affected test file.
+Future<void> pumpWithFixedClock(
+  WidgetTester tester,
+  Widget child, {
+  required Brightness brightness,
+  Size size = goldenPhoneSize,
+  bool settle = true,
+  DateTime? fixedNow,
+}) {
+  return withClock(
+    Clock.fixed(fixedNow ?? goldenReferenceNow),
+    () => pumpGolden(
+      tester,
+      child,
+      brightness: brightness,
+      size: size,
+      settle: settle,
+    ),
+  );
 }

@@ -1,7 +1,7 @@
 name: billetudo
 description: Billetudo — app de finanzas personales local-first (Flutter) para el mercado hispanohablante.
 publish_to: 'none'
-version: 0.0.4+8
+version: 0.0.5+9
 
 # NOTA: las versiones son indicativas. Ajusta con:
 #   flutter pub get   /   flutter pub upgrade --major-versions
@@ -119,6 +119,16 @@ dependencies:
   # lo que exige `depend_on_referenced_packages`.
   # NO devolver a dev_dependencies: lib/ la usa en produccion.
   http: ^1.6.0
+
+  # Reloj inyectable (decision: golden tests estables + `presentation/`
+  # testeable). `clock.now()` reemplaza `DateTime.now()` en toda la capa
+  # `presentation/`: en produccion se resuelve al reloj real, y los tests
+  # (golden o no) fijan la fecha con `withClock(Clock.fixed(...), ...)` sin
+  # tener que inyectar un `Clock` por parametro en cada widget/cubit. Ya
+  # estaba en el arbol como transitiva (de `test`); declararla explicita
+  # porque `lib/` la usa en produccion, no solo en tests — igual que `http`
+  # arriba. NO moverla a dev_dependencies.
+  clock: ^1.1.2
 
   # Share sheet nativo. Infraestructura de tres features, dos de ellas Nivel 0
   # — no es la dependencia de un boton suelto:

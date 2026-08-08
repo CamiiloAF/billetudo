@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -44,7 +45,7 @@ class SyncStatusHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final now = DateTime.now();
+    final now = clock.now();
     final lastSyncedAt = state.snapshot.lastSyncedAt;
     final isStale = SyncFreshness.isStale(lastSyncedAt, now: now);
     final relative = lastSyncedAt == null

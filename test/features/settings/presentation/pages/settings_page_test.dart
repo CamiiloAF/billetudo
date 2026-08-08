@@ -15,6 +15,7 @@ import 'package:billetudo/features/settings/presentation/pages/settings_page.dar
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
 import 'package:billetudo/features/settings/presentation/widgets/show_help_on_entry_field.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,26 +118,34 @@ void main() {
     testWidgets(
         'con sesión: aparece bajo la tarjeta de sesión con la última '
         'sincronización', (tester) async {
-      when(() => syncStatusCubit.state).thenReturn(
-        SyncStatusState(
-          status: SyncStatusStatus.ready,
-          snapshot: SyncStatusSnapshot(
-            state: SyncState.synced,
-            quarantinedCount: 0,
-            lastSyncedAt: DateTime.now().subtract(const Duration(minutes: 5)),
-            hasSyncedEver: true,
+      // Reloj fijo: `SyncStatusSettingsField` calcula "hace X minutos" con
+      // `clock.now()` en el momento del build, que en esta máquina puede
+      // ocurrir varios segundos después de este `when(...)` — suficiente
+      // para cruzar el límite del minuto y volver el test no-determinista
+      // (fixture en "hace 5 minutos" exactos, build real en "hace 4").
+      final fixedNow = DateTime(2026, 8, 7, 12);
+      await withClock(Clock.fixed(fixedNow), () async {
+        when(() => syncStatusCubit.state).thenReturn(
+          SyncStatusState(
+            status: SyncStatusStatus.ready,
+            snapshot: SyncStatusSnapshot(
+              state: SyncState.synced,
+              quarantinedCount: 0,
+              lastSyncedAt: fixedNow.subtract(const Duration(minutes: 5)),
+              hasSyncedEver: true,
+            ),
           ),
-        ),
-      );
-      await pumpSettings(tester, session: const AuthSession.signedIn(user));
+        );
+        await pumpSettings(tester, session: const AuthSession.signedIn(user));
 
-      expect(find.text('Estado de sincronización'), findsOneWidget);
-      expect(
-          find.text('Última sincronización: hace 5 minutos'), findsOneWidget);
-      expect(
-        tester.getRect(find.byType(SettingsSessionCard)).bottom,
-        lessThan(tester.getRect(find.text('Estado de sincronización')).top),
-      );
+        expect(find.text('Estado de sincronización'), findsOneWidget);
+        expect(find.text('Última sincronización: hace 5 minutos'),
+            findsOneWidget);
+        expect(
+          tester.getRect(find.byType(SettingsSessionCard)).bottom,
+          lessThan(tester.getRect(find.text('Estado de sincronización')).top),
+        );
+      });
     });
 
     testWidgets('sin sesión: NO existe', (tester) async {
