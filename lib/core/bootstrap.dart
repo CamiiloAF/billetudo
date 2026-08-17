@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../features/auth/domain/usecases/wait_for_first_sync_before_seeding.dart';
 import '../features/categories/domain/usecases/seed_default_categories.dart';
 import '../features/onboarding/domain/usecases/should_show_onboarding.dart';
 import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
@@ -114,6 +115,30 @@ Future<Widget Function()> _initApp(
 
   final crash = getIt<CrashReporter>();
   await crash.init();
+
+  // Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): must run
+  // before ANY local seed below. `SeedDefaultCategories()()` just below is
+  // the first use case that touches `AppDatabase` — Drift only opens (and
+  // runs its `onCreate`/`onUpgrade` migrations, including
+  // `_seedAppSettings()`) lazily, on its first real query. If this device
+  // already has a restorable Supabase session but its local PowerSync store
+  // is empty or was reset, seeding local defaults before PowerSync's first
+  // sync downloads the user's real values ends up uploading those defaults
+  // over the real server state — PostgREST
+  // `upsert(...resolution=merge-duplicates)` silently overwrites any column
+  // present in the seed payload. A timeout
+  // keeps a signed-in device with no network at this exact launch from
+  // hanging forever — `waitForFirstSync` resolves instantly for the common
+  // case of a device that already completed a sync before (PowerSync
+  // persists that locally), so the timeout only ever fires for the rare
+  // double coincidence this fix targets, and seeding proceeds anyway when it
+  // does: an unprotected write is still better than an app that never starts.
+  final firstSyncResult = await getIt<WaitForFirstSyncBeforeSeeding>()();
+  if (firstSyncResult case Left(value: final failure)) {
+    unawaited(
+      crash.recordFailure(failure, context: 'waitForFirstSyncBeforeSeeding'),
+    );
+  }
 
   // Stopgap: seed the default categories on every launch until onboarding
   // (HU-06, docs/requirements/13-onboarding.md) owns this — the user decided

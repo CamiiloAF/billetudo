@@ -989,4 +989,62 @@ void main() {
       expect(repository.currentSession, const AuthSession.signedOut());
     });
   });
+
+  // Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): a device
+  // with a restorable session must not let local seeding (AppSettings,
+  // default categories) run before PowerSync's first sync lands.
+  group('waitForFirstSync (bug corregido 2026-08-17)', () {
+    test(
+      'no-op Right without connecting when there is no restorable session',
+      () async {
+        // `repository` was built in setUp with `currentSession` == null.
+        final result = await repository.waitForFirstSync(
+          timeout: const Duration(milliseconds: 50),
+        );
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verifyNever(() => connector.fetchCredentials());
+      },
+    );
+
+    test(
+      'connects PowerSync and returns a NetworkFailure, bounded by the '
+      'timeout, when a session exists but credentials never resolve (no '
+      'network at this launch)',
+      () async {
+        // The connector answers well after our own timeout below, same as a
+        // device offline at this exact boot. Finite (not a `Completer` that
+        // never resolves): the underlying sync loop's own pending
+        // `fetchCredentials()` call has to settle *eventually* or
+        // `tearDown`'s `powerSync.close()` hangs waiting on it too — a real
+        // offline device does not have that problem because the OS/socket
+        // layer eventually surfaces a failure, which this mock stands in
+        // for with a bounded delay instead.
+        Future<Null> delayedCredentials() => Future<Null>.delayed(
+              const Duration(seconds: 2),
+              () => null,
+            );
+        when(() => connector.fetchCredentials())
+            .thenAnswer((_) => delayedCredentials());
+        when(() => connector.getCredentialsCached())
+            .thenAnswer((_) => delayedCredentials());
+        when(() => connector.prefetchCredentials())
+            .thenAnswer((_) => delayedCredentials());
+
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+
+        final result = await signedIn.waitForFirstSync(
+          timeout: const Duration(milliseconds: 200),
+        );
+
+        expect(result.isLeft(), isTrue);
+        expect((result as Left).value, isA<NetworkFailure>());
+        // The gate really tried to sync — this is not just "no session,
+        // skip" returning early by accident.
+        verify(() => connector.fetchCredentials()).called(greaterThan(0));
+      },
+      timeout: const Timeout(Duration(seconds: 10)),
+    );
+  });
 }

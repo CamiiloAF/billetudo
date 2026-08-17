@@ -94,6 +94,12 @@ class AuthRepositoryImpl implements AuthRepository {
     _connectPowerSync();
   }
 
+  /// Shared by [_restoreSession] and [waitForFirstSync]: whether
+  /// `supabase_flutter` already restored a session from disk for this
+  /// launch, i.e. whether there is a cloud account whose data this device
+  /// must not race against.
+  bool get _hasRestorableSession => _supabase.auth.currentSession?.user != null;
+
   /// Keeps the session in step with Supabase's own lifecycle: a token refresh
   /// that fails, a sign-out from another part of the app, or the initial
   /// restore landing after this was constructed.
@@ -429,4 +435,29 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> hasEverSignedIn() => _everSignedIn.read();
+
+  @override
+  FutureResult<Unit> waitForFirstSync({
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    if (!_hasRestorableSession) {
+      return const Right(unit);
+    }
+
+    _connectPowerSync();
+
+    try {
+      await _powerSync.waitForFirstSync().timeout(timeout);
+      return const Right(unit);
+    } on TimeoutException catch (e, stackTrace) {
+      return Left(
+        NetworkFailure(
+          'waitForFirstSync timed out after $timeout — proceeding without '
+          'the PowerSync first download (likely no network at this launch).',
+          cause: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
 }

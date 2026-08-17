@@ -10,6 +10,7 @@ import 'package:billetudo/features/auth/domain/usecases/merge_local_data.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_apple.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
+import 'package:billetudo/features/auth/domain/usecases/wait_for_first_sync_before_seeding.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/wipe_local_data.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,10 @@ import 'auth_repository_mock.dart';
 
 void main() {
   late MockAuthRepository repository;
+
+  setUpAll(() {
+    registerFallbackValue(Duration.zero);
+  });
 
   setUp(() {
     repository = MockAuthRepository();
@@ -157,5 +162,40 @@ void main() {
         expect(scope, DeleteAccountScope.localOnlySignedOut);
       },
     );
+  });
+
+  group('WaitForFirstSyncBeforeSeeding', () {
+    test('delega en el repositorio con el timeout por defecto', () async {
+      when(() => repository.waitForFirstSync(timeout: any(named: 'timeout')))
+          .thenAnswer((_) async => const Right(unit));
+
+      final result = await WaitForFirstSyncBeforeSeeding(repository)();
+
+      expect(result.isRight(), isTrue);
+      verify(
+        () => repository.waitForFirstSync(
+          timeout: const Duration(seconds: 8),
+        ),
+      ).called(1);
+    });
+
+    test('propaga un NetworkFailure sin lanzar cuando el repositorio '
+        'reporta timeout', () async {
+      when(() => repository.waitForFirstSync(timeout: any(named: 'timeout')))
+          .thenAnswer(
+        (_) async => const Left(NetworkFailure('timed out')),
+      );
+
+      final result = await WaitForFirstSyncBeforeSeeding(repository)(
+        timeout: const Duration(milliseconds: 1),
+      );
+
+      expect(result.isLeft(), isTrue);
+      verify(
+        () => repository.waitForFirstSync(
+          timeout: const Duration(milliseconds: 1),
+        ),
+      ).called(1);
+    });
   });
 }

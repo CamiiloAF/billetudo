@@ -55,4 +55,21 @@ abstract class AuthRepository {
   /// from one that signed out of a real one, so "Eliminar cuenta" never
   /// implies the cloud account is gone when it was only skipped.
   Future<bool> hasEverSignedIn();
+
+  /// Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): if this
+  /// device has a restorable Supabase session, connects PowerSync (if it is
+  /// not connected yet) and waits, bounded by [timeout], for its first full
+  /// sync to land — so a caller writing local defaults right after this
+  /// (e.g. `bootstrap.dart` seeding `AppSettings`/default categories) never
+  /// races the download of the user's real server values.
+  ///
+  /// A no-op `Right` when there is no restorable session — the local-first,
+  /// no-account path (HU-01) has nothing on a server to race against.
+  ///
+  /// Returns a `NetworkFailure` (not thrown) if [timeout] elapses before the
+  /// first sync completes, e.g. no network at this exact launch — the
+  /// caller decides what "proceed anyway" means for it, same posture as
+  /// `SeedDefaultCategories`'s own `NetworkFailure` handling in
+  /// `bootstrap.dart`.
+  FutureResult<Unit> waitForFirstSync({Duration timeout});
 }
