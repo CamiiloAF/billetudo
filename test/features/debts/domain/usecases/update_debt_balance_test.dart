@@ -2,7 +2,9 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_balance.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_entry.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_entry_draft.dart';
+import 'package:billetudo/features/debts/domain/services/debt_balance_calculator.dart';
 import 'package:billetudo/features/debts/domain/usecases/update_debt_balance.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -42,6 +44,7 @@ void main() {
           totalIncreasesMinor: 100000,
           totalDecreasesMinor: 0,
           interestAccruedMinor: 0,
+          displayTotalMinor: 100000,
         ),
       ),
     );
@@ -69,6 +72,7 @@ void main() {
           totalIncreasesMinor: 100000,
           totalDecreasesMinor: 0,
           interestAccruedMinor: 0,
+          displayTotalMinor: 100000,
         ),
       ),
     );
@@ -95,6 +99,7 @@ void main() {
           totalIncreasesMinor: 100000,
           totalDecreasesMinor: 0,
           interestAccruedMinor: 0,
+          displayTotalMinor: 100000,
         ),
       ),
     );
@@ -119,6 +124,79 @@ void main() {
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
     verifyNever(() => repository.getBalance(any()));
   });
+
+  test(
+    'the diff it writes, once fed back into the calculator, makes '
+    'displayTotalMinor equal the reconciled figure (regression, not '
+    'target + abonos already applied)',
+    () async {
+      // Opening 98M, a 2M abono before reconciling: raw outstanding is 96M.
+      // The user reconciles to 110M -> diff = +14M.
+      const debt98mOpen = 98000000;
+      final debt = buildDebt(
+        principalMinor: debt98mOpen,
+        createdAt: DateTime(2026, 1, 1),
+        startDate: DateTime(2026, 1, 1),
+      );
+      when(() => repository.getDebt('d1')).thenAnswer((_) async => Right(debt));
+
+      const calc = DebtBalanceCalculator();
+      final beforeReconciliation = calc.calculate(
+        debt: debt,
+        entries: const [],
+        cashEvents: [
+          buildCashEvent(
+            transactionId: 't-abono',
+            type: TransactionType.expense,
+            amountMinor: 2000000,
+            date: DateTime(2026, 2, 1),
+          ),
+        ],
+      );
+      expect(beforeReconciliation.rawOutstandingMinor, 96000000);
+
+      when(() => repository.getBalance('d1'))
+          .thenAnswer((_) async => Right(beforeReconciliation));
+      when(() => repository.addDebtEntry(any()))
+          .thenAnswer((_) async => Right(anyEntry()));
+
+      await usecase(
+        debtId: 'd1',
+        targetOutstandingMinor: 110000000,
+        date: DateTime(2026, 3, 1),
+      );
+
+      final captured = verify(() => repository.addDebtEntry(captureAny()))
+          .captured
+          .single as DebtEntryDraft;
+      expect(captured.amountMinor, 14000000);
+
+      final afterReconciliation = calc.calculate(
+        debt: debt,
+        entries: [
+          buildEntry(
+            id: 'reconciliation',
+            kind: captured.kind,
+            amountMinor: captured.amountMinor,
+            entryDate: captured.entryDate,
+          ),
+        ],
+        cashEvents: [
+          buildCashEvent(
+            transactionId: 't-abono',
+            type: TransactionType.expense,
+            amountMinor: 2000000,
+            date: DateTime(2026, 2, 1),
+          ),
+        ],
+      );
+
+      expect(afterReconciliation.outstandingMinor, 110000000);
+      // The bug: this used to read 112000000 (110M target + the 2M abono
+      // already applied before reconciling).
+      expect(afterReconciliation.displayTotalMinor, 110000000);
+    },
+  );
 
   test('rejects a reconciliation on a closed debt', () async {
     when(() => repository.getDebt('d1')).thenAnswer(

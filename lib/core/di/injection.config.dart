@@ -314,6 +314,8 @@ import 'package:billetudo/features/debts/domain/usecases/create_debt_with_openin
     as _i398;
 import 'package:billetudo/features/debts/domain/usecases/delete_debt.dart'
     as _i644;
+import 'package:billetudo/features/debts/domain/usecases/delete_debt_entry.dart'
+    as _i789;
 import 'package:billetudo/features/debts/domain/usecases/link_transaction_to_debt.dart'
     as _i980;
 import 'package:billetudo/features/debts/domain/usecases/register_debt_cash_event.dart'
@@ -326,6 +328,8 @@ import 'package:billetudo/features/debts/domain/usecases/update_debt.dart'
     as _i779;
 import 'package:billetudo/features/debts/domain/usecases/update_debt_balance.dart'
     as _i309;
+import 'package:billetudo/features/debts/domain/usecases/update_debt_entry.dart'
+    as _i316;
 import 'package:billetudo/features/debts/domain/usecases/update_initial_movement.dart'
     as _i425;
 import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart'
@@ -334,6 +338,8 @@ import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart'
     as _i42;
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart'
     as _i428;
+import 'package:billetudo/features/debts/presentation/cubit/debt_entry_edit_cubit.dart'
+    as _i420;
 import 'package:billetudo/features/debts/presentation/cubit/debt_form_cubit.dart'
     as _i457;
 import 'package:billetudo/features/debts/presentation/cubit/debt_link_cubit.dart'
@@ -1282,6 +1288,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i398.CreateDebtWithOpeningMovement(gh<_i932.DebtRepository>()));
     gh.factory<_i644.DeleteDebt>(
         () => _i644.DeleteDebt(gh<_i932.DebtRepository>()));
+    gh.factory<_i789.DeleteDebtEntry>(
+        () => _i789.DeleteDebtEntry(gh<_i932.DebtRepository>()));
     gh.factory<_i980.LinkTransactionToDebt>(
         () => _i980.LinkTransactionToDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i135.RegisterDebtCashEvent>(
@@ -1294,6 +1302,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i779.UpdateDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i309.UpdateDebtBalance>(
         () => _i309.UpdateDebtBalance(gh<_i932.DebtRepository>()));
+    gh.factory<_i316.UpdateDebtEntry>(
+        () => _i316.UpdateDebtEntry(gh<_i932.DebtRepository>()));
     gh.factory<_i425.UpdateInitialMovement>(
         () => _i425.UpdateInitialMovement(gh<_i932.DebtRepository>()));
     gh.factory<_i1003.WatchDebtDetail>(
@@ -1312,6 +1322,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i966.CashflowCubit>(
         () => _i966.CashflowCubit(gh<_i137.WatchCashflowReport>()));
+    gh.factory<_i420.DebtEntryEditCubit>(() => _i420.DebtEntryEditCubit(
+          gh<_i316.UpdateDebtEntry>(),
+          gh<_i789.DeleteDebtEntry>(),
+        ));
     gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
           gh<_i418.BackupRepository>(),
           gh<_i639.ParseBackupHeader>(),
@@ -1481,6 +1495,14 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
+    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i255.DebtInterestCalculator>(),
+          gh<_i939.CloseDebt>(),
+          gh<_i644.DeleteDebt>(),
+          gh<_i103.AccrueInterest>(),
+          gh<_i789.DeleteDebtEntry>(),
+        ));
     gh.factory<_i244.BudgetsListCubit>(() => _i244.BudgetsListCubit(
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
@@ -1549,13 +1571,6 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i9.OnboardingFlowCubit>(
         () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
-    gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
-          gh<_i1003.WatchDebtDetail>(),
-          gh<_i255.DebtInterestCalculator>(),
-          gh<_i939.CloseDebt>(),
-          gh<_i644.DeleteDebt>(),
-          gh<_i103.AccrueInterest>(),
-        ));
     gh.factory<_i829.TutorialGateCubit>(() => _i829.TutorialGateCubit(
           gh<_i781.HasSeenTutorial>(),
           gh<_i895.WatchHelpEnabled>(),

@@ -1,11 +1,15 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/error_state.dart';
 import 'package:billetudo/core/widgets/load_more_button.dart';
 import 'package:billetudo/features/debts/domain/entities/debt.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_ledger_entry.dart';
+import 'package:billetudo/features/debts/domain/usecases/delete_debt_entry.dart';
+import 'package:billetudo/features/debts/domain/usecases/update_debt_entry.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_state.dart';
+import 'package:billetudo/features/debts/presentation/cubit/debt_entry_edit_cubit.dart';
 import 'package:billetudo/features/debts/presentation/pages/debt_detail_page.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_configure_installment_card.dart';
 import 'package:billetudo/features/debts/presentation/widgets/debt_hero_card.dart';
@@ -18,10 +22,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../support/fake_note_suggestions.dart';
 import '../debts_presentation_fixtures.dart';
 
 class MockDebtDetailCubit extends MockCubit<DebtDetailState>
     implements DebtDetailCubit {}
+
+class MockUpdateDebtEntry extends Mock implements UpdateDebtEntry {}
+
+class MockDeleteDebtEntry extends Mock implements DeleteDebtEntry {}
 
 void main() {
   late MockDebtDetailCubit cubit;
@@ -58,7 +67,25 @@ void main() {
     runningBalances: const [2856000000, 4200000000],
   );
 
-  setUp(() => cubit = MockDebtDetailCubit());
+  setUp(() {
+    cubit = MockDebtDetailCubit();
+    // A ledger row's tap now opens the merged `DebtEntryEditSheet` directly
+    // (no more intermediate `DebtMovementDetailSheet`), so its
+    // `DebtEntryEditCubit` needs registering here too — a real cubit over
+    // mock use cases, since these tests only assert what the sheet renders,
+    // never `submit`/`delete`.
+    getIt
+      ..registerFactory<UpdateDebtEntry>(MockUpdateDebtEntry.new)
+      ..registerFactory<DeleteDebtEntry>(MockDeleteDebtEntry.new)
+      ..registerFactory<DebtEntryEditCubit>(
+        () => DebtEntryEditCubit(getIt(), getIt()),
+      );
+    // The editable sheet's note field is the shared `NoteAutocompleteField`,
+    // which needs its own `getIt<GetNoteSuggestions>()` lookup.
+    registerFakeNoteSuggestions();
+  });
+
+  tearDown(getIt.reset);
 
   Future<void> pump(
     WidgetTester tester,
@@ -205,8 +232,8 @@ void main() {
   });
 
   testWidgets(
-      'tocar un abono sin caja (ledgerPayment sin tx) muestra el snackbar de '
-      'feedback', (tester) async {
+      'tocar un abono sin caja (ledgerPayment sin tx) abre el sheet '
+      'editable, con Guardar cambios y Eliminar movimiento', (tester) async {
     final abonoState = DebtDetailState(
       status: DebtDetailStatus.ready,
       detail: buildDebtDetail(
@@ -221,6 +248,7 @@ void main() {
             id: 'abono',
             kind: DebtLedgerKind.ledgerPayment,
             effectMinor: -20000,
+            entryId: 'e1',
           ),
           buildLedgerEntry(
             id: 'open',
@@ -236,8 +264,45 @@ void main() {
 
     // The first row is the cash-less abono: no movement behind it.
     await tester.tap(find.byType(DebtLedgerRow).first);
-    await tester.pump();
-    expect(find.text('Este abono no movió ninguna cuenta'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Guardar cambios'), findsOneWidget);
+    expect(find.text('Eliminar movimiento'), findsOneWidget);
+  });
+
+  testWidgets(
+      'tocar un interés (auto-generado) abre el sheet en modo solo lectura, '
+      'sin Guardar cambios, solo Eliminar', (tester) async {
+    final interestState = DebtDetailState(
+      status: DebtDetailStatus.ready,
+      detail: buildDebtDetail(
+        debt: buildDebt(id: 'd1', name: 'Préstamo a Ana'),
+        balance: buildBalance(
+          principalMinor: 100000,
+          totalIncreasesMinor: 103600,
+        ),
+        ledger: [
+          buildLedgerEntry(
+            id: 'interest',
+            kind: DebtLedgerKind.interestAccrual,
+            effectMinor: 3600,
+            entryId: 'e2',
+          ),
+          buildLedgerEntry(
+            id: 'open',
+            kind: DebtLedgerKind.opening,
+            effectMinor: 100000,
+          ),
+        ],
+      ),
+      runningBalances: const [103600, 100000],
+    );
+
+    await pump(tester, interestState);
+
+    await tester.tap(find.byType(DebtLedgerRow).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Guardar cambios'), findsNothing);
+    expect(find.text('Eliminar'), findsOneWidget);
   });
 
   group('HU-04: paginación "Ver más" del ledger (8/+8)', () {

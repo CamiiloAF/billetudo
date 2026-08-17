@@ -73,7 +73,54 @@ class DebtBalanceCalculator {
       totalIncreasesMinor: increases,
       totalDecreasesMinor: decreases,
       interestAccruedMinor: interest,
+      displayTotalMinor: _displayTotal(
+        debt: debt,
+        entries: entries,
+        cashEvents: cashEvents,
+        fallback: increases,
+      ),
     );
+  }
+
+  /// The "de $X" figure (see [DebtBalance.displayTotalMinor]'s doc): walks the
+  /// unified, chronological (oldest-first) ledger and, if it finds a
+  /// `manualAdjustment` entry — always a balance reconciliation written by
+  /// `UpdateDebtBalance` (HU-06); no other use case in this feature produces
+  /// that kind today — resets the running total to the raw balance right after
+  /// it and only accumulates increases from there on. The *most recent*
+  /// reconciliation wins when there is more than one. With no reconciliation
+  /// in the ledger, [fallback] (the full lifetime `totalIncreasesMinor`) is
+  /// returned unchanged.
+  int _displayTotal({
+    required Debt debt,
+    required List<DebtEntry> entries,
+    required List<DebtCashEvent> cashEvents,
+    required int fallback,
+  }) {
+    final chronological =
+        buildLedger(debt: debt, entries: entries, cashEvents: cashEvents)
+            .reversed;
+
+    var running = 0;
+    int? baselineAfterReconciliation;
+    var increasesSinceReconciliation = 0;
+
+    for (final item in chronological) {
+      running += item.effectMinor;
+      if (item.kind == DebtLedgerKind.manualAdjustment) {
+        baselineAfterReconciliation = running;
+        increasesSinceReconciliation = 0;
+        continue;
+      }
+      if (item.effectMinor >= 0) {
+        increasesSinceReconciliation += item.effectMinor;
+      }
+    }
+
+    if (baselineAfterReconciliation == null) {
+      return fallback;
+    }
+    return baselineAfterReconciliation + increasesSinceReconciliation;
   }
 
   /// Builds the unified, newest-first history (HU-04): an opening row (when the

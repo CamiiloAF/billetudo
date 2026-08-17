@@ -12,6 +12,7 @@ class DebtBalance extends Equatable {
     required this.totalIncreasesMinor,
     required this.totalDecreasesMinor,
     required this.interestAccruedMinor,
+    required this.displayTotalMinor,
   });
 
   /// A zeroed balance, for a debt with no principal and no events.
@@ -20,20 +21,40 @@ class DebtBalance extends Equatable {
     totalIncreasesMinor: 0,
     totalDecreasesMinor: 0,
     interestAccruedMinor: 0,
+    displayTotalMinor: 0,
   );
 
   final int principalMinor;
 
-  /// Everything that pushed the debt up: the opening principal + every
-  /// disbursement (cash or ledger) + accrued interest + upward adjustments.
+  /// Everything that pushed the debt up since the debt's origin: the opening
+  /// principal + every disbursement (cash or ledger) + accrued interest +
+  /// upward adjustments. Historical, never resets — feeds [rawOutstandingMinor]
+  /// and anything that needs the true lifetime figure (e.g. the "total
+  /// pagado/cobrado" summaries), so its invariant with [totalDecreasesMinor]
+  /// must hold regardless of any reconciliation in between.
   final int totalIncreasesMinor;
 
-  /// Everything that pushed the debt down: every abono/cuota (cash or ledger) +
-  /// downward adjustments (as a positive magnitude).
+  /// Everything that pushed the debt down since the debt's origin: every
+  /// abono/cuota (cash or ledger) + downward adjustments (as a positive
+  /// magnitude). Historical, same lifetime scope as [totalIncreasesMinor].
   final int totalDecreasesMinor;
 
   /// The subset of increases that is interest (for the "estimado" label).
   final int interestAccruedMinor;
+
+  /// What the hero/card show as "de $X": the total against which the current
+  /// balance is measured. Equal to [totalIncreasesMinor] (the full lifetime
+  /// total) **unless** the ledger holds a balance reconciliation
+  /// (`manualAdjustment` written by `UpdateDebtBalance`, HU-06) — in that case
+  /// it is the figure the user typed at the last reconciliation plus any
+  /// disbursement/interest/upward adjustment posted after it, so a
+  /// reconciliation does not drag abonos applied *before* it into the
+  /// denominator (see the dev-run bug fix for the exact scenario). Deliberately
+  /// separate from [totalIncreasesMinor]: that field must stay the true
+  /// lifetime total for other consumers (e.g. `DebtsSummary`'s "total
+  /// pagado/cobrado", which reads [totalDecreasesMinor] with that same
+  /// lifetime scope).
+  final int displayTotalMinor;
 
   /// Signed running balance. May be negative when abonos exceed what is owed;
   /// that surplus is [excessMinor]. Used by reconciliation ("actualizar saldo")
@@ -67,5 +88,6 @@ class DebtBalance extends Equatable {
         totalIncreasesMinor,
         totalDecreasesMinor,
         interestAccruedMinor,
+        displayTotalMinor,
       ];
 }

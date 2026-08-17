@@ -86,11 +86,11 @@ class DebtHeroCard extends StatelessWidget {
                         color: colors.textPrimary,
                       ),
                     ),
-                    if (balance.totalIncreasesMinor > 0)
+                    if (balance.displayTotalMinor > 0)
                       Text(
                         l10n.debtAmountOf(
                           DebtFormat.amount(
-                            balance.totalIncreasesMinor,
+                            balance.displayTotalMinor,
                             debt.currency,
                           ),
                         ),

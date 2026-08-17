@@ -13,6 +13,7 @@ import '../../domain/services/debt_interest_calculator.dart';
 import '../../domain/usecases/accrue_interest.dart';
 import '../../domain/usecases/close_debt.dart';
 import '../../domain/usecases/delete_debt.dart';
+import '../../domain/usecases/delete_debt_entry.dart';
 import '../../domain/usecases/watch_debt_detail.dart';
 import 'debt_detail_state.dart';
 
@@ -32,6 +33,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     this._closeDebt,
     this._deleteDebt,
     this._accrueInterest,
+    this._deleteDebtEntry,
   ) : super(const DebtDetailState());
 
   final WatchDebtDetail _watchDebtDetail;
@@ -39,6 +41,7 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
   final CloseDebt _closeDebt;
   final DeleteDebt _deleteDebt;
   final AccrueInterest _accrueInterest;
+  final DeleteDebtEntry _deleteDebtEntry;
 
   StreamSubscription<Result<DebtDetail>>? _subscription;
   String? _debtId;
@@ -196,6 +199,25 @@ class DebtDetailCubit extends Cubit<DebtDetailState> {
     result.fold(
       (failure) => emit(state.copyWith(actionFailure: () => failure)),
       (_) => emit(state.copyWith(status: DebtDetailStatus.deleted)),
+    );
+  }
+
+  /// Deletes a single solo-deuda movement (an abono, desembolso, interest
+  /// accrual, or manual adjustment). Kept for callers outside
+  /// `DebtEntryEditSheet` (which now owns its own delete flow via
+  /// `DebtEntryEditCubit.delete`); the detail stream (`watchDebtDetail`)
+  /// reflects the entry's removal on its own either way — this only surfaces
+  /// a failure via [DebtDetailState.actionFailure], the same channel
+  /// "Cerrar deuda"/"Eliminar deuda" already use, so the page needs no new
+  /// listener.
+  Future<void> deleteEntry(String entryId) async {
+    final result = await _deleteDebtEntry(entryId);
+    if (isClosed) {
+      return;
+    }
+    result.fold(
+      (failure) => emit(state.copyWith(actionFailure: () => failure)),
+      (_) {},
     );
   }
 

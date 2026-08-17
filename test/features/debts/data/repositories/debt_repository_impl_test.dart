@@ -223,4 +223,123 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
   });
+
+  Future<DebtEntry> createEntry(
+    String debtId, {
+    DebtEntryKind kind = DebtEntryKind.payment,
+    int amountMinor = -15000,
+  }) =>
+      db.into(db.debtEntries).insertReturning(
+            DebtEntriesCompanion.insert(
+              debtId: debtId,
+              kind: kind,
+              amountMinor: amountMinor,
+              entryDate: DateTime(2026, 5, 1),
+              updatedAt: const Value(0),
+            ),
+          );
+
+  group('updateDebtEntry / deleteDebtEntry (Fix B)', () {
+    test('getDebtEntry reads a live entry back', () async {
+      final debt = await createDebt(DebtDirection.iOwe);
+      final entry = await createEntry(debt.id);
+
+      final result = await repository.getDebtEntry(entry.id);
+
+      expect(result.isRight(), isTrue);
+      result.fold((_) => fail('expected a Right'), (found) {
+        expect(found.id, entry.id);
+        expect(found.amountMinor, -15000);
+      });
+    });
+
+    test('getDebtEntry fails for a missing entry', () async {
+      final result = await repository.getDebtEntry('missing');
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('updateDebtEntry overwrites amount/date/note and stamps updatedAt',
+        () async {
+      final debt = await createDebt(DebtDirection.iOwe);
+      final entry = await createEntry(debt.id);
+
+      final result = await repository.updateDebtEntry(
+        id: entry.id,
+        amountMinor: -20000,
+        entryDate: DateTime(2026, 6, 1),
+        note: 'Cuota de junio',
+      );
+
+      expect(result.isRight(), isTrue);
+      final row = await (db.select(db.debtEntries)
+            ..where((e) => e.id.equals(entry.id)))
+          .getSingle();
+      expect(row.amountMinor, -20000);
+      expect(row.entryDate, DateTime(2026, 6, 1));
+      expect(row.note, 'Cuota de junio');
+      expect(row.updatedAt, greaterThan(0));
+    });
+
+    test('updateDebtEntry fails for a missing entry', () async {
+      final result = await repository.updateDebtEntry(
+        id: 'missing',
+        amountMinor: -20000,
+        entryDate: DateTime(2026, 6, 1),
+      );
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('deleteDebtEntry sets deletedAt (papelera), never tombstonedAt',
+        () async {
+      final debt = await createDebt(DebtDirection.iOwe);
+      final entry = await createEntry(debt.id);
+
+      final result = await repository.deleteDebtEntry(entry.id);
+
+      expect(result.isRight(), isTrue);
+      final row = await (db.select(db.debtEntries)
+            ..where((e) => e.id.equals(entry.id)))
+          .getSingle();
+      expect(row.deletedAt, isNotNull);
+      expect(row.tombstonedAt, isNull);
+    });
+
+    test('a deleted entry no longer surfaces via getDebtEntry', () async {
+      final debt = await createDebt(DebtDirection.iOwe);
+      final entry = await createEntry(debt.id);
+      await repository.deleteDebtEntry(entry.id);
+
+      final result = await repository.getDebtEntry(entry.id);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('deleteDebtEntry fails for a missing entry', () async {
+      final result = await repository.deleteDebtEntry('missing');
+      expect(result.isLeft(), isTrue);
+    });
+
+    test(
+        'deleteDebtEntry allows deleting an interestAccrual entry, unlike '
+        'updateDebtEntry (whose rejection is domain-level, in UpdateDebtEntry '
+        '— this repository method itself never discriminates by kind)',
+        () async {
+      final debt = await createDebt(DebtDirection.iOwe);
+      final entry = await createEntry(
+        debt.id,
+        kind: DebtEntryKind.interestAccrual,
+        amountMinor: 3000,
+      );
+
+      final result = await repository.deleteDebtEntry(entry.id);
+
+      expect(result.isRight(), isTrue);
+      final row = await (db.select(db.debtEntries)
+            ..where((e) => e.id.equals(entry.id)))
+          .getSingle();
+      expect(row.deletedAt, isNotNull);
+      expect(row.tombstonedAt, isNull);
+    });
+  });
 }

@@ -11,6 +11,8 @@ import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/debt_entry.dart';
+import '../../domain/entities/debt_ledger_entry.dart';
 import '../cubit/debt_detail_cubit.dart';
 import '../cubit/debt_detail_state.dart';
 import '../widgets/debt_configure_installment_card.dart';
@@ -24,6 +26,7 @@ import '../widgets/sheets/confirm_delete_debt_sheet.dart';
 import '../widgets/sheets/debt_actions_sheet.dart';
 import '../widgets/sheets/debt_celebration_sheet.dart';
 import '../widgets/sheets/debt_close_confirm_sheet.dart';
+import '../widgets/sheets/debt_entry_edit_sheet.dart';
 import '../widgets/sheets/debt_payment_sheet.dart';
 import '../widgets/sheets/debt_update_balance_sheet.dart';
 
@@ -335,8 +338,15 @@ class DebtDetailReadyView extends StatelessWidget {
             onOpenTransaction: onOpenTransaction,
             initialTransactionId: debt.initialTransactionId,
             onLinkOpening: () => _showOpeningLinkSnackbar(context),
-            onLedgerPaymentNoAccount: () =>
-                _showLedgerPaymentNoAccountSnackbar(context),
+            onOpenMovementDetail: (entry) => unawaited(
+              _openMovementDetail(
+                context,
+                debt: debt,
+                entry: entry,
+                runningMinor:
+                    index < runningBalances.length ? runningBalances[index] : 0,
+              ),
+            ),
           ),
         ],
         if (state.hasMoreLedger) ...[
@@ -365,21 +375,65 @@ class DebtDetailReadyView extends StatelessWidget {
       );
   }
 
-  /// A cash-less abono row (toggle "No") was tapped. It has no underlying
-  /// movement to open, so a neutral feedback snackbar explains it — no action,
-  /// auto-dismiss: "Este abono no movió ninguna cuenta".
-  void _showLedgerPaymentNoAccountSnackbar(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(l10n.debtLedgerAbonoNoAccountSnackbar),
-          duration: const Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  /// A solo-deuda row (a cash-less abono/desembolso, an interest accrual, or a
+  /// manual adjustment) was tapped. Opens the merged `DebtEntryEditSheet`
+  /// directly — no intermediate read-only detail step — which renders its
+  /// editable form or its read-only info rows depending on the entry's kind,
+  /// and owns its own delete flow.
+  Future<void> _openMovementDetail(
+    BuildContext context, {
+    required Debt debt,
+    required DebtLedgerEntry entry,
+    required int runningMinor,
+  }) async {
+    final entryId = entry.entryId;
+    if (entryId == null) {
+      return;
+    }
+    await DebtEntryEditSheet.show(
+      context,
+      debt: debt,
+      entry: _entryFromLedgerRow(debt.id, entryId, entry),
+      runningMinor: runningMinor,
+    );
   }
+
+  /// Rebuilds the domain [DebtEntry] `DebtEntryEditSheet` needs to seed its
+  /// form from the read-only [DebtLedgerEntry] the ledger row carries — the
+  /// unified ledger never keeps the underlying `DebtEntry` around once it is
+  /// merged, so this reconstructs it from the fields the ledger row itself
+  /// projects (`kind`/`effectMinor`/`date`/`note`). `createdAt`/`updatedAt`
+  /// carry no meaning for the edit sheet (it never displays or resubmits
+  /// them) — `UpdateDebtEntry` re-reads the real, persisted entry by `id`
+  /// before writing, so nothing here reaches storage unverified.
+  DebtEntry _entryFromLedgerRow(
+    String debtId,
+    String id,
+    DebtLedgerEntry ledgerEntry,
+  ) =>
+      DebtEntry(
+        id: id,
+        debtId: debtId,
+        kind: switch (ledgerEntry.kind) {
+          DebtLedgerKind.ledgerDisbursement => DebtEntryKind.disbursement,
+          DebtLedgerKind.interestAccrual => DebtEntryKind.interestAccrual,
+          DebtLedgerKind.manualAdjustment => DebtEntryKind.manualAdjustment,
+          // `ledgerPayment` and every cash/opening kind: the payment default
+          // is correct for the former, and `_openMovementDetail` never
+          // reaches this for the latter (opening/cash rows carry no
+          // `entryId`).
+          DebtLedgerKind.ledgerPayment ||
+          DebtLedgerKind.opening ||
+          DebtLedgerKind.cashDisbursement ||
+          DebtLedgerKind.cashPayment =>
+            DebtEntryKind.payment,
+        },
+        amountMinor: ledgerEntry.effectMinor,
+        entryDate: ledgerEntry.date,
+        note: ledgerEntry.note,
+        createdAt: ledgerEntry.createdAt,
+        updatedAt: 0,
+      );
 }
 
 /// The fixed CTA at the thumb zone (`wubqC`): "Registrar abono" normally, or

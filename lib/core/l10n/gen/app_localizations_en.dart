@@ -1714,8 +1714,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtOpeningLinkSnackbar => 'Initial balance · no account linked';
 
   @override
-  String get debtLedgerAbonoNoAccountSnackbar =>
-      'This payment didn\'t move any account';
+  String get debtEntryDeleteSheetTitle => 'Delete this movement?';
+
+  @override
+  String get debtEntryDeleteSheetMessage => 'You can restore it later.';
+
+  @override
+  String get debtEntryEditTitle => 'Edit movement';
+
+  @override
+  String get debtEntryEditDateLabel => 'Date';
+
+  @override
+  String get debtEntryEditNoteLabel => 'Note (optional)';
+
+  @override
+  String get debtEntryEditNoteReadLabel => 'Note';
+
+  @override
+  String get debtEntryEditBalanceLabel => 'Balance after';
+
+  @override
+  String get debtEntryEditCta => 'Save changes';
+
+  @override
+  String get debtEntryEditDeleteLink => 'Delete movement';
+
+  @override
+  String get debtEntryEditError => 'We couldn\'t save the changes. Try again.';
 
   @override
   String get debtMenuTooltip => 'More options';

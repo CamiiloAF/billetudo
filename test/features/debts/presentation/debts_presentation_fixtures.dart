@@ -14,12 +14,16 @@ DebtBalance buildBalance({
   int totalIncreasesMinor = 0,
   int totalDecreasesMinor = 0,
   int interestAccruedMinor = 0,
+  int? displayTotalMinor,
 }) =>
     DebtBalance(
       principalMinor: principalMinor,
       totalIncreasesMinor: totalIncreasesMinor,
       totalDecreasesMinor: totalDecreasesMinor,
       interestAccruedMinor: interestAccruedMinor,
+      // Defaults to the historical total, matching the calculator's fallback
+      // when the debt has no balance reconciliation in its ledger.
+      displayTotalMinor: displayTotalMinor ?? totalIncreasesMinor,
     );
 
 DebtWithBalance buildDebtWithBalance({

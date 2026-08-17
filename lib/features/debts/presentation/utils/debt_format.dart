@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/debt_entry.dart';
 import '../../domain/entities/debt_ledger_entry.dart';
 
 /// Shared, localized formatting for the Deudas read screens, kept in one place
@@ -187,6 +188,27 @@ abstract final class DebtFormat {
     }
     return months < 0 ? 0 : months;
   }
+
+  /// The amount héroe's label in `DebtEntryEditSheet` for a [DebtEntry.kind]
+  /// — the same per-kind copy [ledgerTitle] uses for the unified ledger row,
+  /// reused verbatim so a viewed/edited abono/desembolso/ajuste/interés reads
+  /// with the label it already shows elsewhere. Also drives the read-only
+  /// body's header title and héroe label for `interestAccrual` — that kind
+  /// is never editable (`UpdateDebtEntry` rejects it), but it is still
+  /// viewable.
+  static String entryKindLabel(
+    AppLocalizations l10n,
+    DebtEntryKind kind,
+    DebtDirection direction,
+  ) =>
+      switch (kind) {
+        DebtEntryKind.disbursement => l10n.debtLedgerDisbursement,
+        DebtEntryKind.payment => direction == DebtDirection.iOwe
+            ? l10n.debtLedgerPaymentOwe
+            : l10n.debtLedgerPaymentOwed,
+        DebtEntryKind.manualAdjustment => l10n.debtLedgerAdjustment,
+        DebtEntryKind.interestAccrual => l10n.debtLedgerInterest,
+      };
 
   /// The small tag on a solo-deuda row ("Estimado" for interest, "No afecta
   /// cuentas" for cash-less events); `null` for cash rows, which need no tag.

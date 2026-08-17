@@ -3056,11 +3056,65 @@ abstract class AppLocalizations {
   /// **'Saldo inicial · sin cuenta enlazada'**
   String get debtOpeningLinkSnackbar;
 
-  /// No description provided for @debtLedgerAbonoNoAccountSnackbar.
+  /// No description provided for @debtEntryDeleteSheetTitle.
   ///
   /// In es, this message translates to:
-  /// **'Este abono no movió ninguna cuenta'**
-  String get debtLedgerAbonoNoAccountSnackbar;
+  /// **'¿Eliminar este movimiento?'**
+  String get debtEntryDeleteSheetTitle;
+
+  /// No description provided for @debtEntryDeleteSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrás recuperarlo más adelante.'**
+  String get debtEntryDeleteSheetMessage;
+
+  /// No description provided for @debtEntryEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar movimiento'**
+  String get debtEntryEditTitle;
+
+  /// No description provided for @debtEntryEditDateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get debtEntryEditDateLabel;
+
+  /// No description provided for @debtEntryEditNoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota (opcional)'**
+  String get debtEntryEditNoteLabel;
+
+  /// No description provided for @debtEntryEditNoteReadLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get debtEntryEditNoteReadLabel;
+
+  /// No description provided for @debtEntryEditBalanceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo después'**
+  String get debtEntryEditBalanceLabel;
+
+  /// No description provided for @debtEntryEditCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get debtEntryEditCta;
+
+  /// No description provided for @debtEntryEditDeleteLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar movimiento'**
+  String get debtEntryEditDeleteLink;
+
+  /// No description provided for @debtEntryEditError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar los cambios. Intenta de nuevo.'**
+  String get debtEntryEditError;
 
   /// No description provided for @debtMenuTooltip.
   ///

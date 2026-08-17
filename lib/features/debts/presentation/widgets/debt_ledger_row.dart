@@ -20,7 +20,7 @@ class DebtLedgerRow extends StatelessWidget {
     required this.currency,
     this.onOpenTransaction,
     this.onLinkOpening,
-    this.onLedgerPaymentNoAccount,
+    this.onOpenMovementDetail,
     this.initialTransactionId,
     super.key,
   });
@@ -39,10 +39,12 @@ class DebtLedgerRow extends StatelessWidget {
   /// inert.
   final VoidCallback? onLinkOpening;
 
-  /// Tapped on a cash-less abono row (`ledgerPayment`, toggle "No"): it has no
-  /// underlying movement, so this shows a feedback snackbar. `null` leaves the
-  /// row inert.
-  final VoidCallback? onLedgerPaymentNoAccount;
+  /// Tapped on any solo-deuda row that is not the opening row — a cash-less
+  /// abono/desembolso, an interest accrual, or a manual adjustment. Opens the
+  /// merged `DebtEntryEditSheet` directly (editable form, or read-only info
+  /// rows for an interest accrual, both with a delete affordance). `null`
+  /// leaves the row inert.
+  final ValueChanged<DebtLedgerEntry>? onOpenMovementDetail;
 
   /// The debt's `initialTransactionId`, so the linked opening movement's row is
   /// titled "Saldo de apertura" instead of a generic "Desembolso".
@@ -68,21 +70,21 @@ class DebtLedgerRow extends StatelessWidget {
         : DebtFormat.dateShort(context, entry.date);
 
     // A cash row deep-links into its movement's detail; the synthetic opening
-    // row (no movement) shows a feedback snackbar; a cash-less abono row shows
-    // its own feedback snackbar; other solo-deuda rows stay inert.
+    // row (no movement) shows a feedback snackbar; every other solo-deuda row
+    // (Fix A) opens the movement-detail sheet.
     final transactionId = entry.transactionId;
     final onOpenTransaction = this.onOpenTransaction;
     final onLinkOpening = this.onLinkOpening;
-    final onLedgerPaymentNoAccount = this.onLedgerPaymentNoAccount;
+    final onOpenMovementDetail = this.onOpenMovementDetail;
     final VoidCallback? onTap;
     if (isCash && transactionId != null && onOpenTransaction != null) {
       onTap = () => onOpenTransaction(transactionId);
     } else if (entry.kind == DebtLedgerKind.opening && onLinkOpening != null) {
       onTap = onLinkOpening;
-    } else if (entry.kind == DebtLedgerKind.ledgerPayment &&
-        transactionId == null &&
-        onLedgerPaymentNoAccount != null) {
-      onTap = onLedgerPaymentNoAccount;
+    } else if (!isCash &&
+        entry.kind != DebtLedgerKind.opening &&
+        onOpenMovementDetail != null) {
+      onTap = () => onOpenMovementDetail(entry);
     } else {
       onTap = null;
     }

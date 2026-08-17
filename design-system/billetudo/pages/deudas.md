@@ -34,6 +34,8 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Sheet Confirmar cierre manual | `R97gF` | `WLz5x` |
 | Sheet Felicitacion al 100% | `C28Zt` | `h0zie` |
 | Lista — tab Activas/Cerradas, viendo Cerradas | `vaNHd` | `nusfh` |
+| Sheet Movimiento — Editar (ledger sin cuenta) | `v4RJC` | `L5KbhU` |
+| Sheet Movimiento — Interés | `ldTrt` | `hVah4` |
 
 **Estados/piezas sin frame propio en el `.pen` (por diseño o reusables genéricos):**
 - **Detalle sin cuota** (`DebtConfigureInstallmentCard`): no tiene frame — solo se diseñó el estado *con* cuota (`cUzp6`). El widget reusa la geometría de la card de cuota. Gap de cobertura conocido, no deriva.
@@ -191,6 +193,22 @@ Definido en `08-deudas.md` HU-03 y `09-pagos-programados.md` linea 111. Diseñad
 - **Detalle del PP** (`nDmnf`, variante nueva del canonico `OY2Kj`): **card "Deuda Enlazada"** (`M7Ijh`) entre la Ficha Card y el Historial — icono `landmark` (`$primary-on-soft-strong`) + "Cuota de / Credito vehicular · Yo debo" + `chevron-right` → navega al detalle de la deuda. Mismo chrome que la Ficha Card. El detalle **scrollea** (tiene "Ver historial completo (N)" que expande in-place), asi que el card se agrega sin recortar contenido: el excedente queda bajo el fold. El canonico `OY2Kj` (PP sin deuda) queda intacto.
 - **Lista / Scheduled Card** (`tit0W`): nodo opcional **`Y5FQT` "Deuda Chip"** (`enabled:false` por default) apendido a la fila de chips, sin reestructurar el componente (regla de overrides). Badge sutil `$primary-soft` + icono `landmark` + "Deuda" (`$primary-on-soft-strong`). Demo en contexto: `F3srst`.
 - Editar la plantilla de una cuota debe **deep-linkear de vuelta a la deuda** (su hogar), no editarse como plantilla suelta (comportamiento, no pantalla).
+
+## Sheet Movimiento — Editar / Interés (`v4RJC` Editar / `ldTrt` Interés)
+
+Reemplazan el flujo anterior de 2 pasos (ver detalle → editar), fusionado en uno solo para reducir taps — decisión de producto. Se abren directo al tocar una fila del ledger sin cuenta vinculada (`Debt Ledger Row · Running` en su variante "solo-deuda": abono, desembolso o ajuste manual). Ambas variantes navegan desde su acción de eliminar al sheet de confirmar eliminar movimiento (reusa el patrón destructivo genérico del sistema, mismo criterio que la nota de "Sheet confirmar borrado" de deuda arriba — sin frame propio dedicado en este documento).
+
+### Editar (`v4RJC` / `L5KbhU`)
+
+Bottom Sheet Base (`PqTUt`). **Header** (título "Editar movimiento" + contexto de la deuda, ej. "Crédito vehicular · Yo debo") + **Amount Hero** (monto héroe editable, label según tipo de movimiento — ej. "Abono" — con caret) + fila **"Saldo después"** (solo lectura) + `Form Field` **"Fecha"** (icono `calendar`, editable) + `Form Field` **"Nota (opcional)"** (icono `pencil`, editable) + CTA primario `Button/Primary` **"Guardar cambios"** (`$primary`, icono `check`) + **`Delete Link`** (`u0THG`) **"Eliminar movimiento"** debajo del CTA.
+
+### Interés (`ldTrt` / `hVah4`)
+
+Misma Bottom Sheet Base, estructura distinta para movimientos `interestAccrual` (generados automáticamente por el modo de interés automático de la deuda). **Header Row** con icon-wrap + icono `trending-up` + título "Interés" + tag "Estimado" (reemplaza el contexto de deuda del header de Editar). **Amount Hero** idéntico visualmente (mismo componente héroe+caret) pero de solo lectura. Fila "Saldo después" igual. **Info Card** con Fecha y Nota como **`Info Row` (`myfAc`) de solo lectura** (sin caja de input, sin `chevron`/affordance de tap) — ej. Nota: "Interés calculado automáticamente sobre el saldo pendiente al corte del {fecha}." **Sin botón "Guardar cambios".** Único CTA: `Button/Primary` **"Eliminar"** a ancho completo, en **`$expense`** (es el único botón de la hoja y es destructivo), icono `trash-2`.
+
+### Regla de negocio (no se lee del frame — flutter-dev debe conocerla)
+
+**Los movimientos de tipo `interestAccrual` nunca son editables, solo eliminables.** El monto héroe con caret en `ldTrt`/`hVah4` es puramente visual (reusa el mismo componente que la variante editable) — en Flutter no debe llevar foco/teclado, y por eso Fecha/Nota se renderizan con `Info Row` en vez de `Form Field`: no hay affordance de tap porque no hay nada que tocar. No existe CTA "Guardar cambios" para interés porque no hay nada que guardar: el único camino para "corregir" un interés generado automáticamente es eliminar el asiento (el motor lo recalcula) o cambiar el modo de interés de la deuda a Manual desde el form crear/editar. Si en el futuro se soporta interés manual editable, será una tercera variante de este sheet, no una extensión de `ldTrt`.
 
 ## Notas de implementacion (para flutter-dev)
 
