@@ -40,7 +40,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._clearFeaturedBudget,
     this._watchHelpEnabled,
     this._setTutorialsEnabled,
-  ) : super(const AppSettingsState());
+  ) : super(const AppSettingsState(isLoaded: false));
 
   final GetAppSettings _getAppSettings;
   final SetZeroBasedEnabled _setZeroBasedEnabled;
@@ -64,7 +64,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
       }
       result.fold(
         (_) {},
-        (settings) => emit(state.copyWith(settings: settings)),
+        (settings) => emit(state.copyWith(settings: settings, isLoaded: true)),
       );
     });
     _budgetsSubscription = _getActiveBudgets().listen((result) {

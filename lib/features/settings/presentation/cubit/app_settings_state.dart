@@ -10,6 +10,7 @@ class AppSettingsState extends Equatable {
     this.settings = const AppSettings.defaults(),
     this.activeBudgets = const [],
     this.showHelpOnSectionEntry = true,
+    this.isLoaded = true,
   });
 
   final AppSettings settings;
@@ -28,6 +29,19 @@ class AppSettingsState extends Equatable {
   /// repository backs which column.
   final bool showHelpOnSectionEntry;
 
+  /// Whether [settings] already reflects the first real value emitted by
+  /// `GetAppSettings`'s stream, as opposed to the in-memory default this
+  /// state starts with before that stream has emitted at least once.
+  ///
+  /// `AppSettingsCubit`'s own initial state (before `AppSettingsCubit.start`
+  /// has resolved anything) is the only place this is explicitly `false` —
+  /// a fresh `AppSettingsCubit` instance is created per navigation to the
+  /// budget detail route (`app_router.dart`), so its stream has not
+  /// necessarily emitted yet by the time the user taps "Destacar"/"Quitar de
+  /// Inicio". Every state built elsewhere (tests, `copyWith`) defaults to
+  /// `true` since it already represents a resolved value.
+  final bool isLoaded;
+
   bool get zeroBasedEnabled => settings.zeroBasedEnabled;
 
   /// The manually-featured budget id, or `null` for "Automático"
@@ -38,14 +52,17 @@ class AppSettingsState extends Equatable {
     AppSettings? settings,
     List<BudgetWithProgress>? activeBudgets,
     bool? showHelpOnSectionEntry,
+    bool? isLoaded,
   }) =>
       AppSettingsState(
         settings: settings ?? this.settings,
         activeBudgets: activeBudgets ?? this.activeBudgets,
         showHelpOnSectionEntry:
             showHelpOnSectionEntry ?? this.showHelpOnSectionEntry,
+        isLoaded: isLoaded ?? this.isLoaded,
       );
 
   @override
-  List<Object?> get props => [settings, activeBudgets, showHelpOnSectionEntry];
+  List<Object?> get props =>
+      [settings, activeBudgets, showHelpOnSectionEntry, isLoaded];
 }

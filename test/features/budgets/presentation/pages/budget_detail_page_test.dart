@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_view.dart';
@@ -135,7 +137,8 @@ void main() {
     expect(find.text('Netflix'), findsOneWidget);
   });
 
-  group('actions sheet "isFeatured" (bugfix: automatic-fallback featured '
+  group(
+      'actions sheet "isFeatured" (bugfix: automatic-fallback featured '
       'budget)', () {
     BudgetDetailState globalReadyState() {
       final entry = globalEntry;
@@ -217,8 +220,7 @@ void main() {
         'a budget that is not featured at all (mode: none) opens the sheet '
         'offering "Usar como destacado", and tapping it manually sets this '
         'budget', (tester) async {
-      final settingsCubit =
-          buildSettingsCubit(mode: FeaturedBudgetMode.none);
+      final settingsCubit = buildSettingsCubit(mode: FeaturedBudgetMode.none);
 
       await pump(tester, globalReadyState(), settingsCubit: settingsCubit);
       await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
@@ -233,6 +235,98 @@ void main() {
       verify(() => settingsCubit.setFeaturedBudget(globalEntry.budget.id))
           .called(1);
       verifyNever(settingsCubit.clearFeaturedBudget);
+    });
+  });
+
+  group(
+      'toggleFeatured waits for AppSettingsCubit to load before deciding '
+      'the branch (race fix)', () {
+    BudgetDetailState globalReadyState() {
+      final entry = globalEntry;
+      return BudgetDetailState(
+        status: BudgetDetailStatus.ready,
+        budget: entry.budget,
+        scope: entry.scope,
+        view: BudgetPeriodView(
+          window: entry.window,
+          progress: entry.progress,
+          activity: const [],
+          scheduledItems: const [],
+        ),
+      );
+    }
+
+    testWidgets(
+        'a still-loading cubit (isLoaded: false, stale in-memory default) '
+        'blocks the decision until the stream emits the real value, then '
+        'acts on it instead of the default', (tester) async {
+      final settingsCubit = MockAppSettingsCubit();
+      final controller = StreamController<AppSettingsState>();
+      addTearDown(controller.close);
+      const notYetLoaded = AppSettingsState(
+        settings: AppSettings(
+          zeroBasedEnabled: false,
+          categoriesSeeded: true,
+          onboardingCompleted: true,
+        ),
+        isLoaded: false,
+      );
+      whenListen(settingsCubit, controller.stream, initialState: notYetLoaded);
+      when(() => settingsCubit.state).thenReturn(notYetLoaded);
+      when(settingsCubit.clearFeaturedBudget).thenAnswer((_) async {});
+      when(() => settingsCubit.setFeaturedBudget(any()))
+          .thenAnswer((_) async {});
+
+      await pump(tester, globalReadyState(), settingsCubit: settingsCubit);
+      await tester.tap(find.byIcon(LucideIcons.ellipsisVertical));
+      await tester.pumpAndSettle();
+
+      // With the stale default (mode: automatic, no active budgets loaded
+      // yet), `BudgetHeroSelector.pick` cannot resolve anything, so the
+      // sheet still offers "Usar como destacado".
+      expect(find.text('Usar como destacado en Inicio'), findsOneWidget);
+
+      await tester.tap(find.text('Usar como destacado en Inicio'));
+      await tester.pumpAndSettle();
+
+      // The tap is stuck awaiting the real value — neither branch has run.
+      verifyNever(() => settingsCubit.setFeaturedBudget(any()));
+      verifyNever(settingsCubit.clearFeaturedBudget);
+
+      // The stream now emits what was actually persisted: this budget was
+      // already manually featured all along.
+      when(() => settingsCubit.state).thenReturn(
+        AppSettingsState(
+          settings: AppSettings(
+            zeroBasedEnabled: false,
+            categoriesSeeded: true,
+            onboardingCompleted: true,
+            featuredBudgetId: globalEntry.budget.id,
+            featuredBudgetMode: FeaturedBudgetMode.manual,
+          ),
+          activeBudgets: [globalEntry],
+        ),
+      );
+      controller.add(
+        AppSettingsState(
+          settings: AppSettings(
+            zeroBasedEnabled: false,
+            categoriesSeeded: true,
+            onboardingCompleted: true,
+            featuredBudgetId: globalEntry.budget.id,
+            featuredBudgetMode: FeaturedBudgetMode.manual,
+          ),
+          activeBudgets: [globalEntry],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Correctly resolved against the real value: this budget WAS
+      // featured, so removing it is the right call — never the stale
+      // default's "set it as featured" (which would have been a no-op at
+      // best, or have clobbered a different manual pick at worst).
+      verify(settingsCubit.clearFeaturedBudget).called(1);
+      verifyNever(() => settingsCubit.setFeaturedBudget(any()));
     });
   });
 

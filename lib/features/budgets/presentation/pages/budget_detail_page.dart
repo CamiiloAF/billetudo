@@ -152,16 +152,27 @@ class BudgetDetailPage extends StatelessWidget {
       case BudgetDetailAction.edit:
         onEdit(id);
       case BudgetDetailAction.toggleFeatured:
+        // `settings` is a fresh `AppSettingsCubit` instance per navigation to
+        // this route (`app_router.dart`); its settings stream is not
+        // guaranteed to have emitted its first real value yet, in which case
+        // `settings.state` is still the in-memory default
+        // (`featuredBudgetMode: automatic`) rather than the persisted value.
+        // Deciding the branch below against that default can pick the wrong
+        // one (e.g. `clearFeaturedBudget()` when the real intent was
+        // `setFeaturedBudget`), which is exactly the race that lost a
+        // user's "Destacar" pick on next launch. `isLoaded` distinguishes
+        // "still the default" from "confirmed by the stream" — wait for it
+        // before resolving anything.
+        if (!settings.state.isLoaded) {
+          await settings.stream.firstWhere((s) => s.isLoaded);
+        }
         // Resolved fresh here, not reused from a value captured when the
         // sheet was opened: the RESOLVED pick (same `BudgetHeroSelector.pick`
         // Home's hero and the list's star badge use,
         // `budgets_list_cubit.dart`), never the raw
         // `AppSettings.featuredBudgetId` alone — a budget only featured via
         // the automatic global+monthly fallback (no manual pick) must still
-        // read as "featured" here, or this toggles the wrong direction. By
-        // the time the user has read the sheet and tapped a row,
-        // `AppSettingsCubit`'s stream has had every chance to emit its real
-        // value, closing the race a static snapshot at open-time could not.
+        // read as "featured" here, or this toggles the wrong direction.
         final resolvedFeatured = BudgetHeroSelector.pick(
           settings.state.activeBudgets,
           mode: settings.state.settings.featuredBudgetMode,

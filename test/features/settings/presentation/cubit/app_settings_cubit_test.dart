@@ -92,13 +92,22 @@ void main() {
         setTutorialsEnabled,
       );
 
+  test(
+      'a freshly-built cubit (before start()) is isLoaded: false — the race '
+      'fix in budget_detail_page.dart depends on this to tell "still the '
+      'in-memory default" apart from "confirmed by the stream"', () {
+    expect(build().state.isLoaded, isFalse);
+  });
+
   blocTest<AppSettingsCubit, AppSettingsState>(
     'HU-06: emits the settings the use case streams',
     setUp: () => when(getAppSettings.call)
         .thenAnswer((_) => Stream.value(const Right(enabledSettings))),
     build: build,
     act: (cubit) => cubit.start(),
-    expect: () => [const AppSettingsState(settings: enabledSettings)],
+    expect: () => [
+      const AppSettingsState(settings: enabledSettings, isLoaded: true),
+    ],
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -148,8 +157,7 @@ void main() {
         .thenAnswer((_) => Stream.value(const Right(featuredSettings))),
     build: build,
     act: (cubit) => cubit.start(),
-    verify: (cubit) =>
-        expect(cubit.state.featuredBudgetId, 'budget-1'),
+    verify: (cubit) => expect(cubit.state.featuredBudgetId, 'budget-1'),
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -185,8 +193,7 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.start(),
-    verify: (cubit) =>
-        expect(cubit.state.showHelpOnSectionEntry, isFalse),
+    verify: (cubit) => expect(cubit.state.showHelpOnSectionEntry, isFalse),
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -197,7 +204,6 @@ void main() {
     build: build,
     act: (cubit) => cubit.setShowHelpOnSectionEntry(enabled: true),
     expect: () => <AppSettingsState>[],
-    verify: (_) =>
-        verify(() => setTutorialsEnabled(enabled: true)).called(1),
+    verify: (_) => verify(() => setTutorialsEnabled(enabled: true)).called(1),
   );
 }
