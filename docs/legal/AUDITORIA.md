@@ -196,7 +196,20 @@ queda es ofrecer un interruptor al usuario.
 > acotar al caso residual. **No modificar esa redacción antes de que el cambio
 > esté efectivamente en la versión publicada.**
 
-### B4 — MEDIO: falta `PrivacyInfo.xcprivacy` en el target de iOS
+### B4 — ✅ RESUELTO (2026-08-18): faltaba `PrivacyInfo.xcprivacy` en el target de iOS
+
+> **Estado: cerrado.** Creado en `ios/Runner/PrivacyInfo.xcprivacy` y añadido a
+> Copy Bundle Resources del target Runner (verificado con `xcodebuild`).
+> Declara las 11 categorías de datos de §2.2 de `declaraciones-tiendas.md`,
+> `NSPrivacyTracking = false` sin dominios, y dos Required Reason APIs: CA92.1
+> (user defaults, por `shared_preferences`) y C617.1 (timestamps de archivos
+> del contenedor, por la base Drift/SQLite y los temporales de exportación).
+> Los pods traen su propio manifiesto.
+>
+> **Al cambiar el tratamiento de datos hay que actualizar los dos a la vez:**
+> el manifiesto y §2.2. Apple contrasta el archivo contra el formulario de App
+> Privacy.
+
 
 `find ios -name "*.xcprivacy"` no devuelve ningún manifiesto propio del target
 `Runner`. Apple lo exige cuando la app usa APIs de "required reason" —

@@ -29,8 +29,8 @@ Ninguna de las dos consolas deja enviar sin esto.
 | 1 | **Política de privacidad publicada en una URL pública** | ✅ **Publicada el 2026-08-18** en https://camiiloaf.github.io/billetudo/ (HTTP 200, sin marcadores pendientes) | — |
 | 2 | **URL web de borrado de cuenta** | ✅ **Publicada** en https://camiiloaf.github.io/billetudo/borrar-cuenta.html (HTTP 200) | — |
 | 3 | **Excluir el Espacio Económico Europeo** | ⛔ La política publicada declara que billetudo **no se ofrece en el EEE** mientras no estén firmados los DPA de Sentry y PowerSync. Hay que excluir esos 30 países en la disponibilidad de **ambas** consolas — está dicho en público | Configurar disponibilidad, o firmar los dos DPA y republicar |
-| 4 | **Decisión iPad** | ⛔ El target declara `TARGETED_DEVICE_FAMILY = "1,2"` y las 4 orientaciones. Ninguna pantalla está diseñada para tablet. O se publica iPhone-only, o hay que soportar iPad de verdad y generar capturas de 2064×2752 | Decisión pendiente |
-| 5 | **`PrivacyInfo.xcprivacy` en el target de iOS** | ⛔ No existe. Los `.xcprivacy` que aparecen en `ios/` son de los Pods (Sentry, GoogleSignIn, AppAuth…), **no** del target de la app | Pendiente — ver B4 de `AUDITORIA.md` |
+| 4 | **Decisión iPad** | ✅ **Resuelto: el v1 va iPhone-only.** `TARGETED_DEVICE_FAMILY = 1` (verificado con `xcodebuild -showBuildSettings`) y se quitaron las orientaciones de iPad del Info.plist. No hacen falta capturas de iPad. Añadir soporte más adelante es una versión nueva; quitarlo después de publicar habría perjudicado a quien ya la tuviera instalada | — |
+| 5 | **`PrivacyInfo.xcprivacy` en el target de iOS** | ✅ **Creado** en `ios/Runner/PrivacyInfo.xcprivacy` y añadido a Copy Bundle Resources. Declara las 11 categorías de §2.2, `NSPrivacyTracking = false` y dos Required Reason APIs (CA92.1, C617.1) | — |
 
 **Ya no son bloqueantes** (se cerraron el 2026-08-08 y conviene no arrastrar el
 estado viejo):
@@ -137,8 +137,8 @@ opt-in: *nunca verás un anuncio que no hayas pedido tú*. Ver §6 del plan.
 ## 5. Orden recomendado
 
 1. ~~Publicar el sitio~~ → ✅ hecho el 2026-08-18; cerró los bloqueantes 1 y 2.
-2. Decidir iPad: es lo que más condiciona el envío a App Store.
-3. Crear el `PrivacyInfo.xcprivacy`, solo iOS.
+2. ~~Decidir iPad~~ → ✅ iPhone-only.
+3. ~~Crear el `PrivacyInfo.xcprivacy`~~ → ✅ hecho.
 4. Al configurar la ficha, **excluir el EEE** (o firmar los dos DPA antes,
    revertir §7 de la política y republicar con `web/build_site.py`).
 4. Cargar Play y App Store: los activos y el copy ya están listos y no dependen

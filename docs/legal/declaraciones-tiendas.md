@@ -42,9 +42,28 @@ segunda es una clave foránea interna. Evidencia en `AUDITORIA.md` §1.1.
 | 2 | Borrado de cuenta desde la app | ✅ Implementado (ver §4) |
 | 3 | Borrado de cuenta funcional para todos los usuarios | ✅ **Corregido el 2026-08-08** (migración `20260808000000_delete_account_cascade_missing_tables.sql`, aplicada en dev y prod). Ver B1 de `AUDITORIA.md` |
 | 4 | URL web de borrado de cuenta (exigida por Play) | ✅ **Publicada**: https://camiiloaf.github.io/billetudo/borrar-cuenta.html |
-| 5 | `PrivacyInfo.xcprivacy` en el target iOS | ⛔ No existe — ver B4 de `AUDITORIA.md` |
+| 5 | `PrivacyInfo.xcprivacy` en el target iOS | ✅ **Creado el 2026-08-18** en `ios/Runner/`, dentro de Copy Bundle Resources. Su contenido tiene que seguir coincidiendo con §2.2 |
 | 6 | Nombre público del desarrollador | ✅ **Hecho consumado.** Las cuentas de Play y de App Store **ya están creadas** a nombre de Juan Camilo Agudelo Franco (persona natural). En Apple el *developer name* ya quedó fijado y **es irreversible**; no hay decisión pendiente aquí (ver §5) |
 | 7 | Datos de contacto que la tienda publicará por su cuenta | ⚠️ Fuera del control del desarrollador y **ya condicionado** por las cuentas existentes — §5 describe qué publica hoy cada tienda y qué cambiaría al monetizar |
+
+---
+
+## 0.2 El v1 va solo para iPhone
+
+`TARGETED_DEVICE_FAMILY = 1`: la app **no se distribuye para iPad**, así que
+App Store **no** pide capturas de iPad y App Review no la prueba ahí.
+
+El motivo es que ninguna pantalla está diseñada para tablet — el sistema de
+diseño no tiene una sola variante de ese ancho — y una prueba de render a
+1376 pt mostró la app estirada, con el importe y su etiqueta separados por casi
+toda la pantalla.
+
+La dirección importa: publicar iPhone-only y **añadir** iPad después es una
+versión nueva y ya; publicar con iPad y **quitarlo** después le retira la app a
+quien ya la tuviera instalada en su tablet.
+
+Si algún día se soporta iPad, hay que generar capturas de **2064 × 2752**
+(iPad 13") además de las de iPhone.
 
 ---
 
