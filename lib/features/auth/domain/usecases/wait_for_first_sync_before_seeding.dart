@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../repositories/auth_repository.dart';
 
-/// Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): a device
+/// Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): a device
 /// that already has a valid Supabase session at launch, but whose local
 /// PowerSync store is empty or was reset (fresh install, PowerSync
 /// reactivated after being disconnected), used to seed `AppSettings` and the

@@ -16,7 +16,7 @@ import '../widgets/onboarding_wallet_fan.dart';
 /// When [accountSkipped] is `true` the CTA cannot open the transaction form —
 /// `Transactions.accountId` is `NOT NULL` — so it bridges to creating the
 /// account instead, with `bAKS6`'s generic, gate-agnostic copy
-/// (`docs/requirements/15-gate-cuenta.md` does not have its own design yet;
+/// (`docs/requirements/fase-1/15-gate-cuenta.md` does not have its own design yet;
 /// see the todo below).
 class ClosingPage extends StatelessWidget {
   const ClosingPage({

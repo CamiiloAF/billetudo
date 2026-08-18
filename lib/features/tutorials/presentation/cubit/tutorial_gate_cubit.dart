@@ -8,7 +8,7 @@ import '../utils/tutorial_navigation_guard.dart';
 import 'tutorial_gate_state.dart';
 
 /// Decides whether a minitutorial sheet should auto-show on a given screen
-/// or sub-flow entry (`docs/requirements/16-minitutoriales.md`).
+/// or sub-flow entry (`docs/requirements/fase-1/16-minitutoriales.md`).
 ///
 /// Orchestrates only use cases ([HasSeenTutorial], [WatchHelpEnabled]) plus
 /// [TutorialNavigationGuard] — never a repository or DAO directly. One
@@ -31,7 +31,7 @@ class TutorialGateCubit extends Cubit<TutorialGateState> {
   ///
   /// [accountGateShown] is `true` when the caller already had to (and did)
   /// show the account gate bridge for this same entry
-  /// (`docs/requirements/15-gate-cuenta.md`) — that gate has absolute
+  /// (`docs/requirements/fase-1/15-gate-cuenta.md`) — that gate has absolute
   /// precedence (criterion 7): the tutorial stays pending for the next valid
   /// visit, and — crucially — [TutorialNavigationGuard.claim] is never
   /// called in that branch, so it does not consume the "one tutorial per

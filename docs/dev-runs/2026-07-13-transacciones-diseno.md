@@ -1,8 +1,8 @@
 # Sesión de diseño — Transacciones (2026-07-13)
 
-Cierre de sesión: qué se hizo, decisiones tomadas, y qué falta para continuar. Fuente real del diseño sigue siendo `billetudo.pen`; este documento es un mapa de la sesión, no reemplaza `design-system/billetudo/pages/transacciones.md` (spec vigente) ni `docs/requirements/03-transacciones.md` (HUs).
+Cierre de sesión: qué se hizo, decisiones tomadas, y qué falta para continuar. Fuente real del diseño sigue siendo `billetudo.pen`; este documento es un mapa de la sesión, no reemplaza `design-system/billetudo/pages/transacciones.md` (spec vigente) ni `docs/requirements/fase-1/03-transacciones.md` (HUs).
 
-## 1. Requisitos refinados (`docs/requirements/03-transacciones.md`)
+## 1. Requisitos refinados (`docs/requirements/fase-1/03-transacciones.md`)
 
 - **HU-06a (nueva)** — filtro rápido de cuentas: bottom sheet multi-selección, chip compacto según cantidad seleccionada (nombre / "N cuentas" / sin badge si todas), transferencias visibles si la cuenta filtrada es origen o destino, sin total sumado cuando hay monedas distintas seleccionadas.
 - **HU-06b (nueva, reescrita 2 veces hoy)** — filtro rápido de fecha: selector de granularidad Semana/Mes/Año + stepper de un toque, "Todo" para quitar el filtro, "Rango personalizado" con confirmación aparte. **Decisión final del día:** el estado por defecto es **"Este mes"**, no "Todo" — evita sobrecargar la lista con todo el histórico de entrada.

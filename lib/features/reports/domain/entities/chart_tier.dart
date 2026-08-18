@@ -1,5 +1,5 @@
 /// The Nivel 0/1/2 tier a chart view belongs to (see
-/// `docs/requirements/10-graficas-informes.md`, "Costura para Nivel 1/2").
+/// `docs/requirements/fase-1/10-graficas-informes.md`, "Costura para Nivel 1/2").
 ///
 /// `essential` is Nivel 0: gratis, ilimitado, nunca detrás de anuncio o pago.
 /// `advanced` is Nivel 1 (Modo anuncios) / Nivel 2 (Premium): does not exist

@@ -1,4 +1,4 @@
-/// The 12 stable contextual-help minitutorials (`docs/requirements/16-minitutoriales.md`).
+/// The 12 stable contextual-help minitutorials (`docs/requirements/fase-1/16-minitutoriales.md`).
 ///
 /// [id] is the value persisted as `TutorialViews.id` — a small fixed string,
 /// NOT a random UUID, so it stays stable across app versions and is shared

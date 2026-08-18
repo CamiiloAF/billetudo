@@ -108,7 +108,7 @@ Future<Widget Function()> _initApp(
 
   // Also must run before `configureDependencies()`: the DI graph exposes
   // `AppDatabase` synchronously, built on top of this connection (see
-  // `register_module.dart` and decision #6, docs/requirements/05-auth-sync.md).
+  // `register_module.dart` and decision #6, docs/requirements/fase-1/05-auth-sync.md).
   await openPowerSyncDatabase();
 
   configureDependencies();
@@ -116,7 +116,7 @@ Future<Widget Function()> _initApp(
   final crash = getIt<CrashReporter>();
   await crash.init();
 
-  // Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): must run
+  // Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): must run
   // before ANY local seed below. `SeedDefaultCategories()()` just below is
   // the first use case that touches `AppDatabase` — Drift only opens (and
   // runs its `onCreate`/`onUpgrade` migrations, including
@@ -141,7 +141,7 @@ Future<Widget Function()> _initApp(
   }
 
   // Stopgap: seed the default categories on every launch until onboarding
-  // (HU-06, docs/requirements/13-onboarding.md) owns this — the user decided
+  // (HU-06, docs/requirements/fase-1/13-onboarding.md) owns this — the user decided
   // to load them from main for now. `SeedDefaultCategories` is idempotent
   // (no-op when any category already exists, including the fast path where
   // the `categoriesSeeded` latch is already on — no network call at all), so
@@ -149,7 +149,7 @@ Future<Widget Function()> _initApp(
   //
   // The one case that changes what gets returned below: a `NetworkFailure` on
   // the very first launch (no local categories yet, catalog now lives in
-  // Supabase — decisión #12, docs/requirements/05-auth-sync.md). The app
+  // Supabase — decisión #12, docs/requirements/fase-1/05-auth-sync.md). The app
   // cannot use a network-less copy in that case (deliberately not
   // duplicated), so instead of `builder` we return a builder for
   // `FirstLaunchOfflineGate`, which blocks with a retry screen until seeding

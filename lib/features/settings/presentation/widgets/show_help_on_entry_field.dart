@@ -6,7 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// "Mostrar ayuda al entrar a una sección" in Ajustes › Preferencias
-/// (`docs/requirements/16-minitutoriales.md` HU-04), right after "Moneda".
+/// (`docs/requirements/fase-1/16-minitutoriales.md` HU-04), right after "Moneda".
 /// Same card shape as `EnvelopeModeField` — icon + label + subtitle + a
 /// switch — minus its "¿Qué es?" link, since there is nothing extra to
 /// explain here.

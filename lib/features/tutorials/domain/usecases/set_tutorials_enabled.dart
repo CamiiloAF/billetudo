@@ -4,7 +4,7 @@ import '../../../../core/error/result.dart';
 import '../repositories/tutorials_repository.dart';
 
 /// Turns "Mostrar ayuda al entrar a una sección" on or off (HU-04,
-/// `docs/requirements/16-minitutoriales.md`), writing
+/// `docs/requirements/fase-1/16-minitutoriales.md`), writing
 /// `AppSettings.showHelpOnSectionEntry`.
 ///
 /// A plain on/off switch: it never touches the tutorials' "seen" registry.

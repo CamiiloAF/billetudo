@@ -1,6 +1,6 @@
 # Dev run — Inicio (Home + shell de navegación)
 
-Feature **04** (`docs/requirements/04-inicio.md`, spec de diseño `design-system/billetudo/pages/inicio.md`). Nivel 0. Primera pantalla de la app + marco de navegación que reemplaza `BootstrapHomePage`.
+Feature **04** (`docs/requirements/fase-1/04-inicio.md`, spec de diseño `design-system/billetudo/pages/inicio.md`). Nivel 0. Primera pantalla de la app + marco de navegación que reemplaza `BootstrapHomePage`.
 
 ## Qué se construyó
 

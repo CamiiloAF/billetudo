@@ -1,7 +1,7 @@
 name: CI — Flutter Analyze & Test
 
 # REACTIVADO el 2026-07-28 a raíz del incidente de pérdida de datos (decisión
-# #22 en docs/requirements/05-auth-sync.md). El paso "Paridad de esquema" de
+# #22 en docs/requirements/fase-1/05-auth-sync.md). El paso "Paridad de esquema" de
 # abajo es el guardrail contra la cuarta repetición del mismo bug, y un
 # guardrail que solo corre a mano no es un guardrail: la decisión #21 ya había
 # identificado esta misma mitigación y quedó sin operar dos días antes del
@@ -42,7 +42,7 @@ jobs:
         run: flutter analyze
 
       # Guardrail del incidente del 2026-07-28 (decisión #22 en
-      # docs/requirements/05-auth-sync.md). Cuatro veces seguidas un cambio de
+      # docs/requirements/fase-1/05-auth-sync.md). Cuatro veces seguidas un cambio de
       # esquema tocó Drift pero no Postgres; la cuarta costó 89 registros de un
       # usuario real. Corre aparte de la suite y ANTES que ella para que, cuando
       # falle, el motivo se lea en el nombre del paso y no enterrado entre 2600

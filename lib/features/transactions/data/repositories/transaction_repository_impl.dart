@@ -33,7 +33,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionsLocalDatasource _local;
   final TagsLocalDatasource _tags;
 
-  /// Metas cascade (`docs/requirements/07-metas.md` HU-08): a transaction
+  /// Metas cascade (`docs/requirements/fase-1/07-metas.md` HU-08): a transaction
   /// carrying a `goalId` may mirror a `GoalContribution`. Editing/deleting it
   /// here must keep that movement's amount/existence in sync, orchestrated
   /// from this repository since that is where a transaction actually

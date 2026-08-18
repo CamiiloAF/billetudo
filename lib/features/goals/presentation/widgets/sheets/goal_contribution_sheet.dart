@@ -198,7 +198,7 @@ class GoalContributionSheetBody extends StatelessWidget {
                   const SizedBox(height: 10),
                   // First time this control renders, its own minitutorial
                   // explains earmarking vs. an actual transfer
-                  // (`docs/requirements/16-minitutoriales.md` HU-02).
+                  // (`docs/requirements/fase-1/16-minitutoriales.md` HU-02).
                   TutorialAutoShow(
                     tutorialKey: TutorialKey.goalContributionToggle,
                     child: ToggleField(

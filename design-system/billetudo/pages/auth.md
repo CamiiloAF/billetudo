@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** **Auditoría de cierre completa (2026-07-16, `ui-ux-reviewer`) — aprobada con hallazgos menores documentados, ninguno bloqueante.** Las 7 historias de usuario (HU-01 a HU-07) están cubiertas sin gaps: Login Android/iOS, confirmación de fusión, cerrar sesión y borrado de cuenta en 3 pasos tienen ambos temas; Ajustes (punto de entrada) tiene tema claro, pendiente el oscuro junto con el resto de la app. `Illustration/Device Preview` ya está componentizado (`a0FOYN`, reusable) — el hallazgo que lo pedía se resolvió y su nota se retiró del canvas. El contraste del Skip Link (`Continuar sin cuenta`) ya usa `$primary-on-soft-strong` en las 6 instancias — hallazgo resuelto, notas retiradas. Cubre el flujo completo de Auth + Sync descrito en `docs/requirements/05-auth-sync.md`.
+**Estado:** **Auditoría de cierre completa (2026-07-16, `ui-ux-reviewer`) — aprobada con hallazgos menores documentados, ninguno bloqueante.** Las 7 historias de usuario (HU-01 a HU-07) están cubiertas sin gaps: Login Android/iOS, confirmación de fusión, cerrar sesión y borrado de cuenta en 3 pasos tienen ambos temas; Ajustes (punto de entrada) tiene tema claro, pendiente el oscuro junto con el resto de la app. `Illustration/Device Preview` ya está componentizado (`a0FOYN`, reusable) — el hallazgo que lo pedía se resolvió y su nota se retiró del canvas. El contraste del Skip Link (`Continuar sin cuenta`) ya usa `$primary-on-soft-strong` en las 6 instancias — hallazgo resuelto, notas retiradas. Cubre el flujo completo de Auth + Sync descrito en `docs/requirements/fase-1/05-auth-sync.md`.
 
 ## Contexto de producto
 

@@ -1,10 +1,10 @@
 # Página: Estado de sincronización
 
-Overrides sobre `MASTER.md` para la familia de pantallas y hojas del estado de sincronización (HU-08 en `docs/requirements/05-auth-sync.md`). **Diseño cerrado y aprobado el 2026-07-28 (claro y oscuro) e implementado en Flutter** — cerrado también contra `/design-fidelity-check` el mismo día (ver `docs/fidelidad-visual-tracking.md`).
+Overrides sobre `MASTER.md` para la familia de pantallas y hojas del estado de sincronización (HU-08 en `docs/requirements/fase-1/05-auth-sync.md`). **Diseño cerrado y aprobado el 2026-07-28 (claro y oscuro) e implementado en Flutter** — cerrado también contra `/design-fidelity-check` el mismo día (ver `docs/fidelidad-visual-tracking.md`).
 
 ## Tesis (norte del diseño)
 
-Esta feature nace de un incidente real, documentado como **decisión #22** en `docs/requirements/05-auth-sync.md`: a Postgres prod le faltaba una columna, la cola FIFO de subida se bloqueó, y durante **3 días la app mostró el ícono de nube girando exactamente igual que una sincronización sana**. El usuario acumuló 89 cambios que solo existían en su teléfono, reinstaló la app y los perdió todos.
+Esta feature nace de un incidente real, documentado como **decisión #22** en `docs/requirements/fase-1/05-auth-sync.md`: a Postgres prod le faltaba una columna, la cola FIFO de subida se bloqueó, y durante **3 días la app mostró el ícono de nube girando exactamente igual que una sincronización sana**. El usuario acumuló 89 cambios que solo existían en su teléfono, reinstaló la app y los perdió todos.
 
 De ahí el criterio de éxito, que es literal y manda sobre cualquier consideración estética:
 

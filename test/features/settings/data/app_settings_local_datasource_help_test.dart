@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Covers `AppSettingsLocalDatasource.setShowHelpOnSectionEntry` — the
 /// `settings`-side write path for the contextual-help preference
-/// (`docs/requirements/16-minitutoriales.md` HU-04), parallel to
+/// (`docs/requirements/fase-1/16-minitutoriales.md` HU-04), parallel to
 /// `setZeroBasedEnabled` (already covered in
 /// `app_settings_repository_impl_test.dart`).
 void main() {

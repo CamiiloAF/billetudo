@@ -7,7 +7,7 @@ import '../../../../../core/widgets/sheet_action_row.dart';
 
 /// What Deudas' overflow ("⋮") offers — same pattern as `BudgetsMenuSheet`.
 /// Deudas had no overflow menu until the contextual-help minitutorials needed
-/// a "Ver ayuda" reopen affordance (`docs/requirements/16-minitutoriales.md`
+/// a "Ver ayuda" reopen affordance (`docs/requirements/fase-1/16-minitutoriales.md`
 /// criterion 6), so this menu only ever carries that one option today.
 enum DebtsMenuAction { viewHelp }
 

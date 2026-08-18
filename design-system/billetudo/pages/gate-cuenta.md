@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado: diseño cerrado, claro + oscuro, auditado por `ui-ux-reviewer` en ambos temas.** Listo para `flutter-dev`. Requisitos en `docs/requirements/15-gate-cuenta.md`.
+**Estado: diseño cerrado, claro + oscuro, auditado por `ui-ux-reviewer` en ambos temas.** Listo para `flutter-dev`. Requisitos en `docs/requirements/fase-1/15-gate-cuenta.md`.
 
 ## Tema oscuro
 
@@ -64,7 +64,7 @@ Pasó sin hallazgos críticos ni importantes sobre el patrón base y las 3 super
 
 ## Superficies agregadas 2026-08-06 (bugs reales encontrados en producción)
 
-- **Presupuestos pasó de "no se bloquea" a bloqueante** — decisión de producto explícita del usuario tras probar la app: toda la creación de presupuestos exige cuenta activa, incluido el alcance "Todo" (que en rigor no referencia ninguna cuenta puntual — se prioriza consistencia de flujo sobre esa posibilidad de dominio). Ver nota en `docs/requirements/15-gate-cuenta.md`. Implementado como guarda de router en `/presupuestos/nuevo`.
+- **Presupuestos pasó de "no se bloquea" a bloqueante** — decisión de producto explícita del usuario tras probar la app: toda la creación de presupuestos exige cuenta activa, incluido el alcance "Todo" (que en rigor no referencia ninguna cuenta puntual — se prioriza consistencia de flujo sobre esa posibilidad de dominio). Ver nota en `docs/requirements/fase-1/15-gate-cuenta.md`. Implementado como guarda de router en `/presupuestos/nuevo`.
 - **Meta — vincular cuenta:** el campo "Cuenta vinculada (recomendado)" del formulario de Metas era un no-op silencioso al tocarlo sin cuentas activas — bug real, no una decisión de diseño. Se corrigió para mostrar la hoja puente de forma informativa (no bloqueante): crear la meta sin cuenta sigue funcionando igual que siempre.
 
 ## Pendiente / fuera de alcance de Pencil

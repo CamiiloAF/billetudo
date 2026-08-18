@@ -23,7 +23,7 @@ abstract class RegisterModule {
 
   /// Local source of truth. Singleton: a single SQLite connection per process.
   /// Drift opens on top of the same PowerSync-managed connection (decision
-  /// #6, docs/requirements/05-auth-sync.md) so every write it makes is
+  /// #6, docs/requirements/fase-1/05-auth-sync.md) so every write it makes is
   /// intercepted into PowerSync's upload queue automatically.
   @lazySingleton
   AppDatabase appDatabase() => AppDatabase(

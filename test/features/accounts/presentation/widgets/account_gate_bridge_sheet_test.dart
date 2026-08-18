@@ -186,7 +186,7 @@ void main() {
         'resuelve primero, el hook del minitutorial (aún no implementado en '
         'código) sólo se dispara después de que el usuario responde',
         (tester) async {
-      // `docs/requirements/15-gate-cuenta.md`: "si en la misma entrada
+      // `docs/requirements/fase-1/15-gate-cuenta.md`: "si en la misma entrada
       // corresponde mostrar el puente y un minitutorial, gana el puente; el
       // tutorial espera a la siguiente visita." There is no minitutoriales
       // gate in code yet (`16-minitutoriales.md`), so this pins the ordering

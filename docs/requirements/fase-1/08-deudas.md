@@ -69,7 +69,7 @@ Como usuario quiero registrar cuándo tomé/di el préstamo y cada abono, y deci
 - **Sin cuentas activas, la rama "Sí" del toggle es la única bloqueada** (gate de `15-gate-cuenta.md`). Deudas funciona sin cuentas: registrar la deuda, el desembolso y los abonos **sin caja** (toggle en No) no requiere ninguna. La rama con caja crea una `Transaction` y por eso exige al menos una cuenta activa (`deletedAt IS NULL AND tombstonedAt IS NULL`); en ese estado se presenta explicada y ofrece crear la cuenta ahí mismo, continuando después con el abono — nunca un control en gris sin motivo. Igual criterio para "enlazar un movimiento existente", que sin cuentas no tiene nada que listar.
 - El saldo pendiente se deriva del ledger (ver "Modelo"), respetando la dirección.
 - El saldo pendiente **nunca se muestra negativo**; si los abonos superan el saldo, la deuda se marca **saldada** y se avisa el exceso (el cálculo sí puede pasar de 0; el límite es de presentación).
-- **Enlazar un movimiento existente (Fase 0, decidido 2026-07-22):** además de crear un abono nuevo, el flujo de abono permite **elegir un movimiento ya registrado** en una cuenta y enlazarlo a la deuda (setea su `Transactions.debtId`). El movimiento ya movió la cuenta; enlazarlo solo lo **atribuye** a la deuda, entrando en el saldo derivado como abono o desembolso según `direction × type`. Evita duplicar cuando el usuario ya registró el pago como un movimiento normal. A nivel de datos, un movimiento enlazado es idéntico a un abono de caja creado desde la hoja (una `Transaction` con `debtId`); solo cambia la **forma de setear** el `debtId` (retroactiva vs. al crear). El picker de movimientos existentes de la cuenta es una **adición de diseño a la hoja de abono** (`xbsY3`) — pendiente de diseñar antes de implementar esa pantalla.
+- **Enlazar un movimiento existente (Fase 1, decidido 2026-07-22):** además de crear un abono nuevo, el flujo de abono permite **elegir un movimiento ya registrado** en una cuenta y enlazarlo a la deuda (setea su `Transactions.debtId`). El movimiento ya movió la cuenta; enlazarlo solo lo **atribuye** a la deuda, entrando en el saldo derivado como abono o desembolso según `direction × type`. Evita duplicar cuando el usuario ya registró el pago como un movimiento normal. A nivel de datos, un movimiento enlazado es idéntico a un abono de caja creado desde la hoja (una `Transaction` con `debtId`); solo cambia la **forma de setear** el `debtId` (retroactiva vs. al crear). El picker de movimientos existentes de la cuenta es una **adición de diseño a la hoja de abono** (`xbsY3`) — pendiente de diseñar antes de implementar esa pantalla.
 
 ### HU-03 — Cuota programada (opcional) vía Pagos Programados
 Como usuario quiero ponerle una cuota a una deuda para que, al llegar la fecha, se genere la transacción (automática o con confirmación) desde la cuenta que yo elija, sin tener que registrarla a mano cada mes.
@@ -92,7 +92,7 @@ Como usuario quiero ponerle una cuota a una deuda para que, al llegar la fecha, 
 Como usuario quiero ver cuánto debo (o me deben) en total y por deuda, con el avance y la fecha de vencimiento, para priorizar y sentir el progreso.
 
 **Criterios de aceptación:**
-- Vista resumen: total `iOwe` pendiente vs. total `owedToMe` pendiente. **Multi-moneda:** en Fase 0 los totales se **segmentan por moneda** (no se normaliza a una base; ver `12-multi-moneda.md` para la normalización futura).
+- Vista resumen: total `iOwe` pendiente vs. total `owedToMe` pendiente. **Multi-moneda:** en Fase 1 los totales se **segmentan por moneda** (no se normaliza a una base; ver `12-multi-moneda.md` para la normalización futura).
 - **Barra de avance "pagado / total"** por deuda (análoga al "cupo usado" de la tarjeta), es el corazón emocional de la feature y se construye **una sola vez** para deuda formal e informal.
 - Si `dueDate` existe y se acerca (umbral configurable, ej. 7 días), se muestra un aviso local (sin IA).
 - Tono **neutral/positivo, nunca alarmista** — la regla de "nunca avergonzar al usuario por sus gastos" se extiende a sus deudas.
@@ -144,9 +144,9 @@ Las deudas entran al **patrimonio total** (una hipoteca de 200M resta; lo que me
 
 ## Fases
 
-- **Fase 0:** ledger de asientos + registro de caja opcional por evento (HU-01/02) · cuota vía Pagos Programados con la regla de UX y el cross-link (HU-03) · avance y totales por moneda (HU-04) · borrado reversible (HU-05) · interés **manual** con "actualizar saldo" (HU-06) · saldada automática (HU-07).
-- **Fase 0 opcional (barato, mismo modelo):** interés **automático** simple-diario + proyección de payoff + split interés/capital, todo rotulado "estimado" (HU-06).
-- **Fase 1:** **tasa variable** exacta (historial de tasa con fecha efectiva; el interés diario usa la tasa vigente cada día). **Cuota variable no necesita nada** — la base ya es "registra el monto que pagaste"; lo único que la cuota fija añade es poder *proyectar*. Se puede **anotar** una tasa/cuota nueva como informativa desde ya aunque el cálculo con fecha efectiva llegue en Fase 1.
+- **Fase 1:** ledger de asientos + registro de caja opcional por evento (HU-01/02) · cuota vía Pagos Programados con la regla de UX y el cross-link (HU-03) · avance y totales por moneda (HU-04) · borrado reversible (HU-05) · interés **manual** con "actualizar saldo" (HU-06) · saldada automática (HU-07).
+- **Fase 1 opcional (barato, mismo modelo):** interés **automático** simple-diario + proyección de payoff + split interés/capital, todo rotulado "estimado" (HU-06).
+- **Fase 1b:** **tasa variable** exacta (historial de tasa con fecha efectiva; el interés diario usa la tasa vigente cada día). **Cuota variable no necesita nada** — la base ya es "registra el monto que pagaste"; lo único que la cuota fija añade es poder *proyectar*. Se puede **anotar** una tasa/cuota nueva como informativa desde ya aunque el cálculo con fecha efectiva llegue en Fase 1b.
 
 ## Cambios de esquema requeridos (Drift)
 

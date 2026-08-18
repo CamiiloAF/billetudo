@@ -170,7 +170,7 @@ class DebtPaymentSheetBody extends StatelessWidget {
                 const SizedBox(height: 16),
                 // Switch row. First time this control renders, its own
                 // minitutorial explains "No" still lowers the debt
-                // (`docs/requirements/16-minitutoriales.md` HU-02).
+                // (`docs/requirements/fase-1/16-minitutoriales.md` HU-02).
                 TutorialAutoShow(
                   tutorialKey: TutorialKey.debtPaymentToggle,
                   child: DebtAddToAccountRow(state: state, cubit: cubit),

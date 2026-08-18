@@ -21,7 +21,7 @@ class CategorySeedsFetchException implements Exception {
 
 /// Reads the read-only `category_seeds` catalog table (Supabase Postgres) —
 /// the canonical source of HU-06's onboarding categories as of
-/// `docs/requirements/05-auth-sync.md` decision #12. Public `SELECT` RLS
+/// `docs/requirements/fase-1/05-auth-sync.md` decision #12. Public `SELECT` RLS
 /// policy (`anon` + `authenticated`): this never requires a signed-in
 /// session, since seeding happens before the user ever logs in.
 @lazySingleton

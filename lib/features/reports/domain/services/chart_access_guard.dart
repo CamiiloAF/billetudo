@@ -5,7 +5,7 @@ import '../entities/chart_view.dart';
 import 'chart_catalog.dart';
 
 /// The single point of guard for opening a report view (see "Costura para
-/// Nivel 1/2" in `docs/requirements/10-graficas-informes.md`).
+/// Nivel 1/2" in `docs/requirements/fase-1/10-graficas-informes.md`).
 ///
 /// Fase 0: every entry in `ChartCatalog` is `essential`, so this always
 /// grants access — there is no quota to check yet. Fase 4 connects the

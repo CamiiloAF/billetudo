@@ -52,7 +52,7 @@ Regresión introducida por `f5e10c8` ("cablear Google/Apple login, PowerSync+Sup
 
 ## Deudas: suites nuevas 2026-07-22 (escritas, sin correr en device)
 
-Dos suites Patrol para Deudas Fase 0, contra el flavor `dev`. Ambas compilan
+Dos suites Patrol para Deudas Fase 1, contra el flavor `dev`. Ambas compilan
 (`flutter analyze integration_test/` → *No issues found*). **Ninguna se ha
 corrido en emulador todavía**: eso es de `patrol-e2e-runner`. Los resultados de
 abajo son los *esperados*, no confirmados en device.

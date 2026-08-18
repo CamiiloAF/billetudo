@@ -24,7 +24,7 @@ void main() {
 
   test(
       'cae a es (no al primero de supportedLocales) cuando ningún idioma '
-      'preferido está soportado — HU-06, docs/requirements/05-auth-sync.md '
+      'preferido está soportado — HU-06, docs/requirements/fase-1/05-auth-sync.md '
       'decisión #12', () {
     expect(
       AppLocale.resolveLanguageCode(

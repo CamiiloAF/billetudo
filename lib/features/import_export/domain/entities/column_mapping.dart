@@ -20,7 +20,7 @@ enum ImportField {
 
 /// How a CSV row expresses income vs. expense when there is no `type` column
 /// mapped: the sign of the amount itself (negative = gasto), per
-/// `docs/requirements/11-import-export.md` §Montos.
+/// `docs/requirements/fase-1/11-import-export.md` §Montos.
 class TypeColumnValues extends Equatable {
   const TypeColumnValues({
     required this.income,

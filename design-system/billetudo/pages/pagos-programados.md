@@ -1,6 +1,6 @@
 # Página: Pagos programados
 
-Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`. Requisitos: `docs/requirements/09-pagos-programados.md`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`. Requisitos: `docs/requirements/fase-1/09-pagos-programados.md`.
 
 **Estado:** ✅ **cerrada en diseño — ambos temas (claro + oscuro), auditada de punta a punta.** Lista (con datos/vacío/carga/error), hoja de confirmación (6 variantes con Confirmar/Posponer/Omitir), formulario + companion `once` (con etiquetas), detalle híbrido (+ `once` histórico + transfer), menús "⋮", sheet de Posponer y sheet de confirmar-eliminar. Cada pieza pasó por diseño → auditoría de `ui-ux-reviewer` → aprobación explícita del usuario; paridad claro↔oscuro y contraste AA verificados. **Lista para `flutter-dev`** — la deuda que queda (más abajo) es de implementación, no de diseño.
 
@@ -58,7 +58,7 @@ Los chips **"Activos · N" / "Terminados · N"** son un par de pills que **filtr
 
 **Componentes reutilizables:**
 - `Scheduled Card/B — Tarjeta` (`tit0W`) — plantilla en la lista principal, **activa o terminada** (ver "Terminados: filtro en sitio" más abajo: misma geometría, solo cambia el eje inferior).
-  - **Se removió el chip de recordatorio "Te avisamos"** (ícono de campana) del componente: el feature todavía no permite configurar cuándo recordar ni tiene notificaciones push, así que el chip prometía algo no cumplible. Se reintroducirá con **HU-08 (Fase 2)** de `docs/requirements/09-pagos-programados.md` (config de timing del recordatorio: día del pago / 1 día antes / 3 días antes / una semana antes). **No confundir** con el copy del modo manual "te avisamos antes de afectar tu saldo" (ver "Formulario crear/editar"), que describe un comportamiento in-app real y NO se tocó.
+  - **Se removió el chip de recordatorio "Te avisamos"** (ícono de campana) del componente: el feature todavía no permite configurar cuándo recordar ni tiene notificaciones push, así que el chip prometía algo no cumplible. Se reintroducirá con **HU-08 (Fase 2)** de `docs/requirements/fase-1/09-pagos-programados.md` (config de timing del recordatorio: día del pago / 1 día antes / 3 días antes / una semana antes). **No confundir** con el copy del modo manual "te avisamos antes de afectar tu saldo" (ver "Formulario crear/editar"), que describe un comportamiento in-app real y NO se tocó.
 - `Scheduled Filter Chips` (`qPSvV`) — la fila "Activos · N / Terminados · N". Filtra en sitio; **no navega**.
 - `Scheduled Pending Row/B2 — Compacta` (`QhuIP`) — ocurrencia pendiente. Su `context` lleva la regla de truncado; **léelo antes de tocarla**.
 
@@ -226,7 +226,7 @@ Los frames son maquetas, no una base de datos: sus datos son coherentes **dentro
 - **La ocurrencia pendiente de "Ahorro mensual" cae el 1 ago, pero su serie está anclada al día 13** (13 may / 13 jun / 13 jul generados). Es una ocurrencia vencida coherente con la zona "Por confirmar", pero no pertenece a la serie mensual. Alinearla exigiría reordenar filas en la zona de pendientes y chocaría con el 13 jul ya listado como generado — se dejó a propósito.
 - Los nombres de cuenta se acortan en filas compactas ("Fondo viaje") frente al detalle ("Fondo de viaje familiar"). Es **intencional**: el mockup usa cadenas cortas donde en producción hay ellipsis. No son dos cuentas distintas.
 
-Regla general: si un dato del mockup contradice una regla de `docs/requirements/09-pagos-programados.md`, **manda el requisito**. Los datos de maqueta existen para mostrar la forma, no para definir el comportamiento.
+Regla general: si un dato del mockup contradice una regla de `docs/requirements/fase-1/09-pagos-programados.md`, **manda el requisito**. Los datos de maqueta existen para mostrar la forma, no para definir el comportamiento.
 
 ## Trampas de herramienta (aprendidas en este diseño)
 

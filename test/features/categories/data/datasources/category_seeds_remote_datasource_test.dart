@@ -22,7 +22,7 @@ void main() {
 
   test(
       'HU-06: mapea las filas de category_seeds a CategorySeedEntry '
-      '(docs/requirements/05-auth-sync.md, decisión #12)', () async {
+      '(docs/requirements/fase-1/05-auth-sync.md, decisión #12)', () async {
     final supabase = await buildClient((request) {
       expect(request.url.path, contains('/rest/v1/category_seeds'));
       return http.Response(

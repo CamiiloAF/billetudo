@@ -3,7 +3,7 @@
 ## Objetivo y criterios de aceptación
 
 Implementar `lib/features/onboarding/` (Clean Architecture completa) contra el spec cerrado en
-`docs/requirements/13-onboarding.md` y el diseño aprobado (claro+oscuro) en `billetudo.pen` /
+`docs/requirements/fase-1/13-onboarding.md` y el diseño aprobado (claro+oscuro) en `billetudo.pen` /
 `design-system/billetudo/pages/onboarding.md`: un flujo lineal de 4 pantallas (Bienvenida, Tu
 primera cuenta, Respalda tus datos, Cierre) que corre una sola vez, se cierra para siempre con el
 latch `AppSettings.onboardingCompleted`, es 100% completable offline y sin cuenta, y reusa (no

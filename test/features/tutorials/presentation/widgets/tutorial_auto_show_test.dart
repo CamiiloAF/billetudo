@@ -21,7 +21,7 @@ class MockMarkTutorialSeen extends Mock implements MarkTutorialSeen {}
 /// `TutorialAutoShow`/`maybeShowTutorial`/`reopenTutorial` orchestrate the
 /// exact "evaluate, then show, then mark seen, then optionally navigate"
 /// sequence every one of the 11 trigger points needs
-/// (`docs/requirements/16-minitutoriales.md`). This is the only place that
+/// (`docs/requirements/fase-1/16-minitutoriales.md`). This is the only place that
 /// exercises that sequence end to end, criteria 1, 2, 3 and 6.
 void main() {
   late MockTutorialGateCubit gateCubit;

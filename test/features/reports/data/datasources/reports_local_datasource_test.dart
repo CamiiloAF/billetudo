@@ -5,7 +5,7 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Covers the "Reglas de conteo" of `docs/requirements/10-graficas-informes.md`
+/// Covers the "Reglas de conteo" of `docs/requirements/fase-1/10-graficas-informes.md`
 /// against a real (in-memory) schema, for every SQL-aggregated query
 /// `ReportsLocalDatasource` exposes.
 void main() {

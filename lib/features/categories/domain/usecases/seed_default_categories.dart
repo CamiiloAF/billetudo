@@ -8,7 +8,7 @@ import '../repositories/category_repository.dart';
 /// lifetime of the installation.
 ///
 /// The set itself now comes from the `category_seeds` table in Postgres, not
-/// a static Dart list (`docs/requirements/05-auth-sync.md`, decision #12) —
+/// a static Dart list (`docs/requirements/fase-1/05-auth-sync.md`, decision #12) —
 /// `CategoryRepository.seedDefaultCategories()` fetches it under the hood.
 /// That means this can fail with a `NetworkFailure` on a device's first
 /// launch with no connectivity: this use case propagates that failure as-is

@@ -12,7 +12,7 @@ Hoy `Budgets.amountMinor` vive directo en la fila de la plantilla — no hay con
 persistido. `BudgetPeriodCalculator` deriva las ventanas `[start, endExclusive)` matemáticamente
 desde `startDate` + `period`, sin snapshots por mes. Editar el monto afecta pasado, presente y
 futuro por igual. Es una decisión ya documentada, no un vacío accidental: `docs/requirements/
-06-presupuestos.md` HU-05/HU-09 dice explícito que "en Fase 0 el cálculo usa los valores vigentes
+06-presupuestos.md` HU-05/HU-09 dice explícito que "en Fase 1 el cálculo usa los valores vigentes
 del presupuesto (no se congela por periodo)" y "editar no recalcula retroactivamente el histórico".
 
 HU-07 (Rollover, diferido a Fase 3) ya anticipa esta misma tensión: "el arrastre exige estado

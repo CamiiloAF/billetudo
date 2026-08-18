@@ -18,7 +18,7 @@ enum TutorialSheetResult {
   gotIt,
 }
 
-/// The one shared minitutorial sheet (`docs/requirements/16-minitutoriales.md`)
+/// The one shared minitutorial sheet (`docs/requirements/fase-1/16-minitutoriales.md`)
 /// every one of the 12 tutorials renders through — parameterized by
 /// [TutorialContent], never a bespoke widget per feature.
 ///

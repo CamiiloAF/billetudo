@@ -11,7 +11,7 @@ import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 ///    `delete-account` Edge Function first).
 ///
 /// Never deletes row by row through Drift. Drift writes through PowerSync's
-/// *views* (decision #6, docs/requirements/05-auth-sync.md), whose `INSTEAD OF`
+/// *views* (decision #6, docs/requirements/fase-1/05-auth-sync.md), whose `INSTEAD OF`
 /// triggers record every write in the upload queue (`ps_crud`) — so a local
 /// `DELETE` is queued as a `DELETE` for Postgres and gets uploaded on the next
 /// sign-in, wiping the cloud too. That is exactly the data-loss bug this

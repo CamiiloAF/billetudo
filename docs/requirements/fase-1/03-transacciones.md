@@ -103,7 +103,7 @@ Como usuario quiero asignar una o varias etiquetas libres a una transacción (ad
 Como usuario quiero ver el detalle completo de una transacción (cuenta, categoría, monto, fecha, nota, etiquetas, origen), para confirmar que todo quedó bien registrado.
 
 **Criterios de aceptación:**
-- Se muestra el `source` de forma legible (manual, voz, OCR, notificación, importado, programado) aunque en Fase 0 la inmensa mayoría sea `manual`.
+- Se muestra el `source` de forma legible (manual, voz, OCR, notificación, importado, programado) aunque en Fase 1 la inmensa mayoría sea `manual`.
 
 ## Reglas de negocio y edge cases
 
@@ -111,5 +111,5 @@ Como usuario quiero ver el detalle completo de una transacción (cuenta, categor
 - `amountMinor` siempre entero positivo; el signo/dirección del efecto en el saldo lo determina `type`, nunca un monto negativo.
 - Una transacción `transfer` **sin** `countsInBudget` nunca aparece en el desglose de "estructura de gasto" ni suma al total de gastos del periodo. Con `countsInBudget = true` sí suma, como gasto de su categoría en la cuenta **origen** — ver `10-graficas-informes.md` §Reglas de conteo.
 - Una transacción con `debtId` asignado **sí cuenta** en los totales de ingreso/gasto de gráficas/informes, según su `type` (pagar la cuota es gasto real; tomar el préstamo es entrada de caja). *Esto invierte la regla anterior que la excluía como si fuera un `transfer`* — ver `08-deudas.md` §Estadísticas. El reporte de flujo ofrece un toggle para **segregarlas** como serie aparte, no para ocultarlas. Su `categoryId` sigue siendo opcional; los movimientos de deuda sin categoría caen en el bucket "Sin categoría" del desglose.
-- `source` se fija automáticamente por el flujo de entrada (en Fase 0 solo `manual` e `imported` existen realmente; los demás valores del enum quedan reservados para Fase 2/4).
+- `source` se fija automáticamente por el flujo de entrada (en Fase 1 solo `manual` e `imported` existen realmente; los demás valores del enum quedan reservados para Fase 2/4).
 - Al eliminar una cuenta o categoría con transacciones asociadas, resolver primero según `01-cuentas.md` / `02-categorias.md` antes de permitir el borrado definitivo.

@@ -2,7 +2,7 @@ import '../../../../core/database/app_database.dart' as db;
 
 /// One row of the `category_seeds` catalog (Supabase, read-only), mapped from
 /// Postgres — not a domain nor a presentation type, purely internal to
-/// `data/`. See `docs/requirements/05-auth-sync.md`, decision #12: the
+/// `data/`. See `docs/requirements/fase-1/05-auth-sync.md`, decision #12: the
 /// catalog lives in Postgres now, not in a static Dart list.
 ///
 /// [id] is the catalog's own stable id (e.g. `seed-food-drink`) — reused 1:1

@@ -217,7 +217,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       });
 
   /// HU-06: fetches the onboarding catalog from `category_seeds`
-  /// (`docs/requirements/05-auth-sync.md`, decision #12) and seeds it
+  /// (`docs/requirements/fase-1/05-auth-sync.md`, decision #12) and seeds it
   /// locally. A fetch failure is mapped to [NetworkFailure] explicitly —
   /// distinct from the generic [DatabaseFailure] `_guard` produces for local
   /// Drift errors — so the caller (`SeedDefaultCategories`) can tell "no

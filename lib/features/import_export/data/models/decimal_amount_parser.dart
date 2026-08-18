@@ -12,7 +12,7 @@ class ParsedDecimalAmount {
   /// True when the source had more decimal digits than `currencyDecimals`
   /// admits and at least one of the dropped digits was non-zero — the value
   /// was rounded half-up, never truncated silently and never discarded
-  /// (`docs/requirements/11-import-export.md` §Montos).
+  /// (`docs/requirements/fase-1/11-import-export.md` §Montos).
   final bool rounded;
 }
 
@@ -22,7 +22,7 @@ class ParsedDecimalAmount {
 /// integer arithmetic on the digit strings instead.
 ///
 /// Lives in `data/` (never `domain/`) per
-/// `docs/requirements/11-import-export.md`: "la conversión decimal → centavos
+/// `docs/requirements/fase-1/11-import-export.md`: "la conversión decimal → centavos
 /// ocurre en el borde (parser/serializador), nunca dentro del dominio".
 /// [DecimalConvention] is already resolved by the time this runs — the
 /// mapping step, not this parser, decides which separator means what for a

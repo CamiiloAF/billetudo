@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Incluye la extension de cierre/completar deuda (menu overflow, sheet de acciones, cierre manual, felicitacion al 100%, tab "Cerradas") aprobada 2026-07-24. Requisitos en `docs/requirements/08-deudas.md` HU-02/HU-07. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
+**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Incluye la extension de cierre/completar deuda (menu overflow, sheet de acciones, cierre manual, felicitacion al 100%, tab "Cerradas") aprobada 2026-07-24. Requisitos en `docs/requirements/fase-1/08-deudas.md` HU-02/HU-07. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
 
 ## Frames
 
@@ -164,7 +164,7 @@ CTA "Cerrar deuda" en **violeta** (`Button/Primary`), no destructivo — cerrar 
 
 ### Sheet Felicitacion al 100% (`C28Zt`)
 
-Se dispara cuando el saldo pendiente de una deuda llega a 0 o menos (ver HU-02/HU-07 en `docs/requirements/08-deudas.md`), tipicamente tras registrar un abono que salda el total. Bottom Sheet Base con `Sheet Icon Header` (icono `party-popper`, icon-wrap 72px violeta) + fila de 2 stats (`$primary-soft` + texto `$primary-on-soft-strong`, no `$primary-on-soft` — a este tamaño no alcanza 4.5:1) + `Sheet Buttons Row`.
+Se dispara cuando el saldo pendiente de una deuda llega a 0 o menos (ver HU-02/HU-07 en `docs/requirements/fase-1/08-deudas.md`), tipicamente tras registrar un abono que salda el total. Bottom Sheet Base con `Sheet Icon Header` (icono `party-popper`, icon-wrap 72px violeta) + fila de 2 stats (`$primary-soft` + texto `$primary-on-soft-strong`, no `$primary-on-soft` — a este tamaño no alcanza 4.5:1) + `Sheet Buttons Row`.
 
 Copy diseñado en el `.pen` para direccion `iOwe`: **"¡Felicidades! Ya no debes nada"** / **"Terminaste de pagar {nombre}. En total pagaste {monto} en {duración}."** Stats: "Total pagado" y "Duración". **Para direccion `owedToMe` el copy cambia de verbo** (misma pieza visual, texto por l10n segun direccion): "Terminaste de cobrar {nombre}. En total cobraste {monto} en {duración}." — no se disena una segunda variante visual, solo el string cambia por parametro de direccion (a resolver en `flutter-dev` via l10n, no en Pencil).
 

@@ -1,4 +1,4 @@
--- schemaVersion 21 (Import/Export, docs/requirements/11-import-export.md):
+-- schemaVersion 21 (Import/Export, docs/requirements/fase-1/11-import-export.md):
 -- one row per completed CSV import, plus a nullable `import_batch_id` on
 -- every table an import can create rows in (`transactions`, `accounts`,
 -- `categories`, `tags`), so a whole import can be reverted by id (HU-08)

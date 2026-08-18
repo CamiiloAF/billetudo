@@ -3,7 +3,7 @@
 // navigation. No datasource or repository is mocked.
 //
 // Supabase/PowerSync are not wired into this project yet (see CLAUDE.md →
-// "Estado del repo" and `docs/requirements/05-auth-sync.md`): every real
+// "Estado del repo" and `docs/requirements/fase-1/05-auth-sync.md`): every real
 // Google/Apple sign-in call throws `UnimplementedError` from
 // `AuthRepositoryImpl`. That rules out automating an actual sign-in, a real
 // merge, a real cloud delete, or a real "Cerrar sesión" (which only shows in

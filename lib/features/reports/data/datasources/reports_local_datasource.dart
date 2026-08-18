@@ -7,7 +7,7 @@ import '../models/cashflow_row.dart';
 import '../models/category_row.dart';
 import '../models/net_worth_row.dart';
 
-/// Drift queries for Gráficas e informes (`docs/requirements/10-graficas-informes.md`).
+/// Drift queries for Gráficas e informes (`docs/requirements/fase-1/10-graficas-informes.md`).
 ///
 /// Every aggregate here is a real SQL `SUM`/`GROUP BY` (criterion 21: "toda
 /// agregación en SQL vía Drift, nunca iterando en Dart") — the one deliberate
@@ -68,7 +68,7 @@ class ReportsLocalDatasource {
   /// midnight. `DateTimeModifier.localTime()` converts to the SQLite
   /// engine's local timezone (the device's) before formatting, matching
   /// "Fechas y agregación" → "el corte de periodo usa la zona horaria local
-  /// del dispositivo" (docs/requirements/10-graficas-informes.md).
+  /// del dispositivo" (docs/requirements/fase-1/10-graficas-informes.md).
   Expression<String> _bucketKeyExpr(
     Expression<DateTime> date,
     DateGranularity granularity,

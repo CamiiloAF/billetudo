@@ -10,7 +10,7 @@ PowerSyncDatabase? _powerSyncDatabase;
 
 /// Opens the single [PowerSyncDatabase] for this process, at the same path
 /// `openLocalDatabase()` used to open its own `NativeDatabase` (see decision
-/// #6, `docs/requirements/05-auth-sync.md`).
+/// #6, `docs/requirements/fase-1/05-auth-sync.md`).
 ///
 /// Must be awaited once in `bootstrap()`, **before** `configureDependencies()`
 /// builds the DI graph — same pattern as `Supabase.initialize()` there. Only

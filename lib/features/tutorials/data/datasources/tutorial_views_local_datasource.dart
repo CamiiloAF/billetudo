@@ -6,7 +6,7 @@ import '../../domain/entities/tutorial_key.dart';
 
 /// Drift access to the contextual-help minitutorials' "already seen"
 /// registry (`TutorialViews`) plus the `AppSettings.showHelpOnSectionEntry`
-/// preference (`docs/requirements/16-minitutoriales.md`).
+/// preference (`docs/requirements/fase-1/16-minitutoriales.md`).
 ///
 /// `TutorialViews.id` is [TutorialKey.id] — a small stable string, NOT a
 /// generated UUID (see the table's class doc in `app_database.dart`): row

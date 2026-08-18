@@ -6,7 +6,7 @@ import 'package:equatable/equatable.dart';
 /// `biweekly` is the es-CO **semi-monthly fortnight** (two periods per month
 /// anchored to the start day), NOT a rolling 14 days. `custom` is always a
 /// single one-off window (`recurring = false`). See
-/// `docs/requirements/06-presupuestos.md`.
+/// `docs/requirements/fase-1/06-presupuestos.md`.
 enum BudgetPeriod { weekly, biweekly, monthly, yearly, custom }
 
 /// A user-named budget with a configurable scope (accounts + categories, held

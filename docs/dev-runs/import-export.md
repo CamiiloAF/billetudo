@@ -2,7 +2,7 @@
 
 ## Objetivo y criterios de aceptación
 
-Dar a cualquier usuario, sin cuenta ni conexión, la capacidad completa de sacar sus datos de Billetudo (CSV legible + copia `.billetudo.json` restaurable) y de traer datos desde cualquier CSV (propio o de otra app) con mapeo manual, vista previa segura y reversión por lote — sin que nada de esto dependa de anuncios, pago ni de que la nube esté sana. Implementa HU-01 a HU-09 de `docs/requirements/11-import-export.md`, contra el diseño ya aprobado en `design-system/billetudo/pages/import-export.md`.
+Dar a cualquier usuario, sin cuenta ni conexión, la capacidad completa de sacar sus datos de Billetudo (CSV legible + copia `.billetudo.json` restaurable) y de traer datos desde cualquier CSV (propio o de otra app) con mapeo manual, vista previa segura y reversión por lote — sin que nada de esto dependa de anuncios, pago ni de que la nube esté sana. Implementa HU-01 a HU-09 de `docs/requirements/fase-1/11-import-export.md`, contra el diseño ya aprobado en `design-system/billetudo/pages/import-export.md`.
 
 Criterios de aceptación (20, derivados de las HU) — ver cobertura en la sección Tests.
 

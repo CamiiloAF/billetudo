@@ -8,7 +8,7 @@
 
 ## Contexto
 
-Este es el único punto de la Fase 0 donde existe un límite deliberado de producto (no técnico): el set esencial es gratis para siempre, pero las vistas "avanzadas" quedan reservadas para Nivel 1/2. El criterio de qué es "esencial" debe quedar explícito para no bloquear por error algo que CLAUDE.md protege como Nivel 0.
+Este es el único punto de la Fase 1 donde existe un límite deliberado de producto (no técnico): el set esencial es gratis para siempre, pero las vistas "avanzadas" quedan reservadas para Nivel 1/2. El criterio de qué es "esencial" debe quedar explícito para no bloquear por error algo que CLAUDE.md protege como Nivel 0.
 
 Es también la pantalla donde **convergen** las reglas de conteo de toda la app: transferencias presupuestables (`plan-cuentas-tipos-y-transferencias-presupuestables.md` §3), movimientos de deuda (`08-deudas.md` §Estadísticas) y patrimonio total vs. líquido. Esas reglas se centralizan aquí (ver "Reglas de conteo") y el resto de docs las referencian; si un documento y este difieren, **manda este**.
 
@@ -124,12 +124,12 @@ Como usuario nuevo o sin datos suficientes quiero una pantalla que me oriente, e
 - **Offline / error de sync:** los datos salen de Drift, así que la pantalla funciona completa sin conexión; un fallo de sync no la vacía ni la bloquea (mismo criterio que `04-inicio.md` HU-10).
 - Tono positivo en todos los estados; nunca avergonzar por el gasto ni por no tener datos.
 
-## Costura para Nivel 1/2 (se construye en Fase 0, sin UI avanzada)
+## Costura para Nivel 1/2 (se construye en Fase 1, sin UI avanzada)
 
 Para que añadir una vista avanzada en Fase 4 sea **aditivo** y no un retrofit sobre datos y UI ya escritos:
 
 - **Catálogo declarativo de vistas** en `domain`: cada vista se declara con su identificador, su tipo y un campo `tier` (`essential` | `advanced`). Hoy todas las entradas son `essential`.
-- **Un único punto de guarda** (`ChartAccessGuard` o equivalente) que consulta el `tier` antes de abrir una vista. En Fase 0 siempre deja pasar porque no existe ninguna `advanced`; en Fase 4 se le conecta la verificación de cupo **server-side** sin tocar las vistas.
+- **Un único punto de guarda** (`ChartAccessGuard` o equivalente) que consulta el `tier` antes de abrir una vista. En Fase 1 siempre deja pasar porque no existe ninguna `advanced`; en Fase 4 se le conecta la verificación de cupo **server-side** sin tocar las vistas.
 - **El rango de fechas es parámetro** de cada vista desde el día 1 (HU-01), no una constante — es lo que después habilita comparativas y tendencias sin reescribir la capa de datos.
 - **Nada de UI avanzada apagada**: no se agregan pantallas, rutas ni entradas de menú para vistas que no existen.
 - **Cómo entra una vista avanzada en Fase 4** (decisión 2026-07-28): como **acción dentro de un tab existente** (ej. "comparar con el periodo anterior" dentro de Flujo), **nunca como un tab nuevo**. Con 4 tabs el control ya está en su techo medido y un quinto obligaría a rediseñar la navegación; una acción dentro del tab es aditiva y sigue respetando "nada de UI avanzada apagada" — hoy simplemente no existe la acción.
@@ -159,7 +159,7 @@ Las "Reglas de conteo" de este doc son la fuente de verdad. Estos documentos se 
 
 ## Fases
 
-- **Fase 0 (esta HU):** HU-01 a HU-06 + la costura de tiers. Requiere que existan Transacciones, Cuentas, Categorías, Presupuestos, Metas y Deudas.
+- **Fase 1 (esta HU):** HU-01 a HU-06 + la costura de tiers. Requiere que existan Transacciones, Cuentas, Categorías, Presupuestos, Metas y Deudas.
 - **Fase de multi-moneda:** cuando se construya `12-multi-moneda.md`, se añade a HU-01/HU-02/HU-03 el manejo de varias monedas descrito en "Reglas de conteo" → Moneda. No es bloqueante para este entregable.
 - **Dependencia blanda:** HU-01/HU-03 solo cambian de comportamiento cuando exista `countsInBudget` (Fase B1 del plan de transferencias). Si esta feature se implementa antes, la regla queda escrita y sin efecto — no es bloqueante.
 - **Fase 4:** vistas avanzadas (Cubo B) enchufadas al catálogo + verificación de cupo server-side + AdMob SSV / RevenueCat.

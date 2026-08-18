@@ -9,7 +9,7 @@ enum ChartViewId { dashboard, cashflow, netWorth, categoryBreakdown }
 
 /// A single entry in the report catalog: which view it is and which tier
 /// gates it. See "Costura para Nivel 1/2" in
-/// `docs/requirements/10-graficas-informes.md`. Every entry is `essential`
+/// `docs/requirements/fase-1/10-graficas-informes.md`. Every entry is `essential`
 /// today — Fase 0 builds no `advanced` view.
 class ChartView extends Equatable {
   const ChartView({required this.id, required this.tier});

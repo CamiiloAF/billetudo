@@ -21,7 +21,7 @@ Como usuario quiero crear una cuenta indicando nombre, tipo, moneda y saldo inic
 - El saldo inicial se guarda en centavos (`initialBalanceMinor`), nunca como decimal.
 - Puedo asignar ícono y color para identificarla visualmente en listas y gráficas.
 - **Campos opcionales de identificación** (todos los tipos): `institution` (nombre de la entidad, ej. "Bancolombia", "Nu"; texto libre 0-100) y número de cuenta (ver HU-03).
-- **Tasa de interés opcional** (`interestRateBps`) para ahorros, inversión y tarjeta: se captura como porcentaje anual y se guarda en **puntos básicos enteros** (24,5% → `2450`); en Fase 0 es solo informativa, no calcula rendimientos.
+- **Tasa de interés opcional** (`interestRateBps`) para ahorros, inversión y tarjeta: se captura como porcentaje anual y se guarda en **puntos básicos enteros** (24,5% → `2450`); en Fase 1 es solo informativa, no calcula rendimientos.
 - Si el tipo es **tarjeta de crédito**, el formulario habilita los campos específicos de HU-02 (cupo, corte, pago). Para los demás tipos esos campos permanecen ocultos y nulos.
 - No hay límite de número de cuentas (Nivel 0).
 - La cuenta queda disponible de inmediato para seleccionar en el formulario de transacciones.
@@ -109,7 +109,7 @@ Como usuario quiero arrastrar y reordenar mis cuentas en la lista, para ver prim
 ## Reglas de negocio y edge cases
 
 - Ninguna operación de cuentas depende de red: todo es local-first (Drift/SQLite), coherente con "la app funciona sin conexión".
-- El tipo `investment` no calcula rendimientos ni valorización automática en Fase 0 — es solo una etiqueta de cuenta para separar el patrimonio invertido; el saldo se mueve igual que cualquier otra cuenta vía transacciones manuales. La tasa de interés es informativa.
+- El tipo `investment` no calcula rendimientos ni valorización automática en Fase 1 — es solo una etiqueta de cuenta para separar el patrimonio invertido; el saldo se mueve igual que cualquier otra cuenta vía transacciones manuales. La tasa de interés es informativa.
 - La **tarjeta de crédito** es una cuenta de pasivo: su saldo es deuda (negativo). El pago de la tarjeta es una transferencia desde otra cuenta, no un gasto nuevo (evita doble conteo). Ver `03-transacciones.md`.
 - **Número de cuenta (HU-03):** el número completo se guarda cifrado y solo en el dispositivo (Keychain/Keystore), nunca en texto plano ni sincronizado a la nube. `last4` es el único fragmento que se sincroniza/muestra. Para **tarjeta de crédito** no se guarda el número completo (PAN) en ningún caso — solo `last4` — para no entrar en PCI-DSS. La ofuscación con "ojito" es solo presentación; la protección real la da el cifrado en reposo.
 - Transferencias entre cuentas se gestionan desde `Transactions` (`type = transfer`, `transferAccountId`), no desde esta feature — ver `03-transacciones.md`.
@@ -124,7 +124,7 @@ Estas HU requieren nuevas columnas en la tabla `Accounts` (todas nullable para n
 | `institution` | `text().nullable()` (max 100) | Nombre de la entidad. Todos los tipos. |
 | `accountNumberEnc` | `text().nullable()` | Número de cuenta completo **cifrado** (Keychain/Keystore). **No** tipo tarjeta. **Excluir del sync** de PowerSync — vive solo local. HU-03. |
 | `last4` | `text().nullable()` (max 4, numérico) | Últimos 4 dígitos; se deriva de `accountNumberEnc` o se ingresa manual. Único fragmento sincronizable. |
-| `interestRateBps` | `integer().nullable()` | Tasa anual en puntos básicos. Informativa en Fase 0. |
+| `interestRateBps` | `integer().nullable()` | Tasa anual en puntos básicos. Informativa en Fase 1. |
 | `creditLimitMinor` | `integer().nullable()` | Cupo máximo en centavos. Obligatorio si `type = card`. |
 | `statementDay` | `integer().nullable()` (1-31) | Día de corte. Solo tarjeta. |
 | `paymentDueDay` | `integer().nullable()` (1-31) | Día de pago. Solo tarjeta. |

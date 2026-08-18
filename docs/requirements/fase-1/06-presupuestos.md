@@ -65,8 +65,8 @@ Como usuario, dentro de un presupuesto recurrente, quiero **moverme entre period
 
 **Criterios de aceptación:**
 - Un **stepper de periodo** (‹ / ›) permite avanzar y retroceder de a un periodo, análogo al stepper de fechas de Transacciones (`DatePeriodFilter`). El periodo vigente es el default.
-- **Periodos pasados:** muestran el resultado real de ese periodo (gastado vs. `amountMinor`), calculado contra las transacciones históricas de esa ventana. En Fase 0 el cálculo usa los **valores vigentes** del presupuesto (no se congela por periodo; ver HU-09).
-- **Periodos futuros:** muestran el `amountMinor` asignado y el gasto ya registrado con fecha futura (si lo hubiera), como panorama; sin proyecciones de IA (Fase 0 es cálculo determinístico local).
+- **Periodos pasados:** muestran el resultado real de ese periodo (gastado vs. `amountMinor`), calculado contra las transacciones históricas de esa ventana. En Fase 1 el cálculo usa los **valores vigentes** del presupuesto (no se congela por periodo; ver HU-09).
+- **Periodos futuros:** muestran el `amountMinor` asignado y el gasto ya registrado con fecha futura (si lo hubiera), como panorama; sin proyecciones de IA (Fase 1 es cálculo determinístico local).
 - No se puede retroceder antes de `startDate` ni avanzar más allá de `endDate` (si existe).
 - Es una vista de **solo lectura del progreso**; no crea filas por periodo (el arrastre entre periodos es HU-07, diferido).
 
@@ -76,7 +76,7 @@ Como usuario quiero, si lo activo, distribuir todo mi ingreso del periodo entre 
 **Criterios de aceptación:**
 - Es un modo **opt-in a nivel de app**, no obligatorio para usar presupuestos normales. Se persiste en `AppSettings.zeroBasedEnabled` (ver Cambios de esquema; requiere el mecanismo de settings persistentes, hoy inexistente).
 - Con el modo activo, la pantalla muestra: **ingreso del periodo − total asignado a presupuestos = sin asignar**, donde:
-  - Ingreso del periodo = suma de `Transactions.type = income` no eliminadas, con `date` en el periodo de referencia (el mes calendario vigente en Fase 0).
+  - Ingreso del periodo = suma de `Transactions.type = income` no eliminadas, con `date` en el periodo de referencia (el mes calendario vigente en Fase 1).
   - Total asignado = suma de `amountMinor` de los presupuestos activos de ese periodo y moneda.
 - "Sin asignar" debe llegar a **cero** para considerarse completo, pero **no bloquea ninguna acción** si no llega a cero (es guía, no obstáculo — coherente con "sin fricción").
 - **No introduce una tabla nueva** para base-cero: se apoya en `Budgets` + suma de `Transactions.type = income`.
@@ -84,7 +84,7 @@ Como usuario quiero, si lo activo, distribuir todo mi ingreso del periodo entre 
 ### HU-07 — Rollover (arrastre de presupuesto) — *diferido a Fase 3*
 Como usuario quiero que el sobrante (o el exceso) de un presupuesto se arrastre al siguiente periodo, para no perder el margen que no usé o compensar un mes en que me pasé.
 
-**Estado:** el modelo de datos lo soporta desde Fase 0 (columna `rollover` en `Budgets`), pero la **lógica de arrastre no se implementa en Fase 0**. El arrastre exige estado por-periodo (sobrante/déficit de cada periodo cerrado), interactúa con la edición del monto y obliga a reglas de retroactividad — el tipo de mecánica de fricción que nuestro diferenciador evita hacer obligatoria. Aterriza junto a safe-to-spend en Fase 3, donde se decidirá el modelo de persistencia (recompute determinístico desde `startDate` vs. tabla `BudgetPeriods` con snapshots inmutables).
+**Estado:** el modelo de datos lo soporta desde Fase 1 (columna `rollover` en `Budgets`), pero la **lógica de arrastre no se implementa en Fase 1**. El arrastre exige estado por-periodo (sobrante/déficit de cada periodo cerrado), interactúa con la edición del monto y obliga a reglas de retroactividad — el tipo de mecánica de fricción que nuestro diferenciador evita hacer obligatoria. Aterriza junto a safe-to-spend en Fase 3, donde se decidirá el modelo de persistencia (recompute determinístico desde `startDate` vs. tabla `BudgetPeriods` con snapshots inmutables).
 
 **Criterios de aceptación (para cuando se implemente):**
 - Se controla con el flag `rollover` del presupuesto (default `false`).
@@ -98,7 +98,7 @@ Como usuario quiero recibir un aviso **antes** de pasarme de un presupuesto (no 
 **Criterios de aceptación:**
 - **Umbral configurable por presupuesto** (`alertThresholdPct`, entero 1-100, nullable con default 80). Al alcanzar ese % del `amountMinor` gastado, se dispara una notificación local positiva: "Te queda X% del presupuesto de [alcance] y faltan Y días" — no es IA, es cálculo local determinístico.
 - Al **completar el periodo dentro del presupuesto**, se felicita al usuario (refuerzo positivo, no solo alertas de exceso).
-- Es **Nivel 0** (cálculo local, sin costo). Su implementación completa (disparo de notificaciones locales) puede aterrizar en Fase 3 según el roadmap; el modelo de datos (`alertThresholdPct`) debe soportarla desde Fase 0.
+- Es **Nivel 0** (cálculo local, sin costo). Su implementación completa (disparo de notificaciones locales) puede aterrizar en Fase 3 según el roadmap; el modelo de datos (`alertThresholdPct`) debe soportarla desde Fase 1.
 - La **entrega** de la notificación local (scheduling, permisos) es de la feature de notificaciones, que leerá `alertThresholdPct` y el progreso; aquí solo se persiste el umbral y se define el cálculo.
 
 ### HU-09 — Editar presupuesto
@@ -106,7 +106,7 @@ Como usuario quiero modificar el monto, la periodicidad, las fechas o el alcance
 
 **Criterios de aceptación:**
 - Puedo editar `amountMinor`, `currency`, `period`, `startDate`, `endDate`, `recurring`, el alcance (cuentas/categorías), `alertThresholdPct` y `rollover`.
-- Editar **no recalcula retroactivamente** el histórico: el progreso siempre se computa contra los valores vigentes del presupuesto en el periodo consultado, no se congela por periodo en Fase 0 (consistente con HU-05).
+- Editar **no recalcula retroactivamente** el histórico: el progreso siempre se computa contra los valores vigentes del presupuesto en el periodo consultado, no se congela por periodo en Fase 1 (consistente con HU-05).
 - `updatedAt` se actualiza en cada edición (en el repositorio); las tablas de unión de alcance también actualizan su `updatedAt`.
 
 ### HU-10 — Cerrar presupuesto (conservar en histórico)
@@ -150,7 +150,7 @@ Lee de la feature `09-pagos-programados.md` (tabla `ScheduledPayments`); no intr
 - Los **movimientos de deuda** (`debtId`) **sí cuentan** como gasto presupuestable cuando son de caja y llevan categoría (presupuestas tu cuota de carro); los asientos de solo-deuda (`DebtEntries`, interés y ajustes) nunca — no son caja. Ver `08-deudas.md` §Estadísticas.
 - Seleccionar una **categoría raíz** en el alcance incluye automáticamente el gasto de todas sus subcategorías.
 - **Alcances anidados/solapados son válidos** (global + específico, cuenta + categoría): son lentes distintos sobre el mismo gasto, no un error. Solo se advierte ante un **duplicado exacto** (mismo alcance + misma periodicidad, ambos activos).
-- **Multi-moneda (Fase 0):** el presupuesto tiene una sola `currency`; su progreso suma **solo transacciones de esa misma moneda**. Los gastos en otra moneda quedan fuera del alcance de ese presupuesto. La conversión se define en `12-multi-moneda.md` y se difiere. Advertir en la UI si el alcance incluye cuentas de distinta moneda.
+- **Multi-moneda (Fase 1):** el presupuesto tiene una sola `currency`; su progreso suma **solo transacciones de esa misma moneda**. Los gastos en otra moneda quedan fuera del alcance de ese presupuesto. La conversión se define en `12-multi-moneda.md` y se difiere. Advertir en la UI si el alcance incluye cuentas de distinta moneda.
 - **Borrado de cuenta/categoría dentro del alcance:** si se elimina una cuenta (`tombstonedAt`, irreversible) o una categoría (`deletedAt`, reversible) referenciada por un presupuesto, **la fila de unión se conserva** — no se limpia ni se borra en cascada. El cálculo de progreso hace JOIN a `Accounts`/`Categories` y **filtra el referente borrado** (cuentas con `tombstonedAt IS NULL`; categorías con `deletedAt IS NULL AND tombstonedAt IS NULL`). Así, restaurar una categoría desde la papelera **repone el alcance intacto sin trabajo extra**.
   - **Global vs. acotado-que-quedó-vacío (regla crítica):** "sin filas de unión = todo" (global, HU-02) **no** es lo mismo que "hay filas de unión pero todos sus referentes están borrados". El cálculo debe contar las filas de unión **crudas** (incluyendo referentes borrados) para decidir global-vs-acotado, y filtrar los borrados **solo** del conjunto `IN(...)`. Si existen filas pero ninguna sobrevive → el presupuesto matchea **cero** transacciones (nunca "todas"), y la UI lo **advierte**. Un cálculo ingenuo aquí convertiría un presupuesto estrecho en global por accidente.
   - **Aviso al borrar:** al eliminar una cuenta o categoría, la computación de impacto (la que ya cuenta metas/deudas afectadas) también cuenta los presupuestos cuyo alcance la referencia, para que el sheet de confirmación diga "se usa en N presupuestos". No se elimina el presupuesto en cascada.

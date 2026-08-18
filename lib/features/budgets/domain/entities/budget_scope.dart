@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 /// (HU-04): a scope row survives even when the account/category it points at is
 /// deleted, so we must tell "no scope rows at all" (global) apart from "scope
 /// rows whose referents are all gone" (matches nothing). See
-/// `docs/requirements/06-presupuestos.md`.
+/// `docs/requirements/fase-1/06-presupuestos.md`.
 class BudgetScopeRef extends Equatable {
   const BudgetScopeRef({required this.id, required this.referentAlive});
 

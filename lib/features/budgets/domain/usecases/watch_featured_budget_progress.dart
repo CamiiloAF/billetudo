@@ -9,7 +9,7 @@ import '../entities/budget_with_progress.dart';
 import '../repositories/budget_repository.dart';
 import '../services/budget_hero_selector.dart';
 
-/// Home's hero progress bar (`docs/requirements/04-inicio.md`,
+/// Home's hero progress bar (`docs/requirements/fase-1/04-inicio.md`,
 /// `design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
 ///
 /// Combines the active budgets with the user's settings so a manual pick

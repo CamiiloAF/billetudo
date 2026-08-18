@@ -8,7 +8,7 @@ import '../../../../../core/widgets/sheet_action_row.dart';
 /// What Pagos programados' overflow ("⋮") offers — same pattern as
 /// `BudgetsMenuSheet`. This tab root had an empty `Action Spacer` where this
 /// menu now sits, needed once the contextual-help minitutorials required a
-/// "Ver ayuda" reopen affordance (`docs/requirements/16-minitutoriales.md`
+/// "Ver ayuda" reopen affordance (`docs/requirements/fase-1/16-minitutoriales.md`
 /// criterion 6).
 enum ScheduledPaymentsMenuAction { viewHelp }
 

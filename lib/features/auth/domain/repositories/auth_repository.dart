@@ -7,7 +7,7 @@ import '../entities/merge_summary.dart';
 ///
 /// Implemented in `data/` over the official Google/Apple SDKs for the
 /// client-side half of sign-in, Supabase for the session/account, and
-/// PowerSync for sync (see `docs/requirements/05-auth-sync.md`). [deleteAccount]
+/// PowerSync for sync (see `docs/requirements/fase-1/05-auth-sync.md`). [deleteAccount]
 /// calls a Supabase Edge Function (`delete-account`); see `AuthRepositoryImpl`.
 ///
 /// Signing in is always optional (HU-01): nothing in this contract may be
@@ -56,7 +56,7 @@ abstract class AuthRepository {
   /// implies the cloud account is gone when it was only skipped.
   Future<bool> hasEverSignedIn();
 
-  /// Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): if this
+  /// Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): if this
   /// device has a restorable Supabase session, connects PowerSync (if it is
   /// not connected yet) and waits, bounded by [timeout], for its first full
   /// sync to land — so a caller writing local defaults right after this

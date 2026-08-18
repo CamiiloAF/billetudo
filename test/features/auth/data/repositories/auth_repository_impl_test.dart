@@ -671,7 +671,7 @@ void main() {
 
     test(
       'claims unowned local rows for the signed-in account (decision #6, '
-      'docs/requirements/05-auth-sync.md)',
+      'docs/requirements/fase-1/05-auth-sync.md)',
       () async {
         await signIn();
         const summary = MergeSummary(
@@ -990,7 +990,7 @@ void main() {
     });
   });
 
-  // Bug corregido (2026-08-17, docs/requirements/05-auth-sync.md): a device
+  // Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): a device
   // with a restorable session must not let local seeding (AppSettings,
   // default categories) run before PowerSync's first sync lands.
   group('waitForFirstSync (bug corregido 2026-08-17)', () {

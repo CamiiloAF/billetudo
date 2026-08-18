@@ -27,7 +27,7 @@ Consecuencia visual: **el violeta de marca sigue significando "nube"** (quedó r
 ### Alcance de construcción (decisión 2026-07-27)
 
 - **Import por mapeo manual de columnas**, no por perfiles hardcodeados de Wallet/Mint. La app lee **cualquier** CSV: detecta encabezados y el usuario confirma qué columna es qué (con autodetección del formato propio, que deja el caso base en un toque). Motivo: un perfil por app promete una migración 1:1 que no se puede sostener sin archivos de muestra reales de cada versión de cada app, y envejece cada vez que Wallet o Mint cambian su export. El mapeador cubre Wallet, Mint y cualquier otra herramienta sin adivinar nada, y las **plantillas de mapeo guardadas** (HU-06) hacen que reimportar el mismo origen tampoco cueste trabajo.
-- **Se construye en Fase 0:** export CSV, copia completa, restauración, import con mapeo, vista previa, detección de duplicados y reversión por lote.
+- **Se construye en Fase 1:** export CSV, copia completa, restauración, import con mapeo, vista previa, detección de duplicados y reversión por lote.
 - **Fuera de alcance (no se promete en la tienda ni en la UI):** OFX/QIF/MT940, export a Excel nativo (`.xlsx`) o PDF, y sincronización con archivos en la nube del usuario (Drive/iCloud). El export a PDF de informes pertenece además a Cubo B (`10-graficas-informes.md`).
 
 ## Reglas transversales del formato (fuente de verdad; aplican a todas las HU)
@@ -132,7 +132,7 @@ Esto le da a HU-03 un segundo propósito, además de la portabilidad: **es la re
 - La recomendación **no** aparece cuando la sincronización está sana. Un aviso permanente se vuelve invisible y contradice el tono de progreso; la copia se sigue ofreciendo desde su lugar normal en "Más".
 - **La copia debe poder guardarse aunque la cola de subida esté bloqueada.** Es un flujo 100% local que lee la base local, así que un sync trabado no puede impedirla — es exactamente el escenario para el que existe. Verificar que ninguna dependencia del flujo de copia espere a que el sync esté al día.
 
-**Excel (`.xlsx`) queda fuera de esta recomendación.** Sigue *fuera de Fase 0 y sin fecha* (ver §Fases), y además es un formato de *lectura*, no de *estado*: no puede restaurarse sin pérdida. Recomendarlo como red de seguridad sería engañoso. El diseño de la pantalla de sincronización ya reserva su lugar marcado como **Próximamente**, pero la protección real que se ofrece hoy es la copia completa de HU-03.
+**Excel (`.xlsx`) queda fuera de esta recomendación.** Sigue *fuera de Fase 1 y sin fecha* (ver §Fases), y además es un formato de *lectura*, no de *estado*: no puede restaurarse sin pérdida. Recomendarlo como red de seguridad sería engañoso. El diseño de la pantalla de sincronización ya reserva su lugar marcado como **Próximamente**, pero la protección real que se ofrece hoy es la copia completa de HU-03.
 
 ### HU-05 — Importar transacciones desde un CSV cualquiera
 Como usuario quiero importar transacciones desde un archivo CSV, propio o de otra app, para no perder mi historial al migrar.
@@ -241,9 +241,9 @@ Ejecutar vía `/drift-schema-change`: subir `schemaVersion`, escribir migración
 
 ## Fases
 
-- **Fase 0 (esta feature):** HU-01 a HU-09 completas. Depende de que existan Cuentas, Categorías y Transacciones (ya implementadas); la copia completa (HU-03/HU-04) depende además de que las demás tablas existan en el esquema — **ya existen todas**, aunque sus features no estén construidas, así que la copia se escribe contra el esquema, no contra las features.
+- **Fase 1 (esta feature):** HU-01 a HU-09 completas. Depende de que existan Cuentas, Categorías y Transacciones (ya implementadas); la copia completa (HU-03/HU-04) depende además de que las demás tablas existan en el esquema — **ya existen todas**, aunque sus features no estén construidas, así que la copia se escribe contra el esquema, no contra las features.
 - **Dependencia blanda:** la columna `presupuestable` del CSV solo tiene efecto real cuando exista `countsInBudget` en la UI (Fase B1 del plan de transferencias). Hasta entonces se exporta e importa el valor del esquema, sin efecto visible. No es bloqueante.
-- **Fuera de Fase 0 y sin fecha:** OFX/QIF, `.xlsx`, PDF (Cubo B), copia cifrada con contraseña, y copia automática a Drive/iCloud.
+- **Fuera de Fase 1 y sin fecha:** OFX/QIF, `.xlsx`, PDF (Cubo B), copia cifrada con contraseña, y copia automática a Drive/iCloud.
 
 ## Cumplimiento (Nivel 0 / legal / tono)
 

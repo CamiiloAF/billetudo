@@ -10,7 +10,7 @@ import 'first_launch_offline_state.dart';
 /// "Primer arranque — sin conexión" (`KSkpO` light / `zeAfp` dark): blocks
 /// the very first launch when the device has no connectivity to download the
 /// seed category catalog (decisión #12,
-/// `docs/requirements/05-auth-sync.md`). An extended `Empty State` instance
+/// `docs/requirements/fase-1/05-auth-sync.md`). An extended `Empty State` instance
 /// (icon + title + optional subtitle) plus a full-width "Reintentar" button
 /// as a sibling, per `design-system/billetudo/pages/primer-arranque.md`.
 ///

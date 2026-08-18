@@ -6,7 +6,7 @@ import 'package:billetudo/features/tutorials/presentation/utils/tutorial_content
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Criterion 12 (`docs/requirements/16-minitutoriales.md`): every one of the
+/// Criterion 12 (`docs/requirements/fase-1/16-minitutoriales.md`): every one of the
 /// 12 tutorials is localized through `AppLocalizations`, and screen
 /// tutorials (HU-01) carry a navigation CTA while sub-flow ones (HU-02)
 /// never do — [TutorialContentCatalog.of] is the single place that maps a

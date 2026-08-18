@@ -24,7 +24,7 @@ const _ownedTables = [
 ];
 
 /// Prefix of a seed category's id (e.g. `seed-food-drink`), assigned by the
-/// `category_seeds` catalog (`docs/requirements/05-auth-sync.md`, decision
+/// `category_seeds` catalog (`docs/requirements/fase-1/05-auth-sync.md`, decision
 /// #12) — the one thing that tells this datasource "this row might already
 /// exist under this account, check before claiming it".
 const _seedIdPrefix = 'seed-';
@@ -34,7 +34,7 @@ const _seedIdPrefix = 'seed-';
 /// that just authenticated.
 ///
 /// Once `user_id` is set, PowerSync's write interception (decision #6,
-/// docs/requirements/05-auth-sync.md) treats each row as changed and queues it
+/// docs/requirements/fase-1/05-auth-sync.md) treats each row as changed and queues it
 /// for upload — this UPDATE is what actually associates local data with the
 /// account; there is no separate "upload" call to make.
 ///

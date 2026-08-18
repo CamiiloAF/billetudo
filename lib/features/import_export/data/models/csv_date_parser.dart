@@ -8,7 +8,7 @@ class ParsedCsvDate {
 
   /// True when both non-year components read `<= 12` (day and month), so the
   /// opposite [DateComponentOrder] would have parsed to an equally valid,
-  /// different date — `docs/requirements/11-import-export.md` §Fechas: "si
+  /// different date — `docs/requirements/fase-1/11-import-export.md` §Fechas: "si
   /// la muestra es ambigua ... la vista previa lo advierte explícitamente".
   final bool ambiguous;
 }
@@ -16,7 +16,7 @@ class ParsedCsvDate {
 /// Parses a date cell per [DateComponentOrder]/[DateSeparatorChar] (never the
 /// device locale — the format is part of the mapping, chosen or autodetected
 /// per file). [DateComponentOrder.isoYmd] always uses `-`, per
-/// `docs/requirements/11-import-export.md` §Fechas.
+/// `docs/requirements/fase-1/11-import-export.md` §Fechas.
 abstract final class CsvDateParser {
   static ParsedCsvDate? parse(
     String raw, {

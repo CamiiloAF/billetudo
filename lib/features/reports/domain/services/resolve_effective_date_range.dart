@@ -9,7 +9,7 @@ import '../entities/date_range.dart';
 /// switch. No I/O — the caller (the repository) supplies
 /// `earliestDataDate`, already read from `watchEarliestDataDate`.
 ///
-/// Rules (docs/requirements/10-graficas-informes.md HU-06):
+/// Rules (docs/requirements/fase-1/10-graficas-informes.md HU-06):
 ///  - The view never fakes a longer series than the data supports: if
 ///    `earliestDataDate` is later than the requested start, the effective
 ///    range starts there instead, and [ChartHistoryBounds.isClamped] is set.

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../utils/show_account_gate_if_needed.dart';
 import 'account_gate_copy.dart';
 
-/// HU-04 of `docs/requirements/15-gate-cuenta.md`: reaching a route that
+/// HU-04 of `docs/requirements/fase-1/15-gate-cuenta.md`: reaching a route that
 /// needs an account directly — a deep link, a restored deep route, typing
 /// the path by hand — must get the same bridge a FAB tap gets, not a
 /// half-built form. Wrap the `GoRoute`'s `builder` result in this widget

@@ -49,7 +49,7 @@ dependencies:
 
   # --- Sync + backend (decisión: PowerSync + Supabase) ---
   # Drift abre su conexión sobre el `sqlite_async` que administra PowerSync
-  # (decisión #6, docs/requirements/05-auth-sync.md) — drift_sqlite_async
+  # (decisión #6, docs/requirements/fase-1/05-auth-sync.md) — drift_sqlite_async
   # fijado en versión exacta (pre-1.0, riesgo de breaking changes entre
   # minors, ver el mismo doc).
   powersync: ^2.3.1
@@ -112,7 +112,7 @@ dependencies:
   # Produccion, no solo tests: `SyncErrorClassifier` necesita el tipo
   # `http.ClientException` para reconocer un fallo de transporte. `postgrest`
   # envuelve ahi las caidas de red, y sin ese tipo el watchdog de la cola
-  # (decision #22, docs/requirements/05-auth-sync.md) contaria estar sin senal
+  # (decision #22, docs/requirements/fase-1/05-auth-sync.md) contaria estar sin senal
   # como un rechazo del servidor y acabaria mandando a cuarentena las
   # escrituras de un usuario que solo se quedo sin internet.
   # Ya estaba en el arbol como transitiva de supabase; declararla explicita es
@@ -148,7 +148,7 @@ dependencies:
   # desde el dia uno, en el registro tecnico de sync.
   share_plus: ^13.3.0
 
-  # --- Import/export (docs/requirements/11-import-export.md) ---
+  # --- Import/export (docs/requirements/fase-1/11-import-export.md) ---
   # csv: RFC 4180 parse/write for HU-01/02/05/06 (the interoperability half).
   # archive: zips the CSVs together when the user exports more than one kind
   # in the same flow (HU-02). file_picker: native file picker to select a CSV

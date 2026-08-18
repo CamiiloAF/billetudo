@@ -6,7 +6,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// HU-01: the transaction CSV row's exact 13-column order and content,
-/// including the two privacy rules from `docs/requirements/11-import-export.md`
+/// including the two privacy rules from `docs/requirements/fase-1/11-import-export.md`
 /// §Identidad y datos que nunca salen — `last4` on accounts is exported
 /// elsewhere (HU-02, accounts CSV), but a transaction row must never carry
 /// anything beyond these 13 fields, structurally ruling out `accountNumberEnc`

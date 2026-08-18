@@ -6,7 +6,7 @@ import '../entities/net_worth_series.dart';
 
 /// Contract the Gráficas e informes feature depends on. Implemented in
 /// `data/` over Drift (source of truth); every aggregate is computed in SQL
-/// (see `docs/requirements/10-graficas-informes.md` → "Reglas de conteo" →
+/// (see `docs/requirements/fase-1/10-graficas-informes.md` → "Reglas de conteo" →
 /// Fechas y agregación), never by iterating raw transactions in Dart.
 ///
 /// `range` is an explicit parameter everywhere (HU-01, "Costura para Nivel

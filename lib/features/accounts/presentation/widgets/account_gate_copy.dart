@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 
 /// Every surface the account gate can intercept
-/// (`docs/requirements/15-gate-cuenta.md` HU-03), each with its own icon and
+/// (`docs/requirements/fase-1/15-gate-cuenta.md` HU-03), each with its own icon and
 /// copy in `billetudo.pen` (`design-system/billetudo/pages/gate-cuenta.md`).
 enum AccountGateSurface {
   /// Registrar movimiento (ingreso/gasto), incluido el FAB de Home y el CTA
@@ -29,7 +29,7 @@ enum AccountGateSurface {
 
   /// Crear presupuesto — bloquea **toda** la creación, incluido el alcance
   /// "Todo" (decisión de producto revertida 2026-08-06, ver
-  /// `docs/requirements/15-gate-cuenta.md` HU-03). `flt4U`.
+  /// `docs/requirements/fase-1/15-gate-cuenta.md` HU-03). `flt4U`.
   budget,
 
   /// Campo "Cuenta vinculada" de Metas: ayuda informativa no bloqueante — el

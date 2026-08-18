@@ -21,7 +21,7 @@
 -- Las tablas sincronizadas se leen en el cliente a través de las *vistas* de
 -- PowerSync, donde cada columna es `CAST(json_extract(data,'$.col') AS <tipo>)`.
 -- Por eso el tipo de Postgres debe seguir al tipo del cliente, no al revés
--- (decisión #15, docs/requirements/05-auth-sync.md):
+-- (decisión #15, docs/requirements/fase-1/05-auth-sync.md):
 --
 --   * Fechas y timestamps -> `bigint` con epoch en SEGUNDOS.
 --     Es como Drift serializa un `DateTimeColumn` a SQLite.

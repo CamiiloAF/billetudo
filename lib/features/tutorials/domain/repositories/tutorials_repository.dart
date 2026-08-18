@@ -3,7 +3,7 @@ import '../entities/tutorial_key.dart';
 
 /// Contract for the contextual-help minitutorials' "already seen" registry
 /// and the account-level on/off preference
-/// (`docs/requirements/16-minitutoriales.md`). Implemented in `data/` over
+/// (`docs/requirements/fase-1/16-minitutoriales.md`). Implemented in `data/` over
 /// Drift's `TutorialViews` table and the `AppSettings.showHelpOnSectionEntry`
 /// column.
 ///

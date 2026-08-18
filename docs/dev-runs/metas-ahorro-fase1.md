@@ -2,7 +2,7 @@
 
 ## Objetivo y criterios de aceptacion
 
-Implementar la feature Metas de ahorro (Nivel 0) segun `docs/requirements/07-metas.md`: modelo de progreso derivado de un historial de movimientos (`GoalContributions`), CRUD completo, aportar/retirar, proyeccion, celebracion de hitos y meta cumplida, archivado/eliminado con tombstone, lista con senal de coherencia y momentum, y el nuevo diseno "tablero de aspiraciones" ya aprobado en Pencil (`design-system/billetudo/pages/metas.md`).
+Implementar la feature Metas de ahorro (Nivel 0) segun `docs/requirements/fase-1/07-metas.md`: modelo de progreso derivado de un historial de movimientos (`GoalContributions`), CRUD completo, aportar/retirar, proyeccion, celebracion de hitos y meta cumplida, archivado/eliminado con tombstone, lista con senal de coherencia y momentum, y el nuevo diseno "tablero de aspiraciones" ya aprobado en Pencil (`design-system/billetudo/pages/metas.md`).
 
 Excluido explicitamente de esta corrida:
 - HU-16 (aporte recurrente via `ScheduledPayments.goalId`).

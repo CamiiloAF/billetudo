@@ -295,7 +295,7 @@ class CategoriesLocalDatasource {
           .then((rows) => rows.isEmpty ? null : rows.first);
 
   /// HU-06: inserts the onboarding seed set fetched from the remote
-  /// `category_seeds` catalog (`docs/requirements/05-auth-sync.md`, decision
+  /// `category_seeds` catalog (`docs/requirements/fase-1/05-auth-sync.md`, decision
   /// #12), in one transaction.
   ///
   /// Unlike a normal [insertCategory], every row keeps the catalog's own

@@ -4,7 +4,7 @@ import '../../../../core/error/result.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../settings/domain/repositories/app_settings_repository.dart';
 
-/// `docs/requirements/13-onboarding.md`, "Persistencia y ciclo de vida del
+/// `docs/requirements/fase-1/13-onboarding.md`, "Persistencia y ciclo de vida del
 /// flujo": decides whether the welcome flow should be shown on this launch,
 /// evaluated once, after bootstrap.
 ///

@@ -1,6 +1,6 @@
 # Página: Presupuestos
 
-Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`. Requisitos: `docs/requirements/06-presupuestos.md`.
+Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`. Requisitos: `docs/requirements/fase-1/06-presupuestos.md`.
 
 **Estado:** **aprobado** (tema claro + tema oscuro). Diseño cerrado tras múltiples rondas de refinamiento y auditoría con `ui-ux-reviewer` (paridad claro↔oscuro verificada, contrastes AA, sin hex hardcodeados). Listo para `flutter-dev`.
 

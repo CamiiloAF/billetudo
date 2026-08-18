@@ -9,7 +9,7 @@
 --   but do NOT exist in Postgres: goal_quick_amounts.
 --
 -- Existía en dev y faltaba en prod: el patrón exacto de la decisión #22 en
--- `docs/requirements/05-auth-sync.md`, que bloqueó la cola FIFO de subida
+-- `docs/requirements/fase-1/05-auth-sync.md`, que bloqueó la cola FIFO de subida
 -- durante 3 días y costó 89 registros irrecuperables. Sin el test, esta tabla
 -- habría llegado a producción y el primer usuario que creara un aporte rápido
 -- habría trabado su sincronización entera.

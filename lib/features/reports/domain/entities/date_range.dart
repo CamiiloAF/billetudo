@@ -14,7 +14,7 @@ enum DateGranularity { monthly, daily }
 ///
 /// Dates are compared as local wall-clock `DateTime`s, consistent with how
 /// `Transactions.date` is captured (see "Reglas de conteo" → Fechas y
-/// agregación in `docs/requirements/10-graficas-informes.md`).
+/// agregación in `docs/requirements/fase-1/10-graficas-informes.md`).
 class DateRange extends Equatable {
   const DateRange({
     required this.start,

@@ -19,7 +19,7 @@ import 'wipe_local_data.dart';
 ///
 /// The re-seed is **best-effort and never changes the wipe [Result]**: if it
 /// fails (e.g. `NetworkFailure` while offline — the catalog now lives in
-/// Supabase, decisión #12 in `docs/requirements/05-auth-sync.md`) the wipe
+/// Supabase, decisión #12 in `docs/requirements/fase-1/05-auth-sync.md`) the wipe
 /// itself still succeeded, and the reset latch means the next launch seeds
 /// again anyway. We only log the failure via [CrashReporter], mirroring how
 /// `bootstrap.dart` treats a seed failure as non-fatal.

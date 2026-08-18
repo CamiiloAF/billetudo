@@ -25,7 +25,7 @@ class EnvelopeModeField extends StatelessWidget {
   final VoidCallback onWhatIs;
 
   /// Turning the switch on may show its own minitutorial first
-  /// (`docs/requirements/16-minitutoriales.md` HU-02) — skipped outright if
+  /// (`docs/requirements/fase-1/16-minitutoriales.md` HU-02) — skipped outright if
   /// the Presupuestos screen tutorial has already been seen, since that one
   /// already covers "Modo sobres" (the no-repeat rule this sub-flow calls
   /// out explicitly). Turning it off never shows anything.

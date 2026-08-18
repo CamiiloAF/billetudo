@@ -110,7 +110,7 @@ void main() {
 
   test(
     'HU-03: la copia completa nunca incluye userId (columna de sync, no del '
-    'usuario) — `docs/requirements/11-import-export.md` §Identidad y datos '
+    'usuario) — `docs/requirements/fase-1/11-import-export.md` §Identidad y datos '
     'que nunca salen',
     () async {
       await sourceDb.into(sourceDb.accounts).insert(

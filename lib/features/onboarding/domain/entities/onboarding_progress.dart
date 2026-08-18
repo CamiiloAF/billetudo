@@ -4,7 +4,7 @@ import 'onboarding_step.dart';
 
 /// In-memory state of the welcome flow while it is running.
 ///
-/// This is **not** persisted anywhere: `docs/requirements/13-onboarding.md`
+/// This is **not** persisted anywhere: `docs/requirements/fase-1/13-onboarding.md`
 /// ("Interrupción a mitad") is explicit that killing the app mid-flow resets
 /// it to the beginning on the next launch — only the `AppSettings.
 /// onboardingCompleted` latch (settings feature) and whatever accounts the

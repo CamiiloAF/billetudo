@@ -264,7 +264,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     // Claims every row with no owner yet for this account. PowerSync's write
-    // interception (decision #6, docs/requirements/05-auth-sync.md) then
+    // interception (decision #6, docs/requirements/fase-1/05-auth-sync.md) then
     // queues each claimed row for upload on its own — there is no separate
     // upload step to trigger. Can fail with a `NetworkFailure` (decision
     // #12): claiming `seed-*` categories needs a live Postgres check for
