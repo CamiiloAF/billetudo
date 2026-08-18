@@ -33,7 +33,26 @@ documentos públicos.
 
 ## 0. Bloqueantes encontrados (leer primero)
 
-### B1 — CRÍTICO: el borrado de cuenta falla para usuarios con presupuestos por periodo o metas con montos rápidos
+### B1 — ✅ RESUELTO (2026-08-08): el borrado de cuenta fallaba para usuarios con presupuestos por periodo o metas con montos rápidos
+
+> **Estado: cerrado.** Corregido por la migración
+> `supabase/migrations/20260808000000_delete_account_cascade_missing_tables.sql`,
+> **aplicada en dev y en producción**. El hallazgo se conserva abajo porque
+> documenta el fallo real y la evidencia con que se detectó.
+>
+> Qué se hizo:
+> - `ON DELETE CASCADE` estructural en las FK que estaban en `NO ACTION`
+>   (`budget_period_overrides` → `budgets`, `goal_quick_amounts` → `goals`) y
+>   FK nuevas donde no había ninguna (`debt_entries` → `debts` y `user_id`,
+>   `import_batches` → `user_id`).
+> - `delete_account_data` reescrita con los cinco `delete` que faltaban, hijos
+>   antes que padres.
+> - Se añadió `delete_account_data_coverage_gaps()`, que compara las tablas con
+>   `user_id` contra las que la función borra, para que la próxima tabla nueva
+>   no repita este fallo en silencio. **Probada en negativo**: se creó una tabla
+>   ficticia, se confirmó que la detecta y se eliminó.
+> - Verificado tras aplicar en producción: 0 filas huérfanas y 0 pérdida de
+>   datos de otros usuarios.
 
 **Verificado en vivo contra Postgres de producción**, no por lectura de código.
 
@@ -118,7 +137,18 @@ no se haga, la política **no puede** decir que el borrado local elimina todo.
 El texto redactado hoy dice la verdad actual y quedará desactualizado (a mejor)
 cuando se corrija.
 
-### B3 — MEDIO: Sentry está activo en producción sin consentimiento ni forma de desactivarlo, y sin ningún filtro de PII
+### B3 — PARCIAL: Sentry está activo en producción sin consentimiento ni forma de desactivarlo
+
+> **Estado: mitigado a medias (2026-08-08).** La parte de "sin ningún filtro de
+> PII" quedó cerrada: existe `lib/core/crash/sentry_redaction.dart`, cableado
+> como `beforeSend` en `applySentryOptions` junto con `sendDefaultPii = false`,
+> que limpia los valores de fila del texto libre (mensajes de excepción,
+> mensaje del evento y breadcrumbs) **antes de que el evento salga del
+> dispositivo**. El módulo documenta explícitamente qué **no** cubre.
+>
+> **Sigue abierto:** no hay consentimiento previo ni un ajuste que permita
+> apagarlo. Eso es lo que resta de este hallazgo.
+
 
 - Se activa en el arranque si hay DSN (`lib/core/bootstrap.dart:46-52`), y el
   DSN **está poblado en producción** (`.env.prod`, host `ingest.us.sentry.io`).
@@ -136,9 +166,8 @@ cuando se corrija.
 - No existe ninguna pantalla ni ajuste que lo apague.
 
 **Acción recomendada (no bloqueante para publicar, sí para cumplir bien):**
-añadir un `beforeSend` que recorte `details`/`hint` de los errores de Postgrest.
-La política declara el uso de Sentry de frente, así que publicar es posible sin
-esto; pero la superficie es evitable y barata de cerrar.
+~~añadir un `beforeSend`~~ — ✅ hecho, ver el recuadro de estado arriba. Lo que
+queda es ofrecer un interruptor al usuario.
 
 - ✅ **Hecho (2026-08-08):** *Prevent Storing of IP Addresses* + *Require Data
   Scrubber* + *Require Using Default Scrubbers* activos en la organización de

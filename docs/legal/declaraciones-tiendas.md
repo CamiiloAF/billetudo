@@ -38,13 +38,31 @@ segunda es una clave foránea interna. Evidencia en `AUDITORIA.md` §1.1.
 
 | # | Requisito | Estado |
 |---|---|---|
-| 1 | URL pública de la política de privacidad | ⛔ https://camiiloaf.github.io/billetudo/ — **bloqueante en ambas consolas** |
+| 1 | URL pública de la política de privacidad | ✅ **Publicada el 2026-08-18**: https://camiiloaf.github.io/billetudo/ |
 | 2 | Borrado de cuenta desde la app | ✅ Implementado (ver §4) |
-| 3 | Borrado de cuenta funcional para todos los usuarios | ⛔ **Ver bloqueante B1 de `AUDITORIA.md`** — hoy falla para usuarios con presupuestos por periodo o metas con montos rápidos. **Corregir antes de enviar.** |
-| 4 | URL web de borrado de cuenta (exigida por Play) | ⛔ https://camiiloaf.github.io/billetudo/borrar-cuenta.html |
+| 3 | Borrado de cuenta funcional para todos los usuarios | ✅ **Corregido el 2026-08-08** (migración `20260808000000_delete_account_cascade_missing_tables.sql`, aplicada en dev y prod). Ver B1 de `AUDITORIA.md` |
+| 4 | URL web de borrado de cuenta (exigida por Play) | ✅ **Publicada**: https://camiiloaf.github.io/billetudo/borrar-cuenta.html |
 | 5 | `PrivacyInfo.xcprivacy` en el target iOS | ⛔ No existe — ver B4 de `AUDITORIA.md` |
 | 6 | Nombre público del desarrollador | ✅ **Hecho consumado.** Las cuentas de Play y de App Store **ya están creadas** a nombre de Juan Camilo Agudelo Franco (persona natural). En Apple el *developer name* ya quedó fijado y **es irreversible**; no hay decisión pendiente aquí (ver §5) |
 | 7 | Datos de contacto que la tienda publicará por su cuenta | ⚠️ Fuera del control del desarrollador y **ya condicionado** por las cuentas existentes — §5 describe qué publica hoy cada tienda y qué cambiaría al monetizar |
+
+---
+
+## 0.1 Restricción de territorio declarada en público
+
+La política publicada dice que **billetudo no se ofrece a residentes del
+Espacio Económico Europeo** (los 27 de la UE más Islandia, Liechtenstein y
+Noruega), porque los DPA de **Sentry** y **PowerSync** no están firmados. El de
+Supabase sí aplica, por venir en sus términos de servicio.
+
+**Hay que excluir esos 30 países en la disponibilidad de ambas consolas.** No es
+opcional ni cosmético: está declarado en un documento público, así que
+distribuir allí convertiría la política en una declaración falsa — con el
+agravante de que el RGPD es precisamente el régimen que exige esos acuerdos.
+
+Cuando se firmen ambos DPA: revertir §7 de `politica-de-privacidad.md` a la
+redacción simple, regenerar con `web/build_site.py`, republicar (ver
+`web/README.md`) y recién entonces habilitar el EEE.
 
 ---
 

@@ -312,12 +312,14 @@ También podríamos revelar información si una autoridad competente nos lo exig
 legalmente, o si es necesario para defender derechos ante un fraude o un abuso.
 En ese caso, te lo notificaríamos salvo que la ley lo prohíba.
 
-Con cada uno de esos proveedores existe un **acuerdo de encargo del tratamiento**
-(el contrato que los obliga a tratar tus datos solo siguiendo nuestras
-instrucciones, a protegerlos y a devolverlos o borrarlos al terminar). Con
-Supabase ese acuerdo forma parte de sus propios términos de servicio, así que
-aplica automáticamente.
-`[VERIFICAR: firmar el DPA de Sentry (requiere aceptación electrónica expresa) y el de PowerSync (requiere firma); confirmar cuando estén hechos]`
+Con cada uno de esos proveedores debe existir un **acuerdo de encargo del
+tratamiento** (el contrato que los obliga a tratar tus datos solo siguiendo
+nuestras instrucciones, a protegerlos y a devolverlos o borrarlos al terminar).
+Con Supabase ese acuerdo forma parte de sus propios términos de servicio, así
+que aplica automáticamente desde que usamos el servicio. Con Sentry y con
+PowerSync estamos formalizándolo; mientras eso no esté cerrado, billetudo **no
+se ofrece a residentes del Espacio Económico Europeo** (los países de la Unión
+Europea, más Islandia, Liechtenstein y Noruega).
 
 ---
 

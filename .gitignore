@@ -41,3 +41,4 @@ test/**/failures/
 .claude/worktrees/
 
 sentry.properties
+web/venv/
