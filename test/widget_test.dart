@@ -18,6 +18,8 @@ import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -50,6 +52,9 @@ class _MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class _MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
+class _MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
+
 void main() {
   setUpAll(() {
     // Stops google_fonts from trying to download fonts during tests.
@@ -66,8 +71,7 @@ void main() {
     final watchAuthSession = _MockWatchAuthSession();
     final watchSyncStatus = _MockWatchSyncStatus();
     final restoreTransaction = _MockRestoreTransaction();
-    final watchFeaturedBudgetProgress =
-        _MockWatchFeaturedBudgetProgress();
+    final watchFeaturedBudgetProgress = _MockWatchFeaturedBudgetProgress();
     final getBudgetById = _MockGetBudgetById();
     final getBudgetProgress = _MockGetBudgetProgress();
     when(watchAccounts.call).thenAnswer(
@@ -115,6 +119,20 @@ void main() {
           initialState: ThemeMode.system,
         );
         when(cubit.load).thenAnswer((_) async {});
+        return cubit;
+      })
+      // La rama `/inicio` provee `AppSettingsCubit` junto a `HomeCubit` desde
+      // que el orden del acceso rápido es configurable: sin registrarlo, el
+      // arranque revienta con "not registered inside GetIt" al construir Home.
+      ..registerFactory<AppSettingsCubit>(() {
+        final cubit = _MockAppSettingsCubit();
+        when(() => cubit.state).thenReturn(const AppSettingsState());
+        whenListen(
+          cubit,
+          const Stream<AppSettingsState>.empty(),
+          initialState: const AppSettingsState(),
+        );
+        when(cubit.start).thenAnswer((_) async {});
         return cubit;
       });
   });

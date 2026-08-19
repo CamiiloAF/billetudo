@@ -2,6 +2,7 @@ import 'package:billetudo/features/scheduled_payments/presentation/cubit/snooze_
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/snooze_sheet_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/snooze_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,36 +41,41 @@ void main() {
   }) async {
     when(() => cubit.state).thenReturn(state);
     setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              builder: (context) => BlocProvider<SnoozeSheetCubit>.value(
-                value: cubit,
-                child: SnoozeSheetBody(
-                  templateName: 'Netflix',
-                  occurrenceDate: _fixedDate,
-                  isTransfer: false,
-                  categoryIcon: 'wifi',
-                  categoryColor: 'indigo',
+    // El calendario del sheet marca "hoy" con un anillo (`MonthCalendar`),
+    // así que sin reloj congelado el PNG se hornea con la fecha del día en que
+    // se regeneró y falla en cuanto cambia el día. Ver `goldenReferenceNow`.
+    await withClock(Clock.fixed(goldenReferenceNow), () async {
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => BlocProvider<SnoozeSheetCubit>.value(
+                  value: cubit,
+                  child: SnoozeSheetBody(
+                    templateName: 'Netflix',
+                    occurrenceDate: _fixedDate,
+                    isTransfer: false,
+                    categoryIcon: 'wifi',
+                    categoryColor: 'indigo',
+                  ),
                 ),
               ),
+              child: const Text('open'),
             ),
-            child: const Text('open'),
           ),
+          brightness: brightness,
         ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/sheet_snooze_$name.png'),
-    );
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/sheet_snooze_$name.png'),
+      );
+    });
   }
 
   for (final brightness in Brightness.values) {

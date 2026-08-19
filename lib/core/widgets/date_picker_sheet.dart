@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/gen/app_localizations.dart';
@@ -63,7 +64,7 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
   late DateTime? _selected =
       widget.initialDate == null ? null : DateUtils.dateOnly(widget.initialDate!);
   late DateTime _visibleMonth = widget.initialDate == null
-      ? DateTime(DateTime.now().year, DateTime.now().month)
+      ? DateTime(clock.now().year, clock.now().month)
       : DateTime(widget.initialDate!.year, widget.initialDate!.month);
 
   void _showPreviousMonth() {
@@ -79,7 +80,7 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
   }
 
   void _goToToday() {
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(clock.now());
     setState(() {
       _selected = today;
       _visibleMonth = DateTime(today.year, today.month);
