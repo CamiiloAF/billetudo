@@ -68,14 +68,25 @@ abstract final class DebtFormat {
           ? l10n.debtDirectionIOwePast
           : l10n.debtDirectionOwedToMePast;
 
-  /// The single word under the hero's big percentage: "pagado" / "cobrado".
+  /// The phrase under the hero's big percentage: "pagado" / "cobrado" for a
+  /// debt with no accrued interest, or "pagado del capital" / "cobrado del
+  /// capital" once there is interest to disambiguate from (the "Capital vs
+  /// Interés separado" variant, `pages/deudas.md`) — a debt with no interest
+  /// has nothing to disambiguate, so the shorter word stays.
   static String progressWord(
     AppLocalizations l10n,
-    DebtDirection direction,
-  ) =>
-      direction == DebtDirection.iOwe
-          ? l10n.debtDetailPaidLabel
-          : l10n.debtDetailCollectedLabel;
+    DebtDirection direction, {
+    bool hasInterest = false,
+  }) {
+    if (hasInterest) {
+      return direction == DebtDirection.iOwe
+          ? l10n.debtDetailPaidOfCapitalLabel
+          : l10n.debtDetailCollectedOfCapitalLabel;
+    }
+    return direction == DebtDirection.iOwe
+        ? l10n.debtDetailPaidLabel
+        : l10n.debtDetailCollectedLabel;
+  }
 
   /// A read-only positive amount, e.g. "$28.500.000".
   static String amount(int amountMinor, String currency) =>

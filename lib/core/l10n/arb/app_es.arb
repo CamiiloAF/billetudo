@@ -1151,6 +1151,23 @@
   "@debtDetailPaidLabel": {},
   "debtDetailCollectedLabel": "cobrado",
   "@debtDetailCollectedLabel": {},
+  "debtDetailPaidOfCapitalLabel": "pagado del capital",
+  "@debtDetailPaidOfCapitalLabel": {
+    "description": "Subtitulo del % cuando la deuda tiene interes acumulado: el avance mide solo el capital, no capital+interes."
+  },
+  "debtDetailCollectedOfCapitalLabel": "cobrado del capital",
+  "@debtDetailCollectedOfCapitalLabel": {
+    "description": "Igual a debtDetailPaidOfCapitalLabel pero para deudas 'Me deben'."
+  },
+  "debtInterestAccruedNote": "+{amount} de interés acumulado",
+  "@debtInterestAccruedNote": {
+    "description": "Nota bajo la barra de avance del detalle de deuda: cuanto del saldo pendiente es interes, mostrada solo si hay interes acumulado. El monto llega ya formateado.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "debtDetailGrowth": "Crece ~{amount}/día",
   "@debtDetailGrowth": {
     "description": "Interés diario estimado de la deuda. El monto llega ya formateado.",

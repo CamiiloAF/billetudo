@@ -68,18 +68,24 @@ class DebtBalanceCalculator {
       }
     }
 
+    // Capital-only total: everything that increased the debt, minus the
+    // interest portion — see `DebtBalance.displayTotalMinor`/`capitalTotalMinor`
+    // and `pages/deudas.md` ("Capital vs Interés separado"). Clamped
+    // defensively for the degenerate case of a debt made entirely of
+    // interest with no principal.
+    final capitalTotal = increases - interest < 0 ? 0 : increases - interest;
+
     return DebtBalance(
       principalMinor: principal,
       totalIncreasesMinor: increases,
       totalDecreasesMinor: decreases,
       interestAccruedMinor: interest,
-      // Equal to `totalIncreasesMinor`: a balance reconciliation
-      // (`manualAdjustment`, HU-06) only ever contributes its signed effect
-      // like any other entry — a downward correction is a decrease (lowers
-      // what is pending, never the total), an upward one is an increase (new
-      // debt discovered, correctly grows the total). It never resets the
-      // lifetime total; see the doc on `DebtBalance.displayTotalMinor`.
-      displayTotalMinor: increases,
+      // Capital only (not the lifetime total anymore): a balance
+      // reconciliation (`manualAdjustment`, HU-06) still never resets it — a
+      // downward correction is a decrease (lowers what is pending, never the
+      // total), an upward one is an increase (new debt discovered, correctly
+      // grows the total) — it just excludes interest from what "de $X" shows.
+      displayTotalMinor: capitalTotal,
     );
   }
 

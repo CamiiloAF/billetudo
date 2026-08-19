@@ -36,6 +36,7 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Lista — tab Activas/Cerradas, viendo Cerradas | `vaNHd` | `nusfh` |
 | Sheet Movimiento — Editar (ledger sin cuenta) | `v4RJC` | `L5KbhU` |
 | Sheet Movimiento — Interés | `ldTrt` | `hVah4` |
+| Detalle — variante Capital vs Interés separado | `Uq1Zc` | `vr8kA` |
 
 **Estados/piezas sin frame propio en el `.pen` (por diseño o reusables genéricos):**
 - **Detalle sin cuota** (`DebtConfigureInstallmentCard`): no tiene frame — solo se diseñó el estado *con* cuota (`cUzp6`). El widget reusa la geometría de la card de cuota. Gap de cobertura conocido, no deriva.
@@ -209,6 +210,20 @@ Misma Bottom Sheet Base, estructura distinta para movimientos `interestAccrual` 
 ### Regla de negocio (no se lee del frame — flutter-dev debe conocerla)
 
 **Los movimientos de tipo `interestAccrual` nunca son editables, solo eliminables.** El monto héroe con caret en `ldTrt`/`hVah4` es puramente visual (reusa el mismo componente que la variante editable) — en Flutter no debe llevar foco/teclado, y por eso Fecha/Nota se renderizan con `Info Row` en vez de `Form Field`: no hay affordance de tap porque no hay nada que tocar. No existe CTA "Guardar cambios" para interés porque no hay nada que guardar: el único camino para "corregir" un interés generado automáticamente es eliminar el asiento (el motor lo recalcula) o cambiar el modo de interés de la deuda a Manual desde el form crear/editar. Si en el futuro se soporta interés manual editable, será una tercera variante de este sheet, no una extensión de `ldTrt`.
+
+## Detalle — variante Capital vs Interés separado (`Uq1Zc` / `vr8kA`)
+
+**Decisión de producto (2026-08-19), reemplaza el `progress`/denominador anteriores para deudas con interés automático.** El % y la barra de avance del Hero Compact (`E7TQkJ`) medían capital + interés acumulado desde el origen de la deuda — cada interés que se sumaba sin que el usuario abonara nada hacía que el % bajara o se estancara, sensación de "retroceso" que choca con el tono de marca. Esta variante separa las dos cosas:
+
+- **"Saldo pendiente"** (monto héroe) sigue siendo el número real a pagar hoy: capital + interés acumulado, sin cambios en su cálculo.
+- **Denominador "de $X"** debajo del héroe ahora muestra **solo capital** (saldo de apertura + desembolsos posteriores — nunca intereses).
+- **Nota de interés** nueva, debajo de la barra de progreso: icono `trending-up` + texto `$text-secondary` **"+$X de interés acumulado"** (sin `Incluye` — ese verbo sugería que el interés sí estaba en el denominador de arriba, lo cual es justo lo contrario de esta variante; ver auditoría `ui-ux-reviewer` 2026-08-19). Solo se muestra si hay interés acumulado (`interestAccruedMinor > 0`).
+- **% y barra** miden avance de **capital**: `capitalPaidMinor / capitalTotalMinor`. Subtítulo del % cambia de "pagado" a **"pagado del capital"** (no "del préstamo" — ese texto salió `[IMPORTANTE]` en la primera auditoría por ambiguo, ver historial).
+- **Orden vertical dentro del Hero Compact**: Hero Top → Amount Row (saldo + %) → Track (barra) → Interest Note. La barra queda pegada al bloque de monto/% (proximidad Gestalt), la nota de interés va debajo — no entre el monto y la barra (ajuste post-auditoría).
+
+**Regla de negocio (no se lee del frame):** un abono se aplica **100% a capital** para efectos de este cálculo — nunca se reparte con el interés primero ni proporcional. Motivo (decisión explícita del usuario): la cuota real que paga ya trae el interés incluido en lo que desembolsa, así que restarle interés al abono duplicaría la contabilidad. Concretamente: `capitalPaidMinor = totalDecreasesMinor` (todas las reducciones, igual que hoy) y `capitalTotalMinor = totalIncreasesMinor − interestAccruedMinor` (todo lo que subió la deuda, menos la porción de interés).
+
+Tema oscuro (`vr8kA`) generado por `Copy()+theme:{mode:"dark"}` sin overrides manuales, auditado limpio (sin hallazgos `IMPORTANTE`/`CRITICO`, 2026-08-19).
 
 ## Notas de implementacion (para flutter-dev)
 

@@ -234,6 +234,63 @@ void main() {
       expect(balance.settled, isTrue); // 0 owed
       expect(balance.progress, 1.0);
     });
+
+    test(
+      'interest accruing on its own never moves progress — denominator is '
+      'capital, not capital+interest ("Capital vs Interés separado")',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 100000),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 50000),
+          ],
+          cashEvents: const [],
+        );
+
+        // No abono happened: capital-only progress must read 0, not drop
+        // below 0 or read some fraction diluted by the interest that piled on.
+        expect(balance.capitalTotalMinor, 100000);
+        expect(balance.progress, 0.0);
+      },
+    );
+
+    test(
+      'an abono is applied 100% to capital, never split with interest first',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 100000),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 20000),
+          ],
+          cashEvents: [
+            buildCashEvent(type: TransactionType.expense, amountMinor: 25000),
+          ],
+        );
+
+        // capital = 100000, paid = 25000 -> 25% even though interest also
+        // accrued; the interest never enters the denominator or numerator.
+        expect(balance.capitalTotalMinor, 100000);
+        expect(balance.progress, 0.25);
+      },
+    );
+
+    test(
+      'a debt made entirely of interest (no capital) is clamped defensively',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 0),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 5000),
+          ],
+          cashEvents: const [],
+        );
+
+        expect(balance.capitalTotalMinor, 0);
+        expect(balance.displayTotalMinor, 0);
+        expect(balance.settled, isFalse);
+        expect(balance.progress, 0.0);
+      },
+    );
   });
 
   group(
@@ -332,8 +389,42 @@ void main() {
       );
 
       test(
-        'interest/disbursements after a reconciliation keep adding to the '
-        'total, same as before one',
+        'a disbursement after a reconciliation keeps adding to the total, '
+        'same as before one',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              buildEntry(
+                id: 'disbursement-after',
+                kind: DebtEntryKind.disbursement,
+                amountMinor: 500000,
+                entryDate: DateTime(2026, 4, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.displayTotalMinor, 100500000);
+          expect(balance.outstandingMinor, 80500000);
+        },
+      );
+
+      test(
+        'displayTotalMinor excludes interest ("Capital vs Interés separado", '
+        'pages/deudas.md) — interest after a reconciliation grows the '
+        'lifetime total but not the capital-only "de \$X" figure',
         () {
           final debt = buildDebt(
             principalMinor: 100000000,
@@ -359,7 +450,10 @@ void main() {
             cashEvents: const [],
           );
 
-          expect(balance.displayTotalMinor, 100500000);
+          expect(balance.totalIncreasesMinor, 100500000);
+          expect(balance.interestAccruedMinor, 500000);
+          expect(balance.capitalTotalMinor, 100000000);
+          expect(balance.displayTotalMinor, 100000000);
           expect(balance.outstandingMinor, 80500000);
         },
       );

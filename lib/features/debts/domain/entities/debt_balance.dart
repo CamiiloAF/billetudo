@@ -34,6 +34,16 @@ class DebtBalance extends Equatable {
   /// must hold regardless of any reconciliation in between.
   final int totalIncreasesMinor;
 
+  /// Everything that pushed the debt up, minus the interest portion — the
+  /// denominator of [progress] and the source of [displayTotalMinor] since
+  /// the "Capital vs Interés separado" variant. Never negative in practice
+  /// (clamped defensively): a debt made entirely of interest with no
+  /// principal is a degenerate edge case, not a real one.
+  int get capitalTotalMinor {
+    final raw = totalIncreasesMinor - interestAccruedMinor;
+    return raw < 0 ? 0 : raw;
+  }
+
   /// Everything that pushed the debt down since the debt's origin: every
   /// abono/cuota (cash or ledger) + downward adjustments (as a positive
   /// magnitude). Historical, same lifetime scope as [totalIncreasesMinor].
@@ -43,18 +53,21 @@ class DebtBalance extends Equatable {
   final int interestAccruedMinor;
 
   /// What the hero/card show as "de $X": the total against which the current
-  /// balance is measured. Always equal to [totalIncreasesMinor] — the full
-  /// lifetime total (opening principal + every disbursement/interest/upward
-  /// adjustment). A balance reconciliation (`manualAdjustment` written by
-  /// `UpdateDebtBalance`, HU-06) never resets it: a downward correction is a
-  /// decrease (it lowers what is pending, exactly like an abono, but leaves
-  /// the total the user originally owed untouched); an upward correction is
-  /// an increase (new debt discovered at reconciliation time, so it correctly
-  /// grows the total). Kept as its own field, not a mere alias, because a
-  /// previous version of this logic *did* reset it after a reconciliation —
-  /// that reset made "actualizar saldo" also silently rewrite how much was
-  /// ever borrowed, which is a different, wrong thing to correct (see the
-  /// dev-run bug fix for the exact scenario this reverted).
+  /// balance is measured. As of the "Capital vs Interés separado" variant
+  /// (`design-system/billetudo/pages/deudas.md`, 2026-08-19) this is
+  /// [capitalTotalMinor] — [totalIncreasesMinor] minus the interest portion
+  /// — not the full lifetime total anymore: interest accruing on its own,
+  /// with no abono from the user, used to drag the denominator up (and the
+  /// % down) even though the user did nothing wrong, which read as
+  /// "regression" and clashed with the app's positive tone. The lifetime
+  /// total (capital + interest) is still available via [totalIncreasesMinor]
+  /// for anything that needs the true historical figure. A balance
+  /// reconciliation (`manualAdjustment` written by `UpdateDebtBalance`,
+  /// HU-06) never resets either field: a downward correction is a decrease
+  /// (it lowers what is pending, exactly like an abono, but leaves the total
+  /// the user originally owed untouched); an upward correction is an
+  /// increase (new debt discovered at reconciliation time, so it correctly
+  /// grows the total).
   final int displayTotalMinor;
 
   /// Signed running balance. May be negative when abonos exceed what is owed;
@@ -74,12 +87,20 @@ class DebtBalance extends Equatable {
   int get excessMinor =>
       rawOutstandingMinor < 0 ? -rawOutstandingMinor : 0;
 
-  /// "pagado / total" as a 0..1 fraction — the emotional core of the feature
-  /// (HU-04). total = everything that increased the debt, paid = everything
-  /// that reduced it. A debt with no increases reads 100% when settled, else 0.
+  /// "pagado / capital" as a 0..1 fraction — the emotional core of the
+  /// feature (HU-04). As of the "Capital vs Interés separado" variant the
+  /// denominator is [capitalTotalMinor], not the lifetime total: interest
+  /// accruing by itself must never move this number, or a user who did
+  /// nothing wrong watches their progress "regress". The numerator stays
+  /// [totalDecreasesMinor] unchanged — an abono is applied 100% to capital,
+  /// never split with interest first or pro-rata. That is a deliberate
+  /// product decision, not an oversight: the real installment the user pays
+  /// already has interest baked into what it disburses, so subtracting
+  /// interest from the abono here would double-count it. A debt with no
+  /// capital reads 100% when settled, else 0.
   double get progress {
-    if (totalIncreasesMinor <= 0) return settled ? 1 : 0;
-    final raw = totalDecreasesMinor / totalIncreasesMinor;
+    if (capitalTotalMinor <= 0) return settled ? 1 : 0;
+    final raw = totalDecreasesMinor / capitalTotalMinor;
     return raw.clamp(0.0, 1.0);
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -23,6 +24,7 @@ class DebtHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final pct = (balance.progress * 100).round();
+    final hasInterest = balance.interestAccruedMinor > 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -116,7 +118,11 @@ class DebtHeroCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    DebtFormat.progressWord(l10n, debt.direction),
+                    DebtFormat.progressWord(
+                      l10n,
+                      debt.direction,
+                      hasInterest: hasInterest,
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -129,6 +135,36 @@ class DebtHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           DebtProgressBar(value: balance.progress, height: 14),
+          if (hasInterest) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.trendingUp,
+                  size: 13,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.debtInterestAccruedNote(
+                      DebtFormat.amount(
+                        balance.interestAccruedMinor,
+                        debt.currency,
+                      ),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

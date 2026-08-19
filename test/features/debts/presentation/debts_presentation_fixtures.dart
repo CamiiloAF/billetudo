@@ -21,9 +21,14 @@ DebtBalance buildBalance({
       totalIncreasesMinor: totalIncreasesMinor,
       totalDecreasesMinor: totalDecreasesMinor,
       interestAccruedMinor: interestAccruedMinor,
-      // Defaults to the historical total, matching the calculator's fallback
-      // when the debt has no balance reconciliation in its ledger.
-      displayTotalMinor: displayTotalMinor ?? totalIncreasesMinor,
+      // Defaults to the capital-only total, matching the calculator: every
+      // increase minus the interest portion (see `DebtBalance.displayTotalMinor`),
+      // clamped like the real calculator so a fixture can never produce a
+      // negative default.
+      displayTotalMinor: displayTotalMinor ??
+          (totalIncreasesMinor - interestAccruedMinor < 0
+              ? 0
+              : totalIncreasesMinor - interestAccruedMinor),
     );
 
 DebtWithBalance buildDebtWithBalance({

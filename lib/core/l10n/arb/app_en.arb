@@ -470,6 +470,16 @@
   "debtDetailBalanceLabel": "Outstanding balance",
   "debtDetailPaidLabel": "paid",
   "debtDetailCollectedLabel": "collected",
+  "debtDetailPaidOfCapitalLabel": "paid of principal",
+  "debtDetailCollectedOfCapitalLabel": "collected of principal",
+  "debtInterestAccruedNote": "+{amount} interest accrued",
+  "@debtInterestAccruedNote": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "debtDetailGrowth": "Grows ~{amount}/day",
   "@debtDetailGrowth": {
     "placeholders": {
