@@ -2246,6 +2246,12 @@ abstract class AppLocalizations {
   /// **'Acceso rápido'**
   String get homeQuickAccessTitle;
 
+  /// Tooltip and accessible name of the gear button that closes the Home quick-access strip; opens Ajustes > Orden del acceso rápido.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenar el acceso rápido'**
+  String get homeQuickAccessCustomize;
+
   /// Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más.
   ///
   /// In es, this message translates to:
@@ -2521,6 +2527,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'cobrado'**
   String get debtDetailCollectedLabel;
+
+  /// Subtitulo del % cuando la deuda tiene interes acumulado: el avance mide solo el capital, no capital+interes.
+  ///
+  /// In es, this message translates to:
+  /// **'pagado del capital'**
+  String get debtDetailPaidOfCapitalLabel;
+
+  /// Igual a debtDetailPaidOfCapitalLabel pero para deudas 'Me deben'.
+  ///
+  /// In es, this message translates to:
+  /// **'cobrado del capital'**
+  String get debtDetailCollectedOfCapitalLabel;
+
+  /// Nota bajo la barra de avance del detalle de deuda: cuanto del saldo pendiente es interes, mostrada solo si hay interes acumulado. El monto llega ya formateado.
+  ///
+  /// In es, this message translates to:
+  /// **'+{amount} de interés acumulado'**
+  String debtInterestAccruedNote(String amount);
 
   /// Interés diario estimado de la deuda. El monto llega ya formateado.
   ///
@@ -3778,6 +3802,30 @@ abstract class AppLocalizations {
   /// **'Elige la moneda con la que registras tus movimientos'**
   String get settingsCurrencySubtitle;
 
+  /// No description provided for @settingsQuickAccessOrder.
+  ///
+  /// In es, this message translates to:
+  /// **'Orden del acceso rápido'**
+  String get settingsQuickAccessOrder;
+
+  /// No description provided for @settingsQuickAccessOrderSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige el orden de los accesos rápidos en Inicio'**
+  String get settingsQuickAccessOrderSubtitle;
+
+  /// No description provided for @settingsQuickAccessOrderTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Acceso rápido'**
+  String get settingsQuickAccessOrderTitle;
+
+  /// No description provided for @settingsQuickAccessOrderHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado y arrastra para reordenar'**
+  String get settingsQuickAccessOrderHint;
+
   /// No description provided for @settingsDeleteAccount.
   ///
   /// In es, this message translates to:
@@ -3939,6 +3987,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin movimientos en este periodo'**
   String get budgetActivityEmpty;
+
+  /// No description provided for @budgetActivityNettedTransferTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia interna'**
+  String get budgetActivityNettedTransferTitle;
 
   /// No description provided for @budgetScheduledLabel.
   ///
@@ -4618,7 +4672,7 @@ abstract class AppLocalizations {
   /// **'Cada peso tiene un trabajo'**
   String get budgetsEnvelopeAllAssigned;
 
-  /// Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización.
+  /// Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/fase-1/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización.
   ///
   /// In es, this message translates to:
   /// **'Conéctate para continuar'**
@@ -4642,23 +4696,11 @@ abstract class AppLocalizations {
   /// **'Cargando tus finanzas...'**
   String get splashLoadingCaption;
 
-  /// Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string.
+  /// El wordmark de la marca (lib/core/widgets/brand_wordmark.dart), texto plano y con B mayúscula. Igual en todos los locales a propósito — es el nombre de marca, no una traducción real.
   ///
   /// In es, this message translates to:
-  /// **'b'**
-  String get brandWordmarkPrefix;
-
-  /// La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales.
-  ///
-  /// In es, this message translates to:
-  /// **'ı'**
-  String get brandWordmarkDotlessI;
-
-  /// Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real.
-  ///
-  /// In es, this message translates to:
-  /// **'lletudo'**
-  String get brandWordmarkSuffix;
+  /// **'Billetudo'**
+  String get brandWordmark;
 
   /// No description provided for @scheduledPaymentsTitle.
   ///
@@ -4989,6 +5031,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cuota de'**
   String get scheduledPaymentDetailLinkedDebtLabel;
+
+  /// No description provided for @scheduledPaymentDetailLinkedGoalEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'META ENLAZADA'**
+  String get scheduledPaymentDetailLinkedGoalEyebrow;
+
+  /// No description provided for @scheduledPaymentDetailLinkedGoalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte a'**
+  String get scheduledPaymentDetailLinkedGoalLabel;
 
   /// No description provided for @scheduledDebtChipLabel.
   ///
@@ -6028,6 +6082,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No pudimos enlazar el movimiento. Intenta de nuevo.'**
   String get goalLinkError;
+
+  /// No description provided for @goalRecurringContributionEntryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Configura un aporte recurrente'**
+  String get goalRecurringContributionEntryTitle;
+
+  /// No description provided for @goalRecurringContributionEntrySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Automatiza tus aportes con un pago programado'**
+  String get goalRecurringContributionEntrySubtitle;
+
+  /// No description provided for @goalRecurringContributionDecisionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte recurrente a {name}'**
+  String goalRecurringContributionDecisionTitle(String name);
+
+  /// No description provided for @goalRecurringContributionDecisionSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Quedará enlazado a la meta: cada pago programado suma a tu progreso automáticamente.'**
+  String get goalRecurringContributionDecisionSubtitle;
+
+  /// No description provided for @goalRecurringContributionCreateNewCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear uno nuevo'**
+  String get goalRecurringContributionCreateNewCta;
+
+  /// No description provided for @goalRecurringContributionLinkExistingCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un pago programado existente'**
+  String get goalRecurringContributionLinkExistingCta;
+
+  /// No description provided for @goalRecurringContributionFormTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte recurrente'**
+  String get goalRecurringContributionFormTitle;
+
+  /// No description provided for @goalRecurringContributionAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto del aporte'**
+  String get goalRecurringContributionAmountLabel;
+
+  /// No description provided for @goalRecurringContributionSourceAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de origen'**
+  String get goalRecurringContributionSourceAccountLabel;
+
+  /// No description provided for @goalRecurringContributionFrequencyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Frecuencia'**
+  String get goalRecurringContributionFrequencyLabel;
+
+  /// No description provided for @goalRecurringContributionSubmitCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear aporte recurrente'**
+  String get goalRecurringContributionSubmitCta;
+
+  /// No description provided for @goalRecurringContributionSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos crear el aporte recurrente. Intenta de nuevo.'**
+  String get goalRecurringContributionSaveError;
+
+  /// No description provided for @goalRecurringContributionBanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Se crea un pago programado enlazado a esta meta. Confírmalo o pospónlo en Pagos programados.'**
+  String get goalRecurringContributionBanner;
+
+  /// No description provided for @goalRecurringContributionPickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlazar un pago programado'**
+  String get goalRecurringContributionPickerTitle;
+
+  /// No description provided for @goalRecurringContributionPickerSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige uno de tus pagos programados; lo atribuimos a esta meta, no creamos uno nuevo.'**
+  String get goalRecurringContributionPickerSubtitle;
+
+  /// No description provided for @goalRecurringContributionPickerEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes pagos programados disponibles para enlazar.'**
+  String get goalRecurringContributionPickerEmpty;
+
+  /// No description provided for @goalRecurringContributionLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enlazar el pago programado. Intenta de nuevo.'**
+  String get goalRecurringContributionLinkError;
 
   /// No description provided for @goalWithdrawCta.
   ///
@@ -7313,6 +7469,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Guardando tu copia…'**
   String get importExportProgressSavingCopyTitle;
+
+  /// No description provided for @importExportSaveCopyDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu copia está lista'**
+  String get importExportSaveCopyDoneTitle;
+
+  /// No description provided for @importExportSaveCopyDoneBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Guárdala en tu dispositivo o compártela por donde prefieras.'**
+  String get importExportSaveCopyDoneBody;
+
+  /// No description provided for @importExportSaveCopyActionSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get importExportSaveCopyActionSave;
+
+  /// No description provided for @importExportSaveCopyActionShare.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get importExportSaveCopyActionShare;
 
   /// No description provided for @importExportProgressCaption.
   ///

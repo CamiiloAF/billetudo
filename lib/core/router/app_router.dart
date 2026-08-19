@@ -60,12 +60,14 @@ import '../../features/goals/presentation/cubit/archived_goals_cubit.dart';
 import '../../features/goals/presentation/cubit/goal_detail_cubit.dart';
 import '../../features/goals/presentation/cubit/goal_form_cubit.dart';
 import '../../features/goals/presentation/cubit/goal_link_cubit.dart';
+import '../../features/goals/presentation/cubit/goal_recurring_contribution_cubit.dart';
 import '../../features/goals/presentation/cubit/goals_list_cubit.dart';
 import '../../features/goals/presentation/pages/archived_goals_page.dart';
 import '../../features/goals/presentation/pages/goal_completed_celebration_page.dart';
 import '../../features/goals/presentation/pages/goal_detail_page.dart';
 import '../../features/goals/presentation/pages/goal_form_page.dart';
 import '../../features/goals/presentation/pages/goal_link_mode_page.dart';
+import '../../features/goals/presentation/pages/goal_recurring_contribution_form_page.dart';
 import '../../features/goals/presentation/pages/goals_list_page.dart';
 import '../../features/goals/presentation/widgets/goal_milestone_sheet.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
@@ -108,6 +110,7 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payment_d
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
+import '../../features/settings/presentation/pages/quick_access_order_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/domain/usecases/has_any_transaction.dart';
@@ -165,6 +168,7 @@ abstract final class AppRoutes {
   static const String pendingSyncChanges =
       '/mas/ajustes/sincronizacion/cambios';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
+  static const String quickAccessOrder = '/mas/ajustes/acceso-rapido';
   static const String accountDeleted = '/mas/cuenta-eliminada';
   static const String debts = '/deudas';
   static const String newDebt = '/deudas/nueva';
@@ -211,6 +215,12 @@ abstract final class AppRoutes {
 
   /// Edit form of one goal: `/metas/<id>/editar`.
   static String editGoal(String id) => '$goals/$id/editar';
+
+  /// "Aporte recurrente" → "Crear uno nuevo" config form for one goal
+  /// (HU-16): `/metas/<id>/aporte-recurrente`. The goal's name/currency ride
+  /// in `extra` as a [GoalRecurringContributionContext].
+  static String goalRecurringContribution(String goalId) =>
+      '$goals/$goalId/aporte-recurrente';
 
   /// Detail of one debt: `/deudas/<id>`.
   static String debt(String id) => '$debts/$id';
@@ -365,6 +375,22 @@ class GoalLinkContext {
   final GoalMovementDirection direction;
 }
 
+/// The goal context the "Aporte recurrente" config form needs (HU-16),
+/// passed as `extra` to [AppRoutes.goalRecurringContribution] — the goal's
+/// name (banner/title) and currency, without this feature's domain depending
+/// on Metas'. Built by whichever screen launches the flow.
+class GoalRecurringContributionContext {
+  const GoalRecurringContributionContext({
+    required this.goalId,
+    required this.goalName,
+    required this.currency,
+  });
+
+  final String goalId;
+  final String goalName;
+  final String currency;
+}
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// The Movimientos tab's index in the shell's `branches` list below — the
@@ -464,8 +490,21 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
       routes: [
         GoRoute(
           path: AppRoutes.home,
-          builder: (context, state) => BlocProvider(
-            create: (context) => _started(getIt<HomeCubit>(), (c) => c.start()),
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) =>
+                    _started(getIt<HomeCubit>(), (c) => c.start()),
+              ),
+              // Feeds `QuickAccessRow` its persisted chip order
+              // (`AppSettings.quickAccessOrder`) — the same cubit Ajustes'
+              // reorder screen writes through, so returning to Home reflects
+              // a change without restarting the app.
+              BlocProvider(
+                create: (context) =>
+                    _started(getIt<AppSettingsCubit>(), (c) => c.start()),
+              ),
+            ],
             child: HomePage(
               onAddTransaction: () => context.push(AppRoutes.newTransaction),
               // Reached through the ordinary path, not Gráficas' drill-down:
@@ -510,6 +549,10 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                 getIt<ReportsShellCubit>().resetToDefault();
                 unawaited(context.push(AppRoutes.reports));
               },
+              // The gear closing the quick-access strip: same Ajustes screen
+              // the "Más" hub links to, reached without leaving Inicio.
+              onOpenQuickAccessOrder: () =>
+                  context.push(AppRoutes.quickAccessOrder),
               // Bugfix item 6: offline with no session → back up / sign in.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
@@ -856,6 +899,30 @@ StatefulShellBranch _metasBranch() => StatefulShellBranch(
                     child: const GoalFormPage(),
                   ),
                 ),
+                // "Aporte recurrente" → "Crear uno nuevo" (HU-16): the config
+                // form for a brand-new scheduled payment linked to this goal
+                // via `goalId`. "Enlazar existente" opens the picker as a
+                // sheet instead (no route of its own, same precedent as every
+                // other picker in the app).
+                GoRoute(
+                  path: 'aporte-recurrente',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) {
+                    final goalContext =
+                        state.extra! as GoalRecurringContributionContext;
+                    return BlocProvider(
+                      create: (context) => _started(
+                        getIt<GoalRecurringContributionCubit>(),
+                        (c) => c.start(
+                          goalId: goalContext.goalId,
+                          goalName: goalContext.goalName,
+                          currency: goalContext.currency,
+                        ),
+                      ),
+                      child: const GoalRecurringContributionFormPage(),
+                    );
+                  },
+                ),
               ],
             ),
           ],
@@ -1021,10 +1088,21 @@ GoRoute _settingsRoute() => GoRoute(
           onOpenComingSoon: (title) =>
               context.push(AppRoutes.comingSoonTitled(title)),
           onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+          onOpenQuickAccessOrder: () =>
+              context.push(AppRoutes.quickAccessOrder),
         ),
       ),
       routes: [
         _syncStatusRoute(),
+        GoRoute(
+          path: 'acceso-rapido',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<AppSettingsCubit>(), (c) => c.start()),
+            child: const QuickAccessOrderPage(),
+          ),
+        ),
         GoRoute(
           path: 'respaldar',
           parentNavigatorKey: _rootNavigatorKey,
@@ -1453,7 +1531,7 @@ GoRoute _goalLinkModeRoute() => GoRoute(
       },
     );
 
-// Import/Export (`docs/requirements/11-import-export.md`): the hub is
+// Import/Export (`docs/requirements/fase-1/11-import-export.md`): the hub is
 // reached from "Más" → Gestión and from Sincronización's "Guardar una copia"
 // row, so it lives as a root-navigator sibling like Cuentas/Categorías —
 // never inside a `StatefulShellBranch` (a `Page Header` and the `Tab Bar`
@@ -1704,7 +1782,7 @@ GoRoute _onboardingRoute() => GoRoute(
     );
 
 /// HU-02: pre-fills the exact `AccountFormCubit` `AccountFormPage` uses
-/// (`docs/requirements/13-onboarding.md` — "reutiliza el formulario ...
+/// (`docs/requirements/fase-1/13-onboarding.md` — "reutiliza el formulario ...
 /// mismas validaciones, mismos widgets") through its own public setters —
 /// name "Ahorros" (localized), type `savings`, currency from the device
 /// region (`ResolveDefaultCurrencyForLocale`). No new use case, no second
@@ -1930,6 +2008,8 @@ GoRoute _pagosProgramadosRoute() => GoRoute(
                   context.push<String>(AppRoutes.transaction(id)),
               // Cross-link into the owning debt's detail (HU-03).
               onOpenDebt: (debtId) => context.push(AppRoutes.debt(debtId)),
+              // Cross-link into the owning goal's detail (HU-16).
+              onOpenGoal: (goalId) => context.push(AppRoutes.goal(goalId)),
               // Editing a cuota deep-links back to the debt's
               // Configurar-cuota screen (its home), not the plain form.
               onEditInstallment: (debt, spId) => context.push(

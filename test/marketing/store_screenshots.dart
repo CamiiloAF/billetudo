@@ -263,6 +263,7 @@ void main() {
               onOpenScheduledPayments: () {},
               onOpenDebts: () {},
               onOpenReports: () {},
+              onOpenQuickAccessOrder: () {},
               onOpenLogin: () {},
               onOpenSyncStatus: () {},
             ),

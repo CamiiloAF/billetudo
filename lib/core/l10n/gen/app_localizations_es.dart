@@ -1266,6 +1266,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeQuickAccessTitle => 'Acceso rápido';
 
   @override
+  String get homeQuickAccessCustomize => 'Ordenar el acceso rápido';
+
+  @override
   String get homeQuickAccessScheduledPayments => 'Pagos programados';
 
   @override
@@ -1417,6 +1420,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get debtDetailCollectedLabel => 'cobrado';
+
+  @override
+  String get debtDetailPaidOfCapitalLabel => 'pagado del capital';
+
+  @override
+  String get debtDetailCollectedOfCapitalLabel => 'cobrado del capital';
+
+  @override
+  String debtInterestAccruedNote(String amount) {
+    return '+$amount de interés acumulado';
+  }
 
   @override
   String debtDetailGrowth(String amount) {
@@ -2155,6 +2169,20 @@ class AppLocalizationsEs extends AppLocalizations {
       'Elige la moneda con la que registras tus movimientos';
 
   @override
+  String get settingsQuickAccessOrder => 'Orden del acceso rápido';
+
+  @override
+  String get settingsQuickAccessOrderSubtitle =>
+      'Elige el orden de los accesos rápidos en Inicio';
+
+  @override
+  String get settingsQuickAccessOrderTitle => 'Acceso rápido';
+
+  @override
+  String get settingsQuickAccessOrderHint =>
+      'Mantén presionado y arrastra para reordenar';
+
+  @override
   String get settingsDeleteAccount => 'Eliminar cuenta';
 
   @override
@@ -2285,6 +2313,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetActivityEmpty => 'Sin movimientos en este periodo';
+
+  @override
+  String get budgetActivityNettedTransferTitle => 'Transferencia interna';
 
   @override
   String get budgetScheduledLabel => 'Programado';
@@ -2699,13 +2730,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get splashLoadingCaption => 'Cargando tus finanzas...';
 
   @override
-  String get brandWordmarkPrefix => 'b';
-
-  @override
-  String get brandWordmarkDotlessI => 'ı';
-
-  @override
-  String get brandWordmarkSuffix => 'lletudo';
+  String get brandWordmark => 'Billetudo';
 
   @override
   String get scheduledPaymentsTitle => 'Pagos programados';
@@ -2886,6 +2911,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaymentDetailLinkedDebtLabel => 'Cuota de';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalEyebrow => 'META ENLAZADA';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalLabel => 'Aporte a';
 
   @override
   String get scheduledDebtChipLabel => 'Deuda';
@@ -3541,6 +3572,69 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get goalLinkError =>
       'No pudimos enlazar el movimiento. Intenta de nuevo.';
+
+  @override
+  String get goalRecurringContributionEntryTitle =>
+      'Configura un aporte recurrente';
+
+  @override
+  String get goalRecurringContributionEntrySubtitle =>
+      'Automatiza tus aportes con un pago programado';
+
+  @override
+  String goalRecurringContributionDecisionTitle(String name) {
+    return 'Aporte recurrente a $name';
+  }
+
+  @override
+  String get goalRecurringContributionDecisionSubtitle =>
+      'Quedará enlazado a la meta: cada pago programado suma a tu progreso automáticamente.';
+
+  @override
+  String get goalRecurringContributionCreateNewCta => 'Crear uno nuevo';
+
+  @override
+  String get goalRecurringContributionLinkExistingCta =>
+      'Enlazar un pago programado existente';
+
+  @override
+  String get goalRecurringContributionFormTitle => 'Aporte recurrente';
+
+  @override
+  String get goalRecurringContributionAmountLabel => 'Monto del aporte';
+
+  @override
+  String get goalRecurringContributionSourceAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalRecurringContributionFrequencyLabel => 'Frecuencia';
+
+  @override
+  String get goalRecurringContributionSubmitCta => 'Crear aporte recurrente';
+
+  @override
+  String get goalRecurringContributionSaveError =>
+      'No pudimos crear el aporte recurrente. Intenta de nuevo.';
+
+  @override
+  String get goalRecurringContributionBanner =>
+      'Se crea un pago programado enlazado a esta meta. Confírmalo o pospónlo en Pagos programados.';
+
+  @override
+  String get goalRecurringContributionPickerTitle =>
+      'Enlazar un pago programado';
+
+  @override
+  String get goalRecurringContributionPickerSubtitle =>
+      'Elige uno de tus pagos programados; lo atribuimos a esta meta, no creamos uno nuevo.';
+
+  @override
+  String get goalRecurringContributionPickerEmpty =>
+      'No tienes pagos programados disponibles para enlazar.';
+
+  @override
+  String get goalRecurringContributionLinkError =>
+      'No pudimos enlazar el pago programado. Intenta de nuevo.';
 
   @override
   String get goalWithdrawCta => 'Retirar';
@@ -4454,6 +4548,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get importExportProgressSavingCopyTitle => 'Guardando tu copia…';
+
+  @override
+  String get importExportSaveCopyDoneTitle => 'Tu copia está lista';
+
+  @override
+  String get importExportSaveCopyDoneBody =>
+      'Guárdala en tu dispositivo o compártela por donde prefieras.';
+
+  @override
+  String get importExportSaveCopyActionSave => 'Guardar';
+
+  @override
+  String get importExportSaveCopyActionShare => 'Compartir';
 
   @override
   String importExportProgressCaption(int processed, int total) {

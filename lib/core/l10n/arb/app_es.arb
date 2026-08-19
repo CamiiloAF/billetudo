@@ -1016,6 +1016,10 @@
   "@homeQuickAccessTitle": {
     "description": "Caption de la fila de accesos directos del Home (HU-05b)."
   },
+  "homeQuickAccessCustomize": "Ordenar el acceso rápido",
+  "@homeQuickAccessCustomize": {
+    "description": "Tooltip and accessible name of the gear button that closes the Home quick-access strip; opens Ajustes > Orden del acceso rápido."
+  },
   "homeQuickAccessScheduledPayments": "Pagos programados",
   "@homeQuickAccessScheduledPayments": {
     "description": "Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más."
@@ -1764,6 +1768,14 @@
   "@settingsCurrency": {},
   "settingsCurrencySubtitle": "Elige la moneda con la que registras tus movimientos",
   "@settingsCurrencySubtitle": {},
+  "settingsQuickAccessOrder": "Orden del acceso rápido",
+  "@settingsQuickAccessOrder": {},
+  "settingsQuickAccessOrderSubtitle": "Elige el orden de los accesos rápidos en Inicio",
+  "@settingsQuickAccessOrderSubtitle": {},
+  "settingsQuickAccessOrderTitle": "Acceso rápido",
+  "@settingsQuickAccessOrderTitle": {},
+  "settingsQuickAccessOrderHint": "Mantén presionado y arrastra para reordenar",
+  "@settingsQuickAccessOrderHint": {},
   "settingsDeleteAccount": "Eliminar cuenta",
   "@settingsDeleteAccount": {},
   "budgetsTitle": "Presupuestos",
@@ -1875,6 +1887,8 @@
   },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
+  "budgetActivityNettedTransferTitle": "Transferencia interna",
+  "@budgetActivityNettedTransferTitle": {},
   "budgetScheduledLabel": "Programado",
   "@budgetScheduledLabel": {},
   "budgetScheduledEntrySub": "{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}",
@@ -2216,7 +2230,7 @@
   "@budgetsEnvelopeAllAssigned": {},
   "firstLaunchOfflineTitle": "Conéctate para continuar",
   "@firstLaunchOfflineTitle": {
-    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
+    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/fase-1/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
   },
   "firstLaunchOfflineSubtitle": "Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.",
   "@firstLaunchOfflineSubtitle": {},
@@ -2228,17 +2242,9 @@
   "@splashLoadingCaption": {
     "description": "Caption bajo el spinner indeterminado del splash inicial (design-system/billetudo/pages/splash.md, nodo M0TfmS), mientras arrancan Drift/PowerSync antes de mostrar la app real."
   },
-  "brandWordmarkPrefix": "b",
-  "@brandWordmarkPrefix": {
-    "description": "Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string."
-  },
-  "brandWordmarkDotlessI": "ı",
-  "@brandWordmarkDotlessI": {
-    "description": "La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales."
-  },
-  "brandWordmarkSuffix": "lletudo",
-  "@brandWordmarkSuffix": {
-    "description": "Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real."
+  "brandWordmark": "Billetudo",
+  "@brandWordmark": {
+    "description": "El wordmark de la marca (lib/core/widgets/brand_wordmark.dart), texto plano y con B mayúscula. Igual en todos los locales a propósito — es el nombre de marca, no una traducción real."
   },
   "scheduledPaymentsTitle": "Pagos programados",
   "@scheduledPaymentsTitle": {},
@@ -2367,6 +2373,10 @@
   "@scheduledPaymentInstallmentBanner": {},
   "scheduledPaymentDetailLinkedDebtLabel": "Cuota de",
   "@scheduledPaymentDetailLinkedDebtLabel": {},
+  "scheduledPaymentDetailLinkedGoalEyebrow": "META ENLAZADA",
+  "@scheduledPaymentDetailLinkedGoalEyebrow": {},
+  "scheduledPaymentDetailLinkedGoalLabel": "Aporte a",
+  "@scheduledPaymentDetailLinkedGoalLabel": {},
   "scheduledDebtChipLabel": "Deuda",
   "@scheduledDebtChipLabel": {},
   "scheduledFrequencyOnce": "Solo una vez",
@@ -2992,6 +3002,46 @@
   "@goalLinkBannerBody": {},
   "goalLinkError": "No pudimos enlazar el movimiento. Intenta de nuevo.",
   "@goalLinkError": {},
+  "goalRecurringContributionEntryTitle": "Configura un aporte recurrente",
+  "@goalRecurringContributionEntryTitle": {},
+  "goalRecurringContributionEntrySubtitle": "Automatiza tus aportes con un pago programado",
+  "@goalRecurringContributionEntrySubtitle": {},
+  "goalRecurringContributionDecisionTitle": "Aporte recurrente a {name}",
+  "@goalRecurringContributionDecisionTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goalRecurringContributionDecisionSubtitle": "Quedará enlazado a la meta: cada pago programado suma a tu progreso automáticamente.",
+  "@goalRecurringContributionDecisionSubtitle": {},
+  "goalRecurringContributionCreateNewCta": "Crear uno nuevo",
+  "@goalRecurringContributionCreateNewCta": {},
+  "goalRecurringContributionLinkExistingCta": "Enlazar un pago programado existente",
+  "@goalRecurringContributionLinkExistingCta": {},
+  "goalRecurringContributionFormTitle": "Aporte recurrente",
+  "@goalRecurringContributionFormTitle": {},
+  "goalRecurringContributionAmountLabel": "Monto del aporte",
+  "@goalRecurringContributionAmountLabel": {},
+  "goalRecurringContributionSourceAccountLabel": "Cuenta de origen",
+  "@goalRecurringContributionSourceAccountLabel": {},
+  "goalRecurringContributionFrequencyLabel": "Frecuencia",
+  "@goalRecurringContributionFrequencyLabel": {},
+  "goalRecurringContributionSubmitCta": "Crear aporte recurrente",
+  "@goalRecurringContributionSubmitCta": {},
+  "goalRecurringContributionSaveError": "No pudimos crear el aporte recurrente. Intenta de nuevo.",
+  "@goalRecurringContributionSaveError": {},
+  "goalRecurringContributionBanner": "Se crea un pago programado enlazado a esta meta. Confírmalo o pospónlo en Pagos programados.",
+  "@goalRecurringContributionBanner": {},
+  "goalRecurringContributionPickerTitle": "Enlazar un pago programado",
+  "@goalRecurringContributionPickerTitle": {},
+  "goalRecurringContributionPickerSubtitle": "Elige uno de tus pagos programados; lo atribuimos a esta meta, no creamos uno nuevo.",
+  "@goalRecurringContributionPickerSubtitle": {},
+  "goalRecurringContributionPickerEmpty": "No tienes pagos programados disponibles para enlazar.",
+  "@goalRecurringContributionPickerEmpty": {},
+  "goalRecurringContributionLinkError": "No pudimos enlazar el pago programado. Intenta de nuevo.",
+  "@goalRecurringContributionLinkError": {},
   "goalWithdrawCta": "Retirar",
   "@goalWithdrawCta": {},
   "goalAdjustDateCta": "Ajustar la fecha",

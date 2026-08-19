@@ -1265,6 +1265,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickAccessTitle => 'Quick access';
 
   @override
+  String get homeQuickAccessCustomize => 'Reorder quick access';
+
+  @override
   String get homeQuickAccessScheduledPayments => 'Scheduled payments';
 
   @override
@@ -1415,6 +1418,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtDetailCollectedLabel => 'collected';
+
+  @override
+  String get debtDetailPaidOfCapitalLabel => 'paid of principal';
+
+  @override
+  String get debtDetailCollectedOfCapitalLabel => 'collected of principal';
+
+  @override
+  String debtInterestAccruedNote(String amount) {
+    return '+$amount interest accrued';
+  }
 
   @override
   String debtDetailGrowth(String amount) {
@@ -2147,6 +2161,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose the currency you log your transactions in';
 
   @override
+  String get settingsQuickAccessOrder => 'Quick-access order';
+
+  @override
+  String get settingsQuickAccessOrderSubtitle =>
+      'Choose the order of Home\'s quick-access shortcuts';
+
+  @override
+  String get settingsQuickAccessOrderTitle => 'Quick access';
+
+  @override
+  String get settingsQuickAccessOrderHint =>
+      'Press and hold to drag and reorder';
+
+  @override
   String get settingsDeleteAccount => 'Delete account';
 
   @override
@@ -2277,6 +2305,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetActivityEmpty => 'No transactions in this period';
+
+  @override
+  String get budgetActivityNettedTransferTitle => 'Internal transfer';
 
   @override
   String get budgetScheduledLabel => 'Scheduled';
@@ -2690,13 +2721,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashLoadingCaption => 'Loading your finances...';
 
   @override
-  String get brandWordmarkPrefix => 'b';
-
-  @override
-  String get brandWordmarkDotlessI => 'ı';
-
-  @override
-  String get brandWordmarkSuffix => 'lletudo';
+  String get brandWordmark => 'Billetudo';
 
   @override
   String get scheduledPaymentsTitle => 'Scheduled payments';
@@ -2880,6 +2905,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentDetailLinkedDebtLabel => 'Installment of';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalEyebrow => 'LINKED GOAL';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalLabel => 'Contribution to';
 
   @override
   String get scheduledDebtChipLabel => 'Debt';
@@ -3535,6 +3566,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goalLinkError => 'We couldn\'t link the movement. Try again.';
+
+  @override
+  String get goalRecurringContributionEntryTitle =>
+      'Set up a recurring contribution';
+
+  @override
+  String get goalRecurringContributionEntrySubtitle =>
+      'Automate your contributions with a scheduled payment';
+
+  @override
+  String goalRecurringContributionDecisionTitle(String name) {
+    return 'Recurring contribution to $name';
+  }
+
+  @override
+  String get goalRecurringContributionDecisionSubtitle =>
+      'It will be linked to the goal: every scheduled payment adds to your progress automatically.';
+
+  @override
+  String get goalRecurringContributionCreateNewCta => 'Create a new one';
+
+  @override
+  String get goalRecurringContributionLinkExistingCta =>
+      'Link an existing scheduled payment';
+
+  @override
+  String get goalRecurringContributionFormTitle => 'Recurring contribution';
+
+  @override
+  String get goalRecurringContributionAmountLabel => 'Contribution amount';
+
+  @override
+  String get goalRecurringContributionSourceAccountLabel => 'Source account';
+
+  @override
+  String get goalRecurringContributionFrequencyLabel => 'Frequency';
+
+  @override
+  String get goalRecurringContributionSubmitCta =>
+      'Create recurring contribution';
+
+  @override
+  String get goalRecurringContributionSaveError =>
+      'We couldn\'t create the recurring contribution. Try again.';
+
+  @override
+  String get goalRecurringContributionBanner =>
+      'This creates a scheduled payment linked to this goal. Confirm or postpone it in Scheduled payments.';
+
+  @override
+  String get goalRecurringContributionPickerTitle => 'Link a scheduled payment';
+
+  @override
+  String get goalRecurringContributionPickerSubtitle =>
+      'Choose one of your scheduled payments; we\'ll attribute it to this goal, not create a new one.';
+
+  @override
+  String get goalRecurringContributionPickerEmpty =>
+      'You have no scheduled payments available to link.';
+
+  @override
+  String get goalRecurringContributionLinkError =>
+      'We couldn\'t link the scheduled payment. Try again.';
 
   @override
   String get goalWithdrawCta => 'Withdraw';
@@ -4446,6 +4540,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importExportProgressSavingCopyTitle => 'Saving your copy…';
+
+  @override
+  String get importExportSaveCopyDoneTitle => 'Your copy is ready';
+
+  @override
+  String get importExportSaveCopyDoneBody =>
+      'Save it to your device or share it however you like.';
+
+  @override
+  String get importExportSaveCopyActionSave => 'Save';
+
+  @override
+  String get importExportSaveCopyActionShare => 'Share';
 
   @override
   String importExportProgressCaption(int processed, int total) {
