@@ -1,7 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/core/widgets/brand_wordmark.dart';
-import 'package:billetudo/core/widgets/coin_glyph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -16,15 +15,23 @@ void main() {
         ),
       );
 
-  testWidgets(
-      'renders "b", the dotless i and "lletudo" with a coin glyph as the '
-      'dot (never both a natural dot and the coin)', (tester) async {
+  testWidgets('renders "Billetudo" flat, as a single capitalized piece',
+      (tester) async {
     await pumpWordmark(tester);
 
-    expect(find.text('b'), findsOneWidget);
-    expect(find.text('ı'), findsOneWidget);
-    expect(find.text('i'), findsNothing);
-    expect(find.text('lletudo'), findsOneWidget);
-    expect(find.byType(CoinGlyph), findsOneWidget);
+    expect(find.text('Billetudo'), findsOneWidget);
+    // The retired lowercase direction split the name across three texts and
+    // dotted the "i" with a coin — none of that survives.
+    expect(find.text('billetudo'), findsNothing);
+    expect(find.text('ı'), findsNothing);
+    expect(find.byType(Text), findsOneWidget);
+  });
+
+  testWidgets('scales tracking with the font size (-0.045em)', (tester) async {
+    await pumpWordmark(tester);
+
+    final style = tester.widget<Text>(find.text('Billetudo')).style!;
+    expect(style.fontWeight, FontWeight.w800);
+    expect(style.letterSpacing, closeTo(32 * -0.045, 0.001));
   });
 }

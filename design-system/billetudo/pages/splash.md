@@ -36,16 +36,17 @@ De arriba a abajo, dentro de `Content` (`height:fill_container`, sin `Page Heade
 1. **Status Bar** (`vYZJT`, `Status Bar/Android`).
 2. **Brand Block** (`hg0l8`, centrado en el 50% del alto disponible): instancia de
    **`Logo Wordmark`** (`y5JJtf`, reusable) a tamaño protagonista (`fontSize:56`) —
-   "billetudo" construido con texto real (Plus Jakarta Sans 800, `letterSpacing:-2`), no
-   como imagen pegada. La "i" no lleva su punto natural; en su lugar, `Coin Glyph` (`U60Oq`,
-   reusable — círculo `$primary`→`$primary-deep` con aro `$primary-light`) hace de punto,
-   posicionado en `layoutPosition:"absolute"` sobre la "ı" sin punto (`H9Gwq`).
-   - *Nota de fidelidad para `flutter-dev`:* `snapshot_layout` reporta el coin dot como
-     "partially clipped" — es un overflow decorativo de ~2px por el posicionamiento
-     absoluto dentro del contenedor `fit_content` de la "ı", preexistente y no bloqueante
-     (confirmado visualmente, no afecta legibilidad). En Flutter no hace falta replicar el
-     offset exacto en px de Pencil — un `Positioned`/`Stack` normal alineando el centro del
-     coin sobre el ápice de la "ı" es suficiente.
+   "Billetudo" construido con texto real (Plus Jakarta Sans 800, `letterSpacing:-2.5` =
+   `-0.045em` por `MARCA.md`), no como imagen pegada. Wordmark **plano**, en una sola pieza
+   de texto (`Z4mUsO`): sin elementos flotantes, sin glifos sustituidos.
+   - *Historial:* hasta 2026-08-18 el wordmark iba en minúscula y su "i" (una "ı" sin punto,
+     U+0131) era dotada por `Coin Glyph` (`U60Oq`). Esa era la dirección de identidad
+     anterior; la vigente es **4d — B mayúscula sobre billete plegado**, que fija el
+     wordmark en "Billetudo" plano (ver `assets/branding/MARCA.md` y `docs/branding.md`).
+     `CoinGlyph` se eliminó de `lib/core/widgets/`, y con él el componente `Coin Glyph`
+     (`U60Oq`) del `.pen`: su último uso era el `App Icon Tile` (`ZiNl0`), que ahora es
+     directamente el ícono real de la app como `fill` de imagen
+     (`assets/branding/ic_launcher_master.png`) en vez de una reconstrucción dibujada.
 3. **Bottom Block** (`KEolH`, bloque secundario, `y:820` dentro de los 972px del frame —
    ~90px de margen inferior seguro para gesture bar/home indicator):
    - **Loading Spinner** (`QqHXB`): `ellipse` 36×36, `innerRadius:0.82`, `sweepAngle:270`
@@ -74,11 +75,11 @@ barra, pero delegó el veredicto final en el reviewer):
 
 - Generado como `Copy()` de `bSOQb` con `theme:{mode:"dark"}`, **sin overrides manuales de
   color** — confirma que todo el frame claro estaba correctamente enlazado a variables.
-- Componentes reusados (`Logo Wordmark`, `Coin Glyph`, `Status Bar/Android`) recolorean
-  solos, ya soportan ambos temas por sus propias variables.
+- Componentes reusados (`Logo Wordmark`, `Status Bar/Android`) recolorean solos, ya
+  soportan ambos temas por sus propias variables.
 - Contraste verificado contra `MASTER.md`: `$text-secondary` oscuro (`#9A98B5`) sobre
   `$background` oscuro (`#14141F`) ~5.8:1 (AA texto normal); `$primary` oscuro (`#6D4FE0`)
-  para el coin dot y el spinner, uso decorativo/icónico (≥3:1).
+  para el spinner, uso decorativo/icónico (≥3:1).
 
 ## Pendiente (fuera de alcance de diseño visual)
 
