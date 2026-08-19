@@ -1,4 +1,4 @@
-// PowerSync's client-side schema (decision #6, docs/requirements/05-auth-sync.md).
+// PowerSync's client-side schema (decision #6, docs/requirements/fase-1/05-auth-sync.md).
 //
 // This mirrors the tables in `app_database.dart` that carry `_SyncColumns`
 // — same table and column names (snake_case), matching the Postgres schema
@@ -22,7 +22,7 @@
 //    the same PowerSync `Column.integer`.
 //
 // **Postgres must match these types, not the other way around** (decision #15,
-// docs/requirements/05-auth-sync.md). Drift reads through PowerSync's *views*,
+// docs/requirements/fase-1/05-auth-sync.md). Drift reads through PowerSync's *views*,
 // where every column is a `CAST(json_extract(data,'$.col') AS <type>)`. A date
 // column typed `timestamptz` in Postgres arrives as text, and SQLite's
 // `CAST('2026-07-17...' AS INTEGER)` silently yields `2026` — every server-born
@@ -202,6 +202,10 @@ const powerSyncSchema = Schema([
     Column.integer('end_date'),
     Column.integer('requires_confirmation'),
     Column.text('debt_id'),
+    // HU-16 (design-system/billetudo/pages/metas.md): links a template to a
+    // recurring goal contribution. Nullable, exclusive with `debt_id` — see
+    // `ScheduledPaymentDraft.validated()`.
+    Column.text('goal_id'),
     ..._syncColumns,
   ]),
   Table('tags', [
@@ -254,10 +258,18 @@ const powerSyncSchema = Schema([
     // Global on/off for contextual help minitutorials (schemaVersion 24).
     // Defaults to true; see AppSettings.showHelpOnSectionEntry.
     Column.integer('show_help_on_section_entry'),
-    // Explicit resolution mode for the featured budget above: 'automatic'
-    // (default) | 'manual' | 'none' (schemaVersion 26). See
-    // AppSettings.featuredBudgetMode / FeaturedBudgetMode.
+    // Explicit resolution mode for the featured budget above: 'automatic' |
+    // 'manual' | 'none' (schemaVersion 26). Nullable client-side since
+    // schemaVersion 29 (decision #25, docs/requirements/fase-1/05-auth-sync.md):
+    // a physical NULL (e.g. a row that synced before this column existed) is
+    // treated as 'automatic' only in the read/mapping layer
+    // (AppSettingsRepositoryImpl._toFeaturedBudgetMode), never backfilled
+    // here. See AppSettings.featuredBudgetMode / FeaturedBudgetMode.
     Column.text('featured_budget_mode'),
+    // Persisted order of the Home quick-access chips: comma-separated
+    // `QuickAccessItem.name` values (schemaVersion 27). Null falls back to
+    // the fixed default order. See AppSettings.quickAccessOrder.
+    Column.text('quick_access_order'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has
@@ -269,7 +281,7 @@ const powerSyncSchema = Schema([
     ..._syncColumns,
   ]),
   // One row per completed CSV import (schemaVersion 25,
-  // docs/requirements/11-import-export.md). Never deleted — `reverted_at`
+  // docs/requirements/fase-1/11-import-export.md). Never deleted — `reverted_at`
   // marks a revert (HU-08) instead of removing the row, so the history
   // survives it.
   Table('import_batches', [
