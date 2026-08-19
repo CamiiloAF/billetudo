@@ -411,27 +411,13 @@ class DebtEntryReadOnlySheetBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    DebtFormat.amount(state.amountMinor, debt.currency),
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      color: colors.textPrimary,
-                      fontSize: 38,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    width: 3,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: colors.primary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ],
+              Text(
+                DebtFormat.amount(state.amountMinor, debt.currency),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontSize: 38,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),

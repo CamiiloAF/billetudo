@@ -10,8 +10,10 @@ import '../utils/debt_format.dart';
 ///
 /// Distinguishes a **cash** event (a `Transaction`: `$primary-soft` icon-wrap,
 /// `$text-primary` amount) from a **solo-deuda** entry (`$muted` icon-wrap,
-/// `$text-secondary` amount + a tag) — the sign of the amount is already
-/// resolved by the domain, never re-derived here.
+/// `$text-secondary` amount) — the sign of the amount is already resolved by
+/// the domain, never re-derived here. No tag: the full detail (`Estimado`,
+/// `No afecta cuentas`, complete note) lives only in the movement-detail
+/// sheet this row opens on tap.
 class DebtLedgerRow extends StatelessWidget {
   const DebtLedgerRow({
     required this.entry,
@@ -63,11 +65,8 @@ class DebtLedgerRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isCash = entry.isCashEvent;
-    final tag = DebtFormat.ledgerTag(l10n, entry);
     final note = entry.note;
-    final meta = note != null && note.isNotEmpty
-        ? '${DebtFormat.dateShort(context, entry.date)} · $note'
-        : DebtFormat.dateShort(context, entry.date);
+    final dateShort = DebtFormat.dateShort(context, entry.date);
 
     // A cash row deep-links into its movement's detail; the synthetic opening
     // row (no movement) shows a feedback snackbar; every other solo-deuda row
@@ -126,39 +125,44 @@ class DebtLedgerRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        meta,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: colors.textSecondary,
-                        ),
+                    Text(
+                      dateShort,
+                      maxLines: 1,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: colors.textSecondary,
                       ),
                     ),
-                    if (tag != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.muted,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          tag,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: colors.textSecondary,
-                          ),
+                    if (note != null && note.isNotEmpty)
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 4),
+                            Text(
+                              '·',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                note,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
                   ],
                 ),
               ],

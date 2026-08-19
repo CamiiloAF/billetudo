@@ -103,4 +103,58 @@ void main() {
     expect(find.byType(InkWell), findsNothing);
     expect(movementTapped, isNull);
   });
+
+  // Design fix (`JAmxJ`): the tag ("Estimado"/"No afecta cuentas") is gone
+  // from this row — it lives only in the movement-detail sheet — and the
+  // date/note now render as two separate elements instead of one shared
+  // string, so the date can never lose the ellipsis race to a long note.
+  group('date/note layout', () {
+    testWidgets('renders no separator when there is no note', (tester) async {
+      final entry = buildLedgerEntry(note: null);
+      await pump(tester, entry: entry);
+
+      expect(find.text('·'), findsNothing);
+    });
+
+    testWidgets('renders no separator when the note is empty', (tester) async {
+      final entry = buildLedgerEntry(note: '');
+      await pump(tester, entry: entry);
+
+      expect(find.text('·'), findsNothing);
+    });
+
+    testWidgets('renders the date and the note with a separator',
+        (tester) async {
+      final entry = buildLedgerEntry(note: 'Bancolombia');
+      await pump(tester, entry: entry);
+
+      expect(find.text('·'), findsOneWidget);
+      expect(find.text('Bancolombia'), findsOneWidget);
+    });
+
+    testWidgets(
+        'the date is never truncated even with a very long note, which '
+        'truncates instead', (tester) async {
+      final longNote = 'N' * 200;
+      final entry = buildLedgerEntry(note: longNote);
+      await pump(tester, entry: entry);
+
+      // The date `Text` carries no `overflow`/`maxLines` shrink at all — it
+      // is only the note `Text` that is allowed to ellipsize.
+      final dateText = tester.widget<Text>(find.text('5 jul'));
+      expect(dateText.overflow, isNull);
+
+      final noteText = tester.widget<Text>(find.text(longNote));
+      expect(noteText.overflow, TextOverflow.ellipsis);
+      expect(noteText.maxLines, 1);
+    });
+
+    testWidgets('does not overflow the layout with a long note',
+        (tester) async {
+      final entry = buildLedgerEntry(note: 'N' * 200);
+      await pump(tester, entry: entry);
+
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

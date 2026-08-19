@@ -209,15 +209,4 @@ abstract final class DebtFormat {
         DebtEntryKind.manualAdjustment => l10n.debtLedgerAdjustment,
         DebtEntryKind.interestAccrual => l10n.debtLedgerInterest,
       };
-
-  /// The small tag on a solo-deuda row ("Estimado" for interest, "No afecta
-  /// cuentas" for cash-less events); `null` for cash rows, which need no tag.
-  static String? ledgerTag(AppLocalizations l10n, DebtLedgerEntry entry) {
-    if (entry.isCashEvent) {
-      return null;
-    }
-    return entry.kind == DebtLedgerKind.interestAccrual
-        ? l10n.debtLedgerTagEstimated
-        : l10n.debtLedgerTagNoAccount;
-  }
 }
