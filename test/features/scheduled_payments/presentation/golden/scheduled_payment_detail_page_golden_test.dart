@@ -153,6 +153,7 @@ void main() {
             onEdit: (_) {},
             onOpenTransaction: (_) async => null,
             onOpenDebt: (_) {},
+            onOpenGoal: (_) {},
             onEditInstallment: (_, __) {}),
       ),
       brightness: brightness,

@@ -9,6 +9,7 @@ import 'package:billetudo/features/goals/domain/usecases/contribute_to_goal.dart
 import 'package:billetudo/features/goals/domain/usecases/create_goal_quick_amount.dart';
 import 'package:billetudo/features/goals/domain/usecases/delete_goal.dart';
 import 'package:billetudo/features/goals/domain/usecases/delete_goal_quick_amount.dart';
+import 'package:billetudo/features/goals/domain/usecases/unarchive_goal.dart';
 import 'package:billetudo/features/goals/domain/usecases/watch_goal_detail.dart';
 import 'package:billetudo/features/goals/domain/usecases/watch_goal_quick_amounts.dart';
 import 'package:billetudo/features/goals/presentation/cubit/goal_detail_cubit.dart';
@@ -22,6 +23,8 @@ import 'goals_presentation_fixtures.dart';
 class MockWatchGoalDetail extends Mock implements WatchGoalDetail {}
 
 class MockArchiveGoal extends Mock implements ArchiveGoal {}
+
+class MockUnarchiveGoal extends Mock implements UnarchiveGoal {}
 
 class MockDeleteGoal extends Mock implements DeleteGoal {}
 
@@ -72,6 +75,7 @@ List<GoalContribution> _history(int count) => List.generate(
 void main() {
   late MockWatchGoalDetail watchGoalDetail;
   late MockArchiveGoal archiveGoal;
+  late MockUnarchiveGoal unarchiveGoal;
   late MockDeleteGoal deleteGoal;
   late MockContributeToGoal contributeToGoal;
   late MockWatchGoalQuickAmounts watchGoalQuickAmounts;
@@ -81,6 +85,7 @@ void main() {
   setUp(() {
     watchGoalDetail = MockWatchGoalDetail();
     archiveGoal = MockArchiveGoal();
+    unarchiveGoal = MockUnarchiveGoal();
     deleteGoal = MockDeleteGoal();
     contributeToGoal = MockContributeToGoal();
     watchGoalQuickAmounts = MockWatchGoalQuickAmounts();
@@ -93,6 +98,7 @@ void main() {
   GoalDetailCubit build() => GoalDetailCubit(
         watchGoalDetail,
         archiveGoal,
+        unarchiveGoal,
         deleteGoal,
         contributeToGoal,
         watchGoalQuickAmounts,

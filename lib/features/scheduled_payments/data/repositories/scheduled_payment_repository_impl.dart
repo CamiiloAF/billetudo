@@ -14,6 +14,7 @@ import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_detail.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
 import '../../domain/entities/scheduled_payment_linked_debt.dart';
+import '../../domain/entities/scheduled_payment_linked_goal.dart';
 import '../../domain/entities/scheduled_payment_occurrence.dart';
 import '../../domain/entities/scheduled_payment_summary.dart';
 import '../../domain/entities/snooze_outcome.dart';
@@ -66,6 +67,14 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   Stream<Result<List<ScheduledPaymentSummary>>>
       watchFinishedScheduledPayments() => _guardStream(
             _local.watchFinishedScheduledPayments().map(
+                  (rows) => Right(rows.map(_toSummary).toList()),
+                ),
+          );
+
+  @override
+  Stream<Result<List<ScheduledPaymentSummary>>>
+      watchLinkableScheduledPayments() => _guardStream(
+            _local.watchLinkableScheduledPayments().map(
                   (rows) => Right(rows.map(_toSummary).toList()),
                 ),
           );
@@ -134,6 +143,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               historyTotalCount: historyTotalCount,
               generatedTransactionCount: generatedTransactionCount,
               linkedDebt: _toLinkedDebt(row.debt),
+              linkedGoal: _toLinkedGoal(row.goal),
             ),
           );
         }),
@@ -151,6 +161,18 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       name: debt.name,
       iOwe: debt.direction == db.DebtDirection.iOwe,
     );
+  }
+
+  /// The recurring-contribution cross-link (HU-16), only when the owning goal
+  /// is still alive: a trashed (`deletedAt`) or purged (`tombstonedAt`) goal
+  /// has no live detail to link into, so the card is dropped rather than
+  /// pointing at a screen that would fail to load — same rule as
+  /// [_toLinkedDebt].
+  ScheduledPaymentLinkedGoal? _toLinkedGoal(db.Goal? goal) {
+    if (goal == null || goal.deletedAt != null || goal.tombstonedAt != null) {
+      return null;
+    }
+    return ScheduledPaymentLinkedGoal(id: goal.id, name: goal.name);
   }
 
   @override
@@ -290,6 +312,44 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               NotFoundFailure('scheduled payment "$id" does not exist'));
         }
         return const Right(unit);
+      });
+
+  @override
+  FutureResult<ScheduledPayment> linkScheduledPaymentToGoal({
+    required String scheduledPaymentId,
+    required String goalId,
+  }) =>
+      _guard(() async {
+        final template = await _local.getScheduledPayment(scheduledPaymentId);
+        if (template == null) {
+          return Left(
+            NotFoundFailure(
+              'scheduled payment "$scheduledPaymentId" does not exist',
+            ),
+          );
+        }
+        if (template.debtId != null || template.goalId != null) {
+          return const Left(
+            ValidationFailure(
+              'this scheduled payment is already linked to a debt or a goal',
+            ),
+          );
+        }
+        final row = await _local.updateScheduledPayment(
+          scheduledPaymentId,
+          ScheduledPaymentMapper.assignGoalIdCompanion(
+            goalId: goalId,
+            now: DateTime.now(),
+          ),
+        );
+        if (row == null) {
+          return Left(
+            NotFoundFailure(
+              'scheduled payment "$scheduledPaymentId" does not exist',
+            ),
+          );
+        }
+        return Right(ScheduledPaymentMapper.toEntity(row));
       });
 
   @override
@@ -871,7 +931,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   /// are always read from the template as it stands right now (criterion 7/8 —
   /// never editable at confirmation time).
   ///
-  /// `debtId` (HU-03 of `docs/requirements/08-deudas.md`) is inherited from the
+  /// `debtId` (HU-03 of `docs/requirements/fase-1/08-deudas.md`) is inherited from the
   /// template so an installment (cuota, a `ScheduledPayment` linked to a debt)
   /// both lowers the account AND reduces the debt: the generated transaction
   /// lands in the debt ledger, where `DebtBalanceCalculator` counts it by

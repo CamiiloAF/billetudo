@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/load_more_button.dart';
@@ -12,23 +14,23 @@ import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/goal_contribution.dart';
 import '../../domain/entities/goal_detail.dart';
-import '../../domain/entities/goal_projection.dart';
 import '../../domain/entities/goal_quick_amount.dart';
 import '../../domain/entities/goal_with_progress.dart';
 import '../cubit/goal_detail_cubit.dart';
 import '../cubit/goal_detail_state.dart';
-import '../utils/goal_format.dart';
-import '../utils/goal_icon_appearance.dart';
-import '../widgets/goal_account_unavailable_banner.dart';
+import '../cubit/goal_recurring_contribution_state.dart';
+import '../widgets/goal_detail_fixed_zone.dart';
 import '../widgets/goal_movement_row.dart';
-import '../widgets/goal_progress_ring.dart';
 import '../widgets/goal_quick_amount_row.dart';
+import '../widgets/goal_recurring_contribution_entry_card.dart';
+import '../widgets/goal_scheduled_payment_picker_sheet.dart';
 import '../widgets/sheets/confirm_archive_goal_sheet.dart';
 import '../widgets/sheets/confirm_delete_goal_sheet.dart';
 import '../widgets/sheets/goal_actions_sheet.dart';
 import '../widgets/sheets/goal_contribution_sheet.dart';
 import '../widgets/sheets/goal_movement_detail_sheet.dart';
 import '../widgets/sheets/new_goal_quick_amount_sheet.dart';
+import 'goal_recurring_contribution_decision_page.dart';
 
 /// The goal detail (HU-05/06/07/12/15): arc héroe + "Te faltan $X" + forward
 /// projection, quick-amount chips + Aportar/Retirar, and the movement peek
@@ -198,257 +200,166 @@ class GoalDetailBody extends StatelessWidget {
     // contribution/retiro can no longer move money through it.
     final hasUsableLinkedAccount = goal.hasAccount && !accountUnavailable;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+    return Column(
       children: [
-        Center(
-          child: GoalProgressRing(
-            percent: progress.displayedPercent,
-            size: 168,
-            strokeWidth: 12,
-            completed: completed,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  GoalIconAppearance.iconFor(goal.icon),
-                  size: 34,
-                  color: completed ? colors.incomeText : colors.primaryOnSoft,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${progress.displayedPercent}%',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: completed
-                        ? colors.incomeText
-                        : colors.primaryOnSoftStrong,
-                  ),
-                ),
-              ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+          child: GoalDetailFixedZone(
+            detail: detail,
+            hasUsableLinkedAccount: hasUsableLinkedAccount,
+            accountUnavailable: accountUnavailable,
+            onEdit: onEdit,
+            onOpenWithdraw: (maxWithdrawableMinor) => _openWithdraw(
+              context,
+              goal.id,
+              goal.name,
+              goal.currency,
+              maxWithdrawableMinor,
+              hasUsableLinkedAccount,
+            ),
+            onOpenContribute: () => _openContribute(
+              context,
+              goal.id,
+              goal.name,
+              goal.currency,
+              hasUsableLinkedAccount,
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Center(
-          child: Text(
-            goal.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: colors.textPrimary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Center(
-          child: Text(
-            completed
-                ? l10n.goalDetailAchieved(
-                    GoalFormat.amount(progress.savedMinor, goal.currency),
-                  )
-                : l10n.goalDetailRemaining(
-                    GoalFormat.amount(progress.remainingMinor, goal.currency),
-                  ),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              color: completed ? colors.incomeText : colors.textPrimary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Center(
-          child: Text(
-            _projectionText(l10n, context, detail.projection),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: colors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 3),
-        Center(
-          child: Text(
-            accountUnavailable
-                ? l10n.goalDetailSavedOfTargetNoAccount(
-                    GoalFormat.amount(progress.savedMinor, goal.currency),
-                    GoalFormat.amount(goal.targetMinor, goal.currency),
-                  )
-                : l10n.goalDetailSavedOfTarget(
-                    GoalFormat.amount(progress.savedMinor, goal.currency),
-                    GoalFormat.amount(goal.targetMinor, goal.currency),
-                  ),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: colors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        if (!goal.isArchived) ...[
-          Row(
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
             children: [
-              Expanded(
-                child: detail.projection.kind == GoalProjectionKind.overdue
-                    ? OutlinedButton.icon(
-                        onPressed: () => onEdit(goal.id),
-                        icon: const Icon(LucideIcons.calendar, size: 16),
-                        label: Text(l10n.goalAdjustDateCta),
-                      )
-                    : OutlinedButton.icon(
-                        onPressed: progress.savedMinor <= 0
-                            ? null
-                            : () => unawaited(
-                                  _openWithdraw(
-                                    context,
-                                    goal.id,
-                                    goal.name,
-                                    goal.currency,
-                                    progress.savedMinor,
-                                    hasUsableLinkedAccount,
-                                  ),
-                                ),
-                        icon: const Icon(LucideIcons.arrowDownLeft, size: 16),
-                        label: Text(l10n.goalWithdrawCta),
-                      ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () => unawaited(
-                    _openContribute(
+              if (!goal.isArchived) ...[
+                GoalRecurringContributionEntryCard(
+                  onTap: () => unawaited(
+                    _openRecurringContribution(
                       context,
                       goal.id,
                       goal.name,
                       goal.currency,
-                      hasUsableLinkedAccount,
                     ),
                   ),
-                  icon: const Icon(LucideIcons.plus, size: 16),
-                  label: Text(l10n.goalContributeCta),
+                ),
+                if (!completed) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    l10n.goalQuickAmountLabel,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GoalQuickAmountRow(
+                    currency: goal.currency,
+                    customAmounts: quickAmounts,
+                    onQuickAmount: (amountMinor) => unawaited(
+                      _openContribute(
+                        context,
+                        goal.id,
+                        goal.name,
+                        goal.currency,
+                        hasUsableLinkedAccount,
+                        initialAmountMinor: amountMinor,
+                      ),
+                    ),
+                    onAddNew: () => unawaited(
+                      _addQuickAmount(context, goal.id, goal.currency),
+                    ),
+                    onRemoveCustom: (quickAmount) =>
+                        unawaited(_removeQuickAmount(context, quickAmount)),
+                  ),
+                ],
+                const SizedBox(height: 24),
+              ],
+              Text(
+                l10n.goalMovementsSectionTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
                 ),
               ),
+              const SizedBox(height: 8),
+              if (visible.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    l10n.goalMovementsEmpty,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                )
+              else
+                for (final movement in visible)
+                  GoalMovementRow(
+                    movement: movement,
+                    currency: goal.currency,
+                    onTap: () => unawaited(
+                      GoalMovementDetailSheet.show(
+                        context,
+                        movement: movement,
+                        currency: goal.currency,
+                        goalName: goal.name,
+                        goalCompleted: completed,
+                        onOpenTransaction: onOpenTransaction,
+                      ),
+                    ),
+                  ),
+              if (hasMoreMovements) ...[
+                const SizedBox(height: 8),
+                LoadMoreButton(
+                  onPressed: context.read<GoalDetailCubit>().loadMoreMovements,
+                ),
+              ],
             ],
           ),
-          if (accountUnavailable) ...[
-            const SizedBox(height: 14),
-            GoalAccountUnavailableBanner(
-              onLinkAnother: () => onEdit(goal.id),
-            ),
-          ],
-          if (!completed) ...[
-            const SizedBox(height: 20),
-            Text(
-              l10n.goalQuickAmountLabel,
-              style: theme.textTheme.labelLarge?.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: colors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 10),
-            GoalQuickAmountRow(
-              currency: goal.currency,
-              customAmounts: quickAmounts,
-              onQuickAmount: (amountMinor) => unawaited(
-                _openContribute(
-                  context,
-                  goal.id,
-                  goal.name,
-                  goal.currency,
-                  hasUsableLinkedAccount,
-                  initialAmountMinor: amountMinor,
-                ),
-              ),
-              onAddNew: () =>
-                  unawaited(_addQuickAmount(context, goal.id, goal.currency)),
-              onRemoveCustom: (quickAmount) =>
-                  unawaited(_removeQuickAmount(context, quickAmount)),
-            ),
-          ],
-          const SizedBox(height: 24),
-        ],
-        Text(
-          l10n.goalMovementsSectionTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
         ),
-        const SizedBox(height: 8),
-        if (visible.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              l10n.goalMovementsEmpty,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colors.textSecondary,
-              ),
-            ),
-          )
-        else
-          for (final movement in visible)
-            GoalMovementRow(
-              movement: movement,
-              currency: goal.currency,
-              onTap: () => unawaited(
-                GoalMovementDetailSheet.show(
-                  context,
-                  movement: movement,
-                  currency: goal.currency,
-                  goalName: goal.name,
-                  goalCompleted: completed,
-                  onOpenTransaction: onOpenTransaction,
-                ),
-              ),
-            ),
-        if (hasMoreMovements) ...[
-          const SizedBox(height: 8),
-          LoadMoreButton(
-            onPressed: context.read<GoalDetailCubit>().loadMoreMovements,
-          ),
-        ],
       ],
     );
   }
 
-  String _projectionText(
-    AppLocalizations l10n,
+
+  /// HU-16 entry point: opens the enlazar/crear decision sheet
+  /// (`GoalRecurringContributionDecisionPage`), then routes to whichever
+  /// flow was chosen — the "crear" form (pushed via the router, mirroring
+  /// how `onEdit` navigates) or the "enlazar existente" picker sheet.
+  Future<void> _openRecurringContribution(
     BuildContext context,
-    GoalProjection projection,
-  ) {
-    switch (projection.kind) {
-      case GoalProjectionKind.noTargetDate:
-        return l10n.goalProjectionNoTargetDate;
-      case GoalProjectionKind.overdue:
-        return l10n.goalProjectionOverdue;
-      case GoalProjectionKind.insufficientHistory:
-      case GoalProjectionKind.noPace:
-        final needed = projection.monthlyContributionNeededMinor;
-        return needed == null
-            ? l10n.goalProjectionInsufficientHistory
-            : l10n.goalProjectionMonthlyNeeded(
-                GoalFormat.amount(needed, detail.progress.goal.currency),
-              );
-      case GoalProjectionKind.projected:
-        final date = projection.estimatedDate;
-        return date == null
-            ? l10n.goalProjectionInsufficientHistory
-            : l10n.goalProjectionOnPace(GoalFormat.monthYear(context, date));
+    String goalId,
+    String goalName,
+    String currency,
+  ) async {
+    final decision = await GoalRecurringContributionDecisionPage.show(
+      context,
+      goalName: goalName,
+    );
+    if (decision == null || !context.mounted) {
+      return;
+    }
+    switch (decision) {
+      case GoalRecurringContributionDecision.createNew:
+        await context.push<void>(
+          AppRoutes.goalRecurringContribution(goalId),
+          extra: GoalRecurringContributionContext(
+            goalId: goalId,
+            goalName: goalName,
+            currency: currency,
+          ),
+        );
+      case GoalRecurringContributionDecision.linkExisting:
+        await GoalScheduledPaymentPickerSheet.show(
+          context,
+          goalId: goalId,
+          goalName: goalName,
+          currency: currency,
+        );
     }
   }
 

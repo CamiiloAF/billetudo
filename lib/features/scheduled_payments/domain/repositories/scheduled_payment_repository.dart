@@ -29,6 +29,14 @@ abstract class ScheduledPaymentRepository {
   Stream<Result<List<ScheduledPaymentSummary>>>
       watchFinishedScheduledPayments();
 
+  /// HU-16 "Enlazar existente" picker (Metas → Aporte recurrente): active
+  /// templates that are not already a debt's cuota nor another goal's
+  /// contribution (`debtId IS NULL AND goalId IS NULL`), so the picker never
+  /// offers to re-link an already-committed template. Ordered same as
+  /// [watchActiveScheduledPayments] (`nextDate` ascending).
+  Stream<Result<List<ScheduledPaymentSummary>>>
+      watchLinkableScheduledPayments();
+
   /// HU-03/HU-04: pending occurrences across every manual-mode template,
   /// ordered by effective due date ascending.
   Stream<Result<List<PendingScheduledOccurrence>>> watchPendingOccurrences();
@@ -67,6 +75,19 @@ abstract class ScheduledPaymentRepository {
   /// HU-05: logical delete via `tombstonedAt` — stops future generation,
   /// preserves the historical reference on already-generated transactions.
   FutureResult<Unit> deleteScheduledPayment(String id);
+
+  /// HU-16 "Enlazar existente" (Metas → Aporte recurrente): assigns [goalId]
+  /// to [scheduledPaymentId] without touching any other field of the
+  /// template. Fails with [ValidationFailure] when the template already
+  /// carries a `debtId` or a `goalId` — the caller (`LinkScheduledPaymentToGoal`,
+  /// Metas domain) is expected to have already checked this via
+  /// [getScheduledPayment], but the repository re-checks so this cannot be
+  /// bypassed by a stale read. Fails with [NotFoundFailure] when the id does
+  /// not resolve or is tombstoned.
+  FutureResult<ScheduledPayment> linkScheduledPaymentToGoal({
+    required String scheduledPaymentId,
+    required String goalId,
+  });
 
   /// Replaces the full set of tags linked to [scheduledPaymentId] via
   /// `ScheduledPaymentTags` with [tagIds].

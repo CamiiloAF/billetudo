@@ -1,0 +1,14 @@
+-- schemaVersion 28 (HU-16, design-system/billetudo/pages/metas.md): enlazar
+-- un pago programado a un aporte recurrente de meta.
+--
+-- Paridad explícita con lib/core/database/app_database.dart y
+-- lib/core/database/powersync_schema.dart — ver nota de memoria
+-- "migrar-columna-drift-tambien-en-supabase": subir schemaVersion en Drift
+-- no migra Postgres, y sin este ALTER TABLE el conector de PowerSync
+-- responde PGRST204 y la cola de subida queda quarantined (mismo bug que
+-- 20260724000000_debts_closed_at.sql).
+--
+-- Nullable, exclusivo con `debt_id` (ver
+-- ScheduledPaymentDraft.validated()). Sin backfill: solo templates nuevas la
+-- setean.
+alter table public.scheduled_payments add column if not exists goal_id text;

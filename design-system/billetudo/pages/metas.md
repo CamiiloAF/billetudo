@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras el rediseño bajo la tesis "tablero de aspiraciones con momentum" y varias rondas de `ui-ux-reviewer`. Requisitos en `docs/requirements/07-metas.md`. Cross-link con Pagos Programados (aporte recurrente) y Transferencias presupuestables (flag `countsInBudget`).
+**Estado:** aprobado y terminado (claro + oscuro), tras el rediseño bajo la tesis "tablero de aspiraciones con momentum" y varias rondas de `ui-ux-reviewer`. Requisitos en `docs/requirements/fase-1/07-metas.md`. Cross-link con Pagos Programados (aporte recurrente) y Transferencias presupuestables (flag `countsInBudget`).
 
 ## Tesis (norte del diseño)
 
@@ -51,10 +51,23 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 ### Integración con Pagos Programados (aporte recurrente, HU-16)
 | Pantalla | Claro | Oscuro |
 |---|---|---|
+| Punto de entrada — card en Detalle (tras Aportar/Retirar) | `H86Ed` / `hWrGw` | `hDZ6K` / `D3Apm1` |
 | Elegir: enlazar existente / crear nuevo | `HOdfO` | `XB4rS` |
 | Config de aporte recurrente (clon cuota Deudas) | `ebcqG` | `G2AfJ` |
 | Picker de pago programado existente | `RX8C9` | `LSwr8` |
 | Detalle de PP con card "Meta Enlazada" | `a2yR8P` | `tnaj3` |
+
+**Punto de entrada del Detalle (aprobado 2026-08-17, `H86Ed`/`hWrGw`).** Entre 3 variantes construidas (A: card prominente tras Acciones; B: card al final tras Historial; C: fila en el Sheet acciones ⋮), se aprobó la **Variante A**: una card fija justo **después de Aportar/Retirar y antes de "Aporte rápido"**, siempre visible sin abrir ningún menú. Variantes B y C descartadas y borradas del canvas.
+
+Geometría idéntica al patrón `DebtConfigureInstallmentCard` de Deudas (`f0vDl` en `cUzp6`): icon-wrap 40px `$primary-soft` + ícono `repeat` en `$primary-on-soft`, título 15/600 + subtítulo 12/500 en el bloque medio, chevron-right, `fill:$surface` + `stroke:$border`. Reusa el mismo lenguaje visual que ya usa Deudas para "configurar algo recurrente ligado a este registro", sin inventar un componente nuevo.
+
+**Estructura zona fija / zona scrolleable (decisión 2026-08-17).** La card nueva hacía crecer `H86Ed` de 972 a 1054px sin clipear el historial. Se resolvió con el mismo patrón que ya usa Gráficas · Resumen (`zGEVW`/`jMg1w`): dentro de `Content` se separó en **Zona fija — NO scrollea** (Hero + Acciones Aportar/Retirar, ancladas bajo el Page Header) y **Zona scrolleable — el contenido se desplaza** (`height:fill_container`, contiene la card de Aporte Recurrente + Aporte rápido + Historial). El frame recupera su alto fijo estándar de 972px; en Flutter la zona scrolleable es el único `SingleChildScrollView`/`ListView` de la pantalla. **Alcance:** esta estructura se aplicó solo a `H86Ed` (la variante con aporte recurrente). Migrar `QBTVl` (Detalle base, sin aporte recurrente) al mismo patrón es una decisión aparte, aún sin confirmar por el usuario.
+
+**Excepción — peek de Movimientos a 3 filas en `H86Ed` (fix 2026-08-17, hallazgo IMPORTANTE de `ui-ux-reviewer`).** Con la card nueva, el peek estándar de 4 filas de Movimientos (el que sí usa `QBTVl`) no cabía en la zona scrolleable sin recortar el botón "Ver más" (`Load More · Ver más`, `oadHE`). Se bajó a **3 filas** solo en esta variante, junto con gaps internos reducidos de 12-18px a 8-12px (dentro del rango de MASTER para "gap entre items relacionados"). Verificado sin ningún nodo `partially/fully clipped` en el subárbol. Es una excepción puntual de `H86Ed`, no un cambio al peek estándar de 4 filas que sigue usando `QBTVl`.
+
+Auditado por `ui-ux-reviewer` (2026-08-17): aprobado con una observación IMPORTANTE (el clipping de arriba), ya corregida. Sin hallazgos de jerarquía, contraste, tono de marca ni accesibilidad.
+
+**Estado:** ambos temas cerrados y aprobados (claro `H86Ed`/`hWrGw`, oscuro `hDZ6K`/`D3Apm1`, generado 2026-08-17 vía `Copy()`+`theme:{mode:"dark"}` sin ajustes manuales, sin clipping). Listo para implementar en Flutter.
 
 ### Gestión (sheets)
 | Pantalla | Claro | Oscuro |

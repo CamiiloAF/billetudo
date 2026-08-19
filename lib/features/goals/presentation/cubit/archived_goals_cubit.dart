@@ -6,7 +6,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../domain/entities/goal_with_progress.dart';
-import '../../domain/usecases/archive_goal.dart';
+import '../../domain/usecases/unarchive_goal.dart';
 import '../../domain/usecases/watch_archived_goals.dart';
 import 'archived_goals_state.dart';
 
@@ -17,12 +17,12 @@ import 'archived_goals_state.dart';
 class ArchivedGoalsCubit extends Cubit<ArchivedGoalsState> {
   ArchivedGoalsCubit(
     this._watchArchivedGoals,
-    this._archiveGoal,
+    this._unarchiveGoal,
     this._watchAccounts,
   ) : super(const ArchivedGoalsState());
 
   final WatchArchivedGoals _watchArchivedGoals;
-  final ArchiveGoal _archiveGoal;
+  final UnarchiveGoal _unarchiveGoal;
   final WatchAccounts _watchAccounts;
 
   StreamSubscription<Result<List<GoalWithProgress>>>? _subscription;
@@ -61,7 +61,7 @@ class ArchivedGoalsCubit extends Cubit<ArchivedGoalsState> {
   }
 
   /// HU-09: desarchivar. The list refreshes on its own via the stream.
-  Future<void> unarchive(String goalId) => _archiveGoal.unarchive(goalId);
+  Future<void> unarchive(String goalId) => _unarchiveGoal(goalId);
 
   @override
   Future<void> close() async {

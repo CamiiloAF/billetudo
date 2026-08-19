@@ -15,6 +15,7 @@ class ScheduledPaymentRowWithJoins {
     this.transferAccount,
     this.category,
     this.debt,
+    this.goal,
     this.pendingOccurrenceCount = 0,
     this.nextAwaitingDate,
     this.lastPaymentDate,
@@ -30,6 +31,11 @@ class ScheduledPaymentRowWithJoins {
   /// (the detail query); null in the list queries, which do not render the
   /// cross-link.
   final Debt? debt;
+
+  /// The owning goal when this template is a recurring contribution
+  /// (`scheduledPayment.goalId` is set, HU-16). Same scope as [debt]: only
+  /// resolved by the detail query.
+  final Goal? goal;
 
   final int pendingOccurrenceCount;
 
@@ -316,6 +322,13 @@ class ScheduledPaymentsLocalDatasource {
         _db.debts,
         _db.debts.id.equalsExp(_db.scheduledPayments.debtId),
       ),
+      // The owning goal when this template is a recurring contribution
+      // (HU-16 cross-link). A left join: an ordinary template — or a debt's
+      // cuota — has a null `goalId` and reads no row.
+      leftOuterJoin(
+        _db.goals,
+        _db.goals.id.equalsExp(_db.scheduledPayments.goalId),
+      ),
     ])
       ..where(_db.scheduledPayments.id.equals(id))
       // Make the stream depend on THIS template's occurrences: snooze/confirm/
@@ -357,8 +370,51 @@ class ScheduledPaymentsLocalDatasource {
         transferAccount: row.readTableOrNull(transferAccounts),
         category: row.readTableOrNull(_db.categories),
         debt: row.readTableOrNull(_db.debts),
+        goal: row.readTableOrNull(_db.goals),
       );
     });
+  }
+
+  /// HU-16 "Enlazar existente": active templates not yet claimed by a debt's
+  /// cuota nor another goal's contribution — same join/shape as
+  /// [watchActiveScheduledPayments], narrowed to `debtId IS NULL AND goalId
+  /// IS NULL`.
+  Stream<List<ScheduledPaymentRowWithJoins>> watchLinkableScheduledPayments() {
+    final transferAccounts =
+        _db.alias(_db.accounts, 'linkable_transfer_accounts');
+
+    final query = _db.select(_db.scheduledPayments).join([
+      innerJoin(
+        _db.accounts,
+        _db.accounts.id.equalsExp(_db.scheduledPayments.accountId),
+      ),
+      leftOuterJoin(
+        transferAccounts,
+        transferAccounts.id.equalsExp(_db.scheduledPayments.transferAccountId),
+      ),
+      leftOuterJoin(
+        _db.categories,
+        _db.categories.id.equalsExp(_db.scheduledPayments.categoryId),
+      ),
+    ])
+      ..where(
+        _activeExpr() &
+            _db.scheduledPayments.debtId.isNull() &
+            _db.scheduledPayments.goalId.isNull(),
+      )
+      ..orderBy([OrderingTerm.asc(_db.scheduledPayments.nextDate)]);
+
+    return query.watch().map(
+          (rows) => [
+            for (final row in rows)
+              ScheduledPaymentRowWithJoins(
+                scheduledPayment: row.readTable(_db.scheduledPayments),
+                account: row.readTable(_db.accounts),
+                transferAccount: row.readTableOrNull(transferAccounts),
+                category: row.readTableOrNull(_db.categories),
+              ),
+          ],
+        );
   }
 
   // -- Occurrence ledger --------------------------------------------------
