@@ -126,9 +126,9 @@ void main() {
   });
 
   test(
-    'the diff it writes, once fed back into the calculator, makes '
-    'displayTotalMinor equal the reconciled figure (regression, not '
-    'target + abonos already applied)',
+    'the diff it writes, once fed back into the calculator, grows '
+    'displayTotalMinor by the diff — an upward reconciliation is new debt '
+    'discovered, not a rewrite of the total',
     () async {
       // Opening 98M, a 2M abono before reconciling: raw outstanding is 96M.
       // The user reconciles to 110M -> diff = +14M.
@@ -192,9 +192,11 @@ void main() {
       );
 
       expect(afterReconciliation.outstandingMinor, 110000000);
-      // The bug: this used to read 112000000 (110M target + the 2M abono
-      // already applied before reconciling).
-      expect(afterReconciliation.displayTotalMinor, 110000000);
+      // The reconciliation is an upward correction (+14M): it grows the
+      // total, same as totalIncreasesMinor — it is not swapped out for the
+      // reconciled target (that earlier design silently rewrote how much was
+      // ever borrowed; see debt_balance_calculator_test.dart).
+      expect(afterReconciliation.displayTotalMinor, 112000000);
     },
   );
 

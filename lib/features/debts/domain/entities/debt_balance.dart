@@ -43,17 +43,18 @@ class DebtBalance extends Equatable {
   final int interestAccruedMinor;
 
   /// What the hero/card show as "de $X": the total against which the current
-  /// balance is measured. Equal to [totalIncreasesMinor] (the full lifetime
-  /// total) **unless** the ledger holds a balance reconciliation
-  /// (`manualAdjustment` written by `UpdateDebtBalance`, HU-06) — in that case
-  /// it is the figure the user typed at the last reconciliation plus any
-  /// disbursement/interest/upward adjustment posted after it, so a
-  /// reconciliation does not drag abonos applied *before* it into the
-  /// denominator (see the dev-run bug fix for the exact scenario). Deliberately
-  /// separate from [totalIncreasesMinor]: that field must stay the true
-  /// lifetime total for other consumers (e.g. `DebtsSummary`'s "total
-  /// pagado/cobrado", which reads [totalDecreasesMinor] with that same
-  /// lifetime scope).
+  /// balance is measured. Always equal to [totalIncreasesMinor] — the full
+  /// lifetime total (opening principal + every disbursement/interest/upward
+  /// adjustment). A balance reconciliation (`manualAdjustment` written by
+  /// `UpdateDebtBalance`, HU-06) never resets it: a downward correction is a
+  /// decrease (it lowers what is pending, exactly like an abono, but leaves
+  /// the total the user originally owed untouched); an upward correction is
+  /// an increase (new debt discovered at reconciliation time, so it correctly
+  /// grows the total). Kept as its own field, not a mere alias, because a
+  /// previous version of this logic *did* reset it after a reconciliation —
+  /// that reset made "actualizar saldo" also silently rewrite how much was
+  /// ever borrowed, which is a different, wrong thing to correct (see the
+  /// dev-run bug fix for the exact scenario this reverted).
   final int displayTotalMinor;
 
   /// Signed running balance. May be negative when abonos exceed what is owed;

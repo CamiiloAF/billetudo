@@ -236,56 +236,19 @@ void main() {
     });
   });
 
-  group('displayTotalMinor (reconciliation resets the "de \$X" denominator)', () {
-    test('with no manualAdjustment, falls back to the full historical total',
-        () {
-      final balance = calc.calculate(
-        debt: buildDebt(
-          principalMinor: 98000000,
-          createdAt: DateTime(2026, 1, 1),
-          startDate: DateTime(2026, 1, 1),
-        ),
-        entries: const [],
-        cashEvents: [
-          buildCashEvent(
-            type: TransactionType.expense,
-            amountMinor: 2000000,
-            date: DateTime(2026, 2, 1),
-          ),
-        ],
-      );
-
-      expect(balance.totalIncreasesMinor, 98000000);
-      expect(balance.displayTotalMinor, balance.totalIncreasesMinor);
-    });
-
-    test(
-      'reconciling to \$110M with \$2M already abonado shows "de \$110M", '
-      'not "de \$112M"',
-      () {
-        // Reproduces the reported bug: opening 98M, a 2M abono before the
-        // user reconciles to 110M via UpdateDebtBalance. Raw outstanding was
-        // 96M, so the diff written is +14M -> totalIncreasesMinor (historical)
-        // becomes 112M, but the shown denominator must read the reconciled
-        // figure itself: 110M.
-        final debt = buildDebt(
-          principalMinor: 98000000,
-          createdAt: DateTime(2026, 1, 1),
-          startDate: DateTime(2026, 1, 1),
-        );
+  group(
+    'displayTotalMinor (a reconciliation never rewrites the "de \$X" total)',
+    () {
+      test('with no manualAdjustment, equals the full historical total', () {
         final balance = calc.calculate(
-          debt: debt,
-          entries: [
-            buildEntry(
-              id: 'reconciliation',
-              kind: DebtEntryKind.manualAdjustment,
-              amountMinor: 14000000,
-              entryDate: DateTime(2026, 3, 1),
-            ),
-          ],
+          debt: buildDebt(
+            principalMinor: 98000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          ),
+          entries: const [],
           cashEvents: [
             buildCashEvent(
-              transactionId: 't-abono',
               type: TransactionType.expense,
               amountMinor: 2000000,
               date: DateTime(2026, 2, 1),
@@ -293,126 +256,149 @@ void main() {
           ],
         );
 
-        expect(balance.totalIncreasesMinor, 112000000); // historical, unfixed
-        expect(balance.outstandingMinor, 110000000); // already correct today
-        expect(balance.displayTotalMinor, 110000000); // the fix
-      },
-    );
-
-    test(
-      'a disbursement/interest posted after the reconciliation is added on '
-      'top of the reconciled figure',
-      () {
-        final debt = buildDebt(
-          principalMinor: 100000000,
-          createdAt: DateTime(2026, 1, 1),
-          startDate: DateTime(2026, 1, 1),
-        );
-        final balance = calc.calculate(
-          debt: debt,
-          entries: [
-            buildEntry(
-              id: 'reconciliation',
-              kind: DebtEntryKind.manualAdjustment,
-              amountMinor: -20000000, // reconciles down to 80M
-              entryDate: DateTime(2026, 3, 1),
-            ),
-            buildEntry(
-              id: 'interest-after',
-              kind: DebtEntryKind.interestAccrual,
-              amountMinor: 500000,
-              entryDate: DateTime(2026, 4, 1),
-            ),
-          ],
-          cashEvents: const [],
-        );
-
-        expect(balance.displayTotalMinor, 80500000);
-        expect(balance.outstandingMinor, 80500000);
-      },
-    );
-
-    test('a decrease after the reconciliation does not change the total', () {
-      final debt = buildDebt(
-        principalMinor: 100000000,
-        createdAt: DateTime(2026, 1, 1),
-        startDate: DateTime(2026, 1, 1),
-      );
-      final balance = calc.calculate(
-        debt: debt,
-        entries: [
-          buildEntry(
-            id: 'reconciliation',
-            kind: DebtEntryKind.manualAdjustment,
-            amountMinor: 10000000, // reconciles up to 110M
-            entryDate: DateTime(2026, 3, 1),
-          ),
-          buildEntry(
-            id: 'abono-after',
-            kind: DebtEntryKind.payment,
-            amountMinor: -5000000,
-            entryDate: DateTime(2026, 4, 1),
-          ),
-        ],
-        cashEvents: const [],
-      );
-
-      expect(balance.displayTotalMinor, 110000000);
-      expect(balance.outstandingMinor, 105000000);
-    });
-
-    test('the most recent of two reconciliations wins', () {
-      final debt = buildDebt(
-        principalMinor: 100000000,
-        createdAt: DateTime(2026, 1, 1),
-        startDate: DateTime(2026, 1, 1),
-      );
-      final balance = calc.calculate(
-        debt: debt,
-        entries: [
-          buildEntry(
-            id: 'reconciliation-1',
-            kind: DebtEntryKind.manualAdjustment,
-            amountMinor: 10000000, // 100M -> 110M
-            entryDate: DateTime(2026, 2, 1),
-          ),
-          buildEntry(
-            id: 'reconciliation-2',
-            kind: DebtEntryKind.manualAdjustment,
-            amountMinor: -30000000, // 110M -> 80M
-            entryDate: DateTime(2026, 3, 1),
-          ),
-        ],
-        cashEvents: const [],
-      );
-
-      expect(balance.displayTotalMinor, 80000000);
-    });
-
-    test(
-      'a deleted reconciliation is invisible: the calculator only ever sees '
-      'active entries, so removing the manualAdjustment (Fix B) falls back to '
-      'whatever remains — the previous reconciliation, or the full history',
-      () {
-        // The repository filters deletedAt before entries reach this
-        // calculator, so there is nothing extra to wire here; this test just
-        // documents the expectation for the "delete the reconciliation" edge
-        // case named in the fix's dev-run.
-        final debt = buildDebt(
-          principalMinor: 100000000,
-          createdAt: DateTime(2026, 1, 1),
-          startDate: DateTime(2026, 1, 1),
-        );
-        final balance = calc.calculate(
-          debt: debt,
-          entries: const [], // as if the sole reconciliation was deleted
-          cashEvents: const [],
-        );
-
+        expect(balance.totalIncreasesMinor, 98000000);
         expect(balance.displayTotalMinor, balance.totalIncreasesMinor);
-      },
-    );
-  });
+      });
+
+      test(
+        'reconciling downward (correcting an over-count) lowers what is '
+        'pending, not the total originally owed',
+        () {
+          // Opening 98M, a 2M abono, then the user reconciles to 110M via
+          // UpdateDebtBalance because the bank actually reports more owed
+          // than the ledger tracked (e.g. an untracked fee) — an upward
+          // correction, which legitimately grows the total: the app never
+          // knew about that extra 14M until the reconciliation surfaced it.
+          final debt = buildDebt(
+            principalMinor: 98000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: 14000000,
+                entryDate: DateTime(2026, 3, 1),
+              ),
+            ],
+            cashEvents: [
+              buildCashEvent(
+                transactionId: 't-abono',
+                type: TransactionType.expense,
+                amountMinor: 2000000,
+                date: DateTime(2026, 2, 1),
+              ),
+            ],
+          );
+
+          expect(balance.totalIncreasesMinor, 112000000);
+          expect(balance.outstandingMinor, 110000000);
+          // An upward reconciliation is an increase like any other: it
+          // grows the total the user owes, same as totalIncreasesMinor.
+          expect(balance.displayTotalMinor, 112000000);
+        },
+      );
+
+      test(
+        'a downward reconciliation (correcting an over-count) leaves the '
+        'total untouched — only what is pending drops',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          // The debt originally borrowed 100M — that total does not move
+          // just because the remaining balance was corrected downward.
+          expect(balance.displayTotalMinor, 100000000);
+          expect(balance.outstandingMinor, 80000000);
+        },
+      );
+
+      test(
+        'interest/disbursements after a reconciliation keep adding to the '
+        'total, same as before one',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              buildEntry(
+                id: 'interest-after',
+                kind: DebtEntryKind.interestAccrual,
+                amountMinor: 500000,
+                entryDate: DateTime(2026, 4, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.displayTotalMinor, 100500000);
+          expect(balance.outstandingMinor, 80500000);
+        },
+      );
+
+      test(
+        'deleting an entry posted after a reconciliation only removes its '
+        'own contribution — the total keeps reflecting everything else ever '
+        'borrowed, it does not collapse to match what is pending',
+        () {
+          // Regression: an interest entry accrued after a reconciliation,
+          // then deleted for being wrong, used to leave the total equal to
+          // whatever was pending (0% progress shown) because the previous
+          // logic reset the total at the reconciliation itself.
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -6000000, // corrects pending down to 94M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              // The bad interest entry was already deleted (soft-deleted
+              // entries never reach the calculator), so it is absent here.
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.outstandingMinor, 94000000);
+          expect(balance.displayTotalMinor, 100000000);
+        },
+      );
+    },
+  );
 
   group('buildLedger', () {
     test('synthesizes an opening row and sorts newest first', () {
