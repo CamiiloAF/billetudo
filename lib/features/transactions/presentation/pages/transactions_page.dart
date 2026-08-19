@@ -8,6 +8,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/domain/entities/account.dart';
@@ -174,13 +175,12 @@ class TransactionsPage extends StatelessWidget {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                  SnackBar(
+                  AppSnackBar(
                     content: Text(l10n.transactionsUndoDeletedMessage),
                     action: SnackBarAction(
                       label: l10n.transactionsUndoAction,
                       onPressed: cubit.undoDelete,
                     ),
-                    persist: false,
                   ),
                 );
             },

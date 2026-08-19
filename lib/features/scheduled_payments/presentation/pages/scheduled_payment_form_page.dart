@@ -12,6 +12,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/note_autocomplete_field.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/presentation/widgets/delete_link.dart';
@@ -81,7 +82,7 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(
+              AppSnackBar(
                 content: Text(
                   failure is NotFoundFailure
                       ? l10n.scheduledPaymentFormNotFoundError

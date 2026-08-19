@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../domain/entities/auth_provider.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
@@ -53,7 +54,7 @@ class LoginPage extends StatelessWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(
+            AppSnackBar(
               content: Text(
                 isApple
                     ? l10n.authAppleErrorSnackbar

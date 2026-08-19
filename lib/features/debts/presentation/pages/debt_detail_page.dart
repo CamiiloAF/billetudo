@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/error_state.dart';
 import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -190,14 +191,14 @@ class DebtDetailPage extends StatelessWidget {
       cubit.dismissActionFailure();
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.debtActionError)));
+        ..showSnackBar(AppSnackBar(content: Text(l10n.debtActionError)));
       return;
     }
     if (state.closeSuccess != null) {
       cubit.dismissCloseSuccess();
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.debtActionCloseSuccess)));
+        ..showSnackBar(AppSnackBar(content: Text(l10n.debtActionCloseSuccess)));
       return;
     }
     final celebration = state.celebration;
@@ -367,7 +368,7 @@ class DebtDetailReadyView extends StatelessWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
+        AppSnackBar(
           content: Text(l10n.debtOpeningLinkSnackbar),
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,

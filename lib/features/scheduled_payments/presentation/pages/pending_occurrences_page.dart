@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
 import '../../domain/entities/pending_scheduled_occurrence.dart';
 import '../cubit/pending_occurrences_cubit.dart';
@@ -54,7 +55,7 @@ class PendingOccurrencesPage extends StatelessWidget {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(
+                AppSnackBar(
                   content: Text(
                     undo.isSnooze
                         ? l10n.scheduledUndoSnoozeMessage

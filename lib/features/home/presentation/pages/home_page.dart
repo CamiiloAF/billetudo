@@ -10,6 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
@@ -219,7 +220,7 @@ class _HomePageState extends State<HomePage> {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(
+                AppSnackBar(
                   content: Text(l10n.transactionsUndoDeletedMessage),
                   action: SnackBarAction(
                     label: l10n.transactionsUndoAction,

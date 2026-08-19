@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../domain/entities/account.dart';
@@ -264,7 +265,7 @@ class AccountInfoSection extends StatelessWidget {
     final copied = await context.read<AccountDetailCubit>().copyNumber();
     if (copied) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.accountNumberCopied)),
+        AppSnackBar(content: Text(l10n.accountNumberCopied)),
       );
     }
   }

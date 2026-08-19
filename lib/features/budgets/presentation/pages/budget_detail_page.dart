@@ -7,6 +7,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
@@ -85,7 +86,7 @@ class BudgetDetailPage extends StatelessWidget {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(
+                AppSnackBar(
                   content: Text(l10n.transactionsUndoDeletedMessage),
                   action: SnackBarAction(
                     label: l10n.transactionsUndoAction,
@@ -240,7 +241,7 @@ class BudgetDetailPage extends StatelessWidget {
             messenger
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(
+                AppSnackBar(
                   content: Text(
                     isEditing
                         ? l10n.budgetAdjustUpdatedSnackbar
@@ -262,7 +263,7 @@ class BudgetDetailPage extends StatelessWidget {
             messenger
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(
+                AppSnackBar(
                   content: Text(l10n.budgetAdjustCancelledSnackbar),
                   // Float above the anchored period stepper, same as above.
                   behavior: SnackBarBehavior.floating,

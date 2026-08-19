@@ -10,6 +10,7 @@ import '../../../../di/injection.dart';
 import '../../../../l10n/gen/app_localizations.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/app_snack_bar.dart';
 import '../../../../widgets/bottom_sheet_base.dart';
 import '../../../../widgets/sheet_buttons_row.dart';
 import '../../cubit/sync_log_cubit.dart';
@@ -48,7 +49,7 @@ class SyncLogSheet extends StatelessWidget {
     await Clipboard.setData(ClipboardData(text: text));
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.syncLogCopied)));
+      ..showSnackBar(AppSnackBar(content: Text(l10n.syncLogCopied)));
   }
 
   /// Hands the log to the system share sheet — the point of this screen is

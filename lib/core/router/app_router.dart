@@ -124,6 +124,7 @@ import '../preferences/balance_carousel_cubit.dart';
 import '../sync/presentation/cubit/sync_status_cubit.dart';
 import '../sync/presentation/pages/pending_sync_changes_page.dart';
 import '../sync/presentation/pages/sync_status_page.dart';
+import '../widgets/app_snack_bar.dart';
 import '../widgets/coming_soon_page.dart';
 
 /// App routes. Each feature registers its own here. Paths stay in Spanish
@@ -975,14 +976,14 @@ Future<void> _confirmSignOut(BuildContext context) async {
       break;
     case SignedOutButWipeFailed():
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        AppSnackBar(
           content:
               Text(AppLocalizations.of(context).authSignOutWipeErrorMessage),
         ),
       );
     case SignOutFailed():
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        AppSnackBar(
           content: Text(AppLocalizations.of(context).authSignOutFailedMessage),
         ),
       );

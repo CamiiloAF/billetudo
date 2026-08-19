@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../transactions/presentation/pages/transactions_page.dart';
 import '../../../transactions/presentation/widgets/transactions_link_mode.dart';
 import '../../../tutorials/domain/entities/tutorial_key.dart';
@@ -66,7 +67,7 @@ class DebtLinkModePage extends StatelessWidget {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).debtLinkError)),
+          AppSnackBar(content: Text(AppLocalizations.of(context).debtLinkError)),
         );
     }
   }

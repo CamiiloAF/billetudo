@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_snack_bar.dart';
 import '../../../widgets/data_action_row.dart';
 import '../../../widgets/page_header.dart';
 import '../cubit/sync_status_cubit.dart';
@@ -68,11 +69,11 @@ class SyncStatusPage extends StatelessWidget {
     switch (state.retryOutcome) {
       case SyncRetryOutcome.allUploaded:
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.syncRetrySuccess(state.retriedCount))),
+          AppSnackBar(content: Text(l10n.syncRetrySuccess(state.retriedCount))),
         );
       case SyncRetryOutcome.partial:
         messenger.showSnackBar(
-          SnackBar(
+          AppSnackBar(
             content: Text(l10n.syncRetryPartial),
             action: SnackBarAction(
               label: l10n.syncRetryPartialAction,

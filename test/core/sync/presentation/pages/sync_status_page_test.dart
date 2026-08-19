@@ -370,6 +370,46 @@ void main() {
       );
       expect(find.text('Ver detalle'), findsOneWidget);
     });
+
+    testWidgets('parcial: el aviso se va solo, no se queda pegado',
+        (tester) async {
+      final controller = StreamController<SyncStatusState>();
+      addTearDown(controller.close);
+      await pumpPage(
+        tester,
+        initial: state(syncState: SyncState.stalled, pending: 2),
+        stream: controller.stream,
+      );
+
+      controller.add(
+        SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: const SyncStatusSnapshot(
+            state: SyncState.stalled,
+            quarantinedCount: 2,
+          ),
+          pending: [change(0), change(1)],
+          retryOutcome: SyncRetryOutcome.partial,
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // Material persists any snackbar carrying an action until it is tapped,
+      // which left this one on screen forever. "Ver detalle" is an offer, not
+      // a toll: the news expires on its own.
+      //
+      // The dismiss timer is only armed once the entrance animation lands, so
+      // settle first and only then let the clock run past the four seconds.
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsNothing,
+      );
+    });
   });
 
   group('la lista es una muestra: 3 filas y un enlace contado', () {

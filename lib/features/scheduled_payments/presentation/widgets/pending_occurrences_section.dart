@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../cubit/pending_occurrences_cubit.dart';
 import '../cubit/pending_occurrences_state.dart';
 import 'scheduled_pending_card.dart';
@@ -32,7 +33,7 @@ class PendingOccurrencesSection extends StatelessWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(
+            AppSnackBar(
               content: Text(
                 undo.isSnooze
                     ? l10n.scheduledUndoSnoozeMessage

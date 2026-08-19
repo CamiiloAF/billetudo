@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 import '../../../../core/widgets/load_more_button.dart';
 import '../../../accounts/presentation/widgets/info_card.dart';
 import '../../../accounts/presentation/widgets/info_row.dart';
@@ -108,7 +109,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(
+              AppSnackBar(
                 content: Text(l10n.scheduledPaymentDetailConfirmNowError),
               ),
             );
@@ -146,7 +147,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           final messenger = ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar();
           final controller = messenger.showSnackBar(
-            SnackBar(
+            AppSnackBar(
               content: Text(l10n.scheduledUndoSnoozeMessage),
               action: SnackBarAction(
                 label: l10n.transactionsUndoAction,
@@ -176,7 +177,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           final messenger = ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar();
           final controller = messenger.showSnackBar(
-            SnackBar(
+            AppSnackBar(
               content: Text(l10n.scheduledRecoverMessage),
               action: SnackBarAction(
                 label: l10n.transactionsUndoAction,
@@ -200,7 +201,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(
+              AppSnackBar(
                 content: Text(l10n.transactionsUndoDeletedMessage),
                 action: SnackBarAction(
                   label: l10n.transactionsUndoAction,
