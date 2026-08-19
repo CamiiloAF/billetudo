@@ -34,15 +34,15 @@ class DebtBalance extends Equatable {
   /// must hold regardless of any reconciliation in between.
   final int totalIncreasesMinor;
 
-  /// Everything that pushed the debt up, minus the interest portion — the
-  /// denominator of [progress] and the source of [displayTotalMinor] since
-  /// the "Capital vs Interés separado" variant. Never negative in practice
-  /// (clamped defensively): a debt made entirely of interest with no
-  /// principal is a degenerate edge case, not a real one.
-  int get capitalTotalMinor {
-    final raw = totalIncreasesMinor - interestAccruedMinor;
-    return raw < 0 ? 0 : raw;
-  }
+  /// Alias of [displayTotalMinor] under the name [progress] actually uses as
+  /// its denominator — kept as a separate getter (not the field itself) so
+  /// call sites can read either name for what they mean: "the capital total"
+  /// in domain code, "what shows as de $X" in presentation. Cannot be derived
+  /// from [totalIncreasesMinor] minus [interestAccruedMinor] alone: it also
+  /// excludes `manualAdjustment` (reconciliation) entries regardless of sign
+  /// — see [displayTotalMinor]'s doc — so `DebtBalanceCalculator` computes it
+  /// directly instead of this getter re-deriving it.
+  int get capitalTotalMinor => displayTotalMinor;
 
   /// Everything that pushed the debt down since the debt's origin: every
   /// abono/cuota (cash or ledger) + downward adjustments (as a positive
@@ -54,20 +54,20 @@ class DebtBalance extends Equatable {
 
   /// What the hero/card show as "de $X": the total against which the current
   /// balance is measured. As of the "Capital vs Interés separado" variant
-  /// (`design-system/billetudo/pages/deudas.md`, 2026-08-19) this is
-  /// [capitalTotalMinor] — [totalIncreasesMinor] minus the interest portion
-  /// — not the full lifetime total anymore: interest accruing on its own,
-  /// with no abono from the user, used to drag the denominator up (and the
-  /// % down) even though the user did nothing wrong, which read as
-  /// "regression" and clashed with the app's positive tone. The lifetime
-  /// total (capital + interest) is still available via [totalIncreasesMinor]
-  /// for anything that needs the true historical figure. A balance
-  /// reconciliation (`manualAdjustment` written by `UpdateDebtBalance`,
-  /// HU-06) never resets either field: a downward correction is a decrease
-  /// (it lowers what is pending, exactly like an abono, but leaves the total
-  /// the user originally owed untouched); an upward correction is an
-  /// increase (new debt discovered at reconciliation time, so it correctly
-  /// grows the total).
+  /// (`design-system/billetudo/pages/deudas.md`, 2026-08-19) this is the
+  /// **capital total**: the opening principal + every real disbursement/abono
+  /// (cash or ledger) — it excludes BOTH the interest portion AND any
+  /// `manualAdjustment` (reconciliation, `UpdateDebtBalance`/HU-06)
+  /// regardless of sign. A reconciliation only ever corrects what is
+  /// *pending* against the bank's real figure — it is never new capital
+  /// borrowed, so "Actualizar saldo" must never move this number in either
+  /// direction, only [outstandingMinor]. (An earlier version let an upward
+  /// reconciliation grow this total, treating it as "new debt discovered" —
+  /// reverted: it made "de $X" drift away from the debt's actual saldo de
+  /// apertura, which the user expects to never move on its own unless they
+  /// explicitly edit it.) The lifetime total (capital + interest +
+  /// reconciliations) is still available via [totalIncreasesMinor] for
+  /// anything that needs the true historical figure, e.g. [rawOutstandingMinor].
   final int displayTotalMinor;
 
   /// Signed running balance. May be negative when abonos exceed what is owed;

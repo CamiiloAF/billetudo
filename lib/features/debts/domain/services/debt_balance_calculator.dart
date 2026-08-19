@@ -42,6 +42,18 @@ class DebtBalanceCalculator {
     var increases = principal;
     var decreases = 0;
     var interest = 0;
+    // Capital total: principal + real disbursements only. Deliberately
+    // excludes BOTH interest accrual AND manualAdjustment (reconciliation,
+    // HU-06) regardless of its sign — a reconciliation only ever corrects
+    // what is *pending* against the bank's real figure, it is never new
+    // capital borrowed, so it must never move "de $X" (see
+    // `DebtBalance.displayTotalMinor` and `pages/deudas.md`, "Capital vs
+    // Interés separado"). An earlier version of this logic let an upward
+    // reconciliation grow the capital total (treating it as "new debt
+    // discovered") — reverted: it made "de $X" drift away from the debt's
+    // actual saldo de apertura, which is the one thing the user expects to
+    // never move on its own.
+    var capitalIncreases = principal;
 
     for (final event in cashEvents) {
       final effect = DebtEventRules.cashEventEffect(
@@ -51,6 +63,9 @@ class DebtBalanceCalculator {
       );
       if (effect >= 0) {
         increases += effect;
+        // Every cash event is a real disbursement/abono, never interest or a
+        // reconciliation — always capital.
+        capitalIncreases += effect;
       } else {
         decreases += -effect;
       }
@@ -63,28 +78,25 @@ class DebtBalanceCalculator {
       }
       if (effect >= 0) {
         increases += effect;
+        if (entry.kind != DebtEntryKind.interestAccrual &&
+            entry.kind != DebtEntryKind.manualAdjustment) {
+          capitalIncreases += effect;
+        }
       } else {
         decreases += -effect;
       }
     }
 
-    // Capital-only total: everything that increased the debt, minus the
-    // interest portion — see `DebtBalance.displayTotalMinor`/`capitalTotalMinor`
-    // and `pages/deudas.md` ("Capital vs Interés separado"). Clamped
-    // defensively for the degenerate case of a debt made entirely of
-    // interest with no principal.
-    final capitalTotal = increases - interest < 0 ? 0 : increases - interest;
+    // Defensive clamp, mirroring the principal one above — capitalIncreases
+    // is built only from non-negative contributions on top of a non-negative
+    // principal, so this should never actually trigger.
+    final capitalTotal = capitalIncreases < 0 ? 0 : capitalIncreases;
 
     return DebtBalance(
       principalMinor: principal,
       totalIncreasesMinor: increases,
       totalDecreasesMinor: decreases,
       interestAccruedMinor: interest,
-      // Capital only (not the lifetime total anymore): a balance
-      // reconciliation (`manualAdjustment`, HU-06) still never resets it — a
-      // downward correction is a decrease (lowers what is pending, never the
-      // total), an upward one is an increase (new debt discovered, correctly
-      // grows the total) — it just excludes interest from what "de $X" shows.
       displayTotalMinor: capitalTotal,
     );
   }

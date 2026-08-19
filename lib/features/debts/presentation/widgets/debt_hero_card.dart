@@ -77,15 +77,23 @@ class DebtHeroCard extends StatelessWidget {
                         color: colors.textSecondary,
                       ),
                     ),
-                    Text(
-                      DebtFormat.amount(
-                          balance.outstandingMinor, debt.currency),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: colors.textPrimary,
+                    // COP amounts routinely run to hundreds of millions (9-10
+                    // digits + thousand separators), so a fixed font size
+                    // clips with an ellipsis on real balances even with the
+                    // pct column capped below — scale the text down instead
+                    // of ever cutting a digit off the number.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        DebtFormat.amount(
+                            balance.outstandingMinor, debt.currency),
+                        maxLines: 1,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: colors.textPrimary,
+                        ),
                       ),
                     ),
                     if (balance.displayTotalMinor > 0)
@@ -96,6 +104,8 @@ class DebtHeroCard extends StatelessWidget {
                             debt.currency,
                           ),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -106,30 +116,39 @@ class DebtHeroCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    l10n.debtPercentValue(pct),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: colors.primaryOnSoft,
+              // Capped so a longer subtitle (e.g. "pagado del capital") can
+              // never balloon this column and starve the amount of width —
+              // it wraps onto its own second line instead.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 84),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      l10n.debtPercentValue(pct),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: colors.primaryOnSoft,
+                      ),
                     ),
-                  ),
-                  Text(
-                    DebtFormat.progressWord(
-                      l10n,
-                      debt.direction,
-                      hasInterest: hasInterest,
+                    Text(
+                      DebtFormat.progressWord(
+                        l10n,
+                        debt.direction,
+                        hasInterest: hasInterest,
+                      ),
+                      textAlign: TextAlign.end,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textSecondary,
+                      ),
                     ),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

@@ -318,14 +318,18 @@ void main() {
       });
 
       test(
-        'reconciling downward (correcting an over-count) lowers what is '
-        'pending, not the total originally owed',
+        'reconciling upward (the bank reports more than tracked) grows what '
+        'is pending, never the saldo de apertura shown as "de \$X"',
         () {
           // Opening 98M, a 2M abono, then the user reconciles to 110M via
           // UpdateDebtBalance because the bank actually reports more owed
-          // than the ledger tracked (e.g. an untracked fee) — an upward
-          // correction, which legitimately grows the total: the app never
-          // knew about that extra 14M until the reconciliation surfaced it.
+          // than the ledger tracked (e.g. an untracked fee). Reverted
+          // (regression reported on a real debt): an upward reconciliation
+          // used to be treated as "new capital discovered" and grow the
+          // capital total too — but a reconciliation only ever corrects what
+          // is *pending*, it is not a disbursement, so "de $X" must stay
+          // exactly at the saldo de apertura the user sees on the edit form,
+          // unaffected in either direction.
           final debt = buildDebt(
             principalMinor: 98000000,
             createdAt: DateTime(2026, 1, 1),
@@ -353,9 +357,8 @@ void main() {
 
           expect(balance.totalIncreasesMinor, 112000000);
           expect(balance.outstandingMinor, 110000000);
-          // An upward reconciliation is an increase like any other: it
-          // grows the total the user owes, same as totalIncreasesMinor.
-          expect(balance.displayTotalMinor, 112000000);
+          expect(balance.displayTotalMinor, 98000000);
+          expect(balance.capitalTotalMinor, 98000000);
         },
       );
 
