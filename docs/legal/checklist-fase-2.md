@@ -199,6 +199,19 @@ accesibilidad, VPN, alarmas exactas, full-screen intent). No se afirma que no
 exista el requisito: no se encontró documentado. Se revisa en la consola al
 momento de enviar.
 
+**Pendiente concreto anotado el 2026-08-18, al llenar la ficha del Nivel 0 en
+Play Console:** en la sección "Mensajes" del formulario de Data Safety
+(`Correos electrónicos`, `SMS o MMS`, `Otros mensajes desde la app`) hoy se
+dejaron las tres casillas **sin marcar**, correcto para el binario actual, que
+no lee notificaciones. Cuando esta feature (19) se implemente, esa sección
+**no puede quedar en blanco**: `BIND_NOTIFICATION_LISTENER_SERVICE` da acceso
+al contenido de las notificaciones del sistema (incluidas potencialmente SMS
+si el usuario elige una app de mensajería como emisor), así que probablemente
+haya que marcar `Otros mensajes desde la app` como mínimo, cruzándolo con la
+categoría de "Información financiera" para los campos extraídos (monto,
+comercio, fecha, cuenta) que sí sincronizan (§4). Confirmar la casilla exacta
+contra el código en ese momento, no por analogía con esta nota.
+
 ---
 
 ## 4. La precisión que más fácil se rompe: foto local vs. metadatos que sí sincronizan

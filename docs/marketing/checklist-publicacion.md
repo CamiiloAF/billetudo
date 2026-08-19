@@ -28,7 +28,7 @@ Ninguna de las dos consolas deja enviar sin esto.
 |---|---|---|---|
 | 1 | **Política de privacidad publicada en una URL pública** | ✅ **Publicada el 2026-08-18** en https://camiiloaf.github.io/billetudo/ (HTTP 200, sin marcadores pendientes) | — |
 | 2 | **URL web de borrado de cuenta** | ✅ **Publicada** en https://camiiloaf.github.io/billetudo/borrar-cuenta.html (HTTP 200) | — |
-| 3 | **Excluir el Espacio Económico Europeo** | ⛔ La política publicada declara que billetudo **no se ofrece en el EEE** mientras no estén firmados los DPA de Sentry y PowerSync. Hay que excluir esos 30 países en la disponibilidad de **ambas** consolas — está dicho en público | Configurar disponibilidad, o firmar los dos DPA y republicar |
+| 3 | **Excluir el Espacio Económico Europeo** | ✅ **Excluido en ambas consolas** (2026-08-18), coherente con la política publicada, que declara que billetudo **no se ofrece en el EEE** mientras no estén firmados los DPA de Sentry y PowerSync | — |
 | 4 | **Decisión iPad** | ✅ **Resuelto: el v1 va iPhone-only.** `TARGETED_DEVICE_FAMILY = 1` (verificado con `xcodebuild -showBuildSettings`) y se quitaron las orientaciones de iPad del Info.plist. No hacen falta capturas de iPad. Añadir soporte más adelante es una versión nueva; quitarlo después de publicar habría perjudicado a quien ya la tuviera instalada | — |
 | 5 | **`PrivacyInfo.xcprivacy` en el target de iOS** | ✅ **Creado** en `ios/Runner/PrivacyInfo.xcprivacy` y añadido a Copy Bundle Resources. Declara las 11 categorías de §2.2, `NSPrivacyTracking = false` y dos Required Reason APIs (CA92.1, C617.1) | — |
 
@@ -139,10 +139,13 @@ opt-in: *nunca verás un anuncio que no hayas pedido tú*. Ver §6 del plan.
 1. ~~Publicar el sitio~~ → ✅ hecho el 2026-08-18; cerró los bloqueantes 1 y 2.
 2. ~~Decidir iPad~~ → ✅ iPhone-only.
 3. ~~Crear el `PrivacyInfo.xcprivacy`~~ → ✅ hecho.
-4. Al configurar la ficha, **excluir el EEE** (o firmar los dos DPA antes,
-   revertir §7 de la política y republicar con `web/build_site.py`).
-4. Cargar Play y App Store: los activos y el copy ya están listos y no dependen
-   de nada más.
+4. ~~Excluir el EEE~~ → ✅ hecho el 2026-08-18 en ambas consolas.
+5. ~~Cargar Play y App Store~~ → ✅ **fichas completas en ambas consolas
+   (2026-08-18)**: ficha principal, Data Safety / App Privacy, clasificación de
+   edad y contenido, declaración de anuncios ("No contiene anuncios"), notas
+   para App Review. Listas para enviar a revisión.
 
-Los pasos 1-3 son independientes entre sí: se pueden atacar en cualquier orden,
-o a la vez.
+Los pasos 1-4 eran independientes entre sí. Con las fichas cerradas, lo único
+que queda fuera de este documento es **subir el build** (`.aab` firmado para
+Play, `.ipa` para App Store vía Xcode/Transporter) y darle enviar — eso no es
+parte de la ficha, es el paso de publicación en sí.
