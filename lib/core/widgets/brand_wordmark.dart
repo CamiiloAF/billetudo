@@ -14,8 +14,8 @@ import '../theme/app_theme.dart';
 /// direction (see `docs/branding.md`).
 ///
 /// [fontSize] scales the whole wordmark (default fits a compact/inline use;
-/// splash uses the protagonist size of 56 per its spec). Tracking follows
-/// `MARCA.md`'s `-0.045em`.
+/// splash's `Brand Block` uses 44 per its spec, alongside the app icon).
+/// Tracking follows `MARCA.md`'s `-0.045em`.
 class BrandWordmark extends StatelessWidget {
   const BrandWordmark({this.fontSize = 32, super.key});
 

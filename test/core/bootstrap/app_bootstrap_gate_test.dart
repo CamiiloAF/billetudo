@@ -37,6 +37,12 @@ void main() {
 
     expect(find.text('app real'), findsOneWidget);
     expect(find.byType(SplashPage), findsNothing);
+
+    // `SplashPage` was disposed mid-entrance-animation (its own internal
+    // 150ms timer for the bottom block's delayed start hadn't fired yet) —
+    // that is expected on a "warm" launch now that the swap has no floor.
+    // Flush it so the test doesn't end with a pending timer.
+    await tester.pump(const Duration(milliseconds: 200));
   });
 
   testWidgets(
