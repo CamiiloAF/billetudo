@@ -62,7 +62,11 @@ void main() {
     (tester) async {
       final savedAt = DateTime(2026, 8, 7, 10, 30);
       when(() => cubit.state).thenReturn(
-        SaveCopyState(status: SaveCopyStatus.done, savedAt: savedAt),
+        SaveCopyState(
+          status: SaveCopyStatus.done,
+          savedAt: savedAt,
+          resultFilePath: '/tmp/billetudo-copia.billetudo.json',
+        ),
       );
 
       DateTime? result;
@@ -85,14 +89,44 @@ void main() {
       await tester.tap(find.byType(ElevatedButton));
       await tester.pump();
 
-      // `done` never renders — `SaveCopySheetBody`'s listener reacts to
-      // `resultFilePath`, which this stubbed state does not set, so nothing
-      // pops the sheet on its own here. Pop it directly to let `show`
-      // resolve, same as the real flow does once the share sheet closes.
+      // `done` renders `SaveCopyDoneView`'s "Guardar"/"Compartir" choice —
+      // pop it directly to let `show` resolve, same as the real flow does
+      // once the user picks one of the two actions.
       Navigator.of(tester.element(find.byType(SaveCopySheetBody))).pop();
       await tester.pumpAndSettle();
 
       expect(result, savedAt);
+    },
+  );
+
+  testWidgets(
+    'done renders the Guardar/Compartir choice and wires each action to '
+    'the cubit',
+    (tester) async {
+      when(() => cubit.state).thenReturn(
+        const SaveCopyState(
+          status: SaveCopyStatus.done,
+          resultFilePath: '/tmp/billetudo-copia.billetudo.json',
+        ),
+      );
+      when(() => cubit.saveToDevice(any())).thenAnswer((_) async {});
+      when(() => cubit.shareResult(any())).thenAnswer((_) async {});
+
+      await pumpTrigger(tester);
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Guardar'), findsOneWidget);
+      expect(find.text('Compartir'), findsOneWidget);
+
+      await tester.tap(find.text('Guardar'));
+      await tester.pump();
+      verify(() => cubit.saveToDevice('/tmp/billetudo-copia.billetudo.json')).called(1);
+      verifyNever(() => cubit.shareResult(any()));
+
+      await tester.tap(find.text('Compartir'));
+      await tester.pump();
+      verify(() => cubit.shareResult('/tmp/billetudo-copia.billetudo.json')).called(1);
     },
   );
 
