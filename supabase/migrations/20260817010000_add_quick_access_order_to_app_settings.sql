@@ -1,0 +1,11 @@
+-- schemaVersion 27 (HU-05b, docs/requirements/04-inicio.md): orden
+-- configurable del acceso rapido en Home.
+--
+-- Paridad explícita con lib/core/database/app_database.dart y
+-- lib/core/database/powersync_schema.dart — ver nota de memoria
+-- "migrar-columna-drift-tambien-en-supabase": subir schemaVersion en Drift
+-- no migra Postgres, y sin este ALTER TABLE el conector de PowerSync
+-- responde PGRST204 y la cola de subida queda quarantined.
+--
+-- Nullable: null = orden fijo por defecto (comportamiento actual).
+alter table public.app_settings add column if not exists quick_access_order text;

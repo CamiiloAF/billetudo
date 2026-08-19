@@ -33,12 +33,17 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenDeleteAccount,
     required this.onOpenComingSoon,
     required this.onOpenSyncStatus,
+    required this.onOpenQuickAccessOrder,
     super.key,
   });
 
   final VoidCallback onOpenLogin;
   final VoidCallback onOpenDeleteAccount;
   final ValueChanged<String> onOpenComingSoon;
+
+  /// Opens "Orden del acceso rápido" (`QuickAccessOrderPage`): reorders the
+  /// Home quick-access chips.
+  final VoidCallback onOpenQuickAccessOrder;
 
   /// Opens "Estado de sincronización" (HU-08). Only reachable with a session:
   /// without one there is no cloud to report on, and Ajustes offers
@@ -115,6 +120,13 @@ class SettingsPage extends StatelessWidget {
                         label: l10n.settingsCurrency,
                         sublabel: l10n.settingsCurrencySubtitle,
                         onTap: () => onOpenComingSoon(l10n.settingsCurrency),
+                      ),
+                      const SizedBox(height: 12),
+                      SettingsField(
+                        icon: LucideIcons.listOrdered,
+                        label: l10n.settingsQuickAccessOrder,
+                        sublabel: l10n.settingsQuickAccessOrderSubtitle,
+                        onTap: onOpenQuickAccessOrder,
                       ),
                       const SizedBox(height: 12),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(

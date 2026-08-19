@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../home/domain/entities/quick_access_item.dart';
+
 /// How [AppSettings.featuredBudgetId] is resolved for the Home hero card
 /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
 /// Mirrors the Drift `FeaturedBudgetMode` enum (`app_database.dart`) as text
@@ -28,6 +30,7 @@ class AppSettings extends Equatable {
     required this.onboardingCompleted,
     this.featuredBudgetId,
     this.featuredBudgetMode = FeaturedBudgetMode.automatic,
+    this.quickAccessOrder = QuickAccessItem.defaultOrder,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -36,7 +39,8 @@ class AppSettings extends Equatable {
         categoriesSeeded = false,
         onboardingCompleted = false,
         featuredBudgetId = null,
-        featuredBudgetMode = FeaturedBudgetMode.automatic;
+        featuredBudgetMode = FeaturedBudgetMode.automatic,
+        quickAccessOrder = QuickAccessItem.defaultOrder;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -46,7 +50,7 @@ class AppSettings extends Equatable {
   /// user deletes every category.
   final bool categoriesSeeded;
 
-  /// One-shot latch for the welcome flow (`docs/requirements/13-onboarding.md`).
+  /// One-shot latch for the welcome flow (`docs/requirements/fase-1/13-onboarding.md`).
   /// Turns on once the user reaches the closing screen and acts on it (or logs
   /// in via "Ya tengo cuenta"), or silently if the installation already had an
   /// active account when first evaluated. Never turns off again.
@@ -62,12 +66,21 @@ class AppSettings extends Equatable {
   /// Explicit resolution mode for [featuredBudgetId] — see [FeaturedBudgetMode].
   final FeaturedBudgetMode featuredBudgetMode;
 
+  /// Persisted order of the Home quick-access chips (`QuickAccessRow`).
+  /// Always a valid permutation of [QuickAccessItem.values] — never partial,
+  /// never duplicated — because `AppSettingsRepositoryImpl` (`data/`) falls
+  /// back to [QuickAccessItem.defaultOrder] before this entity is built
+  /// whenever the stored value is missing or malformed. Defaults to
+  /// [QuickAccessItem.defaultOrder], today's fixed order.
+  final List<QuickAccessItem> quickAccessOrder;
+
   AppSettings copyWith({
     bool? zeroBasedEnabled,
     bool? categoriesSeeded,
     bool? onboardingCompleted,
     String? featuredBudgetId,
     FeaturedBudgetMode? featuredBudgetMode,
+    List<QuickAccessItem>? quickAccessOrder,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
@@ -75,6 +88,7 @@ class AppSettings extends Equatable {
         onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
         featuredBudgetId: featuredBudgetId ?? this.featuredBudgetId,
         featuredBudgetMode: featuredBudgetMode ?? this.featuredBudgetMode,
+        quickAccessOrder: quickAccessOrder ?? this.quickAccessOrder,
       );
 
   @override
@@ -84,5 +98,6 @@ class AppSettings extends Equatable {
         onboardingCompleted,
         featuredBudgetId,
         featuredBudgetMode,
+        quickAccessOrder,
       ];
 }

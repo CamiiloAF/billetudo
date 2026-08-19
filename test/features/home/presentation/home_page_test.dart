@@ -18,10 +18,13 @@ import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart
 import 'package:billetudo/features/home/presentation/widgets/home_hero_skeleton.dart';
 import 'package:billetudo/features/home/presentation/widgets/month_selector_chip.dart';
 import 'package:billetudo/features/home/presentation/widgets/quick_access_row.dart';
+import 'package:billetudo/features/home/presentation/widgets/quick_access_settings_button.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_skeleton_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/month_picker_sheet.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/sync_status_sheet.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +36,9 @@ import 'package:mocktail/mocktail.dart';
 import '../home_fixtures.dart';
 
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
+
+class MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
 
 class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
 
@@ -68,6 +74,7 @@ void main() {
     VoidCallback? onOpenScheduledPayments,
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
+    VoidCallback? onOpenQuickAccessOrder,
     VoidCallback? onOpenLogin,
     VoidCallback? onAddTransaction,
     ValueChanged<String>? onOpenBudget,
@@ -81,6 +88,14 @@ void main() {
       initialState: state,
     );
 
+    final appSettingsCubit = MockAppSettingsCubit();
+    when(() => appSettingsCubit.state).thenReturn(const AppSettingsState());
+    whenListen(
+      appSettingsCubit,
+      const Stream<AppSettingsState>.empty(),
+      initialState: const AppSettingsState(),
+    );
+
     await tester.pumpWidget(
       MaterialApp(
         theme:
@@ -88,8 +103,11 @@ void main() {
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider<HomeCubit>.value(
-          value: homeCubit,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<HomeCubit>.value(value: homeCubit),
+            BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
+          ],
           child: HomePage(
             onAddTransaction: onAddTransaction ?? () {},
             onSeeAllTransactions: () {},
@@ -101,6 +119,7 @@ void main() {
             onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
             onOpenDebts: onOpenDebts ?? () {},
             onOpenReports: onOpenReports ?? () {},
+            onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
             onOpenLogin: onOpenLogin ?? () {},
             onOpenSyncStatus: () {},
           ),
@@ -206,6 +225,26 @@ void main() {
   });
 
   testWidgets(
+      'tocar la ruedita de QuickAccessRow invoca onOpenQuickAccessOrder, '
+      'no un callback de destino', (tester) async {
+    var orderTapped = 0;
+    var scheduledTapped = 0;
+
+    await pumpHome(
+      tester,
+      readyWith([buildActivity(categoryName: 'Mercado')]),
+      onOpenScheduledPayments: () => scheduledTapped++,
+      onOpenQuickAccessOrder: () => orderTapped++,
+    );
+
+    await tester.tap(find.byType(QuickAccessSettingsButton));
+    await tester.pump();
+
+    expect(orderTapped, 1);
+    expect(scheduledTapped, 0);
+  });
+
+  testWidgets(
       'tocar cada chip de QuickAccessRow invoca su callback propio '
       '(HU-05b)', (tester) async {
     var scheduledTapped = 0;
@@ -295,8 +334,7 @@ void main() {
   group('gate de cuenta en el FAB (15-gate-cuenta.md HU-02/HU-04)', () {
     void registerAccountGate({required bool hasAny}) {
       final hasAnyActiveAccount = MockHasAnyActiveAccount();
-      when(hasAnyActiveAccount.call)
-          .thenAnswer((_) => Stream.value(hasAny));
+      when(hasAnyActiveAccount.call).thenAnswer((_) => Stream.value(hasAny));
       getIt.registerFactory<HasAnyActiveAccount>(() => hasAnyActiveAccount);
       final watchActiveAccountsCount = MockWatchActiveAccountsCount();
       when(watchActiveAccountsCount.call)
@@ -310,8 +348,7 @@ void main() {
 
     testWidgets(
         'con al menos una cuenta activa, tocar el FAB invoca '
-        'onAddTransaction directamente, sin mostrar el puente',
-        (tester) async {
+        'onAddTransaction directamente, sin mostrar el puente', (tester) async {
       registerAccountGate(hasAny: true);
       var tapped = 0;
       await pumpHome(

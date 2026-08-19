@@ -4,6 +4,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_period_window.
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/home/domain/entities/quick_access_item.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
@@ -21,6 +22,7 @@ void main() {
   late MockClearFeaturedBudget clearFeaturedBudget;
   late MockWatchHelpEnabled watchHelpEnabled;
   late MockSetTutorialsEnabled setTutorialsEnabled;
+  late MockSetQuickAccessOrder setQuickAccessOrder;
 
   const enabledSettings = AppSettings(
     zeroBasedEnabled: true,
@@ -73,6 +75,7 @@ void main() {
     clearFeaturedBudget = MockClearFeaturedBudget();
     watchHelpEnabled = MockWatchHelpEnabled();
     setTutorialsEnabled = MockSetTutorialsEnabled();
+    setQuickAccessOrder = MockSetQuickAccessOrder();
     // Default: no active budgets; individual tests override.
     when(getActiveBudgets.call)
         .thenAnswer((_) => Stream.value(const Right([])));
@@ -90,6 +93,7 @@ void main() {
         clearFeaturedBudget,
         watchHelpEnabled,
         setTutorialsEnabled,
+        setQuickAccessOrder,
       );
 
   test(
@@ -205,5 +209,31 @@ void main() {
     act: (cubit) => cubit.setShowHelpOnSectionEntry(enabled: true),
     expect: () => <AppSettingsState>[],
     verify: (_) => verify(() => setTutorialsEnabled(enabled: true)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setQuickAccessOrder delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(
+      () => setQuickAccessOrder(const [
+        QuickAccessItem.reports,
+        QuickAccessItem.debts,
+        QuickAccessItem.scheduledPayments,
+      ]),
+    ).thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setQuickAccessOrder(const [
+      QuickAccessItem.reports,
+      QuickAccessItem.debts,
+      QuickAccessItem.scheduledPayments,
+    ]),
+    expect: () => <AppSettingsState>[],
+    verify: (_) => verify(
+      () => setQuickAccessOrder(const [
+        QuickAccessItem.reports,
+        QuickAccessItem.debts,
+        QuickAccessItem.scheduledPayments,
+      ]),
+    ).called(1),
   );
 }

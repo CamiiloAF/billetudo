@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../budgets/domain/entities/budget_with_progress.dart';
+import '../../../home/domain/entities/quick_access_item.dart';
 import '../../domain/entities/app_settings.dart';
 
 /// State of the account-level app settings (HU-06). Starts with the safe
@@ -47,6 +48,12 @@ class AppSettingsState extends Equatable {
   /// The manually-featured budget id, or `null` for "Automático"
   /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
   String? get featuredBudgetId => settings.featuredBudgetId;
+
+  /// Persisted order of Home's quick-access chips (`QuickAccessRow`), read
+  /// by both Home (to render the chips) and the reorder screen (to seed the
+  /// draggable list). Always a valid permutation — see
+  /// `AppSettings.quickAccessOrder`.
+  List<QuickAccessItem> get quickAccessOrder => settings.quickAccessOrder;
 
   AppSettingsState copyWith({
     AppSettings? settings,

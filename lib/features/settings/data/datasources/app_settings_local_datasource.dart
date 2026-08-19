@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../home/domain/entities/quick_access_item.dart';
 
 /// Drift access to the `AppSettings` singleton (id `'app'`).
 ///
@@ -37,7 +38,7 @@ class AppSettingsLocalDatasource {
         ),
       );
 
-  /// Marks the welcome flow (`docs/requirements/13-onboarding.md`) as
+  /// Marks the welcome flow (`docs/requirements/fase-1/13-onboarding.md`) as
   /// completed for this installation.
   Future<void> markOnboardingCompleted({required DateTime now}) => _write(
         AppSettingsCompanion(
@@ -59,7 +60,7 @@ class AppSettingsLocalDatasource {
       );
 
   /// Updates the singleton's [showHelpOnSectionEntry] (contextual-help
-  /// minitutorials, `docs/requirements/16-minitutoriales.md` HU-04).
+  /// minitutorials, `docs/requirements/fase-1/16-minitutoriales.md` HU-04).
   /// Paralelo a [setZeroBasedEnabled]. Note: `tutorials`' own
   /// `TutorialViewsLocalDatasource` also writes this same column directly
   /// (documented there) to avoid a cross-feature `data/` dependency — both
@@ -102,9 +103,25 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Persists the Home quick-access chips' order (`QuickAccessRow`) as a
+  /// comma-separated list of [order]'s `.name` values (e.g.
+  /// `'debts,scheduledPayments,reports'`). [order] is trusted to already be a
+  /// valid permutation — `SetQuickAccessOrder` (domain) is the one that
+  /// validates it; this datasource only serializes and writes.
+  Future<void> setQuickAccessOrder({
+    required List<QuickAccessItem> order,
+    required DateTime now,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          quickAccessOrder: Value(order.map((item) => item.name).join(',')),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
   /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
-  /// #14, docs/requirements/05-auth-sync.md) and SQLite rejects
+  /// #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite rejects
   /// `INSERT ... ON CONFLICT ... DO UPDATE` against a view outright
   /// (`cannot UPSERT a view`), whatever its `INSTEAD OF` triggers do.
   ///

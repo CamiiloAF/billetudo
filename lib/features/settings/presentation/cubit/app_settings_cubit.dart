@@ -6,12 +6,14 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/usecases/get_active_budgets.dart';
+import '../../../home/domain/entities/quick_access_item.dart';
 import '../../../tutorials/domain/usecases/set_tutorials_enabled.dart';
 import '../../../tutorials/domain/usecases/watch_help_enabled.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/usecases/clear_featured_budget.dart';
 import '../../domain/usecases/get_app_settings.dart';
 import '../../domain/usecases/set_featured_budget.dart';
+import '../../domain/usecases/set_quick_access_order.dart';
 import '../../domain/usecases/set_zero_based_enabled.dart';
 import 'app_settings_state.dart';
 
@@ -40,6 +42,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._clearFeaturedBudget,
     this._watchHelpEnabled,
     this._setTutorialsEnabled,
+    this._setQuickAccessOrder,
   ) : super(const AppSettingsState(isLoaded: false));
 
   final GetAppSettings _getAppSettings;
@@ -49,6 +52,7 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   final ClearFeaturedBudget _clearFeaturedBudget;
   final WatchHelpEnabled _watchHelpEnabled;
   final SetTutorialsEnabled _setTutorialsEnabled;
+  final SetQuickAccessOrder _setQuickAccessOrder;
 
   StreamSubscription<Result<AppSettings>>? _settingsSubscription;
   StreamSubscription<Result<List<BudgetWithProgress>>>? _budgetsSubscription;
@@ -108,6 +112,15 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   /// stored value the same way [setZeroBasedEnabled] does.
   Future<void> setShowHelpOnSectionEntry({required bool enabled}) =>
       _setTutorialsEnabled(enabled: enabled);
+
+  /// Reorders Home's quick-access chips (`QuickAccessRow`), from the reorder
+  /// screen in Ajustes. [order] must be an exact permutation of
+  /// [QuickAccessItem.values] — [SetQuickAccessOrder] enforces that and
+  /// leaves the persisted order untouched otherwise. The settings stream
+  /// re-emits the stored value, so no manual state juggling is needed here
+  /// either.
+  Future<Result<Unit>> setQuickAccessOrder(List<QuickAccessItem> order) =>
+      _setQuickAccessOrder(order);
 
   @override
   Future<void> close() async {
