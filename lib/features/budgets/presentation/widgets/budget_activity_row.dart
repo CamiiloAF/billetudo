@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
@@ -13,6 +15,14 @@ import '../../domain/entities/budget_activity_item.dart';
 /// `$background` inside the activity section (`NloPT/Abx0H`).
 ///
 /// Tappable, same as `Transaction Row`: opens the real transaction's detail.
+///
+/// [BudgetActivityItem.isNettedTransfer] draws a fixed override instead of
+/// the usual category appearance (`l3si5`/`HEgoB`, "Fila especial —
+/// Transferencia interna neteada"): icon-wrap `$primary-soft` +
+/// `arrow-left-right` in `$primary-on-soft`, title "Transferencia interna",
+/// subtitle "‹origen› ↔ ‹destino› · ‹fecha›" and `$0` in `$text-secondary` —
+/// never the green/red family, since the movement cancels itself out for
+/// this budget.
 class BudgetActivityRow extends StatelessWidget {
   const BudgetActivityRow({
     required this.item,
@@ -29,6 +39,8 @@ class BudgetActivityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final isNetted = item.isNettedTransfer;
 
     return InkWell(
       onTap: () => onTap(item.id),
@@ -38,14 +50,19 @@ class BudgetActivityRow extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color:
-                  CategoryAppearance.softColorFor(colors, item.categoryColor),
+              color: isNetted
+                  ? colors.primarySoft
+                  : CategoryAppearance.softColorFor(colors, item.categoryColor),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              CategoryAppearance.iconFor(item.categoryIcon),
+              isNetted
+                  ? LucideIcons.arrowLeftRight
+                  : CategoryAppearance.iconFor(item.categoryIcon),
               size: 20,
-              color: CategoryAppearance.colorFor(colors, item.categoryColor),
+              color: isNetted
+                  ? colors.primaryOnSoft
+                  : CategoryAppearance.colorFor(colors, item.categoryColor),
             ),
           ),
           const SizedBox(width: 12),
@@ -54,7 +71,7 @@ class BudgetActivityRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
+                  isNetted ? l10n.budgetActivityNettedTransferTitle : item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleSmall?.copyWith(
@@ -82,7 +99,7 @@ class BudgetActivityRow extends StatelessWidget {
             style: theme.textTheme.titleMedium?.copyWith(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
+              color: isNetted ? colors.textSecondary : colors.textPrimary,
             ),
           ),
         ],
@@ -104,17 +121,29 @@ class BudgetActivityRow extends StatelessWidget {
   /// Pencil frame yet; it follows the same `$text-primary`, unsigned-by-color
   /// convention, only flipping the sign character to match the calculator's
   /// own subtraction in `BudgetProgressCalculator.spentIn`. Do not "fix"
-  /// either sign back to unsigned.
+  /// either sign back to unsigned. A netted transfer row is the one
+  /// exception to "signed": it always reads unsigned `$0`, in
+  /// `$text-secondary` (verified against `l3si5/HEgoB/a1Pwa`) — it is neither
+  /// an expense nor an income for this budget.
   String _amountLabel() {
+    if (item.isNettedTransfer) {
+      return const MoneyFormatter()
+          .formatSymbol(0, currencyCode: item.currency);
+    }
     final amount = const MoneyFormatter()
         .formatSymbol(item.amountMinor, currencyCode: item.currency);
     return item.isIncome ? '+$amount' : '-$amount';
   }
 
   /// "Cuenta · Fecha" (`DKJaf/pjX7P`); the note tags along when there is one so
-  /// it is not lost from the list.
+  /// it is not lost from the list. A netted transfer reads
+  /// "‹origen› ↔ ‹destino› · ‹fecha›" instead (`l3si5/HEgoB/pjX7P`), never a
+  /// note — the row already represents two accounts, not one movement.
   String _subtitle() {
     final date = DateFormat.yMMMd('es_CO').format(item.date);
+    if (item.isNettedTransfer) {
+      return '${item.accountName} ↔ ${item.secondaryAccountName} · $date';
+    }
     final base = '${item.accountName} · $date';
     final note = item.note;
     return note == null || note.isEmpty ? base : '$base · $note';

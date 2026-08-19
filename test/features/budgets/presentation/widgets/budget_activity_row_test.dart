@@ -1,3 +1,4 @@
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_activity_item.dart';
 import 'package:billetudo/features/budgets/presentation/widgets/budget_activity_row.dart';
@@ -25,6 +26,9 @@ void main() {
       tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: BudgetActivityRow(item: item, onTap: onTap ?? (_) {}),
           ),
@@ -73,6 +77,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: BudgetActivityRow(item: incomeItem, onTap: (_) {}),
         ),
@@ -81,5 +88,54 @@ void main() {
 
     expect(find.textContaining(r'+$10.000'), findsOneWidget);
     expect(find.textContaining(r'-$10.000'), findsNothing);
+  });
+
+  group('a netted internal transfer row (isNettedTransfer=true)', () {
+    final nettedItem = BudgetActivityItem(
+      id: 'tx-transfer',
+      title: 'ignored',
+      accountName: 'Ahorros',
+      secondaryAccountName: 'Corriente',
+      amountMinor: 0,
+      currency: 'COP',
+      date: DateTime(2025, 7, 28),
+      isNettedTransfer: true,
+    );
+
+    Future<void> pumpNetted(WidgetTester tester) => tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light(),
+            locale: const Locale('es'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: BudgetActivityRow(item: nettedItem, onTap: (_) {}),
+            ),
+          ),
+        );
+
+    testWidgets('shows the fixed title, never the item.title', (
+      tester,
+    ) async {
+      await pumpNetted(tester);
+
+      expect(find.text('Transferencia interna'), findsOneWidget);
+      expect(find.text('ignored'), findsNothing);
+    });
+
+    testWidgets('the subtitle reads "origen ↔ destino · fecha"', (
+      tester,
+    ) async {
+      await pumpNetted(tester);
+
+      expect(find.textContaining('Ahorros ↔ Corriente'), findsOneWidget);
+      expect(find.textContaining('jul'), findsOneWidget);
+    });
+
+    testWidgets('the amount is unsigned \$0, never +/-', (tester) async {
+      await pumpNetted(tester);
+
+      expect(find.text(r'$0'), findsOneWidget);
+    });
   });
 }

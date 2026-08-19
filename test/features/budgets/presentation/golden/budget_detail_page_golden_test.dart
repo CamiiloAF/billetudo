@@ -205,6 +205,25 @@ void main() {
       );
     });
 
+    testWidgets(
+        'detalle con una transferencia interna neteada en la actividad '
+        '($suffix)', (tester) async {
+      final entry = healthyEntry;
+      await golden(
+        tester,
+        readyState(
+          entry,
+          view: BudgetPeriodView(
+            window: entry.window,
+            progress: entry.progress,
+            activity: buildActivityWithNettedTransfer(),
+          ),
+        ),
+        'detail_netted_transfer_$suffix',
+        brightness: brightness,
+      );
+    });
+
     testWidgets('detalle con "Ver más" (actividad paginada) ($suffix)',
         (tester) async {
       await golden(

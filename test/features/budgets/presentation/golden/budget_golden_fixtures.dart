@@ -339,6 +339,34 @@ List<BudgetActivityItem> buildActivity({int count = 4}) {
   ];
 }
 
+/// Activity with a presupuestable-transfer netted row leading the list, as
+/// designed in `l3si5`/`HEgoB` ("Fila especial — Transferencia interna
+/// neteada"): "Transferencia interna" (`arrow-left-right`, `$primary-soft`,
+/// `$0`) followed by one plain expense, matching the frame's 2-row
+/// "Movimientos del periodo".
+List<BudgetActivityItem> buildActivityWithNettedTransfer() => [
+      BudgetActivityItem(
+        id: 'tx-transferencia-ahorro-corriente',
+        title: 'ignored — the row draws its own fixed title',
+        accountName: 'Ahorros',
+        secondaryAccountName: 'Corriente',
+        amountMinor: 0,
+        currency: 'COP',
+        date: DateTime(2025, 7, 28),
+        isNettedTransfer: true,
+      ),
+      BudgetActivityItem(
+        id: 'tx-carulla',
+        title: 'Carulla',
+        accountName: 'Nequi',
+        categoryIcon: 'shopping-cart',
+        categoryColor: 'mint',
+        amountMinor: 9230000,
+        currency: 'COP',
+        date: DateTime(2025, 7, 12),
+      ),
+    ];
+
 /// The detail's period view for [entry], with [activityCount] rows and
 /// [scheduledItems] behind [BudgetProgress.scheduledMinor] (HU-12, empty by
 /// default so existing callers are unaffected).

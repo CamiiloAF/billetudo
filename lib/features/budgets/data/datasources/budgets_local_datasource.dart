@@ -283,22 +283,28 @@ class BudgetsLocalDatasource {
   /// [BudgetExpenseRow.isIncome] is what tells
   /// `BudgetProgressCalculator.spentIn` to subtract instead of add.
   ///
-  /// **Destination side pending:** the plan's model is symmetric (the same
-  /// transfer should also count as *income* for a budget scoped to the
-  /// destination account), but nothing in the budgets domain today models a
-  /// per-scope "income reduces this budget" concept — `ZeroBasedSummary`
-  /// only sums a single global "income this month" figure, not income
-  /// filtered by account/category scope. Modeling that destination side
-  /// would mean inventing a new mechanism with no existing base, which is out
-  /// of scope here (see the task's explicit "don't invent a parallel
-  /// income-to-budget feature" guidance). Left as a documented gap — see
-  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3 and
-  /// `design-system/billetudo/pages/transacciones.md`.
+  /// **Destination side:** a budgetable transfer also emits a second,
+  /// **destination-side row** — same id suffixed `-dest` (so it never
+  /// collides with the origin row's id in an activity list keyed by id),
+  /// [BudgetExpenseRow.accountId] set to the transfer's destination account,
+  /// and [BudgetExpenseRow.isIncome] `true`. It flows through the exact same
+  /// scope-matching/`spentIn` pipeline as a presupuestable income, so a
+  /// budget scoped to the destination account sees its spend reduced, and a
+  /// budget whose scope spans both origin and destination (or a global
+  /// scope, which is every account) nets the transfer to zero automatically
+  /// — no new mechanism, see `docs/requirements/fase-1/06-presupuestos.md` and
+  /// `docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3.
   Stream<List<BudgetExpenseRow>> watchExpenses() {
+    final transferAccounts = _db.alias(_db.accounts, 'transfer_accounts');
+
     final query = _db.select(_db.transactions).join([
       innerJoin(
         _db.accounts,
         _db.accounts.id.equalsExp(_db.transactions.accountId),
+      ),
+      leftOuterJoin(
+        transferAccounts,
+        transferAccounts.id.equalsExp(_db.transactions.transferAccountId),
       ),
       leftOuterJoin(
         _db.categories,
@@ -317,7 +323,7 @@ class BudgetsLocalDatasource {
 
     return query.watch().map(
           (rows) => [
-            for (final row in rows)
+            for (final row in rows) ...[
               BudgetExpenseRow(
                 id: row.readTable(_db.transactions).id,
                 accountId: row.readTable(_db.transactions).accountId,
@@ -333,6 +339,25 @@ class BudgetsLocalDatasource {
                 isIncome:
                     row.readTable(_db.transactions).type == EntryType.income,
               ),
+              if (row.readTable(_db.transactions).type == EntryType.transfer &&
+                  row.readTable(_db.transactions).countsInBudget &&
+                  row.readTable(_db.transactions).transferAccountId != null)
+                BudgetExpenseRow(
+                  id: '${row.readTable(_db.transactions).id}-dest',
+                  accountId: row.readTable(_db.transactions).transferAccountId!,
+                  categoryId: row.readTable(_db.transactions).categoryId,
+                  amountMinor: row.readTable(_db.transactions).amountMinor,
+                  currency: row.readTable(_db.transactions).currency,
+                  date: row.readTable(_db.transactions).date,
+                  accountName: row.readTableOrNull(transferAccounts)?.name ??
+                      row.readTable(_db.accounts).name,
+                  categoryName: row.readTableOrNull(_db.categories)?.name,
+                  categoryIcon: row.readTableOrNull(_db.categories)?.icon,
+                  categoryColor: row.readTableOrNull(_db.categories)?.color,
+                  note: row.readTable(_db.transactions).note,
+                  isIncome: true,
+                ),
+            ],
           ],
         );
   }
