@@ -56104,6 +56104,18 @@
                               "fontFamily": "$font-body",
                               "fontSize": 12,
                               "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "hqK9A",
+                              "name": "Email",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "camila@gmail.com",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
                             }
                           ]
                         }
@@ -57813,6 +57825,18 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "Sesión iniciada con Google",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "S8Xod",
+                              "name": "Email",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "camila@gmail.com",
                               "fontFamily": "$font-body",
                               "fontSize": 12,
                               "fontWeight": "500"
@@ -237140,28 +237164,461 @@
     },
     {
       "type": "frame",
-      "id": "nNxH9",
-      "x": 8740,
-      "y": 19420,
-      "name": "🔖 REVIEW MARKER — Conflicto de cuenta (Oscuro)",
+      "id": "OgoAn",
+      "x": 68760,
+      "y": -3578,
+      "name": "Sync — Lista completa · Descartar todo (Link bajo resumen) (Claro)",
+      "context": "VARIANTE B — entrada a 'Descartar todo' via link de texto bajo el resumen ('89 cambios esperando...'), alineado a la derecha. Mismo lenguaje visual que el resto de acciones secundarias de esta familia (peso 700, icono 15px + label, tap target 44+ de alto via padding [15,8] — igual criterio que 'Ver los 89'/SH Link), pero coloreado $expense-text por ser destructivo (no $text-primary/$primary como los links de navegacion — aqui SI hay una accion destructiva real). Incluye el conteo en el propio label ('Descartar todo (89)'), a diferencia de la Variante A: el usuario ve de entrada cuantos cambios se verian afectados antes de tocar.\n\nAl tocar, abre 'Sync Sheet — Confirmar Descartar Todo' (nueva hoja, copia pluralizada de qZvmL).\n\nNUEVA NECESIDAD (2026-08-25), NO documentada aun en sincronizacion.md: 'Descartar' individual sigue igual (hoja de detalle r1qQYc, umbral attempts>=3). Esta es una accion ADICIONAL de bulk para el caso de cientos de pendientes. Sin gating de umbral aqui tampoco — protegida por la hoja de confirmacion irreversible. Ver Variante A (VlAuC) para la alternativa via icono en el Page Header.\n\nPENDIENTE: esta pantalla documentaba 'SIN ACCIONES MASIVAS' y 'SIN DESCARTAR EN ESTA PANTALLA' como reglas aprobadas — esta variante las contradice a proposito por el nuevo requerimiento. Si se aprueba, corregir sincronizacion.md (no se toca aun).",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
       "width": 390,
-      "height": 40,
-      "fill": "#FF3B30",
-      "cornerRadius": 8,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
       "layout": "vertical",
-      "justifyContent": "center",
-      "alignItems": "center",
       "children": [
         {
-          "type": "text",
-          "id": "W9KMz",
-          "name": "Badge Label",
-          "fill": "#FFFFFF",
-          "content": "🔖 EN REVISION — Conflicto de cuenta (zSzs7)",
-          "textAlign": "center",
-          "fontFamily": "Inter",
-          "fontSize": 13,
-          "fontWeight": "700"
+          "id": "wimHS",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "g1glU3",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Header",
+          "width": "fill_container",
+          "descendants": {
+            "oilB0": {
+              "icon": "arrow-left"
+            },
+            "QnxB2": {
+              "content": "Cambios sin subir"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "RDNjK",
+              "name": "Action Spacer",
+              "width": 44,
+              "height": 44
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "rvURa",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            6,
+            20,
+            28,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "w8u6Bo",
+              "name": "Resumen",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "89 cambios esperando · el más antiguo, desde hace 3 días",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 13,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "Ly00T",
+              "name": "Descartar Todo Link",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CXdn5",
+                  "name": "Link",
+                  "gap": 4,
+                  "padding": [
+                    15,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "d5bOcp",
+                      "name": "Icon",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "trash-2",
+                      "library": "lucide",
+                      "fill": "$expense-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "K5je7",
+                      "name": "Label",
+                      "fill": "$expense-text",
+                      "content": "Descartar todo (89)",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ZLhcz",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Movimiento · Café con Ana",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "receipt"
+                },
+                "sP3fj": {
+                  "content": "Movimiento · Café con Ana"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 12 jul · 8 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "RftLO",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Pago de deuda · Crédito vehicular",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "hand-coins"
+                },
+                "sP3fj": {
+                  "content": "Pago de deuda · Crédito vehicular"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 12 jul · 8 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "Crnje",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Aporte a meta · Viaje a Cartagena",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "target"
+                },
+                "sP3fj": {
+                  "content": "Aporte a meta · Viaje a Cartagena"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 13 jul · 6 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "LJxun",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Movimiento · Mercado de la semana",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "receipt"
+                },
+                "sP3fj": {
+                  "content": "Movimiento · Mercado semanal"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 13 jul · 6 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "zkFzl",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Cuenta · Ahorros Bancolombia",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "wallet"
+                },
+                "sP3fj": {
+                  "content": "Cuenta · Ahorros Bancolombia"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde hace unos minutos · 1 intento"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "E40ZEV",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Movimiento · Gasolina",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "receipt"
+                },
+                "sP3fj": {
+                  "content": "Movimiento · Gasolina"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 14 jul · 5 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "O80BA",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Pago programado · Arriendo",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "repeat"
+                },
+                "sP3fj": {
+                  "content": "Pago programado · Arriendo"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde hace 10 minutos · 2 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "PTmyP",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Movimiento · Cine con Sofía",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "receipt"
+                },
+                "sP3fj": {
+                  "content": "Movimiento · Cine con Sofía"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 14 jul · 5 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "Q4hG2E",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Presupuesto · Comida fuera",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "chart-pie"
+                },
+                "sP3fj": {
+                  "content": "Presupuesto · Comida fuera"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 15 jul · 4 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "AB4zq",
+              "type": "ref",
+              "ref": "VtiBc",
+              "name": "Pending · Movimiento · Farmacia",
+              "width": "fill_container",
+              "descendants": {
+                "W7CR6": {
+                  "icon": "receipt"
+                },
+                "sP3fj": {
+                  "content": "Movimiento · Farmacia"
+                },
+                "t80B5": {
+                  "content": "Pendiente desde el 15 jul · 4 intentos"
+                },
+                "z8DWW": {
+                  "enabled": true
+                },
+                "ni93C": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "yOenD",
+      "x": 0,
+      "y": 0,
+      "context": "NUEVA HOJA (2026-08-25) — confirmacion de 'Descartar todo' (bulk), pedida porque descartar de a uno es inviable con cientos de pendientes (caso real ~500). Reusa EXACTAMENTE el mismo patron que qZvmL (Confirmar Descartar individual): PqTUt (Bottom Sheet Base) + XPjIZ (Sheet Icon Header, mismo icono/colores $expense-soft/$expense) + Ot4yI (Sheet Buttons Row, mismo boton $expense 'trash-2'). Solo cambia el copy, pluralizado con el conteo explicito ('89' es placeholder de mockup — en Flutter es el conteo real de `quarantinedChanges.length`).\n\nDeja explicito, igual que la version individual: (a) irreversible, (b) borra SOLO el dato local de ESAS operaciones especificas (no todos los datos del telefono) — el copy dice 'esas operaciones especificas' en plural para que quede claro que sigue siendo acotado, no un borrado general de la cuenta.\n\nDestino: se abre desde el link 'Descartar todo (N)' bajo el resumen de la lista completa de pendientes (OgoAn — Variante B, elegida por el usuario; la Variante A con icono en header, VlAuC, fue descartada y borrada del canvas).\n\nPENDIENTE DE DISENO: comportamiento tras confirmar (animacion de salida de las filas, snackbar de resultado si alguna operacion fallo al borrarse localmente, que pasa si la app hace bulk-delete mientras el usuario sigue viendo la lista) — no dibujado, mismo nivel de 'no disenado' que ya declara sincronizacion.md para el descarte individual.\n\nNO SE DOCUMENTA AUN en sincronizacion.md (regla del proyecto: solo tras aprobacion explicita del usuario).",
+      "width": "fit_content(0)",
+      "height": "fit_content(0)"
+    },
+    {
+      "type": "frame",
+      "id": "EtwDY",
+      "x": 69210,
+      "y": -3578,
+      "name": "Sync Sheet — Confirmar Descartar Todo (Claro)",
+      "context": "NUEVA HOJA (2026-08-25) — confirmacion de 'Descartar todo' (bulk), pedida porque descartar de a uno es inviable con cientos de pendientes (caso real ~500). Reusa EXACTAMENTE el mismo patron que qZvmL (Confirmar Descartar individual): PqTUt (Bottom Sheet Base) + XPjIZ (Sheet Icon Header, mismo icono/colores $expense-soft/$expense) + Ot4yI (Sheet Buttons Row, mismo boton $expense 'trash-2'). Solo cambia el copy, pluralizado con el conteo explicito ('89' es placeholder de mockup — en Flutter es el conteo real de `quarantinedChanges.length`).\n\nDeja explicito, igual que la version individual: (a) irreversible, (b) borra SOLO el dato local de ESAS operaciones especificas (no todos los datos del telefono) — el copy dice 'esas operaciones especificas' en plural para que quede claro que sigue siendo acotado, no un borrado general de la cuenta.\n\nDestino: se abre desde el link 'Descartar todo (N)' bajo el resumen de la lista completa de pendientes (OgoAn — Variante B, elegida por el usuario; la Variante A con icono en header, VlAuC, fue descartada y borrada del canvas).\n\nPENDIENTE DE DISENO: comportamiento tras confirmar (animacion de salida de las filas, snackbar de resultado si alguna operacion fallo al borrarse localmente, que pasa si la app hace bulk-delete mientras el usuario sigue viendo la lista) — no dibujado, mismo nivel de 'no disenado' que ya declara sincronizacion.md para el descarte individual.\n\nNO SE DOCUMENTA AUN en sincronizacion.md (regla del proyecto: solo tras aprobacion explicita del usuario).",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "cornerRadius": 40,
+      "layout": "none",
+      "children": [
+        {
+          "id": "Q32NsT",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Bottom Sheet",
+          "x": 0,
+          "y": 62,
+          "width": 390,
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "M2g2H",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 16,
+              "padding": [
+                8,
+                4,
+                0,
+                4
+              ],
+              "children": [
+                {
+                  "id": "LIRUJ",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$expense-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "triangle-alert",
+                      "fill": "$expense"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "¿Descartar los 89 cambios pendientes?"
+                    },
+                    "FxD3p": {
+                      "content": "Se van a descartar 89 cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca."
+                    }
+                  }
+                },
+                {
+                  "id": "zbVZ8",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Botones",
+                  "width": "fill_container",
+                  "descendants": {
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Descartar todo"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       ]
     }
