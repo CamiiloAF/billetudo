@@ -73,6 +73,7 @@ class SyncStatusHero extends StatelessWidget {
       icon: _ctaEnabled ? LucideIcons.refreshCw : _inertIcon,
       onPressed: onRetry,
       enabled: _ctaEnabled,
+      spinning: !_ctaEnabled && _isLoadingIcon,
     );
 
     return switch (screenState) {
@@ -97,6 +98,7 @@ class SyncStatusHero extends StatelessWidget {
             icon: _ctaEnabled ? LucideIcons.refreshCw : _inertIcon,
             onPressed: onRetry,
             enabled: _ctaEnabled,
+            spinning: !_ctaEnabled && _isLoadingIcon,
           ),
         ),
       // Amber like `attention`, but its own copy: nothing is held back here,
@@ -179,8 +181,11 @@ class SyncStatusHero extends StatelessWidget {
           ? l10n.syncSyncingCta
           : l10n.syncSyncNowCta;
 
-  IconData get _inertIcon =>
-      state.isRetrying || state.syncState == SyncState.syncing
-          ? LucideIcons.loaderCircle
-          : LucideIcons.refreshCw;
+  IconData get _inertIcon => _isLoadingIcon ? LucideIcons.loaderCircle : LucideIcons.refreshCw;
+
+  /// Whether `_inertIcon` currently resolves to the "in progress" glyph —
+  /// the only case that should spin, never the static `refresh-cw` other
+  /// inert states use.
+  bool get _isLoadingIcon =>
+      state.isRetrying || state.syncState == SyncState.syncing;
 }

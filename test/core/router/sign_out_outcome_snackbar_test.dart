@@ -27,6 +27,8 @@ import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -58,6 +60,9 @@ class MockWatchFeaturedBudgetProgress extends Mock
 class MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
+
+class MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -119,8 +124,7 @@ void main() {
     final watchAuthSession = MockWatchAuthSession();
     final watchSyncStatus = MockWatchSyncStatus();
     final restoreTransaction = MockRestoreTransaction();
-    final watchFeaturedBudgetProgress =
-        MockWatchFeaturedBudgetProgress();
+    final watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     final getBudgetById = MockGetBudgetById();
     final getBudgetProgress = MockGetBudgetProgress();
     when(watchAccounts.call).thenAnswer(
@@ -168,7 +172,20 @@ void main() {
         ),
       )
       ..registerFactory<SignOutWithLocalDataChoice>(() => signOutWithChoice)
-      ..registerFactory<ThemeModeCubit>(fakeThemeModeCubit);
+      ..registerFactory<ThemeModeCubit>(fakeThemeModeCubit)
+      // La rama `/inicio` resuelve `AppSettingsCubit` desde `getIt` para el
+      // orden del acceso rápido; sin registrarlo, Home no llega a construirse.
+      ..registerFactory<AppSettingsCubit>(() {
+        final cubit = MockAppSettingsCubit();
+        when(() => cubit.state).thenReturn(const AppSettingsState());
+        whenListen(
+          cubit,
+          const Stream<AppSettingsState>.empty(),
+          initialState: const AppSettingsState(),
+        );
+        when(cubit.start).thenAnswer((_) async {});
+        return cubit;
+      });
   });
 
   tearDown(getIt.reset);

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../features/auth/domain/usecases/wait_for_first_sync_before_seeding.dart';
 import '../features/categories/domain/usecases/seed_default_categories.dart';
 import '../features/onboarding/domain/usecases/should_show_onboarding.dart';
 import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
@@ -107,7 +108,7 @@ Future<Widget Function()> _initApp(
 
   // Also must run before `configureDependencies()`: the DI graph exposes
   // `AppDatabase` synchronously, built on top of this connection (see
-  // `register_module.dart` and decision #6, docs/requirements/05-auth-sync.md).
+  // `register_module.dart` and decision #6, docs/requirements/fase-1/05-auth-sync.md).
   await openPowerSyncDatabase();
 
   configureDependencies();
@@ -115,8 +116,32 @@ Future<Widget Function()> _initApp(
   final crash = getIt<CrashReporter>();
   await crash.init();
 
+  // Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): must run
+  // before ANY local seed below. `SeedDefaultCategories()()` just below is
+  // the first use case that touches `AppDatabase` — Drift only opens (and
+  // runs its `onCreate`/`onUpgrade` migrations, including
+  // `_seedAppSettings()`) lazily, on its first real query. If this device
+  // already has a restorable Supabase session but its local PowerSync store
+  // is empty or was reset, seeding local defaults before PowerSync's first
+  // sync downloads the user's real values ends up uploading those defaults
+  // over the real server state — PostgREST
+  // `upsert(...resolution=merge-duplicates)` silently overwrites any column
+  // present in the seed payload. A timeout
+  // keeps a signed-in device with no network at this exact launch from
+  // hanging forever — `waitForFirstSync` resolves instantly for the common
+  // case of a device that already completed a sync before (PowerSync
+  // persists that locally), so the timeout only ever fires for the rare
+  // double coincidence this fix targets, and seeding proceeds anyway when it
+  // does: an unprotected write is still better than an app that never starts.
+  final firstSyncResult = await getIt<WaitForFirstSyncBeforeSeeding>()();
+  if (firstSyncResult case Left(value: final failure)) {
+    unawaited(
+      crash.recordFailure(failure, context: 'waitForFirstSyncBeforeSeeding'),
+    );
+  }
+
   // Stopgap: seed the default categories on every launch until onboarding
-  // (HU-06, docs/requirements/13-onboarding.md) owns this — the user decided
+  // (HU-06, docs/requirements/fase-1/13-onboarding.md) owns this — the user decided
   // to load them from main for now. `SeedDefaultCategories` is idempotent
   // (no-op when any category already exists, including the fast path where
   // the `categoriesSeeded` latch is already on — no network call at all), so
@@ -124,7 +149,7 @@ Future<Widget Function()> _initApp(
   //
   // The one case that changes what gets returned below: a `NetworkFailure` on
   // the very first launch (no local categories yet, catalog now lives in
-  // Supabase — decisión #12, docs/requirements/05-auth-sync.md). The app
+  // Supabase — decisión #12, docs/requirements/fase-1/05-auth-sync.md). The app
   // cannot use a network-less copy in that case (deliberately not
   // duplicated), so instead of `builder` we return a builder for
   // `FirstLaunchOfflineGate`, which blocks with a retry screen until seeding

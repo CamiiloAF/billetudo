@@ -12,6 +12,7 @@ import '../../cubit/save_copy_cubit.dart';
 import '../../cubit/save_copy_state.dart';
 import '../blocking_progress_view.dart';
 import '../io_error_view.dart';
+import '../save_copy_done_view.dart';
 
 /// HU-03/HU-09 "Guardar una copia": the whole flow is the shared blocking
 /// progress/error pattern (`d9wzVg`-pattern with `$teal`, `TmHSC`/`HbEJc`) —
@@ -50,23 +51,17 @@ class SaveCopySheet {
 }
 
 /// The sheet's content for the current [SaveCopyState]: progress while
-/// `running`, the write-failure pattern on `error`. `done`/`cancelled` never
-/// render — they close the sheet instead (handing off to the share sheet, or
-/// just backing out).
+/// `running`, the write-failure pattern on `error`, and [SaveCopyDoneView]'s
+/// "Guardar"/"Compartir" choice on `done`. `cancelled` never renders — it
+/// closes the sheet instead (the user just backed out).
 class SaveCopySheetBody extends StatelessWidget {
   const SaveCopySheetBody({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SaveCopyCubit, SaveCopyState>(
-      listenWhen: (previous, current) =>
-          previous.resultFilePath != current.resultFilePath ||
-          previous.status != current.status,
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
-        if (state.resultFilePath case final path?) {
-          unawaited(context.read<SaveCopyCubit>().shareResult(path));
-          return;
-        }
         if (state.status == SaveCopyStatus.idle ||
             state.status == SaveCopyStatus.cancelled) {
           Navigator.of(context).pop();
@@ -88,6 +83,14 @@ class SaveCopySheetBody extends StatelessWidget {
               onCancel: () => Navigator.of(context).pop(),
             ),
           );
+        }
+        if (state.status == SaveCopyStatus.done) {
+          if (state.resultFilePath case final path?) {
+            return SaveCopyDoneView(
+              onSave: () => unawaited(context.read<SaveCopyCubit>().saveToDevice(path)),
+              onShare: () => unawaited(context.read<SaveCopyCubit>().shareResult(path)),
+            );
+          }
         }
         return IntrinsicHeight(
           child: BlockingProgressView(

@@ -5,7 +5,7 @@ import '../repositories/account_repository.dart';
 import 'has_any_active_account.dart';
 
 /// The exact count of active accounts, not just "any" — the account gate
-/// (`docs/requirements/15-gate-cuenta.md`, HU-02) needs it to tell "0 cuentas"
+/// (`docs/requirements/fase-1/15-gate-cuenta.md`, HU-02) needs it to tell "0 cuentas"
 /// from "1 cuenta" for transferencia, which requires **two** active accounts,
 /// not one.
 ///

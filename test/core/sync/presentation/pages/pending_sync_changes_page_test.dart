@@ -12,6 +12,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../pump_sync.dart';
 
@@ -19,8 +20,10 @@ class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
 
 /// "Cambios sin subir" (`rxUil`): la única pantalla de la familia donde se
-/// espera hacer scroll, porque aquí sí se listan todos. Sin acciones masivas y
-/// sin "Descartar": el hero de la pantalla anterior ya reintenta todo.
+/// espera hacer scroll, porque aquí sí se listan todos. Sin acciones masivas
+/// por fila y sin "Descartar" individual (eso vive solo en la hoja de
+/// detalle, gateado por `attempts >= 3`). Sí ofrece "Descartar todo" bajo el
+/// resumen, sin umbral, protegido solo por su hoja de confirmación.
 void main() {
   final now = DateTime.now();
 
@@ -42,8 +45,9 @@ void main() {
         ),
       );
 
-  Future<void> pumpPage(WidgetTester tester, int count) async {
+  Future<MockSyncStatusCubit> pumpPage(WidgetTester tester, int count) async {
     final cubit = MockSyncStatusCubit();
+    when(cubit.discardAll).thenAnswer((_) async {});
     whenListen(
       cubit,
       const Stream<SyncStatusState>.empty(),
@@ -65,6 +69,7 @@ void main() {
       ),
       wrapInScaffold: false,
     );
+    return cubit;
   }
 
   testWidgets('el resumen cuenta los 89 y desde cuándo espera el más antiguo',
@@ -107,12 +112,53 @@ void main() {
     expect(find.text('Nada esperando para subir'), findsOneWidget);
   });
 
-  testWidgets('no ofrece acciones masivas ni "Descartar"', (tester) async {
+  testWidgets('no ofrece checkboxes ni selección: solo el link de bulk',
+      (tester) async {
     await pumpPage(tester, 5);
 
-    expect(find.textContaining('Descartar'), findsNothing);
-    expect(find.textContaining('Eliminar'), findsNothing);
     expect(find.byType(Checkbox), findsNothing);
+  });
+
+  testWidgets('sin nada esperando no ofrece "Descartar todo"', (tester) async {
+    await pumpPage(tester, 0);
+
+    expect(find.textContaining('Descartar todo'), findsNothing);
+  });
+
+  testWidgets('el link "Descartar todo (N)" lleva el conteo real',
+      (tester) async {
+    await pumpPage(tester, 5);
+
+    expect(find.text('Descartar todo (5)'), findsOneWidget);
+  });
+
+  testWidgets(
+      'tocar "Descartar todo" abre la confirmación; confirmar llama al caso '
+      'de uso de bulk', (tester) async {
+    final cubit = await pumpPage(tester, 5);
+
+    await tester.tap(find.text('Descartar todo (5)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Descartar los 5 cambios pendientes?'), findsOneWidget);
+
+    await tester.tap(find.text('Descartar todo'));
+    await tester.pumpAndSettle();
+
+    verify(cubit.discardAll).called(1);
+  });
+
+  testWidgets('cancelar la confirmación no descarta nada', (tester) async {
+    final cubit = await pumpPage(tester, 5);
+
+    await tester.tap(find.text('Descartar todo (5)'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    verifyNever(cubit.discardAll);
+    expect(find.text('Descartar todo (5)'), findsOneWidget);
   });
 
   testWidgets('ninguna fila filtra el nombre de la tabla ni el código',

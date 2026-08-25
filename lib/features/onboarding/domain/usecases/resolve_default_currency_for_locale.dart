@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 
-/// HU-02 (`docs/requirements/13-onboarding.md`): picks the currency to
+/// HU-02 (`docs/requirements/fase-1/13-onboarding.md`): picks the currency to
 /// pre-fill on the first-account step.
 ///
 /// The requirements document originally asked for this to derive the

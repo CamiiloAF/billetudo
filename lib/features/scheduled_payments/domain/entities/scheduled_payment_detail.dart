@@ -4,6 +4,7 @@ import 'pending_scheduled_occurrence.dart';
 import 'scheduled_history_entry.dart';
 import 'scheduled_payment.dart';
 import 'scheduled_payment_linked_debt.dart';
+import 'scheduled_payment_linked_goal.dart';
 import 'tag.dart';
 
 /// The hybrid "próximo pago + configuración" detail view of a template
@@ -28,6 +29,7 @@ class ScheduledPaymentDetail extends Equatable {
     this.nextAwaitingDate,
     this.history = const <ScheduledHistoryEntry>[],
     this.linkedDebt,
+    this.linkedGoal,
   });
 
   final ScheduledPayment scheduledPayment;
@@ -74,6 +76,13 @@ class ScheduledPaymentDetail extends Equatable {
   /// Configurar-cuota screen (HU-03).
   final ScheduledPaymentLinkedDebt? linkedDebt;
 
+  /// Non-null when this template is a goal's recurring contribution
+  /// (`scheduledPayment.goalId != null`, HU-16): the goal it belongs to, for
+  /// the "Meta Enlazada" cross-link card and its deep-link into the goal's
+  /// detail. Mutually exclusive with [linkedDebt] — never both set, mirroring
+  /// `ScheduledPaymentDraft.validated()`'s exclusivity rule.
+  final ScheduledPaymentLinkedGoal? linkedGoal;
+
   /// How many transactions this template has actually generated (`confirmed`
   /// occurrences). A subset of [historyTotalCount], which also counts skipped
   /// occurrences: [onceAlreadyGenerated] keys off this, not the combined
@@ -110,5 +119,6 @@ class ScheduledPaymentDetail extends Equatable {
         historyTotalCount,
         generatedTransactionCount,
         linkedDebt,
+        linkedGoal,
       ];
 }

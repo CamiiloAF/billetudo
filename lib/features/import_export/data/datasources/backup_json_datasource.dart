@@ -3,12 +3,15 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../../core/sync/data/datasources/data_ownership_claimer.dart';
 import '../../domain/entities/cancellation_token.dart';
 import '../../domain/entities/progress_callback.dart';
 import '../../domain/entities/restore_mode.dart';
+import '../../domain/usecases/resolve_backup_id_conflicts.dart';
 
 /// This copy format's own version — bumped only when the JSON *shape* below
 /// changes, independent of `AppDatabase.schemaVersion`. See
@@ -85,9 +88,17 @@ const List<String> restoreInsertOrder = [
 /// intentionally hide tombstoned/deleted rows).
 @lazySingleton
 class BackupJsonDatasource {
-  const BackupJsonDatasource(this._db);
+  const BackupJsonDatasource(
+    this._db,
+    this._ownership,
+    this._supabase,
+    this._resolveIdConflicts,
+  );
 
   final db.AppDatabase _db;
+  final DataOwnershipClaimer _ownership;
+  final SupabaseClient _supabase;
+  final ResolveBackupIdConflicts _resolveIdConflicts;
 
   FutureResult<Map<String, dynamic>> createFullBackup(
     String outputPath, {
@@ -107,7 +118,8 @@ class BackupJsonDatasource {
       sink.write('"formatVersion":$backupFormatVersion,');
       sink.write('"schemaVersion":${_db.schemaVersion},');
       sink.write('"appVersion":${jsonEncode(_appVersionPlaceholder)},');
-      sink.write('"createdAt":${jsonEncode(DateTime.now().toIso8601String())},');
+      sink.write(
+          '"createdAt":${jsonEncode(DateTime.now().toIso8601String())},');
       sink.write('"tables":{');
 
       for (var i = 0; i < totalTables; i++) {
@@ -155,7 +167,8 @@ class BackupJsonDatasource {
     if (decodedResult case Left(value: final failure)) {
       return Left(failure);
     }
-    final decoded = (decodedResult as Right<Failure, Map<String, dynamic>>).value;
+    final decoded =
+        (decodedResult as Right<Failure, Map<String, dynamic>>).value;
     final tables = decoded['tables'] as Map<String, dynamic>? ?? const {};
     return Right({
       'formatVersion': decoded['formatVersion'] as int? ?? 0,
@@ -180,8 +193,31 @@ class BackupJsonDatasource {
     if (decodedResult case Left(value: final failure)) {
       return Left(failure);
     }
-    final decoded = (decodedResult as Right<Failure, Map<String, dynamic>>).value;
-    final tables = decoded['tables'] as Map<String, dynamic>? ?? const {};
+    final decoded =
+        (decodedResult as Right<Failure, Map<String, dynamic>>).value;
+    var tables = decoded['tables'] as Map<String, dynamic>? ?? const {};
+
+    // A backup can carry ids that were originally synced under a *different*
+    // Supabase account than the one currently signed in on this device (ej.
+    // restoring the same file on two accounts) — remap those before this
+    // restore ever touches `_parentsBeforeChildren` or `restoreInsertOrder`,
+    // both of which must operate on the ids this restore will actually
+    // insert, not the backup's original ones. Skipped entirely without an
+    // active session (nothing to check against) or when a backup happens to
+    // carry no rows at all.
+    final restoringUserId = _supabase.auth.currentSession?.user.id;
+    if (restoringUserId != null) {
+      final resolvedResult = await _resolveIdConflicts(
+        userId: restoringUserId,
+        tables: tables,
+      );
+      if (resolvedResult case Left(value: final failure)) {
+        return Left(failure);
+      }
+      tables = resolvedResult.getOrElse(
+        (_) => throw StateError('unreachable: resolvedResult is Left'),
+      );
+    }
 
     final result = <String, ({int created, int updated, int skipped})>{};
     final totalTables = backupTableNames.length;
@@ -192,6 +228,22 @@ class BackupJsonDatasource {
           for (final name in backupTableNames) {
             if (name == 'appSettings') {
               continue; // singleton row, always overwritten below instead.
+            }
+            if (name == 'categories') {
+              // `categories` self-references via `parentId` (Postgres FK
+              // `categories(parent_id, user_id) references categories(id,
+              // user_id)`, no `ON DELETE CASCADE` — intentional, see
+              // `confirm_delete_root_with_subcategories_sheet.dart` for how
+              // deletion-with-children is handled at the app level instead).
+              // A single mass `DELETE FROM categories` queues one PowerSync
+              // delete op per row in SQLite's own scan order, not
+              // hierarchical order — on a *re*-import the rows being wiped
+              // already exist in Postgres with the same parent/child links,
+              // so deleting a parent before its child there triggers 23503
+              // and permanently quarantines the row. Delete children before
+              // parents instead, one row at a time.
+              await _deleteCategoriesChildrenFirst();
+              continue;
             }
             await _db.customStatement('DELETE FROM ${_sqlNameOf(name)}');
           }
@@ -204,10 +256,29 @@ class BackupJsonDatasource {
           // the delete pass above, which is correctly children-first.
           final name = restoreInsertOrder[i];
           final rows = (tables[name] as List<dynamic>?) ?? const [];
-          result[name] = await _mergeTable(name, rows);
+          final orderedRows =
+              name == 'categories' ? _parentsBeforeChildren(rows) : rows;
+          result[name] = await _mergeTable(name, orderedRows);
           onProgress?.call(i + 1, totalTables);
         }
       });
+
+      // The backup never carries `userId` (privacy — see `_readTableAsJson`),
+      // so every row just inserted above is unowned. If a session is already
+      // active (ej. restoring while signed in), claim them now instead of
+      // relying on the upload-time fallback (`SupabaseOperationUploader.
+      // _ownedPayload`), which only covers `put` operations, not `patch`.
+      // Run after the restore transaction commits: `claimUnownedRows` opens
+      // its own transaction, and by this point every row (parents included)
+      // is already in place thanks to the topological insert order above.
+      final currentUserId = _supabase.auth.currentSession?.user.id;
+      if (currentUserId != null) {
+        final claimResult = await _ownership.claimUnownedRows(currentUserId);
+        if (claimResult case Left(value: final failure)) {
+          return Left(failure);
+        }
+      }
+
       return Right(result);
     } on OperationCancelledException {
       // HU-04/HU-09: cancelling mid-restore throws inside the Drift
@@ -218,6 +289,88 @@ class BackupJsonDatasource {
     } catch (e, st) {
       return Left(
         DatabaseFailure('could not restore backup', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  /// Reorders `categories` rows so a parent is always inserted (and thus
+  /// queued for PowerSync upload) before its children — Postgres' FK
+  /// `(parent_id, user_id) references categories (id, user_id)` rejects a
+  /// child uploaded first with `23503`, which `SyncErrorClassifier` treats
+  /// as permanent and quarantines immediately (no automatic retry). This
+  /// matters for backups from a *different* Supabase project (ej. restoring
+  /// production data into another environment) — the rows are all still in
+  /// the JSON, just not in a safe order.
+  ///
+  /// Kahn's algorithm variant: a row is ready once its `parentId` is null,
+  /// already emitted, or not present in this same batch at all (ej. the
+  /// parent already exists locally — nothing in this batch depends on it).
+  /// Any row still waiting once nothing more becomes ready is a real cycle
+  /// (already-corrupt data, out of scope here) — the remainder is appended
+  /// as is rather than looping forever.
+  List<dynamic> _parentsBeforeChildren(List<dynamic> rows) {
+    final byId = <String, Map<String, dynamic>>{
+      for (final raw in rows)
+        (raw as Map<String, dynamic>)['id'] as String: raw,
+    };
+    final emitted = <String>{};
+    final ordered = <dynamic>[];
+    var remaining = rows.toList();
+
+    while (remaining.isNotEmpty) {
+      final ready = <dynamic>[];
+      final stillWaiting = <dynamic>[];
+      for (final raw in remaining) {
+        final json = raw as Map<String, dynamic>;
+        final parentId = json['parentId'] as String?;
+        final isReady = parentId == null ||
+            emitted.contains(parentId) ||
+            !byId.containsKey(parentId);
+        if (isReady) {
+          ready.add(raw);
+        } else {
+          stillWaiting.add(raw);
+        }
+      }
+
+      if (ready.isEmpty) {
+        // Cycle within this batch: nothing more can become ready. Append
+        // the rest in their original order instead of looping forever.
+        ordered.addAll(stillWaiting);
+        break;
+      }
+
+      for (final raw in ready) {
+        emitted.add((raw as Map<String, dynamic>)['id'] as String);
+      }
+      ordered.addAll(ready);
+      remaining = stillWaiting;
+    }
+
+    return ordered;
+  }
+
+  /// Deletes every local `categories` row, children before parents — the
+  /// reverse of [_parentsBeforeChildren]'s insert order. Reversing a valid
+  /// topological order of a DAG for one direction of an edge relation
+  /// (parent -> child here) always yields a valid topological order for the
+  /// reverse relation (child -> parent), so this reuses that same algorithm
+  /// instead of duplicating Kahn's algorithm with the ready-condition
+  /// flipped. Deletes one row at a time (rather than a single mass `DELETE
+  /// FROM categories`) so PowerSync queues the upload ops in this same
+  /// child-first order.
+  Future<void> _deleteCategoriesChildrenFirst() async {
+    final rows = await _db.select(_db.categories).get();
+    final asJson = [
+      for (final row in rows) {'id': row.id, 'parentId': row.parentId},
+    ];
+    final parentsFirst = _parentsBeforeChildren(asJson);
+    final childrenFirst = parentsFirst.reversed;
+    for (final raw in childrenFirst) {
+      final id = (raw as Map<String, dynamic>)['id'] as String;
+      await _db.customStatement(
+        'DELETE FROM categories WHERE id = ?',
+        [id],
       );
     }
   }
@@ -234,12 +387,10 @@ class BackupJsonDatasource {
       final id = json['id'] as String;
       final incomingUpdatedAt = (json['updatedAt'] as num).toInt();
 
-      final existing = await _db
-          .customSelect(
-            'SELECT updated_at FROM ${_sqlNameOf(name)} WHERE id = ?',
-            variables: [Variable.withString(id)],
-          )
-          .getSingleOrNull();
+      final existing = await _db.customSelect(
+        'SELECT updated_at FROM ${_sqlNameOf(name)} WHERE id = ?',
+        variables: [Variable.withString(id)],
+      ).getSingleOrNull();
 
       if (existing == null) {
         await _insertRow(name, json);
@@ -257,73 +408,75 @@ class BackupJsonDatasource {
   Future<void> _insertRow(String name, Map<String, dynamic> json) async {
     switch (name) {
       case 'accounts':
-        await _db
-            .into(_db.accounts)
-            .insert(db.Account.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.accounts).insert(db.Account.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'categories':
-        await _db
-            .into(_db.categories)
-            .insert(db.Category.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.categories).insert(db.Category.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'transactions':
-        await _db
-            .into(_db.transactions)
-            .insert(db.Transaction.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.transactions).insert(db.Transaction.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'budgets':
-        await _db.into(_db.budgets).insert(db.Budget.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db
+            .into(_db.budgets)
+            .insert(db.Budget.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'goals':
-        await _db.into(_db.goals).insert(db.Goal.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db
+            .into(_db.goals)
+            .insert(db.Goal.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'goalContributions':
-        await _db
-            .into(_db.goalContributions)
-            .insert(db.GoalContribution.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.goalContributions).insert(
+            db.GoalContribution.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'goalQuickAmounts':
-        await _db
-            .into(_db.goalQuickAmounts)
-            .insert(db.GoalQuickAmount.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.goalQuickAmounts).insert(
+            db.GoalQuickAmount.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'debts':
-        await _db.into(_db.debts).insert(db.Debt.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db
+            .into(_db.debts)
+            .insert(db.Debt.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'debtEntries':
-        await _db
-            .into(_db.debtEntries)
-            .insert(db.DebtEntry.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.debtEntries).insert(db.DebtEntry.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'scheduledPayments':
-        await _db
-            .into(_db.scheduledPayments)
-            .insert(db.ScheduledPayment.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.scheduledPayments).insert(
+            db.ScheduledPayment.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'tags':
-        await _db.into(_db.tags).insert(db.Tag.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db
+            .into(_db.tags)
+            .insert(db.Tag.fromJson(json), mode: InsertMode.insertOrReplace);
       case 'transactionTags':
-        await _db
-            .into(_db.transactionTags)
-            .insert(db.TransactionTag.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.transactionTags).insert(
+            db.TransactionTag.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'scheduledPaymentTags':
-        await _db
-            .into(_db.scheduledPaymentTags)
-            .insert(db.ScheduledPaymentTag.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.scheduledPaymentTags).insert(
+            db.ScheduledPaymentTag.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'scheduledPaymentOccurrences':
-        await _db
-            .into(_db.scheduledPaymentOccurrences)
-            .insert(db.ScheduledPaymentOccurrence.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.scheduledPaymentOccurrences).insert(
+            db.ScheduledPaymentOccurrence.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'budgetAccounts':
-        await _db
-            .into(_db.budgetAccounts)
-            .insert(db.BudgetAccount.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.budgetAccounts).insert(
+            db.BudgetAccount.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'budgetCategories':
-        await _db
-            .into(_db.budgetCategories)
-            .insert(db.BudgetCategory.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.budgetCategories).insert(
+            db.BudgetCategory.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'budgetPeriodOverrides':
-        await _db
-            .into(_db.budgetPeriodOverrides)
-            .insert(db.BudgetPeriodOverrideRow.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.budgetPeriodOverrides).insert(
+            db.BudgetPeriodOverrideRow.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'appSettings':
-        await _db
-            .into(_db.appSettings)
-            .insert(db.AppSetting.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.appSettings).insert(db.AppSetting.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       case 'importBatches':
-        await _db
-            .into(_db.importBatches)
-            .insert(db.ImportBatche.fromJson(json), mode: InsertMode.insertOrReplace);
+        await _db.into(_db.importBatches).insert(db.ImportBatche.fromJson(json),
+            mode: InsertMode.insertOrReplace);
       default:
         throw StateError('unknown backup table "$name"');
     }
@@ -345,36 +498,50 @@ class BackupJsonDatasource {
   Future<List<Map<String, dynamic>>> _readTableRowsAsJson(String name) async {
     switch (name) {
       case 'accounts':
-        return [for (final r in await _db.select(_db.accounts).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.accounts).get()) r.toJson()
+        ];
       case 'categories':
-        return [for (final r in await _db.select(_db.categories).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.categories).get()) r.toJson()
+        ];
       case 'transactions':
-        return [for (final r in await _db.select(_db.transactions).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.transactions).get()) r.toJson()
+        ];
       case 'budgets':
-        return [for (final r in await _db.select(_db.budgets).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.budgets).get()) r.toJson()
+        ];
       case 'goals':
         return [for (final r in await _db.select(_db.goals).get()) r.toJson()];
       case 'goalContributions':
         return [
-          for (final r in await _db.select(_db.goalContributions).get()) r.toJson(),
+          for (final r in await _db.select(_db.goalContributions).get())
+            r.toJson(),
         ];
       case 'goalQuickAmounts':
         return [
-          for (final r in await _db.select(_db.goalQuickAmounts).get()) r.toJson(),
+          for (final r in await _db.select(_db.goalQuickAmounts).get())
+            r.toJson(),
         ];
       case 'debts':
         return [for (final r in await _db.select(_db.debts).get()) r.toJson()];
       case 'debtEntries':
-        return [for (final r in await _db.select(_db.debtEntries).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.debtEntries).get()) r.toJson()
+        ];
       case 'scheduledPayments':
         return [
-          for (final r in await _db.select(_db.scheduledPayments).get()) r.toJson(),
+          for (final r in await _db.select(_db.scheduledPayments).get())
+            r.toJson(),
         ];
       case 'tags':
         return [for (final r in await _db.select(_db.tags).get()) r.toJson()];
       case 'transactionTags':
         return [
-          for (final r in await _db.select(_db.transactionTags).get()) r.toJson(),
+          for (final r in await _db.select(_db.transactionTags).get())
+            r.toJson(),
         ];
       case 'scheduledPaymentTags':
         return [
@@ -383,16 +550,19 @@ class BackupJsonDatasource {
         ];
       case 'scheduledPaymentOccurrences':
         return [
-          for (final r in await _db.select(_db.scheduledPaymentOccurrences).get())
+          for (final r
+              in await _db.select(_db.scheduledPaymentOccurrences).get())
             r.toJson(),
         ];
       case 'budgetAccounts':
         return [
-          for (final r in await _db.select(_db.budgetAccounts).get()) r.toJson(),
+          for (final r in await _db.select(_db.budgetAccounts).get())
+            r.toJson(),
         ];
       case 'budgetCategories':
         return [
-          for (final r in await _db.select(_db.budgetCategories).get()) r.toJson(),
+          for (final r in await _db.select(_db.budgetCategories).get())
+            r.toJson(),
         ];
       case 'budgetPeriodOverrides':
         return [
@@ -400,9 +570,13 @@ class BackupJsonDatasource {
             r.toJson(),
         ];
       case 'appSettings':
-        return [for (final r in await _db.select(_db.appSettings).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.appSettings).get()) r.toJson()
+        ];
       case 'importBatches':
-        return [for (final r in await _db.select(_db.importBatches).get()) r.toJson()];
+        return [
+          for (final r in await _db.select(_db.importBatches).get()) r.toJson()
+        ];
       default:
         throw StateError('unknown backup table "$name"');
     }

@@ -101,6 +101,7 @@ void main() {
           onOpenDeleteAccount: () {},
           onOpenComingSoon: (_) {},
           onOpenSyncStatus: () {},
+          onOpenQuickAccessOrder: () {},
         ),
       ),
       brightness: brightness,

@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../repositories/account_repository.dart';
 
-/// HU-02 of `docs/requirements/15-gate-cuenta.md`: whether the app has any
+/// HU-02 of `docs/requirements/fase-1/15-gate-cuenta.md`: whether the app has any
 /// active account to record a movement against — the single source of truth
 /// the account gate (FAB, forms, router guards) checks before letting the
 /// user reach a flow that needs one.

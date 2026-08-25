@@ -10,7 +10,7 @@ import 'import_row_issue.dart';
 /// what crosses from `data/` into `domain` — the decimal/date string parsing
 /// that produces them (exact integer arithmetic, half-up rounding; never
 /// `double`) lives entirely in `data/`, per
-/// `docs/requirements/11-import-export.md` §Montos.
+/// `docs/requirements/fase-1/11-import-export.md` §Montos.
 class ParsedImportRow extends Equatable {
   const ParsedImportRow({
     required this.rowNumber,

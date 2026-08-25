@@ -93,6 +93,48 @@ void main() {
       );
     });
 
+    group('HU-16: exclusividad debtId/goalId', () {
+      test('rechaza un draft que trae debtId y goalId a la vez', () {
+        final result = buildExpenseDraft(
+          debtId: 'debt-1',
+          goalId: 'goal-1',
+        ).validated();
+
+        expect(result.isLeft(), isTrue);
+        expect(
+          (result.getLeft().toNullable()! as ValidationFailure).field,
+          ScheduledPaymentDraft.fieldGoalId,
+        );
+      });
+
+      test(
+          'rechaza igual cuando ambos vienen presentes '
+          'independientemente del orden de asignación', () {
+        final result = buildExpenseDraft(
+          goalId: 'goal-1',
+          debtId: 'debt-1',
+        ).validated();
+
+        expect(result.isLeft(), isTrue);
+      });
+
+      test('acepta un draft solo con debtId', () {
+        final result = buildExpenseDraft(debtId: 'debt-1').validated();
+
+        expect(result.isRight(), isTrue);
+        expect(result.getRight().toNullable()!.debtId, 'debt-1');
+        expect(result.getRight().toNullable()!.goalId, isNull);
+      });
+
+      test('acepta un draft solo con goalId', () {
+        final result = buildExpenseDraft(goalId: 'goal-1').validated();
+
+        expect(result.isRight(), isTrue);
+        expect(result.getRight().toNullable()!.goalId, 'goal-1');
+        expect(result.getRight().toNullable()!.debtId, isNull);
+      });
+    });
+
     group('criterio 16: transfer', () {
       test('exige transferAccountId', () {
         final result = buildTransferDraft(transferAccountId: null).validated();

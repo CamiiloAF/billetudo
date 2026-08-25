@@ -193,4 +193,146 @@ void main() {
       isFalse,
     );
   });
+
+  group('presupuestable transfer — visual netting in the same budget', () {
+    BudgetExpenseDetail originRow({
+      String id = 'tx-transfer',
+      String accountName = 'Ahorros',
+      DateTime? date,
+    }) =>
+        BudgetExpenseDetail(
+          expense: BudgetExpense(
+            id: id,
+            accountId: 'a1',
+            amountMinor: 50000,
+            currency: 'COP',
+            date: date ?? DateTime(2024, 1, 12),
+          ),
+          title: 'Ahorros',
+          accountName: accountName,
+        );
+
+    BudgetExpenseDetail destinationRow({
+      String id = 'tx-transfer-dest',
+      String accountName = 'Corriente',
+      DateTime? date,
+    }) =>
+        BudgetExpenseDetail(
+          expense: BudgetExpense(
+            id: id,
+            accountId: 'a2',
+            amountMinor: 50000,
+            currency: 'COP',
+            date: date ?? DateTime(2024, 1, 12),
+            isIncome: true,
+          ),
+          title: 'Corriente',
+          accountName: accountName,
+        );
+
+    test(
+        'origin and destination both matching the same budget collapse into '
+        'a single netted row', () {
+      final budget = buildBudget(startDate: DateTime(2024, 1, 1));
+      final data = BudgetDetailData(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        expenses: [originRow(), destinationRow()],
+        categoryChildren: const {},
+        scheduledTemplates: const [],
+        pendingScheduledOccurrences: const [],
+      );
+
+      final view = usecase.call(data, now: DateTime(2024, 1, 15), index: 0);
+
+      expect(view.activity, hasLength(1));
+      final row = view.activity.single;
+      expect(row.id, 'tx-transfer');
+      expect(row.isNettedTransfer, isTrue);
+      expect(row.amountMinor, 0);
+      expect(row.accountName, 'Ahorros');
+      expect(row.secondaryAccountName, 'Corriente');
+      expect(view.progress.spentMinor, 0);
+    });
+
+    test(
+        'only the origin matching the scope keeps a plain (non-netted) '
+        'expense row', () {
+      final budget = buildBudget(startDate: DateTime(2024, 1, 1));
+      final data = BudgetDetailData(
+        budget: budget,
+        scope: const BudgetScope(
+          accounts: [BudgetScopeRef(id: 'a1', referentAlive: true)],
+          categories: [],
+        ),
+        expenses: [originRow(), destinationRow()],
+        categoryChildren: const {},
+        scheduledTemplates: const [],
+        pendingScheduledOccurrences: const [],
+      );
+
+      final view = usecase.call(data, now: DateTime(2024, 1, 15), index: 0);
+
+      expect(view.activity, hasLength(1));
+      final row = view.activity.single;
+      expect(row.id, 'tx-transfer');
+      expect(row.isNettedTransfer, isFalse);
+      expect(row.isIncome, isFalse);
+      expect(row.amountMinor, 50000);
+      expect(view.progress.spentMinor, 50000);
+    });
+
+    test(
+        'only the destination matching the scope keeps a plain '
+        '(non-netted) +amount income row', () {
+      final budget = buildBudget(startDate: DateTime(2024, 1, 1));
+      final data = BudgetDetailData(
+        budget: budget,
+        scope: const BudgetScope(
+          accounts: [BudgetScopeRef(id: 'a2', referentAlive: true)],
+          categories: [],
+        ),
+        expenses: [originRow(), destinationRow()],
+        categoryChildren: const {},
+        scheduledTemplates: const [],
+        pendingScheduledOccurrences: const [],
+      );
+
+      final view = usecase.call(data, now: DateTime(2024, 1, 15), index: 0);
+
+      expect(view.activity, hasLength(1));
+      final row = view.activity.single;
+      expect(row.id, 'tx-transfer-dest');
+      expect(row.isNettedTransfer, isFalse);
+      expect(row.isIncome, isTrue);
+      expect(row.amountMinor, 50000);
+      expect(view.progress.spentMinor, -50000);
+    });
+
+    test(
+        'two different transfers landing in the same budget net '
+        'independently, never cross-matching', () {
+      final budget = buildBudget(startDate: DateTime(2024, 1, 1));
+      final data = BudgetDetailData(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        expenses: [
+          originRow(id: 'tx-a', date: DateTime(2024, 1, 5)),
+          destinationRow(id: 'tx-a-dest', date: DateTime(2024, 1, 5)),
+          originRow(id: 'tx-b', date: DateTime(2024, 1, 10)),
+          destinationRow(id: 'tx-b-dest', date: DateTime(2024, 1, 10)),
+        ],
+        categoryChildren: const {},
+        scheduledTemplates: const [],
+        pendingScheduledOccurrences: const [],
+      );
+
+      final view = usecase.call(data, now: DateTime(2024, 1, 15), index: 0);
+
+      expect(view.activity, hasLength(2));
+      expect(view.activity.every((a) => a.isNettedTransfer), isTrue);
+      expect(view.activity.map((a) => a.id), containsAll(['tx-a', 'tx-b']));
+      expect(view.progress.spentMinor, 0);
+    });
+  });
 }

@@ -20,6 +20,17 @@ import '../theme/app_theme.dart';
 /// A plain `setState` swap (not a route push) is intentional, same as
 /// `FirstLaunchOfflineGate`: nothing of the real app's navigation stack
 /// exists yet, so there is nothing to push onto.
+///
+/// The swap happens the instant [init] resolves — there is deliberately no
+/// floor on how long the splash stays on screen. `SplashPage`'s entrance
+/// animation (`splash_page.dart`) is best-effort, not guaranteed to play to
+/// completion: billetudo's whole premise is low-friction, fast expense
+/// capture ("estoy en la calle, necesito que la app abra rápido"), so
+/// artificially holding the splash up just to let its animation finish would
+/// be exactly the kind of friction the product exists to avoid. On a "warm"
+/// launch (Drift already open, a restorable session, no network waits)
+/// [init] can resolve mid-animation or before it visibly starts, and that is
+/// fine — the app never trades startup speed for showing off the splash.
 class AppBootstrapGate extends StatefulWidget {
   const AppBootstrapGate({required this.init, super.key});
 

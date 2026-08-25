@@ -6,8 +6,8 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/neutral_button.dart';
-import '../../../data/models/csv_date_parser.dart';
 import '../../../domain/entities/csv_dialect.dart';
+import '../../../domain/utils/csv_date_parser.dart';
 
 /// One selectable date-format combination (HU-05): [DateComponentOrder.isoYmd]
 /// always reads `-`, so it has a single entry; the other two orders offer all
@@ -121,7 +121,8 @@ class _ImportDateFormatSheetState extends State<ImportDateFormatSheet> {
     final sampleValue = widget.sampleValue;
     final parsed = sampleValue == null || sampleValue.trim().isEmpty
         ? null
-        : CsvDateParser.parse(sampleValue, order: _order, separator: _separator);
+        : CsvDateParser.parse(sampleValue,
+            order: _order, separator: _separator);
     final previewText = sampleValue == null
         ? null
         : (parsed == null
@@ -151,11 +152,13 @@ class _ImportDateFormatSheetState extends State<ImportDateFormatSheet> {
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: option.order == _order && option.separator == _separator
-                      ? colors.mintSoft
-                      : colors.muted,
+                  color:
+                      option.order == _order && option.separator == _separator
+                          ? colors.mintSoft
+                          : colors.muted,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -166,13 +169,15 @@ class _ImportDateFormatSheetState extends State<ImportDateFormatSheet> {
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: option.order == _order && option.separator == _separator
+                          color: option.order == _order &&
+                                  option.separator == _separator
                               ? colors.mintText
                               : colors.textPrimary,
                         ),
                       ),
                     ),
-                    if (option.order == _order && option.separator == _separator)
+                    if (option.order == _order &&
+                        option.separator == _separator)
                       Icon(LucideIcons.check, size: 18, color: colors.mintText),
                   ],
                 ),

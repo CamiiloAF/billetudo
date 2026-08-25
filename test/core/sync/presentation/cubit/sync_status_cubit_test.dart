@@ -6,6 +6,8 @@ import 'package:billetudo/core/sync/domain/entities/sync_failure_kind.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_operation.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
+import 'package:billetudo/core/sync/domain/usecases/discard_all_quarantined_operations.dart';
+import 'package:billetudo/core/sync/domain/usecases/discard_quarantined_operation.dart';
 import 'package:billetudo/core/sync/domain/usecases/retry_all_quarantined_operations.dart';
 import 'package:billetudo/core/sync/domain/usecases/retry_quarantined_operation.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_quarantined_operations.dart';
@@ -25,6 +27,10 @@ class MockRetryAll extends Mock implements RetryAllQuarantinedOperations {}
 
 class MockRetryOne extends Mock implements RetryQuarantinedOperation {}
 
+class MockDiscard extends Mock implements DiscardQuarantinedOperation {}
+
+class MockDiscardAll extends Mock implements DiscardAllQuarantinedOperations {}
+
 /// HU-08. Lo que este cubit no puede hacer nunca, porque es el modo de falla
 /// exacto del incidente #22: **repintar optimistamente**. Un reintento solo
 /// mueve `isRetrying`; el hero y la lista solo cambian cuando el stream (o
@@ -34,6 +40,8 @@ void main() {
   late MockWatchQuarantinedOperations watchQuarantine;
   late MockRetryAll retryAll;
   late MockRetryOne retryOne;
+  late MockDiscard discard;
+  late MockDiscardAll discardAll;
   late StreamController<SyncStatusSnapshot> statusController;
   late StreamController<List<QuarantinedOperation>> quarantineController;
 
@@ -66,6 +74,8 @@ void main() {
         watchQuarantine,
         retryAll,
         retryOne,
+        discard,
+        discardAll,
       );
 
   /// Arranca el cubit y deja que las dos suscripciones queden montadas.
@@ -83,6 +93,8 @@ void main() {
     watchQuarantine = MockWatchQuarantinedOperations();
     retryAll = MockRetryAll();
     retryOne = MockRetryOne();
+    discard = MockDiscard();
+    discardAll = MockDiscardAll();
     statusController = StreamController<SyncStatusSnapshot>.broadcast();
     quarantineController =
         StreamController<List<QuarantinedOperation>>.broadcast();
@@ -386,6 +398,68 @@ void main() {
       verifyNever(() => retryOne(any()));
       completer.complete(const Right(0));
       await all;
+    });
+  });
+
+  group('discard: descarta un cambio en cuarentena sin reintentarlo', () {
+    test('llama al caso de uso con el id de ESE registro', () async {
+      when(() => discard('q-7'))
+          .thenAnswer((_) async => const Right<Failure, Unit>(unit));
+      final cubit = await started();
+      quarantineController.add([operation('q-7')]);
+      await settle();
+
+      await cubit.discard('q-7');
+
+      verify(() => discard('q-7')).called(1);
+    });
+
+    test(
+        'la fila solo desaparece cuando el stream de cuarentena la confirma '
+        'fuera, no de forma optimista', () async {
+      when(() => discard('q-7'))
+          .thenAnswer((_) async => const Right<Failure, Unit>(unit));
+      final cubit = await started();
+      quarantineController.add([operation('q-7')]);
+      await settle();
+
+      await cubit.discard('q-7');
+      expect(cubit.state.pendingCount, 1);
+
+      quarantineController.add(const []);
+      await settle();
+      expect(cubit.state.pendingCount, 0);
+    });
+  });
+
+  group('discardAll: vacía toda la cuarentena de una vez', () {
+    test('llama al caso de uso sin argumentos', () async {
+      when(discardAll.call)
+          .thenAnswer((_) async => const Right<Failure, Unit>(unit));
+      final cubit = await started();
+      quarantineController.add([operation('q-1'), operation('q-2')]);
+      await settle();
+
+      await cubit.discardAll();
+
+      verify(discardAll.call).called(1);
+    });
+
+    test(
+        'la lista solo se vacía cuando el stream de cuarentena lo confirma, '
+        'no de forma optimista', () async {
+      when(discardAll.call)
+          .thenAnswer((_) async => const Right<Failure, Unit>(unit));
+      final cubit = await started();
+      quarantineController.add([operation('q-1'), operation('q-2')]);
+      await settle();
+
+      await cubit.discardAll();
+      expect(cubit.state.pendingCount, 2);
+
+      quarantineController.add(const []);
+      await settle();
+      expect(cubit.state.pendingCount, 0);
     });
   });
 

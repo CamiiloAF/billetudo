@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Incluye la extension de cierre/completar deuda (menu overflow, sheet de acciones, cierre manual, felicitacion al 100%, tab "Cerradas") aprobada 2026-07-24. Requisitos en `docs/requirements/08-deudas.md` HU-02/HU-07. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
+**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`. Incluye la extension de cierre/completar deuda (menu overflow, sheet de acciones, cierre manual, felicitacion al 100%, tab "Cerradas") aprobada 2026-07-24. Requisitos en `docs/requirements/fase-1/08-deudas.md` HU-02/HU-07. Cross-link con Pagos Programados: ver `09-pagos-programados.md`.
 
 ## Frames
 
@@ -34,6 +34,9 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 | Sheet Confirmar cierre manual | `R97gF` | `WLz5x` |
 | Sheet Felicitacion al 100% | `C28Zt` | `h0zie` |
 | Lista — tab Activas/Cerradas, viendo Cerradas | `vaNHd` | `nusfh` |
+| Sheet Movimiento — Editar (ledger sin cuenta) | `v4RJC` | `L5KbhU` |
+| Sheet Movimiento — Interés | `ldTrt` | `hVah4` |
+| Detalle — variante Capital vs Interés separado | `Uq1Zc` | `vr8kA` |
 
 **Estados/piezas sin frame propio en el `.pen` (por diseño o reusables genéricos):**
 - **Detalle sin cuota** (`DebtConfigureInstallmentCard`): no tiene frame — solo se diseñó el estado *con* cuota (`cUzp6`). El widget reusa la geometría de la card de cuota. Gap de cobertura conocido, no deriva.
@@ -162,7 +165,7 @@ CTA "Cerrar deuda" en **violeta** (`Button/Primary`), no destructivo — cerrar 
 
 ### Sheet Felicitacion al 100% (`C28Zt`)
 
-Se dispara cuando el saldo pendiente de una deuda llega a 0 o menos (ver HU-02/HU-07 en `docs/requirements/08-deudas.md`), tipicamente tras registrar un abono que salda el total. Bottom Sheet Base con `Sheet Icon Header` (icono `party-popper`, icon-wrap 72px violeta) + fila de 2 stats (`$primary-soft` + texto `$primary-on-soft-strong`, no `$primary-on-soft` — a este tamaño no alcanza 4.5:1) + `Sheet Buttons Row`.
+Se dispara cuando el saldo pendiente de una deuda llega a 0 o menos (ver HU-02/HU-07 en `docs/requirements/fase-1/08-deudas.md`), tipicamente tras registrar un abono que salda el total. Bottom Sheet Base con `Sheet Icon Header` (icono `party-popper`, icon-wrap 72px violeta) + fila de 2 stats (`$primary-soft` + texto `$primary-on-soft-strong`, no `$primary-on-soft` — a este tamaño no alcanza 4.5:1) + `Sheet Buttons Row`.
 
 Copy diseñado en el `.pen` para direccion `iOwe`: **"¡Felicidades! Ya no debes nada"** / **"Terminaste de pagar {nombre}. En total pagaste {monto} en {duración}."** Stats: "Total pagado" y "Duración". **Para direccion `owedToMe` el copy cambia de verbo** (misma pieza visual, texto por l10n segun direccion): "Terminaste de cobrar {nombre}. En total cobraste {monto} en {duración}." — no se disena una segunda variante visual, solo el string cambia por parametro de direccion (a resolver en `flutter-dev` via l10n, no en Pencil).
 
@@ -191,6 +194,38 @@ Definido en `08-deudas.md` HU-03 y `09-pagos-programados.md` linea 111. Diseñad
 - **Detalle del PP** (`nDmnf`, variante nueva del canonico `OY2Kj`): **card "Deuda Enlazada"** (`M7Ijh`) entre la Ficha Card y el Historial — icono `landmark` (`$primary-on-soft-strong`) + "Cuota de / Credito vehicular · Yo debo" + `chevron-right` → navega al detalle de la deuda. Mismo chrome que la Ficha Card. El detalle **scrollea** (tiene "Ver historial completo (N)" que expande in-place), asi que el card se agrega sin recortar contenido: el excedente queda bajo el fold. El canonico `OY2Kj` (PP sin deuda) queda intacto.
 - **Lista / Scheduled Card** (`tit0W`): nodo opcional **`Y5FQT` "Deuda Chip"** (`enabled:false` por default) apendido a la fila de chips, sin reestructurar el componente (regla de overrides). Badge sutil `$primary-soft` + icono `landmark` + "Deuda" (`$primary-on-soft-strong`). Demo en contexto: `F3srst`.
 - Editar la plantilla de una cuota debe **deep-linkear de vuelta a la deuda** (su hogar), no editarse como plantilla suelta (comportamiento, no pantalla).
+
+## Sheet Movimiento — Editar / Interés (`v4RJC` Editar / `ldTrt` Interés)
+
+Reemplazan el flujo anterior de 2 pasos (ver detalle → editar), fusionado en uno solo para reducir taps — decisión de producto. Se abren directo al tocar una fila del ledger sin cuenta vinculada (`Debt Ledger Row · Running` en su variante "solo-deuda": abono, desembolso o ajuste manual). Ambas variantes navegan desde su acción de eliminar al sheet de confirmar eliminar movimiento (reusa el patrón destructivo genérico del sistema, mismo criterio que la nota de "Sheet confirmar borrado" de deuda arriba — sin frame propio dedicado en este documento).
+
+### Editar (`v4RJC` / `L5KbhU`)
+
+Bottom Sheet Base (`PqTUt`). **Header** (título "Editar movimiento" + contexto de la deuda, ej. "Crédito vehicular · Yo debo") + **Amount Hero** (monto héroe editable, label según tipo de movimiento — ej. "Abono" — con caret) + fila **"Saldo después"** (solo lectura) + `Form Field` **"Fecha"** (icono `calendar`, editable) + `Form Field` **"Nota (opcional)"** (icono `pencil`, editable) + CTA primario `Button/Primary` **"Guardar cambios"** (`$primary`, icono `check`) + **`Delete Link`** (`u0THG`) **"Eliminar movimiento"** debajo del CTA.
+
+### Interés (`ldTrt` / `hVah4`)
+
+Misma Bottom Sheet Base, estructura distinta para movimientos `interestAccrual` (generados automáticamente por el modo de interés automático de la deuda). **Header Row** con icon-wrap + icono `trending-up` + título "Interés" + tag "Estimado" (reemplaza el contexto de deuda del header de Editar). **Amount Hero** idéntico visualmente (mismo componente héroe+caret) pero de solo lectura. Fila "Saldo después" igual. **Info Card** con Fecha y Nota como **`Info Row` (`myfAc`) de solo lectura** (sin caja de input, sin `chevron`/affordance de tap) — ej. Nota: "Interés calculado automáticamente sobre el saldo pendiente al corte del {fecha}." **Sin botón "Guardar cambios".** Único CTA: `Button/Primary` **"Eliminar"** a ancho completo, en **`$expense`** (es el único botón de la hoja y es destructivo), icono `trash-2`.
+
+### Regla de negocio (no se lee del frame — flutter-dev debe conocerla)
+
+**Los movimientos de tipo `interestAccrual` nunca son editables, solo eliminables.** El monto héroe con caret en `ldTrt`/`hVah4` es puramente visual (reusa el mismo componente que la variante editable) — en Flutter no debe llevar foco/teclado, y por eso Fecha/Nota se renderizan con `Info Row` en vez de `Form Field`: no hay affordance de tap porque no hay nada que tocar. No existe CTA "Guardar cambios" para interés porque no hay nada que guardar: el único camino para "corregir" un interés generado automáticamente es eliminar el asiento (el motor lo recalcula) o cambiar el modo de interés de la deuda a Manual desde el form crear/editar. Si en el futuro se soporta interés manual editable, será una tercera variante de este sheet, no una extensión de `ldTrt`.
+
+## Detalle — variante Capital vs Interés separado (`Uq1Zc` / `vr8kA`)
+
+**Decisión de producto (2026-08-19), reemplaza el `progress`/denominador anteriores para deudas con interés automático.** El % y la barra de avance del Hero Compact (`E7TQkJ`) medían capital + interés acumulado desde el origen de la deuda — cada interés que se sumaba sin que el usuario abonara nada hacía que el % bajara o se estancara, sensación de "retroceso" que choca con el tono de marca. Esta variante separa las dos cosas:
+
+- **"Saldo pendiente"** (monto héroe) sigue siendo el número real a pagar hoy: capital + interés acumulado, sin cambios en su cálculo.
+- **Denominador "de $X"** debajo del héroe ahora muestra **solo capital** (saldo de apertura + desembolsos posteriores — nunca intereses).
+- **Nota de interés** nueva, debajo de la barra de progreso: icono `trending-up` + texto `$text-secondary` **"+$X de interés acumulado"** (sin `Incluye` — ese verbo sugería que el interés sí estaba en el denominador de arriba, lo cual es justo lo contrario de esta variante; ver auditoría `ui-ux-reviewer` 2026-08-19). Solo se muestra si hay interés acumulado (`interestAccruedMinor > 0`).
+- **% y barra** miden avance de **capital**: `capitalPaidMinor / capitalTotalMinor`. Subtítulo del % cambia de "pagado" a **"pagado del capital"** (no "del préstamo" — ese texto salió `[IMPORTANTE]` en la primera auditoría por ambiguo, ver historial).
+- **Orden vertical dentro del Hero Compact**: Hero Top → Amount Row (saldo + %) → Track (barra) → Interest Note. La barra queda pegada al bloque de monto/% (proximidad Gestalt), la nota de interés va debajo — no entre el monto y la barra (ajuste post-auditoría).
+
+**Regla de negocio (no se lee del frame):** un abono se aplica **100% a capital** para efectos de este cálculo — nunca se reparte con el interés primero ni proporcional. Motivo (decisión explícita del usuario): la cuota real que paga ya trae el interés incluido en lo que desembolsa, así que restarle interés al abono duplicaría la contabilidad. Concretamente: `capitalPaidMinor = totalDecreasesMinor` (todas las reducciones, igual que hoy).
+
+**Corrección posterior (2026-08-19, mismo día): una reconciliación (`manualAdjustment`, "Actualizar saldo") NUNCA mueve `capitalTotalMinor`/`displayTotalMinor`, en ninguna dirección.** La primera versión de esta regla dejaba que una reconciliación *hacia arriba* creciera el capital total ("deuda nueva descubierta") — se revirtió tras verlo en un caso real: el usuario hizo dos reconciliaciones el mismo día (+$417.542,46 y luego −$14.051.297,37) y el "de $X" del detalle creció aunque el saldo de apertura del formulario de editar deuda nunca se tocó — confuso, porque el usuario espera que "de $X" sea siempre el saldo de apertura + desembolsos reales, punto. Una reconciliación corrige el saldo **pendiente** contra lo que dice el banco; nunca es un desembolso nuevo, así que nunca es capital. Concretamente: `capitalTotalMinor = principalMinor + Σ desembolsos (cash + ledger)`, excluyendo explícitamente tanto `interestAccrual` como `manualAdjustment` (cualquier signo).
+
+Tema oscuro (`vr8kA`) generado por `Copy()+theme:{mode:"dark"}` sin overrides manuales, auditado limpio (sin hallazgos `IMPORTANTE`/`CRITICO`, 2026-08-19).
 
 ## Notas de implementacion (para flutter-dev)
 

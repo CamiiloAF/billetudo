@@ -1,5 +1,5 @@
 -- schemaVersion 24: ayuda contextual permanente (minitutoriales,
--- docs/requirements/16-minitutoriales.md). Dos piezas:
+-- docs/requirements/fase-1/16-minitutoriales.md). Dos piezas:
 --
 -- 1. `tutorial_views` — una fila por clave de tutorial que el usuario ya
 --    vio (`TutorialViews` en app_database.dart). `id` NO es un UUID

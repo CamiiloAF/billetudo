@@ -395,6 +395,55 @@ class DebtRepositoryImpl implements DebtRepository {
       });
 
   @override
+  FutureResult<DebtEntry> getDebtEntry(String id) => _guard(() async {
+        final row = await _local.getEntry(id);
+        if (row == null) {
+          return Left(NotFoundFailure('debt entry "$id" does not exist'));
+        }
+        return Right(DebtEntryMapper.toEntity(row));
+      });
+
+  @override
+  FutureResult<DebtEntry> updateDebtEntry({
+    required String id,
+    required int amountMinor,
+    required DateTime entryDate,
+    String? note,
+  }) =>
+      _guard(() async {
+        final now = DateTime.now();
+        final row = await _local.updateEntry(
+          id,
+          db.DebtEntriesCompanion(
+            amountMinor: Value(amountMinor),
+            entryDate: Value(entryDate),
+            note: Value(note),
+            updatedAt: Value(now.millisecondsSinceEpoch),
+          ),
+        );
+        if (row == null) {
+          return Left(NotFoundFailure('debt entry "$id" does not exist'));
+        }
+        return Right(DebtEntryMapper.toEntity(row));
+      });
+
+  @override
+  FutureResult<Unit> deleteDebtEntry(String id) => _guard(() async {
+        final now = DateTime.now();
+        final row = await _local.updateEntry(
+          id,
+          db.DebtEntriesCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now.millisecondsSinceEpoch),
+          ),
+        );
+        if (row == null) {
+          return Left(NotFoundFailure('debt entry "$id" does not exist'));
+        }
+        return const Right(unit);
+      });
+
+  @override
   FutureResult<DebtEntry?> accrueInterestAtomic({
     required String debtId,
     required DebtEntryDraft? Function(DebtAccrualContext context) buildEntry,

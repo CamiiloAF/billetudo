@@ -5,7 +5,7 @@
 
 ## Motivación
 
-Salió del reanálisis de navegación (ver `docs/requirements/04-inicio.md` § Nota de navegación 2026-07-24 y `docs/fixes/bugfixes-0.0.1.md` item 7): al devolver **Metas al slot 4** del bottom nav, Pagos programados vuelve a "Más". Un usuario que navega seguido a Pagos reportó fricción por tenerlo un nivel adentro. En vez de darle a Pagos un tab propio (se descartó el drawer lateral: menos alcanzable que "Más"), se decidió **enriquecer "Más"** como un menú navegable estilo Mercado Libre, para que Pagos y el resto de destinos de gestión se alcancen mejor sin inflar el bottom nav.
+Salió del reanálisis de navegación (ver `docs/requirements/fase-1/04-inicio.md` § Nota de navegación 2026-07-24 y `docs/fixes/bugfixes-0.0.1.md` item 7): al devolver **Metas al slot 4** del bottom nav, Pagos programados vuelve a "Más". Un usuario que navega seguido a Pagos reportó fricción por tenerlo un nivel adentro. En vez de darle a Pagos un tab propio (se descartó el drawer lateral: menos alcanzable que "Más"), se decidió **enriquecer "Más"** como un menú navegable estilo Mercado Libre, para que Pagos y el resto de destinos de gestión se alcancen mejor sin inflar el bottom nav.
 
 ## Referencia
 

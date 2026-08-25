@@ -1,5 +1,5 @@
 // Patrol e2e for Gráficas e informes esenciales (Nivel 0,
-// `docs/requirements/10-graficas-informes.md`, design spec
+// `docs/requirements/fase-1/10-graficas-informes.md`, design spec
 // `design-system/billetudo/pages/graficas.md`). Runs the real app — real DI
 // graph, real on-device Drift database, real go_router navigation — against
 // a real emulator/simulator. No datasource or repository is mocked: this is

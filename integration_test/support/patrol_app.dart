@@ -102,7 +102,7 @@ Future<void> _prepareCleanBoot(PatrolIntegrationTester $) async {
 }
 
 /// Dismisses the HU-01 minitutorial sheet if it auto-showed
-/// (`docs/requirements/16-minitutoriales.md` criterion 1) right after
+/// (`docs/requirements/fase-1/16-minitutoriales.md` criterion 1) right after
 /// arriving at Presupuestos/Metas/Deudas/Pagos programados for the first
 /// time in a scenario.
 ///

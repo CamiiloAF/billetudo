@@ -88,7 +88,7 @@ enum DebtEntryKind {
 
 /// How often a scheduled payment repeats. `once` is a one-time future payment
 /// (no repetition): it generates a single transaction on its date and then
-/// goes inactive. See docs/requirements/09-pagos-programados.md.
+/// goes inactive. See docs/requirements/fase-1/09-pagos-programados.md.
 enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
 
 /// Lifecycle of a single occurrence of a scheduled payment (as opposed to the
@@ -96,7 +96,7 @@ enum ScheduleFrequency { once, daily, weekly, monthly, yearly }
 /// catch-up generator (HU-02), used as the idempotency ledger so a due date
 /// is never generated twice and never silently lost if the app closes
 /// mid-run. See `ScheduledPaymentOccurrences` and
-/// docs/requirements/09-pagos-programados.md.
+/// docs/requirements/fase-1/09-pagos-programados.md.
 ///  - `pending`: manual-confirmation template (HU-03), due date reached, not
 ///    yet applied to the balance.
 ///  - `confirmed`: applied — a `Transaction` was generated (auto mode
@@ -130,7 +130,7 @@ mixin _SyncColumns on Table {
 
   /// `clientDefault`, not `.withDefault(currentDateAndTime)`: every
   /// `_SyncColumns` table is physically a PowerSync-managed view (see
-  /// decision #14, docs/requirements/05-auth-sync.md), which has no real SQL
+  /// decision #14, docs/requirements/fase-1/05-auth-sync.md), which has no real SQL
   /// column defaults — any column a raw or Drift-builder INSERT statement
   /// doesn't list explicitly comes back NULL, not this default. `clientDefault`
   /// computes the value in Dart and always includes it in the generated
@@ -177,7 +177,7 @@ mixin _SyncColumns on Table {
   /// no owner yet. It is filled once the user signs in and the local-data
   /// merge (HU-04) runs. This is the prerequisite for RLS policies in
   /// Postgres and per-user PowerSync sync rules. See
-  /// docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+  /// docs/requirements/fase-1/05-auth-sync.md, decision #7 (2026-07-17).
   TextColumn get userId => text().nullable()();
 
   @override
@@ -206,7 +206,7 @@ class Accounts extends Table with _SyncColumns {
   IntColumn get sortOrder => integer().clientDefault(() => 0)();
 
   // -- Bank identification and card data (all nullable so existing accounts
-  //    are not broken; see docs/requirements/01-cuentas.md). --
+  //    are not broken; see docs/requirements/fase-1/01-cuentas.md). --
 
   /// Bank name (e.g. 'Bancolombia', 'Nu'). Applies to every account type.
   TextColumn get institution => text().nullable().withLength(max: 100)();
@@ -232,7 +232,7 @@ class Accounts extends Table with _SyncColumns {
   TextColumn get cardBalancePrimary => textEnum<CardBalanceView>().nullable()();
 
   /// The import batch this account was created by, when it came from a CSV
-  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// import (docs/requirements/fase-1/11-import-export.md). Null = created by hand
   /// (or predates the feature). Lets a whole import be reverted without
   /// heuristics (HU-08).
   TextColumn get importBatchId =>
@@ -252,7 +252,7 @@ class Categories extends Table with _SyncColumns {
   IntColumn get sortOrder => integer().clientDefault(() => 0)();
 
   /// The import batch this category was created by, when it came from a CSV
-  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// import (docs/requirements/fase-1/11-import-export.md). Null = created by hand
   /// (or predates the feature), including every `seed-*` catalog category.
   /// Lets a whole import be reverted without heuristics (HU-08).
   TextColumn get importBatchId =>
@@ -296,7 +296,7 @@ class Transactions extends Table with _SyncColumns {
   BoolColumn get countsInBudget => boolean().clientDefault(() => false)();
 
   /// The import batch this transaction was created by, when it came from a
-  /// CSV import (docs/requirements/11-import-export.md). Null = created by
+  /// CSV import (docs/requirements/fase-1/11-import-export.md). Null = created by
   /// hand/voice/OCR/notification/scheduled. Lets a whole import be reverted
   /// without the `source = imported` + time-window heuristic (which breaks
   /// with two same-day imports), see HU-08.
@@ -308,7 +308,7 @@ class Transactions extends Table with _SyncColumns {
 /// `BudgetAccounts` / `BudgetCategories` join tables). No `categoryId` column:
 /// a budget is a named entity, not a per-category breakdown. An empty scope on
 /// both join tables = the global budget (all expenses). See
-/// docs/requirements/06-presupuestos.md.
+/// docs/requirements/fase-1/06-presupuestos.md.
 class Budgets extends Table with _SyncColumns {
   /// Custom name the user gives the budget (e.g. 'Tarjeta de crédito'). HU-01.
   TextColumn get name => text().withLength(min: 1, max: 100)();
@@ -348,7 +348,7 @@ class Budgets extends Table with _SyncColumns {
 /// Savings goals. NOTE: there is deliberately no stored progress column —
 /// `savedMinor` is DERIVED by summing [GoalContributions] (contribution -
 /// withdrawal), the same "derive, don't store" pattern `Debts` uses via
-/// `DebtEntries`. See docs/requirements/07-metas.md.
+/// `DebtEntries`. See docs/requirements/fase-1/07-metas.md.
 class Goals extends Table with _SyncColumns {
   TextColumn get name => text().withLength(min: 1, max: 100)();
   IntColumn get targetMinor => integer()();
@@ -433,7 +433,7 @@ class Debts extends Table with _SyncColumns {
   ///
   /// `nullable()` is a `_SyncColumns`/PowerSync constraint, not the domain
   /// intent: every `_SyncColumns` table is a PowerSync-managed view with no SQL
-  /// column defaults (decision #14, docs/requirements/05-auth-sync.md), so a
+  /// column defaults (decision #14, docs/requirements/fase-1/05-auth-sync.md), so a
   /// `clientDefault`/`.withDefault(...)` here would silently be ignored and
   /// come back NULL. The repository stamps `startDate` explicitly on every
   /// insert (like the other columns). Nullable also lets the `addColumn`
@@ -508,7 +508,7 @@ class ScheduledPayments extends Table with _SyncColumns {
   TextColumn get note => text().nullable()();
 
   /// Only set when [type] is `transfer`: the destination account, same rule as
-  /// a normal transfer transaction (see docs/requirements/03-transacciones.md).
+  /// a normal transfer transaction (see docs/requirements/fase-1/03-transacciones.md).
   TextColumn get transferAccountId =>
       text().nullable().references(Accounts, #id)();
 
@@ -523,7 +523,7 @@ class ScheduledPayments extends Table with _SyncColumns {
   /// creation — it is not a cursor. It exists purely for display (e.g. "First
   /// payment" in the edit form), so the UI never confuses the recurrence
   /// cursor with the original scheduled date. See
-  /// docs/requirements/09-pagos-programados.md.
+  /// docs/requirements/fase-1/09-pagos-programados.md.
   DateTimeColumn get firstPaymentDate => dateTime()();
 
   /// The next due date to be processed by the catch-up generator (HU-02).
@@ -538,9 +538,16 @@ class ScheduledPayments extends Table with _SyncColumns {
   BoolColumn get requiresConfirmation => boolean().clientDefault(() => false)();
 
   /// Links this template to a [Debts] row when it is a debt installment
-  /// (HU-03, docs/requirements/08-deudas.md). Nullable: an ordinary scheduled
+  /// (HU-03, docs/requirements/fase-1/08-deudas.md). Nullable: an ordinary scheduled
   /// payment (rent, subscription) has no debt; only installments set it.
   TextColumn get debtId => text().nullable().references(Debts, #id)();
+
+  /// Links this template to a [Goals] row when it is a recurring goal
+  /// contribution (HU-16, design-system/billetudo/pages/metas.md). Nullable:
+  /// an ordinary scheduled payment has no goal; only recurring contributions
+  /// set it. Exclusive with [debtId] — never both on the same template (see
+  /// `ScheduledPaymentDraft.validated()`).
+  TextColumn get goalId => text().nullable().references(Goals, #id)();
 }
 
 /// User-defined "quick contribution" amount chips for a [Goals] row (Metas
@@ -571,14 +578,14 @@ class Tags extends Table with _SyncColumns {
   TextColumn get color => text().nullable()();
 
   /// The import batch this row was created by, when it came from a CSV
-  /// import (docs/requirements/11-import-export.md). Null = created by hand
+  /// import (docs/requirements/fase-1/11-import-export.md). Null = created by hand
   /// (or predates the feature). Lets a whole import be reverted without
   /// heuristics (HU-08).
   TextColumn get importBatchId =>
       text().nullable().references(ImportBatches, #id)();
 }
 
-/// One row per completed import (CSV, docs/requirements/11-import-export.md).
+/// One row per completed import (CSV, docs/requirements/fase-1/11-import-export.md).
 /// Never deleted: it is the undo target for HU-08 ("revertir importación"),
 /// so its presence in the history must survive the revert itself —
 /// [revertedAt] marks that instead of removing the row.
@@ -643,7 +650,7 @@ class ScheduledPaymentTags extends Table with _SyncColumns {
 /// [occurrenceDate] is the template's original anchor date for this
 /// occurrence and is never mutated — the next occurrence's date is always
 /// computed from the template's own `frequency`/`interval`/`nextDate`, never
-/// from a snoozed date (see docs/requirements/09-pagos-programados.md,
+/// from a snoozed date (see docs/requirements/fase-1/09-pagos-programados.md,
 /// HU-07 "nota de dominio"). Snoozing only records where the user wants
 /// *this* occurrence to land, in [snoozedToDate].
 class ScheduledPaymentOccurrences extends Table with _SyncColumns {
@@ -676,7 +683,7 @@ class ScheduledPaymentOccurrences extends Table with _SyncColumns {
 
 /// Budget scope by account (N:N). No rows for a budget = all accounts. Carries
 /// its own id (from the mixin) because PowerSync needs a single-column PK, just
-/// like `TransactionTags`. See docs/requirements/06-presupuestos.md.
+/// like `TransactionTags`. See docs/requirements/fase-1/06-presupuestos.md.
 class BudgetAccounts extends Table with _SyncColumns {
   TextColumn get budgetId => text().references(Budgets, #id)();
   TextColumn get accountId => text().references(Accounts, #id)();
@@ -771,15 +778,29 @@ class AppSettings extends Table with _SyncColumns {
   TextColumn get featuredBudgetId => text().nullable()();
 
   /// Explicit resolution mode for the featured budget (HU pending, see
-  /// `FeaturedBudgetMode`): `automatic` (default, the pre-existing fallback
-  /// behavior when [featuredBudgetId] is null), `manual` ([featuredBudgetId]
-  /// picks the budget), or `none` (the user explicitly wants no featured
-  /// budget and no automatic fallback). Only relevant when it is `manual`
-  /// does [featuredBudgetId] get read. Defaults to `automatic` so every
-  /// installation that predates this column keeps today's behavior
-  /// unchanged.
-  TextColumn get featuredBudgetMode => textEnum<FeaturedBudgetMode>()
-      .clientDefault(() => FeaturedBudgetMode.automatic.name)();
+  /// `FeaturedBudgetMode`): `automatic` (the pre-existing fallback behavior
+  /// when [featuredBudgetId] is null), `manual` ([featuredBudgetId] picks the
+  /// budget), or `none` (the user explicitly wants no featured budget and no
+  /// automatic fallback). Only relevant when it is `manual` does
+  /// [featuredBudgetId] get read.
+  ///
+  /// Nullable on purpose (fix for decision #25,
+  /// `docs/requirements/fase-1/05-auth-sync.md`): a device whose PowerSync
+  /// store synced *before* this column existed can legitimately have a
+  /// physical `NULL` here even when the user's real server value is
+  /// something other than `automatic` (e.g. `manual`) — that row simply
+  /// hasn't received the real value from the server yet. A non-nullable
+  /// column with a `clientDefault`/backfill treated that transient `NULL` as
+  /// "never configured" and overwrote it with `'automatic'`, and that local
+  /// write then propagated to Postgres via PowerSync's
+  /// `resolution=merge-duplicates` upsert, silently clobbering the user's
+  /// real setting. `null` here means "unknown/not yet synced, or a genuinely
+  /// pre-this-column installation" and must be interpreted as `automatic`
+  /// only in the read/mapping layer
+  /// (`AppSettingsRepositoryImpl._toFeaturedBudgetMode`) — never written back
+  /// to the row.
+  TextColumn get featuredBudgetMode =>
+      textEnum<FeaturedBudgetMode>().nullable()();
 
   /// Global on/off for the contextual help minitutorials (screen + sub-flow
   /// sheets): whether a tutorial the user hasn't seen yet is allowed to pop
@@ -790,6 +811,17 @@ class AppSettings extends Table with _SyncColumns {
   /// every tutorial shows again once.
   BoolColumn get showHelpOnSectionEntry =>
       boolean().clientDefault(() => true)();
+
+  /// Persisted order of the Home quick-access chips (`QuickAccessRow`):
+  /// a comma-separated list of `QuickAccessItem.name` values, e.g.
+  /// `'scheduledPayments,debts,reports'`. Null (the default, including
+  /// every installation that predates this column) falls back to that same
+  /// order — `QuickAccessItem.defaultOrder` — in the repository, which also
+  /// falls back there if the stored value is malformed (not an exact
+  /// permutation of the 3 known items: unknown item, duplicate, or missing
+  /// one). Stored as free text rather than `textEnum` because it holds a
+  /// *list*, not a single enum value.
+  TextColumn get quickAccessOrder => text().nullable()();
 }
 
 /// One row per tutorial key the current installation's user has already
@@ -811,7 +843,7 @@ class AppSettings extends Table with _SyncColumns {
 /// this table's primary key MUST be the composite `(id, user_id)`, never
 /// `id` alone: a plain `id` PK would collide the moment a second user sees
 /// the same tutorial (identical bug class to the seed-categories issue,
-/// docs/requirements/05-auth-sync.md decision #19). Locally this SQLite view
+/// docs/requirements/fase-1/05-auth-sync.md decision #19). Locally this SQLite view
 /// keeps a single-column PK on `id` because one installation only ever holds
 /// one user's rows at a time.
 class TutorialViews extends Table with _SyncColumns {
@@ -851,14 +883,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 26;
+  int get schemaVersion => 29;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
   ///
   /// Goes through Drift's typed insert API, NOT a raw `customStatement`, on
   /// purpose: every `_SyncColumns` table is physically a PowerSync-managed
-  /// view (decision #14, docs/requirements/05-auth-sync.md), which has no SQL
+  /// view (decision #14, docs/requirements/fase-1/05-auth-sync.md), which has no SQL
   /// column defaults of its own — a raw INSERT that only lists a couple of
   /// columns leaves every other column NULL. The typed API fills every
   /// `clientDefault` column (id, createdAt, updatedAt, zeroBasedEnabled,
@@ -877,7 +909,7 @@ class AppDatabase extends _$AppDatabase {
         },
         onUpgrade: (Migrator m, int from, int to) async {
           // v1 -> v2: bank identification and card data columns on Accounts
-          // (all nullable). See docs/requirements/01-cuentas.md.
+          // (all nullable). See docs/requirements/fase-1/01-cuentas.md.
           if (from < 2) {
             await m.addColumn(accounts, accounts.institution);
             // `account_number_enc` no longer exists on the table class (see
@@ -993,7 +1025,7 @@ class AppDatabase extends _$AppDatabase {
             );
           }
 
-          // v6 -> v7: Budgets feature. See docs/requirements/06-presupuestos.md.
+          // v6 -> v7: Budgets feature. See docs/requirements/fase-1/06-presupuestos.md.
           //  1. Budgets gains name/icon/recurring/endDate/archivedAt/
           //     alertThresholdPct and drops `categoryId` (scope now lives in the
           //     BudgetAccounts / BudgetCategories join tables).
@@ -1025,7 +1057,7 @@ class AppDatabase extends _$AppDatabase {
           // v7 -> v8: scheduled payments gain a one-time frequency and two
           // fields. `once` is additive to the ScheduleFrequency enum (stored as
           // text), so no data migration is needed. See
-          // docs/requirements/09-pagos-programados.md.
+          // docs/requirements/fase-1/09-pagos-programados.md.
           //  - `transferAccountId`: destination for a transfer-type scheduled
           //    payment (nullable).
           //  - `requiresConfirmation`: opt-in confirmation flow (HU-03).
@@ -1056,7 +1088,7 @@ class AppDatabase extends _$AppDatabase {
           // user signs in and the local-data merge (HU-04) fills it in; this
           // is what unlocks RLS in Postgres and per-user PowerSync sync
           // rules. Additive nullable column -> no backfill needed. See
-          // docs/requirements/05-auth-sync.md, decision #7 (2026-07-17).
+          // docs/requirements/fase-1/05-auth-sync.md, decision #7 (2026-07-17).
           if (from < 10) {
             await m.addColumn(accounts, accounts.userId);
             await m.addColumn(categories, categories.userId);
@@ -1102,7 +1134,7 @@ class AppDatabase extends _$AppDatabase {
             // (2026-07-15) — SQLite hard-errors ("Cannot add a column to a
             // view") on any `ALTER TABLE ADD/DROP COLUMN` against one, it is
             // not a silent no-op as an earlier version of this comment (and
-            // `docs/requirements/05-auth-sync.md` decision #14's own closing
+            // `docs/requirements/fase-1/05-auth-sync.md` decision #14's own closing
             // note) assumed. Confirmed empirically 2026-07-24, after a real
             // device hit this on an app update: `onUpgrade` running that
             // `ALTER TABLE scheduled_payments ADD COLUMN ...` was the actual
@@ -1144,7 +1176,7 @@ class AppDatabase extends _$AppDatabase {
           //    adjustments. The outstanding balance is DERIVED from these, so
           //    there is no stored balance column.
           //  - `ScheduledPayments.debtId`: nullable FK linking an installment
-          //    template to its debt (HU-03, docs/requirements/08-deudas.md).
+          //    template to its debt (HU-03, docs/requirements/fase-1/08-deudas.md).
           // Keep parity with Supabase/Postgres: replicate the `debts.accrual_mode`
           // column, the `debt_entries` table (same columns + sync columns) and
           // the `scheduled_payments.debt_id` column once sync is wired.
@@ -1219,7 +1251,7 @@ class AppDatabase extends _$AppDatabase {
             // JSON key, once it re-syncs.
           }
 
-          // v18 -> v19: Metas de ahorro (Nivel 0, docs/requirements/07-metas.md).
+          // v18 -> v19: Metas de ahorro (Nivel 0, docs/requirements/fase-1/07-metas.md).
           // `Goals` drops `savedMinor`/`color` and gains `completedAt`,
           // `archivedAt`, `lastMilestonePct`; the new `GoalContributions`
           // table becomes the ONLY source of a goal's progress
@@ -1393,7 +1425,7 @@ class AppDatabase extends _$AppDatabase {
             );
           }
 
-          // v24 -> v25: Import/Export (docs/requirements/11-import-export.md).
+          // v24 -> v25: Import/Export (docs/requirements/fase-1/11-import-export.md).
           // New `ImportBatches` table (one row per completed CSV import,
           // never deleted — `revertedAt` marks a revert instead, HU-08) plus
           // a nullable `importBatchId` on every table an import can create
@@ -1424,27 +1456,83 @@ class AppDatabase extends _$AppDatabase {
           // above: `appSettings` is a PowerSync-managed view, and
           // `powerSyncSchema` (`powersync_schema.dart`) already declares
           // `featured_budget_mode`, so PowerSync recreates the view with the
-          // column present before this migration runs. This column is NOT
-          // nullable in Dart (`textEnum<FeaturedBudgetMode>()`, default
-          // `automatic`), so — learning from the exact crash
-          // `onboardingCompleted` hit (`from < 22` above,
-          // BILLETUDO-9/BILLETUDO-A) — any pre-existing singleton row with no
-          // `featured_budget_mode` key in its PowerSync JSON blob is
-          // explicitly backfilled to `'automatic'` here in the SAME version
-          // bump that adds the column, matching today's pre-existing
-          // behavior (null `featuredBudgetId` = automatic fallback).
+          // column present before this migration runs.
+          //
+          // NOTE: this block used to backfill any `NULL`
+          // `featured_budget_mode` to `'automatic'` here, matching the
+          // column being non-nullable in Dart at the time. That backfill was
+          // the exact bug fixed by decision #25
+          // (`docs/requirements/fase-1/05-auth-sync.md`): a device that
+          // synced before this column existed has a *physically* `NULL`
+          // value, not an "unconfigured" one — the real value (e.g.
+          // `manual`) just hasn't come down from the server yet at migration
+          // time. Overwriting it here and letting that write upload via
+          // PowerSync's merge-duplicates upsert silently clobbered the
+          // user's real server value. The column is nullable now (see its
+          // declaration above), so this block is intentionally empty — no
+          // DDL, no backfill. `null` is handled by treating it as
+          // `automatic` only in the read/mapping layer
+          // (`AppSettingsRepositoryImpl._toFeaturedBudgetMode`).
           if (from < 26) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v26 -> v27: `AppSettings` gains `quickAccessOrder`, the
+          // persisted order of the Home quick-access chips
+          // (`QuickAccessItem` / `QuickAccessRow`). No `addColumn` — see the
+          // note on `from < 12` above: `appSettings` is a PowerSync-managed
+          // view, and `powerSyncSchema` (`powersync_schema.dart`) already
+          // declares `quick_access_order`, so PowerSync recreates the view
+          // with the column present before this migration runs. This column
+          // IS nullable in Dart, so it would not crash like
+          // `onboardingCompleted` (`from < 22` above) did — but every
+          // pre-existing singleton row is still explicitly backfilled to
+          // today's fixed order here, so `AppSettings.quickAccessOrder`
+          // reads the same value whether the repository's "null falls back
+          // to default" path is exercised or not.
+          if (from < 27) {
             await m.database.customStatement(
-              "UPDATE app_settings SET featured_budget_mode = 'automatic' "
-              'WHERE featured_budget_mode IS NULL',
+              'UPDATE app_settings SET quick_access_order = '
+              "'scheduledPayments,debts,reports' "
+              'WHERE quick_access_order IS NULL',
             );
+          }
+
+          // v27 -> v28: `ScheduledPayments` gains `goalId` (HU-16,
+          // design-system/billetudo/pages/metas.md): a nullable FK linking a
+          // template to a [Goals] row when it represents a recurring goal
+          // contribution, mirroring `debtId` for debt installments. No
+          // `addColumn` — see the note on `from < 12` above:
+          // `scheduledPayments` is a PowerSync-managed view, and
+          // `powerSyncSchema` (`powersync_schema.dart`) already declares
+          // `goal_id`, so PowerSync recreates the view with the column
+          // present before this migration runs. Nullable column, no backfill
+          // needed.
+          if (from < 28) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v28 -> v29: `AppSettings.featuredBudgetMode` becomes nullable
+          // (fix for decision #25, `docs/requirements/fase-1/05-auth-sync.md`
+          // — see the column's doc comment and the `from < 26` block above
+          // for the full story). No DDL: `appSettings` is a
+          // PowerSync-managed view, and nullability is a Dart/Drift-side
+          // constraint, not something `powerSyncSchema`
+          // (`powersync_schema.dart`) encodes differently — that schema
+          // already declares `featured_budget_mode` as a plain
+          // `Column.text()` with no NOT NULL of its own, so nothing there
+          // needed to change either. No backfill: a physical `NULL` is now a
+          // valid, meaningful value (see the column's doc comment), so there
+          // is nothing to fix up on upgrade.
+          if (from < 29) {
+            // Nothing to do here: see the comment above this block.
           }
         },
       );
 
   // Drift opens on top of the PowerSync-managed connection instead of its own
   // NativeDatabase (see `core/database/database_connection.dart` and decision
-  // #6, docs/requirements/05-auth-sync.md). The mirrored PowerSync `Schema`
+  // #6, docs/requirements/fase-1/05-auth-sync.md). The mirrored PowerSync `Schema`
   // lives in `core/database/powersync_schema.dart` and must be kept in sync
   // by hand with any change to a `_SyncColumns` table here.
 }

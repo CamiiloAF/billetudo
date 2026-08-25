@@ -27,16 +27,32 @@ class BottomSheetBase extends StatelessWidget {
   /// included — the behaviour every sheet in the app is expected to have.
   /// Pass `false` only for the rare sheet that must stay scoped to its
   /// branch, with a comment at the call site explaining why.
+  /// [isDismissible]/[enableDrag] default to `true`, matching every sheet
+  /// that existed before this parameter — pass `false` to both for a
+  /// genuinely blocking sheet (e.g. HU-02/03's account-conflict warning): a
+  /// scrim tap or a downward drag must not be able to close it. That alone
+  /// does not stop Android's back button/edge-swipe gesture, so when both
+  /// are `false` the content is also wrapped in `PopScope(canPop: false)`.
   static Future<T?> show<T>(
     BuildContext context, {
     required WidgetBuilder builder,
     bool useRootNavigator = true,
+    bool isDismissible = true,
+    bool enableDrag = true,
   }) =>
       showModalBottomSheet<T>(
         context: context,
         isScrollControlled: true,
         useRootNavigator: useRootNavigator,
-        builder: (context) => BottomSheetBase(child: builder(context)),
+        isDismissible: isDismissible,
+        enableDrag: enableDrag,
+        builder: (context) {
+          final content = BottomSheetBase(child: builder(context));
+          if (isDismissible || enableDrag) {
+            return content;
+          }
+          return PopScope(canPop: false, child: content);
+        },
       );
 
   /// Closes a sheet opened with [show] once its own write finishes, safely

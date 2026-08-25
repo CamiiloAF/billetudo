@@ -5,6 +5,7 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_linked_debt.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_linked_goal.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_detail_state.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/pages/scheduled_payment_detail_page.dart';
@@ -39,6 +40,7 @@ void main() {
     DateTime? nextDate,
     bool pending = false,
     ScheduledPaymentLinkedDebt? linkedDebt,
+    ScheduledPaymentLinkedGoal? linkedGoal,
   }) {
     final payment = buildScheduledPayment(
       frequency: frequency,
@@ -57,6 +59,7 @@ void main() {
       pendingOccurrence:
           pending ? buildPendingOccurrence(scheduledPayment: payment) : null,
       linkedDebt: linkedDebt,
+      linkedGoal: linkedGoal,
     );
   }
 
@@ -64,6 +67,7 @@ void main() {
     WidgetTester tester,
     ScheduledPaymentDetailState state, {
     ValueChanged<String>? onOpenDebt,
+    ValueChanged<String>? onOpenGoal,
     void Function(ScheduledPaymentLinkedDebt debt, String spId)?
         onEditInstallment,
   }) async {
@@ -87,6 +91,7 @@ void main() {
             onEdit: (_) {},
             onOpenTransaction: (_) async => null,
             onOpenDebt: onOpenDebt ?? (_) {},
+            onOpenGoal: onOpenGoal ?? (_) {},
             onEditInstallment: onEditInstallment ?? (_, __) {},
           ),
         ),
@@ -466,6 +471,68 @@ void main() {
 
       expect(editedDebt, linkedDebt);
       expect(editedSpId, 'sp-1');
+    });
+  });
+
+  group('HU-16: cross-link con la meta', () {
+    const linkedGoal = ScheduledPaymentLinkedGoal(
+      id: 'goal-1',
+      name: 'Viaje a Cartagena',
+    );
+
+    testWidgets(
+        'un aporte recurrente muestra la card "Meta Enlazada" y navega al '
+        'detalle de la meta al tocarla', (tester) async {
+      String? openedGoalId;
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(linkedGoal: linkedGoal),
+        ),
+        onOpenGoal: (id) => openedGoalId = id,
+      );
+
+      expect(find.text('META ENLAZADA'), findsOneWidget);
+      expect(find.text('Viaje a Cartagena'), findsOneWidget);
+
+      await tester.tap(find.text('Viaje a Cartagena'));
+      await tester.pumpAndSettle();
+      expect(openedGoalId, 'goal-1');
+    });
+
+    testWidgets(
+        'una plantilla ordinaria (sin meta) no muestra la card de meta '
+        'enlazada', (tester) async {
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(),
+        ),
+      );
+
+      expect(find.text('META ENLAZADA'), findsNothing);
+    });
+
+    testWidgets(
+        'si por error trae linkedDebt y linkedGoal a la vez, muestra solo la '
+        'card de deuda, nunca ambas', (tester) async {
+      const linkedDebt = ScheduledPaymentLinkedDebt(
+        id: 'debt-1',
+        name: 'Crédito vehicular',
+        iOwe: true,
+      );
+      await pumpDetail(
+        tester,
+        ScheduledPaymentDetailState(
+          status: ScheduledPaymentDetailStatus.ready,
+          detail: buildDetail(linkedDebt: linkedDebt, linkedGoal: linkedGoal),
+        ),
+      );
+
+      expect(find.text('META ENLAZADA'), findsNothing);
+      expect(find.textContaining('Cuota de'), findsOneWidget);
     });
   });
 }

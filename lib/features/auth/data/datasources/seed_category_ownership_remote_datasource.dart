@@ -13,7 +13,7 @@ class SeedCategoryOwnershipCheckException implements Exception {
 }
 
 /// HU-04's "don't reclaim a seed category the account already has" check
-/// (`docs/requirements/05-auth-sync.md`, decision #12): a one-off query
+/// (`docs/requirements/fase-1/05-auth-sync.md`, decision #12): a one-off query
 /// straight against Postgres via [SupabaseClient] — not PowerSync, which may
 /// not have finished hydrating this account's data yet at this point of the
 /// merge — for which of this device's local `seed-*` category ids the

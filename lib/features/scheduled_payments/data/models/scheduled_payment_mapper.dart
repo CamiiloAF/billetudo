@@ -32,6 +32,7 @@ abstract final class ScheduledPaymentMapper {
         updatedAt: row.updatedAt,
         tombstonedAt: row.tombstonedAt,
         debtId: row.debtId,
+        goalId: row.goalId,
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).
@@ -61,6 +62,7 @@ abstract final class ScheduledPaymentMapper {
         endDate: Value(draft.endDate),
         requiresConfirmation: Value(draft.requiresConfirmation),
         debtId: Value(draft.debtId),
+        goalId: Value(draft.goalId),
         createdAt: Value(now),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
@@ -105,6 +107,12 @@ abstract final class ScheduledPaymentMapper {
         // link and an ordinary template keeps its null — an edit never silently
         // unlinks or links a template.
         debtId: Value(draft.debtId),
+        // Same rule as `debtId` (HU-16): a plain edit resubmits the loaded
+        // `goalId` untouched, so a recurring contribution keeps its link.
+        // `LinkScheduledPaymentToGoal` (Metas) is the only path that sets
+        // this from `null` to a real value, via a targeted update, not this
+        // full-draft edit path.
+        goalId: Value(draft.goalId),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
@@ -116,6 +124,21 @@ abstract final class ScheduledPaymentMapper {
   }) =>
       db.ScheduledPaymentsCompanion(
         tombstonedAt: Value(now),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      );
+
+  /// HU-16 "Enlazar existente": assigns `goalId` to an already-created
+  /// template, touching nothing else. Deliberately NOT built via
+  /// [toUpdateCompanion] (which resubmits every field of a full,
+  /// re-validated draft) — the link flow only claims an untouched template,
+  /// so a narrow companion is both simpler and safe against accidentally
+  /// rewriting fields the picker never showed the user.
+  static db.ScheduledPaymentsCompanion assignGoalIdCompanion({
+    required String goalId,
+    required DateTime now,
+  }) =>
+      db.ScheduledPaymentsCompanion(
+        goalId: Value(goalId),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 

@@ -1,4 +1,4 @@
-// Patrol e2e for the account gate (`docs/requirements/15-gate-cuenta.md`).
+// Patrol e2e for the account gate (`docs/requirements/fase-1/15-gate-cuenta.md`).
 // Runs the real app: real DI graph, real on-device Drift database, real
 // go_router navigation. No datasource or repository is mocked.
 //

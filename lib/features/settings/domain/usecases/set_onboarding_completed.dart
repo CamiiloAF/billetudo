@@ -4,7 +4,7 @@ import '../../../../core/error/result.dart';
 import '../repositories/app_settings_repository.dart';
 
 /// Latches the welcome flow as completed for this installation
-/// (`docs/requirements/13-onboarding.md`). Idempotent; the flag never turns
+/// (`docs/requirements/fase-1/13-onboarding.md`). Idempotent; the flag never turns
 /// off once set.
 @injectable
 class SetOnboardingCompleted {

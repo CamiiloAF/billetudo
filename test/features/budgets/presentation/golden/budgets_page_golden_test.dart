@@ -80,7 +80,16 @@ void main() {
     double height = 1000,
     String? featuredBudgetId,
   }) async {
-    when(() => listCubit.state).thenReturn(state);
+    // El badge de destacado lo pinta `BudgetsPage` desde
+    // `BudgetsListState.featuredBudgetId` (`budgets_page.dart`), NO desde
+    // `AppSettings` — el cubit lo deriva de los ajustes y lo publica en su
+    // propio estado. Inyectarlo solo en `AppSettingsState` dejaba el golden
+    // `list_featured_*` sin badge, que es justo lo que ese caso verifica.
+    when(() => listCubit.state).thenReturn(
+      featuredBudgetId == null
+          ? state
+          : state.copyWith(featuredBudgetId: () => featuredBudgetId),
+    );
     when(() => envelopeCubit.state)
         .thenReturn(ZeroBasedSummaryState(summary: summary));
     when(() => settingsCubit.state).thenReturn(

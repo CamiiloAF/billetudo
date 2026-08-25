@@ -5,7 +5,7 @@ import 'column_mapping.dart';
 /// Which of the two vocabularies a CSV file's headers/values are written in.
 /// Export always picks one from the active app language; import recognizes
 /// either, so a Spanish-exported file re-imports unmodified into an
-/// English-language install (`docs/requirements/11-import-export.md`
+/// English-language install (`docs/requirements/fase-1/11-import-export.md`
 /// §Encabezados y nombres de archivo).
 enum CsvLanguage { es, en }
 

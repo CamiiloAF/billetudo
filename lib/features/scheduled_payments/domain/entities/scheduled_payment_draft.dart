@@ -33,6 +33,7 @@ class ScheduledPaymentDraft extends Equatable {
     this.requiresConfirmation = false,
     this.tagIds = const <String>[],
     this.debtId,
+    this.goalId,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -46,6 +47,7 @@ class ScheduledPaymentDraft extends Equatable {
   static const String fieldInterval = 'interval';
   static const String fieldEndDate = 'endDate';
   static const String fieldNote = 'note';
+  static const String fieldGoalId = 'goalId';
 
   static const int maxNoteLength = 500;
 
@@ -82,6 +84,13 @@ class ScheduledPaymentDraft extends Equatable {
   /// it is a cross-link, not a business rule the draft enforces.
   final String? debtId;
 
+  /// The owning `Goal` id when this template is a recurring contribution
+  /// (HU-16); null for an ordinary scheduled payment or a debt installment.
+  /// Exclusive with [debtId] — [validated] rejects a draft carrying both.
+  /// Carried through untouched, same as [debtId]: a cross-link, not a
+  /// business rule the draft computes.
+  final String? goalId;
+
   /// Validates every business rule of HU-01/HU-05/criterion 16 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
   /// becomes `null`), `interval` forced to 1 for `once`, and
@@ -91,6 +100,19 @@ class ScheduledPaymentDraft extends Equatable {
   /// Returns `Left(ValidationFailure)` with the offending `field` set, so the
   /// form can highlight it.
   Result<ScheduledPaymentDraft> validated() {
+    // HU-16 exclusivity: a template is either a debt's cuota or a goal's
+    // recurring contribution, never both — the "Meta Enlazada"/"Deuda
+    // Enlazada" cards on the detail screen are mutually exclusive, and a
+    // template linked to both would make no sense to generate/confirm.
+    if (debtId != null && goalId != null) {
+      return const Left(
+        ValidationFailure(
+          'a scheduled payment cannot be linked to both a debt and a goal',
+          field: fieldGoalId,
+        ),
+      );
+    }
+
     final accountId = this.accountId.trim();
     if (accountId.isEmpty) {
       return const Left(
@@ -173,6 +195,7 @@ class ScheduledPaymentDraft extends Equatable {
         requiresConfirmation: requiresConfirmation,
         tagIds: tagIds,
         debtId: debtId,
+        goalId: goalId,
       ),
     );
   }
@@ -254,5 +277,6 @@ class ScheduledPaymentDraft extends Equatable {
         requiresConfirmation,
         tagIds,
         debtId,
+        goalId,
       ];
 }

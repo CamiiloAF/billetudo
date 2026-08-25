@@ -7,7 +7,7 @@ import '../entities/budget_with_progress.dart';
 import '../repositories/budget_repository.dart';
 import '../services/budget_hero_selector.dart';
 
-/// Home's automatic hero pick (`docs/requirements/04-inicio.md`): the single
+/// Home's automatic hero pick (`docs/requirements/fase-1/04-inicio.md`): the single
 /// active budget, if any, that is both global (no account/category scope,
 /// `BudgetScope.isGlobal`) and on the `BudgetPeriod.monthly` cadence. Home
 /// only ever represents *this* exact profile — a global budget on another

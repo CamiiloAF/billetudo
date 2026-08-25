@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras 2 rondas de conceptos, refinamiento del elegido y 2 pases de `ui-ux-reviewer`. Requisitos en `docs/requirements/13-onboarding.md`. No confundir con `design-system/billetudo/pages/primer-arranque.md` (pantalla de "sin conexión" del primerísimo arranque, independiente y anterior a este flujo).
+**Estado:** aprobado y terminado (claro + oscuro), tras 2 rondas de conceptos, refinamiento del elegido y 2 pases de `ui-ux-reviewer`. Requisitos en `docs/requirements/fase-1/13-onboarding.md`. No confundir con `design-system/billetudo/pages/primer-arranque.md` (pantalla de "sin conexión" del primerísimo arranque, independiente y anterior a este flujo).
 
 ## Tesis (norte del diseño)
 
@@ -33,7 +33,7 @@ HU-03 (categorías semilla) no tiene pantalla propia — se menciona en una lín
 
 ## Decisiones cerradas durante el diseño (no repetir la discusión)
 
-- **Default de la primera cuenta: Ahorros/`savings`, no Efectivo/`cash`.** Cambiado el 2026-07-29 sobre la decisión original de `docs/requirements/13-onboarding.md` — es el tipo de cuenta más común entre usuarios reales. Nombre, tipo, moneda (según región del locale) y saldo ($0) siguen siendo pre-llenados y editables; el mockup muestra COP como ejemplo de moneda, la real se deriva en runtime.
+- **Default de la primera cuenta: Ahorros/`savings`, no Efectivo/`cash`.** Cambiado el 2026-07-29 sobre la decisión original de `docs/requirements/fase-1/13-onboarding.md` — es el tipo de cuenta más común entre usuarios reales. Nombre, tipo, moneda (según región del locale) y saldo ($0) siguen siendo pre-llenados y editables; el mockup muestra COP como ejemplo de moneda, la real se deriva en runtime.
 - **Sin "Agregar otra cuenta" en el flujo.** Cambiado el 2026-07-29 — permitir crear varias cuentas alargaba el onboarding sin necesidad; agregar cuentas adicionales es tarea normal de mantenimiento en Cuentas, no del arranque. El paso 2 crea como máximo una cuenta y avanza. (La pantalla de referencia que existió brevemente para este estado dejaba Tipo/Nombre vacíos en la segunda cuenta —para no duplicar en silencio el default "Ahorros"— mientras Moneda/Saldo seguían prellenados; queda como nota histórica, sin efecto real una vez eliminada la pantalla completa.)
 - **Tipo de cuenta como campo de formulario, no como chip "ya asentado".** El campo "Tipo de cuenta" en `G7vDVK` usa el mismo componente `Form Field` que Nombre/Moneda/Saldo (no el chip colapsado que usa Cuentas en modo Editar) — para que el paso se lea como invitación a completar/editar, no como una decisión ya tomada por la app.
 - **Tarjeta de crédito no relaja las reglas de dominio de Cuentas.** Si el usuario elige `card` en el paso 2, aparecen cupo máximo, día de corte y día de pago (obligatorios), y el campo de saldo cambia su label a "Deuda actual" — mismo comportamiento que el formulario real de `pages/cuentas.md`, sin excepciones. Ver `O2QbEF`.
@@ -52,5 +52,5 @@ No simuladas como frames estáticos adicionales (se mantuvo un frame por pantall
 ## Pendiente / fuera de alcance de Pencil
 
 - **Interacción real de los selectores** (tipo de cuenta, moneda, día de corte/pago dentro de `Form Field`) — bottom sheet vs. otro patrón, decisión de `flutter-dev` al implementar, igual que en Cuentas.
-- **El puente/gate real cuando falta una cuenta** (`docs/requirements/15-gate-cuenta.md`) no tiene diseño propio en Pencil todavía. `bAKS6` (Cierre · Cuenta omitida) usa copy genérico y seguro ("Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.") que no debería quedar desincronizado cuando ese documento se diseñe, pero vale confirmarlo cuando llegue su turno.
+- **El puente/gate real cuando falta una cuenta** (`docs/requirements/fase-1/15-gate-cuenta.md`) no tiene diseño propio en Pencil todavía. `bAKS6` (Cierre · Cuenta omitida) usa copy genérico y seguro ("Para registrar movimientos necesitas una cuenta. Crea la primera en un momento.") que no debería quedar desincronizado cuando ese documento se diseñe, pero vale confirmarlo cuando llegue su turno.
 - **Moneda prellenada:** el mockup siempre muestra COP; la app deriva la moneda real de la región del locale del dispositivo en runtime (ver criterio de aceptación HU-02).

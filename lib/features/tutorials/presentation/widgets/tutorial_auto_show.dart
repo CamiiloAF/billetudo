@@ -19,7 +19,7 @@ import '../utils/tutorial_content_catalog.dart';
 /// [skipIfSeen], when given, is checked *before* evaluating [key] at all: if
 /// that other tutorial has already been seen, [key] is skipped outright
 /// without consuming the `TutorialNavigationGuard` slot. This is the
-/// "Modo sobres" rule (`docs/requirements/16-minitutoriales.md`): its own
+/// "Modo sobres" rule (`docs/requirements/fase-1/16-minitutoriales.md`): its own
 /// sub-flow tutorial never shows once the Presupuestos screen tutorial
 /// ([TutorialKey.budgetsScreen]) has been seen — the concept is already
 /// covered there.

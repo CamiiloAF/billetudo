@@ -1,7 +1,14 @@
 # Plan — Material de marketing para Play Store y App Store
 
-Estado: **borrador para revisión**. Nada se ejecuta hasta que se apruebe.
-Fecha: 2026-07-29 · Versión de la app al momento del análisis: `0.0.3+3`.
+Estado: **aprobado, listo para ejecutar**.
+Fecha original: 2026-07-29 · **Revisado: 2026-08-07** contra `0.0.4+8`.
+
+> **Qué cambió en la revisión del 2026-08-07.** Gráficas e Import/Export pasaron
+> de "no existe" a implementadas y con goldens. Eso **elimina los dos riesgos
+> principales del plan**: ya no hay ninguna captura que salga de Pencil en vez
+> de la app, y desaparecen las fases F1b y F8 (producir y luego regenerar la
+> captura de Gráficas). Todo el set se produce ahora desde la app real, de una
+> sola pasada.
 
 ---
 
@@ -14,34 +21,28 @@ está estable).
 
 | Feature | Archivos en `lib/` | Goldens | ¿Sirve para la tienda? |
 |---|---|---|---|
-| Inicio (home + shell) | 25 | 36 | **Sí — hero** |
-| Transacciones | 91 | 86 | **Sí** |
-| Presupuestos | 93 | 98 | **Sí** |
-| Metas | 103 | 120 | **Sí** |
-| Deudas | 88 | 50 | **Sí** |
-| Pagos programados | 98 | 98 | **Sí** |
-| Cuentas | 73 | 58 | Sí (secundaria) |
-| Categorías | 49 | 36 | Sí (secundaria) |
-| Ajustes / apariencia | 15 | 14 | Sí (solo como prueba de claro/oscuro) |
-| Auth + sync | 52 | (en home) | Sí (como "local-first", no como login) |
-| **Gráficas / informes** | **0** | 0 | **Sí — vía diseño de Pencil** (ver ⚠️ abajo) |
-| **Captura IA / voz / OCR** | **0** | 0 | **No — no existe** |
-| **Mejora / coach** | **0** | 0 | **No — no existe** |
+| Inicio (home + shell) | 29 | 32 | **Sí — hero** |
+| Transacciones | 97 | 104 | **Sí** |
+| **Gráficas / informes** | **82** | **43** | **Sí — ya implementada** ✅ |
+| Presupuestos | 96 | 102 | **Sí** |
+| Metas | 104 | 126 | **Sí** |
+| Deudas | 89 | 54 | **Sí** |
+| Pagos programados | 99 | 102 | **Sí** |
+| **Import / Export** | **134** | **84** | **Sí — nueva candidata** (ver §4) ✅ |
+| Cuentas | 81 | 72 | Sí (secundaria) |
+| Categorías | 50 | 36 | Sí (secundaria) |
+| Onboarding | 18 | 12 | Sí (secundaria) |
+| Tutoriales | 16 | — | No (no es argumento de venta) |
+| Ajustes / apariencia | 19 | 14 | Sí (solo como prueba de claro/oscuro) |
+| Auth + sync | 56 | (en home) | Sí (como "local-first", no como login) |
+| **Captura IA / voz / OCR** | **0** | 0 | **No — sigue sin existir** |
+| **Mejora / coach** | **0** | 0 | **No — sigue sin existir** |
 
-> ⚠️ **Gráficas entra al set por decisión tuya** (2026-07-29): no está
-> implementada en Flutter, pero el diseño está aprobado y cerrado (claro +
-> oscuro, spec en `design-system/billetudo/pages/graficas.md`) y tú garantizas
-> que estará implementada antes de enviar la app a revisión. La captura se
-> produce **desde los frames de Pencil**, no desde la app. Esto crea una
-> dependencia dura que hay que rastrear: **si Gráficas no está implementada al
-> momento del envío, esa captura tiene que salir de la ficha** — Apple rechaza
-> por "capturas que no reflejan la app" y Play la retira. Queda anotada en §8
-> como el riesgo #1 del plan.
-
-> Consecuencia para el copy: **no se puede prometer IA, captura por voz ni
-> lectura de notificaciones bancarias**. El mensaje se sostiene sobre registro
-> rápido, presupuestos, metas, deudas, pagos programados, gráficas esenciales,
-> offline-first y "gratis completo, sin anuncios".
+> Consecuencia para el copy, sin cambios: **no se puede prometer IA, captura por
+> voz ni lectura de notificaciones bancarias** — `capture/` e `improvement/`
+> siguen vacíos. El mensaje se sostiene sobre registro rápido, presupuestos,
+> metas, deudas, pagos programados, gráficas esenciales, portabilidad de datos y
+> offline-first.
 
 ---
 
@@ -54,7 +55,7 @@ Están resueltas con una recomendación; si no objetas, se ejecutan así.
 | D1 | Idiomas de la ficha | **Solo es-419** ✅ *decidido* | Cubre toda LatAm. El inglés se agrega después clonando los lienzos y cambiando solo el caption — no hay que rediseñar nada. |
 | D2 | Tablet | **No en el v1** | No hay diseño de tablet en Pencil ni layouts responsive verificados. Play penaliza levemente la visibilidad, pero mentir con capturas escaladas es peor. |
 | D3 | Estilo de captura | **Mockup con marco de dispositivo + caption arriba, fondo de marca** | Convierte mejor que la captura cruda; es el estándar de la categoría (YNAB, Fintonic, Mobills). |
-| D4 | Fuente de píxeles de la app | **Capturas reales de la app a 3x** para las 7 features implementadas; **export de Pencil** solo para Gráficas | Los goldens actuales son 390×844 @1x → se ven borrosos al escalarlos. Ver §5. |
+| D4 | Fuente de píxeles de la app | **Capturas reales de la app a 3x, las 8** ✅ *simplificado 2026-08-07* | Los goldens actuales son 390×844 @1x → se ven borrosos al escalarlos. Ver §5. Ya no hay excepción de Pencil: Gráficas está implementada. |
 | D5 | Video / App Preview | **No en el v1** | Multiplica el esfuerzo y no es obligatorio en ninguna tienda. Se agenda para el primer update. |
 | D6 | Cantidad de capturas | **8 en Play, 8 en App Store** (mismo guion) | Play muestra ~3 sin scroll, Apple ~2-3. Las 8 dan cobertura completa a quien sí desliza. |
 
@@ -92,9 +93,9 @@ Están resueltas con una recomendación; si no objetas, se ejecutan así.
 | Texto promocional | ≤ **170** caracteres (editable sin nueva review) | No, pero conviene |
 | App Preview | 15–30 s, hasta 3 | No (D5) |
 
-**Total de piezas gráficas a producir:** 8 (Play, 1080×1920) + 8 (App Store,
-1290×2796) = **16 lienzos**, más el gráfico destacado (1024×500) y los dos
-íconos (512 y 1024). Un solo idioma (D1).
+**Total de piezas gráficas a producir:** 8 (Play, 1080×1920) + 9 (App Store,
+1290×2796 — la novena es Import/Export, §4.1) = **17 lienzos**, más el gráfico
+destacado (1024×500) y los dos íconos (512 y 1024). Un solo idioma (D1).
 
 ---
 
@@ -107,7 +108,7 @@ El orden importa: la #1 es la que más pesa en la decisión de instalar, y las
 |---|---|---|---|
 | 1 | App @3x — `home_page_with_data_light` | **Todo tu dinero,** / **en una sola pantalla** | Muestra el producto completo de un vistazo. Es el hero. |
 | 2 | App @3x — `transaction_form_page_keypad_open_light` | **Anota un gasto** / **en 3 segundos** | El diferenciador central: captura de baja fricción. El teclado numérico visible comunica "esto es rápido". |
-| 3 | **Pencil** — Gráficas / Categorías, nodo `A3zxf` | **En qué se te va la plata,** / **sin adivinar** | La dona es la pieza más vendedora del set y la que mejor funciona como miniatura. |
+| 3 | App @3x — `reports_page_categories_with_data_light` | **En qué se te va la plata,** / **sin adivinar** | La dona es la pieza más vendedora del set y la que mejor funciona como miniatura. |
 | 4 | App @3x — `budgets_page_envelope_with_data_light` | **Presupuestos** / **que sí se entienden** | El anti-YNAB: el beneficio de sobres sin la curva de aprendizaje. |
 | 5 | App @3x — `goals_list_page_momentum_active_light` | **Ahorra para lo que** / **de verdad quieres** | Emocional, y la feature con más trabajo de diseño detrás. |
 | 6 | App @3x — `debts_list_page_with_data_light` | **Sabe quién te debe** / **y a quién le debes** | Muy pedido en el mercado hispano, mal cubierto por la competencia. |
@@ -117,12 +118,28 @@ El orden importa: la #1 es la que más pesa en la decisión de instalar, y las
 Todas las capturas van en **tema claro salvo la #8**, que es la que
 deliberadamente muestra el oscuro.
 
-**Nota sobre la #3.** Sale de Pencil porque Gráficas aún no está en código.
-En cuanto `flutter-dev` la implemente, esta captura **se regenera desde la app
-real** con el mismo pipeline de las demás (§5a) y se reemplaza en la ficha —
-así se elimina cualquier divergencia entre lo que promete la tienda y lo que ve
-el usuario, y se evita que un ajuste de implementación deje la captura
-desactualizada.
+### 4.1 Import/Export — la novena candidata
+
+Import/Export se implementó después de escribir este plan (134 archivos, 84
+goldens) y es un argumento de venta real: **captura al usuario que ya está en
+otra app** y refuerza el mensaje de "tus datos son tuyos" con una prueba
+concreta, no con una promesa. El problema es que Play topa en 8 capturas y las
+8 actuales ya están peleadas.
+
+**Recomendación:**
+
+- **Play (máx. 8):** no le doy slot propio. Import/Export es una preocupación de
+  fase de decisión ("¿puedo traerme lo que ya tengo?"), y eso el **texto** lo
+  responde mejor que una imagen — una pantalla de mapeo de columnas CSV es poco
+  atractiva como miniatura. Se cubre en la descripción larga (§6.1).
+- **App Store (máx. 10):** entra como **#9**, con
+  `import_export_hub_page_with_data_light` y el caption
+  **"Trae tus datos de otra app" / "y llévatelos cuando quieras"**. El slot es
+  gratis ahí, así que no cuesta nada aprovecharlo.
+
+Esto rompe levemente el "mismo guion en ambas tiendas", y es a propósito: los
+límites de las tiendas son distintos y desperdiciar dos slots en iOS por
+simetría no tiene sentido.
 
 **Datos de vitrina:** las capturas necesitan datos coherentes entre sí (los
 mismos nombres de cuenta, categorías y montos en las 8), realistas para el
@@ -136,17 +153,13 @@ que usan los goldens.
 
 Dos fuentes, cada una para lo suyo:
 
-**a) Los píxeles de la app → capturas reales a 3x** (capturas 1, 2, 4, 5, 6, 7, 8).
+**a) Los píxeles de la app → capturas reales a 3x** (las 8, más la #9 de iOS).
 Los goldens existentes son 390 × 844 @1x; metidos en un mockup de ~900 px de
 ancho quedan borrosos. La solución es un *harness* de captura dedicado en
 `test/marketing/` (no toca `test/features/`, no altera ningún golden existente)
-que renderiza las 7 pantallas seleccionadas con el dataset de vitrina y
+que renderiza las 9 pantallas seleccionadas con el dataset de vitrina y
 `devicePixelRatio: 3` → PNG de **1170 × 2532**, nítidos y fieles a la app real.
 Salida a `docs/marketing/store-listing/raw/`.
-
-**a-bis) La captura 3 → export del frame `A3zxf` de Pencil**, escalado a
-1170 × 2532 para que encaje en el mismo marco de dispositivo que las demás.
-Se regenera desde la app cuando Gráficas exista (§4).
 
 **b) El lienzo alrededor → Pencil.**
 Fondo, marco de dispositivo, caption y gráfico destacado se construyen en
@@ -210,6 +223,10 @@ Billetudo guarda todo en tu teléfono. Funciona completo sin internet y sin
 crear cuenta. Si quieres, luego inicias sesión y tus datos se respaldan y
 sincronizan sin perder nada de lo que ya registraste.
 
+¿Ya llevas tus cuentas en otra app o en una hoja de cálculo? Puedes importar
+tus movimientos desde un archivo CSV y seguir donde ibas. Y cuando quieras,
+exportas todo o guardas una copia completa: nada se queda encerrado aquí.
+
 MODO CLARO Y OSCURO
 Diseñada con cuidado, en español, y con un tono que no te regaña por gastar.
 
@@ -237,44 +254,42 @@ Billetudo no es asesoría financiera.
 | Fase | Qué | Quién | Salida |
 |---|---|---|---|
 | **F0** | Aprobar este plan (§2) | Tú | — |
-| **F1** | Dataset de vitrina + harness de captura a 3x (7 pantallas) | `qa-automator` | `test/marketing/`, PNG en `docs/marketing/store-listing/raw/` |
-| **F1b** | Export del frame `A3zxf` (Gráficas / Categorías) escalado a 1170×2532 | `pencil-designer` | `store-listing/raw/03-graficas.png` |
-| **F2** | Página "Marketing / Store" en Pencil: fondos, marcos, captions, los 16 lienzos + gráfico destacado | `pencil-designer` | Frames en `billetudo.pen` |
+| **F1** | Dataset de vitrina + harness de captura a 3x (**9 pantallas**) | `qa-automator` | `test/marketing/`, PNG en `docs/marketing/store-listing/raw/` |
+| **F2** | Página "Marketing / Store" en Pencil: fondos, marcos, captions, los **17 lienzos** (8 Play + 9 App Store) + gráfico destacado | `pencil-designer` | Frames en `billetudo.pen` |
 | **F3** | Auditoría de los lienzos (jerarquía, contraste del caption sobre el fondo, consistencia con el sistema) | `ui-ux-reviewer` | Anotaciones + reporte |
 | **F4** | Correcciones y export final a PNG en los tamaños de §3 | `pencil-designer` | `docs/marketing/store-listing/play/` y `/appstore/` |
 | **F5** | Íconos 512 y 1024 desde `assets/branding/ic_launcher_master.png` (verificar que no lleven transparencia ni esquinas redondeadas) | Directo | `store-listing/icons/` |
 | **F6** | Copy final en un archivo listo para copiar/pegar en cada consola | Directo | `docs/marketing/store-listing/copy.md` |
 | **F7** | Checklist de subida (clasificación de contenido, URL de política de privacidad, formulario de seguridad de datos de Play, App Privacy de Apple, **declaración de anuncios** — ver §8.6) | Directo | `docs/marketing/checklist-publicacion.md` |
-| **F8** | *Post-implementación de Gráficas:* regenerar la captura #3 desde la app real y re-exportar los 2 lienzos afectados | `qa-automator` + `pencil-designer` | Reemplazo en `play/` y `appstore/` |
 
-F1, F1b y F2 se pueden arrancar en paralelo: `pencil-designer` construye los
-lienzos con placeholders y sustituye los PNG reales cuando F1 termine.
+~~F8 — regenerar la captura de Gráficas desde la app~~ **eliminada el
+2026-08-07**: Gráficas ya está implementada, así que la #3 nace de la app real
+en F1 y no hay nada que regenerar después.
+
+F1 y F2 se pueden arrancar en paralelo: `pencil-designer` construye los lienzos
+con placeholders y sustituye los PNG reales cuando F1 termine.
 
 ---
 
 ## 8. Riesgos y cosas que no cubre este plan
 
-1. **Riesgo #1 — la captura #3 depende de que Gráficas se implemente.** La
-   ficha promete una feature que hoy tiene 0 archivos en `lib/features/reports/`.
-   Está asumido por decisión tuya y con el compromiso de implementarla antes de
-   enviar a revisión. Dos salvaguardas: **(a)** si al momento del envío no está,
-   la #3 sale de la ficha y las demás se renumeran — es un cambio de 10 minutos
-   si los lienzos están bien componentizados, por eso F2 debe dejar el caption y
-   el fondo como componentes `reusable:true`; **(b)** F8 regenera esa captura
-   desde la app real en cuanto exista, para que no quede una promesa dibujada.
-2. **La captura #3 sale de Pencil, no de Flutter.** Aunque el diseño sea la
-   fuente de verdad, la implementación siempre introduce diferencias que el
-   frame no especifica (ellipsis, densidad real de datos). Mientras F8 no corra,
-   esa captura muestra una versión idealizada.
-3. **El copy no puede prometer IA, voz, OCR ni lectura de notificaciones
+> ✅ **Cerrados el 2026-08-07:** los riesgos #1 y #2 de la versión anterior
+> (la captura de Gráficas salía de Pencil y dependía de que la feature se
+> implementara) desaparecieron: `lib/features/reports/` tiene 82 archivos y 43
+> goldens. Todo el set nace ahora de la app real.
+
+1. **El copy no puede prometer IA, voz, OCR ni lectura de notificaciones
    bancarias.** Son el diferenciador del plan de producto pero no existen en
    código y no hay fecha. Se quedan fuera del texto por completo.
-4. **Falta la política de privacidad publicada en una URL** — único pendiente
-   legal según tu confirmación (2026-07-29). Es un campo obligatorio en ambas
-   consolas: sin ella la ficha no se puede enviar. El borrado de cuenta in-app
-   sí está implementado (`lib/features/auth/domain/usecases/delete_account.dart`),
-   las plataformas nativas existen (`android/`, `ios/`) y PowerSync está cableado.
-5. **La declaración de anuncios hay que decidirla en el envío, no después.**
+2. **La política de privacidad publicada en una URL sigue siendo el único
+   bloqueante duro.** Es campo obligatorio en ambas consolas: sin ella no se
+   puede enviar la ficha, por bueno que quede el material. **Es lo único de
+   este plan que no puedo producir yo** y no depende de ninguna fase de abajo,
+   así que conviene arrancarlo en paralelo desde ya. El resto del frente legal
+   está resuelto: borrado de cuenta in-app implementado
+   (`lib/features/auth/domain/usecases/delete_account.dart`), plataformas
+   nativas (`android/`, `ios/`) y PowerSync cableado.
+3. **La declaración de anuncios hay que decidirla en el envío, no después.**
    Play pregunta "¿la app contiene anuncios?" y pone la etiqueta *Contiene
    anuncios* en la ficha; Apple lo pregunta en App Privacy (recolección de datos
    para publicidad) y en la clasificación. Hoy `google_mobile_ads` está
@@ -286,7 +301,7 @@ lienzos con placeholders y sustituye los PNG reales cuando F1 termine.
    respuesta contra el binario real al momento de enviar, no antes.
    Relacionado: si los rewarded llegan, la verificación con **AdMob SSV** es
    obligatoria antes de conceder el acceso (`CLAUDE.md`).
-6. **Los datos de vitrina son una superficie de error propia.** Montos, nombres
+4. **Los datos de vitrina son una superficie de error propia.** Montos, nombres
    y fechas tienen que ser coherentes entre las 8 capturas (misma cuenta, mismas
    categorías, mismo mes) o se nota al deslizar. Es responsabilidad explícita de
    F1, no un detalle.

@@ -2,6 +2,7 @@ import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.da
 import 'package:billetudo/features/settings/domain/usecases/clear_featured_budget.dart';
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart';
+import 'package:billetudo/features/settings/domain/usecases/set_quick_access_order.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart';
 import 'package:billetudo/features/tutorials/domain/usecases/set_tutorials_enabled.dart';
 import 'package:billetudo/features/tutorials/domain/usecases/watch_help_enabled.dart';
@@ -23,3 +24,5 @@ class MockClearFeaturedBudget extends Mock implements ClearFeaturedBudget {}
 class MockWatchHelpEnabled extends Mock implements WatchHelpEnabled {}
 
 class MockSetTutorialsEnabled extends Mock implements SetTutorialsEnabled {}
+
+class MockSetQuickAccessOrder extends Mock implements SetQuickAccessOrder {}

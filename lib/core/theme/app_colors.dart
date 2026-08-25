@@ -87,7 +87,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// `mint` calibrated for small text/icons (12-15px), never the plain fill
   /// token — same pattern as [expenseText]/[incomeText]/[amberText]. Added
-  /// for Import/Export (`docs/requirements/11-import-export.md`), whose
+  /// for Import/Export (`docs/requirements/fase-1/11-import-export.md`), whose
   /// mapper/preview badges repeatedly used `$mint` crude on text and failed
   /// AA (~3.4:1); `mintText` clears ~5:1.
   final Color mintText;

@@ -100,6 +100,7 @@ void main() {
     bool isSignedIn = true,
     SyncStatusState? outcome,
     double height = 1100,
+    bool settle = true,
   }) async {
     final cubit = MockSyncStatusCubit();
     // Los frames de resultado (`J0B0e`/`SZgd4`) son un snackbar, y el snackbar
@@ -130,12 +131,21 @@ void main() {
       // La pantalla debe caber sin scroll por diseño; el lienzo alto captura
       // el bloque completo para poder verificar justamente eso.
       size: tallGoldenPhoneSize(height: height),
+      settle: settle,
     );
 
     await expectLater(
       find.byType(MaterialApp),
       matchesGoldenFile('goldens/sync_status_page_$name.png'),
     );
+
+    // The `partial` snackbar's auto-hide is driven by `_onRetryOutcome`'s own
+    // `Timer` (its `SnackBarAction` stops the SDK's own dismiss timer from
+    // ever arming — see the comment on that method), which the test binding
+    // flags as "still pending" at teardown unless it is let to fire.
+    if (outcome?.retryOutcome == SyncRetryOutcome.partial) {
+      await tester.pump(const Duration(seconds: 5));
+    }
   }
 
   for (final brightness in Brightness.values) {
@@ -172,6 +182,11 @@ void main() {
         state(syncState: SyncState.stalled, pending: 3, isRetrying: true),
         'retrying_$suffix',
         brightness: brightness,
+        // The CTA's loader-circle now spins (`SpinningIcon`), so its
+        // `AnimationController` repeats forever and `pumpAndSettle` would
+        // hang — same reasoning as the `loading` state below. A single
+        // `pump()` still captures a deterministic frame.
+        settle: false,
       );
     });
 

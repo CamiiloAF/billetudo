@@ -29,6 +29,7 @@ ScheduledPayment buildScheduledPayment({
   DateTime? tombstonedAt,
   int? updatedAt,
   String? debtId,
+  String? goalId,
 }) =>
     ScheduledPayment(
       id: id,
@@ -42,6 +43,7 @@ ScheduledPayment buildScheduledPayment({
       frequency: frequency,
       interval: interval,
       debtId: debtId,
+      goalId: goalId,
       // Defaults to the same value as `nextDate` (or `testInstant`) so
       // existing fixtures that never touched the recurrence cursor stay
       // coherent: the immutable "first payment" and the live cursor start
@@ -72,6 +74,8 @@ ScheduledPaymentDraft buildExpenseDraft({
   int interval = 1,
   bool requiresConfirmation = false,
   List<String> tagIds = const <String>[],
+  String? debtId,
+  String? goalId,
 }) =>
     ScheduledPaymentDraft(
       id: id,
@@ -88,6 +92,8 @@ ScheduledPaymentDraft buildExpenseDraft({
       note: note,
       requiresConfirmation: requiresConfirmation,
       tagIds: tagIds,
+      debtId: debtId,
+      goalId: goalId,
     );
 
 ScheduledPaymentOccurrence buildOccurrence({

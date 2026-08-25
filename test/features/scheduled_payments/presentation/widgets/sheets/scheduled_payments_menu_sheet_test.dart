@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../../support/golden_helpers.dart';
 
-/// Criterion 6 (`docs/requirements/16-minitutoriales.md`): Pagos programados'
+/// Criterion 6 (`docs/requirements/fase-1/16-minitutoriales.md`): Pagos programados'
 /// overflow menu gained a "Ver ayuda" row that reopens the HU-01 sheet — this
 /// tab root had an empty action spacer before minitutorials, so this test is
 /// the only place that asserts the row exists and pops the right action at

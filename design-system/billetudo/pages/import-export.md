@@ -1,6 +1,6 @@
 # Página: Importar y exportar
 
-Overrides sobre `MASTER.md` para la feature de portabilidad de datos (`docs/requirements/11-import-export.md`, HU-01 a HU-09). **Diseño cerrado y aprobado, claro y oscuro (2026-07-29).**
+Overrides sobre `MASTER.md` para la feature de portabilidad de datos (`docs/requirements/fase-1/11-import-export.md`, HU-01 a HU-09). **Diseño cerrado y aprobado, claro y oscuro (2026-07-29).**
 
 ## Tesis (norte del diseño)
 

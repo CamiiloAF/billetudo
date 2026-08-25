@@ -171,6 +171,23 @@ class DebtsLocalDatasource {
   Future<DebtEntry> insertEntry(DebtEntriesCompanion companion) =>
       _db.into(_db.debtEntries).insertReturning(companion);
 
+  /// One-shot read of a single alive entry, ignoring which debt it belongs to
+  /// — the repository already knows the id it wants.
+  Future<DebtEntry?> getEntry(String id) =>
+      (_db.select(_db.debtEntries)
+            ..where((e) => e.id.equals(id) & _aliveEntry(e)))
+          .getSingleOrNull();
+
+  /// Fix B: the write both `updateDebtEntry` (amount/date/note) and
+  /// `deleteDebtEntry` (`deletedAt`) funnel through, guarded the same way
+  /// [updateDebt] is: only an alive entry can be touched. No match returns
+  /// null, which the repository turns into a `NotFoundFailure`.
+  Future<DebtEntry?> updateEntry(String id, DebtEntriesCompanion companion) =>
+      (_db.update(_db.debtEntries)
+            ..where((e) => e.id.equals(id) & _aliveEntry(e)))
+          .writeReturning(companion)
+          .then((rows) => rows.isEmpty ? null : rows.first);
+
   Future<Transaction> insertCashEvent(TransactionsCompanion companion) =>
       _db.into(_db.transactions).insertReturning(companion);
 

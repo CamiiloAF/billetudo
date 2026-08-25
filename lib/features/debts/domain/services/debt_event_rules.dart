@@ -9,7 +9,7 @@ import '../entities/debt_entry.dart';
 /// the write use cases (RegisterDebtCashEvent) route through here so the sign
 /// logic has exactly one implementation.
 ///
-/// The core subtlety (`docs/requirements/08-deudas.md`): a `Transaction` with a
+/// The core subtlety (`docs/requirements/fase-1/08-deudas.md`): a `Transaction` with a
 /// debt id does NOT always reduce the debt. The effect is the pair
 /// (`direction` × `type`):
 ///

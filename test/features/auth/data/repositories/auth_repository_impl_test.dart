@@ -6,6 +6,7 @@ import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart';
+import 'package:billetudo/features/auth/data/datasources/local_data_conflict_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart';
@@ -15,6 +16,7 @@ import 'package:billetudo/features/auth/data/repositories/auth_repository_impl.d
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/merge_summary.dart';
+import 'package:billetudo/features/auth/domain/entities/sign_in_outcome.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -34,6 +36,9 @@ class MockLocalDataWipeDatasource extends Mock
 class MockLocalDataOwnershipDatasource extends Mock
     implements LocalDataOwnershipDatasource {}
 
+class MockLocalDataConflictDatasource extends Mock
+    implements LocalDataConflictDatasource {}
+
 class MockEverSignedInDatasource extends Mock
     implements EverSignedInDatasource {}
 
@@ -51,6 +56,7 @@ void main() {
   late MockLocalDataSummaryDatasource summaries;
   late MockLocalDataWipeDatasource wipe;
   late MockLocalDataOwnershipDatasource ownership;
+  late MockLocalDataConflictDatasource conflict;
   late MockEverSignedInDatasource everSignedIn;
   late MockSupabaseClient supabase;
   late MockFunctionsClient functions;
@@ -79,6 +85,7 @@ void main() {
       summaries,
       wipe,
       ownership,
+      conflict,
       everSignedIn,
       supabase,
       powerSync,
@@ -117,6 +124,7 @@ void main() {
     summaries = MockLocalDataSummaryDatasource();
     wipe = MockLocalDataWipeDatasource();
     ownership = MockLocalDataOwnershipDatasource();
+    conflict = MockLocalDataConflictDatasource();
     everSignedIn = MockEverSignedInDatasource();
     supabase = MockSupabaseClient();
     functions = MockFunctionsClient();
@@ -151,6 +159,10 @@ void main() {
     when(() => everSignedIn.read()).thenAnswer((_) async => false);
     when(() => everSignedIn.markSignedIn()).thenAnswer((_) async {});
     when(() => everSignedIn.clear()).thenAnswer((_) async {});
+    // Default for every existing test: this device has no local data owned
+    // by a different account, i.e. no account-conflict sheet in the way.
+    when(() => conflict.hasConflict(any())).thenAnswer((_) async => false);
+    when(() => wipe.wipeAll()).thenAnswer((_) async {});
 
     repository = buildRepository();
   });
@@ -637,6 +649,181 @@ void main() {
     );
   });
 
+  group('account conflict detection on login (complemento inverso de HU-04)',
+      () {
+    /// Stubs a Google sign-in whose Supabase token exchange succeeds for
+    /// [id], and configures the conflict datasource to report
+    /// [reportsConflict] for that id (or throw, when [throwOnCheck] is set —
+    /// the fail-closed path).
+    void stubGoogleSignIn({
+      String id = 'user-2',
+      bool reportsConflict = true,
+      bool throwOnCheck = false,
+    }) {
+      when(() => google.signIn()).thenAnswer(
+        (_) async => const SocialCredential(
+          providerUserId: 'google-2',
+          displayName: 'Beto',
+          idToken: 'id-token',
+        ),
+      );
+      when(
+        () => auth.signInWithIdToken(
+          provider: OAuthProvider.google,
+          idToken: 'id-token',
+        ),
+      ).thenAnswer(
+        (_) async => AuthResponse(user: supabaseUser(id: id)),
+      );
+      if (throwOnCheck) {
+        when(() => conflict.hasConflict(id))
+            .thenThrow(Exception('drift read failed'));
+      } else {
+        when(() => conflict.hasConflict(id))
+            .thenAnswer((_) async => reportsConflict);
+      }
+    }
+
+    test(
+      'holds back the sign-in and reports AccountConflictDetected instead '
+      'of completing it, without touching _current/PowerSync/everSignedIn',
+      () async {
+        stubGoogleSignIn();
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result.isRight(), isTrue);
+        expect((result as Right).value, isA<AccountConflictDetected>());
+        expect(repository.currentSession, const AuthSession.signedOut());
+        expect(powerSync.connected, isFalse);
+        verifyNever(() => everSignedIn.markSignedIn());
+      },
+    );
+
+    test(
+      'treats a conflict-detection failure as a conflict too (fail-closed) '
+      'instead of completing the sign-in silently',
+      () async {
+        stubGoogleSignIn(throwOnCheck: true);
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result.isRight(), isTrue);
+        expect((result as Right).value, isA<AccountConflictDetected>());
+        expect(repository.currentSession, const AuthSession.signedOut());
+        verifyNever(() => everSignedIn.markSignedIn());
+      },
+    );
+
+    test(
+      'does not fire for a device with only unowned local data (HU-04 '
+      'territory): a false from the conflict datasource completes sign-in '
+      'normally',
+      () async {
+        stubGoogleSignIn(reportsConflict: false);
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result.isRight(), isTrue);
+        expect((result as Right).value, isA<SignedIn>());
+        expect(repository.currentSession.isSignedIn, isTrue);
+        verify(() => everSignedIn.markSignedIn()).called(1);
+      },
+    );
+
+    test(
+      'the onAuthStateChange event signInWithIdToken fires internally does '
+      'not leak the exchanged session into currentSession while the '
+      'conflict is pending',
+      () async {
+        stubGoogleSignIn();
+        await repository.signInWithGoogle();
+        final emitted = <AuthSession>[];
+        repository.watchSession().listen(emitted.add);
+        await pumpEventQueue();
+
+        authStateChanges.add(
+          AuthState(
+            AuthChangeEvent.signedIn,
+            sessionFor(supabaseUser(id: 'user-2')),
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(repository.currentSession, const AuthSession.signedOut());
+        expect(emitted, [const AuthSession.signedOut()]);
+        expect(powerSync.connected, isFalse);
+      },
+    );
+
+    group('resolveAccountConflict', () {
+      test(
+        'wipes local data and completes the sign-in that was held back',
+        () async {
+          stubGoogleSignIn();
+          await repository.signInWithGoogle();
+
+          final result = await repository.resolveAccountConflict();
+          await pumpEventQueue();
+
+          expect(result.isRight(), isTrue);
+          verify(() => wipe.wipeAll()).called(1);
+          expect(repository.currentSession.isSignedIn, isTrue);
+          expect(repository.currentSession.user!.id, 'user-2');
+          verify(() => everSignedIn.markSignedIn()).called(1);
+          await untilCalled(() => connector.fetchCredentials())
+              .timeout(const Duration(seconds: 5));
+        },
+      );
+
+      test(
+        'returns Left(UnexpectedFailure) without wiping anything when there '
+        'is no pending conflict to resolve',
+        () async {
+          final result = await repository.resolveAccountConflict();
+
+          expect(result.isLeft(), isTrue);
+          expect((result as Left).value, isA<UnexpectedFailure>());
+          verifyNever(() => wipe.wipeAll());
+        },
+      );
+    });
+
+    group('cancelAccountConflict', () {
+      test(
+        'closes Google + Supabase + PowerSync without ever marking the '
+        'session signed-in, and never wipes local data',
+        () async {
+          stubGoogleSignIn();
+          await repository.signInWithGoogle();
+
+          final result = await repository.cancelAccountConflict();
+
+          expect(result, const Right<Failure, Unit>(unit));
+          verify(() => google.signOutSilently()).called(1);
+          verify(() => auth.signOut()).called(1);
+          expect(powerSync.connected, isFalse);
+          expect(repository.currentSession, const AuthSession.signedOut());
+          verifyNever(() => wipe.wipeAll());
+          verifyNever(() => everSignedIn.markSignedIn());
+        },
+      );
+
+      test(
+        'returns Left(UnexpectedFailure) without touching Google/Supabase '
+        'when there is no pending conflict to cancel',
+        () async {
+          final result = await repository.cancelAccountConflict();
+
+          expect(result.isLeft(), isTrue);
+          expect((result as Left).value, isA<UnexpectedFailure>());
+          verifyNever(() => google.signOutSilently());
+          verifyNever(() => auth.signOut());
+        },
+      );
+    });
+  });
+
   group('mergeLocalData', () {
     /// Signs the repository in via Google (HU-02) so `mergeLocalData` (HU-04)
     /// has a `currentSession.user` to claim rows for.
@@ -671,7 +858,7 @@ void main() {
 
     test(
       'claims unowned local rows for the signed-in account (decision #6, '
-      'docs/requirements/05-auth-sync.md)',
+      'docs/requirements/fase-1/05-auth-sync.md)',
       () async {
         await signIn();
         const summary = MergeSummary(
@@ -988,5 +1175,63 @@ void main() {
 
       expect(repository.currentSession, const AuthSession.signedOut());
     });
+  });
+
+  // Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): a device
+  // with a restorable session must not let local seeding (AppSettings,
+  // default categories) run before PowerSync's first sync lands.
+  group('waitForFirstSync (bug corregido 2026-08-17)', () {
+    test(
+      'no-op Right without connecting when there is no restorable session',
+      () async {
+        // `repository` was built in setUp with `currentSession` == null.
+        final result = await repository.waitForFirstSync(
+          timeout: const Duration(milliseconds: 50),
+        );
+
+        expect(result, const Right<Failure, Unit>(unit));
+        verifyNever(() => connector.fetchCredentials());
+      },
+    );
+
+    test(
+      'connects PowerSync and returns a NetworkFailure, bounded by the '
+      'timeout, when a session exists but credentials never resolve (no '
+      'network at this launch)',
+      () async {
+        // The connector answers well after our own timeout below, same as a
+        // device offline at this exact boot. Finite (not a `Completer` that
+        // never resolves): the underlying sync loop's own pending
+        // `fetchCredentials()` call has to settle *eventually* or
+        // `tearDown`'s `powerSync.close()` hangs waiting on it too — a real
+        // offline device does not have that problem because the OS/socket
+        // layer eventually surfaces a failure, which this mock stands in
+        // for with a bounded delay instead.
+        Future<Null> delayedCredentials() => Future<Null>.delayed(
+              const Duration(seconds: 2),
+              () => null,
+            );
+        when(() => connector.fetchCredentials())
+            .thenAnswer((_) => delayedCredentials());
+        when(() => connector.getCredentialsCached())
+            .thenAnswer((_) => delayedCredentials());
+        when(() => connector.prefetchCredentials())
+            .thenAnswer((_) => delayedCredentials());
+
+        await repository.dispose();
+        final signedIn = buildSignedInRepository();
+
+        final result = await signedIn.waitForFirstSync(
+          timeout: const Duration(milliseconds: 200),
+        );
+
+        expect(result.isLeft(), isTrue);
+        expect((result as Left).value, isA<NetworkFailure>());
+        // The gate really tried to sync — this is not just "no session,
+        // skip" returning early by accident.
+        verify(() => connector.fetchCredentials()).called(greaterThan(0));
+      },
+      timeout: const Timeout(Duration(seconds: 10)),
+    );
   });
 }

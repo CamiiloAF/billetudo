@@ -234,7 +234,268 @@ void main() {
       expect(balance.settled, isTrue); // 0 owed
       expect(balance.progress, 1.0);
     });
+
+    test(
+      'interest accruing on its own never moves progress — denominator is '
+      'capital, not capital+interest ("Capital vs Interés separado")',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 100000),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 50000),
+          ],
+          cashEvents: const [],
+        );
+
+        // No abono happened: capital-only progress must read 0, not drop
+        // below 0 or read some fraction diluted by the interest that piled on.
+        expect(balance.capitalTotalMinor, 100000);
+        expect(balance.progress, 0.0);
+      },
+    );
+
+    test(
+      'an abono is applied 100% to capital, never split with interest first',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 100000),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 20000),
+          ],
+          cashEvents: [
+            buildCashEvent(type: TransactionType.expense, amountMinor: 25000),
+          ],
+        );
+
+        // capital = 100000, paid = 25000 -> 25% even though interest also
+        // accrued; the interest never enters the denominator or numerator.
+        expect(balance.capitalTotalMinor, 100000);
+        expect(balance.progress, 0.25);
+      },
+    );
+
+    test(
+      'a debt made entirely of interest (no capital) is clamped defensively',
+      () {
+        final balance = calc.calculate(
+          debt: buildDebt(principalMinor: 0),
+          entries: [
+            buildEntry(kind: DebtEntryKind.interestAccrual, amountMinor: 5000),
+          ],
+          cashEvents: const [],
+        );
+
+        expect(balance.capitalTotalMinor, 0);
+        expect(balance.displayTotalMinor, 0);
+        expect(balance.settled, isFalse);
+        expect(balance.progress, 0.0);
+      },
+    );
   });
+
+  group(
+    'displayTotalMinor (a reconciliation never rewrites the "de \$X" total)',
+    () {
+      test('with no manualAdjustment, equals the full historical total', () {
+        final balance = calc.calculate(
+          debt: buildDebt(
+            principalMinor: 98000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          ),
+          entries: const [],
+          cashEvents: [
+            buildCashEvent(
+              type: TransactionType.expense,
+              amountMinor: 2000000,
+              date: DateTime(2026, 2, 1),
+            ),
+          ],
+        );
+
+        expect(balance.totalIncreasesMinor, 98000000);
+        expect(balance.displayTotalMinor, balance.totalIncreasesMinor);
+      });
+
+      test(
+        'reconciling upward (the bank reports more than tracked) grows what '
+        'is pending, never the saldo de apertura shown as "de \$X"',
+        () {
+          // Opening 98M, a 2M abono, then the user reconciles to 110M via
+          // UpdateDebtBalance because the bank actually reports more owed
+          // than the ledger tracked (e.g. an untracked fee). Reverted
+          // (regression reported on a real debt): an upward reconciliation
+          // used to be treated as "new capital discovered" and grow the
+          // capital total too — but a reconciliation only ever corrects what
+          // is *pending*, it is not a disbursement, so "de $X" must stay
+          // exactly at the saldo de apertura the user sees on the edit form,
+          // unaffected in either direction.
+          final debt = buildDebt(
+            principalMinor: 98000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: 14000000,
+                entryDate: DateTime(2026, 3, 1),
+              ),
+            ],
+            cashEvents: [
+              buildCashEvent(
+                transactionId: 't-abono',
+                type: TransactionType.expense,
+                amountMinor: 2000000,
+                date: DateTime(2026, 2, 1),
+              ),
+            ],
+          );
+
+          expect(balance.totalIncreasesMinor, 112000000);
+          expect(balance.outstandingMinor, 110000000);
+          expect(balance.displayTotalMinor, 98000000);
+          expect(balance.capitalTotalMinor, 98000000);
+        },
+      );
+
+      test(
+        'a downward reconciliation (correcting an over-count) leaves the '
+        'total untouched — only what is pending drops',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          // The debt originally borrowed 100M — that total does not move
+          // just because the remaining balance was corrected downward.
+          expect(balance.displayTotalMinor, 100000000);
+          expect(balance.outstandingMinor, 80000000);
+        },
+      );
+
+      test(
+        'a disbursement after a reconciliation keeps adding to the total, '
+        'same as before one',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              buildEntry(
+                id: 'disbursement-after',
+                kind: DebtEntryKind.disbursement,
+                amountMinor: 500000,
+                entryDate: DateTime(2026, 4, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.displayTotalMinor, 100500000);
+          expect(balance.outstandingMinor, 80500000);
+        },
+      );
+
+      test(
+        'displayTotalMinor excludes interest ("Capital vs Interés separado", '
+        'pages/deudas.md) — interest after a reconciliation grows the '
+        'lifetime total but not the capital-only "de \$X" figure',
+        () {
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -20000000, // corrects pending down to 80M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              buildEntry(
+                id: 'interest-after',
+                kind: DebtEntryKind.interestAccrual,
+                amountMinor: 500000,
+                entryDate: DateTime(2026, 4, 1),
+              ),
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.totalIncreasesMinor, 100500000);
+          expect(balance.interestAccruedMinor, 500000);
+          expect(balance.capitalTotalMinor, 100000000);
+          expect(balance.displayTotalMinor, 100000000);
+          expect(balance.outstandingMinor, 80500000);
+        },
+      );
+
+      test(
+        'deleting an entry posted after a reconciliation only removes its '
+        'own contribution — the total keeps reflecting everything else ever '
+        'borrowed, it does not collapse to match what is pending',
+        () {
+          // Regression: an interest entry accrued after a reconciliation,
+          // then deleted for being wrong, used to leave the total equal to
+          // whatever was pending (0% progress shown) because the previous
+          // logic reset the total at the reconciliation itself.
+          final debt = buildDebt(
+            principalMinor: 100000000,
+            createdAt: DateTime(2026, 1, 1),
+            startDate: DateTime(2026, 1, 1),
+          );
+          final balance = calc.calculate(
+            debt: debt,
+            entries: [
+              buildEntry(
+                id: 'reconciliation',
+                kind: DebtEntryKind.manualAdjustment,
+                amountMinor: -6000000, // corrects pending down to 94M
+                entryDate: DateTime(2026, 3, 1),
+              ),
+              // The bad interest entry was already deleted (soft-deleted
+              // entries never reach the calculator), so it is absent here.
+            ],
+            cashEvents: const [],
+          );
+
+          expect(balance.outstandingMinor, 94000000);
+          expect(balance.displayTotalMinor, 100000000);
+        },
+      );
+    },
+  );
 
   group('buildLedger', () {
     test('synthesizes an opening row and sorts newest first', () {

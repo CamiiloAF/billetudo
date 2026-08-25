@@ -16,14 +16,19 @@ class BudgetActivityItem extends Equatable {
     this.categoryColor,
     this.note,
     this.isIncome = false,
+    this.isNettedTransfer = false,
+    this.secondaryAccountName,
   });
 
   final String id;
 
-  /// Category name when categorized, otherwise the account name.
+  /// Category name when categorized, otherwise the account name. Ignored by
+  /// the row when [isNettedTransfer] is `true` — it draws its own fixed
+  /// "Transferencia interna" title from `AppLocalizations` instead.
   final String title;
 
   /// Account the expense was paid from; the row's subtitle leads with it.
+  /// For a [isNettedTransfer] row this is the transfer's origin account.
   final String accountName;
 
   /// Category appearance tokens (lucide name / palette token), null for an
@@ -41,6 +46,21 @@ class BudgetActivityItem extends Equatable {
   /// disponible, instead of the usual `-amount`.
   final bool isIncome;
 
+  /// `true` when a presupuestable transfer (`countsInBudget = true`) has
+  /// **both its origin and destination account in this same budget's
+  /// scope**: the origin-side expense row and the destination-side income
+  /// row net to zero for this budget's total, and the two are collapsed into
+  /// a single row here instead of showing as separate expense/income entries
+  /// (`design-system/billetudo/pages/presupuestos.md`, "Fila especial —
+  /// Transferencia interna neteada"). `amountMinor` is always `0` on this
+  /// row and [isIncome] is meaningless (never both `true`).
+  final bool isNettedTransfer;
+
+  /// The transfer's destination account name, only set when
+  /// [isNettedTransfer] is `true` — the row's subtitle reads
+  /// "`accountName` ↔ `secondaryAccountName` · fecha".
+  final String? secondaryAccountName;
+
   @override
   List<Object?> get props => [
         id,
@@ -53,5 +73,7 @@ class BudgetActivityItem extends Equatable {
         date,
         note,
         isIncome,
+        isNettedTransfer,
+        secondaryAccountName,
       ];
 }

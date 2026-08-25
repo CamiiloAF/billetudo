@@ -2,7 +2,7 @@
 
 ## Objetivo y criterios de aceptacion
 
-HU-12 de `docs/requirements/06-presupuestos.md`: extender Presupuestos (`lib/features/budgets/`) para proyectar, dentro de la ventana vigente del periodo, las ocurrencias de pagos programados que aun no se han materializado como transaccion. Se muestran como un segmento atenuado contiguo al gastado en la barra de progreso, se expone la cifra de "programado" y se da acceso a la lista de esos pagos — sin esquema nuevo, reutilizando `ProjectUpcomingOccurrences` de `scheduled_payments` (comentada explicitamente en ese archivo como construida para esta HU) en vez de duplicar la logica de recurrencia.
+HU-12 de `docs/requirements/fase-1/06-presupuestos.md`: extender Presupuestos (`lib/features/budgets/`) para proyectar, dentro de la ventana vigente del periodo, las ocurrencias de pagos programados que aun no se han materializado como transaccion. Se muestran como un segmento atenuado contiguo al gastado en la barra de progreso, se expone la cifra de "programado" y se da acceso a la lista de esos pagos — sin esquema nuevo, reutilizando `ProjectUpcomingOccurrences` de `scheduled_payments` (comentada explicitamente en ese archivo como construida para esta HU) en vez de duplicar la logica de recurrencia.
 
 Criterios de aceptacion:
 

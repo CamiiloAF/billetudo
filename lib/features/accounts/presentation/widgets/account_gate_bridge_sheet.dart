@@ -8,7 +8,7 @@ import '../../../../core/widgets/sheet_buttons_row.dart';
 import 'account_gate_copy.dart';
 
 /// The "puente, no muro" hoja every surface of the account gate shares
-/// (`docs/requirements/15-gate-cuenta.md` HU-01, Variante B in
+/// (`docs/requirements/fase-1/15-gate-cuenta.md` HU-01, Variante B in
 /// `design-system/billetudo/pages/gate-cuenta.md`): `Bottom Sheet Base` +
 /// `Sheet Icon Header` + `Sheet Buttons Row` (`Zjsfz`/`XYfSq`/`goGwA`/
 /// `G0mfgY`/`K6bGhq`/`xU4uz`/`oHAVJ`), parametrized by [AccountGateCopy] so

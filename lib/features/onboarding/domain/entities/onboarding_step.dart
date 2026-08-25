@@ -1,5 +1,5 @@
 /// The four screens of the welcome flow, in the order defined by
-/// `docs/requirements/13-onboarding.md` ("Secuencia real del flujo"). The
+/// `docs/requirements/fase-1/13-onboarding.md` ("Secuencia real del flujo"). The
 /// numbering is stable and historical (HU-01, HU-02, HU-07, HU-04) but the
 /// screen order follows this enum's declaration order.
 enum OnboardingStep {

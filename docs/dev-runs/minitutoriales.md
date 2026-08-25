@@ -12,7 +12,7 @@ Tamaño: **l** · Review: **deep — APROBADO**
 4. Los 7 sub-flujos de HU-02 muestran su hoja corta (1-2 puntos, solo "Entendido") la primera vez, sin bloquear el formulario subyacente. ✅
 5. Si coinciden un tutorial de pantalla y uno de sub-flujo en la misma entrada, solo se muestra uno. ✅
 6. Las 4 pantallas principales tienen fila "Ver ayuda" en su menú de tres puntos que reabre la misma hoja sin alterar el registro. ✅
-7. El gate de cuenta (`docs/requirements/15-gate-cuenta.md`) tiene precedencia absoluta sobre cualquier tutorial. ✅
+7. El gate de cuenta (`docs/requirements/fase-1/15-gate-cuenta.md`) tiene precedencia absoluta sobre cualquier tutorial. ✅
 8. Ningún tutorial se muestra durante el onboarding. ⚠️ (cubierto estructuralmente, sin test dedicado — ver Pendientes)
 9. Ajustes > Preferencias tiene "Mostrar ayuda al entrar a una sección" con switch encendido por defecto. ✅
 10. Reactivar el switch resetea el registro de ya-lo-visto de TODOS los tutoriales y muestra un Snackbar de una línea (sin diálogo modal). ✅
@@ -103,7 +103,7 @@ patrol test --target integration_test/scheduled_payments_patrol_test.dart --flav
 **Riesgos del plan (documentados por el review deep, no bloqueantes):**
 - Alcance grande cross-feature (5 features de producción + settings + core), alto riesgo de un sub-flujo mal cableado o copy que no siga el spec literal — mitigado por la cobertura de tests de contenido/catálogo.
 - El requerimiento original (HU-03) pedía un ícono de ayuda fijo en el header; el diseño cerrado en `billetudo.pen` lo reemplazó por la fila "Ver ayuda" en el menú de tres puntos — se siguió el `.pen` (fuente de verdad) sobre el requirement original en ese punto.
-- Metas/Deudas/Pagos programados no tienen frame de Pencil para el nuevo botón `⋮`/menú (`docs/requirements/16-minitutoriales.md` dice explícitamente "diseño no existe todavía") — se replicó el patrón ya aprobado de `BudgetsPageHeader`; recomendado que `pencil-designer` formalice esto cuando se retome el flujo de diseño.
+- Metas/Deudas/Pagos programados no tienen frame de Pencil para el nuevo botón `⋮`/menú (`docs/requirements/fase-1/16-minitutoriales.md` dice explícitamente "diseño no existe todavía") — se replicó el patrón ya aprobado de `BudgetsPageHeader`; recomendado que `pencil-designer` formalice esto cuando se retome el flujo de diseño.
 - Menú "Activar modo sobres" de `budgets_page.dart` sigue llamando `setZeroBasedEnabled` directo, sin pasar por el hook de tutorial de `EnvelopeModeField` — gap menor, no bloqueante.
 - `TutorialNavigationGuard` usa una ventana de tiempo (700ms) como aproximación de "misma navegación" porque no hay wiring de router disponible para el concepto exacto — documentado en el propio archivo.
 

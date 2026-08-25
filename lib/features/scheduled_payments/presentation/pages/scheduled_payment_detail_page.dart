@@ -22,6 +22,7 @@ import '../widgets/scheduled_payment_detail_tags_row.dart';
 import '../widgets/scheduled_payment_hero_card.dart';
 import '../widgets/scheduled_payment_history_row.dart';
 import '../widgets/scheduled_payment_linked_debt_card.dart';
+import '../widgets/scheduled_payment_linked_goal_card.dart';
 import '../widgets/scheduled_payment_skipped_history_row.dart';
 import '../widgets/sheets/confirmation_sheet.dart';
 import '../widgets/sheets/delete_scheduled_payment_sheet.dart';
@@ -36,6 +37,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
     required this.onEdit,
     required this.onOpenTransaction,
     required this.onOpenDebt,
+    required this.onOpenGoal,
     required this.onEditInstallment,
     super.key,
   });
@@ -50,6 +52,10 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
   /// Cross-link into the owning debt's detail from the "Cuota de …" card
   /// (HU-03), when this template is a cuota.
   final ValueChanged<String> onOpenDebt;
+
+  /// Cross-link into the owning goal's detail from the "Meta Enlazada" card
+  /// (HU-16), when this template is a recurring contribution.
+  final ValueChanged<String> onOpenGoal;
 
   /// Editing a cuota deep-links back to the debt's Configurar-cuota screen (its
   /// home), never the plain template form (HU-03).
@@ -257,6 +263,7 @@ class ScheduledPaymentDetailPage extends StatelessWidget {
                   state: state,
                   onOpenTransaction: (id) => _openTransaction(context, id),
                   onOpenDebt: onOpenDebt,
+                  onOpenGoal: onOpenGoal,
                 ),
               ScheduledPaymentDetailStatus.ready => const SizedBox.shrink(),
             },
@@ -347,6 +354,7 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenDebt,
+    required this.onOpenGoal,
     super.key,
   });
 
@@ -354,6 +362,7 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
   final ScheduledPaymentDetailState state;
   final ValueChanged<String> onOpenTransaction;
   final ValueChanged<String> onOpenDebt;
+  final ValueChanged<String> onOpenGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -445,6 +454,12 @@ class ScheduledPaymentDetailBody extends StatelessWidget {
           ScheduledPaymentLinkedDebtCard(
             debt: detail.linkedDebt!,
             onTap: () => onOpenDebt(detail.linkedDebt!.id),
+          ),
+        ] else if (detail.linkedGoal != null) ...[
+          const SizedBox(height: 16),
+          ScheduledPaymentLinkedGoalCard(
+            goal: detail.linkedGoal!,
+            onTap: () => onOpenGoal(detail.linkedGoal!.id),
           ),
         ],
         const SizedBox(height: 24),

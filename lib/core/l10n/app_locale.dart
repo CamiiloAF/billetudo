@@ -6,7 +6,7 @@ import 'gen/app_localizations.dart';
 /// [AppLocalizations.supportedLocales]) best matches the device's language
 /// preferences. Needed for code that must pick a language before the widget
 /// tree exists — e.g. `bootstrap.dart`/HU-06 category seeding
-/// (`docs/requirements/05-auth-sync.md`, decision #12): it has no
+/// (`docs/requirements/fase-1/05-auth-sync.md`, decision #12): it has no
 /// `BuildContext` to read `Localizations.localeOf`, but should still land on
 /// a sensible language.
 ///

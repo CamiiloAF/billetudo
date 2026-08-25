@@ -63,6 +63,7 @@ void main() {
         domain.ScheduledPaymentFrequency.monthly,
     List<String> tagIds = const <String>[],
     String? debtId,
+    String? goalId,
   }) =>
       ScheduledPaymentDraft(
         id: id,
@@ -78,6 +79,7 @@ void main() {
         requiresConfirmation: requiresConfirmation,
         tagIds: tagIds,
         debtId: debtId,
+        goalId: goalId,
       );
 
   Future<domain.ScheduledPayment> createTemplate(
@@ -1317,6 +1319,204 @@ void main() {
       final balance = after.getRight().toNullable()!;
       expect(balance.totalDecreasesMinor, 50000);
       expect(balance.outstandingMinor, 150000);
+    });
+  });
+
+  group('aporte recurrente ↔ meta: linkedGoal en el detalle (HU-16)', () {
+    Future<Goal> createGoal({String name = 'Vacaciones'}) =>
+        database.into(database.goals).insertReturning(
+              GoalsCompanion.insert(
+                name: name,
+                targetMinor: 1000000,
+                currency: 'COP',
+              ),
+            );
+
+    test('expone linkedGoal cuando la plantilla tiene goalId', () async {
+      final goal = await createGoal();
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), goalId: goal.id),
+      );
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+
+      expect(detail.linkedGoal, isNotNull);
+      expect(detail.linkedGoal!.id, goal.id);
+      expect(detail.linkedGoal!.name, 'Vacaciones');
+      expect(detail.linkedDebt, isNull);
+    });
+
+    test('linkedGoal es null para una plantilla ordinaria', () async {
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+
+      expect(detail.linkedGoal, isNull);
+    });
+
+    test('linkedGoal se omite si la meta enlazada fue borrada (papelera)',
+        () async {
+      final goal = await createGoal();
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), goalId: goal.id),
+      );
+      await (database.update(database.goals)
+            ..where((g) => g.id.equals(goal.id)))
+          .write(GoalsCompanion(deletedAt: Value(DateTime(2026, 7, 2))));
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+
+      expect(detail.linkedGoal, isNull);
+    });
+  });
+
+  group('watchLinkableScheduledPayments (HU-16 "Enlazar existente")', () {
+    test('solo incluye plantillas activas sin debtId ni goalId', () async {
+      final debt = await database.into(database.debts).insertReturning(
+            DebtsCompanion.insert(
+              name: 'Préstamo',
+              direction: DebtDirection.iOwe,
+              principalMinor: 200000,
+              currency: 'COP',
+            ),
+          );
+      final goal = await database.into(database.goals).insertReturning(
+            GoalsCompanion.insert(
+              name: 'Vacaciones',
+              targetMinor: 1000000,
+              currency: 'COP',
+            ),
+          );
+      final plain = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+      await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+      await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), goalId: goal.id),
+      );
+
+      final result =
+          await repository.watchLinkableScheduledPayments().first;
+
+      final linkable = result.getRight().toNullable()!;
+      expect(linkable.map((s) => s.scheduledPayment.id), [plain.id]);
+    });
+
+    test('excluye plantillas terminadas/tombstoned', () async {
+      final finished = await createTemplate(
+        ScheduledPaymentDraft(
+          accountId: account.id,
+          categoryId: expenseCategory.id,
+          amountMinor: 50000,
+          currency: 'COP',
+          type: domain.ScheduledPaymentType.expense,
+          frequency: domain.ScheduledPaymentFrequency.once,
+          nextDate: DateTime(2026, 7, 1),
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+
+      final result =
+          await repository.watchLinkableScheduledPayments().first;
+
+      expect(
+        result.getRight().toNullable()!.map((s) => s.scheduledPayment.id),
+        isNot(contains(finished.id)),
+      );
+    });
+  });
+
+  group('linkScheduledPaymentToGoal (HU-16 "Enlazar existente")', () {
+    Future<Goal> createGoal({String name = 'Vacaciones'}) =>
+        database.into(database.goals).insertReturning(
+              GoalsCompanion.insert(
+                name: name,
+                targetMinor: 1000000,
+                currency: 'COP',
+              ),
+            );
+
+    test('asigna goalId sin tocar otros campos y actualiza updatedAt',
+        () async {
+      final goal = await createGoal();
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+      final before = await rowOf(template.id);
+
+      final result = await repository.linkScheduledPaymentToGoal(
+        scheduledPaymentId: template.id,
+        goalId: goal.id,
+      );
+
+      expect(result.isRight(), isTrue);
+      final row = await rowOf(template.id);
+      expect(row.goalId, goal.id);
+      expect(row.debtId, isNull);
+      expect(row.amountMinor, before.amountMinor);
+      expect(row.accountId, before.accountId);
+      expect(row.updatedAt, greaterThanOrEqualTo(before.updatedAt));
+    });
+
+    test('rechaza cuando la plantilla ya tiene debtId', () async {
+      final debt = await database.into(database.debts).insertReturning(
+            DebtsCompanion.insert(
+              name: 'Préstamo',
+              direction: DebtDirection.iOwe,
+              principalMinor: 200000,
+              currency: 'COP',
+            ),
+          );
+      final goal = await createGoal();
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+
+      final result = await repository.linkScheduledPaymentToGoal(
+        scheduledPaymentId: template.id,
+        goalId: goal.id,
+      );
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+    });
+
+    test('rechaza cuando la plantilla ya tiene un goalId', () async {
+      final goal = await createGoal();
+      final otherGoal = await createGoal(name: 'Emergencias');
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), goalId: goal.id),
+      );
+
+      final result = await repository.linkScheduledPaymentToGoal(
+        scheduledPaymentId: template.id,
+        goalId: otherGoal.id,
+      );
+
+      expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+    });
+
+    test('plantilla inexistente es NotFound', () async {
+      final goal = await createGoal();
+
+      final result = await repository.linkScheduledPaymentToGoal(
+        scheduledPaymentId: 'no-existe',
+        goalId: goal.id,
+      );
+
+      expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
     });
   });
 

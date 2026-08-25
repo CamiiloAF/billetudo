@@ -1,6 +1,9 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/auth/domain/entities/sign_in_outcome.dart';
+import 'package:billetudo/features/auth/domain/usecases/cancel_account_conflict.dart';
+import 'package:billetudo/features/auth/domain/usecases/resolve_account_conflict.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_apple.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:billetudo/features/auth/presentation/cubit/login_cubit.dart';
@@ -19,9 +22,17 @@ class MockSignInWithGoogle extends Mock implements SignInWithGoogle {}
 
 class MockSignInWithApple extends Mock implements SignInWithApple {}
 
+class MockResolveAccountConflict extends Mock
+    implements ResolveAccountConflict {}
+
+class MockCancelAccountConflict extends Mock
+    implements CancelAccountConflict {}
+
 void main() {
   late MockSignInWithGoogle signInWithGoogle;
   late MockSignInWithApple signInWithApple;
+  late MockResolveAccountConflict resolveAccountConflict;
+  late MockCancelAccountConflict cancelAccountConflict;
 
   const user = AuthUser(
     id: 'google-1',
@@ -32,18 +43,25 @@ void main() {
   setUp(() {
     signInWithGoogle = MockSignInWithGoogle();
     signInWithApple = MockSignInWithApple();
+    resolveAccountConflict = MockResolveAccountConflict();
+    cancelAccountConflict = MockCancelAccountConflict();
   });
 
   Future<void> pumpLogin(
     WidgetTester tester, {
-    VoidCallback? onSignedIn,
+    void Function({required bool signedInAfterConflict})? onSignedIn,
     VoidCallback? onSkip,
   }) =>
       tester.pumpAuthWidget(
         BlocProvider(
-          create: (_) => LoginCubit(signInWithGoogle, signInWithApple),
+          create: (_) => LoginCubit(
+            signInWithGoogle,
+            signInWithApple,
+            resolveAccountConflict,
+            cancelAccountConflict,
+          ),
           child: LoginPage(
-            onSignedIn: onSignedIn ?? () {},
+            onSignedIn: onSignedIn ?? ({required signedInAfterConflict}) {},
             onSkip: onSkip ?? () {},
           ),
         ),
@@ -94,10 +112,13 @@ void main() {
     var signedIn = false;
     when(() => signInWithGoogle()).thenAnswer((_) async {
       await Future<void>.delayed(const Duration(milliseconds: 10));
-      return const Right(user);
+      return const Right(SignedIn(user));
     });
 
-    await pumpLogin(tester, onSignedIn: () => signedIn = true);
+    await pumpLogin(
+      tester,
+      onSignedIn: ({required signedInAfterConflict}) => signedIn = true,
+    );
 
     await tester.tap(find.byType(GoogleSignInButton));
     await tester.pump();
@@ -139,5 +160,65 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets(
+      'un conflicto de cuenta muestra la hoja bloqueante y "Borrar y '
+      'continuar" completa el sign-in tras resolveConflict', (tester) async {
+    var lastSignedInAfterConflict = false;
+    when(() => signInWithGoogle()).thenAnswer(
+      (_) async => const Right(AccountConflictDetected()),
+    );
+    when(() => resolveAccountConflict())
+        .thenAnswer((_) async => const Right(user));
+
+    await pumpLogin(
+      tester,
+      onSignedIn: ({required signedInAfterConflict}) =>
+          lastSignedInAfterConflict = signedInAfterConflict,
+    );
+
+    await tester.tap(find.byType(GoogleSignInButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Hay datos de otra cuenta en este dispositivo'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Borrar y continuar'));
+    await tester.pumpAndSettle();
+
+    verify(() => resolveAccountConflict()).called(1);
+    expect(lastSignedInAfterConflict, isTrue);
+  });
+
+  testWidgets(
+      'cancelar la hoja de conflicto cierra la sesión sin completar el '
+      'sign-in', (tester) async {
+    var signedIn = false;
+    when(() => signInWithGoogle()).thenAnswer(
+      (_) async => const Right(AccountConflictDetected()),
+    );
+    when(() => cancelAccountConflict())
+        .thenAnswer((_) async => const Right(unit));
+
+    await pumpLogin(
+      tester,
+      onSignedIn: ({required signedInAfterConflict}) => signedIn = true,
+    );
+
+    await tester.tap(find.byType(GoogleSignInButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    verify(() => cancelAccountConflict()).called(1);
+    verifyNever(() => resolveAccountConflict());
+    expect(signedIn, isFalse);
+    expect(
+      find.text('Hay datos de otra cuenta en este dispositivo'),
+      findsNothing,
+    );
   });
 }

@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/debt_entry.dart';
 import '../../domain/entities/debt_ledger_entry.dart';
 
 /// Shared, localized formatting for the Deudas read screens, kept in one place
@@ -67,14 +68,25 @@ abstract final class DebtFormat {
           ? l10n.debtDirectionIOwePast
           : l10n.debtDirectionOwedToMePast;
 
-  /// The single word under the hero's big percentage: "pagado" / "cobrado".
+  /// The phrase under the hero's big percentage: "pagado" / "cobrado" for a
+  /// debt with no accrued interest, or "pagado del capital" / "cobrado del
+  /// capital" once there is interest to disambiguate from (the "Capital vs
+  /// Interés separado" variant, `pages/deudas.md`) — a debt with no interest
+  /// has nothing to disambiguate, so the shorter word stays.
   static String progressWord(
     AppLocalizations l10n,
-    DebtDirection direction,
-  ) =>
-      direction == DebtDirection.iOwe
-          ? l10n.debtDetailPaidLabel
-          : l10n.debtDetailCollectedLabel;
+    DebtDirection direction, {
+    bool hasInterest = false,
+  }) {
+    if (hasInterest) {
+      return direction == DebtDirection.iOwe
+          ? l10n.debtDetailPaidOfCapitalLabel
+          : l10n.debtDetailCollectedOfCapitalLabel;
+    }
+    return direction == DebtDirection.iOwe
+        ? l10n.debtDetailPaidLabel
+        : l10n.debtDetailCollectedLabel;
+  }
 
   /// A read-only positive amount, e.g. "$28.500.000".
   static String amount(int amountMinor, String currency) =>
@@ -188,14 +200,24 @@ abstract final class DebtFormat {
     return months < 0 ? 0 : months;
   }
 
-  /// The small tag on a solo-deuda row ("Estimado" for interest, "No afecta
-  /// cuentas" for cash-less events); `null` for cash rows, which need no tag.
-  static String? ledgerTag(AppLocalizations l10n, DebtLedgerEntry entry) {
-    if (entry.isCashEvent) {
-      return null;
-    }
-    return entry.kind == DebtLedgerKind.interestAccrual
-        ? l10n.debtLedgerTagEstimated
-        : l10n.debtLedgerTagNoAccount;
-  }
+  /// The amount héroe's label in `DebtEntryEditSheet` for a [DebtEntry.kind]
+  /// — the same per-kind copy [ledgerTitle] uses for the unified ledger row,
+  /// reused verbatim so a viewed/edited abono/desembolso/ajuste/interés reads
+  /// with the label it already shows elsewhere. Also drives the read-only
+  /// body's header title and héroe label for `interestAccrual` — that kind
+  /// is never editable (`UpdateDebtEntry` rejects it), but it is still
+  /// viewable.
+  static String entryKindLabel(
+    AppLocalizations l10n,
+    DebtEntryKind kind,
+    DebtDirection direction,
+  ) =>
+      switch (kind) {
+        DebtEntryKind.disbursement => l10n.debtLedgerDisbursement,
+        DebtEntryKind.payment => direction == DebtDirection.iOwe
+            ? l10n.debtLedgerPaymentOwe
+            : l10n.debtLedgerPaymentOwed,
+        DebtEntryKind.manualAdjustment => l10n.debtLedgerAdjustment,
+        DebtEntryKind.interestAccrual => l10n.debtLedgerInterest,
+      };
 }

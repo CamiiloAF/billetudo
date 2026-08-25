@@ -1,6 +1,12 @@
 import 'package:injectable/injectable.dart';
 import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 
+import '../../../../core/crash/crash_reporter.dart';
+import '../../../../core/error/result.dart';
+import '../../../../core/sync/data/datasources/sync_retry_ledger_store.dart';
+import '../../../../core/sync/domain/repositories/sync_log_repository.dart';
+import '../../../../core/sync/domain/repositories/sync_quarantine_repository.dart';
+
 /// Erases every row on this device, across every table, **without touching the
 /// cloud copy**. Used by two different flows, and the difference matters:
 ///
@@ -11,7 +17,7 @@ import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 ///    `delete-account` Edge Function first).
 ///
 /// Never deletes row by row through Drift. Drift writes through PowerSync's
-/// *views* (decision #6, docs/requirements/05-auth-sync.md), whose `INSTEAD OF`
+/// *views* (decision #6, docs/requirements/fase-1/05-auth-sync.md), whose `INSTEAD OF`
 /// triggers record every write in the upload queue (`ps_crud`) — so a local
 /// `DELETE` is queued as a `DELETE` for Postgres and gets uploaded on the next
 /// sign-in, wiping the cloud too. That is exactly the data-loss bug this
@@ -29,17 +35,70 @@ import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 /// this device to go. If a local-only table is ever added, revisit this
 /// deliberately instead of inheriting the default.
 ///
+/// `disconnectAndClear` only reaches the PowerSync-managed SQLite file. Three
+/// sync diagnostics stores live deliberately outside of it, as plain JSON
+/// under `<app documents>/sync/` (see `SyncStorageDirectory`'s doc comment for
+/// why): the quarantine, the retry ledger and the local sync log. Left alone,
+/// a wiped device kept showing stale quarantine entries ("N cambios están
+/// solo en este teléfono") for data that no longer existed anywhere. They are
+/// cleared here too, alongside the PowerSync database, so a wipe is really a
+/// wipe.
+///
 /// Only ever runs on the user's explicit, unpreselected choice — never
 /// silently.
 @lazySingleton
 class LocalDataWipeDatasource {
-  const LocalDataWipeDatasource(this._powerSync);
+  const LocalDataWipeDatasource(
+    this._powerSync,
+    this._quarantine,
+    this._retryLedger,
+    this._log,
+    this._crashReporter,
+  );
 
   final PowerSyncDatabase _powerSync;
+  final SyncQuarantineRepository _quarantine;
+  final SyncRetryLedgerStore _retryLedger;
+  final SyncLogRepository _log;
+  final CrashReporter _crashReporter;
 
   /// Also disconnects sync on its own, so callers don't need to sequence a
   /// `disconnect()` before this (`SignOutWithLocalDataChoice` still signs out
   /// first for its own reason: a failed sign-out after a wipe would leave a
   /// live session over an empty database).
-  Future<void> wipeAll() => _powerSync.disconnectAndClear();
+  Future<void> wipeAll() async {
+    await _powerSync.disconnectAndClear();
+    // Quarantine first: `SyncQuarantineRepository.clearAll` appends its own
+    // "quarantine cleared" entry to the sync log, and the log wipe right
+    // after removes that entry too — a wiped device should show no trace of
+    // its own wipe.
+    await _clearQuietly(_quarantine.clearAll,
+        'could not clear the sync quarantine during a local wipe');
+    await _clearRetryLedgerQuietly();
+    await _clearQuietly(
+        _log.clear, 'could not clear the sync log during a local wipe');
+  }
+
+  Future<void> _clearQuietly(
+    FutureResult<Unit> Function() clear,
+    String context,
+  ) async {
+    final result = await clear();
+    await result.fold(
+      (failure) => _crashReporter.recordFailure(failure, context: context),
+      (_) async {},
+    );
+  }
+
+  Future<void> _clearRetryLedgerQuietly() async {
+    try {
+      await _retryLedger.removeAll();
+    } on Object catch (e, stackTrace) {
+      await _crashReporter.recordError(
+        e,
+        stackTrace,
+        context: 'could not clear the sync retry ledger during a local wipe',
+      );
+    }
+  }
 }

@@ -126,7 +126,7 @@ class SyncRetryWatchdog {
       // already earned. Failing open on a verdict we could not *compute* is
       // right; silently dropping one we did compute is how a real stall stays
       // invisible — the exact mechanism behind the incident this class exists
-      // to prevent (decision #22, docs/requirements/05-auth-sync.md).
+      // to prevent (decision #22, docs/requirements/fase-1/05-auth-sync.md).
       try {
         await _prune();
       } catch (_) {

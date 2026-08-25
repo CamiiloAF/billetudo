@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Nivel 0: el respaldo/sync en sí es gratis desde el día 1 — no es una
-/// feature de monetización (`docs/requirements/05-auth-sync.md`). Solo
+/// feature de monetización (`docs/requirements/fase-1/05-auth-sync.md`). Solo
 /// IA/gráficas avanzadas (features futuras, ajenas a esta) se monetizan.
 /// Además, HU-01 exige que ninguna pantalla de login bloquee el acceso a
 /// features de Nivel 0: el login es siempre una invitación posterior, nunca

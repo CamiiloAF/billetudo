@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/restore_mode.dart';
+import 'choice_toggle_segment.dart';
 
 /// The `Choice Toggle` (`FMJ1w`, HU-04): a 2-segment pill choosing
 /// Fusionar/Reemplazar todo. Pencil calls this ad-hoc rather than an
@@ -34,35 +35,6 @@ class RestoreChoiceToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    Widget segment({
-      required bool selected,
-      required VoidCallback onTap,
-      required Widget child,
-    }) {
-      return Expanded(
-        child: Material(
-          color: selected ? colors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(11),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(11),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(11),
-                border: selected && isDark
-                    ? Border.all(color: colors.textSecondary)
-                    : null,
-              ),
-              alignment: Alignment.center,
-              child: child,
-            ),
-          ),
-        ),
-      );
-    }
 
     return Container(
       padding: const EdgeInsets.all(4),
@@ -72,7 +44,7 @@ class RestoreChoiceToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          segment(
+          ChoiceToggleSegment(
             selected: mode == RestoreMode.merge,
             onTap: () => onChanged(RestoreMode.merge),
             child: Column(
@@ -100,7 +72,7 @@ class RestoreChoiceToggle extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          segment(
+          ChoiceToggleSegment(
             selected: mode == RestoreMode.replaceAll,
             onTap: () => onChanged(RestoreMode.replaceAll),
             child: Text(

@@ -107,6 +107,30 @@ abstract class DebtRepository {
   /// payment/disbursement, interest accrual, or manual adjustment).
   FutureResult<DebtEntry> addDebtEntry(DebtEntryDraft draft);
 
+  /// Fix: one-shot read of a single solo-deuda entry — used by `UpdateDebtEntry`
+  /// to validate an edit against the entry's stored `kind` (an `interestAccrual`
+  /// is never editable) before writing.
+  FutureResult<DebtEntry> getDebtEntry(String id);
+
+  /// Fix: edits an existing solo-deuda entry's amount/date/note in place —
+  /// a cash-less abono/desembolso or a manual adjustment; never an
+  /// `interestAccrual` (`UpdateDebtEntry` rejects that in domain before this is
+  /// ever called). [amountMinor] is already signed by the caller. Stamps
+  /// `updatedAt`; the derived balance is never stored, so nothing else needs
+  /// recomputing.
+  FutureResult<DebtEntry> updateDebtEntry({
+    required String id,
+    required int amountMinor,
+    required DateTime entryDate,
+    String? note,
+  });
+
+  /// Fix: reversible papelera delete (`deletedAt`) of a single solo-deuda
+  /// entry — never `tombstonedAt`: unlike a `Debt`, no other table references a
+  /// `DebtEntry`'s id by foreign key, but the same UX-trash convention applies
+  /// (HU-05's rule, scoped to one entry instead of a whole debt).
+  FutureResult<Unit> deleteDebtEntry(String id);
+
   /// HU-06: the read-then-write half of `AccrueInterest` that must be atomic.
   /// Re-reads [DebtAccrualContext] and, if [buildEntry] decides something
   /// should post, inserts it — both inside a single Drift transaction, so two

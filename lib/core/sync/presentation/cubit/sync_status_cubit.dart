@@ -5,6 +5,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../domain/entities/quarantined_operation.dart';
 import '../../domain/entities/sync_status_snapshot.dart';
+import '../../domain/usecases/discard_all_quarantined_operations.dart';
+import '../../domain/usecases/discard_quarantined_operation.dart';
 import '../../domain/usecases/retry_all_quarantined_operations.dart';
 import '../../domain/usecases/retry_quarantined_operation.dart';
 import '../../domain/usecases/watch_quarantined_operations.dart';
@@ -32,12 +34,16 @@ class SyncStatusCubit extends Cubit<SyncStatusState> {
     this._watchQuarantinedOperations,
     this._retryAllQuarantinedOperations,
     this._retryQuarantinedOperation,
+    this._discardQuarantinedOperation,
+    this._discardAllQuarantinedOperations,
   ) : super(const SyncStatusState());
 
   final WatchSyncStatusDetails _watchSyncStatusDetails;
   final WatchQuarantinedOperations _watchQuarantinedOperations;
   final RetryAllQuarantinedOperations _retryAllQuarantinedOperations;
   final RetryQuarantinedOperation _retryQuarantinedOperation;
+  final DiscardQuarantinedOperation _discardQuarantinedOperation;
+  final DiscardAllQuarantinedOperations _discardAllQuarantinedOperations;
 
   StreamSubscription<SyncStatusSnapshot>? _statusSub;
   StreamSubscription<List<QuarantinedOperation>>? _quarantineSub;
@@ -156,6 +162,21 @@ class SyncStatusCubit extends Cubit<SyncStatusState> {
             succeeded ? SyncRetryOutcome.allUploaded : SyncRetryOutcome.partial,
       ),
     );
+  }
+
+  /// "Descartar" from a single change's detail sheet: drops the quarantine
+  /// record for [id] without replaying it. The row disappears once the
+  /// quarantine stream confirms the deletion, not optimistically.
+  Future<void> discard(String id) async {
+    await _discardQuarantinedOperation(id);
+  }
+
+  /// "Descartar todo" from the full pending list (`rxUil`): drops every
+  /// quarantined record without replaying them. Same fire-and-forget shape as
+  /// [discard] — the list empties as the quarantine stream confirms it, not
+  /// optimistically.
+  Future<void> discardAll() async {
+    await _discardAllQuarantinedOperations();
   }
 
   /// The page raises each outcome once; this clears it afterwards.

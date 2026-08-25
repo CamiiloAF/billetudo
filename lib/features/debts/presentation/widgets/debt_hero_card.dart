@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -23,6 +24,7 @@ class DebtHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final pct = (balance.progress * 100).round();
+    final hasInterest = balance.interestAccruedMinor > 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -75,25 +77,35 @@ class DebtHeroCard extends StatelessWidget {
                         color: colors.textSecondary,
                       ),
                     ),
-                    Text(
-                      DebtFormat.amount(
-                          balance.outstandingMinor, debt.currency),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: colors.textPrimary,
+                    // COP amounts routinely run to hundreds of millions (9-10
+                    // digits + thousand separators), so a fixed font size
+                    // clips with an ellipsis on real balances even with the
+                    // pct column capped below — scale the text down instead
+                    // of ever cutting a digit off the number.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        DebtFormat.amount(
+                            balance.outstandingMinor, debt.currency),
+                        maxLines: 1,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: colors.textPrimary,
+                        ),
                       ),
                     ),
-                    if (balance.totalIncreasesMinor > 0)
+                    if (balance.displayTotalMinor > 0)
                       Text(
                         l10n.debtAmountOf(
                           DebtFormat.amount(
-                            balance.totalIncreasesMinor,
+                            balance.displayTotalMinor,
                             debt.currency,
                           ),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -104,31 +116,74 @@ class DebtHeroCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    l10n.debtPercentValue(pct),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: colors.primaryOnSoft,
+              // Capped so a longer subtitle (e.g. "pagado del capital") can
+              // never balloon this column and starve the amount of width —
+              // it wraps onto its own second line instead.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 84),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      l10n.debtPercentValue(pct),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: colors.primaryOnSoft,
+                      ),
                     ),
-                  ),
-                  Text(
-                    DebtFormat.progressWord(l10n, debt.direction),
+                    Text(
+                      DebtFormat.progressWord(
+                        l10n,
+                        debt.direction,
+                        hasInterest: hasInterest,
+                      ),
+                      textAlign: TextAlign.end,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          DebtProgressBar(value: balance.progress, height: 14),
+          if (hasInterest) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.trendingUp,
+                  size: 13,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.debtInterestAccruedNote(
+                      DebtFormat.amount(
+                        balance.interestAccruedMinor,
+                        debt.currency,
+                      ),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: colors.textSecondary,
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          DebtProgressBar(value: balance.progress, height: 14),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

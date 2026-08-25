@@ -1,4 +1,4 @@
-// HU-07 (docs/requirements/05-auth-sync.md): deletes a user's account and all
+// HU-07 (docs/requirements/fase-1/05-auth-sync.md): deletes a user's account and all
 // their data, synchronously and immediately — a legal requirement (Apple/
 // Google), never deferred to the tombstone cleanup cron.
 //

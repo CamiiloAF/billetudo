@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Field separator a CSV file uses (`docs/requirements/11-import-export.md`
+/// Field separator a CSV file uses (`docs/requirements/fase-1/11-import-export.md`
 /// §Dialecto CSV). Export always writes [comma]; import detects one of the
 /// three by reading the first lines, and the user can correct it.
 enum CsvFieldSeparator { comma, semicolon, tab }

@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../settings/domain/usecases/set_onboarding_completed.dart';
 
-/// `docs/requirements/13-onboarding.md`: closes the welcome flow for good.
+/// `docs/requirements/fase-1/13-onboarding.md`: closes the welcome flow for good.
 ///
 /// Called when the user acts on the closing screen (HU-04: registers a
 /// transaction or skips) or when "Ya tengo cuenta" (HU-06) finishes

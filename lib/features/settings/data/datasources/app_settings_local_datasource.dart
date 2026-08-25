@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../home/domain/entities/quick_access_item.dart';
 
 /// Drift access to the `AppSettings` singleton (id `'app'`).
 ///
@@ -37,7 +38,7 @@ class AppSettingsLocalDatasource {
         ),
       );
 
-  /// Marks the welcome flow (`docs/requirements/13-onboarding.md`) as
+  /// Marks the welcome flow (`docs/requirements/fase-1/13-onboarding.md`) as
   /// completed for this installation.
   Future<void> markOnboardingCompleted({required DateTime now}) => _write(
         AppSettingsCompanion(
@@ -59,7 +60,7 @@ class AppSettingsLocalDatasource {
       );
 
   /// Updates the singleton's [showHelpOnSectionEntry] (contextual-help
-  /// minitutorials, `docs/requirements/16-minitutoriales.md` HU-04).
+  /// minitutorials, `docs/requirements/fase-1/16-minitutoriales.md` HU-04).
   /// Paralelo a [setZeroBasedEnabled]. Note: `tutorials`' own
   /// `TutorialViewsLocalDatasource` also writes this same column directly
   /// (documented there) to avoid a cross-feature `data/` dependency — both
@@ -102,9 +103,25 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Persists the Home quick-access chips' order (`QuickAccessRow`) as a
+  /// comma-separated list of [order]'s `.name` values (e.g.
+  /// `'debts,scheduledPayments,reports'`). [order] is trusted to already be a
+  /// valid permutation — `SetQuickAccessOrder` (domain) is the one that
+  /// validates it; this datasource only serializes and writes.
+  Future<void> setQuickAccessOrder({
+    required List<QuickAccessItem> order,
+    required DateTime now,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          quickAccessOrder: Value(order.map((item) => item.name).join(',')),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
   /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
-  /// #14, docs/requirements/05-auth-sync.md) and SQLite rejects
+  /// #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite rejects
   /// `INSERT ... ON CONFLICT ... DO UPDATE` against a view outright
   /// (`cannot UPSERT a view`), whatever its `INSTEAD OF` triggers do.
   ///
@@ -115,6 +132,33 @@ class AppSettingsLocalDatasource {
   /// including this one, and no migration re-runs afterwards. Without this
   /// fallback the seed latch could never be set again and the default
   /// categories would be re-seeded on every launch.
+  ///
+  /// The `UPDATE` finding 0 rows and, in the gap before the fallback
+  /// `INSERT ... insertOrIgnore` below runs, something else (most likely
+  /// `_seedAppSettings()`'s own reseed, e.g. right after a sign-out wipe)
+  /// recreating the singleton row means `insertOrIgnore` silently drops
+  /// [values] — a row with `singletonId` already exists again, so the insert
+  /// is a no-op, and only the freshly-reseeded defaults survive.
+  ///
+  /// The follow-up `UPDATE` after the insert closes that gap: if the insert
+  /// above created the row, this is a harmless no-op re-write of the same
+  /// [values]; if it didn't (the race), this is what actually persists them.
+  ///
+  /// Its own affected-row count is **not** checked, unlike the first
+  /// `UPDATE` above. Confirmed empirically against a real PowerSync
+  /// connection (`app_settings_after_wipe_test.dart` uses one, not a plain
+  /// in-memory `NativeDatabase`): SQLite's `changes()` does not count writes
+  /// performed by an `INSTEAD OF` trigger body, so *every* `UPDATE` against
+  /// this view reports `0` regardless of whether it actually matched and
+  /// updated the row — including the very first `UPDATE` above when it
+  /// *does* find and update an existing row. (That first `UPDATE`'s `0`
+  /// still doubles as "go to the fallback" correctly: the fallback's own
+  /// `insertOrIgnore` is a safe no-op on a row that in fact already got
+  /// updated, so relying on it there was never actually wrong, just
+  /// coincidentally-named — this data source never had a working
+  /// affected-row signal to test in the first place.) So there is nothing
+  /// left to gate the retry on; running it unconditionally and trusting its
+  /// result is the correct behavior for this table, not a shortcut.
   Future<void> _write(AppSettingsCompanion values) async {
     final updated = await (_db.update(_db.appSettings)
           ..where((s) => s.id.equals(singletonId)))
@@ -126,5 +170,7 @@ class AppSettingsLocalDatasource {
           values.copyWith(id: const Value(singletonId)),
           mode: InsertMode.insertOrIgnore,
         );
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(singletonId)))
+        .write(values);
   }
 }

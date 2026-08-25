@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../categories/category_donut_chart.dart';
 import 'chart_skeleton_view.dart';
 
 /// The plot placeholder inside [ChartSkeletonView], drawn per [shape] so a
@@ -20,9 +21,9 @@ class ChartSkeletonPlot extends StatelessWidget {
   final int columnCount;
   final Color skeletonColor;
 
-  /// Matches `CategoryDonutChart`'s default `size` (156) so the placeholder
+  /// Matches `CategoryDonutChart`'s default `size` so the placeholder
   /// occupies roughly the same footprint as the real donut it stands in for.
-  static const double _donutDiameter = 156;
+  static const double _donutDiameter = CategoryDonutChart.defaultSize;
 
   @override
   Widget build(BuildContext context) {

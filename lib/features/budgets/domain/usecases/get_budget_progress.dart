@@ -101,24 +101,80 @@ class GetBudgetProgress {
         daysLeft: window.daysLeftFrom(now),
         scheduledMinor: scheduled,
       ),
-      activity: [
-        for (final detail in matched)
-          BudgetActivityItem(
-            id: detail.expense.id,
-            title: detail.title,
-            accountName: detail.accountName,
-            categoryIcon: detail.categoryIcon,
-            categoryColor: detail.categoryColor,
-            amountMinor: detail.expense.amountMinor,
-            currency: detail.expense.currency,
-            date: detail.expense.date,
-            note: detail.note,
-            isIncome: detail.expense.isIncome,
-          ),
-      ],
+      activity: _buildActivity(matched),
       scheduledItems: scheduledItems,
     );
   }
+
+  /// Builds the activity list from [matched] (already scope/window-filtered,
+  /// newest first), collapsing a presupuestable transfer's two synthetic
+  /// rows (origin-side expense id `X`, destination-side income id `X-dest`
+  /// — see `BudgetsLocalDatasource.watchExpenses`) into a single netted row
+  /// whenever **both** landed in this same budget's scope
+  /// (`design-system/billetudo/pages/presupuestos.md`, "Fila especial —
+  /// Transferencia interna neteada"). When only one side matched — the other
+  /// account sits outside this budget's scope — that lone row renders as
+  /// before (a plain expense or a `+amount` presupuestable income), no
+  /// change from prior behaviour.
+  List<BudgetActivityItem> _buildActivity(List<BudgetExpenseDetail> matched) {
+    final byId = {for (final detail in matched) detail.expense.id: detail};
+    final consumed = <String>{};
+    final activity = <BudgetActivityItem>[];
+
+    for (final detail in matched) {
+      final id = detail.expense.id;
+      if (consumed.contains(id)) {
+        continue;
+      }
+
+      final baseId = id.endsWith(_destSuffix)
+          ? id.substring(0, id.length - _destSuffix.length)
+          : id;
+      final origin = byId[baseId];
+      final destination = byId['$baseId$_destSuffix'];
+
+      if (origin != null && destination != null) {
+        consumed
+          ..add(baseId)
+          ..add('$baseId$_destSuffix');
+        activity.add(
+          BudgetActivityItem(
+            id: baseId,
+            title: origin.title,
+            accountName: origin.accountName,
+            secondaryAccountName: destination.accountName,
+            amountMinor: 0,
+            currency: origin.expense.currency,
+            date: origin.expense.date,
+            isNettedTransfer: true,
+          ),
+        );
+        continue;
+      }
+
+      consumed.add(id);
+      activity.add(
+        BudgetActivityItem(
+          id: id,
+          title: detail.title,
+          accountName: detail.accountName,
+          categoryIcon: detail.categoryIcon,
+          categoryColor: detail.categoryColor,
+          amountMinor: detail.expense.amountMinor,
+          currency: detail.expense.currency,
+          date: detail.expense.date,
+          note: detail.note,
+          isIncome: detail.expense.isIncome,
+        ),
+      );
+    }
+
+    return activity;
+  }
+
+  /// Suffix `BudgetsLocalDatasource.watchExpenses` appends to a
+  /// presupuestable transfer's synthetic destination-side row id.
+  static const String _destSuffix = '-dest';
 
   /// The window at [index] alone (no progress), for the cubit to read the
   /// navigation bounds when the user steps to an empty period.

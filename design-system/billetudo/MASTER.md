@@ -296,7 +296,7 @@ Toda pantalla que carga datos de forma async debe considerar sus estados (con da
 | Vacio | `DliNF` | `dJDHi` | Hero en `$0` + mensaje neutral (no punitivo); bloque de movimientos reemplazado por `Empty State` (icono + mensaje + CTA "Agregar movimiento"). |
 | Carga | `AmifS` | `Y5TnWd` | Skeleton: hero y 5 `Transaction Skeleton Row` planas (bloques `$skeleton`), misma geometria que el estado con datos. |
 
-**Inicio NO tiene estado de Error de pantalla completa** (el diseño viejo si; se descarto): es local-first, el Home no se vacia sin conexion, y un fallo de sync se comunica con un **indicador discreto** (HU-10 en `docs/requirements/04-inicio.md`). Otras features pueden tener su propio estado de error solo si de verdad pueden quedarse sin datos.
+**Inicio NO tiene estado de Error de pantalla completa** (el diseño viejo si; se descarto): es local-first, el Home no se vacia sin conexion, y un fallo de sync se comunica con un **indicador discreto** (HU-10 en `docs/requirements/fase-1/04-inicio.md`). Otras features pueden tener su propio estado de error solo si de verdad pueden quedarse sin datos.
 
 Status bar, header (saludo + avatar + campana), Tab Bar y FAB se mantienen IGUALES en todos los estados — solo cambia el area de contenido (Hero + movimientos + banner). Replicar este patron para Movimientos/Presupuestos/Metas: la unica parte de la pantalla que entra en estado vacio/carga es el area de datos, nunca el chrome de navegacion.
 

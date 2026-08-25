@@ -1016,6 +1016,10 @@
   "@homeQuickAccessTitle": {
     "description": "Caption de la fila de accesos directos del Home (HU-05b)."
   },
+  "homeQuickAccessCustomize": "Ordenar el acceso rápido",
+  "@homeQuickAccessCustomize": {
+    "description": "Tooltip and accessible name of the gear button that closes the Home quick-access strip; opens Ajustes > Orden del acceso rápido."
+  },
   "homeQuickAccessScheduledPayments": "Pagos programados",
   "@homeQuickAccessScheduledPayments": {
     "description": "Label del chip de acceso rápido a Pagos programados; mismo texto que moreScheduledPayments en el hub Más."
@@ -1151,6 +1155,23 @@
   "@debtDetailPaidLabel": {},
   "debtDetailCollectedLabel": "cobrado",
   "@debtDetailCollectedLabel": {},
+  "debtDetailPaidOfCapitalLabel": "pagado del capital",
+  "@debtDetailPaidOfCapitalLabel": {
+    "description": "Subtitulo del % cuando la deuda tiene interes acumulado: el avance mide solo el capital, no capital+interes."
+  },
+  "debtDetailCollectedOfCapitalLabel": "cobrado del capital",
+  "@debtDetailCollectedOfCapitalLabel": {
+    "description": "Igual a debtDetailPaidOfCapitalLabel pero para deudas 'Me deben'."
+  },
+  "debtInterestAccruedNote": "+{amount} de interés acumulado",
+  "@debtInterestAccruedNote": {
+    "description": "Nota bajo la barra de avance del detalle de deuda: cuanto del saldo pendiente es interes, mostrada solo si hay interes acumulado. El monto llega ya formateado.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "debtDetailGrowth": "Crece ~{amount}/día",
   "@debtDetailGrowth": {
     "description": "Interés diario estimado de la deuda. El monto llega ya formateado.",
@@ -1396,8 +1417,26 @@
   "@debtUpdateRegistroConfirm": {},
   "debtOpeningLinkSnackbar": "Saldo inicial · sin cuenta enlazada",
   "@debtOpeningLinkSnackbar": {},
-  "debtLedgerAbonoNoAccountSnackbar": "Este abono no movió ninguna cuenta",
-  "@debtLedgerAbonoNoAccountSnackbar": {},
+  "debtEntryDeleteSheetTitle": "¿Eliminar este movimiento?",
+  "@debtEntryDeleteSheetTitle": {},
+  "debtEntryDeleteSheetMessage": "Podrás recuperarlo más adelante.",
+  "@debtEntryDeleteSheetMessage": {},
+  "debtEntryEditTitle": "Editar movimiento",
+  "@debtEntryEditTitle": {},
+  "debtEntryEditDateLabel": "Fecha",
+  "@debtEntryEditDateLabel": {},
+  "debtEntryEditNoteLabel": "Nota (opcional)",
+  "@debtEntryEditNoteLabel": {},
+  "debtEntryEditNoteReadLabel": "Nota",
+  "@debtEntryEditNoteReadLabel": {},
+  "debtEntryEditBalanceLabel": "Saldo después",
+  "@debtEntryEditBalanceLabel": {},
+  "debtEntryEditCta": "Guardar cambios",
+  "@debtEntryEditCta": {},
+  "debtEntryEditDeleteLink": "Eliminar movimiento",
+  "@debtEntryEditDeleteLink": {},
+  "debtEntryEditError": "No pudimos guardar los cambios. Intenta de nuevo.",
+  "@debtEntryEditError": {},
   "debtMenuTooltip": "Más opciones",
   "@debtMenuTooltip": {},
   "debtActionClose": "Cerrar deuda",
@@ -1582,6 +1621,18 @@
   "@authGoogleErrorSnackbar": {},
   "authAppleErrorSnackbar": "No pudimos iniciar sesión con Apple",
   "@authAppleErrorSnackbar": {},
+  "authAccountConflictTitle": "Hay datos de otra cuenta en este dispositivo",
+  "@authAccountConflictTitle": {
+    "description": "HU-02/03: título de la hoja bloqueante cuando el dispositivo ya tiene datos locales asociados a una cuenta distinta a la que acaba de iniciar sesión. Nunca nombra ni da pistas de cuál es esa cuenta."
+  },
+  "authAccountConflictMessage": "Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán.",
+  "@authAccountConflictMessage": {
+    "description": "HU-02/03: mensaje genérico, sin identificar la cuenta dueña de los datos en conflicto."
+  },
+  "authAccountConflictConfirmCta": "Borrar y continuar",
+  "@authAccountConflictConfirmCta": {
+    "description": "HU-02/03: confirma la hoja — borra los datos locales existentes y completa el inicio de sesión."
+  },
   "authMergeTitle": "Tus datos están a salvo",
   "@authMergeTitle": {},
   "authMergeSubtitle": "Combinamos todo lo que ya tenías guardado con tu cuenta. Nada se perdió en el camino.",
@@ -1729,6 +1780,14 @@
   "@settingsCurrency": {},
   "settingsCurrencySubtitle": "Elige la moneda con la que registras tus movimientos",
   "@settingsCurrencySubtitle": {},
+  "settingsQuickAccessOrder": "Orden del acceso rápido",
+  "@settingsQuickAccessOrder": {},
+  "settingsQuickAccessOrderSubtitle": "Elige el orden de los accesos rápidos en Inicio",
+  "@settingsQuickAccessOrderSubtitle": {},
+  "settingsQuickAccessOrderTitle": "Acceso rápido",
+  "@settingsQuickAccessOrderTitle": {},
+  "settingsQuickAccessOrderHint": "Mantén presionado y arrastra para reordenar",
+  "@settingsQuickAccessOrderHint": {},
   "settingsDeleteAccount": "Eliminar cuenta",
   "@settingsDeleteAccount": {},
   "budgetsTitle": "Presupuestos",
@@ -1840,6 +1899,8 @@
   },
   "budgetActivityEmpty": "Sin movimientos en este periodo",
   "@budgetActivityEmpty": {},
+  "budgetActivityNettedTransferTitle": "Transferencia interna",
+  "@budgetActivityNettedTransferTitle": {},
   "budgetScheduledLabel": "Programado",
   "@budgetScheduledLabel": {},
   "budgetScheduledEntrySub": "{count, plural, one{{count} pago próximo} other{{count} pagos próximos}}",
@@ -2181,7 +2242,7 @@
   "@budgetsEnvelopeAllAssigned": {},
   "firstLaunchOfflineTitle": "Conéctate para continuar",
   "@firstLaunchOfflineTitle": {
-    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
+    "description": "Título de la pantalla de bloqueo por falta de red en el primerísimo arranque (decisión #12, docs/requirements/fase-1/05-auth-sync.md). Copy deliberadamente agnóstico: no menciona categorías ni sincronización."
   },
   "firstLaunchOfflineSubtitle": "Necesitamos conexión a internet para terminar de configurar tu cuenta. Cuando tengas señal, vuelve a intentarlo.",
   "@firstLaunchOfflineSubtitle": {},
@@ -2193,17 +2254,9 @@
   "@splashLoadingCaption": {
     "description": "Caption bajo el spinner indeterminado del splash inicial (design-system/billetudo/pages/splash.md, nodo M0TfmS), mientras arrancan Drift/PowerSync antes de mostrar la app real."
   },
-  "brandWordmarkPrefix": "b",
-  "@brandWordmarkPrefix": {
-    "description": "Primera parte del wordmark 'billetudo' (lib/core/widgets/brand_wordmark.dart). Igual en todos los locales a propósito — es el nombre de marca, no una traducción real; se parte en 3 claves (en vez de una sola indexada) para no depender de indexado frágil sobre un string."
-  },
-  "brandWordmarkDotlessI": "ı",
-  "@brandWordmarkDotlessI": {
-    "description": "La 'i' sin punto (U+0131) del wordmark — el punto lo hace la moneda (CoinGlyph), nunca ambos a la vez (assets/branding/MARCA.md). Igual en todos los locales."
-  },
-  "brandWordmarkSuffix": "lletudo",
-  "@brandWordmarkSuffix": {
-    "description": "Última parte del wordmark 'billetudo'. Igual en todos los locales a propósito — nombre de marca, no traducción real."
+  "brandWordmark": "Billetudo",
+  "@brandWordmark": {
+    "description": "El wordmark de la marca (lib/core/widgets/brand_wordmark.dart), texto plano y con B mayúscula. Igual en todos los locales a propósito — es el nombre de marca, no una traducción real."
   },
   "scheduledPaymentsTitle": "Pagos programados",
   "@scheduledPaymentsTitle": {},
@@ -2332,6 +2385,10 @@
   "@scheduledPaymentInstallmentBanner": {},
   "scheduledPaymentDetailLinkedDebtLabel": "Cuota de",
   "@scheduledPaymentDetailLinkedDebtLabel": {},
+  "scheduledPaymentDetailLinkedGoalEyebrow": "META ENLAZADA",
+  "@scheduledPaymentDetailLinkedGoalEyebrow": {},
+  "scheduledPaymentDetailLinkedGoalLabel": "Aporte a",
+  "@scheduledPaymentDetailLinkedGoalLabel": {},
   "scheduledDebtChipLabel": "Deuda",
   "@scheduledDebtChipLabel": {},
   "scheduledFrequencyOnce": "Solo una vez",
@@ -2957,6 +3014,46 @@
   "@goalLinkBannerBody": {},
   "goalLinkError": "No pudimos enlazar el movimiento. Intenta de nuevo.",
   "@goalLinkError": {},
+  "goalRecurringContributionEntryTitle": "Configura un aporte recurrente",
+  "@goalRecurringContributionEntryTitle": {},
+  "goalRecurringContributionEntrySubtitle": "Automatiza tus aportes con un pago programado",
+  "@goalRecurringContributionEntrySubtitle": {},
+  "goalRecurringContributionDecisionTitle": "Aporte recurrente a {name}",
+  "@goalRecurringContributionDecisionTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goalRecurringContributionDecisionSubtitle": "Quedará enlazado a la meta: cada pago programado suma a tu progreso automáticamente.",
+  "@goalRecurringContributionDecisionSubtitle": {},
+  "goalRecurringContributionCreateNewCta": "Crear uno nuevo",
+  "@goalRecurringContributionCreateNewCta": {},
+  "goalRecurringContributionLinkExistingCta": "Enlazar un pago programado existente",
+  "@goalRecurringContributionLinkExistingCta": {},
+  "goalRecurringContributionFormTitle": "Aporte recurrente",
+  "@goalRecurringContributionFormTitle": {},
+  "goalRecurringContributionAmountLabel": "Monto del aporte",
+  "@goalRecurringContributionAmountLabel": {},
+  "goalRecurringContributionSourceAccountLabel": "Cuenta de origen",
+  "@goalRecurringContributionSourceAccountLabel": {},
+  "goalRecurringContributionFrequencyLabel": "Frecuencia",
+  "@goalRecurringContributionFrequencyLabel": {},
+  "goalRecurringContributionSubmitCta": "Crear aporte recurrente",
+  "@goalRecurringContributionSubmitCta": {},
+  "goalRecurringContributionSaveError": "No pudimos crear el aporte recurrente. Intenta de nuevo.",
+  "@goalRecurringContributionSaveError": {},
+  "goalRecurringContributionBanner": "Se crea un pago programado enlazado a esta meta. Confírmalo o pospónlo en Pagos programados.",
+  "@goalRecurringContributionBanner": {},
+  "goalRecurringContributionPickerTitle": "Enlazar un pago programado",
+  "@goalRecurringContributionPickerTitle": {},
+  "goalRecurringContributionPickerSubtitle": "Elige uno de tus pagos programados; lo atribuimos a esta meta, no creamos uno nuevo.",
+  "@goalRecurringContributionPickerSubtitle": {},
+  "goalRecurringContributionPickerEmpty": "No tienes pagos programados disponibles para enlazar.",
+  "@goalRecurringContributionPickerEmpty": {},
+  "goalRecurringContributionLinkError": "No pudimos enlazar el pago programado. Intenta de nuevo.",
+  "@goalRecurringContributionLinkError": {},
   "goalWithdrawCta": "Retirar",
   "@goalWithdrawCta": {},
   "goalAdjustDateCta": "Ajustar la fecha",
@@ -3483,10 +3580,45 @@
   "@syncDetailRisk": {},
   "syncDetailRetry": "Reintentar",
   "@syncDetailRetry": {},
+  "syncDetailDiscard": "Descartar",
+  "@syncDetailDiscard": {},
+  "syncDiscardConfirmTitle": "¿Descartar este cambio?",
+  "@syncDiscardConfirmTitle": {},
+  "syncDiscardConfirmMessage": "Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca.",
+  "@syncDiscardConfirmMessage": {},
   "syncPendingEmptyMessage": "Nada esperando para subir",
   "@syncPendingEmptyMessage": {},
   "syncPendingEmptyDescription": "Todo lo que registraste ya llegó a la nube.",
   "@syncPendingEmptyDescription": {},
+  "syncDiscardAllLinkLabel": "{count, plural, =1{Descartar todo (1)} other{Descartar todo ({count})}}",
+  "@syncDiscardAllLinkLabel": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmTitle": "{count, plural, =1{¿Descartar el cambio pendiente?} other{¿Descartar los {count} cambios pendientes?}}",
+  "@syncDiscardAllConfirmTitle": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmMessage": "{count, plural, =1{Se va a descartar 1 cambio pendiente. Esta acción no se puede deshacer. Solo se borra el dato local de esa operación específica — el resto de tu información en este teléfono no se toca.} other{Se van a descartar {count} cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca.}}",
+  "@syncDiscardAllConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmButton": "Descartar todo",
+  "@syncDiscardAllConfirmButton": {},
   "syncLogSheetSubtitle": "{count, plural, =0{Aún no hay líneas · nada que reportar} =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}",
   "@syncLogSheetSubtitle": {
     "placeholders": {
@@ -3663,6 +3795,14 @@
   "@importExportProgressRestoringTitle": {},
   "importExportProgressSavingCopyTitle": "Guardando tu copia…",
   "@importExportProgressSavingCopyTitle": {},
+  "importExportSaveCopyDoneTitle": "Tu copia está lista",
+  "@importExportSaveCopyDoneTitle": {},
+  "importExportSaveCopyDoneBody": "Guárdala en tu dispositivo o compártela por donde prefieras.",
+  "@importExportSaveCopyDoneBody": {},
+  "importExportSaveCopyActionSave": "Guardar",
+  "@importExportSaveCopyActionSave": {},
+  "importExportSaveCopyActionShare": "Compartir",
+  "@importExportSaveCopyActionShare": {},
   "importExportProgressCaption": "{processed} de {total} filas",
   "@importExportProgressCaption": {"placeholders": {"processed": {"type": "int"}, "total": {"type": "int"}}},
   "importExportProgressHint": "No cierres la app mientras esto termina. Puedes cancelar sin perder lo que ya tenías.",

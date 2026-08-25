@@ -14,12 +14,21 @@ DebtBalance buildBalance({
   int totalIncreasesMinor = 0,
   int totalDecreasesMinor = 0,
   int interestAccruedMinor = 0,
+  int? displayTotalMinor,
 }) =>
     DebtBalance(
       principalMinor: principalMinor,
       totalIncreasesMinor: totalIncreasesMinor,
       totalDecreasesMinor: totalDecreasesMinor,
       interestAccruedMinor: interestAccruedMinor,
+      // Defaults to the capital-only total, matching the calculator: every
+      // increase minus the interest portion (see `DebtBalance.displayTotalMinor`),
+      // clamped like the real calculator so a fixture can never produce a
+      // negative default.
+      displayTotalMinor: displayTotalMinor ??
+          (totalIncreasesMinor - interestAccruedMinor < 0
+              ? 0
+              : totalIncreasesMinor - interestAccruedMinor),
     );
 
 DebtWithBalance buildDebtWithBalance({

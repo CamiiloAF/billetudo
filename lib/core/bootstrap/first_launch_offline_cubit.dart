@@ -5,7 +5,7 @@ import '../../features/categories/domain/usecases/seed_default_categories.dart';
 import 'first_launch_offline_state.dart';
 
 /// Drives the "Reintentar" button on the "Primer arranque — sin conexión"
-/// screen (`KSkpO`/`zeAfp`, decisión #12 de `docs/requirements/05-auth-sync.md`).
+/// screen (`KSkpO`/`zeAfp`, decisión #12 de `docs/requirements/fase-1/05-auth-sync.md`).
 ///
 /// Same idle/loading pattern as `LoginCubit`, scoped to this one retry
 /// button instead of a full attempt/error flow: a failed retry just returns

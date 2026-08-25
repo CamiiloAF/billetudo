@@ -1265,6 +1265,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickAccessTitle => 'Quick access';
 
   @override
+  String get homeQuickAccessCustomize => 'Reorder quick access';
+
+  @override
   String get homeQuickAccessScheduledPayments => 'Scheduled payments';
 
   @override
@@ -1415,6 +1418,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtDetailCollectedLabel => 'collected';
+
+  @override
+  String get debtDetailPaidOfCapitalLabel => 'paid of principal';
+
+  @override
+  String get debtDetailCollectedOfCapitalLabel => 'collected of principal';
+
+  @override
+  String debtInterestAccruedNote(String amount) {
+    return '+$amount interest accrued';
+  }
 
   @override
   String debtDetailGrowth(String amount) {
@@ -1714,8 +1728,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get debtOpeningLinkSnackbar => 'Initial balance · no account linked';
 
   @override
-  String get debtLedgerAbonoNoAccountSnackbar =>
-      'This payment didn\'t move any account';
+  String get debtEntryDeleteSheetTitle => 'Delete this movement?';
+
+  @override
+  String get debtEntryDeleteSheetMessage => 'You can restore it later.';
+
+  @override
+  String get debtEntryEditTitle => 'Edit movement';
+
+  @override
+  String get debtEntryEditDateLabel => 'Date';
+
+  @override
+  String get debtEntryEditNoteLabel => 'Note (optional)';
+
+  @override
+  String get debtEntryEditNoteReadLabel => 'Note';
+
+  @override
+  String get debtEntryEditBalanceLabel => 'Balance after';
+
+  @override
+  String get debtEntryEditCta => 'Save changes';
+
+  @override
+  String get debtEntryEditDeleteLink => 'Delete movement';
+
+  @override
+  String get debtEntryEditError => 'We couldn\'t save the changes. Try again.';
 
   @override
   String get debtMenuTooltip => 'More options';
@@ -1915,6 +1955,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authAppleErrorSnackbar => 'We couldn\'t sign you in with Apple';
+
+  @override
+  String get authAccountConflictTitle =>
+      'Another account\'s data is on this device';
+
+  @override
+  String get authAccountConflictMessage =>
+      'To continue with this account, the other account\'s data saved on this device has to be deleted first. Any changes that haven\'t been uploaded to the cloud will be lost.';
+
+  @override
+  String get authAccountConflictConfirmCta => 'Delete and continue';
 
   @override
   String get authMergeTitle => 'Your data is safe';
@@ -2121,6 +2172,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose the currency you log your transactions in';
 
   @override
+  String get settingsQuickAccessOrder => 'Quick-access order';
+
+  @override
+  String get settingsQuickAccessOrderSubtitle =>
+      'Choose the order of Home\'s quick-access shortcuts';
+
+  @override
+  String get settingsQuickAccessOrderTitle => 'Quick access';
+
+  @override
+  String get settingsQuickAccessOrderHint =>
+      'Press and hold to drag and reorder';
+
+  @override
   String get settingsDeleteAccount => 'Delete account';
 
   @override
@@ -2251,6 +2316,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetActivityEmpty => 'No transactions in this period';
+
+  @override
+  String get budgetActivityNettedTransferTitle => 'Internal transfer';
 
   @override
   String get budgetScheduledLabel => 'Scheduled';
@@ -2664,13 +2732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashLoadingCaption => 'Loading your finances...';
 
   @override
-  String get brandWordmarkPrefix => 'b';
-
-  @override
-  String get brandWordmarkDotlessI => 'ı';
-
-  @override
-  String get brandWordmarkSuffix => 'lletudo';
+  String get brandWordmark => 'Billetudo';
 
   @override
   String get scheduledPaymentsTitle => 'Scheduled payments';
@@ -2854,6 +2916,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaymentDetailLinkedDebtLabel => 'Installment of';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalEyebrow => 'LINKED GOAL';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalLabel => 'Contribution to';
 
   @override
   String get scheduledDebtChipLabel => 'Debt';
@@ -3511,6 +3579,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalLinkError => 'We couldn\'t link the movement. Try again.';
 
   @override
+  String get goalRecurringContributionEntryTitle =>
+      'Set up a recurring contribution';
+
+  @override
+  String get goalRecurringContributionEntrySubtitle =>
+      'Automate your contributions with a scheduled payment';
+
+  @override
+  String goalRecurringContributionDecisionTitle(String name) {
+    return 'Recurring contribution to $name';
+  }
+
+  @override
+  String get goalRecurringContributionDecisionSubtitle =>
+      'It will be linked to the goal: every scheduled payment adds to your progress automatically.';
+
+  @override
+  String get goalRecurringContributionCreateNewCta => 'Create a new one';
+
+  @override
+  String get goalRecurringContributionLinkExistingCta =>
+      'Link an existing scheduled payment';
+
+  @override
+  String get goalRecurringContributionFormTitle => 'Recurring contribution';
+
+  @override
+  String get goalRecurringContributionAmountLabel => 'Contribution amount';
+
+  @override
+  String get goalRecurringContributionSourceAccountLabel => 'Source account';
+
+  @override
+  String get goalRecurringContributionFrequencyLabel => 'Frequency';
+
+  @override
+  String get goalRecurringContributionSubmitCta =>
+      'Create recurring contribution';
+
+  @override
+  String get goalRecurringContributionSaveError =>
+      'We couldn\'t create the recurring contribution. Try again.';
+
+  @override
+  String get goalRecurringContributionBanner =>
+      'This creates a scheduled payment linked to this goal. Confirm or postpone it in Scheduled payments.';
+
+  @override
+  String get goalRecurringContributionPickerTitle => 'Link a scheduled payment';
+
+  @override
+  String get goalRecurringContributionPickerSubtitle =>
+      'Choose one of your scheduled payments; we\'ll attribute it to this goal, not create a new one.';
+
+  @override
+  String get goalRecurringContributionPickerEmpty =>
+      'You have no scheduled payments available to link.';
+
+  @override
+  String get goalRecurringContributionLinkError =>
+      'We couldn\'t link the scheduled payment. Try again.';
+
+  @override
   String get goalWithdrawCta => 'Withdraw';
 
   @override
@@ -4131,11 +4262,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncDetailRetry => 'Retry';
 
   @override
+  String get syncDetailDiscard => 'Discard';
+
+  @override
+  String get syncDiscardConfirmTitle => 'Discard this change?';
+
+  @override
+  String get syncDiscardConfirmMessage =>
+      'This can\'t be undone. It only removes the local copy of this change — the rest of your information on this phone is untouched.';
+
+  @override
   String get syncPendingEmptyMessage => 'Nothing waiting to upload';
 
   @override
   String get syncPendingEmptyDescription =>
       'Everything you recorded already reached the cloud.';
+
+  @override
+  String syncDiscardAllLinkLabel(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Discard all ($countString)',
+      one: 'Discard all (1)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Discard the $countString pending changes?',
+      one: 'Discard the pending change?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmMessage(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$countString pending changes are about to be discarded. This can\'t be undone. It only removes the local copy of those specific operations — the rest of your information on this phone is untouched.',
+      one:
+          '1 pending change is about to be discarded. This can\'t be undone. It only removes the local copy of that specific operation — the rest of your information on this phone is untouched.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDiscardAllConfirmButton => 'Discard all';
 
   @override
   String syncLogSheetSubtitle(num count) {
@@ -4420,6 +4614,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importExportProgressSavingCopyTitle => 'Saving your copy…';
+
+  @override
+  String get importExportSaveCopyDoneTitle => 'Your copy is ready';
+
+  @override
+  String get importExportSaveCopyDoneBody =>
+      'Save it to your device or share it however you like.';
+
+  @override
+  String get importExportSaveCopyActionSave => 'Save';
+
+  @override
+  String get importExportSaveCopyActionShare => 'Share';
 
   @override
   String importExportProgressCaption(int processed, int total) {

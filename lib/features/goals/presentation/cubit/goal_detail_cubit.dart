@@ -12,6 +12,7 @@ import '../../domain/usecases/contribute_to_goal.dart';
 import '../../domain/usecases/create_goal_quick_amount.dart';
 import '../../domain/usecases/delete_goal.dart';
 import '../../domain/usecases/delete_goal_quick_amount.dart';
+import '../../domain/usecases/unarchive_goal.dart';
 import '../../domain/usecases/watch_goal_detail.dart';
 import '../../domain/usecases/watch_goal_quick_amounts.dart';
 import 'goal_detail_state.dart';
@@ -26,6 +27,7 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
   GoalDetailCubit(
     this._watchGoalDetail,
     this._archiveGoal,
+    this._unarchiveGoal,
     this._deleteGoal,
     this._contributeToGoal,
     this._watchGoalQuickAmounts,
@@ -35,6 +37,7 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
 
   final WatchGoalDetail _watchGoalDetail;
   final ArchiveGoal _archiveGoal;
+  final UnarchiveGoal _unarchiveGoal;
   final DeleteGoal _deleteGoal;
   final ContributeToGoal _contributeToGoal;
   final WatchGoalQuickAmounts _watchGoalQuickAmounts;
@@ -152,7 +155,7 @@ class GoalDetailCubit extends Cubit<GoalDetailState> {
     if (id == null) {
       return const Left(ValidationFailure('no goal loaded'));
     }
-    return _archiveGoal.unarchive(id);
+    return _unarchiveGoal(id);
   }
 
   /// HU-10: soft delete (papelera). The page pops to the list on success.

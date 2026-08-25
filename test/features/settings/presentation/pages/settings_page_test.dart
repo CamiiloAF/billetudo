@@ -87,6 +87,7 @@ void main() {
     VoidCallback? onOpenDeleteAccount,
     ValueChanged<String>? onOpenComingSoon,
     VoidCallback? onOpenSyncStatus,
+    VoidCallback? onOpenQuickAccessOrder,
   }) async {
     when(() => watchAuthSession.current).thenReturn(session);
     when(() => watchAuthSession()).thenAnswer((_) => const Stream.empty());
@@ -104,6 +105,7 @@ void main() {
           onOpenDeleteAccount: onOpenDeleteAccount ?? () {},
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
+          onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
         ),
       ),
       wrapInScaffold: false,
@@ -277,7 +279,7 @@ void main() {
     expect(opened, isEmpty);
   });
 
-  // HU-04 (`docs/requirements/16-minitutoriales.md`): the "Mostrar ayuda al
+  // HU-04 (`docs/requirements/fase-1/16-minitutoriales.md`): the "Mostrar ayuda al
   // entrar a una sección" switch in Preferencias. Plain on/off, no side
   // effects on the tutorials' "seen" registry and no SnackBar.
   group('"Mostrar ayuda al entrar a una sección" (HU-04, minitutoriales)', () {
@@ -373,6 +375,30 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.byType(Dialog), findsNothing);
+    });
+  });
+
+  group('entrada a "Orden del acceso rápido"', () {
+    testWidgets(
+        'aparece en Preferencias y tocarla invoca onOpenQuickAccessOrder',
+        (tester) async {
+      var opened = 0;
+      await pumpSettings(
+        tester,
+        session: const AuthSession.signedOut(),
+        onOpenQuickAccessOrder: () => opened++,
+      );
+
+      final field = find.text('Orden del acceso rápido');
+      await tester.scrollUntilVisible(
+        field,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(field);
+      await tester.pump();
+
+      expect(opened, 1);
     });
   });
 }

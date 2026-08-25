@@ -14,6 +14,8 @@ import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
+import '../../../settings/presentation/cubit/app_settings_cubit.dart';
+import '../../../settings/presentation/cubit/app_settings_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_banner.dart';
@@ -43,6 +45,7 @@ class HomePage extends StatefulWidget {
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onOpenQuickAccessOrder,
     required this.onOpenLogin,
     required this.onOpenSyncStatus,
     super.key,
@@ -70,6 +73,11 @@ class HomePage extends StatefulWidget {
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+
+  /// Opens Ajustes > "Orden del acceso rapido" from the gear that closes the
+  /// quick-access strip. Not a chip destination: it is where the strip's
+  /// own order is set.
+  final VoidCallback onOpenQuickAccessOrder;
 
   /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
   /// when the app is offline with no session, so the user can back up.
@@ -290,10 +298,14 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: QuickAccessRow(
-                      onOpenScheduledPayments: widget.onOpenScheduledPayments,
-                      onOpenDebts: widget.onOpenDebts,
-                      onOpenReports: widget.onOpenReports,
+                    child: BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                      builder: (context, settings) => QuickAccessRow(
+                        order: settings.quickAccessOrder,
+                        onOpenScheduledPayments: widget.onOpenScheduledPayments,
+                        onOpenDebts: widget.onOpenDebts,
+                        onOpenReports: widget.onOpenReports,
+                        onCustomize: widget.onOpenQuickAccessOrder,
+                      ),
                     ),
                   ),
                 ),

@@ -16,6 +16,7 @@ import '../../cubit/sync_status_cubit.dart';
 import '../../models/pending_sync_change.dart';
 import '../../utils/sync_relative_time.dart';
 import '../sync_time_row.dart';
+import 'confirm_discard_quarantined_change_sheet.dart';
 import 'sync_log_sheet.dart';
 
 /// The detail of one held-back change (`r1qQYc`), opened by tapping its row.
@@ -26,8 +27,9 @@ import 'sync_log_sheet.dart';
 /// secondary way into the technical log.
 ///
 /// Forbidden here: error codes, table names, ISO timestamps. Those live only
-/// in the technical log, whose reader is support. There is no "Descartar":
-/// nothing in this flow destroys data that only exists on this phone.
+/// in the technical log, whose reader is support. "Descartar" only shows up
+/// once `change.attempts >= 3` — below that threshold the sheet keeps its
+/// two-button layout.
 class PendingChangeDetailSheet extends StatelessWidget {
   const PendingChangeDetailSheet({required this.change, super.key});
 
@@ -191,7 +193,53 @@ class PendingChangeDetailSheet extends StatelessWidget {
             label: Text(l10n.syncDetailRetry),
           ),
         ),
+        if (change.attempts >= 3) ...[
+          const SizedBox(height: 4),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: TextButton(
+              onPressed: () => unawaited(_discard(context)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.syncDetailDiscard,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      // `expense-text`, not `expense`: a normal-sized
+                      // destructive link needs the calibrated token to
+                      // clear 4.5:1 (MASTER.md).
+                      color: colors.expenseText,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    LucideIcons.trash2,
+                    size: 16,
+                    color: colors.expenseText,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  Future<void> _discard(BuildContext context) async {
+    final cubit = context.read<SyncStatusCubit>();
+    final confirmed = await ConfirmDiscardQuarantinedChangeSheet.show(context);
+    if (confirmed != true) {
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
+    unawaited(cubit.discard(change.id));
   }
 }

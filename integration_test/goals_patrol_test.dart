@@ -1,4 +1,4 @@
-// Patrol e2e for Metas de ahorro (Nivel 0, `docs/requirements/07-metas.md`,
+// Patrol e2e for Metas de ahorro (Nivel 0, `docs/requirements/fase-1/07-metas.md`,
 // design spec `design-system/billetudo/pages/metas.md`). Runs the real app —
 // real DI graph, real on-device Drift database, real go_router navigation —
 // against a real emulator/simulator. No datasource or repository is mocked:

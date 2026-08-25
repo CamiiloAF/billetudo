@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:billetudo/core/crash/crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart';
 import 'package:billetudo/features/categories/domain/repositories/category_repository.dart';
 import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart';
@@ -13,7 +16,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 
+import '../../../support/fake_sync_retry_ledger_store.dart';
+
 class MockCategoryRepository extends Mock implements CategoryRepository {}
+
+class MockSyncQuarantineRepository extends Mock
+    implements SyncQuarantineRepository {}
+
+class MockSyncLogRepository extends Mock implements SyncLogRepository {}
+
+class MockCrashReporter extends Mock implements CrashReporter {}
 
 /// Que pasa con el singleton `app_settings` **despues** del wipe de HU-06.
 ///
@@ -30,6 +42,10 @@ class MockCategoryRepository extends Mock implements CategoryRepository {}
 /// vista, y es la vista la que hace que un `INSERT ... ON CONFLICT DO UPDATE`
 /// (el upsert obvio) sea ilegal en SQLite.
 void main() {
+  setUpAll(() {
+    registerFallbackValue(const DatabaseFailure('fallback'));
+  });
+
   late Directory tempDir;
   late PowerSyncDatabase powerSync;
   late AppDatabase db;
@@ -45,7 +61,30 @@ void main() {
     db = AppDatabase(driftConnection(powerSync));
     local = AppSettingsLocalDatasource(db);
     settingsRepository = AppSettingsRepositoryImpl(local);
-    wipe = LocalDataWipeDatasource(powerSync);
+    final quarantine = MockSyncQuarantineRepository();
+    final retryLedger = FakeSyncRetryLedgerStore();
+    final log = MockSyncLogRepository();
+    final crashReporter = MockCrashReporter();
+    when(quarantine.clearAll).thenAnswer((_) async => const Right(unit));
+    when(log.clear).thenAnswer((_) async => const Right(unit));
+    when(
+      () => crashReporter.recordFailure(any(), context: any(named: 'context')),
+    ).thenAnswer((_) async {});
+    when(
+      () => crashReporter.recordError(
+        any(),
+        any(),
+        context: any(named: 'context'),
+        fatal: any(named: 'fatal'),
+      ),
+    ).thenAnswer((_) async {});
+    wipe = LocalDataWipeDatasource(
+      powerSync,
+      quarantine,
+      retryLedger,
+      log,
+      crashReporter,
+    );
   });
 
   tearDown(() async {

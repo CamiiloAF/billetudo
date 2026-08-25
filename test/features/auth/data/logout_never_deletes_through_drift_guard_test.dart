@@ -34,12 +34,16 @@ void main() {
   const datasourcesDir = 'lib/features/auth/data/datasources';
 
   /// Los unicos datasources de auth a los que se les permite hablar Drift, y
-  /// por que: ambos solo LEEN o estampan `user_id`, nunca borran. Cualquier
+  /// por que: todos solo LEEN o estampan `user_id`, nunca borran. Cualquier
   /// otro que aparezca aqui hay que revisarlo a mano antes de sumarlo — el
   /// wipe en particular no debe estar nunca en esta lista.
   const driftAllowlist = <String>{
     'local_data_summary_datasource.dart',
     'local_data_ownership_datasource.dart',
+    // Detección de conflicto de cuenta al iniciar sesión (inverso de HU-04):
+    // solo hace `SELECT ... WHERE user_id IS NOT NULL AND user_id != ?`,
+    // nunca escribe ni borra.
+    'local_data_conflict_datasource.dart',
   };
 
   /// Quita comentarios de linea para que la prosa que explica la regla no

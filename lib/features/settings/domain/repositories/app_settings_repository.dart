@@ -1,4 +1,5 @@
 import '../../../../core/error/result.dart';
+import '../../../home/domain/entities/quick_access_item.dart';
 import '../entities/app_settings.dart';
 
 /// Contract for reading and writing the account-level [AppSettings] singleton.
@@ -23,7 +24,7 @@ abstract class AppSettingsRepository {
   FutureResult<Unit> markCategoriesSeeded();
 
   /// Latches the welcome flow as completed for this installation
-  /// (`docs/requirements/13-onboarding.md`). Idempotent: safe to call again;
+  /// (`docs/requirements/fase-1/13-onboarding.md`). Idempotent: safe to call again;
   /// the flag never turns off.
   FutureResult<Unit> markOnboardingCompleted();
 
@@ -36,4 +37,11 @@ abstract class AppSettingsRepository {
   /// `none` (the user explicitly wants no featured budget, and no automatic
   /// fallback) and `featuredBudgetId` is reset to `null`.
   FutureResult<Unit> clearFeaturedBudget();
+
+  /// Persists the Home quick-access chips' order (`QuickAccessRow`).
+  ///
+  /// [order] must already be a valid permutation of
+  /// [QuickAccessItem.values] — validating that is `SetQuickAccessOrder`'s
+  /// job (domain business rule), not this method's; this is a plain write.
+  FutureResult<Unit> setQuickAccessOrder(List<QuickAccessItem> order);
 }

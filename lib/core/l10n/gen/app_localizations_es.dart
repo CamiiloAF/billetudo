@@ -1266,6 +1266,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeQuickAccessTitle => 'Acceso rápido';
 
   @override
+  String get homeQuickAccessCustomize => 'Ordenar el acceso rápido';
+
+  @override
   String get homeQuickAccessScheduledPayments => 'Pagos programados';
 
   @override
@@ -1417,6 +1420,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get debtDetailCollectedLabel => 'cobrado';
+
+  @override
+  String get debtDetailPaidOfCapitalLabel => 'pagado del capital';
+
+  @override
+  String get debtDetailCollectedOfCapitalLabel => 'cobrado del capital';
+
+  @override
+  String debtInterestAccruedNote(String amount) {
+    return '+$amount de interés acumulado';
+  }
 
   @override
   String debtDetailGrowth(String amount) {
@@ -1718,8 +1732,35 @@ class AppLocalizationsEs extends AppLocalizations {
   String get debtOpeningLinkSnackbar => 'Saldo inicial · sin cuenta enlazada';
 
   @override
-  String get debtLedgerAbonoNoAccountSnackbar =>
-      'Este abono no movió ninguna cuenta';
+  String get debtEntryDeleteSheetTitle => '¿Eliminar este movimiento?';
+
+  @override
+  String get debtEntryDeleteSheetMessage => 'Podrás recuperarlo más adelante.';
+
+  @override
+  String get debtEntryEditTitle => 'Editar movimiento';
+
+  @override
+  String get debtEntryEditDateLabel => 'Fecha';
+
+  @override
+  String get debtEntryEditNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get debtEntryEditNoteReadLabel => 'Nota';
+
+  @override
+  String get debtEntryEditBalanceLabel => 'Saldo después';
+
+  @override
+  String get debtEntryEditCta => 'Guardar cambios';
+
+  @override
+  String get debtEntryEditDeleteLink => 'Eliminar movimiento';
+
+  @override
+  String get debtEntryEditError =>
+      'No pudimos guardar los cambios. Intenta de nuevo.';
 
   @override
   String get debtMenuTooltip => 'Más opciones';
@@ -1918,6 +1959,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authAppleErrorSnackbar => 'No pudimos iniciar sesión con Apple';
+
+  @override
+  String get authAccountConflictTitle =>
+      'Hay datos de otra cuenta en este dispositivo';
+
+  @override
+  String get authAccountConflictMessage =>
+      'Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán.';
+
+  @override
+  String get authAccountConflictConfirmCta => 'Borrar y continuar';
 
   @override
   String get authMergeTitle => 'Tus datos están a salvo';
@@ -2128,6 +2180,20 @@ class AppLocalizationsEs extends AppLocalizations {
       'Elige la moneda con la que registras tus movimientos';
 
   @override
+  String get settingsQuickAccessOrder => 'Orden del acceso rápido';
+
+  @override
+  String get settingsQuickAccessOrderSubtitle =>
+      'Elige el orden de los accesos rápidos en Inicio';
+
+  @override
+  String get settingsQuickAccessOrderTitle => 'Acceso rápido';
+
+  @override
+  String get settingsQuickAccessOrderHint =>
+      'Mantén presionado y arrastra para reordenar';
+
+  @override
   String get settingsDeleteAccount => 'Eliminar cuenta';
 
   @override
@@ -2258,6 +2324,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetActivityEmpty => 'Sin movimientos en este periodo';
+
+  @override
+  String get budgetActivityNettedTransferTitle => 'Transferencia interna';
 
   @override
   String get budgetScheduledLabel => 'Programado';
@@ -2672,13 +2741,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get splashLoadingCaption => 'Cargando tus finanzas...';
 
   @override
-  String get brandWordmarkPrefix => 'b';
-
-  @override
-  String get brandWordmarkDotlessI => 'ı';
-
-  @override
-  String get brandWordmarkSuffix => 'lletudo';
+  String get brandWordmark => 'Billetudo';
 
   @override
   String get scheduledPaymentsTitle => 'Pagos programados';
@@ -2859,6 +2922,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaymentDetailLinkedDebtLabel => 'Cuota de';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalEyebrow => 'META ENLAZADA';
+
+  @override
+  String get scheduledPaymentDetailLinkedGoalLabel => 'Aporte a';
 
   @override
   String get scheduledDebtChipLabel => 'Deuda';
@@ -3516,6 +3585,69 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pudimos enlazar el movimiento. Intenta de nuevo.';
 
   @override
+  String get goalRecurringContributionEntryTitle =>
+      'Configura un aporte recurrente';
+
+  @override
+  String get goalRecurringContributionEntrySubtitle =>
+      'Automatiza tus aportes con un pago programado';
+
+  @override
+  String goalRecurringContributionDecisionTitle(String name) {
+    return 'Aporte recurrente a $name';
+  }
+
+  @override
+  String get goalRecurringContributionDecisionSubtitle =>
+      'Quedará enlazado a la meta: cada pago programado suma a tu progreso automáticamente.';
+
+  @override
+  String get goalRecurringContributionCreateNewCta => 'Crear uno nuevo';
+
+  @override
+  String get goalRecurringContributionLinkExistingCta =>
+      'Enlazar un pago programado existente';
+
+  @override
+  String get goalRecurringContributionFormTitle => 'Aporte recurrente';
+
+  @override
+  String get goalRecurringContributionAmountLabel => 'Monto del aporte';
+
+  @override
+  String get goalRecurringContributionSourceAccountLabel => 'Cuenta de origen';
+
+  @override
+  String get goalRecurringContributionFrequencyLabel => 'Frecuencia';
+
+  @override
+  String get goalRecurringContributionSubmitCta => 'Crear aporte recurrente';
+
+  @override
+  String get goalRecurringContributionSaveError =>
+      'No pudimos crear el aporte recurrente. Intenta de nuevo.';
+
+  @override
+  String get goalRecurringContributionBanner =>
+      'Se crea un pago programado enlazado a esta meta. Confírmalo o pospónlo en Pagos programados.';
+
+  @override
+  String get goalRecurringContributionPickerTitle =>
+      'Enlazar un pago programado';
+
+  @override
+  String get goalRecurringContributionPickerSubtitle =>
+      'Elige uno de tus pagos programados; lo atribuimos a esta meta, no creamos uno nuevo.';
+
+  @override
+  String get goalRecurringContributionPickerEmpty =>
+      'No tienes pagos programados disponibles para enlazar.';
+
+  @override
+  String get goalRecurringContributionLinkError =>
+      'No pudimos enlazar el pago programado. Intenta de nuevo.';
+
+  @override
   String get goalWithdrawCta => 'Retirar';
 
   @override
@@ -4136,11 +4268,74 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncDetailRetry => 'Reintentar';
 
   @override
+  String get syncDetailDiscard => 'Descartar';
+
+  @override
+  String get syncDiscardConfirmTitle => '¿Descartar este cambio?';
+
+  @override
+  String get syncDiscardConfirmMessage =>
+      'Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca.';
+
+  @override
   String get syncPendingEmptyMessage => 'Nada esperando para subir';
 
   @override
   String get syncPendingEmptyDescription =>
       'Todo lo que registraste ya llegó a la nube.';
+
+  @override
+  String syncDiscardAllLinkLabel(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Descartar todo ($countString)',
+      one: 'Descartar todo (1)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Descartar los $countString cambios pendientes?',
+      one: '¿Descartar el cambio pendiente?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmMessage(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se van a descartar $countString cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca.',
+      one:
+          'Se va a descartar 1 cambio pendiente. Esta acción no se puede deshacer. Solo se borra el dato local de esa operación específica — el resto de tu información en este teléfono no se toca.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDiscardAllConfirmButton => 'Descartar todo';
 
   @override
   String syncLogSheetSubtitle(num count) {
@@ -4427,6 +4622,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get importExportProgressSavingCopyTitle => 'Guardando tu copia…';
+
+  @override
+  String get importExportSaveCopyDoneTitle => 'Tu copia está lista';
+
+  @override
+  String get importExportSaveCopyDoneBody =>
+      'Guárdala en tu dispositivo o compártela por donde prefieras.';
+
+  @override
+  String get importExportSaveCopyActionSave => 'Guardar';
+
+  @override
+  String get importExportSaveCopyActionShare => 'Compartir';
 
   @override
   String importExportProgressCaption(int processed, int total) {

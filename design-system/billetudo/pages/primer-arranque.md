@@ -6,7 +6,7 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 
 ## Contexto de producto
 
-Excepción puntual a que la app funcione sin conexión (HU-01 de `docs/requirements/05-auth-sync.md`): en el **primerísimo arranque**, antes de que exista ninguna categoría local, la app necesita bajar el catálogo semilla desde Supabase (`category_seeds`, ver `05-auth-sync.md` decisión #12 y `02-categorias.md` HU-06). Sin conexión en ese momento puntual, se bloquea con esta pantalla en vez de sembrar con una copia local desactualizada.
+Excepción puntual a que la app funcione sin conexión (HU-01 de `docs/requirements/fase-1/05-auth-sync.md`): en el **primerísimo arranque**, antes de que exista ninguna categoría local, la app necesita bajar el catálogo semilla desde Supabase (`category_seeds`, ver `05-auth-sync.md` decisión #12 y `02-categorias.md` HU-06). Sin conexión en ese momento puntual, se bloquea con esta pantalla en vez de sembrar con una copia local desactualizada.
 
 **Copy deliberadamente agnóstico**: no menciona categorías, sincronización, servidor ni ningún detalle técnico — se enmarca como "terminar de configurar tu cuenta", suficiente para transmitir que es importante sin exponer implementación. Decisión de producto, no ausencia de información.
 

@@ -48,7 +48,7 @@ void main() {
     );
 
     // `AppDatabase` now opens on top of the PowerSync-managed connection (see
-    // `register_module.dart` and decision #6, docs/requirements/05-auth-sync.md)
+    // `register_module.dart` and decision #6, docs/requirements/fase-1/05-auth-sync.md)
     // instead of a lazy `NativeDatabase`, so the graph needs a real (if
     // never-connected-to-the-service) `PowerSyncDatabase` too — same pattern as
     // `bootstrap.dart`, but pointed at a throwaway temp file instead of

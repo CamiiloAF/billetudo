@@ -137,11 +137,11 @@ class DebtCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (balance.totalIncreasesMinor > 0)
+                  if (balance.displayTotalMinor > 0)
                     Text(
                       l10n.debtAmountOf(
                         DebtFormat.amount(
-                          balance.totalIncreasesMinor,
+                          balance.displayTotalMinor,
                           debt.currency,
                         ),
                       ),

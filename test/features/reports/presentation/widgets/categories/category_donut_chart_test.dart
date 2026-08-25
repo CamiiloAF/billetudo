@@ -5,6 +5,7 @@ import 'package:billetudo/features/reports/presentation/widgets/categories/categ
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Covers the tap-to-select behaviour of the donut (criteria 1-3 of the
@@ -35,6 +36,8 @@ void main() {
     WidgetTester tester, {
     required int? selectedIndex,
     required ValueChanged<int?> onSectionTap,
+    List<CategoryBreakdownItem> withItems = items,
+    int withTotalMinor = totalMinor,
   }) =>
       tester.pumpWidget(
         MaterialApp(
@@ -45,8 +48,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: CategoryDonutChart(
-                items: items,
-                totalMinor: totalMinor,
+                items: withItems,
+                totalMinor: withTotalMinor,
                 selectedIndex: selectedIndex,
                 onSectionTap: onSectionTap,
               ),
@@ -151,4 +154,135 @@ void main() {
       expect(reported, 1);
     },
   );
+
+  /// Regression guard for the truncated center total (`$2.640.0…`): the hole
+  /// was narrower than the figure a real Colombian monthly expense produces.
+  /// Neither the selection tests above nor the page goldens covered it — their
+  /// fixtures top out at 5 significant digits (`$26.400`), which fits even in
+  /// the old 156pt donut. Asserted on the `RenderParagraph` rather than on a
+  /// pixel diff so the failure names the cause (the text did not fit) instead
+  /// of just reporting changed pixels.
+  group('el total del centro se muestra completo', () {
+    /// `$2.640.000` — 7 significant digits, the amount that truncated.
+    const largeTotalMinor = 264000000;
+
+    /// An amount far past anything a personal budget produces, used only to
+    /// pin the lower bound of the auto-shrink fallback.
+    const absurdTotalMinor = 999999999999900;
+
+    RenderParagraph amountParagraph(WidgetTester tester, String text) =>
+        tester.renderObject<RenderParagraph>(find.text(text));
+
+    testWidgets('un total de 7 dígitos no se trunca ni encoge la fuente',
+        (tester) async {
+      await pumpDonut(
+        tester,
+        selectedIndex: null,
+        onSectionTap: (_) {},
+        withTotalMinor: largeTotalMinor,
+      );
+
+      final finder = find.textContaining('2.640.000');
+      expect(finder, findsOneWidget);
+      final label = tester.widget<Text>(finder);
+      expect(
+        amountParagraph(tester, label.data!).didExceedMaxLines,
+        isFalse,
+        reason: 'el total debe caber entero dentro del agujero de la dona',
+      );
+      expect(
+        label.style?.fontSize,
+        16,
+        reason: 'a este monto el anillo ensanchado basta, sin encoger la letra',
+      );
+    });
+
+    testWidgets(
+        'ningún monto realista se trunca: hasta 8 dígitos entra a tamaño de '
+        'diseño', (tester) async {
+      // Spans a plausible range of monthly expense totals in COP, from a
+      // modest week to an outlier year — the whole band the widened ring is
+      // supposed to absorb without shrinking the figure.
+      for (final totalMinor in [
+        2640000, // $26.400
+        26400000, // $264.000
+        264000000, // $2.640.000
+        1919000000, // $19.190.000
+        26400000000, // $264.000.000
+      ]) {
+        await pumpDonut(
+          tester,
+          selectedIndex: null,
+          onSectionTap: (_) {},
+          withTotalMinor: totalMinor,
+        );
+
+        final label = tester.widget<Text>(
+          find.descendant(
+            of: find.byType(CategoryDonutChart),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is Text && widget.style?.fontWeight != null,
+            ),
+          ),
+        );
+        expect(
+          amountParagraph(tester, label.data!).didExceedMaxLines,
+          isFalse,
+          reason: '$totalMinor se truncó en el centro de la dona',
+        );
+        expect(
+          label.style?.fontSize,
+          16,
+          reason: '$totalMinor no debería necesitar encoger la letra',
+        );
+      }
+    });
+
+    testWidgets('un monto absurdo encoge la letra pero nunca bajo 12pt',
+        (tester) async {
+      await pumpDonut(
+        tester,
+        selectedIndex: null,
+        onSectionTap: (_) {},
+        withTotalMinor: absurdTotalMinor,
+      );
+
+      final label = tester.widget<Text>(
+        find.descendant(
+          of: find.byType(CategoryDonutChart),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is Text && widget.style?.fontWeight != null,
+          ),
+        ),
+      );
+      expect(label.style!.fontSize, lessThan(16));
+      expect(
+        label.style!.fontSize,
+        greaterThanOrEqualTo(12),
+        reason: 'por debajo de 12pt la cifra deja de ser legible',
+      );
+    });
+
+    testWidgets('el monto de una sección seleccionada tampoco se trunca',
+        (tester) async {
+      const bigGroceries = CategoryBreakdownItem(
+        categoryId: 'cat-mercado',
+        name: 'Mercado',
+        amountMinor: 264000000,
+      );
+      await pumpDonut(
+        tester,
+        selectedIndex: 0,
+        onSectionTap: (_) {},
+        withItems: const [bigGroceries, transport, uncategorized],
+        withTotalMinor: 264000000 + 620000 + 90000,
+      );
+
+      final finder = find.textContaining('2.640.000');
+      expect(finder, findsOneWidget);
+      final label = tester.widget<Text>(finder);
+      expect(amountParagraph(tester, label.data!).didExceedMaxLines, isFalse);
+      expect(find.text('Mercado'), findsOneWidget);
+    });
+  });
 }

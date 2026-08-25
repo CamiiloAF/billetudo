@@ -11,6 +11,7 @@ import 'package:billetudo/features/debts/domain/services/debt_interest_calculato
 import 'package:billetudo/features/debts/domain/usecases/accrue_interest.dart';
 import 'package:billetudo/features/debts/domain/usecases/close_debt.dart';
 import 'package:billetudo/features/debts/domain/usecases/delete_debt.dart';
+import 'package:billetudo/features/debts/domain/usecases/delete_debt_entry.dart';
 import 'package:billetudo/features/debts/domain/usecases/watch_debt_detail.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_cubit.dart';
 import 'package:billetudo/features/debts/presentation/cubit/debt_detail_state.dart';
@@ -28,11 +29,14 @@ class MockDeleteDebt extends Mock implements DeleteDebt {}
 
 class MockAccrueInterest extends Mock implements AccrueInterest {}
 
+class MockDeleteDebtEntry extends Mock implements DeleteDebtEntry {}
+
 void main() {
   late MockWatchDebtDetail watchDebtDetail;
   late MockCloseDebt closeDebt;
   late MockDeleteDebt deleteDebt;
   late MockAccrueInterest accrueInterest;
+  late MockDeleteDebtEntry deleteDebtEntry;
 
   const calculator = DebtInterestCalculator();
 
@@ -65,6 +69,7 @@ void main() {
     closeDebt = MockCloseDebt();
     deleteDebt = MockDeleteDebt();
     accrueInterest = MockAccrueInterest();
+    deleteDebtEntry = MockDeleteDebtEntry();
     when(
       () => accrueInterest.call(
         debtId: any(named: 'debtId'),
@@ -79,6 +84,7 @@ void main() {
         closeDebt,
         deleteDebt,
         accrueInterest,
+        deleteDebtEntry,
       );
 
   blocTest<DebtDetailCubit, DebtDetailState>(
@@ -441,6 +447,53 @@ void main() {
       expect: () => [
         isA<DebtDetailState>()
             .having((s) => s.actionFailure, 'actionFailure', isNull),
+      ],
+    );
+  });
+
+  group('deleteEntry (Fix B)', () {
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'a successful delete leaves no actionFailure (the stream reflects the '
+      'removed entry on its own)',
+      setUp: () {
+        when(() => watchDebtDetail.call(any())).thenAnswer(
+          (_) => Stream.value(Right(detailWith(buildDebt()))),
+        );
+        when(() => deleteDebtEntry.call('e1'))
+            .thenAnswer((_) async => const Right(unit));
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('d1');
+        await cubit.deleteEntry('e1');
+      },
+      skip: 2,
+      expect: () => <DebtDetailState>[],
+      verify: (_) => verify(() => deleteDebtEntry.call('e1')).called(1),
+    );
+
+    blocTest<DebtDetailCubit, DebtDetailState>(
+      'a failed delete surfaces the failure as actionFailure',
+      setUp: () {
+        when(() => watchDebtDetail.call(any())).thenAnswer(
+          (_) => Stream.value(Right(detailWith(buildDebt()))),
+        );
+        when(() => deleteDebtEntry.call('e1')).thenAnswer(
+          (_) async => const Left(NotFoundFailure('debt entry not found')),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start('d1');
+        await cubit.deleteEntry('e1');
+      },
+      skip: 2,
+      expect: () => [
+        isA<DebtDetailState>().having(
+          (s) => s.actionFailure,
+          'actionFailure',
+          isA<NotFoundFailure>(),
+        ),
       ],
     );
   });

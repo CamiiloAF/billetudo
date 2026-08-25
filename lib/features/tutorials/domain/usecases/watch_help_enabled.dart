@@ -4,7 +4,7 @@ import '../../../../core/error/result.dart';
 import '../repositories/tutorials_repository.dart';
 
 /// Observes `AppSettings.showHelpOnSectionEntry` (HU-04,
-/// `docs/requirements/16-minitutoriales.md`): whether a tutorial the user
+/// `docs/requirements/fase-1/16-minitutoriales.md`): whether a tutorial the user
 /// hasn't seen yet may appear unprompted.
 ///
 /// Not in the original change map, added here because both `AppSettingsCubit`

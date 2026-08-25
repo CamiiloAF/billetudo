@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:clock/clock.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
@@ -82,6 +85,47 @@ class SaveCopyCubit extends Cubit<SaveCopyState> {
     await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
     if (!isClosed) {
       emit(state.copyWith(status: SaveCopyStatus.idle, clearResult: true));
+    }
+  }
+
+  /// Writes the already-generated backup bytes to wherever the user chooses
+  /// through the OS's native "save" picker (Descargas, Documentos, iCloud
+  /// Drive, etc.) — the primary action of HU-03, "compartir" is the
+  /// secondary one via [shareResult]. Reads the bytes from the temp copy
+  /// [start] already wrote, so both actions save the exact same file.
+  ///
+  /// Backing out of the native picker without choosing a destination is a
+  /// normal cancellation, not a failure: the sheet stays on its current
+  /// state so the user can still tap "Compartir" or try "Guardar" again.
+  Future<void> saveToDevice(String path) async {
+    try {
+      final bytes = await File(path).readAsBytes();
+      final savedPath = await FilePicker.saveFile(
+        fileName: p.basename(path),
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        bytes: bytes,
+      );
+      if (savedPath == null) {
+        return;
+      }
+      if (!isClosed) {
+        emit(state.copyWith(status: SaveCopyStatus.idle, clearResult: true));
+      }
+    } on Exception catch (error, stackTrace) {
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            status: SaveCopyStatus.error,
+            failure: IoFailure(
+              'Failed to save backup copy to device',
+              reason: IoFailureReason.permissionDenied,
+              cause: error,
+              stackTrace: stackTrace,
+            ),
+          ),
+        );
+      }
     }
   }
 

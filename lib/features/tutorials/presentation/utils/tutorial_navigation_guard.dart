@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 /// Enforces "never chain two tutorials in the same navigation"
-/// (`docs/requirements/16-minitutoriales.md` HU-02): if a HU-01 screen
+/// (`docs/requirements/fase-1/16-minitutoriales.md` HU-02): if a HU-01 screen
 /// tutorial and a HU-02 sub-flow one would both qualify for the same screen
 /// entry, only one shows and the other waits for the next visit.
 ///

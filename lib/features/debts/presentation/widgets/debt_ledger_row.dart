@@ -10,8 +10,10 @@ import '../utils/debt_format.dart';
 ///
 /// Distinguishes a **cash** event (a `Transaction`: `$primary-soft` icon-wrap,
 /// `$text-primary` amount) from a **solo-deuda** entry (`$muted` icon-wrap,
-/// `$text-secondary` amount + a tag) — the sign of the amount is already
-/// resolved by the domain, never re-derived here.
+/// `$text-secondary` amount) — the sign of the amount is already resolved by
+/// the domain, never re-derived here. No tag: the full detail (`Estimado`,
+/// `No afecta cuentas`, complete note) lives only in the movement-detail
+/// sheet this row opens on tap.
 class DebtLedgerRow extends StatelessWidget {
   const DebtLedgerRow({
     required this.entry,
@@ -20,7 +22,7 @@ class DebtLedgerRow extends StatelessWidget {
     required this.currency,
     this.onOpenTransaction,
     this.onLinkOpening,
-    this.onLedgerPaymentNoAccount,
+    this.onOpenMovementDetail,
     this.initialTransactionId,
     super.key,
   });
@@ -39,10 +41,12 @@ class DebtLedgerRow extends StatelessWidget {
   /// inert.
   final VoidCallback? onLinkOpening;
 
-  /// Tapped on a cash-less abono row (`ledgerPayment`, toggle "No"): it has no
-  /// underlying movement, so this shows a feedback snackbar. `null` leaves the
-  /// row inert.
-  final VoidCallback? onLedgerPaymentNoAccount;
+  /// Tapped on any solo-deuda row that is not the opening row — a cash-less
+  /// abono/desembolso, an interest accrual, or a manual adjustment. Opens the
+  /// merged `DebtEntryEditSheet` directly (editable form, or read-only info
+  /// rows for an interest accrual, both with a delete affordance). `null`
+  /// leaves the row inert.
+  final ValueChanged<DebtLedgerEntry>? onOpenMovementDetail;
 
   /// The debt's `initialTransactionId`, so the linked opening movement's row is
   /// titled "Saldo de apertura" instead of a generic "Desembolso".
@@ -61,28 +65,25 @@ class DebtLedgerRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isCash = entry.isCashEvent;
-    final tag = DebtFormat.ledgerTag(l10n, entry);
     final note = entry.note;
-    final meta = note != null && note.isNotEmpty
-        ? '${DebtFormat.dateShort(context, entry.date)} · $note'
-        : DebtFormat.dateShort(context, entry.date);
+    final dateShort = DebtFormat.dateShort(context, entry.date);
 
     // A cash row deep-links into its movement's detail; the synthetic opening
-    // row (no movement) shows a feedback snackbar; a cash-less abono row shows
-    // its own feedback snackbar; other solo-deuda rows stay inert.
+    // row (no movement) shows a feedback snackbar; every other solo-deuda row
+    // (Fix A) opens the movement-detail sheet.
     final transactionId = entry.transactionId;
     final onOpenTransaction = this.onOpenTransaction;
     final onLinkOpening = this.onLinkOpening;
-    final onLedgerPaymentNoAccount = this.onLedgerPaymentNoAccount;
+    final onOpenMovementDetail = this.onOpenMovementDetail;
     final VoidCallback? onTap;
     if (isCash && transactionId != null && onOpenTransaction != null) {
       onTap = () => onOpenTransaction(transactionId);
     } else if (entry.kind == DebtLedgerKind.opening && onLinkOpening != null) {
       onTap = onLinkOpening;
-    } else if (entry.kind == DebtLedgerKind.ledgerPayment &&
-        transactionId == null &&
-        onLedgerPaymentNoAccount != null) {
-      onTap = onLedgerPaymentNoAccount;
+    } else if (!isCash &&
+        entry.kind != DebtLedgerKind.opening &&
+        onOpenMovementDetail != null) {
+      onTap = () => onOpenMovementDetail(entry);
     } else {
       onTap = null;
     }
@@ -124,39 +125,44 @@ class DebtLedgerRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        meta,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: colors.textSecondary,
-                        ),
+                    Text(
+                      dateShort,
+                      maxLines: 1,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: colors.textSecondary,
                       ),
                     ),
-                    if (tag != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.muted,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          tag,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: colors.textSecondary,
-                          ),
+                    if (note != null && note.isNotEmpty)
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 4),
+                            Text(
+                              '·',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                note,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
                   ],
                 ),
               ],

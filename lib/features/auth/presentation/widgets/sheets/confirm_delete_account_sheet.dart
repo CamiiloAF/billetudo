@@ -110,7 +110,7 @@ class ConfirmDeleteAccountSheet extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             )
-                          : const Icon(LucideIcons.trash, size: 18),
+                          : const Icon(LucideIcons.trash2, size: 18),
                       // "Eliminar cuenta" is wider than half a sheet row at the
                       // button's own size, so Material would wrap it to two
                       // lines. `FittedBox` keeps it on the single line the

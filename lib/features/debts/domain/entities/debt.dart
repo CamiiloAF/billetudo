@@ -19,7 +19,7 @@ enum DebtAccrualMode { manual, auto }
 /// integer of minor units (cents). The outstanding balance is **never** stored
 /// here — it is derived from the ledger (opening [principalMinor] + the debt's
 /// `DebtEntry`s + the `Transaction`s that carry its id). See
-/// `docs/requirements/08-deudas.md` and `DebtBalanceCalculator`.
+/// `docs/requirements/fase-1/08-deudas.md` and `DebtBalanceCalculator`.
 class Debt extends Equatable {
   const Debt({
     required this.id,

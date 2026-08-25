@@ -3,26 +3,44 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/quick_access_item.dart';
+import 'quick_access_settings_button.dart';
 
-/// HU-05b: fixed chrome row of navigation shortcuts (Pagos programados,
-/// Deudas, Gráficas e informes) shown right below the Hero Card in every Home
-/// state (loading/ready/empty/failure). Purely a navigation aid to sections
-/// otherwise buried in "Más" — no selected/active chip, and the order is
-/// fixed for now (configurable reordering is a future feature, see
-/// `docs/requirements/04-inicio.md` § Pendiente). Metas is not here anymore:
-/// it recovered its own bottom-nav tab. Cuentas is not here either: the "Mis
-/// cuentas" strip right below already covers that shortcut.
+/// HU-05b: chrome row of navigation shortcuts (Pagos programados, Deudas,
+/// Gráficas e informes) shown right below the Hero Card in every Home state
+/// (loading/ready/empty/failure). Purely a navigation aid to sections
+/// otherwise buried in "Más" — no selected/active chip. The order renders
+/// [order] as given — the user's persisted pick from Ajustes ▸ "Orden del
+/// acceso rápido" (`AppSettings.quickAccessOrder`), never a fixed sequence
+/// hardcoded here. Metas is not here anymore: it recovered its own
+/// bottom-nav tab. Cuentas is not here either: the "Mis cuentas" strip right
+/// below already covers that shortcut. Closing the strip is
+/// [QuickAccessSettingsButton], the way back to that Ajustes screen — shaped
+/// as a circle, not a fourth pill, because it configures the row instead of
+/// navigating anywhere, and pinned outside the scroll view so it stays
+/// reachable no matter how wide the chips get.
 class QuickAccessRow extends StatelessWidget {
   const QuickAccessRow({
+    required this.order,
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onCustomize,
     super.key,
   });
+
+  /// Chips render in this order — always a valid permutation of
+  /// [QuickAccessItem.values] (`QuickAccessItem.isValidOrder`), guaranteed
+  /// upstream by `AppSettingsRepositoryImpl`.
+  final List<QuickAccessItem> order;
 
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+
+  /// Opens Ajustes ▸ "Orden del acceso rápido", where [order] is picked. Not a
+  /// destination like the chips above — see [QuickAccessSettingsButton].
+  final VoidCallback onCustomize;
 
   @override
   Widget build(BuildContext context) {
@@ -42,33 +60,56 @@ class QuickAccessRow extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              QuickAccessChip(
-                icon: LucideIcons.calendarClock,
-                label: l10n.homeQuickAccessScheduledPayments,
-                onTap: onOpenScheduledPayments,
+        // The gear sits OUTSIDE the scroll view, pinned to the trailing edge.
+        // Inside it, it never showed: the three chips measure ~507pt against a
+        // 390pt phone, so the button rendered past the fold and no golden even
+        // changed when it was added — an entry point nobody could find.
+        Row(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final item in order) ...[
+                      QuickAccessChip(
+                        icon: _iconFor(item),
+                        label: _labelFor(l10n, item),
+                        onTap: _onTapFor(item),
+                        key: ValueKey(item),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(width: 8),
-              QuickAccessChip(
-                icon: LucideIcons.handCoins,
-                label: l10n.moreDebts,
-                onTap: onOpenDebts,
-              ),
-              const SizedBox(width: 8),
-              QuickAccessChip(
-                icon: LucideIcons.chartColumn,
-                label: l10n.moreReports,
-                onTap: onOpenReports,
-              ),
-            ],
-          ),
+            ),
+            QuickAccessSettingsButton(onTap: onCustomize),
+          ],
         ),
       ],
     );
   }
+
+  IconData _iconFor(QuickAccessItem item) => switch (item) {
+        QuickAccessItem.scheduledPayments => LucideIcons.calendarClock,
+        QuickAccessItem.debts => LucideIcons.handCoins,
+        QuickAccessItem.reports => LucideIcons.chartColumn,
+      };
+
+  String _labelFor(AppLocalizations l10n, QuickAccessItem item) =>
+      switch (item) {
+        QuickAccessItem.scheduledPayments =>
+          l10n.homeQuickAccessScheduledPayments,
+        QuickAccessItem.debts => l10n.moreDebts,
+        QuickAccessItem.reports => l10n.moreReports,
+      };
+
+  VoidCallback _onTapFor(QuickAccessItem item) => switch (item) {
+        QuickAccessItem.scheduledPayments => onOpenScheduledPayments,
+        QuickAccessItem.debts => onOpenDebts,
+        QuickAccessItem.reports => onOpenReports,
+      };
 }
 
 /// One pill of [QuickAccessRow]: icon + label, purely navigational (no

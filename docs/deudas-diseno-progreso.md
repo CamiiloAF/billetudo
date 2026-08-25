@@ -28,9 +28,9 @@ La sección **"Por confirmar"** (pending card/row) no muestra ninguna identidad 
 ## 1. Decisiones de producto/requisitos — CERRADAS
 
 Ya reflejadas en los requirements (fuente de verdad, no repetir acá):
-- **`docs/requirements/08-deudas.md`** — reescrito completo.
-- **`docs/requirements/09-pagos-programados.md`** — nota de integración + columna `debtId`.
-- **`docs/requirements/10-graficas-informes.md`** — cambió la regla de exclusión (línea de `debtId`).
+- **`docs/requirements/fase-1/08-deudas.md`** — reescrito completo.
+- **`docs/requirements/fase-1/09-pagos-programados.md`** — nota de integración + columna `debtId`.
+- **`docs/requirements/fase-1/10-graficas-informes.md`** — cambió la regla de exclusión (línea de `debtId`).
 - **`docs/plan-cuentas-tipos-y-transferencias-presupuestables.md`** — Decisión A-1 reabierta.
 
 Resumen de lo decidido (el detalle vive en esos docs):

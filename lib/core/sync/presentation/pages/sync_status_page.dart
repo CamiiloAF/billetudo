@@ -71,7 +71,19 @@ class SyncStatusPage extends StatelessWidget {
           SnackBar(content: Text(l10n.syncRetrySuccess(state.retriedCount))),
         );
       case SyncRetryOutcome.partial:
-        messenger.showSnackBar(
+        // A plain `SnackBar` (no `action`) auto-hides on its own; one with a
+        // `SnackBarAction` — this one — does not, in the Flutter version this
+        // app builds against: `ScaffoldMessengerState`'s internal dismiss
+        // timer is only (re)armed by a `setState` its `SnackBar`'s entrance
+        // `AnimationController` triggers on completion, and that path never
+        // fires here once an action is present, confirmed against a bare
+        // `MaterialApp`/`SnackBarAction` reproduction with no app code
+        // involved. The user hit exactly this: the "Sigue guardado en este
+        // teléfono" snackbar (the only one with an action) stayed up
+        // forever, while the plain "Todo al día" one always closed itself.
+        // Driving the hide explicitly sidesteps the SDK's broken timer
+        // instead of depending on it.
+        final controller = messenger.showSnackBar(
           SnackBar(
             content: Text(l10n.syncRetryPartial),
             action: SnackBarAction(
@@ -80,6 +92,55 @@ class SyncStatusPage extends StatelessWidget {
             ),
           ),
         );
+        // `SnackBar`'s default duration (4s) is private to `snack_bar.dart`,
+        // so it is repeated here explicitly.
+        //
+        // Guarding on `context.mounted` here was wrong: that is
+        // `SyncStatusPage`'s context, but the `SnackBar` lives in the
+        // `ScaffoldMessenger` above the `Navigator` (`MaterialApp` inserts
+        // it there by default), which survives navigating back from this
+        // page. With `context.mounted`, popping back before the 4s deadline
+        // left the snackbar stuck forever — the `Timer` bailed out on a
+        // widget that was never the one holding the snackbar. `messenger`
+        // is a `State` (`ScaffoldMessengerState`), so its own `mounted`
+        // reflects whether it — and therefore the snackbar — is still
+        // around.
+        Timer(const Duration(milliseconds: 4000), () {
+          if (!messenger.mounted) {
+            return;
+          }
+          // `messenger.mounted` only proves the `ScaffoldMessengerState`
+          // itself is still alive, not that *this* snackbar is still the
+          // one it is showing. A burst of partial retries in a row (real
+          // logcat: several in a row, seconds apart) calls
+          // `hideCurrentSnackBar()` again on line above before this old
+          // `Timer` gets to fire. There is no public API to ask "is this
+          // still the active snackbar" before calling `close()`, and
+          // `ScaffoldFeatureController.close()`'s own internal check —
+          // `assert(_snackBars.first == controller)` inside
+          // `ScaffoldMessengerState.showSnackBar` — fails in one of two
+          // ways depending on timing, neither guarded before it runs:
+          // `_snackBars` can be completely empty by then (`ListQueue.first`
+          // throws `StateError: Bad state: No element`, the exact crash
+          // from the field) or non-empty but already pointing at the
+          // *next* snackbar (the `assert` itself throws `AssertionError`,
+          // only possible in debug/test builds — release builds strip
+          // asserts, so this second branch cannot fire in production, but
+          // is still worth swallowing here so it doesn't flake this app's
+          // own debug runs or widget tests). Both mean the same thing: the
+          // snackbar this `Timer` was guarding is already gone, which is
+          // the outcome it wanted anyway.
+          try {
+            controller.close();
+            // ignore: avoid_catching_errors
+          } on StateError {
+            // Queue was already empty — nothing left to close.
+          }
+          // ignore: avoid_catching_errors
+          on AssertionError {
+            // Queue now points at a newer snackbar — nothing left to close.
+          }
+        });
       case SyncRetryOutcome.none:
         break;
     }

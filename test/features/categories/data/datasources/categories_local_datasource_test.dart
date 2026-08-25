@@ -319,7 +319,7 @@ void main() {
 
   group('countActiveCategories / seedDefaultCategories', () {
     // Small fixture standing in for the real `category_seeds` catalog
-    // (docs/requirements/05-auth-sync.md, decision #12): 2 expense roots (one
+    // (docs/requirements/fase-1/05-auth-sync.md, decision #12): 2 expense roots (one
     // with subcategories) + 1 income root, deliberately listed with a
     // subcategory *before* its root to prove the datasource reorders for the
     // `parentId` FK instead of relying on catalog row order.

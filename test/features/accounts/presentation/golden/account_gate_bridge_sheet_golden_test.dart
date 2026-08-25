@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../../support/golden_helpers.dart';
 
 /// Golden coverage for the account gate's shared "puente, no muro" sheet
-/// (`docs/requirements/15-gate-cuenta.md` HU-01, `design-system/billetudo/
+/// (`docs/requirements/fase-1/15-gate-cuenta.md` HU-01, `design-system/billetudo/
 /// pages/gate-cuenta.md` Variante B): one case per [AccountGateSurface],
 /// since each carries its own icon and copy (`Zjsfz`/`XYfSq`/`goGwA`/
 /// `G0mfgY`/`K6bGhq`/`xU4uz`/`oHAVJ`) — and, for transferencia, both the

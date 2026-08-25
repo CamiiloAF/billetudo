@@ -72,7 +72,7 @@ final class UnexpectedFailure extends Failure {
 }
 
 /// A file the user picked, or a file the app tried to write, could not be
-/// read/written (HU-09 of `docs/requirements/11-import-export.md`): not CSV,
+/// read/written (HU-09 of `docs/requirements/fase-1/11-import-export.md`): not CSV,
 /// unreadable encoding, no rows, no disk space, permission denied. Not a
 /// crash — the tone is "the file has a problem", never "you did something
 /// wrong" (`CLAUDE.md`).

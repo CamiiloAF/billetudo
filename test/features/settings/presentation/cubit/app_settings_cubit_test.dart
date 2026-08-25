@@ -4,6 +4,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_period_window.
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/home/domain/entities/quick_access_item.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
@@ -21,6 +22,7 @@ void main() {
   late MockClearFeaturedBudget clearFeaturedBudget;
   late MockWatchHelpEnabled watchHelpEnabled;
   late MockSetTutorialsEnabled setTutorialsEnabled;
+  late MockSetQuickAccessOrder setQuickAccessOrder;
 
   const enabledSettings = AppSettings(
     zeroBasedEnabled: true,
@@ -73,6 +75,7 @@ void main() {
     clearFeaturedBudget = MockClearFeaturedBudget();
     watchHelpEnabled = MockWatchHelpEnabled();
     setTutorialsEnabled = MockSetTutorialsEnabled();
+    setQuickAccessOrder = MockSetQuickAccessOrder();
     // Default: no active budgets; individual tests override.
     when(getActiveBudgets.call)
         .thenAnswer((_) => Stream.value(const Right([])));
@@ -90,7 +93,15 @@ void main() {
         clearFeaturedBudget,
         watchHelpEnabled,
         setTutorialsEnabled,
+        setQuickAccessOrder,
       );
+
+  test(
+      'a freshly-built cubit (before start()) is isLoaded: false — the race '
+      'fix in budget_detail_page.dart depends on this to tell "still the '
+      'in-memory default" apart from "confirmed by the stream"', () {
+    expect(build().state.isLoaded, isFalse);
+  });
 
   blocTest<AppSettingsCubit, AppSettingsState>(
     'HU-06: emits the settings the use case streams',
@@ -98,7 +109,9 @@ void main() {
         .thenAnswer((_) => Stream.value(const Right(enabledSettings))),
     build: build,
     act: (cubit) => cubit.start(),
-    expect: () => [const AppSettingsState(settings: enabledSettings)],
+    expect: () => [
+      const AppSettingsState(settings: enabledSettings, isLoaded: true),
+    ],
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -148,8 +161,7 @@ void main() {
         .thenAnswer((_) => Stream.value(const Right(featuredSettings))),
     build: build,
     act: (cubit) => cubit.start(),
-    verify: (cubit) =>
-        expect(cubit.state.featuredBudgetId, 'budget-1'),
+    verify: (cubit) => expect(cubit.state.featuredBudgetId, 'budget-1'),
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -185,8 +197,7 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.start(),
-    verify: (cubit) =>
-        expect(cubit.state.showHelpOnSectionEntry, isFalse),
+    verify: (cubit) => expect(cubit.state.showHelpOnSectionEntry, isFalse),
   );
 
   blocTest<AppSettingsCubit, AppSettingsState>(
@@ -197,7 +208,32 @@ void main() {
     build: build,
     act: (cubit) => cubit.setShowHelpOnSectionEntry(enabled: true),
     expect: () => <AppSettingsState>[],
-    verify: (_) =>
-        verify(() => setTutorialsEnabled(enabled: true)).called(1),
+    verify: (_) => verify(() => setTutorialsEnabled(enabled: true)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setQuickAccessOrder delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(
+      () => setQuickAccessOrder(const [
+        QuickAccessItem.reports,
+        QuickAccessItem.debts,
+        QuickAccessItem.scheduledPayments,
+      ]),
+    ).thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setQuickAccessOrder(const [
+      QuickAccessItem.reports,
+      QuickAccessItem.debts,
+      QuickAccessItem.scheduledPayments,
+    ]),
+    expect: () => <AppSettingsState>[],
+    verify: (_) => verify(
+      () => setQuickAccessOrder(const [
+        QuickAccessItem.reports,
+        QuickAccessItem.debts,
+        QuickAccessItem.scheduledPayments,
+      ]),
+    ).called(1),
   );
 }

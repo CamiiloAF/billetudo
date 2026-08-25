@@ -7,7 +7,7 @@ import '../entities/goal_with_progress.dart';
 /// Pure domain service that derives a goal's progress from its
 /// `GoalContribution` history. The **only** place `savedMinor` is computed —
 /// no use case or repository is allowed to write a progress value directly
-/// (`docs/requirements/07-metas.md`, "Reglas de negocio y edge cases").
+/// (`docs/requirements/fase-1/07-metas.md`, "Reglas de negocio y edge cases").
 @lazySingleton
 class GoalProgressCalculator {
   const GoalProgressCalculator();

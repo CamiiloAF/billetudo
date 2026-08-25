@@ -10,7 +10,7 @@ import 'first_launch_offline_state.dart';
 
 /// Runs instead of the real app's `builder()` when `bootstrap()` detects the
 /// first-launch seeding call failed with a `NetworkFailure` (decisión #12,
-/// `docs/requirements/05-auth-sync.md`): shows the blocking
+/// `docs/requirements/fase-1/05-auth-sync.md`): shows the blocking
 /// [FirstLaunchOfflineScreen] in its own minimal `MaterialApp` (only
 /// theme/l10n, no router — the real app's shell hasn't been reached yet)
 /// until a retry succeeds, then swaps in [builder] for the rest of the

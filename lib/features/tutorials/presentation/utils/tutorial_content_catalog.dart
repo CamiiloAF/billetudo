@@ -7,7 +7,7 @@ import '../../domain/entities/tutorial_key.dart';
 /// Resolves a [TutorialKey] to its localized [TutorialContent] — the "content
 /// map" `TutorialContent`'s own class doc refers to. Every one of the 12
 /// tutorials' copy comes only from `AppLocalizations` (never a hardcoded
-/// literal), per `docs/requirements/16-minitutoriales.md`'s "Localizados
+/// literal), per `docs/requirements/fase-1/16-minitutoriales.md`'s "Localizados
 /// (es + en)" rule.
 ///
 /// Pure mapping, no state: safe to call from any `build()`.

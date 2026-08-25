@@ -17,7 +17,7 @@ import '../../../../core/sync/domain/repositories/sync_quarantine_repository.dar
 /// stream needs, and replicates PowerSync's local write queue against
 /// Supabase's REST API so every Drift write that reached PowerSync (see
 /// `core/database/database_connection.dart`, decision #6,
-/// docs/requirements/05-auth-sync.md) ends up in Postgres too.
+/// docs/requirements/fase-1/05-auth-sync.md) ends up in Postgres too.
 ///
 /// Lives under `features/auth/data/` rather than `core/` because it is a
 /// concrete Supabase-backed implementation the same way

@@ -138,7 +138,7 @@ class TransactionDraft extends Equatable {
       );
     }
 
-    // Metas invariant (docs/requirements/07-metas.md, "Reglas de negocio y
+    // Metas invariant (docs/requirements/fase-1/07-metas.md, "Reglas de negocio y
     // edge cases"): an aporte/retiro is never `type = expense` — it is either
     // a `transfer` (moves money) or an `income` (a bonus apartado directo a
     // la meta). Enforced here, in the domain, not only in the UI, so nothing

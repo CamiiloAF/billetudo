@@ -4,7 +4,7 @@ import '../entities/budget.dart';
 import '../entities/budget_with_progress.dart';
 
 /// Picks which of the user's active budgets, if any, is featured on Home's
-/// hero card (`docs/requirements/04-inicio.md`,
+/// hero card (`docs/requirements/fase-1/04-inicio.md`,
 /// `design-system/billetudo/pages/ajustes.md`).
 ///
 /// Bifurcates on `AppSettings.featuredBudgetMode`:

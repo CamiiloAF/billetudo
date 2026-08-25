@@ -5,6 +5,8 @@ import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +20,12 @@ import '../../home_fixtures.dart';
 
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
+class MockAppSettingsCubit extends MockCubit<AppSettingsState>
+    implements AppSettingsCubit {}
+
 void main() {
   late MockHomeCubit cubit;
+  late MockAppSettingsCubit appSettingsCubit;
 
   final month = DateTime(2026, 7);
 
@@ -44,7 +50,16 @@ void main() {
     disableGoogleFontsRuntimeFetching();
     await loadMaterialIconsFont();
   });
-  setUp(() => cubit = MockHomeCubit());
+  setUp(() {
+    cubit = MockHomeCubit();
+    appSettingsCubit = MockAppSettingsCubit();
+    when(() => appSettingsCubit.state).thenReturn(const AppSettingsState());
+    whenListen(
+      appSettingsCubit,
+      const Stream<AppSettingsState>.empty(),
+      initialState: const AppSettingsState(),
+    );
+  });
 
   Future<void> golden(
     WidgetTester tester,
@@ -57,8 +72,11 @@ void main() {
     whenListen(cubit, const Stream<HomeState>.empty(), initialState: state);
     await pumpGolden(
       tester,
-      BlocProvider<HomeCubit>.value(
-        value: cubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<HomeCubit>.value(value: cubit),
+          BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
+        ],
         child: HomePage(
           onAddTransaction: () {},
           onSeeAllTransactions: () {},
@@ -70,6 +88,7 @@ void main() {
           onOpenScheduledPayments: () {},
           onOpenDebts: () {},
           onOpenReports: () {},
+          onOpenQuickAccessOrder: () {},
           onOpenLogin: () {},
           onOpenSyncStatus: () {},
         ),

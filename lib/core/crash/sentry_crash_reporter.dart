@@ -5,6 +5,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../config/env.dart';
 import '../error/failure.dart';
 import 'crash_reporter.dart';
+import 'sentry_redaction.dart';
 
 /// Sentry-backed [CrashReporter]. Only instantiated when `Env.hasSentryDsn` is
 /// true. Sentry initialization (which wraps `runApp`) is done by the bootstrap
@@ -93,5 +94,14 @@ void applySentryOptions(SentryFlutterOptions options) {
     ..debug = Env.isDev
     // Conservative performance sampling; tune once we have real data.
     ..tracesSampleRate = Env.isProduction ? 0.2 : 1.0
-    ..enableAutoSessionTracking = true;
+    ..enableAutoSessionTracking = true
+    // Explicit even though it is Sentry's default: the privacy policy states
+    // that crash reports carry no personal data, so this must not silently
+    // flip if the SDK ever changes its default (no IP, no user headers).
+    ..sendDefaultPii = false
+    // Strips row values out of driver-generated error text before the event
+    // leaves the device. Server-side scrubbers clean on ingest; this is the
+    // layer that keeps the value from ever being sent. See
+    // `sentry_redaction.dart` for what the patterns do and do not cover.
+    ..beforeSend = (event, hint) => redactSentryEvent(event);
 }

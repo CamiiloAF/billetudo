@@ -17,11 +17,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// B-3 — transferencia presupuestable
 /// (`docs/plan-cuentas-tipos-y-transferencias-presupuestables.md` §3):
 /// `BudgetsLocalDatasource.watchExpenses()` folds in a `type = transfer`
-/// transaction marked `countsInBudget = true` as an **origin-side** expense
-/// row, so it flows through `BudgetProgressCalculator`'s existing
-/// account-scope matching exactly like a plain expense — no new scope
-/// mechanism. Exercised at the repository level (real in-memory Drift, same
-/// pattern as `budget_repository_impl_scheduled_test.dart`) because the
+/// transaction marked `countsInBudget = true` as **two** rows — an
+/// **origin-side** expense row and a **destination-side** presupuestable
+/// income row (`isIncome = true`) — so both flow through
+/// `BudgetProgressCalculator`'s existing account-scope matching exactly like
+/// a plain expense/presupuestable income, no new scope mechanism. A budget
+/// whose scope spans both origin and destination (including a global budget,
+/// whose empty scope means "every account") nets the transfer to zero
+/// automatically. Exercised at the repository level (real in-memory Drift,
+/// same pattern as `budget_repository_impl_scheduled_test.dart`) because the
 /// scope match itself lives one layer above the datasource.
 void main() {
   late AppDatabase database;
@@ -226,8 +230,9 @@ void main() {
   });
 
   test(
-      'un presupuesto global (sin alcance de cuenta) sí cuenta una '
-      'transferencia presupuestable de cualquier cuenta', () async {
+      'un presupuesto global (sin alcance de cuenta) netea a cero: ve la '
+      'fila origen como gasto y la fila destino como ingreso presupuestable '
+      '(criterio 5)', () async {
     final origin = await createAccount('Nequi');
     final destination = await createAccount('Ahorros');
     final category = await createExpenseCategory('Transferencias');
@@ -244,7 +249,157 @@ void main() {
     final result = await repository.watchActiveBudgets().first;
     final budgets = result.getRight().toNullable()!;
 
-    expect(spentMinorOf(budgets, budgetId), 50000);
+    expect(spentMinorOf(budgets, budgetId), 0);
+  });
+
+  group('transferencia presupuestable — lado destino (isIncome)', () {
+    test(
+        'criterio 2: un presupuesto cuyo alcance es SOLO la cuenta destino '
+        've reducido su gasto en el monto de la transferencia', () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      final budgetId = await createBudgetScopedTo({destination.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: true,
+        categoryId: category.id,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), -50000);
+    });
+
+    test(
+        'criterio 3: un presupuesto cuyo alcance es SOLO la cuenta origen '
+        'sigue viendo la transferencia como gasto, sin regresión', () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      final budgetId = await createBudgetScopedTo({origin.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: true,
+        categoryId: category.id,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 50000);
+    });
+
+    test(
+        'criterio 4: un presupuesto cuyo alcance incluye TANTO origen como '
+        'destino netea a cero (edge case explícito de 06-presupuestos.md)',
+        () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      final budgetId = await createBudgetScopedTo({origin.id, destination.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: true,
+        categoryId: category.id,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 0);
+    });
+
+    test(
+        'una transferencia NO presupuestable no reduce el gasto de un '
+        'presupuesto cuyo alcance es la cuenta destino (sin regresión)',
+        () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      final budgetId = await createBudgetScopedTo({destination.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: false,
+        categoryId: category.id,
+      );
+
+      final result = await repository.watchActiveBudgets().first;
+      final budgets = result.getRight().toNullable()!;
+
+      expect(spentMinorOf(budgets, budgetId), 0);
+    });
+
+    test(
+        'criterio 7: BudgetDetailData.expenses incluye el ítem de ingreso '
+        'destino cuando la cuenta destino cae en el alcance', () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      final budgetId = await createBudgetScopedTo({destination.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: true,
+        categoryId: category.id,
+      );
+
+      final result = await repository.watchBudgetDetail(budgetId).first;
+      final detail = result.getRight().toNullable()!;
+
+      final destExpense = detail.expenses
+          .firstWhere((e) => e.expense.accountId == destination.id);
+
+      expect(destExpense.expense.isIncome, isTrue);
+      expect(destExpense.expense.amountMinor, 50000);
+      expect(destExpense.accountName, 'Ahorros');
+    });
+
+    test(
+        'criterio 8: la fila destino sintética de una transferencia '
+        'presupuestable no se cuela en watchZeroBasedSummary — este solo '
+        'suma type=income real, sin doble conteo', () async {
+      final origin = await createAccount('Nequi');
+      final destination = await createAccount('Ahorros');
+      final category = await createExpenseCategory('Transferencias');
+      await createBudgetScopedTo({destination.id});
+
+      await insertTransfer(
+        originAccountId: origin.id,
+        destinationAccountId: destination.id,
+        amountMinor: 50000,
+        countsInBudget: true,
+        categoryId: category.id,
+      );
+      await insertIncome(
+        accountId: origin.id,
+        amountMinor: 30000,
+        countsInBudget: false,
+      );
+
+      final result = await repository.watchZeroBasedSummary().first;
+      final summary = result.getRight().toNullable()!;
+
+      // Only the real `type=income` transaction (30000) is counted; the
+      // transfer's 50000 destination-side row (isIncome=true for budget
+      // scope-matching purposes) must not add to this global figure.
+      expect(summary.incomeMinor, 30000);
+    });
   });
 
   group('budget-income-counts-in-budget', () {

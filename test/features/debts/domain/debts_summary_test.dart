@@ -19,6 +19,7 @@ void main() {
           totalIncreasesMinor: outstanding,
           totalDecreasesMinor: 0,
           interestAccruedMinor: 0,
+          displayTotalMinor: outstanding,
         ),
       );
 
@@ -76,6 +77,7 @@ void main() {
             totalIncreasesMinor: paid,
             totalDecreasesMinor: paid,
             interestAccruedMinor: 0,
+            displayTotalMinor: paid,
           ),
         );
 

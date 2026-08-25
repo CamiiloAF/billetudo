@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 /// There is deliberately no stored progress field — `savedMinor` is always
 /// DERIVED by summing the goal's `GoalContribution`s (contribution -
 /// withdrawal), the same "derive, don't store" pattern `Debts` uses via
-/// `DebtEntries`. See `docs/requirements/07-metas.md`.
+/// `DebtEntries`. See `docs/requirements/fase-1/07-metas.md`.
 class Goal extends Equatable {
   const Goal({
     required this.id,

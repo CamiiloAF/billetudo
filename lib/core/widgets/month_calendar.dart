@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -359,7 +360,7 @@ class CalendarMonthGrid extends StatelessWidget {
         DateUtils.getDaysInMonth(visibleMonth.year, visibleMonth.month);
     // weekday: Mon=1..Sun=7; leading blanks before the 1st, Monday-first.
     final leadingBlanks = firstOfMonth.weekday - 1;
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(clock.now());
     final selectedDay = selected == null ? null : DateUtils.dateOnly(selected!);
     final rangeEndDay = rangeEnd == null ? null : DateUtils.dateOnly(rangeEnd!);
     final floor =
@@ -557,7 +558,7 @@ class CalendarYearGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentYear = DateTime.now().year;
+    final currentYear = clock.now().year;
     final floorYear = disabledBefore?.year;
     final ceilingYear = disabledAfter?.year;
     final years = [for (var i = 0; i < yearsPerPage; i++) rangeStart + i];

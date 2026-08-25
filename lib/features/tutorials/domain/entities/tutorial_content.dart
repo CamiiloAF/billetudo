@@ -38,7 +38,7 @@ class TutorialContent extends Equatable {
   final String title;
 
   /// 2-3 points for a HU-01 screen tutorial, 1-2 for a HU-02 sub-flow one
-  /// (convention from `docs/requirements/16-minitutoriales.md`, not enforced
+  /// (convention from `docs/requirements/fase-1/16-minitutoriales.md`, not enforced
   /// at runtime — `List.length` cannot be checked in a const assert without
   /// giving up `const` construction, and every caller of this entity is the
   /// presentation-layer content map, not arbitrary user input).

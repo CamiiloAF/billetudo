@@ -80,7 +80,7 @@ Cobertura por AC (✅ cubierto, ⚠️ gap):
 - ✅ 6 `GetCategoryDeletionImpact` → `get_category_deletion_impact_test.dart` + los mismos dos anteriores
 - ✅ 7-9 `DeleteCategory` (3 casos) → `delete_category_test.dart` + `categories_local_datasource_test.dart`
 - ✅ 10 `RestoreCategory` → `restore_category_test.dart` + `categories_local_datasource_test.dart`
-- ✅ 11 `SeedDefaultCategories` → `seed_default_categories_test.dart` + `categories_local_datasource_test.dart` + revisión de código de `default_categories_seed.dart` contra el apéndice de `docs/requirements/02-categorias.md`
+- ✅ 11 `SeedDefaultCategories` → `seed_default_categories_test.dart` + `categories_local_datasource_test.dart` + revisión de código de `default_categories_seed.dart` contra el apéndice de `docs/requirements/fase-1/02-categorias.md`
 - ✅ 12 `WatchCategories` → `watch_categories_test.dart` + `category_repository_impl_test.dart` + `categories_local_datasource_test.dart`
 - ✅ 13 `CategoriesListCubit` → `test/features/categories/presentation/cubit/categories_list_cubit_test.dart`
 - ✅ 14 `CategoryFormCubit` → `test/features/categories/presentation/cubit/category_form_cubit_test.dart`
