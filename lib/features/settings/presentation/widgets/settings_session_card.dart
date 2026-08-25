@@ -75,6 +75,16 @@ class SettingsSessionCard extends StatelessWidget {
                       .bodySmall
                       ?.copyWith(color: colors.textSecondary),
                 ),
+                if (user?.email != null && user!.email!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    user.email!,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: colors.textSecondary),
+                  ),
+                ],
               ],
             ),
           ),
