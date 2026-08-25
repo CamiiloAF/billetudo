@@ -5,8 +5,8 @@ import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/neutral_button.dart';
-import '../../../data/models/decimal_amount_parser.dart';
 import '../../../domain/entities/csv_dialect.dart';
+import '../../../domain/utils/decimal_amount_parser.dart';
 
 /// Sheet for picking [DecimalConvention] (HU-05 mapping step, "Convención
 /// decimal" field): dot vs. comma, the active one highlighted, with a live
@@ -42,7 +42,8 @@ class ImportDecimalFormatSheet extends StatefulWidget {
       );
 
   @override
-  State<ImportDecimalFormatSheet> createState() => _ImportDecimalFormatSheetState();
+  State<ImportDecimalFormatSheet> createState() =>
+      _ImportDecimalFormatSheetState();
 }
 
 class _ImportDecimalFormatSheetState extends State<ImportDecimalFormatSheet> {
@@ -96,9 +97,11 @@ class _ImportDecimalFormatSheetState extends State<ImportDecimalFormatSheet> {
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: option.$1 == _selected ? colors.mintSoft : colors.muted,
+                  color:
+                      option.$1 == _selected ? colors.mintSoft : colors.muted,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(

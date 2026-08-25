@@ -40,7 +40,10 @@ void main() {
       tester,
       BlocProvider<LoginCubit>.value(
         value: cubit,
-        child: LoginPage(onSignedIn: () {}, onSkip: () {}),
+        child: LoginPage(
+          onSignedIn: ({required signedInAfterConflict}) {},
+          onSkip: () {},
+        ),
       ),
       brightness: brightness,
       settle: settle,

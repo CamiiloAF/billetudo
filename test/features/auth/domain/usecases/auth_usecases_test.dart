@@ -4,6 +4,7 @@ import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/entities/delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/entities/merge_summary.dart';
+import 'package:billetudo/features/auth/domain/entities/sign_in_outcome.dart';
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart';
 import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart';
 import 'package:billetudo/features/auth/domain/usecases/merge_local_data.dart';
@@ -37,17 +38,19 @@ void main() {
 
   test('HU-02: SignInWithGoogle delega en el repositorio', () async {
     when(() => repository.signInWithGoogle())
-        .thenAnswer((_) async => const Right(user));
+        .thenAnswer((_) async => const Right(SignedIn(user)));
 
     final result = await SignInWithGoogle(repository)();
 
-    expect(result.getOrElse((_) => throw StateError('left')), user);
+    final outcome = result.getOrElse((_) => throw StateError('left'));
+    expect(outcome, isA<SignedIn>());
+    expect((outcome as SignedIn).user, user);
     verify(() => repository.signInWithGoogle()).called(1);
   });
 
   test('HU-03: SignInWithApple delega en el repositorio', () async {
     when(() => repository.signInWithApple())
-        .thenAnswer((_) async => const Right(user));
+        .thenAnswer((_) async => const Right(SignedIn(user)));
 
     final result = await SignInWithApple(repository)();
 

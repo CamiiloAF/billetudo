@@ -6,9 +6,12 @@ import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/database/powersync_schema.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart';
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart';
+import 'package:billetudo/features/auth/data/datasources/local_data_conflict_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart';
@@ -26,6 +29,8 @@ import 'package:path/path.dart' as p;
 import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../support/fake_sync_retry_ledger_store.dart';
+
 class MockGoogleAuthDatasource extends Mock implements GoogleAuthDatasource {}
 
 class MockAppleAuthDatasource extends Mock implements AppleAuthDatasource {}
@@ -35,6 +40,9 @@ class MockLocalDataSummaryDatasource extends Mock
 
 class MockLocalDataOwnershipDatasource extends Mock
     implements LocalDataOwnershipDatasource {}
+
+class MockLocalDataConflictDatasource extends Mock
+    implements LocalDataConflictDatasource {}
 
 class MockEverSignedInDatasource extends Mock
     implements EverSignedInDatasource {}
@@ -48,6 +56,11 @@ class MockPowerSyncConnector extends Mock implements PowerSyncConnector {}
 class MockSeedDefaultCategories extends Mock implements SeedDefaultCategories {}
 
 class MockCrashReporter extends Mock implements CrashReporter {}
+
+class MockSyncQuarantineRepository extends Mock
+    implements SyncQuarantineRepository {}
+
+class MockSyncLogRepository extends Mock implements SyncLogRepository {}
 
 /// Contrato "la nube no se toca" de HU-06, sobre una [PowerSyncDatabase]
 /// **real** y el caso de uso completo que corre el usuario.
@@ -133,13 +146,28 @@ void main() {
 
     // Cada pieza que toca datos locales es real: el datasource del wipe, el
     // repositorio, y los dos casos de uso que HU-06 encadena. Solo se mockea
-    // lo que sale a la red (Google, Supabase, el connector de sync).
+    // lo que sale a la red (Google, Supabase, el connector de sync) y los
+    // stores de diagnostico de sync (viven fuera de la base de PowerSync, ver
+    // `LocalDataWipeDatasource`; aqui no importa su contenido, solo que se
+    // llamen sin explotar).
+    final quarantine = MockSyncQuarantineRepository();
+    final retryLedger = FakeSyncRetryLedgerStore();
+    final syncLog = MockSyncLogRepository();
+    when(quarantine.clearAll).thenAnswer((_) async => const Right(unit));
+    when(syncLog.clear).thenAnswer((_) async => const Right(unit));
     repository = AuthRepositoryImpl(
       google,
       MockAppleAuthDatasource(),
       MockLocalDataSummaryDatasource(),
-      LocalDataWipeDatasource(powerSync),
+      LocalDataWipeDatasource(
+        powerSync,
+        quarantine,
+        retryLedger,
+        syncLog,
+        MockCrashReporter(),
+      ),
       MockLocalDataOwnershipDatasource(),
+      MockLocalDataConflictDatasource(),
       everSignedIn,
       supabase,
       powerSync,

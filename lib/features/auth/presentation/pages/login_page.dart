@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,6 +11,7 @@ import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
 import '../widgets/auth_sign_in_buttons_group.dart';
 import '../widgets/device_preview_illustration.dart';
+import '../widgets/sheets/confirm_account_conflict_sheet.dart';
 
 /// Login / invitation to back up (`fTetG` Android, `RSzD1` iOS): the
 /// same centered composition on both platforms, differing only in which
@@ -23,9 +26,14 @@ class LoginPage extends StatelessWidget {
     super.key,
   });
 
-  /// Called once [LoginCubit] reports a successful sign-in — the caller
-  /// pushes the merge confirmation screen (HU-04).
-  final VoidCallback onSignedIn;
+  /// Called once [LoginCubit] reports a successful sign-in.
+  ///
+  /// `signedInAfterConflict: true` means this sign-in was completed by
+  /// resolving an account-conflict sheet (this device's local data was just
+  /// wiped) — the caller must skip the merge confirmation screen (HU-04):
+  /// there is nothing left on this device to fold in. `false` is a plain
+  /// sign-in, which the caller sends to the merge screen as before.
+  final void Function({required bool signedInAfterConflict}) onSignedIn;
 
   /// "Continuar sin cuenta" / the close button: both just leave this screen.
   final VoidCallback onSkip;
@@ -38,10 +46,15 @@ class LoginPage extends StatelessWidget {
     return BlocConsumer<LoginCubit, LoginState>(
       listenWhen: (previous, current) =>
           current.status == LoginStatus.signedIn ||
-          current.status == LoginStatus.error,
+          current.status == LoginStatus.error ||
+          current.status == LoginStatus.accountConflictDetected,
       listener: (context, state) {
         if (state.status == LoginStatus.signedIn) {
-          onSignedIn();
+          onSignedIn(signedInAfterConflict: state.signedInAfterConflict);
+          return;
+        }
+        if (state.status == LoginStatus.accountConflictDetected) {
+          unawaited(_handleAccountConflict(context));
           return;
         }
         final failure = state.failure;
@@ -160,5 +173,24 @@ class LoginPage extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Shows the blocking [ConfirmAccountConflictSheet] and settles it against
+/// [LoginCubit] — `true` (borrar y continuar) calls `resolveConflict`,
+/// `false` (cancelar) calls `cancelConflict`. The sheet itself never
+/// resolves to `null` (see its own doc), but the `context.mounted` guard
+/// still protects the (rare) case where this widget is gone by the time the
+/// awaited sheet settles.
+Future<void> _handleAccountConflict(BuildContext context) async {
+  final cubit = context.read<LoginCubit>();
+  final confirmed = await ConfirmAccountConflictSheet.show(context);
+  if (!context.mounted) {
+    return;
+  }
+  if (confirmed ?? false) {
+    await cubit.resolveConflict();
+  } else {
+    await cubit.cancelConflict();
   }
 }

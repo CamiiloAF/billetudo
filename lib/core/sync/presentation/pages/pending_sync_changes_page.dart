@@ -12,6 +12,8 @@ import '../../../widgets/page_header.dart';
 import '../cubit/sync_status_cubit.dart';
 import '../cubit/sync_status_state.dart';
 import '../utils/sync_relative_time.dart';
+import '../widgets/discard_all_link.dart';
+import '../widgets/sheets/confirm_discard_all_quarantined_changes_sheet.dart';
 import '../widgets/sheets/pending_change_detail_sheet.dart';
 import '../widgets/sync_pending_row.dart';
 
@@ -21,9 +23,14 @@ import '../widgets/sync_pending_row.dart';
 /// This is the one screen of the family where scrolling is expected — on the
 /// status screen the risk and "Guardar una copia" have to fit without it.
 ///
-/// No bulk actions and no selection: the hero's "Reintentar ahora" already
-/// replays the whole queue, and there is no "Descartar" anywhere in this flow.
-/// Each row opens its own detail. The amber is not repeated here either — the
+/// No selection and no per-row bulk actions: the hero's "Reintentar ahora"
+/// already replays the whole queue, and there is no "Descartar" on individual
+/// rows here (that lives only in the detail sheet, gated by `attempts >= 3`).
+/// The one bulk action this screen does offer is "Descartar todo" (`OgoAn`),
+/// a link under the summary line — added 2026-08-25 for the case where
+/// discarding one write at a time is not viable (hundreds in quarantine).
+/// Unlike the per-row discard it has no threshold, and is protected only by
+/// its own confirmation sheet. The amber is not repeated here either — the
 /// previous hero already said it, and repeating an alarm on every surface
 /// turns it into noise.
 class PendingSyncChangesPage extends StatelessWidget {
@@ -69,9 +76,11 @@ class PendingSyncChangesPage extends StatelessWidget {
                     );
                   }
 
+                  final cubit = context.read<SyncStatusCubit>();
+
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
-                    itemCount: changes.length + 1,
+                    itemCount: changes.length + 2,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 10),
                     itemBuilder: (context, index) {
@@ -91,13 +100,21 @@ class PendingSyncChangesPage extends StatelessWidget {
                           ),
                         );
                       }
-                      final change = changes[index - 1];
+                      if (index == 1) {
+                        return DiscardAllLink(
+                          count: changes.length,
+                          onTap: () => unawaited(
+                            _discardAll(context, cubit, changes.length),
+                          ),
+                        );
+                      }
+                      final change = changes[index - 2];
                       return SyncPendingRow(
                         change: change,
                         onTap: () => unawaited(
                           PendingChangeDetailSheet.show(
                             context,
-                            context.read<SyncStatusCubit>(),
+                            cubit,
                             change,
                           ),
                         ),
@@ -111,5 +128,24 @@ class PendingSyncChangesPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Opens the bulk confirmation sheet and, once confirmed, empties the
+  /// quarantine. Same fire-and-forget shape as the per-row discard: the rows
+  /// disappear as the quarantine stream confirms the deletion, not
+  /// optimistically.
+  Future<void> _discardAll(
+    BuildContext context,
+    SyncStatusCubit cubit,
+    int count,
+  ) async {
+    final confirmed = await ConfirmDiscardAllQuarantinedChangesSheet.show(
+      context,
+      count: count,
+    );
+    if (confirmed != true) {
+      return;
+    }
+    unawaited(cubit.discardAll());
   }
 }

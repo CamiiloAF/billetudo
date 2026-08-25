@@ -15,6 +15,7 @@ class FakeSyncRetryLedgerStore implements SyncRetryLedgerStore {
   Exception? readError;
   Exception? upsertError;
   Exception? removeError;
+  Exception? removeAllError;
 
   int removeCalls = 0;
 
@@ -49,5 +50,10 @@ class FakeSyncRetryLedgerStore implements SyncRetryLedgerStore {
   }
 
   @override
-  Future<void> removeAll() async => records.clear();
+  Future<void> removeAll() async {
+    if (removeAllError case final error?) {
+      throw error;
+    }
+    records.clear();
+  }
 }

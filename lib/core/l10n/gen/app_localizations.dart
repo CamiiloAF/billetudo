@@ -3460,6 +3460,24 @@ abstract class AppLocalizations {
   /// **'No pudimos iniciar sesión con Apple'**
   String get authAppleErrorSnackbar;
 
+  /// HU-02/03: título de la hoja bloqueante cuando el dispositivo ya tiene datos locales asociados a una cuenta distinta a la que acaba de iniciar sesión. Nunca nombra ni da pistas de cuál es esa cuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay datos de otra cuenta en este dispositivo'**
+  String get authAccountConflictTitle;
+
+  /// HU-02/03: mensaje genérico, sin identificar la cuenta dueña de los datos en conflicto.
+  ///
+  /// In es, this message translates to:
+  /// **'Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán.'**
+  String get authAccountConflictMessage;
+
+  /// HU-02/03: confirma la hoja — borra los datos locales existentes y completa el inicio de sesión.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar y continuar'**
+  String get authAccountConflictConfirmCta;
+
   /// No description provided for @authMergeTitle.
   ///
   /// In es, this message translates to:
@@ -7032,6 +7050,24 @@ abstract class AppLocalizations {
   /// **'Reintentar'**
   String get syncDetailRetry;
 
+  /// No description provided for @syncDetailDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get syncDetailDiscard;
+
+  /// No description provided for @syncDiscardConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Descartar este cambio?'**
+  String get syncDiscardConfirmTitle;
+
+  /// No description provided for @syncDiscardConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca.'**
+  String get syncDiscardConfirmMessage;
+
   /// No description provided for @syncPendingEmptyMessage.
   ///
   /// In es, this message translates to:
@@ -7043,6 +7079,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Todo lo que registraste ya llegó a la nube.'**
   String get syncPendingEmptyDescription;
+
+  /// No description provided for @syncDiscardAllLinkLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Descartar todo (1)} other{Descartar todo ({count})}}'**
+  String syncDiscardAllLinkLabel(num count);
+
+  /// No description provided for @syncDiscardAllConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{¿Descartar el cambio pendiente?} other{¿Descartar los {count} cambios pendientes?}}'**
+  String syncDiscardAllConfirmTitle(num count);
+
+  /// No description provided for @syncDiscardAllConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Se va a descartar 1 cambio pendiente. Esta acción no se puede deshacer. Solo se borra el dato local de esa operación específica — el resto de tu información en este teléfono no se toca.} other{Se van a descartar {count} cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca.}}'**
+  String syncDiscardAllConfirmMessage(num count);
+
+  /// No description provided for @syncDiscardAllConfirmButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar todo'**
+  String get syncDiscardAllConfirmButton;
 
   /// No description provided for @syncLogSheetSubtitle.
   ///

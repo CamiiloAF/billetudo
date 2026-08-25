@@ -29,6 +29,10 @@ import 'package:billetudo/core/preferences/debt_payment_toggle_preference_dataso
     as _i554;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
 import 'package:billetudo/core/security/secure_storage_service.dart' as _i1034;
+import 'package:billetudo/core/sync/data/datasources/backup_id_collision_datasource.dart'
+    as _i200;
+import 'package:billetudo/core/sync/data/datasources/data_ownership_claimer.dart'
+    as _i967;
 import 'package:billetudo/core/sync/data/datasources/json_sync_log_store.dart'
     as _i466;
 import 'package:billetudo/core/sync/data/datasources/json_sync_quarantine_store.dart'
@@ -59,6 +63,8 @@ import 'package:billetudo/core/sync/data/repositories/sync_quarantine_repository
     as _i850;
 import 'package:billetudo/core/sync/data/repositories/sync_status_repository_impl.dart'
     as _i975;
+import 'package:billetudo/core/sync/domain/repositories/backup_id_collision_resolver.dart'
+    as _i765;
 import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart'
     as _i666;
 import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart'
@@ -152,6 +158,8 @@ import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasour
     as _i464;
 import 'package:billetudo/features/auth/data/datasources/google_auth_datasource.dart'
     as _i235;
+import 'package:billetudo/features/auth/data/datasources/local_data_conflict_datasource.dart'
+    as _i959;
 import 'package:billetudo/features/auth/data/datasources/local_data_ownership_datasource.dart'
     as _i718;
 import 'package:billetudo/features/auth/data/datasources/local_data_summary_datasource.dart'
@@ -166,12 +174,16 @@ import 'package:billetudo/features/auth/data/repositories/auth_repository_impl.d
     as _i13;
 import 'package:billetudo/features/auth/domain/repositories/auth_repository.dart'
     as _i913;
+import 'package:billetudo/features/auth/domain/usecases/cancel_account_conflict.dart'
+    as _i154;
 import 'package:billetudo/features/auth/domain/usecases/delete_account.dart'
     as _i498;
 import 'package:billetudo/features/auth/domain/usecases/get_delete_account_scope.dart'
     as _i186;
 import 'package:billetudo/features/auth/domain/usecases/merge_local_data.dart'
     as _i916;
+import 'package:billetudo/features/auth/domain/usecases/resolve_account_conflict.dart'
+    as _i8;
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_apple.dart'
     as _i888;
 import 'package:billetudo/features/auth/domain/usecases/sign_in_with_google.dart'
@@ -512,6 +524,8 @@ import 'package:billetudo/features/import_export/domain/usecases/parse_csv_heade
     as _i894;
 import 'package:billetudo/features/import_export/domain/usecases/preview_import.dart'
     as _i917;
+import 'package:billetudo/features/import_export/domain/usecases/resolve_backup_id_conflicts.dart'
+    as _i413;
 import 'package:billetudo/features/import_export/domain/usecases/restore_backup.dart'
     as _i881;
 import 'package:billetudo/features/import_export/domain/usecases/save_mapping_template.dart'
@@ -831,6 +845,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
         _i476.MappingTemplatesLocalDatasource(
             gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i200.BackupIdCollisionDatasource>(
+        () => _i200.BackupIdCollisionDatasource(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
         _i226.SeedCategoryOwnershipRemoteDatasource(
             gh<_i454.SupabaseClient>()));
@@ -843,6 +859,12 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i190.SyncOperationUploader>(
         () => _i257.SupabaseOperationUploader(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
+        () => _i718.LocalDataOwnershipDatasource(
+              gh<_i249.AppDatabase>(),
+              gh<_i226.SeedCategoryOwnershipRemoteDatasource>(),
+              gh<_i200.BackupIdCollisionDatasource>(),
+            ));
     gh.lazySingleton<_i766.SyncStorageDirectory>(
         () => const _i766.AppDocumentsSyncStorageDirectory());
     gh.lazySingleton<_i24.BackupStatusRepository>(
@@ -852,11 +874,10 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i407.ThemeModeCubit>(
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
-    gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
-        () => _i718.LocalDataOwnershipDatasource(
-              gh<_i249.AppDatabase>(),
-              gh<_i226.SeedCategoryOwnershipRemoteDatasource>(),
-            ));
+    gh.lazySingleton<_i967.DataOwnershipClaimer>(() => registerModule
+        .dataOwnershipClaimer(gh<_i718.LocalDataOwnershipDatasource>()));
+    gh.lazySingleton<_i765.BackupIdCollisionResolver>(() => registerModule
+        .backupIdCollisionResolver(gh<_i718.LocalDataOwnershipDatasource>()));
     gh.lazySingleton<_i811.SyncLogStore>(
         () => _i466.JsonSyncLogStore(gh<_i766.SyncStorageDirectory>()));
     gh.lazySingleton<_i666.SyncLogRepository>(() => _i133.SyncLogRepositoryImpl(
@@ -869,6 +890,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
         () => _i533.AccountsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i959.LocalDataConflictDatasource>(
+        () => _i959.LocalDataConflictDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i835.LocalDataSummaryDatasource>(
         () => _i835.LocalDataSummaryDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i99.BudgetsLocalDatasource>(
@@ -881,8 +904,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i60.GoalQuickAmountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i822.GoalsLocalDatasource>(
         () => _i822.GoalsLocalDatasource(gh<_i249.AppDatabase>()));
-    gh.lazySingleton<_i716.BackupJsonDatasource>(
-        () => _i716.BackupJsonDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i505.ExportLocalDatasource>(
         () => _i505.ExportLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i545.ImportBatchesLocalDatasource>(
@@ -935,8 +956,6 @@ extension GetItInjectableX on _i174.GetIt {
         _i215.RetryQuarantinedOperation(gh<_i400.SyncQuarantineRepository>()));
     gh.factory<_i239.WatchQuarantinedOperations>(() =>
         _i239.WatchQuarantinedOperations(gh<_i400.SyncQuarantineRepository>()));
-    gh.lazySingleton<_i173.LocalDataWipeDatasource>(
-        () => _i173.LocalDataWipeDatasource(gh<_i433.PowerSyncDatabase>()));
     gh.factory<_i623.ClearSyncLog>(
         () => _i623.ClearSyncLog(gh<_i666.SyncLogRepository>()));
     gh.factory<_i177.ExportSyncLog>(
@@ -945,8 +964,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i77.WatchSyncLog(gh<_i666.SyncLogRepository>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
-    gh.lazySingleton<_i418.BackupRepository>(
-        () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
     gh.lazySingleton<_i509.NoteSuggestionsRepository>(
         () => _i670.NoteSuggestionsRepositoryImpl(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i447.ImportRepository>(() => _i719.ImportRepositoryImpl(
@@ -967,6 +984,8 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i612.AccountNumberLocalDatasource>(() =>
         _i612.AccountNumberLocalDatasource(gh<_i1034.SecureStorageService>()));
+    gh.factory<_i413.ResolveBackupIdConflicts>(() =>
+        _i413.ResolveBackupIdConflicts(gh<_i765.BackupIdCollisionResolver>()));
     gh.factory<_i542.GetMappingTemplates>(
         () => _i542.GetMappingTemplates(gh<_i867.MappingTemplateRepository>()));
     gh.factory<_i200.SaveMappingTemplate>(
@@ -1034,6 +1053,13 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i136.SyncRetryWatchdog>(
         () => _i136.SyncRetryWatchdog(gh<_i390.SyncRetryLedgerStore>()));
+    gh.lazySingleton<_i716.BackupJsonDatasource>(
+        () => _i716.BackupJsonDatasource(
+              gh<_i249.AppDatabase>(),
+              gh<_i967.DataOwnershipClaimer>(),
+              gh<_i454.SupabaseClient>(),
+              gh<_i413.ResolveBackupIdConflicts>(),
+            ));
     gh.factory<_i504.SnoozeSheetCubit>(
         () => _i504.SnoozeSheetCubit(gh<_i1009.SnoozeScheduledOccurrence>()));
     gh.lazySingleton<_i108.ImportBatchRepository>(
@@ -1066,17 +1092,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i666.SyncLogRepository>(),
           gh<_i474.CrashReporter>(),
           gh<_i136.SyncRetryWatchdog>(),
-        ));
-    gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
-          gh<_i235.GoogleAuthDatasource>(),
-          gh<_i22.AppleAuthDatasource>(),
-          gh<_i835.LocalDataSummaryDatasource>(),
-          gh<_i173.LocalDataWipeDatasource>(),
-          gh<_i718.LocalDataOwnershipDatasource>(),
-          gh<_i464.EverSignedInDatasource>(),
-          gh<_i454.SupabaseClient>(),
-          gh<_i433.PowerSyncDatabase>(),
-          gh<_i872.PowerSyncConnector>(),
         ));
     gh.lazySingleton<_i742.ExportRepository>(() => _i548.ExportRepositoryImpl(
           gh<_i505.ExportLocalDatasource>(),
@@ -1130,6 +1145,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
         () => _i121.WatchTags(gh<_i716.TagRepository>()));
+    gh.lazySingleton<_i173.LocalDataWipeDatasource>(
+        () => _i173.LocalDataWipeDatasource(
+              gh<_i433.PowerSyncDatabase>(),
+              gh<_i400.SyncQuarantineRepository>(),
+              gh<_i390.SyncRetryLedgerStore>(),
+              gh<_i666.SyncLogRepository>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i691.SyncStatusRepository>(
         () => _i975.SyncStatusRepositoryImpl(
               gh<_i130.SyncStatusSource>(),
@@ -1207,10 +1230,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i696.GoalRepository>(),
               gh<_i474.CrashReporter>(),
             ));
-    gh.factory<_i237.CreateFullBackup>(
-        () => _i237.CreateFullBackup(gh<_i418.BackupRepository>()));
-    gh.factory<_i639.ParseBackupHeader>(
-        () => _i639.ParseBackupHeader(gh<_i418.BackupRepository>()));
     gh.factory<_i1061.GetNoteSuggestions>(
         () => _i1061.GetNoteSuggestions(gh<_i509.NoteSuggestionsRepository>()));
     gh.factory<_i506.TagFilterCubit>(() => _i506.TagFilterCubit(
@@ -1241,12 +1260,26 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i968.DeleteCategory>(),
           gh<_i928.SuggestSubcategoryIcon>(),
         ));
+    gh.lazySingleton<_i418.BackupRepository>(
+        () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
     gh.factory<_i458.ScheduledPaymentsListCubit>(
         () => _i458.ScheduledPaymentsListCubit(
               gh<_i265.GetScheduledPayments>(),
               gh<_i747.GenerateDueScheduledPayments>(),
               gh<_i274.GetFinishedScheduledPayments>(),
             ));
+    gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
+          gh<_i235.GoogleAuthDatasource>(),
+          gh<_i22.AppleAuthDatasource>(),
+          gh<_i835.LocalDataSummaryDatasource>(),
+          gh<_i173.LocalDataWipeDatasource>(),
+          gh<_i967.DataOwnershipClaimer>(),
+          gh<_i959.LocalDataConflictDatasource>(),
+          gh<_i464.EverSignedInDatasource>(),
+          gh<_i454.SupabaseClient>(),
+          gh<_i433.PowerSyncDatabase>(),
+          gh<_i872.PowerSyncConnector>(),
+        ));
     gh.factory<_i783.ExportAccountsCategoriesCsv>(
         () => _i783.ExportAccountsCategoriesCsv(gh<_i742.ExportRepository>()));
     gh.factory<_i527.ExportTransactionsCsv>(
@@ -1262,12 +1295,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i367.UndoImportBatch(gh<_i108.ImportBatchRepository>()));
     gh.factory<_i813.WatchImportBatches>(
         () => _i813.WatchImportBatches(gh<_i108.ImportBatchRepository>()));
-    gh.factory<_i696.SyncStatusCubit>(() => _i696.SyncStatusCubit(
-          gh<_i773.WatchSyncStatusDetails>(),
-          gh<_i239.WatchQuarantinedOperations>(),
-          gh<_i883.RetryAllQuarantinedOperations>(),
-          gh<_i215.RetryQuarantinedOperation>(),
-        ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.factory<_i1061.GetLinkableScheduledPayments>(() =>
@@ -1355,21 +1382,21 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i316.UpdateDebtEntry>(),
           gh<_i789.DeleteDebtEntry>(),
         ));
-    gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
-          gh<_i418.BackupRepository>(),
-          gh<_i639.ParseBackupHeader>(),
-        ));
     gh.factory<_i325.ExportCubit>(() => _i325.ExportCubit(
           gh<_i527.ExportTransactionsCsv>(),
           gh<_i783.ExportAccountsCategoriesCsv>(),
           gh<_i480.ZipExportFiles>(),
         ));
+    gh.factory<_i154.CancelAccountConflict>(
+        () => _i154.CancelAccountConflict(gh<_i913.AuthRepository>()));
     gh.factory<_i498.DeleteAccount>(
         () => _i498.DeleteAccount(gh<_i913.AuthRepository>()));
     gh.factory<_i186.GetDeleteAccountScope>(
         () => _i186.GetDeleteAccountScope(gh<_i913.AuthRepository>()));
     gh.factory<_i916.MergeLocalData>(
         () => _i916.MergeLocalData(gh<_i913.AuthRepository>()));
+    gh.factory<_i8.ResolveAccountConflict>(
+        () => _i8.ResolveAccountConflict(gh<_i913.AuthRepository>()));
     gh.factory<_i888.SignInWithApple>(
         () => _i888.SignInWithApple(gh<_i913.AuthRepository>()));
     gh.factory<_i1044.SignInWithGoogle>(
@@ -1446,9 +1473,13 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1047.WithdrawFromGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
-    gh.factory<_i641.RestoreCubit>(() => _i641.RestoreCubit(
-          gh<_i639.ParseBackupHeader>(),
-          gh<_i881.RestoreBackup>(),
+    gh.factory<_i696.SyncStatusCubit>(() => _i696.SyncStatusCubit(
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i239.WatchQuarantinedOperations>(),
+          gh<_i883.RetryAllQuarantinedOperations>(),
+          gh<_i215.RetryQuarantinedOperation>(),
+          gh<_i427.DiscardQuarantinedOperation>(),
+          gh<_i192.DiscardAllQuarantinedOperations>(),
         ));
     gh.factory<_i522.CompleteOnboarding>(
         () => _i522.CompleteOnboarding(gh<_i528.SetOnboardingCompleted>()));
@@ -1485,10 +1516,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i813.WatchImportBatches>(),
           gh<_i296.HasAnyTransaction>(),
         ));
-    gh.factory<_i401.SaveCopyCubit>(() => _i401.SaveCopyCubit(
-          gh<_i237.CreateFullBackup>(),
-          gh<_i936.MarkBackupSaved>(),
-        ));
     gh.factory<_i633.WipeLocalDataAfterDeletion>(
         () => _i633.WipeLocalDataAfterDeletion(
               gh<_i537.WipeLocalData>(),
@@ -1524,6 +1551,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i364.ReportsShellCubit(gh<_i773.WatchSyncStatusDetails>()));
     gh.factory<_i170.DebtUpdateBalanceCubit>(
         () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
+    gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
+          gh<_i1044.SignInWithGoogle>(),
+          gh<_i888.SignInWithApple>(),
+          gh<_i8.ResolveAccountConflict>(),
+          gh<_i154.CancelAccountConflict>(),
+        ));
     gh.factory<_i843.ZeroBasedSummaryCubit>(
         () => _i843.ZeroBasedSummaryCubit(gh<_i458.GetZeroBasedSummary>()));
     gh.factory<_i140.DeleteAccountCubit>(() => _i140.DeleteAccountCubit(
@@ -1561,6 +1594,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i990.UpdateBudgetAdjustment>(),
           gh<_i1054.CancelBudgetAdjustment>(),
         ));
+    gh.factory<_i237.CreateFullBackup>(
+        () => _i237.CreateFullBackup(gh<_i418.BackupRepository>()));
+    gh.factory<_i639.ParseBackupHeader>(
+        () => _i639.ParseBackupHeader(gh<_i418.BackupRepository>()));
     gh.factory<_i79.ArchiveAccount>(
         () => _i79.ArchiveAccount(gh<_i1067.AccountRepository>()));
     gh.factory<_i703.CreateAccount>(
@@ -1620,10 +1657,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i781.HasSeenTutorial>(),
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
-        ));
-    gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
-          gh<_i1044.SignInWithGoogle>(),
-          gh<_i888.SignInWithApple>(),
         ));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
@@ -1690,6 +1723,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
         ));
+    gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
+          gh<_i418.BackupRepository>(),
+          gh<_i639.ParseBackupHeader>(),
+        ));
     gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
           gh<_i182.GetAppSettings>(),
           gh<_i636.SetZeroBasedEnabled>(),
@@ -1706,6 +1743,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i674.GetActiveBudgets>(),
           gh<_i529.WatchGoals>(),
         ));
+    gh.factory<_i641.RestoreCubit>(() => _i641.RestoreCubit(
+          gh<_i639.ParseBackupHeader>(),
+          gh<_i881.RestoreBackup>(),
+        ));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
@@ -1720,6 +1761,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1023.ContributeToGoal>(),
           gh<_i1047.WithdrawFromGoal>(),
           gh<_i837.WatchAccounts>(),
+        ));
+    gh.factory<_i401.SaveCopyCubit>(() => _i401.SaveCopyCubit(
+          gh<_i237.CreateFullBackup>(),
+          gh<_i936.MarkBackupSaved>(),
         ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'spinning_icon.dart';
 
 /// The `Button/Neutral` component (`xncgz`): a solid, high-contrast CTA with
 /// no brand colour — `$text-primary` fill, `$background` label and glyph.
@@ -22,6 +23,7 @@ class NeutralButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.enabled = true,
+    this.spinning = false,
     super.key,
   });
 
@@ -30,6 +32,10 @@ class NeutralButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final bool enabled;
+
+  /// Whether [icon] is the "in progress" glyph and should spin — never true
+  /// for the button's normal, static icon.
+  final bool spinning;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +59,12 @@ class NeutralButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: foreground),
+              SpinningIcon(
+                icon: icon,
+                spinning: spinning,
+                size: 18,
+                color: foreground,
+              ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

@@ -1621,6 +1621,18 @@
   "@authGoogleErrorSnackbar": {},
   "authAppleErrorSnackbar": "No pudimos iniciar sesión con Apple",
   "@authAppleErrorSnackbar": {},
+  "authAccountConflictTitle": "Hay datos de otra cuenta en este dispositivo",
+  "@authAccountConflictTitle": {
+    "description": "HU-02/03: título de la hoja bloqueante cuando el dispositivo ya tiene datos locales asociados a una cuenta distinta a la que acaba de iniciar sesión. Nunca nombra ni da pistas de cuál es esa cuenta."
+  },
+  "authAccountConflictMessage": "Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán.",
+  "@authAccountConflictMessage": {
+    "description": "HU-02/03: mensaje genérico, sin identificar la cuenta dueña de los datos en conflicto."
+  },
+  "authAccountConflictConfirmCta": "Borrar y continuar",
+  "@authAccountConflictConfirmCta": {
+    "description": "HU-02/03: confirma la hoja — borra los datos locales existentes y completa el inicio de sesión."
+  },
   "authMergeTitle": "Tus datos están a salvo",
   "@authMergeTitle": {},
   "authMergeSubtitle": "Combinamos todo lo que ya tenías guardado con tu cuenta. Nada se perdió en el camino.",
@@ -3568,10 +3580,45 @@
   "@syncDetailRisk": {},
   "syncDetailRetry": "Reintentar",
   "@syncDetailRetry": {},
+  "syncDetailDiscard": "Descartar",
+  "@syncDetailDiscard": {},
+  "syncDiscardConfirmTitle": "¿Descartar este cambio?",
+  "@syncDiscardConfirmTitle": {},
+  "syncDiscardConfirmMessage": "Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca.",
+  "@syncDiscardConfirmMessage": {},
   "syncPendingEmptyMessage": "Nada esperando para subir",
   "@syncPendingEmptyMessage": {},
   "syncPendingEmptyDescription": "Todo lo que registraste ya llegó a la nube.",
   "@syncPendingEmptyDescription": {},
+  "syncDiscardAllLinkLabel": "{count, plural, =1{Descartar todo (1)} other{Descartar todo ({count})}}",
+  "@syncDiscardAllLinkLabel": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmTitle": "{count, plural, =1{¿Descartar el cambio pendiente?} other{¿Descartar los {count} cambios pendientes?}}",
+  "@syncDiscardAllConfirmTitle": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmMessage": "{count, plural, =1{Se va a descartar 1 cambio pendiente. Esta acción no se puede deshacer. Solo se borra el dato local de esa operación específica — el resto de tu información en este teléfono no se toca.} other{Se van a descartar {count} cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca.}}",
+  "@syncDiscardAllConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "syncDiscardAllConfirmButton": "Descartar todo",
+  "@syncDiscardAllConfirmButton": {},
   "syncLogSheetSubtitle": "{count, plural, =0{Aún no hay líneas · nada que reportar} =1{Última línea · útil para soporte} other{Últimas {count} líneas · útil para soporte}}",
   "@syncLogSheetSubtitle": {
     "placeholders": {

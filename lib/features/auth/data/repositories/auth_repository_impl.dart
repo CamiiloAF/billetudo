@@ -5,15 +5,17 @@ import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
 
 import '../../../../core/error/result.dart';
+import '../../../../core/sync/data/datasources/data_ownership_claimer.dart';
 import '../../domain/entities/auth_provider.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/entities/auth_user.dart';
 import '../../domain/entities/merge_summary.dart';
+import '../../domain/entities/sign_in_outcome.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/apple_auth_datasource.dart';
 import '../datasources/ever_signed_in_datasource.dart';
 import '../datasources/google_auth_datasource.dart';
-import '../datasources/local_data_ownership_datasource.dart';
+import '../datasources/local_data_conflict_datasource.dart';
 import '../datasources/local_data_summary_datasource.dart';
 import '../datasources/local_data_wipe_datasource.dart';
 import '../datasources/powersync_connector.dart';
@@ -32,6 +34,7 @@ class AuthRepositoryImpl implements AuthRepository {
     this._summaries,
     this._wipe,
     this._ownership,
+    this._conflict,
     this._everSignedIn,
     this._supabase,
     this._powerSync,
@@ -63,7 +66,8 @@ class AuthRepositoryImpl implements AuthRepository {
   final AppleAuthDatasource _apple;
   final LocalDataSummaryDatasource _summaries;
   final LocalDataWipeDatasource _wipe;
-  final LocalDataOwnershipDatasource _ownership;
+  final DataOwnershipClaimer _ownership;
+  final LocalDataConflictDatasource _conflict;
   final EverSignedInDatasource _everSignedIn;
   final SupabaseClient _supabase;
   final PowerSyncDatabase _powerSync;
@@ -72,6 +76,14 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthSession _current = const AuthSession.signedOut();
   final _controller = StreamController<AuthSession>.broadcast();
   late final StreamSubscription<AuthState> _authStateSubscription;
+
+  /// Set the instant `_completeSignIn` detects a conflict, cleared by
+  /// [resolveAccountConflict]/[cancelAccountConflict]. Doubles as the guard
+  /// [_onAuthStateChange] checks: while a conflict is pending, the session
+  /// Supabase already exchanged and persisted to disk must not leak into
+  /// [_current] through that listener — [currentSession] has to keep
+  /// reporting `signedOut` until the user picks an outcome for the sheet.
+  AuthUser? _pendingConflictUser;
 
   @override
   AuthSession get currentSession => _current;
@@ -104,6 +116,16 @@ class AuthRepositoryImpl implements AuthRepository {
   /// that fails, a sign-out from another part of the app, or the initial
   /// restore landing after this was constructed.
   void _onAuthStateChange(AuthState state) {
+    // A conflict is pending: Supabase already exchanged and persisted a
+    // session for the incoming account, but the sign-in must stay held back
+    // until `resolveAccountConflict`/`cancelAccountConflict` runs. The event
+    // `signInWithIdToken` fires internally right after that exchange is
+    // exactly what this guard exists to swallow — letting it through would
+    // complete the sign-in behind the still-open confirmation sheet.
+    if (_pendingConflictUser != null) {
+      return;
+    }
+
     final user = state.session?.user;
 
     if (user == null) {
@@ -155,7 +177,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  FutureResult<AuthUser> signInWithGoogle() async {
+  FutureResult<SignInOutcome> signInWithGoogle() async {
     try {
       final credential = await _google.signIn();
       return _completeSignIn(credential, AuthProvider.google);
@@ -165,7 +187,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  FutureResult<AuthUser> signInWithApple() async {
+  FutureResult<SignInOutcome> signInWithApple() async {
     try {
       final credential = await _apple.signIn();
       return _completeSignIn(credential, AuthProvider.apple);
@@ -177,7 +199,14 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Exchanges an already-collected provider credential for a real Supabase
   /// session (HU-02). The client-side SDK call above (Google/Apple) already
   /// ran for real by the time this is called.
-  FutureResult<AuthUser> _completeSignIn(
+  ///
+  /// Before this touches [_current]/PowerSync/[_everSignedIn], it runs the
+  /// account-conflict detection with the just-exchanged Supabase id (the
+  /// exact inverse of HU-04's unowned-data merge): if this device already
+  /// holds local data owned by a *different* account — or the detection
+  /// itself fails to read Drift, fail-closed — the sign-in is held back and
+  /// [AccountConflictDetected] is returned instead of completing it.
+  FutureResult<SignInOutcome> _completeSignIn(
     SocialCredential credential,
     AuthProvider provider,
   ) async {
@@ -223,6 +252,12 @@ class AuthRepositoryImpl implements AuthRepository {
         email: supabaseUser.email ?? credential.email,
         avatarUrl: (metadata['avatar_url'] as String?) ?? credential.avatarUrl,
       );
+
+      if (await _hasAccountConflict(user.id)) {
+        _pendingConflictUser = user;
+        return const Right(AccountConflictDetected());
+      }
+
       _current = AuthSession.signedIn(user);
       _controller.add(_current);
       _connectPowerSync();
@@ -230,9 +265,21 @@ class AuthRepositoryImpl implements AuthRepository {
       // later `signOut` apart from never having signed in at all. Never
       // undone by `signOut` — only a real cloud deletion below clears it.
       await _everSignedIn.markSignedIn();
-      return Right(user);
+      return Right(SignedIn(user));
     } on AuthException catch (e, stackTrace) {
       return Left(NetworkFailure(e.message, cause: e, stackTrace: stackTrace));
+    }
+  }
+
+  /// Fail-closed wrapper around [LocalDataConflictDatasource.hasConflict]: a
+  /// read exception (corrupt PowerSync view, closed database) is treated the
+  /// same as a real conflict rather than let a broken detection complete the
+  /// sign-in silently.
+  Future<bool> _hasAccountConflict(String incomingUserId) async {
+    try {
+      return await _conflict.hasConflict(incomingUserId);
+    } on Object {
+      return true;
     }
   }
 
@@ -431,6 +478,51 @@ class AuthRepositoryImpl implements AuthRepository {
   FutureResult<Unit> wipeLocalData() async {
     await _wipe.wipeAll();
     return const Right(unit);
+  }
+
+  @override
+  FutureResult<AuthUser> resolveAccountConflict() async {
+    final user = _pendingConflictUser;
+    if (user == null) {
+      return const Left(
+        UnexpectedFailure(
+          'AuthRepositoryImpl.resolveAccountConflict called without a '
+          'pending AccountConflictDetected outcome.',
+        ),
+      );
+    }
+
+    // Same scope as `wipeLocalData` — this device's rows only, never the
+    // cloud copy of the account this device was previously on.
+    await _wipe.wipeAll();
+
+    _current = AuthSession.signedIn(user);
+    _controller.add(_current);
+    _connectPowerSync();
+    await _everSignedIn.markSignedIn();
+    _pendingConflictUser = null;
+    return Right(user);
+  }
+
+  @override
+  FutureResult<Unit> cancelAccountConflict() async {
+    if (_pendingConflictUser == null) {
+      return const Left(
+        UnexpectedFailure(
+          'AuthRepositoryImpl.cancelAccountConflict called without a '
+          'pending AccountConflictDetected outcome.',
+        ),
+      );
+    }
+
+    // `force: true`: the sign-in behind the conflict was never completed —
+    // `_current` never left `signedOut` — so there is no signed-in state to
+    // protect if a cleanup step fails. The whole point of cancelling is
+    // that the just-exchanged session and its PowerSync connection go away
+    // regardless, without touching this device's existing local data.
+    final result = await _clearLocalSession(force: true);
+    _pendingConflictUser = null;
+    return result;
   }
 
   @override

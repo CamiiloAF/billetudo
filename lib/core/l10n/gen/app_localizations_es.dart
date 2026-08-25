@@ -1961,6 +1961,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authAppleErrorSnackbar => 'No pudimos iniciar sesión con Apple';
 
   @override
+  String get authAccountConflictTitle =>
+      'Hay datos de otra cuenta en este dispositivo';
+
+  @override
+  String get authAccountConflictMessage =>
+      'Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán.';
+
+  @override
+  String get authAccountConflictConfirmCta => 'Borrar y continuar';
+
+  @override
   String get authMergeTitle => 'Tus datos están a salvo';
 
   @override
@@ -4257,11 +4268,74 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncDetailRetry => 'Reintentar';
 
   @override
+  String get syncDetailDiscard => 'Descartar';
+
+  @override
+  String get syncDiscardConfirmTitle => '¿Descartar este cambio?';
+
+  @override
+  String get syncDiscardConfirmMessage =>
+      'Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca.';
+
+  @override
   String get syncPendingEmptyMessage => 'Nada esperando para subir';
 
   @override
   String get syncPendingEmptyDescription =>
       'Todo lo que registraste ya llegó a la nube.';
+
+  @override
+  String syncDiscardAllLinkLabel(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Descartar todo ($countString)',
+      one: 'Descartar todo (1)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Descartar los $countString cambios pendientes?',
+      one: '¿Descartar el cambio pendiente?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmMessage(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se van a descartar $countString cambios pendientes. Esta acción no se puede deshacer. Solo se borra el dato local de esas operaciones específicas — el resto de tu información en este teléfono no se toca.',
+      one:
+          'Se va a descartar 1 cambio pendiente. Esta acción no se puede deshacer. Solo se borra el dato local de esa operación específica — el resto de tu información en este teléfono no se toca.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDiscardAllConfirmButton => 'Descartar todo';
 
   @override
   String syncLogSheetSubtitle(num count) {

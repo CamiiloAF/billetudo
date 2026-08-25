@@ -1109,7 +1109,17 @@ GoRoute _settingsRoute() => GoRoute(
           builder: (context, state) => BlocProvider(
             create: (context) => getIt<LoginCubit>(),
             child: LoginPage(
-              onSignedIn: () => context.push(AppRoutes.mergeConfirmation),
+              // A sign-in completed by resolving an account-conflict sheet
+              // already wiped this device's local data — nothing left to
+              // merge, so it skips `MergeConfirmationPage` and goes straight
+              // Home instead of pushing `fusion`.
+              onSignedIn: ({required signedInAfterConflict}) {
+                if (signedInAfterConflict) {
+                  context.go(AppRoutes.home);
+                } else {
+                  unawaited(context.push(AppRoutes.mergeConfirmation));
+                }
+              },
               onSkip: () => context.pop(),
             ),
           ),
@@ -1738,11 +1748,28 @@ GoRoute _onboardingRoute() => GoRoute(
             return BlocProvider(
               create: (context) => getIt<LoginCubit>(),
               child: LoginPage(
-                onSignedIn: () => context.push(
-                  AppRoutes.onboardingMergeConfirmationFrom(
-                    closesFlow: closesFlow,
-                  ),
-                ),
+                // Same "nothing to merge after a wipe" shortcut as the
+                // Ajustes/respaldar entry point above — this one calls
+                // `_finishOnboardingAfterLogin` directly instead of pushing
+                // `fusion`'s onboarding route.
+                onSignedIn: ({required signedInAfterConflict}) {
+                  if (signedInAfterConflict) {
+                    unawaited(
+                      _finishOnboardingAfterLogin(
+                        context,
+                        closesFlow: closesFlow,
+                      ),
+                    );
+                  } else {
+                    unawaited(
+                      context.push(
+                        AppRoutes.onboardingMergeConfirmationFrom(
+                          closesFlow: closesFlow,
+                        ),
+                      ),
+                    );
+                  }
+                },
                 onSkip: () => context.pop(),
               ),
             );

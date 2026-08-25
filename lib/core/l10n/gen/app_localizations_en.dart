@@ -1957,6 +1957,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authAppleErrorSnackbar => 'We couldn\'t sign you in with Apple';
 
   @override
+  String get authAccountConflictTitle =>
+      'Another account\'s data is on this device';
+
+  @override
+  String get authAccountConflictMessage =>
+      'To continue with this account, the other account\'s data saved on this device has to be deleted first. Any changes that haven\'t been uploaded to the cloud will be lost.';
+
+  @override
+  String get authAccountConflictConfirmCta => 'Delete and continue';
+
+  @override
   String get authMergeTitle => 'Your data is safe';
 
   @override
@@ -4251,11 +4262,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncDetailRetry => 'Retry';
 
   @override
+  String get syncDetailDiscard => 'Discard';
+
+  @override
+  String get syncDiscardConfirmTitle => 'Discard this change?';
+
+  @override
+  String get syncDiscardConfirmMessage =>
+      'This can\'t be undone. It only removes the local copy of this change — the rest of your information on this phone is untouched.';
+
+  @override
   String get syncPendingEmptyMessage => 'Nothing waiting to upload';
 
   @override
   String get syncPendingEmptyDescription =>
       'Everything you recorded already reached the cloud.';
+
+  @override
+  String syncDiscardAllLinkLabel(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Discard all ($countString)',
+      one: 'Discard all (1)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmTitle(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Discard the $countString pending changes?',
+      one: 'Discard the pending change?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncDiscardAllConfirmMessage(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$countString pending changes are about to be discarded. This can\'t be undone. It only removes the local copy of those specific operations — the rest of your information on this phone is untouched.',
+      one:
+          '1 pending change is about to be discarded. This can\'t be undone. It only removes the local copy of that specific operation — the rest of your information on this phone is untouched.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDiscardAllConfirmButton => 'Discard all';
 
   @override
   String syncLogSheetSubtitle(num count) {

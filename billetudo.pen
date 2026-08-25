@@ -173205,7 +173205,7 @@
       "x": 39258,
       "y": -1976,
       "name": "Sync Pending Row",
-      "context": "Fila de registro que no pudo subir a la nube (Estado de sincronizacion). TONO: es un cambio PENDIENTE, no un error del usuario ni un dato perdido — por eso usa $amber/$amber-soft (atencion sin alarma). CONTRATO DE TEXTO: 'Title' nombra el registro en el idioma del usuario (tipo de entidad + su descripcion), NUNCA el nombre de tabla ni el codigo de error. 'Meta' lleva la antiguedad y el numero de intentos: es el dato que hace visible el paso del tiempo, la senal que faltaba en el incidente. Title y Meta van a 1 sola linea con ellipsis (Flutter: Expanded + maxLines:1).\n\nINTERACCION (decision de producto 2026-07-28): la fila COMPLETA es tocable y abre la hoja de detalle de la operacion; por eso el Chevron viene encendido por defecto y el Footer apagado. NO EXISTE accion 'Descartar' — se elimino del producto: es irreversible y destruiria datos que solo viven en ese telefono, exactamente lo que se perdio en el incidente de la decision #22. No reintroducirla ni en la fila ni en la hoja de detalle sin una decision explicita de producto. El Footer sobrevive solo como affordance opcional de 'Reintentar' inline (enabled:true) si alguna pantalla futura lo necesita.\n\nTAP TARGET: la fila entera (>=72px de alto) es el area tocable, no el chevron.",
+      "context": "Fila de registro que no pudo subir a la nube (Estado de sincronizacion). TONO: es un cambio PENDIENTE, no un error del usuario ni un dato perdido — por eso usa $amber/$amber-soft (atencion sin alarma). CONTRATO DE TEXTO: 'Title' nombra el registro en el idioma del usuario (tipo de entidad + su descripcion), NUNCA el nombre de tabla ni el codigo de error. 'Meta' lleva la antiguedad y el numero de intentos: es el dato que hace visible el paso del tiempo, la senal que faltaba en el incidente. Title y Meta van a 1 sola linea con ellipsis (Flutter: Expanded + maxLines:1).\n\nINTERACCION: la fila COMPLETA (el bloque 'Head') es tocable y abre la hoja de detalle de la operacion; por eso el Chevron viene encendido por defecto. Es el mismo patron de 'Archived Account Row' (VS0d0): un Footer con su propio tap target, separado por un borde superior, integrado en el MISMO contenedor visual en vez de quedar suelto.\n\nFOOTER 'REINTENTAR': el Footer (ni93C) es una affordance opcional inline (icono `refresh-cw` + label 'Reintentar', `fill:$primary-on-soft`) para una pantalla futura que lo necesite. Por defecto viene `enabled:false`; se activa por instancia cuando esa pantalla lo requiera. No existe una variante 'Descartar' — no hay forma de descartar un registro desde esta fila (ver r1qQYc para el detalle, que si tiene esa accion gateada por `attempts>=3`).\n\nTAP TARGET: el Head (>=72px de alto) es el area tocable principal, no el chevron; el Footer (cuando esta activo) es un area tocable aparte, con su propio alto minimo de 44pt.",
       "reusable": true,
       "clip": true,
       "width": 350,
@@ -175835,7 +175835,7 @@
       "x": 40410,
       "y": 56268,
       "name": "Sync Sheet — Detalle de la operación (Claro)",
-      "context": "HOJA DE DETALLE DE LA OPERACION. Destino de tocar una fila 'Sync Pending Row' (VtiBc) — sirve a las CUATRO variantes, no a una sola. Reemplaza las acciones inline de la fila: 'Descartar' se elimino del producto (irreversible sobre datos que solo viven en ese telefono, exactamente lo que se perdio en la decision #22).\n\nCONTRATO DE CONTENIDO (nota UX J2GkxQ): (1) que operacion es, en idioma del usuario — mismo Title que la fila, mas monto y fecha del movimiento; (2) desde cuando espera, en fraseo relativo; (3) cuantos intentos lleva; (4) la misma linea de riesgo que usan las variantes; (5) 'Reintentar' primario; (6) acceso secundario al Registro tecnico.\n\nPROHIBIDO AQUI: codigo de error (PGRST204), nombre de tabla, timestamp ISO. Eso vive UNICAMENTE en T7Iw0C, cuyo destinatario es soporte.",
+      "context": "HOJA DE DETALLE DE LA OPERACION. Destino de tocar una fila 'Sync Pending Row' (VtiBc) — sirve a las CUATRO variantes, no a una sola. Reemplaza las acciones inline de la fila: 'Reintentar' primario y 'Registro tecnico' secundario.\n\nCONTRATO DE CONTENIDO (nota UX J2GkxQ): (1) que operacion es, en idioma del usuario — mismo Title que la fila, mas monto y fecha del movimiento; (2) desde cuando espera, en fraseo relativo; (3) cuantos intentos lleva; (4) la misma linea de riesgo que usan las variantes; (5) 'Reintentar' primario; (6) acceso secundario al Registro tecnico.\n\nPROHIBIDO AQUI: codigo de error (PGRST204), nombre de tabla, timestamp ISO. Eso vive UNICAMENTE en T7Iw0C, cuyo destinatario es soporte.\n\nAPROBADO (revierte decision #22, informada): 'Descartar' vuelve al producto como tercer boton (estilo Delete Link, u0THG, nodo 'Descartar'/tJNz6), debajo de 'Registro tecnico'/'Reintentar'. Abre la hoja de confirmacion 'Sync Sheet — Confirmar Descartar' (qZvmL) que deja explicito que la accion es irreversible y que borra SOLO el dato local de esta operacion especifica.\n\nREGLA DE NEGOCIO (agregada, no se dibuja distinto en Pencil — visibilidad condicional resuelta en Flutter): el boton 'Descartar' SOLO se muestra/habilita cuando `change.attempts >= 3`. Antes de ese umbral, esta hoja de detalle NO incluye el tercer boton (solo 'Registro tecnico'/'Reintentar', 2 botones). Mismo umbral y misma fuente de verdad (`change.attempts`) que gatilla el Footer 'Descartar' de la fila en la lista completa (VtiBc, ver su propio context) — una sola regla, dos superficies.",
       "theme": {
         "mode": "light"
       },
@@ -176040,6 +176040,17 @@
                     },
                     "qfTBg/JHbmq": {
                       "content": "Reintentar"
+                    }
+                  }
+                },
+                {
+                  "id": "tJNz6",
+                  "type": "ref",
+                  "ref": "u0THG",
+                  "name": "Descartar",
+                  "descendants": {
+                    "PHw80": {
+                      "content": "Descartar"
                     }
                   }
                 }
@@ -180017,7 +180028,7 @@
       "x": 39960,
       "y": 58512,
       "name": "Sync — Lista completa de pendientes (Claro)",
-      "context": "Pantalla completa 'Cambios sin subir' — destino del enlace 'Ver los 89' del estado de atencion a escala (MG3eK).\n\nPOR QUE UNA PANTALLA Y NO UNA LISTA MAS LARGA EN EL ESTADO DE ATENCION: alli el riesgo y 'Guardar una copia' tienen que caber sin scroll. Aqui la lista SI es el contenido, asi que puede desplazarse libremente. Es la unica pantalla de la familia sync donde el scroll es esperado.\n\nENCABEZADO DE CONTEXTO (no es un estado de error): una sola linea con el total y la antiguedad del mas viejo, en $text-secondary. El ambar no se repite aqui — ya lo dijo el hero de la pantalla anterior; repetir la alarma en cada superficie la vuelve ruido.\n\nSIN ACCIONES MASIVAS: no hay 'reintentar todo' ni seleccion multiple. 'Reintentar ahora' del hero ya reintenta la cola entera, y NO EXISTE 'Descartar' (decision de producto 2026-07-28) — ninguna accion de este flujo destruye datos que solo viven en el telefono. Cada fila abre su hoja de detalle.\n\nPage Header con flecha atras y SIN Tab Bar: es pantalla apilada (regla de MASTER). En Pencil se dibujan 10 filas y la ultima queda cortada por el borde del frame: es la representacion del scroll, no un desbordamiento a corregir.",
+      "context": "Pantalla completa 'Cambios sin subir' — destino del enlace 'Ver los 89' del estado de atencion a escala (MG3eK).\n\nPOR QUE UNA PANTALLA Y NO UNA LISTA MAS LARGA EN EL ESTADO DE ATENCION: alli el riesgo y 'Guardar una copia' tienen que caber sin scroll. Aqui la lista SI es el contenido, asi que puede desplazarse libremente. Es la unica pantalla de la familia sync donde el scroll es esperado.\n\nENCABEZADO DE CONTEXTO (no es un estado de error): una sola linea con el total y la antiguedad del mas viejo, en $text-secondary. El ambar no se repite aqui en el encabezado — ya lo dijo el hero de la pantalla anterior; repetir la alarma en cada superficie la vuelve ruido.\n\nSIN ACCIONES MASIVAS: no hay 'reintentar todo' ni seleccion multiple. 'Reintentar ahora' del hero ya reintenta la cola entera. Cada fila abre su hoja de detalle al tocar el Head.\n\nSIN 'DESCARTAR' EN ESTA PANTALLA: no existe ninguna forma de descartar un registro pendiente desde esta lista ni desde sus filas (Sync Pending Row, VtiBc). La unica via de descarte del sistema es el boton del detalle de la operacion (r1qQYc), gateado por `change.attempts >= 3`, que abre 'Sync Sheet — Confirmar Descartar' (qZvmL).\n\nPage Header con flecha atras y SIN Tab Bar: es pantalla apilada (regla de MASTER). En Pencil se dibujan 10 filas y la ultima queda cortada por el borde del frame: es la representacion del scroll, no un desbordamiento a corregir.",
       "theme": {
         "mode": "light"
       },
@@ -180088,7 +180099,7 @@
               "fontWeight": "500"
             },
             {
-              "id": "TwXWT",
+              "id": "Jx1aj",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Movimiento · Café con Ana",
@@ -180112,7 +180123,7 @@
               }
             },
             {
-              "id": "NMzXn",
+              "id": "x1Ps31",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Pago de deuda · Crédito vehicular",
@@ -180136,7 +180147,7 @@
               }
             },
             {
-              "id": "knCUe",
+              "id": "sfEUX",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Aporte a meta · Viaje a Cartagena",
@@ -180160,7 +180171,7 @@
               }
             },
             {
-              "id": "OeGUZ",
+              "id": "n4TcJ",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Movimiento · Mercado de la semana",
@@ -180197,7 +180208,7 @@
                   "content": "Cuenta · Ahorros Bancolombia"
                 },
                 "t80B5": {
-                  "content": "Pendiente desde el 13 jul · 6 intentos"
+                  "content": "Pendiente desde hace unos minutos · 1 intento"
                 },
                 "z8DWW": {
                   "enabled": true
@@ -180208,7 +180219,7 @@
               }
             },
             {
-              "id": "Zzysn",
+              "id": "Mnz24",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Movimiento · Gasolina",
@@ -180245,7 +180256,7 @@
                   "content": "Pago programado · Arriendo"
                 },
                 "t80B5": {
-                  "content": "Pendiente desde el 14 jul · 5 intentos"
+                  "content": "Pendiente desde hace 10 minutos · 2 intentos"
                 },
                 "z8DWW": {
                   "enabled": true
@@ -180256,7 +180267,7 @@
               }
             },
             {
-              "id": "pMNoi",
+              "id": "C3dhwR",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Movimiento · Cine con Sofía",
@@ -180280,7 +180291,7 @@
               }
             },
             {
-              "id": "TJe63",
+              "id": "vM1bt",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Presupuesto · Comida fuera",
@@ -180304,7 +180315,7 @@
               }
             },
             {
-              "id": "VcrDy",
+              "id": "K48lLc",
               "type": "ref",
               "ref": "VtiBc",
               "name": "Pending · Movimiento · Farmacia",
@@ -223563,42 +223574,7 @@
       "cornerRadius": 24,
       "stroke": "$border",
       "strokeWidth": 2,
-      "layout": "none",
-      "children": [
-        {
-          "type": "note",
-          "id": "Cfc0z",
-          "layoutPosition": "absolute",
-          "x": 49170,
-          "y": -2336,
-          "name": "Review — kOr4c opcional vs bloqueante",
-          "width": 360,
-          "height": 210,
-          "content": "[IMPORTANTE] kOr4c es la unica superficie de gate-cuenta NO bloqueante, pero comparte layout, icono de header y labels de botones (\"Ahora no\" / \"Crear cuenta\") 1:1 con las 8 superficies bloqueantes. La unica senal de \"opcional\" es la primera palabra del body, facil de saltar en un vistazo rapido. Riesgo: el usuario que ya aprendio \"esta hoja = obligatorio\" (de Presupuesto/Movimiento/etc.) puede sentirse forzado a crear una cuenta que no necesita. Sugerencia: anadir un kicker/pill \"Opcional\" junto al titulo (fondo $muted, texto $text-secondary, sin peso de CTA) y/o cambiar el label del boton secundario a algo mas explicito como \"Seguir sin cuenta\" solo en esta instancia."
-        },
-        {
-          "type": "note",
-          "id": "VLOeL",
-          "layoutPosition": "absolute",
-          "x": 49170,
-          "y": -2116,
-          "name": "Review — kOr4c icono landmark repetido",
-          "width": 360,
-          "height": 170,
-          "content": "[MENOR] El icono \"landmark\" de kOr4c coincide correctamente con LucideIcons.landmark del campo real \"Cuenta vinculada\" en goal_form_page.dart (buen match semantico). Pero tambien duplica el icono de Zjsfz (registrar movimiento), rompiendo la regla documentada en pages/gate-cuenta.md de \"el icono cambia por superficie\" que las otras superficies respetan (wallet, arrow-left-right, calendar-clock, credit-card, piggy-bank, link). No bloqueante -las dos hojas nunca coexisten en pantalla- pero vale una pasada de icono dedicado si se quiere mantener la regla 1:1."
-        },
-        {
-          "type": "note",
-          "id": "vR9K6",
-          "layoutPosition": "absolute",
-          "x": 48720,
-          "y": -2306,
-          "name": "Review — flt4U OK",
-          "width": 360,
-          "height": 130,
-          "content": "[POSITIVO] flt4U consistente con el patron: icono wallet reusado del mismo lenguaje visual de Presupuestos (empty state, minitutorial y campo \"Cuentas\" del formulario), tokens $primary-soft/$primary-on-soft, sin $expense, botones y posicion sin solapes. Sin hallazgos."
-        }
-      ]
+      "layout": "none"
     },
     {
       "type": "text",
@@ -236682,112 +236658,10 @@
     },
     {
       "type": "frame",
-      "id": "iITru",
-      "x": 9270,
-      "y": 29108,
-      "name": "Splash - Variante A (Icono primero)",
-      "clip": true,
-      "width": 390,
-      "height": 972,
-      "fill": "$background",
-      "cornerRadius": 40,
-      "layout": "vertical",
-      "children": [
-        {
-          "id": "AhTaA",
-          "type": "ref",
-          "ref": "vYZJT",
-          "name": "Status Bar",
-          "width": "fill_container"
-        },
-        {
-          "type": "frame",
-          "id": "yAj3D",
-          "name": "Content",
-          "width": "fill_container",
-          "height": "fill_container",
-          "layout": "vertical",
-          "padding": [
-            6,
-            20
-          ],
-          "justifyContent": "center",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "frame",
-              "id": "pYPcn",
-              "name": "Brand Block",
-              "layout": "vertical",
-              "gap": 20,
-              "alignItems": "center",
-              "children": [
-                {
-                  "id": "u1Vju",
-                  "type": "ref",
-                  "ref": "ZiNl0",
-                  "name": "App Icon",
-                  "width": 88,
-                  "height": 88
-                },
-                {
-                  "type": "text",
-                  "id": "zALpq",
-                  "name": "Wordmark Text",
-                  "fill": "$text-primary",
-                  "content": "Billetudo",
-                  "fontFamily": "$font-body",
-                  "fontSize": 40,
-                  "fontWeight": "800",
-                  "letterSpacing": -1.8
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "Trwfy",
-              "layoutPosition": "absolute",
-              "x": 20,
-              "y": 820,
-              "name": "Bottom Block",
-              "width": 350,
-              "layout": "vertical",
-              "gap": 10,
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "ellipse",
-                  "id": "TyZR5",
-                  "name": "Loading Spinner",
-                  "innerRadius": 0.82,
-                  "startAngle": -90,
-                  "sweepAngle": 270,
-                  "fill": "$primary",
-                  "width": 36,
-                  "height": 36
-                },
-                {
-                  "type": "text",
-                  "id": "I3ZuNy",
-                  "name": "Loading Caption",
-                  "fill": "$text-secondary",
-                  "content": "Cargando tus finanzas...",
-                  "fontFamily": "$font-body",
-                  "fontSize": 13,
-                  "fontWeight": "500"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "frame",
       "id": "QUsfN",
       "x": 9710,
       "y": 29108,
-      "name": "Splash - Variante B (Icono integrado)",
+      "name": "Splash - B Wordmark + Icono (v2)",
       "clip": true,
       "width": 390,
       "height": 972,
@@ -236885,10 +236759,13 @@
     },
     {
       "type": "frame",
-      "id": "hgDiK",
-      "x": 10150,
-      "y": 29108,
-      "name": "Splash - Variante C (Solo icono)",
+      "id": "U0WjJ",
+      "x": 9710,
+      "y": 30140,
+      "name": "Splash - B Wordmark + Icono (v2, Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
       "clip": true,
       "width": 390,
       "height": 972,
@@ -236897,7 +236774,7 @@
       "layout": "vertical",
       "children": [
         {
-          "id": "mPq2d",
+          "id": "F3zvjk",
           "type": "ref",
           "ref": "vYZJT",
           "name": "Status Bar",
@@ -236905,7 +236782,7 @@
         },
         {
           "type": "frame",
-          "id": "UjqT8",
+          "id": "deEkY",
           "name": "Content",
           "width": "fill_container",
           "height": "fill_container",
@@ -236919,24 +236796,35 @@
           "children": [
             {
               "type": "frame",
-              "id": "zDWSA",
+              "id": "d9eT6O",
               "name": "Brand Block",
-              "layout": "vertical",
+              "gap": 14,
               "alignItems": "center",
               "children": [
                 {
-                  "id": "ZwnP9",
+                  "id": "k0LQW",
                   "type": "ref",
                   "ref": "ZiNl0",
                   "name": "App Icon",
-                  "width": 152,
-                  "height": 152
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "uPi42",
+                  "name": "Wordmark Text",
+                  "fill": "$text-primary",
+                  "content": "Billetudo",
+                  "fontFamily": "$font-body",
+                  "fontSize": 44,
+                  "fontWeight": "800",
+                  "letterSpacing": -2
                 }
               ]
             },
             {
               "type": "frame",
-              "id": "ZaTXi",
+              "id": "ieQE4",
               "layoutPosition": "absolute",
               "x": 20,
               "y": 820,
@@ -236948,7 +236836,7 @@
               "children": [
                 {
                   "type": "ellipse",
-                  "id": "MczHm",
+                  "id": "S9uD1",
                   "name": "Loading Spinner",
                   "innerRadius": 0.82,
                   "startAngle": -90,
@@ -236959,7 +236847,7 @@
                 },
                 {
                   "type": "text",
-                  "id": "hTS4N",
+                  "id": "zUz1T",
                   "name": "Loading Caption",
                   "fill": "$text-secondary",
                   "content": "Cargando tus finanzas...",
@@ -236975,75 +236863,304 @@
     },
     {
       "type": "frame",
-      "id": "wS72E",
-      "x": 9270,
-      "y": 29062,
-      "name": "🔖 REVIEW MARKER — Splash Variante A",
+      "id": "qZvmL",
+      "x": 41310,
+      "y": 56268,
+      "name": "Sync Sheet — Confirmar Descartar (Claro)",
+      "context": "HOJA DE CONFIRMACION para 'Descartar' (tercer boton, estilo Delete Link, agregado bajo 'Registro tecnico'/'Reintentar' en r1qQYc — decision revertida sobre la #22 documentada ahi). APROBADA (claro). Se abre al tocar 'Descartar' desde la hoja de detalle de la operacion (r1qQYc) O directamente desde el Footer de una Sync Pending Row en la lista completa (rxUil) cuando `change.attempts >= 3` — MISMA hoja, sin variantes, para ambas superficies. Reusa XPjIZ (Sheet Icon Header) + Ot4yI (Sheet Buttons Row), mismo patron que Cuentas — Confirmar Eliminar (oymM5). Deja explicito: (a) la accion es irreversible, (b) borra SOLO el dato local de ESTA operacion especifica, no todos los datos del telefono.",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
       "width": 390,
-      "height": 34,
-      "fill": "#FF3B30",
-      "cornerRadius": 8,
-      "justifyContent": "center",
-      "alignItems": "center",
+      "height": 972,
+      "cornerRadius": 40,
+      "layout": "none",
       "children": [
         {
-          "type": "text",
-          "id": "l5WTp",
-          "name": "Label",
-          "fill": "#FFFFFF",
-          "content": "🔖 EN REVISION — Splash Variante A (iITru)",
-          "fontFamily": "$font-body",
-          "fontSize": 12,
-          "fontWeight": "700"
+          "id": "wYUXi",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Bottom Sheet",
+          "x": 0,
+          "y": 62,
+          "width": 390,
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "eVngi",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 16,
+              "padding": [
+                8,
+                4,
+                0,
+                4
+              ],
+              "children": [
+                {
+                  "id": "QjmBt",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$expense-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "triangle-alert",
+                      "fill": "$expense"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "¿Descartar este cambio?"
+                    },
+                    "FxD3p": {
+                      "content": "Esta acción no se puede deshacer. Solo se borra el dato local de este cambio — el resto de tu información en este teléfono no se toca."
+                    }
+                  }
+                },
+                {
+                  "id": "r12w4y",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Botones",
+                  "width": "fill_container",
+                  "descendants": {
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Descartar"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       ]
     },
     {
       "type": "frame",
-      "id": "qBm6h",
-      "x": 9710,
-      "y": 29062,
-      "name": "🔖 REVIEW MARKER — Splash Variante B",
+      "id": "bWaKR",
+      "x": 5500,
+      "y": 19570,
+      "name": "Auth — Conflicto de cuenta al iniciar sesión (Claro)",
+      "context": "Frame formal para ConfirmAccountConflictSheet (lib/features/auth/presentation/widgets/sheets/confirm_account_conflict_sheet.dart), HU-02/03 inverso de HU-04. Documenta lo YA implementado, no propone diseño nuevo. Diferencia intencional frente a su hermana j8ZdEx (Borrar Cuenta Paso 1): esta hoja es genuinamente bloqueante (enableDrag:false, isDismissible:false en código) — por eso NO lleva drag handle (Handle Wrap deshabilitado). Solo tema claro por ahora; el oscuro espera aprobación explícita del claro.",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
       "width": 390,
-      "height": 34,
-      "fill": "#FF3B30",
-      "cornerRadius": 8,
-      "justifyContent": "center",
-      "alignItems": "center",
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
       "children": [
         {
-          "type": "text",
-          "id": "zzmCL",
-          "name": "Label",
-          "fill": "#FFFFFF",
-          "content": "🔖 EN REVISION — Splash Variante B (QUsfN)",
-          "fontFamily": "$font-body",
-          "fontSize": 12,
-          "fontWeight": "700"
+          "id": "TK1X0",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "ZQT6F",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "G11HR": {
+              "enabled": false
+            },
+            "wJBMX": {
+              "type": "frame",
+              "id": "kmPWb",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "PnLGO",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$expense-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "triangle-alert",
+                      "fill": "$expense"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "Hay datos de otra cuenta en este dispositivo",
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán."
+                    }
+                  }
+                },
+                {
+                  "id": "A5Pgn",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Borrar y continuar"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       ]
     },
     {
       "type": "frame",
-      "id": "m64vs",
-      "x": 10150,
-      "y": 29062,
-      "name": "🔖 REVIEW MARKER — Splash Variante C",
+      "id": "zSzs7",
+      "x": 8740,
+      "y": 19570,
+      "name": "Auth — Conflicto de cuenta al iniciar sesión (Oscuro)",
+      "context": "Frame formal para ConfirmAccountConflictSheet (lib/features/auth/presentation/widgets/sheets/confirm_account_conflict_sheet.dart), HU-02/03 inverso de HU-04. Par oscuro de bWaKR (Claro, aprobado). Documenta lo YA implementado, no propone diseño nuevo. Diferencia intencional frente a su hermana QOJ74 (Borrar Cuenta Paso 1, Oscuro): esta hoja es genuinamente bloqueante (enableDrag:false, isDismissible:false en código) — por eso NO lleva drag handle (Handle Wrap deshabilitado).",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
       "width": 390,
-      "height": 34,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "njghU",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "Sh4jI",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay",
+          "width": "fill_container",
+          "height": "fill_container",
+          "descendants": {
+            "G11HR": {
+              "enabled": false
+            },
+            "wJBMX": {
+              "type": "frame",
+              "id": "UYOYo",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "nlmJ1",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "mv2jh": {
+                      "fill": "$expense-soft"
+                    },
+                    "IPjWU": {
+                      "icon": "triangle-alert",
+                      "fill": "$expense"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "Hay datos de otra cuenta en este dispositivo",
+                      "lineHeight": 1.3
+                    },
+                    "FxD3p": {
+                      "content": "Para continuar con esta cuenta, primero hay que borrar los datos de otra cuenta guardados en este dispositivo. Los cambios que no se hayan subido a la nube se perderán."
+                    }
+                  }
+                },
+                {
+                  "id": "lFDVd",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Cancelar"
+                    },
+                    "qfTBg": {
+                      "fill": "$expense"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "trash-2"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Borrar y continuar"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "nNxH9",
+      "x": 8740,
+      "y": 19420,
+      "name": "🔖 REVIEW MARKER — Conflicto de cuenta (Oscuro)",
+      "width": 390,
+      "height": 40,
       "fill": "#FF3B30",
       "cornerRadius": 8,
+      "layout": "vertical",
       "justifyContent": "center",
       "alignItems": "center",
       "children": [
         {
           "type": "text",
-          "id": "LzfLA",
-          "name": "Label",
+          "id": "W9KMz",
+          "name": "Badge Label",
           "fill": "#FFFFFF",
-          "content": "🔖 EN REVISION — Splash Variante C (hgDiK)",
-          "fontFamily": "$font-body",
-          "fontSize": 12,
+          "content": "🔖 EN REVISION — Conflicto de cuenta (zSzs7)",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 13,
           "fontWeight": "700"
         }
       ]

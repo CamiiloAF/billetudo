@@ -18,8 +18,7 @@ class MockSyncStatusCubit extends MockCubit<SyncStatusState>
 
 /// El detalle de un cambio trabado (`r1qQYc`). Prohibido aquí: códigos,
 /// nombres de tabla y timestamps ISO — esos viven solo en el registro técnico.
-/// Tampoco hay "Descartar": nada en este flujo destruye datos que solo existen
-/// en este teléfono.
+/// "Descartar" solo aparece cuando `change.attempts >= 3`.
 void main() {
   final now = DateTime.now();
 
@@ -52,6 +51,7 @@ void main() {
   setUp(() {
     cubit = MockSyncStatusCubit();
     when(() => cubit.retryOne(any())).thenAnswer((_) async {});
+    when(() => cubit.discard(any())).thenAnswer((_) async {});
     whenListen(
       cubit,
       const Stream<SyncStatusState>.empty(),
@@ -149,12 +149,62 @@ void main() {
     verify(() => cubit.retryOne('q-1')).called(1);
   });
 
-  testWidgets('no ofrece "Descartar" en ninguna variante', (tester) async {
-    await pumpSheet(tester, change(payload: const {'note': 'Café con Ana'}));
+  testWidgets('no ofrece "Descartar" con menos de 3 intentos', (tester) async {
+    await pumpSheet(tester, change(attempts: 2));
 
-    expect(find.textContaining('Descartar'), findsNothing);
-    expect(find.textContaining('Eliminar'), findsNothing);
-    expect(find.textContaining('Borrar'), findsNothing);
+    expect(find.text('Descartar'), findsNothing);
+  });
+
+  testWidgets('ofrece "Descartar" desde el intento número 3', (tester) async {
+    await pumpSheet(tester, change(attempts: 3));
+
+    expect(find.text('Descartar'), findsOneWidget);
+  });
+
+  Future<void> openViaShow(WidgetTester tester, PendingSyncChange value) =>
+      tester.pumpSyncWidget(
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () =>
+                PendingChangeDetailSheet.show(context, cubit, value),
+            child: const Text('abrir'),
+          ),
+        ),
+      );
+
+  testWidgets(
+      'tocar "Descartar" abre la confirmación; confirmar llama al caso de '
+      'uso con ESE id y cierra la hoja de detalle', (tester) async {
+    await openViaShow(tester, change(attempts: 3));
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(TextButton, 'Descartar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Descartar este cambio?'), findsOneWidget);
+
+    await tester.tap(find.text('Descartar').last);
+    await tester.pumpAndSettle();
+
+    verify(() => cubit.discard('q-1')).called(1);
+    expect(find.byType(PendingChangeDetailSheet), findsNothing);
+  });
+
+  testWidgets('cancelar la confirmación no descarta nada y vuelve al detalle',
+      (tester) async {
+    await openViaShow(tester, change(attempts: 3));
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(TextButton, 'Descartar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => cubit.discard(any()));
+    expect(find.byType(PendingChangeDetailSheet), findsOneWidget);
   });
 
   testWidgets('ofrece la entrada al registro técnico como acción secundaria',

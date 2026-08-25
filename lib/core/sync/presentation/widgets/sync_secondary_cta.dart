@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/spinning_icon.dart';
 
 /// The hero's low-weight CTA: `Button/Secondary` (`pNjOz`) kept **entirely
 /// neutral** — `$surface` fill, `$border` stroke, label and glyph in
@@ -21,6 +22,7 @@ class SyncSecondaryCta extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.enabled = true,
+    this.spinning = false,
     super.key,
   });
 
@@ -29,6 +31,10 @@ class SyncSecondaryCta extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final bool enabled;
+
+  /// Whether [icon] is the "in progress" glyph and should spin — never true
+  /// for the button's normal, static icon.
+  final bool spinning;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +59,12 @@ class SyncSecondaryCta extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: foreground),
+              SpinningIcon(
+                icon: icon,
+                spinning: spinning,
+                size: 18,
+                color: foreground,
+              ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

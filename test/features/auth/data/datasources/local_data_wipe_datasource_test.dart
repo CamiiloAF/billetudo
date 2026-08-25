@@ -1,13 +1,32 @@
 import 'dart:io';
 
+import 'package:billetudo/core/crash/crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/database/database_connection.dart';
+import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/sync/data/models/sync_retry_record.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_log_repository.dart';
+import 'package:billetudo/core/sync/domain/repositories/sync_quarantine_repository.dart';
 import 'package:billetudo/features/auth/data/datasources/local_data_wipe_datasource.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:powersync/powersync.dart' show PowerSyncDatabase;
 
+import '../../../../support/fake_sync_retry_ledger_store.dart';
+
+class MockCrashReporter extends Mock implements CrashReporter {}
+
+class MockSyncQuarantineRepository extends Mock
+    implements SyncQuarantineRepository {}
+
+class MockSyncLogRepository extends Mock implements SyncLogRepository {}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(const DatabaseFailure('fallback'));
+  });
+
   // Deliberately a real `PowerSyncDatabase` (with Drift on top of it), not a
   // `NativeDatabase`: the whole point of this datasource is what happens to
   // PowerSync's upload queue, which only exists on the real views/triggers.
@@ -15,6 +34,10 @@ void main() {
   late Directory tempDir;
   late PowerSyncDatabase powerSync;
   late AppDatabase db;
+  late MockSyncQuarantineRepository quarantine;
+  late FakeSyncRetryLedgerStore retryLedger;
+  late MockSyncLogRepository log;
+  late MockCrashReporter crashReporter;
   late LocalDataWipeDatasource datasource;
 
   setUp(() async {
@@ -25,7 +48,31 @@ void main() {
       path: p.join(tempDir.path, 'test.sqlite'),
     );
     db = AppDatabase(driftConnection(powerSync));
-    datasource = LocalDataWipeDatasource(powerSync);
+    quarantine = MockSyncQuarantineRepository();
+    retryLedger = FakeSyncRetryLedgerStore();
+    log = MockSyncLogRepository();
+    crashReporter = MockCrashReporter();
+    when(() => quarantine.clearAll())
+        .thenAnswer((_) async => const Right(unit));
+    when(() => log.clear()).thenAnswer((_) async => const Right(unit));
+    when(
+      () => crashReporter.recordFailure(any(), context: any(named: 'context')),
+    ).thenAnswer((_) async {});
+    when(
+      () => crashReporter.recordError(
+        any(),
+        any(),
+        context: any(named: 'context'),
+        fatal: any(named: 'fatal'),
+      ),
+    ).thenAnswer((_) async {});
+    datasource = LocalDataWipeDatasource(
+      powerSync,
+      quarantine,
+      retryLedger,
+      log,
+      crashReporter,
+    );
   });
 
   tearDown(() async {
@@ -65,4 +112,65 @@ void main() {
       reason: 'un DELETE encolado se sube al volver a entrar y borra la nube',
     );
   });
+
+  test('también limpia la cuarentena de sync', () async {
+    await datasource.wipeAll();
+
+    verify(() => quarantine.clearAll()).called(1);
+  });
+
+  test('también limpia el ledger de reintentos de sync', () async {
+    final now = DateTime(2026, 8, 21);
+    retryLedger.seed(
+      SyncRetryRecord(
+        key: 'accounts#abc#patch',
+        attempts: 3,
+        firstFailureAt: now,
+        lastFailureAt: now,
+      ),
+    );
+
+    await datasource.wipeAll();
+
+    expect(retryLedger.records, isEmpty);
+  });
+
+  test('también limpia el log local de sync', () async {
+    await datasource.wipeAll();
+
+    verify(() => log.clear()).called(1);
+  });
+
+  test(
+    'no lanza y reporta al crash reporter si limpiar la cuarentena falla',
+    () async {
+      const failure = DatabaseFailure('boom');
+      when(() => quarantine.clearAll())
+          .thenAnswer((_) async => const Left(failure));
+
+      await datasource.wipeAll();
+
+      verify(
+        () => crashReporter.recordFailure(failure,
+            context: any(named: 'context')),
+      ).called(1);
+    },
+  );
+
+  test(
+    'no lanza y reporta al crash reporter si limpiar el ledger de reintentos falla',
+    () async {
+      retryLedger.removeAllError = Exception('boom');
+
+      await datasource.wipeAll();
+
+      verify(
+        () => crashReporter.recordError(
+          any(),
+          any(),
+          context: any(named: 'context'),
+        ),
+      ).called(1);
+    },
+  );
 }

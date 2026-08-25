@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/sync/domain/entities/quarantined_operation.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_failure_kind.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_operation.dart';
@@ -11,6 +12,7 @@ import 'package:billetudo/core/sync/presentation/models/pending_sync_change.dart
 import 'package:billetudo/core/sync/presentation/pages/sync_status_page.dart';
 import 'package:billetudo/core/sync/presentation/widgets/sync_pending_row.dart';
 import 'package:billetudo/core/sync/presentation/widgets/sync_skeleton_row.dart';
+import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -369,6 +371,192 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Ver detalle'), findsOneWidget);
+
+      // Let `_onRetryOutcome`'s own auto-hide `Timer` fire before teardown —
+      // otherwise the test binding flags it as a leaked pending timer.
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('parcial: el snackbar se cierra solo tras su duración '
+        'por defecto', (tester) async {
+      final controller = StreamController<SyncStatusState>();
+      addTearDown(controller.close);
+      await pumpPage(
+        tester,
+        initial: state(syncState: SyncState.stalled, pending: 2),
+        stream: controller.stream,
+      );
+
+      controller.add(
+        SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: const SyncStatusSnapshot(
+            state: SyncState.stalled,
+            quarantinedCount: 2,
+          ),
+          pending: [change(0), change(1)],
+          retryOutcome: SyncRetryOutcome.partial,
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsOneWidget,
+      );
+
+      // A `SnackBar` with a `SnackBarAction` (this one has "Ver detalle")
+      // does not auto-hide itself on the Flutter version this app builds
+      // against — confirmed against a bare `MaterialApp`/`SnackBarAction`
+      // reproduction with none of this app's code involved. `_onRetryOutcome`
+      // works around it with its own `Timer` calling `controller.close()`;
+      // this asserts that workaround actually fires, past its 4s deadline.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'parcial dos veces seguidas: el timer del primero no revienta al '
+        'disparar sobre el snackbar del segundo', (tester) async {
+      final controller = StreamController<SyncStatusState>();
+      addTearDown(controller.close);
+      await pumpPage(
+        tester,
+        initial: state(syncState: SyncState.stalled, pending: 2),
+        stream: controller.stream,
+      );
+
+      final partial = SyncStatusState(
+        status: SyncStatusStatus.ready,
+        snapshot: const SyncStatusSnapshot(
+          state: SyncState.stalled,
+          quarantinedCount: 2,
+        ),
+        pending: [change(0), change(1)],
+        retryOutcome: SyncRetryOutcome.partial,
+      );
+
+      // First partial outcome: schedules a `Timer` to auto-close its
+      // snackbar in 4s.
+      controller.add(partial);
+      await tester.pump();
+      await tester.pump();
+
+      // A second partial outcome lands well before that `Timer` fires — the
+      // real logcat showed bursts of retries seconds apart. This calls
+      // `hideCurrentSnackBar()` again, replacing the first snackbar before
+      // its own `Timer` ever gets to run. `retryOutcome` has to actually
+      // change for `listenWhen` to fire the listener again — mirroring how
+      // the real `SyncStatusCubit` resets it to `none` via
+      // `acknowledgeRetryOutcome()` after every emission.
+      await tester.pump(const Duration(seconds: 1));
+      controller.add(
+        SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: const SyncStatusSnapshot(
+            state: SyncState.stalled,
+            quarantinedCount: 2,
+          ),
+          pending: [change(0), change(1)],
+        ),
+      );
+      await tester.pump();
+      controller.add(partial);
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsOneWidget,
+      );
+
+      // Let both timers run their course — the first one's `controller`
+      // no longer points at the active snackbar by the time it fires.
+      // Before the fix this threw `Bad state: No element` from inside
+      // `ScaffoldMessengerState.showSnackBar`'s internal `close` closure;
+      // reaching `pumpAndSettle()` without throwing is the assertion.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('parcial: el snackbar se cierra solo aunque se vuelva atrás '
+        'antes de los 4s', (tester) async {
+      final controller = StreamController<SyncStatusState>();
+      addTearDown(controller.close);
+      final navigatorKey = GlobalKey<NavigatorState>();
+
+      // `SyncStatusPage` is pushed as a route on top of a placeholder, the
+      // way the real router does it — its `ScaffoldMessenger` lives above
+      // the `Navigator` (`MaterialApp` inserts it there by default) and must
+      // outlive the page that triggered the snackbar.
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navigatorKey,
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SizedBox.shrink()),
+        ),
+      );
+
+      whenListen(cubit, controller.stream, initialState: state(pending: 2));
+      unawaited(
+        navigatorKey.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider<SyncStatusCubit>.value(
+              value: cubit,
+              child: SyncStatusPage(
+                isSignedIn: true,
+                onSaveCopy: () {},
+                onSignIn: () {},
+                onSeeAllPending: () {},
+                onOpenComingSoon: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      controller.add(
+        SyncStatusState(
+          status: SyncStatusStatus.ready,
+          snapshot: const SyncStatusSnapshot(
+            state: SyncState.stalled,
+            quarantinedCount: 2,
+          ),
+          pending: [change(0), change(1)],
+          retryOutcome: SyncRetryOutcome.partial,
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsOneWidget,
+      );
+
+      // Navigate back before the auto-hide `Timer` fires — `SyncStatusPage`
+      // unmounts, but the `ScaffoldMessenger` above the `Navigator` (and its
+      // snackbar) survives the pop.
+      navigatorKey.currentState!.pop();
+      await tester.pumpAndSettle();
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('No se pudo subir todo. Sigue guardado en este teléfono.'),
+        findsNothing,
+      );
     });
   });
 

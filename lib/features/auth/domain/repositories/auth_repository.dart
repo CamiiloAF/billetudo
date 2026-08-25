@@ -2,6 +2,7 @@ import '../../../../core/error/result.dart';
 import '../entities/auth_session.dart';
 import '../entities/auth_user.dart';
 import '../entities/merge_summary.dart';
+import '../entities/sign_in_outcome.dart';
 
 /// Contract the Auth feature depends on.
 ///
@@ -21,14 +22,39 @@ abstract class AuthRepository {
   AuthSession get currentSession;
 
   /// HU-02: Google sign-in, available on Android and iOS.
-  FutureResult<AuthUser> signInWithGoogle();
+  ///
+  /// If this device already holds local data owned by a different account,
+  /// the Supabase token exchange still runs, but the sign-in is **not**
+  /// completed: [AccountConflictDetected] is returned, [currentSession] keeps
+  /// reporting [AuthSession.signedOut], and PowerSync stays disconnected
+  /// until the caller resolves it via [resolveAccountConflict] or
+  /// [cancelAccountConflict].
+  FutureResult<SignInOutcome> signInWithGoogle();
 
-  /// HU-03: Sign in with Apple, iOS only.
-  FutureResult<AuthUser> signInWithApple();
+  /// HU-03: Sign in with Apple, iOS only. See [signInWithGoogle] for the
+  /// account-conflict behavior, identical for both providers.
+  FutureResult<SignInOutcome> signInWithApple();
 
   /// HU-04: folds this device's local data into the just-authenticated
   /// account and reports what was folded in.
   FutureResult<MergeSummary> mergeLocalData();
+
+  /// Resolves an [AccountConflictDetected] outcome by wiping every local row
+  /// on this device (same scope as [wipeLocalData]) and then completing the
+  /// sign-in that was held back: [currentSession] becomes signed-in,
+  /// PowerSync connects, and this device counts as ever-signed-in.
+  ///
+  /// Must only be called with a pending conflict from [signInWithGoogle] or
+  /// [signInWithApple]; the caller is the confirmation sheet's "borrar y
+  /// continuar" action, never triggered by anything preselected.
+  FutureResult<AuthUser> resolveAccountConflict();
+
+  /// Resolves an [AccountConflictDetected] outcome by closing everything the
+  /// sign-in attempt opened — the just-exchanged Supabase session, the
+  /// cached Google/Apple credential, and PowerSync — **without** touching
+  /// this device's existing local data and without ever completing the
+  /// sign-in. [currentSession] stays/returns to [AuthSession.signedOut].
+  FutureResult<Unit> cancelAccountConflict();
 
   /// HU-06: stops sync on this device. Local data is untouched.
   FutureResult<Unit> signOut();

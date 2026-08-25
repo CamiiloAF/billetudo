@@ -4,12 +4,15 @@ import 'package:powersync/powersync.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/auth/data/datasources/local_data_ownership_datasource.dart';
 import '../config/env.dart';
 import '../crash/crash_reporter.dart';
 import '../crash/noop_crash_reporter.dart';
 import '../crash/sentry_crash_reporter.dart';
 import '../database/app_database.dart';
 import '../database/database_connection.dart' as db_connection;
+import '../sync/data/datasources/data_ownership_claimer.dart';
+import '../sync/domain/repositories/backup_id_collision_resolver.dart';
 
 /// Registers third-party dependencies, and any whose construction logic
 /// injectable cannot infer from an annotation on the class itself.
@@ -58,4 +61,24 @@ abstract class RegisterModule {
   /// `configureDependencies()` synchronous like the rest of the graph.
   @lazySingleton
   SharedPreferencesAsync sharedPreferencesAsync() => SharedPreferencesAsync();
+
+  /// `LocalDataOwnershipDatasource` implements two domain interfaces —
+  /// `DataOwnershipClaimer` (HU-04's post-login claim) and
+  /// `BackupIdCollisionResolver` (restoring a backup across two Supabase
+  /// accounts) — but injectable's `@LazySingleton(as: X)` binds only one
+  /// abstract type per class annotation, so it is registered as itself
+  /// there and exposed under each interface here instead. Both getters
+  /// receive the exact same singleton instance (`@lazySingleton` on the
+  /// class itself caches it in `GetIt`), never two separate ones.
+  @lazySingleton
+  DataOwnershipClaimer dataOwnershipClaimer(
+    LocalDataOwnershipDatasource datasource,
+  ) =>
+      datasource;
+
+  @lazySingleton
+  BackupIdCollisionResolver backupIdCollisionResolver(
+    LocalDataOwnershipDatasource datasource,
+  ) =>
+      datasource;
 }
