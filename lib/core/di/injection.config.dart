@@ -152,6 +152,50 @@ import 'package:billetudo/features/accounts/presentation/cubit/adjust_balance_cu
     as _i1059;
 import 'package:billetudo/features/accounts/presentation/cubit/archived_accounts_cubit.dart'
     as _i958;
+import 'package:billetudo/features/ai/data/datasources/ai_history_local_datasource.dart'
+    as _i981;
+import 'package:billetudo/features/ai/data/datasources/ai_remote_datasource.dart'
+    as _i636;
+import 'package:billetudo/features/ai/data/datasources/ai_report_remote_datasource.dart'
+    as _i827;
+import 'package:billetudo/features/ai/data/repositories/ai_history_repository_impl.dart'
+    as _i99;
+import 'package:billetudo/features/ai/data/repositories/ai_report_repository_impl.dart'
+    as _i166;
+import 'package:billetudo/features/ai/data/repositories/ai_repository_impl.dart'
+    as _i181;
+import 'package:billetudo/features/ai/domain/repositories/ai_history_repository.dart'
+    as _i179;
+import 'package:billetudo/features/ai/domain/repositories/ai_report_repository.dart'
+    as _i826;
+import 'package:billetudo/features/ai/domain/repositories/ai_repository.dart'
+    as _i526;
+import 'package:billetudo/features/ai/domain/usecases/append_ai_message.dart'
+    as _i782;
+import 'package:billetudo/features/ai/domain/usecases/build_financial_snapshot.dart'
+    as _i5;
+import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart'
+    as _i699;
+import 'package:billetudo/features/ai/domain/usecases/clear_ai_history.dart'
+    as _i11;
+import 'package:billetudo/features/ai/domain/usecases/clear_all_ai_history.dart'
+    as _i562;
+import 'package:billetudo/features/ai/domain/usecases/execute_ai_action.dart'
+    as _i455;
+import 'package:billetudo/features/ai/domain/usecases/report_ai_message.dart'
+    as _i494;
+import 'package:billetudo/features/ai/domain/usecases/resolve_ai_tool_call.dart'
+    as _i1057;
+import 'package:billetudo/features/ai/domain/usecases/send_ai_turn.dart'
+    as _i598;
+import 'package:billetudo/features/ai/domain/usecases/start_new_ai_conversation.dart'
+    as _i196;
+import 'package:billetudo/features/ai/domain/usecases/update_ai_proposal_status.dart'
+    as _i723;
+import 'package:billetudo/features/ai/domain/usecases/watch_ai_conversations.dart'
+    as _i1039;
+import 'package:billetudo/features/ai/domain/usecases/watch_ai_messages.dart'
+    as _i817;
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
     as _i22;
 import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart'
@@ -847,6 +891,10 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i200.BackupIdCollisionDatasource>(
         () => _i200.BackupIdCollisionDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i636.AiRemoteDatasource>(
+        () => _i636.AiRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i827.AiReportRemoteDatasource>(
+        () => _i827.AiReportRemoteDatasource(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i226.SeedCategoryOwnershipRemoteDatasource>(() =>
         _i226.SeedCategoryOwnershipRemoteDatasource(
             gh<_i454.SupabaseClient>()));
@@ -874,6 +922,8 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i407.ThemeModeCubit>(
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
+    gh.lazySingleton<_i826.AiReportRepository>(() =>
+        _i166.AiReportRepositoryImpl(gh<_i827.AiReportRemoteDatasource>()));
     gh.lazySingleton<_i967.DataOwnershipClaimer>(() => registerModule
         .dataOwnershipClaimer(gh<_i718.LocalDataOwnershipDatasource>()));
     gh.lazySingleton<_i765.BackupIdCollisionResolver>(() => registerModule
@@ -890,6 +940,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1034.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
     gh.lazySingleton<_i533.AccountsLocalDatasource>(
         () => _i533.AccountsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i981.AiHistoryLocalDatasource>(
+        () => _i981.AiHistoryLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i959.LocalDataConflictDatasource>(
         () => _i959.LocalDataConflictDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i835.LocalDataSummaryDatasource>(
@@ -941,6 +993,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i276.ScheduledPaymentTagsLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.lazySingleton<_i526.AiRepository>(() => _i181.AiRepositoryImpl(
+          gh<_i636.AiRemoteDatasource>(),
+          gh<_i474.CrashReporter>(),
+        ));
     gh.factory<_i192.DiscardAllQuarantinedOperations>(() =>
         _i192.DiscardAllQuarantinedOperations(
             gh<_i400.SyncQuarantineRepository>()));
@@ -971,6 +1027,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i799.ImportDestinationsLocalDatasource>(),
           gh<_i545.ImportBatchesLocalDatasource>(),
         ));
+    gh.lazySingleton<_i179.AiHistoryRepository>(
+        () => _i99.AiHistoryRepositoryImpl(
+              gh<_i981.AiHistoryLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i776.ReportsRepository>(() => _i324.ReportsRepositoryImpl(
           gh<_i584.ReportsLocalDatasource>(),
           gh<_i323.ResolveEffectiveDateRange>(),
@@ -1136,6 +1197,20 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i315.CategoryFilterCubit>(
         () => _i315.CategoryFilterCubit(gh<_i722.WatchCategories>()));
+    gh.factory<_i782.AppendAiMessage>(
+        () => _i782.AppendAiMessage(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i11.ClearAiHistory>(
+        () => _i11.ClearAiHistory(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i562.ClearAllAiHistory>(
+        () => _i562.ClearAllAiHistory(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i196.StartNewAiConversation>(
+        () => _i196.StartNewAiConversation(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i723.UpdateAiProposalStatus>(
+        () => _i723.UpdateAiProposalStatus(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i1039.WatchAiConversations>(
+        () => _i1039.WatchAiConversations(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i817.WatchAiMessages>(
+        () => _i817.WatchAiMessages(gh<_i179.AiHistoryRepository>()));
     gh.factory<_i304.CategoryQuickPickerCubit>(
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),
@@ -1190,12 +1265,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i785.SetQuickAccessOrder(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i636.SetZeroBasedEnabled>(
         () => _i636.SetZeroBasedEnabled(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i494.ReportAiMessage>(
+        () => _i494.ReportAiMessage(gh<_i826.AiReportRepository>()));
     gh.factory<_i569.CreateGoalQuickAmount>(() =>
         _i569.CreateGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
     gh.factory<_i1040.DeleteGoalQuickAmount>(() =>
         _i1040.DeleteGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
     gh.factory<_i492.WatchGoalQuickAmounts>(() =>
         _i492.WatchGoalQuickAmounts(gh<_i34.GoalQuickAmountsRepository>()));
+    gh.factory<_i699.CheckAiAccess>(
+        () => _i699.CheckAiAccess(gh<_i526.AiRepository>()));
+    gh.factory<_i598.SendAiTurn>(
+        () => _i598.SendAiTurn(gh<_i526.AiRepository>()));
     gh.lazySingleton<_i932.DebtRepository>(() => _i454.DebtRepositoryImpl(
           gh<_i907.DebtsLocalDatasource>(),
           gh<_i1013.DebtBalanceCalculator>(),
@@ -1579,6 +1660,14 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i613.ReconcileBudgetScopes>(),
           gh<_i241.WatchFeaturedBudgetProgress>(),
         ));
+    gh.factory<_i455.ExecuteAiAction>(() => _i455.ExecuteAiAction(
+          gh<_i526.CreateBudget>(),
+          gh<_i97.CreateGoal>(),
+          gh<_i885.CreateCategory>(),
+          gh<_i990.CreateTransaction>(),
+          gh<_i382.GetCategory>(),
+          gh<_i1067.AccountRepository>(),
+        ));
     gh.factory<_i152.ShouldShowOnboarding>(() => _i152.ShouldShowOnboarding(
           gh<_i487.AppSettingsRepository>(),
           gh<_i1067.AccountRepository>(),
@@ -1657,6 +1746,15 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i781.HasSeenTutorial>(),
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
+        ));
+    gh.factory<_i1057.ResolveAiToolCall>(() => _i1057.ResolveAiToolCall(
+          gh<_i832.WatchTransactions>(),
+          gh<_i645.WatchCategoryBreakdownReport>(),
+          gh<_i137.WatchCashflowReport>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i678.WatchGoalDetail>(),
         ));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
@@ -1775,6 +1873,18 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i636.DeleteScheduledPayment>(),
               gh<_i837.WatchAccounts>(),
             ));
+    gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
+          gh<_i837.WatchAccounts>(),
+          gh<_i902.WatchAccountsOverview>(),
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i458.GetZeroBasedSummary>(),
+          gh<_i529.WatchGoals>(),
+          gh<_i42.WatchDebts>(),
+          gh<_i645.WatchCategoryBreakdownReport>(),
+          gh<_i137.WatchCashflowReport>(),
+          gh<_i265.GetScheduledPayments>(),
+          gh<_i450.ProjectUpcomingOccurrences>(),
+        ));
     gh.factory<_i502.AccountDetailCubit>(() => _i502.AccountDetailCubit(
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
