@@ -93,15 +93,30 @@ Future<void> _linkAccount(PatrolIntegrationTester $, String accountName) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Picks the goal form's target date (HU-01, optional): opens the selector
-/// and confirms the sheet's own default selection (today + 30 days) without
-/// navigating the calendar — this suite never asserts a specific date, only
-/// that a target date can be set at all.
+/// Picks a target date on the goal form's `DatePickerSheet` (HU-01,
+/// optional): opens the selector, jumps to next month and taps day 20, then
+/// confirms — this suite never asserts a specific date, only that a target
+/// date can be set at all.
+///
+/// Not a tap on "Confirmar" alone: `DatePickerSheet`'s own doc comment says
+/// explicitly "no day highlighted, and 'Confirmar' stays disabled until the
+/// user taps one" when opened with no `initialDate` (always true for a new
+/// goal) — there is no pre-selected default despite what this helper used to
+/// assume. Skipping the day tap leaves the disabled "Confirmar" button doing
+/// nothing and the sheet stuck open, silently blocking every tap this
+/// scenario makes afterwards (including "Crear meta") — verified against a
+/// real emulator run. Next month (not today) because the target date must be
+/// strictly after today (`goalFormErrorTargetDatePast`), and `disabledBefore:
+/// clock.now()` may disable today's own cell.
 Future<void> _pickDefaultTargetDate(PatrolIntegrationTester $) async {
   // The tappable surface is the `GoalSelectorBox`'s own hint text, not the
   // plain `GoalFieldLabel` above it ("Fecha objetivo (opcional)") — that
   // label has no `onTap` of its own.
   await $.tester.tap(find.text('Elegir una fecha posterior a hoy'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Mes siguiente'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('20'));
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.text('Confirmar'));
   await $.tester.pumpAndSettle();
@@ -176,6 +191,23 @@ Future<void> _dismissMilestoneSheet(PatrolIntegrationTester $) async {
 /// Opens the detail's `⋮` "Más acciones" sheet.
 Future<void> _openActionsMenu(PatrolIntegrationTester $) async {
   await $.tester.tap(find.byTooltip('Más acciones'));
+  await $.tester.pumpAndSettle();
+}
+
+/// Drags the nearest `Scrollable` until [finder] is on screen — the goal
+/// detail is a plain `ListView` (`goal_detail_page.dart`), so the
+/// "Movimientos (N)" section below the hero can be discarded by the sliver's
+/// cache extent, same reasoning `debts_patrol_test.dart`'s own
+/// `_scrollUntilVisible` documents.
+Future<void> _scrollUntilVisible(
+  PatrolIntegrationTester $,
+  Finder finder,
+) async {
+  await $.tester.dragUntilVisible(
+    finder,
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
   await $.tester.pumpAndSettle();
 }
 
@@ -261,8 +293,11 @@ void main() {
       await _dismissMilestoneSheet($);
 
       // Progress reflects the aporte: $700.000 left, one "Aporte" movement of
-      // "+$300.000".
+      // "+$300.000". The movements section sits below the fold, so scroll to
+      // it first (same `ListView` cache-extent caveat as
+      // `debts_patrol_test.dart`'s own `_scrollUntilVisible`).
       expect(find.text(r'Te faltan $700.000'), findsOneWidget);
+      await _scrollUntilVisible($, find.text('Movimientos (1)'));
       expect(find.text('Movimientos (1)'), findsOneWidget);
       expect(find.text('Aporte'), findsOneWidget);
       expect(find.text(r'+$300.000'), findsOneWidget);
@@ -310,6 +345,7 @@ void main() {
       // $300.000 saved of $1.000.000 => $700.000 remaining. No new milestone
       // sheet: 30% never exceeds the already-celebrated 50%.
       expect(find.text(r'Te faltan $700.000'), findsOneWidget);
+      await _scrollUntilVisible($, find.text('Movimientos (2)'));
       expect(find.text('Movimientos (2)'), findsOneWidget);
       expect(find.text('Retiro'), findsOneWidget);
       expect(find.text(r'−$200.000'), findsOneWidget);
@@ -444,7 +480,10 @@ void main() {
 
       await _openOnlyGoal($);
       await _openActionsMenu($);
-      await $.tester.tap(find.text('Eliminar'));
+      // The ⋮ menu row is "Eliminar meta" (`goalActionDeleteLabel`), not the
+      // bare "Eliminar" the confirm sheet's own CTA uses (`commonDelete`) —
+      // this test used to assume they were the same label.
+      await $.tester.tap(find.text('Eliminar meta'));
       await $.tester.pumpAndSettle();
 
       // Reversible papelera copy (HU-10), never a punitive tone. Cancel path
@@ -455,7 +494,7 @@ void main() {
       expect(find.text('Meta a borrar'), findsOneWidget);
 
       await _openActionsMenu($);
-      await $.tester.tap(find.text('Eliminar'));
+      await $.tester.tap(find.text('Eliminar meta'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Eliminar'));
       // Delete, the auto-pop back to the list, and the Drift stream removing

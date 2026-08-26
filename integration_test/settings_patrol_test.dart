@@ -53,6 +53,21 @@ Future<void> _openSettings(PatrolIntegrationTester $) async {
   await _pumpUntilFound($, masTab);
   await $.tester.tap(masTab);
   await $.tester.pumpAndSettle();
+  // "Ajustes" is `MorePage`'s last row before "Cerrar sesión" (8th of 8,
+  // each with an icon, a bold label and a description line — tall enough
+  // that a phone screen shows only the first 5-6 without scrolling).
+  // `MorePage`'s `ListView` is a plain one (`ListView(children: [...])`,
+  // not `.builder`), but its underlying sliver still discards elements
+  // that scroll far enough outside the cache extent, so tapping "Ajustes"
+  // without scrolling to it first fails with "Found 0 widgets", not a
+  // hit-test miss — same bug already fixed in `auth_patrol_test.dart`'s
+  // `_openSettings`.
+  await $.tester.dragUntilVisible(
+    find.text('Ajustes'),
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
+  await $.tester.pumpAndSettle();
   await $.tester.tap(find.text('Ajustes'));
   await $.tester.pumpAndSettle();
 }

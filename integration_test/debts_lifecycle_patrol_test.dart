@@ -44,9 +44,22 @@ void _goToDebts(PatrolIntegrationTester $) {
   unawaited(GoRouter.of(context).push(AppRoutes.debts));
 }
 
+/// Taps "Agregar deuda" and waits for `DebtAmountHeroField` to actually
+/// mount, retrying the tap (bounded) instead of trusting a single one: the
+/// same intermittent real-tap-miss flakiness already documented for
+/// `accounts_patrol_test.dart`'s day picker and
+/// `debts_installment_patrol_test.dart`'s `_enterKeypadAmount` — without
+/// this, a missed tap surfaces two/three steps later as a confusing "Bad
+/// state: No element" out of `_enterHeroAmount`'s `enterText`, not a clear
+/// "tooltip not found" — verified against a real emulator run.
 Future<void> _openNewDebtForm(PatrolIntegrationTester $) async {
-  await $.tester.tap(find.byTooltip('Agregar deuda'));
-  await $.tester.pumpAndSettle();
+  final heroField = find.byType(DebtAmountHeroField);
+  for (var attempt = 0;
+      attempt < 3 && heroField.evaluate().isEmpty;
+      attempt++) {
+    await $.tester.tap(find.byTooltip('Agregar deuda'));
+    await $.tester.pumpAndSettle();
+  }
 }
 
 Future<void> _enterHeroAmount(PatrolIntegrationTester $, String value) async {
@@ -99,6 +112,21 @@ Future<void> _createDebt(
   await _enterDebtName($, name);
   await $.tester.tap(find.text('Crear deuda'));
   await $.tester.pumpAndSettle();
+  // `DebtFormCubit.submit`'s own doc comment: "Create: always offer the
+  // registro inicial when there is a positive opening figure ... whether or
+  // not there is an account yet" — every debt in this file has a positive
+  // opening figure, so "Crear deuda" always opens the registro-inicial
+  // sheet now, even with zero accounts (previously it only appeared with at
+  // least one). None of this file's scenarios exercise a cash movement, so
+  // dismiss it with "No, solo la deuda" — skipping this used to leave the
+  // debt uncreated and the sheet blocking every widget behind it, surfacing
+  // as "Found 0 widgets with type DebtCard" on the very next tap — verified
+  // against a real emulator run.
+  if (find.text('No, solo la deuda').evaluate().isNotEmpty) {
+    await $.tester.tap(find.text('No, solo la deuda'));
+    await $.tester.pump(const Duration(milliseconds: 500));
+    await $.tester.pumpAndSettle();
+  }
 }
 
 /// Opens the only `DebtCard` on the current tab. Only safe when exactly one

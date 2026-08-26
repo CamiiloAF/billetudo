@@ -62,6 +62,14 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.tap(_saveAccountButton);
       await $.tester.pumpAndSettle();
+      // The account write, the form pop, and the bridge's own continuation
+      // into the transaction form are separate async hops; `pumpAndSettle`
+      // alone can race the DB round trip and briefly still show
+      // `AccountFormPage` — same reasoning as `accounts_patrol_test.dart`'s
+      // HU-08 bounded pump before asserting a stream-driven change — verified
+      // against a real emulator run.
+      await $.tester.pump(const Duration(milliseconds: 500));
+      await $.tester.pumpAndSettle();
 
       // HU-01: no transition screen, no bounce back to Home — the original
       // action (the new-transaction form) opens directly, with the
