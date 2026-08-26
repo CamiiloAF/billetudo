@@ -6,6 +6,12 @@
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
 // must be mirrored here by hand** (see `drift-migration-helper`).
 //
+// One table here is NOT synced: `ai_messages`, declared with
+// `Table.localOnly` at the bottom. It is still declared in this schema because
+// PowerSync — not Drift — owns the physical storage of every table this app
+// reads through, local-only ones included. See its comment for why the AI
+// conversation never leaves the device.
+//
 // `id` is never declared as a column: PowerSync manages it implicitly for
 // every table (`Table.validate()` rejects a custom `id` column).
 //
@@ -270,6 +276,12 @@ const powerSyncSchema = Schema([
     // `QuickAccessItem.name` values (schemaVersion 27). Null falls back to
     // the fixed default order. See AppSettings.quickAccessOrder.
     Column.text('quick_access_order'),
+    // Consent to send data to a third-party AI model (schemaVersion 30, Apple
+    // 5.1.2(i)). Epoch SECONDS like every Drift DateTimeColumn, so `bigint` in
+    // Postgres — never `timestamptz` (see the type note at the top of this
+    // file). Nullable = not consented yet / withdrawn; never backfilled. See
+    // AppSettings.aiConsentAcceptedAt.
+    Column.integer('ai_consent_accepted_at'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has
@@ -292,5 +304,37 @@ const powerSyncSchema = Schema([
     Column.integer('rows_skipped'),
     Column.integer('reverted_at'),
     ..._syncColumns,
+  ]),
+  // AI assistant chat history (schemaVersion 30). **The only local-only table
+  // in this schema**, and the reason it exists as one is privacy, not
+  // convenience: the conversation is the most sensitive text this app holds,
+  // so it must never reach Postgres, the database backups, or the deletion
+  // duties of `delete_account_data` (HU-07). `Table.localOnly` backs it with a
+  // real local table (`ps_data_local__ai_messages`) whose writes are never
+  // recorded in `ps_crud`, so there is structurally nothing to upload — see
+  // `AiMessages` in `app_database.dart`.
+  //
+  // Consequences of local-only, both intended:
+  //  - No `_syncColumns` here (no `user_id`, `deleted_at`, `tombstoned_at`);
+  //    the Drift table carries none of them either.
+  //  - `PowerSyncDatabase.disconnectAndClear()` DOES empty this table, because
+  //    `clearLocal` defaults to `true` ("To preserve data in local-only
+  //    tables, set clearLocal to false"). `LocalDataWipeDatasource.wipeAll`
+  //    relies on exactly that.
+  //
+  // No `Index`: Fase A holds hundreds of rows at most, and every read is
+  // either "the current conversation, ordered by created_at" or a full-table
+  // sweep — a scan at that size is cheaper than the index it would maintain.
+  // Add one here (never with a Drift `CREATE INDEX`, which fails against a
+  // PowerSync view) if the history ever grows by an order of magnitude.
+  Table.localOnly('ai_messages', [
+    Column.text('conversation_id'),
+    Column.text('role'),
+    Column.text('content'),
+    // Epoch MILLIS (not seconds): a Drift IntColumn, not a DateTimeColumn.
+    // Local-only, so there is no Postgres counterpart to keep in step.
+    Column.integer('created_at'),
+    Column.text('status'),
+    Column.text('proposals_json'),
   ]),
 ]);

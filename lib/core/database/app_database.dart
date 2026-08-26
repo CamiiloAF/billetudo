@@ -822,6 +822,23 @@ class AppSettings extends Table with _SyncColumns {
   /// one). Stored as free text rather than `textEnum` because it holds a
   /// *list*, not a single enum value.
   TextColumn get quickAccessOrder => text().nullable()();
+
+  /// When the person gave explicit consent to send their financial data to a
+  /// third-party AI model (Apple App Review 5.1.2(i): the consent must be
+  /// explicit, informed and recorded, and it must happen before the first
+  /// message reaches the provider). Null = not given yet, or withdrawn.
+  ///
+  /// It lives here — in the synced settings row — and not in device-local
+  /// preferences because the consent belongs to the *person*, not to the
+  /// handset: someone who accepted on their phone must not be asked again on
+  /// a tablet, and someone who withdraws it must have it withdrawn
+  /// everywhere.
+  ///
+  /// A `DateTimeColumn` like every other date in this table, so it is stored
+  /// as unix SECONDS and mirrored in Postgres as `bigint` — never
+  /// `timestamptz` on a synced table (see the header of
+  /// `powersync_schema.dart`).
+  DateTimeColumn get aiConsentAcceptedAt => dateTime().nullable()();
 }
 
 /// One row per tutorial key the current installation's user has already
@@ -851,6 +868,70 @@ class TutorialViews extends Table with _SyncColumns {
   TextColumn get id => text()();
 }
 
+/// Chat history with the AI financial assistant (Fase A). One row per message,
+/// user's and assistant's alike.
+///
+/// **LOCAL-ONLY, on purpose — and the only table in this database that is.**
+/// It deliberately does NOT use `_SyncColumns`: no `userId`, no `updatedAt`,
+/// no `deletedAt`, no `tombstonedAt`. There is no upload queue to feed, and
+/// the mirror in `powersync_schema.dart` declares it with
+/// `Table.localOnly('ai_messages', ...)`, so PowerSync backs it with a real
+/// local table (`ps_data_local__ai_messages`) that never records CRUD entries
+/// and is never synced down.
+///
+/// Why: a financial conversation is the most sensitive data this app holds —
+/// it can contain balances, debts, salary, and whatever the person types in
+/// prose. Syncing it would put that text in Postgres, in every database
+/// backup, and inside the blast radius of any future incident, and it would
+/// add one more table that `delete_account_data` (HU-07) must remember to
+/// purge — where a single omission is a legal breach, not a bug. Keeping it
+/// local makes the guarantee structural instead of procedural: there is
+/// nothing on the server to leak, to back up, or to forget to delete. The
+/// server only ever keeps metadata about usage (`ai_usage_log`, see
+/// `supabase/migrations/20260825120000_ai_assistant_access_and_usage.sql`),
+/// never content.
+///
+/// Consequence to keep in mind: this history does NOT follow the person to
+/// another device, and it is destroyed by
+/// `LocalDataWipeDatasource.wipeAll` (whose `disconnectAndClear` clears
+/// local-only tables too, by design — see that file's doc comment). Both are
+/// the intended behavior for a device-local record.
+class AiMessages extends Table {
+  /// Random UUID, like every other table here. Never autoincrement.
+  TextColumn get id => text().clientDefault(() => _uuid.v4())();
+
+  /// Groups the messages of one conversation. Plain text, no FK: there is no
+  /// `ai_conversations` table in Fase A.
+  TextColumn get conversationId => text()();
+
+  /// Who wrote the message: `'user'` or `'assistant'`. Plain text rather than
+  /// `textEnum` because the matching Dart enum belongs to the AI feature's
+  /// domain layer (`lib/features/ai/domain/`), which this core file must not
+  /// depend on; the mapping lives in that feature's data layer.
+  TextColumn get role => text()();
+
+  /// The message body as shown in the chat.
+  TextColumn get content => text()();
+
+  /// Epoch **millis** UTC (NOT a Drift `DateTimeColumn`, which would be whole
+  /// seconds): several messages of one turn can land inside the same second,
+  /// and this column is what orders the thread.
+  IntColumn get createdAt => integer()
+      .clientDefault(() => DateTime.now().toUtc().millisecondsSinceEpoch)();
+
+  /// Delivery state of the message, e.g. `'sent'`, `'sending'`, `'failed'`.
+  /// Free text for the same reason as [role].
+  TextColumn get status => text().clientDefault(() => 'sent')();
+
+  /// The proposals payload exactly as the backend returned it, kept verbatim
+  /// so a re-render never has to reconstruct it. Null = the message carried no
+  /// proposals.
+  TextColumn get proposalsJson => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -877,13 +958,14 @@ class TutorialViews extends Table with _SyncColumns {
     AppSettings,
     ImportBatches,
     TutorialViews,
+    AiMessages,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1525,6 +1607,33 @@ class AppDatabase extends _$AppDatabase {
           // valid, meaningful value (see the column's doc comment), so there
           // is nothing to fix up on upgrade.
           if (from < 29) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v29 -> v30: the AI assistant (Fase A) adds two things at once.
+          //
+          //  1. `AiMessages`, the chat history — the first and only
+          //     **local-only** table in this database (see its doc comment for
+          //     why the conversation never leaves the device). No
+          //     `m.createTable` here: `powerSyncSchema`
+          //     (`powersync_schema.dart`) declares it as
+          //     `Table.localOnly('ai_messages', ...)`, so PowerSync creates
+          //     its backing table and view the next time the app opens,
+          //     before Drift's migration runs — exactly like the synced
+          //     tables in the `from < 25`/`from < 28` blocks above.
+          //  2. `AppSettings.aiConsentAcceptedAt`, the recorded consent to
+          //     send data to a third-party model (Apple 5.1.2(i)). No
+          //     `addColumn` — see the note on `from < 12` above:
+          //     `appSettings` is a PowerSync-managed view, and
+          //     `powerSyncSchema` already declares `ai_consent_accepted_at`,
+          //     so the view is recreated with the column present. No backfill
+          //     either, and deliberately so: `NULL` is the correct, meaningful
+          //     value ("has not consented yet"), and writing anything here
+          //     would upload a fabricated consent through PowerSync's
+          //     merge-duplicates upsert — the same class of bug as the
+          //     `featured_budget_mode` backfill (decision #25, see the
+          //     `from < 26` block).
+          if (from < 30) {
             // Nothing to do here: see the comment above this block.
           }
         },
