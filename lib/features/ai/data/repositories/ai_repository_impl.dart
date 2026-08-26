@@ -114,6 +114,12 @@ class AiRepositoryImpl implements AiRepository {
               'id': result.toolCallId,
               'name': result.name,
               'arguments': const <String, Object?>{},
+              // Gemini 3.x rejects a replayed function call missing this
+              // token, so it must ride back unread — see `AiToolCall.
+              // thoughtSignature`. Omitted, not `null`, when the provider
+              // never set one.
+              if (result.thoughtSignature != null)
+                'thoughtSignature': result.thoughtSignature,
             },
         ],
       })
@@ -176,6 +182,10 @@ class AiRepositoryImpl implements AiRepository {
               },
               name: name,
               arguments: _asMap(call['arguments']) ?? const <String, Object?>{},
+              thoughtSignature: switch (call['thoughtSignature']) {
+                final String signature => signature,
+                _ => null,
+              },
             ),
     ];
   }
@@ -237,11 +247,17 @@ class AiRepositoryImpl implements AiRepository {
       );
     }
 
-    // Only the two codes the README marks as bugs are reported. The rest are
-    // expected operating conditions (a closed gate, a spent quota, a rate
-    // limit) and reporting them would bury the real ones.
+    // The two codes the README marks as bugs, plus `unauthenticated`: the
+    // presentation layer gates the composer on `WatchAuthSession` before this
+    // repository is ever called (`AiChatCubit`/`AiSignedOutPage`), so by the
+    // time a request reaches here the caller is expected to have a live
+    // session. An `unauthenticated` response past that gate means the token
+    // expired mid-conversation or something is wrong with session handling —
+    // worth knowing, not an expected operating condition like a closed gate,
+    // a spent quota, or a rate limit, which would just bury the real ones.
     if (code == AiFailureCode.invalidRequest ||
-        code == AiFailureCode.internal) {
+        code == AiFailureCode.internal ||
+        code == AiFailureCode.unauthenticated) {
       await _crash.recordError(
         StateError('ai-chat returned ${code.name} (HTTP ${e.status})'),
         e.stackTrace,

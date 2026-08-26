@@ -511,13 +511,13 @@ function mapThrown(error: unknown): {
         return {
           response: errorResponse('provider_unavailable', 'the assistant is unavailable'),
           usageOutcome: 'provider_error',
-          errorCode: 'provider_auth',
+          errorCode: errorCodeWithDetail('provider_auth', error.detail),
         };
       default:
         return {
           response: errorResponse('provider_unavailable', 'the assistant is unavailable'),
           usageOutcome: 'provider_error',
-          errorCode: error.kind,
+          errorCode: errorCodeWithDetail(error.kind, error.detail),
         };
     }
   }
@@ -535,4 +535,13 @@ function mapThrown(error: unknown): {
     usageOutcome: 'invalid',
     errorCode: 'internal',
   };
+}
+
+/// `ai_usage_log.error_code` has no schema constraint, so folding the
+/// provider's own HTTP status into it (`bad_response:404`, `auth:401`) is
+/// free — no migration, and it is the only place that status survives past
+/// this request. Without it, every non-5xx/401/403/429 failure collapsed
+/// into a bare `bad_response`, indistinguishable from each other.
+function errorCodeWithDetail(kind: string, detail: string | undefined): string {
+  return detail ? `${kind}:${detail}` : kind;
 }

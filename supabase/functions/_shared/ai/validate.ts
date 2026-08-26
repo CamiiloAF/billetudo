@@ -101,6 +101,10 @@ function parseToolCall(raw: unknown): AiToolCall {
     arguments: (typeof value.arguments === 'object' && value.arguments !== null)
       ? value.arguments as Record<string, unknown>
       : {},
+    // Opaque passthrough — the client only ever echoes back what a previous
+    // response gave it. Absent for any turn that predates this field or that
+    // the client rebuilt itself (see `ai_repository_impl.dart`'s known gap).
+    thoughtSignature: asString(value.thoughtSignature),
   };
 }
 

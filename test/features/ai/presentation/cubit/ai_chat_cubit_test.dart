@@ -10,9 +10,14 @@ import 'package:billetudo/features/ai/domain/usecases/build_financial_snapshot.d
 import 'package:billetudo/features/ai/domain/usecases/resolve_ai_tool_call.dart';
 import 'package:billetudo/features/ai/domain/usecases/resume_or_create_ai_conversation.dart';
 import 'package:billetudo/features/ai/domain/usecases/send_ai_turn.dart';
+import 'package:billetudo/features/ai/domain/usecases/start_new_ai_conversation.dart';
 import 'package:billetudo/features/ai/domain/usecases/watch_ai_messages.dart';
 import 'package:billetudo/features/ai/presentation/cubit/ai_chat_cubit.dart';
 import 'package:billetudo/features/ai/presentation/cubit/ai_chat_state.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
+import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,6 +26,9 @@ import '../../ai_fixtures.dart';
 
 class MockResumeOrCreateAiConversation extends Mock
     implements ResumeOrCreateAiConversation {}
+
+class MockStartNewAiConversation extends Mock
+    implements StartNewAiConversation {}
 
 class MockWatchAiMessages extends Mock implements WatchAiMessages {}
 
@@ -38,8 +46,20 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockAiClientContextProvider extends Mock
     implements AiClientContextProvider {}
 
+class MockWatchAuthSession extends Mock implements WatchAuthSession {}
+
+const _signedInSession = AuthSession.signedIn(
+  AuthUser(
+    id: 'user-1',
+    displayName: 'Camila',
+    provider: AuthProvider.google,
+    email: 'a@b.com',
+  ),
+);
+
 void main() {
   late MockResumeOrCreateAiConversation resumeOrCreateAiConversation;
+  late MockStartNewAiConversation startNewAiConversation;
   late MockWatchAiMessages watchAiMessages;
   late MockAppendAiMessage appendAiMessage;
   late MockBuildFinancialSnapshot buildFinancialSnapshot;
@@ -47,6 +67,7 @@ void main() {
   late MockResolveAiToolCall resolveAiToolCall;
   late MockWatchAccounts watchAccounts;
   late MockAiClientContextProvider clientContext;
+  late MockWatchAuthSession watchAuthSession;
 
   setUpAll(() {
     registerFallbackValue(
@@ -66,6 +87,7 @@ void main() {
 
   setUp(() {
     resumeOrCreateAiConversation = MockResumeOrCreateAiConversation();
+    startNewAiConversation = MockStartNewAiConversation();
     watchAiMessages = MockWatchAiMessages();
     appendAiMessage = MockAppendAiMessage();
     buildFinancialSnapshot = MockBuildFinancialSnapshot();
@@ -73,6 +95,7 @@ void main() {
     resolveAiToolCall = MockResolveAiToolCall();
     watchAccounts = MockWatchAccounts();
     clientContext = MockAiClientContextProvider();
+    watchAuthSession = MockWatchAuthSession();
 
     when(watchAccounts.call)
         .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
@@ -87,10 +110,16 @@ void main() {
         .thenAnswer((_) async => const Right(unit));
     when(buildFinancialSnapshot.call)
         .thenAnswer((_) async => const Left(DatabaseFailure('no data')));
+    // Signed in by default: most tests care about the chat mechanics, not
+    // the gate — the gate itself gets its own tests below.
+    when(() => watchAuthSession.current).thenReturn(_signedInSession);
+    when(watchAuthSession.call)
+        .thenAnswer((_) => const Stream<AuthSession>.empty());
   });
 
   AiChatCubit build() => AiChatCubit(
         resumeOrCreateAiConversation,
+        startNewAiConversation,
         watchAiMessages,
         appendAiMessage,
         buildFinancialSnapshot,
@@ -98,6 +127,7 @@ void main() {
         resolveAiToolCall,
         watchAccounts,
         clientContext,
+        watchAuthSession,
       );
 
   blocTest<AiChatCubit, AiChatState>(
@@ -209,6 +239,55 @@ void main() {
     verify: (_) {
       verify(() => sendAiTurn(any())).called(2);
       verify(() => resolveAiToolCall(any())).called(1);
+    },
+  );
+
+  blocTest<AiChatCubit, AiChatState>(
+    'the initial state mirrors WatchAuthSession.current',
+    setUp: () => when(() => watchAuthSession.current)
+        .thenReturn(const AuthSession.signedOut()),
+    build: build,
+    verify: (cubit) => expect(cubit.state.isSignedIn, isFalse),
+  );
+
+  blocTest<AiChatCubit, AiChatState>(
+    'start() is a no-op without a session',
+    setUp: () => when(() => watchAuthSession.current)
+        .thenReturn(const AuthSession.signedOut()),
+    build: build,
+    act: (cubit) => cubit.start(),
+    expect: () => <AiChatState>[],
+    verify: (_) => verifyNever(resumeOrCreateAiConversation.call),
+  );
+
+  blocTest<AiChatCubit, AiChatState>(
+    'signing in emits isSignedIn: true',
+    setUp: () {
+      when(() => watchAuthSession.current)
+          .thenReturn(const AuthSession.signedOut());
+      when(watchAuthSession.call)
+          .thenAnswer((_) => Stream.value(_signedInSession));
+    },
+    build: build,
+    wait: const Duration(milliseconds: 10),
+    expect: () => [
+      isA<AiChatState>().having((s) => s.isSignedIn, 'isSignedIn', true),
+    ],
+  );
+
+  blocTest<AiChatCubit, AiChatState>(
+    'startNew() always opens a fresh thread, never the last one',
+    setUp: () {
+      when(startNewAiConversation.call)
+          .thenAnswer((_) async => const Right('conv-2'));
+      when(() => watchAiMessages('conv-2'))
+          .thenAnswer((_) => Stream.value(const Right(<AiMessage>[])));
+    },
+    build: build,
+    act: (cubit) => cubit.startNew(),
+    verify: (_) {
+      verify(startNewAiConversation.call).called(1);
+      verifyNever(resumeOrCreateAiConversation.call);
     },
   );
 }

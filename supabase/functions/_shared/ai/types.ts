@@ -10,6 +10,12 @@ export interface AiToolCall {
   id: string;
   name: string;
   arguments: Record<string, unknown>;
+  /// Opaque, provider-specific token (Gemini 3.x's "thought signature") that
+  /// must ride along with this call, unread and unmodified, from the moment
+  /// it is emitted to the moment its turn is replayed back to the provider —
+  /// including the round trip through the client, which owns the transcript.
+  /// A provider without this concept simply never sets it.
+  thoughtSignature?: string;
 }
 
 export interface AiMessage {
@@ -78,6 +84,14 @@ export class AiProviderError extends Error {
     readonly kind: AiProviderErrorKind,
     message: string,
     readonly retryAfterSeconds?: number,
+    /// A short, safe-to-log fragment — the upstream HTTP status, never a
+    /// piece of the response body. `kind` alone collapsed every non-5xx,
+    /// non-401/403/429 failure into a single `bad_response` bucket in
+    /// `ai_usage_log.error_code`, with the actual status (a 400? a 404 from a
+    /// renamed model?) surviving only in `message`, which nothing persists.
+    /// This is the field that lets `error_code` say `bad_response:404`
+    /// instead of just `bad_response`.
+    readonly detail?: string,
   ) {
     super(message);
     this.name = 'AiProviderError';

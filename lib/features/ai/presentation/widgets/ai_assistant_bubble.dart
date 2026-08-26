@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/ai_message.dart';
+import 'ai_message_copy_menu.dart';
 import 'ai_orb.dart';
 import 'ai_proposal_card.dart';
 
@@ -32,26 +33,29 @@ class AiAssistantBubble extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  border: Border.all(color: colors.border),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(18),
-                    bottomRight: Radius.circular(18),
-                    bottomLeft: Radius.circular(18),
+              AiMessageCopyMenu(
+                textToCopy: message.content,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border.all(color: colors.border),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(18),
+                    ),
                   ),
-                ),
-                child: Text(
-                  message.content,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    height: 1.45,
-                    color: colors.textPrimary,
+                  child: Text(
+                    message.content,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      height: 1.45,
+                      color: colors.textPrimary,
+                    ),
                   ),
                 ),
               ),

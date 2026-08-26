@@ -58,6 +58,14 @@ export const READ_TOOLS: AiToolDef[] = [
           type: 'integer',
           description: 'Filtra por monto absoluto en unidades menores (centavos).',
         },
+        maxAmountMinor: {
+          type: 'integer',
+          description:
+            'Filtra por monto absoluto maximo en unidades menores (centavos). '
+            + 'Combinala con minAmountMinor para acotar un rango (por ejemplo, '
+            + 'gastos hormiga: montos chicos que se repiten) sin traer tambien '
+            + 'compras grandes de la misma categoria.',
+        },
         limit: {
           // 50 is also what the published privacy policy commits to (section
           // 17.2) and what `ResolveAiToolCall.maxRows` enforces on the device.

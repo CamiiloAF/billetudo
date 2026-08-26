@@ -156,6 +156,24 @@ void main() {
       );
     });
 
+    test(
+        'a thoughtSignature on the call survives unread onto the result, so '
+        'it can ride back to the next turn', () async {
+      final result = await usecase(
+        const AiToolCall(
+          id: 'tc_0_0',
+          name: 'drop_database',
+          arguments: <String, Object?>{},
+          thoughtSignature: 'opaque-signature-abc',
+        ),
+      );
+
+      expect(
+        result.getRight().toNullable()!.thoughtSignature,
+        'opaque-signature-abc',
+      );
+    });
+
     test('get_transactions without a window', () async {
       final result = await resolve('get_transactions');
 
@@ -380,6 +398,56 @@ void main() {
         ['tx-cop-big'],
       );
       expect(result['currency'], 'COP');
+    });
+
+    test('filters by a min/max amount range to isolate small recurring '
+        'purchases from one big purchase in the same category', () async {
+      when(() => watchTransactions(any())).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            buildActivity(id: 'tx-too-small', amountMinor: 2000),
+            buildActivity(id: 'tx-in-range-1', amountMinor: 5000),
+            buildActivity(id: 'tx-in-range-2', amountMinor: 20000),
+            buildActivity(id: 'tx-too-big', amountMinor: 90000),
+          ]),
+        ),
+      );
+
+      final result = await resolve('get_transactions', <String, Object?>{
+        'from': augustFirst,
+        'to': septemberFirst,
+        'minAmountMinor': 3000,
+        'maxAmountMinor': 25000,
+      });
+
+      expect(
+        (result['items']! as List)
+            .map((item) => (item! as Map<String, Object?>)['id']),
+        ['tx-in-range-1', 'tx-in-range-2'],
+      );
+    });
+
+    test('filters by maximum amount alone, with no minimum given', () async {
+      when(() => watchTransactions(any())).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            buildActivity(id: 'tx-small', amountMinor: 1000),
+            buildActivity(id: 'tx-big', amountMinor: 90000),
+          ]),
+        ),
+      );
+
+      final result = await resolve('get_transactions', <String, Object?>{
+        'from': augustFirst,
+        'to': septemberFirst,
+        'maxAmountMinor': 25000,
+      });
+
+      expect(
+        (result['items']! as List)
+            .map((item) => (item! as Map<String, Object?>)['id']),
+        ['tx-small'],
+      );
     });
 
     test('translates the exclusive wire window into an inclusive last day',

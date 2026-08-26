@@ -98,6 +98,7 @@ class ResolveAiToolCall {
         toolCallId: toolCall.id,
         name: toolCall.name,
         result: result,
+        thoughtSignature: toolCall.thoughtSignature,
       ),
     );
   }
@@ -144,11 +145,14 @@ class ResolveAiToolCall {
     // shared filter for one caller.
     final currency = _stringArg(arguments, 'currency')?.toUpperCase();
     final minAmountMinor = _intArg(arguments, 'minAmountMinor');
+    final maxAmountMinor = _intArg(arguments, 'maxAmountMinor');
     final matching = [
       for (final row in rows)
         if ((currency == null || row.transaction.currency == currency) &&
             (minAmountMinor == null ||
-                row.transaction.amountMinor >= minAmountMinor))
+                row.transaction.amountMinor >= minAmountMinor) &&
+            (maxAmountMinor == null ||
+                row.transaction.amountMinor <= maxAmountMinor))
           row,
     ];
 

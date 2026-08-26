@@ -5880,15 +5880,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiChatComposerHint => 'Escríbele a Billetudo…';
 
   @override
+  String get aiChatEmptyTitle => '¿Por dónde empezamos?';
+
+  @override
+  String get aiChatEmptySubtitle =>
+      'Elegí una pregunta o escribime lo que necesites.';
+
+  @override
+  String get aiChatSuggestionMonthProgress => '¿Cómo voy este mes?';
+
+  @override
+  String get aiChatSuggestionBuildBudget => 'Ayudame a armar un presupuesto';
+
+  @override
+  String get aiChatSuggestionGoalsSaved =>
+      '¿Cuánto llevo ahorrado en mis metas?';
+
+  @override
+  String get aiChatSuggestionBiggestSpend => '¿En qué se me fue más la plata?';
+
+  @override
   String get aiChatErrorTitle => 'No pude responder';
 
   @override
   String get aiChatErrorBody =>
-      'Intentá de nuevo. Tus datos siguen a salvo en tu dispositivo.';
+      'No pudimos enviar tu mensaje. Intentá de nuevo.';
 
   @override
-  String get aiChatMessageFailed =>
-      'No se pudo enviar. Tus datos siguen a salvo en tu dispositivo.';
+  String get aiChatMessageFailed => 'No se pudo enviar. Intentá de nuevo.';
+
+  @override
+  String get aiChatCopyMessage => 'Copiar';
+
+  @override
+  String get aiSignedOutTitle => 'Asistente';
+
+  @override
+  String get aiSignedOutHeadline => 'Iniciá sesión para usar el asistente';
+
+  @override
+  String get aiSignedOutBody =>
+      'El asistente necesita tu sesión para conectarse y responderte. Iniciá sesión para empezar a chatear.';
 
   @override
   String get aiConsentTitle => 'Antes de empezar';

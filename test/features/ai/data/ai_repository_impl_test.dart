@@ -184,6 +184,60 @@ void main() {
         <String, Object?>{'totalMinor': 284000000},
       );
     });
+
+    test(
+        'a thoughtSignature carried on the result rides back on the rebuilt '
+        'assistant turn, unread', () async {
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      await repository.sendTurn(
+        request(
+          toolResults: const [
+            AiToolResult(
+              toolCallId: 'tc_0_0',
+              name: 'get_category_breakdown',
+              result: <String, Object?>{'totalMinor': 284000000},
+              thoughtSignature: 'opaque-signature-abc',
+            ),
+          ],
+        ),
+      );
+
+      final body = verify(() => remote.sendTurn(captureAny())).captured.single
+          as Map<String, Object?>;
+      final messages = body['messages']! as List;
+      final rebuiltCall =
+          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List)
+              .single as Map<String, Object?>;
+      expect(rebuiltCall['thoughtSignature'], 'opaque-signature-abc');
+    });
+
+    test('a tool result with no thoughtSignature omits the key rather than '
+        'sending it as null', () async {
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      await repository.sendTurn(
+        request(
+          toolResults: const [
+            AiToolResult(
+              toolCallId: 'tc_0_0',
+              name: 'get_category_breakdown',
+              result: <String, Object?>{'totalMinor': 284000000},
+            ),
+          ],
+        ),
+      );
+
+      final body = verify(() => remote.sendTurn(captureAny())).captured.single
+          as Map<String, Object?>;
+      final messages = body['messages']! as List;
+      final rebuiltCall =
+          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List)
+              .single as Map<String, Object?>;
+      expect(rebuiltCall.containsKey('thoughtSignature'), isFalse);
+    });
   });
 
   group('response parse', () {
@@ -313,6 +367,56 @@ void main() {
           .toNullable()!;
 
       expect(response.toolCalls.single.id, 'get_goal_detail');
+    });
+
+    test('a thoughtSignature on a tool call is read from the response',
+        () async {
+      when(() => remote.sendTurn(any())).thenAnswer(
+        (_) async => <String, Object?>{
+          'finishReason': 'tool_calls',
+          'message': <String, Object?>{'content': ''},
+          'toolCalls': <Object?>[
+            <String, Object?>{
+              'id': 'tc_0_0',
+              'name': 'get_transactions',
+              'arguments': <String, Object?>{},
+              'thoughtSignature': 'opaque-signature-abc',
+            },
+          ],
+        },
+      );
+
+      final response = (await repository.sendTurn(request()))
+          .getRight()
+          .toNullable()!;
+
+      expect(
+        response.toolCalls.single.thoughtSignature,
+        'opaque-signature-abc',
+      );
+    });
+
+    test('a tool call with no thoughtSignature parses to null, not a crash',
+        () async {
+      when(() => remote.sendTurn(any())).thenAnswer(
+        (_) async => <String, Object?>{
+          'finishReason': 'tool_calls',
+          'message': <String, Object?>{'content': ''},
+          'toolCalls': <Object?>[
+            <String, Object?>{
+              'id': 'tc_0_0',
+              'name': 'get_transactions',
+              'arguments': <String, Object?>{},
+            },
+          ],
+        },
+      );
+
+      final response = (await repository.sendTurn(request()))
+          .getRight()
+          .toNullable()!;
+
+      expect(response.toolCalls.single.thoughtSignature, isNull);
     });
 
     test('a response with no message at all parses to an empty bubble',
@@ -456,8 +560,8 @@ void main() {
       );
     });
 
-    test('only the two codes that mean a bug are reported to the crash '
-        'reporter', () async {
+    test('only the codes that mean a bug are reported to the crash reporter',
+        () async {
       when(() => remote.sendTurn(any())).thenThrow(
         const AiRemoteException(
           status: 403,
@@ -474,6 +578,24 @@ void main() {
           status: 500,
           payload: <String, Object?>{
             'error': <String, Object?>{'code': 'internal'},
+          },
+        ),
+      );
+      await repository.sendTurn(request());
+
+      expect(crash.errors, hasLength(1));
+      expect(crash.contexts, ['ai-chat']);
+    });
+
+    test(
+        'unauthenticated is reported too: the composer is gated on a live '
+        'session, so a 401 that still reaches here means the token expired '
+        'mid-conversation, not an expected operating condition', () async {
+      when(() => remote.sendTurn(any())).thenThrow(
+        const AiRemoteException(
+          status: 401,
+          payload: <String, Object?>{
+            'error': <String, Object?>{'code': 'unauthenticated'},
           },
         ),
       );

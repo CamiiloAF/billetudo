@@ -9543,6 +9543,42 @@ abstract class AppLocalizations {
   /// **'Escríbele a Billetudo…'**
   String get aiChatComposerHint;
 
+  /// No description provided for @aiChatEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Por dónde empezamos?'**
+  String get aiChatEmptyTitle;
+
+  /// No description provided for @aiChatEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegí una pregunta o escribime lo que necesites.'**
+  String get aiChatEmptySubtitle;
+
+  /// No description provided for @aiChatSuggestionMonthProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo voy este mes?'**
+  String get aiChatSuggestionMonthProgress;
+
+  /// No description provided for @aiChatSuggestionBuildBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayudame a armar un presupuesto'**
+  String get aiChatSuggestionBuildBudget;
+
+  /// No description provided for @aiChatSuggestionGoalsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cuánto llevo ahorrado en mis metas?'**
+  String get aiChatSuggestionGoalsSaved;
+
+  /// No description provided for @aiChatSuggestionBiggestSpend.
+  ///
+  /// In es, this message translates to:
+  /// **'¿En qué se me fue más la plata?'**
+  String get aiChatSuggestionBiggestSpend;
+
   /// No description provided for @aiChatErrorTitle.
   ///
   /// In es, this message translates to:
@@ -9552,14 +9588,38 @@ abstract class AppLocalizations {
   /// No description provided for @aiChatErrorBody.
   ///
   /// In es, this message translates to:
-  /// **'Intentá de nuevo. Tus datos siguen a salvo en tu dispositivo.'**
+  /// **'No pudimos enviar tu mensaje. Intentá de nuevo.'**
   String get aiChatErrorBody;
 
   /// No description provided for @aiChatMessageFailed.
   ///
   /// In es, this message translates to:
-  /// **'No se pudo enviar. Tus datos siguen a salvo en tu dispositivo.'**
+  /// **'No se pudo enviar. Intentá de nuevo.'**
   String get aiChatMessageFailed;
+
+  /// No description provided for @aiChatCopyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get aiChatCopyMessage;
+
+  /// No description provided for @aiSignedOutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Asistente'**
+  String get aiSignedOutTitle;
+
+  /// No description provided for @aiSignedOutHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciá sesión para usar el asistente'**
+  String get aiSignedOutHeadline;
+
+  /// No description provided for @aiSignedOutBody.
+  ///
+  /// In es, this message translates to:
+  /// **'El asistente necesita tu sesión para conectarse y responderte. Iniciá sesión para empezar a chatear.'**
+  String get aiSignedOutBody;
 
   /// No description provided for @aiConsentTitle.
   ///

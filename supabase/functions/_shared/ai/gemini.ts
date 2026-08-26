@@ -29,6 +29,12 @@ interface GeminiPart {
   text?: string;
   functionCall?: { name: string; args?: Record<string, unknown> };
   functionResponse?: { name: string; response: Record<string, unknown> };
+  // Opaque token Gemini 3.x ("thinking") models attach to a `functionCall`
+  // part. It must be echoed back verbatim on the SAME part when that turn is
+  // replayed in a later request, or the model rejects the whole call with a
+  // 400 ("Function call is missing a thought_signature..."). We never read
+  // or generate it — just carry it through unchanged, like a cookie.
+  thoughtSignature?: string;
 }
 
 interface GeminiContent {
@@ -106,7 +112,12 @@ export class GeminiProvider implements AiProvider {
     try {
       return await response.json() as Record<string, unknown>;
     } catch (_) {
-      throw new AiProviderError('bad_response', 'provider returned invalid JSON');
+      throw new AiProviderError(
+        'bad_response',
+        'provider returned invalid JSON',
+        undefined,
+        'invalid_json',
+      );
     }
   }
 }
@@ -145,7 +156,12 @@ export function toContents(messages: AiMessage[]): GeminiContent[] {
       for (const call of message.toolCalls ?? []) {
         if (seen.has(call.name)) continue;
         seen.add(call.name);
-        parts.push({ functionCall: { name: call.name, args: call.arguments } });
+        parts.push({
+          functionCall: { name: call.name, args: call.arguments },
+          // Required by Gemini 3.x on replay (see `GeminiPart.thoughtSignature`
+          // above). Older/non-thinking models simply ignore an extra field.
+          thoughtSignature: call.thoughtSignature,
+        });
       }
       if (parts.length === 0) parts.push({ text: '' });
       contents.push({ role: 'model', parts });
@@ -192,7 +208,12 @@ function toResult(payload: Record<string, unknown>): AiResult {
     if (feedback?.blockReason) {
       return { text: '', toolCalls: [], usage: tokens, finish: 'safety' };
     }
-    throw new AiProviderError('bad_response', 'provider returned no candidates');
+    throw new AiProviderError(
+      'bad_response',
+      'provider returned no candidates',
+      undefined,
+      'no_candidates',
+    );
   }
 
   const candidate = candidates[0];
@@ -211,6 +232,7 @@ function toResult(payload: Record<string, unknown>): AiResult {
         id: `tc_0_${index}`,
         name: part.functionCall.name,
         arguments: part.functionCall.args ?? {},
+        thoughtSignature: part.thoughtSignature,
       });
     }
   });
@@ -251,20 +273,49 @@ async function providerErrorFor(response: Response): Promise<AiProviderError> {
     body = undefined;
   }
 
+  if (response.status === 400) {
+    // A 400 is Gemini rejecting the *shape* of our request (a schema/role
+    // violation), not the user's content — `error.message` describes which
+    // rule broke (e.g. "contents.parts must not be empty"), not what was
+    // asked. That is safe to log server-side even though the full body is
+    // not: this is the one field that turns "bad_response:400" into an
+    // actionable cause instead of a guess.
+    const message = (body?.error as Record<string, unknown> | undefined)?.message;
+    if (typeof message === 'string') {
+      console.error('gemini rejected the request shape:', message);
+    }
+  }
+
   if (response.status === 401 || response.status === 403) {
-    return new AiProviderError('auth', 'provider rejected the api key');
+    return new AiProviderError(
+      'auth',
+      'provider rejected the api key',
+      undefined,
+      String(response.status),
+    );
   }
   if (response.status === 429) {
     return new AiProviderError(
       'rate_limited',
       'provider rate limited',
       retryDelaySeconds(body) ?? 30,
+      String(response.status),
     );
   }
   if (response.status >= 500) {
-    return new AiProviderError('unavailable', `provider error ${response.status}`);
+    return new AiProviderError(
+      'unavailable',
+      `provider error ${response.status}`,
+      undefined,
+      String(response.status),
+    );
   }
-  return new AiProviderError('bad_response', `provider error ${response.status}`);
+  return new AiProviderError(
+    'bad_response',
+    `provider error ${response.status}`,
+    undefined,
+    String(response.status),
+  );
 }
 
 /// Digs `RetryInfo.retryDelay` ("17s") out of a Google API error envelope.

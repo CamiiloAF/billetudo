@@ -1354,6 +1354,7 @@ GoRoute _aiRoute() => GoRoute(
         child: AiAssistantPage(
           onBack: () => context.pop(),
           onOpenHistory: () => context.push<String>(AppRoutes.aiHistory),
+          onSignIn: () => context.push(AppRoutes.login),
         ),
       ),
     );

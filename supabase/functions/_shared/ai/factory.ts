@@ -19,7 +19,16 @@ export function getProvider(): AiProvider {
         console.error('GEMINI_API_KEY is not set for this project');
         throw new AiHttpError('internal', 'assistant is not configured');
       }
-      const model = Deno.env.get('AI_MODEL') ?? 'gemini-2.5-flash';
+      // `gemini-2.5-flash` was the default through 2026-08-25 and stopped
+      // working the next day (`bad_response:404` from generateContent) even
+      // though Google's own docs still list it under a "Gemini 2.5 Family"
+      // section — the live API and the docs had drifted. Verified via
+      // ai.google.dev/gemini-api/docs/models (2026-08-26) that
+      // `gemini-3.5-flash-lite` is the current cheapest/fastest stable
+      // string, matching the original "modelo economico" intent from
+      // `Plan_Monetizacion_y_Tecnico.md`. `AI_MODEL` still overrides this
+      // without a redeploy if Google moves the ground again.
+      const model = Deno.env.get('AI_MODEL') ?? 'gemini-3.5-flash-lite';
       return new GeminiProvider(model, apiKey);
     }
     default:

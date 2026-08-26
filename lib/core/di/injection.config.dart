@@ -1972,6 +1972,7 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i433.AiChatCubit>(() => _i433.AiChatCubit(
           gh<_i61.ResumeOrCreateAiConversation>(),
+          gh<_i196.StartNewAiConversation>(),
           gh<_i817.WatchAiMessages>(),
           gh<_i782.AppendAiMessage>(),
           gh<_i5.BuildFinancialSnapshot>(),
@@ -1979,6 +1980,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1057.ResolveAiToolCall>(),
           gh<_i837.WatchAccounts>(),
           gh<_i1026.AiClientContextProvider>(),
+          gh<_i716.WatchAuthSession>(),
         ));
     return this;
   }

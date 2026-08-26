@@ -15,6 +15,7 @@ class AiChatState extends Equatable {
     this.draft = '',
     this.failure,
     this.accountNames = const <String, String>{},
+    this.isSignedIn = false,
   });
 
   final AiChatStatus status;
@@ -39,7 +40,15 @@ class AiChatState extends Equatable {
   /// rather than fabricate a name.
   final Map<String, String> accountNames;
 
+  /// Mirrors `WatchAuthSession.current`/`.call()`. The Edge Function this
+  /// cubit calls into requires a JWT (`verify_jwt: true`), so without a
+  /// session every send would fail anyway — `AiAssistantPage` renders a
+  /// dedicated sign-in gate instead of the composer while this is `false`,
+  /// and [canSend] refuses regardless as a second line of defense.
+  final bool isSignedIn;
+
   bool get canSend =>
+      isSignedIn &&
       draft.trim().isNotEmpty &&
       status != AiChatStatus.thinking &&
       status != AiChatStatus.loading;
@@ -52,6 +61,7 @@ class AiChatState extends Equatable {
     Failure? failure,
     bool clearFailure = false,
     Map<String, String>? accountNames,
+    bool? isSignedIn,
   }) =>
       AiChatState(
         status: status ?? this.status,
@@ -60,6 +70,7 @@ class AiChatState extends Equatable {
         draft: draft ?? this.draft,
         failure: clearFailure ? null : (failure ?? this.failure),
         accountNames: accountNames ?? this.accountNames,
+        isSignedIn: isSignedIn ?? this.isSignedIn,
       );
 
   @override
@@ -70,5 +81,6 @@ class AiChatState extends Equatable {
         draft,
         failure,
         accountNames,
+        isSignedIn,
       ];
 }

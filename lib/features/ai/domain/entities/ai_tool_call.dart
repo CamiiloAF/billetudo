@@ -12,6 +12,7 @@ class AiToolCall extends Equatable {
     required this.id,
     required this.name,
     required this.arguments,
+    this.thoughtSignature,
   });
 
   /// Synthesised by the provider adapter (Gemini has no tool-call ids of its
@@ -27,8 +28,15 @@ class AiToolCall extends Equatable {
   /// understands and ignores the rest.
   final Map<String, Object?> arguments;
 
+  /// Opaque, provider-specific token (Gemini 3.x's "thought signature") that
+  /// must ride along with this call, unread and unmodified, from the moment
+  /// it is emitted to the moment its turn is replayed back to the provider —
+  /// including the round trip through this client, which owns the transcript.
+  /// A provider without this concept simply never sets it.
+  final String? thoughtSignature;
+
   @override
-  List<Object?> get props => [id, name, arguments];
+  List<Object?> get props => [id, name, arguments, thoughtSignature];
 }
 
 /// The answer to an [AiToolCall], posted back as a `role: "tool"` message.
@@ -37,6 +45,7 @@ class AiToolResult extends Equatable {
     required this.toolCallId,
     required this.name,
     required this.result,
+    this.thoughtSignature,
   });
 
   final String toolCallId;
@@ -47,6 +56,11 @@ class AiToolResult extends Equatable {
   /// `{'error': ..., 'message': ...}` here rather than failing the turn.
   final Map<String, Object?> result;
 
+  /// Copied verbatim from the [AiToolCall] this answers. Carried here (rather
+  /// than looked up again) so it can travel forward to the rebuilt
+  /// `assistant` turn the next request sends — see `AiRepositoryImpl._messages`.
+  final String? thoughtSignature;
+
   @override
-  List<Object?> get props => [toolCallId, name, result];
+  List<Object?> get props => [toolCallId, name, result, thoughtSignature];
 }

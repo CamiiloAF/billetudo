@@ -3,6 +3,17 @@
   "children": [
     {
       "type": "frame",
+      "id": "l4pGHJ",
+      "x": 71900,
+      "y": -180,
+      "name": "Zona — Home Rediseño Radical (3 variantes)",
+      "width": 1690,
+      "height": 1260,
+      "fill": "#F2F0FB",
+      "cornerRadius": 24
+    },
+    {
+      "type": "frame",
       "id": "xnP7D",
       "x": 51250,
       "y": -2096,
@@ -55,7 +66,1029 @@
       "cornerRadius": 24,
       "stroke": "$border",
       "strokeWidth": 2,
-      "layout": "none"
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "qFaMF",
+          "x": 72000,
+          "y": 0,
+          "name": "🔖 EN REVISION — Variante A: Solo lo esencial (Light)",
+          "clip": true,
+          "width": 390,
+          "height": 972,
+          "fill": "$background",
+          "cornerRadius": 40,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "QgXTz",
+              "type": "ref",
+              "ref": "vYZJT",
+              "name": "Status Bar",
+              "width": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "tvx9J",
+              "name": "Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "padding": [
+                6,
+                20
+              ],
+              "children": [
+                {
+                  "id": "wTNEX",
+                  "type": "ref",
+                  "ref": "Nk9rB",
+                  "name": "Header",
+                  "width": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "nmdYe",
+                  "name": "Hero",
+                  "width": "fill_container",
+                  "height": 280,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 145,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$primary-deep",
+                        "position": 0
+                      },
+                      {
+                        "color": "$primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 28,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "omtkw",
+                      "name": "Featured Budget Label",
+                      "fill": "$on-primary",
+                      "content": "Mercado del mes",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "F01D9S",
+                      "name": "Hero Top",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kt6OW",
+                          "name": "HC Label",
+                          "fill": "$on-primary",
+                          "content": "Gastado en julio",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SCpfH",
+                          "name": "HC Month",
+                          "fill": "$month-chip-bg",
+                          "cornerRadius": 14,
+                          "gap": 5,
+                          "padding": [
+                            15,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "h7JoYd",
+                              "name": "HC Month Txt",
+                              "fill": "$on-primary",
+                              "content": "Julio",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "rgsC9",
+                              "name": "HC Month Chev",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "chevron-down",
+                              "library": "lucide",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "uTxAw",
+                      "name": "HC Amount",
+                      "fill": "$on-primary",
+                      "content": "$1,297,900",
+                      "fontFamily": "$font-body",
+                      "fontSize": 40,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T3NJJ",
+                      "name": "HC Progress",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "cFrHi",
+                          "name": "HC Track",
+                          "width": "fill_container",
+                          "height": 8,
+                          "fill": "$track-overlay",
+                          "cornerRadius": 4,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 4,
+                              "id": "yP6K1",
+                              "name": "HC Bar Fill",
+                              "fill": "$on-primary",
+                              "width": 133,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n7abOS",
+                          "name": "HC Prog Row",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "aPhuU",
+                              "name": "HC Prog Left",
+                              "fill": "$on-primary",
+                              "content": "43% de $3.000.000",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "K0p0d",
+                              "name": "HC Prog Right",
+                              "fill": "$on-primary",
+                              "content": "faltan 12 días",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JItxj",
+                  "name": "AI Banner",
+                  "width": "fill_container",
+                  "fill": "$muted",
+                  "cornerRadius": 16,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Z52rjh",
+                      "name": "AI Left",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "vYKmI",
+                          "name": "AI Spark",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sparkles",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "lk66j",
+                          "name": "AI Text",
+                          "fill": "$text-primary",
+                          "content": "Pronto: pregúntale a Billetudo",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon",
+                      "id": "uoSdR",
+                      "name": "AI Arrow",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YO0Ch",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": "fill_container"
+                }
+              ]
+            },
+            {
+              "id": "WF3cb",
+              "type": "ref",
+              "ref": "u3b5s9",
+              "name": "Tab Bar",
+              "width": "fill_container",
+              "descendants": {
+                "Msnwh": {
+                  "fill": "$muted"
+                },
+                "PW0js": {
+                  "fill": "$primary"
+                },
+                "rOzr4": {
+                  "fill": "$primary"
+                }
+              }
+            },
+            {
+              "id": "XaYEm",
+              "type": "ref",
+              "ref": "H5mzN",
+              "name": "FAB",
+              "layoutPosition": "absolute",
+              "x": 314,
+              "y": 826
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "suwlT",
+          "x": 72600,
+          "y": 0,
+          "name": "🔖 EN REVISION — Variante B: IA como protagonista (Light)",
+          "clip": true,
+          "width": 390,
+          "height": 972,
+          "fill": "$background",
+          "cornerRadius": 40,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "xXPGr",
+              "type": "ref",
+              "ref": "vYZJT",
+              "name": "Status Bar",
+              "width": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "C9Panz",
+              "name": "Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "padding": [
+                6,
+                20
+              ],
+              "children": [
+                {
+                  "id": "YbwhM",
+                  "type": "ref",
+                  "ref": "Nk9rB",
+                  "name": "Header",
+                  "width": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "GDNpZ",
+                  "name": "Hero",
+                  "width": "fill_container",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 145,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$primary-deep",
+                        "position": 0
+                      },
+                      {
+                        "color": "$primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 28,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "O9r72S",
+                      "name": "Featured Budget Label",
+                      "fill": "$on-primary",
+                      "content": "Mercado del mes",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "H8MEZQ",
+                      "name": "Hero Top",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZbbiU",
+                          "name": "HC Label",
+                          "fill": "$on-primary",
+                          "content": "Gastado en julio",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OBkzu",
+                          "name": "HC Month",
+                          "fill": "$month-chip-bg",
+                          "cornerRadius": 14,
+                          "gap": 5,
+                          "padding": [
+                            15,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IQKLq",
+                              "name": "HC Month Txt",
+                              "fill": "$on-primary",
+                              "content": "Julio",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Tp639",
+                              "name": "HC Month Chev",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "chevron-down",
+                              "library": "lucide",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "lhdsV",
+                      "name": "HC Amount",
+                      "fill": "$on-primary",
+                      "content": "$1,297,900",
+                      "fontFamily": "$font-body",
+                      "fontSize": 40,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "F8LZhu",
+                      "name": "HC Progress",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "B3c7YI",
+                          "name": "HC Track",
+                          "width": "fill_container",
+                          "height": 8,
+                          "fill": "$track-overlay",
+                          "cornerRadius": 4,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 4,
+                              "id": "sIipV",
+                              "name": "HC Bar Fill",
+                              "fill": "$on-primary",
+                              "width": 133,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BlcGF",
+                          "name": "HC Prog Row",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "P2zso",
+                              "name": "HC Prog Left",
+                              "fill": "$on-primary",
+                              "content": "43% de $3.000.000",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "TDPAT",
+                              "name": "HC Prog Right",
+                              "fill": "$on-primary",
+                              "content": "faltan 12 días",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mnqgB",
+                  "name": "AI Banner",
+                  "width": "fill_container",
+                  "fill": "$muted",
+                  "cornerRadius": 16,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 16,
+                  "padding": [
+                    32,
+                    20
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uKsth",
+                      "name": "AI Left",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "qKiSN",
+                          "name": "AI Spark",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sparkles",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "syp9K",
+                          "name": "AI Text",
+                          "fill": "$text-primary",
+                          "content": "Pronto: pregúntale a Billetudo",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon",
+                      "id": "D9ZzY",
+                      "name": "AI Arrow",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "C73wA",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": "fill_container"
+                }
+              ]
+            },
+            {
+              "id": "F34RTU",
+              "type": "ref",
+              "ref": "u3b5s9",
+              "name": "Tab Bar",
+              "width": "fill_container",
+              "descendants": {
+                "Msnwh": {
+                  "fill": "$muted"
+                },
+                "PW0js": {
+                  "fill": "$primary"
+                },
+                "rOzr4": {
+                  "fill": "$primary"
+                }
+              }
+            },
+            {
+              "id": "fsQmQ",
+              "type": "ref",
+              "ref": "H5mzN",
+              "name": "FAB",
+              "layoutPosition": "absolute",
+              "x": 314,
+              "y": 826
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "R1DTq",
+          "x": 73200,
+          "y": 0,
+          "name": "🔖 EN REVISION — Variante C: Tarjetas apilables (Light)",
+          "clip": true,
+          "width": 390,
+          "height": 972,
+          "fill": "$background",
+          "cornerRadius": 40,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "QgIz7",
+              "type": "ref",
+              "ref": "vYZJT",
+              "name": "Status Bar",
+              "width": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "nG1Bj",
+              "name": "Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": [
+                6,
+                20
+              ],
+              "children": [
+                {
+                  "id": "BaGfn",
+                  "type": "ref",
+                  "ref": "Nk9rB",
+                  "name": "Header",
+                  "width": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "ECMwP",
+                  "name": "Hero",
+                  "width": "fill_container",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 145,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$primary-deep",
+                        "position": 0
+                      },
+                      {
+                        "color": "$primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 28,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "B5wAEc",
+                      "name": "Featured Budget Label",
+                      "fill": "$on-primary",
+                      "content": "Mercado del mes",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FGWD5",
+                      "name": "Hero Top",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m7RtZ3",
+                          "name": "HC Label",
+                          "fill": "$on-primary",
+                          "content": "Gastado en julio",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EOTDD",
+                          "name": "HC Month",
+                          "fill": "$month-chip-bg",
+                          "cornerRadius": 14,
+                          "gap": 5,
+                          "padding": [
+                            15,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E11uj",
+                              "name": "HC Month Txt",
+                              "fill": "$on-primary",
+                              "content": "Julio",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "w3ZyDx",
+                              "name": "HC Month Chev",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "chevron-down",
+                              "library": "lucide",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "I1MmM",
+                      "name": "HC Amount",
+                      "fill": "$on-primary",
+                      "content": "$1,297,900",
+                      "fontFamily": "$font-body",
+                      "fontSize": 40,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "baGeR",
+                      "name": "HC Progress",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "aMOfn",
+                          "name": "HC Track",
+                          "width": "fill_container",
+                          "height": 8,
+                          "fill": "$track-overlay",
+                          "cornerRadius": 4,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 4,
+                              "id": "c0CG4f",
+                              "name": "HC Bar Fill",
+                              "fill": "$on-primary",
+                              "width": 133,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zjJtM",
+                          "name": "HC Prog Row",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "GX3EV",
+                              "name": "HC Prog Left",
+                              "fill": "$on-primary",
+                              "content": "43% de $3.000.000",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bYIyJ",
+                              "name": "HC Prog Right",
+                              "fill": "$on-primary",
+                              "content": "faltan 12 días",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qSPwH",
+                  "name": "AI Banner",
+                  "width": "fill_container",
+                  "fill": "$muted",
+                  "cornerRadius": 16,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Csubd",
+                      "name": "AI Left",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "G7t3yf",
+                          "name": "AI Spark",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sparkles",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "LmIyR",
+                          "name": "AI Text",
+                          "fill": "$text-primary",
+                          "content": "Pronto: pregúntale a Billetudo",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon",
+                      "id": "rasoD",
+                      "name": "AI Arrow",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ANjIx",
+                  "name": "Spacer",
+                  "width": "fill_container",
+                  "height": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "CuQUX",
+                  "name": "Carousel Indicator",
+                  "width": "fill_container",
+                  "height": 32,
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "RKxaS",
+                      "name": "Dot 1 — Active",
+                      "fill": "$primary",
+                      "width": 8,
+                      "height": 8
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "o8Fpu",
+                      "name": "Dot 2 — Inactive",
+                      "fill": "$muted",
+                      "width": 8,
+                      "height": 8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "pSozm",
+              "type": "ref",
+              "ref": "u3b5s9",
+              "name": "Tab Bar",
+              "width": "fill_container",
+              "descendants": {
+                "Msnwh": {
+                  "fill": "$muted"
+                },
+                "PW0js": {
+                  "fill": "$primary"
+                },
+                "rOzr4": {
+                  "fill": "$primary"
+                }
+              }
+            },
+            {
+              "id": "sjp2J",
+              "type": "ref",
+              "ref": "H5mzN",
+              "name": "FAB",
+              "layoutPosition": "absolute",
+              "x": 314,
+              "y": 826
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "M61I8",
+          "x": 72000,
+          "y": -80,
+          "name": "🔖 REVIEW MARKER — Variante A",
+          "width": 390,
+          "height": 40,
+          "fill": "#FF3B30",
+          "cornerRadius": 8,
+          "gap": 8,
+          "padding": [
+            8,
+            12
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "iFLFP",
+              "fill": "#FFFFFF",
+              "content": "🔖 EN REVISION — A: Solo lo esencial (qFaMF)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "VGkFf",
+          "x": 72600,
+          "y": -80,
+          "name": "🔖 REVIEW MARKER — Variante B",
+          "width": 390,
+          "height": 40,
+          "fill": "#FF3B30",
+          "cornerRadius": 8,
+          "gap": 8,
+          "padding": [
+            8,
+            12
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "POotp",
+              "fill": "#FFFFFF",
+              "content": "🔖 EN REVISION — B: IA protagonista (suwlT)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dCIVy",
+          "x": 73200,
+          "y": -80,
+          "name": "🔖 REVIEW MARKER — Variante C",
+          "width": 390,
+          "height": 40,
+          "fill": "#FF3B30",
+          "cornerRadius": 8,
+          "gap": 8,
+          "padding": [
+            8,
+            12
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "x17P5H",
+              "fill": "#FFFFFF",
+              "content": "🔖 EN REVISION — C: Tarjetas apilables (R1DTq)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "600"
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "frame",
@@ -238482,36 +239515,6 @@
       ]
     },
     {
-      "type": "note",
-      "id": "k50y7z",
-      "x": 30040,
-      "y": 67350,
-      "name": "Nota — Asistente IA · Ejes de las 3 variantes",
-      "width": 420,
-      "height": 0,
-      "content": "ASISTENTE IA (Fase 4) — 3 variantes de la pantalla de chat, SOLO tema claro. Aun no existe pages/asistente-ia.md: se escribe DESPUES de que el usuario elija una.\n\nLas tres comparten: pantalla completa apilada (Page Header, SIN Tab Bar, regla de MASTER), 390x972, Content en fill_container, composer anclado abajo, conversacion anclada al fondo (justifyContent:end) porque lo ultimo dicho es lo que importa.\n\nA — ueaIi · Avatar por mensaje\n  Identidad maxima: el orbe se repite en cada respuesta. Respuestas en burbuja $surface: el asistente 'habla'.\n  Beta + disclaimer en BARRA FIJA bajo el header ($muted, no descartable, fuera del scroll).\n  Propuesta = TARJETA-FORMULARIO: filas etiqueta/valor con divisores, se lee como un resumen de campos.\n  Costo: el avatar repetido come 38px de ancho en cada respuesta y personifica mucho a un asistente en beta.\n\nB — mCVGU · Texto plano + identidad en el encabezado\n  El asistente NO habla en globos: ESCRIBE EN LA APP (texto 15/500 sobre $background, ancho completo, sin avatar). Solo el usuario tiene burbuja.\n  El orbe aparece UNA vez, en un bloque fijo de identidad bajo el header, con la etiqueta Beta.\n  Disclaimer al PIE DEL COMPOSER (11px, centrado): queda pegado al teclado, siempre a la vista.\n  Propuesta = RESUMEN EN PROSA: el monto protagonista (28/800) + una linea de contexto. Menos campos, mas lectura.\n  Costo: sin globo, el limite entre respuesta y UI de la app se difumina (a favor si se quiere que la IA se sienta parte de la app, en contra si se quiere que se note que es generada).\n\nC — PUseo · Sin avatar + propuesta editable\n  Identidad minima: cero orbe en la conversacion (queda solo en el punto de entrada, el AI Banner de Inicio, h5dN1). Turnos por alineacion y color.\n  Beta + disclaimer en el SUBTITULO del Page Header (s9gXs): fijo, cero espacio extra, pero 13px es la version mas discreta de las tres.\n  Propuesta EDITABLE ANTES DE CONFIRMAR: cada valor es un chip tocable de 44px con lapiz que abre su selector. Cambia el modelo mental: no es aceptar/rechazar en bloque, es revisar y ajustar.\n  Costo: la tarjeta crece a 344px y el flujo de confirmacion deja de ser de un solo tap."
-    },
-    {
-      "type": "note",
-      "id": "H6UhZ",
-      "x": 30490,
-      "y": 67350,
-      "name": "Nota — Asistente IA · Requisitos duros",
-      "width": 420,
-      "height": 0,
-      "content": "REQUISITOS DUROS QUE LAS 3 VARIANTES CUMPLEN\n\n1. Aviso permanente y NO descartable con la etiqueta 'Beta' y la frase 'No es asesoria financiera'. Es requisito legal (CLAUDE.md), no decoracion: en las tres esta FUERA del area scrolleable (barra fija en A, bloque de identidad + pie de composer en B, subtitulo del header en C) y debe seguir presente en TODOS los estados (vacio, carga, error), no solo en el de conversacion.\n\n2. Nada se escribe en la base local hasta 'Confirmar'. La tarjeta de propuesta lo dice explicito en su footnote, y las dos acciones son simetricas (Descartar secundario / Confirmar primario), sin default preseleccionado.\n\n3. Tono de marca: el asistente no regaña. La respuesta del mockup cierra con 'Vas $180.000 por debajo de julio' en vez de señalar el exceso; ningun monto de gasto usa $expense.\n\n4. Nivel 0: esta pantalla es Fase 4 y va detras de anuncio recompensado/Premium, pero NADA de su chrome insinua pago aqui. El gate vive antes de entrar, no dentro del chat.\n\nCOMPONENTE NUEVO — AI Proposal Card (TmIac, reusable:true)\n  Chrome fijo: $surface + $border 1 + radio 20 + padding 16 + gap 12. Kicker (sparkles + 'Propuesta' en $primary-on-soft) + Title + BODY SLOT + Footnote + Actions Row (refs a pNjOz y j7Zvt).\n  El 'Body Slot' se REEMPLAZA entero por instancia (Replace), nunca se le cambian props — mismo patron que el CTA Slot de Sync Hero (XxHV3). Por eso las tres variantes usan el MISMO componente con tres cuerpos distintos: filas etiqueta/valor (A), prosa con monto (B), chips editables (C).\n  Instancias: QbxtJ (A), x3z9dy (B), lDurC (C)."
-    },
-    {
-      "type": "note",
-      "id": "ZtrVl",
-      "x": 30940,
-      "y": 67350,
-      "name": "Nota — Asistente IA · Pendientes de esta pasada",
-      "width": 420,
-      "height": 0,
-      "content": "PENDIENTES / NO DISEÑADO EN ESTA PASADA (solo tema claro, variantes de exploracion)\n\n- Estados de la tarjeta de propuesta: solo esta PENDIENTE. Faltan confirmada, descartada y fallida-con-reintentar. Se diseñan sobre la variante que se elija, dentro del mismo componente (idealmente cambiando kicker + fill + Actions Row, sin reestructurar el arbol: MASTER prohibe reestructurar un componente que ya tiene overrides).\n- Estados de pantalla: falta vacio (primer uso, con AI Question Chips tMqvn como arranque), carga/'pensando', error de red y CUPO AGOTADO (Fase 4 tiene limite mensual verificado en servidor).\n- Composer: falta el estado con texto escrito y con foco/teclado abierto; el CTA de enviar se dibuja siempre activo.\n- C: los selectores que abren los chips editables (monto, periodo, categoria) serian bottom sheets ya existentes; no se dibujaron.\n- Tema oscuro: NO se construyo a proposito. Se genera al final, solo cuando el usuario apruebe explicitamente el claro.\n- Entrada a la pantalla: se asume el AI Banner de Inicio (h5dN1) sin cambios de diseño, solo de copy en codigo.\n- Bloque 'AI Assistant' (cwxZI, hoy en la hoja de proximamente): si esta pantalla se implementa, revisar si ese bloque pasa a ser el estado VACIO del chat en vez de una hoja aparte."
-    },
-    {
       "type": "frame",
       "id": "EGwSs",
       "x": 31940,
@@ -239434,26 +240437,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "note",
-      "id": "ZZwuX",
-      "x": 32370,
-      "y": 66390,
-      "name": "Review — Historial, gesto de apertura sin definir (Eliminar Todo)",
-      "width": 340,
-      "height": 0,
-      "content": "[MENOR] EGwSs (Historial): el boton \"trash-2\" del header (kGEK4) es el candidato visual para abrir el sheet fvmUI (\"Confirmar Eliminar Todo\"), pero Pencil no declara la interaccion — no es un hallazgo de diseno visual, es un hueco que flutter-dev va a tener que resolver por su cuenta al implementar (que boton dispara que sheet). Dejarlo explicito en la spec de la feature antes de construir evita una decision implicita en codigo."
-    },
-    {
-      "type": "note",
-      "id": "bcU8V",
-      "x": 33230,
-      "y": 66400,
-      "name": "Review — Conversation Row footer, gesto y area tocable",
-      "width": 340,
-      "height": 0,
-      "content": "[MENOR] Conversation Row (cBizM), Footer \"Eliminar\" (Q1MtvQ): el gesto que abre uPidu (Confirmar Eliminar Conversacion) no esta definido en Pencil — flutter-dev debe decidirlo. De paso: el contenido visible (icono+label) esta pegado a la derecha via justifyContent:\"end\" dentro de una fila de 44px de alto; si el GestureDetector se limita al bounding box del contenido en vez de cubrir la fila completa (350x44), sigue pasando el minimo de 44x44 pero por poco margen. Recomendado: que el area tocable sea la fila completa (mismo criterio que Delete Opt-in Row en MASTER), no solo el icono+label."
     },
     {
       "type": "frame",
@@ -244453,6 +245436,925 @@
       "name": "Conversation Skeleton Row (Oscuro)",
       "x": 40830,
       "y": 66222
+    },
+    {
+      "type": "frame",
+      "id": "p3tJFm",
+      "x": 30490,
+      "y": 66330,
+      "name": "IA — Chat · Vacío (Claro)",
+      "context": "Estado vacío del chat: hilo nuevo, sin mensajes todavía. Mismo header, Beta Strip y Composer que la Variante A (ueaIi) — solo el área de conversación cambia. Reemplaza el bloque de mensajes por Orb 48px (mismo gradiente $primary→$primary-deep con sparkles, protagonista en vez de acompañante) + título/subtítulo + 4x AI Question Chip (tMqvn) con preguntas de ejemplo, todo centrado verticalmente. Variación de copy respecto a la implementación provisional en código: título invita a elegir una pregunta (\"¿Por dónde empezamos?\") en vez de una pregunta abierta genérica, y el subtítulo es más corto porque las chips ya sugieren el contenido.",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "OYMPH",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "CJH7s",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Header",
+          "width": "fill_container",
+          "descendants": {
+            "coVLA": {
+              "type": "frame",
+              "id": "AmB6p",
+              "name": "Left Group",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mjPtP",
+                  "name": "Back Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "H4nM4n",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "arrow-left",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "W9U0M",
+                  "name": "Spacer",
+                  "width": 44,
+                  "height": 44
+                }
+              ]
+            },
+            "QnxB2": {
+              "content": "Billetudo"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "cnHYb",
+              "name": "Right Group",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gG8no",
+                  "name": "Historial Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "s8nYZ",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xy5IE",
+                  "name": "Action Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$primary",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "P0mbo",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Aa0I5",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Cs2yl",
+              "name": "Beta Strip",
+              "context": "Aviso legal permanente y NO descartable. Fijo bajo el header: nunca scrollea ni desaparece en ningun estado.",
+              "width": "fill_container",
+              "fill": "$muted",
+              "gap": 10,
+              "padding": [
+                10,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "h0TYmh",
+                  "name": "Beta Badge",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "padding": [
+                    3,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NnYpS",
+                      "name": "Beta",
+                      "fill": "$on-primary",
+                      "content": "Beta",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "FcmHy",
+                  "name": "Disclaimer",
+                  "fill": "$segment-inactive-text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Respuestas generadas con IA. No es asesoría financiera.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "D7q4F",
+              "name": "Empty State",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 20,
+              "padding": [
+                16,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jFQQs",
+                  "name": "Orb",
+                  "width": 48,
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "angular",
+                    "enabled": true,
+                    "rotation": 0,
+                    "size": {
+                      "width": 1,
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$primary",
+                        "position": 0
+                      },
+                      {
+                        "color": "$primary-deep",
+                        "position": 0.5
+                      },
+                      {
+                        "color": "$primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 24,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "UQKHz",
+                      "name": "Spark",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "sparkles",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "J1tUbj",
+                  "name": "Text Group",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "L1diE",
+                      "name": "Title",
+                      "fill": "$text-primary",
+                      "content": "¿Por dónde empezamos?",
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "D4vA3",
+                      "name": "Subtitle",
+                      "fill": "$text-secondary",
+                      "content": "Elegí una pregunta o escribime lo que necesites.",
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L75Hx7",
+                  "name": "Chips",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "o19hR",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿Cómo voy este mes?"
+                        }
+                      }
+                    },
+                    {
+                      "id": "eYOEk",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "Ayudame a armar un presupuesto"
+                        }
+                      }
+                    },
+                    {
+                      "id": "FZuZp",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿Cuánto llevo ahorrado en mis metas?"
+                        }
+                      }
+                    },
+                    {
+                      "id": "lx9wM",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿En qué se me fue más la plata?"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eMriU",
+              "name": "Composer",
+              "width": "fill_container",
+              "fill": "$surface",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ViXd9",
+                  "name": "Divider",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "$border"
+                },
+                {
+                  "type": "frame",
+                  "id": "qU267",
+                  "name": "Composer Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    20,
+                    20,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TIMhl",
+                      "name": "Input Pill",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "$muted",
+                      "cornerRadius": 22,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K2nuCo",
+                          "name": "Placeholder",
+                          "fill": "$segment-inactive-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Escríbele a Billetudo…",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LB3RX",
+                      "name": "Send Button",
+                      "opacity": 0.4,
+                      "width": 44,
+                      "height": 44,
+                      "fill": "$primary",
+                      "cornerRadius": 22,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "mUk0C",
+                          "name": "Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "$on-primary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hx3IY",
+      "x": 43080,
+      "y": 66330,
+      "name": "IA — Chat · Vacío (Oscuro)",
+      "context": "Estado vacío del chat: hilo nuevo, sin mensajes todavía. Mismo header, Beta Strip y Composer que la Variante A (ueaIi) — solo el área de conversación cambia. Reemplaza el bloque de mensajes por Orb 48px (mismo gradiente $primary→$primary-deep con sparkles, protagonista en vez de acompañante) + título/subtítulo + 4x AI Question Chip (tMqvn) con preguntas de ejemplo, todo centrado verticalmente. Variación de copy respecto a la implementación provisional en código: título invita a elegir una pregunta (\"¿Por dónde empezamos?\") en vez de una pregunta abierta genérica, y el subtítulo es más corto porque las chips ya sugieren el contenido.",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "n21JVh",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "uKVeN",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Header",
+          "width": "fill_container",
+          "descendants": {
+            "coVLA": {
+              "type": "frame",
+              "id": "G1IWeh",
+              "name": "Left Group",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XJwp6",
+                  "name": "Back Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "vp7Y1",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "arrow-left",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JaXYW",
+                  "name": "Spacer",
+                  "width": 44,
+                  "height": 44
+                }
+              ]
+            },
+            "QnxB2": {
+              "content": "Billetudo"
+            },
+            "HCkvh": {
+              "type": "frame",
+              "id": "RZS2H",
+              "name": "Right Group",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SIca8",
+                  "name": "Historial Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$muted",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "GB2Hc",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$text-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oeVLx",
+                  "name": "Action Button",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$primary",
+                  "cornerRadius": 22,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "F1IpYc",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "cs2Qt",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "WH0Tj",
+              "name": "Beta Strip",
+              "context": "Aviso legal permanente y NO descartable. Fijo bajo el header: nunca scrollea ni desaparece en ningun estado.",
+              "width": "fill_container",
+              "fill": "$muted",
+              "gap": 10,
+              "padding": [
+                10,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "b92nvR",
+                  "name": "Beta Badge",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "padding": [
+                    3,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Hr6Kg",
+                      "name": "Beta",
+                      "fill": "$on-primary",
+                      "content": "Beta",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "A9peG",
+                  "name": "Disclaimer",
+                  "fill": "$segment-inactive-text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Respuestas generadas con IA. No es asesoría financiera.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "GWiNJ",
+              "name": "Empty State",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 20,
+              "padding": [
+                16,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yi3ff",
+                  "name": "Orb",
+                  "width": 48,
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "angular",
+                    "enabled": true,
+                    "rotation": 0,
+                    "size": {
+                      "width": 1,
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$primary",
+                        "position": 0
+                      },
+                      {
+                        "color": "$primary-deep",
+                        "position": 0.5
+                      },
+                      {
+                        "color": "$primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 24,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "cpKvI",
+                      "name": "Spark",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "sparkles",
+                      "library": "lucide",
+                      "fill": "$on-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qXOIv",
+                  "name": "Text Group",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Y2XLnW",
+                      "name": "Title",
+                      "fill": "$text-primary",
+                      "content": "¿Por dónde empezamos?",
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "tK3lm",
+                      "name": "Subtitle",
+                      "fill": "$text-secondary",
+                      "content": "Elegí una pregunta o escribime lo que necesites.",
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JjoZ1",
+                  "name": "Chips",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "sVcUr",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿Cómo voy este mes?"
+                        }
+                      }
+                    },
+                    {
+                      "id": "cUckD",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "Ayudame a armar un presupuesto"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Qe2po",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿Cuánto llevo ahorrado en mis metas?"
+                        }
+                      }
+                    },
+                    {
+                      "id": "etZKj",
+                      "type": "ref",
+                      "ref": "tMqvn",
+                      "name": "Chip",
+                      "width": "fill_container",
+                      "descendants": {
+                        "tHBsx": {
+                          "content": "¿En qué se me fue más la plata?"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "A8K8Nq",
+              "name": "Composer",
+              "width": "fill_container",
+              "fill": "$surface",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dH74V",
+                  "name": "Divider",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "$border"
+                },
+                {
+                  "type": "frame",
+                  "id": "NlTgb",
+                  "name": "Composer Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    20,
+                    20,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NrFIH",
+                      "name": "Input Pill",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "$muted",
+                      "cornerRadius": 22,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R0sx3",
+                          "name": "Placeholder",
+                          "fill": "$segment-inactive-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Escríbele a Billetudo…",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w6MU9j",
+                      "name": "Send Button",
+                      "opacity": 0.4,
+                      "width": 44,
+                      "height": 44,
+                      "fill": "$primary",
+                      "cornerRadius": 22,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "ch4bN",
+                          "name": "Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "$on-primary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "id": "NGpoB",
+      "x": 11210,
+      "y": 22270,
+      "width": 280,
+      "height": 0,
+      "content": "[CRITICO] Superposición real: el FAB (H5mzN, x314-370 / y826-882) tapa la esquina derecha del AI Banner (x20-370 / y816-862) — la flecha 'AI Arrow' queda literalmente debajo del FAB. Pasa solo en esta variante V2 (con 'Mis cuentas'): se agregó Balance Strip V2 sin reajustar la posición del FAB. Reubicar el FAB o el banner antes de dar este frame por canónico."
+    },
+    {
+      "type": "note",
+      "id": "iKNQx",
+      "x": 11210,
+      "y": 21546,
+      "width": 300,
+      "height": 0,
+      "content": "[IMPORTANTE] Sobrecarga medida, no solo percibida: 6 bloques distintos (Header, Hero con 4 sub-elementos, Acceso rápido, Mis cuentas, Movimientos, AI Banner) llenan los 838px del área de contenido con 16px de gap entre secciones y apenas ~1px de margen sobrante al final (el Spacer se colapsa a 1px de alto). Cero jerarquía de peso real: todo compite al mismo nivel. Candidatos concretos: fusionar 'Acceso rápido' + 'Mis cuentas' en un único carrusel, o sacar 'Mis cuentas' del Home (ya es accesible desde Cuentas)."
+    },
+    {
+      "type": "note",
+      "id": "e6WzV",
+      "x": 11210,
+      "y": 21620,
+      "width": 280,
+      "height": 0,
+      "content": "[IMPORTANTE] El Hero solo ya apila 4 elementos de texto (etiqueta de presupuesto destacado, chip de mes, monto grande, barra+leyenda de progreso) antes de llegar al resto de la pantalla. Es el bloque más denso del Home y compite consigo mismo por atención — evaluar si la etiqueta de presupuesto destacado y el chip de mes pueden fusionarse en una sola línea."
+    },
+    {
+      "type": "note",
+      "id": "UYbSv",
+      "x": 11210,
+      "y": 22296,
+      "width": 300,
+      "height": 0,
+      "content": "[IMPORTANTE] Banner de IA de una línea, al fondo del contenido y ahora parcialmente tapado por el FAB (ver nota crítica arriba). El asistente de IA ya está implementado (Fase A, diseño cerrado 2026-08-26) — mantenerlo con copy 'Pronto...' y estado inerte ya no corresponde. Reinstalar la tarjeta completa (cwxZI, 188px) EN EL MISMO LUGAR sin quitar nada no cabe: el viewport ya está al límite (~1px de aire). Ver reporte del reviewer para 3 alternativas de prominencia intermedia entre banner y tarjeta completa."
+    },
+    {
+      "type": "note",
+      "id": "p9jlTW",
+      "x": 3136,
+      "y": 3520,
+      "width": 260,
+      "height": 0,
+      "content": "[MENOR] Title/Sub de este componente usan fontFamily:'Plus Jakarta Sans' literal en vez de la variable $font-body — inconsistencia con MASTER.md § Tipografía. Corregir antes de reinstalar este componente en el Home."
     }
   ],
   "themes": {

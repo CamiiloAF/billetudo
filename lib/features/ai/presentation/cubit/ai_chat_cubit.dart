@@ -9,6 +9,8 @@ import '../../../../core/error/result.dart';
 import '../../../../core/utils/ai_client_context.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../auth/domain/entities/auth_session.dart';
+import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../domain/entities/ai_message.dart';
 import '../../domain/entities/ai_tool_call.dart';
 import '../../domain/entities/ai_turn.dart';
@@ -17,6 +19,7 @@ import '../../domain/usecases/build_financial_snapshot.dart';
 import '../../domain/usecases/resolve_ai_tool_call.dart';
 import '../../domain/usecases/resume_or_create_ai_conversation.dart';
 import '../../domain/usecases/send_ai_turn.dart';
+import '../../domain/usecases/start_new_ai_conversation.dart';
 import '../../domain/usecases/watch_ai_messages.dart';
 import 'ai_chat_state.dart';
 
@@ -33,6 +36,7 @@ const _uuid = Uuid();
 class AiChatCubit extends Cubit<AiChatState> {
   AiChatCubit(
     this._resumeOrCreateAiConversation,
+    this._startNewAiConversation,
     this._watchAiMessages,
     this._appendAiMessage,
     this._buildFinancialSnapshot,
@@ -40,9 +44,13 @@ class AiChatCubit extends Cubit<AiChatState> {
     this._resolveAiToolCall,
     this._watchAccounts,
     this._clientContext,
-  ) : super(const AiChatState());
+    WatchAuthSession watchAuthSession,
+  ) : super(AiChatState(isSignedIn: watchAuthSession.current.isSignedIn)) {
+    _authSubscription = watchAuthSession().listen(_onAuthSession);
+  }
 
   final ResumeOrCreateAiConversation _resumeOrCreateAiConversation;
+  final StartNewAiConversation _startNewAiConversation;
   final WatchAiMessages _watchAiMessages;
   final AppendAiMessage _appendAiMessage;
   final BuildFinancialSnapshot _buildFinancialSnapshot;
@@ -53,15 +61,31 @@ class AiChatCubit extends Cubit<AiChatState> {
 
   StreamSubscription<Result<List<AiMessage>>>? _messagesSubscription;
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
+  StreamSubscription<AuthSession>? _authSubscription;
+
+  void _onAuthSession(AuthSession session) {
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(isSignedIn: session.isSignedIn));
+  }
 
   /// Opens a thread. [conversationId] reopens that exact thread (tapping a
   /// `Conversation Row` in the history list); `null` (app-launch/AI Banner
   /// entry) resumes the last thread or creates a fresh one, matching
   /// `AiHistoryRepository.resumeOrCreateConversation`'s own contract.
+  ///
+  /// No-op without a session: the Edge Function behind every turn requires a
+  /// JWT, and `AiAssistantPage` never calls this before
+  /// [AiChatState.isSignedIn] is `true` — this guard only covers a stale
+  /// call racing a sign-out.
   Future<void> start({String? conversationId}) async {
+    if (!state.isSignedIn) {
+      return;
+    }
     await _messagesSubscription?.cancel();
     await _accountsSubscription?.cancel();
-    emit(const AiChatState());
+    emit(AiChatState(isSignedIn: state.isSignedIn));
 
     _accountsSubscription = _watchAccounts().listen((result) {
       if (isClosed) {
@@ -98,6 +122,25 @@ class AiChatCubit extends Cubit<AiChatState> {
         emit(state.copyWith(conversationId: resumedId));
         _messagesSubscription = _watchAiMessages(resumedId).listen(_onMessages);
       },
+    );
+  }
+
+  /// Forces a brand-new thread (the header's "+" button) instead of
+  /// resuming the last one — unlike [start], which
+  /// `_resumeOrCreateAiConversation` deliberately reuses.
+  Future<void> startNew() async {
+    if (!state.isSignedIn) {
+      return;
+    }
+    final result = await _startNewAiConversation();
+    if (isClosed) {
+      return;
+    }
+    await result.fold(
+      (failure) async => emit(
+        state.copyWith(status: AiChatStatus.error, failure: failure),
+      ),
+      (newConversationId) => start(conversationId: newConversationId),
     );
   }
 
@@ -299,6 +342,7 @@ class AiChatCubit extends Cubit<AiChatState> {
   Future<void> close() async {
     await _messagesSubscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _authSubscription?.cancel();
     return super.close();
   }
 }
