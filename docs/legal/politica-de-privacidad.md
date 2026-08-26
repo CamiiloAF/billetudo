@@ -1,11 +1,32 @@
 # Política de privacidad de billetudo
 
-**Versión 1.4** · **Última actualización: 17 de agosto de 2026** · **En vigor desde: 17 de agosto de 2026**
+**Versión 1.5** · **Última actualización: 25 de agosto de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
 una vez. Si algo no queda claro, escríbenos a
 camiiloagudelo92@gmail.com.
+
+### Qué cambió en la versión 1.5
+
+Llega el **asistente financiero con inteligencia artificial**, y con él la
+primera función de billetudo que envía información tuya a un modelo de lenguaje
+de un tercero. La versión 1.4 decía, correctamente para ese momento, que no
+había ninguna IA en la app. Eso deja de ser cierto cuando esta función se active.
+
+- **Sección 17, nueva:** qué hace el asistente, exactamente qué sale de tu
+  teléfono, qué no sale nunca, a quién llega y qué se guarda —incluida la única
+  cosa del chat que llega a nuestro servidor: el mensaje que **tú** decidas
+  reportar (sección 17.5).
+- **Nuevo tercero:** Google, a través de su API de Gemini (secciones 7 y 8).
+- **Base legal nueva:** tu consentimiento explícito, que te pedimos dentro de la
+  app antes del primer mensaje (sección 6).
+- **Se corrigió** la sección 4.3: tu correo **sí** se muestra hoy en la app, en
+  la tarjeta de sesión de Ajustes. La versión 1.4 decía que no.
+- El resto de la política no cambió.
+
+Si tu versión de la app todavía no muestra el asistente, nada de la sección 17
+está ocurriendo en tu teléfono.
 
 ---
 
@@ -28,6 +49,12 @@ camiiloagudelo92@gmail.com.
 - Sí hay dos cosas que salen del dispositivo aunque no tengas cuenta: la app
   **descarga el catálogo de categorías** la primera vez que se abre, y envía
   **reportes de error técnicos**. Los dos están explicados abajo, sin adornos.
+- **El asistente con inteligencia artificial es la excepción a todo lo
+  anterior.** Es opcional, requiere iniciar sesión y te pedimos permiso antes
+  del primer mensaje. Si lo usas, un **resumen de tus finanzas** y lo que
+  escribas en el chat salen del teléfono hacia Google. Está explicado entero en
+  la [sección 17](#17-el-asistente-con-inteligencia-artificial), sin adornos y
+  sin enterrarlo.
 
 ---
 
@@ -49,9 +76,10 @@ camiiloagudelo92@gmail.com.
 14. [Permisos que la app pide](#14-permisos-que-la-app-pide)
 15. [Seguridad](#15-seguridad)
 16. [Menores de edad](#16-menores-de-edad)
-17. [Lo que billetudo hoy no hace](#17-lo-que-billetudo-hoy-no-hace)
-18. [Cambios a esta política](#18-cambios-a-esta-política)
-19. [Contacto](#19-contacto)
+17. [El asistente con inteligencia artificial](#17-el-asistente-con-inteligencia-artificial)
+18. [Lo que billetudo hoy no hace](#18-lo-que-billetudo-hoy-no-hace)
+19. [Cambios a esta política](#19-cambios-a-esta-política)
+20. [Contacto](#20-contacto)
 
 ---
 
@@ -169,8 +197,9 @@ Qué hacemos con eso:
 - El **nombre** se muestra en la app: en el saludo de la pantalla de Inicio y en
   la tarjeta de sesión de Ajustes. El avatar circular que ves son tus
   **iniciales, dibujadas en el teléfono**.
-- El **correo** se guarda en el servicio de autenticación y **no se muestra en
-  ninguna pantalla de la app**.
+- El **correo** se guarda en el servicio de autenticación y se muestra en la
+  **tarjeta de sesión de Ajustes**, para que sepas con qué cuenta estás dentro.
+  No aparece en ninguna otra pantalla y no se envía a nadie más.
 - La **foto de perfil**: recibimos la URL, pero **la app nunca la descarga ni la
   muestra**.
 
@@ -180,6 +209,19 @@ teléfono.
 ### 4.4 Datos técnicos de errores
 
 Ver la [sección 5.3](#53-reportes-de-error).
+
+### 4.5 Tus conversaciones con el asistente
+
+Si usas el asistente con inteligencia artificial, lo que escribes y lo que te
+responde se guardan **solo en tu teléfono**, en una tabla que **no se
+sincroniza** ni siquiera con la sesión iniciada. No guardamos una copia de tu
+conversación en ningún servidor nuestro.
+
+Hay **una sola excepción, y la disparas tú**: si reportas un mensaje del
+asistente porque te pareció ofensivo o equivocado, ese mensaje —solo ese— se
+guarda en nuestro servidor para que podamos revisarlo. La app te lo advierte
+antes de enviarlo. Los detalles están en la
+[sección 17.5](#175-qué-se-guarda-y-dónde).
 
 ---
 
@@ -264,10 +306,11 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 
 | Destino | Qué recibe | Cuándo |
 |---|---|---|
-| **Supabase** (base de datos y autenticación) | Todos tus datos financieros, tu correo y nombre | Solo con sesión iniciada (excepto el catálogo de categorías, que es una descarga anónima) |
+| **Supabase** (base de datos y autenticación) | Todos tus datos financieros, tu correo y nombre, y los mensajes del asistente que decidas reportar | Solo con sesión iniciada (excepto el catálogo de categorías, que es una descarga anónima) |
 | **PowerSync** | Los mismos datos, en tránsito, para sincronizarlos | Solo con sesión iniciada |
 | **Sentry** | Diagnósticos técnicos de fallos | Siempre que ocurra un error |
 | **Google / Apple** | Los datos de tu inicio de sesión, según sus propias políticas | Solo si inicias sesión |
+| **Google (API de Gemini)** | El texto que escribes en el chat y un resumen de tus finanzas | Solo si usas el asistente, después de aceptarlo (sección 17) |
 
 ---
 
@@ -278,6 +321,8 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 | Que la app funcione: registrar y mostrar tus finanzas | Los de la sección 4.1 | **Ejecución del contrato** (art. 6.1.b) |
 | Identificarte y proteger tu cuenta | Identificador, correo, nombre | **Ejecución del contrato** (art. 6.1.b) |
 | Respaldar y sincronizar entre tus dispositivos | Los de la sección 4.1 | **Ejecución del contrato**, a petición tuya al iniciar sesión (art. 6.1.b) |
+| Responder tus preguntas con el asistente de IA | El texto que escribes y el resumen financiero de la sección 17 | **Consentimiento** explícito, que puedes retirar (art. 6.1.a) |
+| Revisar un mensaje del asistente que tú reportaste y corregir la función | El mensaje reportado, el motivo y tu comentario (sección 17.5) | **Interés legítimo** en moderar el contenido que genera la app, a partir de un envío tuyo; además es un requisito de Google Play para las apps con IA generativa (art. 6.1.f) |
 | Detectar y corregir fallos de la app | Diagnósticos técnicos (sección 5.3) | **Interés legítimo** en mantener la app estable y segura (art. 6.1.f) |
 | Cumplir obligaciones legales y responder a autoridades | Los estrictamente exigidos | **Obligación legal** (art. 6.1.c) |
 
@@ -299,9 +344,10 @@ del tratamiento), bajo contrato y solo para las finalidades de arriba:
 
 | Proveedor | Para qué | Qué recibe |
 |---|---|---|
-| **Supabase, Inc.** | Base de datos en la nube y autenticación | Tus datos financieros sincronizados, tu correo, nombre y foto de perfil (URL) |
+| **Supabase, Inc.** | Base de datos en la nube y autenticación | Tus datos financieros sincronizados, tu correo, nombre y foto de perfil (URL), y los mensajes del asistente que reportes |
 | **JourneyApps / PowerSync** | Motor de sincronización entre el teléfono y la base de datos | Los mismos datos, en tránsito |
 | **Functional Software, Inc. (Sentry)** | Reporte de errores | Diagnósticos técnicos, sin identificador de usuario y sin dirección IP almacenada (filtrado aplicado en su servidor, ver 5.3) |
+| **Google LLC (API de Gemini)** | Generar las respuestas del asistente de IA | El texto que escribes en el chat y el resumen financiero de la sección 17. **No** recibe tu correo, tu nombre, tus notas, el nombre de tu banco ni los últimos 4 dígitos |
 
 Además, **Google LLC** y **Apple Inc.** actúan como **responsables
 independientes** cuando inicias sesión con ellos: no les enviamos tus datos
@@ -316,10 +362,13 @@ Con cada uno de esos proveedores debe existir un **acuerdo de encargo del
 tratamiento** (el contrato que los obliga a tratar tus datos solo siguiendo
 nuestras instrucciones, a protegerlos y a devolverlos o borrarlos al terminar).
 Con Supabase ese acuerdo forma parte de sus propios términos de servicio, así
-que aplica automáticamente desde que usamos el servicio. Con Sentry y con
-PowerSync estamos formalizándolo; mientras eso no esté cerrado, billetudo **no
-se ofrece a residentes del Espacio Económico Europeo** (los países de la Unión
-Europea, más Islandia, Liechtenstein y Noruega).
+que aplica automáticamente desde que usamos el servicio. Con Google, para el
+asistente, usamos el servicio de pago de la API de Gemini, cuyos términos
+incluyen el acuerdo de tratamiento de datos y establecen que **el contenido que
+enviamos no se usa para entrenar ni mejorar los modelos de Google**. Con Sentry
+y con PowerSync estamos formalizándolo; mientras eso no esté cerrado, billetudo
+**no se ofrece a residentes del Espacio Económico Europeo** (los países de la
+Unión Europea, más Islandia, Liechtenstein y Noruega).
 
 ---
 
@@ -329,14 +378,16 @@ Europea, más Islandia, Liechtenstein y Noruega).
 
 Si usas billetudo sin iniciar sesión, esto casi no te afecta: solo la descarga
 del catálogo y los reportes de error cruzan la frontera. Si inicias sesión, tus
-datos financieros se almacenan y se procesan en **Estados Unidos**. Los tres
-proveedores que usamos operan desde allí.
+datos financieros se almacenan y se procesan en **Estados Unidos**. Y si usas el
+asistente, el resumen de tus finanzas se procesa en la infraestructura de
+Google, también fuera de tu país.
 
 | Proveedor | Dónde se procesa |
 |---|---|
 | Sentry | **Estados Unidos** |
 | Supabase | **Estados Unidos** |
 | PowerSync | **Estados Unidos** |
+| Google (API de Gemini, solo si usas el asistente) | **Estados Unidos** y, según la disponibilidad del servicio, otros países donde Google opera `[VERIFICAR: si se fija una región de procesamiento concreta al contratar el servicio de pago]` |
 
 **Por qué es así:** son los proveedores que hacen posible la sincronización sin
 pérdida de datos y sin que tengamos que operar servidores propios. No hay hoy un
@@ -365,6 +416,10 @@ consuelo.
 | Cuenta de usuario (correo, nombre) | Mientras la cuenta exista |
 | Reportes de error | **30 días** en Sentry, según el plazo de conservación del plan que usamos. Vencido ese plazo se eliminan solos |
 | Copias de seguridad del proveedor de base de datos | **No hay.** El plan que usamos en Supabase no incluye copias de seguridad automáticas |
+| Tus conversaciones con el asistente | Solo en tu teléfono, hasta que las borres tú, borres los datos de la app o la desinstales. **No se respaldan**: si cambias de teléfono, no viajan |
+| Registro técnico de uso del asistente (sin contenido) | Mientras tu cuenta exista. Se elimina al borrar la cuenta |
+| Mensajes del asistente que **tú** reportaste | En nuestro servidor mientras tu cuenta exista. **No se purgan solos** cuando terminamos de revisarlos: quedan como registro de la revisión. Se eliminan al borrar la cuenta |
+| Lo que envías al asistente, en los servidores de Google | Google registra las solicitudes **por un tiempo limitado**, solo para detectar abusos y por obligaciones legales, y no las usa para entrenar sus modelos en el servicio de pago que usamos |
 
 Tras borrar tu cuenta, los datos desaparecen de la base de datos activa de forma
 inmediata. Y como no existen copias de seguridad automáticas, no queda una copia
@@ -402,6 +457,11 @@ Puedes hacerlo tú, desde la app, sin escribirnos ni llamar a nadie.
   etiquetas y preferencias.
 - **Se elimina tu usuario** del sistema de autenticación, con tu correo y tu
   nombre.
+- **Se elimina tu habilitación, el registro técnico de uso del asistente y los
+  mensajes que hayas reportado**, con su motivo y tu comentario. Los reportes no
+  sobreviven al borrado de la cuenta: no abrimos una excepción para ellos.
+  El resto de la conversación nunca estuvo en el servidor: vive en tu teléfono y
+  se va con los datos locales.
 - No es un borrado lógico ni una desactivación: las filas se eliminan.
 - Si eliges borrar también lo local, se vacía la base de datos del teléfono.
   Ten presente lo que advertimos en la [sección 4.2](#42-el-número-completo-de-tus-cuentas-bancarias)
@@ -437,10 +497,26 @@ Buena parte de eso lo puedes hacer sin pedirnos permiso, dentro de la app:
 | Derecho | Cómo ejercerlo tú mismo |
 |---|---|
 | **Acceso** | Todos tus datos están visibles en la app |
-| **Rectificación** | Edita cualquier registro directamente |
+| **Rectificación** | Edita cualquier registro directamente. Única excepción: un reporte del asistente ya enviado (ver la nota de abajo) |
 | **Supresión** | Borra registros uno a uno, o borra tu cuenta completa (sección 10) |
 | **Portabilidad** | **Más → Importar y exportar**: obtienes tus datos en CSV estándar o en una copia completa. Sin límites, sin costo y sin necesidad de cuenta |
 | **Revocar la autorización de la nube** | Cierra sesión: la sincronización se detiene de inmediato |
+| **Revocar el permiso del asistente de IA** | Ajustes: retira el permiso y borra tu historial de conversación. Deja de enviarse cualquier cosa a Google |
+
+### Lo único que no puedes deshacer desde la app: un reporte ya enviado
+
+Cuando reportas un mensaje del asistente, ese reporte **no se puede editar ni
+borrar** desde la app. Es a propósito: un reporte modificable después de
+enviarlo no sirve para revisar nada. La app te lo advierte antes de enviarlo,
+para que decidas con eso claro.
+
+Eso no anula tu derecho de rectificación y supresión: escríbenos al correo de
+abajo y corregimos o eliminamos el reporte. Y si borras tu cuenta, se va con
+ella, como todo lo demás.
+
+Ojo con un detalle: **retirar el permiso del asistente no borra los reportes que
+ya enviaste**. Retirar el permiso detiene los envíos a Google y te deja borrar tu
+conversación local; los reportes se eliminan al borrar la cuenta o pidiéndonoslo.
 
 Para lo que no puedas resolver por tu cuenta, escríbenos a
 camiiloagudelo92@gmail.com. Responderemos en
@@ -554,7 +630,7 @@ dictar un gasto o la cámara para fotografiar un recibo—, te lo pediríamos **
 el momento de usar esa función**, nunca al abrir la app, y con la explicación de
 para qué sirve. Negarlo no te dejaría sin registrar tus gastos: el registro
 manual seguiría igual. Y actualizaríamos esta política **antes** de que esa
-función llegue a tu teléfono (ver la sección 17).
+función llegue a tu teléfono (ver la sección 18).
 
 Tampoco mostramos el aviso de seguimiento de iOS, porque **no hacemos
 seguimiento entre aplicaciones**.
@@ -599,7 +675,171 @@ cuenta y sus datos.
 
 ---
 
-## 17. Lo que billetudo hoy no hace
+## 17. El asistente con inteligencia artificial
+
+Esta es la única función de billetudo que envía información tuya a un modelo de
+lenguaje. Le dedicamos una sección entera porque contradice el principio con el
+que está construido el resto de la app, y prometimos decirlo de frente cuando
+pasara.
+
+**Si tu app no muestra el asistente, nada de esta sección está ocurriendo.**
+
+### 17.1 Qué es y cómo se activa
+
+Es un chat donde le preguntas por tus finanzas ("¿en qué se me fue la plata este
+mes?", "¿me alcanza para esto?") y te responde usando **tus** datos.
+
+- **Es opcional.** Si no lo abres, no pasa nada de lo que sigue.
+- **Requiere iniciar sesión.** Es la única función de la app con ese requisito.
+- **Te pedimos permiso antes del primer mensaje**, con una pantalla que te dice
+  qué sale, a quién llega y qué no sale. Si no aceptas, no se envía nada y el
+  resto de la app funciona igual.
+- **Puedes retirar ese permiso** cuando quieras desde Ajustes, y borrar tu
+  historial de conversación.
+- **Puedes reportar cualquier respuesta** desde la propia conversación, sin
+  salir de la app. Eso sí: el mensaje que reportes se guarda en nuestro
+  servidor, y es la única cosa del chat que llega ahí (sección 17.5).
+- Está marcado como **Beta** dentro de la app, con un aviso permanente de que
+  **no es asesoría financiera**. Un modelo de lenguaje puede equivocarse con
+  total seguridad; las decisiones sobre tu dinero siguen siendo tuyas.
+
+### 17.2 Qué sale de tu teléfono
+
+Cada vez que envías un mensaje salen tres cosas:
+
+1. **El texto que escribiste**, y también **los mensajes anteriores de esa misma
+   conversación**. Esto es importante y preferimos decirlo con todas las letras:
+   el asistente no tiene memoria en nuestro servidor, así que tu teléfono
+   reenvía la conversación en curso cada vez, para que la respuesta tenga
+   sentido. Tu historial **no se guarda** en ningún servidor —salvo un mensaje
+   suelto, si tú decides reportarlo (sección 17.5)—, pero **sí pasa** por el
+   proveedor en cada mensaje. Cuando empiezas una conversación nueva, empieza de
+   cero.
+2. **Un resumen de tus finanzas**, que la app arma en ese momento desde la base
+   de datos de tu teléfono. Contiene:
+   - tus cuentas: nombre que tú les pusiste, tipo, moneda y saldo;
+   - cuánto gastaste e ingresaste este mes, por moneda;
+   - tus categorías con más gasto del mes, con montos;
+   - el flujo de caja de los últimos 6 meses, mes a mes;
+   - tus presupuestos: nombre, periodo, límite, gastado y días restantes;
+   - tus metas: nombre, objetivo, ahorrado y fecha;
+   - tus deudas, **solo como totales** por moneda y por si te deben o debes;
+   - los pagos programados que vencen en los próximos 30 días;
+   - la lista de tus categorías, para que el asistente pueda nombrarlas.
+3. Además viajan cuatro datos técnicos: el **idioma** de la app, tu **zona
+   horaria** (para que entienda "este mes" o "la semana pasada"), la **versión**
+   de la app y un **identificador de conversación** que se genera en tu
+   teléfono.
+
+**Detalle bajo demanda.** Si para responderte hace falta mirar movimientos
+concretos, el asistente los pide y **tu propio teléfono** resuelve la búsqueda en
+su base local: nuestro servidor nunca consulta tus datos. Se envían **como
+máximo 50 movimientos**, y de cada uno solo: su identificador interno, fecha,
+monto, moneda, tipo, nombre de la categoría y nombre de la cuenta. El asistente
+puede pedir ese detalle **hasta tres veces** por cada mensaje tuyo; pasado ese
+tope responde con lo que tiene.
+
+### 17.3 Qué no sale nunca
+
+Esto no es una intención, es cómo está construido el resumen:
+
+- **Las notas y descripciones que escribes** en movimientos, aportes a metas,
+  deudas y pagos programados. Ninguna. Son el campo donde cabe lo que quizá
+  preferirías no escribir en ningún lado, y por eso no se envían.
+- **El nombre de tu banco** y los **últimos 4 dígitos** de tu tarjeta.
+- **El número completo de tus cuentas**, que además nunca sale del teléfono para
+  nada (sección 4.2).
+- **El nombre de la persona a la que le debes o que te debe.** Del bloque de
+  deudas solo salen totales.
+- **Tu nombre y tu correo.** Google no recibe quién eres desde acá.
+- **Archivos, fotos, audio, contactos** o el contenido de tus notificaciones. La
+  app ni siquiera pide esos permisos.
+
+### 17.4 A quién llega y dónde se procesa
+
+Tu mensaje viaja primero a un servicio nuestro en **Supabase**, que solo hace de
+intermediario: comprueba que tengas sesión y cupo, reenvía la consulta y te
+devuelve la respuesta. **No guarda nada** de lo que pasa por ahí. Reportar un
+mensaje es otro camino distinto, y ahí sí se guarda: lo explicamos en 17.5.
+
+De ahí llega a **Google**, a su API de Gemini (modelo `gemini-2.5-flash`), que
+es quien genera la respuesta.
+
+- Usamos el **servicio de pago** de esa API. Bajo esos términos, **Google no usa
+  tu contenido para entrenar ni mejorar sus modelos**. Sí registra las
+  solicitudes por un tiempo limitado para detectar abusos y por obligaciones
+  legales.
+- Google aplica sus propios **filtros de seguridad** sobre lo que se envía y lo
+  que responde. Si un filtro se activa, el asistente te dirá que no puede
+  responder eso.
+- **El procesamiento ocurre fuera de tu país**, en la infraestructura de Google
+  (ver sección 8). Como con Supabase y Sentry, es una transferencia
+  internacional y te la decimos de frente.
+- La app **nunca** habla directamente con Google ni lleva claves de acceso
+  dentro: por eso existe el intermediario.
+
+### 17.5 Qué se guarda, y dónde
+
+| Qué | Dónde queda |
+|---|---|
+| Tu conversación (lo que escribes y lo que responde) | **Solo en tu teléfono**, en una tabla que no se sincroniza. Ni siquiera con sesión iniciada. *Guardada* solo ahí; *enviada* a Google en cada turno, como explica 17.2 |
+| Un mensaje del asistente que **tú** reportes | **En nuestro servidor**, junto con el motivo, tu comentario, la fecha, la versión de la app y el identificador de esa conversación. Es la única excepción a la fila de arriba, y la explicamos entera debajo de la tabla |
+| El resumen de tus finanzas que se envió | **En ningún lado.** Se arma para ese mensaje y se descarta |
+| Si tienes el asistente habilitado | En nuestro servidor, como un permiso de acceso |
+| Un registro técnico por mensaje | En nuestro servidor: fecha, proveedor, modelo, si salió bien o mal (y el código de error si falló), tamaño de la consulta, tiempo de respuesta, versión de la app, cuántas propuestas se generaron y el identificador de la conversación |
+| Si el asistente está abierto a todo el mundo o solo a la beta | En nuestro servidor, como un interruptor general. No lleva datos de nadie |
+
+Ese registro técnico **no incluye tu mensaje, ni el resumen, ni la respuesta**.
+Es deliberadamente insuficiente para reconstruir una conversación: sirve para
+saber cuánto cuesta la función y si está fallando, y nada más.
+
+#### La excepción: el mensaje que reportas
+
+Google Play exige que las apps que generan contenido con IA permitan reportar
+una respuesta **sin salir de la app**. Eso descarta abrir tu correo con el texto
+pegado, y obliga a que el reporte llegue a un servidor nuestro. Preferimos
+decirte cómo quedó resuelto en vez de dejarlo entre líneas:
+
+- **Nada se envía solo.** El reporte se escribe únicamente cuando tocas
+  "reportar" sobre un mensaje concreto y confirmas. No hay envío automático, ni
+  en segundo plano, ni por muestreo.
+- **Se guarda solo el mensaje que reportaste.** No la conversación, no los
+  mensajes anteriores, no lo que tú escribiste y no el resumen de tus finanzas.
+- **Qué lo acompaña:** el motivo que elijas, el comentario que quieras escribir
+  (opcional), la fecha, la versión de la app, el identificador de esa
+  conversación y tu identificador de usuario.
+- **El motivo sale de una lista cerrada:** ofensivo, equivocado, peligroso,
+  problema de privacidad, u otro. No es un campo libre a propósito, para que la
+  pregunta no te invite a escribir ahí datos personales.
+- **Te lo advertimos antes de enviar**, en la misma pantalla: el mensaje
+  reportado se guarda en nuestros servidores para poder revisarlo.
+- **Quién lo lee:** la persona responsable de la sección 1, para ajustar el
+  asistente y sus filtros. No se usa para nada más, no se cruza con tus finanzas
+  y no se comparte con nadie.
+- **Un reporte enviado no se puede editar ni borrar** desde la app. La app
+  puede mostrarte que ya reportaste ese mensaje, y nada más: un reporte que se
+  cambia después de enviado no sirve para revisar nada. Si necesitas corregir o
+  retirar uno, escríbenos (sección 11).
+- **Se borra con tu cuenta**, igual que todo lo demás.
+
+La diferencia que sostiene esta excepción es simple: es **retención que tú
+pides**, no retención silenciosa. Si nunca reportas un mensaje, no hay ni una
+línea de tu conversación en nuestro servidor.
+
+Todo lo que está en nuestro servidor **se elimina al borrar tu cuenta**
+(sección 10), incluidos los reportes que hayas enviado. El resto de la
+conversación se va con los datos de tu teléfono.
+
+### 17.6 El asistente no toca tus datos por su cuenta
+
+Puede **proponerte** acciones: crear un presupuesto, una meta, una categoría o
+registrar un movimiento. Cuando lo hace, la app te muestra una tarjeta con los
+valores exactos y **no se escribe nada hasta que tú lo confirmes con un toque**.
+Si ignoras la propuesta, no queda rastro en tus datos.
+
+---
+
+## 18. Lo que billetudo hoy no hace
 
 Esta sección existe para que no tengas que deducirlo. Todo lo de abajo es
 verificable en la versión publicada de la app:
@@ -611,8 +851,10 @@ verificable en la versión publicada de la app:
   cuánto tiempo pasas en cada una.
 - **No hay compras dentro de la app** ni suscripciones.
 - **No hay notificaciones push.**
-- **No hay inteligencia artificial.** No enviamos tus datos a ningún modelo de
-  lenguaje ni a ningún servicio de IA.
+- **La inteligencia artificial se limita al asistente** de la sección 17: es
+  opcional, requiere sesión y requiere tu permiso. Fuera de él, ningún dato tuyo
+  se envía a un modelo de lenguaje. No categorizamos tus gastos con IA, no
+  analizamos tus finanzas en segundo plano y no generamos informes automáticos.
 - **No hay captura por voz ni por foto.** No leemos recibos, no transcribimos
   audio y no accedemos a las notificaciones de tu banco.
 - **No vendemos ni cedemos datos personales a terceros.**
@@ -622,9 +864,10 @@ verificable en la versión publicada de la app:
 Estamos diseñando funciones para que registrar un gasto cueste segundos:
 **dictarlo por voz**, **fotografiar el recibo** para que la app lea el monto,
 **leer las notificaciones de tu banco** en Android, y un **widget** de acceso
-rápido. Más adelante, gráficas avanzadas, ayuda con inteligencia artificial y
-una versión de pago que podría apoyarse en anuncios **con recompensa y de
-participación voluntaria** o en una suscripción.
+rápido. Más adelante, gráficas avanzadas y una versión de pago que podría
+apoyarse en anuncios **con recompensa y de participación voluntaria** o en una
+suscripción. El asistente de la sección 17, hoy en beta y gratuito, será parte
+de esa versión de pago.
 
 **Nada de eso está activo hoy** — la lista de arriba, la de lo que billetudo no
 hace, sigue siendo cierta mientras leas esta versión de la política. Cuando alguna de esas funciones
@@ -642,14 +885,14 @@ la razón de diseñarlas así:
 
 - **Serán opcionales.** Lo que hoy es gratis sigue gratis, sin anuncios y sin
   condiciones nuevas.
-- **La idea es procesar en tu teléfono**, no en un servidor. Cuando eso no sea
-  posible en algún caso concreto, lo diremos **explícitamente y sin adornos** en
-  esta política antes de activarlo, en vez de esconderlo bajo un "podríamos
-  compartir datos con proveedores".
+- **La idea es procesar en tu teléfono**, no en un servidor. La sección 17 es la
+  primera excepción a eso, y por eso está escrita entera y sin adornos en vez de
+  esconderse bajo un "podríamos compartir datos con proveedores". Cuando vuelva a
+  pasar en otra función, lo diremos igual de explícito y antes de activarla.
 
 ---
 
-## 18. Cambios a esta política
+## 19. Cambios a esta política
 
 Si cambia lo que hacemos con tus datos, cambiamos esta política. Publicaremos la
 versión nueva en esta misma dirección, con su número de versión y su fecha.
@@ -663,7 +906,7 @@ El historial de versiones se conserva para que puedas comparar.
 
 ---
 
-## 19. Contacto
+## 20. Contacto
 
 Para cualquier asunto relacionado con tus datos personales, incluido el
 ejercicio de tus derechos:
@@ -680,4 +923,4 @@ app. Si en 30 días no tuviste respuesta, insiste: algo falló.
 
 ---
 
-*billetudo — Política de privacidad, versión 1.4, 17 de agosto de 2026.*
+*billetudo — Política de privacidad, versión 1.5, 25 de agosto de 2026.*

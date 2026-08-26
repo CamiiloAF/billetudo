@@ -1,6 +1,12 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-17 (revisión de vigencia: esquema
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-25, segunda pasada (mecanismo
+de reporte in-app `ai_reports`: **existe en datos, no en el cliente** §10.3 y
+punto 32; la tabla local `AiMessages` ya existe y `schemaVersion` está en 30)
+· 2026-08-25 (auditoría del **asistente
+con IA de Fase 4**: diseñado y especificado, **NO implementado** §10.3;
+correcciones a §2.4 y §10; tres desfases de vigencia detectados §0.7)
+· 2026-08-17 (revisión de vigencia: esquema
 en `schemaVersion` 28 y dos columnas nuevas §1.1; estado real de B1 y B3 §0;
 **Fase 2 especificada pero NO implementada** §10.2 y
 [`checklist-fase-2.md`](checklist-fase-2.md))
@@ -250,6 +256,18 @@ en el sandbox temporal hasta que el sistema operativo los purgue.
 Está dentro del sandbox de la app, así que no es una fuga hacia otras apps. Se
 declara tal cual en la política; conviene borrarlos igual.
 
+### 0.7 — Desfases de vigencia detectados el 2026-08-25
+
+Tres cosas que los documentos afirman y que ya no coinciden con el árbol. Ninguna
+es un bloqueante, pero las tres hacen que un documento diga algo falso, que es
+justamente lo que esta auditoría existe para evitar.
+
+| Qué dice el documento | Qué dice el código hoy | Acción |
+|---|---|---|
+| `politica-de-privacidad.md` v1.4 §4.3: *"El correo… **no se muestra en ninguna pantalla de la app**"* | **Sí se muestra.** `lib/features/settings/presentation/widgets/settings_session_card.dart:78-81` pinta `user.email` en la tarjeta de sesión de Ajustes (commit `a735609`, *"correo en Session Card"*) | ✅ **Corregido en la v1.5.** También se ajustó la nota equivalente de `declaraciones-tiendas.md` §1.2, que repetía *"No se muestra en la app"* |
+| `AUDITORIA.md` §1.1 y `declaraciones-tiendas.md`: `schemaVersion` **28** | `app_database.dart:886` está en **29** (siguen siendo **20 tablas**: el cambio no añadió ninguna) | Sin impacto en las declaraciones: no hay tipo de dato nuevo. Anotado para que el próximo repaso no lo cite como 28 |
+| `declaraciones-tiendas.md`: versión de la app `0.0.5+8` | `pubspec.yaml:4` está en **`0.0.5+9`** | `[VERIFICAR: contra qué build exacto se envía, y re-verificar §1.1/§1.3 sobre ese binario]` |
+
 ---
 
 ## 1. Qué datos existen y dónde viven
@@ -412,8 +430,19 @@ paquete `http` está declarado solo por el tipo `ClientException`
 | 7 | Sentry ingest (`ingest.us.sentry.io`) | `bootstrap.dart:46-52` |
 | 8 | Google / Apple (identidad) | `google_auth_datasource.dart`, `apple_auth_datasource.dart` |
 
-**Solo existe una Edge Function** en todo el proyecto: `delete-account`
-(confirmado con `list_edge_functions` contra producción).
+**Ya no es una sola.** El 2026-08-25, durante esta misma auditoría, apareció en
+la rama `feat/ai-assistant` una **segunda Edge Function: `ai-chat`**
+(`supabase/functions/ai-chat/index.ts` + `_shared/ai/*`), el primer endpoint del
+proyecto que envía datos del usuario a un **proveedor externo de modelos de
+lenguaje**.
+
+| # | Destino | Origen en código | Estado |
+|---|---|---|---|
+| 9 | Edge Function `ai-chat` → `generativelanguage.googleapis.com` (API de Gemini, modelo `gemini-2.5-flash`) | `supabase/functions/ai-chat/index.ts`, `_shared/ai/gemini.ts:29` | **Backend en el repo; sin llamador todavía** — `lib/features/ai/` existe pero está **vacía**, así que ningún binario lo invoca |
+
+Esa fila 9 es la que rompe, cuando el cliente exista, la afirmación de la
+política v1.4 (*"no enviamos tus datos a ningún modelo de lenguaje"*) y la
+viñeta "sin IA" de `declaraciones-tiendas.md` §1.3. Ver §10.3.
 
 ---
 
@@ -742,12 +771,24 @@ Onboarding, 4 pantallas (`lib/features/onboarding/`):
 `lib/features/capture/` y `lib/features/improvement/` **están vacías** (0
 archivos). Confirmado también en `docs/marketing/plan-fichas-de-tienda.md:44-45`.
 
-No existen hoy: IA/coach, captura por voz, OCR de recibos, lectura de
-notificaciones bancarias, anuncios, suscripciones, analítica, notificaciones push.
+No existen hoy en el código: captura por voz, OCR de recibos, lectura de
+notificaciones bancarias, anuncios, suscripciones, analítica, notificaciones
+push **ni el asistente con IA**.
 
-La política los menciona **solo** en la sección "Lo que hoy no hacemos", dejando
-claro que no están activos y que su activación exigirá actualizar la política
-— nunca como funcionalidad presente.
+**Matiz importante sobre la IA (actualizado el 2026-08-25).** Sigue siendo cierto
+que no hay una línea de IA en `lib/` ni en `supabase/functions/`, pero la
+afirmación *"no existe IA/coach"* ya no puede usarse como si nada estuviera en
+marcha: el asistente está **diseñado, aprobado y especificado** en
+`docs/requirements/fase-4/21-asistente-ia.md`, y la política de privacidad **v1.5**
+ya lo describe para poder publicarse **antes** de que la feature se active. La
+auditoría de ese diseño está en §10.3.
+
+La política menciona las funciones no implementadas **solo** en la sección "Lo
+que hoy no hacemos", dejando claro que no están activas y que su activación
+exigirá actualizar la política — nunca como funcionalidad presente. La v1.5
+cambió ahí la negación absoluta de IA (*"No hay inteligencia artificial"*, v1.4
+§17) por una acotación verificable: la IA se limita al asistente opcional de la
+nueva §17, y fuera de él ningún dato va a un modelo de lenguaje.
 
 ### 10.2 Fase 2 (captura sin fricción): especificada, NO implementada
 
@@ -783,6 +824,138 @@ es publicar con las declaraciones viejas. `docs/requirements/README.md`
 ("Bloqueante de publicación") y las cuatro HU de privacidad de Fase 2
 (`17-captura-voz.md` HU-06/HU-07, `18-captura-ocr.md` HU-09,
 `19-notificaciones-bancarias.md` HU-08) apuntan a estos mismos archivos.
+
+### 10.3 Fase 4 (asistente con IA): diseñado y especificado, NO implementado
+
+El 2026-08-25 se aprobó el diseño de la **Fase A del asistente financiero con
+IA**, se escribió su requisito (`docs/requirements/fase-4/21-asistente-ia.md`) y
+**el backend aterrizó en la rama durante esta auditoría**. El cliente todavía
+no. Ese desfase es exactamente el estado que hay que declarar bien: lo que se
+declara ante las tiendas es el **binario**, y ningún binario tiene la feature.
+
+> **El árbol se mueve mientras se audita.** Cuando empezó esta revisión,
+> `supabase/functions/` tenía una sola función; horas después tenía dos. Nada de
+> lo de abajo debe citarse sin re-verificarlo contra el árbol del día.
+
+**Estado real, pieza por pieza** (rama `feat/ai-assistant`, 2026-08-25):
+
+| Pieza | Estado | Evidencia |
+|---|---|---|
+| Edge Function `ai-chat` | ✅ **Existe** | `supabase/functions/ai-chat/index.ts` (538 líneas) + `_shared/ai/{gemini,tools,prompt,validate,factory,provider,types}.ts` |
+| Proveedor y modelo | ✅ Gemini, `gemini-2.5-flash` por defecto | `_shared/ai/factory.ts` (`AI_PROVIDER`, `AI_MODEL`, `GEMINI_API_KEY`); endpoint `generativelanguage.googleapis.com/v1beta/models` (`gemini.ts:29`) |
+| Tablas de control | ✅ **Tres**, no dos | `20260825120000_ai_assistant_access_and_usage.sql`: `ai_access`, `ai_feature_flags` (interruptor global, sin `user_id`) y `ai_usage_log` |
+| Tabla de moderación `ai_reports` | ✅ Existe, **aplicada en dev, no en prod** | `20260825140000_ai_reports.sql`. Es la **única tabla del servidor con contenido de conversación** (`reported_text`), y solo se escribe cuando la persona reporta un mensaje a mano. Ver el bloque de abajo |
+| Borrado de cuenta | ✅ Cubierto **en la misma migración** que las crea | La migración reescribe `delete_account_data` con `delete from ai_usage_log` y `delete from ai_access`, más FK `on delete cascade` a `auth.users`. Rompe la racha de cuatro reincidencias de B1 |
+| Gate de acceso | ✅ En servidor, falla cerrado | `ai_access_state()` es `SECURITY DEFINER` con `revoke execute` para `anon`/`authenticated`; la app solo puede llamar al wrapper `my_ai_access_state()`, que resuelve sobre `auth.uid()`. `readAccessState` lanza si no puede leer |
+| Cupo | ✅ Diario, en servidor | `ai_access.daily_message_limit` (por defecto **30/día** UTC), contado sobre `ai_usage_log` con `outcome = 'ok'` |
+| Interruptor de apertura | ✅ Apagado, con la precondición legal escrita en el SQL | `ai_feature_flags.ai_assistant_open_to_all = false`, y la cabecera de la migración exige política v1.5 publicada + declaraciones rehechas + key con facturación |
+| Cliente (Flutter) | ⚠️ **Parcial y en movimiento** | Al cierre de esta revisión `lib/features/ai/` tiene **solo la capa `domain/`** (entidades, dos repositorios y 12 casos de uso). No hay `data/` ni `presentation/`, y **ningún archivo de `lib/` menciona `ai_reports`**. La fila de abajo la escribí cuando la carpeta estaba vacía; se movió el mismo día |
+| Tabla local de conversación | ✅ Existe | `AiMessages` en `lib/core/database/app_database.dart:899`, respaldada por `Table.localOnly('ai_messages', ...)` (comentario en :878). El `@DriftDatabase` la lista en :961 y `schemaVersion` está en **30** (:968) |
+| Consentimiento in-app (HU-02) | ❌ No existe | Sin cliente no hay pantalla. **Bloqueante de Apple 5.1.2(i)** |
+| Reporte in-app de contenido de IA (HU-09) | ⚠️ **Backend sí, cliente no** | La tabla, las policies y el borrado con la cuenta existen (`20260825140000_ai_reports.sql`, dev). No hay UI que escriba en ella: `grep ai_reports lib/` no devuelve nada. **Play mira el binario**, así que el bloqueante sigue abierto |
+
+**Lo que el código confirma de las promesas de la política** (leído, no asumido):
+
+- **El broker no persiste contenido.** `ai-chat/index.ts` no lee ninguna tabla
+  financiera y solo escribe `ai_usage_log` con metadatos (`recordUsage`). El
+  propio archivo lo dice en su cabecera: *"If a future change starts persisting
+  transcripts 'just for debugging', the policy becomes false the same day."*
+- **`ai_usage_log` es insuficiente para reconstruir una conversación**: guarda
+  `conversation_id`, proveedor, modelo, `outcome`, `error_code`, tokens,
+  `tool_rounds`, `proposals_count`, `latency_ms`, `client_version` y `usage_day`.
+  Nada de texto.
+- **Las propuestas nunca se ejecutan en el servidor**: las herramientas
+  `propose_*` se validan (`validate.ts`) y se devuelven como `proposals[]` para
+  que el cliente pinte una tarjeta.
+
+**`ai_reports`: la única excepción a "el servidor no guarda contenido"**
+(`supabase/migrations/20260825140000_ai_reports.sql`, aplicada en dev). Existe
+porque la *AI-Generated Content policy* de Play obliga a reportar **sin salir de
+la app**, lo que descarta el `mailto:` y fuerza un servidor propio. Lo
+verificado, columna por columna:
+
+- Guarda `user_id` (FK a `auth.users` con `on delete cascade`), `created_at`,
+  `conversation_id`, `reason`, `reported_text`, `comment`, `client_version` y
+  `status`.
+- **`reported_text` es contenido de conversación**: el mensaje del asistente que
+  la persona eligió reportar. Nada más de la conversación llega ahí, y nada
+  llega solo: se escribe únicamente al confirmar el reporte.
+- **`reason` tiene `check` con lista cerrada** (`offensive`, `wrong`, `harmful`,
+  `privacy`, `other`), deliberadamente, para no ofrecer un campo libre que
+  invite a pegar datos personales. `comment` sí es libre, y es opcional.
+- **RLS con `insert` + `select` de las propias filas, y nada más.** No hay
+  policy de `update` ni de `delete`: **la persona no puede rectificar ni suprimir
+  su reporte desde la app**, y tampoco puede tocar `status`. Eso es una
+  limitación real del derecho de rectificación y por eso quedó escrita en la
+  política §11, con el canal de contacto como salida.
+- **Entra en `delete_account_data` en la misma migración que la crea** (línea
+  `delete from ai_reports where user_id = p_user_id;`). Segunda vez seguida que
+  una tabla nueva no repite el bug B1.
+- **Dependencia de producto, no solo de código:** la UI tiene que mostrar el
+  aviso **antes de enviar**. Sin ese aviso, la política §17.5 se vuelve falsa el
+  día que la pantalla exista.
+
+**Tres hallazgos que cambian lo que los documentos podían decir:**
+
+1. **El transcript se reenvía en cada turno.** El servidor es sin estado, así
+   que el cliente manda la conversación completa (tope de 40 mensajes) en cada
+   mensaje. El historial **no se almacena** en ningún servidor, pero **sí pasa**
+   por Google cada vez. La política v1.5 §17.2 lo dice con esas palabras; una
+   redacción que solo dijera "tu historial se queda en el teléfono" habría sido
+   engañosa.
+2. **El tope de detalle son 50 filas, no 60**, y hay **cinco** herramientas de
+   lectura, no una (`tools.ts`: `get_transactions`, `get_category_breakdown`,
+   `compare_periods`, `get_budget_detail`, `get_goal_detail`), con un máximo de
+   **3 rondas** por turno (`AI_MAX_TOOL_ROUNDS`). Corregido en la política y en
+   las declaraciones.
+3. **La minimización de datos NO la puede garantizar el servidor.**
+   `validate.ts` comprueba que `snapshot` sea un objeto y nada más: no valida
+   qué campos trae. Toda la promesa de "las notas, el banco y los `last4` no
+   salen" depende **exclusivamente del cliente**, que aún no existe. Es el
+   riesgo estructural de esta feature y por eso HU-08 exige un test de lista
+   blanca.
+
+**Detalle menor pero real:** `ai_access.notes` es una columna de texto libre
+sobre una persona usuaria, escrita por el administrador. No es dato financiero,
+pero sí dato personal sujeto a acceso y rectificación como cualquier otro.
+
+**Qué se auditó del diseño, contra lo que los documentos prometen:**
+
+| Afirmación que la política v1.5 hace | En qué se apoya | Riesgo de que deje de ser cierta |
+|---|---|---|
+| "Las notas libres no salen del teléfono" | Construcción del snapshot (HU-08) | **Alto si no hay test.** Es una exclusión por omisión: alguien agrega un campo y nadie se entera. Por eso HU-08 exige una lista blanca con test de contrato |
+| "El banco y los últimos 4 dígitos no salen" | Misma construcción | Igual que arriba. Sostiene la respuesta *User payment info = no compartido* de Play |
+| "El nombre de la contraparte de una deuda no sale" | Del bloque de deudas solo salen totales por moneda y dirección | Medio: basta con que alguien "enriquezca" el bloque de deudas |
+| "Nuestro servidor no guarda el contenido" | `ai-chat` es un broker sin estado; `ai_usage_log` guarda solo metadatos | Medio: un log de depuración añadido para diagnosticar un incidente convierte esto en falso sin cambiar ninguna tabla |
+| "El historial vive solo en tu teléfono" | Tabla `Table.localOnly` en `powersync_schema.dart` | Bajo, pero binario: si alguien la declara como tabla normal, sincroniza entera |
+| "Google no usa tu contenido para entrenar" | Términos de la API de Gemini, **solo en el servicio de pago** | **Alto.** Con key gratuita esta frase es falsa. Ver la precondición dura de abajo |
+| "Todo lo del servidor se borra al borrar la cuenta" | `delete_account_data` **ya extendido** en la misma migración que crea las tablas, más `on delete cascade` a `auth.users` | **Bajo, por primera vez.** El patrón que reincidió cuatro veces (B1) aquí se rompió: la cobertura llegó con la tabla, no después. Falta ejecutar `select * from delete_account_data_coverage_gaps();` en dev y prod tras aplicar |
+
+**Precondición dura, la más importante de esta auditoría.** Los términos de la
+API de Gemini distinguen dos regímenes: en las *Unpaid Services*, Google usa el
+contenido enviado y las respuestas para **proveer, mejorar y desarrollar** sus
+productos, y **revisores humanos pueden leerlo** (los propios términos advierten
+"no envíes información sensible, confidencial o personal"); en las *Paid
+Services*, no se usa para mejorar productos y solo se registra por un tiempo
+limitado para detectar abusos y por obligaciones legales. La política v1.5 §17
+está escrita para el **segundo** régimen. Por lo tanto:
+
+> **Con key de la capa gratuita, la feature no se abre a nadie más que al
+> desarrollador.** Abrirla en ese estado convertiría §17 en una declaración
+> falsa ante el usuario y ante ambas tiendas. La key de pago no es una mejora de
+> cuota: es la condición que hace verdadero el documento.
+
+**`[VERIFICAR]` abiertos de esta feature** (ninguno resoluble en el código hoy):
+
+- `[VERIFICAR: contratación del tier de pago de la API de Gemini antes de abrir la feature a terceros]`
+- `[VERIFICAR: región de procesamiento de la API de Gemini —hoy la política dice "Estados Unidos y otros países donde Google opera"; si se fija una región concreta al contratar, precisar §8 de la política]`
+- `[VERIFICAR: campos exactos del bloque de pagos programados del snapshot (el diseño dice "los que vencen en los próximos 30 días" sin enumerar columnas) — la política debe listar lo que realmente se envía]`
+- `[VERIFICAR: acuerdo de tratamiento de datos con Google para la API de Gemini, en los mismos términos que el de Supabase; sin él, el veto de distribución en el EEE se refuerza]`
+- `[VERIFICAR: plazo de purga de ai_usage_log — hoy solo se promete que se borra con la cuenta, no que caduque antes]`
+- `[VERIFICAR: si declarar IA generativa mueve la clasificación por edad en Play (IARC) o en App Store]`
+- `[VERIFICAR: dónde y cómo se registra el consentimiento de HU-02 —versión del texto aceptado y fecha— para poder demostrarlo si una autoridad lo pide]`
+- `[VERIFICAR: en el dashboard de PowerSync, que las sync rules NO seleccionen ai_access, ai_usage_log ni ai_feature_flags]` — la publicación `powersync` es `FOR ALL TABLES`, así que las tres quedan dentro de ella por defecto. Si una sync rule las tomara, el registro de uso bajaría al dispositivo. Es la única parte del contrato que no vive en el repo, y el `README.md` de `supabase/functions/` ya lo lista como paso posterior a la migración.
+- `[VERIFICAR: ejecutar delete_account_data_coverage_gaps() en dev y prod tras aplicar la migración de IA — cero filas]`
 
 ---
 
@@ -998,6 +1171,46 @@ implemente. El detalle está en [`checklist-fase-2.md`](checklist-fase-2.md).
     es exactamente el bug B1, que ya reincidió cuatro veces. Con las tablas
     sincronizando, dejarlas fuera del RPC vuelve a hacer falsa la promesa de
     borrado total.
+
+### Fase 4 (asistente con IA) — bloqueantes de declaración
+
+Como los de Fase 2, **no** afectan a la publicación de hoy: la app no tiene
+ninguna capacidad de IA (§10.3). Se listan para que no se pierdan.
+
+27. `[VERIFICAR: key del tier de pago de la API de Gemini antes de abrir la feature a terceros]` —
+    **el más importante.** Con la capa gratuita, Google usa el contenido para
+    mejorar sus productos y puede haber revisión humana; la política v1.5 §17
+    promete lo contrario. Es la precondición que hace verdadero el documento, no
+    una optimización de cuota.
+28. ✅ **Cerrado en el código el 2026-08-25:** `ai_access` y `ai_usage_log`
+    entraron a `delete_account_data` **en la misma migración que las crea**
+    (`20260825120000_ai_assistant_access_and_usage.sql`), con `on delete
+    cascade` a `auth.users` como refuerzo. Es la primera vez que una tabla nueva
+    no repite el bug B1, y `ai_reports` la repitió bien después. En **dev**,
+    `delete_account_data_coverage_gaps()` devuelve **cero filas** con las tres
+    tablas del asistente más `ai_reports` (reportado por quien aplicó la
+    migración; no re-ejecutado en esta pasada). Queda el paso operativo en
+    producción: `[VERIFICAR: aplicar las migraciones del asistente en prod y correr delete_account_data_coverage_gaps() ahí]`.
+29. `[VERIFICAR: acuerdo de tratamiento de datos con Google para la API de Gemini]` —
+    se suma a los DPA pendientes de Sentry y PowerSync que hoy sostienen el veto
+    de distribución en el EEE (`declaraciones-tiendas.md` §0.1).
+30. `[VERIFICAR: región de procesamiento de la API de Gemini]` — determina la
+    precisión de la sección 8 de la política.
+31. `[VERIFICAR: campos exactos del snapshot en la implementación, contra la lista publicada en la política §17.2]` —
+    la política enumera lo que sale; si el código envía un campo más, la política
+    queda falsa. Se cierra con el test de lista blanca de HU-08.
+32. ⚠️ **Parcialmente cerrado el 2026-08-25:** el mecanismo in-app de reporte de
+    contenido generado por IA ya existe **del lado de datos**
+    (`20260825140000_ai_reports.sql`: tabla, RLS de `insert`+`select`, razones
+    cerradas y borrado con la cuenta), pero **no del lado del cliente**: ningún
+    archivo de `lib/` la menciona. Play evalúa el binario, así que sigue siendo
+    bloqueante. Quedan dos verificaciones:
+    `[VERIFICAR: aplicar 20260825140000_ai_reports.sql en prod]` y
+    `[VERIFICAR: que la UI de reporte muestre el aviso previo de que el mensaje reportado se guarda en el servidor — sin él, la política §17.5 es falsa]`.
+33. `[VERIFICAR: alcance de la redacción de Sentry sobre reported_text y comment]` —
+    si un fallo en el envío del reporte arrastra el texto reportado a un evento
+    de Sentry, ese contenido llega a un tercero que la política §17.5 no nombra
+    para este flujo.
 
 ---
 
