@@ -111,6 +111,18 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
     }
   }
 
+  @override
+  FutureResult<Unit> markAiConsentAccepted() async {
+    try {
+      await _local.markAiConsentAccepted(now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
   AppSettings _toEntity(db.AppSetting? row) => row == null
       ? const AppSettings.defaults()
       : AppSettings(
@@ -120,6 +132,7 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
           featuredBudgetId: row.featuredBudgetId,
           featuredBudgetMode: _toFeaturedBudgetMode(row.featuredBudgetMode),
           quickAccessOrder: _toQuickAccessOrder(row.quickAccessOrder),
+          aiConsentAcceptedAt: row.aiConsentAcceptedAt,
         );
 
   /// Parses the persisted comma-separated `QuickAccessItem.name` list back

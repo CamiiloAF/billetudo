@@ -31,6 +31,7 @@ class AppSettings extends Equatable {
     this.featuredBudgetId,
     this.featuredBudgetMode = FeaturedBudgetMode.automatic,
     this.quickAccessOrder = QuickAccessItem.defaultOrder,
+    this.aiConsentAcceptedAt,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -40,7 +41,8 @@ class AppSettings extends Equatable {
         onboardingCompleted = false,
         featuredBudgetId = null,
         featuredBudgetMode = FeaturedBudgetMode.automatic,
-        quickAccessOrder = QuickAccessItem.defaultOrder;
+        quickAccessOrder = QuickAccessItem.defaultOrder,
+        aiConsentAcceptedAt = null;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -74,6 +76,14 @@ class AppSettings extends Equatable {
   /// [QuickAccessItem.defaultOrder], today's fixed order.
   final List<QuickAccessItem> quickAccessOrder;
 
+  /// When the user consented to the AI assistant sending their message and a
+  /// snapshot of their finances to a third-party model (Apple 5.1.2(i);
+  /// privacy policy §17). `null` = not asked yet, or asked and not yet
+  /// accepted — the assistant's composer stays gated until this is set.
+  final DateTime? aiConsentAcceptedAt;
+
+  bool get hasAcceptedAiConsent => aiConsentAcceptedAt != null;
+
   AppSettings copyWith({
     bool? zeroBasedEnabled,
     bool? categoriesSeeded,
@@ -81,6 +91,7 @@ class AppSettings extends Equatable {
     String? featuredBudgetId,
     FeaturedBudgetMode? featuredBudgetMode,
     List<QuickAccessItem>? quickAccessOrder,
+    DateTime? aiConsentAcceptedAt,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
@@ -89,6 +100,7 @@ class AppSettings extends Equatable {
         featuredBudgetId: featuredBudgetId ?? this.featuredBudgetId,
         featuredBudgetMode: featuredBudgetMode ?? this.featuredBudgetMode,
         quickAccessOrder: quickAccessOrder ?? this.quickAccessOrder,
+        aiConsentAcceptedAt: aiConsentAcceptedAt ?? this.aiConsentAcceptedAt,
       );
 
   @override
@@ -99,5 +111,6 @@ class AppSettings extends Equatable {
         featuredBudgetId,
         featuredBudgetMode,
         quickAccessOrder,
+        aiConsentAcceptedAt,
       ];
 }

@@ -119,6 +119,15 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Records the AI assistant's third-party data-sharing consent as accepted
+  /// now (Apple 5.1.2(i)).
+  Future<void> markAiConsentAccepted({required DateTime now}) => _write(
+        AppSettingsCompanion(
+          aiConsentAcceptedAt: Value(now),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
   /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
   /// #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite rejects

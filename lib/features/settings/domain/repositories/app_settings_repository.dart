@@ -44,4 +44,10 @@ abstract class AppSettingsRepository {
   /// [QuickAccessItem.values] — validating that is `SetQuickAccessOrder`'s
   /// job (domain business rule), not this method's; this is a plain write.
   FutureResult<Unit> setQuickAccessOrder(List<QuickAccessItem> order);
+
+  /// Records the AI assistant's third-party data-sharing consent (Apple
+  /// 5.1.2(i)) as accepted now. Idempotent: calling it again just moves the
+  /// timestamp forward, which is harmless since the gate only checks
+  /// presence, never the exact instant.
+  FutureResult<Unit> markAiConsentAccepted();
 }
