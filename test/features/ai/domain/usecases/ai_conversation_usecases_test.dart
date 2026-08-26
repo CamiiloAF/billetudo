@@ -138,9 +138,8 @@ void main() {
     ).called(1);
   });
 
-  test('StartNewAiConversation resolves the thread to show in one call',
-      () async {
-    when(history.resumeOrCreateConversation)
+  test('StartNewAiConversation always opens a brand-new thread', () async {
+    when(history.startNewConversation)
         .thenAnswer((_) async => const Right('conv-7'));
 
     final id = (await StartNewAiConversation(history)())

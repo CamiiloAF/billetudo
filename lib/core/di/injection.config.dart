@@ -101,6 +101,7 @@ import 'package:billetudo/core/sync/presentation/cubit/sync_status_cubit.dart'
     as _i696;
 import 'package:billetudo/core/theme/theme_mode_cubit.dart' as _i407;
 import 'package:billetudo/core/theme/theme_preference_datasource.dart' as _i207;
+import 'package:billetudo/core/utils/ai_client_context.dart' as _i1026;
 import 'package:billetudo/core/utils/money_formatter.dart' as _i731;
 import 'package:billetudo/features/accounts/data/datasources/account_number_local_datasource.dart'
     as _i612;
@@ -186,6 +187,8 @@ import 'package:billetudo/features/ai/domain/usecases/report_ai_message.dart'
     as _i494;
 import 'package:billetudo/features/ai/domain/usecases/resolve_ai_tool_call.dart'
     as _i1057;
+import 'package:billetudo/features/ai/domain/usecases/resume_or_create_ai_conversation.dart'
+    as _i61;
 import 'package:billetudo/features/ai/domain/usecases/send_ai_turn.dart'
     as _i598;
 import 'package:billetudo/features/ai/domain/usecases/start_new_ai_conversation.dart'
@@ -196,6 +199,14 @@ import 'package:billetudo/features/ai/domain/usecases/watch_ai_conversations.dar
     as _i1039;
 import 'package:billetudo/features/ai/domain/usecases/watch_ai_messages.dart'
     as _i817;
+import 'package:billetudo/features/ai/presentation/cubit/ai_action_cubit.dart'
+    as _i1056;
+import 'package:billetudo/features/ai/presentation/cubit/ai_chat_cubit.dart'
+    as _i433;
+import 'package:billetudo/features/ai/presentation/cubit/ai_consent_cubit.dart'
+    as _i587;
+import 'package:billetudo/features/ai/presentation/cubit/ai_history_cubit.dart'
+    as _i369;
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
     as _i22;
 import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart'
@@ -706,6 +717,8 @@ import 'package:billetudo/features/settings/domain/usecases/clear_featured_budge
     as _i594;
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
     as _i182;
+import 'package:billetudo/features/settings/domain/usecases/mark_ai_consent_accepted.dart'
+    as _i1053;
 import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart'
     as _i643;
 import 'package:billetudo/features/settings/domain/usecases/set_onboarding_completed.dart'
@@ -829,6 +842,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i460.SharedPreferencesAsync>(
         () => registerModule.sharedPreferencesAsync());
     gh.lazySingleton<_i486.SecureClipboard>(() => _i486.SecureClipboard());
+    gh.lazySingleton<_i1026.AiClientContextProvider>(
+        () => _i1026.AiClientContextProvider());
     gh.lazySingleton<_i731.MoneyFormatter>(() => const _i731.MoneyFormatter());
     gh.lazySingleton<_i22.AppleAuthDatasource>(
         () => _i22.AppleAuthDatasource());
@@ -1203,6 +1218,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i11.ClearAiHistory(gh<_i179.AiHistoryRepository>()));
     gh.factory<_i562.ClearAllAiHistory>(
         () => _i562.ClearAllAiHistory(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i61.ResumeOrCreateAiConversation>(() =>
+        _i61.ResumeOrCreateAiConversation(gh<_i179.AiHistoryRepository>()));
     gh.factory<_i196.StartNewAiConversation>(
         () => _i196.StartNewAiConversation(gh<_i179.AiHistoryRepository>()));
     gh.factory<_i723.UpdateAiProposalStatus>(
@@ -1257,6 +1274,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i594.ClearFeaturedBudget(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i1053.MarkAiConsentAccepted>(
+        () => _i1053.MarkAiConsentAccepted(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i643.SetFeaturedBudget>(
         () => _i643.SetFeaturedBudget(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i528.SetOnboardingCompleted>(
@@ -1298,6 +1317,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i72.GoalMomentumCalculator>(),
           gh<_i703.GoalCoherenceCalculator>(),
           gh<_i474.CrashReporter>(),
+        ));
+    gh.factory<_i369.AiHistoryCubit>(() => _i369.AiHistoryCubit(
+          gh<_i1039.WatchAiConversations>(),
+          gh<_i196.StartNewAiConversation>(),
+          gh<_i11.ClearAiHistory>(),
+          gh<_i562.ClearAllAiHistory>(),
         ));
     gh.factory<_i861.LinkScheduledPaymentToGoal>(
         () => _i861.LinkScheduledPaymentToGoal(
@@ -1569,6 +1594,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i717.ImportBatchesCubit>(() => _i717.ImportBatchesCubit(
           gh<_i813.WatchImportBatches>(),
           gh<_i367.UndoImportBatch>(),
+        ));
+    gh.factory<_i587.AiConsentCubit>(() => _i587.AiConsentCubit(
+          gh<_i182.GetAppSettings>(),
+          gh<_i1053.MarkAiConsentAccepted>(),
         ));
     gh.factory<_i465.ImportFlowCubit>(() => _i465.ImportFlowCubit(
           gh<_i894.ParseCsvHeaders>(),
@@ -1847,6 +1876,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
+    gh.factory<_i1056.AiActionCubit>(() => _i1056.AiActionCubit(
+          gh<_i455.ExecuteAiAction>(),
+          gh<_i723.UpdateAiProposalStatus>(),
+        ));
     gh.factory<_i759.BudgetFormCubit>(() => _i759.BudgetFormCubit(
           gh<_i526.CreateBudget>(),
           gh<_i857.UpdateBudget>(),
@@ -1936,6 +1969,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
           gh<_i787.ReorderAccounts>(),
+        ));
+    gh.factory<_i433.AiChatCubit>(() => _i433.AiChatCubit(
+          gh<_i61.ResumeOrCreateAiConversation>(),
+          gh<_i817.WatchAiMessages>(),
+          gh<_i782.AppendAiMessage>(),
+          gh<_i5.BuildFinancialSnapshot>(),
+          gh<_i598.SendAiTurn>(),
+          gh<_i1057.ResolveAiToolCall>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i1026.AiClientContextProvider>(),
         ));
     return this;
   }

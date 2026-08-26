@@ -122,6 +122,7 @@ void main() {
             onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
             onOpenLogin: onOpenLogin ?? () {},
             onOpenSyncStatus: () {},
+            onOpenAi: () {},
           ),
         ),
       ),

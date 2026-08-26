@@ -266,6 +266,7 @@ void main() {
               onOpenQuickAccessOrder: () {},
               onOpenLogin: () {},
               onOpenSyncStatus: () {},
+              onOpenAi: () {},
             ),
           ),
           brightness: brightness,

@@ -5851,4 +5851,188 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialBudgetFeaturedChoicePoint2Body =>
       'Open a budget and use its ⋮ menu to feature it or remove it. It\'s reversible whenever you want.';
+
+  @override
+  String get aiChatTitle => 'Billetudo';
+
+  @override
+  String get aiChatHistoryTooltip => 'History';
+
+  @override
+  String get aiChatNewConversationTooltip => 'New conversation';
+
+  @override
+  String get aiChatBetaBadge => 'Beta';
+
+  @override
+  String get aiChatDisclaimer =>
+      'AI-generated answers. This is not financial advice.';
+
+  @override
+  String get aiChatComposerHint => 'Message Billetudo…';
+
+  @override
+  String get aiChatErrorTitle => 'I couldn\'t reply';
+
+  @override
+  String get aiChatErrorBody =>
+      'Try again. Your data is still safe on your device.';
+
+  @override
+  String get aiChatMessageFailed =>
+      'Couldn\'t be sent. Your data is still safe on your device.';
+
+  @override
+  String get aiConsentTitle => 'Before you start';
+
+  @override
+  String get aiConsentHeadline => 'Billetudo uses a Google model to answer you';
+
+  @override
+  String get aiConsentBody =>
+      'Your message and a summary of your finances (no notes or bank-identifying data) are sent to Google to generate the reply. Your account is never shared, and nothing is executed without you confirming it.';
+
+  @override
+  String get aiConsentAccept => 'Accept and continue';
+
+  @override
+  String get aiConsentDecline => 'No, thanks';
+
+  @override
+  String get aiHistoryTitle => 'History';
+
+  @override
+  String get aiHistoryDeleteAllTooltip => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteAllConfirm => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteOneSheetMessage =>
+      'This conversation will be permanently deleted from your history. This cannot be undone.';
+
+  @override
+  String get aiHistoryDeleteAllSheetMessage =>
+      'All your conversations with Billetudo will be permanently deleted. This cannot be undone.';
+
+  @override
+  String get aiHistoryEmptyMessage =>
+      'You don\'t have any conversations with Billetudo yet';
+
+  @override
+  String get aiHistoryEmptyCta => 'New conversation';
+
+  @override
+  String get aiHistoryErrorTitle => 'We couldn\'t load your history';
+
+  @override
+  String get aiHistoryRowDelete => 'Delete';
+
+  @override
+  String get aiHistoryRowUntitled => 'Untitled conversation';
+
+  @override
+  String get aiHistoryRowYesterday => 'Yesterday';
+
+  @override
+  String get aiProposalKickerPending => 'Suggestion';
+
+  @override
+  String get aiProposalKickerConfirmed => 'Confirmed';
+
+  @override
+  String get aiProposalKickerDismissed => 'Dismissed';
+
+  @override
+  String get aiProposalKickerFailed => 'Couldn\'t be saved';
+
+  @override
+  String get aiProposalFootnotePending => 'Nothing is saved until you confirm.';
+
+  @override
+  String get aiProposalFootnoteConfirmed => 'Applied to your transactions.';
+
+  @override
+  String get aiProposalFootnoteDismissed => 'No changes were saved.';
+
+  @override
+  String get aiProposalFootnoteFailed =>
+      'There was a problem saving this. Your data is still safe on your device.';
+
+  @override
+  String get aiProposalActionDiscard => 'Discard';
+
+  @override
+  String get aiProposalActionConfirm => 'Confirm';
+
+  @override
+  String get aiProposalActionRetry => 'Retry';
+
+  @override
+  String get aiProposalConfirmedRow => 'It\'s already in your transactions';
+
+  @override
+  String get aiProposalUnsupported =>
+      'This app version can\'t act on this suggestion yet.';
+
+  @override
+  String get aiProposalAmount => 'Amount';
+
+  @override
+  String get aiProposalPeriod => 'Period';
+
+  @override
+  String get aiProposalCategory => 'Category';
+
+  @override
+  String get aiProposalScopeAllCategories => 'All categories';
+
+  @override
+  String aiProposalScopeSomeCategories(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString categories',
+      one: '1 category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProposalGoalTarget => 'Target amount';
+
+  @override
+  String get aiProposalGoalDate => 'Target date';
+
+  @override
+  String get aiProposalGoalNoDate => 'No deadline';
+
+  @override
+  String get aiProposalCategoryType => 'Type';
+
+  @override
+  String get aiProposalCategoryScope => 'Placement';
+
+  @override
+  String get aiProposalCategoryScopeRoot => 'Main category';
+
+  @override
+  String get aiProposalCategoryScopeSub => 'Subcategory';
+
+  @override
+  String get aiProposalTransactionType => 'Type';
+
+  @override
+  String get aiProposalTransactionDate => 'Date';
+
+  @override
+  String get aiProposalTransactionAccount => 'Account';
+
+  @override
+  String get aiProposalTransactionAccountUnknown => 'Selected account';
 }

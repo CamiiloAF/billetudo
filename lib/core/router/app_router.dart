@@ -16,6 +16,12 @@ import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/accounts/presentation/widgets/account_gate_copy.dart';
 import '../../features/accounts/presentation/widgets/account_gated_route.dart';
+import '../../features/ai/presentation/cubit/ai_action_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_chat_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_consent_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_history_cubit.dart';
+import '../../features/ai/presentation/pages/ai_assistant_page.dart';
+import '../../features/ai/presentation/pages/ai_history_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/domain/entities/delete_account_scope.dart';
 import '../../features/auth/domain/entities/sign_out_outcome.dart';
@@ -175,6 +181,8 @@ abstract final class AppRoutes {
   static const String scheduledPayments = '/pagos-programados';
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String reports = '/graficas';
+  static const String ai = '/asistente';
+  static const String aiHistory = '/asistente/historial';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
@@ -476,6 +484,8 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _goalLinkModeRoute(),
       _importExportRoute(),
       _reportsRoute(),
+      _aiRoute(),
+      _aiHistoryRoute(),
       // The welcome flow (`13-onboarding.md`): a sibling of the shell route,
       // same reasoning as the routes above — it must render without the tab
       // bar, and unlike them it is also the *only* screen reachable while
@@ -556,6 +566,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               // Bugfix item 6: offline with no session → back up / sign in.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+              onOpenAi: () => unawaited(context.push(AppRoutes.ai)),
               // NOTE(gate-cuenta run): `HomePage` on disk no longer declares
               // `onOpenBudget` — this callsite was left dangling by something
               // outside this task's scope (a build break present before any
@@ -1326,6 +1337,40 @@ GoRoute _reportsRoute() => GoRoute(
       },
     );
 
+// Asistente IA (`design-system/billetudo/pages/asistente-ia.md`): reached from
+// Inicio's `AI Banner`, rendered as a stacked screen (`Page Header`, no `Tab
+// Bar`). `AiConsentCubit`/`AiChatCubit`/`AiActionCubit` are all `@injectable`
+// (never singletons) so a fresh instance is provided per visit, same as
+// `ReportsShellCubit`'s siblings that are *not* lazy singletons.
+GoRoute _aiRoute() => GoRoute(
+      path: AppRoutes.ai,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => getIt<AiConsentCubit>()),
+          BlocProvider(create: (context) => getIt<AiChatCubit>()),
+          BlocProvider(create: (context) => getIt<AiActionCubit>()),
+        ],
+        child: AiAssistantPage(
+          onBack: () => context.pop(),
+          onOpenHistory: () => context.push<String>(AppRoutes.aiHistory),
+        ),
+      ),
+    );
+
+// The assistant's history list, a sibling stacked route (not nested under
+// `_aiRoute()`) so it can pop back to the chat screen carrying the picked
+// conversation id as its result (`AiHistoryPage`'s own doc).
+GoRoute _aiHistoryRoute() => GoRoute(
+      path: AppRoutes.aiHistory,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<AiHistoryCubit>(), (c) => c.start()),
+        child: const AiHistoryPage(),
+      ),
+    );
+
 // Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
 // rendered as a stacked screen on the root navigator — a `Page Header` with a
 // back button, no `Tab Bar`. The read screens (list + detail) plus the write
@@ -1486,8 +1531,7 @@ GoRoute _debtLinkModeRoute() => GoRoute(
                 ),
               ),
               BlocProvider.value(
-                value:
-                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
               ),
               BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
             ],
@@ -1519,8 +1563,7 @@ GoRoute _goalLinkModeRoute() => GoRoute(
                 ),
               ),
               BlocProvider.value(
-                value:
-                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
               ),
               BlocProvider.value(
                 value: getIt<GoalLinkCubit>()

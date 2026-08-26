@@ -9506,6 +9506,330 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Entra a un presupuesto y usa el menú ⋮ para marcarlo como destacado o quitarlo. Es reversible en cualquier momento.'**
   String get tutorialBudgetFeaturedChoicePoint2Body;
+
+  /// No description provided for @aiChatTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Billetudo'**
+  String get aiChatTitle;
+
+  /// No description provided for @aiChatHistoryTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get aiChatHistoryTooltip;
+
+  /// No description provided for @aiChatNewConversationTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva conversación'**
+  String get aiChatNewConversationTooltip;
+
+  /// No description provided for @aiChatBetaBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Beta'**
+  String get aiChatBetaBadge;
+
+  /// No description provided for @aiChatDisclaimer.
+  ///
+  /// In es, this message translates to:
+  /// **'Respuestas generadas con IA. No es asesoría financiera.'**
+  String get aiChatDisclaimer;
+
+  /// No description provided for @aiChatComposerHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Escríbele a Billetudo…'**
+  String get aiChatComposerHint;
+
+  /// No description provided for @aiChatErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pude responder'**
+  String get aiChatErrorTitle;
+
+  /// No description provided for @aiChatErrorBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Intentá de nuevo. Tus datos siguen a salvo en tu dispositivo.'**
+  String get aiChatErrorBody;
+
+  /// No description provided for @aiChatMessageFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar. Tus datos siguen a salvo en tu dispositivo.'**
+  String get aiChatMessageFailed;
+
+  /// No description provided for @aiConsentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Antes de empezar'**
+  String get aiConsentTitle;
+
+  /// No description provided for @aiConsentHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'Billetudo usa un modelo de Google para responderte'**
+  String get aiConsentHeadline;
+
+  /// No description provided for @aiConsentBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu mensaje y un resumen de tus finanzas (sin notas ni datos de identificación bancaria) se envían a Google para generar la respuesta. Nunca se comparte tu cuenta, ni se ejecuta ninguna acción sin que la confirmes tú.'**
+  String get aiConsentBody;
+
+  /// No description provided for @aiConsentAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar y continuar'**
+  String get aiConsentAccept;
+
+  /// No description provided for @aiConsentDecline.
+  ///
+  /// In es, this message translates to:
+  /// **'No, gracias'**
+  String get aiConsentDecline;
+
+  /// No description provided for @aiHistoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get aiHistoryTitle;
+
+  /// No description provided for @aiHistoryDeleteAllTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar todo'**
+  String get aiHistoryDeleteAllTooltip;
+
+  /// No description provided for @aiHistoryDeleteAllConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar todo'**
+  String get aiHistoryDeleteAllConfirm;
+
+  /// No description provided for @aiHistoryDeleteOneSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta conversación se eliminará de tu historial de forma permanente. Esta acción no se puede deshacer.'**
+  String get aiHistoryDeleteOneSheetMessage;
+
+  /// No description provided for @aiHistoryDeleteAllSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminarán todas tus conversaciones con Billetudo de forma permanente. Esta acción no se puede deshacer.'**
+  String get aiHistoryDeleteAllSheetMessage;
+
+  /// No description provided for @aiHistoryEmptyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes conversaciones con Billetudo'**
+  String get aiHistoryEmptyMessage;
+
+  /// No description provided for @aiHistoryEmptyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva conversación'**
+  String get aiHistoryEmptyCta;
+
+  /// No description provided for @aiHistoryErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tu historial'**
+  String get aiHistoryErrorTitle;
+
+  /// No description provided for @aiHistoryRowDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get aiHistoryRowDelete;
+
+  /// No description provided for @aiHistoryRowUntitled.
+  ///
+  /// In es, this message translates to:
+  /// **'Conversación sin título'**
+  String get aiHistoryRowUntitled;
+
+  /// No description provided for @aiHistoryRowYesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayer'**
+  String get aiHistoryRowYesterday;
+
+  /// No description provided for @aiProposalKickerPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Propuesta'**
+  String get aiProposalKickerPending;
+
+  /// No description provided for @aiProposalKickerConfirmed.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmado'**
+  String get aiProposalKickerConfirmed;
+
+  /// No description provided for @aiProposalKickerDismissed.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartada'**
+  String get aiProposalKickerDismissed;
+
+  /// No description provided for @aiProposalKickerFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar'**
+  String get aiProposalKickerFailed;
+
+  /// No description provided for @aiProposalFootnotePending.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada se guarda hasta que confirmes.'**
+  String get aiProposalFootnotePending;
+
+  /// No description provided for @aiProposalFootnoteConfirmed.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicado a tus movimientos.'**
+  String get aiProposalFootnoteConfirmed;
+
+  /// No description provided for @aiProposalFootnoteDismissed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se guardó ningún cambio.'**
+  String get aiProposalFootnoteDismissed;
+
+  /// No description provided for @aiProposalFootnoteFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'Hubo un problema al registrar esto. Tus datos siguen a salvo en tu dispositivo.'**
+  String get aiProposalFootnoteFailed;
+
+  /// No description provided for @aiProposalActionDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get aiProposalActionDiscard;
+
+  /// No description provided for @aiProposalActionConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get aiProposalActionConfirm;
+
+  /// No description provided for @aiProposalActionRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get aiProposalActionRetry;
+
+  /// No description provided for @aiProposalConfirmedRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya está en tus movimientos'**
+  String get aiProposalConfirmedRow;
+
+  /// No description provided for @aiProposalUnsupported.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta versión de la app aún no puede aplicar esta propuesta.'**
+  String get aiProposalUnsupported;
+
+  /// No description provided for @aiProposalAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get aiProposalAmount;
+
+  /// No description provided for @aiProposalPeriod.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo'**
+  String get aiProposalPeriod;
+
+  /// No description provided for @aiProposalCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get aiProposalCategory;
+
+  /// No description provided for @aiProposalScopeAllCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las categorías'**
+  String get aiProposalScopeAllCategories;
+
+  /// No description provided for @aiProposalScopeSomeCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 categoría} other{{count} categorías}}'**
+  String aiProposalScopeSomeCategories(num count);
+
+  /// No description provided for @aiProposalGoalTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto objetivo'**
+  String get aiProposalGoalTarget;
+
+  /// No description provided for @aiProposalGoalDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha objetivo'**
+  String get aiProposalGoalDate;
+
+  /// No description provided for @aiProposalGoalNoDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha límite'**
+  String get aiProposalGoalNoDate;
+
+  /// No description provided for @aiProposalCategoryType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get aiProposalCategoryType;
+
+  /// No description provided for @aiProposalCategoryScope.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicación'**
+  String get aiProposalCategoryScope;
+
+  /// No description provided for @aiProposalCategoryScopeRoot.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría principal'**
+  String get aiProposalCategoryScopeRoot;
+
+  /// No description provided for @aiProposalCategoryScopeSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Subcategoría'**
+  String get aiProposalCategoryScopeSub;
+
+  /// No description provided for @aiProposalTransactionType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get aiProposalTransactionType;
+
+  /// No description provided for @aiProposalTransactionDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get aiProposalTransactionDate;
+
+  /// No description provided for @aiProposalTransactionAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get aiProposalTransactionAccount;
+
+  /// No description provided for @aiProposalTransactionAccountUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta seleccionada'**
+  String get aiProposalTransactionAccountUnknown;
 }
 
 class _AppLocalizationsDelegate

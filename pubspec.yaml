@@ -156,6 +156,8 @@ dependencies:
   csv: ^6.0.0
   archive: ^4.0.4
   file_picker: ^12.0.0-beta.7
+  package_info_plus: ^10.2.1
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0

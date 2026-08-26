@@ -48,6 +48,7 @@ class HomePage extends StatefulWidget {
     required this.onOpenQuickAccessOrder,
     required this.onOpenLogin,
     required this.onOpenSyncStatus,
+    required this.onOpenAi,
     super.key,
   });
 
@@ -86,6 +87,9 @@ class HomePage extends StatefulWidget {
   /// Opens "Estado de sincronización" from the cloud sheet (HU-08). The sheet
   /// never navigates itself; the Home owns the destination.
   final VoidCallback onOpenSyncStatus;
+
+  /// Opens the assistant (`asistente-ia.md`) from the `AI Banner`.
+  final VoidCallback onOpenAi;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -187,16 +191,6 @@ class _HomePageState extends State<HomePage> {
     if (canProceed) {
       widget.onAddTransaction();
     }
-  }
-
-  Future<void> _openAiSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ComingSoonSheet.show(
-      context,
-      icon: LucideIcons.sparkles,
-      message: l10n.homeAiSheetMessage,
-      disclaimer: l10n.homeAiDisclaimer,
-    );
   }
 
   @override
@@ -381,7 +375,7 @@ class _HomePageState extends State<HomePage> {
                         _openTransaction(context, entry.transaction.id),
                   ),
                 const SizedBox(height: 16),
-                AiBanner(onTap: () => _openAiSheet(context)),
+                AiBanner(onTap: widget.onOpenAi),
               ],
             ),
           ),
