@@ -222,12 +222,17 @@ Future<void> _selectManualMode(PatrolIntegrationTester $) async {
   await $.tester.pumpAndSettle();
 }
 
-/// Types [text] into the form's only `TextFormField` (Nota) — confirmed by
-/// reading every widget under `lib/features/scheduled_payments/presentation`:
-/// the amount, interval and account/category/date fields are all custom
-/// widgets, not `TextFormField`s.
+/// Types [text] into the form's only Nota field. It is not a
+/// `TextFormField`: `lib/features/scheduled_payments/presentation` renders
+/// it via `NoteAutocompleteField`
+/// (`lib/core/widgets/note_autocomplete_field.dart`), which internally
+/// wraps a plain `TextField`, not a `TextFormField` — confirmed by reading
+/// every widget under `lib/features/scheduled_payments/presentation`: the
+/// amount, interval and account/category/date fields are all other custom
+/// widgets, none of them a `TextField`/`TextFormField`, so `find.byType(
+/// TextField)` is unambiguous on this form.
 Future<void> _enterNote(PatrolIntegrationTester $, String text) async {
-  final field = find.byType(TextFormField);
+  final field = find.byType(TextField);
   await _scrollUntilVisible($, field);
   await $.tester.enterText(field, text);
   await $.tester.pumpAndSettle();

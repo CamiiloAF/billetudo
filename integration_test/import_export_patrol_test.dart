@@ -131,6 +131,24 @@ Future<String> _writeOwnFormatCsv() async {
   return path;
 }
 
+/// Pumps frames until any finder in [finders] matches, or a frame budget
+/// runs out — used where which of two mutually-exclusive states is showing
+/// depends on async data (`ImportExportHubCubit.start`'s `HasAnyTransaction`
+/// stream), not just widget-tree mounting.
+Future<void> _pumpUntilAnyFound(
+  PatrolIntegrationTester $,
+  List<Finder> finders, {
+  int maxFrames = 30,
+}) async {
+  for (
+    var i = 0;
+    i < maxFrames && finders.every((finder) => finder.evaluate().isEmpty);
+    i++
+  ) {
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 Future<void> _openImportExportHub(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Más'));
   await $.tester.pumpAndSettle();
@@ -147,13 +165,21 @@ Future<void> _openImportExportHub(PatrolIntegrationTester $) async {
 /// single previewed row. Leaves the app back on the hub, same as tapping
 /// "Listo" would.
 ///
-/// Every call site starts from a Drift database with no transactions yet
-/// (`startApp` always boots a fresh in-memory-equivalent DB, and this is the
-/// *first* import each scenario runs), so the hub is always rendering
-/// `ImportExportEmptyHub` at this point, never `ImportExportHubContent` —
-/// same `onImportCsv` callback underneath, but the empty state's CTA label
-/// is "Importar un CSV" (`importExportEmptyImportCta`), not "Importar desde
-/// un CSV" (`importExportImportCsvTitle`, the data-state row's label).
+/// `startApp` only wipes the on-device sqlite file
+/// (`resetLocalDatabase`/`ImportExportHubCubit.start`'s `HasAnyTransaction`
+/// reads straight off that file), so a fresh scenario against a *local*
+/// database always renders `ImportExportEmptyHub`. But this suite runs
+/// against the real dev Supabase/PowerSync backend (`support/patrol_app.dart`
+/// never mocks it), and nothing in `_prepareCleanBoot` signs out or wipes
+/// that project's cloud data between scenarios/CI runs — so if an earlier
+/// e2e run against the same dev account already synced a transaction up,
+/// PowerSync can re-download it into this "fresh" local database before the
+/// hub's first query resolves, and `hasAnyTransactions` comes back `true`
+/// (`ImportExportHubContent`, not `ImportExportEmptyHub`). That is a data-
+/// isolation gap between e2e runs, not a broken locator or a product bug —
+/// there is no reset-the-dev-project mechanism in this repo to invoke
+/// instead — so this helper tolerates either state rather than assuming the
+/// database is always empty.
 Future<void> _importOwnFormatCsv(
   PatrolIntegrationTester $,
   String csvPath,
@@ -162,10 +188,29 @@ Future<void> _importOwnFormatCsv(
   await _mockFilePicker(csvPath, csvName);
   await _openImportExportHub($);
 
-  // Hub (empty state) → "Importar un CSV" (HU-05 entry point) triggers the
-  // (mocked) native picker directly — no "Elegir archivo" sheet in between
-  // anymore.
-  await $.tester.tap(find.text('Importar un CSV'));
+  // Empty-state hub (`ImportExportEmptyHub`) uses "Importar un CSV"
+  // (`importExportEmptyImportCta`); data-state hub (`ImportExportHubContent`)
+  // uses "Importar desde un CSV" (`importExportImportCsvTitle`) — same
+  // `onImportCsv` callback underneath either way, see this helper's doc
+  // comment for why either can be showing.
+  final emptyStateCta = find.text('Importar un CSV');
+  final dataStateCta = find.text('Importar desde un CSV');
+  await _pumpUntilAnyFound($, [emptyStateCta, dataStateCta]);
+  final importCta =
+      emptyStateCta.evaluate().isNotEmpty ? emptyStateCta : dataStateCta;
+  if (importCta == dataStateCta) {
+    // Only the data-state row can sit below the fold — same lazy-layout
+    // caveat as the "Importaciones recientes" row further down this file.
+    await $.tester.scrollUntilVisible(
+      importCta,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await $.tester.pumpAndSettle();
+  }
+  // Import CTA triggers the (mocked) native picker directly — no "Elegir
+  // archivo" sheet in between anymore.
+  await $.tester.tap(importCta);
   await $.tester.pumpAndSettle();
 
   // Mapping step: own vocabulary fully autodetected — defaults to the

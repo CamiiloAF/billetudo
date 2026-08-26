@@ -16,22 +16,49 @@
 // helpers on purpose: that is exactly the profile `BudgetHeroSelector`'s
 // automatic pick requires, and it keeps this scenario free of the
 // category-seed network dependency (see that file's own header comment).
+import 'package:billetudo/core/router/app_router.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budget_detail_page.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_budget_progress.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
+/// Creates one cash account named [name] from `/cuentas` — same flow (and
+/// same reason) as `budgets_patrol_test.dart`'s own `_createCashAccount`:
+/// `BudgetsPage._addBudget` runs the account gate first (`15-gate-cuenta.md`
+/// HU-04) on a fresh install with zero accounts, opening
+/// `AccountGateBridgeSheet` (no `TextFormField` at all) instead of the real
+/// budget form — verified against a real emulator run.
+Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
+  final context = $.tester.element(find.byType(Scaffold).first);
+  GoRouter.of(context).go(AppRoutes.accounts);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Agregar cuenta'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Efectivo'));
+  await $.tester.pumpAndSettle();
+  await $.tester.enterText(find.byType(TextFormField).first, name);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Guardar'));
+  await $.tester.pumpAndSettle();
+  GoRouter.of(context).go(AppRoutes.home);
+  await $.tester.pumpAndSettle();
+}
+
 /// Opens the budget form from the list's `+` circular button — same helper
 /// shape as `budgets_patrol_test.dart`'s private one (not shared across
 /// integration_test files on purpose: each Patrol suite stays self
-/// contained).
+/// contained). Assumes an active account already exists (see
+/// [_createCashAccount]'s doc comment) and its own minitutorial has already
+/// been dismissed.
 Future<void> _openNewBudgetForm(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Presupuestos'));
   await $.tester.pumpAndSettle();
+  await dismissAutoTutorialIfShown($);
   await $.tester.tap(find.byTooltip('Nuevo presupuesto'));
   await $.tester.pumpAndSettle();
 }
@@ -89,6 +116,12 @@ void main() {
       expect(find.byType(HomeHeroCard), findsOneWidget);
       expect(find.byType(HeroPeriodStepper), findsNothing);
       expect(find.byType(HomeHeroBudgetProgress), findsNothing);
+
+      // A budget can't be created on a fresh install without an account
+      // first (see `_createCashAccount`'s doc comment) — this does not
+      // affect the fallback assertions above, which are about the absence of
+      // a budget, not of an account.
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm(

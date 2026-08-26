@@ -18,14 +18,45 @@
 // Every scenario starts from `startApp`, which wipes the on-device sqlite
 // file first (see `support/patrol_app.dart`), so scenarios do not leak state
 // into each other even though they share one app process.
+import 'package:billetudo/core/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
-/// Opens the budget form from the list's `+` circular button.
+/// Creates one cash account named [name] from `/cuentas`, same flow as
+/// `debts_patrol_test.dart`'s private `_createCashAccount`.
+///
+/// Needed before every scenario in this file now reaches "Nuevo
+/// presupuesto": `BudgetsPage._addBudget` runs the account gate first
+/// (`15-gate-cuenta.md` HU-04 — `showAccountGateIfNeeded(context,
+/// AccountGateSurface.budget)`), and a fresh `startApp` install has zero
+/// accounts. Skipping this leaves the "+" tap opening `AccountGateBridgeSheet`
+/// instead of the real budget form — a sheet with no `TextFormField` at all
+/// — so the very next `enterText` in `_fillMinimalBudgetForm` fails with
+/// "Bad state: No element" (0 `TextFormField`s in the whole tree), not a
+/// simple "widget not found" — verified against a real emulator run.
+Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
+  final context = $.tester.element(find.byType(Scaffold).first);
+  GoRouter.of(context).go(AppRoutes.accounts);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Agregar cuenta'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Efectivo'));
+  await $.tester.pumpAndSettle();
+  await $.tester.enterText(find.byType(TextFormField).first, name);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.byTooltip('Guardar'));
+  await $.tester.pumpAndSettle();
+  GoRouter.of(context).go(AppRoutes.home);
+  await $.tester.pumpAndSettle();
+}
+
+/// Opens the budget form from the list's `+` circular button. Assumes an
+/// active account already exists (see [_createCashAccount]'s doc comment).
 Future<void> _openNewBudgetForm(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Presupuestos'));
   await $.tester.pumpAndSettle();
@@ -105,6 +136,7 @@ void main() {
     'progreso',
     ($) async {
       await startApp($);
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm(
@@ -129,6 +161,7 @@ void main() {
     'el detalle',
     ($) async {
       await startApp($);
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm($, name: 'Gastos fijos', amount: '500000');
@@ -167,6 +200,7 @@ void main() {
     'afecta el período siguiente',
     ($) async {
       await startApp($);
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm(
@@ -229,6 +263,7 @@ void main() {
     'deja en el histórico, reactivarlo lo devuelve',
     ($) async {
       await startApp($);
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm(
@@ -271,6 +306,7 @@ void main() {
     'HU-11: eliminar un presupuesto pide confirmación y lo quita de la lista',
     ($) async {
       await startApp($);
+      await _createCashAccount($, 'Efectivo');
 
       await _openNewBudgetForm($);
       await _fillMinimalBudgetForm(

@@ -11,10 +11,10 @@
 // (every tab label also shows inside its own page). Taps still go through the
 // visible affordances — the tab labels and the FAB tooltip — exactly as a user
 // would drive the shell.
-import 'package:billetudo/core/widgets/coming_soon_page.dart';
 import 'package:billetudo/features/accounts/presentation/pages/accounts_page.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budgets_page.dart';
+import 'package:billetudo/features/goals/presentation/pages/goals_list_page.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
@@ -67,19 +67,22 @@ void main() {
   );
 
   patrolTest(
-    'HU-01: Presupuestos abre su feature real y Metas muestra "Próximamente"',
+    'HU-01: Presupuestos y Metas abren sus features reales',
     ($) async {
       await startApp($);
 
-      // Budgets shipped as a real feature (BudgetsPage), so its tab no longer
-      // renders the ComingSoonPage placeholder. Goals is still unimplemented.
+      // Both Budgets and Goals shipped as real features (BudgetsPage,
+      // GoalsListPage): neither tab renders the ComingSoonPage placeholder
+      // anymore. Goals recovered its own bottom-nav tab (see
+      // `QuickAccessRow`'s doc comment: "Metas is not here anymore: it
+      // recovered its own bottom-nav tab").
       await $.tester.tap(find.text('Presupuestos'));
       await $.tester.pumpAndSettle();
       expect(find.byType(BudgetsPage), findsOneWidget);
 
       await $.tester.tap(find.text('Metas'));
       await $.tester.pumpAndSettle();
-      expect(find.byType(ComingSoonPage), findsOneWidget);
+      expect(find.byType(GoalsListPage), findsOneWidget);
 
       // The tab bar stays visible and lets us return to Inicio.
       await $.tester.tap(find.text('Inicio'));
