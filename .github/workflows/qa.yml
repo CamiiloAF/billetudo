@@ -1,0 +1,328 @@
+name: QA — Play Store (internal) & TestFlight (build de QA)
+
+# Se dispara con un tag `qa-<version>` o `qa-<version>-<descripción>`, donde
+# <version> es la versión de producción a la que apunta este build (ej.
+# `qa-0.0.7-ai-asistente`: "esto se planea lanzar como 0.0.7"). La versión es
+# OBLIGATORIA en el tag — el job `parse-version` falla el run si no viene o
+# no tiene forma x.y.z, precisamente para que quede explícito a qué versión
+# apunta cada tag de QA.
+#
+# A diferencia de release.yml:
+#   - La versión marketing (build-name) NUNCA se escribe en pubspec.yaml: es
+#     la que trae el tag, aplicada solo como flag de `flutter build` para
+#     este build puntual. `pubspec.yaml` sigue reflejando la última versión
+#     realmente liberada hasta que corras `release-x.y.z` de verdad.
+#   - El BUILD NUMBER sí es compartido con release.yml: Play Store exige que
+#     el versionCode sea siempre mayor que cualquiera ya subido a esa app (en
+#     cualquier track) y App Store exige lo mismo por versión — así que no
+#     puede ser un contador propio de QA, tiene que ser el mismo contador
+#     +1 de siempre. Por eso el job `bump-build-number` sí commitea a main,
+#     pero ÚNICAMENTE el número después del `+` (nunca la versión x.y.z real
+#     del pubspec, esa la sigue moviendo solo release.yml).
+#   - Sube únicamente al track `internal` de Play Store (nada de producción
+#     ni closed testing todavía) y como build interno de TestFlight.
+#   - El código que se compila es el del commit exacto al que apunta el tag
+#     de QA (no `main`) — el bump de build number es el único paso que toca
+#     main, y es independiente de qué rama estés probando.
+#
+# Corre contra el MISMO paquete/bundle id y el MISMO backend de producción
+# que release.yml (mismo flavor `prod`, mismos secrets SUPABASE_*/POWERSYNC_*)
+# — no hay todavía un ambiente "dev" desplegado, solo local y producción.
+# Quien aprueba estos builds son personas reales usando la app con sus datos
+# reales, no testers con datos de prueba, así que apuntar a otro backend les
+# rompería su información. Lo único distinto de un release real es el track
+# de distribución (internal en vez del público) y que la versión marketing
+# es efímera (del tag), no la de pubspec.yaml.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'qa-*'
+
+jobs:
+  parse-version:
+    name: Validar tag y versión de QA
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
+    steps:
+      - name: Parse y valida el tag qa-<version>[-descripcion]
+        id: parse
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^qa-([0-9]+\.[0-9]+\.[0-9]+)(-.+)?$ ]]; then
+            echo "::error::Tag '$TAG' inválido. Este pipeline se dispara empujando un tag \`qa-<version>\` o \`qa-<version>-<descripcion>\`, con la versión de producción a la que apunta este build. Ej.: qa-0.0.7-ai-asistente. 'Run workflow' manual sin ese tag no aplica."
+            exit 1
+          fi
+          VERSION="${BASH_REMATCH[1]}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+  # Único paso de este pipeline que toca main: avanza en 1 el contador de
+  # build compartido con release.yml (el número después del `+` en
+  # pubspec.yaml), SIN tocar la versión x.y.z ahí guardada — esa sigue
+  # siendo responsabilidad exclusiva de release.yml. Así Play/App Store
+  # siempre reciben un build number mayor al anterior sin importar si el
+  # último build subido fue de QA o de un release real.
+  bump-build-number:
+    name: Bump build number (compartido con release.yml)
+    needs: parse-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      build_number: ${{ steps.bump.outputs.build_number }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump build number in pubspec.yaml
+        id: bump
+        run: |
+          CURRENT=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}')  # ej. 0.0.6+10
+          VERSION_PART="${CURRENT%%+*}"   # 0.0.6 — no se toca
+          CURRENT_BUILD="${CURRENT##*+}"  # 10
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+
+          sed -i "s/^version: .*/version: ${VERSION_PART}+${NEW_BUILD}/" pubspec.yaml
+
+          echo "build_number=${NEW_BUILD}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated pubspec.yaml
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore(qa): bump build number to ${{ steps.bump.outputs.build_number }} for ${{ needs.parse-version.outputs.tag }} [skip ci]"
+          git push origin HEAD:main
+
+  build-aab-qa:
+    name: Build & upload AAB (Play internal)
+    needs: [parse-version, bump-build-number]
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Sin `ref:` — checkea el commit exacto al que apunta el tag qa-*.
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      # Mismo .env.prod que release.yml — sin ambiente dev desplegado, QA
+      # prueba contra el backend real para no romper los datos de quien aprueba.
+      - name: Create .env.prod
+        run: |
+          cat > .env.prod << EOF
+          ENVIRONMENT=prod
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+          POWERSYNC_URL=${{ secrets.POWERSYNC_URL }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EOF
+
+      - name: Warn if SENTRY_DSN is missing
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::warning::SENTRY_DSN no está configurado — el build de QA saldría sin reporte de errores (NoopCrashReporter)."
+          fi
+
+      - name: Decode release keystore & key.properties
+        if: env.RELEASE_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          cat > android/key.properties << EOF
+          storePassword=$RELEASE_KEYSTORE_PASSWORD
+          keyPassword=$RELEASE_KEY_PASSWORD
+          keyAlias=$RELEASE_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Warn if release keystore is missing
+        if: env.RELEASE_KEYSTORE_BASE64 == ''
+        run: echo "::warning::RELEASE_KEYSTORE_BASE64 no está configurado — el AAB se firmaría con debug y no sirve para Play."
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code (Drift + injectable)
+        run: dart run build_runner build --force-jit
+
+      # --build-name/--build-number son flags de este build únicamente: no
+      # tocan pubspec.yaml ni el repo. build-name es la versión que trae el
+      # tag (la que verán Play Console y quien apruebe); build-number es el
+      # timestamp, para diferenciarlo de cualquier build real ya subido.
+      - name: Build AAB (flavor prod)
+        run: |
+          flutter build appbundle --release --flavor prod \
+            --build-name=${{ needs.parse-version.outputs.version }} \
+            --build-number=${{ needs.bump-build-number.outputs.build_number }} \
+            --dart-define-from-file=.env.prod
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: billetudo-${{ needs.parse-version.outputs.tag }}.aab
+          path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          retention-days: 30
+
+      - name: Create GitHub Release (QA, prerelease)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "QA rumbo a ${{ needs.parse-version.outputs.version }}: ${{ needs.parse-version.outputs.tag }} (build ${{ needs.bump-build-number.outputs.build_number }})"
+          prerelease: true
+          files: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          generate_release_notes: true
+
+      - name: Upload to Play Store (Internal Test)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}
+          packageName: com.billetudo.app
+          releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          track: internal
+          status: completed
+
+  build-ipa-qa:
+    name: Build & upload IPA (TestFlight)
+    needs: [parse-version, bump-build-number]
+    # Ver comentario en release.yml sobre por qué macos-26 (Xcode 26+, SDK
+    # de iOS 26+ exigido por App Store Connect desde 2026).
+    runs-on: macos-26
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+
+      - name: Create .env.prod
+        run: |
+          cat > .env.prod << EOF
+          ENVIRONMENT=prod
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+          POWERSYNC_URL=${{ secrets.POWERSYNC_URL }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EOF
+
+      - name: Warn if SENTRY_DSN is missing
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::warning::SENTRY_DSN no está configurado — el build de QA saldría sin reporte de errores (NoopCrashReporter)."
+          fi
+
+      - name: Import distribution certificate
+        env:
+          DIST_CERT_P12_BASE64: ${{ secrets.DIST_CERT_P12_BASE64 }}
+          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 20)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo "$DIST_CERT_P12_BASE64" | base64 -d > /tmp/distribution.p12
+          security import /tmp/distribution.p12 -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Install provisioning profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
+            > ~/Library/MobileDevice/Provisioning\ Profiles/billetudo_appstore.mobileprovision
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        run: cd ios && pod install --repo-update
+
+      - name: Generate code (Drift + injectable)
+        run: dart run build_runner build --force-jit
+
+      # Idéntico al de release.yml: mismo flavor prod, mismo bundle id, misma
+      # config "Release-prod" — ver ese archivo para el porqué detallado.
+      - name: Force manual signing in Xcode project
+        run: |
+          python3 - <<'PYEOF'
+          import re
+
+          path = "ios/Runner.xcodeproj/project.pbxproj"
+          content = open(path).read()
+
+          entry_re = re.compile(
+              r'(isa = XCBuildConfiguration;.*?buildSettings = \{\n)(.*?)'
+              r'(\t\t\t\};\n\t\t\tname = (?:"([^"]+)"|([A-Za-z0-9_.-]+));\n\t\t\};)',
+              re.S,
+          )
+
+          def inject(m):
+              head, settings, tail = m.group(1), m.group(2), m.group(3)
+              name = m.group(4) or m.group(5)
+              if name == "Release-prod" and "PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo;\n" in settings:
+                  extra = (
+                      '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
+                      '\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";\n'
+                      '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";\n'
+                  )
+                  settings = extra + settings
+              return head + settings + tail
+
+          new_content, count = entry_re.subn(inject, content)
+          assert 'PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store"' in new_content, "no se insertó la firma manual"
+          open(path, "w").write(new_content)
+          print(f"XCBuildConfiguration entries scanned: {count}")
+          PYEOF
+
+      # --build-name/--build-number son flags de este build únicamente.
+      - name: Build IPA (flavor prod)
+        run: |
+          flutter build ipa --release \
+            --flavor prod \
+            --build-name=${{ needs.parse-version.outputs.version }} \
+            --build-number=${{ needs.bump-build-number.outputs.build_number }} \
+            --dart-define-from-file=.env.prod \
+            --export-options-plist=ios/ExportOptionsProd.plist
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: billetudo-${{ needs.parse-version.outputs.tag }}.ipa
+          path: build/ios/ipa/*.ipa
+          retention-days: 30
+
+      - name: Find IPA path
+        id: find_ipa
+        run: echo "IPA_PATH=$(find build/ios/ipa -name '*.ipa' | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ${{ steps.find_ipa.outputs.IPA_PATH }}
+          issuer-id: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
