@@ -113,3 +113,18 @@ Como usuario quiero ver el detalle completo de una transacción (cuenta, categor
 - Una transacción con `debtId` asignado **sí cuenta** en los totales de ingreso/gasto de gráficas/informes, según su `type` (pagar la cuota es gasto real; tomar el préstamo es entrada de caja). *Esto invierte la regla anterior que la excluía como si fuera un `transfer`* — ver `08-deudas.md` §Estadísticas. El reporte de flujo ofrece un toggle para **segregarlas** como serie aparte, no para ocultarlas. Su `categoryId` sigue siendo opcional; los movimientos de deuda sin categoría caen en el bucket "Sin categoría" del desglose.
 - `source` se fija automáticamente por el flujo de entrada (en Fase 1 solo `manual` e `imported` existen realmente; los demás valores del enum quedan reservados para Fase 2/4).
 - Al eliminar una cuenta o categoría con transacciones asociadas, resolver primero según `01-cuentas.md` / `02-categorias.md` antes de permitir el borrado definitivo.
+- **Filas "fantasma" de capturas pendientes (decisión 2026-08-27, `../fase-2/19-notificaciones-bancarias.md` HU-04):** cuando la lectura de notificaciones bancarias esté implementada, el listado de una cuenta muestra, **fijadas al inicio y antes del primer grupo de día**, las filas derivadas de `PendingCaptures` sugeridas para esa cuenta. **No se intercalan cronológicamente** — dentro de un historial largo se perderían, que es lo contrario de lo que buscan. Estas filas llevan marca visual de "pendiente de confirmar" y **no son `Transactions`**: no suman al total del listado ni a ningún cálculo de saldo, y al no vivir dentro de un grupo de día no participan de ningún total diario. Tocar una fila fantasma abre el flujo de despacho de HU-05 de esa feature, no el editor de HU-04 de esta.
+
+## Pendiente — Cambio rápido de cuenta en Movimientos (2026-08-26)
+
+**Estado: pendiente de diseño, no comprometido.** Registra una deuda de UX que nace de una decisión tomada en el rediseño del Home; no tiene diseño ni historia de usuario todavía.
+
+**De dónde viene.** El Home tenía una tira "Mis cuentas" (bugfix item 8) cuyas mini-cards navegaban a Movimientos **ya filtrado por esa cuenta** (`onOpenAccountMovements` en `home_page.dart`). Al darle protagonismo al asistente de IA, esa tira salió del Home y su acceso a saldos se reemplazó por una hoja que se abre desde el header — que muestra los saldos mejor (todas las cuentas, nombre completo, total por moneda), pero **no conserva el atajo de "un toque → movimientos de esta cuenta"**.
+
+El dueño lo identificó como el trade-off explícito de ese cambio: *"me permitía con un solo clic ir a filtrar los movimientos de esa cuenta, era muy rápido ese proceso… me gustaría que más adelante analicemos una forma de hacer un filtrado más rápido"*.
+
+**Dónde debería resolverse.** En **Movimientos**, no en el Home. El caso de uso real no es "ver saldos" (eso ya lo cubre la hoja de saldos) sino **alternar entre cuentas mientras se revisa la actividad** — y eso pertenece a la pantalla que muestra la actividad. Hoy el filtro por cuenta existe pero vive dentro del sistema de filtros general, que es varios toques y no está pensado para ir y volver entre cuentas.
+
+**A explorar cuando se retome** (ninguna decidida): una fila de chips de cuenta en la cabecera de Movimientos, con estado activo, que filtre en sitio; un selector de cuenta en la barra superior; o un gesto de deslizar entre cuentas. La restricción de fondo: debe permitir **alternar** rápido, no solo filtrar una vez — si volver a "todas las cuentas" cuesta tanto como filtrar, no resuelve el problema.
+
+**Cuidado con la regla existente:** el feed del Home agrega **todas** las cuentas activas a propósito (`04-inicio.md` §HU-05) y eso no cambia. Esto es sobre la pestaña Movimientos.

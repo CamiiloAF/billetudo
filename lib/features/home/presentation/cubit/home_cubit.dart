@@ -11,6 +11,7 @@ import '../../../../core/sync/domain/usecases/watch_sync_status_details.dart';
 import '../../../../core/sync/presentation/utils/sync_freshness.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../ai/domain/usecases/check_ai_access.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../budgets/domain/entities/budget_detail_data.dart';
@@ -20,8 +21,12 @@ import '../../../budgets/domain/usecases/get_budget_progress.dart';
 import '../../../budgets/domain/usecases/watch_featured_budget_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
+import '../../domain/entities/home_ai_insight.dart';
 import '../../domain/entities/home_snapshot.dart';
+import '../../domain/usecases/watch_has_any_budget.dart';
+import '../../domain/usecases/watch_home_ai_insight.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
+import '../../domain/usecases/watch_pending_scheduled_payment_count.dart';
 import '../../domain/usecases/watch_recent_transactions.dart';
 import 'home_state.dart';
 
@@ -52,6 +57,10 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchFeaturedBudgetProgress,
     this._getBudgetById,
     this._getBudgetProgress,
+    this._watchHasAnyBudget,
+    this._watchHomeAiInsight,
+    this._watchPendingScheduledPaymentCount,
+    this._checkAiAccess,
   ) : super(HomeState.initial(clock.now()));
 
   final WatchAccounts _watchAccounts;
@@ -71,6 +80,10 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchFeaturedBudgetProgress _watchFeaturedBudgetProgress;
   final GetBudgetById _getBudgetById;
   final GetBudgetProgress _getBudgetProgress;
+  final WatchHasAnyBudget _watchHasAnyBudget;
+  final WatchHomeAiInsight _watchHomeAiInsight;
+  final WatchPendingScheduledPaymentCount _watchPendingScheduledPaymentCount;
+  final CheckAiAccess _checkAiAccess;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _monthTxSub;
@@ -79,6 +92,15 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<SyncStatusSnapshot>? _syncSub;
   StreamSubscription<Result<BudgetWithProgress?>>? _featuredBudgetSub;
   StreamSubscription<Result<BudgetDetailData>>? _featuredBudgetDataSub;
+  StreamSubscription<Result<bool>>? _hasAnyBudgetSub;
+  StreamSubscription<Result<int>>? _pendingScheduledSub;
+  StreamSubscription<Result<HomeAiInsight?>>? _aiInsightSub;
+
+  /// The `(month, hasAnyBudget, featuredBudgetId, spendingTotalMinor)` key
+  /// [_aiInsightSub] was last subscribed against — resubscribing on every
+  /// unrelated tick (e.g. a benign sync re-emission) would restart the
+  /// insight's own history query for nothing.
+  (DateTime, bool, String?, int)? _aiInsightKey;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastMonthTransactions;
@@ -120,10 +142,14 @@ class HomeCubit extends Cubit<HomeState> {
     await _syncSub?.cancel();
     await _featuredBudgetSub?.cancel();
     await _featuredBudgetDataSub?.cancel();
+    await _hasAnyBudgetSub?.cancel();
+    await _pendingScheduledSub?.cancel();
+    await _aiInsightSub?.cancel();
     _featuredBudgetId = null;
     _periodIndex = null;
     _featuredBudgetData = null;
     _lastFeaturedResult = null;
+    _aiInsightKey = null;
 
     final now = clock.now();
     _visibleMonth = DateTime(now.year, now.month);
@@ -135,6 +161,108 @@ class HomeCubit extends Cubit<HomeState> {
     _syncSub = _watchSyncStatusDetails().listen(_onSyncSnapshot);
     _featuredBudgetSub =
         _watchFeaturedBudgetProgress().listen(_onFeaturedBudgetProgress);
+    _hasAnyBudgetSub = _watchHasAnyBudget().listen(_onHasAnyBudget);
+    _pendingScheduledSub = _watchPendingScheduledPaymentCount()
+        .listen(_onPendingScheduledCount);
+  }
+
+  /// Passive input, same convention as [_onSyncSnapshot]/[_onAuthSession]:
+  /// updates [HomeState.hasAnyBudget] independently of [_recompute]'s
+  /// readiness gate, then re-evaluates the AI insight (criterion 10's forced
+  /// "crea un presupuesto" depends on it).
+  void _onHasAnyBudget(Result<bool> result) {
+    if (isClosed) {
+      return;
+    }
+    final hasAnyBudget = result.getRight().toNullable();
+    if (hasAnyBudget == null) {
+      return;
+    }
+    // `failure` is re-passed on purpose, same as `_onSyncSnapshot`:
+    // `copyWith` drops it when omitted, and this tick must not clear a
+    // failure the body is still rendering.
+    emit(
+      state.copyWith(hasAnyBudget: hasAnyBudget, failure: state.failure),
+    );
+    _maybeRefreshAiInsight();
+  }
+
+  /// Passive input feeding `QuickAccessRow`'s "Pagos programados" badge.
+  void _onPendingScheduledCount(Result<int> result) {
+    if (isClosed) {
+      return;
+    }
+    final count = result.getRight().toNullable();
+    if (count == null) {
+      return;
+    }
+    emit(
+      state.copyWith(pendingScheduledCount: count, failure: state.failure),
+    );
+  }
+
+  /// Resubscribes [_watchHomeAiInsight] only when its real inputs changed —
+  /// see [_aiInsightKey]'s doc. A snapshot must have landed already
+  /// (`state.spending != null`); until then there is nothing to compare.
+  void _maybeRefreshAiInsight() {
+    final spending = state.spending;
+    if (spending == null) {
+      return;
+    }
+    final key = (
+      _visibleMonth,
+      state.hasAnyBudget,
+      _featuredBudgetId,
+      spending.displayTotalMinor,
+    );
+    if (key == _aiInsightKey) {
+      return;
+    }
+    _aiInsightKey = key;
+    unawaited(_aiInsightSub?.cancel());
+    _aiInsightSub = _watchHomeAiInsight(
+      month: _visibleMonth,
+      spending: spending,
+      hasAnyBudget: state.hasAnyBudget,
+      featuredBudget: state.budgetProgress,
+    ).listen(_onAiInsight);
+  }
+
+  void _onAiInsight(Result<HomeAiInsight?> result) {
+    if (isClosed) {
+      return;
+    }
+    // A failure here falls back to the "con chips" default variant
+    // (`aiInsight: null`) rather than surfacing an error — the card is
+    // informative, never a hard dependency of the Home being usable.
+    emit(
+      state.copyWith(
+        aiInsight: result.getRight().toNullable(),
+        clearAiInsight: result.getRight().toNullable() == null,
+        failure: state.failure,
+      ),
+    );
+  }
+
+  /// "Ahora no": drops the current insight for the rest of this session.
+  /// Simplification: the design's "reappears next period" persistence is not
+  /// implemented — dismissing here falls back to the chips variant until the
+  /// next natural recompute (e.g. the month/featured budget changing) picks
+  /// the insight stream back up.
+  void dismissAiInsight() {
+    if (isClosed) {
+      return;
+    }
+    unawaited(_aiInsightSub?.cancel());
+    emit(state.copyWith(clearAiInsight: true, failure: state.failure));
+  }
+
+  /// Whether the user currently has access to the AI chat — asked at the
+  /// moment of a tap (never before), so the card/chips gate exactly per
+  /// criterion 12.
+  Future<bool> hasAiAccess() async {
+    final result = await _checkAiAccess();
+    return result.fold((_) => false, (access) => access.allowed);
   }
 
   /// HU-07: the session updates the greeting/avatar only — it never gates the
@@ -359,6 +487,7 @@ class HomeCubit extends Cubit<HomeState> {
       budgetProgress: featured.getRight().toNullable(),
     );
     emit(state.copyWith(status: HomeStatus.ready, snapshot: snapshot));
+    _maybeRefreshAiInsight();
   }
 
   /// HU-05: offers the "Deshacer" snackbar for a delete that happened in the
@@ -399,6 +528,9 @@ class HomeCubit extends Cubit<HomeState> {
     await _syncSub?.cancel();
     await _featuredBudgetSub?.cancel();
     await _featuredBudgetDataSub?.cancel();
+    await _hasAnyBudgetSub?.cancel();
+    await _pendingScheduledSub?.cancel();
+    await _aiInsightSub?.cancel();
     return super.close();
   }
 }

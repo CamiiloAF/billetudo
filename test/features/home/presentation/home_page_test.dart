@@ -5,14 +5,13 @@ import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
-import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
-import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
-import 'package:billetudo/features/home/presentation/widgets/ai_banner.dart';
+import 'package:billetudo/features/home/presentation/widgets/ai_card.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_header.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_card.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_skeleton.dart';
@@ -21,8 +20,9 @@ import 'package:billetudo/features/home/presentation/widgets/quick_access_row.da
 import 'package:billetudo/features/home/presentation/widgets/quick_access_settings_button.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/recent_activity_skeleton_row.dart';
+import 'package:billetudo/features/home/presentation/widgets/sheets/account_sheet.dart';
+import 'package:billetudo/features/home/presentation/widgets/sheets/balances_sheet.dart';
 import 'package:billetudo/features/home/presentation/widgets/sheets/month_picker_sheet.dart';
-import 'package:billetudo/features/home/presentation/widgets/sheets/sync_status_sheet.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -53,6 +53,7 @@ void main() {
   HomeState readyWith(
     List<dynamic> transactions, {
     BudgetWithProgress? budgetProgress,
+    HomeAiInsight? aiInsight,
   }) =>
       HomeState(
         status: HomeStatus.ready,
@@ -62,6 +63,7 @@ void main() {
           transactions: transactions.cast(),
           budgetProgress: budgetProgress,
         ),
+        aiInsight: aiInsight,
       );
 
   Future<void> pumpHome(
@@ -74,9 +76,15 @@ void main() {
     VoidCallback? onOpenScheduledPayments,
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
+    VoidCallback? onOpenGoals,
     VoidCallback? onOpenQuickAccessOrder,
     VoidCallback? onOpenLogin,
+    VoidCallback? onOpenSyncStatus,
+    VoidCallback? onOpenSettings,
+    VoidCallback? onSignOut,
+    VoidCallback? onOpenAi,
     VoidCallback? onAddTransaction,
+    VoidCallback? onCreateBudget,
     ValueChanged<String>? onOpenBudget,
     MockHomeCubit? cubit,
   }) async {
@@ -87,6 +95,7 @@ void main() {
       const Stream<HomeState>.empty(),
       initialState: state,
     );
+    when(homeCubit.hasAiAccess).thenAnswer((_) async => true);
 
     final appSettingsCubit = MockAppSettingsCubit();
     when(() => appSettingsCubit.state).thenReturn(const AppSettingsState());
@@ -112,17 +121,20 @@ void main() {
             onAddTransaction: onAddTransaction ?? () {},
             onSeeAllTransactions: () {},
             onOpenTransaction: (_) async => null,
-            onCreateBudget: () {},
+            onCreateBudget: onCreateBudget ?? () {},
             onOpenBudget: onOpenBudget ?? (_) {},
             onOpenAccounts: onOpenAccounts ?? () {},
             onOpenAccountMovements: onOpenAccountMovements ?? (_) {},
             onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
             onOpenDebts: onOpenDebts ?? () {},
             onOpenReports: onOpenReports ?? () {},
+            onOpenGoals: onOpenGoals ?? () {},
             onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
             onOpenLogin: onOpenLogin ?? () {},
-            onOpenSyncStatus: () {},
-            onOpenAi: () {},
+            onOpenSyncStatus: onOpenSyncStatus ?? () {},
+            onOpenSettings: onOpenSettings ?? () {},
+            onSignOut: onSignOut ?? () {},
+            onOpenAi: onOpenAi ?? () {},
           ),
         ),
       ),
@@ -130,37 +142,99 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('con datos: muestra header, movimientos y banner de IA',
+  testWidgets('con datos: muestra header, movimientos y la card de IA',
       (tester) async {
     await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
 
-    expect(find.text('Hola de nuevo'), findsOneWidget);
+    expect(find.text('Hola de nuevo 👋'), findsOneWidget);
     expect(find.text('Movimientos recientes'), findsOneWidget);
     expect(find.byType(RecentActivityRow), findsOneWidget);
-    // The balance strip (bugfix item 8) adds height above the feed, so the AI
-    // banner at the bottom of the sliver list can start below the cache
-    // extent; scroll the vertical list until it builds.
-    await tester.scrollUntilVisible(
-      find.byType(AiBanner),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.byType(AiBanner), findsOneWidget);
+    expect(find.byType(AiCard), findsOneWidget);
   });
 
-  testWidgets('vacío: mensaje de bienvenida y sin banner de IA (HU-08)',
+  testWidgets(
+      'vacío: mensaje de bienvenida y sin card de IA (HU-08, criterio 15)',
       (tester) async {
     await pumpHome(tester, readyWith(const []));
 
     expect(find.text('Aún no registras movimientos'), findsOneWidget);
-    expect(find.byType(AiBanner), findsNothing);
+    expect(find.byType(AiCard), findsNothing);
   });
 
-  testWidgets('carga: skeletons de hero y filas (HU-09)', (tester) async {
+  testWidgets(
+      'carga: skeletons de hero y filas, sin card de IA (HU-09, criterio 15)',
+      (tester) async {
     await pumpHome(tester, HomeState.initial(month));
 
     expect(find.byType(HomeHeroSkeleton), findsOneWidget);
     expect(find.byType(RecentActivitySkeletonRow), findsWidgets);
+    expect(find.byType(AiCard), findsNothing);
+  });
+
+  group('gate de acceso al chat de IA (criterio 12)', () {
+    testWidgets(
+        'el chip "Ayúdame a presupuestar" navega directo a onCreateBudget, '
+        'sin consultar acceso ni abrir el chat/beta sheet', (tester) async {
+      var createBudgetTapped = 0;
+      final cubit = MockHomeCubit();
+      await pumpHome(
+        tester,
+        readyWith(
+          [buildActivity(categoryName: 'Mercado')],
+          aiInsight: const HomeAiInsight.createBudget(),
+        ),
+        cubit: cubit,
+        onCreateBudget: () => createBudgetTapped++,
+      );
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+
+      await tester.tap(find.text(l10n.homeAiChipBudgetHelp));
+      await tester.pump();
+
+      expect(createBudgetTapped, 1);
+      verifyNever(cubit.hasAiAccess);
+    });
+
+    testWidgets(
+        'sin acceso, tocar el cuerpo de la card abre "Conversación en beta" '
+        'en el momento del tap — nunca antes', (tester) async {
+      final cubit = MockHomeCubit();
+      await pumpHome(
+        tester,
+        readyWith([buildActivity(categoryName: 'Mercado')]),
+        cubit: cubit,
+      );
+      when(cubit.hasAiAccess).thenAnswer((_) async => false);
+
+      expect(find.byType(AiBetaSheet), findsNothing);
+
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+      await tester.tap(find.text(l10n.homeAiCardTitle));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AiBetaSheet), findsOneWidget);
+    });
+
+    testWidgets(
+        'con acceso al chat, tocar el cuerpo de la card navega directo — '
+        'nunca abre "Conversación en beta"', (tester) async {
+      var aiOpened = 0;
+      final cubit = MockHomeCubit();
+      await pumpHome(
+        tester,
+        readyWith([buildActivity(categoryName: 'Mercado')]),
+        cubit: cubit,
+        onOpenAi: () => aiOpened++,
+      );
+      when(cubit.hasAiAccess).thenAnswer((_) async => true);
+
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+      await tester.tap(find.text(l10n.homeAiCardTitle));
+      await tester.pumpAndSettle();
+
+      expect(aiOpened, 1);
+      expect(find.byType(AiBetaSheet), findsNothing);
+    });
   });
 
   testWidgets('mes en español: "Gastado en Julio" (HU-04)', (tester) async {
@@ -213,7 +287,7 @@ void main() {
     await pumpHome(tester, readyWith([buildActivity(categoryName: 'Mercado')]));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(3));
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
   });
 
   testWidgets(
@@ -222,7 +296,7 @@ void main() {
     await pumpHome(tester, HomeState.initial(month));
 
     expect(find.byType(QuickAccessRow), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(3));
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
   });
 
   testWidgets(
@@ -238,6 +312,7 @@ void main() {
       onOpenQuickAccessOrder: () => orderTapped++,
     );
 
+    await tester.ensureVisible(find.byType(QuickAccessSettingsButton));
     await tester.tap(find.byType(QuickAccessSettingsButton));
     await tester.pump();
 
@@ -249,20 +324,24 @@ void main() {
       'tocar cada chip de QuickAccessRow invoca su callback propio '
       '(HU-05b)', (tester) async {
     var scheduledTapped = 0;
+    var accountsTapped = 0;
     var debtsTapped = 0;
     var reportsTapped = 0;
+    var goalsTapped = 0;
 
     await pumpHome(
       tester,
       readyWith([buildActivity(categoryName: 'Mercado')]),
       onOpenScheduledPayments: () => scheduledTapped++,
+      onOpenAccounts: () => accountsTapped++,
       onOpenDebts: () => debtsTapped++,
       onOpenReports: () => reportsTapped++,
+      onOpenGoals: () => goalsTapped++,
     );
 
     final chips =
         tester.widgetList<QuickAccessChip>(find.byType(QuickAccessChip));
-    expect(chips.length, 3);
+    expect(chips.length, 5);
 
     for (final chip in chips) {
       await tester.tap(find.byWidget(chip));
@@ -270,65 +349,31 @@ void main() {
     }
 
     expect(scheduledTapped, 1);
+    expect(accountsTapped, 1);
     expect(debtsTapped, 1);
     expect(reportsTapped, 1);
+    expect(goalsTapped, 1);
   });
 
-  group('icono de sync interactivo (bugfix item 6)', () {
-    const user = AuthUser(
-      id: 'u-1',
-      displayName: 'Camila',
-      provider: AuthProvider.google,
-    );
+  group('avatar y wallet del header (criterios 1/2/3)', () {
+    testWidgets('tocar el avatar abre "Tu cuenta"', (tester) async {
+      await pumpHome(tester, readyWith([buildActivity()]));
 
-    testWidgets('offline sin sesión: navega a login, sin abrir sheet',
-        (tester) async {
-      var loginTapped = 0;
-      await pumpHome(
-        tester,
-        readyWith(const []).copyWith(syncStatus: HomeSyncStatus.offline),
-        onOpenLogin: () => loginTapped++,
-      );
-
-      await tester.tap(find.byType(SyncIndicator));
+      await tester.tap(find.byType(AccountAvatar));
       await tester.pumpAndSettle();
 
-      expect(loginTapped, 1);
-      expect(find.text('Sin conexión'), findsNothing);
+      expect(find.byType(AccountSheet), findsOneWidget);
     });
 
-    testWidgets('offline con sesión: abre el sheet "Sin conexión", no login',
+    testWidgets('botón wallet del header abre la hoja "Tu dinero" (criterio 3)',
         (tester) async {
-      var loginTapped = 0;
-      await pumpHome(
-        tester,
-        readyWith(const []).copyWith(
-          syncStatus: HomeSyncStatus.offline,
-          user: user,
-          updateUser: true,
-        ),
-        onOpenLogin: () => loginTapped++,
-      );
+      await pumpHome(tester, readyWith([buildActivity()]));
+      final l10n = AppLocalizations.of(tester.element(find.byType(HomePage)));
 
-      await tester.tap(find.byType(SyncIndicator));
+      await tester.tap(find.byTooltip(l10n.homeWalletTooltip));
       await tester.pumpAndSettle();
 
-      expect(loginTapped, 0);
-      expect(find.byType(SyncStatusSheet), findsOneWidget);
-      expect(find.text('Sin conexión'), findsOneWidget);
-    });
-
-    testWidgets('sincronizado: abre el sheet "Todo a salvo"', (tester) async {
-      await pumpHome(
-        tester,
-        readyWith(const []).copyWith(syncStatus: HomeSyncStatus.synced),
-      );
-
-      await tester.tap(find.byType(SyncIndicator));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SyncStatusSheet), findsOneWidget);
-      expect(find.text('Todo a salvo'), findsOneWidget);
+      expect(find.byType(BalancesSheet), findsOneWidget);
     });
   });
 
@@ -419,7 +464,7 @@ void main() {
         'stepper de presupuesto', (tester) async {
       await pumpHome(tester, readyWith([buildActivity()]));
 
-      expect(find.byType(HeroPeriodStepper), findsNothing);
+      expect(find.byType(PeriodPill), findsNothing);
       expect(find.byType(MonthSelectorChip), findsOneWidget);
     });
 
@@ -432,7 +477,7 @@ void main() {
         readyWith([buildActivity()], budgetProgress: budgetProgress),
       );
 
-      expect(find.byType(HeroPeriodStepper), findsOneWidget);
+      expect(find.byType(PeriodPill), findsOneWidget);
       expect(find.byType(MonthSelectorChip), findsNothing);
     });
 
@@ -467,7 +512,7 @@ void main() {
 
       // The fixture window has `hasNext: true` — only the trailing chevron
       // is enabled.
-      await tester.tap(find.byType(HeroPeriodChevron).last);
+      await tester.tap(find.byType(PillChevron).last);
       await tester.pump();
 
       verify(cubit.nextPeriod).called(1);

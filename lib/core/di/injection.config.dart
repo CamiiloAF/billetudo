@@ -501,8 +501,14 @@ import 'package:billetudo/features/goals/presentation/cubit/goal_recurring_contr
     as _i597;
 import 'package:billetudo/features/goals/presentation/cubit/goals_list_cubit.dart'
     as _i29;
+import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart'
+    as _i738;
+import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart'
+    as _i434;
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart'
     as _i426;
+import 'package:billetudo/features/home/domain/usecases/watch_pending_scheduled_payment_count.dart'
+    as _i196;
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart'
     as _i188;
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart'
@@ -1072,6 +1078,9 @@ extension GetItInjectableX on _i174.GetIt {
         _i645.WatchCategoryBreakdownReport(gh<_i776.ReportsRepository>()));
     gh.factory<_i1003.WatchNetWorthReport>(
         () => _i1003.WatchNetWorthReport(gh<_i776.ReportsRepository>()));
+    gh.factory<_i196.WatchPendingScheduledPaymentCount>(() =>
+        _i196.WatchPendingScheduledPaymentCount(
+            gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
         _i325.AdvanceScheduledOccurrence(
             gh<_i680.ScheduledPaymentRepository>()));
@@ -1442,6 +1451,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i990.UpdateBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i139.WatchGlobalMonthlyBudgetProgress>(() =>
         _i139.WatchGlobalMonthlyBudgetProgress(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i738.WatchHasAnyBudget>(
+        () => _i738.WatchHasAnyBudget(gh<_i1023.BudgetRepository>()));
     gh.factory<_i939.CloseDebt>(
         () => _i939.CloseDebt(gh<_i932.DebtRepository>()));
     gh.factory<_i247.CreateDebt>(
@@ -1632,6 +1643,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i693.SeedDefaultCategories>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i434.WatchHomeAiInsight>(
+        () => _i434.WatchHomeAiInsight(gh<_i654.TransactionRepository>()));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
@@ -1897,6 +1910,21 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i237.CreateFullBackup>(),
           gh<_i936.MarkBackupSaved>(),
         ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i188.WatchRecentTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i241.WatchFeaturedBudgetProgress>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i738.WatchHasAnyBudget>(),
+          gh<_i434.WatchHomeAiInsight>(),
+          gh<_i196.WatchPendingScheduledPaymentCount>(),
+          gh<_i699.CheckAiAccess>(),
+        ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(
               gh<_i242.CreateScheduledPayment>(),
@@ -1953,17 +1981,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i837.WatchAccounts>(),
           gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
           gh<_i382.GetCategory>(),
-        ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i188.WatchRecentTransactions>(),
-          gh<_i716.WatchAuthSession>(),
-          gh<_i773.WatchSyncStatusDetails>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i241.WatchFeaturedBudgetProgress>(),
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
         ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),

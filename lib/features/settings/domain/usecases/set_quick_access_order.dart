@@ -8,7 +8,7 @@ import '../repositories/app_settings_repository.dart';
 /// screen in Ajustes.
 ///
 /// The business rule enforced here — not in `data/` — is that [order] must
-/// be an exact permutation of [QuickAccessItem.values]: same 3 items, no
+/// be an exact permutation of [QuickAccessItem.values]: same 5 items, no
 /// duplicates, none missing. A partial or malformed list is rejected before
 /// it ever reaches the repository, so a corrupt write can never happen.
 @injectable

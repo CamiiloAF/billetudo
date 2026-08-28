@@ -34,8 +34,13 @@ import 'support/patrol_app.dart';
 /// `AccountGateBridgeSheet` (no `TextFormField` at all) instead of the real
 /// budget form — verified against a real emulator run.
 Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
-  final context = $.tester.element(find.byType(Scaffold).first);
-  GoRouter.of(context).go(AppRoutes.accounts);
+  // Regression: a `BuildContext` captured once and reused across both `go()`
+  // calls goes stale — the first navigation away from Home can deactivate
+  // the `Scaffold` it was captured from, so the second `GoRouter.of(context)`
+  // below throws "Looking up a deactivated widget's ancestor is unsafe".
+  // Each navigation re-reads a fresh, still-mounted `Scaffold`'s context.
+  GoRouter.of($.tester.element(find.byType(Scaffold).first))
+      .go(AppRoutes.accounts);
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Agregar cuenta'));
   await $.tester.pumpAndSettle();
@@ -45,7 +50,8 @@ Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Guardar'));
   await $.tester.pumpAndSettle();
-  GoRouter.of(context).go(AppRoutes.home);
+  GoRouter.of($.tester.element(find.byType(Scaffold).first))
+      .go(AppRoutes.home);
   await $.tester.pumpAndSettle();
 }
 
@@ -114,7 +120,7 @@ void main() {
       // `home_patrol_test.dart`'s own `_pumpUntilFound` usage).
       await _pumpUntilFound($, find.byType(HomeHeroCard));
       expect(find.byType(HomeHeroCard), findsOneWidget);
-      expect(find.byType(HeroPeriodStepper), findsNothing);
+      expect(find.byType(PeriodPill), findsNothing);
       expect(find.byType(HomeHeroBudgetProgress), findsNothing);
 
       // A budget can't be created on a fresh install without an account
@@ -138,8 +144,8 @@ void main() {
       // automatically — no Ajustes step needed — and the hero swaps its
       // calendar-month chip for the period stepper, with a real progress bar
       // instead of the budget invitation.
-      await _pumpUntilFound($, find.byType(HeroPeriodStepper));
-      expect(find.byType(HeroPeriodStepper), findsOneWidget);
+      await _pumpUntilFound($, find.byType(PeriodPill));
+      expect(find.byType(PeriodPill), findsOneWidget);
       expect(find.byType(HomeHeroBudgetProgress), findsOneWidget);
 
       // Criterion 6: tapping the hero opens *that* budget's own detail —

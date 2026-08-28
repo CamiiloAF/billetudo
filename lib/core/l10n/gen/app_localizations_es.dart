@@ -1182,11 +1182,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navMore => 'Más';
 
   @override
-  String get homeGreeting => 'Hola de nuevo';
+  String get homeGreeting => 'Hola de nuevo 👋';
 
   @override
   String homeGreetingNamed(String name) {
-    return 'Hola de nuevo, $name';
+    return 'Hola, $name 👋';
   }
 
   @override
@@ -1314,6 +1314,170 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get homeNotificationsSheetMessage =>
       'Las notificaciones llegarán pronto.';
+
+  @override
+  String get homeAccountAvatarNoAccount => 'Sin respaldo en la nube';
+
+  @override
+  String get homeWalletTooltip => 'Tu dinero';
+
+  @override
+  String get homeHeroOverspentKicker => 'Excedido por';
+
+  @override
+  String get homeHeroRemainingKicker => 'Te quedan';
+
+  @override
+  String homeHeroMetaDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restan $count días',
+      one: 'Resta $count día',
+      zero: 'Último día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHeroRiskNote(String amount) {
+    return 'Podría exceder por $amount';
+  }
+
+  @override
+  String get homeHeroNoBudgetEverCreatedNote =>
+      'Sin presupuesto activo este mes';
+
+  @override
+  String get homeHeroNoBudgetFeaturedNote =>
+      'Ningún presupuesto destacado este mes';
+
+  @override
+  String get homeAiCardTitle => 'Pregúntale a Billetudo';
+
+  @override
+  String get homeAiCardSubtitle => 'Entiende tu plata en segundos';
+
+  @override
+  String get homeAiChipMonthProgress => '¿Cómo voy este mes?';
+
+  @override
+  String get homeAiChipGoalsSaved => '¿Cuánto llevo ahorrado en mis metas?';
+
+  @override
+  String get homeAiChipBiggestSpend => '¿En qué se me fue más la plata?';
+
+  @override
+  String get homeAiChipBudgetHelp => 'Ayúdame a presupuestar';
+
+  @override
+  String get homeAiInsightCreateBudgetKicker => 'Nuevo en Billetudo';
+
+  @override
+  String get homeAiInsightCreateBudgetTitle => 'Presupuesta y no gastes de más';
+
+  @override
+  String get homeAiInsightCreateBudgetMeta => 'Verás cuánto te queda del mes';
+
+  @override
+  String get homeAiInsightProjectionKicker => 'Proyección de presupuesto';
+
+  @override
+  String get homeAiInsightProjectionTitle =>
+      'Podrías exceder tu presupuesto este mes';
+
+  @override
+  String homeAiInsightProjectionMeta(String amount) {
+    return 'Con tus pagos programados podrías exceder por $amount';
+  }
+
+  @override
+  String get homeAiInsightAverageKicker => 'Comparado con tu promedio';
+
+  @override
+  String homeAiInsightAverageTitleUp(int percent) {
+    return 'Vas $percent% arriba de tu promedio este mes';
+  }
+
+  @override
+  String homeAiInsightAverageTitleDown(int percent) {
+    return 'Vas $percent% abajo de tu promedio este mes';
+  }
+
+  @override
+  String get homeAiInsightAverageMeta => 'Comparado con los últimos 3 meses';
+
+  @override
+  String homeAiInsightQueueCounter(int position, int total) {
+    return '$position de $total';
+  }
+
+  @override
+  String get homeAiInsightContinueChip => 'Continuar la conversación';
+
+  @override
+  String get homeAiInsightDismiss => 'Ahora no';
+
+  @override
+  String get homeAiBetaSheetTitle => 'Conversación en beta';
+
+  @override
+  String get homeAiBetaSheetMessage =>
+      'Todavía no tienes acceso a la conversación con Billetudo. Sigue explorando la app mientras se abre para más personas.';
+
+  @override
+  String get homeBalancesSheetTitle => 'Tu dinero';
+
+  @override
+  String get homeBalancesSheetTotalLabel => 'TU DINERO';
+
+  @override
+  String get homeBalancesSheetExcludesNote =>
+      'No incluye tarjetas de crédito ni inversiones';
+
+  @override
+  String homeBalancesSheetCurrencyCount(String currency, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cuentas',
+      one: '1 cuenta',
+    );
+    return '$currency · $_temp0';
+  }
+
+  @override
+  String get homeAccountSheetTitle => 'Tu cuenta';
+
+  @override
+  String get homeAccountSheetSyncedTitle => 'Todo está sincronizado';
+
+  @override
+  String get homeAccountSheetSyncedKicker => 'Todo bien';
+
+  @override
+  String get homeAccountSheetSyncedBody =>
+      'Tus datos están respaldados y al día en la nube.';
+
+  @override
+  String get homeAccountSheetOfflineTitle => 'Sin conexión';
+
+  @override
+  String get homeAccountSheetOfflineKicker => 'Algo merece tu atención';
+
+  @override
+  String get homeAccountSheetOfflineBody =>
+      'Sincronizaremos solos en cuanto haya conexión.';
+
+  @override
+  String get homeAccountSheetNoAccountTitle => 'Respalda tu información';
+
+  @override
+  String get homeAccountSheetNoAccountBody =>
+      'Inicia sesión para no perder tus datos si cambias de teléfono.';
+
+  @override
+  String get homeAccountSheetActivateBackup => 'Activar respaldo';
 
   @override
   String get homeExitConfirmTitle => '¿Salir de Billetudo?';
@@ -5884,7 +6048,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiChatEmptySubtitle =>
-      'Elegí una pregunta o escribime lo que necesites.';
+      'Elige una pregunta o escríbeme lo que necesites.';
 
   @override
   String get aiChatSuggestionMonthProgress => '¿Cómo voy este mes?';
@@ -5904,10 +6068,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiChatErrorBody =>
-      'No pudimos enviar tu mensaje. Intentá de nuevo.';
+      'No pudimos enviar tu mensaje. Inténtalo de nuevo.';
 
   @override
-  String get aiChatMessageFailed => 'No se pudo enviar. Intentá de nuevo.';
+  String get aiChatMessageFailed => 'No se pudo enviar. Inténtalo de nuevo.';
 
   @override
   String get aiChatCopyMessage => 'Copiar';

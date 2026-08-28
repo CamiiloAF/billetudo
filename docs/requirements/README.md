@@ -62,9 +62,15 @@ Aplican a los cuatro documentos; cada uno las desarrolla en su propio contexto.
 
 **Bloqueante de publicación.** `docs/legal/declaraciones-tiendas.md` y `docs/legal/AUDITORIA.md` declaran hoy ante las tiendas que la app **no** tiene captura por voz ni OCR, apoyándose en que `lib/features/capture/` está vacío. Fase 2 invalida esa declaración: hay que actualizarla, junto con los primeros `uses-permission` del `AndroidManifest.xml` y las claves `*UsageDescription` del `Info.plist`, antes de publicar.
 
-## [Fase 4](fase-4/) — Backend + IA
+## [Fase 3](fase-3/) — Capa de mejora financiera (todo local)
 
-Fase 3 (capa de mejora financiera, todo local) todavía no tiene documentos de requerimientos. La numeración es global, así que Fase 4 arranca en el 21.
+Su destino en código es `lib/features/improvement/`, hoy vacío.
+
+22. [Centro de notificaciones (insights proactivos)](fase-3/22-centro-notificaciones.md) — **exploratorio**, no es un compromiso de construcción: registra una decisión de producto del 2026-08-26 y su razonamiento, sin historias de usuario cerradas ni diseño. Tiene un solapamiento sin resolver con los recordatorios de vencimientos (HU-08 de `fase-1/09-pagos-programados.md`), que hay que decidir antes de construir cualquiera de los dos.
+
+> El 22 salió antes que el 21 en numeración de fase pero después en el tiempo: la numeración es global y correlativa al orden en que se escriben los documentos, no al orden de las fases.
+
+## [Fase 4](fase-4/) — Backend + IA
 
 21. [Asistente financiero con IA](fase-4/21-asistente-ia.md) — Fase A: chat con contexto financiero, propuestas que el usuario confirma, historial local.
 

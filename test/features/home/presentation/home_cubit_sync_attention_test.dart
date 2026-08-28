@@ -4,13 +4,20 @@ import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
+import 'package:billetudo/features/home/domain/entities/month_spending.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_pending_scheduled_payment_count.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -43,6 +50,15 @@ class MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
+class MockWatchHasAnyBudget extends Mock implements WatchHasAnyBudget {}
+
+class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
+
+class MockWatchPendingScheduledPaymentCount extends Mock
+    implements WatchPendingScheduledPaymentCount {}
+
+class MockCheckAiAccess extends Mock implements CheckAiAccess {}
+
 /// El cuarto estado del indicador del Home (HU-08). Cubre **dos** condiciones,
 /// las dos ámbar: cambios retenidos en la cuarentena, y una última
 /// sincronización exitosa de más de 24 h. La segunda es el incidente en
@@ -58,8 +74,20 @@ void main() {
   late MockWatchFeaturedBudgetProgress watchFeaturedBudgetProgress;
   late MockGetBudgetById getBudgetById;
   late MockGetBudgetProgress getBudgetProgress;
+  late MockWatchHasAnyBudget watchHasAnyBudget;
+  late MockWatchHomeAiInsight watchHomeAiInsight;
+  late MockWatchPendingScheduledPaymentCount watchPendingScheduledPaymentCount;
+  late MockCheckAiAccess checkAiAccess;
 
-  setUpAll(() => registerFallbackValue(DateTime(2026)));
+  setUpAll(() {
+    registerFallbackValue(DateTime(2026));
+    registerFallbackValue(
+      MonthSpending(
+          month: DateTime(2026, 1),
+          subtotals: const [],
+          displayCurrency: 'COP'),
+    );
+  });
 
   setUp(() {
     watchAccounts = MockWatchAccounts();
@@ -71,6 +99,26 @@ void main() {
     watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     getBudgetById = MockGetBudgetById();
     getBudgetProgress = MockGetBudgetProgress();
+    watchHasAnyBudget = MockWatchHasAnyBudget();
+    watchHomeAiInsight = MockWatchHomeAiInsight();
+    watchPendingScheduledPaymentCount = MockWatchPendingScheduledPaymentCount();
+    checkAiAccess = MockCheckAiAccess();
+    when(() => watchHasAnyBudget())
+        .thenAnswer((_) => Stream<Result<bool>>.value(const Right(true)));
+    when(() => watchPendingScheduledPaymentCount())
+        .thenAnswer((_) => Stream<Result<int>>.value(const Right(0)));
+    when(
+      () => watchHomeAiInsight(
+        month: any(named: 'month'),
+        spending: any(named: 'spending'),
+        hasAnyBudget: any(named: 'hasAnyBudget'),
+        featuredBudget: any(named: 'featuredBudget'),
+      ),
+    ).thenAnswer(
+      (_) => Stream<Result<HomeAiInsight?>>.value(const Right(null)),
+    );
+    when(() => checkAiAccess())
+        .thenAnswer((_) async => const Right(AiAccess.denied));
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
     when(() => restoreTransaction(any()))
@@ -110,6 +158,10 @@ void main() {
       watchFeaturedBudgetProgress,
       getBudgetById,
       getBudgetProgress,
+      watchHasAnyBudget,
+      watchHomeAiInsight,
+      watchPendingScheduledPaymentCount,
+      checkAiAccess,
     );
     addTearDown(cubit.close);
     await cubit.start();
@@ -276,6 +328,10 @@ void main() {
       watchFeaturedBudgetProgress,
       getBudgetById,
       getBudgetProgress,
+      watchHasAnyBudget,
+      watchHomeAiInsight,
+      watchPendingScheduledPaymentCount,
+      checkAiAccess,
     );
     addTearDown(cubit.close);
     await cubit.start();

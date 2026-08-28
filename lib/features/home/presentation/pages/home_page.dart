@@ -18,19 +18,19 @@ import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../../settings/presentation/cubit/app_settings_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
-import '../widgets/ai_banner.dart';
-import '../widgets/home_balances_strip.dart';
+import '../widgets/ai_card.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/home_hero_skeleton.dart';
 import '../widgets/quick_access_row.dart';
 import '../widgets/recent_activity_row.dart';
 import '../widgets/recent_activity_skeleton_row.dart';
+import '../widgets/sheets/account_sheet.dart';
+import '../widgets/sheets/balances_sheet.dart';
 import '../widgets/sheets/month_picker_sheet.dart';
-import '../widgets/sheets/sync_status_sheet.dart';
 
-/// The Inicio tab (feature 04): header, hero, quick access, recent activity,
-/// AI banner and a scroll-aware FAB. It only reads and aggregates data
+/// The Inicio tab (feature 04): header, hero, AI card, quick access, recent
+/// activity and a scroll-aware FAB. It only reads and aggregates data
 /// (HU-01…HU-10); the one write it triggers is opening the new-transaction
 /// form via the FAB (HU-02).
 class HomePage extends StatefulWidget {
@@ -45,9 +45,12 @@ class HomePage extends StatefulWidget {
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onOpenGoals,
     required this.onOpenQuickAccessOrder,
     required this.onOpenLogin,
     required this.onOpenSyncStatus,
+    required this.onOpenSettings,
+    required this.onSignOut,
     required this.onOpenAi,
     super.key,
   });
@@ -67,28 +70,37 @@ class HomePage extends StatefulWidget {
   /// HU-05b: quick-access chip destinations.
   final VoidCallback onOpenAccounts;
 
-  /// Bugfix item 8: tapping an account's mini-card in the "Mis cuentas" strip
-  /// opens Movimientos filtered to that account only.
+  /// Criterion 4: tapping a row in the "Tu dinero" balances sheet opens
+  /// Movimientos filtered to that account only — never an account detail.
   final ValueChanged<String> onOpenAccountMovements;
 
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+  final VoidCallback onOpenGoals;
 
   /// Opens Ajustes > "Orden del acceso rapido" from the gear that closes the
   /// quick-access strip. Not a chip destination: it is where the strip's
   /// own order is set.
   final VoidCallback onOpenQuickAccessOrder;
 
-  /// Opens the backup/login flow (bugfix item 6): the sync icon routes here
-  /// when the app is offline with no session, so the user can back up.
+  /// Opens the backup/login flow: routed to both from a sync badge in
+  /// attention with no session, and from "Tu cuenta"'s "sin cuenta" CTA
+  /// ("Activar respaldo").
   final VoidCallback onOpenLogin;
 
-  /// Opens "Estado de sincronización" from the cloud sheet (HU-08). The sheet
-  /// never navigates itself; the Home owns the destination.
+  /// Opens "Estado de sincronización" from "Tu cuenta"'s sync block. The
+  /// block never navigates itself; the Home owns the destination.
   final VoidCallback onOpenSyncStatus;
 
-  /// Opens the assistant (`asistente-ia.md`) from the `AI Banner`.
+  /// Opens Ajustes from "Tu cuenta"'s "Ajustes" row.
+  final VoidCallback onOpenSettings;
+
+  /// "Cerrar sesión" from "Tu cuenta" — same confirmation flow as Más.
+  final VoidCallback onSignOut;
+
+  /// Opens the assistant (`asistente-ia.md`) from the AI card/chips, already
+  /// gated: only called once the tap-time access check passed.
   final VoidCallback onOpenAi;
 
   @override
@@ -156,27 +168,41 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Bugfix item 6: the cloud icon's tap. "Estado real + reassurance":
-  ///
-  /// - offline *with no session* → routes to login so the user can back up
-  ///   (there is nothing to sync to yet). The session — not just the coarse
-  ///   [HomeSyncStatus.offline] — is what tells "no account" apart from "signed
-  ///   in but temporarily offline".
-  /// - any other case (synced, syncing, or offline *with* a session) → opens
-  ///   the reactive [SyncStatusSheet], which keeps tracking the live status.
-  void _onSyncTap(BuildContext context, HomeState state) {
-    final signedIn = state.user != null;
-    if (state.syncStatus == HomeSyncStatus.offline && !signedIn) {
-      widget.onOpenLogin();
+  /// Opens "Tu cuenta" — the avatar's tap (criterion 2).
+  Future<void> _openAccountSheet(BuildContext context) {
+    return AccountSheet.show(
+      context,
+      context.read<HomeCubit>(),
+      onOpenSettings: widget.onOpenSettings,
+      onSignOut: widget.onSignOut,
+      onOpenSyncStatus: widget.onOpenSyncStatus,
+      onActivateBackup: widget.onOpenLogin,
+    );
+  }
+
+  /// Opens "Tu dinero" — the header's wallet button (criterion 3).
+  Future<void> _openBalancesSheet(BuildContext context, HomeState state) {
+    return BalancesSheet.show(
+      context,
+      accounts: state.accounts,
+      onOpenAccountMovements: widget.onOpenAccountMovements,
+    );
+  }
+
+  /// Criterion 12: the chat gate check happens at the moment of the tap,
+  /// never before. `question` is accepted for future seeding but ignored
+  /// today — `AiAssistantPage` does not yet support opening pre-seeded
+  /// (tracked as a known simplification of this run).
+  Future<void> _onAskQuestion(BuildContext context, String? question) async {
+    final hasAccess = await context.read<HomeCubit>().hasAiAccess();
+    if (!context.mounted) {
       return;
     }
-    unawaited(
-      SyncStatusSheet.show(
-        context,
-        context.read<HomeCubit>(),
-        onOpenDetails: widget.onOpenSyncStatus,
-      ),
-    );
+    if (!hasAccess) {
+      unawaited(AiBetaSheet.show(context));
+      return;
+    }
+    widget.onOpenAi();
   }
 
   /// HU-02 gated by `15-gate-cuenta.md`: without any active account the FAB
@@ -242,7 +268,9 @@ class _HomePageState extends State<HomePage> {
                       syncStatus: state.syncStatus,
                       user: state.user,
                       onBellTap: () => _openBellSheet(context),
-                      onSyncTap: () => _onSyncTap(context, state),
+                      onAvatarTap: () => unawaited(_openAccountSheet(context)),
+                      onWalletTap: () =>
+                          unawaited(_openBalancesSheet(context, state)),
                     ),
                   ),
                 ),
@@ -256,13 +284,14 @@ class _HomePageState extends State<HomePage> {
                     child: state.spending == null
                         ? const HomeHeroSkeleton()
                         : HomeHeroCard(
+                            heroState: state.heroState,
                             spending: state.spending!,
                             budgetProgress: state.budgetProgress,
                             // Only ever the fallback caption (criterion 5):
                             // `HomeHeroCard` ignores it once a budget is
-                            // featured, in favor of `HeroPeriodStepper`'s
-                            // real window label. Sourced from the snapshot's
-                            // own `spending.month` (always "now"'s calendar
+                            // featured, in favor of the hero's own `Period
+                            // Pill` label. Sourced from the snapshot's own
+                            // `spending.month` (always "now"'s calendar
                             // month, per `HomeCubit.start`) rather than a
                             // direct clock read, so this stays deterministic
                             // and in sync with what `spending` itself counts.
@@ -287,37 +316,42 @@ class _HomePageState extends State<HomePage> {
                           ),
                   ),
                 ),
-                // Acceso rápido (shortcuts) goes right under the hero, ABOVE the
-                // "Mis cuentas" strip (user preference: shortcuts first).
+                // Card de IA (criterion 10/15): never in the empty state
+                // (nothing to summarize) nor as a loading skeleton — the
+                // slot stays empty until data has actually landed.
+                if (state.status == HomeStatus.ready && !state.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: AiCard(
+                        insight: state.aiInsight,
+                        onAskQuestion: (question) =>
+                            unawaited(_onAskQuestion(context, question)),
+                        onCreateBudget: widget.onCreateBudget,
+                        onDismissInsight: state.aiInsight == null
+                            ? null
+                            : () =>
+                                context.read<HomeCubit>().dismissAiInsight(),
+                      ),
+                    ),
+                  ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                     child: BlocBuilder<AppSettingsCubit, AppSettingsState>(
                       builder: (context, settings) => QuickAccessRow(
                         order: settings.quickAccessOrder,
+                        pendingScheduledCount: state.pendingScheduledCount,
                         onOpenScheduledPayments: widget.onOpenScheduledPayments,
+                        onOpenAccounts: widget.onOpenAccounts,
                         onOpenDebts: widget.onOpenDebts,
                         onOpenReports: widget.onOpenReports,
+                        onOpenGoals: widget.onOpenGoals,
                         onCustomize: widget.onOpenQuickAccessOrder,
                       ),
                     ),
                   ),
                 ),
-                // "Mis cuentas" balance strip (bugfix item 8): below Acceso
-                // rápido, only once accounts exist. No outer horizontal padding —
-                // the strip pads its own header and lets the mini-card row
-                // scroll edge to edge.
-                if (state.accounts.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
-                      child: HomeBalancesStrip(
-                        accounts: state.accounts,
-                        onSeeAll: widget.onOpenAccounts,
-                        onOpenAccountMovements: widget.onOpenAccountMovements,
-                      ),
-                    ),
-                  ),
                 // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
                 // from "Acceso rápido" to the loading/empty state: the
                 // "Movimientos recientes" header only exists once there is
@@ -374,23 +408,21 @@ class _HomePageState extends State<HomePage> {
                     onTap: () =>
                         _openTransaction(context, entry.transaction.id),
                   ),
-                const SizedBox(height: 16),
-                AiBanner(onTap: widget.onOpenAi),
               ],
             ),
           ),
-          // Pencil's spacer below the banner is `height:fill_container`
-          // (`docs`/`pages/inicio.md` § 7): it must grow to at least fill
-          // whatever viewport space is left, not just reserve a fixed 96px —
-          // a fixed `SizedBox` inside the list only guarantees that gap when
-          // the content already overflows the viewport. With a short list
-          // (few recent movements) the content falls short of the screen and
-          // the FAB, docked at a fixed bottom-right position, ends up
-          // floating directly over the last row instead of the empty space
-          // below it (the fidelity finding this fixes: the FAB covering
-          // "Salario"'s amount). `SliverFillRemaining` guarantees at least
-          // the remaining viewport height while still respecting the 96px
-          // floor when content is already long enough to scroll.
+          // Pencil's spacer below Movimientos is `height:fill_container`
+          // (`docs`/`pages/inicio.md` § "Carril del FAB"): it must grow to
+          // at least fill whatever viewport space is left, not just reserve
+          // a fixed 96px — a fixed `SizedBox` inside the list only
+          // guarantees that gap when the content already overflows the
+          // viewport. With a short list (few recent movements) the content
+          // falls short of the screen and the FAB, docked at a fixed
+          // bottom-right position, ends up floating directly over the last
+          // row instead of the empty space below it. `SliverFillRemaining`
+          // guarantees at least the remaining viewport height while still
+          // respecting the 96px floor when content is already long enough
+          // to scroll.
           const SliverFillRemaining(
             hasScrollBody: false,
             child: SizedBox(height: 96),
@@ -484,7 +516,7 @@ class HomeRecentSkeletonList extends StatelessWidget {
 }
 
 /// The recent-feed empty state (HU-08): centered between hero and tab bar,
-/// with a CTA that opens the new-transaction form. No AI banner here.
+/// with a CTA that opens the new-transaction form. No AI card here.
 class HomeMovementsEmptyState extends StatelessWidget {
   const HomeMovementsEmptyState({required this.onAdd, super.key});
 

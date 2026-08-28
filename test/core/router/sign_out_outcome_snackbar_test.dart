@@ -9,6 +9,7 @@ import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.da
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -24,7 +25,10 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_pending_scheduled_payment_count.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -60,6 +64,15 @@ class MockWatchFeaturedBudgetProgress extends Mock
 class MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
+
+class MockWatchHasAnyBudget extends Mock implements WatchHasAnyBudget {}
+
+class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
+
+class MockWatchPendingScheduledPaymentCount extends Mock
+    implements WatchPendingScheduledPaymentCount {}
+
+class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
@@ -127,6 +140,11 @@ void main() {
     final watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     final getBudgetById = MockGetBudgetById();
     final getBudgetProgress = MockGetBudgetProgress();
+    final watchHasAnyBudget = MockWatchHasAnyBudget();
+    final watchHomeAiInsight = MockWatchHomeAiInsight();
+    final watchPendingScheduledPaymentCount =
+        MockWatchPendingScheduledPaymentCount();
+    final checkAiAccess = MockCheckAiAccess();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -146,6 +164,10 @@ void main() {
     when(watchFeaturedBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
     );
+    when(watchHasAnyBudget.call)
+        .thenAnswer((_) => const Stream<Result<bool>>.empty());
+    when(watchPendingScheduledPaymentCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
 
     signOutWithChoice = MockSignOutWithLocalDataChoice();
 
@@ -161,6 +183,10 @@ void main() {
           watchFeaturedBudgetProgress,
           getBudgetById,
           getBudgetProgress,
+          watchHasAnyBudget,
+          watchHomeAiInsight,
+          watchPendingScheduledPaymentCount,
+          checkAiAccess,
         ),
       )
       ..registerFactory<AuthCubit>(

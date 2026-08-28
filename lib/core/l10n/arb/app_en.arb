@@ -368,8 +368,8 @@
   "navGoals": "Goals",
   "navScheduledPayments": "Payments",
   "navMore": "More",
-  "homeGreeting": "Welcome back",
-  "homeGreetingNamed": "Welcome back, {name}",
+  "homeGreeting": "Hi 👋",
+  "homeGreetingNamed": "Hi, {name} 👋",
   "homeNotificationsTooltip": "Notifications",
   "homeSyncSynced": "Synced",
   "homeSyncSyncing": "Syncing…",
@@ -405,6 +405,160 @@
   "homeAiSheetMessage": "Soon you will be able to ask Billetudo about your money in plain language.",
   "homeAiDisclaimer": "This is not financial advice.",
   "homeNotificationsSheetMessage": "Notifications are coming soon.",
+  "homeAccountAvatarNoAccount": "No cloud backup",
+  "@homeAccountAvatarNoAccount": {
+    "description": "Accessibility label of the avatar badge with no session (design-system/billetudo/pages/inicio.md)."
+  },
+  "homeWalletTooltip": "Your money",
+  "@homeWalletTooltip": {
+    "description": "Tooltip of the header's wallet button, opens the balances sheet."
+  },
+  "homeHeroOverspentKicker": "Over by",
+  "@homeHeroOverspentKicker": {
+    "description": "Hero kicker in the real-overspend state (xRSdl)."
+  },
+  "homeHeroRemainingKicker": "You have left",
+  "@homeHeroRemainingKicker": {
+    "description": "Fixed hero kicker in every state with a remaining balance (fixed anchor, xRSdl)."
+  },
+  "homeHeroMetaDaysLeft": "{count, plural, =0{Last day} one{{count} day left} other{{count} days left}}",
+  "@homeHeroMetaDaysLeft": {
+    "description": "Hero's Meta Days with a budget (xRSdl): days left in the current period.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeHeroRiskNote": "Could exceed by {amount}",
+  "@homeHeroRiskNote": {
+    "description": "Hero Note of the projected-overspend-risk state (xRSdl KSaru).",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$330,000"
+      }
+    }
+  },
+  "homeHeroNoBudgetEverCreatedNote": "No active budget this month",
+  "@homeHeroNoBudgetEverCreatedNote": {
+    "description": "Hero note when the user has never created a budget."
+  },
+  "homeHeroNoBudgetFeaturedNote": "No budget featured this month",
+  "@homeHeroNoBudgetFeaturedNote": {
+    "description": "Hero note when the user has budgets but none is featured."
+  },
+  "homeAiCardTitle": "Ask Billetudo",
+  "@homeAiCardTitle": {},
+  "homeAiCardSubtitle": "Understand your money in seconds",
+  "@homeAiCardSubtitle": {},
+  "homeAiChipMonthProgress": "How am I doing this month?",
+  "@homeAiChipMonthProgress": {},
+  "homeAiChipGoalsSaved": "How much have I saved toward my goals?",
+  "@homeAiChipGoalsSaved": {},
+  "homeAiChipBiggestSpend": "Where did most of my money go?",
+  "@homeAiChipBiggestSpend": {},
+  "homeAiChipBudgetHelp": "Help me budget",
+  "@homeAiChipBudgetHelp": {
+    "description": "Chip/CTA that navigates straight to create-budget (never opens the chat)."
+  },
+  "homeAiInsightCreateBudgetKicker": "New to Billetudo",
+  "@homeAiInsightCreateBudgetKicker": {},
+  "homeAiInsightCreateBudgetTitle": "Budget so you don't overspend",
+  "@homeAiInsightCreateBudgetTitle": {},
+  "homeAiInsightCreateBudgetMeta": "You'll see what's left of your month",
+  "@homeAiInsightCreateBudgetMeta": {},
+  "homeAiInsightProjectionKicker": "Budget projection",
+  "@homeAiInsightProjectionKicker": {},
+  "homeAiInsightProjectionTitle": "You could exceed your budget this month",
+  "@homeAiInsightProjectionTitle": {},
+  "homeAiInsightProjectionMeta": "With your scheduled payments you could exceed by {amount}",
+  "@homeAiInsightProjectionMeta": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$330,000"
+      }
+    }
+  },
+  "homeAiInsightAverageKicker": "Compared to your average",
+  "@homeAiInsightAverageKicker": {},
+  "homeAiInsightAverageTitleUp": "You're {percent}% above your average this month",
+  "@homeAiInsightAverageTitleUp": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightAverageTitleDown": "You're {percent}% below your average this month",
+  "@homeAiInsightAverageTitleDown": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightAverageMeta": "Compared to the last 3 months",
+  "@homeAiInsightAverageMeta": {},
+  "homeAiInsightQueueCounter": "{position} of {total}",
+  "@homeAiInsightQueueCounter": {
+    "description": "AI card's queue counter, only visible with 2 or more queued insights.",
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightContinueChip": "Continue the conversation",
+  "@homeAiInsightContinueChip": {},
+  "homeAiInsightDismiss": "Not now",
+  "@homeAiInsightDismiss": {},
+  "homeAiBetaSheetTitle": "Conversation in beta",
+  "@homeAiBetaSheetTitle": {},
+  "homeAiBetaSheetMessage": "You don't have access to chat with Billetudo yet. Keep exploring the app while it opens up to more people.",
+  "@homeAiBetaSheetMessage": {},
+  "homeBalancesSheetTitle": "Your money",
+  "@homeBalancesSheetTitle": {},
+  "homeBalancesSheetTotalLabel": "YOUR MONEY",
+  "@homeBalancesSheetTotalLabel": {},
+  "homeBalancesSheetExcludesNote": "Does not include credit cards or investments",
+  "@homeBalancesSheetExcludesNote": {},
+  "homeBalancesSheetCurrencyCount": "{currency} · {count, plural, =1{1 account} other{{count} accounts}}",
+  "@homeBalancesSheetCurrencyCount": {
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "example": "COP"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAccountSheetTitle": "Your account",
+  "@homeAccountSheetTitle": {},
+  "homeAccountSheetSyncedTitle": "Everything is synced",
+  "@homeAccountSheetSyncedTitle": {},
+  "homeAccountSheetSyncedKicker": "All good",
+  "@homeAccountSheetSyncedKicker": {},
+  "homeAccountSheetSyncedBody": "Your data is backed up and up to date in the cloud.",
+  "@homeAccountSheetSyncedBody": {},
+  "homeAccountSheetOfflineTitle": "No connection",
+  "@homeAccountSheetOfflineTitle": {},
+  "homeAccountSheetOfflineKicker": "Something needs your attention",
+  "@homeAccountSheetOfflineKicker": {},
+  "homeAccountSheetOfflineBody": "We'll sync automatically once you're back online.",
+  "@homeAccountSheetOfflineBody": {},
+  "homeAccountSheetNoAccountTitle": "Back up your data",
+  "@homeAccountSheetNoAccountTitle": {},
+  "homeAccountSheetNoAccountBody": "Sign in so you don't lose your data if you switch phones.",
+  "@homeAccountSheetNoAccountBody": {},
+  "homeAccountSheetActivateBackup": "Activate backup",
+  "@homeAccountSheetActivateBackup": {},
   "homeExitConfirmTitle": "Leave Billetudo?",
   "homeExitConfirmMessage": "You can come back anytime, your data stays saved.",
   "homeExitConfirmAction": "Exit",

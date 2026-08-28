@@ -2123,13 +2123,13 @@ abstract class AppLocalizations {
   /// Saludo genérico del header cuando no hay cuenta ni nombre local.
   ///
   /// In es, this message translates to:
-  /// **'Hola de nuevo'**
+  /// **'Hola de nuevo 👋'**
   String get homeGreeting;
 
   /// Saludo del header cuando hay sesión, con el nombre del usuario.
   ///
   /// In es, this message translates to:
-  /// **'Hola de nuevo, {name}'**
+  /// **'Hola, {name} 👋'**
   String homeGreetingNamed(String name);
 
   /// No description provided for @homeNotificationsTooltip.
@@ -2341,6 +2341,264 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Las notificaciones llegarán pronto.'**
   String get homeNotificationsSheetMessage;
+
+  /// Etiqueta de accesibilidad del badge del avatar cuando no hay sesión (design-system/billetudo/pages/inicio.md).
+  ///
+  /// In es, this message translates to:
+  /// **'Sin respaldo en la nube'**
+  String get homeAccountAvatarNoAccount;
+
+  /// Tooltip del botón wallet del header que abre la hoja de saldos.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu dinero'**
+  String get homeWalletTooltip;
+
+  /// Kicker del hero en el estado de sobregasto real (xRSdl).
+  ///
+  /// In es, this message translates to:
+  /// **'Excedido por'**
+  String get homeHeroOverspentKicker;
+
+  /// Kicker fijo del hero en todo estado con saldo restante (ancla fija, xRSdl).
+  ///
+  /// In es, this message translates to:
+  /// **'Te quedan'**
+  String get homeHeroRemainingKicker;
+
+  /// Meta Days del hero con presupuesto (xRSdl): días restantes del periodo vigente.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Último día} one{Resta {count} día} other{Restan {count} días}}'**
+  String homeHeroMetaDaysLeft(int count);
+
+  /// Hero Note del estado de riesgo de sobregiro proyectado (xRSdl KSaru).
+  ///
+  /// In es, this message translates to:
+  /// **'Podría exceder por {amount}'**
+  String homeHeroRiskNote(String amount);
+
+  /// Nota del hero cuando el usuario nunca creó un presupuesto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin presupuesto activo este mes'**
+  String get homeHeroNoBudgetEverCreatedNote;
+
+  /// Nota del hero cuando el usuario tiene presupuestos pero ninguno está destacado.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún presupuesto destacado este mes'**
+  String get homeHeroNoBudgetFeaturedNote;
+
+  /// No description provided for @homeAiCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pregúntale a Billetudo'**
+  String get homeAiCardTitle;
+
+  /// No description provided for @homeAiCardSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Entiende tu plata en segundos'**
+  String get homeAiCardSubtitle;
+
+  /// No description provided for @homeAiChipMonthProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo voy este mes?'**
+  String get homeAiChipMonthProgress;
+
+  /// No description provided for @homeAiChipGoalsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cuánto llevo ahorrado en mis metas?'**
+  String get homeAiChipGoalsSaved;
+
+  /// No description provided for @homeAiChipBiggestSpend.
+  ///
+  /// In es, this message translates to:
+  /// **'¿En qué se me fue más la plata?'**
+  String get homeAiChipBiggestSpend;
+
+  /// Chip/CTA que navega directo a crear presupuesto (nunca abre el chat).
+  ///
+  /// In es, this message translates to:
+  /// **'Ayúdame a presupuestar'**
+  String get homeAiChipBudgetHelp;
+
+  /// No description provided for @homeAiInsightCreateBudgetKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo en Billetudo'**
+  String get homeAiInsightCreateBudgetKicker;
+
+  /// No description provided for @homeAiInsightCreateBudgetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesta y no gastes de más'**
+  String get homeAiInsightCreateBudgetTitle;
+
+  /// No description provided for @homeAiInsightCreateBudgetMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Verás cuánto te queda del mes'**
+  String get homeAiInsightCreateBudgetMeta;
+
+  /// No description provided for @homeAiInsightProjectionKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyección de presupuesto'**
+  String get homeAiInsightProjectionKicker;
+
+  /// No description provided for @homeAiInsightProjectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrías exceder tu presupuesto este mes'**
+  String get homeAiInsightProjectionTitle;
+
+  /// No description provided for @homeAiInsightProjectionMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Con tus pagos programados podrías exceder por {amount}'**
+  String homeAiInsightProjectionMeta(String amount);
+
+  /// No description provided for @homeAiInsightAverageKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Comparado con tu promedio'**
+  String get homeAiInsightAverageKicker;
+
+  /// No description provided for @homeAiInsightAverageTitleUp.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas {percent}% arriba de tu promedio este mes'**
+  String homeAiInsightAverageTitleUp(int percent);
+
+  /// No description provided for @homeAiInsightAverageTitleDown.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas {percent}% abajo de tu promedio este mes'**
+  String homeAiInsightAverageTitleDown(int percent);
+
+  /// No description provided for @homeAiInsightAverageMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Comparado con los últimos 3 meses'**
+  String get homeAiInsightAverageMeta;
+
+  /// Contador de cola de la card de IA, visible solo con 2 o más insights.
+  ///
+  /// In es, this message translates to:
+  /// **'{position} de {total}'**
+  String homeAiInsightQueueCounter(int position, int total);
+
+  /// No description provided for @homeAiInsightContinueChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar la conversación'**
+  String get homeAiInsightContinueChip;
+
+  /// No description provided for @homeAiInsightDismiss.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get homeAiInsightDismiss;
+
+  /// No description provided for @homeAiBetaSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Conversación en beta'**
+  String get homeAiBetaSheetTitle;
+
+  /// No description provided for @homeAiBetaSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tienes acceso a la conversación con Billetudo. Sigue explorando la app mientras se abre para más personas.'**
+  String get homeAiBetaSheetMessage;
+
+  /// No description provided for @homeBalancesSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu dinero'**
+  String get homeBalancesSheetTitle;
+
+  /// No description provided for @homeBalancesSheetTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'TU DINERO'**
+  String get homeBalancesSheetTotalLabel;
+
+  /// No description provided for @homeBalancesSheetExcludesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'No incluye tarjetas de crédito ni inversiones'**
+  String get homeBalancesSheetExcludesNote;
+
+  /// No description provided for @homeBalancesSheetCurrencyCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{currency} · {count, plural, =1{1 cuenta} other{{count} cuentas}}'**
+  String homeBalancesSheetCurrencyCount(String currency, int count);
+
+  /// No description provided for @homeAccountSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta'**
+  String get homeAccountSheetTitle;
+
+  /// No description provided for @homeAccountSheetSyncedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo está sincronizado'**
+  String get homeAccountSheetSyncedTitle;
+
+  /// No description provided for @homeAccountSheetSyncedKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo bien'**
+  String get homeAccountSheetSyncedKicker;
+
+  /// No description provided for @homeAccountSheetSyncedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos están respaldados y al día en la nube.'**
+  String get homeAccountSheetSyncedBody;
+
+  /// No description provided for @homeAccountSheetOfflineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get homeAccountSheetOfflineTitle;
+
+  /// No description provided for @homeAccountSheetOfflineKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Algo merece tu atención'**
+  String get homeAccountSheetOfflineKicker;
+
+  /// No description provided for @homeAccountSheetOfflineBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizaremos solos en cuanto haya conexión.'**
+  String get homeAccountSheetOfflineBody;
+
+  /// No description provided for @homeAccountSheetNoAccountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Respalda tu información'**
+  String get homeAccountSheetNoAccountTitle;
+
+  /// No description provided for @homeAccountSheetNoAccountBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicia sesión para no perder tus datos si cambias de teléfono.'**
+  String get homeAccountSheetNoAccountBody;
+
+  /// No description provided for @homeAccountSheetActivateBackup.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar respaldo'**
+  String get homeAccountSheetActivateBackup;
 
   /// No description provided for @homeExitConfirmTitle.
   ///
@@ -9552,7 +9810,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiChatEmptySubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Elegí una pregunta o escribime lo que necesites.'**
+  /// **'Elige una pregunta o escríbeme lo que necesites.'**
   String get aiChatEmptySubtitle;
 
   /// No description provided for @aiChatSuggestionMonthProgress.
@@ -9588,13 +9846,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiChatErrorBody.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos enviar tu mensaje. Intentá de nuevo.'**
+  /// **'No pudimos enviar tu mensaje. Inténtalo de nuevo.'**
   String get aiChatErrorBody;
 
   /// No description provided for @aiChatMessageFailed.
   ///
   /// In es, this message translates to:
-  /// **'No se pudo enviar. Intentá de nuevo.'**
+  /// **'No se pudo enviar. Inténtalo de nuevo.'**
   String get aiChatMessageFailed;
 
   /// No description provided for @aiChatCopyMessage.

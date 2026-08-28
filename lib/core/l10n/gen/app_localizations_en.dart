@@ -1181,11 +1181,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navMore => 'More';
 
   @override
-  String get homeGreeting => 'Welcome back';
+  String get homeGreeting => 'Hi 👋';
 
   @override
   String homeGreetingNamed(String name) {
-    return 'Welcome back, $name';
+    return 'Hi, $name 👋';
   }
 
   @override
@@ -1312,6 +1312,169 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
+
+  @override
+  String get homeAccountAvatarNoAccount => 'No cloud backup';
+
+  @override
+  String get homeWalletTooltip => 'Your money';
+
+  @override
+  String get homeHeroOverspentKicker => 'Over by';
+
+  @override
+  String get homeHeroRemainingKicker => 'You have left';
+
+  @override
+  String homeHeroMetaDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHeroRiskNote(String amount) {
+    return 'Could exceed by $amount';
+  }
+
+  @override
+  String get homeHeroNoBudgetEverCreatedNote => 'No active budget this month';
+
+  @override
+  String get homeHeroNoBudgetFeaturedNote => 'No budget featured this month';
+
+  @override
+  String get homeAiCardTitle => 'Ask Billetudo';
+
+  @override
+  String get homeAiCardSubtitle => 'Understand your money in seconds';
+
+  @override
+  String get homeAiChipMonthProgress => 'How am I doing this month?';
+
+  @override
+  String get homeAiChipGoalsSaved => 'How much have I saved toward my goals?';
+
+  @override
+  String get homeAiChipBiggestSpend => 'Where did most of my money go?';
+
+  @override
+  String get homeAiChipBudgetHelp => 'Help me budget';
+
+  @override
+  String get homeAiInsightCreateBudgetKicker => 'New to Billetudo';
+
+  @override
+  String get homeAiInsightCreateBudgetTitle => 'Budget so you don\'t overspend';
+
+  @override
+  String get homeAiInsightCreateBudgetMeta =>
+      'You\'ll see what\'s left of your month';
+
+  @override
+  String get homeAiInsightProjectionKicker => 'Budget projection';
+
+  @override
+  String get homeAiInsightProjectionTitle =>
+      'You could exceed your budget this month';
+
+  @override
+  String homeAiInsightProjectionMeta(String amount) {
+    return 'With your scheduled payments you could exceed by $amount';
+  }
+
+  @override
+  String get homeAiInsightAverageKicker => 'Compared to your average';
+
+  @override
+  String homeAiInsightAverageTitleUp(int percent) {
+    return 'You\'re $percent% above your average this month';
+  }
+
+  @override
+  String homeAiInsightAverageTitleDown(int percent) {
+    return 'You\'re $percent% below your average this month';
+  }
+
+  @override
+  String get homeAiInsightAverageMeta => 'Compared to the last 3 months';
+
+  @override
+  String homeAiInsightQueueCounter(int position, int total) {
+    return '$position of $total';
+  }
+
+  @override
+  String get homeAiInsightContinueChip => 'Continue the conversation';
+
+  @override
+  String get homeAiInsightDismiss => 'Not now';
+
+  @override
+  String get homeAiBetaSheetTitle => 'Conversation in beta';
+
+  @override
+  String get homeAiBetaSheetMessage =>
+      'You don\'t have access to chat with Billetudo yet. Keep exploring the app while it opens up to more people.';
+
+  @override
+  String get homeBalancesSheetTitle => 'Your money';
+
+  @override
+  String get homeBalancesSheetTotalLabel => 'YOUR MONEY';
+
+  @override
+  String get homeBalancesSheetExcludesNote =>
+      'Does not include credit cards or investments';
+
+  @override
+  String homeBalancesSheetCurrencyCount(String currency, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$currency · $_temp0';
+  }
+
+  @override
+  String get homeAccountSheetTitle => 'Your account';
+
+  @override
+  String get homeAccountSheetSyncedTitle => 'Everything is synced';
+
+  @override
+  String get homeAccountSheetSyncedKicker => 'All good';
+
+  @override
+  String get homeAccountSheetSyncedBody =>
+      'Your data is backed up and up to date in the cloud.';
+
+  @override
+  String get homeAccountSheetOfflineTitle => 'No connection';
+
+  @override
+  String get homeAccountSheetOfflineKicker => 'Something needs your attention';
+
+  @override
+  String get homeAccountSheetOfflineBody =>
+      'We\'ll sync automatically once you\'re back online.';
+
+  @override
+  String get homeAccountSheetNoAccountTitle => 'Back up your data';
+
+  @override
+  String get homeAccountSheetNoAccountBody =>
+      'Sign in so you don\'t lose your data if you switch phones.';
+
+  @override
+  String get homeAccountSheetActivateBackup => 'Activate backup';
 
   @override
   String get homeExitConfirmTitle => 'Leave Billetudo?';

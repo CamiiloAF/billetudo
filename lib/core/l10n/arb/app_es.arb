@@ -927,11 +927,11 @@
   },
   "navMore": "Más",
   "@navMore": {},
-  "homeGreeting": "Hola de nuevo",
+  "homeGreeting": "Hola de nuevo 👋",
   "@homeGreeting": {
     "description": "Saludo genérico del header cuando no hay cuenta ni nombre local."
   },
-  "homeGreetingNamed": "Hola de nuevo, {name}",
+  "homeGreetingNamed": "Hola, {name} 👋",
   "@homeGreetingNamed": {
     "description": "Saludo del header cuando hay sesión, con el nombre del usuario.",
     "placeholders": {
@@ -1062,6 +1062,160 @@
   "@homeAiDisclaimer": {},
   "homeNotificationsSheetMessage": "Las notificaciones llegarán pronto.",
   "@homeNotificationsSheetMessage": {},
+  "homeAccountAvatarNoAccount": "Sin respaldo en la nube",
+  "@homeAccountAvatarNoAccount": {
+    "description": "Etiqueta de accesibilidad del badge del avatar cuando no hay sesión (design-system/billetudo/pages/inicio.md)."
+  },
+  "homeWalletTooltip": "Tu dinero",
+  "@homeWalletTooltip": {
+    "description": "Tooltip del botón wallet del header que abre la hoja de saldos."
+  },
+  "homeHeroOverspentKicker": "Excedido por",
+  "@homeHeroOverspentKicker": {
+    "description": "Kicker del hero en el estado de sobregasto real (xRSdl)."
+  },
+  "homeHeroRemainingKicker": "Te quedan",
+  "@homeHeroRemainingKicker": {
+    "description": "Kicker fijo del hero en todo estado con saldo restante (ancla fija, xRSdl)."
+  },
+  "homeHeroMetaDaysLeft": "{count, plural, =0{Último día} one{Resta {count} día} other{Restan {count} días}}",
+  "@homeHeroMetaDaysLeft": {
+    "description": "Meta Days del hero con presupuesto (xRSdl): días restantes del periodo vigente.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeHeroRiskNote": "Podría exceder por {amount}",
+  "@homeHeroRiskNote": {
+    "description": "Hero Note del estado de riesgo de sobregiro proyectado (xRSdl KSaru).",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$330.000"
+      }
+    }
+  },
+  "homeHeroNoBudgetEverCreatedNote": "Sin presupuesto activo este mes",
+  "@homeHeroNoBudgetEverCreatedNote": {
+    "description": "Nota del hero cuando el usuario nunca creó un presupuesto."
+  },
+  "homeHeroNoBudgetFeaturedNote": "Ningún presupuesto destacado este mes",
+  "@homeHeroNoBudgetFeaturedNote": {
+    "description": "Nota del hero cuando el usuario tiene presupuestos pero ninguno está destacado."
+  },
+  "homeAiCardTitle": "Pregúntale a Billetudo",
+  "@homeAiCardTitle": {},
+  "homeAiCardSubtitle": "Entiende tu plata en segundos",
+  "@homeAiCardSubtitle": {},
+  "homeAiChipMonthProgress": "¿Cómo voy este mes?",
+  "@homeAiChipMonthProgress": {},
+  "homeAiChipGoalsSaved": "¿Cuánto llevo ahorrado en mis metas?",
+  "@homeAiChipGoalsSaved": {},
+  "homeAiChipBiggestSpend": "¿En qué se me fue más la plata?",
+  "@homeAiChipBiggestSpend": {},
+  "homeAiChipBudgetHelp": "Ayúdame a presupuestar",
+  "@homeAiChipBudgetHelp": {
+    "description": "Chip/CTA que navega directo a crear presupuesto (nunca abre el chat)."
+  },
+  "homeAiInsightCreateBudgetKicker": "Nuevo en Billetudo",
+  "@homeAiInsightCreateBudgetKicker": {},
+  "homeAiInsightCreateBudgetTitle": "Presupuesta y no gastes de más",
+  "@homeAiInsightCreateBudgetTitle": {},
+  "homeAiInsightCreateBudgetMeta": "Verás cuánto te queda del mes",
+  "@homeAiInsightCreateBudgetMeta": {},
+  "homeAiInsightProjectionKicker": "Proyección de presupuesto",
+  "@homeAiInsightProjectionKicker": {},
+  "homeAiInsightProjectionTitle": "Podrías exceder tu presupuesto este mes",
+  "@homeAiInsightProjectionTitle": {},
+  "homeAiInsightProjectionMeta": "Con tus pagos programados podrías exceder por {amount}",
+  "@homeAiInsightProjectionMeta": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$330.000"
+      }
+    }
+  },
+  "homeAiInsightAverageKicker": "Comparado con tu promedio",
+  "@homeAiInsightAverageKicker": {},
+  "homeAiInsightAverageTitleUp": "Vas {percent}% arriba de tu promedio este mes",
+  "@homeAiInsightAverageTitleUp": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightAverageTitleDown": "Vas {percent}% abajo de tu promedio este mes",
+  "@homeAiInsightAverageTitleDown": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightAverageMeta": "Comparado con los últimos 3 meses",
+  "@homeAiInsightAverageMeta": {},
+  "homeAiInsightQueueCounter": "{position} de {total}",
+  "@homeAiInsightQueueCounter": {
+    "description": "Contador de cola de la card de IA, visible solo con 2 o más insights.",
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAiInsightContinueChip": "Continuar la conversación",
+  "@homeAiInsightContinueChip": {},
+  "homeAiInsightDismiss": "Ahora no",
+  "@homeAiInsightDismiss": {},
+  "homeAiBetaSheetTitle": "Conversación en beta",
+  "@homeAiBetaSheetTitle": {},
+  "homeAiBetaSheetMessage": "Todavía no tienes acceso a la conversación con Billetudo. Sigue explorando la app mientras se abre para más personas.",
+  "@homeAiBetaSheetMessage": {},
+  "homeBalancesSheetTitle": "Tu dinero",
+  "@homeBalancesSheetTitle": {},
+  "homeBalancesSheetTotalLabel": "TU DINERO",
+  "@homeBalancesSheetTotalLabel": {},
+  "homeBalancesSheetExcludesNote": "No incluye tarjetas de crédito ni inversiones",
+  "@homeBalancesSheetExcludesNote": {},
+  "homeBalancesSheetCurrencyCount": "{currency} · {count, plural, =1{1 cuenta} other{{count} cuentas}}",
+  "@homeBalancesSheetCurrencyCount": {
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "example": "COP"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAccountSheetTitle": "Tu cuenta",
+  "@homeAccountSheetTitle": {},
+  "homeAccountSheetSyncedTitle": "Todo está sincronizado",
+  "@homeAccountSheetSyncedTitle": {},
+  "homeAccountSheetSyncedKicker": "Todo bien",
+  "@homeAccountSheetSyncedKicker": {},
+  "homeAccountSheetSyncedBody": "Tus datos están respaldados y al día en la nube.",
+  "@homeAccountSheetSyncedBody": {},
+  "homeAccountSheetOfflineTitle": "Sin conexión",
+  "@homeAccountSheetOfflineTitle": {},
+  "homeAccountSheetOfflineKicker": "Algo merece tu atención",
+  "@homeAccountSheetOfflineKicker": {},
+  "homeAccountSheetOfflineBody": "Sincronizaremos solos en cuanto haya conexión.",
+  "@homeAccountSheetOfflineBody": {},
+  "homeAccountSheetNoAccountTitle": "Respalda tu información",
+  "@homeAccountSheetNoAccountTitle": {},
+  "homeAccountSheetNoAccountBody": "Inicia sesión para no perder tus datos si cambias de teléfono.",
+  "@homeAccountSheetNoAccountBody": {},
+  "homeAccountSheetActivateBackup": "Activar respaldo",
+  "@homeAccountSheetActivateBackup": {},
   "homeExitConfirmTitle": "¿Salir de Billetudo?",
   "@homeExitConfirmTitle": {},
   "homeExitConfirmMessage": "Puedes volver cuando quieras, tus datos se quedan guardados.",
@@ -4655,7 +4809,7 @@
   "@aiChatComposerHint": {},
   "aiChatEmptyTitle": "¿Por dónde empezamos?",
   "@aiChatEmptyTitle": {},
-  "aiChatEmptySubtitle": "Elegí una pregunta o escribime lo que necesites.",
+  "aiChatEmptySubtitle": "Elige una pregunta o escríbeme lo que necesites.",
   "@aiChatEmptySubtitle": {},
   "aiChatSuggestionMonthProgress": "¿Cómo voy este mes?",
   "@aiChatSuggestionMonthProgress": {},
@@ -4667,9 +4821,9 @@
   "@aiChatSuggestionBiggestSpend": {},
   "aiChatErrorTitle": "No pude responder",
   "@aiChatErrorTitle": {},
-  "aiChatErrorBody": "No pudimos enviar tu mensaje. Intentá de nuevo.",
+  "aiChatErrorBody": "No pudimos enviar tu mensaje. Inténtalo de nuevo.",
   "@aiChatErrorBody": {},
-  "aiChatMessageFailed": "No se pudo enviar. Intentá de nuevo.",
+  "aiChatMessageFailed": "No se pudo enviar. Inténtalo de nuevo.",
   "@aiChatMessageFailed": {},
   "aiChatCopyMessage": "Copiar",
   "@aiChatCopyMessage": {},

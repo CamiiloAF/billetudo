@@ -559,21 +559,18 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                 getIt<ReportsShellCubit>().resetToDefault();
                 unawaited(context.push(AppRoutes.reports));
               },
+              onOpenGoals: () => context.go(AppRoutes.goals),
               // The gear closing the quick-access strip: same Ajustes screen
               // the "Más" hub links to, reached without leaving Inicio.
               onOpenQuickAccessOrder: () =>
                   context.push(AppRoutes.quickAccessOrder),
               // Bugfix item 6: offline with no session → back up / sign in.
+              // Reused as "Tu cuenta"'s "Activar respaldo" CTA too.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
+              onOpenSettings: () => context.push(AppRoutes.settings),
+              onSignOut: () => unawaited(_confirmSignOut(context)),
               onOpenAi: () => unawaited(context.push(AppRoutes.ai)),
-              // NOTE(gate-cuenta run): `HomePage` on disk no longer declares
-              // `onOpenBudget` — this callsite was left dangling by something
-              // outside this task's scope (a build break present before any
-              // of this run's edits, see the run's closing notes). Dropped
-              // here only to keep the tree compiling; the "home-hero-period-
-              // stepper" item 7 feature itself needs a real look, not a
-              // silent re-add.
             ),
           ),
         ),

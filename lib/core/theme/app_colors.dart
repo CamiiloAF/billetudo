@@ -57,6 +57,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.track,
     required this.trackOverlay,
     required this.monthChipBg,
+    required this.onPrimaryWarn,
+    required this.onPrimaryAlert,
   });
 
   final Color primary;
@@ -167,6 +169,22 @@ class AppColors extends ThemeExtension<AppColors> {
   /// gradient without a themed surface color underneath.
   final Color monthChipBg;
 
+  /// `$on-primary-warn` (`#FFD27A`), fixed in both themes: a warm tint
+  /// legible against the Home hero's violet gradient, used only for the
+  /// projected scheduled-payment segment of the hero's progress bar and its
+  /// `Hero Note` icon (`design-system/billetudo/pages/inicio.md` § "Hero
+  /// compacto"). `$amber` is nearly invisible on this gradient (1.15:1), and
+  /// neither warm tint clears 4.5:1 for small text on it, so text stays on
+  /// `$on-primary` solid — only bars/icons (3:1 graphic-object floor) use
+  /// this token.
+  final Color onPrimaryWarn;
+
+  /// `$on-primary-alert` (`#FFCFC4`), fixed in both themes: same rationale as
+  /// [onPrimaryWarn], for the hero's real-overspend state (bar fill, `State
+  /// Icon`, `State Amount`). `$expense` is nearly invisible on the gradient
+  /// (1.01:1).
+  final Color onPrimaryAlert;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -212,6 +230,8 @@ class AppColors extends ThemeExtension<AppColors> {
     track: Color(0xFFEEECFB),
     trackOverlay: Color(0x33FFFFFF),
     monthChipBg: Color(0x40000000),
+    onPrimaryWarn: Color(0xFFFFD27A),
+    onPrimaryAlert: Color(0xFFFFCFC4),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -259,6 +279,8 @@ class AppColors extends ThemeExtension<AppColors> {
     track: Color(0xFF2A2A3D),
     trackOverlay: Color(0x33FFFFFF),
     monthChipBg: Color(0x40000000),
+    onPrimaryWarn: Color(0xFFFFD27A),
+    onPrimaryAlert: Color(0xFFFFCFC4),
   );
 
   @override
@@ -306,6 +328,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? track,
     Color? trackOverlay,
     Color? monthChipBg,
+    Color? onPrimaryWarn,
+    Color? onPrimaryAlert,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -351,6 +375,8 @@ class AppColors extends ThemeExtension<AppColors> {
       track: track ?? this.track,
       trackOverlay: trackOverlay ?? this.trackOverlay,
       monthChipBg: monthChipBg ?? this.monthChipBg,
+      onPrimaryWarn: onPrimaryWarn ?? this.onPrimaryWarn,
+      onPrimaryAlert: onPrimaryAlert ?? this.onPrimaryAlert,
     );
   }
 
@@ -403,6 +429,8 @@ class AppColors extends ThemeExtension<AppColors> {
       track: Color.lerp(track, other.track, t)!,
       trackOverlay: Color.lerp(trackOverlay, other.trackOverlay, t)!,
       monthChipBg: Color.lerp(monthChipBg, other.monthChipBg, t)!,
+      onPrimaryWarn: Color.lerp(onPrimaryWarn, other.onPrimaryWarn, t)!,
+      onPrimaryAlert: Color.lerp(onPrimaryAlert, other.onPrimaryAlert, t)!,
     );
   }
 }
