@@ -43,6 +43,15 @@ class LoginCubit extends Cubit<LoginState> {
     Future<Result<SignInOutcome>> Function() signIn,
     AuthProvider provider,
   ) async {
+    // Sentry BILLETUDO-F: the only `emit` in this class without this guard,
+    // and the one that actually crashed live — a SnackBar's "reintentar"
+    // action outlived the Login screen (shown via a `ScaffoldMessenger` that
+    // survives navigating away) and called back into an already-closed
+    // cubit. Every other `emit` here already guards after an `await`; this
+    // one needed it even before its first one.
+    if (isClosed) {
+      return;
+    }
     emit(state.copyWith(status: LoginStatus.loading, lastProvider: provider));
     try {
       final result = await signIn();

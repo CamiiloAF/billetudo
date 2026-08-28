@@ -34,6 +34,9 @@ class AiAssistantPage extends StatefulWidget {
     required this.onBack,
     required this.onOpenHistory,
     required this.onSignIn,
+    this.initialQuestion,
+    this.initialInsightType,
+    this.initialConversationId,
     super.key,
   });
 
@@ -45,6 +48,26 @@ class AiAssistantPage extends StatefulWidget {
 
   /// Pushes the login flow ([AiSignedOutPage]'s CTA).
   final VoidCallback onSignIn;
+
+  /// A question pre-seeded from Home's AI card chips (Router's
+  /// `initialQuestion` query param). When non-empty, the first start forces
+  /// a brand-new thread (`AiChatCubit.startNew`) and sends it right away
+  /// instead of resuming the last conversation.
+  final String? initialQuestion;
+
+  /// The Home AI card insight (`HomeAiInsightType.name`) that seeded
+  /// [initialQuestion], when this launch came from that card's own
+  /// "iniciar conversación" chip (bugfix item 7). Ignored without a
+  /// [initialQuestion] — the brand-new thread `initialQuestion` forces is
+  /// what gets linked to it, via `AiChatCubit.startNew`.
+  final String? initialInsightType;
+
+  /// A specific thread to reopen straight away — set by Home's AI card
+  /// insight chip once it already has `HomeAiInsight.conversationId`
+  /// (bugfix item 7), same navigation shape as picking a row from the
+  /// history list (`_openHistory`). Takes priority over [initialQuestion]
+  /// when both are somehow present.
+  final String? initialConversationId;
 
   @override
   State<AiAssistantPage> createState() => _AiAssistantPageState();
@@ -58,6 +81,16 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
   void initState() {
     super.initState();
     unawaited(context.read<AiConsentCubit>().start());
+    // Both cubits are long-lived singletons: on a SECOND visit this session,
+    // consent may already read `granted` and the chat may already read
+    // `isSignedIn: true` from the previous visit, so neither transitions —
+    // the `BlocConsumer` listeners below only fire on a *change*, and would
+    // silently never call `_startChatOnce()` at all. That was the bug: the
+    // screen opened with an empty composer and never sent the seeded
+    // question. This eager call closes that gap; it still no-ops via its own
+    // two guards when a gate genuinely is not clear yet, and the listeners
+    // remain the ones that fire once it does.
+    _startChatOnce();
   }
 
   @override
@@ -69,6 +102,10 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
   /// Starts the thread once both gates are clear (consent granted, session
   /// active). Called from two listeners — consent turning granted, and the
   /// session turning signed-in — since either can be the last one to clear.
+  ///
+  /// With a non-empty [AiAssistantPage.initialQuestion] (Home's AI card
+  /// chips), this forces a brand-new thread and sends the question right
+  /// away instead of resuming the last conversation.
   void _startChatOnce() {
     if (_chatStarted) {
       return;
@@ -81,7 +118,29 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
       return;
     }
     _chatStarted = true;
+    final conversationId = widget.initialConversationId;
+    if (conversationId != null && conversationId.trim().isNotEmpty) {
+      unawaited(
+        context.read<AiChatCubit>().start(conversationId: conversationId),
+      );
+      return;
+    }
+    final question = widget.initialQuestion;
+    if (question != null && question.trim().isNotEmpty) {
+      unawaited(_startWithQuestion(question));
+      return;
+    }
     unawaited(context.read<AiChatCubit>().start());
+  }
+
+  Future<void> _startWithQuestion(String question) async {
+    final cubit = context.read<AiChatCubit>();
+    await cubit.startNew(insightType: widget.initialInsightType);
+    if (!mounted) {
+      return;
+    }
+    cubit.updateDraft(question);
+    await cubit.send();
   }
 
   void _scrollToBottom() {

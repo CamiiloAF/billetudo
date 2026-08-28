@@ -50,7 +50,7 @@ class AiProposalActionsRow extends StatelessWidget {
                   size: 16, color: colors.incomeText),
               const SizedBox(width: 8),
               Text(
-                l10n.aiProposalConfirmedRow,
+                _confirmedRowLabel(l10n, proposal),
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -109,4 +109,16 @@ class AiProposalActionsRow extends StatelessWidget {
         );
     }
   }
+
+  /// Matches `AiProposalCard`'s own exhaustive body-slot switch: a confirmed
+  /// row names the entity it just created, never a generic "transactions"
+  /// copy for a budget/goal/category.
+  String _confirmedRowLabel(AppLocalizations l10n, AiActionProposal proposal) =>
+      switch (proposal) {
+        CreateBudgetProposal() => l10n.aiProposalConfirmedRowBudget,
+        CreateGoalProposal() => l10n.aiProposalConfirmedRowGoal,
+        CreateCategoryProposal() => l10n.aiProposalConfirmedRowCategory,
+        CreateTransactionProposal() => l10n.aiProposalConfirmedRowTransaction,
+        UnsupportedProposal() => l10n.aiProposalConfirmedRowTransaction,
+      };
 }

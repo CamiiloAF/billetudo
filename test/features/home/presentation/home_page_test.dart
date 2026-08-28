@@ -82,7 +82,11 @@ void main() {
     VoidCallback? onOpenSyncStatus,
     VoidCallback? onOpenSettings,
     VoidCallback? onSignOut,
-    VoidCallback? onOpenAi,
+    void Function(String? question)? onOpenAi,
+    Future<void> Function(
+            {required String question, required String? insightType})?
+        onOpenAiInsightQuestion,
+    Future<void> Function(String conversationId)? onOpenAiConversation,
     VoidCallback? onAddTransaction,
     VoidCallback? onCreateBudget,
     ValueChanged<String>? onOpenBudget,
@@ -134,7 +138,10 @@ void main() {
             onOpenSyncStatus: onOpenSyncStatus ?? () {},
             onOpenSettings: onOpenSettings ?? () {},
             onSignOut: onSignOut ?? () {},
-            onOpenAi: onOpenAi ?? () {},
+            onOpenAi: onOpenAi ?? (_) {},
+            onOpenAiInsightQuestion: onOpenAiInsightQuestion ??
+                ({required question, required insightType}) async {},
+            onOpenAiConversation: onOpenAiConversation ?? (_) async {},
           ),
         ),
       ),
@@ -173,8 +180,37 @@ void main() {
 
   group('gate de acceso al chat de IA (criterio 12)', () {
     testWidgets(
-        'el chip "Ayúdame a presupuestar" navega directo a onCreateBudget, '
-        'sin consultar acceso ni abrir el chat/beta sheet', (tester) async {
+        'dogfooding fix: el chip "Ayúdame a presupuestar" CON acceso a IA '
+        'abre el chat sembrado, nunca onCreateBudget ni la beta sheet',
+        (tester) async {
+      var createBudgetTapped = 0;
+      String? asked;
+      final cubit = MockHomeCubit();
+      await pumpHome(
+        tester,
+        readyWith(
+          [buildActivity(categoryName: 'Mercado')],
+          aiInsight: const HomeAiInsight.createBudget(),
+        ),
+        cubit: cubit,
+        onCreateBudget: () => createBudgetTapped++,
+        onOpenAi: (q) => asked = q,
+      );
+      when(cubit.hasAiAccess).thenAnswer((_) async => true);
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+
+      await tester.tap(find.text(l10n.homeAiChipBudgetHelp));
+      await tester.pumpAndSettle();
+
+      expect(asked, l10n.aiChatSuggestionBuildBudget);
+      expect(createBudgetTapped, 0);
+      expect(find.byType(AiBetaSheet), findsNothing);
+    });
+
+    testWidgets(
+        'el chip "Ayúdame a presupuestar" SIN acceso a IA navega directo a '
+        'onCreateBudget, nunca abre la beta sheet (Nivel 0, nunca una pared)',
+        (tester) async {
       var createBudgetTapped = 0;
       final cubit = MockHomeCubit();
       await pumpHome(
@@ -186,13 +222,14 @@ void main() {
         cubit: cubit,
         onCreateBudget: () => createBudgetTapped++,
       );
+      when(cubit.hasAiAccess).thenAnswer((_) async => false);
       final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
 
       await tester.tap(find.text(l10n.homeAiChipBudgetHelp));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(createBudgetTapped, 1);
-      verifyNever(cubit.hasAiAccess);
+      expect(find.byType(AiBetaSheet), findsNothing);
     });
 
     testWidgets(
@@ -224,7 +261,7 @@ void main() {
         tester,
         readyWith([buildActivity(categoryName: 'Mercado')]),
         cubit: cubit,
-        onOpenAi: () => aiOpened++,
+        onOpenAi: (_) => aiOpened++,
       );
       when(cubit.hasAiAccess).thenAnswer((_) async => true);
 

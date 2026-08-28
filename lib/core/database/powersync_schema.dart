@@ -6,11 +6,12 @@
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
 // must be mirrored here by hand** (see `drift-migration-helper`).
 //
-// One table here is NOT synced: `ai_messages`, declared with
-// `Table.localOnly` at the bottom. It is still declared in this schema because
-// PowerSync — not Drift — owns the physical storage of every table this app
-// reads through, local-only ones included. See its comment for why the AI
-// conversation never leaves the device.
+// Two tables here are NOT synced: `ai_messages` and
+// `ai_insight_conversations`, both declared with `Table.localOnly` at the
+// bottom. They are still declared in this schema because PowerSync — not
+// Drift — owns the physical storage of every table this app reads through,
+// local-only ones included. See their comments for why the AI conversation
+// (and what links to it) never leaves the device.
 //
 // `id` is never declared as a column: PowerSync manages it implicitly for
 // every table (`Table.validate()` rejects a custom `id` column).
@@ -336,5 +337,24 @@ const powerSyncSchema = Schema([
     Column.integer('created_at'),
     Column.text('status'),
     Column.text('proposals_json'),
+  ]),
+  // Links a Home AI insight chip (`HomeAiInsightType`) to the conversation it
+  // started (schemaVersion 31), so the chip can reopen that exact thread
+  // instead of whatever conversation is most recently active — see
+  // `AiInsightConversations` in `app_database.dart`. Local-only for the same
+  // reason as `ai_messages` right above: it only points at a conversation id
+  // from that local-only history, so there is nothing cross-device to
+  // resume. `Table.localOnly` backs it with a real local table
+  // (`ps_data_local__ai_insight_conversations`) whose writes are never
+  // recorded in `ps_crud`.
+  //
+  // No `_syncColumns` here either, and no `Index`: one row per link event
+  // (never updated in place — see the Drift table's doc comment), and Fase A
+  // holds at most a handful of insight types, so a full scan ordered by
+  // `created_at` is cheap.
+  Table.localOnly('ai_insight_conversations', [
+    Column.text('insight_type'),
+    Column.text('conversation_id'),
+    Column.integer('created_at'),
   ]),
 ]);

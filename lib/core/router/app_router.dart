@@ -212,6 +212,32 @@ abstract final class AppRoutes {
   static String comingSoonTitled(String title) =>
       '$comingSoon?title=${Uri.encodeQueryComponent(title)}';
 
+  /// The assistant, opened with [question] pre-seeded (Home's AI card
+  /// chips): `AiAssistantPage` starts a brand-new thread and sends it right
+  /// away instead of resuming the last conversation.
+  ///
+  /// [insightType] (`HomeAiInsightType.name`), when set, is the AI card
+  /// insight chip this brand-new thread was started from (bugfix item 7):
+  /// `AiChatCubit.startNew` links the freshly created conversation id to it
+  /// the moment it exists, so the chip flips to "continuar" on return.
+  static String aiWithQuestion(String question, {String? insightType}) {
+    final params = {
+      'initialQuestion': question,
+      if (insightType != null) 'insightType': insightType,
+    };
+    final query = params.entries
+        .map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}')
+        .join('&');
+    return '$ai?$query';
+  }
+
+  /// The assistant, opened straight into [conversationId] — the thread
+  /// already linked to an AI card insight chip (bugfix item 7). Unlike
+  /// [aiWithQuestion], nothing is sent automatically: this just resumes an
+  /// existing thread, same as picking a row from the history list.
+  static String aiWithConversation(String conversationId) =>
+      '$ai?conversationId=${Uri.encodeQueryComponent(conversationId)}';
+
   /// Detail of one budget: `/presupuestos/<id>`.
   static String budget(String id) => '$budgets/$id';
 
@@ -570,7 +596,33 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
               onOpenSettings: () => context.push(AppRoutes.settings),
               onSignOut: () => unawaited(_confirmSignOut(context)),
-              onOpenAi: () => unawaited(context.push(AppRoutes.ai)),
+              onOpenAi: (question) => unawaited(
+                context.push(
+                  question == null
+                      ? AppRoutes.ai
+                      : AppRoutes.aiWithQuestion(question),
+                ),
+              ),
+              // Bugfix item 7: the AI card insight's own chip, distinct from
+              // `onOpenAi` above. `_HomePageState` refreshes `HomeCubit`'s
+              // resolved `HomeAiInsight.conversationId` itself once the
+              // returned future completes (so the chip's copy/destination
+              // reflects whatever just happened) — NOT here: `context` at
+              // this scope is the route's own builder context, an ANCESTOR
+              // of the `MultiBlocProvider` below that actually provides
+              // `HomeCubit`, so `context.read<HomeCubit>()` after an `await`
+              // at this level throws `ProviderNotFoundException` every time
+              // (this is exactly BILLETUDO's "Provider<HomeCubit> not found
+              // for Builder" — caught live, not hypothetical).
+              onOpenAiInsightQuestion: ({
+                required question,
+                required insightType,
+              }) =>
+                  context.push(
+                AppRoutes.aiWithQuestion(question, insightType: insightType),
+              ),
+              onOpenAiConversation: (conversationId) =>
+                  context.push(AppRoutes.aiWithConversation(conversationId)),
             ),
           ),
         ),
@@ -1349,6 +1401,9 @@ GoRoute _aiRoute() => GoRoute(
           BlocProvider(create: (context) => getIt<AiActionCubit>()),
         ],
         child: AiAssistantPage(
+          initialQuestion: state.uri.queryParameters['initialQuestion'],
+          initialInsightType: state.uri.queryParameters['insightType'],
+          initialConversationId: state.uri.queryParameters['conversationId'],
           onBack: () => context.pop(),
           onOpenHistory: () => context.push<String>(AppRoutes.aiHistory),
           onSignIn: () => context.push(AppRoutes.login),

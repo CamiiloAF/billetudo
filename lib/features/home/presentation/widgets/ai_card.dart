@@ -17,13 +17,18 @@ import 'ai_card_insight.dart';
 ///
 /// Gate: tapping the card body or any conversation chip when the user has no
 /// chat access opens the "Conversación en beta" sheet **at the moment of the
-/// tap**, never before. The "Ayúdame a presupuestar" chip/CTA never gates —
-/// it always navigates straight to [onCreateBudget] (Nivel 0).
+/// tap**, never before. The "Ayúdame a presupuestar" chip/CTA never shows
+/// that sheet — [onCreateBudget] is the caller's own decision (dogfooding
+/// fix: with chat access it opens a seeded conversation instead of the raw
+/// form; the direct new-budget nav is the Nivel 0 fallback for everyone
+/// else, never a wall).
 class AiCard extends StatelessWidget {
   const AiCard({
     required this.insight,
     required this.onAskQuestion,
     required this.onCreateBudget,
+    required this.onStartInsightConversation,
+    required this.onContinueInsightConversation,
     this.onDismissInsight,
     super.key,
   });
@@ -37,9 +42,23 @@ class AiCard extends StatelessWidget {
   /// empty conversation (tapping the card body).
   final ValueChanged<String?> onAskQuestion;
 
-  /// Navigates straight to the new-budget form — never gated, never opens
-  /// the chat (criterion 11).
+  /// Never shows the beta-upsell sheet (criterion 11) — but unlike the
+  /// conversation chips, what it actually does is the caller's call: with
+  /// chat access, opens a seeded conversation instead of the raw form
+  /// (dogfooding fix); without it, the direct new-budget nav stays the
+  /// unconditional Nivel 0 fallback.
   final VoidCallback onCreateBudget;
+
+  /// The insight variant's own chip when it has no linked conversation yet
+  /// (`HomeAiInsight.conversationId == null`): starts a brand-new thread
+  /// seeded with the given question, and links it to this insight
+  /// (bugfix item 7).
+  final ValueChanged<String> onStartInsightConversation;
+
+  /// The insight variant's own chip once it has a linked conversation:
+  /// reopens that exact thread, never whatever conversation is most recently
+  /// active in general (bugfix item 7).
+  final ValueChanged<String> onContinueInsightConversation;
 
   /// "Ahora no": dismisses the current insight, revealing the next queued
   /// one (or the chips variant once the queue empties). `null` when there is
@@ -70,6 +89,8 @@ class AiCard extends StatelessWidget {
               onAskQuestion: onAskQuestion,
               onCreateBudget: onCreateBudget,
               onDismiss: onDismissInsight,
+              onStartConversation: onStartInsightConversation,
+              onContinueConversation: onContinueInsightConversation,
               l10n: l10n,
             ),
     );
@@ -104,25 +125,29 @@ class AiBetaSheet extends StatelessWidget {
             color: colors.primarySoft,
             shape: BoxShape.circle,
           ),
-          child: Icon(LucideIcons.sparkles, color: colors.primaryOnSoft, size: 30),
+          child:
+              Icon(LucideIcons.sparkles, color: colors.primaryOnSoft, size: 30),
         ),
         const SizedBox(height: 16),
         Text(
           l10n.homeAiBetaSheetTitle,
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(
           l10n.homeAiBetaSheetMessage,
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+          style:
+              theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 8),
         Text(
           l10n.homeAiDisclaimer,
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+          style:
+              theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 24),
         SizedBox(

@@ -129,37 +129,95 @@ class SnapshotCashflowPoint extends Equatable {
 }
 
 /// An active budget with its current-period progress.
+///
+/// [scheduledMinor] is what makes overspend-RISK questions answerable at all
+/// (dogfooding bug: the assistant used to only see [spentMinor] against
+/// [amountMinor], so a budget that was fine on real spend but had a big
+/// scheduled payment still ahead in the window read as "you're fine" — the
+/// exact case that prompted this field). It is the same number
+/// `BudgetProgress.scheduledMinor` already computes and the Home
+/// "riesgo de sobregiro proyectado" insight already shows; this section must
+/// never re-derive it.
 class SnapshotBudget extends Equatable {
   const SnapshotBudget({
     required this.id,
     required this.name,
     required this.amountMinor,
     required this.spentMinor,
+    required this.scheduledMinor,
     required this.currency,
     required this.period,
     required this.periodStart,
     required this.periodEndExclusive,
+    required this.amountFormatted,
+    required this.spentFormatted,
+    required this.remainingFormatted,
+    required this.scheduledFormatted,
+    required this.projectedTotalFormatted,
   });
 
   final String id;
   final String name;
   final int amountMinor;
   final int spentMinor;
+
+  /// Projected but not-yet-materialized scheduled-payment expense still
+  /// inside the window — `BudgetProgress.scheduledMinor` verbatim. `0` when
+  /// there is none, never omitted (unlike the section itself, a per-row `0`
+  /// is a real fact, not a missing read).
+  final int scheduledMinor;
+
   final String currency;
   final BudgetPeriod period;
   final DateTime periodStart;
   final DateTime periodEndExclusive;
 
+  /// Pre-formatted "$1.234.567"-style strings, in the app's own
+  /// `MoneyFormatter` convention — the same one every screen renders with.
+  /// Every amount in this snapshot carries one: dividing `amountMinor` by 100
+  /// in its head is exactly the arithmetic step a model gets wrong under
+  /// load (confirmed live: a 730.000 COP scheduled payment read back as
+  /// 73.000.000). Quoting these instead of the raw integer turns that into a
+  /// lookup instead of mental math.
+  final String amountFormatted;
+  final String spentFormatted;
+  final String remainingFormatted;
+  final String scheduledFormatted;
+
+  /// [spentMinor] + [scheduledMinor], formatted — "if every scheduled payment
+  /// still due in this window actually happens, this is the running total"
+  /// (`BudgetProgress.committedFraction`'s numerator).
+  final String projectedTotalFormatted;
+
   /// Negative when overspent — the model is told the sign means exactly that,
   /// so it never has to guess from an absolute value.
   int get remainingMinor => amountMinor - spentMinor;
+
+  /// `spentMinor + scheduledMinor` — the projected running total if every
+  /// scheduled payment still due in the window actually happens.
+  int get projectedTotalMinor => spentMinor + scheduledMinor;
+
+  /// True exactly when `BudgetProgress.isScheduledOverspendRisk` would be:
+  /// real spend has not crossed the budget yet, but spend + what is still
+  /// scheduled would. This is the flag a "will I go over?" question must
+  /// check — [spentMinor] alone cannot answer it.
+  bool get isProjectedOverspendRisk =>
+      spentMinor <= amountMinor && projectedTotalMinor > amountMinor;
 
   Map<String, Object?> toJson() => <String, Object?>{
         'id': id,
         'name': name,
         'amountMinor': amountMinor,
+        'amountFormatted': amountFormatted,
         'spentMinor': spentMinor,
+        'spentFormatted': spentFormatted,
         'remainingMinor': remainingMinor,
+        'remainingFormatted': remainingFormatted,
+        'scheduledMinor': scheduledMinor,
+        'scheduledFormatted': scheduledFormatted,
+        'projectedTotalMinor': projectedTotalMinor,
+        'projectedTotalFormatted': projectedTotalFormatted,
+        'isProjectedOverspendRisk': isProjectedOverspendRisk,
         'currency': currency,
         'period': period.name,
         'periodStart': FinancialSnapshot.unixSeconds(periodStart),
@@ -172,10 +230,16 @@ class SnapshotBudget extends Equatable {
         name,
         amountMinor,
         spentMinor,
+        scheduledMinor,
         currency,
         period,
         periodStart,
         periodEndExclusive,
+        amountFormatted,
+        spentFormatted,
+        remainingFormatted,
+        scheduledFormatted,
+        projectedTotalFormatted,
       ];
 }
 
@@ -236,9 +300,14 @@ class SnapshotDebtTotal extends Equatable {
 
 /// A scheduled payment due inside the look-ahead window.
 ///
-/// [name] is the payment's category (falling back to its account), never its
-/// `note`: that field is the user's own free text and free text does not leave
-/// the device.
+/// [name] combines the payment's category AND account — never its `note`:
+/// that field is the user's own free text and free text does not leave the
+/// device. Category alone used to be the whole name (dogfooding bug: two
+/// scheduled payments sharing one category, e.g. rent and a mortgage both
+/// filed under "Vivienda", were indistinguishable to the model — it answered
+/// about one while the user asked about the other). Combining both is not a
+/// full guarantee when two payments also share an account, but it is the
+/// strongest disambiguation available without crossing into free text.
 class SnapshotUpcoming extends Equatable {
   const SnapshotUpcoming({
     required this.scheduledPaymentId,
@@ -247,6 +316,7 @@ class SnapshotUpcoming extends Equatable {
     required this.amountMinor,
     required this.currency,
     required this.type,
+    required this.amountFormatted,
   });
 
   final String scheduledPaymentId;
@@ -256,18 +326,30 @@ class SnapshotUpcoming extends Equatable {
   final String currency;
   final ScheduledPaymentType type;
 
+  /// See `SnapshotBudget.amountFormatted` — same reasoning, same fix for the
+  /// same live bug, just for this section's amount.
+  final String amountFormatted;
+
   Map<String, Object?> toJson() => <String, Object?>{
         'id': scheduledPaymentId,
         'name': name,
         'date': FinancialSnapshot.unixSeconds(date),
         'amountMinor': amountMinor,
+        'amountFormatted': amountFormatted,
         'currency': currency,
         'type': type.name,
       };
 
   @override
-  List<Object?> get props =>
-      [scheduledPaymentId, name, date, amountMinor, currency, type];
+  List<Object?> get props => [
+        scheduledPaymentId,
+        name,
+        date,
+        amountMinor,
+        currency,
+        type,
+        amountFormatted,
+      ];
 }
 
 /// The "modo sobres" figures for one reference currency.

@@ -44,7 +44,7 @@ void main() {
 
     expect(find.text('¿Por dónde empezamos?'), findsOneWidget);
     expect(
-      find.text('Elegí una pregunta o escribime lo que necesites.'),
+      find.text('Elige una pregunta o escríbeme lo que necesites.'),
       findsOneWidget,
     );
     expect(find.text('¿Cómo voy este mes?'), findsOneWidget);

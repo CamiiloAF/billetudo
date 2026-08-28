@@ -16,6 +16,7 @@ import '../../domain/entities/ai_tool_call.dart';
 import '../../domain/entities/ai_turn.dart';
 import '../../domain/usecases/append_ai_message.dart';
 import '../../domain/usecases/build_financial_snapshot.dart';
+import '../../domain/usecases/link_insight_to_conversation.dart';
 import '../../domain/usecases/resolve_ai_tool_call.dart';
 import '../../domain/usecases/resume_or_create_ai_conversation.dart';
 import '../../domain/usecases/send_ai_turn.dart';
@@ -44,6 +45,7 @@ class AiChatCubit extends Cubit<AiChatState> {
     this._resolveAiToolCall,
     this._watchAccounts,
     this._clientContext,
+    this._linkInsightToConversation,
     WatchAuthSession watchAuthSession,
   ) : super(AiChatState(isSignedIn: watchAuthSession.current.isSignedIn)) {
     _authSubscription = watchAuthSession().listen(_onAuthSession);
@@ -58,6 +60,7 @@ class AiChatCubit extends Cubit<AiChatState> {
   final ResolveAiToolCall _resolveAiToolCall;
   final WatchAccounts _watchAccounts;
   final AiClientContextProvider _clientContext;
+  final LinkInsightToConversation _linkInsightToConversation;
 
   StreamSubscription<Result<List<AiMessage>>>? _messagesSubscription;
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
@@ -85,6 +88,9 @@ class AiChatCubit extends Cubit<AiChatState> {
     }
     await _messagesSubscription?.cancel();
     await _accountsSubscription?.cancel();
+    if (isClosed) {
+      return;
+    }
     emit(AiChatState(isSignedIn: state.isSignedIn));
 
     _accountsSubscription = _watchAccounts().listen((result) {
@@ -125,10 +131,16 @@ class AiChatCubit extends Cubit<AiChatState> {
     );
   }
 
-  /// Forces a brand-new thread (the header's "+" button) instead of
-  /// resuming the last one — unlike [start], which
+  /// Forces a brand-new thread (the header's "+" button, or Home's AI card
+  /// insight chip) instead of resuming the last one — unlike [start], which
   /// `_resumeOrCreateAiConversation` deliberately reuses.
-  Future<void> startNew() async {
+  ///
+  /// [insightType] (`HomeAiInsightType.name`), when set, is the AI card
+  /// insight this thread was started from — the moment the new id exists it
+  /// is linked to it (`LinkInsightToConversation`), so that chip flips to
+  /// "continuar conversación" on return (bugfix item 7). `null` for the
+  /// header's own "+" button, which is not tied to any insight.
+  Future<void> startNew({String? insightType}) async {
     if (!state.isSignedIn) {
       return;
     }
@@ -140,7 +152,15 @@ class AiChatCubit extends Cubit<AiChatState> {
       (failure) async => emit(
         state.copyWith(status: AiChatStatus.error, failure: failure),
       ),
-      (newConversationId) => start(conversationId: newConversationId),
+      (newConversationId) async {
+        await start(conversationId: newConversationId);
+        if (insightType != null) {
+          await _linkInsightToConversation(
+            insightType: insightType,
+            conversationId: newConversationId,
+          );
+        }
+      },
     );
   }
 

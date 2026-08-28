@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/utils/money_formatter.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/entities/accounts_overview.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
@@ -52,6 +53,7 @@ class BuildFinancialSnapshot {
     this._watchCashflow,
     this._getScheduledPayments,
     this._projectUpcomingOccurrences,
+    this._money,
   );
 
   final WatchAccounts _watchAccounts;
@@ -64,6 +66,10 @@ class BuildFinancialSnapshot {
   final WatchCashflowReport _watchCashflow;
   final GetScheduledPayments _getScheduledPayments;
   final ProjectUpcomingOccurrences _projectUpcomingOccurrences;
+
+  /// The same formatter every screen renders amounts with — never re-derive
+  /// the "$1.234.567" shape here, or the two will eventually drift.
+  final MoneyFormatter _money;
 
   /// Per-source ceiling. Drift emits on subscription, so this is a point read,
   /// not a listener — but a source that never emits would otherwise hang the
@@ -289,19 +295,34 @@ class BuildFinancialSnapshot {
 
   List<SnapshotBudget> _budgets(List<BudgetWithProgress> budgets) => [
         for (final entry in budgets.take(maxListRows))
-          SnapshotBudget(
-            id: entry.budget.id,
-            name: entry.budget.name,
-            // The window's amount, not the budget row's: a Wallet-style
-            // per-period override changes what this period is actually worth.
-            amountMinor: entry.progress.amountMinor,
-            spentMinor: entry.progress.spentMinor,
-            currency: entry.budget.currency,
-            period: entry.budget.period,
-            periodStart: entry.window.start,
-            periodEndExclusive: entry.window.endExclusive,
-          ),
+          _budget(entry),
       ];
+
+  SnapshotBudget _budget(BudgetWithProgress entry) {
+    final currency = entry.budget.currency;
+    // The window's amounts, not the budget row's: a Wallet-style per-period
+    // override changes what this period is actually worth.
+    final amountMinor = entry.progress.amountMinor;
+    final spentMinor = entry.progress.spentMinor;
+    final scheduledMinor = entry.progress.scheduledMinor;
+    String fmt(int minor) => _money.formatSymbol(minor, currencyCode: currency);
+    return SnapshotBudget(
+      id: entry.budget.id,
+      name: entry.budget.name,
+      amountMinor: amountMinor,
+      spentMinor: spentMinor,
+      scheduledMinor: scheduledMinor,
+      currency: currency,
+      period: entry.budget.period,
+      periodStart: entry.window.start,
+      periodEndExclusive: entry.window.endExclusive,
+      amountFormatted: fmt(amountMinor),
+      spentFormatted: fmt(spentMinor),
+      remainingFormatted: fmt(amountMinor - spentMinor),
+      scheduledFormatted: fmt(scheduledMinor),
+      projectedTotalFormatted: fmt(spentMinor + scheduledMinor),
+    );
+  }
 
   List<SnapshotGoal> _goals(List<GoalWithProgress> goals) => [
         for (final entry in goals.take(maxListRows))
@@ -343,17 +364,34 @@ class BuildFinancialSnapshot {
       for (final occurrence in projected.take(maxListRows))
         SnapshotUpcoming(
           scheduledPaymentId: occurrence.scheduledPaymentId,
-          // Category first, account as fallback: the template's own `note` is
-          // the user's free text and free text does not leave the device.
-          name: byId[occurrence.scheduledPaymentId]?.categoryName ??
-              byId[occurrence.scheduledPaymentId]?.accountName ??
-              '',
+          name: _upcomingName(byId[occurrence.scheduledPaymentId]),
           date: occurrence.date,
           amountMinor: occurrence.amountMinor,
           currency: occurrence.currency,
           type: occurrence.type,
+          amountFormatted: _money.formatSymbol(
+            occurrence.amountMinor,
+            currencyCode: occurrence.currency,
+          ),
         ),
     ];
+  }
+
+  /// Category AND account, never just the category (dogfooding bug: two
+  /// scheduled payments sharing a category, e.g. rent and a mortgage both
+  /// filed under "Vivienda", were indistinguishable to the model). Never the
+  /// template's own `note` — that is the user's free text and free text does
+  /// not leave the device.
+  String _upcomingName(ScheduledPaymentSummary? summary) {
+    if (summary == null) {
+      return '';
+    }
+    final category = summary.categoryName;
+    final account = summary.accountName;
+    if (category == null || category.isEmpty) {
+      return account;
+    }
+    return '$category · $account';
   }
 
   SnapshotZeroBased _zeroBased(ZeroBasedSummary summary) => SnapshotZeroBased(

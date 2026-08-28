@@ -12,6 +12,7 @@ import '../../../../core/sync/presentation/utils/sync_freshness.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../ai/domain/usecases/check_ai_access.dart';
+import '../../../ai/domain/usecases/get_conversation_for_insight.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../budgets/domain/entities/budget_detail_data.dart';
@@ -61,6 +62,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchHomeAiInsight,
     this._watchPendingScheduledPaymentCount,
     this._checkAiAccess,
+    this._getConversationForInsight,
   ) : super(HomeState.initial(clock.now()));
 
   final WatchAccounts _watchAccounts;
@@ -84,6 +86,7 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchHomeAiInsight _watchHomeAiInsight;
   final WatchPendingScheduledPaymentCount _watchPendingScheduledPaymentCount;
   final CheckAiAccess _checkAiAccess;
+  final GetConversationForInsight _getConversationForInsight;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _monthTxSub;
@@ -162,8 +165,8 @@ class HomeCubit extends Cubit<HomeState> {
     _featuredBudgetSub =
         _watchFeaturedBudgetProgress().listen(_onFeaturedBudgetProgress);
     _hasAnyBudgetSub = _watchHasAnyBudget().listen(_onHasAnyBudget);
-    _pendingScheduledSub = _watchPendingScheduledPaymentCount()
-        .listen(_onPendingScheduledCount);
+    _pendingScheduledSub =
+        _watchPendingScheduledPaymentCount().listen(_onPendingScheduledCount);
   }
 
   /// Passive input, same convention as [_onSyncSnapshot]/[_onAuthSession]:
@@ -228,20 +231,75 @@ class HomeCubit extends Cubit<HomeState> {
     ).listen(_onAiInsight);
   }
 
+  /// Guards [_resolveAiInsightConversation] against a stale lookup landing
+  /// after a newer insight (or `null`) already replaced it — bumped on every
+  /// [_onAiInsight] tick, checked before the async lookup's result is
+  /// applied.
+  int _aiInsightTicket = 0;
+
   void _onAiInsight(Result<HomeAiInsight?> result) {
     if (isClosed) {
       return;
     }
+    final insight = result.getRight().toNullable();
     // A failure here falls back to the "con chips" default variant
     // (`aiInsight: null`) rather than surfacing an error — the card is
     // informative, never a hard dependency of the Home being usable.
     emit(
       state.copyWith(
-        aiInsight: result.getRight().toNullable(),
-        clearAiInsight: result.getRight().toNullable() == null,
+        aiInsight: insight,
+        clearAiInsight: insight == null,
         failure: state.failure,
       ),
     );
+    final ticket = ++_aiInsightTicket;
+    if (insight != null && insight.type != HomeAiInsightType.createBudget) {
+      unawaited(_resolveAiInsightConversation(insight, ticket));
+    }
+  }
+
+  /// Patches in [HomeAiInsight.conversationId] once resolved (bugfix item
+  /// 7): the chip's copy/destination must be tied to the exact insight it
+  /// came from, never to whatever conversation is most recently active in
+  /// general. Skipped for `createBudget` — its chip is a direct navigation
+  /// to the new-budget form, never a chat.
+  Future<void> _resolveAiInsightConversation(
+    HomeAiInsight insight,
+    int ticket,
+  ) async {
+    final result = await _getConversationForInsight(insight.type.name);
+    if (isClosed || ticket != _aiInsightTicket) {
+      return;
+    }
+    final conversationId = result.getRight().toNullable();
+    if (state.aiInsight?.type != insight.type) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        aiInsight: insight.withConversationId(conversationId),
+        failure: state.failure,
+      ),
+    );
+  }
+
+  /// Re-resolves [HomeAiInsight.conversationId] for whatever insight is
+  /// currently shown — called by the router right after the assistant screen
+  /// is popped back to Home. Neither the "iniciar" nor the "continuar" tap
+  /// changes any of [_maybeRefreshAiInsight]'s own resubscription inputs
+  /// (month/budget/spending), so without this the chip would keep showing
+  /// "iniciar conversación" after the user just started one, until some
+  /// unrelated recompute happened to tick.
+  void refreshAiInsightConversation() {
+    if (isClosed) {
+      return;
+    }
+    final insight = state.aiInsight;
+    if (insight == null || insight.type == HomeAiInsightType.createBudget) {
+      return;
+    }
+    final ticket = ++_aiInsightTicket;
+    unawaited(_resolveAiInsightConversation(insight, ticket));
   }
 
   /// "Ahora no": drops the current insight for the rest of this session.

@@ -1413,6 +1413,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAiInsightContinueChip => 'Continue the conversation';
 
   @override
+  String get homeAiInsightProjectionChip => 'Adjust my budget';
+
+  @override
+  String get homeAiInsightProjectionQuestion =>
+      'How can I avoid going over my projected budget this month?';
+
+  @override
+  String get homeAiInsightAverageUpChip => 'Understand this increase';
+
+  @override
+  String get homeAiInsightAverageUpQuestion =>
+      'Why did I spend more this month than my recent average?';
+
+  @override
+  String get homeAiInsightAverageDownChip => 'See this saving';
+
+  @override
+  String get homeAiInsightAverageDownQuestion =>
+      'What did I do differently this month to spend less than my average?';
+
+  @override
   String get homeAiInsightDismiss => 'Not now';
 
   @override
@@ -6142,7 +6163,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiProposalFootnotePending => 'Nothing is saved until you confirm.';
 
   @override
-  String get aiProposalFootnoteConfirmed => 'Applied to your transactions.';
+  String get aiProposalFootnoteConfirmedTransaction =>
+      'Applied to your transactions.';
+
+  @override
+  String get aiProposalFootnoteConfirmedBudget => 'Your budget is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedGoal => 'Your goal is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedCategory =>
+      'Your category is now created.';
 
   @override
   String get aiProposalFootnoteDismissed => 'No changes were saved.';
@@ -6161,7 +6193,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiProposalActionRetry => 'Retry';
 
   @override
-  String get aiProposalConfirmedRow => 'It\'s already in your transactions';
+  String get aiProposalConfirmedRowTransaction =>
+      'It\'s already in your transactions';
+
+  @override
+  String get aiProposalConfirmedRowBudget => 'Budget created';
+
+  @override
+  String get aiProposalConfirmedRowGoal => 'Goal created';
+
+  @override
+  String get aiProposalConfirmedRowCategory => 'Category created';
 
   @override
   String get aiProposalUnsupported =>

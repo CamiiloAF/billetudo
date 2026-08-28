@@ -18,12 +18,17 @@ void main() {
     ValueChanged<String?>? onAskQuestion,
     VoidCallback? onCreateBudget,
     VoidCallback? onDismissInsight,
+    ValueChanged<String>? onStartInsightConversation,
+    ValueChanged<String>? onContinueInsightConversation,
   }) =>
       AiCard(
         insight: insight,
         onAskQuestion: onAskQuestion ?? (_) {},
         onCreateBudget: onCreateBudget ?? () {},
         onDismissInsight: onDismissInsight,
+        onStartInsightConversation: onStartInsightConversation ?? (_) {},
+        onContinueInsightConversation:
+            onContinueInsightConversation ?? (_) {},
       );
 
   group('sin insight: variante "con chips" (default, sin importar acceso)', () {
@@ -93,6 +98,70 @@ void main() {
 
       expect(called, isTrue);
       expect(asked, isNull);
+    });
+  });
+
+  group(
+      'bugfix item 7: el chip de un insight distingue "iniciar" de '
+      '"continuar" según HomeAiInsight.conversationId', () {
+    testWidgets(
+        'sin conversationId: muestra el chip específico del insight (no '
+        'genérico) y tocarlo invoca onStartInsightConversation con una '
+        'pregunta real (nunca el texto del propio botón), nunca '
+        'onContinueInsightConversation', (tester) async {
+      const insight = HomeAiInsight(
+        type: HomeAiInsightType.spendingVsAverage,
+        percentDelta: 15,
+      );
+      String? started;
+      var continued = 0;
+      await tester.pumpHomeWidget(
+        card(
+          insight: insight,
+          onStartInsightConversation: (q) => started = q,
+          onContinueInsightConversation: (_) => continued++,
+        ),
+      );
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+
+      expect(find.text(l10n.homeAiInsightAverageUpChip), findsOneWidget);
+      expect(find.text(l10n.homeAiInsightContinueChip), findsNothing);
+
+      await tester.tap(find.text(l10n.homeAiInsightAverageUpChip));
+      await tester.pump();
+
+      expect(started, l10n.homeAiInsightAverageUpQuestion);
+      expect(continued, 0);
+    });
+
+    testWidgets(
+        'con conversationId: muestra "continuar conversación" y tocarlo '
+        'invoca onContinueInsightConversation con ese id exacto, nunca '
+        'onStartInsightConversation', (tester) async {
+      const insight = HomeAiInsight(
+        type: HomeAiInsightType.spendingVsAverage,
+        percentDelta: 15,
+        conversationId: 'conv-linked',
+      );
+      String? continuedId;
+      var started = 0;
+      await tester.pumpHomeWidget(
+        card(
+          insight: insight,
+          onContinueInsightConversation: (id) => continuedId = id,
+          onStartInsightConversation: (_) => started++,
+        ),
+      );
+      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
+
+      expect(find.text(l10n.homeAiInsightContinueChip), findsOneWidget);
+      expect(find.text(l10n.homeAiInsightAverageUpChip), findsNothing);
+
+      await tester.tap(find.text(l10n.homeAiInsightContinueChip));
+      await tester.pump();
+
+      expect(continuedId, 'conv-linked');
+      expect(started, 0);
     });
   });
 

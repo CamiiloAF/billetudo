@@ -10,6 +10,7 @@ import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/get_conversation_for_insight.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
@@ -65,6 +66,9 @@ class _MockWatchPendingScheduledPaymentCount extends Mock
 
 class _MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
+class _MockGetConversationForInsight extends Mock
+    implements GetConversationForInsight {}
+
 class _MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
@@ -92,6 +96,7 @@ void main() {
     final watchPendingScheduledPaymentCount =
         _MockWatchPendingScheduledPaymentCount();
     final checkAiAccess = _MockCheckAiAccess();
+    final getConversationForInsight = _MockGetConversationForInsight();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -130,6 +135,7 @@ void main() {
           watchHomeAiInsight,
           watchPendingScheduledPaymentCount,
           checkAiAccess,
+          getConversationForInsight,
         ),
       )
       // `BilletudoApp` resolves `ThemeModeCubit` from `getIt` directly, not

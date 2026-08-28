@@ -932,6 +932,57 @@ class AiMessages extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Which conversation, if any, a given Home AI insight chip
+/// (`HomeAiInsight`/`HomeAiInsightType`, `lib/features/home/domain/entities/
+/// home_ai_insight.dart`) has already spawned. Lets the chip say "start a
+/// conversation" the first time and "continue the conversation" — pointing
+/// back at that exact thread, not just whichever conversation is most
+/// recent overall — every time after.
+///
+/// **LOCAL-ONLY, same reasoning as [AiMessages] right below**: this only
+/// links an insight category to a `conversationId` from that local-only chat
+/// history, so it is exactly as sensitive by association and just as
+/// pointless to sync — there is no cross-device conversation to resume, since
+/// [AiMessages] itself never leaves the device either. No `_SyncColumns`: no
+/// `userId`, no `updatedAt`, no `deletedAt`, no `tombstonedAt`. Mirrored in
+/// `powersync_schema.dart` as `Table.localOnly('ai_insight_conversations',
+/// ...)`, so PowerSync backs it with a real local table
+/// (`ps_data_local__ai_insight_conversations`) that is never recorded in
+/// `ps_crud` and never synced. Also destroyed by
+/// `LocalDataWipeDatasource.wipeAll`, same as [AiMessages].
+///
+/// One row per link event rather than an upsert-in-place: [insightType] is
+/// NOT a primary key, so relinking an insight to a new conversation just
+/// inserts another row instead of overwriting history. "The" conversation for
+/// a given [insightType] is whichever row has the greatest [createdAt] —
+/// callers must query `ORDER BY created_at DESC LIMIT 1`, not assume
+/// uniqueness.
+class AiInsightConversations extends Table {
+  /// Random UUID, like every other table here. Never autoincrement.
+  TextColumn get id => text().clientDefault(() => _uuid.v4())();
+
+  /// `HomeAiInsightType.name` — plain text rather than `textEnum` because the
+  /// matching Dart enum belongs to `lib/features/home/domain/`, which this
+  /// core file must not depend on; the mapping lives in that feature's data
+  /// layer.
+  TextColumn get insightType => text()();
+
+  /// The linked conversation's grouping id — matches
+  /// `AiMessages.conversationId`. Plain text, no FK: `AiMessages` has no
+  /// primary/unique key on `conversationId` to reference, same as every other
+  /// place in this database that already treats it as an opaque string.
+  TextColumn get conversationId => text()();
+
+  /// Epoch **millis** UTC (NOT a Drift `DateTimeColumn`), matching
+  /// `AiMessages.createdAt`: this is what orders the rows to find the latest
+  /// link for a given [insightType].
+  IntColumn get createdAt => integer()
+      .clientDefault(() => DateTime.now().toUtc().millisecondsSinceEpoch)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -959,13 +1010,14 @@ class AiMessages extends Table {
     ImportBatches,
     TutorialViews,
     AiMessages,
+    AiInsightConversations,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1634,6 +1686,21 @@ class AppDatabase extends _$AppDatabase {
           //     `featured_budget_mode` backfill (decision #25, see the
           //     `from < 26` block).
           if (from < 30) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v30 -> v31: `AiInsightConversations`, linking a Home AI insight
+          // chip (`HomeAiInsightType`) to the conversation it started, so the
+          // chip can say "continue" and reopen that exact thread instead of
+          // always redirecting to whatever conversation is most recently
+          // active (bug fix, see the type's doc comment). Local-only, same
+          // shape as `AiMessages` (schemaVersion 30, `from < 30` block
+          // above): no `m.createTable` here — `powerSyncSchema`
+          // (`powersync_schema.dart`) declares it as
+          // `Table.localOnly('ai_insight_conversations', ...)`, so PowerSync
+          // creates its backing table and view the next time the app opens,
+          // before Drift's migration runs.
+          if (from < 31) {
             // Nothing to do here: see the comment above this block.
           }
         },

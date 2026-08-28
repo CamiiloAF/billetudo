@@ -1416,6 +1416,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeAiInsightContinueChip => 'Continuar la conversación';
 
   @override
+  String get homeAiInsightProjectionChip => 'Ajustar mi presupuesto';
+
+  @override
+  String get homeAiInsightProjectionQuestion =>
+      '¿Cómo evito pasarme del presupuesto que tengo proyectado este mes?';
+
+  @override
+  String get homeAiInsightAverageUpChip => 'Entender este aumento';
+
+  @override
+  String get homeAiInsightAverageUpQuestion =>
+      '¿Por qué gasté más este mes que en mi promedio de los últimos meses?';
+
+  @override
+  String get homeAiInsightAverageDownChip => 'Ver este ahorro';
+
+  @override
+  String get homeAiInsightAverageDownQuestion =>
+      '¿Qué hice diferente este mes para gastar menos que mi promedio?';
+
+  @override
   String get homeAiInsightDismiss => 'Ahora no';
 
   @override
@@ -6155,7 +6176,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiProposalFootnotePending => 'Nada se guarda hasta que confirmes.';
 
   @override
-  String get aiProposalFootnoteConfirmed => 'Aplicado a tus movimientos.';
+  String get aiProposalFootnoteConfirmedTransaction =>
+      'Aplicado a tus movimientos.';
+
+  @override
+  String get aiProposalFootnoteConfirmedBudget =>
+      'Tu presupuesto ya está creado.';
+
+  @override
+  String get aiProposalFootnoteConfirmedGoal => 'Tu meta ya está creada.';
+
+  @override
+  String get aiProposalFootnoteConfirmedCategory =>
+      'Tu categoría ya está creada.';
 
   @override
   String get aiProposalFootnoteDismissed => 'No se guardó ningún cambio.';
@@ -6174,7 +6207,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiProposalActionRetry => 'Reintentar';
 
   @override
-  String get aiProposalConfirmedRow => 'Ya está en tus movimientos';
+  String get aiProposalConfirmedRowTransaction => 'Ya está en tus movimientos';
+
+  @override
+  String get aiProposalConfirmedRowBudget => 'Presupuesto creado';
+
+  @override
+  String get aiProposalConfirmedRowGoal => 'Meta creada';
+
+  @override
+  String get aiProposalConfirmedRowCategory => 'Categoría creada';
 
   @override
   String get aiProposalUnsupported =>

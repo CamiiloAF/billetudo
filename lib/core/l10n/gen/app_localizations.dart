@@ -2498,6 +2498,42 @@ abstract class AppLocalizations {
   /// **'Continuar la conversación'**
   String get homeAiInsightContinueChip;
 
+  /// No description provided for @homeAiInsightProjectionChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar mi presupuesto'**
+  String get homeAiInsightProjectionChip;
+
+  /// No description provided for @homeAiInsightProjectionQuestion.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo evito pasarme del presupuesto que tengo proyectado este mes?'**
+  String get homeAiInsightProjectionQuestion;
+
+  /// No description provided for @homeAiInsightAverageUpChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Entender este aumento'**
+  String get homeAiInsightAverageUpChip;
+
+  /// No description provided for @homeAiInsightAverageUpQuestion.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Por qué gasté más este mes que en mi promedio de los últimos meses?'**
+  String get homeAiInsightAverageUpQuestion;
+
+  /// No description provided for @homeAiInsightAverageDownChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver este ahorro'**
+  String get homeAiInsightAverageDownChip;
+
+  /// No description provided for @homeAiInsightAverageDownQuestion.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué hice diferente este mes para gastar menos que mi promedio?'**
+  String get homeAiInsightAverageDownQuestion;
+
   /// No description provided for @homeAiInsightDismiss.
   ///
   /// In es, this message translates to:
@@ -10005,11 +10041,29 @@ abstract class AppLocalizations {
   /// **'Nada se guarda hasta que confirmes.'**
   String get aiProposalFootnotePending;
 
-  /// No description provided for @aiProposalFootnoteConfirmed.
+  /// No description provided for @aiProposalFootnoteConfirmedTransaction.
   ///
   /// In es, this message translates to:
   /// **'Aplicado a tus movimientos.'**
-  String get aiProposalFootnoteConfirmed;
+  String get aiProposalFootnoteConfirmedTransaction;
+
+  /// No description provided for @aiProposalFootnoteConfirmedBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu presupuesto ya está creado.'**
+  String get aiProposalFootnoteConfirmedBudget;
+
+  /// No description provided for @aiProposalFootnoteConfirmedGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu meta ya está creada.'**
+  String get aiProposalFootnoteConfirmedGoal;
+
+  /// No description provided for @aiProposalFootnoteConfirmedCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu categoría ya está creada.'**
+  String get aiProposalFootnoteConfirmedCategory;
 
   /// No description provided for @aiProposalFootnoteDismissed.
   ///
@@ -10041,11 +10095,29 @@ abstract class AppLocalizations {
   /// **'Reintentar'**
   String get aiProposalActionRetry;
 
-  /// No description provided for @aiProposalConfirmedRow.
+  /// No description provided for @aiProposalConfirmedRowTransaction.
   ///
   /// In es, this message translates to:
   /// **'Ya está en tus movimientos'**
-  String get aiProposalConfirmedRow;
+  String get aiProposalConfirmedRowTransaction;
+
+  /// No description provided for @aiProposalConfirmedRowBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto creado'**
+  String get aiProposalConfirmedRowBudget;
+
+  /// No description provided for @aiProposalConfirmedRowGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta creada'**
+  String get aiProposalConfirmedRowGoal;
+
+  /// No description provided for @aiProposalConfirmedRowCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría creada'**
+  String get aiProposalConfirmedRowCategory;
 
   /// No description provided for @aiProposalUnsupported.
   ///

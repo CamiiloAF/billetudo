@@ -1,11 +1,16 @@
 import 'dart:async';
 
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/utils/money_formatter.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/accounts_overview.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts_overview.dart';
 import 'package:billetudo/features/ai/domain/usecases/build_financial_snapshot.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/zero_based_summary.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart';
@@ -232,6 +237,7 @@ void main() {
       watchCashflow,
       getScheduledPayments,
       const ProjectUpcomingOccurrences(),
+      const MoneyFormatter(),
     );
   });
 
@@ -317,14 +323,17 @@ void main() {
       expect(point['netMinor'], 501000000 - 302000000);
     });
 
-    test('an upcoming payment travels by category, never by its note',
+    test(
+        'an upcoming payment travels by category AND account, never by its '
+        'note (dogfooding fix: category alone collided when two payments '
+        'shared one, e.g. rent and a mortgage both under "Vivienda")',
         () async {
       stubHealthySources();
 
       final json = await buildJson();
 
       final upcoming = (json['upcoming']! as List).first as Map<String, Object?>;
-      expect(upcoming['name'], 'Arriendo');
+      expect(upcoming['name'], 'Arriendo · Bancolombia');
       expect(json.toString(), isNot(contains('no debe viajar')));
     });
 
@@ -338,6 +347,60 @@ void main() {
 
       final upcoming = (json['upcoming']! as List).first as Map<String, Object?>;
       expect(upcoming['name'], 'Bancolombia');
+    });
+
+    test(
+        'a budget carries BudgetProgress.scheduledMinor verbatim, plus '
+        'pre-formatted strings and the projected-overspend-risk flag '
+        '(dogfooding fix: the assistant used to only see spentMinor vs. '
+        'amountMinor, so a budget on track by real spend alone but at risk '
+        'once its scheduled payments land read as "you are fine")',
+        () async {
+      final atRisk = BudgetWithProgress(
+        budget: Budget(
+          id: 'budget-risk',
+          name: 'Mercado',
+          amountMinor: 60000000,
+          currency: 'COP',
+          period: BudgetPeriod.monthly,
+          startDate: DateTime(2026, 7, 1),
+          recurring: true,
+          rollover: false,
+          createdAt: DateTime(2026, 7, 1),
+          updatedAt: 0,
+        ),
+        scope: const BudgetScope.empty(),
+        window: BudgetPeriodWindow(
+          start: DateTime(2026, 7, 1),
+          endExclusive: DateTime(2026, 8, 1),
+          index: 0,
+          status: BudgetWindowStatus.current,
+          hasPrevious: false,
+          hasNext: true,
+        ),
+        // 40M spent (well under the 60M budget on its own) + 30M still
+        // scheduled this window projects to 70M — over the budget, even
+        // though spentMinor alone reads as "70% used, you are fine".
+        progress: const BudgetProgress(
+          amountMinor: 60000000,
+          spentMinor: 40000000,
+          daysLeft: 10,
+          scheduledMinor: 30000000,
+        ),
+      );
+      stubHealthySources(budgets: [atRisk]);
+
+      final json = await buildJson();
+
+      final budget =
+          (json['budgets']! as List).first as Map<String, Object?>;
+      expect(budget['scheduledMinor'], 30000000);
+      expect(budget['projectedTotalMinor'], 40000000 + 30000000);
+      expect(budget['isProjectedOverspendRisk'], isTrue);
+      expect(budget['amountFormatted'], r'$600.000');
+      expect(budget['spentFormatted'], r'$400.000');
+      expect(budget['scheduledFormatted'], r'$300.000');
+      expect(budget['projectedTotalFormatted'], r'$700.000');
     });
 
     test('counts report the real totals even when a list is capped', () async {

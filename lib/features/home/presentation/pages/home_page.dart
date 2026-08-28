@@ -52,6 +52,8 @@ class HomePage extends StatefulWidget {
     required this.onOpenSettings,
     required this.onSignOut,
     required this.onOpenAi,
+    required this.onOpenAiInsightQuestion,
+    required this.onOpenAiConversation,
     super.key,
   });
 
@@ -100,8 +102,31 @@ class HomePage extends StatefulWidget {
   final VoidCallback onSignOut;
 
   /// Opens the assistant (`asistente-ia.md`) from the AI card/chips, already
-  /// gated: only called once the tap-time access check passed.
-  final VoidCallback onOpenAi;
+  /// gated: only called once the tap-time access check passed. `question`
+  /// carries the tapped chip's text (`null` for the header/generic tap),
+  /// pre-seeding a brand-new thread instead of resuming the last one.
+  final void Function(String? question) onOpenAi;
+
+  /// The AI card insight's own chip when it has no linked conversation yet
+  /// (bugfix item 7): starts a brand-new thread seeded with `question` and,
+  /// unlike [onOpenAi], links that thread to the insight it came from —
+  /// `insightType` is `HomeAiInsightType.name`, `null` only for
+  /// `createBudget` (which never reaches this callback; its chip is a direct
+  /// navigation). Returns once the assistant screen is popped back, so the
+  /// caller can refresh `HomeCubit`'s resolved conversation link with a
+  /// `BuildContext`/cubit reference it already holds — the router must not
+  /// do that refresh itself (its own `context` sits above `HomeCubit`'s
+  /// provider).
+  final Future<void> Function({
+    required String question,
+    required String? insightType,
+  }) onOpenAiInsightQuestion;
+
+  /// The AI card insight's own chip once it already has a linked
+  /// conversation: reopens that exact thread — never whatever conversation
+  /// is most recently active in general, which was the bug. Same "returns
+  /// once popped back" contract as [onOpenAiInsightQuestion].
+  final Future<void> Function(String conversationId) onOpenAiConversation;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -189,10 +214,33 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// The AI card's "Ayúdame a presupuestar" chip (`AiCardChips`, distinct from
+  /// `HomeHeroCard`'s own "Crear presupuesto" CTA, which stays wired to
+  /// [HomePage.onCreateBudget] unconditionally — that one is not AI-flavored).
+  ///
+  /// Dogfooding fix: with chat access, this chip is a strictly better
+  /// starting point than the raw form — it opens a fresh conversation seeded
+  /// with the budget question instead. [HomePage.onCreateBudget] (the direct
+  /// nav to the new-budget form) stays as the fallback ONLY for the three
+  /// cases where chat is not an option: no AI beta access, not paid/entitled,
+  /// or no session — matching [AiCard]'s own contract that this chip never
+  /// shows the beta-upsell sheet (Nivel 0 must never wall this off).
+  Future<void> _onCreateBudgetOrAskAi(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final hasAccess = await context.read<HomeCubit>().hasAiAccess();
+    if (!context.mounted) {
+      return;
+    }
+    if (hasAccess) {
+      widget.onOpenAi(l10n.aiChatSuggestionBuildBudget);
+    } else {
+      widget.onCreateBudget();
+    }
+  }
+
   /// Criterion 12: the chat gate check happens at the moment of the tap,
-  /// never before. `question` is accepted for future seeding but ignored
-  /// today — `AiAssistantPage` does not yet support opening pre-seeded
-  /// (tracked as a known simplification of this run).
+  /// never before. `question`, when present, seeds a brand-new thread and
+  /// sends it right away (`AiAssistantPage.initialQuestion`).
   Future<void> _onAskQuestion(BuildContext context, String? question) async {
     final hasAccess = await context.read<HomeCubit>().hasAiAccess();
     if (!context.mounted) {
@@ -202,7 +250,55 @@ class _HomePageState extends State<HomePage> {
       unawaited(AiBetaSheet.show(context));
       return;
     }
-    widget.onOpenAi();
+    widget.onOpenAi(question);
+  }
+
+  /// The insight card's own "iniciar conversación" chip (bugfix item 7):
+  /// same access gate as [_onAskQuestion], but routed through
+  /// [HomePage.onOpenAiInsightQuestion] so the freshly created thread gets
+  /// linked to the insight it came from.
+  Future<void> _onStartInsightConversation(
+    BuildContext context,
+    String question,
+  ) async {
+    final cubit = context.read<HomeCubit>();
+    final hasAccess = await cubit.hasAiAccess();
+    if (!context.mounted) {
+      return;
+    }
+    if (!hasAccess) {
+      unawaited(AiBetaSheet.show(context));
+      return;
+    }
+    await widget.onOpenAiInsightQuestion(
+      question: question,
+      insightType: cubit.state.aiInsight?.type.name,
+    );
+    // `cubit`, not `context.read<HomeCubit>()`: after this `await`, `context`
+    // may no longer be mounted, and even when it is, `HomeCubit` is a
+    // long-lived singleton — the reference captured above is still valid
+    // either way, and skips the provider lookup entirely.
+    cubit.refreshAiInsightConversation();
+  }
+
+  /// The insight card's own "continuar conversación" chip: same access gate,
+  /// but reopens [conversationId] directly instead of resuming whatever
+  /// conversation is most recently active in general.
+  Future<void> _onContinueInsightConversation(
+    BuildContext context,
+    String conversationId,
+  ) async {
+    final cubit = context.read<HomeCubit>();
+    final hasAccess = await cubit.hasAiAccess();
+    if (!context.mounted) {
+      return;
+    }
+    if (!hasAccess) {
+      unawaited(AiBetaSheet.show(context));
+      return;
+    }
+    await widget.onOpenAiConversation(conversationId);
+    cubit.refreshAiInsightConversation();
   }
 
   /// HU-02 gated by `15-gate-cuenta.md`: without any active account the FAB
@@ -327,7 +423,18 @@ class _HomePageState extends State<HomePage> {
                         insight: state.aiInsight,
                         onAskQuestion: (question) =>
                             unawaited(_onAskQuestion(context, question)),
-                        onCreateBudget: widget.onCreateBudget,
+                        onCreateBudget: () =>
+                            unawaited(_onCreateBudgetOrAskAi(context)),
+                        onStartInsightConversation: (question) => unawaited(
+                          _onStartInsightConversation(context, question),
+                        ),
+                        onContinueInsightConversation: (conversationId) =>
+                            unawaited(
+                          _onContinueInsightConversation(
+                            context,
+                            conversationId,
+                          ),
+                        ),
                         onDismissInsight: state.aiInsight == null
                             ? null
                             : () =>

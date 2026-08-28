@@ -6,6 +6,7 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/ai/domain/entities/ai_access.dart';
 import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/get_conversation_for_insight.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
@@ -59,6 +60,9 @@ class MockWatchPendingScheduledPaymentCount extends Mock
 
 class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
+class MockGetConversationForInsight extends Mock
+    implements GetConversationForInsight {}
+
 /// El cuarto estado del indicador del Home (HU-08). Cubre **dos** condiciones,
 /// las dos ámbar: cambios retenidos en la cuarentena, y una última
 /// sincronización exitosa de más de 24 h. La segunda es el incidente en
@@ -78,6 +82,7 @@ void main() {
   late MockWatchHomeAiInsight watchHomeAiInsight;
   late MockWatchPendingScheduledPaymentCount watchPendingScheduledPaymentCount;
   late MockCheckAiAccess checkAiAccess;
+  late MockGetConversationForInsight getConversationForInsight;
 
   setUpAll(() {
     registerFallbackValue(DateTime(2026));
@@ -103,6 +108,9 @@ void main() {
     watchHomeAiInsight = MockWatchHomeAiInsight();
     watchPendingScheduledPaymentCount = MockWatchPendingScheduledPaymentCount();
     checkAiAccess = MockCheckAiAccess();
+    getConversationForInsight = MockGetConversationForInsight();
+    when(() => getConversationForInsight(any()))
+        .thenAnswer((_) async => const Right(null));
     when(() => watchHasAnyBudget())
         .thenAnswer((_) => Stream<Result<bool>>.value(const Right(true)));
     when(() => watchPendingScheduledPaymentCount())
@@ -162,6 +170,7 @@ void main() {
       watchHomeAiInsight,
       watchPendingScheduledPaymentCount,
       checkAiAccess,
+      getConversationForInsight,
     );
     addTearDown(cubit.close);
     await cubit.start();
@@ -332,6 +341,7 @@ void main() {
       watchHomeAiInsight,
       watchPendingScheduledPaymentCount,
       checkAiAccess,
+      getConversationForInsight,
     );
     addTearDown(cubit.close);
     await cubit.start();

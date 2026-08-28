@@ -86,7 +86,7 @@ class AiProposalCard extends StatelessWidget {
                 },
                 const SizedBox(height: 10),
                 Text(
-                  _footnote(l10n),
+                  _footnote(l10n, proposal),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -107,10 +107,24 @@ class AiProposalCard extends StatelessWidget {
     );
   }
 
-  String _footnote(AppLocalizations l10n) => switch (proposal.status) {
+  String _footnote(AppLocalizations l10n, AiActionProposal proposal) =>
+      switch (proposal.status) {
         AiProposalStatus.pending => l10n.aiProposalFootnotePending,
-        AiProposalStatus.confirmed => l10n.aiProposalFootnoteConfirmed,
+        AiProposalStatus.confirmed => _confirmedFootnote(l10n, proposal),
         AiProposalStatus.dismissed => l10n.aiProposalFootnoteDismissed,
         AiProposalStatus.failed => l10n.aiProposalFootnoteFailed,
+      };
+
+  /// Matches the exhaustive body-slot switch above: a confirmed proposal's
+  /// footnote names the entity it just created, never a generic
+  /// "transactions" copy for a budget/goal/category.
+  String _confirmedFootnote(AppLocalizations l10n, AiActionProposal proposal) =>
+      switch (proposal) {
+        CreateBudgetProposal() => l10n.aiProposalFootnoteConfirmedBudget,
+        CreateGoalProposal() => l10n.aiProposalFootnoteConfirmedGoal,
+        CreateCategoryProposal() => l10n.aiProposalFootnoteConfirmedCategory,
+        CreateTransactionProposal() =>
+          l10n.aiProposalFootnoteConfirmedTransaction,
+        UnsupportedProposal() => l10n.aiProposalFootnoteConfirmedTransaction,
       };
 }

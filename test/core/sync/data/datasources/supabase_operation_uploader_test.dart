@@ -142,28 +142,62 @@ void main() {
       expect(upsertedRow(seen!)['name'], 'Comida');
     });
 
-    test('sin sesión activa no inventa ningún user_id', () async {
-      http.Request? seen;
+    test(
+        'REGRESIÓN BILLETUDO-D: sin sesión activa NO sube sin user_id (eso '
+        'garantiza 42501 de RLS) — lanza para que el llamador lo reintente',
+        () async {
+      var requests = 0;
       final supabase = await buildSupabase(
         responder: (request) {
-          seen = request;
+          requests++;
           return http.Response('', 201, request: request);
         },
       );
 
-      await SupabaseOperationUploader(supabase).upload(
-        const SyncOperation(
-          tableName: 'app_settings',
-          rowId: 's-1',
-          type: SyncOperationType.put,
-          payload: <String, dynamic>{'updated_at': 1700000000000},
+      await expectLater(
+        SupabaseOperationUploader(supabase).upload(
+          const SyncOperation(
+            tableName: 'app_settings',
+            rowId: 's-1',
+            type: SyncOperationType.put,
+            payload: <String, dynamic>{'updated_at': 1700000000000},
+          ),
         ),
+        throwsA(isA<AuthException>()),
       );
-
-      final row = upsertedRow(seen!);
-      expect(row.containsKey('user_id'), isFalse);
-      expect(row['id'], 's-1');
+      // Ningún request llegó a Postgres: la sesión se valida antes de
+      // construir el payload, para cualquier tipo de operación.
+      expect(requests, 0);
     });
+
+    for (final type in SyncOperationType.values) {
+      test(
+          'REGRESIÓN BILLETUDO-D: sin sesión activa un $type lanza en vez de '
+          'llamar a Postgres', () async {
+        var requests = 0;
+        final supabase = await buildSupabase(
+          responder: (request) {
+            requests++;
+            return http.Response('', 204, request: request);
+          },
+        );
+
+        await expectLater(
+          SupabaseOperationUploader(supabase).upload(
+            SyncOperation(
+              tableName: 'app_settings',
+              rowId: 's-1',
+              type: type,
+              payload: type == SyncOperationType.delete
+                  ? null
+                  : <String, dynamic>{'updated_at': 1700000000000},
+            ),
+          ),
+          throwsA(isA<AuthException>()),
+        );
+        expect(requests, 0);
+      });
+    }
 
     test('un put sin payload igual sube el id y el user_id de la sesión',
         () async {

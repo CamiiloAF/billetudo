@@ -33,6 +33,7 @@ class HomeAiInsight extends Equatable {
     this.percentDelta,
     this.overageMinor,
     this.currency,
+    this.conversationId,
   });
 
   /// Forced insight for `HomeHeroState.noBudgetEverCreated` — always alone
@@ -43,7 +44,8 @@ class HomeAiInsight extends Equatable {
         queueLength = 1,
         percentDelta = null,
         overageMinor = null,
-        currency = null;
+        currency = null,
+        conversationId = null;
 
   final HomeAiInsightType type;
 
@@ -68,7 +70,29 @@ class HomeAiInsight extends Equatable {
   /// carries no amount.
   final String? currency;
 
+  /// The conversation already started from this specific insight's chip
+  /// (`AiInsightConversations`, resolved by `GetConversationForInsight`), or
+  /// `null` when the user has never tapped it yet. Drives `AiCardInsight`'s
+  /// chip copy ("iniciar conversación" vs "continuar conversación") and
+  /// destination — bug fix: the chip used to always reopen whichever
+  /// conversation was most recently active in general, regardless of which
+  /// insight it came from.
+  final String? conversationId;
+
   bool get hasQueue => queueLength >= 2;
+
+  /// Returns a copy with [conversationId] resolved. The only field the
+  /// presentation layer patches in after the fact — every other field comes
+  /// straight from `WatchHomeAiInsight`'s business resolution.
+  HomeAiInsight withConversationId(String? conversationId) => HomeAiInsight(
+        type: type,
+        queuePosition: queuePosition,
+        queueLength: queueLength,
+        percentDelta: percentDelta,
+        overageMinor: overageMinor,
+        currency: currency,
+        conversationId: conversationId,
+      );
 
   @override
   List<Object?> get props => [
@@ -78,5 +102,6 @@ class HomeAiInsight extends Equatable {
         percentDelta,
         overageMinor,
         currency,
+        conversationId,
       ];
 }

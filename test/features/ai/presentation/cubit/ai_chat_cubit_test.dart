@@ -7,6 +7,7 @@ import 'package:billetudo/features/ai/domain/entities/ai_tool_call.dart';
 import 'package:billetudo/features/ai/domain/entities/ai_turn.dart';
 import 'package:billetudo/features/ai/domain/usecases/append_ai_message.dart';
 import 'package:billetudo/features/ai/domain/usecases/build_financial_snapshot.dart';
+import 'package:billetudo/features/ai/domain/usecases/link_insight_to_conversation.dart';
 import 'package:billetudo/features/ai/domain/usecases/resolve_ai_tool_call.dart';
 import 'package:billetudo/features/ai/domain/usecases/resume_or_create_ai_conversation.dart';
 import 'package:billetudo/features/ai/domain/usecases/send_ai_turn.dart';
@@ -48,6 +49,9 @@ class MockAiClientContextProvider extends Mock
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
+class MockLinkInsightToConversation extends Mock
+    implements LinkInsightToConversation {}
+
 const _signedInSession = AuthSession.signedIn(
   AuthUser(
     id: 'user-1',
@@ -68,6 +72,7 @@ void main() {
   late MockWatchAccounts watchAccounts;
   late MockAiClientContextProvider clientContext;
   late MockWatchAuthSession watchAuthSession;
+  late MockLinkInsightToConversation linkInsightToConversation;
 
   setUpAll(() {
     registerFallbackValue(
@@ -96,6 +101,7 @@ void main() {
     watchAccounts = MockWatchAccounts();
     clientContext = MockAiClientContextProvider();
     watchAuthSession = MockWatchAuthSession();
+    linkInsightToConversation = MockLinkInsightToConversation();
 
     when(watchAccounts.call)
         .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
@@ -115,6 +121,12 @@ void main() {
     when(() => watchAuthSession.current).thenReturn(_signedInSession);
     when(watchAuthSession.call)
         .thenAnswer((_) => const Stream<AuthSession>.empty());
+    when(
+      () => linkInsightToConversation(
+        insightType: any(named: 'insightType'),
+        conversationId: any(named: 'conversationId'),
+      ),
+    ).thenAnswer((_) async => const Right(unit));
   });
 
   AiChatCubit build() => AiChatCubit(
@@ -127,6 +139,7 @@ void main() {
         resolveAiToolCall,
         watchAccounts,
         clientContext,
+        linkInsightToConversation,
         watchAuthSession,
       );
 
@@ -288,6 +301,33 @@ void main() {
     verify: (_) {
       verify(startNewAiConversation.call).called(1);
       verifyNever(resumeOrCreateAiConversation.call);
+      verifyNever(
+        () => linkInsightToConversation(
+          insightType: any(named: 'insightType'),
+          conversationId: any(named: 'conversationId'),
+        ),
+      );
+    },
+  );
+
+  blocTest<AiChatCubit, AiChatState>(
+    'startNew(insightType: ...) links the fresh thread to that insight '
+    '(bugfix item 7)',
+    setUp: () {
+      when(startNewAiConversation.call)
+          .thenAnswer((_) async => const Right('conv-3'));
+      when(() => watchAiMessages('conv-3'))
+          .thenAnswer((_) => Stream.value(const Right(<AiMessage>[])));
+    },
+    build: build,
+    act: (cubit) => cubit.startNew(insightType: 'spendingVsAverage'),
+    verify: (_) {
+      verify(
+        () => linkInsightToConversation(
+          insightType: 'spendingVsAverage',
+          conversationId: 'conv-3',
+        ),
+      ).called(1);
     },
   );
 }

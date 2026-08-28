@@ -220,4 +220,17 @@ void main() {
           .having((s) => s.failure, 'failure', isA<NetworkFailure>()),
     ],
   );
+
+  test(
+      'Sentry BILLETUDO-F: continueWithGoogle tras close() no lanza '
+      '"Cannot emit new states after calling close" (una SnackBar '
+      '"reintentar" puede sobrevivir a la pantalla y volver a llamar al '
+      'cubit ya cerrado)', () async {
+    final cubit = build();
+    when(() => signInWithGoogle())
+        .thenAnswer((_) async => const Right(SignedIn(user)));
+    await cubit.close();
+
+    await expectLater(cubit.continueWithGoogle(), completes);
+  });
 }
