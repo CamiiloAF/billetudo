@@ -104,6 +104,8 @@ jobs:
     name: Build & upload AAB (Play internal)
     needs: [parse-version, bump-build-number]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # softprops/action-gh-release necesita crear el release
     env:
       RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
       RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
