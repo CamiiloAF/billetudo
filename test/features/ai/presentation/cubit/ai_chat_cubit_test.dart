@@ -19,10 +19,15 @@ import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_balance.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_with_balance.dart';
+import 'package:billetudo/features/debts/domain/entities/debts_summary.dart';
+import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../debts/domain/debt_test_fixtures.dart';
 import '../../ai_fixtures.dart';
 
 class MockResumeOrCreateAiConversation extends Mock
@@ -43,6 +48,8 @@ class MockSendAiTurn extends Mock implements SendAiTurn {}
 class MockResolveAiToolCall extends Mock implements ResolveAiToolCall {}
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
+
+class MockWatchDebts extends Mock implements WatchDebts {}
 
 class MockAiClientContextProvider extends Mock
     implements AiClientContextProvider {}
@@ -70,6 +77,7 @@ void main() {
   late MockSendAiTurn sendAiTurn;
   late MockResolveAiToolCall resolveAiToolCall;
   late MockWatchAccounts watchAccounts;
+  late MockWatchDebts watchDebts;
   late MockAiClientContextProvider clientContext;
   late MockWatchAuthSession watchAuthSession;
   late MockLinkInsightToConversation linkInsightToConversation;
@@ -99,12 +107,18 @@ void main() {
     sendAiTurn = MockSendAiTurn();
     resolveAiToolCall = MockResolveAiToolCall();
     watchAccounts = MockWatchAccounts();
+    watchDebts = MockWatchDebts();
     clientContext = MockAiClientContextProvider();
     watchAuthSession = MockWatchAuthSession();
     linkInsightToConversation = MockLinkInsightToConversation();
 
     when(watchAccounts.call)
         .thenAnswer((_) => Stream.value(const Right(<AccountWithBalance>[])));
+    when(watchDebts.call).thenAnswer(
+      (_) => Stream.value(
+        Right(DebtsSummary.from(const <DebtWithBalance>[])),
+      ),
+    );
     when(clientContext.resolve).thenAnswer(
       (_) async => const AiClientContext(
         locale: 'es-CO',
@@ -138,6 +152,7 @@ void main() {
         sendAiTurn,
         resolveAiToolCall,
         watchAccounts,
+        watchDebts,
         clientContext,
         linkInsightToConversation,
         watchAuthSession,
@@ -161,6 +176,39 @@ void main() {
       isA<AiChatState>()
           .having((s) => s.status, 'status', AiChatStatus.ready)
           .having((s) => s.messages.length, 'messages', 1),
+    ],
+  );
+
+  // A proposal that attributes a movement to a debt has to name the debt on
+  // its card; the names come from here, not from the payload the model sent.
+  blocTest<AiChatCubit, AiChatState>(
+    'start() streams debt names so a proposal can name the debt it attributes',
+    setUp: () {
+      when(resumeOrCreateAiConversation.call)
+          .thenAnswer((_) async => const Right('conv-1'));
+      when(() => watchAiMessages('conv-1'))
+          .thenAnswer((_) => const Stream<Result<List<AiMessage>>>.empty());
+      when(watchDebts.call).thenAnswer(
+        (_) => Stream.value(
+          Right(
+            DebtsSummary.from([
+              DebtWithBalance(
+                debt: buildDebt(id: 'debt-1', name: 'Crédito moto'),
+                balance: DebtBalance.empty,
+              ),
+            ]),
+          ),
+        ),
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.start(),
+    skip: 1,
+    expect: () => [
+      isA<AiChatState>()
+          .having((s) => s.debtNames, 'debtNames', {'debt-1': 'Crédito moto'}),
+      isA<AiChatState>()
+          .having((s) => s.conversationId, 'conversationId', 'conv-1'),
     ],
   );
 

@@ -5690,10 +5690,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.';
 
   @override
-  String get onboardingWelcomeCaption =>
-      'Ya dejamos categorías listas para ti.';
-
-  @override
   String get onboardingWelcomeCta => 'Comenzar';
 
   @override
@@ -6282,4 +6278,77 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiProposalTransactionAccountUnknown => 'Cuenta seleccionada';
+
+  @override
+  String get aiProposalTransactionDebt => 'Deuda';
+
+  @override
+  String get aiProposalDebtUnknown => 'Deuda seleccionada';
+
+  @override
+  String get aiProposalDebtLinkExplainer =>
+      'No se crea ningún movimiento nuevo ni se mueve dinero: el movimiento ya afectó tu cuenta. Con esto empieza a contar en el saldo de la deuda.';
+
+  @override
+  String get aiProposalFootnoteConfirmedDebtLink =>
+      'El movimiento ya cuenta en tu deuda.';
+
+  @override
+  String get aiProposalConfirmedRowDebtLink => 'Atribuido a la deuda';
+
+  @override
+  String get settingsAiSection => 'Asistente de IA';
+
+  @override
+  String get settingsAiNotesAccess => 'Dejar que el asistente lea mis notas';
+
+  @override
+  String get settingsAiNotesAccessSubtitle =>
+      'Aunque esté apagado, el asistente sigue buscando en tus movimientos: la búsqueda ocurre en tu dispositivo y solo viajan datos ya organizados, nunca el texto de tus notas.';
+
+  @override
+  String get settingsAiNotesAccessSheetTitle =>
+      '¿Dejar que el asistente lea tus notas?';
+
+  @override
+  String get settingsAiNotesAccessSheetMessage =>
+      'Tus notas son texto libre: ahí suelen aparecer nombres de personas y detalles de tu vida. Si lo activas, la nota viaja a Google Gemini junto con tu pregunta para que el asistente entienda cómo llamas tú a las cosas: encontrar «lo de la luz» cuando la nota dice «factura de energía». Puedes apagarlo cuando quieras.';
+
+  @override
+  String get settingsAiNotesAccessSheetConfirm => 'Activar';
+
+  @override
+  String get settingsPrivacyPolicy => 'Política de privacidad';
+
+  @override
+  String get settingsPrivacyPolicySubtitle =>
+      'Qué datos guardamos, qué se comparte y con quién';
+
+  @override
+  String get settingsTermsOfUse => 'Términos de uso';
+
+  @override
+  String get settingsTermsOfUseSubtitle => 'Las reglas de uso de Billetudo';
+
+  @override
+  String get settingsLegalLinkError =>
+      'No pudimos abrir el enlace. Inténtalo de nuevo.';
+
+  @override
+  String get settingsAiConsentWithdraw => 'Retirar el consentimiento de IA';
+
+  @override
+  String get settingsAiConsentWithdrawSubtitle =>
+      'Dejas de compartir datos con el asistente. Puedes volver a activarlo cuando quieras.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetTitle =>
+      '¿Retirar el consentimiento?';
+
+  @override
+  String get settingsAiConsentWithdrawSheetMessage =>
+      'El asistente deja de estar disponible y no se envía nada más a Google Gemini. También se apaga «Dejar que el asistente lea mis notas». Tus movimientos y tus conversaciones guardadas se quedan en tu dispositivo. Puedes volver a activarlo cuando quieras.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetConfirm => 'Retirar';
 }

@@ -50,7 +50,8 @@ class BalancesSheet extends StatelessWidget {
       children: [
         Text(
           l10n.homeBalancesSheetTitle,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 16),
         SheetListViewport(

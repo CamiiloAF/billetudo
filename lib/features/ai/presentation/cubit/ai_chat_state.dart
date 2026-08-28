@@ -15,6 +15,7 @@ class AiChatState extends Equatable {
     this.draft = '',
     this.failure,
     this.accountNames = const <String, String>{},
+    this.debtNames = const <String, String>{},
     this.isSignedIn = false,
   });
 
@@ -40,6 +41,12 @@ class AiChatState extends Equatable {
   /// rather than fabricate a name.
   final Map<String, String> accountNames;
 
+  /// `Debt.id` → `Debt.name`, so a proposal that attributes a movement to a
+  /// debt names it on the card. Closed debts are in here too: a proposal
+  /// pointing at one is refused when applied (`LinkTransactionToDebt`), and a
+  /// card that cannot even name the debt it was refused for explains nothing.
+  final Map<String, String> debtNames;
+
   /// Mirrors `WatchAuthSession.current`/`.call()`. The Edge Function this
   /// cubit calls into requires a JWT (`verify_jwt: true`), so without a
   /// session every send would fail anyway — `AiAssistantPage` renders a
@@ -61,6 +68,7 @@ class AiChatState extends Equatable {
     Failure? failure,
     bool clearFailure = false,
     Map<String, String>? accountNames,
+    Map<String, String>? debtNames,
     bool? isSignedIn,
   }) =>
       AiChatState(
@@ -70,6 +78,7 @@ class AiChatState extends Equatable {
         draft: draft ?? this.draft,
         failure: clearFailure ? null : (failure ?? this.failure),
         accountNames: accountNames ?? this.accountNames,
+        debtNames: debtNames ?? this.debtNames,
         isSignedIn: isSignedIn ?? this.isSignedIn,
       );
 
@@ -81,6 +90,7 @@ class AiChatState extends Equatable {
         draft,
         failure,
         accountNames,
+        debtNames,
         isSignedIn,
       ];
 }

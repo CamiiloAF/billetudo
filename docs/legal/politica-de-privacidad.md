@@ -1,11 +1,35 @@
 # Política de privacidad de billetudo
 
-**Versión 1.5** · **Última actualización: 25 de agosto de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
+**Versión 1.6** · **Última actualización: 28 de agosto de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
 una vez. Si algo no queda claro, escríbenos a
 camiiloagudelo92@gmail.com.
+
+### Qué cambió en la versión 1.6
+
+Esta versión **corrige** y **amplía** lo que la 1.5 decía del asistente. Las dos
+cosas importan y las separamos, porque son distintas:
+
+- **Corrección (aplica a todo el mundo, actives o no algo).** La versión 1.5
+  decía que del bloque de deudas "solo salen totales" y que los nombres que tú
+  escribes no viajaban. Eso no era exacto: **los nombres que tú les pones a tus
+  cuentas, categorías, presupuestos, metas y deudas sí viajan** en el resumen
+  que se manda al asistente, y siempre viajaron. Son la forma en que el
+  asistente puede decir "tu presupuesto de Mercado" en vez de "tu presupuesto
+  número 3". Lo decimos ahora con todas las letras en las secciones 17.2 y 17.3.
+- **Novedad (solo si tú la activas).** Aparece un **interruptor en Ajustes para
+  que el asistente pueda leer tus notas**. Viene **apagado**, y mientras siga
+  apagado tus notas no salen del teléfono. Está explicado entero en la
+  [sección 17.7](#177-el-interruptor-de-notas-apagado-hasta-que-tú-decidas).
+- **Búsqueda de pagos programados sin enviar notas.** Cuando le preguntas por un
+  pago concreto ("el abono de la moto"), **tu propio teléfono** busca esas
+  palabras dentro de tus notas y solo devuelve datos estructurados. Ese camino
+  no envía el texto de ninguna nota, ni con el interruptor apagado ni con él
+  encendido (sección 17.2).
+- **Se actualizaron** la tabla de terceros (sección 7) y la sección 12 (datos de
+  otras personas que tú registras), para que digan lo mismo que lo anterior.
 
 ### Qué cambió en la versión 1.5
 
@@ -52,9 +76,14 @@ está ocurriendo en tu teléfono.
 - **El asistente con inteligencia artificial es la excepción a todo lo
   anterior.** Es opcional, requiere iniciar sesión y te pedimos permiso antes
   del primer mensaje. Si lo usas, un **resumen de tus finanzas** y lo que
-  escribas en el chat salen del teléfono hacia Google. Está explicado entero en
-  la [sección 17](#17-el-asistente-con-inteligencia-artificial), sin adornos y
-  sin enterrarlo.
+  escribas en el chat salen del teléfono hacia Google. Ese resumen incluye **los
+  nombres que tú les pusiste** a tus cuentas, categorías, presupuestos, metas y
+  deudas. Está explicado entero en la
+  [sección 17](#17-el-asistente-con-inteligencia-artificial), sin adornos y sin
+  enterrarlo.
+- **Tus notas no van al asistente, salvo que tú enciendas un interruptor.**
+  Viene apagado de fábrica, está en Ajustes y lo puedes apagar cuando quieras
+  (sección 17.7).
 
 ---
 
@@ -152,7 +181,11 @@ sesión.
 | **Preferencias** | Tema claro/oscuro, moneda, modo de presupuesto, el orden en que ordenaste los accesos rápidos de Inicio, qué tutoriales ya viste |
 
 Ten presente que las **notas** son campos de texto libre: ahí cabe lo que tú
-escribas, incluida información que quizá prefieras no escribir.
+escribas, incluida información que quizá prefieras no escribir. Lo mismo aplica
+a los **nombres** que les pones a tus cuentas, categorías, presupuestos, metas y
+deudas. Si usas el asistente de IA, esos nombres viajan a Google y tus notas
+solo si tú lo activas: está explicado en la
+[sección 17](#17-el-asistente-con-inteligencia-artificial).
 
 ### 4.2 El número completo de tus cuentas bancarias
 
@@ -310,7 +343,7 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 | **PowerSync** | Los mismos datos, en tránsito, para sincronizarlos | Solo con sesión iniciada |
 | **Sentry** | Diagnósticos técnicos de fallos | Siempre que ocurra un error |
 | **Google / Apple** | Los datos de tu inicio de sesión, según sus propias políticas | Solo si inicias sesión |
-| **Google (API de Gemini)** | El texto que escribes en el chat y un resumen de tus finanzas | Solo si usas el asistente, después de aceptarlo (sección 17) |
+| **Google (API de Gemini)** | El texto que escribes en el chat y un resumen de tus finanzas, con los nombres que tú les pusiste a tus cuentas, categorías, presupuestos, metas y deudas. **Tus notas solo si enciendes el interruptor de la sección 17.7**, que viene apagado | Solo si usas el asistente, después de aceptarlo (sección 17) |
 
 ---
 
@@ -321,7 +354,8 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 | Que la app funcione: registrar y mostrar tus finanzas | Los de la sección 4.1 | **Ejecución del contrato** (art. 6.1.b) |
 | Identificarte y proteger tu cuenta | Identificador, correo, nombre | **Ejecución del contrato** (art. 6.1.b) |
 | Respaldar y sincronizar entre tus dispositivos | Los de la sección 4.1 | **Ejecución del contrato**, a petición tuya al iniciar sesión (art. 6.1.b) |
-| Responder tus preguntas con el asistente de IA | El texto que escribes y el resumen financiero de la sección 17 | **Consentimiento** explícito, que puedes retirar (art. 6.1.a) |
+| Responder tus preguntas con el asistente de IA | El texto que escribes y el resumen financiero de la sección 17, con los nombres que tú les diste a tus cuentas, categorías, presupuestos, metas y deudas | **Consentimiento** explícito, que puedes retirar (art. 6.1.a) |
+| Responder con más precisión leyendo tus notas | El texto libre de tus notas (sección 17.7) | **Consentimiento** explícito y **separado** del anterior: es un interruptor aparte, apagado por defecto, que puedes apagar cuando quieras (art. 6.1.a) |
 | Revisar un mensaje del asistente que tú reportaste y corregir la función | El mensaje reportado, el motivo y tu comentario (sección 17.5) | **Interés legítimo** en moderar el contenido que genera la app, a partir de un envío tuyo; además es un requisito de Google Play para las apps con IA generativa (art. 6.1.f) |
 | Detectar y corregir fallos de la app | Diagnósticos técnicos (sección 5.3) | **Interés legítimo** en mantener la app estable y segura (art. 6.1.f) |
 | Cumplir obligaciones legales y responder a autoridades | Los estrictamente exigidos | **Obligación legal** (art. 6.1.c) |
@@ -347,7 +381,7 @@ del tratamiento), bajo contrato y solo para las finalidades de arriba:
 | **Supabase, Inc.** | Base de datos en la nube y autenticación | Tus datos financieros sincronizados, tu correo, nombre y foto de perfil (URL), y los mensajes del asistente que reportes |
 | **JourneyApps / PowerSync** | Motor de sincronización entre el teléfono y la base de datos | Los mismos datos, en tránsito |
 | **Functional Software, Inc. (Sentry)** | Reporte de errores | Diagnósticos técnicos, sin identificador de usuario y sin dirección IP almacenada (filtrado aplicado en su servidor, ver 5.3) |
-| **Google LLC (API de Gemini)** | Generar las respuestas del asistente de IA | El texto que escribes en el chat y el resumen financiero de la sección 17. **No** recibe tu correo, tu nombre, tus notas, el nombre de tu banco ni los últimos 4 dígitos |
+| **Google LLC (API de Gemini)** | Generar las respuestas del asistente de IA | El texto que escribes en el chat y el resumen financiero de la sección 17, incluidos los **nombres** que tú les pusiste a tus cuentas, categorías, presupuestos, metas y deudas. **Tus notas solo si enciendes el interruptor de la sección 17.7**; viene apagado. **No** recibe tu correo, tu nombre, el nombre de tu banco ni los últimos 4 dígitos de tus tarjetas |
 
 Además, **Google LLC** y **Apple Inc.** actúan como **responsables
 independientes** cuando inicias sesión con ellos: no les enviamos tus datos
@@ -578,12 +612,29 @@ de terceros en las **notas** de cualquier movimiento.
 
 Esos datos son de otras personas, aunque los escribas tú. Para nosotros son
 simplemente contenido de tu cuenta: no los usamos para nada, no los cruzamos con
-nada y no los compartimos con nadie. Pero **tú eres quien decide incluirlos**, y
+nada y no los mostramos a nadie más. Pero **tú eres quien decide incluirlos**, y
 por eso te pedimos dos cosas:
 
 - Registra solo lo mínimo que necesites para llevar tus cuentas.
 - Si vas a anotar datos de otra persona, asegúrate de que sea razonable hacerlo
   en tu contexto.
+
+### Dos casos en los que esos datos sí salen del teléfono
+
+Preferimos que lo sepas antes y no después:
+
+- **Si usas el asistente**, el nombre que le pusiste a una deuda viaja a Google
+  como parte del resumen. Si ese nombre es el de una persona ("Préstamo a
+  Camila"), ese nombre viaja. Pasa desde la primera versión del asistente y no
+  depende de ningún interruptor (sección 17.2).
+- **Si además enciendes el interruptor de notas** (sección 17.7), el texto de
+  tus notas también viaja, y ahí es donde suelen estar los nombres, teléfonos o
+  detalles de otras personas. Es tu decisión y por eso el interruptor viene
+  apagado.
+
+Si esos datos son de un tercero, quien decide compartirlos eres tú. Vale la
+pena tenerlo presente al escribir una nota, sobre todo si el interruptor está
+encendido.
 
 Si una tercera persona quiere saber si aparece en los datos de alguien, no
 podemos responder: no tenemos forma de buscar dentro de la información de
@@ -696,6 +747,9 @@ mes?", "¿me alcanza para esto?") y te responde usando **tus** datos.
   resto de la app funciona igual.
 - **Puedes retirar ese permiso** cuando quieras desde Ajustes, y borrar tu
   historial de conversación.
+- **Tus notas quedan fuera por defecto.** En Ajustes hay un interruptor
+  independiente para dejar que el asistente las lea. Viene **apagado** y no se
+  enciende solo (sección 17.7).
 - **Puedes reportar cualquier respuesta** desde la propia conversación, sin
   salir de la app. Eso sí: el mensaje que reportes se guarda en nuestro
   servidor, y es la única cosa del chat que llega ahí (sección 17.5).
@@ -719,17 +773,27 @@ Cada vez que envías un mensaje salen tres cosas:
    de datos de tu teléfono. Contiene:
    - tus cuentas: nombre que tú les pusiste, tipo, moneda y saldo;
    - cuánto gastaste e ingresaste este mes, por moneda;
-   - tus categorías con más gasto del mes, con montos;
+   - tus categorías con más gasto del mes, con nombre y montos;
    - el flujo de caja de los últimos 6 meses, mes a mes;
-   - tus presupuestos: nombre, periodo, límite, gastado y días restantes;
+   - tus presupuestos: nombre, periodo, límite, gastado, lo que ya tienes
+     programado y días restantes;
    - tus metas: nombre, objetivo, ahorrado y fecha;
-   - tus deudas, **solo como totales** por moneda y por si te deben o debes;
-   - los pagos programados que vencen en los próximos 30 días;
+   - tus deudas: **totales** por moneda, y además **cada deuda abierta con el
+     nombre que tú le pusiste**, si te deben o debes, el saldo pendiente y su
+     cuota si la configuraste;
+   - los pagos programados que vencen en los próximos 30 días, identificados por
+     **su categoría y su cuenta** (no por su nota);
    - la lista de tus categorías, para que el asistente pueda nombrarlas.
 3. Además viajan cuatro datos técnicos: el **idioma** de la app, tu **zona
    horaria** (para que entienda "este mes" o "la semana pasada"), la **versión**
    de la app y un **identificador de conversación** que se genera en tu
    teléfono.
+
+**Los nombres que tú escribes sí viajan, y conviene saberlo.** El nombre de una
+cuenta, una categoría, un presupuesto, una meta o una deuda es texto que tú
+escribiste, y va en el resumen. Es lo que permite que el asistente responda
+"vas bien en Mercado" en vez de "vas bien en el presupuesto 3". Si prefieres que
+algo no viaje, la forma directa de conseguirlo es no ponerlo en el nombre.
 
 **Detalle bajo demanda.** Si para responderte hace falta mirar movimientos
 concretos, el asistente los pide y **tu propio teléfono** resuelve la búsqueda en
@@ -739,21 +803,47 @@ monto, moneda, tipo, nombre de la categoría y nombre de la cuenta. El asistente
 puede pedir ese detalle **hasta tres veces** por cada mensaje tuyo; pasado ese
 tope responde con lo que tiene.
 
-### 17.3 Qué no sale nunca
+**Buscar dentro de tus notas sin enviarlas.** Cuando le preguntas por algo que
+solo está escrito en una nota ("el abono de la moto", "el pago del gimnasio"),
+pasa esto:
 
-Esto no es una intención, es cómo está construido el resumen:
+1. El asistente manda **las palabras que tú ya escribiste** en tu mensaje. Ese
+   texto ya había salido del teléfono al enviar la pregunta, así que no se envía
+   nada nuevo.
+2. **Tu teléfono** compara esas palabras con tus notas locales.
+3. De vuelta solo salen **datos estructurados**: identificador, monto, moneda,
+   fecha, frecuencia, categoría y cuenta. **El texto de la nota no se devuelve**,
+   ni entero ni en fragmentos.
 
-- **Las notas y descripciones que escribes** en movimientos, aportes a metas,
-  deudas y pagos programados. Ninguna. Son el campo donde cabe lo que quizá
-  preferirías no escribir en ningún lado, y por eso no se envían.
+La nota se usa como llave de búsqueda dentro de tu teléfono y se descarta ahí
+mismo. Este camino funciona igual con el interruptor de la sección 17.7 apagado.
+
+### 17.3 Qué no sale, y qué sí sale aunque no lo esperes
+
+Empecemos por lo que **nunca** sale, en ninguna circunstancia y con cualquier
+configuración. No es una intención, es cómo está construido el resumen:
+
 - **El nombre de tu banco** y los **últimos 4 dígitos** de tu tarjeta.
 - **El número completo de tus cuentas**, que además nunca sale del teléfono para
   nada (sección 4.2).
-- **El nombre de la persona a la que le debes o que te debe.** Del bloque de
-  deudas solo salen totales.
 - **Tu nombre y tu correo.** Google no recibe quién eres desde acá.
 - **Archivos, fotos, audio, contactos** o el contenido de tus notificaciones. La
   app ni siquiera pide esos permisos.
+
+Y ahora lo que **sí sale** y quizá no dabas por hecho, porque prometer de menos
+también sería mentirte:
+
+- **Los nombres que tú escribes**: los de tus cuentas, categorías, presupuestos,
+  metas y deudas. Van en el resumen de cada mensaje.
+- **El nombre que le pusiste a una deuda**, que a veces es el de una persona.
+  Sale con el resto del bloque de deudas.
+- **Tus notas**, pero **solo si enciendes el interruptor** de la sección 17.7.
+  Mientras esté apagado —y viene apagado— el texto de tus notas de movimientos,
+  aportes a metas, deudas y pagos programados no sale del teléfono.
+
+> La versión 1.5 de esta política decía que del bloque de deudas "solo salen
+> totales" y que ninguna palabra tuya viajaba. No era exacto y lo corregimos
+> aquí. Nos parece mejor decirlo que dejarlo pasar.
 
 ### 17.4 A quién llega y dónde se procesa
 
@@ -836,6 +926,63 @@ Puede **proponerte** acciones: crear un presupuesto, una meta, una categoría o
 registrar un movimiento. Cuando lo hace, la app te muestra una tarjeta con los
 valores exactos y **no se escribe nada hasta que tú lo confirmes con un toque**.
 Si ignoras la propuesta, no queda rastro en tus datos.
+
+### 17.7 El interruptor de notas: apagado hasta que tú decidas
+
+**[VERIFICAR: publicar esta subsección solo cuando el interruptor esté cableado
+de extremo a extremo en la versión de la app que se distribuye. Al 28 de agosto
+de 2026 el ajuste existe en la base de datos, pero todavía no hay interruptor en
+Ajustes ni nadie que lo lea.]**
+
+En Ajustes hay un interruptor llamado **"Dejar que el asistente lea mis notas"**.
+Viene **apagado**.
+
+**Con el interruptor apagado (así viene):** el texto de tus notas —las de
+movimientos, aportes a metas, movimientos de deuda y pagos programados— **no
+sale de tu teléfono** hacia el asistente. Eso incluye el detalle bajo demanda:
+los movimientos que el asistente pide llegan sin nota.
+
+**Con el interruptor encendido:** el texto de esas notas **empieza a viajar a
+Google**, junto con el resto del resumen y de los resultados de búsqueda, cuando
+sea relevante para responderte.
+
+**Por qué existe.** Buscar palabra por palabra funciona solo si escribes la misma
+palabra. Si tu nota dice "Crédito KTM 1390" y preguntas por "mi crédito
+vehicular", la búsqueda del punto anterior no encuentra nada, porque no sabe que
+una KTM es una moto. Con las notas a la vista, el asistente sí puede conectarlo.
+Es una función de precisión, y por eso la decides tú.
+
+**Antes de encenderlo, dos cosas que vale la pena pensar:**
+
+- Una nota es **texto completamente libre**. Ahí caben nombres de personas,
+  motivos de un gasto, detalles de salud, direcciones o cualquier cosa que hayas
+  escrito sin pensar que algún día saldría del teléfono.
+- Parte de eso puede ser **información de otras personas** (sección 12). Al
+  encender el interruptor, esa información también empieza a viajar, y la
+  decisión es tuya.
+
+Nada de esto es motivo de alarma: es exactamente la información que ya usas todos
+los días, y lo único que cambia es quién más puede leerla para ayudarte. Solo
+queremos que lo sepas antes y no después.
+
+**Cómo funciona en la práctica:**
+
+- **Se apaga igual de fácil.** Vuelves a Ajustes y lo apagas. Desde el siguiente
+  mensaje, tus notas dejan de salir.
+- **No es retroactivo hacia atrás ni hacia adelante.** Apagarlo no borra lo que
+  ya se envió en conversaciones anteriores; encenderlo no reenvía nada de lo que
+  ya pasó.
+- **Sigue sin guardarse en ningún servidor.** Tus notas viajan para producir la
+  respuesta de ese mensaje y se descartan, igual que el resto del resumen
+  (sección 17.5). La única cosa del chat que se guarda en nuestro servidor sigue
+  siendo el mensaje que tú decidas reportar.
+- **Es independiente del permiso general del asistente.** Puedes usar el
+  asistente con el interruptor apagado toda la vida.
+- **El estado del interruptor se guarda con tus ajustes**, en tu teléfono, y se
+  sincroniza con tu cuenta como cualquier otra preferencia.
+- **Si en el futuro ampliamos lo que el asistente puede leer, te lo volvemos a
+  preguntar.** La app recuerda qué versión del aviso aceptaste, así que un
+  permiso que diste para una cosa no se convierte solo en permiso para otra.
 
 ---
 
@@ -923,4 +1070,4 @@ app. Si en 30 días no tuviste respuesta, insiste: algo falló.
 
 ---
 
-*billetudo — Política de privacidad, versión 1.5, 25 de agosto de 2026.*
+*billetudo — Política de privacidad, versión 1.6, 28 de agosto de 2026.*

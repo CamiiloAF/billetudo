@@ -13,11 +13,13 @@ class AiAssistantBubble extends StatelessWidget {
   const AiAssistantBubble({
     required this.message,
     required this.accountNames,
+    required this.debtNames,
     super.key,
   });
 
   final AiMessage message;
   final Map<String, String> accountNames;
+  final Map<String, String> debtNames;
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +64,11 @@ class AiAssistantBubble extends StatelessWidget {
               for (final proposal in message.proposals) ...[
                 const SizedBox(height: 10),
                 AiProposalCard(
-                    messageId: message.id,
-                    proposal: proposal,
-                    accountNames: accountNames),
+                  messageId: message.id,
+                  proposal: proposal,
+                  accountNames: accountNames,
+                  debtNames: debtNames,
+                ),
               ],
             ],
           ),

@@ -44,6 +44,7 @@ class HomeState extends Equatable {
     this.hasAnyBudget = true,
     this.aiInsight,
     this.pendingScheduledCount = 0,
+    this.budgetChipIsDirectNav = true,
   });
 
   /// "Movimientos recientes" stays unbound (criterion 1) regardless of the
@@ -95,6 +96,18 @@ class HomeState extends Equatable {
   /// (`WatchPendingScheduledPaymentCount`) — feeds `QuickAccessRow`'s badge.
   final int pendingScheduledCount;
 
+  /// Which arrow the "Ayúdame a presupuestar" chip shows: `true` for the
+  /// straight arrow (direct nav to the new-budget form), `false` for the
+  /// diagonal one (opens the chat instead). Resolved once per `HomeCubit`
+  /// `start()` from `CheckAiAccess` — a hint for the icon only, never a
+  /// gate: `_HomePageState._onCreateBudgetOrAskAi` re-checks access fresh at
+  /// tap time and is the one that actually decides where the tap goes, so a
+  /// stale read here only shows the "wrong" arrow for one frame at worst,
+  /// never sends the tap anywhere this field did not predict. Defaults to
+  /// `true` (the direct-nav arrow) until resolved, matching Nivel 0's
+  /// unconditional fallback.
+  final bool budgetChipIsDirectNav;
+
   MonthSpending? get spending => snapshot?.spending;
 
   /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`). Its
@@ -139,6 +152,7 @@ class HomeState extends Equatable {
     HomeAiInsight? aiInsight,
     bool clearAiInsight = false,
     int? pendingScheduledCount,
+    bool? budgetChipIsDirectNav,
   }) =>
       HomeState(
         status: status ?? this.status,
@@ -155,6 +169,8 @@ class HomeState extends Equatable {
         aiInsight: clearAiInsight ? null : (aiInsight ?? this.aiInsight),
         pendingScheduledCount:
             pendingScheduledCount ?? this.pendingScheduledCount,
+        budgetChipIsDirectNav:
+            budgetChipIsDirectNav ?? this.budgetChipIsDirectNav,
       );
 
   @override
@@ -169,5 +185,6 @@ class HomeState extends Equatable {
         hasAnyBudget,
         aiInsight,
         pendingScheduledCount,
+        budgetChipIsDirectNav,
       ];
 }

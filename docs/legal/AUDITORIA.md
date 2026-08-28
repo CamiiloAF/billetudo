@@ -1,6 +1,11 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-25, segunda pasada (mecanismo
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-28 (revisión del **alcance real
+de lo que el asistente envía**: cinco campos `name` de texto libre viajan hoy y
+la documentación decía lo contrario; la búsqueda local por nota **sí** está
+implementada y no amplía el alcance; el **interruptor opt-in de notas NO
+existe** todavía; **no hay sección de IA en Ajustes** — §10.4 y puntos 34-38)
+· 2026-08-25, segunda pasada (mecanismo
 de reporte in-app `ai_reports`: **existe en datos, no en el cliente** §10.3 y
 punto 32; la tabla local `AiMessages` ya existe y `schemaVersion` está en 30)
 · 2026-08-25 (auditoría del **asistente
@@ -38,6 +43,25 @@ documentos públicos.
 ---
 
 ## 0. Bloqueantes encontrados (leer primero)
+
+### B4 — ABIERTO (2026-08-28): no hay sección de IA en Ajustes
+
+La política §17.1 promete que el consentimiento del asistente se puede retirar
+desde Ajustes, y la Guideline 5.1.2(i) de Apple lo exige. Hoy
+`lib/features/settings/presentation/pages/settings_page.dart` no tiene ninguna
+entrada de IA: no hay dónde retirarlo, ni dónde poner el interruptor opt-in de
+notas que documentan la política §17.7 y `declaraciones-tiendas.md` §8.7.
+Bloqueante de envío. Detalle y evidencia en §10.4 (hallazgo 5).
+
+### B5 — ABIERTO (2026-08-28): el interruptor opt-in de notas existe en el esquema pero no está cableado
+
+`AppSettings.aiNotesAccessEnabled` (default `false`) y `aiConsentVersion` ya
+están en `app_database.dart` y en `powersync_schema.dart`, pero **nadie los
+lee**: no están en la entidad de dominio, ni en el constructor del snapshot, ni
+en Ajustes. Los documentos legales de esta revisión describen el comportamiento
+final y lo marcan con `[VERIFICAR]` en el punto exacto. **No se publica la §17.7
+de la política ni la §8.7 de declaraciones hasta que el cableado esté completo**,
+o se retiran ambas. Detalle en §10.4 (hallazgos 4 y 4-bis).
 
 ### B1 — ✅ RESUELTO (2026-08-08): el borrado de cuenta fallaba para usuarios con presupuestos por periodo o metas con montos rápidos
 
@@ -443,6 +467,14 @@ lenguaje**.
 Esa fila 9 es la que rompe, cuando el cliente exista, la afirmación de la
 política v1.4 (*"no enviamos tus datos a ningún modelo de lenguaje"*) y la
 viñeta "sin IA" de `declaraciones-tiendas.md` §1.3. Ver §10.3.
+
+> **Actualización 2026-08-28.** El cliente **ya existe** en la rama
+> `feat/ai-assistant`: `lib/features/ai/` tiene las tres capas y
+> `AiRemoteDatasource` invoca la función `ai-chat`
+> (`lib/features/ai/data/datasources/ai_remote_datasource.dart`). Sigue sin
+> haber binario publicado con la feature, pero la frase "sin llamador todavía"
+> de la tabla de arriba dejó de ser cierta. El alcance exacto de lo que ese
+> llamador envía está auditado en **§10.4**.
 
 ---
 
@@ -959,6 +991,98 @@ está escrita para el **segundo** régimen. Por lo tanto:
 
 ---
 
+### 10.4 Revisión 2026-08-28 — alcance real de los datos que envía el asistente
+
+Auditoría puntual pedida por la decisión de producto sobre las notas. Todo lo de
+abajo se verificó contra la rama `feat/ai-assistant` con cambios sin commitear
+en el working tree.
+
+**Hallazgo 1 — la política v1.5 §17.3 y las declaraciones v1.5 §8.1 declaraban
+de menos.** Decían que ninguna palabra libre del usuario viajaba más allá del
+chat, y que del bloque de deudas "solo salen totales". Ambas afirmaciones son
+falsas. Hoy viajan **cinco campos `name` de texto libre**, en el resumen de cada
+turno:
+
+| Campo del usuario | Clase del snapshot | Archivo |
+|---|---|---|
+| `Accounts.name` | `SnapshotAccount.name` | `lib/features/ai/domain/entities/financial_snapshot.dart` |
+| `Categories.name` | `SnapshotCategoryLine.name` | mismo archivo |
+| `Budgets.name` | `SnapshotBudget.name` | mismo archivo |
+| `Goals.name` | `SnapshotGoal.name` | mismo archivo |
+| `Debts.name` | `SnapshotDebt.name` | mismo archivo |
+
+Los llena `lib/features/ai/domain/usecases/build_financial_snapshot.dart`, y las
+herramientas de lectura los repiten (`resolve_ai_tool_call.dart`:
+`_getBudgetDetail`, `_getGoalDetail`, `_getDebtDetail`, `linkedDebtName`,
+`linkedGoalName`, y `accountName`/`categoryName` en `_transactionItem`). Un
+sexto nombre es derivado: `SnapshotUpcoming.name` = `"categoría · cuenta"`.
+
+**Corrección adicional:** la tabla `Debts` **no tiene** columna `counterparty`
+(`lib/core/database/app_database.dart`). El nombre de la contraparte se escribe
+en `Debts.name`, que es justamente el campo que viaja. Cualquier documento que
+diga "no se envía el nombre de la contraparte" es falso y contrastable.
+
+**Hallazgo 2 — la búsqueda local por nota está implementada y NO amplía el
+alcance de lo enviado.** `resolve_ai_tool_call.dart` `_findScheduledPayments`:
+recibe un `query` (palabras que el usuario ya escribió en su mensaje), lo compara
+en el dispositivo contra `ScheduledPayments.note` más los nombres de categoría y
+cuenta (`_matchesQuery`), y devuelve solo campos estructurados
+(`_scheduledPaymentItem`). Lo mismo hace `get_transactions` con `searchText`:
+el match es local y `_transactionItem` no emite `note`. Conclusión de
+declaración: procesamiento **on-device**, sin tipo de dato nuevo en Play ni en
+Apple.
+
+**Hallazgo 3 — cuatro columnas `note` son las afectadas por el interruptor
+opt-in**, y son las únicas: `Transactions.note`, `GoalContributions.note`,
+`DebtEntries.note`, `ScheduledPayments.note` (`app_database.dart`).
+
+**Hallazgo 4 — el interruptor opt-in existe SOLO en el esquema; no está
+cableado.** Estado al momento de escribir esta revisión (el árbol se movió
+durante la auditoría, igual que el 2026-08-25):
+
+| Pieza | Estado | Evidencia |
+|---|---|---|
+| Columna `AppSettings.aiNotesAccessEnabled`, `boolean` con `clientDefault(() => false)` | ✅ Existe | `lib/core/database/app_database.dart` |
+| Backfill a `0` de las filas preexistentes en la misma subida de `schemaVersion` | ✅ Existe | misma migración, `app_database.dart` |
+| Espejo en PowerSync | ✅ Existe | `lib/core/database/powersync_schema.dart` |
+| Entidad de dominio `AppSettings` | ❌ No expone el campo | `lib/features/settings/domain/entities/app_settings.dart` |
+| Lectura del flag al construir el snapshot / resolver herramientas | ❌ No existe | ninguna referencia fuera de `lib/core/database/` |
+| Interruptor en la UI de Ajustes | ❌ No existe | ver hallazgo 5 |
+
+Es decir: **hoy el flag no cambia el comportamiento**, porque nadie lo lee. Con
+él en `false` y sin lector, el efecto observable coincide con el estado por
+defecto que documenta la política (las notas no salen), pero la política §17.7 no
+se puede publicar hasta que exista el interruptor y su lector.
+`[VERIFICAR: cablear aiNotesAccessEnabled (dominio + snapshot + herramientas + UI) antes de publicar la política v1.6 §17.7 y la §8.7 de declaraciones-tiendas]`
+
+**Hallazgo 4-bis — `AppSettings.aiConsentVersion`, y por qué importa para esta
+política.** La misma subida de esquema añade una columna que versiona el
+consentimiento del asistente (`app_database.dart`). Su documentación es explícita
+sobre el motivo: sin ella, ampliar el alcance de lo que se envía dejaría a todo
+el que ya pulsó "Acepto" con un consentimiento válido para un texto que nunca
+vio. Eso es exactamente lo que hace el interruptor de notas, y es lo que la
+Guideline 5.1.2(i) de Apple y el requisito de consentimiento **informado** del
+RGPD/Ley 1581 no permiten. La comparación (`aiConsentVersion >= versión actual`)
+**todavía no está implementada** en dominio ni presentación.
+`[VERIFICAR: implementar la comparación de aiConsentVersion y subir la versión del texto al publicar el consentimiento nuevo]`
+
+**Hallazgo 5 — bloqueante independiente: no hay sección de IA en Ajustes.**
+`[VERIFICAR: añadir la sección de IA en Ajustes con retiro de consentimiento antes de enviar a tiendas]`
+`lib/features/settings/presentation/pages/settings_page.dart` no tiene ninguna
+entrada de IA. La política §17.1 promete que el permiso se puede retirar desde
+Ajustes y la Guideline 5.1.2(i) de Apple lo exige. Hoy esa promesa no se puede
+cumplir en la app, y además no hay dónde poner el interruptor de notas.
+
+**Hallazgo 6 — el texto de consentimiento vigente es inexacto.**
+`aiConsentBody` (`lib/core/l10n/arb/app_es.arb`) dice "un resumen de tus
+finanzas (sin notas ni datos de identificación bancaria)". La parte de "datos de
+identificación bancaria" es cierta (`institution` y `last4` están fuera por
+construcción); la de "sin notas" será cierta solo por defecto en cuanto exista
+el interruptor, y el texto omite que sí viajan los cinco `name`.
+`[VERIFICAR: reescribir aiConsentBody y su equivalente en inglés antes de abrir la beta a terceros]`
+
+---
+
 ## 10.1 El responsable es una persona natural — puntos cerrados
 
 **Dato de fondo confirmado por el usuario (8 de agosto de 2026):** billetudo lo
@@ -1211,6 +1335,34 @@ ninguna capacidad de IA (§10.3). Se listan para que no se pierdan.
     si un fallo en el envío del reporte arrastra el texto reportado a un evento
     de Sentry, ese contenido llega a un tercero que la política §17.5 no nombra
     para este flujo.
+
+### Añadidos el 2026-08-28 (revisión §10.4)
+
+34. `[VERIFICAR: cablear aiNotesAccessEnabled de extremo a extremo antes de publicar la política v1.6 §17.7 y la §8.7 de declaraciones-tiendas]` —
+    la columna existe (`app_database.dart`, `powersync_schema.dart`) pero nadie
+    la lee. Si el binario sale sin el cableado completo, hay que retirar §17.7 de
+    la política y §8.7 de las declaraciones antes de publicar, no dejarlas "por
+    si acaso".
+34-bis. `[VERIFICAR: implementar la comparación de aiConsentVersion y subir la versión al publicar el texto de consentimiento nuevo]` —
+    la columna ya existe; sin la comparación, quien aceptó el consentimiento
+    anterior nunca vería el aviso del interruptor de notas.
+35. `[VERIFICAR: añadir la sección de IA en Ajustes, con retiro de consentimiento y el interruptor de notas]` —
+    `settings_page.dart` no tiene ninguna entrada de IA. Sin ella, la política
+    §17.1 ("puedes retirar ese permiso desde Ajustes") es falsa y la Guideline
+    5.1.2(i) de Apple queda incumplida. Bloqueante de envío por sí solo.
+36. `[VERIFICAR: reescribir aiConsentBody y su equivalente en inglés]` — el texto
+    vigente dice "sin notas ni datos de identificación bancaria" y omite que sí
+    viajan cinco campos `name` de texto libre. La propuesta de redacción está en
+    el reporte de la revisión del 2026-08-28.
+37. `[VERIFICAR: extender el test de lista blanca del snapshot a los dos estados del interruptor]` —
+    apagado (ni una nota en el payload) y encendido (notas sí; `institution` y
+    `last4` siguen fuera). Sin el caso "apagado" en verde, la §17.7 de la
+    política no es defendible.
+38. `[VERIFICAR: revisión legal humana de la política v1.6 §12, §17.3 y §17.7]` —
+    el interruptor introduce una transferencia de datos de **terceros** (personas
+    nombradas en las notas) decidida por el usuario. Encaja mal en el esquema
+    responsable/encargado del RGPD y de la Ley 1581, y merece una lectura de
+    abogado antes de publicar.
 
 ---
 

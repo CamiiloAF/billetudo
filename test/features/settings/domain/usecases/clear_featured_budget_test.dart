@@ -14,8 +14,7 @@ void main() {
     clearFeaturedBudget = ClearFeaturedBudget(repository);
   });
 
-  test('clears the featured budget by delegating to the repository',
-      () async {
+  test('clears the featured budget by delegating to the repository', () async {
     when(() => repository.clearFeaturedBudget())
         .thenAnswer((_) async => const Right<Failure, Unit>(unit));
 

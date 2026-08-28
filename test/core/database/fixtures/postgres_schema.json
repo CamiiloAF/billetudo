@@ -72,6 +72,8 @@
     ],
     "app_settings": [
       "ai_consent_accepted_at",
+      "ai_consent_version",
+      "ai_notes_access_enabled",
       "categories_seeded",
       "created_at",
       "deleted_at",

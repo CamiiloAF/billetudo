@@ -13,6 +13,7 @@ import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/entities/zero_based_summary.dart';
 import '../../../budgets/domain/usecases/get_active_budgets.dart';
 import '../../../budgets/domain/usecases/get_zero_based_summary.dart';
+import '../../../debts/domain/entities/debt_with_balance.dart';
 import '../../../debts/domain/entities/debts_summary.dart';
 import '../../../debts/domain/usecases/watch_debts.dart';
 import '../../../goals/domain/entities/goal_with_progress.dart';
@@ -25,6 +26,7 @@ import '../../../reports/domain/usecases/watch_category_breakdown_report.dart';
 import '../../../scheduled_payments/domain/entities/scheduled_payment_summary.dart';
 import '../../../scheduled_payments/domain/usecases/get_scheduled_payments.dart';
 import '../../../scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
+import '../../../settings/domain/usecases/get_app_settings.dart';
 import '../entities/financial_snapshot.dart';
 
 /// Builds the aggregated picture that travels with every turn.
@@ -53,6 +55,7 @@ class BuildFinancialSnapshot {
     this._watchCashflow,
     this._getScheduledPayments,
     this._projectUpcomingOccurrences,
+    this._getAppSettings,
     this._money,
   );
 
@@ -66,6 +69,13 @@ class BuildFinancialSnapshot {
   final WatchCashflowReport _watchCashflow;
   final GetScheduledPayments _getScheduledPayments;
   final ProjectUpcomingOccurrences _projectUpcomingOccurrences;
+
+  /// Read for one thing only: `AppSettings.aiNotesAccessEnabled`, the opt-in
+  /// that decides whether a scheduled payment's free text may travel in the
+  /// `upcoming` section. Unreadable settings mean `false`: [_once] collapses a
+  /// `Left`, a timeout and a throwing source into `null`, and "we could not
+  /// read it" can only mean "do not send the note".
+  final GetAppSettings _getAppSettings;
 
   /// The same formatter every screen renders amounts with — never re-derive
   /// the "$1.234.567" shape here, or the two will eventually drift.
@@ -123,6 +133,7 @@ class BuildFinancialSnapshot {
       _watchCashflow(WatchCashflowReportParams(range: historyRange)),
     );
     final scheduledRead = _once(_getScheduledPayments());
+    final settingsRead = _once(_getAppSettings());
 
     await Future.wait<void>([
       accountsRead,
@@ -134,6 +145,7 @@ class BuildFinancialSnapshot {
       breakdownRead,
       cashflowRead,
       scheduledRead,
+      settingsRead,
     ]);
 
     final accounts = await accountsRead;
@@ -145,6 +157,11 @@ class BuildFinancialSnapshot {
     final breakdown = await breakdownRead;
     final cashflow = await cashflowRead;
     final scheduled = await scheduledRead;
+    // Deliberately NOT part of `everySourceDown` below: this is not a
+    // financial section, and an unreadable settings row must degrade to "no
+    // notes", never to a failed snapshot.
+    final notesAccessEnabled =
+        (await settingsRead)?.aiNotesAccessEnabled ?? false;
 
     // `zeroBased` is excluded on purpose: its payload is legitimately `null`
     // when there is nothing to show, so it cannot tell "unreadable" from
@@ -173,8 +190,13 @@ class BuildFinancialSnapshot {
         : {for (final entry in accounts) entry.account.currency};
     final singleCurrency = currencies.length == 1 ? currencies.first : null;
 
-    final upcoming =
-        scheduled == null ? null : _upcoming(scheduled, at: at);
+    final upcoming = scheduled == null
+        ? null
+        : _upcoming(
+            scheduled,
+            at: at,
+            notesAccessEnabled: notesAccessEnabled,
+          );
 
     return Right(
       FinancialSnapshot(
@@ -185,20 +207,24 @@ class BuildFinancialSnapshot {
         currencyTotals: overview == null ? null : _currencyTotals(overview),
         spendingByCategory: breakdown == null || singleCurrency == null
             ? null
-            : _categoryLines(breakdown),
+            : _categoryLines(breakdown, singleCurrency),
         spendingCurrency:
             breakdown == null || singleCurrency == null ? null : singleCurrency,
         spendingTotalMinor: breakdown == null || singleCurrency == null
             ? null
             : breakdown.totalMinor,
+        spendingTotalFormatted: breakdown == null || singleCurrency == null
+            ? null
+            : _fmt(breakdown.totalMinor, singleCurrency),
         cashflow: cashflow == null || singleCurrency == null
             ? null
-            : _cashflowPoints(cashflow),
+            : _cashflowPoints(cashflow, singleCurrency),
         cashflowCurrency:
             cashflow == null || singleCurrency == null ? null : singleCurrency,
         budgets: budgets == null ? null : _budgets(budgets),
         goals: goals == null ? null : _goals(goals),
         debtTotals: debts == null ? null : _debtTotals(debts),
+        debts: debts == null ? null : _debts(debts),
         upcoming: upcoming,
         zeroBased: zeroBased == null ? null : _zeroBased(zeroBased),
         counts: SnapshotCounts(
@@ -211,6 +237,15 @@ class BuildFinancialSnapshot {
       ),
     );
   }
+
+  /// The one place an amount becomes text in this snapshot. Every
+  /// `*Formatted` twin goes through it, with the currency of its OWN row —
+  /// there is no global currency here (dogfooding bug: the twins only existed
+  /// on budgets, so the model read `379931350` cents of a savings account as
+  /// "$379.931.350" and told the user a figure 100x their balance; the prompt
+  /// meanwhile asserted that every amount carried one).
+  String _fmt(int minor, String currency) =>
+      _money.formatSymbol(minor, currencyCode: currency);
 
   /// One point read off a reactive source. `null` means "this section is
   /// unavailable", for any reason: a `Left`, a stream that errored, or one
@@ -256,6 +291,8 @@ class BuildFinancialSnapshot {
             type: entry.account.type,
             currency: entry.account.currency,
             balanceMinor: entry.balance.balanceMinor,
+            balanceFormatted:
+                _fmt(entry.balance.balanceMinor, entry.account.currency),
           ),
       ];
 
@@ -265,10 +302,16 @@ class BuildFinancialSnapshot {
             currency: subtotal.currency,
             netWorthMinor: subtotal.netWorthMinor,
             debtMinor: subtotal.debtMinor,
+            netWorthFormatted: _fmt(subtotal.netWorthMinor, subtotal.currency),
+            debtFormatted: _fmt(subtotal.debtMinor, subtotal.currency),
           ),
       ];
 
-  List<SnapshotCategoryLine> _categoryLines(CategoryBreakdown breakdown) => [
+  List<SnapshotCategoryLine> _categoryLines(
+    CategoryBreakdown breakdown,
+    String currency,
+  ) =>
+      [
         for (final item in breakdown.items.take(maxCategoryRows))
           SnapshotCategoryLine(
             categoryId: item.categoryId,
@@ -277,25 +320,48 @@ class BuildFinancialSnapshot {
             // empty id is the signal; the model is told what it means.
             name: item.name ?? '',
             amountMinor: item.amountMinor,
+            amountFormatted: _fmt(item.amountMinor, currency),
             movementCount: item.movementCount,
           ),
       ];
 
-  List<SnapshotCashflowPoint> _cashflowPoints(CashflowSeries series) => [
+  List<SnapshotCashflowPoint> _cashflowPoints(
+    CashflowSeries series,
+    String currency,
+  ) =>
+      [
         for (final point in series.points)
-          SnapshotCashflowPoint(
+          // Debt movements folded in, matching the report's default: pulling
+          // them out here would make the net stop reconciling with the
+          // account balances in the same payload.
+          _cashflowPoint(
             periodStart: point.periodStart,
-            // Debt movements folded in, matching the report's default: pulling
-            // them out here would make the net stop reconciling with the
-            // account balances in the same payload.
             incomeMinor: point.incomeMinor + point.debtIncomeMinor,
             expenseMinor: point.expenseMinor + point.debtExpenseMinor,
+            currency: currency,
           ),
       ];
 
+  /// Named so the net's formatted twin is computed from the very same
+  /// subtraction the entity's `netMinor` getter exposes — a month that spent
+  /// more than it earned keeps its minus sign.
+  SnapshotCashflowPoint _cashflowPoint({
+    required DateTime periodStart,
+    required int incomeMinor,
+    required int expenseMinor,
+    required String currency,
+  }) =>
+      SnapshotCashflowPoint(
+        periodStart: periodStart,
+        incomeMinor: incomeMinor,
+        expenseMinor: expenseMinor,
+        incomeFormatted: _fmt(incomeMinor, currency),
+        expenseFormatted: _fmt(expenseMinor, currency),
+        netFormatted: _fmt(incomeMinor - expenseMinor, currency),
+      );
+
   List<SnapshotBudget> _budgets(List<BudgetWithProgress> budgets) => [
-        for (final entry in budgets.take(maxListRows))
-          _budget(entry),
+        for (final entry in budgets.take(maxListRows)) _budget(entry),
       ];
 
   SnapshotBudget _budget(BudgetWithProgress entry) {
@@ -305,7 +371,7 @@ class BuildFinancialSnapshot {
     final amountMinor = entry.progress.amountMinor;
     final spentMinor = entry.progress.spentMinor;
     final scheduledMinor = entry.progress.scheduledMinor;
-    String fmt(int minor) => _money.formatSymbol(minor, currencyCode: currency);
+    String fmt(int minor) => _fmt(minor, currency);
     return SnapshotBudget(
       id: entry.budget.id,
       name: entry.budget.name,
@@ -332,6 +398,8 @@ class BuildFinancialSnapshot {
             targetMinor: entry.goal.targetMinor,
             savedMinor: entry.savedMinor,
             currency: entry.goal.currency,
+            targetFormatted: _fmt(entry.goal.targetMinor, entry.goal.currency),
+            savedFormatted: _fmt(entry.savedMinor, entry.goal.currency),
             targetDate: entry.goal.targetDate,
           ),
       ];
@@ -342,12 +410,41 @@ class BuildFinancialSnapshot {
             currency: total.currency,
             iOweMinor: total.iOweOutstandingMinor,
             owedToMeMinor: total.owedToMeOutstandingMinor,
+            iOweFormatted: _fmt(total.iOweOutstandingMinor, total.currency),
+            owedToMeFormatted:
+                _fmt(total.owedToMeOutstandingMinor, total.currency),
           ),
       ];
+
+  /// Same scope as [_debtTotals]: open debts only — a closed debt's frozen
+  /// balance is uninteresting to a "should I pay X from this account"
+  /// question, same reasoning as the totals it sits beside.
+  List<SnapshotDebt> _debts(DebtsSummary summary) => [
+        for (final entry in summary.openDebts.take(maxListRows)) _debt(entry),
+      ];
+
+  SnapshotDebt _debt(DebtWithBalance entry) {
+    final currency = entry.debt.currency;
+    final installment = entry.installment;
+    return SnapshotDebt(
+      id: entry.debt.id,
+      name: entry.debt.name,
+      direction: entry.debt.direction,
+      currency: currency,
+      outstandingMinor: entry.balance.outstandingMinor,
+      outstandingFormatted: _fmt(entry.balance.outstandingMinor, currency),
+      nextInstallmentAmountMinor: installment?.amountMinor,
+      nextInstallmentAmountFormatted: installment == null
+          ? null
+          : _fmt(installment.amountMinor, installment.currency),
+      nextInstallmentDate: installment?.nextDate,
+    );
+  }
 
   List<SnapshotUpcoming> _upcoming(
     List<ScheduledPaymentSummary> templates, {
     required DateTime at,
+    required bool notesAccessEnabled,
   }) {
     final byId = {
       for (final summary in templates) summary.scheduledPayment.id: summary,
@@ -365,14 +462,14 @@ class BuildFinancialSnapshot {
         SnapshotUpcoming(
           scheduledPaymentId: occurrence.scheduledPaymentId,
           name: _upcomingName(byId[occurrence.scheduledPaymentId]),
+          note: notesAccessEnabled
+              ? byId[occurrence.scheduledPaymentId]?.scheduledPayment.note
+              : null,
           date: occurrence.date,
           amountMinor: occurrence.amountMinor,
           currency: occurrence.currency,
           type: occurrence.type,
-          amountFormatted: _money.formatSymbol(
-            occurrence.amountMinor,
-            currencyCode: occurrence.currency,
-          ),
+          amountFormatted: _fmt(occurrence.amountMinor, occurrence.currency),
         ),
     ];
   }
@@ -380,8 +477,9 @@ class BuildFinancialSnapshot {
   /// Category AND account, never just the category (dogfooding bug: two
   /// scheduled payments sharing a category, e.g. rent and a mortgage both
   /// filed under "Vivienda", were indistinguishable to the model). Never the
-  /// template's own `note` — that is the user's free text and free text does
-  /// not leave the device.
+  /// template's own `note`: the name is structured data that always travels,
+  /// while the note is the user's free text and only ever rides in
+  /// `SnapshotUpcoming.note`, gated on `AppSettings.aiNotesAccessEnabled`.
   String _upcomingName(ScheduledPaymentSummary? summary) {
     if (summary == null) {
       return '';
@@ -398,5 +496,12 @@ class BuildFinancialSnapshot {
         currency: summary.currency,
         incomeMinor: summary.incomeMinor,
         assignedMinor: summary.assignedMinor,
+        incomeFormatted: _fmt(summary.incomeMinor, summary.currency),
+        assignedFormatted: _fmt(summary.assignedMinor, summary.currency),
+        // Over-assigning is negative and stays negative.
+        unassignedFormatted: _fmt(
+          summary.incomeMinor - summary.assignedMinor,
+          summary.currency,
+        ),
       );
 }

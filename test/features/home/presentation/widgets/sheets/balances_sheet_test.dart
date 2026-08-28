@@ -1,4 +1,5 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/home/presentation/widgets/balance_mini_card.dart';
@@ -219,6 +220,48 @@ void main() {
     await tester.pump();
 
     expect(openedAccountId, 'acc-42');
+  });
+
+  testWidgets(
+      'bugfix: tocar una fila cierra la hoja además de navegar (reportado en '
+      'dogfooding — la navegación funcionaba pero la hoja se quedaba abierta '
+      'detrás)', (tester) async {
+    String? openedAccountId;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('es'),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => BalancesSheet.show(
+                context,
+                accounts: [
+                  account(
+                    id: 'acc-42',
+                    type: AccountType.bank,
+                    currency: 'COP',
+                    balanceMinor: 100000,
+                  ),
+                ],
+                onOpenAccountMovements: (id) => openedAccountId = id,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(BalanceMiniCard));
+    await tester.pumpAndSettle();
+
+    expect(openedAccountId, 'acc-42');
+    expect(find.byType(BalancesSheet), findsNothing);
   });
 
   testWidgets(

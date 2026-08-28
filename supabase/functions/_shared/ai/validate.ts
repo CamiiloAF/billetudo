@@ -28,6 +28,17 @@ export interface ChatRequest {
   locale: string;
   timezone: string;
   clientVersion: string;
+  /// Whether the device is sending free-text notes inside `snapshot` and tool
+  /// results. Off by default and on ONLY if the person turned the setting on.
+  ///
+  /// The server never decides this and cannot verify it — the device is the
+  /// only party that can withhold a note, and it already did (or did not)
+  /// before this request was built. This flag exists purely so the prompt can
+  /// tell the model the truth about what it is looking at: claiming notes
+  /// never travel while they sit in the snapshot makes the model distrust
+  /// data it can plainly see. Absent means off, so an older client that does
+  /// not send it gets the conservative wording.
+  notesAccessEnabled: boolean;
   snapshot: Record<string, unknown>;
   messages: AiMessage[];
 }
@@ -64,6 +75,7 @@ export function parseChatRequest(body: unknown): ChatRequest {
     locale: asString(raw.locale) ?? 'es',
     timezone: asString(raw.timezone) ?? 'UTC',
     clientVersion: asString(raw.clientVersion) ?? '',
+    notesAccessEnabled: raw.notesAccessEnabled === true,
     snapshot: snapshot as Record<string, unknown>,
     messages: messages.map(parseMessage),
   };
@@ -165,6 +177,16 @@ export interface ProposalValidation {
   payload?: Record<string, unknown>;
 }
 
+/// Proposals that carry no amount of their own, and so are exempt from the
+/// currency check every other proposal must pass. A category has no money at
+/// all; linking an existing movement to a debt does not introduce any either —
+/// the amount and currency already live on that movement, and asking the model
+/// to restate them would only invite it to restate them wrong.
+const MONEYLESS_PROPOSALS = new Set([
+  'propose_create_category',
+  'propose_link_transaction_to_debt',
+]);
+
 export function validateProposal(
   toolName: string,
   args: Record<string, unknown>,
@@ -176,7 +198,7 @@ export function validateProposal(
   }
 
   const currency = asString(args.currency);
-  if (toolName !== 'propose_create_category') {
+  if (!MONEYLESS_PROPOSALS.has(toolName)) {
     if (!currency || !/^[A-Z]{3}$/.test(currency)) {
       return fail('"currency" debe ser un codigo ISO 4217 de 3 letras mayusculas');
     }
@@ -271,6 +293,14 @@ export function validateProposal(
       if (categoryId && !index.ids.has(categoryId)) {
         return fail(`la categoria ${categoryId} no existe en el resumen`);
       }
+      // Optional: when present the movement is born attributed to the debt, so
+      // the person confirms once instead of twice. Refused rather than dropped
+      // if unknown — silently unlinking a movement the model said would count
+      // against a debt is a lie the confirmation card would then tell.
+      const debtId = asString(args.debtId);
+      if (debtId && !index.ids.has(debtId)) {
+        return fail(`la deuda ${debtId} no existe en el resumen`);
+      }
 
       return {
         ok: true,
@@ -281,10 +311,32 @@ export function validateProposal(
           date: date.value,
           accountId,
           categoryId,
+          debtId,
           note: asString(args.note),
           rationale,
         },
       };
+    }
+
+    case 'propose_link_transaction_to_debt': {
+      // Both ids must have travelled from the device: `transactionId` comes
+      // from a `get_transactions` result, `debtId` from the snapshot. This
+      // index is flat (every id at any depth), so it proves the client sent
+      // the value, not that it is of the right kind — the device re-checks
+      // both when it applies the proposal, and `LinkTransactionToDebt` is the
+      // one that refuses a closed debt.
+      const transactionId = asString(args.transactionId);
+      if (!transactionId || !index.ids.has(transactionId)) {
+        return fail(
+          '"transactionId" debe ser el id de un movimiento que hayas obtenido '
+            + 'con get_transactions',
+        );
+      }
+      const debtId = asString(args.debtId);
+      if (!debtId || !index.ids.has(debtId)) {
+        return fail('"debtId" debe ser el id de una deuda que este en el resumen');
+      }
+      return { ok: true, payload: { transactionId, debtId, rationale } };
     }
 
     default:

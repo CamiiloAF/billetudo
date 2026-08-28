@@ -283,6 +283,16 @@ const powerSyncSchema = Schema([
     // file). Nullable = not consented yet / withdrawn; never backfilled. See
     // AppSettings.aiConsentAcceptedAt.
     Column.integer('ai_consent_accepted_at'),
+    // Which version of the consent text the user accepted (schemaVersion 32).
+    // Nullable; NULL is read as 0 (never backfilled), which is below the
+    // current version and therefore re-asks for consent. See
+    // AppSettings.aiConsentVersion.
+    Column.integer('ai_consent_version'),
+    // Opt-in permission for the assistant to read free-text notes
+    // (schemaVersion 32). Boolean stored as integer 0/1 like every other
+    // Drift BoolColumn here; non-nullable client-side, so the migration
+    // backfills pre-existing rows to 0. See AppSettings.aiNotesAccessEnabled.
+    Column.integer('ai_notes_access_enabled'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has
@@ -356,5 +366,23 @@ const powerSyncSchema = Schema([
     Column.text('insight_type'),
     Column.text('conversation_id'),
     Column.integer('created_at'),
+  ]),
+  // One "shown"/"dismissed" lifecycle event for a Home AI insight
+  // (`HomeAiInsightType`), schemaVersion 33 — see `HomeInsightEvents` in
+  // `app_database.dart`. Local-only for the same reason as
+  // `ai_insight_conversations` right above: it is device-side UX
+  // bookkeeping, not financial data, so there is nothing cross-device worth
+  // syncing. `Table.localOnly` backs it with a real local table
+  // (`ps_data_local__home_insight_events`) whose writes are never recorded
+  // in `ps_crud`.
+  //
+  // No `_syncColumns` here either, and no `Index`: one row per event (never
+  // updated in place — see the Drift table's doc comment), and this device
+  // holds at most a handful of insight types times however many times a
+  // month they fire, so a full scan ordered by `occurred_at` is cheap.
+  Table.localOnly('home_insight_events', [
+    Column.text('insight_type'),
+    Column.text('kind'),
+    Column.integer('occurred_at'),
   ]),
 ]);

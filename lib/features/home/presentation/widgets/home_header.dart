@@ -60,7 +60,8 @@ class HomeHeader extends StatelessWidget {
     return switch (syncStatus) {
       HomeSyncStatus.syncing => AccountAvatarBadge.syncing,
       HomeSyncStatus.attention => AccountAvatarBadge.attention,
-      HomeSyncStatus.synced || HomeSyncStatus.offline =>
+      HomeSyncStatus.synced ||
+      HomeSyncStatus.offline =>
         AccountAvatarBadge.synced,
     };
   }

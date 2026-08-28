@@ -9,6 +9,7 @@ import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.da
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_access.dart';
 import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
 import 'package:billetudo/features/ai/domain/usecases/get_conversation_for_insight.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
@@ -26,6 +27,8 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
+import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
@@ -77,6 +80,11 @@ class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
 class MockGetConversationForInsight extends Mock
     implements GetConversationForInsight {}
+
+class MockDismissHomeInsight extends Mock implements DismissHomeInsight {}
+
+class MockRecordHomeInsightShown extends Mock
+    implements RecordHomeInsightShown {}
 
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
@@ -150,6 +158,8 @@ void main() {
         MockWatchPendingScheduledPaymentCount();
     final checkAiAccess = MockCheckAiAccess();
     final getConversationForInsight = MockGetConversationForInsight();
+    final dismissHomeInsight = MockDismissHomeInsight();
+    final recordHomeInsightShown = MockRecordHomeInsightShown();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -173,6 +183,13 @@ void main() {
         .thenAnswer((_) => const Stream<Result<bool>>.empty());
     when(watchPendingScheduledPaymentCount.call)
         .thenAnswer((_) => const Stream<Result<int>>.empty());
+    // Home arranca resolviendo el acceso al asistente. Este test es de HU-06
+    // (cerrar sesión), no de IA: `denied` es la respuesta neutra — y el
+    // fail-closed por defecto de `AiAccess` — así que la card de IA no se
+    // dibuja y el recorrido "Más" → hoja → snackbar queda igual. Sin el stub,
+    // el mock devuelve `null` donde el cubit espera un Future.
+    when(checkAiAccess.call)
+        .thenAnswer((_) async => const Right(AiAccess.denied));
 
     signOutWithChoice = MockSignOutWithLocalDataChoice();
 
@@ -193,6 +210,8 @@ void main() {
           watchPendingScheduledPaymentCount,
           checkAiAccess,
           getConversationForInsight,
+          dismissHomeInsight,
+          recordHomeInsightShown,
         ),
       )
       ..registerFactory<AuthCubit>(

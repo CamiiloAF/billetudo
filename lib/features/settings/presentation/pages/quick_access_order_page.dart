@@ -124,7 +124,8 @@ class QuickAccessOrderRow extends StatelessWidget {
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
-              child: Icon(_iconFor(item), size: 20, color: colors.primaryOnSoft),
+              child:
+                  Icon(_iconFor(item), size: 20, color: colors.primaryOnSoft),
             ),
             const SizedBox(width: 12),
             Expanded(

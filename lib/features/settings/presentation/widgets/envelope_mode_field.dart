@@ -106,8 +106,7 @@ class EnvelopeModeField extends StatelessWidget {
               const SizedBox(width: 8),
               Switch(
                 value: enabled,
-                onChanged: (value) =>
-                    unawaited(_handleChanged(context, value)),
+                onChanged: (value) => unawaited(_handleChanged(context, value)),
               ),
             ],
           ),

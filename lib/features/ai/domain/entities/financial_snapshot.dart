@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../accounts/domain/entities/account.dart' show AccountType;
 import '../../../budgets/domain/entities/budget.dart' show BudgetPeriod;
+import '../../../debts/domain/entities/debt.dart' show DebtDirection;
 import '../../../scheduled_payments/domain/entities/scheduled_payment.dart'
     show ScheduledPaymentType;
 
@@ -17,6 +18,7 @@ class SnapshotAccount extends Equatable {
     required this.type,
     required this.currency,
     required this.balanceMinor,
+    required this.balanceFormatted,
   });
 
   /// The id the model must echo back verbatim in a proposal. Inventing one is
@@ -31,16 +33,22 @@ class SnapshotAccount extends Equatable {
   /// Cents of [currency]. For a card this is its balance, negative when owed.
   final int balanceMinor;
 
+  /// See [SnapshotBudget.amountFormatted]: every amount in this snapshot
+  /// carries its pre-formatted twin, and the prompt tells the model so.
+  final String balanceFormatted;
+
   Map<String, Object?> toJson() => <String, Object?>{
         'id': id,
         'name': name,
         'type': type.name,
         'currency': currency,
         'balanceMinor': balanceMinor,
+        'balanceFormatted': balanceFormatted,
       };
 
   @override
-  List<Object?> get props => [id, name, type, currency, balanceMinor];
+  List<Object?> get props =>
+      [id, name, type, currency, balanceMinor, balanceFormatted];
 }
 
 /// Net worth and card debt for a single currency. Never summed with another
@@ -50,6 +58,8 @@ class SnapshotCurrencyTotal extends Equatable {
     required this.currency,
     required this.netWorthMinor,
     required this.debtMinor,
+    required this.netWorthFormatted,
+    required this.debtFormatted,
   });
 
   final String currency;
@@ -61,14 +71,27 @@ class SnapshotCurrencyTotal extends Equatable {
   /// Card debt in this currency, as a positive figure.
   final int debtMinor;
 
+  /// See [SnapshotBudget.amountFormatted]. [netWorthFormatted] may read
+  /// negative; the sign is kept, never dropped.
+  final String netWorthFormatted;
+  final String debtFormatted;
+
   Map<String, Object?> toJson() => <String, Object?>{
         'currency': currency,
         'netWorthMinor': netWorthMinor,
+        'netWorthFormatted': netWorthFormatted,
         'debtMinor': debtMinor,
+        'debtFormatted': debtFormatted,
       };
 
   @override
-  List<Object?> get props => [currency, netWorthMinor, debtMinor];
+  List<Object?> get props => [
+        currency,
+        netWorthMinor,
+        debtMinor,
+        netWorthFormatted,
+        debtFormatted,
+      ];
 }
 
 /// One root category's spend over the snapshot's period.
@@ -76,6 +99,7 @@ class SnapshotCategoryLine extends Equatable {
   const SnapshotCategoryLine({
     required this.name,
     required this.amountMinor,
+    required this.amountFormatted,
     required this.movementCount,
     this.categoryId,
   });
@@ -86,17 +110,29 @@ class SnapshotCategoryLine extends Equatable {
 
   final String name;
   final int amountMinor;
+
+  /// See [SnapshotBudget.amountFormatted]. Formatted in the enclosing
+  /// section's `spendingCurrency` — this section only ships single-currency.
+  final String amountFormatted;
+
   final int movementCount;
 
   Map<String, Object?> toJson() => <String, Object?>{
         if (categoryId != null) 'categoryId': categoryId,
         'name': name,
         'amountMinor': amountMinor,
+        'amountFormatted': amountFormatted,
         'movementCount': movementCount,
       };
 
   @override
-  List<Object?> get props => [categoryId, name, amountMinor, movementCount];
+  List<Object?> get props => [
+        categoryId,
+        name,
+        amountMinor,
+        amountFormatted,
+        movementCount,
+      ];
 }
 
 /// One month of the cash-flow series.
@@ -105,6 +141,9 @@ class SnapshotCashflowPoint extends Equatable {
     required this.periodStart,
     required this.incomeMinor,
     required this.expenseMinor,
+    required this.incomeFormatted,
+    required this.expenseFormatted,
+    required this.netFormatted,
   });
 
   /// First day of the month the point covers.
@@ -115,17 +154,36 @@ class SnapshotCashflowPoint extends Equatable {
   final int incomeMinor;
   final int expenseMinor;
 
+  /// See [SnapshotBudget.amountFormatted]. Formatted in the enclosing
+  /// section's `cashflowCurrency`.
+  final String incomeFormatted;
+  final String expenseFormatted;
+
+  /// [netMinor] formatted. Negative months keep their sign — a month that
+  /// spent more than it earned must not read as a surplus.
+  final String netFormatted;
+
   int get netMinor => incomeMinor - expenseMinor;
 
   Map<String, Object?> toJson() => <String, Object?>{
         'periodStart': FinancialSnapshot.unixSeconds(periodStart),
         'incomeMinor': incomeMinor,
+        'incomeFormatted': incomeFormatted,
         'expenseMinor': expenseMinor,
+        'expenseFormatted': expenseFormatted,
         'netMinor': netMinor,
+        'netFormatted': netFormatted,
       };
 
   @override
-  List<Object?> get props => [periodStart, incomeMinor, expenseMinor];
+  List<Object?> get props => [
+        periodStart,
+        incomeMinor,
+        expenseMinor,
+        incomeFormatted,
+        expenseFormatted,
+        netFormatted,
+      ];
 }
 
 /// An active budget with its current-period progress.
@@ -251,6 +309,8 @@ class SnapshotGoal extends Equatable {
     required this.targetMinor,
     required this.savedMinor,
     required this.currency,
+    required this.targetFormatted,
+    required this.savedFormatted,
     this.targetDate,
   });
 
@@ -259,21 +319,36 @@ class SnapshotGoal extends Equatable {
   final int targetMinor;
   final int savedMinor;
   final String currency;
+
+  /// See [SnapshotBudget.amountFormatted].
+  final String targetFormatted;
+  final String savedFormatted;
+
   final DateTime? targetDate;
 
   Map<String, Object?> toJson() => <String, Object?>{
         'id': id,
         'name': name,
         'targetMinor': targetMinor,
+        'targetFormatted': targetFormatted,
         'savedMinor': savedMinor,
+        'savedFormatted': savedFormatted,
         'currency': currency,
         if (targetDate != null)
           'targetDate': FinancialSnapshot.unixSeconds(targetDate!),
       };
 
   @override
-  List<Object?> get props =>
-      [id, name, targetMinor, savedMinor, currency, targetDate];
+  List<Object?> get props => [
+        id,
+        name,
+        targetMinor,
+        savedMinor,
+        currency,
+        targetFormatted,
+        savedFormatted,
+        targetDate,
+      ];
 }
 
 /// Outstanding debt for a single currency, both directions.
@@ -282,20 +357,97 @@ class SnapshotDebtTotal extends Equatable {
     required this.currency,
     required this.iOweMinor,
     required this.owedToMeMinor,
+    required this.iOweFormatted,
+    required this.owedToMeFormatted,
   });
 
   final String currency;
   final int iOweMinor;
   final int owedToMeMinor;
 
+  /// See [SnapshotBudget.amountFormatted].
+  final String iOweFormatted;
+  final String owedToMeFormatted;
+
   Map<String, Object?> toJson() => <String, Object?>{
         'currency': currency,
         'iOweMinor': iOweMinor,
+        'iOweFormatted': iOweFormatted,
         'owedToMeMinor': owedToMeMinor,
+        'owedToMeFormatted': owedToMeFormatted,
       };
 
   @override
-  List<Object?> get props => [currency, iOweMinor, owedToMeMinor];
+  List<Object?> get props => [
+        currency,
+        iOweMinor,
+        owedToMeMinor,
+        iOweFormatted,
+        owedToMeFormatted,
+      ];
+}
+
+/// One open debt, by name — added alongside [SnapshotDebtTotal] (dogfooding
+/// bug: the aggregate-only total meant the model had no id/name to reason
+/// about a SPECIFIC debt like "la KTM 1390" or "el crédito hipotecario",
+/// only a blended currency total). [id] is what `get_debt_detail` takes.
+class SnapshotDebt extends Equatable {
+  const SnapshotDebt({
+    required this.id,
+    required this.name,
+    required this.direction,
+    required this.currency,
+    required this.outstandingMinor,
+    required this.outstandingFormatted,
+    this.nextInstallmentAmountMinor,
+    this.nextInstallmentAmountFormatted,
+    this.nextInstallmentDate,
+  });
+
+  final String id;
+  final String name;
+
+  /// `iOwe`: the user owes this. `owedToMe`: someone owes the user.
+  final DebtDirection direction;
+
+  final String currency;
+  final int outstandingMinor;
+  final String outstandingFormatted;
+
+  /// The linked scheduled payment's amount/date when this debt has a cuota
+  /// configured (`DebtWithBalance.installment`) — e.g. the KTM 1390's own
+  /// "abono a capital". `null` when the debt has none.
+  final int? nextInstallmentAmountMinor;
+  final String? nextInstallmentAmountFormatted;
+  final DateTime? nextInstallmentDate;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'name': name,
+        'direction': direction.name,
+        'currency': currency,
+        'outstandingMinor': outstandingMinor,
+        'outstandingFormatted': outstandingFormatted,
+        if (nextInstallmentAmountMinor != null) ...{
+          'nextInstallmentAmountMinor': nextInstallmentAmountMinor,
+          'nextInstallmentAmountFormatted': nextInstallmentAmountFormatted,
+          'nextInstallmentDate':
+              FinancialSnapshot.unixSeconds(nextInstallmentDate!),
+        },
+      };
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        direction,
+        currency,
+        outstandingMinor,
+        outstandingFormatted,
+        nextInstallmentAmountMinor,
+        nextInstallmentAmountFormatted,
+        nextInstallmentDate,
+      ];
 }
 
 /// A scheduled payment due inside the look-ahead window.
@@ -317,6 +469,7 @@ class SnapshotUpcoming extends Equatable {
     required this.currency,
     required this.type,
     required this.amountFormatted,
+    this.note,
   });
 
   final String scheduledPaymentId;
@@ -330,6 +483,13 @@ class SnapshotUpcoming extends Equatable {
   /// same live bug, just for this section's amount.
   final String amountFormatted;
 
+  /// The scheduled payment's own free text, and the ONLY user-written text in
+  /// the whole snapshot. Always `null` unless the person turned
+  /// `AppSettings.aiNotesAccessEnabled` on: `BuildFinancialSnapshot` is what
+  /// decides, and it falls back to omitting the note whenever the setting
+  /// cannot be read.
+  final String? note;
+
   Map<String, Object?> toJson() => <String, Object?>{
         'id': scheduledPaymentId,
         'name': name,
@@ -338,6 +498,9 @@ class SnapshotUpcoming extends Equatable {
         'amountFormatted': amountFormatted,
         'currency': currency,
         'type': type.name,
+        // Absent, never `null`: the key exists only when the note does and the
+        // user allowed it.
+        if (note != null) 'note': note,
       };
 
   @override
@@ -349,6 +512,7 @@ class SnapshotUpcoming extends Equatable {
         currency,
         type,
         amountFormatted,
+        note,
       ];
 }
 
@@ -358,11 +522,22 @@ class SnapshotZeroBased extends Equatable {
     required this.currency,
     required this.incomeMinor,
     required this.assignedMinor,
+    required this.incomeFormatted,
+    required this.assignedFormatted,
+    required this.unassignedFormatted,
   });
 
   final String currency;
   final int incomeMinor;
   final int assignedMinor;
+
+  /// See [SnapshotBudget.amountFormatted].
+  final String incomeFormatted;
+  final String assignedFormatted;
+
+  /// [unassignedMinor] formatted, sign included: over-assigning reads
+  /// negative, and the model must be able to say so without re-deriving it.
+  final String unassignedFormatted;
 
   /// May be negative (over-assigned). Guidance, never a blocker — the prompt
   /// relies on that framing to keep the tone non-punitive.
@@ -371,12 +546,22 @@ class SnapshotZeroBased extends Equatable {
   Map<String, Object?> toJson() => <String, Object?>{
         'currency': currency,
         'incomeMinor': incomeMinor,
+        'incomeFormatted': incomeFormatted,
         'assignedMinor': assignedMinor,
+        'assignedFormatted': assignedFormatted,
         'unassignedMinor': unassignedMinor,
+        'unassignedFormatted': unassignedFormatted,
       };
 
   @override
-  List<Object?> get props => [currency, incomeMinor, assignedMinor];
+  List<Object?> get props => [
+        currency,
+        incomeMinor,
+        assignedMinor,
+        incomeFormatted,
+        assignedFormatted,
+        unassignedFormatted,
+      ];
 }
 
 /// How many rows exist behind the lists above.
@@ -440,11 +625,13 @@ class FinancialSnapshot extends Equatable {
     this.spendingByCategory,
     this.spendingCurrency,
     this.spendingTotalMinor,
+    this.spendingTotalFormatted,
     this.cashflow,
     this.cashflowCurrency,
     this.budgets,
     this.goals,
     this.debtTotals,
+    this.debts,
     this.upcoming,
     this.zeroBased,
     this.counts,
@@ -473,6 +660,12 @@ class FinancialSnapshot extends Equatable {
 
   final int? spendingTotalMinor;
 
+  /// [spendingTotalMinor] in [spendingCurrency], pre-formatted — see
+  /// [SnapshotBudget.amountFormatted]. Travels with the section or not at
+  /// all: the whole section is omitted when it is missing, so the prompt's
+  /// promise that every amount has a formatted twin stays true.
+  final String? spendingTotalFormatted;
+
   /// Monthly income/expense for the last six months, oldest first.
   final List<SnapshotCashflowPoint>? cashflow;
 
@@ -482,6 +675,11 @@ class FinancialSnapshot extends Equatable {
   final List<SnapshotBudget>? budgets;
   final List<SnapshotGoal>? goals;
   final List<SnapshotDebtTotal>? debtTotals;
+
+  /// Open debts by name, with an id `get_debt_detail` accepts — see
+  /// [SnapshotDebt]'s own doc for why this exists alongside [debtTotals].
+  final List<SnapshotDebt>? debts;
+
   final List<SnapshotUpcoming>? upcoming;
   final SnapshotZeroBased? zeroBased;
   final SnapshotCounts? counts;
@@ -495,11 +693,16 @@ class FinancialSnapshot extends Equatable {
         if (accounts != null)
           'accounts': [for (final account in accounts!) account.toJson()],
         if (currencyTotals != null)
-          'currencyTotals': [for (final total in currencyTotals!) total.toJson()],
-        if (spendingByCategory != null && spendingCurrency != null)
+          'currencyTotals': [
+            for (final total in currencyTotals!) total.toJson()
+          ],
+        if (spendingByCategory != null &&
+            spendingCurrency != null &&
+            spendingTotalFormatted != null)
           'spendingByCategory': <String, Object?>{
             'currency': spendingCurrency,
             'totalMinor': spendingTotalMinor ?? 0,
+            'totalFormatted': spendingTotalFormatted,
             'items': [for (final line in spendingByCategory!) line.toJson()],
           },
         if (cashflow != null && cashflowCurrency != null)
@@ -513,6 +716,7 @@ class FinancialSnapshot extends Equatable {
         if (goals != null) 'goals': [for (final goal in goals!) goal.toJson()],
         if (debtTotals != null)
           'debtTotals': [for (final total in debtTotals!) total.toJson()],
+        if (debts != null) 'debts': [for (final debt in debts!) debt.toJson()],
         if (upcoming != null)
           'upcoming': [for (final item in upcoming!) item.toJson()],
         if (zeroBased != null) 'zeroBased': zeroBased!.toJson(),
@@ -534,11 +738,13 @@ class FinancialSnapshot extends Equatable {
         spendingByCategory,
         spendingCurrency,
         spendingTotalMinor,
+        spendingTotalFormatted,
         cashflow,
         cashflowCurrency,
         budgets,
         goals,
         debtTotals,
+        debts,
         upcoming,
         zeroBased,
         counts,

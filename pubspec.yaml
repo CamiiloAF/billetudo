@@ -159,6 +159,14 @@ dependencies:
   package_info_plus: ^10.2.1
   flutter_timezone: ^5.1.0
 
+  # --- Legal links (Ajustes) ---
+  # Opens the privacy policy and the terms of use in the system browser
+  # (`lib/core/config/legal_urls.dart`). Both stores require those URLs to be
+  # reachable from inside the app, so this is a shipping requirement, not a
+  # convenience. Already present transitively; declared here because the app
+  # code imports it directly.
+  url_launcher: ^6.3.2
+
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

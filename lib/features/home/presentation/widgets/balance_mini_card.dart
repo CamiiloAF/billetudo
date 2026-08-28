@@ -67,8 +67,7 @@ class BalanceMiniCard extends StatelessWidget {
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color:
-                      balanceMinor < 0 ? colors.expense : colors.textPrimary,
+                  color: balanceMinor < 0 ? colors.expense : colors.textPrimary,
                 ),
               ),
             ],

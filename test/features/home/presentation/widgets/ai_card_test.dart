@@ -15,6 +15,7 @@ import 'pump_widget.dart';
 void main() {
   Widget card({
     HomeAiInsight? insight,
+    bool budgetChipIsDirectNav = true,
     ValueChanged<String?>? onAskQuestion,
     VoidCallback? onCreateBudget,
     VoidCallback? onDismissInsight,
@@ -23,6 +24,7 @@ void main() {
   }) =>
       AiCard(
         insight: insight,
+        budgetChipIsDirectNav: budgetChipIsDirectNav,
         onAskQuestion: onAskQuestion ?? (_) {},
         onCreateBudget: onCreateBudget ?? () {},
         onDismissInsight: onDismissInsight,
@@ -66,6 +68,41 @@ void main() {
 
       expect(createBudgetTapped, 1);
       expect(askQuestionTapped, 0);
+    });
+
+    testWidgets(
+        'el chip "Ayúdame a presupuestar" muestra la flecha recta con '
+        'budgetChipIsDirectNav=true (va a presupuestos) y la diagonal con '
+        'false (va al chat) — dogfooding fix', (tester) async {
+      await tester.pumpHomeWidget(card());
+
+      final straightChip = tester.widget<AiQuestionChip>(
+        find.byType(AiQuestionChip).last,
+      );
+      expect(straightChip.isDirectNav, isTrue);
+
+      await tester.pumpHomeWidget(card(budgetChipIsDirectNav: false));
+
+      final diagonalChip = tester.widget<AiQuestionChip>(
+        find.byType(AiQuestionChip).last,
+      );
+      expect(diagonalChip.isDirectNav, isFalse);
+    });
+
+    testWidgets('los 4 chips tienen el mismo alto (dogfooding fix)',
+        (tester) async {
+      tester.view.physicalSize = const Size(1400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpHomeWidget(card());
+
+      final heights = tester
+          .widgetList<AiQuestionChip>(find.byType(AiQuestionChip))
+          .map((chip) => tester.getSize(find.byWidget(chip)).height)
+          .toSet();
+
+      expect(heights, hasLength(1));
     });
 
     testWidgets(

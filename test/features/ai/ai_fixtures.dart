@@ -86,6 +86,7 @@ CreateTransactionProposal buildTransactionProposal({
   DateTime? date,
   String? categoryId,
   String? note,
+  String? debtId,
 }) =>
     CreateTransactionProposal(
       id: id,
@@ -98,6 +99,22 @@ CreateTransactionProposal buildTransactionProposal({
       date: date ?? DateTime(2026, 8, 20),
       categoryId: categoryId,
       note: note,
+      debtId: debtId,
+    );
+
+LinkTransactionToDebtProposal buildDebtLinkProposal({
+  String id = 'tc_0_5',
+  String title = 'Atribuir ese pago a tu crédito de la moto',
+  AiProposalStatus status = AiProposalStatus.pending,
+  String transactionId = 'tx-1',
+  String debtId = 'debt-1',
+}) =>
+    LinkTransactionToDebtProposal(
+      id: id,
+      title: title,
+      status: status,
+      transactionId: transactionId,
+      debtId: debtId,
     );
 
 UnsupportedProposal buildUnsupportedProposal({

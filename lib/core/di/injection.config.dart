@@ -511,6 +511,16 @@ import 'package:billetudo/features/goals/presentation/cubit/goal_recurring_contr
     as _i597;
 import 'package:billetudo/features/goals/presentation/cubit/goals_list_cubit.dart'
     as _i29;
+import 'package:billetudo/features/home/data/datasources/home_insight_event_local_datasource.dart'
+    as _i89;
+import 'package:billetudo/features/home/data/repositories/home_insight_event_repository_impl.dart'
+    as _i783;
+import 'package:billetudo/features/home/domain/repositories/home_insight_event_repository.dart'
+    as _i504;
+import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart'
+    as _i589;
+import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart'
+    as _i332;
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart'
     as _i738;
 import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart'
@@ -729,12 +739,16 @@ import 'package:billetudo/features/settings/data/repositories/app_settings_repos
     as _i733;
 import 'package:billetudo/features/settings/domain/repositories/app_settings_repository.dart'
     as _i487;
+import 'package:billetudo/features/settings/domain/usecases/clear_ai_consent.dart'
+    as _i377;
 import 'package:billetudo/features/settings/domain/usecases/clear_featured_budget.dart'
     as _i594;
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart'
     as _i182;
 import 'package:billetudo/features/settings/domain/usecases/mark_ai_consent_accepted.dart'
     as _i1053;
+import 'package:billetudo/features/settings/domain/usecases/set_ai_notes_access_enabled.dart'
+    as _i117;
 import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart'
     as _i643;
 import 'package:billetudo/features/settings/domain/usecases/set_onboarding_completed.dart'
@@ -989,6 +1003,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i60.GoalQuickAmountsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i822.GoalsLocalDatasource>(
         () => _i822.GoalsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i89.HomeInsightEventLocalDatasource>(
+        () => _i89.HomeInsightEventLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i505.ExportLocalDatasource>(
         () => _i505.ExportLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i545.ImportBatchesLocalDatasource>(
@@ -1026,10 +1042,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i276.ScheduledPaymentTagsLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
-    gh.lazySingleton<_i526.AiRepository>(() => _i181.AiRepositoryImpl(
-          gh<_i636.AiRemoteDatasource>(),
-          gh<_i474.CrashReporter>(),
-        ));
     gh.factory<_i192.DiscardAllQuarantinedOperations>(() =>
         _i192.DiscardAllQuarantinedOperations(
             gh<_i400.SyncQuarantineRepository>()));
@@ -1201,6 +1213,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i474.CrashReporter>(),
           gh<_i136.SyncRetryWatchdog>(),
         ));
+    gh.lazySingleton<_i504.HomeInsightEventRepository>(
+        () => _i783.HomeInsightEventRepositoryImpl(
+              gh<_i89.HomeInsightEventLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i742.ExportRepository>(() => _i548.ExportRepositoryImpl(
           gh<_i505.ExportLocalDatasource>(),
           gh<_i49.CsvWriterDatasource>(),
@@ -1302,12 +1319,16 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i894.ParseCsvHeaders(gh<_i447.ImportRepository>()));
     gh.factory<_i917.PreviewImport>(
         () => _i917.PreviewImport(gh<_i447.ImportRepository>()));
+    gh.factory<_i377.ClearAiConsent>(
+        () => _i377.ClearAiConsent(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i594.ClearFeaturedBudget>(
         () => _i594.ClearFeaturedBudget(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i182.GetAppSettings>(
         () => _i182.GetAppSettings(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i1053.MarkAiConsentAccepted>(
         () => _i1053.MarkAiConsentAccepted(gh<_i487.AppSettingsRepository>()));
+    gh.factory<_i117.SetAiNotesAccessEnabled>(
+        () => _i117.SetAiNotesAccessEnabled(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i643.SetFeaturedBudget>(
         () => _i643.SetFeaturedBudget(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i528.SetOnboardingCompleted>(
@@ -1324,10 +1345,6 @@ extension GetItInjectableX on _i174.GetIt {
         _i1040.DeleteGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
     gh.factory<_i492.WatchGoalQuickAmounts>(() =>
         _i492.WatchGoalQuickAmounts(gh<_i34.GoalQuickAmountsRepository>()));
-    gh.factory<_i699.CheckAiAccess>(
-        () => _i699.CheckAiAccess(gh<_i526.AiRepository>()));
-    gh.factory<_i598.SendAiTurn>(
-        () => _i598.SendAiTurn(gh<_i526.AiRepository>()));
     gh.lazySingleton<_i932.DebtRepository>(() => _i454.DebtRepositoryImpl(
           gh<_i907.DebtsLocalDatasource>(),
           gh<_i1013.DebtBalanceCalculator>(),
@@ -1433,6 +1450,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i367.UndoImportBatch(gh<_i108.ImportBatchRepository>()));
     gh.factory<_i813.WatchImportBatches>(
         () => _i813.WatchImportBatches(gh<_i108.ImportBatchRepository>()));
+    gh.factory<_i434.WatchHomeAiInsight>(() => _i434.WatchHomeAiInsight(
+          gh<_i654.TransactionRepository>(),
+          gh<_i504.HomeInsightEventRepository>(),
+        ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.factory<_i1061.GetLinkableScheduledPayments>(() =>
@@ -1522,6 +1543,15 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i316.UpdateDebtEntry>(),
           gh<_i789.DeleteDebtEntry>(),
         ));
+    gh.lazySingleton<_i526.AiRepository>(() => _i181.AiRepositoryImpl(
+          gh<_i636.AiRemoteDatasource>(),
+          gh<_i474.CrashReporter>(),
+          gh<_i487.AppSettingsRepository>(),
+        ));
+    gh.factory<_i589.DismissHomeInsight>(
+        () => _i589.DismissHomeInsight(gh<_i504.HomeInsightEventRepository>()));
+    gh.factory<_i332.RecordHomeInsightShown>(() =>
+        _i332.RecordHomeInsightShown(gh<_i504.HomeInsightEventRepository>()));
     gh.factory<_i325.ExportCubit>(() => _i325.ExportCubit(
           gh<_i527.ExportTransactionsCsv>(),
           gh<_i783.ExportAccountsCategoriesCsv>(),
@@ -1666,8 +1696,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i693.SeedDefaultCategories>(),
               gh<_i474.CrashReporter>(),
             ));
-    gh.factory<_i434.WatchHomeAiInsight>(
-        () => _i434.WatchHomeAiInsight(gh<_i654.TransactionRepository>()));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
@@ -1710,6 +1738,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i633.WipeLocalDataAfterDeletion>(),
           gh<_i186.GetDeleteAccountScope>(),
         ));
+    gh.factory<_i699.CheckAiAccess>(
+        () => _i699.CheckAiAccess(gh<_i526.AiRepository>()));
+    gh.factory<_i598.SendAiTurn>(
+        () => _i598.SendAiTurn(gh<_i526.AiRepository>()));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
     gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
@@ -1724,14 +1756,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i674.GetActiveBudgets>(),
           gh<_i613.ReconcileBudgetScopes>(),
           gh<_i241.WatchFeaturedBudgetProgress>(),
-        ));
-    gh.factory<_i455.ExecuteAiAction>(() => _i455.ExecuteAiAction(
-          gh<_i526.CreateBudget>(),
-          gh<_i97.CreateGoal>(),
-          gh<_i885.CreateCategory>(),
-          gh<_i990.CreateTransaction>(),
-          gh<_i382.GetCategory>(),
-          gh<_i1067.AccountRepository>(),
         ));
     gh.factory<_i152.ShouldShowOnboarding>(() => _i152.ShouldShowOnboarding(
           gh<_i487.AppSettingsRepository>(),
@@ -1812,28 +1836,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
         ));
-    gh.factory<_i1057.ResolveAiToolCall>(() => _i1057.ResolveAiToolCall(
-          gh<_i832.WatchTransactions>(),
-          gh<_i645.WatchCategoryBreakdownReport>(),
-          gh<_i137.WatchCashflowReport>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
-          gh<_i678.WatchGoalDetail>(),
-        ));
-    gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
-          gh<_i837.WatchAccounts>(),
-          gh<_i902.WatchAccountsOverview>(),
-          gh<_i674.GetActiveBudgets>(),
-          gh<_i458.GetZeroBasedSummary>(),
-          gh<_i529.WatchGoals>(),
-          gh<_i42.WatchDebts>(),
-          gh<_i645.WatchCategoryBreakdownReport>(),
-          gh<_i137.WatchCashflowReport>(),
-          gh<_i265.GetScheduledPayments>(),
-          gh<_i450.ProjectUpcomingOccurrences>(),
-          gh<_i731.MoneyFormatter>(),
-        ));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
               gh<_i1066.SignOut>(),
@@ -1890,6 +1892,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1003.WatchDebtDetail>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.factory<_i455.ExecuteAiAction>(() => _i455.ExecuteAiAction(
+          gh<_i526.CreateBudget>(),
+          gh<_i97.CreateGoal>(),
+          gh<_i885.CreateCategory>(),
+          gh<_i990.CreateTransaction>(),
+          gh<_i382.GetCategory>(),
+          gh<_i1067.AccountRepository>(),
+          gh<_i980.LinkTransactionToDebt>(),
+          gh<_i932.DebtRepository>(),
+        ));
     gh.factory<_i597.ArchivedGoalsCubit>(() => _i597.ArchivedGoalsCubit(
           gh<_i711.WatchArchivedGoals>(),
           gh<_i14.UnarchiveGoal>(),
@@ -1898,10 +1910,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
-        ));
-    gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
-          gh<_i418.BackupRepository>(),
-          gh<_i639.ParseBackupHeader>(),
         ));
     gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
           gh<_i182.GetAppSettings>(),
@@ -1912,6 +1920,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i895.WatchHelpEnabled>(),
           gh<_i134.SetTutorialsEnabled>(),
           gh<_i785.SetQuickAccessOrder>(),
+          gh<_i117.SetAiNotesAccessEnabled>(),
+          gh<_i377.ClearAiConsent>(),
+        ));
+    gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
+          gh<_i418.BackupRepository>(),
+          gh<_i639.ParseBackupHeader>(),
         ));
     gh.factory<_i244.BudgetPeriodFilterCubit>(() =>
         _i244.BudgetPeriodFilterCubit(gh<_i479.WatchBudgetPeriodOptions>()));
@@ -1919,28 +1933,26 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i674.GetActiveBudgets>(),
           gh<_i529.WatchGoals>(),
         ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i188.WatchRecentTransactions>(),
-          gh<_i716.WatchAuthSession>(),
-          gh<_i773.WatchSyncStatusDetails>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i241.WatchFeaturedBudgetProgress>(),
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
-          gh<_i738.WatchHasAnyBudget>(),
-          gh<_i434.WatchHomeAiInsight>(),
-          gh<_i196.WatchPendingScheduledPaymentCount>(),
-          gh<_i699.CheckAiAccess>(),
-          gh<_i142.GetConversationForInsight>(),
-        ));
     gh.factory<_i641.RestoreCubit>(() => _i641.RestoreCubit(
           gh<_i639.ParseBackupHeader>(),
           gh<_i881.RestoreBackup>(),
         ));
     gh.factory<_i1059.AdjustBalanceCubit>(
         () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
+    gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
+          gh<_i837.WatchAccounts>(),
+          gh<_i902.WatchAccountsOverview>(),
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i458.GetZeroBasedSummary>(),
+          gh<_i529.WatchGoals>(),
+          gh<_i42.WatchDebts>(),
+          gh<_i645.WatchCategoryBreakdownReport>(),
+          gh<_i137.WatchCashflowReport>(),
+          gh<_i265.GetScheduledPayments>(),
+          gh<_i450.ProjectUpcomingOccurrences>(),
+          gh<_i182.GetAppSettings>(),
+          gh<_i731.MoneyFormatter>(),
+        ));
     gh.factory<_i1056.AiActionCubit>(() => _i1056.AiActionCubit(
           gh<_i455.ExecuteAiAction>(),
           gh<_i723.UpdateAiProposalStatus>(),
@@ -1971,6 +1983,20 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i636.DeleteScheduledPayment>(),
               gh<_i837.WatchAccounts>(),
             ));
+    gh.factory<_i1057.ResolveAiToolCall>(() => _i1057.ResolveAiToolCall(
+          gh<_i832.WatchTransactions>(),
+          gh<_i645.WatchCategoryBreakdownReport>(),
+          gh<_i137.WatchCashflowReport>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i678.WatchGoalDetail>(),
+          gh<_i1003.WatchDebtDetail>(),
+          gh<_i470.GetScheduledPaymentDetail>(),
+          gh<_i265.GetScheduledPayments>(),
+          gh<_i182.GetAppSettings>(),
+          gh<_i731.MoneyFormatter>(),
+        ));
     gh.factory<_i502.AccountDetailCubit>(() => _i502.AccountDetailCubit(
           gh<_i325.WatchAccountDetail>(),
           gh<_i306.GetAccountNumber>(),
@@ -1979,6 +2005,24 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i79.ArchiveAccount>(),
           gh<_i574.DeleteAccount>(),
           gh<_i486.SecureClipboard>(),
+        ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i188.WatchRecentTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i241.WatchFeaturedBudgetProgress>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i738.WatchHasAnyBudget>(),
+          gh<_i434.WatchHomeAiInsight>(),
+          gh<_i196.WatchPendingScheduledPaymentCount>(),
+          gh<_i699.CheckAiAccess>(),
+          gh<_i142.GetConversationForInsight>(),
+          gh<_i589.DismissHomeInsight>(),
+          gh<_i332.RecordHomeInsightShown>(),
         ));
     gh.factory<_i805.ReportsDashboardCubit>(
         () => _i805.ReportsDashboardCubit(gh<_i118.WatchReportsDashboard>()));
@@ -2021,6 +2065,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i598.SendAiTurn>(),
           gh<_i1057.ResolveAiToolCall>(),
           gh<_i837.WatchAccounts>(),
+          gh<_i42.WatchDebts>(),
           gh<_i1026.AiClientContextProvider>(),
           gh<_i146.LinkInsightToConversation>(),
           gh<_i716.WatchAuthSession>(),

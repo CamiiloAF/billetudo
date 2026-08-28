@@ -15,6 +15,8 @@ import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.d
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
 import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/entities/month_spending.dart';
+import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
+import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
@@ -63,6 +65,11 @@ class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 class MockGetConversationForInsight extends Mock
     implements GetConversationForInsight {}
 
+class MockDismissHomeInsight extends Mock implements DismissHomeInsight {}
+
+class MockRecordHomeInsightShown extends Mock
+    implements RecordHomeInsightShown {}
+
 /// El cuarto estado del indicador del Home (HU-08). Cubre **dos** condiciones,
 /// las dos ámbar: cambios retenidos en la cuarentena, y una última
 /// sincronización exitosa de más de 24 h. La segunda es el incidente en
@@ -83,6 +90,8 @@ void main() {
   late MockWatchPendingScheduledPaymentCount watchPendingScheduledPaymentCount;
   late MockCheckAiAccess checkAiAccess;
   late MockGetConversationForInsight getConversationForInsight;
+  late MockDismissHomeInsight dismissHomeInsight;
+  late MockRecordHomeInsightShown recordHomeInsightShown;
 
   setUpAll(() {
     registerFallbackValue(DateTime(2026));
@@ -92,6 +101,7 @@ void main() {
           subtotals: const [],
           displayCurrency: 'COP'),
     );
+    registerFallbackValue(HomeAiInsightType.spendingVsAverage);
   });
 
   setUp(() {
@@ -111,6 +121,12 @@ void main() {
     getConversationForInsight = MockGetConversationForInsight();
     when(() => getConversationForInsight(any()))
         .thenAnswer((_) async => const Right(null));
+    dismissHomeInsight = MockDismissHomeInsight();
+    recordHomeInsightShown = MockRecordHomeInsightShown();
+    when(() => dismissHomeInsight(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => recordHomeInsightShown(any()))
+        .thenAnswer((_) async => const Right(unit));
     when(() => watchHasAnyBudget())
         .thenAnswer((_) => Stream<Result<bool>>.value(const Right(true)));
     when(() => watchPendingScheduledPaymentCount())
@@ -171,6 +187,8 @@ void main() {
       watchPendingScheduledPaymentCount,
       checkAiAccess,
       getConversationForInsight,
+      dismissHomeInsight,
+      recordHomeInsightShown,
     );
     addTearDown(cubit.close);
     await cubit.start();
@@ -342,6 +360,8 @@ void main() {
       watchPendingScheduledPaymentCount,
       checkAiAccess,
       getConversationForInsight,
+      dismissHomeInsight,
+      recordHomeInsightShown,
     );
     addTearDown(cubit.close);
     await cubit.start();

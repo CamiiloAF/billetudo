@@ -24,6 +24,8 @@ import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_ai_insight.dart';
 import '../../domain/entities/home_snapshot.dart';
+import '../../domain/usecases/dismiss_home_insight.dart';
+import '../../domain/usecases/record_home_insight_shown.dart';
 import '../../domain/usecases/watch_has_any_budget.dart';
 import '../../domain/usecases/watch_home_ai_insight.dart';
 import '../../domain/usecases/watch_month_transactions.dart';
@@ -63,6 +65,8 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchPendingScheduledPaymentCount,
     this._checkAiAccess,
     this._getConversationForInsight,
+    this._dismissHomeInsight,
+    this._recordHomeInsightShown,
   ) : super(HomeState.initial(clock.now()));
 
   final WatchAccounts _watchAccounts;
@@ -87,6 +91,8 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchPendingScheduledPaymentCount _watchPendingScheduledPaymentCount;
   final CheckAiAccess _checkAiAccess;
   final GetConversationForInsight _getConversationForInsight;
+  final DismissHomeInsight _dismissHomeInsight;
+  final RecordHomeInsightShown _recordHomeInsightShown;
 
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSub;
   StreamSubscription<Result<List<TransactionWithDetails>>>? _monthTxSub;
@@ -167,6 +173,23 @@ class HomeCubit extends Cubit<HomeState> {
     _hasAnyBudgetSub = _watchHasAnyBudget().listen(_onHasAnyBudget);
     _pendingScheduledSub =
         _watchPendingScheduledPaymentCount().listen(_onPendingScheduledCount);
+    unawaited(_resolveBudgetChipAccess(++_startGeneration));
+  }
+
+  /// Guards [_resolveBudgetChipAccess] against a stale check landing after a
+  /// later [start()] call already superseded it.
+  int _startGeneration = 0;
+
+  /// Resolves [HomeState.budgetChipIsDirectNav] once per [start()] — see that
+  /// field's own doc for why this is a hint for the icon, never a gate.
+  Future<void> _resolveBudgetChipAccess(int generation) async {
+    final access = await hasAiAccess();
+    if (isClosed || generation != _startGeneration) {
+      return;
+    }
+    emit(
+      state.copyWith(budgetChipIsDirectNav: !access, failure: state.failure),
+    );
   }
 
   /// Passive input, same convention as [_onSyncSnapshot]/[_onAuthSession]:
@@ -242,6 +265,12 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     final insight = result.getRight().toNullable();
+    // Captured before the emit below overwrites `state.aiInsight` — this is
+    // exactly the "no-insight/other-insight -> this insight" transition
+    // `RecordHomeInsightShown` must fire on, and only on (its own doc
+    // comment): recording on every recompute that merely *keeps* the same
+    // type showing would defeat the 24h cooldown within the same session.
+    final previousType = state.aiInsight?.type;
     // A failure here falls back to the "con chips" default variant
     // (`aiInsight: null`) rather than surfacing an error — the card is
     // informative, never a hard dependency of the Home being usable.
@@ -252,6 +281,11 @@ class HomeCubit extends Cubit<HomeState> {
         failure: state.failure,
       ),
     );
+    if (insight != null &&
+        insight.type != HomeAiInsightType.createBudget &&
+        insight.type != previousType) {
+      unawaited(_recordHomeInsightShown(insight.type));
+    }
     final ticket = ++_aiInsightTicket;
     if (insight != null && insight.type != HomeAiInsightType.createBudget) {
       unawaited(_resolveAiInsightConversation(insight, ticket));
@@ -302,17 +336,24 @@ class HomeCubit extends Cubit<HomeState> {
     unawaited(_resolveAiInsightConversation(insight, ticket));
   }
 
-  /// "Ahora no": drops the current insight for the rest of this session.
-  /// Simplification: the design's "reappears next period" persistence is not
-  /// implemented — dismissing here falls back to the chips variant until the
-  /// next natural recompute (e.g. the month/featured budget changing) picks
-  /// the insight stream back up.
+  /// "Ahora no": drops the current insight immediately (optimistic local
+  /// update, for instant feedback) and persists the dismissal via
+  /// [DismissHomeInsight] so `WatchHomeAiInsight` excludes this type for the
+  /// rest of the current calendar month — the stream reconciles on the next
+  /// natural recompute (e.g. the month/featured budget changing, or a new
+  /// transaction), same "optimistic local + stream reconciles" pattern used
+  /// elsewhere in this cubit. Never called for `createBudget`: it has no
+  /// "Ahora no" affordance (forced state, see the type's own doc comment).
   void dismissAiInsight() {
     if (isClosed) {
       return;
     }
+    final insight = state.aiInsight;
     unawaited(_aiInsightSub?.cancel());
     emit(state.copyWith(clearAiInsight: true, failure: state.failure));
+    if (insight != null && insight.type != HomeAiInsightType.createBudget) {
+      unawaited(_dismissHomeInsight(insight.type));
+    }
   }
 
   /// Whether the user currently has access to the AI chat — asked at the

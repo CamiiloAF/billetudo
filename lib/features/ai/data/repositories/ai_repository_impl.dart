@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/crash/crash_reporter.dart';
 import '../../../../core/error/result.dart';
+import '../../../settings/domain/repositories/app_settings_repository.dart';
 import '../../domain/entities/ai_access.dart';
 import '../../domain/entities/ai_message.dart';
 import '../../domain/entities/ai_tool_call.dart';
@@ -20,10 +21,16 @@ import '../mappers/ai_action_proposal_mapper.dart';
 /// client-side limit `CLAUDE.md` forbids.
 @LazySingleton(as: AiRepository)
 class AiRepositoryImpl implements AiRepository {
-  const AiRepositoryImpl(this._remote, this._crash);
+  const AiRepositoryImpl(this._remote, this._crash, this._settings);
 
   final AiRemoteDatasource _remote;
   final CrashReporter _crash;
+
+  /// Read for one field only: `AppSettings.aiNotesAccessEnabled`, which the
+  /// body reports so the server can word the system prompt for the payload it
+  /// actually received (`notesAccessEnabled`). The device stays the one that
+  /// decides what travels — this only tells the server what it decided.
+  final AppSettingsRepository _settings;
 
   /// Must match `PROTOCOL_VERSION` in `supabase/functions/_shared/ai/
   /// validate.ts`. A mismatch is answered with `426 unsupported_protocol`,
@@ -33,7 +40,9 @@ class AiRepositoryImpl implements AiRepository {
   @override
   FutureResult<AiTurnResponse> sendTurn(AiTurnRequest request) async {
     try {
-      final data = await _remote.sendTurn(_requestBody(request));
+      final data = await _remote.sendTurn(
+        _requestBody(request, notesAccessEnabled: await _notesAccessEnabled()),
+      );
       return Right(_parseResponse(data));
     } on AiRemoteException catch (e) {
       return Left(await _mapRemoteFailure(e));
@@ -63,7 +72,28 @@ class AiRepositoryImpl implements AiRepository {
   // Request
   // ---------------------------------------------------------------------------
 
-  Map<String, Object?> _requestBody(AiTurnRequest request) => <String, Object?>{
+  /// `false` on every failure path, matching `ResolveAiToolCall` and
+  /// `BuildFinancialSnapshot`: if the setting cannot be read, no note was put
+  /// in the payload either, so reporting `false` is the honest answer as well
+  /// as the safe one.
+  Future<bool> _notesAccessEnabled() async {
+    try {
+      final settings = await _settings.getSettings();
+      return settings.fold(
+        (failure) => false,
+        (value) => value.aiNotesAccessEnabled,
+      );
+      // ignore: avoid_catching_errors
+    } on Object {
+      return false;
+    }
+  }
+
+  Map<String, Object?> _requestBody(
+    AiTurnRequest request, {
+    required bool notesAccessEnabled,
+  }) =>
+      <String, Object?>{
         'protocolVersion': protocolVersion,
         'conversationId': request.conversationId,
         'locale': request.locale,
@@ -76,6 +106,10 @@ class AiRepositoryImpl implements AiRepository {
         // could not be read is dropped, never sent empty — degrades to exactly
         // this when *no* section could be read.
         'snapshot': request.snapshot?.toJson() ?? const <String, Object?>{},
+        // Whether the payload above may contain the user's free-text notes
+        // (`AppSettings.aiNotesAccessEnabled`). Always sent, both values, so
+        // the server never has to infer it from the absence of a key.
+        'notesAccessEnabled': notesAccessEnabled,
         'messages': _messages(request),
       };
 

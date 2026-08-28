@@ -9189,12 +9189,6 @@ abstract class AppLocalizations {
   /// **'Tus datos viven en tu teléfono. El respaldo en la nube es opcional.'**
   String get onboardingWelcomeSubhead;
 
-  /// No description provided for @onboardingWelcomeCaption.
-  ///
-  /// In es, this message translates to:
-  /// **'Ya dejamos categorías listas para ti.'**
-  String get onboardingWelcomeCaption;
-
   /// No description provided for @onboardingWelcomeCta.
   ///
   /// In es, this message translates to:
@@ -10220,6 +10214,132 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cuenta seleccionada'**
   String get aiProposalTransactionAccountUnknown;
+
+  /// No description provided for @aiProposalTransactionDebt.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda'**
+  String get aiProposalTransactionDebt;
+
+  /// No description provided for @aiProposalDebtUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'Deuda seleccionada'**
+  String get aiProposalDebtUnknown;
+
+  /// No description provided for @aiProposalDebtLinkExplainer.
+  ///
+  /// In es, this message translates to:
+  /// **'No se crea ningún movimiento nuevo ni se mueve dinero: el movimiento ya afectó tu cuenta. Con esto empieza a contar en el saldo de la deuda.'**
+  String get aiProposalDebtLinkExplainer;
+
+  /// No description provided for @aiProposalFootnoteConfirmedDebtLink.
+  ///
+  /// In es, this message translates to:
+  /// **'El movimiento ya cuenta en tu deuda.'**
+  String get aiProposalFootnoteConfirmedDebtLink;
+
+  /// No description provided for @aiProposalConfirmedRowDebtLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Atribuido a la deuda'**
+  String get aiProposalConfirmedRowDebtLink;
+
+  /// No description provided for @settingsAiSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Asistente de IA'**
+  String get settingsAiSection;
+
+  /// No description provided for @settingsAiNotesAccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejar que el asistente lea mis notas'**
+  String get settingsAiNotesAccess;
+
+  /// No description provided for @settingsAiNotesAccessSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aunque esté apagado, el asistente sigue buscando en tus movimientos: la búsqueda ocurre en tu dispositivo y solo viajan datos ya organizados, nunca el texto de tus notas.'**
+  String get settingsAiNotesAccessSubtitle;
+
+  /// No description provided for @settingsAiNotesAccessSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Dejar que el asistente lea tus notas?'**
+  String get settingsAiNotesAccessSheetTitle;
+
+  /// No description provided for @settingsAiNotesAccessSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus notas son texto libre: ahí suelen aparecer nombres de personas y detalles de tu vida. Si lo activas, la nota viaja a Google Gemini junto con tu pregunta para que el asistente entienda cómo llamas tú a las cosas: encontrar «lo de la luz» cuando la nota dice «factura de energía». Puedes apagarlo cuando quieras.'**
+  String get settingsAiNotesAccessSheetMessage;
+
+  /// No description provided for @settingsAiNotesAccessSheetConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar'**
+  String get settingsAiNotesAccessSheetConfirm;
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get settingsPrivacyPolicy;
+
+  /// No description provided for @settingsPrivacyPolicySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué datos guardamos, qué se comparte y con quién'**
+  String get settingsPrivacyPolicySubtitle;
+
+  /// No description provided for @settingsTermsOfUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Términos de uso'**
+  String get settingsTermsOfUse;
+
+  /// No description provided for @settingsTermsOfUseSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Las reglas de uso de Billetudo'**
+  String get settingsTermsOfUseSubtitle;
+
+  /// No description provided for @settingsLegalLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos abrir el enlace. Inténtalo de nuevo.'**
+  String get settingsLegalLinkError;
+
+  /// No description provided for @settingsAiConsentWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar el consentimiento de IA'**
+  String get settingsAiConsentWithdraw;
+
+  /// No description provided for @settingsAiConsentWithdrawSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejas de compartir datos con el asistente. Puedes volver a activarlo cuando quieras.'**
+  String get settingsAiConsentWithdrawSubtitle;
+
+  /// No description provided for @settingsAiConsentWithdrawSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Retirar el consentimiento?'**
+  String get settingsAiConsentWithdrawSheetTitle;
+
+  /// No description provided for @settingsAiConsentWithdrawSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El asistente deja de estar disponible y no se envía nada más a Google Gemini. También se apaga «Dejar que el asistente lea mis notas». Tus movimientos y tus conversaciones guardadas se quedan en tu dispositivo. Puedes volver a activarlo cuando quieras.'**
+  String get settingsAiConsentWithdrawSheetMessage;
+
+  /// No description provided for @settingsAiConsentWithdrawSheetConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar'**
+  String get settingsAiConsentWithdrawSheetConfirm;
 }
 
 class _AppLocalizationsDelegate

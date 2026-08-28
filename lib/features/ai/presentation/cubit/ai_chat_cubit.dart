@@ -11,6 +11,8 @@ import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
+import '../../../debts/domain/entities/debts_summary.dart';
+import '../../../debts/domain/usecases/watch_debts.dart';
 import '../../domain/entities/ai_message.dart';
 import '../../domain/entities/ai_tool_call.dart';
 import '../../domain/entities/ai_turn.dart';
@@ -44,6 +46,7 @@ class AiChatCubit extends Cubit<AiChatState> {
     this._sendAiTurn,
     this._resolveAiToolCall,
     this._watchAccounts,
+    this._watchDebts,
     this._clientContext,
     this._linkInsightToConversation,
     WatchAuthSession watchAuthSession,
@@ -59,11 +62,13 @@ class AiChatCubit extends Cubit<AiChatState> {
   final SendAiTurn _sendAiTurn;
   final ResolveAiToolCall _resolveAiToolCall;
   final WatchAccounts _watchAccounts;
+  final WatchDebts _watchDebts;
   final AiClientContextProvider _clientContext;
   final LinkInsightToConversation _linkInsightToConversation;
 
   StreamSubscription<Result<List<AiMessage>>>? _messagesSubscription;
   StreamSubscription<Result<List<AccountWithBalance>>>? _accountsSubscription;
+  StreamSubscription<Result<DebtsSummary>>? _debtsSubscription;
   StreamSubscription<AuthSession>? _authSubscription;
 
   void _onAuthSession(AuthSession session) {
@@ -88,6 +93,7 @@ class AiChatCubit extends Cubit<AiChatState> {
     }
     await _messagesSubscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _debtsSubscription?.cancel();
     if (isClosed) {
       return;
     }
@@ -103,6 +109,21 @@ class AiChatCubit extends Cubit<AiChatState> {
             accountNames: {
               for (final entry in accounts)
                 entry.account.id: entry.account.name,
+            },
+          ),
+        );
+      });
+    });
+
+    _debtsSubscription = _watchDebts().listen((result) {
+      if (isClosed) {
+        return;
+      }
+      result.fold((failure) {}, (summary) {
+        emit(
+          state.copyWith(
+            debtNames: {
+              for (final entry in summary.debts) entry.debt.id: entry.debt.name,
             },
           ),
         );
@@ -362,6 +383,7 @@ class AiChatCubit extends Cubit<AiChatState> {
   Future<void> close() async {
     await _messagesSubscription?.cancel();
     await _accountsSubscription?.cancel();
+    await _debtsSubscription?.cancel();
     await _authSubscription?.cancel();
     return super.close();
   }

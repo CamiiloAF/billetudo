@@ -421,6 +421,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                       child: AiCard(
                         insight: state.aiInsight,
+                        budgetChipIsDirectNav: state.budgetChipIsDirectNav,
                         onAskQuestion: (question) =>
                             unawaited(_onAskQuestion(context, question)),
                         onCreateBudget: () =>

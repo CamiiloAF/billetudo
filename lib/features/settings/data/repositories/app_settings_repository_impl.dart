@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart' as db;
 import '../../../../core/error/result.dart';
+import '../../../ai/domain/entities/ai_consent.dart';
 import '../../../home/domain/entities/quick_access_item.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/repositories/app_settings_repository.dart';
@@ -114,7 +115,37 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
   @override
   FutureResult<Unit> markAiConsentAccepted() async {
     try {
-      await _local.markAiConsentAccepted(now: DateTime.now());
+      await _local.markAiConsentAccepted(
+        now: DateTime.now(),
+        consentVersion: currentAiConsentVersion,
+      );
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  @override
+  FutureResult<Unit> clearAiConsent() async {
+    try {
+      await _local.clearAiConsent(now: DateTime.now());
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
+  @override
+  FutureResult<Unit> setAiNotesAccessEnabled({required bool enabled}) async {
+    try {
+      await _local.setAiNotesAccessEnabled(
+        enabled: enabled,
+        now: DateTime.now(),
+      );
       return const Right(unit);
     } catch (e, st) {
       return Left(
@@ -133,6 +164,12 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
           featuredBudgetMode: _toFeaturedBudgetMode(row.featuredBudgetMode),
           quickAccessOrder: _toQuickAccessOrder(row.quickAccessOrder),
           aiConsentAcceptedAt: row.aiConsentAcceptedAt,
+          // `NULL` reads as `0` (never backfilled — see the column doc in
+          // `app_database.dart`): a row that predates the column, or one whose
+          // PowerSync blob has no such key yet, simply counts as "accepted an
+          // older consent" and is asked again.
+          aiConsentVersion: row.aiConsentVersion ?? 0,
+          aiNotesAccessEnabled: row.aiNotesAccessEnabled,
         );
 
   /// Parses the persisted comma-separated `QuickAccessItem.name` list back

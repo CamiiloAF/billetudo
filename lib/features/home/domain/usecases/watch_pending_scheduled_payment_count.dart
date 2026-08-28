@@ -19,8 +19,9 @@ class WatchPendingScheduledPaymentCount {
 
   Stream<Result<int>> call() => _repository.watchPendingOccurrences().map(
         (result) => result.map(
-          (items) =>
-              items.where((item) => item.occurrence.isDueOn(DateTime.now())).length,
+          (items) => items
+              .where((item) => item.occurrence.isDueOn(DateTime.now()))
+              .length,
         ),
       );
 }

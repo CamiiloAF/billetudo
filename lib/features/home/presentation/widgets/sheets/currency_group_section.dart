@@ -94,7 +94,10 @@ class CurrencyGroupSection extends StatelessWidget {
             entry: entry,
             onTap: onOpenAccountMovements == null
                 ? null
-                : () => onOpenAccountMovements!(entry.account.id),
+                : () {
+                    Navigator.of(context).pop();
+                    onOpenAccountMovements!(entry.account.id);
+                  },
           ),
       ],
     );

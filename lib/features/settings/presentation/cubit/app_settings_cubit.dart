@@ -10,8 +10,10 @@ import '../../../home/domain/entities/quick_access_item.dart';
 import '../../../tutorials/domain/usecases/set_tutorials_enabled.dart';
 import '../../../tutorials/domain/usecases/watch_help_enabled.dart';
 import '../../domain/entities/app_settings.dart';
+import '../../domain/usecases/clear_ai_consent.dart';
 import '../../domain/usecases/clear_featured_budget.dart';
 import '../../domain/usecases/get_app_settings.dart';
+import '../../domain/usecases/set_ai_notes_access_enabled.dart';
 import '../../domain/usecases/set_featured_budget.dart';
 import '../../domain/usecases/set_quick_access_order.dart';
 import '../../domain/usecases/set_zero_based_enabled.dart';
@@ -43,6 +45,8 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._watchHelpEnabled,
     this._setTutorialsEnabled,
     this._setQuickAccessOrder,
+    this._setAiNotesAccessEnabled,
+    this._clearAiConsent,
   ) : super(const AppSettingsState(isLoaded: false));
 
   final GetAppSettings _getAppSettings;
@@ -53,6 +57,8 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   final WatchHelpEnabled _watchHelpEnabled;
   final SetTutorialsEnabled _setTutorialsEnabled;
   final SetQuickAccessOrder _setQuickAccessOrder;
+  final SetAiNotesAccessEnabled _setAiNotesAccessEnabled;
+  final ClearAiConsent _clearAiConsent;
 
   StreamSubscription<Result<AppSettings>>? _settingsSubscription;
   StreamSubscription<Result<List<BudgetWithProgress>>>? _budgetsSubscription;
@@ -121,6 +127,24 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   /// either.
   Future<Result<Unit>> setQuickAccessOrder(List<QuickAccessItem> order) =>
       _setQuickAccessOrder(order);
+
+  /// Persists "Dejar que el asistente lea mis notas"
+  /// (`AppSettings.aiNotesAccessEnabled`). Turning it **on** is gated behind
+  /// an explicit confirmation in the UI (`AiNotesAccessSheet`), because it
+  /// widens what leaves the device; turning it off is immediate — withdrawing
+  /// a permission never asks twice. The settings stream re-emits the stored
+  /// value, so no manual state juggling is needed here either.
+  Future<void> setAiNotesAccessEnabled({required bool enabled}) =>
+      _setAiNotesAccessEnabled(enabled: enabled);
+
+  /// Withdraws the AI assistant's data-sharing consent from Ajustes (RGPD
+  /// art. 7.3 — withdrawing must be as easy as granting). Gated behind an
+  /// explicit confirmation in the UI (`AiConsentWithdrawSheet`) because it
+  /// closes the assistant and turns "Dejar que el asistente lea mis notas"
+  /// off in the same write — that combined rule lives in [ClearAiConsent].
+  /// The settings stream re-emits the stored values, so both the switch and
+  /// the action's own visibility update without manual state juggling.
+  Future<void> clearAiConsent() => _clearAiConsent();
 
   @override
   Future<void> close() async {

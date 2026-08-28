@@ -2,6 +2,7 @@ import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/presentation/widgets/sync_hero.dart';
+import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
@@ -217,5 +218,123 @@ void main() {
       (tester) async {
     await pumpSheet(tester, stateWith());
     expect(tester.takeException(), isNull);
+  });
+
+  group(
+      'bugfix: cada fila cierra la hoja antes de navegar (reportado en '
+      'dogfooding — la navegación funcionaba pero la hoja se quedaba abierta '
+      'detrás)', () {
+    /// Presents [AccountSheet] through its real [AccountSheet.show] route —
+    /// unlike [pumpSheet] above, which pumps it bare with no `Navigator`
+    /// entry of its own to pop. Only through the real route can a test prove
+    /// the sheet actually closes, not just that the callback fired.
+    Future<void> pumpPresentedSheet(
+      WidgetTester tester,
+      HomeState state, {
+      VoidCallback? onOpenSettings,
+      VoidCallback? onSignOut,
+      VoidCallback? onOpenSyncStatus,
+      VoidCallback? onActivateBackup,
+    }) async {
+      when(() => cubit.state).thenReturn(state);
+      whenListen(cubit, const Stream<HomeState>.empty(), initialState: state);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('es'),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => AccountSheet.show(
+                  context,
+                  cubit,
+                  onOpenSettings: onOpenSettings ?? () {},
+                  onSignOut: onSignOut ?? () {},
+                  onOpenSyncStatus: onOpenSyncStatus ?? () {},
+                  onActivateBackup: onActivateBackup ?? () {},
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('tocar "Ajustes" dispara onOpenSettings Y cierra la hoja',
+        (tester) async {
+      var tapped = 0;
+      await pumpPresentedSheet(
+        tester,
+        stateWith(user: user),
+        onOpenSettings: () => tapped++,
+      );
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(ElevatedButton)));
+
+      await tester.tap(find.text(l10n.moreSettings));
+      await tester.pumpAndSettle();
+
+      expect(tapped, 1);
+      expect(find.byType(AccountSheet), findsNothing);
+    });
+
+    testWidgets('tocar "Cerrar sesión" dispara onSignOut Y cierra la hoja',
+        (tester) async {
+      var tapped = 0;
+      await pumpPresentedSheet(
+        tester,
+        stateWith(user: user),
+        onSignOut: () => tapped++,
+      );
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(ElevatedButton)));
+
+      await tester.tap(find.text(l10n.moreSignOut));
+      await tester.pumpAndSettle();
+
+      expect(tapped, 1);
+      expect(find.byType(AccountSheet), findsNothing);
+    });
+
+    testWidgets(
+        'tocar el bloque de sync dispara onOpenSyncStatus Y cierra la hoja',
+        (tester) async {
+      var tapped = 0;
+      await pumpPresentedSheet(
+        tester,
+        stateWith(user: user),
+        onOpenSyncStatus: () => tapped++,
+      );
+
+      await tester.tap(find.byType(SyncHero));
+      await tester.pumpAndSettle();
+
+      expect(tapped, 1);
+      expect(find.byType(AccountSheet), findsNothing);
+    });
+
+    testWidgets(
+        'variante sin cuenta: tocar "Activar respaldo" dispara '
+        'onActivateBackup Y cierra la hoja', (tester) async {
+      var tapped = 0;
+      await pumpPresentedSheet(
+        tester,
+        stateWith(),
+        onActivateBackup: () => tapped++,
+      );
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(ElevatedButton)));
+
+      await tester.tap(find.text(l10n.homeAccountSheetActivateBackup));
+      await tester.pumpAndSettle();
+
+      expect(tapped, 1);
+      expect(find.byType(AccountSheet), findsNothing);
+    });
   });
 }

@@ -119,6 +119,7 @@ class AiProposalActionsRow extends StatelessWidget {
         CreateGoalProposal() => l10n.aiProposalConfirmedRowGoal,
         CreateCategoryProposal() => l10n.aiProposalConfirmedRowCategory,
         CreateTransactionProposal() => l10n.aiProposalConfirmedRowTransaction,
+        LinkTransactionToDebtProposal() => l10n.aiProposalConfirmedRowDebtLink,
         UnsupportedProposal() => l10n.aiProposalConfirmedRowTransaction,
       };
 }

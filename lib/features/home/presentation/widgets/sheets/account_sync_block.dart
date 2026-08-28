@@ -27,8 +27,9 @@ class AccountSyncBlock extends StatelessWidget {
     final relative = lastSyncedAt == null
         ? null
         : SyncRelativeTime.since(l10n, lastSyncedAt, now: clock.now());
-    final timeLabel =
-        relative == null ? l10n.syncNeverSyncedLabel : l10n.syncLastSyncLabel(relative);
+    final timeLabel = relative == null
+        ? l10n.syncNeverSyncedLabel
+        : l10n.syncLastSyncLabel(relative);
 
     return SyncHero(
       compact: true,

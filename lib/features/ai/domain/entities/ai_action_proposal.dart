@@ -200,6 +200,7 @@ final class CreateTransactionProposal extends AiActionProposal {
     required this.date,
     this.categoryId,
     this.note,
+    this.debtId,
   });
 
   final String accountId;
@@ -220,6 +221,12 @@ final class CreateTransactionProposal extends AiActionProposal {
 
   final String? note;
 
+  /// When set, the movement is **born** attributed to that debt: one card, one
+  /// confirmation, instead of registering it and linking it afterwards. The id
+  /// is re-checked on device by `ExecuteAiAction` (it must exist and the debt
+  /// must be open) — the backend only proves the id travelled from here.
+  final String? debtId;
+
   @override
   CreateTransactionProposal withStatus(AiProposalStatus status) =>
       CreateTransactionProposal(
@@ -233,6 +240,7 @@ final class CreateTransactionProposal extends AiActionProposal {
         date: date,
         categoryId: categoryId,
         note: note,
+        debtId: debtId,
       );
 
   @override
@@ -245,7 +253,44 @@ final class CreateTransactionProposal extends AiActionProposal {
         date,
         categoryId,
         note,
+        debtId,
       ];
+}
+
+/// `kind: "link_transaction_to_debt"`.
+///
+/// Attributes a movement that **already exists** to a debt. No row is created
+/// and no money moves: the movement already hit its account, linking only makes
+/// it count in the debt's derived balance (`LinkTransactionToDebt`).
+final class LinkTransactionToDebtProposal extends AiActionProposal {
+  const LinkTransactionToDebtProposal({
+    required super.id,
+    required super.title,
+    required super.status,
+    required this.transactionId,
+    required this.debtId,
+  });
+
+  /// A movement id the model read back from a `get_transactions` result. The
+  /// server's snapshot index is flat — it proves the id was sent by this
+  /// device, not that it belongs to a transaction — so `LinkTransactionToDebt`
+  /// is the real gate.
+  final String transactionId;
+
+  final String debtId;
+
+  @override
+  LinkTransactionToDebtProposal withStatus(AiProposalStatus status) =>
+      LinkTransactionToDebtProposal(
+        id: id,
+        title: title,
+        status: status,
+        transactionId: transactionId,
+        debtId: debtId,
+      );
+
+  @override
+  List<Object?> get props => [...super.props, transactionId, debtId];
 }
 
 /// A proposal this app version cannot act on: an unknown `kind`, or a payload

@@ -80,20 +80,38 @@ class AccountSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             if (user == null)
-              NoAccountInvite(onActivateBackup: onActivateBackup)
+              NoAccountInvite(
+                onActivateBackup: () {
+                  Navigator.of(context).pop();
+                  onActivateBackup();
+                },
+              )
             else ...[
               IdentityRow(user: user),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: onOpenSyncStatus,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onOpenSyncStatus();
+                },
                 child: AccountSyncBlock(state: state),
               ),
               const SizedBox(height: 16),
-              SettingsRow(onTap: onOpenSettings),
+              SettingsRow(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onOpenSettings();
+                },
+              ),
               const SizedBox(height: 8),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              SignOutRow(onTap: onSignOut),
+              SignOutRow(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onSignOut();
+                },
+              ),
             ],
           ],
         );
@@ -101,4 +119,3 @@ class AccountSheet extends StatelessWidget {
     );
   }
 }
-

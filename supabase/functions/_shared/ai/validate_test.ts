@@ -236,9 +236,120 @@ Deno.test('an over-long transcript is rejected', () => {
   assertThrows(() => parseChatRequest({ messages, snapshot: {} }), AiHttpError);
 });
 
+// Linking an existing movement to a debt carries no amount of its own, so it
+// is exempt from the currency check every other proposal must pass. Without
+// the exemption the tool would be refused 100% of the time with a message
+// about ISO 4217 — a failure mode that looks like the model misbehaving.
+Deno.test('linking a movement to a debt needs no currency', () => {
+  const index = indexSnapshot({
+    accounts: [{ id: 'acc-1', currency: 'COP' }],
+    debts: [{ id: 'debt-1' }],
+    recent: [{ id: 'tx-1' }],
+  });
+
+  const ok = validateProposal(
+    'propose_link_transaction_to_debt',
+    { transactionId: 'tx-1', debtId: 'debt-1', rationale: 'es el abono' },
+    index,
+  );
+
+  assertEquals(ok.ok, true);
+  assertEquals(ok.payload?.transactionId, 'tx-1');
+  assertEquals(ok.payload?.debtId, 'debt-1');
+});
+
+Deno.test('both ids of a debt link must come from the client', () => {
+  const index = indexSnapshot({
+    accounts: [{ id: 'acc-1', currency: 'COP' }],
+    debts: [{ id: 'debt-1' }],
+    recent: [{ id: 'tx-1' }],
+  });
+
+  const invented = validateProposal(
+    'propose_link_transaction_to_debt',
+    { transactionId: 'tx-999', debtId: 'debt-1', rationale: 'x' },
+    index,
+  );
+  assertEquals(invented.ok, false);
+
+  const inventedDebt = validateProposal(
+    'propose_link_transaction_to_debt',
+    { transactionId: 'tx-1', debtId: 'debt-999', rationale: 'x' },
+    index,
+  );
+  assertEquals(inventedDebt.ok, false);
+});
+
+// A movement born linked: the debt id must survive validation, and an unknown
+// one is refused rather than dropped — silently unlinking it would make the
+// confirmation card promise something that then does not happen.
+Deno.test('a transaction proposal carries an optional debtId', () => {
+  const index = indexSnapshot({
+    accounts: [{ id: 'acc-1', currency: 'COP' }],
+    debts: [{ id: 'debt-1' }],
+  });
+  const base = {
+    type: 'expense',
+    amountMinor: 284000000,
+    currency: 'COP',
+    date: 1756600000,
+    accountId: 'acc-1',
+    rationale: 'abono a capital',
+  };
+
+  const linked = validateProposal(
+    'propose_create_transaction',
+    { ...base, debtId: 'debt-1' },
+    index,
+  );
+  assertEquals(linked.ok, true);
+  assertEquals(linked.payload?.debtId, 'debt-1');
+
+  const unlinked = validateProposal('propose_create_transaction', base, index);
+  assertEquals(unlinked.ok, true);
+  assertEquals(unlinked.payload?.debtId, undefined);
+
+  const bogus = validateProposal(
+    'propose_create_transaction',
+    { ...base, debtId: 'debt-999' },
+    index,
+  );
+  assertEquals(bogus.ok, false);
+});
+
 Deno.test('a request without a snapshot object is rejected', () => {
   assertThrows(
     () => parseChatRequest({ messages: [{ role: 'user', content: 'hola' }] }),
     AiHttpError,
+  );
+});
+
+// `notesAccessEnabled` decides which version of the prompt's "buscar algo por
+// como la persona lo llama" section ships. Anything other than a literal
+// `true` has to land on the private reading: a client that omits the field, an
+// older build that never heard of it, or a truthy-but-not-true value must not
+// make the prompt tell the model it may read free-text notes.
+Deno.test('notesAccessEnabled is off unless the client sends exactly true', () => {
+  const base = {
+    snapshot: {},
+    messages: [{ role: 'user', content: 'hola' }],
+  };
+
+  assertEquals(parseChatRequest(base).notesAccessEnabled, false);
+  assertEquals(
+    parseChatRequest({ ...base, notesAccessEnabled: false }).notesAccessEnabled,
+    false,
+  );
+  assertEquals(
+    parseChatRequest({ ...base, notesAccessEnabled: 'true' }).notesAccessEnabled,
+    false,
+  );
+  assertEquals(
+    parseChatRequest({ ...base, notesAccessEnabled: 1 }).notesAccessEnabled,
+    false,
+  );
+  assertEquals(
+    parseChatRequest({ ...base, notesAccessEnabled: true }).notesAccessEnabled,
+    true,
   );
 });

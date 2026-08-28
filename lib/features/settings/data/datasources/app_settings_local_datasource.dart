@@ -120,10 +120,53 @@ class AppSettingsLocalDatasource {
       );
 
   /// Records the AI assistant's third-party data-sharing consent as accepted
-  /// now (Apple 5.1.2(i)).
-  Future<void> markAiConsentAccepted({required DateTime now}) => _write(
+  /// now (Apple 5.1.2(i)), against the [consentVersion] of the copy that was
+  /// actually shown.
+  ///
+  /// Both columns move in ONE write on purpose: a timestamp without its
+  /// version (or the other way round) is a row that claims a consent nobody
+  /// can date to a disclosure — and since the gate reads them together, a
+  /// half-written pair would either re-ask forever or accept a stale consent.
+  Future<void> markAiConsentAccepted({
+    required DateTime now,
+    required int consentVersion,
+  }) =>
+      _write(
         AppSettingsCompanion(
           aiConsentAcceptedAt: Value(now),
+          aiConsentVersion: Value(consentVersion),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
+  /// Withdraws the AI assistant's data-sharing consent (RGPD art. 7.3:
+  /// withdrawing has to be as easy as giving it), putting the row back in the
+  /// exact shape it had before anyone accepted.
+  ///
+  /// Three columns move in ONE write, and the third is not optional:
+  /// `aiNotesAccessEnabled` is a *narrower* permission that only exists inside
+  /// the broad one. Leaving it on after the broad consent is gone would be an
+  /// orphan permission — the person believes they cancelled everything, while
+  /// the row still says "yes, send my free-text notes".
+  Future<void> clearAiConsent({required DateTime now}) => _write(
+        AppSettingsCompanion(
+          aiConsentAcceptedAt: const Value(null),
+          aiConsentVersion: const Value(null),
+          aiNotesAccessEnabled: const Value(false),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
+  /// Turns the assistant's access to the records' free-text `note` on or off
+  /// (`AppSettings.aiNotesAccessEnabled`). Off is the default and the
+  /// privacy-preserving direction; nothing else in the row changes.
+  Future<void> setAiNotesAccessEnabled({
+    required bool enabled,
+    required DateTime now,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          aiNotesAccessEnabled: Value(enabled),
           updatedAt: Value(now.millisecondsSinceEpoch),
         ),
       );

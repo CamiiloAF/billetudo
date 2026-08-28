@@ -15,6 +15,9 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/entities/zero_based_summary.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_zero_based_summary.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_balance.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_installment.dart';
+import 'package:billetudo/features/debts/domain/entities/debt_with_balance.dart';
 import 'package:billetudo/features/debts/domain/entities/debts_summary.dart';
 import 'package:billetudo/features/debts/domain/usecases/watch_debts.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_with_progress.dart';
@@ -31,19 +34,22 @@ import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_summary.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/get_scheduled_payments.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/project_upcoming_occurrences.dart';
+import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
+import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../accounts/account_fixtures.dart';
+import '../../../debts/domain/debt_test_fixtures.dart';
 import '../../../goals/presentation/goals_presentation_fixtures.dart';
 import '../../../home/home_fixtures.dart' show buildHomeBudgetProgress;
 import '../../../scheduled_payments/scheduled_payment_fixtures.dart'
     as scheduled;
+import '../../formatted_twin.dart';
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
 
-class MockWatchAccountsOverview extends Mock
-    implements WatchAccountsOverview {}
+class MockWatchAccountsOverview extends Mock implements WatchAccountsOverview {}
 
 class MockGetActiveBudgets extends Mock implements GetActiveBudgets {}
 
@@ -60,6 +66,8 @@ class MockWatchCashflowReport extends Mock implements WatchCashflowReport {}
 
 class MockGetScheduledPayments extends Mock implements GetScheduledPayments {}
 
+class MockGetAppSettings extends Mock implements GetAppSettings {}
+
 /// The snapshot is the whole picture the model reasons about, so the rules it
 /// enforces are about honesty: integer minor units next to their currency,
 /// unix seconds, nothing summed across currencies, and — the one that matters
@@ -74,6 +82,7 @@ void main() {
   late MockWatchCategoryBreakdownReport watchCategoryBreakdown;
   late MockWatchCashflowReport watchCashflow;
   late MockGetScheduledPayments getScheduledPayments;
+  late MockGetAppSettings getAppSettings;
   late BuildFinancialSnapshot usecase;
 
   final now = DateTime(2026, 8, 25, 10);
@@ -160,6 +169,7 @@ void main() {
     List<GoalWithProgress>? goals,
     ZeroBasedSummary? zeroBased,
     List<ScheduledPaymentSummary>? scheduledPayments,
+    DebtsSummary? debtsSummary,
   }) {
     final resolvedAccounts = accounts ??
         [
@@ -197,7 +207,9 @@ void main() {
         Right(goals ?? [buildGoalWithProgress(savedMinor: 120000)]),
       ),
     );
-    when(watchDebts.call).thenAnswer((_) => Stream.value(const Right(debts)));
+    when(watchDebts.call).thenAnswer(
+      (_) => Stream.value(Right(debtsSummary ?? debts)),
+    );
     when(() => watchCategoryBreakdown(any()))
         .thenAnswer((_) => Stream.value(Right(breakdown)));
     when(() => watchCashflow(any()))
@@ -205,6 +217,17 @@ void main() {
     when(getScheduledPayments.call).thenAnswer(
       (_) => Stream.value(
         Right(scheduledPayments ?? [scheduledSummary()]),
+      ),
+    );
+  }
+
+  /// The `AppSettings.aiNotesAccessEnabled` opt-in, as the use case reads it.
+  void stubNotesAccess({required bool enabled}) {
+    when(getAppSettings.call).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          const AppSettings.defaults().copyWith(aiNotesAccessEnabled: enabled),
+        ),
       ),
     );
   }
@@ -226,6 +249,10 @@ void main() {
     watchCategoryBreakdown = MockWatchCategoryBreakdownReport();
     watchCashflow = MockWatchCashflowReport();
     getScheduledPayments = MockGetScheduledPayments();
+    getAppSettings = MockGetAppSettings();
+    // Notes access OFF by default, like a real install that never touched the
+    // switch — the section must be byte-identical to the pre-opt-in payload.
+    stubNotesAccess(enabled: false);
     usecase = BuildFinancialSnapshot(
       watchAccounts,
       watchAccountsOverview,
@@ -237,6 +264,7 @@ void main() {
       watchCashflow,
       getScheduledPayments,
       const ProjectUpcomingOccurrences(),
+      getAppSettings,
       const MoneyFormatter(),
     );
   });
@@ -265,6 +293,7 @@ void main() {
           'budgets',
           'goals',
           'debtTotals',
+          'debts',
           'upcoming',
           'zeroBased',
           'counts',
@@ -315,8 +344,8 @@ void main() {
 
       final json = await buildJson();
 
-      final points = (json['cashflow']! as Map<String, Object?>)['points']!
-          as List;
+      final points =
+          (json['cashflow']! as Map<String, Object?>)['points']! as List;
       final point = points.first as Map<String, Object?>;
       expect(point['incomeMinor'], 500000000 + 1000000);
       expect(point['expenseMinor'], 300000000 + 2000000);
@@ -332,7 +361,8 @@ void main() {
 
       final json = await buildJson();
 
-      final upcoming = (json['upcoming']! as List).first as Map<String, Object?>;
+      final upcoming =
+          (json['upcoming']! as List).first as Map<String, Object?>;
       expect(upcoming['name'], 'Arriendo · Bancolombia');
       expect(json.toString(), isNot(contains('no debe viajar')));
     });
@@ -345,7 +375,8 @@ void main() {
 
       final json = await buildJson();
 
-      final upcoming = (json['upcoming']! as List).first as Map<String, Object?>;
+      final upcoming =
+          (json['upcoming']! as List).first as Map<String, Object?>;
       expect(upcoming['name'], 'Bancolombia');
     });
 
@@ -354,8 +385,7 @@ void main() {
         'pre-formatted strings and the projected-overspend-risk flag '
         '(dogfooding fix: the assistant used to only see spentMinor vs. '
         'amountMinor, so a budget on track by real spend alone but at risk '
-        'once its scheduled payments land read as "you are fine")',
-        () async {
+        'once its scheduled payments land read as "you are fine")', () async {
       final atRisk = BudgetWithProgress(
         budget: Budget(
           id: 'budget-risk',
@@ -392,8 +422,7 @@ void main() {
 
       final json = await buildJson();
 
-      final budget =
-          (json['budgets']! as List).first as Map<String, Object?>;
+      final budget = (json['budgets']! as List).first as Map<String, Object?>;
       expect(budget['scheduledMinor'], 30000000);
       expect(budget['projectedTotalMinor'], 40000000 + 30000000);
       expect(budget['isProjectedOverspendRisk'], isTrue);
@@ -401,6 +430,42 @@ void main() {
       expect(budget['spentFormatted'], r'$400.000');
       expect(budget['scheduledFormatted'], r'$300.000');
       expect(budget['projectedTotalFormatted'], r'$700.000');
+    });
+
+    test(
+        'a debt travels by name+id with its outstanding balance and, when '
+        'it has a cuota, the next installment amount — dogfooding fix: a '
+        'debt named in chat ("la KTM 1390") had nothing to look up beyond '
+        'the currency-blended debtTotals aggregate', () async {
+      final withInstallment = DebtWithBalance(
+        debt: buildDebt(id: 'debt-1', name: 'KTM 1390', currency: 'COP'),
+        balance: const DebtBalance(
+          principalMinor: 500000000,
+          totalIncreasesMinor: 500000000,
+          totalDecreasesMinor: 87169980,
+          interestAccruedMinor: 0,
+          displayTotalMinor: 500000000,
+        ),
+        installment: DebtInstallment(
+          scheduledPaymentId: 'sp-1',
+          amountMinor: 41283020,
+          nextDate: DateTime(2026, 9, 25),
+          currency: 'COP',
+        ),
+      );
+      stubHealthySources(
+        debtsSummary: DebtsSummary.from([withInstallment]),
+      );
+
+      final json = await buildJson();
+
+      final debt = (json['debts']! as List).single as Map<String, Object?>;
+      expect(debt['id'], 'debt-1');
+      expect(debt['name'], 'KTM 1390');
+      expect(debt['outstandingMinor'], 500000000 - 87169980);
+      expect(debt['outstandingFormatted'], r'$4.128.300,20');
+      expect(debt['nextInstallmentAmountMinor'], 41283020);
+      expect(debt['nextInstallmentAmountFormatted'], r'$412.830,20');
     });
 
     test('counts report the real totals even when a list is capped', () async {
@@ -456,16 +521,16 @@ void main() {
 
       final json = await buildJson();
 
-      final items =
-          (json['spendingByCategory']! as Map<String, Object?>)['items']!
-              as List;
+      final items = (json['spendingByCategory']!
+          as Map<String, Object?>)['items']! as List;
       final uncategorised = items.last! as Map<String, Object?>;
       expect(uncategorised.containsKey('categoryId'), isFalse);
     });
   });
 
   group('a section that could not be read is omitted, never emitted empty', () {
-    test('a failing budgets source drops the key instead of sending an empty '
+    test(
+        'a failing budgets source drops the key instead of sending an empty '
         'list', () async {
       stubHealthySources();
       when(getActiveBudgets.call).thenAnswer(
@@ -479,7 +544,8 @@ void main() {
       expect(json.containsKey('goals'), isTrue);
     });
 
-    test('a budgets source with genuinely nothing to show still emits an empty '
+    test(
+        'a budgets source with genuinely nothing to show still emits an empty '
         'list', () async {
       stubHealthySources(budgets: []);
 
@@ -537,7 +603,8 @@ void main() {
       expect(json.containsKey('accounts'), isTrue);
     });
 
-    test('a zero-based summary that is legitimately null omits its section '
+    test(
+        'a zero-based summary that is legitimately null omits its section '
         'without counting as an outage', () async {
       stubHealthySources();
       when(getZeroBasedSummary.call).thenAnswer(
@@ -602,7 +669,8 @@ void main() {
   });
 
   group('multi-currency', () {
-    test('omits the category breakdown and the cash flow, which cannot be '
+    test(
+        'omits the category breakdown and the cash flow, which cannot be '
         'split by currency', () async {
       stubHealthySources(
         accounts: [
@@ -638,6 +706,183 @@ void main() {
       expect(json.containsKey('spendingByCategory'), isFalse);
       expect(json.containsKey('cashflow'), isFalse);
       expect(json.containsKey('budgets'), isTrue);
+    });
+  });
+
+  /// The `upcoming` section is the only place in the snapshot where a
+  /// user-written note can appear at all, so the pair is asserted here.
+  group('AppSettings.aiNotesAccessEnabled gates the upcoming note', () {
+    test('off: no note key, and the text appears nowhere in the payload',
+        () async {
+      stubHealthySources();
+
+      final json = await buildJson();
+
+      final upcoming =
+          (json['upcoming']! as List).first as Map<String, Object?>;
+      expect(upcoming.containsKey('note'), isFalse);
+      expect(upcoming['name'], 'Arriendo · Bancolombia');
+      expect(json.toString(), isNot(contains('no debe viajar')));
+    });
+
+    test('on: the scheduled payment note rides in its upcoming row', () async {
+      stubNotesAccess(enabled: true);
+      stubHealthySources();
+
+      final json = await buildJson();
+
+      final upcoming =
+          (json['upcoming']! as List).first as Map<String, Object?>;
+      expect(upcoming['note'], 'arriendo del apto — no debe viajar');
+      expect(
+        upcoming['name'],
+        'Arriendo · Bancolombia',
+        reason: 'the note is added to the row, it never replaces the name',
+      );
+    });
+
+    test('an unreadable settings row falls back to OFF, not to sending it',
+        () async {
+      when(getAppSettings.call).thenAnswer(
+        (_) => Stream.value(const Left(DatabaseFailure('settings are down'))),
+      );
+      stubHealthySources();
+
+      final json = await buildJson();
+
+      final upcoming =
+          (json['upcoming']! as List).first as Map<String, Object?>;
+      expect(upcoming.containsKey('note'), isFalse);
+      expect(json.toString(), isNot(contains('no debe viajar')));
+    });
+
+    test('an unreadable settings row never fails the snapshot by itself',
+        () async {
+      when(getAppSettings.call).thenAnswer(
+        (_) => Stream.value(const Left(DatabaseFailure('settings are down'))),
+      );
+      stubHealthySources();
+
+      final result = await usecase(now: now);
+
+      expect(result.isRight(), isTrue);
+    });
+  });
+
+  group('every amount carries its formatted twin', () {
+    test(
+        'no `*Minor` anywhere in the payload is missing its `*Formatted` '
+        'sibling', () async {
+      // The server prompt ASSERTS to the model that every amount ships
+      // pre-formatted. When that was only true of budgets, the model fell
+      // back to dividing by 100 in its head and told the user a balance 100x
+      // too big ("$379.931.350" for $3.799.313,50). This test is the
+      // assertion made checkable: it walks the whole wire payload instead of
+      // naming fields, so a new amount added without its twin fails here.
+      stubHealthySources();
+
+      final json = await buildJson();
+
+      expect(amountsMissingFormattedTwin(json), isEmpty);
+    });
+
+    test('an account balance is quoted as pesos, never as raw cents', () async {
+      stubHealthySources(
+        accounts: [
+          buildAccountWithBalance(
+            account: buildAccount(id: 'acc-1', currency: 'COP'),
+            // The exact figure from the live report.
+            balanceMinor: 379931350,
+          ),
+        ],
+      );
+
+      final json = await buildJson();
+
+      final account = (json['accounts']! as List).first as Map<String, Object?>;
+      expect(account['balanceMinor'], 379931350);
+      expect(account['balanceFormatted'], r'$3.799.313,50');
+    });
+
+    test('each row is formatted in its OWN currency, never a global one',
+        () async {
+      stubHealthySources(
+        accounts: [
+          buildAccountWithBalance(
+            account: buildAccount(id: 'acc-cop', currency: 'COP'),
+            balanceMinor: 379931350,
+          ),
+          buildAccountWithBalance(
+            account: buildAccount(id: 'acc-usd', currency: 'USD'),
+            balanceMinor: 120050,
+          ),
+        ],
+      );
+
+      final json = await buildJson();
+
+      final accounts = (json['accounts']! as List).cast<Map<String, Object?>>();
+      expect(accounts[0]['balanceFormatted'], r'$3.799.313,50');
+      // USD keeps its two decimals; COP above only shows them because the
+      // balance genuinely carries cents.
+      expect(accounts[1]['balanceFormatted'], r'$1.200,50');
+    });
+
+    test('a negative net keeps its sign instead of reading as a surplus',
+        () async {
+      stubHealthySources();
+      when(() => watchCashflow(any())).thenAnswer(
+        (_) => Stream.value(
+          Right(
+            CashflowSeries(
+              points: [
+                CashflowPoint(
+                  periodStart: DateTime(2026, 7),
+                  incomeMinor: 300000000,
+                  expenseMinor: 500000000,
+                  debtIncomeMinor: 0,
+                  debtExpenseMinor: 0,
+                ),
+              ],
+              includeDebtMovements: true,
+              bounds: cashflow.bounds,
+            ),
+          ),
+        ),
+      );
+
+      final json = await buildJson();
+
+      final point = ((json['cashflow']! as Map<String, Object?>)['points']!
+          as List)[0] as Map<String, Object?>;
+      expect(point['netMinor'], -200000000);
+      expect(point['netFormatted'], r'$-2.000.000');
+    });
+
+    test('an over-assigned zero-based budget reads negative', () async {
+      stubHealthySources(
+        zeroBased: const ZeroBasedSummary(
+          currency: 'COP',
+          incomeMinor: 400000000,
+          assignedMinor: 450000000,
+        ),
+      );
+
+      final json = await buildJson();
+
+      final zeroBased = json['zeroBased']! as Map<String, Object?>;
+      expect(zeroBased['unassignedMinor'], -50000000);
+      expect(zeroBased['unassignedFormatted'], r'$-500.000');
+    });
+
+    test('the spending section carries a formatted total too', () async {
+      stubHealthySources();
+
+      final json = await buildJson();
+
+      final spending = json['spendingByCategory']! as Map<String, Object?>;
+      expect(spending['totalMinor'], 126000000);
+      expect(spending['totalFormatted'], r'$1.260.000');
     });
   });
 }

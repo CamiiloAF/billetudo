@@ -24,7 +24,10 @@ class AiConsentState extends Equatable {
   /// spinner instead of accepting a second tap mid-write.
   final bool accepting;
 
-  AiConsentState copyWith({AiConsentStatus? status, bool? accepting}) =>
+  AiConsentState copyWith({
+    AiConsentStatus? status,
+    bool? accepting,
+  }) =>
       AiConsentState(
         status: status ?? this.status,
         accepting: accepting ?? this.accepting,

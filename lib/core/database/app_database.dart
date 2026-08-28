@@ -839,6 +839,61 @@ class AppSettings extends Table with _SyncColumns {
   /// `timestamptz` on a synced table (see the header of
   /// `powersync_schema.dart`).
   DateTimeColumn get aiConsentAcceptedAt => dateTime().nullable()();
+
+  /// Which VERSION of the consent text the person accepted, alongside
+  /// [aiConsentAcceptedAt]'s "when". Without it the consent is de facto a
+  /// boolean: if the scope of what the assistant sends ever widens (the first
+  /// case being [aiNotesAccessEnabled] below, free-text notes), everyone who
+  /// already tapped "Acepto" would keep a non-null `aiConsentAcceptedAt` and
+  /// would never see the consent screen again — consenting, in practice, to
+  /// something they were never shown. Apple 5.1.2(i) requires the consent to
+  /// be *informed*, so it has to be re-asked when the disclosure changes.
+  ///
+  /// Expected use (the comparison itself is NOT implemented here — that is
+  /// domain/presentation work): the app holds a `currentAiConsentVersion`
+  /// constant that is bumped by hand whenever the consent copy changes, and
+  /// consent counts as granted only when
+  /// `aiConsentAcceptedAt != null && aiConsentVersion >= currentVersion`.
+  /// A lower stored version re-shows the consent screen even though
+  /// `aiConsentAcceptedAt` is set; accepting again refreshes both columns.
+  ///
+  /// NULLABLE, and read as `0` (never backfilled) in the mapping layer, for
+  /// two reasons:
+  ///  - A row that predates this column has no `ai_consent_version` key in
+  ///    its PowerSync JSON blob and reads SQL `NULL`. A non-nullable column
+  ///    would crash Drift's mapper on that row — the exact
+  ///    `onboardingCompleted` bug (BILLETUDO-9/BILLETUDO-A, `from < 21`/
+  ///    `from < 22` in the migration below).
+  ///  - Backfilling it instead would upload a fabricated `0` through
+  ///    PowerSync's `merge-duplicates` upsert and could clobber a real
+  ///    version accepted on another device that simply hasn't synced down
+  ///    yet — decision #25, `docs/requirements/fase-1/05-auth-sync.md`.
+  ///    Interpreting `NULL` as `0` at read time costs nothing and writes
+  ///    nothing: `0 < currentVersion`, so the (few, pre-release) installs
+  ///    that accepted the unversioned consent are simply asked once more.
+  IntColumn get aiConsentVersion => integer().nullable()();
+
+  /// Whether the assistant is allowed to read the free-text `note` of the
+  /// user's records (transactions, debts, ...). **Off by default and opt-in
+  /// only**: notes are the least structured and most personal text this app
+  /// stores, so they stay out of every prompt payload until the person turns
+  /// this on explicitly. Flipping it on is what [aiConsentVersion] exists to
+  /// re-disclose.
+  ///
+  /// NOT nullable (matching [zeroBasedEnabled] and friends), so — following
+  /// the lesson of `showHelpOnSectionEntry` (`from < 24` below) rather than
+  /// repeating `onboardingCompleted`'s crash — the migration that introduces
+  /// it backfills every pre-existing singleton row to `0` in the SAME version
+  /// bump. That backfill is safe against decision #25's clobber concern in a
+  /// way a `featured_budget_mode`-style one was not: `false` is both the
+  /// documented default AND the privacy-preserving direction, so the worst
+  /// case of overwriting a not-yet-synced `true` from another device is that
+  /// the user re-enables notes access — never that data leaks.
+  ///
+  /// `clientDefault`, never `withDefault`: a SQL default is not applied when
+  /// the write goes through a PowerSync view (same incident that first hit
+  /// this table).
+  BoolColumn get aiNotesAccessEnabled => boolean().clientDefault(() => false)();
 }
 
 /// One row per tutorial key the current installation's user has already
@@ -983,6 +1038,64 @@ class AiInsightConversations extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// One "shown" or "dismissed" lifecycle event for a Home AI insight
+/// (`HomeAiInsightType`, `lib/features/home/domain/entities/
+/// home_ai_insight.dart`) — bug fix: the "Ahora no" dismissal used to live
+/// only in `HomeCubit`'s in-memory state, so it evaporated the moment
+/// `_maybeRefreshAiInsight` resubscribed on the very next transaction. This
+/// table is what lets a dismissal survive for the rest of the current month,
+/// and what lets any insight (dismissed or not) enforce a 24h cooldown
+/// between two showings, without a user having to touch anything for the
+/// second part.
+///
+/// **LOCAL-ONLY, same reasoning as [AiInsightConversations] right above**:
+/// this is device-side UX bookkeeping (when did this device last show or
+/// dismiss a given insight type), not financial data — there is no
+/// cross-device state worth fusing. No `_SyncColumns`: no `userId`, no
+/// `updatedAt`, no `deletedAt`, no `tombstonedAt`. Mirrored in
+/// `powersync_schema.dart` as `Table.localOnly('home_insight_events', ...)`,
+/// so PowerSync backs it with a real local table
+/// (`ps_data_local__home_insight_events`) that is never recorded in
+/// `ps_crud` and never synced. Also destroyed by
+/// `LocalDataWipeDatasource.wipeAll`, same as [AiInsightConversations].
+///
+/// One row per event rather than an upsert-in-place, same shape as
+/// [AiInsightConversations]: neither [insightType] nor [kind] is a primary
+/// key, so every occurrence just appends. Callers derive "the" last
+/// dismissal/showing for a given `(insightType, kind)` pair as
+/// `MAX(occurred_at)` — there is deliberately no month column: "was this
+/// dismissed during the current month" and "was this shown in the last 24h"
+/// are both computed by comparing [occurredAt] against a caller-supplied
+/// `monthStart`/`now`, exactly like `WatchHomeAiInsight` already does with
+/// `historyStart`/`monthStart` for its trailing-average window. That makes
+/// the month-rollover reset free: no explicit cleanup, a dismissal from last
+/// month simply stops matching `occurredAt >= monthStart` once the visible
+/// month advances.
+class HomeInsightEvents extends Table {
+  /// Random UUID, like every other table here. Never autoincrement.
+  TextColumn get id => text().clientDefault(() => _uuid.v4())();
+
+  /// `HomeAiInsightType.name` — plain text rather than `textEnum`, same
+  /// reasoning as `AiInsightConversations.insightType`: this core file must
+  /// not depend on `lib/features/home/`, so the mapping to the real enum
+  /// lives in that feature's data layer. `HomeAiInsightType.createBudget`
+  /// never appears here — it is a forced state, not a dismissible/coolable
+  /// insight (see the enum's own doc comment).
+  TextColumn get insightType => text()();
+
+  /// `'shown'` or `'dismissed'` — plain text for the same reason as
+  /// [insightType]: no enum dependency on the home feature from this file.
+  TextColumn get kind => text()();
+
+  /// Epoch **millis** UTC (NOT a Drift `DateTimeColumn`), matching
+  /// `AiInsightConversations.createdAt`.
+  IntColumn get occurredAt => integer()
+      .clientDefault(() => DateTime.now().toUtc().millisecondsSinceEpoch)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -1011,13 +1124,14 @@ class AiInsightConversations extends Table {
     TutorialViews,
     AiMessages,
     AiInsightConversations,
+    HomeInsightEvents,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 33;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1701,6 +1815,59 @@ class AppDatabase extends _$AppDatabase {
           // creates its backing table and view the next time the app opens,
           // before Drift's migration runs.
           if (from < 31) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v31 -> v32: `AppSettings` gains two AI-privacy columns,
+          // `aiConsentVersion` and `aiNotesAccessEnabled` (see their doc
+          // comments). No `addColumn`/`ALTER TABLE` for either — see the note
+          // on `from < 12` above: `appSettings` is a PowerSync-managed view,
+          // and `powerSyncSchema` (`powersync_schema.dart`) already declares
+          // `ai_consent_version` and `ai_notes_access_enabled`, so PowerSync
+          // recreates the view with both columns present the next time the
+          // app opens, before this migration runs.
+          //
+          //  1. `ai_consent_version`: NOT backfilled, deliberately. The
+          //     column is nullable in Dart, so a pre-existing singleton row
+          //     reads `null` without crashing the mapper, and the read layer
+          //     interprets `null` as version 0 — which is below whatever the
+          //     current consent version is, so the (pre-release) installs
+          //     that accepted the unversioned consent get asked once more,
+          //     which is the intent. Writing a `0` here instead would upload
+          //     a fabricated version through PowerSync's merge-duplicates
+          //     upsert and could clobber a real value from another device
+          //     (decision #25, docs/requirements/fase-1/05-auth-sync.md, the
+          //     `from < 26` block above).
+          //  2. `ai_notes_access_enabled`: IS backfilled to `0`, because it
+          //     is NOT nullable in Dart — same reasoning as
+          //     `show_help_on_section_entry` (`from < 24` above), fixing the
+          //     `onboardingCompleted` NULL crash (`from < 21`/`from < 22`)
+          //     in the same version that adds the column rather than one
+          //     later. Unlike the `featured_budget_mode` backfill that
+          //     decision #25 removed, this one cannot leak: `false` is both
+          //     the documented default and the privacy-safe direction, so
+          //     overwriting a not-yet-synced `true` only means the user
+          //     re-enables notes access.
+          //
+          // Plain `UPDATE` DML, valid against a view through its `INSTEAD OF`
+          // trigger (same pattern as the `from < 24`/`from < 27` backfills).
+          if (from < 32) {
+            await m.database.customStatement(
+              'UPDATE app_settings SET ai_notes_access_enabled = 0 '
+              'WHERE ai_notes_access_enabled IS NULL',
+            );
+          }
+
+          // v32 -> v33: `HomeInsightEvents`, the "shown"/"dismissed" ledger
+          // that fixes the Home AI insight reappearing on every new
+          // transaction (see the table's own doc comment). Local-only, same
+          // shape as `AiInsightConversations` (schemaVersion 31, `from < 31`
+          // block above): no `m.createTable` here — `powerSyncSchema`
+          // (`powersync_schema.dart`) declares it as
+          // `Table.localOnly('home_insight_events', ...)`, so PowerSync
+          // creates its backing table and view the next time the app opens,
+          // before Drift's migration runs.
+          if (from < 33) {
             // Nothing to do here: see the comment above this block.
           }
         },

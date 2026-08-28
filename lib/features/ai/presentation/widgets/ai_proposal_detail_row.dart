@@ -27,13 +27,21 @@ class AiProposalDetailRow extends StatelessWidget {
             color: colors.textSecondary,
           ),
         ),
-        Text(
-          value,
-          textAlign: TextAlign.right,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
+        // Flexible + ellipsis, not a bare Text: a real account or debt name
+        // ("Crédito hipotecario Bancolombia") overflows this row at any font
+        // scale, and Pencil renders no ellipsis, so the frame cannot show it.
+        // Nothing moves while the value fits.
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: colors.textPrimary,
+            ),
           ),
         ),
       ],

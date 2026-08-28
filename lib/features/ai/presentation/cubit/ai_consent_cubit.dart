@@ -16,10 +16,19 @@ import 'ai_consent_state.dart';
 /// Reactive to [GetAppSettings] rather than a one-shot read, so a consent
 /// accepted on another device (it syncs like every other `AppSettings`
 /// field) unlocks the composer here too without a relaunch.
+///
+/// That same stream is what closes the gate again when the consent is
+/// withdrawn from Ajustes (RGPD art. 7.3) — this cubit has no withdrawal path
+/// of its own on purpose. `ClearAiConsent` nulls the persisted columns, the
+/// stream re-emits, and the status falls back to [AiConsentStatus.required]
+/// without anything here needing to know a withdrawal happened. Give the chat
+/// its own withdrawal affordance only when there is a screen asking for one.
 @injectable
 class AiConsentCubit extends Cubit<AiConsentState> {
-  AiConsentCubit(this._getAppSettings, this._markAiConsentAccepted)
-      : super(const AiConsentState());
+  AiConsentCubit(
+    this._getAppSettings,
+    this._markAiConsentAccepted,
+  ) : super(const AiConsentState());
 
   final GetAppSettings _getAppSettings;
   final MarkAiConsentAccepted _markAiConsentAccepted;

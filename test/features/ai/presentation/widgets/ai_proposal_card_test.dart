@@ -43,6 +43,10 @@ void main() {
               messageId: 'msg-1',
               proposal: proposal,
               accountNames: const {'acc-1': 'Nequi'},
+              debtNames: const {
+                'debt-1': 'Crédito moto',
+                'debt-largo': 'Crédito hipotecario Bancolombia tasa fija 2024',
+              },
             ),
           ),
         ),
@@ -100,6 +104,74 @@ void main() {
 
       expect(find.text('Aplicado a tus movimientos.'), findsOneWidget);
       expect(find.text('Tu categoría ya está creada.'), findsNothing);
+    });
+
+    testWidgets('atribución a deuda: "El movimiento ya cuenta en tu deuda."',
+        (tester) async {
+      await pumpCard(
+        tester,
+        buildDebtLinkProposal(status: AiProposalStatus.confirmed),
+      );
+
+      expect(
+        find.text('El movimiento ya cuenta en tu deuda.'),
+        findsOneWidget,
+      );
+      expect(find.text('Aplicado a tus movimientos.'), findsNothing);
+    });
+  });
+
+  // Confirmar a ciegas un vínculo que no se ve es lo que erosiona la confianza
+  // en las propuestas: si la tarjeta no nombra la deuda, no hay nada que
+  // confirmar informadamente.
+  group('atribución a una deuda', () {
+    testWidgets('un movimiento propuesto con deuda la nombra en la tarjeta',
+        (tester) async {
+      await pumpCard(
+        tester,
+        buildTransactionProposal(debtId: 'debt-1'),
+      );
+
+      expect(find.text('Deuda'), findsOneWidget);
+      expect(find.text('Crédito moto'), findsOneWidget);
+    });
+
+    testWidgets('sin deuda no aparece la fila', (tester) async {
+      await pumpCard(tester, buildTransactionProposal());
+
+      expect(find.text('Deuda'), findsNothing);
+    });
+
+    testWidgets('una deuda que el dispositivo no resuelve usa una etiqueta '
+        'genérica, nunca el id crudo', (tester) async {
+      await pumpCard(
+        tester,
+        buildTransactionProposal(debtId: 'debt-desconocida'),
+      );
+
+      expect(find.text('Deuda seleccionada'), findsOneWidget);
+      expect(find.text('debt-desconocida'), findsNothing);
+    });
+
+    testWidgets('la tarjeta de vínculo dice que no crea ni mueve nada',
+        (tester) async {
+      await pumpCard(tester, buildDebtLinkProposal());
+
+      expect(find.text('Crédito moto'), findsOneWidget);
+      expect(
+        find.textContaining('No se crea ningún movimiento nuevo'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('un nombre de deuda largo se trunca en vez de desbordar',
+        (tester) async {
+      await pumpCard(
+        tester,
+        buildDebtLinkProposal(debtId: 'debt-largo'),
+      );
+
+      expect(tester.takeException(), isNull);
     });
   });
 }

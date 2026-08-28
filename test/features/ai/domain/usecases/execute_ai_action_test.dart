@@ -8,6 +8,8 @@ import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_draft.dart';
 import 'package:billetudo/features/categories/domain/usecases/create_category.dart';
 import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
+import 'package:billetudo/features/debts/domain/entities/debt.dart';
+import 'package:billetudo/features/debts/domain/usecases/link_transaction_to_debt.dart';
 import 'package:billetudo/features/goals/domain/entities/goal.dart';
 import 'package:billetudo/features/goals/domain/entities/goal_draft.dart';
 import 'package:billetudo/features/goals/domain/usecases/create_goal.dart';
@@ -20,6 +22,8 @@ import 'package:mocktail/mocktail.dart';
 import '../../../accounts/account_fixtures.dart';
 import '../../../accounts/domain/usecases/account_repository_mock.dart';
 import '../../../categories/domain/usecases/category_repository_mock.dart';
+import '../../../debts/domain/debt_test_fixtures.dart';
+import '../../../debts/domain/usecases/debt_repository_mock.dart';
 import '../../../transactions/transaction_fixtures.dart' show buildTransaction;
 import '../../ai_fixtures.dart';
 
@@ -33,6 +37,8 @@ class MockCreateTransaction extends Mock implements CreateTransaction {}
 
 class MockGetCategory extends Mock implements GetCategory {}
 
+class MockLinkTransactionToDebt extends Mock implements LinkTransactionToDebt {}
+
 /// The only place a suggestion becomes a row. It does not re-validate what the
 /// drafts already validate; what it owns is the referential work a draft
 /// cannot do, and the asymmetry between a budget (a stale id is filtered) and
@@ -44,6 +50,8 @@ void main() {
   late MockCreateTransaction createTransaction;
   late MockGetCategory getCategory;
   late MockAccountRepository accounts;
+  late MockLinkTransactionToDebt linkTransactionToDebt;
+  late MockDebtRepository debts;
   late ExecuteAiAction usecase;
 
   final budget = Budget(
@@ -72,6 +80,7 @@ void main() {
   setUpAll(() {
     registerAccountFallbacks();
     registerCategoryFallbacks();
+    registerDebtFallbacks();
     registerFallbackValue(
       BudgetDraft(
         name: 'fallback',
@@ -103,6 +112,8 @@ void main() {
     createTransaction = MockCreateTransaction();
     getCategory = MockGetCategory();
     accounts = MockAccountRepository();
+    linkTransactionToDebt = MockLinkTransactionToDebt();
+    debts = MockDebtRepository();
     usecase = ExecuteAiAction(
       createBudget,
       createGoal,
@@ -110,6 +121,8 @@ void main() {
       createTransaction,
       getCategory,
       accounts,
+      linkTransactionToDebt,
+      debts,
     );
   });
 
@@ -366,6 +379,154 @@ void main() {
           .captured
           .single as TransactionDraft;
       expect(draft.note, 'almuerzo con Ana');
+    });
+  });
+
+  group('create_transaction attributed to a debt', () {
+    void stubAccount() {
+      when(() => accounts.getAccount('acc-1'))
+          .thenAnswer((_) async => Right(buildAccount(id: 'acc-1')));
+      when(() => createTransaction(any())).thenAnswer(
+        (_) async => Right(buildTransaction(id: 'tx-created')),
+      );
+    }
+
+    test('the movement is born linked: debtId reaches the draft', () async {
+      stubAccount();
+      when(() => debts.getDebt('debt-1')).thenAnswer(
+        (_) async => Right(buildDebt(id: 'debt-1')),
+      );
+
+      final result = await usecase(
+        buildTransactionProposal(debtId: 'debt-1'),
+      );
+
+      final draft = verify(() => createTransaction(captureAny()))
+          .captured
+          .single as TransactionDraft;
+      expect(draft.debtId, 'debt-1');
+      expect(result.isRight(), isTrue);
+      // One write, one confirmation: linking afterwards would be a second
+      // one the user never agreed to.
+      verifyNever(
+        () => linkTransactionToDebt(
+          transactionId: any(named: 'transactionId'),
+          debtId: any(named: 'debtId'),
+        ),
+      );
+    });
+
+    test('a repago recibido (owedToMe + income) counts in the budget',
+        () async {
+      stubAccount();
+      when(() => debts.getDebt('debt-1')).thenAnswer(
+        (_) async => Right(
+          buildDebt(id: 'debt-1', direction: DebtDirection.owedToMe),
+        ),
+      );
+
+      await usecase(
+        buildTransactionProposal(
+          debtId: 'debt-1',
+          type: TransactionType.income,
+          categoryId: null,
+        ),
+      );
+
+      final draft = verify(() => createTransaction(captureAny()))
+          .captured
+          .single as TransactionDraft;
+      expect(draft.countsInBudget, isTrue);
+    });
+
+    test('a closed debt is refused and nothing is written', () async {
+      when(() => accounts.getAccount('acc-1'))
+          .thenAnswer((_) async => Right(buildAccount(id: 'acc-1')));
+      when(() => debts.getDebt('debt-1')).thenAnswer(
+        (_) async => Right(
+          buildDebt(id: 'debt-1', closedAt: DateTime(2026, 7)),
+        ),
+      );
+
+      final result = await usecase(
+        buildTransactionProposal(debtId: 'debt-1'),
+      );
+
+      expect(
+        result.getLeft().toNullable(),
+        isA<ValidationFailure>().having((f) => f.field, 'field', 'debtId'),
+      );
+      verifyNever(() => createTransaction(any()));
+    });
+
+    test('an unknown debtId fails on that field instead of dropping the link',
+        () async {
+      when(() => accounts.getAccount('acc-1'))
+          .thenAnswer((_) async => Right(buildAccount(id: 'acc-1')));
+      when(() => debts.getDebt('debt-ghost')).thenAnswer(
+        (_) async => const Left(NotFoundFailure('no debt with that id')),
+      );
+
+      final result = await usecase(
+        buildTransactionProposal(debtId: 'debt-ghost'),
+      );
+
+      expect(
+        result.getLeft().toNullable(),
+        isA<ValidationFailure>().having((f) => f.field, 'field', 'debtId'),
+      );
+      verifyNever(() => createTransaction(any()));
+    });
+  });
+
+  group('link_transaction_to_debt', () {
+    test('delegates to LinkTransactionToDebt and creates nothing', () async {
+      when(
+        () => linkTransactionToDebt(
+          transactionId: 'tx-1',
+          debtId: 'debt-1',
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+
+      final result = await usecase(buildDebtLinkProposal());
+
+      expect(
+        result.getRight().toNullable(),
+        const AiActionOutcome(
+          proposalId: 'tc_0_5',
+          entity: AiActionEntity.debtLink,
+          entityId: 'debt-1',
+        ),
+      );
+      verifyNever(() => createTransaction(any()));
+    });
+
+    test('a closed debt surfaces as a failure, never as an applied link',
+        () async {
+      when(
+        () => linkTransactionToDebt(
+          transactionId: 'tx-1',
+          debtId: 'debt-closed',
+        ),
+      ).thenAnswer(
+        (_) async => const Left(
+          ValidationFailure(
+            'a closed debt accepts no new links',
+            field: 'closedAt',
+          ),
+        ),
+      );
+
+      final result = await usecase(
+        buildDebtLinkProposal(debtId: 'debt-closed'),
+      );
+
+      expect(result.isLeft(), isTrue);
+      expect(
+        result.getLeft().toNullable(),
+        isA<ValidationFailure>().having((f) => f.field, 'field', 'closedAt'),
+      );
+      verifyNever(() => createTransaction(any()));
     });
   });
 

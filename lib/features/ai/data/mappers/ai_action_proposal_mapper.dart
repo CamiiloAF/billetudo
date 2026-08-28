@@ -41,6 +41,7 @@ abstract final class AiActionProposalMapper {
   static const String _kindGoal = 'create_goal';
   static const String _kindCategory = 'create_category';
   static const String _kindTransaction = 'create_transaction';
+  static const String _kindDebtLink = 'link_transaction_to_debt';
 
   /// Parses one wire/stored proposal. Never throws — see the class doc.
   static AiActionProposal fromJson(Map<String, Object?> json) {
@@ -84,6 +85,7 @@ abstract final class AiActionProposalMapper {
       _kindGoal => _goal(id, title, status, payload),
       _kindCategory => _category(id, title, status, payload),
       _kindTransaction => _transaction(id, title, status, payload),
+      _kindDebtLink => _debtLink(id, title, status, payload),
       _ => null,
     };
 
@@ -120,6 +122,7 @@ abstract final class AiActionProposalMapper {
         CreateGoalProposal() => _kindGoal,
         CreateCategoryProposal() => _kindCategory,
         CreateTransactionProposal() => _kindTransaction,
+        LinkTransactionToDebtProposal() => _kindDebtLink,
         UnsupportedProposal(:final rawKind) => rawKind,
       };
 
@@ -159,6 +162,11 @@ abstract final class AiActionProposalMapper {
             if (proposal.categoryId case final String categoryId)
               'categoryId': categoryId,
             if (proposal.note case final String note) 'note': note,
+            if (proposal.debtId case final String debtId) 'debtId': debtId,
+          },
+        LinkTransactionToDebtProposal() => <String, Object?>{
+            'transactionId': proposal.transactionId,
+            'debtId': proposal.debtId,
           },
         UnsupportedProposal() => null,
       };
@@ -287,6 +295,33 @@ abstract final class AiActionProposalMapper {
       date: date,
       categoryId: _string(payload['categoryId']),
       note: _string(payload['note']),
+      // Optional, and dropped rather than fatal when unreadable: a movement
+      // with no debt attribution is still the movement the user asked for.
+      // What must never happen is the card claiming an attribution the write
+      // will not make, and the card reads this same field.
+      debtId: _string(payload['debtId']),
+    );
+  }
+
+  static LinkTransactionToDebtProposal? _debtLink(
+    String id,
+    String title,
+    AiProposalStatus status,
+    Map<String, Object?> payload,
+  ) {
+    final transactionId = _string(payload['transactionId']);
+    final debtId = _string(payload['debtId']);
+    // Neither id is droppable: without both there is nothing to link, and
+    // guessing either would attribute a payment to the wrong debt.
+    if (transactionId == null || debtId == null) {
+      return null;
+    }
+    return LinkTransactionToDebtProposal(
+      id: id,
+      title: title,
+      status: status,
+      transactionId: transactionId,
+      debtId: debtId,
     );
   }
 

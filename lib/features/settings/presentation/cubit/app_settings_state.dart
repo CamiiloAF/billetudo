@@ -45,6 +45,18 @@ class AppSettingsState extends Equatable {
 
   bool get zeroBasedEnabled => settings.zeroBasedEnabled;
 
+  /// Whether the assistant may read the free-text `note` of the user's
+  /// records (`AppSettings.aiNotesAccessEnabled`). Opt-in: `false` until the
+  /// user confirms it in Ajustes.
+  bool get aiNotesAccessEnabled => settings.aiNotesAccessEnabled;
+
+  /// Whether the AI assistant's data-sharing consent is currently granted
+  /// against this build's copy (`AppSettings.hasAcceptedAiConsent`). Ajustes
+  /// only offers "Retirar el consentimiento" while this is `true`: there is
+  /// nothing to withdraw otherwise, and showing the action anyway would
+  /// suggest a permission that was never given.
+  bool get hasAcceptedAiConsent => settings.hasAcceptedAiConsent;
+
   /// The manually-featured budget id, or `null` for "Automático"
   /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
   String? get featuredBudgetId => settings.featuredBudgetId;

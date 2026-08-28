@@ -23,7 +23,7 @@ Todas las pantallas existen en tema Claro y su copia Oscuro (`Copy()+theme:{mode
 | 4 — Cierre: primer movimiento (HU-04) | `Gi0NV` | `Bylcp` |
 | 4b — Cierre · Cuenta omitida (referencia: CTA cambia a "Crea tu primera cuenta" cuando el paso 2 se omitió) | `bAKS6` | `ld3xh` |
 
-HU-03 (categorías semilla) no tiene pantalla propia — se menciona en una línea dentro de Bienvenida ("Ya dejamos categorías listas para ti."). HU-05 (niveles de pago) está congelada y no aparece en ninguna pantalla.
+HU-03 (categorías semilla) no tiene pantalla propia y tampoco se anuncia: la línea que la mencionaba en Bienvenida ("Ya dejamos categorías listas para ti.") se eliminó el 2026-08-28, del diseño y del código (`onboardingWelcomeCaption`), por decisión del usuario — no aportaba valor y cargaba la primera pantalla. HU-05 (niveles de pago) está congelada y no aparece en ninguna pantalla.
 
 ## Componentes nuevos (reusable:true)
 

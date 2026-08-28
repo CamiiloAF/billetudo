@@ -13,6 +13,7 @@ import 'ai_question_chip.dart';
 class AiCardInsight extends StatelessWidget {
   const AiCardInsight({
     required this.insight,
+    required this.budgetChipIsDirectNav,
     required this.onAskQuestion,
     required this.onCreateBudget,
     required this.onDismiss,
@@ -23,6 +24,13 @@ class AiCardInsight extends StatelessWidget {
   });
 
   final HomeAiInsight insight;
+
+  /// `HomeState.budgetChipIsDirectNav` — which arrow the `createBudget`
+  /// variant's chip shows (the only case in this widget that reaches
+  /// [onCreateBudget]; every other insight type uses the conversation chips
+  /// below instead).
+  final bool budgetChipIsDirectNav;
+
   final ValueChanged<String?> onAskQuestion;
   final VoidCallback onCreateBudget;
   final VoidCallback? onDismiss;
@@ -196,7 +204,7 @@ class AiCardInsight extends StatelessWidget {
                     : (insight.conversationId != null
                         ? l10n.homeAiInsightContinueChip
                         : startChipLabel),
-                isDirectNav: isCreateBudget,
+                isDirectNav: isCreateBudget && budgetChipIsDirectNav,
                 onTap: isCreateBudget
                     ? onCreateBudget
                     : (insight.conversationId != null

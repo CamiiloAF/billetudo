@@ -269430,6 +269430,1709 @@
           "fontWeight": "700"
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "p76NB",
+      "x": 91250,
+      "y": -3560,
+      "name": "Legal Link Chip",
+      "context": "Chip tocable que abre un documento legal (Terminos de uso / Politica de privacidad) en el onboarding. Padding [14,12] para llegar a 45px de alto (minimo 44pt). Label + icono en $primary-on-soft-strong sobre $muted (~6:1). Overrides: Label content, Icon (opcional).",
+      "reusable": true,
+      "fill": "$muted",
+      "cornerRadius": 12,
+      "gap": 6,
+      "padding": [
+        14,
+        12
+      ],
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "icon",
+          "id": "sYE7b",
+          "name": "Icon",
+          "width": 14,
+          "height": 14,
+          "icon": "external-link",
+          "library": "lucide",
+          "fill": "$primary-on-soft-strong"
+        },
+        {
+          "type": "text",
+          "id": "y4HbB",
+          "name": "Label",
+          "fill": "$primary-on-soft-strong",
+          "content": "Leer términos",
+          "lineHeight": 1.3,
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "SVfby",
+      "x": 91700,
+      "y": -3560,
+      "name": "Legal Consent Row",
+      "context": "Fila de consentimiento legal del onboarding: checkbox + declaracion de aceptacion + 2 chips que abren cada documento.\n\nESTADOS. Reposo (sin aceptar) = $surface + $border 1, checkbox vacio con borde $text-secondary. Aceptado = override en la instancia: root stroke $primary 2, Checkbox fill $primary + stroke $primary, Check enabled true.\n\nWCAG 1.4.1: el estado se comunica por glifo check + relleno + borde de 2px, nunca solo por color.\n\nTAP TARGETS: el area tocable del consentimiento es la fila completa (checkbox + texto), NO el checkbox de 24x24. Los 2 chips son tap targets independientes de 45px de alto que abren el documento; no deben alternar el checkbox.",
+      "reusable": true,
+      "width": 350,
+      "fill": "$surface",
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 14,
+      "children": [
+        {
+          "type": "frame",
+          "id": "JGBG7",
+          "name": "Consent Row",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "FtMnq",
+              "name": "Checkbox",
+              "width": 24,
+              "height": 24,
+              "fill": "$surface",
+              "cornerRadius": 7,
+              "stroke": "$text-secondary",
+              "strokeWidth": 2,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "GPFiv",
+                  "x": 0,
+                  "y": 0,
+                  "name": "Check",
+                  "enabled": false,
+                  "width": 16,
+                  "height": 16,
+                  "icon": "check",
+                  "library": "lucide",
+                  "fill": "$on-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "SIUMG",
+              "name": "Consent Text",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Acepto los Términos de uso y la Política de privacidad.",
+              "lineHeight": 1.35,
+              "fontFamily": "$font-body",
+              "fontSize": 14,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jXEbv",
+          "name": "Links Row",
+          "width": "fill_container",
+          "gap": 8,
+          "children": [
+            {
+              "id": "mm9z7",
+              "type": "ref",
+              "ref": "p76NB",
+              "name": "Link Términos"
+            },
+            {
+              "id": "fdMfH",
+              "type": "ref",
+              "ref": "p76NB",
+              "name": "Link Política",
+              "descendants": {
+                "y4HbB": {
+                  "content": "Leer política"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "SjOTr",
+      "x": 92150,
+      "y": -3560,
+      "name": "Legal Doc Row",
+      "context": "Fila tocable de documento legal dentro de una hoja (Bottom Sheet Base). Abre el documento. Alto 46px (>=44). Overrides: Icon, Label.",
+      "reusable": true,
+      "width": 350,
+      "fill": "$muted",
+      "cornerRadius": 14,
+      "gap": 12,
+      "padding": 14,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "icon",
+          "id": "HIxbb",
+          "name": "Icon",
+          "width": 18,
+          "height": 18,
+          "icon": "file-text",
+          "library": "lucide",
+          "fill": "$primary-on-soft"
+        },
+        {
+          "type": "text",
+          "id": "Yy1fC",
+          "name": "Label",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Términos de uso",
+          "lineHeight": 1.3,
+          "fontFamily": "$font-body",
+          "fontSize": 14,
+          "fontWeight": "700"
+        },
+        {
+          "type": "icon",
+          "id": "XuEcH",
+          "name": "Chevron",
+          "width": 16,
+          "height": 16,
+          "icon": "chevron-right",
+          "library": "lucide",
+          "fill": "$text-secondary"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "D6t77",
+      "x": 91250,
+      "y": -4690,
+      "name": "A1 · Bienvenida + checkbox legal — sin aceptar (Claro)",
+      "context": "VARIANTE A (sin aceptar). Consentimiento explicito EN la Bienvenida: Legal Consent Row (checkbox + 2 chips que abren cada documento) entre el bloque de texto y el CTA. Mientras la casilla esta sin marcar, el CTA \"Comenzar\" queda INERTE: fill $muted, label e icono en $segment-inactive-text (5.3:1 en claro). El link \"Ya tengo cuenta\" sigue activo a proposito: iniciar sesion tambien exigira aceptar, pero el bloqueo se resuelve en el mismo lugar. Estado aceptado = fr4V1.",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "gvgH5",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "AxqAK",
+          "type": "ref",
+          "ref": "s6LXJ",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "descendants": {
+            "M6HzP": {
+              "fill": []
+            },
+            "UpRIR": {
+              "enabled": false
+            },
+            "wP0oW": {
+              "width": 22,
+              "fill": "$primary"
+            },
+            "Lr9Ia": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "O4nul": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "Kv44Y": {
+              "width": 8,
+              "fill": "$border"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "dD8PF",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            24,
+            20,
+            32,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "FrfAQ",
+              "name": "Hero",
+              "width": "fill_container",
+              "height": 220,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "H32BvD",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Back",
+                  "x": 150,
+                  "y": 20,
+                  "rotation": 8,
+                  "width": 190,
+                  "height": 114,
+                  "layoutPosition": "absolute",
+                  "opacity": 0.55,
+                  "descendants": {
+                    "vGBTN": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "u6ynSR",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Front",
+                  "x": 70,
+                  "y": 56,
+                  "rotation": -7,
+                  "width": 210,
+                  "height": 126,
+                  "layoutPosition": "absolute"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "d9T8D",
+              "name": "Text Group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L4i5c",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Todo lo esencial. Gratis. Para siempre.",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$font-body",
+                  "fontSize": 30,
+                  "fontWeight": "800",
+                  "letterSpacing": -0.5
+                },
+                {
+                  "type": "text",
+                  "id": "E3e0n1",
+                  "name": "Subhead",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "LRusH",
+                  "name": "Caption",
+                  "fill": "$primary-on-soft-strong",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Ya dejamos categorías listas para ti.",
+                  "lineHeight": 1.3,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "id": "JQms4",
+              "type": "ref",
+              "ref": "SVfby",
+              "name": "Legal Consent",
+              "width": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "K9n1eC",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "id": "SNmiP",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Comenzar",
+                  "width": "fill_container",
+                  "fill": "$muted",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "arrow-right",
+                      "fill": "$segment-inactive-text"
+                    },
+                    "JHbmq": {
+                      "content": "Comenzar",
+                      "fill": "$segment-inactive-text"
+                    }
+                  }
+                },
+                {
+                  "id": "lQLPI",
+                  "type": "ref",
+                  "ref": "f3Zbo",
+                  "name": "Link Ya tengo cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IwyRw": {
+                      "content": "Ya tengo cuenta"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "fr4V1",
+      "x": 91680,
+      "y": -4690,
+      "name": "A2 · Bienvenida + checkbox legal — aceptado (Claro)",
+      "context": "VARIANTE A (aceptado). Misma pantalla que D6t77 con la casilla marcada: root del Legal Consent Row con stroke $primary 2, checkbox relleno $primary + glifo check visible (3 senales redundantes, WCAG 1.4.1), y CTA \"Comenzar\" de vuelta en $primary/$on-primary.",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "JDYox",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "DhWJH",
+          "type": "ref",
+          "ref": "s6LXJ",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "descendants": {
+            "M6HzP": {
+              "fill": []
+            },
+            "UpRIR": {
+              "enabled": false
+            },
+            "wP0oW": {
+              "width": 22,
+              "fill": "$primary"
+            },
+            "Lr9Ia": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "O4nul": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "Kv44Y": {
+              "width": 8,
+              "fill": "$border"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Y15uM",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            24,
+            20,
+            32,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hoKrk",
+              "name": "Hero",
+              "width": "fill_container",
+              "height": 220,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "iqEzR",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Back",
+                  "x": 150,
+                  "y": 20,
+                  "rotation": 8,
+                  "width": 190,
+                  "height": 114,
+                  "layoutPosition": "absolute",
+                  "opacity": 0.55,
+                  "descendants": {
+                    "vGBTN": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "CRMg6",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Front",
+                  "x": 70,
+                  "y": 56,
+                  "rotation": -7,
+                  "width": 210,
+                  "height": 126,
+                  "layoutPosition": "absolute"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Jp8bt",
+              "name": "Text Group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "dzWe9",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Todo lo esencial. Gratis. Para siempre.",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$font-body",
+                  "fontSize": 30,
+                  "fontWeight": "800",
+                  "letterSpacing": -0.5
+                },
+                {
+                  "type": "text",
+                  "id": "wQGAX",
+                  "name": "Subhead",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "Mtj6r",
+                  "name": "Caption",
+                  "fill": "$primary-on-soft-strong",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Ya dejamos categorías listas para ti.",
+                  "lineHeight": 1.3,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "id": "Qc8Zs",
+              "type": "ref",
+              "ref": "SVfby",
+              "name": "Legal Consent",
+              "width": "fill_container",
+              "stroke": "$primary",
+              "strokeWidth": 2,
+              "descendants": {
+                "FtMnq": {
+                  "fill": "$primary",
+                  "stroke": "$primary"
+                },
+                "GPFiv": {
+                  "enabled": true
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "KDv0Y",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "id": "vmhWt",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Comenzar",
+                  "width": "fill_container",
+                  "fill": "$primary",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "arrow-right",
+                      "fill": "$on-primary"
+                    },
+                    "JHbmq": {
+                      "content": "Comenzar",
+                      "fill": "$on-primary"
+                    }
+                  }
+                },
+                {
+                  "id": "HjtPX",
+                  "type": "ref",
+                  "ref": "f3Zbo",
+                  "name": "Link Ya tengo cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IwyRw": {
+                      "content": "Ya tengo cuenta"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "h6osZ",
+      "x": 92110,
+      "y": -4690,
+      "name": "B · Bienvenida — hoja legal al entrar (Claro)",
+      "context": "VARIANTE B. Hoja legal BLOQUEANTE al entrar al onboarding, antes de que la persona interactue con la Bienvenida (que queda visible detras del scrim). Sin handle de arrastre (G11HR enabled:false) para senalar que no se puede descartar; sin boton secundario. La aceptacion es el propio CTA \"Acepto y continuar\". El CTA \"Comenzar\" de la Bienvenida no llega a tener estado no-aceptado: la hoja se resuelve primero.",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "xxJ4p",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "LfVc7",
+          "type": "ref",
+          "ref": "s6LXJ",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "descendants": {
+            "M6HzP": {
+              "fill": []
+            },
+            "UpRIR": {
+              "enabled": false
+            },
+            "wP0oW": {
+              "width": 22,
+              "fill": "$primary"
+            },
+            "Lr9Ia": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "O4nul": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "Kv44Y": {
+              "width": 8,
+              "fill": "$border"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "BE1Kv",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            24,
+            20,
+            32,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "CRIBi",
+              "name": "Hero",
+              "width": "fill_container",
+              "height": 220,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "XLktl",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Back",
+                  "x": 150,
+                  "y": 20,
+                  "rotation": 8,
+                  "width": 190,
+                  "height": 114,
+                  "layoutPosition": "absolute",
+                  "opacity": 0.55,
+                  "descendants": {
+                    "vGBTN": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "NBerP",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Front",
+                  "x": 70,
+                  "y": 56,
+                  "rotation": -7,
+                  "width": 210,
+                  "height": 126,
+                  "layoutPosition": "absolute"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NPnme",
+              "name": "Text Group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zSo4B",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Todo lo esencial. Gratis. Para siempre.",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$font-body",
+                  "fontSize": 30,
+                  "fontWeight": "800",
+                  "letterSpacing": -0.5
+                },
+                {
+                  "type": "text",
+                  "id": "m8kj1",
+                  "name": "Subhead",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "vzbEE",
+                  "name": "Caption",
+                  "fill": "$primary-on-soft-strong",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Ya dejamos categorías listas para ti.",
+                  "lineHeight": 1.3,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "K5toQL",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "id": "Nis59",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Comenzar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "arrow-right"
+                    },
+                    "JHbmq": {
+                      "content": "Comenzar"
+                    }
+                  }
+                },
+                {
+                  "id": "YOelE",
+                  "type": "ref",
+                  "ref": "f3Zbo",
+                  "name": "Link Ya tengo cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IwyRw": {
+                      "content": "Ya tengo cuenta"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "KUqEh",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay Legal",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": -50,
+          "width": 390,
+          "height": 972,
+          "descendants": {
+            "G11HR": {
+              "enabled": false
+            },
+            "wJBMX": {
+              "type": "frame",
+              "id": "cw1ln",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "Q9xqZV",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IPjWU": {
+                      "icon": "shield-check"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "Antes de empezar"
+                    },
+                    "FxD3p": {
+                      "content": "Tus datos viven en tu teléfono. Estos dos documentos cuentan cómo los tratamos y qué puedes esperar de Billetudo."
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "a4FK8A",
+                  "name": "Docs",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "shgGl",
+                      "type": "ref",
+                      "ref": "SjOTr",
+                      "name": "Doc Términos",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "sSqH0",
+                      "type": "ref",
+                      "ref": "SjOTr",
+                      "name": "Doc Política",
+                      "width": "fill_container",
+                      "descendants": {
+                        "HIxbb": {
+                          "icon": "shield"
+                        },
+                        "Yy1fC": {
+                          "content": "Política de privacidad"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "fBnjd",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Aceptar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "check"
+                    },
+                    "JHbmq": {
+                      "content": "Acepto y continuar"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "nqoi6",
+                  "name": "Sheet Caption",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Podrás volver a leerlos cuando quieras desde Ajustes.",
+                  "lineHeight": 1.4,
+                  "textAlign": "center",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "c1dEc",
+      "x": 92600,
+      "y": -3560,
+      "name": "Legal Text Link",
+      "context": "Enlace legal discreto (sin fondo) para el pie de la Bienvenida. Padding [14,8] para alcanzar 44px de alto (minimo tap target). Fill $primary-on-soft-strong sobre $background (~7:1). Override: Label content.",
+      "reusable": true,
+      "padding": [
+        14,
+        8
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "h2Rril",
+          "name": "Label",
+          "fill": "$primary-on-soft-strong",
+          "content": "Términos de uso",
+          "lineHeight": 1.3,
+          "fontFamily": "$font-body",
+          "fontSize": 12,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "z16gWV",
+      "x": 92540,
+      "y": -4690,
+      "name": "C1 · Bienvenida limpia + enlaces legales (Claro)",
+      "context": "VARIANTE C, paso 1. La Bienvenida NO cambia de tono: cero muro legal, solo un pie discreto con los dos documentos accesibles (Legal Text Link, 44px de alto cada uno). No hay declaracion de aceptacion aqui — estos enlaces solo cumplen la obligacion de disponibilidad. El CTA \"Comenzar\" esta siempre habilitado; la aceptacion explicita ocurre al tocarlo (ver TxoKJ).",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "BZanr",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "baAhP",
+          "type": "ref",
+          "ref": "s6LXJ",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "descendants": {
+            "M6HzP": {
+              "fill": []
+            },
+            "UpRIR": {
+              "enabled": false
+            },
+            "wP0oW": {
+              "width": 22,
+              "fill": "$primary"
+            },
+            "Lr9Ia": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "O4nul": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "Kv44Y": {
+              "width": 8,
+              "fill": "$border"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Z6kQXj",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 22,
+          "padding": [
+            24,
+            20,
+            32,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "G4qE6G",
+              "name": "Hero",
+              "width": "fill_container",
+              "height": 220,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "QawqY",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Back",
+                  "x": 150,
+                  "y": 20,
+                  "rotation": 8,
+                  "width": 190,
+                  "height": 114,
+                  "layoutPosition": "absolute",
+                  "opacity": 0.55,
+                  "descendants": {
+                    "vGBTN": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "ReLh9",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Front",
+                  "x": 70,
+                  "y": 56,
+                  "rotation": -7,
+                  "width": 210,
+                  "height": 126,
+                  "layoutPosition": "absolute"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fy7vF",
+              "name": "Text Group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WH7VC",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Todo lo esencial. Gratis. Para siempre.",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$font-body",
+                  "fontSize": 30,
+                  "fontWeight": "800",
+                  "letterSpacing": -0.5
+                },
+                {
+                  "type": "text",
+                  "id": "Z6faHJ",
+                  "name": "Subhead",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "acE43",
+                  "name": "Caption",
+                  "fill": "$primary-on-soft-strong",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Ya dejamos categorías listas para ti.",
+                  "lineHeight": 1.3,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oC43x",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "id": "fmaVx",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Comenzar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "arrow-right"
+                    },
+                    "JHbmq": {
+                      "content": "Comenzar"
+                    }
+                  }
+                },
+                {
+                  "id": "y2thV",
+                  "type": "ref",
+                  "ref": "f3Zbo",
+                  "name": "Link Ya tengo cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IwyRw": {
+                      "content": "Ya tengo cuenta"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TVJJ6",
+              "name": "Legal Links",
+              "width": "fill_container",
+              "gap": 2,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "y5ggll",
+                  "type": "ref",
+                  "ref": "c1dEc",
+                  "name": "Link Términos"
+                },
+                {
+                  "type": "text",
+                  "id": "zSyBG",
+                  "name": "Dot",
+                  "fill": "$text-secondary",
+                  "content": "·",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                },
+                {
+                  "id": "QfJZ8",
+                  "type": "ref",
+                  "ref": "c1dEc",
+                  "name": "Link Política",
+                  "descendants": {
+                    "h2Rril": {
+                      "content": "Política de privacidad"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "TxoKJ",
+      "x": 92970,
+      "y": -4690,
+      "name": "C2 · Hoja de aceptación al tocar “Comenzar” (Claro)",
+      "context": "VARIANTE C, paso 2. Al tocar \"Comenzar\" por primera vez sube la hoja de aceptacion (just-in-time). Es descartable (handle visible + boton \"Ahora no\", que devuelve a la Bienvenida sin avanzar); \"Acepto\" registra el consentimiento y continua al paso 2 del onboarding. Consentimiento explicito sin que la Bienvenida cargue con texto legal.",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "Pu1Xv",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62
+        },
+        {
+          "id": "bEvAq",
+          "type": "ref",
+          "ref": "s6LXJ",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "descendants": {
+            "M6HzP": {
+              "fill": []
+            },
+            "UpRIR": {
+              "enabled": false
+            },
+            "wP0oW": {
+              "width": 22,
+              "fill": "$primary"
+            },
+            "Lr9Ia": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "O4nul": {
+              "width": 8,
+              "fill": "$border"
+            },
+            "Kv44Y": {
+              "width": 8,
+              "fill": "$border"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Gpa0t",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 22,
+          "padding": [
+            24,
+            20,
+            32,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "KRsij",
+              "name": "Hero",
+              "width": "fill_container",
+              "height": 220,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "BaPwr",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Back",
+                  "x": 150,
+                  "y": 20,
+                  "rotation": 8,
+                  "width": 190,
+                  "height": 114,
+                  "layoutPosition": "absolute",
+                  "opacity": 0.55,
+                  "descendants": {
+                    "vGBTN": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "Ueq2F",
+                  "type": "ref",
+                  "ref": "S7Dgu0",
+                  "name": "Card Front",
+                  "x": 70,
+                  "y": 56,
+                  "rotation": -7,
+                  "width": 210,
+                  "height": 126,
+                  "layoutPosition": "absolute"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "jrhXw",
+              "name": "Text Group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "owds8",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Todo lo esencial. Gratis. Para siempre.",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$font-body",
+                  "fontSize": 30,
+                  "fontWeight": "800",
+                  "letterSpacing": -0.5
+                },
+                {
+                  "type": "text",
+                  "id": "NYoc5",
+                  "name": "Subhead",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus datos viven en tu teléfono. El respaldo en la nube es opcional.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "xqPIl",
+                  "name": "Caption",
+                  "fill": "$primary-on-soft-strong",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Ya dejamos categorías listas para ti.",
+                  "lineHeight": 1.3,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RZami",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "id": "W5CH84",
+                  "type": "ref",
+                  "ref": "j7Zvt",
+                  "name": "CTA Comenzar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "PKzAO": {
+                      "icon": "arrow-right"
+                    },
+                    "JHbmq": {
+                      "content": "Comenzar"
+                    }
+                  }
+                },
+                {
+                  "id": "I6zgZt",
+                  "type": "ref",
+                  "ref": "f3Zbo",
+                  "name": "Link Ya tengo cuenta",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IwyRw": {
+                      "content": "Ya tengo cuenta"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "t3zCYS",
+              "name": "Legal Links",
+              "width": "fill_container",
+              "gap": 2,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "xH2df",
+                  "type": "ref",
+                  "ref": "c1dEc",
+                  "name": "Link Términos"
+                },
+                {
+                  "type": "text",
+                  "id": "qZuD1",
+                  "name": "Dot",
+                  "fill": "$text-secondary",
+                  "content": "·",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                },
+                {
+                  "id": "BeYiH",
+                  "type": "ref",
+                  "ref": "c1dEc",
+                  "name": "Link Política",
+                  "descendants": {
+                    "h2Rril": {
+                      "content": "Política de privacidad"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "Lkt6u",
+          "type": "ref",
+          "ref": "PqTUt",
+          "name": "Overlay Aceptación",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": -50,
+          "width": 390,
+          "height": 972,
+          "descendants": {
+            "wJBMX": {
+              "type": "frame",
+              "id": "YhrVf",
+              "name": "Content Slot",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "id": "aNcK1",
+                  "type": "ref",
+                  "ref": "XPjIZ",
+                  "name": "Sheet Icon Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "IPjWU": {
+                      "icon": "file-check"
+                    },
+                    "lmN3k": {
+                      "enabled": true,
+                      "content": "Un último paso"
+                    },
+                    "FxD3p": {
+                      "content": "Para continuar necesitamos que aceptes los Términos de uso y la Política de privacidad."
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "Fi2Jm",
+                  "name": "Docs",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "DhrTi",
+                      "type": "ref",
+                      "ref": "SjOTr",
+                      "name": "Doc Términos",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "x4UEsH",
+                      "type": "ref",
+                      "ref": "SjOTr",
+                      "name": "Doc Política",
+                      "width": "fill_container",
+                      "descendants": {
+                        "HIxbb": {
+                          "icon": "shield"
+                        },
+                        "Yy1fC": {
+                          "content": "Política de privacidad"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "SliOm",
+                  "type": "ref",
+                  "ref": "Ot4yI",
+                  "name": "Buttons Row",
+                  "width": "fill_container",
+                  "descendants": {
+                    "yX5SX/kAVHJ": {
+                      "content": "Ahora no"
+                    },
+                    "qfTBg/PKzAO": {
+                      "icon": "check"
+                    },
+                    "qfTBg/JHbmq": {
+                      "content": "Acepto"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "A187l",
+      "x": 91250,
+      "y": -4850,
+      "name": "Zona — ONBOARDING · Aceptación TyC (Claro, EN REVISIÓN)",
+      "fill": "$text-primary",
+      "content": "Zona — ONBOARDING · Aceptación de Términos y Privacidad · 3 variantes (solo tema claro)",
+      "fontFamily": "$font-body",
+      "fontSize": 22,
+      "fontWeight": "800"
+    },
+    {
+      "type": "frame",
+      "id": "nlogv",
+      "x": 91250,
+      "y": -4750,
+      "name": "🔖 REVIEW MARKER — A1 — Checkbox, CTA inerte",
+      "width": 390,
+      "fill": "#FF3B30",
+      "cornerRadius": 12,
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "MLsOy",
+          "name": "Label",
+          "fill": "#FFFFFF",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "🔖 EN REVISIÓN — A1 — Checkbox, CTA inerte (D6t77)",
+          "lineHeight": 1.3,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "E4MhF8",
+      "x": 91680,
+      "y": -4750,
+      "name": "🔖 REVIEW MARKER — A2 — Checkbox aceptado",
+      "width": 390,
+      "fill": "#FF3B30",
+      "cornerRadius": 12,
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "dMjHI",
+          "name": "Label",
+          "fill": "#FFFFFF",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "🔖 EN REVISIÓN — A2 — Checkbox aceptado (fr4V1)",
+          "lineHeight": 1.3,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "LaYMN",
+      "x": 92110,
+      "y": -4750,
+      "name": "🔖 REVIEW MARKER — B — Hoja legal al entrar",
+      "width": 390,
+      "fill": "#FF3B30",
+      "cornerRadius": 12,
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "YFaG6",
+          "name": "Label",
+          "fill": "#FFFFFF",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "🔖 EN REVISIÓN — B — Hoja legal al entrar (h6osZ)",
+          "lineHeight": 1.3,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "n19pEv",
+      "x": 92540,
+      "y": -4750,
+      "name": "🔖 REVIEW MARKER — C1 — Bienvenida limpia + enlaces",
+      "width": 390,
+      "fill": "#FF3B30",
+      "cornerRadius": 12,
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "p9Ufv",
+          "name": "Label",
+          "fill": "#FFFFFF",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "🔖 EN REVISIÓN — C1 — Bienvenida limpia + enlaces (z16gWV)",
+          "lineHeight": 1.3,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "m7vExZ",
+      "x": 92970,
+      "y": -4750,
+      "name": "🔖 REVIEW MARKER — C2 — Hoja al tocar Comenzar",
+      "width": 390,
+      "fill": "#FF3B30",
+      "cornerRadius": 12,
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "G84BNy",
+          "name": "Label",
+          "fill": "#FFFFFF",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "🔖 EN REVISIÓN — C2 — Hoja al tocar Comenzar (TxoKJ)",
+          "lineHeight": 1.3,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "Q321oq",
+      "x": 91250,
+      "y": -3620,
+      "name": "Label — Componentes legales nuevos",
+      "fill": "$text-secondary",
+      "content": "Componentes nuevos (reusable) — Legal Link Chip · Legal Consent Row · Legal Doc Row · Legal Text Link",
+      "fontFamily": "$font-body",
+      "fontSize": 14,
+      "fontWeight": "700"
     }
   ],
   "themes": {

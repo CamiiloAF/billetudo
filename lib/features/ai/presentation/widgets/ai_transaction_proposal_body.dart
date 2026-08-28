@@ -8,18 +8,26 @@ import '../../domain/entities/ai_action_proposal.dart';
 import 'ai_proposal_detail_row.dart';
 import 'ai_proposal_divider.dart';
 
-/// The Body Slot for a `create_transaction` proposal: amount, type, date and
-/// account (resolved by name when it is one of the user's known accounts,
-/// via `AiChatState.accountNames`).
+/// The Body Slot for a `create_transaction` proposal: amount, type, date,
+/// account and — when the movement is born attributed to a debt — the debt it
+/// will count against. Both ids are resolved to names via
+/// `AiChatState.accountNames`/`debtNames`.
+///
+/// The debt row is not optional chrome: confirming an attribution the card
+/// never showed is exactly what makes a proposal untrustworthy, so when
+/// `proposal.debtId` is set the row is rendered even if the name cannot be
+/// resolved (a generic label then stands in, never the raw id).
 class AiTransactionProposalBody extends StatelessWidget {
   const AiTransactionProposalBody({
     required this.proposal,
     required this.accountNames,
+    required this.debtNames,
     super.key,
   });
 
   final CreateTransactionProposal proposal;
   final Map<String, String> accountNames;
+  final Map<String, String> debtNames;
 
   static const MoneyFormatter _money = MoneyFormatter();
 
@@ -56,6 +64,13 @@ class AiTransactionProposalBody extends StatelessWidget {
           value: accountNames[proposal.accountId] ??
               l10n.aiProposalTransactionAccountUnknown,
         ),
+        if (proposal.debtId case final String debtId) ...[
+          const AiProposalDivider(),
+          AiProposalDetailRow(
+            label: l10n.aiProposalTransactionDebt,
+            value: debtNames[debtId] ?? l10n.aiProposalDebtUnknown,
+          ),
+        ],
       ],
     );
   }

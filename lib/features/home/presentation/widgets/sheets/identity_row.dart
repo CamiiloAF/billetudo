@@ -31,8 +31,8 @@ class IdentityRow extends StatelessWidget {
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               if (email != null)
                 Text(

@@ -91,6 +91,15 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
     // two guards when a gate genuinely is not clear yet, and the listeners
     // remain the ones that fire once it does.
     _startChatOnce();
+    // Same gap, for scroll position: a resumed conversation (from history, or
+    // a long-lived AiChatCubit that already has messages from earlier this
+    // session) mounts with `chatState.messages` already non-empty, and
+    // `BlocConsumer`'s `listener` only fires on a *transition* after this
+    // widget subscribes — never for the state the cubit already held. Without
+    // this, the chat opened at the top instead of the latest message, exactly
+    // backwards for something that reads bottom-to-top. Harmless no-op when
+    // there are no messages yet (`maxScrollExtent` is 0).
+    _scrollToBottom();
   }
 
   @override
@@ -215,6 +224,7 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
                                 : AiAssistantBubble(
                                     message: message,
                                     accountNames: chatState.accountNames,
+                                    debtNames: chatState.debtNames,
                                   ),
                             const SizedBox(height: 14),
                           ],

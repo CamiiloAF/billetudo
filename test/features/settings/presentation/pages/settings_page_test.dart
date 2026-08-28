@@ -141,8 +141,8 @@ void main() {
         await pumpSettings(tester, session: const AuthSession.signedIn(user));
 
         expect(find.text('Estado de sincronización'), findsOneWidget);
-        expect(find.text('Última sincronización: hace 5 minutos'),
-            findsOneWidget);
+        expect(
+            find.text('Última sincronización: hace 5 minutos'), findsOneWidget);
         expect(
           tester.getRect(find.byType(SettingsSessionCard)).bottom,
           lessThan(tester.getRect(find.text('Estado de sincronización')).top),

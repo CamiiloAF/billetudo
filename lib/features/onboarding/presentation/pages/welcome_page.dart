@@ -72,14 +72,6 @@ class WelcomePage extends StatelessWidget {
                     height: 1.4,
                   ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.onboardingWelcomeCaption,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colors.primaryOnSoftStrong,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
           ],
         ),
       ),

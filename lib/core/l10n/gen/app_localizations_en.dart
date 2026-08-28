@@ -5683,10 +5683,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your data lives on your phone. Cloud backup is optional.';
 
   @override
-  String get onboardingWelcomeCaption =>
-      'We already set up some categories for you.';
-
-  @override
   String get onboardingWelcomeCta => 'Get started';
 
   @override
@@ -6269,4 +6265,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiProposalTransactionAccountUnknown => 'Selected account';
+
+  @override
+  String get aiProposalTransactionDebt => 'Debt';
+
+  @override
+  String get aiProposalDebtUnknown => 'Selected debt';
+
+  @override
+  String get aiProposalDebtLinkExplainer =>
+      'No new movement is created and no money moves: the movement already hit your account. This only makes it count towards the debt\'s balance.';
+
+  @override
+  String get aiProposalFootnoteConfirmedDebtLink =>
+      'The movement now counts towards your debt.';
+
+  @override
+  String get aiProposalConfirmedRowDebtLink => 'Attributed to the debt';
+
+  @override
+  String get settingsAiSection => 'AI assistant';
+
+  @override
+  String get settingsAiNotesAccess => 'Let the assistant read my notes';
+
+  @override
+  String get settingsAiNotesAccessSubtitle =>
+      'Even when it\'s off, the assistant still searches your records: the search runs on your device and only structured data travels, never the text of your notes.';
+
+  @override
+  String get settingsAiNotesAccessSheetTitle =>
+      'Let the assistant read your notes?';
+
+  @override
+  String get settingsAiNotesAccessSheetMessage =>
+      'Your notes are free text: they often hold people\'s names and details of your life. If you turn this on, the note travels to Google Gemini along with your question so the assistant understands what you call things: finding “the power bill” when the note says “electricity invoice”. You can turn it off whenever you want.';
+
+  @override
+  String get settingsAiNotesAccessSheetConfirm => 'Turn on';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsPrivacyPolicySubtitle =>
+      'What data we keep, what is shared and with whom';
+
+  @override
+  String get settingsTermsOfUse => 'Terms of use';
+
+  @override
+  String get settingsTermsOfUseSubtitle => 'The rules for using Billetudo';
+
+  @override
+  String get settingsLegalLinkError =>
+      'We couldn\'t open the link. Please try again.';
+
+  @override
+  String get settingsAiConsentWithdraw => 'Withdraw AI consent';
+
+  @override
+  String get settingsAiConsentWithdrawSubtitle =>
+      'You stop sharing data with the assistant. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetTitle => 'Withdraw your consent?';
+
+  @override
+  String get settingsAiConsentWithdrawSheetMessage =>
+      'The assistant stops being available and nothing else is sent to Google Gemini. \"Let the assistant read my notes\" is turned off too. Your records and your saved conversations stay on your device. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetConfirm => 'Withdraw';
 }

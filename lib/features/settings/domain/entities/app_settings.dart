@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../ai/domain/entities/ai_consent.dart';
 import '../../../home/domain/entities/quick_access_item.dart';
 
 /// How [AppSettings.featuredBudgetId] is resolved for the Home hero card
@@ -32,6 +33,8 @@ class AppSettings extends Equatable {
     this.featuredBudgetMode = FeaturedBudgetMode.automatic,
     this.quickAccessOrder = QuickAccessItem.defaultOrder,
     this.aiConsentAcceptedAt,
+    this.aiConsentVersion = 0,
+    this.aiNotesAccessEnabled = false,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -42,7 +45,9 @@ class AppSettings extends Equatable {
         featuredBudgetId = null,
         featuredBudgetMode = FeaturedBudgetMode.automatic,
         quickAccessOrder = QuickAccessItem.defaultOrder,
-        aiConsentAcceptedAt = null;
+        aiConsentAcceptedAt = null,
+        aiConsentVersion = 0,
+        aiNotesAccessEnabled = false;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -82,7 +87,26 @@ class AppSettings extends Equatable {
   /// accepted — the assistant's composer stays gated until this is set.
   final DateTime? aiConsentAcceptedAt;
 
-  bool get hasAcceptedAiConsent => aiConsentAcceptedAt != null;
+  /// Which version of the consent copy was accepted
+  /// (`AppSettings.aiConsentVersion`). `0` means "accepted before the column
+  /// existed, or never accepted" — the Drift column is nullable and is read as
+  /// `0` in `data/` rather than backfilled.
+  final int aiConsentVersion;
+
+  /// Whether the user explicitly let the assistant read the free-text `note`
+  /// of their records. **Off by default**: with this `false` — the state of
+  /// anyone who has done nothing — not a single note travels in any payload,
+  /// which is the behavior every version before this opt-in had.
+  final bool aiNotesAccessEnabled;
+
+  /// Consent counts as granted only when it was given AND given against copy
+  /// at least as current as this build's ([currentAiConsentVersion]). A lower
+  /// stored version re-shows the consent screen even though the timestamp is
+  /// set: the person consented to a narrower disclosure than what the app now
+  /// does (Apple 5.1.2(i) — consent has to be informed).
+  bool get hasAcceptedAiConsent =>
+      aiConsentAcceptedAt != null &&
+      aiConsentVersion >= currentAiConsentVersion;
 
   AppSettings copyWith({
     bool? zeroBasedEnabled,
@@ -92,6 +116,8 @@ class AppSettings extends Equatable {
     FeaturedBudgetMode? featuredBudgetMode,
     List<QuickAccessItem>? quickAccessOrder,
     DateTime? aiConsentAcceptedAt,
+    int? aiConsentVersion,
+    bool? aiNotesAccessEnabled,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
@@ -101,6 +127,8 @@ class AppSettings extends Equatable {
         featuredBudgetMode: featuredBudgetMode ?? this.featuredBudgetMode,
         quickAccessOrder: quickAccessOrder ?? this.quickAccessOrder,
         aiConsentAcceptedAt: aiConsentAcceptedAt ?? this.aiConsentAcceptedAt,
+        aiConsentVersion: aiConsentVersion ?? this.aiConsentVersion,
+        aiNotesAccessEnabled: aiNotesAccessEnabled ?? this.aiNotesAccessEnabled,
       );
 
   @override
@@ -112,5 +140,7 @@ class AppSettings extends Equatable {
         featuredBudgetMode,
         quickAccessOrder,
         aiConsentAcceptedAt,
+        aiConsentVersion,
+        aiNotesAccessEnabled,
       ];
 }

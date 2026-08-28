@@ -66,6 +66,15 @@ export const READ_TOOLS: AiToolDef[] = [
             + 'gastos hormiga: montos chicos que se repiten) sin traer tambien '
             + 'compras grandes de la misma categoria.',
         },
+        searchText: {
+          type: 'string',
+          description:
+            'Texto a buscar DENTRO de la nota del movimiento y del nombre de '
+            + 'su categoria. La busqueda ocurre en el dispositivo: tu mandas el '
+            + 'termino, el telefono compara contra las notas locales y te '
+            + 'devuelve solo los movimientos que coinciden. El texto de la nota '
+            + 'NUNCA vuelve en la respuesta, asi que no lo pidas ni lo supongas.',
+        },
         limit: {
           // 50 is also what the published privacy policy commits to (section
           // 17.2) and what `ResolveAiToolCall.maxRows` enforces on the device.
@@ -155,6 +164,69 @@ export const READ_TOOLS: AiToolDef[] = [
         goalId: { type: 'string', description: 'Id exacto tomado del resumen.' },
       },
       required: ['goalId'],
+    },
+  },
+  {
+    name: 'get_debt_detail',
+    description:
+      'Detalle de una deuda concreta (id tomado de la seccion "debts" del '
+      + 'resumen, nunca de "debtTotals" que es un agregado sin id): saldo '
+      + 'pendiente, si tiene cuota/abono programado, y su historial de '
+      + 'movimientos (abonos, desembolsos, intereses).',
+    parameters: {
+      type: 'object',
+      properties: {
+        debtId: { type: 'string', description: 'Id exacto tomado del resumen.' },
+      },
+      required: ['debtId'],
+    },
+  },
+  {
+    name: 'find_scheduled_payments',
+    description:
+      'Busca un pago programado por como el usuario lo llama, cuando no sabes '
+      + 'su id. La busqueda ocurre EN EL DISPOSITIVO contra la nota del pago, '
+      + 'su categoria y su cuenta; tu solo mandas el termino y recibes los que '
+      + 'coinciden, con su "id". El texto de la nota NUNCA vuelve en la '
+      + 'respuesta. Usala como paso previo a get_scheduled_payment_detail, que '
+      + 'necesita ese "id". Solo busca entre pagos ACTIVOS (el campo "scope" lo '
+      + 'confirma): si no aparece nada, puede ser que no exista O que ya haya '
+      + 'terminado, y debes decirlo asi en vez de afirmar que no existe.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description:
+            'El termino tal como lo dijo la persona ("abono a capital", '
+            + '"hipotecario"). Insensible a mayusculas y tildes. Es coincidencia '
+            + 'de TEXTO, no semantica: si la persona dice "mi credito vehicular" '
+            + 'y no encuentras nada, prueba con una palabra que si pueda estar '
+            + 'escrita (una marca, un modelo, el nombre del banco) antes de '
+            + 'concluir que no existe.',
+        },
+        limit: { type: 'integer', description: 'Entre 1 y 50. Por defecto 25.' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'get_scheduled_payment_detail',
+    description:
+      'Detalle de un pago programado concreto (id tomado de la seccion '
+      + '"upcoming" del resumen). Usala cuando el pago que buscas no aparece '
+      + 'en "upcoming" (esa seccion solo trae los proximos 30 dias, maximo 25 '
+      + 'filas) o cuando necesitas su historial de ocurrencias pasadas '
+      + '(confirmadas u omitidas).',
+    parameters: {
+      type: 'object',
+      properties: {
+        scheduledPaymentId: {
+          type: 'string',
+          description: 'Id exacto tomado del resumen.',
+        },
+      },
+      required: ['scheduledPaymentId'],
     },
   },
 ];
@@ -254,6 +326,14 @@ export const WRITE_TOOLS: AiToolDef[] = [
         date: { type: 'integer', description: 'Unix en SEGUNDOS.' },
         accountId: { type: 'string', description: 'Id exacto del resumen.' },
         categoryId: { type: 'string', description: 'Id exacto del resumen.' },
+        debtId: {
+          type: 'string',
+          description:
+            'Opcional. Id exacto de una deuda de "debts". Si lo mandas, el '
+            + 'movimiento nace ya atribuido a esa deuda (abono o desembolso '
+            + 'segun corresponda), en una sola confirmacion. Usalo cuando la '
+            + 'persona diga que el movimiento ES un pago de una deuda suya.',
+        },
         note: { type: 'string' },
         rationale: RATIONALE,
       },
@@ -265,6 +345,32 @@ export const WRITE_TOOLS: AiToolDef[] = [
         'accountId',
         'rationale',
       ],
+    },
+  },
+  {
+    name: 'propose_link_transaction_to_debt',
+    description:
+      'Propone atribuir un movimiento QUE YA EXISTE a una deuda, como abono o '
+      + 'desembolso. NO lo hace: el usuario confirma. No crea ningun movimiento '
+      + 'nuevo ni mueve dinero — el movimiento ya afecto su cuenta; esto solo '
+      + 'hace que cuente en el saldo de la deuda. Para un movimiento que '
+      + 'todavia no existe, usa propose_create_transaction con "debtId".',
+    parameters: {
+      type: 'object',
+      properties: {
+        transactionId: {
+          type: 'string',
+          description:
+            'Id exacto de un movimiento que hayas obtenido con get_transactions. '
+            + 'Nunca lo inventes.',
+        },
+        debtId: {
+          type: 'string',
+          description: 'Id exacto de una deuda de "debts" en el resumen.',
+        },
+        rationale: RATIONALE,
+      },
+      required: ['transactionId', 'debtId', 'rationale'],
     },
   },
 ];

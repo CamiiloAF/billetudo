@@ -1,4 +1,5 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_consent.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
@@ -23,6 +24,8 @@ void main() {
   late MockWatchHelpEnabled watchHelpEnabled;
   late MockSetTutorialsEnabled setTutorialsEnabled;
   late MockSetQuickAccessOrder setQuickAccessOrder;
+  late MockSetAiNotesAccessEnabled setAiNotesAccessEnabled;
+  late MockClearAiConsent clearAiConsent;
 
   const enabledSettings = AppSettings(
     zeroBasedEnabled: true,
@@ -76,6 +79,8 @@ void main() {
     watchHelpEnabled = MockWatchHelpEnabled();
     setTutorialsEnabled = MockSetTutorialsEnabled();
     setQuickAccessOrder = MockSetQuickAccessOrder();
+    setAiNotesAccessEnabled = MockSetAiNotesAccessEnabled();
+    clearAiConsent = MockClearAiConsent();
     // Default: no active budgets; individual tests override.
     when(getActiveBudgets.call)
         .thenAnswer((_) => Stream.value(const Right([])));
@@ -94,6 +99,8 @@ void main() {
         watchHelpEnabled,
         setTutorialsEnabled,
         setQuickAccessOrder,
+        setAiNotesAccessEnabled,
+        clearAiConsent,
       );
 
   test(
@@ -236,4 +243,59 @@ void main() {
       ]),
     ).called(1),
   );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setAiNotesAccessEnabled delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(() => setAiNotesAccessEnabled(enabled: true))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setAiNotesAccessEnabled(enabled: true),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setAiNotesAccessEnabled(enabled: true)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'turning the notes access off goes through the same use case with false '
+    '— withdrawing the permission is never a different code path',
+    setUp: () => when(() => setAiNotesAccessEnabled(enabled: false))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setAiNotesAccessEnabled(enabled: false),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setAiNotesAccessEnabled(enabled: false)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'clearAiConsent delegates to the use case (RGPD art. 7.3) instead of '
+    'emitting directly: the settings stream is the source of truth',
+    setUp: () => when(clearAiConsent.call)
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.clearAiConsent(),
+    expect: () => <AppSettingsState>[],
+    verify: (_) => verify(clearAiConsent.call).called(1),
+  );
+
+  test(
+      'hasAcceptedAiConsent follows the stored consent, so Ajustes only offers '
+      'the withdrawal when there is one to withdraw', () async {
+    when(getAppSettings.call).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          const AppSettings.defaults().copyWith(
+            aiConsentAcceptedAt: DateTime(2026, 8, 25),
+            aiConsentVersion: currentAiConsentVersion,
+          ),
+        ),
+      ),
+    );
+    final cubit = build();
+    await cubit.start();
+    await Future<void>.delayed(Duration.zero);
+    expect(cubit.state.hasAcceptedAiConsent, isTrue);
+    await cubit.close();
+  });
 }

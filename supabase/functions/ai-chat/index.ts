@@ -109,6 +109,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       locale: request.locale,
       timezone: request.timezone,
       nowSeconds: Math.floor(startedAt / 1000),
+      notesAccessEnabled: request.notesAccessEnabled,
       snapshotJson: JSON.stringify(request.snapshot),
     });
 

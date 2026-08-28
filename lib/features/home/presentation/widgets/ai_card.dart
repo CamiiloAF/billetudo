@@ -25,6 +25,7 @@ import 'ai_card_insight.dart';
 class AiCard extends StatelessWidget {
   const AiCard({
     required this.insight,
+    required this.budgetChipIsDirectNav,
     required this.onAskQuestion,
     required this.onCreateBudget,
     required this.onStartInsightConversation,
@@ -35,6 +36,11 @@ class AiCard extends StatelessWidget {
 
   /// The insight to show, or `null` for the "con chips" default variant.
   final HomeAiInsight? insight;
+
+  /// `HomeState.budgetChipIsDirectNav` — which arrow the "Ayúdame a
+  /// presupuestar" chip shows. See that field's own doc: a hint for the icon
+  /// only, never a gate.
+  final bool budgetChipIsDirectNav;
 
   /// Opens the chat, already gated: the caller checks chat access first and
   /// shows [AiBetaSheet] instead when it is missing. `question` seeds the
@@ -81,11 +87,13 @@ class AiCard extends StatelessWidget {
       ),
       child: insight == null
           ? AiCardChips(
+              budgetChipIsDirectNav: budgetChipIsDirectNav,
               onAskQuestion: onAskQuestion,
               onCreateBudget: onCreateBudget,
             )
           : AiCardInsight(
               insight: insight,
+              budgetChipIsDirectNav: budgetChipIsDirectNav,
               onAskQuestion: onAskQuestion,
               onCreateBudget: onCreateBudget,
               onDismiss: onDismissInsight,

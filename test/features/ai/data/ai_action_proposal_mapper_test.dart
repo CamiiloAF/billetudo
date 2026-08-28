@@ -112,6 +112,27 @@ void main() {
       expect(reparsed, original);
     });
 
+    test('a transaction born linked to a debt keeps its debtId', () {
+      final original = buildTransactionProposal(debtId: 'debt-1');
+
+      final reparsed = AiActionProposalMapper.fromJson(
+        AiActionProposalMapper.toJson(original),
+      );
+
+      expect(reparsed, original);
+      expect((reparsed as CreateTransactionProposal).debtId, 'debt-1');
+    });
+
+    test('a debt-link proposal survives toJson followed by fromJson', () {
+      final original = buildDebtLinkProposal();
+
+      final reparsed = AiActionProposalMapper.fromJson(
+        AiActionProposalMapper.toJson(original),
+      );
+
+      expect(reparsed, original);
+    });
+
     test('an unsupported proposal keeps its raw kind through a round trip', () {
       final original = buildUnsupportedProposal(rawKind: 'create_spaceship');
 
@@ -286,6 +307,54 @@ void main() {
             .having((p) => p.amountMinor, 'amountMinor', 4500),
       );
     });
+  });
+
+  group('link_transaction_to_debt', () {
+    Map<String, Object?> linkJson(Map<String, Object?> payload) =>
+        <String, Object?>{
+          'id': 'tc_0_5',
+          'kind': 'link_transaction_to_debt',
+          'title': 'Atribuir ese pago a tu crédito de la moto',
+          'payload': payload,
+        };
+
+    test('reads both ids into the entity', () {
+      final proposal = AiActionProposalMapper.fromJson(
+        linkJson(<String, Object?>{
+          'transactionId': 'tx-1',
+          'debtId': 'debt-1',
+        }),
+      );
+
+      expect(
+        proposal,
+        isA<LinkTransactionToDebtProposal>()
+            .having((p) => p.transactionId, 'transactionId', 'tx-1')
+            .having((p) => p.debtId, 'debtId', 'debt-1'),
+      );
+    });
+
+    for (final (description, payload) in <(String, Map<String, Object?>)>[
+      ('a missing transactionId', <String, Object?>{'debtId': 'debt-1'}),
+      ('a missing debtId', <String, Object?>{'transactionId': 'tx-1'}),
+      (
+        'an id of the wrong type',
+        <String, Object?>{'transactionId': 42, 'debtId': 'debt-1'},
+      ),
+    ]) {
+      test('$description yields an unexecutable card, never an exception', () {
+        final proposal = AiActionProposalMapper.fromJson(linkJson(payload));
+
+        expect(
+          proposal,
+          isA<UnsupportedProposal>().having(
+            (p) => p.rawKind,
+            'rawKind',
+            'link_transaction_to_debt',
+          ),
+        );
+      });
+    }
   });
 
   group('unknown kinds degrade instead of throwing', () {

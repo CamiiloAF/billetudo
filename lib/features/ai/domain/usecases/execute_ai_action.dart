@@ -8,6 +8,10 @@ import '../../../categories/domain/entities/category.dart';
 import '../../../categories/domain/entities/category_draft.dart';
 import '../../../categories/domain/usecases/create_category.dart';
 import '../../../categories/domain/usecases/get_category.dart';
+import '../../../debts/domain/entities/debt.dart';
+import '../../../debts/domain/repositories/debt_repository.dart';
+import '../../../debts/domain/services/debt_event_rules.dart';
+import '../../../debts/domain/usecases/link_transaction_to_debt.dart';
 import '../../../goals/domain/entities/goal_draft.dart';
 import '../../../goals/domain/usecases/create_goal.dart';
 import '../../../transactions/domain/entities/transaction.dart'
@@ -50,7 +54,13 @@ class ExecuteAiAction {
     this._createTransaction,
     this._getCategory,
     this._accounts,
+    this._linkTransactionToDebt,
+    this._debts,
   );
+
+  /// The field a failed debt reference is reported on, mirroring the name
+  /// `LinkTransactionToDebt` already uses for the same id.
+  static const String _fieldDebtId = 'debtId';
 
   final CreateBudget _createBudget;
   final CreateGoal _createGoal;
@@ -58,6 +68,8 @@ class ExecuteAiAction {
   final CreateTransaction _createTransaction;
   final GetCategory _getCategory;
   final AccountRepository _accounts;
+  final LinkTransactionToDebt _linkTransactionToDebt;
+  final DebtRepository _debts;
 
   FutureResult<AiActionOutcome> call(AiActionProposal proposal) async =>
       switch (proposal) {
@@ -65,6 +77,7 @@ class ExecuteAiAction {
         CreateGoalProposal() => _goal(proposal),
         CreateCategoryProposal() => _category(proposal),
         CreateTransactionProposal() => _transaction(proposal),
+        LinkTransactionToDebtProposal() => _debtLink(proposal),
         UnsupportedProposal() => Future.value(
             Left<Failure, AiActionOutcome>(
               ValidationFailure(
@@ -174,6 +187,41 @@ class ExecuteAiAction {
       categoryKind = categoryResult.fold((_) => null, (c) => c.kind);
     }
 
+    // A movement can be born attributed to a debt (`debtId` on the write
+    // tool), which spares the user a second confirmation. The debt is resolved
+    // here — not inside the draft — because the draft cannot reach a
+    // repository, and because the two rules that follow both need the row: a
+    // closed debt accepts nothing new (same rule `LinkTransactionToDebt`
+    // enforces for the after-the-fact link), and `countsInBudget` follows from
+    // `direction` × `type` (`DebtEventRules`, the single source of that
+    // truth), exactly as `RegisterDebtCashEvent` resolves it.
+    var countsInBudget = false;
+    final debtId = proposal.debtId;
+    if (debtId != null) {
+      final debtResult = await _debts.getDebt(debtId);
+      if (debtResult case Left(value: final failure)) {
+        return Left(_asReferenceFailure(failure, _fieldDebtId));
+      }
+      final Debt? debt = debtResult.getRight().toNullable();
+      if (debt == null) {
+        return const Left(
+          ValidationFailure('that debt does not exist', field: _fieldDebtId),
+        );
+      }
+      if (debt.isClosed) {
+        return const Left(
+          ValidationFailure(
+            'a closed debt accepts no new links',
+            field: _fieldDebtId,
+          ),
+        );
+      }
+      countsInBudget = DebtEventRules.countsInBudgetFor(
+        direction: debt.direction,
+        type: proposal.type,
+      );
+    }
+
     final result = await _createTransaction(
       TransactionDraft(
         accountId: proposal.accountId,
@@ -184,6 +232,8 @@ class ExecuteAiAction {
         categoryId: categoryId,
         categoryKind: categoryKind,
         note: proposal.note,
+        debtId: debtId,
+        countsInBudget: countsInBudget,
         // TODO(cami): add an `ai` value to TransactionSource once the sync
         // side is settled. `TxSource` is a synchronised column read with
         // Drift's `textEnum`, which throws on a value it does not know — so an
@@ -201,6 +251,27 @@ class ExecuteAiAction {
         proposalId: proposal.id,
         entity: AiActionEntity.transaction,
         entityId: transaction.id,
+      ),
+    );
+  }
+
+  /// Attributes an existing movement to a debt. Nothing is created here: the
+  /// movement already moved its account, and `LinkTransactionToDebt` owns both
+  /// gates the server structurally cannot apply — the ids must resolve to a
+  /// real transaction and a real debt, and the debt must be open.
+  FutureResult<AiActionOutcome> _debtLink(
+    LinkTransactionToDebtProposal proposal,
+  ) async {
+    final result = await _linkTransactionToDebt(
+      transactionId: proposal.transactionId,
+      debtId: proposal.debtId,
+    );
+
+    return result.map(
+      (_) => AiActionOutcome(
+        proposalId: proposal.id,
+        entity: AiActionEntity.debtLink,
+        entityId: proposal.debtId,
       ),
     );
   }

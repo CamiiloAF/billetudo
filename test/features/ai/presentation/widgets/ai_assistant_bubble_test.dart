@@ -45,6 +45,7 @@ void main() {
           body: AiAssistantBubble(
             message: message,
             accountNames: const {},
+            debtNames: const {},
           ),
         ),
       ),

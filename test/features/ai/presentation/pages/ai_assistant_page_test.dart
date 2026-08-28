@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_message.dart';
 import 'package:billetudo/features/ai/presentation/cubit/ai_chat_cubit.dart';
 import 'package:billetudo/features/ai/presentation/cubit/ai_chat_state.dart';
 import 'package:billetudo/features/ai/presentation/cubit/ai_consent_cubit.dart';
@@ -149,4 +150,93 @@ void main() {
       verifyNever(() => chatCubit.send());
     },
   );
+
+  testWidgets(
+      'una conversación reanudada (mensajes ya presentes en el PRIMER '
+      'frame, no llegados por un emit posterior) abre con el scroll en el '
+      'último mensaje, no en el primero — reproduce el mismo hueco de '
+      "BlocConsumer que ya se arregló para _startChatOnce: 'listener' solo "
+      'reacciona a una transición después de suscribirse, nunca al estado '
+      'que el cubit ya traía puesto', (tester) async {
+    final messages = List.generate(
+      30,
+      (i) => AiMessage(
+        id: 'm$i',
+        conversationId: 'conv-1',
+        role: i.isEven ? AiMessageRole.user : AiMessageRole.assistant,
+        content: 'Mensaje número $i, con texto suficiente para ocupar '
+            'varias líneas de la burbuja y así forzar overflow del '
+            'viewport en la prueba.',
+        createdAt: DateTime(2026, 8, 28, 12, i),
+        status: AiMessageStatus.sent,
+      ),
+    );
+
+    consentCubit = MockAiConsentCubit();
+    chatCubit = MockAiChatCubit();
+    when(() => consentCubit.start()).thenAnswer((_) async {});
+    when(
+      () => chatCubit.start(conversationId: any(named: 'conversationId')),
+    ).thenAnswer((_) async {});
+    whenListen(
+      consentCubit,
+      const Stream<AiConsentState>.empty(),
+      initialState: const AiConsentState(status: AiConsentStatus.granted),
+    );
+    whenListen(
+      chatCubit,
+      const Stream<AiChatState>.empty(),
+      initialState: AiChatState(
+        status: AiChatStatus.ready,
+        isSignedIn: true,
+        conversationId: 'conv-1',
+        messages: messages,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('es'),
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<AiConsentCubit>.value(value: consentCubit),
+            BlocProvider<AiChatCubit>.value(value: chatCubit),
+          ],
+          child: AiAssistantPage(
+            onBack: () {},
+            onOpenHistory: () async => null,
+            onSignIn: () {},
+            initialConversationId: 'conv-1',
+          ),
+        ),
+      ),
+    );
+    // One `pump()` to build the first frame and let `_scrollToBottom`'s
+    // `addPostFrameCallback` fire its `jumpTo`, then `pumpAndSettle()` — a
+    // bare `pump()` with no duration doesn't advance the fake clock, so any
+    // scroll physics still winding down after the jump (measured empirically:
+    // `pixels` lands past `maxScrollExtent`, an unsettled overscroll, not a
+    // production bug) never gets the chance to actually settle. Same
+    // technique `month_picker_sheet_test.dart` uses after an action closes a
+    // sheet.
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // `find.byType(Scrollable)` is ambiguous here: the composer's `TextField`
+    // builds its own internal `Scrollable` for `EditableText`, so `.single`
+    // throws "Too many elements". The messages `ListView` is the one and
+    // only `ListView` in this tree — query it directly instead.
+    final listView = tester.widget<ListView>(find.byType(ListView));
+    final position = listView.controller!.position;
+    expect(
+      position.maxScrollExtent,
+      greaterThan(0),
+      reason: '30 mensajes largos deben desbordar el viewport de la prueba; '
+          'si esto falla, la prueba no está probando nada.',
+    );
+    expect(position.pixels, position.maxScrollExtent);
+  });
 }

@@ -29,7 +29,8 @@ class CurrencyGroup {
     }
     final currencies = byCurrency.keys.toList()..sort();
     return [
-      for (final currency in currencies) _build(currency, byCurrency[currency]!),
+      for (final currency in currencies)
+        _build(currency, byCurrency[currency]!),
     ];
   }
 

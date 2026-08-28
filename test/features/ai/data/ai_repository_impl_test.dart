@@ -7,12 +7,16 @@ import 'package:billetudo/features/ai/domain/entities/ai_message.dart';
 import 'package:billetudo/features/ai/domain/entities/ai_tool_call.dart';
 import 'package:billetudo/features/ai/domain/entities/ai_turn.dart';
 import 'package:billetudo/features/ai/domain/entities/financial_snapshot.dart';
+import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
+import 'package:billetudo/features/settings/domain/repositories/app_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../ai_fixtures.dart';
 
 class MockAiRemoteDatasource extends Mock implements AiRemoteDatasource {}
+
+class MockAppSettingsRepository extends Mock implements AppSettingsRepository {}
 
 /// Records what would have been uploaded, so a test can assert that no
 /// conversation content ever reaches the crash reporter.
@@ -58,6 +62,7 @@ class RecordingCrashReporter implements CrashReporter {
 void main() {
   late MockAiRemoteDatasource remote;
   late RecordingCrashReporter crash;
+  late MockAppSettingsRepository settings;
   late AiRepositoryImpl repository;
 
   AiTurnRequest request({
@@ -82,6 +87,16 @@ void main() {
         toolResults: toolResults,
       );
 
+  /// The `AppSettings.aiNotesAccessEnabled` opt-in, as the repository reads it
+  /// to report `notesAccessEnabled` in the body.
+  void stubNotesAccess({required bool enabled}) {
+    when(settings.getSettings).thenAnswer(
+      (_) async => Right(
+        const AppSettings.defaults().copyWith(aiNotesAccessEnabled: enabled),
+      ),
+    );
+  }
+
   Future<Map<String, Object?>> capturedBody() async {
     await repository.sendTurn(request());
     return verify(() => remote.sendTurn(captureAny())).captured.single
@@ -95,10 +110,48 @@ void main() {
   setUp(() {
     remote = MockAiRemoteDatasource();
     crash = RecordingCrashReporter();
-    repository = AiRepositoryImpl(remote, crash);
+    settings = MockAppSettingsRepository();
+    // Notes access OFF by default, like a real install that never touched the
+    // switch.
+    stubNotesAccess(enabled: false);
+    repository = AiRepositoryImpl(remote, crash, settings);
   });
 
   group('request document', () {
+    test(
+        'reports whether notes may be in the payload, so the server can word '
+        'the system prompt for what it actually received', () async {
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      expect((await capturedBody())['notesAccessEnabled'], isFalse);
+    });
+
+    test('reports true once the user opted in', () async {
+      stubNotesAccess(enabled: true);
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      expect((await capturedBody())['notesAccessEnabled'], isTrue);
+    });
+
+    test('an unreadable settings row reports false, never true', () async {
+      when(settings.getSettings)
+          .thenAnswer((_) async => const Left(DatabaseFailure('boom')));
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      expect((await capturedBody())['notesAccessEnabled'], isFalse);
+    });
+
+    test('a throwing settings read reports false too', () async {
+      when(settings.getSettings).thenThrow(StateError('drift blew up'));
+      when(() => remote.sendTurn(any()))
+          .thenAnswer((_) async => <String, Object?>{});
+
+      expect((await capturedBody())['notesAccessEnabled'], isFalse);
+    });
+
     test('carries the protocol version the function will check', () async {
       when(() => remote.sendTurn(any()))
           .thenAnswer((_) async => <String, Object?>{});
@@ -112,7 +165,8 @@ void main() {
       expect(body['clientVersion'], '1.12.0+134');
     });
 
-    test('a snapshot that could not be built travels as an empty object, not '
+    test(
+        'a snapshot that could not be built travels as an empty object, not '
         'as a missing key', () async {
       when(() => remote.sendTurn(any()))
           .thenAnswer((_) async => <String, Object?>{});
@@ -208,12 +262,13 @@ void main() {
           as Map<String, Object?>;
       final messages = body['messages']! as List;
       final rebuiltCall =
-          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List)
-              .single as Map<String, Object?>;
+          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List).single
+              as Map<String, Object?>;
       expect(rebuiltCall['thoughtSignature'], 'opaque-signature-abc');
     });
 
-    test('a tool result with no thoughtSignature omits the key rather than '
+    test(
+        'a tool result with no thoughtSignature omits the key rather than '
         'sending it as null', () async {
       when(() => remote.sendTurn(any()))
           .thenAnswer((_) async => <String, Object?>{});
@@ -234,8 +289,8 @@ void main() {
           as Map<String, Object?>;
       final messages = body['messages']! as List;
       final rebuiltCall =
-          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List)
-              .single as Map<String, Object?>;
+          ((messages[1]! as Map<String, Object?>)['toolCalls']! as List).single
+              as Map<String, Object?>;
       expect(rebuiltCall.containsKey('thoughtSignature'), isFalse);
     });
   });
@@ -266,9 +321,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.finishReason, AiFinishReason.message);
       expect(response.content, 'Gastaste menos este mes.');
@@ -285,9 +339,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.finishReason, AiFinishReason.message);
       expect(response.content, 'Hola');
@@ -311,9 +364,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(
         response.proposals.single,
@@ -340,9 +392,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.finishReason, AiFinishReason.toolCalls);
       expect(response.needsToolResolution, isTrue);
@@ -350,7 +401,8 @@ void main() {
       expect(response.toolCalls.single.arguments, {'from': 1754006400});
     });
 
-    test('a tool call with no id falls back to its name so it stays '
+    test(
+        'a tool call with no id falls back to its name so it stays '
         'addressable', () async {
       when(() => remote.sendTurn(any())).thenAnswer(
         (_) async => <String, Object?>{
@@ -362,9 +414,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.toolCalls.single.id, 'get_goal_detail');
     });
@@ -386,9 +437,8 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(
         response.toolCalls.single.thoughtSignature,
@@ -412,21 +462,19 @@ void main() {
         },
       );
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.toolCalls.single.thoughtSignature, isNull);
     });
 
     test('a response with no message at all parses to an empty bubble',
         () async {
-      when(() => remote.sendTurn(any()))
-          .thenAnswer((_) async => <String, Object?>{'finishReason': 'blocked'});
+      when(() => remote.sendTurn(any())).thenAnswer(
+          (_) async => <String, Object?>{'finishReason': 'blocked'});
 
-      final response = (await repository.sendTurn(request()))
-          .getRight()
-          .toNullable()!;
+      final response =
+          (await repository.sendTurn(request())).getRight().toNullable()!;
 
       expect(response.finishReason, AiFinishReason.blocked);
       expect(response.content, '');
@@ -505,7 +553,8 @@ void main() {
       );
     });
 
-    test('a call the server never answered is a NetworkFailure, so the UI '
+    test(
+        'a call the server never answered is a NetworkFailure, so the UI '
         'offers a retry instead of hiding the assistant', () async {
       when(() => remote.sendTurn(any())).thenThrow(
         AiRemoteException(cause: Exception('socket closed')),
@@ -607,7 +656,8 @@ void main() {
   });
 
   group('privacy', () {
-    test('the failure message is built from the code and status only, never '
+    test(
+        'the failure message is built from the code and status only, never '
         'from the server prose', () async {
       when(() => remote.sendTurn(any())).thenThrow(
         const AiRemoteException(
@@ -657,8 +707,7 @@ void main() {
     test('no row at all is denied, never allowed', () async {
       when(remote.checkAccess).thenAnswer((_) async => null);
 
-      final access =
-          (await repository.checkAccess()).getRight().toNullable()!;
+      final access = (await repository.checkAccess()).getRight().toNullable()!;
 
       expect(access.allowed, isFalse);
       expect(access.remainingToday, isNull);
@@ -673,8 +722,7 @@ void main() {
         },
       );
 
-      final access =
-          (await repository.checkAccess()).getRight().toNullable()!;
+      final access = (await repository.checkAccess()).getRight().toNullable()!;
 
       expect(access.allowed, isTrue);
       expect(access.remainingToday, 12);
@@ -689,8 +737,7 @@ void main() {
         },
       );
 
-      final access =
-          (await repository.checkAccess()).getRight().toNullable()!;
+      final access = (await repository.checkAccess()).getRight().toNullable()!;
 
       expect(access.remainingToday, 0);
     });
@@ -704,8 +751,7 @@ void main() {
         },
       );
 
-      final access =
-          (await repository.checkAccess()).getRight().toNullable()!;
+      final access = (await repository.checkAccess()).getRight().toNullable()!;
 
       expect(access.remainingToday, isNull);
     });
@@ -726,7 +772,8 @@ void main() {
       expect(premium.isBeta, isFalse);
     });
 
-    test('a gate that could not be read fails as a Left, not as a silent '
+    test(
+        'a gate that could not be read fails as a Left, not as a silent '
         'denial', () async {
       when(remote.checkAccess).thenThrow(
         AiRemoteException(cause: Exception('no signal')),

@@ -29,7 +29,8 @@ class AiMessageCopyMenu extends StatelessWidget {
   ) async {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
     final selected = await showMenu<bool>(
       context: context,
       position: RelativeRect.fromRect(

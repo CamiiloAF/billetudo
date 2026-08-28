@@ -8,6 +8,7 @@ import '../cubit/ai_action_cubit.dart';
 import '../cubit/ai_action_state.dart';
 import 'ai_budget_proposal_body.dart';
 import 'ai_category_proposal_body.dart';
+import 'ai_debt_link_proposal_body.dart';
 import 'ai_goal_proposal_body.dart';
 import 'ai_proposal_actions_row.dart';
 import 'ai_proposal_card_kicker.dart';
@@ -27,12 +28,17 @@ class AiProposalCard extends StatelessWidget {
     required this.messageId,
     required this.proposal,
     required this.accountNames,
+    required this.debtNames,
     super.key,
   });
 
   final String messageId;
   final AiActionProposal proposal;
   final Map<String, String> accountNames;
+
+  /// `Debt.id` → `Debt.name`, so a proposal that attributes a movement to a
+  /// debt can name it instead of asking the user to trust a bare id.
+  final Map<String, String> debtNames;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +87,12 @@ class AiProposalCard extends StatelessWidget {
                     AiTransactionProposalBody(
                       proposal: p,
                       accountNames: accountNames,
+                      debtNames: debtNames,
+                    ),
+                  final LinkTransactionToDebtProposal p =>
+                    AiDebtLinkProposalBody(
+                      proposal: p,
+                      debtNames: debtNames,
                     ),
                   UnsupportedProposal() => const AiUnsupportedProposalBody(),
                 },
@@ -125,6 +137,8 @@ class AiProposalCard extends StatelessWidget {
         CreateCategoryProposal() => l10n.aiProposalFootnoteConfirmedCategory,
         CreateTransactionProposal() =>
           l10n.aiProposalFootnoteConfirmedTransaction,
+        LinkTransactionToDebtProposal() =>
+          l10n.aiProposalFootnoteConfirmedDebtLink,
         UnsupportedProposal() => l10n.aiProposalFootnoteConfirmedTransaction,
       };
 }
