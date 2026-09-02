@@ -20,7 +20,13 @@ import {
 const snapshot = {
   currencies: [{ code: 'COP', decimals: 2 }],
   accounts: [{ id: 'acc-1', name: 'Bancolombia', currency: 'COP' }],
-  categories: [{ id: 'cat-1', name: 'Comida', kind: 'expense' }],
+  // `categoryId`, not `id`: the real snapshot only ever names a category
+  // this way (`SnapshotCategoryLine.categoryId`, inside `spendingByCategory`)
+  // — there is no standalone "categories" list with a bare `id` in
+  // production. Matching that field name here is what makes
+  // `index.categoryIds` (as opposed to the flat, type-blind `index.ids`)
+  // mean anything in these tests.
+  categories: [{ categoryId: 'cat-1', name: 'Comida', kind: 'expense' }],
   budgets: [{ id: 'bud-1', name: 'Comida', currency: 'COP' }],
 };
 
@@ -43,6 +49,12 @@ Deno.test('indexSnapshot collects ids and currencies at any depth', () => {
   assertEquals(index.ids.has('bud-1'), true);
   assertEquals(index.currencies.has('COP'), true);
   assertEquals(index.ids.has('nope'), false);
+  // A category also lands in the narrower, type-specific set — this is what
+  // lets `propose_create_transaction` refuse a `categoryId` that is
+  // genuinely some OTHER entity's id (found live: a debt's id, accepted by
+  // the flat `ids` check, refused only on-device and unrecoverably).
+  assertEquals(index.categoryIds.has('cat-1'), true);
+  assertEquals(index.categoryIds.has('acc-1'), false);
 });
 
 Deno.test('a well-formed budget proposal passes', () => {
@@ -183,6 +195,33 @@ Deno.test(
   },
 );
 
+Deno.test(
+  'a categoryId that is actually some OTHER entity\'s id is refused, not ' +
+    'silently accepted — found live: the model sent a debt\'s id as ' +
+    '"categoryId" (both are valid ids SOMEWHERE in the snapshot), it passed ' +
+    'here against the old flat `index.ids` check, and only failed on-device ' +
+    'as an unrecoverable "no se pudo guardar" (the bad id never changes, so ' +
+    '"Reintentar" could never work)',
+  () => {
+    const mixedIndex = indexSnapshot({
+      accounts: [{ id: 'acc-1', currency: 'COP' }],
+      categories: [{ categoryId: 'cat-1', kind: 'expense' }],
+      debts: [{ id: 'debt-1' }],
+    });
+    const result = validateProposal('propose_create_transaction', {
+      type: 'expense',
+      amountMinor: 4500000,
+      currency: 'COP',
+      date: 1755100000,
+      accountId: 'acc-1',
+      categoryId: 'debt-1', // a real id in the snapshot — just the wrong kind
+      debtId: 'debt-1',
+      rationale: 'x',
+    }, mixedIndex);
+    assertEquals(result.ok, false);
+  },
+);
+
 Deno.test('a category proposal needs no currency', () => {
   const result = validateProposal('propose_create_category', {
     name: 'Delivery',
@@ -312,7 +351,7 @@ Deno.test('both ids of a debt link must come from the client', () => {
 Deno.test('a transaction proposal carries an optional debtId', () => {
   const index = indexSnapshot({
     accounts: [{ id: 'acc-1', currency: 'COP' }],
-    categories: [{ id: 'cat-1', kind: 'expense' }],
+    categories: [{ categoryId: 'cat-1', kind: 'expense' }],
     debts: [{ id: 'debt-1' }],
   });
   const base = {

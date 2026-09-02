@@ -140,6 +140,16 @@ export function toolRoundsSinceLastUser(messages: AiMessage[]): number {
 export interface SnapshotIndex {
   currencies: Set<string>;
   ids: Set<string>;
+  /// Found live: a `propose_create_transaction` carried a `categoryId` that
+  /// was actually another DEBT's id — `index.ids` proved the string appeared
+  /// SOMEWHERE in the snapshot, but not that it named a category, so it
+  /// passed here and only failed on-device (`_getCategory` refusing it), as
+  /// an opaque "no se pudo guardar" that "Reintentar" could never fix (the
+  /// bad id never changes). Populated only from values under a literal
+  /// `categoryId` key — the one field name the snapshot actually uses for a
+  /// category reference (`SnapshotCategoryLine.categoryId`) — so it stays
+  /// exactly as tolerant of new sections as [ids], just scoped to one type.
+  categoryIds: Set<string>;
 }
 
 /// Collects every `id` and every `currency` anywhere in the snapshot, at any
@@ -149,6 +159,7 @@ export interface SnapshotIndex {
 export function indexSnapshot(snapshot: Record<string, unknown>): SnapshotIndex {
   const currencies = new Set<string>();
   const ids = new Set<string>();
+  const categoryIds = new Set<string>();
 
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -160,6 +171,7 @@ export function indexSnapshot(snapshot: Record<string, unknown>): SnapshotIndex 
     for (const [key, value] of Object.entries(node)) {
       if (typeof value === 'string') {
         if (key === 'id' || key.endsWith('Id')) ids.add(value);
+        if (key === 'categoryId') categoryIds.add(value);
         if (key === 'currency' || key === 'code') currencies.add(value);
       } else {
         visit(value);
@@ -168,7 +180,7 @@ export function indexSnapshot(snapshot: Record<string, unknown>): SnapshotIndex 
   };
 
   visit(snapshot);
-  return { currencies, ids };
+  return { currencies, ids, categoryIds };
 }
 
 export interface ProposalValidation {
@@ -229,8 +241,8 @@ export function validateProposal(
           // Hallucinated ids are dropped rather than failing the whole
           // proposal: a budget with a broader scope than intended is something
           // the user can see on the card and fix, an error is a dead end.
-          categoryIds: keepKnownIds(args.categoryIds, index),
-          accountIds: keepKnownIds(args.accountIds, index),
+          categoryIds: keepKnownIds(args.categoryIds, index.categoryIds),
+          accountIds: keepKnownIds(args.accountIds, index.ids),
           rationale,
         },
       };
@@ -265,7 +277,7 @@ export function validateProposal(
         return fail('"kind" debe ser income o expense');
       }
       const parentId = asString(args.parentId);
-      if (parentId && !index.ids.has(parentId)) {
+      if (parentId && !index.categoryIds.has(parentId)) {
         return fail(`la categoria padre ${parentId} no existe en el resumen`);
       }
       return { ok: true, payload: { name, kind, parentId, rationale } };
@@ -301,7 +313,7 @@ export function validateProposal(
       if (!categoryId) {
         return fail('"categoryId" es obligatorio para un movimiento de income o expense');
       }
-      if (!index.ids.has(categoryId)) {
+      if (!index.categoryIds.has(categoryId)) {
         return fail(`la categoria ${categoryId} no existe en el resumen`);
       }
       // Optional: when present the movement is born attributed to the debt, so
@@ -392,11 +404,11 @@ function optionalDate(raw: unknown): { value?: number; reason?: string } {
   return { value: raw };
 }
 
-function keepKnownIds(raw: unknown, index: SnapshotIndex): string[] {
+function keepKnownIds(raw: unknown, known: Set<string>): string[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter((value): value is string => typeof value === 'string')
-    .filter((value) => index.ids.has(value));
+    .filter((value) => known.has(value));
 }
 
 function fail(reason: string): ProposalValidation {
