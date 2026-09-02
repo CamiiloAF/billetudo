@@ -36,7 +36,7 @@ class AiQuestionChip extends StatelessWidget {
     // where the available width can be under 200px on a real phone). The
     // label's max width has to shrink to whatever room is actually left
     // instead of insisting on the full 200px and overflowing the Row.
-    const horizontalPadding = 16.0 * 2;
+    const horizontalPadding = 14.0 * 2;
     const iconWidth = 16.0;
     const labelIconGap = 8.0;
     const reservedWidth = horizontalPadding + iconWidth + labelIconGap;
@@ -54,7 +54,7 @@ class AiQuestionChip extends StatelessWidget {
                 : 200.0;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.all(14),
               constraints: const BoxConstraints(minHeight: 44),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -63,7 +63,7 @@ class AiQuestionChip extends StatelessWidget {
                     constraints: BoxConstraints(maxWidth: maxLabelWidth),
                     child: Text(
                       label,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.textPrimary,

@@ -20,11 +20,27 @@ import '../cubit/ai_consent_state.dart';
 /// (`EmptyState`'s own shape) rather than a new one-off, and should go
 /// through Pencil in a follow-up pass instead of staying a one-off.
 class AiConsentPage extends StatelessWidget {
-  const AiConsentPage({required this.onDecline, super.key});
+  const AiConsentPage({
+    required this.onDecline,
+    this.hasHistory = false,
+    this.onOpenHistory,
+    super.key,
+  });
 
   /// Called when the user backs out without accepting (there is nothing
   /// useful to show underneath, so this closes the assistant entirely).
   final VoidCallback onDecline;
+
+  /// Whether at least one conversation survives from before consent was
+  /// withdrawn (or never sending a message in the first place) — reading a
+  /// past thread needs no consent, since reading sends nothing to Google.
+  /// The "Ver mis conversaciones anteriores" link only renders when this is
+  /// true; there is nothing useful to open otherwise.
+  final bool hasHistory;
+
+  /// Opens the history list in read-only mode. Required when [hasHistory] is
+  /// true, ignored otherwise.
+  final VoidCallback? onOpenHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +116,26 @@ class AiConsentPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      if (hasHistory) ...[
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: onOpenHistory,
+                          icon: Icon(
+                            LucideIcons.history,
+                            size: 16,
+                            color: colors.textSecondary,
+                          ),
+                          label: Text(
+                            l10n.aiConsentViewHistory,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: colors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 4),
                       TextButton(
                         onPressed: onDecline,
                         child: Text(l10n.aiConsentDecline),

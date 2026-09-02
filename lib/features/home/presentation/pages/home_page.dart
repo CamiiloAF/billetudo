@@ -138,6 +138,19 @@ class _HomePageState extends State<HomePage> {
   /// HU-02: the FAB hides on scroll down and comes back on scroll up.
   bool _fabVisible = true;
 
+  /// Guards every AI-card tap handler below (`_onAskQuestion`,
+  /// `_onCreateBudgetOrAskAi`, `_onStartInsightConversation`,
+  /// `_onContinueInsightConversation`) against opening the chat more than
+  /// once. Each of them is `async` with a real `await` (the access-gate
+  /// check) before it navigates — reported live: tapping the card/a chip
+  /// rapidly, before that first `await` resolves, fires the handler again,
+  /// and each independent call ends up pushing the AI route, stacking
+  /// several copies of the chat screen. Shared across all four on purpose:
+  /// they all navigate to the same destination, so a tap on one mid-flight
+  /// while another is still resolving must be blocked too, not just repeats
+  /// of the exact same one.
+  bool _openingAi = false;
+
   @override
   void initState() {
     super.initState();
@@ -226,15 +239,23 @@ class _HomePageState extends State<HomePage> {
   /// or no session — matching [AiCard]'s own contract that this chip never
   /// shows the beta-upsell sheet (Nivel 0 must never wall this off).
   Future<void> _onCreateBudgetOrAskAi(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    final hasAccess = await context.read<HomeCubit>().hasAiAccess();
-    if (!context.mounted) {
+    if (_openingAi) {
       return;
     }
-    if (hasAccess) {
-      widget.onOpenAi(l10n.aiChatSuggestionBuildBudget);
-    } else {
-      widget.onCreateBudget();
+    _openingAi = true;
+    try {
+      final l10n = AppLocalizations.of(context);
+      final hasAccess = await context.read<HomeCubit>().hasAiAccess();
+      if (!context.mounted) {
+        return;
+      }
+      if (hasAccess) {
+        widget.onOpenAi(l10n.aiChatSuggestionBuildBudget);
+      } else {
+        widget.onCreateBudget();
+      }
+    } finally {
+      _openingAi = false;
     }
   }
 
@@ -242,15 +263,23 @@ class _HomePageState extends State<HomePage> {
   /// never before. `question`, when present, seeds a brand-new thread and
   /// sends it right away (`AiAssistantPage.initialQuestion`).
   Future<void> _onAskQuestion(BuildContext context, String? question) async {
-    final hasAccess = await context.read<HomeCubit>().hasAiAccess();
-    if (!context.mounted) {
+    if (_openingAi) {
       return;
     }
-    if (!hasAccess) {
-      unawaited(AiBetaSheet.show(context));
-      return;
+    _openingAi = true;
+    try {
+      final hasAccess = await context.read<HomeCubit>().hasAiAccess();
+      if (!context.mounted) {
+        return;
+      }
+      if (!hasAccess) {
+        unawaited(AiBetaSheet.show(context));
+        return;
+      }
+      widget.onOpenAi(question);
+    } finally {
+      _openingAi = false;
     }
-    widget.onOpenAi(question);
   }
 
   /// The insight card's own "iniciar conversación" chip (bugfix item 7):
@@ -261,24 +290,32 @@ class _HomePageState extends State<HomePage> {
     BuildContext context,
     String question,
   ) async {
-    final cubit = context.read<HomeCubit>();
-    final hasAccess = await cubit.hasAiAccess();
-    if (!context.mounted) {
+    if (_openingAi) {
       return;
     }
-    if (!hasAccess) {
-      unawaited(AiBetaSheet.show(context));
-      return;
+    _openingAi = true;
+    try {
+      final cubit = context.read<HomeCubit>();
+      final hasAccess = await cubit.hasAiAccess();
+      if (!context.mounted) {
+        return;
+      }
+      if (!hasAccess) {
+        unawaited(AiBetaSheet.show(context));
+        return;
+      }
+      await widget.onOpenAiInsightQuestion(
+        question: question,
+        insightType: cubit.state.aiInsight?.type.name,
+      );
+      // `cubit`, not `context.read<HomeCubit>()`: after this `await`,
+      // `context` may no longer be mounted, and even when it is, `HomeCubit`
+      // is a long-lived singleton — the reference captured above is still
+      // valid either way, and skips the provider lookup entirely.
+      cubit.refreshAiInsightConversation();
+    } finally {
+      _openingAi = false;
     }
-    await widget.onOpenAiInsightQuestion(
-      question: question,
-      insightType: cubit.state.aiInsight?.type.name,
-    );
-    // `cubit`, not `context.read<HomeCubit>()`: after this `await`, `context`
-    // may no longer be mounted, and even when it is, `HomeCubit` is a
-    // long-lived singleton — the reference captured above is still valid
-    // either way, and skips the provider lookup entirely.
-    cubit.refreshAiInsightConversation();
   }
 
   /// The insight card's own "continuar conversación" chip: same access gate,
@@ -288,17 +325,25 @@ class _HomePageState extends State<HomePage> {
     BuildContext context,
     String conversationId,
   ) async {
-    final cubit = context.read<HomeCubit>();
-    final hasAccess = await cubit.hasAiAccess();
-    if (!context.mounted) {
+    if (_openingAi) {
       return;
     }
-    if (!hasAccess) {
-      unawaited(AiBetaSheet.show(context));
-      return;
+    _openingAi = true;
+    try {
+      final cubit = context.read<HomeCubit>();
+      final hasAccess = await cubit.hasAiAccess();
+      if (!context.mounted) {
+        return;
+      }
+      if (!hasAccess) {
+        unawaited(AiBetaSheet.show(context));
+        return;
+      }
+      await widget.onOpenAiConversation(conversationId);
+      cubit.refreshAiInsightConversation();
+    } finally {
+      _openingAi = false;
     }
-    await widget.onOpenAiConversation(conversationId);
-    cubit.refreshAiInsightConversation();
   }
 
   /// HU-02 gated by `15-gate-cuenta.md`: without any active account the FAB

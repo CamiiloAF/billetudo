@@ -215,6 +215,7 @@ Ver tabla completa arriba, sección "Hoja de cuenta".
 - Badge del avatar nunca es un punto pelado — siempre lleva un mini-glifo.
 - **Carril del FAB:** la reserva original (`padding-bottom` sobre un `Content` de alto fijo) no empujaba nada — se recortaba invisible. Corregido con un spacer real (96px) como último hijo del `Content`, y "Movimientos" bajó a 4 filas visibles en la mayoría de frames para que la última fila termine con margen real antes del FAB (33–93px medido según frame).
 - **Chevron del bloque de sync compacto**: sin él (y sin el CTA que se quitó), el estado "sincronizado" no tenía ningún límite visual — corregido, ver "Hoja de cuenta" arriba.
+- **`AI Question Chip` (`tMqvn`), 2026-08-29:** el chip (`fill:$muted`) se fundía con la card que lo contiene (`fill:$surface`) — 1.09:1/1.16:1, muy por debajo del 3:1 de WCAG 1.4.11. Se agregó `stroke:$primary-on-soft` 1.5px al componente base (4.86:1 claro / 6.03:1 oscuro), sin tocar el fill. Detalle completo en `MASTER.md` § AI Question Chip. Propaga a `MrROq`/`OcfBN`, `Ih1x4`/`GpFk6`, `lKQ3p`/`lclPR`, `ytvPw`/`VxGME`, `GmKkQ`/`plbn5` — todas marcadas `placeholder:true` con badge de revisión en el canvas hasta que el usuario apruebe.
 
 ## Pendientes
 

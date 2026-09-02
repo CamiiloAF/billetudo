@@ -171,57 +171,74 @@ class AppSettingsLocalDatasource {
         ),
       );
 
-  /// `UPDATE`, falling back to `INSERT` when the singleton is missing — never
-  /// an upsert: `AppSettings` is physically a PowerSync-managed view (decision
-  /// #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite rejects
-  /// `INSERT ... ON CONFLICT ... DO UPDATE` against a view outright
+  /// `UPDATE` when the singleton exists, `INSERT` only when it is confirmed
+  /// missing — never an upsert: `AppSettings` is physically a PowerSync-managed
+  /// view (decision #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite
+  /// rejects `INSERT ... ON CONFLICT ... DO UPDATE` against a view outright
   /// (`cannot UPSERT a view`), whatever its `INSTEAD OF` triggers do.
   ///
   /// The row usually exists (`_seedAppSettings()` creates it on
   /// `onCreate`/migration), but it can legitimately be gone: wiping this
   /// device on sign-out (HU-06) goes through
   /// `PowerSyncDatabase.disconnectAndClear`, which empties every synced table
-  /// including this one, and no migration re-runs afterwards. Without this
+  /// including this one, and no migration re-runs afterwards. Without a
   /// fallback the seed latch could never be set again and the default
   /// categories would be re-seeded on every launch.
   ///
-  /// The `UPDATE` finding 0 rows and, in the gap before the fallback
-  /// `INSERT ... insertOrIgnore` below runs, something else (most likely
-  /// `_seedAppSettings()`'s own reseed, e.g. right after a sign-out wipe)
-  /// recreating the singleton row means `insertOrIgnore` silently drops
-  /// [values] — a row with `singletonId` already exists again, so the insert
-  /// is a no-op, and only the freshly-reseeded defaults survive.
+  /// BILLETUDO-? (found live, real device + real PowerSync + real Postgres,
+  /// 2026-09-01): the previous version of this method ran `UPDATE`, then
+  /// **unconditionally** ran `INSERT ... insertOrIgnore` afterwards too,
+  /// trusting its own doc's claim that `insertOrIgnore` is a harmless no-op
+  /// when the row already exists (justified at the time by
+  /// `app_settings_after_wipe_test.dart`, which only ever exercised the
+  /// *empty-row* case). It is not a no-op on an existing row against this
+  /// PowerSync-managed view: every field **absent** from [values] still gets
+  /// Drift's typed API to fill in its `clientDefault` (`id`, `createdAt`,
+  /// `zeroBasedEnabled`, `categoriesSeeded`, `aiNotesAccessEnabled`, …) before
+  /// the `INSTEAD OF INSERT` trigger runs, and that trigger applies them —
+  /// confirmed by `createdAt` visibly changing to "now" on every single
+  /// settings write, on a real device, in Postgres too. A column with a
+  /// `clientDefault` and no explicit value in *that* write's [values] — e.g.
+  /// `aiNotesAccessEnabled` when some *other* setting is the one being
+  /// written — got silently reset to its Dart-side default. Nullable columns
+  /// with no `clientDefault` (`aiConsentAcceptedAt`, `aiConsentVersion`)
+  /// survived, which is exactly why the "notes toggle doesn't persist" bug
+  /// looked notes-specific: it silently affected *every* `clientDefault`
+  /// column, on *every* write to this table, not just this one.
   ///
-  /// The follow-up `UPDATE` after the insert closes that gap: if the insert
-  /// above created the row, this is a harmless no-op re-write of the same
-  /// [values]; if it didn't (the race), this is what actually persists them.
+  /// The fix: ask the row whether it exists with a real `SELECT` first, and
+  /// only take the insert path when it is genuinely missing. A `SELECT`
+  /// against this view returns real rows (unlike the `UPDATE`/`INSERT`
+  /// side, its `changes()` problem is specific to DML through `INSTEAD OF`
+  /// triggers), so this is a reliable existence check where the row's own
+  /// affected-row count never was.
   ///
-  /// Its own affected-row count is **not** checked, unlike the first
-  /// `UPDATE` above. Confirmed empirically against a real PowerSync
-  /// connection (`app_settings_after_wipe_test.dart` uses one, not a plain
-  /// in-memory `NativeDatabase`): SQLite's `changes()` does not count writes
-  /// performed by an `INSTEAD OF` trigger body, so *every* `UPDATE` against
-  /// this view reports `0` regardless of whether it actually matched and
-  /// updated the row — including the very first `UPDATE` above when it
-  /// *does* find and update an existing row. (That first `UPDATE`'s `0`
-  /// still doubles as "go to the fallback" correctly: the fallback's own
-  /// `insertOrIgnore` is a safe no-op on a row that in fact already got
-  /// updated, so relying on it there was never actually wrong, just
-  /// coincidentally-named — this data source never had a working
-  /// affected-row signal to test in the first place.) So there is nothing
-  /// left to gate the retry on; running it unconditionally and trusting its
-  /// result is the correct behavior for this table, not a shortcut.
+  /// The insert branch still ends with one plain `UPDATE` of its own — that
+  /// part of the original design was correct and stays
+  /// (`app_settings_local_datasource_write_race_test.dart` covers exactly
+  /// why): a concurrent reseed (`_seedAppSettings()` right after a sign-out
+  /// wipe) can recreate the row in the gap between the `SELECT` above and
+  /// this `INSERT`, making `insertOrIgnore` a silent no-op that drops
+  /// [values]. This does **not** reintroduce the bug this whole rewrite
+  /// exists to fix: `clientDefault` only fires when Drift builds an `INSERT`
+  /// statement for an absent field, never for a plain `UPDATE` — so this
+  /// follow-up `UPDATE`, restricted to the missing-row branch instead of
+  /// running after every single write, reasserts [values] without touching
+  /// any sibling column's default.
   Future<void> _write(AppSettingsCompanion values) async {
-    final updated = await (_db.update(_db.appSettings)
+    final exists = await (_db.select(_db.appSettings)
           ..where((s) => s.id.equals(singletonId)))
-        .write(values);
-    if (updated > 0) {
+        .getSingleOrNull();
+    if (exists == null) {
+      await _db.into(_db.appSettings).insert(
+            values.copyWith(id: const Value(singletonId)),
+            mode: InsertMode.insertOrIgnore,
+          );
+      await (_db.update(_db.appSettings)
+            ..where((s) => s.id.equals(singletonId)))
+          .write(values);
       return;
     }
-    await _db.into(_db.appSettings).insert(
-          values.copyWith(id: const Value(singletonId)),
-          mode: InsertMode.insertOrIgnore,
-        );
     await (_db.update(_db.appSettings)..where((s) => s.id.equals(singletonId)))
         .write(values);
   }

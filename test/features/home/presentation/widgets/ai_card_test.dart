@@ -89,8 +89,8 @@ void main() {
       expect(diagonalChip.isDirectNav, isFalse);
     });
 
-    testWidgets('los 4 chips tienen el mismo alto (dogfooding fix)',
-        (tester) async {
+    testWidgets(
+        'los 4 chips quedan forzados al mismo alto fijo', (tester) async {
       tester.view.physicalSize = const Size(1400, 800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -102,7 +102,7 @@ void main() {
           .map((chip) => tester.getSize(find.byWidget(chip)).height)
           .toSet();
 
-      expect(heights, hasLength(1));
+      expect(heights.length, 1);
     });
 
     testWidgets(

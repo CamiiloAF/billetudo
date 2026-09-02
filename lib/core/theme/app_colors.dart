@@ -41,6 +41,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.background,
     required this.surface,
     required this.muted,
+    required this.mutedStrong,
     required this.border,
     required this.skeleton,
     required this.textPrimary,
@@ -115,6 +116,19 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color background;
   final Color surface;
   final Color muted;
+
+  /// `$muted-strong`: [muted] calibrated for a *tappable* fill against
+  /// `$surface`, not a plain background wash. Same hex as [muted] in light
+  /// (`#EEECFB`, zero visual change — the user had already approved light);
+  /// in dark it diverges (`#6E68AB` vs. `#26243B`) because plain [muted] on
+  /// `$surface` dark measured ~1.09:1, far under WCAG 1.4.11's 3:1 floor for
+  /// a component boundary. `#6E68AB` is the same violet-gray family as
+  /// [muted] (same hue, lighter), not the saturated [primary] — that read as
+  /// a solid action button in review and was rejected, along with an earlier
+  /// `stroke`-based fix the user rejected as "looks cheap". Gives ~3.30:1
+  /// against `$surface` dark. First use: `AiQuestionChip`
+  /// (`design-system/billetudo/pages/inicio.md` § "Card de IA").
+  final Color mutedStrong;
   final Color border;
 
   /// Placeholder fill for skeleton loaders only (never borders/dividers). In
@@ -214,6 +228,7 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFFF4F3FA),
     surface: Color(0xFFFFFFFF),
     muted: Color(0xFFEEECFB),
+    mutedStrong: Color(0xFFEEECFB),
     border: Color(0xFFECEBF3),
     skeleton: Color(0xFFECEBF3),
     textPrimary: Color(0xFF1C1B29),
@@ -263,6 +278,7 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFF14141F),
     surface: Color(0xFF1E1E2E),
     muted: Color(0xFF26243B),
+    mutedStrong: Color(0xFF6E68AB),
     border: Color(0xFF2A2A3D),
     skeleton: Color(0xFF45455F),
     textPrimary: Color(0xFFF4F3FA),
@@ -312,6 +328,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? background,
     Color? surface,
     Color? muted,
+    Color? mutedStrong,
     Color? border,
     Color? skeleton,
     Color? textPrimary,
@@ -359,6 +376,7 @@ class AppColors extends ThemeExtension<AppColors> {
       background: background ?? this.background,
       surface: surface ?? this.surface,
       muted: muted ?? this.muted,
+      mutedStrong: mutedStrong ?? this.mutedStrong,
       border: border ?? this.border,
       skeleton: skeleton ?? this.skeleton,
       textPrimary: textPrimary ?? this.textPrimary,
@@ -412,6 +430,7 @@ class AppColors extends ThemeExtension<AppColors> {
       background: Color.lerp(background, other.background, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
       muted: Color.lerp(muted, other.muted, t)!,
+      mutedStrong: Color.lerp(mutedStrong, other.mutedStrong, t)!,
       border: Color.lerp(border, other.border, t)!,
       skeleton: Color.lerp(skeleton, other.skeleton, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,

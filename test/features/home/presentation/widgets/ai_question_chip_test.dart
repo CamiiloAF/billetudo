@@ -1,3 +1,4 @@
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/features/home/presentation/widgets/ai_question_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,5 +51,75 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tema oscuro: fondo usa AppColors.muted; icono usa primaryOnSoft',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      AiQuestionChip(label: 'Pregunta', onTap: () {}),
+      brightness: Brightness.dark,
+    );
+
+    final material = tester.widget<Material>(
+      find.descendant(
+        of: find.byType(AiQuestionChip),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(material.color, AppColors.dark.muted);
+
+    final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
+    expect(icon.color, AppColors.dark.primaryOnSoft);
+  });
+
+  testWidgets('tema claro: fondo usa AppColors.muted; icono usa primaryOnSoft',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      AiQuestionChip(label: 'Pregunta', onTap: () {}),
+    );
+
+    final material = tester.widget<Material>(
+      find.descendant(
+        of: find.byType(AiQuestionChip),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(material.color, AppColors.light.muted);
+
+    final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
+    expect(icon.color, AppColors.light.primaryOnSoft);
+  });
+
+  testWidgets('etiqueta larga se trunca en una sola línea (maxLines: 1)',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      AiQuestionChip(
+        label: '¿Cuánto llevo ahorrado en mis metas?',
+        onTap: () {},
+      ),
+    );
+
+    final text = tester.widget<Text>(
+      find.descendant(
+        of: find.byType(AiQuestionChip),
+        matching: find.byType(Text),
+      ),
+    );
+    expect(text.maxLines, 1);
+    expect(text.overflow, TextOverflow.ellipsis);
+  });
+
+  testWidgets('padding uniforme de 14 en los cuatro lados', (tester) async {
+    await tester.pumpHomeWidget(
+      AiQuestionChip(label: 'Pregunta', onTap: () {}),
+    );
+
+    final container = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(AiQuestionChip),
+        matching: find.byType(Container),
+      ),
+    );
+    expect(container.padding, const EdgeInsets.all(14));
   });
 }

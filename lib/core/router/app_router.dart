@@ -19,8 +19,10 @@ import '../../features/accounts/presentation/widgets/account_gated_route.dart';
 import '../../features/ai/presentation/cubit/ai_action_cubit.dart';
 import '../../features/ai/presentation/cubit/ai_chat_cubit.dart';
 import '../../features/ai/presentation/cubit/ai_consent_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_conversation_read_cubit.dart';
 import '../../features/ai/presentation/cubit/ai_history_cubit.dart';
 import '../../features/ai/presentation/pages/ai_assistant_page.dart';
+import '../../features/ai/presentation/pages/ai_conversation_read_page.dart';
 import '../../features/ai/presentation/pages/ai_history_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/domain/entities/delete_account_scope.dart';
@@ -183,6 +185,13 @@ abstract final class AppRoutes {
   static const String reports = '/graficas';
   static const String ai = '/asistente';
   static const String aiHistory = '/asistente/historial';
+
+  /// The read-only view of a single past thread (`AiConversationReadPage`),
+  /// reached from `AiConsentPage`'s "Ver mis conversaciones anteriores" —
+  /// unlike [ai], reopening a conversation here never needs consent, since
+  /// it only reads what is already on the device. Takes `conversationId` as
+  /// a query parameter, same shape as [ai]'s own `conversationId` param.
+  static const String aiConversationRead = '/asistente/conversacion';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
@@ -512,6 +521,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _reportsRoute(),
       _aiRoute(),
       _aiHistoryRoute(),
+      _aiConversationReadRoute(),
       // The welcome flow (`13-onboarding.md`): a sibling of the shell route,
       // same reasoning as the routes above — it must render without the tab
       // bar, and unlike them it is also the *only* screen reachable while
@@ -1399,6 +1409,14 @@ GoRoute _aiRoute() => GoRoute(
           BlocProvider(create: (context) => getIt<AiConsentCubit>()),
           BlocProvider(create: (context) => getIt<AiChatCubit>()),
           BlocProvider(create: (context) => getIt<AiActionCubit>()),
+          // Only actually read while `AiConsentCubit` reports not-granted
+          // (`AiAssistantPage`'s `AiConsentPage` branch) — provided here
+          // regardless so that branch always finds it in context, same
+          // shape as the three cubits above.
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<AiHistoryCubit>(), (c) => c.start()),
+          ),
         ],
         child: AiAssistantPage(
           initialQuestion: state.uri.queryParameters['initialQuestion'],
@@ -1406,6 +1424,9 @@ GoRoute _aiRoute() => GoRoute(
           initialConversationId: state.uri.queryParameters['conversationId'],
           onBack: () => context.pop(),
           onOpenHistory: () => context.push<String>(AppRoutes.aiHistory),
+          onOpenReadOnlyConversation: (conversationId) => context.push(
+            '${AppRoutes.aiConversationRead}?conversationId=$conversationId',
+          ),
           onSignIn: () => context.push(AppRoutes.login),
         ),
       ),
@@ -1421,6 +1442,29 @@ GoRoute _aiHistoryRoute() => GoRoute(
         create: (context) =>
             _started(getIt<AiHistoryCubit>(), (c) => c.start()),
         child: const AiHistoryPage(),
+      ),
+    );
+
+// The read-only view of a single thread (`AiConsentPage`'s "Ver mis
+// conversaciones anteriores"), a sibling stacked route so its back button
+// pops straight to whatever pushed it — always `_aiRoute()`'s own
+// `AiConsentPage`, today. `AiActionCubit` is provided again (fresh instance,
+// same as `_aiRoute()`'s) because `AiProposalCard` inside the reused bubbles
+// needs one in context; `AiConsentCubit`/`AiChatCubit` are deliberately not
+// provided here at all — this screen has no code path that could use them.
+GoRoute _aiConversationReadRoute() => GoRoute(
+      path: AppRoutes.aiConversationRead,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => getIt<AiActionCubit>()),
+          BlocProvider(create: (context) => getIt<AiConversationReadCubit>()),
+        ],
+        child: AiConversationReadPage(
+          conversationId: state.uri.queryParameters['conversationId'] ?? '',
+          onBack: () => context.pop(),
+          onReactivate: () => context.pop(),
+        ),
       ),
     );
 

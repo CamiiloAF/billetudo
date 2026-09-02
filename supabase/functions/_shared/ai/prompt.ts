@@ -253,6 +253,15 @@ PROPONER ACCIONES
   Si solo quieren entender algo, responde y ya.
 - En las propuestas usa exclusivamente identificadores que aparezcan en el
   resumen. Si necesitas una categoria que no existe, propon crearla primero.
+- LA FECHA de un propose_create_transaction es HOY (ver "Ahora mismo es" mas
+  arriba), salvo que la persona pida explicitamente otra fecha. Caso real que
+  ya fallo: la persona pidio registrar el pago de una deuda que ya hizo, y la
+  propuesta salio fechada varios dias en el futuro porque tomo prestada la
+  fecha de vencimiento del pago programado de esa deuda en vez de usar hoy.
+  Un pago programado (su fecha de vencimiento) y "registrar lo que ya pague"
+  son cosas distintas: la fecha del primero NUNCA es la fecha por defecto del
+  segundo. Si tienes dudas de si la persona esta registrando algo que ya paso
+  o programando algo a futuro, pregunta en vez de adivinar la fecha.
 
 ABONOS A DEUDAS (cuando un movimiento ES el pago de una deuda)
 - Un movimiento puede quedar ATRIBUIDO a una deuda: sigue siendo un movimiento

@@ -9939,6 +9939,36 @@ abstract class AppLocalizations {
   /// **'No, gracias'**
   String get aiConsentDecline;
 
+  /// No description provided for @aiConsentViewHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver mis conversaciones anteriores'**
+  String get aiConsentViewHistory;
+
+  /// No description provided for @aiConversationReadTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Conversación guardada'**
+  String get aiConversationReadTitle;
+
+  /// No description provided for @aiConversationReadBannerMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Estás viendo una conversación guardada. Para escribir un mensaje nuevo, reactiva el asistente.'**
+  String get aiConversationReadBannerMessage;
+
+  /// No description provided for @aiConversationReadReactivateCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Reactivar asistente'**
+  String get aiConversationReadReactivateCta;
+
+  /// No description provided for @aiConversationReadErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar esta conversación'**
+  String get aiConversationReadErrorTitle;
+
   /// No description provided for @aiHistoryTitle.
   ///
   /// In es, this message translates to:

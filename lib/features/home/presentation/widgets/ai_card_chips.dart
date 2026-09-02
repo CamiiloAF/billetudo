@@ -24,11 +24,12 @@ class AiCardChips extends StatelessWidget {
   final ValueChanged<String?> onAskQuestion;
   final VoidCallback onCreateBudget;
 
-  /// `AiQuestionChip`'s own vertical padding (14 top + 14 bottom) plus two
-  /// lines of its `bodySmall` label — see the call site's comment for why
-  /// every chip is forced to this height instead of sizing to its own
-  /// content.
-  static const double _chipHeight = 64;
+  /// `AiQuestionChip`'s own vertical padding (14 top + 14 bottom) plus one
+  /// line of its `bodySmall` label (measured ~45px) — see the call site's
+  /// comment for why every chip is forced to this height instead of sizing
+  /// to its own content. Rounded up 1px from the measured value so no
+  /// platform/pixel-ratio variance clips the single line.
+  static const double _chipHeight = 46;
 
   @override
   Widget build(BuildContext context) {
@@ -81,14 +82,13 @@ class AiCardChips extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
+            // Fixed, not `IntrinsicHeight`: `AiQuestionChip` measures its
+            // own label with a `LayoutBuilder`, and `LayoutBuilder` cannot
+            // answer an intrinsic-height query (Flutter throws at layout
+            // time — confirmed live). `_chipHeight` reserves room for the
+            // label's single line (`AiQuestionChip.maxLines`) plus its
+            // vertical padding, so every chip renders at the same height.
             children: [
-              // Fixed, not `IntrinsicHeight`: `AiQuestionChip` measures its
-              // own label with a `LayoutBuilder`, and `LayoutBuilder` cannot
-              // answer an intrinsic-height query (Flutter throws at layout
-              // time — confirmed live). `_chipHeight` reserves room for the
-              // label's full 2 lines (`AiQuestionChip.maxLines`) plus its
-              // vertical padding, so every chip renders at the same height
-              // whether its own label needs one line or two.
               SizedBox(
                 height: _chipHeight,
                 child: AiQuestionChip(

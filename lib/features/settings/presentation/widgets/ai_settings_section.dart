@@ -70,13 +70,25 @@ class AiSettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SettingsSectionLabel(l10n.settingsAiSection),
+        // Only while the broad consent is actually granted: the notes opt-in
+        // is a *narrower* permission that only exists inside it
+        // (`ClearAiConsent`'s own doc). Reported live: withdrawing consent
+        // left this row visible and interactive, so re-enabling it alone —
+        // with the assistant itself unreachable — created exactly the orphan
+        // permission `ClearAiConsent` was written to prevent. There is
+        // nothing to opt into here before the broad consent exists either.
         BlocBuilder<AppSettingsCubit, AppSettingsState>(
-          builder: (context, settings) => AiNotesAccessField(
-            enabled: settings.aiNotesAccessEnabled,
-            onChanged: (value) => unawaited(
-              _onChanged(context, enabled: value),
-            ),
-          ),
+          buildWhen: (previous, current) =>
+              previous.hasAcceptedAiConsent != current.hasAcceptedAiConsent ||
+              previous.aiNotesAccessEnabled != current.aiNotesAccessEnabled,
+          builder: (context, settings) => settings.hasAcceptedAiConsent
+              ? AiNotesAccessField(
+                  enabled: settings.aiNotesAccessEnabled,
+                  onChanged: (value) => unawaited(
+                    _onChanged(context, enabled: value),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
         // Only while there IS a consent to withdraw: before accepting, this
         // row would name a permission the person never gave.

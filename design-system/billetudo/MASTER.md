@@ -131,9 +131,10 @@ Fila de categoria de gasto: icono + nombre + contador de movimientos + monto + p
 - **Contraste:** icono siempre debe dar >=3:1 contra su `-soft` de fondo. Por eso `mint`/`sky`/`peach` en claro estan mas oscuros que su primer intento.
 
 ### AI Question Chip
-Chip de pregunta sugerida para el asistente "Billetudo". Texto + flecha, fondo `surface`.
+Chip de pregunta sugerida para el asistente "Billetudo". Texto + flecha, fondo `$muted-strong`, sin borde.
 
-- Padding `[14,16]` (subido desde `[11,14]`) para cumplir el tap target minimo de 44pt de alto — hallazgo de la revision UX, corregido a nivel de componente (afecta ambas instancias/pantallas automaticamente).
+- Padding `14` uniforme (bajado desde `[14,16]` el 2026-08-29 — el vertical ya estaba en el piso matemático de 44pt: con contenido de 16px de alto, `14+16+14=44`; el horizontal bajó de 16 a 14 porque el ancho no era el limitante del tap target). El chip puede tener 1 o 2 líneas de texto según el contenido real (`maxLines:2` en Flutter) — no se fuerza una sola línea, ni un alto uniforme entre chips de la misma fila (decisión explícita del usuario, 2026-08-29: prefiere 2 líneas para preguntas largas antes que forzarlas a una).
+- **Contraste (corregido 2026-08-29, v2 — revierte el stroke del primer intento):** el chip solo tenia `fill:$muted` (=`$primary-soft`) sobre cards `$surface`, dando 1.09:1 (oscuro)/1.16:1 (claro) — se fundia con la card, muy por debajo del 3:1 que WCAG 1.4.11 pide para el limite de un componente tocable. Reportado en dogfooding ("siento que perdio contraste... que incite al usuario a interactuar"). Un primer intento agrego `stroke:$primary-on-soft` 1.5px — el usuario lo rechazo al verlo en captura ("ese borde no me convence, la aplicacion no brilla por tener bordes, se ve barato y fuera de lo convencional"). Se resolvio con COLOR en su lugar: nuevo token `$muted-strong` — claro identico a `$muted` (`#EEECFB`, cero cambio ahi, ya aprobado), oscuro `#6E68AB` (en vez de `#26243B`), ≈3.30:1 contra `$surface` oscuro. Se descarto `$primary`/`$primary-data`/`$indigo` crudos: darian mas margen (3.00-5.5:1) pero como fill solido se verian como boton de accion o introducirian una familia de color ajena a la card de IA. Propaga automaticamente a toda instancia (`ref:tMqvn`) — ninguna sobreescribe `fill`/`padding` hoy.
 
 ### Load More · Ver más (`oadHE`)
 Pill de paginacion incremental para ledgers/listas (8 iniciales + 8 por carga, controlado por codigo). Usado en Presupuestos, Deudas, Pagos Programados y Metas.

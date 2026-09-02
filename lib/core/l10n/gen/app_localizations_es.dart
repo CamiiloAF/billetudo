@@ -6121,6 +6121,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiConsentDecline => 'No, gracias';
 
   @override
+  String get aiConsentViewHistory => 'Ver mis conversaciones anteriores';
+
+  @override
+  String get aiConversationReadTitle => 'Conversación guardada';
+
+  @override
+  String get aiConversationReadBannerMessage =>
+      'Estás viendo una conversación guardada. Para escribir un mensaje nuevo, reactiva el asistente.';
+
+  @override
+  String get aiConversationReadReactivateCta => 'Reactivar asistente';
+
+  @override
+  String get aiConversationReadErrorTitle =>
+      'No pudimos cargar esta conversación';
+
+  @override
   String get aiHistoryTitle => 'Historial';
 
   @override
