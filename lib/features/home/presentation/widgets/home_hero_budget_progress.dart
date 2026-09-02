@@ -5,8 +5,12 @@ import '../../../budgets/domain/entities/budget_progress.dart';
 
 /// The hero's progress bar (`Bar Track`, `Jh0yS`, `design-system/billetudo/
 /// pages/inicio.md` § "Hero compacto"): track + one or two contiguous
-/// segments — real spend, and (only in the projected-overspend-risk state) a
-/// second segment for projected scheduled-payment spend.
+/// segments — real spend, and, whenever there is any scheduled amount, a
+/// second segment for projected scheduled-payment spend — same pattern as
+/// Budgets (issue #11): always drawn, colored by risk rather than hidden
+/// outside the risk state. `$on-primary-scheduled` when
+/// [BudgetProgress.isScheduledOverspendRisk] is false, `$on-primary-warn`
+/// when it is true (`billetudo.pen` `wm9pF`).
 ///
 /// Purely a drawing surface: which color the spent segment takes (`$on-primary`
 /// for every state except real overspend, which tints `$on-primary-alert`) is
@@ -80,7 +84,9 @@ class HomeHeroBudgetProgress extends StatelessWidget {
                     width: scheduledWidth,
                     height: _height,
                     decoration: BoxDecoration(
-                      color: colors.onPrimaryWarn,
+                      color: progress.isScheduledOverspendRisk
+                          ? colors.onPrimaryWarn
+                          : colors.onPrimaryScheduled,
                       borderRadius: const BorderRadius.horizontal(
                         right: Radius.circular(_radius),
                       ),

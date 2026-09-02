@@ -1,3 +1,4 @@
+import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_hero_budget_progress.dart';
 import 'package:flutter/material.dart';
@@ -95,5 +96,77 @@ void main() {
 
     expect(radius?.topLeft, const Radius.circular(5));
     expect(radius?.bottomLeft, const Radius.circular(5));
+  });
+
+  group('color del tramo "programado" (issue #11)', () {
+    Future<Color?> pumpAndGetScheduledColor(
+      WidgetTester tester,
+      BudgetProgress progress,
+    ) async {
+      await tester.pumpHomeWidget(
+        SizedBox(
+          width: trackWidth,
+          child: HomeHeroBudgetProgress(
+            progress: progress,
+            spentColor: Colors.white,
+          ),
+        ),
+      );
+      final context = tester.element(find.byType(HomeHeroBudgetProgress));
+      final colors = context.colors;
+      final containers = tester.widgetList<Container>(find.byType(Container));
+      for (final container in containers) {
+        final decoration = container.decoration;
+        if (decoration is BoxDecoration &&
+            (decoration.color == colors.onPrimaryScheduled ||
+                decoration.color == colors.onPrimaryWarn)) {
+          return decoration.color;
+        }
+      }
+      return null;
+    }
+
+    testWidgets(
+        'scheduledMinor > 0 SIN riesgo real: el segundo tramo se dibuja '
+        'igual (no se oculta, patron de Presupuestos) pero en '
+        'onPrimaryScheduled, no en onPrimaryWarn', (tester) async {
+      // spent (30%) + scheduled (20%) = 50% comprometido, lejos del
+      // presupuesto: sin riesgo.
+      const progress = BudgetProgress(
+        amountMinor: 100000,
+        spentMinor: 30000,
+        scheduledMinor: 20000,
+        daysLeft: 5,
+      );
+      expect(progress.isScheduledOverspendRisk, isFalse);
+
+      final color = await pumpAndGetScheduledColor(tester, progress);
+
+      final colors = tester.element(find.byType(HomeHeroBudgetProgress)).colors;
+      expect(
+        color,
+        colors.onPrimaryScheduled,
+        reason: 'el tramo programado debe existir y usar el color '
+            '"sin riesgo", nunca el de riesgo',
+      );
+    });
+
+    testWidgets(
+        'con riesgo real de sobregiro proyectado: el segundo tramo usa '
+        'onPrimaryWarn', (tester) async {
+      // spent (30%) + scheduled (80%) = 110% comprometido, riesgo real.
+      const progress = BudgetProgress(
+        amountMinor: 100000,
+        spentMinor: 30000,
+        scheduledMinor: 80000,
+        daysLeft: 5,
+      );
+      expect(progress.isScheduledOverspendRisk, isTrue);
+
+      final color = await pumpAndGetScheduledColor(tester, progress);
+
+      final colors = tester.element(find.byType(HomeHeroBudgetProgress)).colors;
+      expect(color, colors.onPrimaryWarn);
+    });
   });
 }

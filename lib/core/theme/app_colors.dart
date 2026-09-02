@@ -60,6 +60,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.monthChipBg,
     required this.onPrimaryWarn,
     required this.onPrimaryAlert,
+    required this.onPrimaryScheduled,
   });
 
   final Color primary;
@@ -199,6 +200,15 @@ class AppColors extends ThemeExtension<AppColors> {
   /// (1.01:1).
   final Color onPrimaryAlert;
 
+  /// `$on-primary-scheduled` (`#D6CCFC`), fixed in both themes: issue #11 —
+  /// the hero's scheduled segment used to render only in the
+  /// projected-overspend-risk state ([onPrimaryWarn]); it now always renders
+  /// when there is a scheduled amount, same pattern as Budgets, so it needs a
+  /// distinct color for the no-risk case. `$primary-light` (Budgets' own
+  /// no-risk token) fails contrast on this gradient (1.78:1/2.44:1); this
+  /// token clears the 3:1 graphic-object floor (3.22:1/4.40:1).
+  final Color onPrimaryScheduled;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -247,6 +257,7 @@ class AppColors extends ThemeExtension<AppColors> {
     monthChipBg: Color(0x40000000),
     onPrimaryWarn: Color(0xFFFFD27A),
     onPrimaryAlert: Color(0xFFFFCFC4),
+    onPrimaryScheduled: Color(0xFFD6CCFC),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -297,6 +308,7 @@ class AppColors extends ThemeExtension<AppColors> {
     monthChipBg: Color(0x40000000),
     onPrimaryWarn: Color(0xFFFFD27A),
     onPrimaryAlert: Color(0xFFFFCFC4),
+    onPrimaryScheduled: Color(0xFFD6CCFC),
   );
 
   @override
@@ -347,6 +359,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? monthChipBg,
     Color? onPrimaryWarn,
     Color? onPrimaryAlert,
+    Color? onPrimaryScheduled,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -395,6 +408,7 @@ class AppColors extends ThemeExtension<AppColors> {
       monthChipBg: monthChipBg ?? this.monthChipBg,
       onPrimaryWarn: onPrimaryWarn ?? this.onPrimaryWarn,
       onPrimaryAlert: onPrimaryAlert ?? this.onPrimaryAlert,
+      onPrimaryScheduled: onPrimaryScheduled ?? this.onPrimaryScheduled,
     );
   }
 
@@ -450,6 +464,8 @@ class AppColors extends ThemeExtension<AppColors> {
       monthChipBg: Color.lerp(monthChipBg, other.monthChipBg, t)!,
       onPrimaryWarn: Color.lerp(onPrimaryWarn, other.onPrimaryWarn, t)!,
       onPrimaryAlert: Color.lerp(onPrimaryAlert, other.onPrimaryAlert, t)!,
+      onPrimaryScheduled:
+          Color.lerp(onPrimaryScheduled, other.onPrimaryScheduled, t)!,
     );
   }
 }
