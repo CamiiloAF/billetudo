@@ -157,6 +157,32 @@ Deno.test('a valid transaction proposal passes and keeps its category', () => {
   assertEquals(result.payload?.categoryId, 'cat-1');
 });
 
+Deno.test(
+  'a transaction proposal with no categoryId is refused, debtId or not — ' +
+    'found live: it used to pass here and only fail at confirm time, ' +
+    'on-device, as an opaque "no se pudo guardar" (TransactionDraft refuses ' +
+    'an income/expense with no category)',
+  () => {
+    const base = {
+      type: 'expense',
+      amountMinor: 4500000,
+      currency: 'COP',
+      date: 1755100000,
+      accountId: 'acc-1',
+      rationale: 'x',
+    };
+    const plain = validateProposal('propose_create_transaction', base, index);
+    assertEquals(plain.ok, false);
+
+    const withDebt = validateProposal(
+      'propose_create_transaction',
+      { ...base, debtId: 'debt-1' },
+      index,
+    );
+    assertEquals(withDebt.ok, false);
+  },
+);
+
 Deno.test('a category proposal needs no currency', () => {
   const result = validateProposal('propose_create_category', {
     name: 'Delivery',
@@ -286,6 +312,7 @@ Deno.test('both ids of a debt link must come from the client', () => {
 Deno.test('a transaction proposal carries an optional debtId', () => {
   const index = indexSnapshot({
     accounts: [{ id: 'acc-1', currency: 'COP' }],
+    categories: [{ id: 'cat-1', kind: 'expense' }],
     debts: [{ id: 'debt-1' }],
   });
   const base = {
@@ -294,6 +321,7 @@ Deno.test('a transaction proposal carries an optional debtId', () => {
     currency: 'COP',
     date: 1756600000,
     accountId: 'acc-1',
+    categoryId: 'cat-1',
     rationale: 'abono a capital',
   };
 

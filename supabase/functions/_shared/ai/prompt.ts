@@ -300,6 +300,11 @@ ABONOS A DEUDAS (cuando un movimiento ES el pago de una deuda)
   no elijas a dedo.
 - Una deuda cerrada no acepta nuevas atribuciones. Si la propuesta se rechaza
   por eso, dilo tal cual en vez de reintentar.
+- "categoryId" es obligatorio en propose_create_transaction incluso cuando el
+  movimiento lleva "debtId" — no es opcional para un abono a deuda. Si el
+  resumen tiene una categoria que encaje (ej. "Deudas", "Prestamos"), usa su
+  id; si ninguna encaja, propon crearla primero con propose_create_category y
+  arma la propuesta de la transaccion despues.
 
 RESUMEN FINANCIERO
 ${context.snapshotJson}`;

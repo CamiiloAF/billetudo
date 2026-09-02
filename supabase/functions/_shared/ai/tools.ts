@@ -325,7 +325,14 @@ export const WRITE_TOOLS: AiToolDef[] = [
         currency: { type: 'string', description: 'ISO 4217 de 3 letras.' },
         date: { type: 'integer', description: 'Unix en SEGUNDOS.' },
         accountId: { type: 'string', description: 'Id exacto del resumen.' },
-        categoryId: { type: 'string', description: 'Id exacto del resumen.' },
+        categoryId: {
+          type: 'string',
+          description:
+            'Obligatoria. Id exacto de una categoria del resumen, del kind '
+            + 'que corresponda a "type". Si ninguna categoria existente '
+            + 'encaja, propon crearla primero (propose_create_category) en '
+            + 'vez de omitir este campo.',
+        },
         debtId: {
           type: 'string',
           description:
@@ -343,6 +350,7 @@ export const WRITE_TOOLS: AiToolDef[] = [
         'currency',
         'date',
         'accountId',
+        'categoryId',
         'rationale',
       ],
     },

@@ -289,8 +289,19 @@ export function validateProposal(
       if (!accountId || !index.ids.has(accountId)) {
         return fail('"accountId" debe ser el id de una cuenta que este en el resumen');
       }
+      // Required for both types this tool supports: `TransactionDraft`
+      // (device-side) refuses an income/expense with no category outright,
+      // except for a balance-adjustment shape this tool has no field for —
+      // so there is no valid case here where omitting it should pass.
+      // Found live: a debt-payment proposal with no category rendered fine
+      // and only failed at confirm time, on-device, as an opaque "no se
+      // pudo guardar" — this check catches it at proposal time instead,
+      // where the model can react and try again with a category.
       const categoryId = asString(args.categoryId);
-      if (categoryId && !index.ids.has(categoryId)) {
+      if (!categoryId) {
+        return fail('"categoryId" es obligatorio para un movimiento de income o expense');
+      }
+      if (!index.ids.has(categoryId)) {
         return fail(`la categoria ${categoryId} no existe en el resumen`);
       }
       // Optional: when present the movement is born attributed to the debt, so
