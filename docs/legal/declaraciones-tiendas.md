@@ -1,8 +1,51 @@
 # Declaraciones de datos para Play Store y App Store — billetudo
 
-**Versión 1.6** · **Última actualización: 28 de agosto de 2026**
+**Versión 1.7** · **Última actualización: 1 de septiembre de 2026**
 **Versión de la app a la que corresponden las respuestas vigentes: `0.0.5+8`**
 `[VERIFICAR: el working tree ya está en 0.0.5+9 (pubspec.yaml:4). Confirmar contra qué build se envía y re-verificar §1.1 y §1.3 sobre ese binario]`
+
+**Qué cambió en la versión 1.7:** se re-verificaron contra el código las
+precondiciones bloqueantes de §8.6. Dos ya están resueltas y dos siguen
+abiertas:
+
+- **Resuelto — precondición 8 (interruptor de notas cableado extremo a
+  extremo).** Ya no es solo esquema: existe la entidad de dominio
+  (`AppSettings.aiNotesAccessEnabled`), el snapshot y las herramientas del
+  prompt lo leen (`_shared/ai/prompt.ts`, `NOTES_WITHHELD_SECTION` /
+  `NOTES_VISIBLE_SECTION`), y hay UI en Ajustes (`AiSettingsSection`,
+  `AiNotesAccessField`, `AiNotesAccessSheet`) con confirmación explícita al
+  encender y apagado inmediato al desactivar. §8.7 deja de ser un checklist a
+  futuro y pasa a ser la declaración vigente.
+- **Resuelto — precondición 10 (sección de IA en Ajustes).**
+  `settings_page.dart` ya incluye `AiSettingsSection`, con el interruptor de
+  notas y el enlace para retirar el consentimiento general
+  (`AiConsentWithdrawField` → `clearAiConsent`).
+- **Sigue abierta — precondición 8-bis, en parte.** `aiConsentVersion` sí se
+  compara de verdad (`AppSettings.hasAcceptedAiConsent`) y ya subió a `2` para
+  cubrir el interruptor de notas (`lib/features/ai/domain/entities/ai_consent.dart`).
+  Lo que sigue sin resolver es la precondición **9**: el texto que
+  `AiConsentPage` muestra (`l10n.aiConsentBody` = *"sin notas ni datos de
+  identificación bancaria"*) nunca se actualizó para mencionar que existe un
+  interruptor separado para las notas. No es una afirmación falsa en sí misma
+  (con el interruptor apagado por defecto, sigue siendo cierto que no viajan
+  notas), pero es una oportunidad perdida de que el consentimiento inicial sea
+  más informado. `[VERIFICAR: decisión de producto — si conviene ampliar
+  aiConsentBody para mencionar el interruptor, y si eso amerita subir
+  currentAiConsentVersion otra vez; no es una corrección de este documento,
+  la decide quien mantiene el código]`.
+- **Sigue abierta — precondición 4 (mecanismo de reporte in-app).** Se
+  confirmó de nuevo, línea por línea: `ReportAiMessage` y su repositorio
+  existen y están registrados en el contenedor de DI
+  (`lib/core/di/injection.config.dart`), pero **ningún widget de
+  `lib/features/ai/presentation/` lo invoca**. El único menú contextual de un
+  mensaje del asistente (`AiMessageCopyMenu`) solo ofrece "Copiar" — no hay
+  botón de "Reportar". La política de privacidad §17.1/17.5 y los términos de
+  uso §3 describen el reporte como si ya funcionara porque estos documentos
+  están escritos para el estado en que la función **debe estar antes de
+  publicarse** (ver el encabezado de §8 y la Guideline de *AI-Generated
+  Content* de Play), no para el estado actual del binario. **No se puede
+  activar `ai_assistant_open_to_all` ni enviar esta hoja a revisión mientras
+  falte ese botón** — sigue siendo el bloqueante más importante de §8.6.
 
 Este documento contiene las respuestas campo por campo para el formulario
 **Data Safety** de Google Play y para **App Privacy** de App Store Connect, con
@@ -1030,23 +1073,31 @@ Sin las tres primeras, esta hoja no se puede usar:
    nota en el payload) y encendido (notas sí, pero `institution` y `last4`
    siguen fuera). Sin el caso "apagado" en verde, la §17.7 de la política y la
    fila "opcional" de §8.7 dejan de ser defendibles.
-8. **Interruptor de notas cableado de extremo a extremo y apagado por defecto**
-   (esquema → dominio → snapshot/herramientas → UI de Ajustes), o §8.7 y la
-   §17.7 de la política se retiran del envío. Hoy solo existe el esquema. No se
-   declara ni se promete una función que no está en el binario.
-8-bis. **`aiConsentVersion` comparándose de verdad**, y con la versión subida al
-   publicar el texto de consentimiento nuevo. Sin eso, quien ya aceptó el
-   consentimiento anterior nunca ve el aviso del interruptor de notas, y el
-   consentimiento deja de ser *informado* para Apple 5.1.2(i) y para el RGPD.
-9. **Consentimiento in-app actualizado**: el texto de `aiConsentBody` decía "sin
-   notas ni datos de identificación bancaria", lo cual (a) omite que sí viajan
-   cinco campos `name` de texto libre y (b) deja de ser exacto en cuanto exista
-   el interruptor. Hay que reescribirlo antes de enviar.
-10. **Sección de IA en Ajustes existente.** Al 28 de agosto de 2026
-    `lib/features/settings/presentation/pages/settings_page.dart` **no tiene
-    ninguna entrada de IA**, así que hoy no hay dónde retirar el consentimiento
-    ni dónde poner el interruptor. La política §17.1 ya promete ese retiro y la
-    Guideline 5.1.2(i) lo exige: es un bloqueante de envío por sí solo.
+8. ✅ **Resuelto (1 de septiembre de 2026). Interruptor de notas cableado de
+   extremo a extremo y apagado por defecto** (esquema → dominio →
+   snapshot/herramientas → UI de Ajustes). Verificado en
+   `AppSettings.aiNotesAccessEnabled` (dominio), `prompt.ts` (las dos
+   variantes de sección según el flag), y `AiSettingsSection`/
+   `AiNotesAccessField`/`AiNotesAccessSheet` (UI). §8.7 pasa de checklist a
+   declaración vigente.
+8-bis. ✅ **Resuelto en la parte de comparación.** `aiConsentVersion` sí se
+   compara de verdad (`AppSettings.hasAcceptedAiConsent`, que exige
+   `aiConsentVersion >= currentAiConsentVersion`) y la constante ya subió a
+   `2` (`lib/features/ai/domain/entities/ai_consent.dart`) precisamente para
+   forzar a que quien aceptó la versión 1 vuelva a ver el consentimiento.
+   ⚠️ Lo que sigue abierto es el punto 9, sobre el **contenido** del texto que
+   se muestra, no sobre si la versión se compara.
+9. ⚠️ **Sigue abierto.** El texto de `aiConsentBody` sigue diciendo "sin notas
+   ni datos de identificación bancaria" y nunca se amplió para mencionar que
+   existe un interruptor separado para las notas. No es falso (con el
+   interruptor apagado por defecto, la afirmación se sostiene), pero es una
+   oportunidad de consentimiento más informado que no se tomó.
+   `[VERIFICAR: decisión de quien mantiene el código sobre si vale la pena
+   ampliar el texto y si eso amerita subir currentAiConsentVersion otra vez]`.
+10. ✅ **Resuelto (1 de septiembre de 2026). Sección de IA en Ajustes
+    existente.** `lib/features/settings/presentation/pages/settings_page.dart`
+    ya incluye `const AiSettingsSection()`, con el interruptor de notas y el
+    enlace para retirar el consentimiento general del asistente.
 11. **Clasificación por edad:** un chatbot de IA puede mover el cuestionario de
     ambas tiendas. `[VERIFICAR: si declarar IA generativa altera la clasificación 16+ de Apple o el cuestionario IARC de Play]`
 12. **EEE:** el veto de §0.1 sigue vigente y ahora suma un tercero más. Además,
@@ -1055,16 +1106,20 @@ Sin las tres primeras, esta hoja no se puede usar:
 
 ### 8.7 El interruptor opt-in de notas — cómo se declara
 
-> ⚠️ **Al 28 de agosto de 2026 este interruptor está a medio implementar.** La
-> columna `AppSettings.aiNotesAccessEnabled` (`boolean`, default `false`) y
-> `AppSettings.aiConsentVersion` ya existen en `lib/core/database/app_database.dart`
-> y en `powersync_schema.dart`, pero **nadie las lee**: no están en la entidad de
-> dominio, ni en el constructor del snapshot, ni en la UI de Ajustes. Es decir,
-> hoy el flag no cambia el comportamiento. Esta subsección describe cómo
-> declararlo **cuando el cableado esté completo**. Si se envía un binario sin él,
-> se declara la fila de notas como **no recopilada por esa vía** y se retira de
-> la política la §17.7. Lo que **no** se puede hacer es declararlo antes de que
-> funcione: Play y Apple contrastan la declaración contra el binario.
+> ✅ **Resuelto el 1 de septiembre de 2026: el interruptor está cableado de
+> extremo a extremo.** `AppSettings.aiNotesAccessEnabled` y
+> `AppSettings.aiConsentVersion` ya no son solo columnas de esquema: la
+> entidad de dominio las expone (`lib/features/settings/domain/entities/app_settings.dart`),
+> el snapshot y el prompt del backend cambian de sección según el valor
+> (`supabase/functions/_shared/ai/prompt.ts`, `NOTES_WITHHELD_SECTION` /
+> `NOTES_VISIBLE_SECTION`), y hay UI real en Ajustes: `AiSettingsSection`
+> muestra `AiNotesAccessField` solo mientras el consentimiento general está
+> activo, encenderlo pide confirmación explícita en `AiNotesAccessSheet`
+> (nombrando a Google Gemini), y apagarlo aplica de inmediato sin preguntar.
+> Retirar el consentimiento general (`clearAiConsent`) apaga este interruptor
+> también, en la misma escritura — no queda un permiso huérfano. Esta
+> subsección deja de ser un checklist a futuro y pasa a ser la declaración
+> vigente para el binario que incluya el asistente.
 
 **Qué es.** Un interruptor en Ajustes, **apagado por defecto**, que autoriza al
 asistente a leer el texto libre de `Transactions.note`, `GoalContributions.note`,

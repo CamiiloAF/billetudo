@@ -1,11 +1,35 @@
 # Política de privacidad de billetudo
 
-**Versión 1.6** · **Última actualización: 28 de agosto de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
+**Versión 1.7** · **Última actualización: 1 de septiembre de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
 una vez. Si algo no queda claro, escríbenos a
 camiiloagudelo92@gmail.com.
+
+### Qué cambió en la versión 1.7
+
+Esta versión no cambia lo que el asistente envía ni a quién: **confirma en el
+código que dos promesas de la versión 1.6 ya son reales**, en vez de una
+condición futura.
+
+- **El interruptor de notas (sección 17.7) ya está cableado de punta a punta.**
+  Existe en Ajustes (`AiSettingsSection`), pide una confirmación explícita antes
+  de encenderse, se apaga sin fricción y retirar el consentimiento general del
+  asistente lo apaga también. La versión 1.6 documentaba el comportamiento final
+  con una nota `[VERIFICAR]` porque en ese momento el ajuste existía solo en la
+  base de datos y nada lo leía; esa nota se retira aquí porque ya se verificó en
+  el código, no solo en el diseño.
+- **Un defecto real, ya corregido, que afectaba justo a este interruptor:** por
+  un tiempo, guardar *cualquier otra* preferencia de Ajustes podía resetear en
+  silencio el interruptor de notas a apagado (un problema de cómo se escribía la
+  fila de configuración, no del interruptor en sí). Quedó corregido antes de la
+  publicación de esta versión. Lo mencionamos porque, si activaste el
+  interruptor en una versión anterior de la app y lo viste "desactivarse solo",
+  esa era la causa — ya no debería volver a pasar.
+- **Seguimos sin haber activado el asistente para el público general** (sigue
+  en beta cerrada mientras se completa lo que falta, ver `declaraciones-tiendas.md`
+  §8.6). El resto de la sección 17 no cambia.
 
 ### Qué cambió en la versión 1.6
 
@@ -929,11 +953,6 @@ Si ignoras la propuesta, no queda rastro en tus datos.
 
 ### 17.7 El interruptor de notas: apagado hasta que tú decidas
 
-**[VERIFICAR: publicar esta subsección solo cuando el interruptor esté cableado
-de extremo a extremo en la versión de la app que se distribuye. Al 28 de agosto
-de 2026 el ajuste existe en la base de datos, pero todavía no hay interruptor en
-Ajustes ni nadie que lo lea.]**
-
 En Ajustes hay un interruptor llamado **"Dejar que el asistente lea mis notas"**.
 Viene **apagado**.
 
@@ -1070,4 +1089,4 @@ app. Si en 30 días no tuviste respuesta, insiste: algo falló.
 
 ---
 
-*billetudo — Política de privacidad, versión 1.6, 28 de agosto de 2026.*
+*billetudo — Política de privacidad, versión 1.7, 1 de septiembre de 2026.*

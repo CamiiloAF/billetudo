@@ -1,6 +1,15 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-28 (revisión del **alcance real
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-01 (re-verificación contra el
+código del PR del asistente de IA antes de mezclar `feat/ai-assistant` a
+`main`: **B4 y B5 se cierran** — la sección de IA en Ajustes y el interruptor
+de notas ya están cableados de extremo a extremo, con evidencia nueva abajo.
+Se reconfirma que el **mecanismo de reporte in-app sigue sin UI** — punto 32,
+sin cambios desde el 25 de agosto — y se documenta un hallazgo nuevo, no
+bloqueante: el texto de `aiConsentBody` no menciona el interruptor de notas.
+`politica-de-privacidad.md` sube a **v1.7** y `declaraciones-tiendas.md` a
+**v1.7** por esto)
+· 2026-08-28 (revisión del **alcance real
 de lo que el asistente envía**: cinco campos `name` de texto libre viajan hoy y
 la documentación decía lo contrario; la búsqueda local por nota **sí** está
 implementada y no amplía el alcance; el **interruptor opt-in de notas NO
@@ -44,24 +53,88 @@ documentos públicos.
 
 ## 0. Bloqueantes encontrados (leer primero)
 
-### B4 — ABIERTO (2026-08-28): no hay sección de IA en Ajustes
+### B4 — ✅ RESUELTO (2026-09-01): no había sección de IA en Ajustes
+
+> **Estado: cerrado.** `lib/features/settings/presentation/pages/settings_page.dart`
+> ya incluye `const AiSettingsSection()`. Esa sección (`ai_settings_section.dart`)
+> muestra el interruptor de notas y un enlace para retirar el consentimiento
+> general del asistente (`AiConsentWithdrawField` → `AppSettingsCubit.clearAiConsent`
+> → `AppSettingsLocalDatasource.clearAiConsent`), ambos condicionados a que el
+> consentimiento general ya esté aceptado. La política §17.1 y la Guideline
+> 5.1.2(i) de Apple ya tienen un lugar real en el binario que las cumple.
 
 La política §17.1 promete que el consentimiento del asistente se puede retirar
-desde Ajustes, y la Guideline 5.1.2(i) de Apple lo exige. Hoy
-`lib/features/settings/presentation/pages/settings_page.dart` no tiene ninguna
-entrada de IA: no hay dónde retirarlo, ni dónde poner el interruptor opt-in de
-notas que documentan la política §17.7 y `declaraciones-tiendas.md` §8.7.
-Bloqueante de envío. Detalle y evidencia en §10.4 (hallazgo 5).
+desde Ajustes, y la Guideline 5.1.2(i) de Apple lo exige. Al 2026-08-28,
+`settings_page.dart` no tenía ninguna entrada de IA. El hallazgo se conserva
+como evidencia del bloqueante real. Detalle en §10.4 (hallazgo 5).
 
-### B5 — ABIERTO (2026-08-28): el interruptor opt-in de notas existe en el esquema pero no está cableado
+### B5 — ✅ RESUELTO (2026-09-01): el interruptor opt-in de notas ya está cableado de extremo a extremo
 
-`AppSettings.aiNotesAccessEnabled` (default `false`) y `aiConsentVersion` ya
-están en `app_database.dart` y en `powersync_schema.dart`, pero **nadie los
-lee**: no están en la entidad de dominio, ni en el constructor del snapshot, ni
-en Ajustes. Los documentos legales de esta revisión describen el comportamiento
-final y lo marcan con `[VERIFICAR]` en el punto exacto. **No se publica la §17.7
-de la política ni la §8.7 de declaraciones hasta que el cableado esté completo**,
-o se retiran ambas. Detalle en §10.4 (hallazgos 4 y 4-bis).
+> **Estado: cerrado.** Verificado capa por capa:
+> - **Dominio:** `AppSettings.aiNotesAccessEnabled` (`lib/features/settings/domain/entities/app_settings.dart`),
+>   con default `false` y una nota de doc explícita: "not a single note travels
+>   in any payload" mientras sea `false`.
+> - **Backend:** `supabase/functions/_shared/ai/prompt.ts` construye el prompt
+>   con `NOTES_WITHHELD_SECTION` o `NOTES_VISIBLE_SECTION` según
+>   `PromptContext.notesAccessEnabled`, que viaja en el `ChatRequest`.
+> - **UI:** `AiSettingsSection` renderiza `AiNotesAccessField` solo mientras el
+>   consentimiento general está activo; encenderlo exige confirmar
+>   `AiNotesAccessSheet` (nombra a Google Gemini explícitamente); apagarlo
+>   aplica sin preguntar (`ai_settings_section.dart:_onChanged`).
+> - **Retiro de consentimiento (RGPD art. 7.3):** `AppSettingsLocalDatasource.clearAiConsent`
+>   pone `aiConsentAcceptedAt`, `aiConsentVersion` y `aiNotesAccessEnabled` en
+>   su estado inicial **en una sola escritura**, evitando el permiso huérfano
+>   que el propio código documenta como riesgo ya reportado en vivo
+>   ("withdrawing consent left this row visible and interactive").
+> - **Bug real, ya corregido, que afectaba esta misma columna:** hasta el
+>   commit `299c3f4d` (2026-09-01), `AppSettingsLocalDatasource._write()`
+>   ejecutaba un `INSERT ... insertOrIgnore` incondicional después de cada
+>   `UPDATE`, y ese insert reseteaba silenciosamente cualquier columna con
+>   `clientDefault` ausente del write en curso — incluida
+>   `aiNotesAccessEnabled` cuando se guardaba *otra* preferencia. Confirmado en
+>   dispositivo real con PowerSync y Postgres reales. El fix (`SELECT` de
+>   existencia real antes de decidir INSERT vs UPDATE) ya está en el código
+>   auditado.
+
+`AppSettings.aiNotesAccessEnabled` y `aiConsentVersion` existían solo en el
+esquema al 2026-08-28; el hallazgo se conserva como evidencia. Detalle en
+§10.4 (hallazgos 4 y 4-bis).
+
+### B7 — ABIERTO (reconfirmado 2026-09-01): el mecanismo de reporte in-app del asistente no tiene UI
+
+Sigue exactamente como se documentó el 2026-08-25 (punto 32 de §10.4): el
+backend está listo —`ai_reports` con RLS de `insert`+`select`, razones
+cerradas, borrado con la cuenta (`20260825140000_ai_reports.sql`)—, y en este
+PR se agregó además la capa `domain`/`data` completa
+(`ReportAiMessage`, `AiReportRepository`, `AiReportRepositoryImpl`,
+`AiReportRemoteDatasource`, registrados en `lib/core/di/injection.config.dart`).
+Pero **ningún widget de `lib/features/ai/presentation/` lo invoca**: el único
+menú contextual sobre un mensaje del asistente es `AiMessageCopyMenu`, y su
+única opción es "Copiar" — no hay botón de "Reportar" en ninguna pantalla.
+
+`politica-de-privacidad.md` §17.1/§17.5 y `terminos-de-uso.md` §3 describen el
+reporte como una función que funciona hoy. Eso es correcto **solo** como
+descripción del estado que el binario debe alcanzar antes de publicarse — la
+Guideline de *AI-Generated Content* de Google Play exige ese mecanismo sin
+salir de la app, y `declaraciones-tiendas.md` §8.6 (precondición 4) ya
+bloquea el envío mientras falte. **No actives `ai_feature_flags.ai_assistant_open_to_all`
+ni mezcles el binario a producción con el chat visible hasta que exista ese
+botón** — de lo contrario la política pasa de "correcta para cuando se
+publique" a "falsa para el binario que se publicó".
+
+### B8 — BAJO (nuevo, 2026-09-01): el texto de consentimiento in-app no menciona el interruptor de notas
+
+`l10n.aiConsentBody` (`lib/core/l10n/arb/app_es.arb`) dice: *"Tu mensaje y un
+resumen de tus finanzas (sin notas ni datos de identificación bancaria) se
+envían a Google para generar la respuesta."* Eso sigue siendo **cierto** —el
+interruptor de notas viene apagado por defecto, así que en el momento de
+aceptar el consentimiento general, ninguna nota viaja todavía—, pero no
+informa que existe un interruptor separado que puede cambiar eso más adelante.
+No es una declaración falsa (por eso no es un bloqueante), es una oportunidad
+de consentimiento más informado que no se tomó. `[VERIFICAR: decisión de quien
+mantiene el código sobre si ampliar `aiConsentBody` y si eso ameritaría subir
+`currentAiConsentVersion` — no es una corrección que le corresponda a este
+documento legal decidir]`.
 
 ### B1 — ✅ RESUELTO (2026-08-08): el borrado de cuenta fallaba para usuarios con presupuestos por periodo o metas con montos rápidos
 
