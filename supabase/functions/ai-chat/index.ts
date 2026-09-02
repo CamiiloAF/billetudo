@@ -40,6 +40,16 @@ import {
   validateProposal,
 } from '../_shared/ai/validate.ts';
 
+/// Found live: a rejected proposal's retry, or a plain turn with no tool
+/// calls, can both come back from the provider with `text === ''` — the
+/// model producing genuinely nothing (not an error, not a safety block,
+/// just an empty string). Left as `content: ''`, that rendered as a
+/// completely blank assistant bubble on device, with no card and no way for
+/// the user to tell what happened. Every terminal "message" response
+/// substitutes this instead of ever sending an empty string down the wire.
+const EMPTY_RESPONSE_FALLBACK =
+  'No logré armar una respuesta esta vez. ¿Puedes reformular la pregunta?';
+
 interface AccessState {
   enabled: boolean;
   tier: string;
@@ -232,7 +242,7 @@ async function resolveTurn(args: {
   return {
     body: response({
       finishReason: exhausted && readCalls.length > 0 ? 'max_iterations' : 'message',
-      content: first.text,
+      content: first.text || EMPTY_RESPONSE_FALLBACK,
       usage: first,
     }),
     usage: {
@@ -301,7 +311,7 @@ async function resolveProposals(args: {
     return {
       body: response({
         finishReason: 'message',
-        content: retry.text || first.text,
+        content: retry.text || first.text || EMPTY_RESPONSE_FALLBACK,
         usage: retry,
       }),
       usage: {

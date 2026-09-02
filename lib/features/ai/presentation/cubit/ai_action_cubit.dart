@@ -34,28 +34,43 @@ class AiActionCubit extends Cubit<AiActionState> {
     if (isClosed) {
       return;
     }
-    await result.fold(
-      (failure) async {
-        await _updateAiProposalStatus(
-          messageId: messageId,
-          proposalId: proposal.id,
-          status: AiProposalStatus.failed,
-        );
-        if (!isClosed) {
-          emit(AiActionState(failure: failure));
-        }
-      },
-      (_) async {
-        await _updateAiProposalStatus(
-          messageId: messageId,
-          proposalId: proposal.id,
-          status: AiProposalStatus.confirmed,
-        );
-        if (!isClosed) {
-          emit(const AiActionState());
-        }
-      },
-    );
+    try {
+      await result.fold(
+        (failure) async {
+          await _updateAiProposalStatus(
+            messageId: messageId,
+            proposalId: proposal.id,
+            status: AiProposalStatus.failed,
+          );
+          if (!isClosed) {
+            emit(AiActionState(failure: failure));
+          }
+        },
+        (_) async {
+          await _updateAiProposalStatus(
+            messageId: messageId,
+            proposalId: proposal.id,
+            status: AiProposalStatus.confirmed,
+          );
+          if (!isClosed) {
+            emit(const AiActionState());
+          }
+        },
+      );
+    } catch (_) {
+      // Reported live: the write behind `_executeAiAction` had already
+      // succeeded (confirmed live in the database) but this card's Confirm
+      // button spun forever, because `_updateAiProposalStatus` threw (or
+      // never resolved in a reasonable window) instead of returning a clean
+      // `Left`/`Right` — nothing downstream ever reached the `emit` that
+      // clears `pendingProposalId`. Whatever caused that, the write that
+      // actually created the record is done; the button has to stop
+      // spinning regardless, even if the card's persisted status now
+      // disagrees with what really happened on the ledger.
+      if (!isClosed) {
+        emit(const AiActionState());
+      }
+    }
   }
 
   /// "Descartar": no write happens, only the card's status is persisted.

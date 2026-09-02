@@ -104,6 +104,39 @@ void main() {
     },
   );
 
+  blocTest<AiActionCubit, AiActionState>(
+      'confirm() still clears pendingProposalId even when '
+      'updateAiProposalStatus throws AFTER the write already succeeded — '
+      'reported live: a category got created (confirmed in the database), '
+      'but the card\'s Confirm button spun forever because nothing ever '
+      'reached the emit that clears it',
+      setUp: () {
+        when(() => executeAiAction(proposal)).thenAnswer(
+          (_) async => const Right(
+            AiActionOutcome(
+              proposalId: 'p-1',
+              entity: AiActionEntity.category,
+              entityId: 'cat-99',
+            ),
+          ),
+        );
+        when(
+          () => updateAiProposalStatus(
+            messageId: 'msg-1',
+            proposalId: 'p-1',
+            status: AiProposalStatus.confirmed,
+          ),
+        ).thenThrow(StateError('boom'));
+      },
+      build: build,
+      act: (cubit) => cubit.confirm(messageId: 'msg-1', proposal: proposal),
+      expect: () => [
+            isA<AiActionState>()
+                .having((s) => s.pendingProposalId, 'pendingProposalId', 'p-1'),
+            isA<AiActionState>().having(
+                (s) => s.pendingProposalId, 'pendingProposalId', isNull),
+          ]);
+
   test('dismiss() only persists the status, never executes a write', () async {
     when(
       () => updateAiProposalStatus(
