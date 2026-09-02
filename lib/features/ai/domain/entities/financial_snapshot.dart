@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../accounts/domain/entities/account.dart' show AccountType;
 import '../../../budgets/domain/entities/budget.dart' show BudgetPeriod;
+import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../../debts/domain/entities/debt.dart' show DebtDirection;
 import '../../../scheduled_payments/domain/entities/scheduled_payment.dart'
     show ScheduledPaymentType;
@@ -133,6 +134,48 @@ class SnapshotCategoryLine extends Equatable {
         amountFormatted,
         movementCount,
       ];
+}
+
+/// One category the person has, full stop — unlike [SnapshotCategoryLine],
+/// this is not scoped to any spending period. Found live (issue tracker, AI
+/// dogfooding): [FinancialSnapshot.spendingByCategory] was the model's ONLY
+/// source of category ids, and it only lists categories with a movement in
+/// the CURRENT period — a category used every month except this one (a debt
+/// payment due outside the current cycle, say) was invisible, so the model
+/// proposed creating a duplicate instead of reusing the real one. This list
+/// exists so "does a category for X already exist" never depends on when it
+/// was last used.
+class SnapshotCategory extends Equatable {
+  const SnapshotCategory({
+    required this.categoryId,
+    required this.name,
+    required this.kind,
+    this.parentId,
+  });
+
+  /// Named `categoryId`, not `id`, on purpose: the backend's
+  /// `indexSnapshot` only recognises a category id under this exact key
+  /// (`validate.ts`'s `SnapshotIndex.categoryIds`) — a plain `id` here would
+  /// silently fall back to the type-blind set and reopen the bug above.
+  final String categoryId;
+
+  final String name;
+  final CategoryKind kind;
+
+  /// `null` for a root category. A subcategory's own [categoryId] is what a
+  /// proposal must use — parent-only bookkeeping is not something the model
+  /// needs to reason about here.
+  final String? parentId;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'categoryId': categoryId,
+        'name': name,
+        'kind': kind.name,
+        if (parentId != null) 'parentId': parentId,
+      };
+
+  @override
+  List<Object?> get props => [categoryId, name, kind, parentId];
 }
 
 /// One month of the cash-flow series.
@@ -622,6 +665,7 @@ class FinancialSnapshot extends Equatable {
     required this.periodEndExclusive,
     this.accounts,
     this.currencyTotals,
+    this.categories,
     this.spendingByCategory,
     this.spendingCurrency,
     this.spendingTotalMinor,
@@ -650,6 +694,11 @@ class FinancialSnapshot extends Equatable {
 
   final List<SnapshotAccount>? accounts;
   final List<SnapshotCurrencyTotal>? currencyTotals;
+
+  /// Every active category, root and subcategories alike, regardless of
+  /// whether it was used this period — see [SnapshotCategory]'s own doc for
+  /// why this exists alongside [spendingByCategory].
+  final List<SnapshotCategory>? categories;
 
   /// Expense grouped by root category over `[periodStart, periodEndExclusive)`.
   final List<SnapshotCategoryLine>? spendingByCategory;
@@ -696,6 +745,10 @@ class FinancialSnapshot extends Equatable {
           'currencyTotals': [
             for (final total in currencyTotals!) total.toJson()
           ],
+        if (categories != null)
+          'categories': [
+            for (final category in categories!) category.toJson()
+          ],
         if (spendingByCategory != null &&
             spendingCurrency != null &&
             spendingTotalFormatted != null)
@@ -735,6 +788,7 @@ class FinancialSnapshot extends Equatable {
         periodEndExclusive,
         accounts,
         currencyTotals,
+        categories,
         spendingByCategory,
         spendingCurrency,
         spendingTotalMinor,

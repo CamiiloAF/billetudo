@@ -15,6 +15,9 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/entities/zero_based_summary.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_zero_based_summary.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart';
+import 'package:billetudo/features/categories/domain/entities/category_node.dart';
+import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_balance.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_installment.dart';
 import 'package:billetudo/features/debts/domain/entities/debt_with_balance.dart';
@@ -40,6 +43,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../accounts/account_fixtures.dart';
+import '../../../categories/domain/usecases/category_repository_mock.dart'
+    show buildCategory;
 import '../../../debts/domain/debt_test_fixtures.dart';
 import '../../../goals/presentation/goals_presentation_fixtures.dart';
 import '../../../home/home_fixtures.dart' show buildHomeBudgetProgress;
@@ -58,6 +63,8 @@ class MockGetZeroBasedSummary extends Mock implements GetZeroBasedSummary {}
 class MockWatchGoals extends Mock implements WatchGoals {}
 
 class MockWatchDebts extends Mock implements WatchDebts {}
+
+class MockWatchCategories extends Mock implements WatchCategories {}
 
 class MockWatchCategoryBreakdownReport extends Mock
     implements WatchCategoryBreakdownReport {}
@@ -79,6 +86,7 @@ void main() {
   late MockGetZeroBasedSummary getZeroBasedSummary;
   late MockWatchGoals watchGoals;
   late MockWatchDebts watchDebts;
+  late MockWatchCategories watchCategories;
   late MockWatchCategoryBreakdownReport watchCategoryBreakdown;
   late MockWatchCashflowReport watchCashflow;
   late MockGetScheduledPayments getScheduledPayments;
@@ -210,6 +218,18 @@ void main() {
     when(watchDebts.call).thenAnswer(
       (_) => Stream.value(Right(debtsSummary ?? debts)),
     );
+    when(() => watchCategories(any())).thenAnswer(
+      (invocation) => Stream.value(
+        Right([
+          CategoryNode(
+            root: buildCategory(
+              id: 'cat-food',
+              kind: invocation.positionalArguments.single as CategoryKind,
+            ),
+          ),
+        ]),
+      ),
+    );
     when(() => watchCategoryBreakdown(any()))
         .thenAnswer((_) => Stream.value(Right(breakdown)));
     when(() => watchCashflow(any()))
@@ -237,6 +257,7 @@ void main() {
     registerFallbackValue(
       WatchCategoryBreakdownReportParams(range: monthRange),
     );
+    registerFallbackValue(CategoryKind.expense);
   });
 
   setUp(() {
@@ -246,6 +267,7 @@ void main() {
     getZeroBasedSummary = MockGetZeroBasedSummary();
     watchGoals = MockWatchGoals();
     watchDebts = MockWatchDebts();
+    watchCategories = MockWatchCategories();
     watchCategoryBreakdown = MockWatchCategoryBreakdownReport();
     watchCashflow = MockWatchCashflowReport();
     getScheduledPayments = MockGetScheduledPayments();
@@ -260,6 +282,7 @@ void main() {
       getZeroBasedSummary,
       watchGoals,
       watchDebts,
+      watchCategories,
       watchCategoryBreakdown,
       watchCashflow,
       getScheduledPayments,
@@ -288,6 +311,7 @@ void main() {
           'periodEnd',
           'accounts',
           'currencyTotals',
+          'categories',
           'spendingByCategory',
           'cashflow',
           'budgets',
@@ -526,6 +550,57 @@ void main() {
       final uncategorised = items.last! as Map<String, Object?>;
       expect(uncategorised.containsKey('categoryId'), isFalse);
     });
+
+    test(
+        '"categories" lists a category that has NO spend this period at all '
+        '— found live: a category used every month except this one (a debt '
+        'payment due outside the current cycle) was invisible to the model, '
+        'which only ever saw ids via "spendingByCategory", so it proposed a '
+        'duplicate instead of reusing the real one', () async {
+      stubHealthySources();
+      // Registered AFTER `stubHealthySources()` on purpose — mocktail's
+      // `when()` resolves a matching call to whichever stub was registered
+      // LAST, so this has to override its default single-category stub, not
+      // the other way around.
+      when(() => watchCategories(any())).thenAnswer(
+        (invocation) => Stream.value(
+          Right([
+            CategoryNode(
+              root: buildCategory(
+                id: 'cat-debts',
+                name: 'Deudas',
+                kind: invocation.positionalArguments.single as CategoryKind,
+              ),
+              subcategories: [
+                buildCategory(
+                  id: 'cat-debts-ktm',
+                  name: 'KTM',
+                  parentId: 'cat-debts',
+                  kind: invocation.positionalArguments.single as CategoryKind,
+                ),
+              ],
+            ),
+          ]),
+        ),
+      );
+
+      final json = await buildJson();
+
+      final categoryEntries = json['categories']! as List;
+      final ids = categoryEntries
+          .cast<Map<String, Object?>>()
+          .map((entry) => entry['categoryId'])
+          .toSet();
+      // Neither id appears anywhere in `spendingByCategory` (only 'cat-food'
+      // does, from `breakdown` above) — this list is the only place the
+      // model can find them.
+      expect(ids, containsAll(<String>['cat-debts', 'cat-debts-ktm']));
+
+      final subcategory = categoryEntries.cast<Map<String, Object?>>().firstWhere(
+            (entry) => entry['categoryId'] == 'cat-debts-ktm',
+          );
+      expect(subcategory['parentId'], 'cat-debts');
+    });
   });
 
   group('a section that could not be read is omitted, never emitted empty', () {
@@ -650,6 +725,9 @@ void main() {
         (_) => Stream.value(const Left(DatabaseFailure('down'))),
       );
       when(watchDebts.call).thenAnswer(
+        (_) => Stream.value(const Left(DatabaseFailure('down'))),
+      );
+      when(() => watchCategories(any())).thenAnswer(
         (_) => Stream.value(const Left(DatabaseFailure('down'))),
       );
       when(() => watchCategoryBreakdown(any())).thenAnswer(

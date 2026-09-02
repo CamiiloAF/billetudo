@@ -1944,8 +1944,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i639.ParseBackupHeader>(),
           gh<_i881.RestoreBackup>(),
         ));
-    gh.factory<_i1059.AdjustBalanceCubit>(
-        () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
@@ -1953,6 +1951,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i458.GetZeroBasedSummary>(),
           gh<_i529.WatchGoals>(),
           gh<_i42.WatchDebts>(),
+          gh<_i722.WatchCategories>(),
           gh<_i645.WatchCategoryBreakdownReport>(),
           gh<_i137.WatchCashflowReport>(),
           gh<_i265.GetScheduledPayments>(),
@@ -1960,6 +1959,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i182.GetAppSettings>(),
           gh<_i731.MoneyFormatter>(),
         ));
+    gh.factory<_i1059.AdjustBalanceCubit>(
+        () => _i1059.AdjustBalanceCubit(gh<_i230.AdjustAccountBalance>()));
     gh.factory<_i1056.AiActionCubit>(() => _i1056.AiActionCubit(
           gh<_i455.ExecuteAiAction>(),
           gh<_i723.UpdateAiProposalStatus>(),

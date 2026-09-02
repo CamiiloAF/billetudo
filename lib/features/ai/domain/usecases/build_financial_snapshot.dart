@@ -13,6 +13,9 @@ import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/entities/zero_based_summary.dart';
 import '../../../budgets/domain/usecases/get_active_budgets.dart';
 import '../../../budgets/domain/usecases/get_zero_based_summary.dart';
+import '../../../categories/domain/entities/category.dart' show CategoryKind;
+import '../../../categories/domain/entities/category_node.dart';
+import '../../../categories/domain/usecases/watch_categories.dart';
 import '../../../debts/domain/entities/debt_with_balance.dart';
 import '../../../debts/domain/entities/debts_summary.dart';
 import '../../../debts/domain/usecases/watch_debts.dart';
@@ -51,6 +54,7 @@ class BuildFinancialSnapshot {
     this._getZeroBasedSummary,
     this._watchGoals,
     this._watchDebts,
+    this._watchCategories,
     this._watchCategoryBreakdown,
     this._watchCashflow,
     this._getScheduledPayments,
@@ -65,6 +69,7 @@ class BuildFinancialSnapshot {
   final GetZeroBasedSummary _getZeroBasedSummary;
   final WatchGoals _watchGoals;
   final WatchDebts _watchDebts;
+  final WatchCategories _watchCategories;
   final WatchCategoryBreakdownReport _watchCategoryBreakdown;
   final WatchCashflowReport _watchCashflow;
   final GetScheduledPayments _getScheduledPayments;
@@ -124,6 +129,8 @@ class BuildFinancialSnapshot {
     final zeroBasedRead = _once(_getZeroBasedSummary());
     final goalsRead = _once(_watchGoals());
     final debtsRead = _once(_watchDebts());
+    final expenseCategoriesRead = _once(_watchCategories(CategoryKind.expense));
+    final incomeCategoriesRead = _once(_watchCategories(CategoryKind.income));
     final breakdownRead = _once(
       _watchCategoryBreakdown(
         WatchCategoryBreakdownReportParams(range: monthRange),
@@ -142,6 +149,8 @@ class BuildFinancialSnapshot {
       zeroBasedRead,
       goalsRead,
       debtsRead,
+      expenseCategoriesRead,
+      incomeCategoriesRead,
       breakdownRead,
       cashflowRead,
       scheduledRead,
@@ -154,6 +163,8 @@ class BuildFinancialSnapshot {
     final zeroBased = await zeroBasedRead;
     final goals = await goalsRead;
     final debts = await debtsRead;
+    final expenseCategories = await expenseCategoriesRead;
+    final incomeCategories = await incomeCategoriesRead;
     final breakdown = await breakdownRead;
     final cashflow = await cashflowRead;
     final scheduled = await scheduledRead;
@@ -205,6 +216,9 @@ class BuildFinancialSnapshot {
         periodEndExclusive: nextMonthStart,
         accounts: accounts == null ? null : _accounts(accounts),
         currencyTotals: overview == null ? null : _currencyTotals(overview),
+        categories: expenseCategories == null && incomeCategories == null
+            ? null
+            : _categories(expenseCategories, incomeCategories),
         spendingByCategory: breakdown == null || singleCurrency == null
             ? null
             : _categoryLines(breakdown, singleCurrency),
@@ -294,6 +308,32 @@ class BuildFinancialSnapshot {
             balanceFormatted:
                 _fmt(entry.balance.balanceMinor, entry.account.currency),
           ),
+      ];
+
+  /// Flattens both kinds' root+subcategory trees into one flat list — the
+  /// model reasons about a single `categories` array, not two kind-keyed
+  /// ones, and each row already carries its own `kind`. Either argument can
+  /// be null on its own (one kind's read failing does not sink the other);
+  /// only both together mean there is nothing to report.
+  List<SnapshotCategory> _categories(
+    List<CategoryNode>? expense,
+    List<CategoryNode>? income,
+  ) =>
+      [
+        for (final node in [...?expense, ...?income]) ...[
+          SnapshotCategory(
+            categoryId: node.root.id,
+            name: node.root.name,
+            kind: node.root.kind,
+          ),
+          for (final sub in node.subcategories)
+            SnapshotCategory(
+              categoryId: sub.id,
+              name: sub.name,
+              kind: sub.kind,
+              parentId: node.root.id,
+            ),
+        ],
       ];
 
   List<SnapshotCurrencyTotal> _currencyTotals(AccountsOverview overview) => [

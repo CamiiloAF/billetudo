@@ -50,6 +50,11 @@ import {
 const EMPTY_RESPONSE_FALLBACK =
   'No logré armar una respuesta esta vez. ¿Puedes reformular la pregunta?';
 
+/// Same failure, narrower spot: the one-sentence intro asked for purely to
+/// sit above an already-valid proposal card. The card carries the real
+/// content regardless, so this only ever needs to be generic.
+const PROPOSAL_INTRO_FALLBACK = 'Te dejo lista la propuesta.';
+
 interface AccessState {
   enabled: boolean;
   tier: string;
@@ -356,7 +361,12 @@ async function resolveProposals(args: {
   }
 
   return proposalOutcome({
-    text,
+    // Found live: this closing call (asked purely for the sentence that
+    // introduces the card) can also come back with `text === ''` — same
+    // failure mode as `EMPTY_RESPONSE_FALLBACK`, but a blank bubble sitting
+    // right above an otherwise-fine card reads even worse than a lone empty
+    // bubble, since the card itself proves something DID happen.
+    text: text || PROPOSAL_INTRO_FALLBACK,
     call,
     payload: validation.payload!,
     usage,
