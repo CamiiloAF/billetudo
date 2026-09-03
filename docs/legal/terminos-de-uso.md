@@ -1,6 +1,6 @@
 # Términos de uso de billetudo
 
-**Versión 1.3** · **Última actualización: 25 de agosto de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, anterior a la activación del asistente]**
+**Versión 1.3** · **Última actualización: 25 de agosto de 2026** · **En vigor desde: 3 de septiembre de 2026**
 
 Estos términos son el acuerdo entre tú y nosotros sobre el uso de billetudo. Los
 escribimos en español claro a propósito: un contrato que no se entiende no

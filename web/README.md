@@ -79,3 +79,11 @@ Dos consecuencias:
    una declaración falsa.
 2. Cuando se firmen los dos DPA, hay que **volver a la redacción simple** en
    §7 de la política, regenerar, republicar y recién entonces habilitar el EEE.
+
+**Región de procesamiento de Gemini (§7, tabla de proveedores).** La política
+dice hoy "Estados Unidos y, según la disponibilidad del servicio, otros
+países donde Google opera" — cierto mientras `GEMINI_API_KEY` no tenga
+facturación habilitada (verificado 2026-09-03: no la tiene). Cuando se
+contrate el servicio de pago, verificar si Google fija una región de
+procesamiento concreta para esa cuenta y, si es así, actualizar la tabla a
+esa región específica en vez de la redacción general de hoy.

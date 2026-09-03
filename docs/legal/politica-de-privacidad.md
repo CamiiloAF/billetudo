@@ -1,6 +1,6 @@
 # Política de privacidad de billetudo
 
-**Versión 1.7** · **Última actualización: 1 de septiembre de 2026** · **En vigor desde: [VERIFICAR: fecha de publicación de esta versión, que debe ser anterior a la activación del asistente]**
+**Versión 1.7** · **Última actualización: 1 de septiembre de 2026** · **En vigor desde: 3 de septiembre de 2026**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
@@ -17,9 +17,9 @@ condición futura.
   Existe en Ajustes (`AiSettingsSection`), pide una confirmación explícita antes
   de encenderse, se apaga sin fricción y retirar el consentimiento general del
   asistente lo apaga también. La versión 1.6 documentaba el comportamiento final
-  con una nota `[VERIFICAR]` porque en ese momento el ajuste existía solo en la
-  base de datos y nada lo leía; esa nota se retira aquí porque ya se verificó en
-  el código, no solo en el diseño.
+  marcado como pendiente de confirmar, porque en ese momento el ajuste existía
+  solo en la base de datos y nada lo leía; esa marca se retira aquí porque ya
+  se verificó en el código, no solo en el diseño.
 - **Un defecto real, ya corregido, que afectaba justo a este interruptor:** por
   un tiempo, guardar *cualquier otra* preferencia de Ajustes podía resetear en
   silencio el interruptor de notas a apagado (un problema de cómo se escribía la
@@ -445,7 +445,7 @@ Google, también fuera de tu país.
 | Sentry | **Estados Unidos** |
 | Supabase | **Estados Unidos** |
 | PowerSync | **Estados Unidos** |
-| Google (API de Gemini, solo si usas el asistente) | **Estados Unidos** y, según la disponibilidad del servicio, otros países donde Google opera `[VERIFICAR: si se fija una región de procesamiento concreta al contratar el servicio de pago]` |
+| Google (API de Gemini, solo si usas el asistente) | **Estados Unidos** y, según la disponibilidad del servicio, otros países donde Google opera |
 
 **Por qué es así:** son los proveedores que hacen posible la sincronización sin
 pérdida de datos y sin que tengamos que operar servidores propios. No hay hoy un
