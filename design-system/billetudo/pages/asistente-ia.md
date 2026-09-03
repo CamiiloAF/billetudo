@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`, zona `JLbGS` — "Zona — ASISTENTE IA (Claro+Oscuro)".
 
-**Estado:** **cerrado y aprobado en claro y oscuro** (2026-08-26). Claro: exploración (3 variantes), tres rondas de auditoría de `ui-ux-reviewer` (base: 2 hallazgos IMPORTANTE corregidos; estados nuevos del chat: 2 hallazgos IMPORTANTE corregidos, incluido un bug real de Pencil sin máscara de recorte). Oscuro: generado por `Copy()`+`theme:{mode:"dark"}` sobre las 16 piezas del claro, auditado con contraste re-medido de forma independiente (no solo confiado al informe del diseñador) — aprobado sin hallazgos. Requisitos en `docs/requirements/fase-4/21-asistente-ia.md`.
+**Estado:** cerrado y aprobado en claro y oscuro para el chat/historial base (2026-08-26). **Reportar un mensaje** (menú + hoja de motivo): claro aprobado (2026-09-02), oscuro construido y pendiente de aprobación explícita del usuario — ver sección "Reportar un mensaje". Claro (chat/historial base): exploración (3 variantes), tres rondas de auditoría de `ui-ux-reviewer` (base: 2 hallazgos IMPORTANTE corregidos; estados nuevos del chat: 2 hallazgos IMPORTANTE corregidos, incluido un bug real de Pencil sin máscara de recorte). Oscuro (chat/historial base): generado por `Copy()`+`theme:{mode:"dark"}` sobre las 16 piezas del claro, auditado con contraste re-medido de forma independiente (no solo confiado al informe del diseñador) — aprobado sin hallazgos. Requisitos en `docs/requirements/fase-4/21-asistente-ia.md`.
 
 Entra desde el `AI Banner` de Inicio (`h5dN1`, existente, solo cambia su copy) y desde un tile nuevo en "Más". El bloque `AI Assistant` (`cwxZI`, orbe+chips) que hoy vive en la hoja de "próximamente" queda pendiente de decisión — ver "Pendientes" abajo.
 
@@ -47,6 +47,31 @@ Claro y oscuro construidos, cada pieza oscura es `Copy()`+`theme:{mode:"dark"}` 
 | Confirmada | `NKaY4` | `n5WJ2j` | Kicker `check` + "Confirmado" en `$income-text`. Actions Row reemplazada por fila de solo lectura ("Ya está en tus movimientos" + `check-circle-2`). Footnote con fecha/hora de aplicación. Contraste `$income-text`/`$surface` oscuro: 8.54:1. |
 | Descartada | `Xc64n` | `T7OfZm` | Kicker `x` + "Descartada" en `$text-secondary`. `fill:$surface` + `strokeWidth:1` (igual que los otros 3 estados — **no** un contenedor sin card). Contenido interno (kicker, título, body, footnote) a **opacidad 94%** — es el piso real medido por contraste WCAG en claro: `$text-secondary` sobre `$surface` cae bajo 4.5:1 por debajo de ~93%. En oscuro el mismo 94% da 5.38:1, con margen — no hizo falta subirlo. Actions Row deshabilitada (`enabled:false`). La diferenciación real de este estado no depende solo de la opacidad: el cambio de color del kicker (violeta→gris) y la desaparición completa de los botones son las señales fuertes; el dimming sutil es deliberado y coherente con el tono no-punitivo (declinar una propuesta no es un error que haya que resaltar). |
 | Fallida | `D6HYxR` | `E8kU6` | Kicker `triangle-alert` + "No se pudo guardar" en `$expense-text`. Mensaje corto de error + "Tus datos siguen a salvo en tu dispositivo" (regla de tono de `MASTER.md`). Botón "Descartar" oculto; "Confirmar" reemplazado por "Reintentar" (`refresh-cw`) a ancho completo. |
+
+### Reportar un mensaje del asistente
+
+Menú contextual sobre un mensaje del asistente (long-press) → hoja de motivo con chips de selección única.
+
+| Pieza | nodeId (Claro) | nodeId (Oscuro) | Notas |
+|---|---|---|---|
+| Menú de acciones (Copiar / Reportar) | `PpcIh` (mockup completo) / `Cbssw` (componente) | `flRpc` | `Cbssw` (`reusable:true`): fila "Copiar" (`copy`) + divisor + fila "Reportar" (`flag`), ambas 44px de alto tocable, fondo `$surface` + borde `$border`. En el mockup se representa insertado en el flujo de la conversación bajo el mensaje objetivo (`MjhiN`), resto de la pantalla atenuado a `opacity:0.35` para comunicar foco — en Flutter es un overlay real anclado al punto de long-press (`CompositedTransformFollower`/`showMenu`), NO un elemento en el flujo del scroll. |
+| Hoja de motivo — chip seleccionado | `zV9g3` | `BQ79s` | Instancia `Bottom Sheet Base` (`PqTUt`). Ilustra el tratamiento del chip **seleccionado**: `Reason Chip` (`Afl5e`) con `fill:$surface` + `stroke:$primary` + ícono/label en `$primary-on-soft`/`$primary-on-soft-strong` (patrón "entidad sin color", igual que el selector de ícono de Presupuestos). |
+| Hoja de motivo — sin selección (estado real por defecto) | `G6uAwV` | `W0k8Z2` | Mismo sheet, ningún chip seleccionado (todos `fill:$surface`+`stroke:$border`, ícono/label `$text-secondary`) y botón "Enviar" (`Ot4yI` → `qfTBg`) en `opacity:0.4` — deshabilitado hasta elegir un motivo. Este es el estado con el que abre la hoja en producción; `zV9g3` es solo la referencia visual del estado seleccionado. |
+
+**Estructura de la hoja (`zV9g3`/`G6uAwV`):** `Content Slot` partido en **zona scrolleable** (`Sheet Icon Header` con ícono `flag` + "Reportar mensaje" + `Reason Grid` de 5 `Reason Chip` en 3 filas + `Comment Field` opcional, ref `wOlOA`) y **zona fija** (`Privacy Note Strip`, ref `YAUFx`, + `Sheet Buttons Row`, ref `Ot4yI`) — así el aviso de envío al servidor es imposible de pasar por alto sin verlo antes de poder tocar "Enviar". Mismo patrón de partición ya usado en Gráficas · Resumen (ver MASTER).
+
+**Copy de la Privacy Note** (única excepción a "nada de la conversación sale del dispositivo", ver política de privacidad §17.5): "Le enviaremos este mensaje a nuestro equipo para revisarlo. El resto de tu conversación se queda solo en tu dispositivo."
+
+**Reason Chip (`Afl5e`, `reusable:true`):** ícono + label, `width:167` (grid 2×2) o `fill_container` (fila final de 1). Tap target: padding `[13,10]` → 44px de alto tocable (verificado). Reason Chip NO introduce colores propios de familia (no tiene par cromático como categorías/cuentas) — sigue el patrón "entidad sin color" documentado en MASTER: seleccionado = hueco (`$surface` + `stroke:$primary`), no relleno `-soft` (que sería idéntico a `$muted` en reposo). Chips inactivos: `fill:$surface` + `stroke:$border` (nunca sin borde).
+
+**Motivos del grid:** Ofensivo (`frown`), Incorrecto (`x-circle`), Dañino (`shield-alert`), Privacidad (`lock`), Otro (`more-horizontal`).
+
+**Tema oscuro (2026-09-02):** generado por `Copy()`+`theme:{mode:"dark"}` sobre los 3 frames, sin cambios estructurales — `Cbssw`, `Afl5e`, `YAUFx`, `PqTUt` ya resuelven oscuro vía sus propios tokens. Contraste verificado a mano (sin `get_screenshot` disponible en esa sesión):
+- Chip seleccionado, `stroke:$primary` sobre `$surface` oscuro: **exactamente 3.00:1** — mismo límite ya documentado en MASTER para `primary` oscuro/`surface` (caso sistémico pendiente de migración a `primary-data`, no exclusivo de esta pantalla). Consistente con el patrón ya aceptado en Presupuestos (`XsnnD/x9w2F`).
+- Chip inactivo, `stroke:$border` sobre `$surface` oscuro: **~1.17:1** (peor que claro ~1.02:1, mismo orden). Igual que `Button/Secondary`, el chip se identifica por su **label/ícono** (`$text-secondary` ~6:1 inactivo, `$primary-on-soft-strong` ~6.03:1 seleccionado), no por el borde — trade-off ya aceptado en el sistema, no una regresión nueva de esta pantalla.
+- `Privacy Note Strip`: `fill:$muted` + texto/ícono `$text-primary` sobre `$muted` oscuro (`#26243B`/`#F4F3FA`) — contraste >12:1, mantiene su prominencia sin cambios.
+
+Pendiente de aprobación explícita del usuario (marcado con badge de revisión en el canvas): `flRpc`, `BQ79s`, `W0k8Z2`.
 
 ## Interacción del header del chat (`ueaIi`)
 

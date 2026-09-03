@@ -61,4 +61,18 @@ void main() {
 
     expect(clipboardText, message.content);
   });
+
+  // A user's own message was never AI-generated, so it can't be flagged to
+  // Google Play's AI-Generated Content pipeline — the menu only ever offers
+  // "Copiar" here.
+  testWidgets('el menú de un mensaje propio nunca ofrece "Reportar"',
+      (tester) async {
+    await pumpBubble(tester);
+
+    await tester.longPress(find.text(message.content));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Copiar'), findsOneWidget);
+    expect(find.text('Reportar'), findsNothing);
+  });
 }

@@ -114,6 +114,7 @@ class _AiConversationReadPageState extends State<AiConversationReadPage> {
                                   message: message,
                                   accountNames: state.accountNames,
                                   debtNames: state.debtNames,
+                                  conversationId: widget.conversationId,
                                 ),
                           const SizedBox(height: 14),
                         ],

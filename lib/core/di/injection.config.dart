@@ -219,6 +219,8 @@ import 'package:billetudo/features/ai/presentation/cubit/ai_conversation_read_cu
     as _i44;
 import 'package:billetudo/features/ai/presentation/cubit/ai_history_cubit.dart'
     as _i369;
+import 'package:billetudo/features/ai/presentation/cubit/ai_report_cubit.dart'
+    as _i136;
 import 'package:billetudo/features/auth/data/datasources/apple_auth_datasource.dart'
     as _i22;
 import 'package:billetudo/features/auth/data/datasources/ever_signed_in_datasource.dart'
@@ -1615,6 +1617,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i276.WatchTransactionDetail(gh<_i654.TransactionRepository>()));
     gh.factory<_i832.WatchTransactions>(
         () => _i832.WatchTransactions(gh<_i654.TransactionRepository>()));
+    gh.factory<_i136.AiReportCubit>(() => _i136.AiReportCubit(
+          gh<_i494.ReportAiMessage>(),
+          gh<_i1026.AiClientContextProvider>(),
+        ));
     gh.factory<_i695.ArchiveGoal>(
         () => _i695.ArchiveGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i1023.ContributeToGoal>(

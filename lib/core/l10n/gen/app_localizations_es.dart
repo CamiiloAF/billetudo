@@ -691,7 +691,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsTitle => 'Movimientos';
 
   @override
-  String get transactionsSearchHint => 'Buscar por nota o categoría';
+  String get transactionsSearchHint => 'Buscar por nota';
 
   @override
   String get transactionsLoading => 'Cargando movimientos';
@@ -737,6 +737,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsFilterBudget => 'Presupuesto';
+
+  @override
+  String get transactionsPeriodTotalLabel => 'Total del período';
 
   @override
   String get transactionsSortDateDesc => 'Más recientes primero';
@@ -6312,6 +6315,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiProposalConfirmedRowDebtLink => 'Atribuido a la deuda';
+
+  @override
+  String get aiMessageActionReport => 'Reportar';
+
+  @override
+  String get aiReportSheetTitle => 'Reportar mensaje';
+
+  @override
+  String get aiReportSheetMessage =>
+      'Cuéntanos qué está mal con esta respuesta. Nos ayuda a mejorar Billetudo.';
+
+  @override
+  String get aiReportReasonOffensive => 'Ofensivo';
+
+  @override
+  String get aiReportReasonWrong => 'Incorrecto';
+
+  @override
+  String get aiReportReasonHarmful => 'Dañino';
+
+  @override
+  String get aiReportReasonPrivacy => 'Privacidad';
+
+  @override
+  String get aiReportReasonOther => 'Otro';
+
+  @override
+  String get aiReportCommentLabel => 'Comentario (opcional)';
+
+  @override
+  String get aiReportCommentHint => 'Cuéntanos más detalles…';
+
+  @override
+  String get aiReportPrivacyNote =>
+      'Le enviaremos este mensaje a nuestro equipo para revisarlo. El resto de tu conversación se queda solo en tu dispositivo.';
+
+  @override
+  String get aiReportSubmit => 'Enviar';
+
+  @override
+  String get aiReportSuccessMessage => 'Gracias, revisaremos este mensaje.';
+
+  @override
+  String get aiReportErrorUnauthenticated =>
+      'Necesitas iniciar sesión para reportar un mensaje.';
+
+  @override
+  String get aiReportErrorGeneric =>
+      'No pudimos enviar tu reporte. Inténtalo de nuevo.';
 
   @override
   String get settingsAiSection => 'Asistente de IA';

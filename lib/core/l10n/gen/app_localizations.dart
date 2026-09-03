@@ -1259,7 +1259,7 @@ abstract class AppLocalizations {
   /// No description provided for @transactionsSearchHint.
   ///
   /// In es, this message translates to:
-  /// **'Buscar por nota o categoría'**
+  /// **'Buscar por nota'**
   String get transactionsSearchHint;
 
   /// No description provided for @transactionsLoading.
@@ -1345,6 +1345,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Presupuesto'**
   String get transactionsFilterBudget;
+
+  /// No description provided for @transactionsPeriodTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Total del período'**
+  String get transactionsPeriodTotalLabel;
 
   /// No description provided for @transactionsSortDateDesc.
   ///
@@ -10274,6 +10280,96 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Atribuido a la deuda'**
   String get aiProposalConfirmedRowDebtLink;
+
+  /// No description provided for @aiMessageActionReport.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar'**
+  String get aiMessageActionReport;
+
+  /// No description provided for @aiReportSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar mensaje'**
+  String get aiReportSheetTitle;
+
+  /// No description provided for @aiReportSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntanos qué está mal con esta respuesta. Nos ayuda a mejorar Billetudo.'**
+  String get aiReportSheetMessage;
+
+  /// No description provided for @aiReportReasonOffensive.
+  ///
+  /// In es, this message translates to:
+  /// **'Ofensivo'**
+  String get aiReportReasonOffensive;
+
+  /// No description provided for @aiReportReasonWrong.
+  ///
+  /// In es, this message translates to:
+  /// **'Incorrecto'**
+  String get aiReportReasonWrong;
+
+  /// No description provided for @aiReportReasonHarmful.
+  ///
+  /// In es, this message translates to:
+  /// **'Dañino'**
+  String get aiReportReasonHarmful;
+
+  /// No description provided for @aiReportReasonPrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'Privacidad'**
+  String get aiReportReasonPrivacy;
+
+  /// No description provided for @aiReportReasonOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro'**
+  String get aiReportReasonOther;
+
+  /// No description provided for @aiReportCommentLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentario (opcional)'**
+  String get aiReportCommentLabel;
+
+  /// No description provided for @aiReportCommentHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntanos más detalles…'**
+  String get aiReportCommentHint;
+
+  /// No description provided for @aiReportPrivacyNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Le enviaremos este mensaje a nuestro equipo para revisarlo. El resto de tu conversación se queda solo en tu dispositivo.'**
+  String get aiReportPrivacyNote;
+
+  /// No description provided for @aiReportSubmit.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get aiReportSubmit;
+
+  /// No description provided for @aiReportSuccessMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Gracias, revisaremos este mensaje.'**
+  String get aiReportSuccessMessage;
+
+  /// No description provided for @aiReportErrorUnauthenticated.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas iniciar sesión para reportar un mensaje.'**
+  String get aiReportErrorUnauthenticated;
+
+  /// No description provided for @aiReportErrorGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enviar tu reporte. Inténtalo de nuevo.'**
+  String get aiReportErrorGeneric;
 
   /// No description provided for @settingsAiSection.
   ///

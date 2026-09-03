@@ -689,7 +689,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsTitle => 'Transactions';
 
   @override
-  String get transactionsSearchHint => 'Search by note or category';
+  String get transactionsSearchHint => 'Search by note';
 
   @override
   String get transactionsLoading => 'Loading transactions';
@@ -734,6 +734,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsFilterBudget => 'Budget';
+
+  @override
+  String get transactionsPeriodTotalLabel => 'Period total';
 
   @override
   String get transactionsSortDateDesc => 'Most recent first';
@@ -6299,6 +6302,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiProposalConfirmedRowDebtLink => 'Attributed to the debt';
+
+  @override
+  String get aiMessageActionReport => 'Report';
+
+  @override
+  String get aiReportSheetTitle => 'Report message';
+
+  @override
+  String get aiReportSheetMessage =>
+      'Tell us what\'s wrong with this response. It helps us improve Billetudo.';
+
+  @override
+  String get aiReportReasonOffensive => 'Offensive';
+
+  @override
+  String get aiReportReasonWrong => 'Incorrect';
+
+  @override
+  String get aiReportReasonHarmful => 'Harmful';
+
+  @override
+  String get aiReportReasonPrivacy => 'Privacy';
+
+  @override
+  String get aiReportReasonOther => 'Other';
+
+  @override
+  String get aiReportCommentLabel => 'Comment (optional)';
+
+  @override
+  String get aiReportCommentHint => 'Tell us more…';
+
+  @override
+  String get aiReportPrivacyNote =>
+      'We\'ll send this message to our team to review it. The rest of your conversation stays only on your device.';
+
+  @override
+  String get aiReportSubmit => 'Send';
+
+  @override
+  String get aiReportSuccessMessage => 'Thanks, we\'ll review this message.';
+
+  @override
+  String get aiReportErrorUnauthenticated =>
+      'You need to sign in to report a message.';
+
+  @override
+  String get aiReportErrorGeneric =>
+      'We couldn\'t send your report. Try again.';
 
   @override
   String get settingsAiSection => 'AI assistant';

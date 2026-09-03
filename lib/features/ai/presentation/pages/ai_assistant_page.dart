@@ -372,14 +372,14 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
                                       ? AiUserBubble(message: message)
                                       : AiAssistantBubble(
                                           message: message,
-                                          accountNames:
-                                              chatState.accountNames,
+                                          accountNames: chatState.accountNames,
                                           debtNames: chatState.debtNames,
+                                          conversationId:
+                                              chatState.conversationId,
                                         ),
                                   const SizedBox(height: 14),
                                 ],
-                                if (chatState.status ==
-                                    AiChatStatus.thinking)
+                                if (chatState.status == AiChatStatus.thinking)
                                   const AiThinkingBubble(),
                                 if (chatState.status == AiChatStatus.error)
                                   AiErrorBubble(

@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'ai_message_menu_row.dart';
 
-/// Wraps a message bubble with a long-press "Copiar" menu. No frame exists
-/// for this in `billetudo.pen` — it is a standard platform interaction
-/// (`showMenu` anchored to the press position), not a designed screen — so
-/// it borrows the popover surface (`$surface`, `$border`, `radius:12`,
+/// The two actions a long-press on an assistant message offers.
+enum AiMessageMenuAction { copy, report }
+
+/// Wraps a message bubble with a long-press menu (`billetudo.pen`
+/// `Cbssw`/`PpcIh`): "Copiar" + "Reportar", divided. Anchored to the press
+/// position (`showMenu`), never a member of the scroll — the `.md` is
+/// explicit that Pencil's mockup insertion into the conversation flow is
+/// only a rendering shortcut, not the real interaction.
+///
+/// Borrows the popover surface (`$surface`, `$border`, `radius:14`,
 /// `elevation:8`) already used by `TransactionsSortButton`'s popover instead
 /// of inventing a new look.
 class AiMessageCopyMenu extends StatelessWidget {
   const AiMessageCopyMenu({
     required this.textToCopy,
     required this.child,
+    this.onReport,
     super.key,
   });
 
@@ -21,9 +30,15 @@ class AiMessageCopyMenu extends StatelessWidget {
   /// is only `message.content` — never the attached proposals.
   final String textToCopy;
 
+  /// Fired when "Reportar" is tapped, after the menu has closed. `null`
+  /// omits "Reportar" from the menu entirely — only an assistant bubble
+  /// passes this; a user's own message can't be reported to Google Play's
+  /// AI-Generated Content pipeline, it wasn't generated.
+  final VoidCallback? onReport;
+
   final Widget child;
 
-  Future<void> _showCopyMenu(
+  Future<void> _showMenu(
     BuildContext context,
     LongPressStartDetails details,
   ) async {
@@ -31,7 +46,7 @@ class AiMessageCopyMenu extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
-    final selected = await showMenu<bool>(
+    final selected = await showMenu<AiMessageMenuAction>(
       context: context,
       position: RelativeRect.fromRect(
         details.globalPosition & const Size(1, 1),
@@ -40,34 +55,60 @@ class AiMessageCopyMenu extends StatelessWidget {
       color: colors.surface,
       elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: colors.border),
       ),
-      // The menu's own width grid (`_kMenuWidthStep` = 56 in Material's
-      // popup_menu.dart) can't be overridden, but its default 112px floor
-      // can — without it, a single short-label item like "Copiar" no longer
-      // pads out to a 3-step-wide (168px) square.
-      constraints: const BoxConstraints(),
+      // `Cbssw`'s own width (176) — without an explicit `constraints`, the
+      // popup menu's default 112px floor and step-of-56 grid would resize
+      // this to whatever a single short label needs instead of the fixed
+      // width the two rows share in the design.
+      constraints: const BoxConstraints(minWidth: 176, maxWidth: 176),
+      menuPadding: const EdgeInsets.all(4),
       items: [
-        PopupMenuItem<bool>(
-          value: true,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        PopupMenuItem<AiMessageMenuAction>(
+          value: AiMessageMenuAction.copy,
+          padding: EdgeInsets.zero,
           height: 44,
-          child: Text(l10n.aiChatCopyMessage),
+          child: AiMessageMenuRow(
+            icon: LucideIcons.copy,
+            label: l10n.aiChatCopyMessage,
+          ),
         ),
+        // "Reportar" only exists for the assistant's own words (Google
+        // Play's AI-Generated Content policy) — a user bubble omits
+        // [onReport], and this stays a single-row menu unchanged from
+        // before that requirement existed.
+        if (onReport != null) ...[
+          PopupMenuDivider(height: 1, thickness: 1, color: colors.border),
+          PopupMenuItem<AiMessageMenuAction>(
+            value: AiMessageMenuAction.report,
+            padding: EdgeInsets.zero,
+            height: 44,
+            child: AiMessageMenuRow(
+              icon: LucideIcons.flag,
+              label: l10n.aiMessageActionReport,
+            ),
+          ),
+        ],
       ],
     );
 
-    if (selected != true || !context.mounted) {
+    if (!context.mounted) {
       return;
     }
-
-    await Clipboard.setData(ClipboardData(text: textToCopy));
+    switch (selected) {
+      case AiMessageMenuAction.copy:
+        await Clipboard.setData(ClipboardData(text: textToCopy));
+      case AiMessageMenuAction.report:
+        onReport?.call();
+      case null:
+        return;
+    }
   }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onLongPressStart: (details) => _showCopyMenu(context, details),
+        onLongPressStart: (details) => _showMenu(context, details),
         child: child,
       );
 }
