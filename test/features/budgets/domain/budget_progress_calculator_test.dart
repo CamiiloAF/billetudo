@@ -611,6 +611,78 @@ void main() {
       expect(items.single.scheduledPaymentId, t.id);
     });
 
+    test(
+        'regression: a recurring occurrence snoozed across a period '
+        'boundary is not a phantom projection in the original period, and '
+        'counts toward the new period immediately (cursor now advances on '
+        'snooze, just like confirm/skip)', () {
+      // Originally due Jan 5 (period A), snoozed to Feb 10 (period B).
+      // `snoozeOccurrence` now advances the template's cursor past Jan 5 to
+      // its next monthly cycle, Feb 5 — same as confirm/skip already did —
+      // so `nextDate` reflects that here.
+      final t = template(nextDate: DateTime(2024, 2, 5));
+      final snoozedAcrossPeriods = pending(
+        scheduledPayment: t,
+        occurrenceDate: DateTime(2024, 1, 5),
+        status: ScheduledOccurrenceStatus.snoozed,
+        snoozedToDate: DateTime(2024, 2, 10),
+      );
+
+      final projectedInA = projector(
+        templates: [t],
+        windowStart: window.start,
+        windowEndInclusive:
+            window.endExclusive.subtract(const Duration(days: 1)),
+      );
+
+      final itemsInA = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: window,
+        templates: [detail(t)],
+        projected: projectedInA,
+        pendingOccurrences: [snoozedAcrossPeriods],
+      );
+
+      // No phantom Jan 5 projection (nextDate already moved past it), and
+      // the occurrence now due Feb 10 doesn't leak into period A either.
+      expect(itemsInA, isEmpty);
+
+      final periodB = BudgetPeriodWindow(
+        start: DateTime(2024, 2, 1),
+        endExclusive: DateTime(2024, 3, 1),
+        index: 1,
+        status: BudgetWindowStatus.current,
+        hasPrevious: true,
+        hasNext: true,
+      );
+      final projectedInB = projector(
+        templates: [t],
+        windowStart: periodB.start,
+        windowEndInclusive:
+            periodB.endExclusive.subtract(const Duration(days: 1)),
+      );
+
+      final itemsInB = calc.scheduledItemsIn(
+        budget: budget,
+        scope: const BudgetScope.empty(),
+        window: periodB,
+        templates: [detail(t)],
+        projected: projectedInB,
+        pendingOccurrences: [snoozedAcrossPeriods],
+      );
+
+      // Both the template's own next cycle (Feb 5) and the postponed
+      // occurrence (Feb 10) show up — genuinely distinct dates, not a
+      // duplicate — and the postponed one already counts toward B's
+      // disponible, before the user confirms it.
+      expect(itemsInB, hasLength(2));
+      expect(itemsInB.map((i) => i.date), [
+        DateTime(2024, 2, 5),
+        DateTime(2024, 2, 10),
+      ]);
+    });
+
     test('respects scope and currency, same rule as matched expenses', () {
       final wrongCurrency = template(id: 'wrong-currency', currency: 'USD');
       final wrongAccount = template(id: 'wrong-account', accountId: 'other');

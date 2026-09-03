@@ -104,6 +104,10 @@ class _TagFilterSheetBodyState extends State<TagFilterSheetBody> {
     // "Todas"/"Ninguna" (`FL1gK`'s `Actions` block).
     final showCreateAction = widget.title != null;
     final query = _query.trim().toLowerCase();
+    // A dot, not translatable text — separates "Todas"/"Ninguna" in the
+    // header actions. Kept as a computed value, never a raw literal inside
+    // the widget tree.
+    const headerActionsSeparator = ' · ';
 
     return BlocBuilder<TagFilterCubit, TagFilterState>(
       builder: (context, state) {
@@ -151,7 +155,7 @@ class _TagFilterSheetBodyState extends State<TagFilterSheetBody> {
                     onTap: cubit.selectAll,
                   ),
                   Text(
-                    ' · ',
+                    headerActionsSeparator,
                     style: theme.textTheme.labelLarge
                         ?.copyWith(color: colors.border),
                   ),

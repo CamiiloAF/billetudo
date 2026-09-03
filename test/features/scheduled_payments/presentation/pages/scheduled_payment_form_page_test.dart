@@ -375,6 +375,32 @@ void main() {
 
       expect(find.text('Elige la cuenta de destino.'), findsOneWidget);
     });
+
+    testWidgets(
+        'fin de recurrencia antes del primer pago muestra el error de fecha',
+        (tester) async {
+      await pumpForm(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryName: 'Comida',
+          nextDate: _instant,
+          endDate: _instant.subtract(const Duration(days: 1)),
+          failure: const ValidationFailure(
+            'end date cannot be before next date',
+            field: ScheduledPaymentDraft.fieldEndDate,
+          ),
+        ),
+      );
+
+      expect(
+        find.text('Elige una fecha de fin posterior al inicio.'),
+        findsOneWidget,
+      );
+    });
   });
 
   group('quick picker filtrado por cuenta (HU quick-picker-most-used)', () {

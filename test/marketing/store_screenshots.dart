@@ -260,6 +260,7 @@ void main() {
               onOpenBudget: (_) {},
               onOpenAccounts: () {},
               onOpenAccountMovements: (_) {},
+              onAddAccount: () {},
               onOpenScheduledPayments: () {},
               onOpenDebts: () {},
               onOpenReports: () {},

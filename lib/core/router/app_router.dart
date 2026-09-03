@@ -568,6 +568,7 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
               // `onOpenBudget`.
               onOpenBudget: (id) => context.push(AppRoutes.budget(id)),
               onOpenAccounts: () => context.push(AppRoutes.accounts),
+              onAddAccount: () => context.push(AppRoutes.newAccount),
               // Bugfix item 8: tapping an account's mini-card pins the
               // Movimientos account filter (HU-06a) to just that account —
               // reusing the list cubit's own `updateFilter`, which persists it

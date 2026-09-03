@@ -25,6 +25,7 @@ import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/tag_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/type_filter_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -113,26 +114,32 @@ void main() {
     Future<void> Function(BuildContext context) openSheet,
     String name, {
     required Brightness brightness,
-  }) async {
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () => openSheet(context),
-            child: const Text('open'),
+  }) =>
+      // Pins clock.now() to goldenReferenceNow for the whole pump/tap/expect
+      // choreography, so a widget that resolves "today" during build (e.g.
+      // DateFilterSheet's inert-granularity fallback for a custom range)
+      // doesn't drift against the committed PNG on a later run. See
+      // pumpWithFixedClock's doc for why this beats a per-widget fix.
+      withClock(Clock.fixed(goldenReferenceNow), () async {
+        setGoldenViewport(tester);
+        await tester.pumpWidget(
+          wrapForGolden(
+            Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => openSheet(context),
+                child: const Text('open'),
+              ),
+            ),
+            brightness: brightness,
           ),
-        ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/sheet_$name.png'),
-    );
-  }
+        );
+        await tester.tap(find.byType(ElevatedButton));
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/sheet_$name.png'),
+        );
+      });
 
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
@@ -291,9 +298,14 @@ void main() {
 
     group('date filter ($suffix)', () {
       testWidgets('this month (default granular period)', (tester) async {
+        // `DatePeriodFilter.thisMonth()` defaults to real `DateTime.now()`
+        // when no anchor is passed — pin it to the frozen golden reference
+        // date so this doesn't drift every calendar month (see
+        // goldenReferenceNow's doc and commit b5d60300).
+        final thisMonth = DatePeriodFilter.thisMonth(goldenReferenceNow);
         final cubit = MockDateFilterCubit();
         when(() => cubit.state)
-            .thenReturn(DateFilterState(filter: DatePeriodFilter.thisMonth()));
+            .thenReturn(DateFilterState(filter: thisMonth));
         getIt.registerFactory<DateFilterCubit>(() => cubit);
 
         await golden(
@@ -301,7 +313,7 @@ void main() {
           (context) async {
             await DateFilterSheet.show(
               context,
-              initial: DatePeriodFilter.thisMonth(),
+              initial: thisMonth,
             );
           },
           'date_filter_month_$suffix',

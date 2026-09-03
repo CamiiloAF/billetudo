@@ -17,6 +17,7 @@ class AiQuestionChip extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.isDirectNav = false,
+    this.maxWidth,
     super.key,
   });
 
@@ -24,67 +25,105 @@ class AiQuestionChip extends StatelessWidget {
   final VoidCallback onTap;
   final bool isDirectNav;
 
+  /// Caps the chip's total width so a long label wraps to a 2nd line
+  /// instead of growing indefinitely wide (issue #22's "regla de altura
+  /// dinámica por fila" — `design-system/billetudo/pages/inicio.md`).
+  ///
+  /// When set, the label sizes off this constant directly instead of a
+  /// `LayoutBuilder` reading the incoming constraints. That matters because
+  /// `AiCardChips` shares one row height across its 4 chips with
+  /// `IntrinsicHeight`, which queries each child's intrinsic height — a
+  /// query `LayoutBuilder` cannot answer (Flutter throws
+  /// `UnimplementedError` at layout time if one sits in that subtree).
+  ///
+  /// When null (e.g. the "Continuar" chip sharing a `Row` with the "Ahora
+  /// no" `TextButton` in `ai_card_insight.dart`, where the available width
+  /// can be under this chip's own preferred width on a real phone), the
+  /// chip falls back to `LayoutBuilder` and shrinks to whatever room its
+  /// parent actually gives it.
+  final double? maxWidth;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
 
-    // The chip is used both unconstrained (the horizontal scroll of
-    // suggested questions, where it should size to its own 200px cap) and
-    // constrained (the insight card's "Continuar" chip, sharing a Row with
-    // the "Ahora no" TextButton — see `ai_card_insight.dart`'s `AiCardInsight`,
-    // where the available width can be under 200px on a real phone). The
-    // label's max width has to shrink to whatever room is actually left
-    // instead of insisting on the full 200px and overflowing the Row.
     const horizontalPadding = 14.0 * 2;
     const iconWidth = 16.0;
     const labelIconGap = 8.0;
     const reservedWidth = horizontalPadding + iconWidth + labelIconGap;
 
+    final labelStyle = theme.textTheme.bodySmall?.copyWith(
+      color: colors.textPrimary,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    );
+
+    final icon = Icon(
+      isDirectNav ? LucideIcons.arrowRight : LucideIcons.arrowUpRight,
+      size: 16,
+      color: colors.primaryOnSoft,
+    );
+
+    final fixedMaxWidth = maxWidth;
+
     return Material(
-      color: colors.muted,
+      color: colors.mutedStrong,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final maxLabelWidth = constraints.hasBoundedWidth
-                ? (constraints.maxWidth - reservedWidth).clamp(0.0, 200.0)
-                : 200.0;
-
-            return Container(
-              padding: const EdgeInsets.all(14),
-              constraints: const BoxConstraints(minHeight: 44),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: maxLabelWidth),
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+        child: fixedMaxWidth != null
+            ? Container(
+                padding: const EdgeInsets.all(14),
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: fixedMaxWidth - reservedWidth,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: labelStyle,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: labelIconGap),
-                  Icon(
-                    isDirectNav
-                        ? LucideIcons.arrowRight
-                        : LucideIcons.arrowUpRight,
-                    size: 16,
-                    color: colors.primaryOnSoft,
-                  ),
-                ],
+                    const SizedBox(width: labelIconGap),
+                    icon,
+                  ],
+                ),
+              )
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final labelMaxWidth = constraints.hasBoundedWidth
+                      ? constraints.maxWidth - reservedWidth
+                      : double.infinity;
+
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    constraints: const BoxConstraints(minHeight: 44),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: labelMaxWidth),
+                          child: Text(
+                            label,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: labelStyle,
+                          ),
+                        ),
+                        const SizedBox(width: labelIconGap),
+                        icon,
+                      ],
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }

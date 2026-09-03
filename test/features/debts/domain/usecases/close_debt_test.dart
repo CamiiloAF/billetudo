@@ -52,4 +52,27 @@ void main() {
     expect(result.getLeft().toNullable(), isA<NotFoundFailure>());
     verifyNever(() => repository.closeDebt(any()));
   });
+
+  test(
+      'never touches ScheduledPayments: `isActive` for a linked template is '
+      'derived by reading `Debts.closedAt`, so closing a debt only calls '
+      'getDebt + closeDebt on the debt repository and nothing else — '
+      'reintroducing a cross-feature write here would duplicate what the '
+      "scheduled_payments repository's `_activeExpr` already resolves by "
+      'itself', () async {
+    when(() => repository.getDebt('d1'))
+        .thenAnswer((_) async => Right(buildDebt()));
+    when(() => repository.closeDebt('d1'))
+        .thenAnswer((_) async => const Right(unit));
+
+    final result = await usecase('d1');
+
+    expect(result.isRight(), isTrue);
+    verify(() => repository.getDebt('d1')).called(1);
+    verify(() => repository.closeDebt('d1')).called(1);
+    // `DebtRepository`'s contract has no method that could write to
+    // `ScheduledPayments` (see `debt_repository.dart`); this pins the
+    // interaction count so a future change that adds one is caught here.
+    verifyNoMoreInteractions(repository);
+  });
 }

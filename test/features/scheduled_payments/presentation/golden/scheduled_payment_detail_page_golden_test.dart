@@ -125,6 +125,7 @@ void main() {
         historyTotalCount: historyTotalCountOverride ?? historyRows.length,
         generatedTransactionCount:
             historyRows.whereType<ScheduledConfirmedHistoryEntry>().length,
+        resolvedOccurrenceCount: historyRows.length,
         history: historyRows,
         pendingOccurrence: withPending
             ? buildPendingOccurrence(

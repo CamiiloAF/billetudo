@@ -300,6 +300,24 @@ Tras explorar 2 variantes (checkbox circular vs. fila completa cambia de estado)
 4. **Calendario completo en Rango Personalizado** — confirmado explícitamente por el usuario ("Sí, mantener calendario completo").
 5. **Botón "Continuar" (no "Continuar de todas formas")** en el Aviso de Impacto — sin objeción, se mantiene.
 
+## Bottom sheet unificado de filtros (GitHub issue #7, cierre 2026-09-02)
+
+Rediseño posterior al bloque anterior: los filtros de fecha/presupuesto/tipo/categoría/etiqueta se consolidan en **un solo bottom sheet** (Variante A, "Secciones Apiladas", nodeId `rktqT`), dejando **cuenta** como chips sueltos en la barra de Movimientos (uno por cuenta + "Todas" + "Limpiar", con al menos una cuenta siempre seleccionada — no reemplaza la fila de filtro previa `jpARf`, que queda para otros contextos). Un botón "Filtros" (icono `sliders-horizontal`, con badge numérico de filtros activos) abre el sheet unificado.
+
+**Secciones fijas del sheet, en orden:** Presupuesto → Fecha → Tipo → Categoría → Etiqueta, con `Sheet Buttons Row` al pie. Se evaluó mover Fecha al final (por pedido inicial del usuario) pero se descartó: el sheet completo mide ~767px contra 910px de viewport disponible (cabe sin scroll), y hay precedente ya aprobado en la barra de chips de la Lista de Movimientos de que "Fecha va en 2º lugar por ser de los filtros más usados" — moverla al final contradiría esa jerarquía.
+
+**Exclusión mutua Presupuesto ↔ Fecha:** nunca pueden estar activos ambos al tiempo. Seleccionar uno limpia el otro (no solo lo deshabilita) — comportamiento bidireccional, resuelto en el bloc/cubit que gestiona el sheet, no solo en presentación. Estado visual cuando Fecha queda deshabilitada por Presupuesto activo: icono `lock` junto al label "FECHA" (opacidad plena) + caption explicativo a opacidad plena:
+
+> "No puedes filtrar por fecha con un presupuesto activo"
+
+(solo el grupo de controles —Granularity Switch + Stepper Row— queda a `opacity:0.4`, nunca el texto explicativo). El caso inverso (Fecha activo → Presupuesto se limpia) es un espejo exacto, no se construyó como frame aparte. Referencia visual: frame companion `pSqZR` (aprobado).
+
+**Sección Presupuesto oculta sin presupuestos creados:** si el usuario no tiene ningún presupuesto (`budgets.isEmpty == true`, sin contar archivados), la sección "Presupuesto" **no se muestra** — ni vacía ni deshabilitada, se omite del widget tree junto con el divider que la separa de Fecha (para no dejar un divisor huérfano pegado al header). El sheet arranca directo en Header → Divider → Fecha, y en ese escenario Fecha **nunca** está deshabilitada (sin presupuestos no puede existir el conflicto). Referencia visual: frame `dUzl8` ("Sheet — Filtros Unificados · Sin presupuestos"), copia de `rktqT` sin la sección Presupuesto ni su divider.
+
+**Para flutter-dev:** ambas reglas (exclusión mutua bidireccional + ocultación condicional) se resuelven en el mismo bloc/cubit que gestiona el estado del sheet de filtros.
+
+**No verificado en esta ronda:** el drift real pixel a pixel reportado por el usuario entre los 6 sheets de filtro ya implementados en Flutter (`lib/features/transactions/presentation/widgets/sheets/`) y su spec en el `.pen` — se confirmó que la estructura general (sheets separados, no uno unificado hasta este rediseño) coincidía, y que `account_filter_sheet.dart` es fiel salvo el componente de fila (`AccountSelectRow` vs `Filter Account Row`). Si se quiere el drift exacto documentado, hace falta un `/design-fidelity-check` dedicado.
+
 ## Componentes reutilizables usados
 
 `Bottom Sheet Base`, `Transaction Row`, `Status Bar/Android`, `Tab Bar`, `Page Header`, `Segmented Control`, `Category Chip`, `Form Field`, `Empty State`, `Skeleton Row`, `Button/Primary`, `Button/Secondary`, `Info Row` (`myfAc`), `Delete Link` (`u0THG`), `Sheet Buttons Row` (`Ot4yI`), `Currency Row` (`Q6KVp`), `Day Cell` (`gVeaW`), `Keypad` (`gHDTi`), `Zona Fija - Monto Expandida` (`Rslzk`), `Zona Fija - Monto Colapsada` (`ofg07`), `Snackbar` (`zSTlU`), `Button/FAB` (`H5mzN`), `Detail Amount Hero` (`npfLO`), `Detail Actions Row` (`jt8dk`), `Tag Chip` (`nM9ea`), `Filter Account Row` (`X3tZG`, nuevo — icono+nombre/tipo+saldo+checkbox, usado en el Filtro de Cuentas y en el sheet de cuenta del formulario en modo single-select, disponible para futuras listas de selección múltiple con saldo visible), `Category Quick Picker` (`EIoVx`), `Category Select Sheet` (`SfSln`), `Category Select Row` (`SLfJW`), `Account Select Sheet` (`fcVZN`, ref `a510v`), `Date Picker Sheet` (`zMqxt`, usado directamente — la instancia `F5TDp` fue eliminada por redundante), `Month Calendar` (`w4yuu`, base del calendario de fecha única del formulario). El "Info Card" del Detalle queda como construcción específica de cada pantalla (a propósito, ver pendientes técnicos).

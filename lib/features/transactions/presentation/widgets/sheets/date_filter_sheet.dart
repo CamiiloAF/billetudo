@@ -68,7 +68,7 @@ class DateFilterSheetBody extends StatelessWidget {
         // stays visible but dimmed (0.4) and swallows taps, showing the "Este
         // mes" defaults instead of the null granularity a custom filter holds.
         final granularityView =
-            isCustom ? DatePeriodFilter.thisMonth() : filter;
+            isCustom ? DatePeriodFilter.thisMonth(clock.now()) : filter;
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,

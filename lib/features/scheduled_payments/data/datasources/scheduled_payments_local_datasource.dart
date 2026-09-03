@@ -97,18 +97,32 @@ class ScheduledPaymentsLocalDatasource {
           .equalsValue(ScheduledOccurrenceStatus.snoozed);
 
   /// A template still generates future occurrences (HU-04) when: not
-  /// tombstoned (HU-05), not past its `endDate`, and — for a `once`
-  /// template — it has not already fired (tracked in the occurrence ledger,
-  /// since `ScheduledPayments` has no column of its own for it).
+  /// tombstoned (HU-05), not past its `endDate`, its single `once`
+  /// occurrence has not already been resolved (confirmed OR skipped —
+  /// tracked in the occurrence ledger, since `ScheduledPayments` has no
+  /// column of its own for it: a skipped `once` is done, revivable only via
+  /// "Recuperar", not still-active), and — when linked to a `Debt`
+  /// (`debtId`) — that debt has not been closed (`Debts.closedAt`). Both
+  /// facts are derived by reading other tables, never persisted on this row.
   Expression<bool> _activeExpr() {
-    final onceAlreadyFired = existsQuery(
+    final onceAlreadyResolved = existsQuery(
       _db.selectOnly(_db.scheduledPaymentOccurrences)
         ..addColumns([_db.scheduledPaymentOccurrences.id])
         ..where(
           _db.scheduledPaymentOccurrences.scheduledPaymentId
                   .equalsExp(_db.scheduledPayments.id) &
-              _db.scheduledPaymentOccurrences.status
-                  .equalsValue(ScheduledOccurrenceStatus.confirmed),
+              (_db.scheduledPaymentOccurrences.status
+                      .equalsValue(ScheduledOccurrenceStatus.confirmed) |
+                  _db.scheduledPaymentOccurrences.status
+                      .equalsValue(ScheduledOccurrenceStatus.skipped)),
+        ),
+    );
+    final linkedDebtOpen = existsQuery(
+      _db.selectOnly(_db.debts)
+        ..addColumns([_db.debts.id])
+        ..where(
+          _db.debts.id.equalsExp(_db.scheduledPayments.debtId) &
+              _db.debts.closedAt.isNull(),
         ),
     );
 
@@ -119,7 +133,8 @@ class ScheduledPaymentsLocalDatasource {
         (_db.scheduledPayments.frequency
                 .equalsValue(ScheduleFrequency.once)
                 .not() |
-            onceAlreadyFired.not());
+            onceAlreadyResolved.not()) &
+        (_db.scheduledPayments.debtId.isNull() | linkedDebtOpen);
   }
 
   // -- Templates --------------------------------------------------------
@@ -689,6 +704,27 @@ class ScheduledPaymentsLocalDatasource {
         _db.transactions.scheduledPaymentId.equals(scheduledPaymentId) &
             _db.transactions.deletedAt.isNull() &
             _db.transactions.tombstonedAt.isNull(),
+      );
+    final row = await query.getSingle();
+    return row.read(count) ?? 0;
+  }
+
+  /// How many occurrences of this template are resolved — `confirmed` OR
+  /// `skipped` (mirrors `_activeExpr`'s `onceAlreadyResolved`). Feeds
+  /// `ScheduledPaymentDetail`'s `isActive` for a `once` template: a skipped
+  /// one must read as terminada, unlike [countGeneratedTransactions] (only
+  /// `confirmed`), which keeps driving the "PAGO EJECUTADO" label.
+  Future<int> countResolvedOccurrences(String scheduledPaymentId) async {
+    final count = _db.scheduledPaymentOccurrences.id.count();
+    final query = _db.selectOnly(_db.scheduledPaymentOccurrences)
+      ..addColumns([count])
+      ..where(
+        _db.scheduledPaymentOccurrences.scheduledPaymentId
+                .equals(scheduledPaymentId) &
+            (_db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.confirmed) |
+                _db.scheduledPaymentOccurrences.status
+                    .equalsValue(ScheduledOccurrenceStatus.skipped)),
       );
     final row = await query.getSingle();
     return row.read(count) ?? 0;

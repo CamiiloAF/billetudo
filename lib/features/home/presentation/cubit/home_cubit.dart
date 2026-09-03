@@ -16,6 +16,7 @@ import '../../../ai/domain/usecases/get_conversation_for_insight.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/domain/usecases/watch_auth_session.dart';
 import '../../../budgets/domain/entities/budget_detail_data.dart';
+import '../../../budgets/domain/entities/budget_progress.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/usecases/get_budget_by_id.dart';
 import '../../../budgets/domain/usecases/get_budget_progress.dart';
@@ -105,11 +106,14 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<Result<int>>? _pendingScheduledSub;
   StreamSubscription<Result<HomeAiInsight?>>? _aiInsightSub;
 
-  /// The `(month, hasAnyBudget, featuredBudgetId, spendingTotalMinor)` key
-  /// [_aiInsightSub] was last subscribed against — resubscribing on every
-  /// unrelated tick (e.g. a benign sync re-emission) would restart the
-  /// insight's own history query for nothing.
-  (DateTime, bool, String?, int)? _aiInsightKey;
+  /// The `(month, hasAnyBudget, featuredBudgetId, spendingTotalMinor,
+  /// budgetProgress)` key [_aiInsightSub] was last subscribed against —
+  /// resubscribing on every unrelated tick (e.g. a benign sync
+  /// re-emission) would restart the insight's own history query for
+  /// nothing. `budgetProgress` is included so a scheduled-payment-driven
+  /// change to the featured budget's overspend risk (which doesn't move
+  /// any of the other fields) still triggers a refresh.
+  (DateTime, bool, String?, int, BudgetProgress?)? _aiInsightKey;
 
   Result<List<AccountWithBalance>>? _lastAccounts;
   Result<List<TransactionWithDetails>>? _lastMonthTransactions;
@@ -240,6 +244,7 @@ class HomeCubit extends Cubit<HomeState> {
       state.hasAnyBudget,
       _featuredBudgetId,
       spending.displayTotalMinor,
+      state.budgetProgress?.progress,
     );
     if (key == _aiInsightKey) {
       return;

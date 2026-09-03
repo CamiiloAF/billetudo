@@ -182,6 +182,12 @@ abstract class AppLocalizations {
   /// **'Limpiar'**
   String get commonClear;
 
+  /// No description provided for @commonClearAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar todo'**
+  String get commonClearAll;
+
   /// No description provided for @commonConfirm.
   ///
   /// In es, this message translates to:
@@ -1262,6 +1268,12 @@ abstract class AppLocalizations {
   /// **'Buscar por nota'**
   String get transactionsSearchHint;
 
+  /// No description provided for @transactionsPeriodTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Total del período'**
+  String get transactionsPeriodTotalLabel;
+
   /// No description provided for @transactionsLoading.
   ///
   /// In es, this message translates to:
@@ -1345,12 +1357,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Presupuesto'**
   String get transactionsFilterBudget;
-
-  /// No description provided for @transactionsPeriodTotalLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Total del período'**
-  String get transactionsPeriodTotalLabel;
 
   /// No description provided for @transactionsSortDateDesc.
   ///
@@ -2023,6 +2029,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No tienes presupuestos activos'**
   String get budgetPeriodFilterEmptyMessage;
+
+  /// No description provided for @transactionsUnifiedFiltersTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros'**
+  String get transactionsUnifiedFiltersTitle;
+
+  /// No description provided for @transactionsFiltersButtonLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros'**
+  String get transactionsFiltersButtonLabel;
+
+  /// No description provided for @transactionsFilterSectionBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'PRESUPUESTO'**
+  String get transactionsFilterSectionBudget;
+
+  /// No description provided for @transactionsFilterBudgetNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguno'**
+  String get transactionsFilterBudgetNone;
+
+  /// No description provided for @transactionsFilterSectionDate.
+  ///
+  /// In es, this message translates to:
+  /// **'FECHA'**
+  String get transactionsFilterSectionDate;
+
+  /// No description provided for @transactionsFilterDateLockedByBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes filtrar por fecha con un presupuesto activo'**
+  String get transactionsFilterDateLockedByBudget;
+
+  /// No description provided for @transactionsFilterSectionType.
+  ///
+  /// In es, this message translates to:
+  /// **'TIPO'**
+  String get transactionsFilterSectionType;
+
+  /// No description provided for @transactionsFilterSectionCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'CATEGORÍA'**
+  String get transactionsFilterSectionCategory;
+
+  /// No description provided for @transactionsFilterSectionTag.
+  ///
+  /// In es, this message translates to:
+  /// **'ETIQUETA'**
+  String get transactionsFilterSectionTag;
+
+  /// No description provided for @transactionsFilterTagEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes etiquetas'**
+  String get transactionsFilterTagEmpty;
 
   /// No description provided for @dateFilterWeek.
   ///

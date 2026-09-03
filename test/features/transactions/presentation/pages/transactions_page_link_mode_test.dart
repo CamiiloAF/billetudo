@@ -96,8 +96,16 @@ void main() {
     );
 
     // The banner no longer carries an "x"; the only exit is the header back
-    // button (item add-on 3), which must still cancel link mode.
-    expect(find.byIcon(LucideIcons.x), findsNothing);
+    // button (item add-on 3), which must still cancel link mode. Scoped to
+    // the banner itself: issue #7's "Limpiar" account chip legitimately adds
+    // its own `x` icon elsewhere in the page.
+    expect(
+      find.descendant(
+        of: find.byType(TransactionsLinkBanner),
+        matching: find.byIcon(LucideIcons.x),
+      ),
+      findsNothing,
+    );
     await tester.tap(find.byIcon(LucideIcons.arrowLeft));
     expect(cancelled, isTrue);
   });

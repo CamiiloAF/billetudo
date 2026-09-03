@@ -10,30 +10,19 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
-import '../../../accounts/domain/entities/account.dart';
-import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
-import '../../../accounts/presentation/widgets/account_type_avatar.dart';
-import '../../../categories/presentation/utils/category_appearance.dart';
-import '../../domain/entities/budget_period_option.dart';
-import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
-import '../utils/date_period_label.dart';
 import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
 import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
-import '../widgets/filter_chip_pill.dart';
+import '../widgets/account_filter_chip_row.dart';
+import '../widgets/filters_button.dart';
 import '../widgets/movements_balance_carousel.dart';
-import '../widgets/sheets/account_filter_sheet.dart';
-import '../widgets/sheets/budget_period_filter_sheet.dart';
-import '../widgets/sheets/category_filter_sheet.dart';
-import '../widgets/sheets/date_filter_sheet.dart';
-import '../widgets/sheets/tag_filter_sheet.dart';
-import '../widgets/sheets/type_filter_sheet.dart';
+import '../widgets/sheets/unified_filters_sheet.dart';
 import '../widgets/skeleton_row.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
@@ -293,18 +282,44 @@ bool _isUnfiltered(TransactionFilter filter) =>
     !filter.hasTypeFilter &&
     !filter.hasTagFilter &&
     !filter.hasBudgetPeriodFilter &&
-    !_hasDateFilter(filter.datePeriod);
-
-/// HU-06b's date filter has no bare "no filter" state (it always defaults to
-/// "this month"), so "active" here means "not the untouched default".
-bool _hasDateFilter(DatePeriodFilter period) =>
-    period != DatePeriodFilter.thisMonth();
+    !filter.hasDateFilter;
 
 /// The search field + sort button row (`B3GGa`/`xAk6Y`).
-class TransactionsSearchRow extends StatelessWidget {
+///
+/// Bugfix item 3: a trailing "x" clears the field once it has text, inside
+/// the input — same clear affordance other text fields in the app already
+/// use. `StatefulWidget` only to own the `TextEditingController` that drives
+/// it; the search text itself still lives in [TransactionsListCubit].
+class TransactionsSearchRow extends StatefulWidget {
   const TransactionsSearchRow({required this.state, super.key});
 
   final TransactionsListState state;
+
+  @override
+  State<TransactionsSearchRow> createState() => _TransactionsSearchRowState();
+}
+
+class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.state.filter.searchText);
+
+  @override
+  void didUpdateWidget(covariant TransactionsSearchRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keeps the field in sync with a search text cleared/changed from
+    // outside this row (e.g. `start()` resetting the filter) without
+    // clobbering the user's own typing/cursor position on every rebuild.
+    final filterText = widget.state.filter.searchText;
+    if (filterText != _controller.text) {
+      _controller.text = filterText;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,31 +332,54 @@ class TransactionsSearchRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                prefixIcon: Icon(
-                  LucideIcons.search,
-                  size: 20,
-                  color: colors.textSecondary,
-                ),
-                hintText: l10n.transactionsSearchHint,
-                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, _) {
+                return TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    prefixIcon: Icon(
+                      LucideIcons.search,
+                      size: 20,
                       color: colors.textSecondary,
                     ),
-              ),
-              onChanged: cubit.searchChanged,
+                    suffixIcon: value.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: Icon(
+                              LucideIcons.x,
+                              size: 18,
+                              color: colors.textSecondary,
+                            ),
+                            tooltip: l10n.commonClear,
+                            onPressed: () {
+                              _controller.clear();
+                              unawaited(cubit.searchChanged(''));
+                            },
+                          ),
+                    hintText: l10n.transactionsSearchHint,
+                    hintStyle:
+                        Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: colors.textSecondary,
+                            ),
+                  ),
+                  onChanged: cubit.searchChanged,
+                );
+              },
             ),
           ),
           const SizedBox(width: 8),
           TransactionsSortButton(
-            sortOrder: state.filter.sortOrder,
+            sortOrder: widget.state.filter.sortOrder,
             onSelect: (sortOrder) => cubit.updateFilter(
-              state.filter.copyWith(sortOrder: sortOrder),
+              widget.state.filter.copyWith(sortOrder: sortOrder),
             ),
           ),
         ],
@@ -350,9 +388,10 @@ class TransactionsSearchRow extends StatelessWidget {
   }
 }
 
-/// The row of filter chips: account, category, type, date and tag
-/// (HU-06/HU-06a/HU-06b/HU-07). Every chip adopts the same active style
-/// (`primary-soft`/`primary`) the instant its own dimension has a filter.
+/// GitHub issue #7's redesign: the account filter is now its own row of
+/// chips (`AccountFilterChipRow`) — no longer part of this bar — plus the
+/// "Filtros" button that opens the single unified sheet for
+/// Presupuesto/Fecha/Tipo/Categoría/Etiqueta (`UnifiedFiltersSheet`).
 class TransactionsFilterBar extends StatelessWidget {
   const TransactionsFilterBar({required this.state, super.key});
 
@@ -360,7 +399,6 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
 
@@ -369,107 +407,33 @@ class TransactionsFilterBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          FilterChipPill(
-            label: _accountChipLabel(l10n, filter, state.accounts),
-            // The Account Chip has no neutral/unset look: HU-06a's 3 states
-            // ("N cuentas" / one account / "Todas" as a stand-in for "no
-            // filter") are all rendered in the same active pill (`s8uIq`).
-            active: true,
-            leadingIcon: _accountChipIcon(filter, state.accounts),
-            trailingIcon: LucideIcons.chevronDown,
-            onTap: () async {
-              final selected = await AccountFilterSheet.show(
-                context,
-                initialSelected: filter.accountIds,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(accountIds: selected));
-              }
-            },
+          AccountFilterChipRow(
+            accounts: state.accounts,
+            selected: filter.accountIds,
+            onChanged: (accountIds) => unawaited(
+              cubit.updateFilter(filter.copyWith(accountIds: accountIds)),
+            ),
           ),
           const SizedBox(width: 8),
-          FilterChipPill(
-            // HU-06b: there is always a real date filter active (defaults to
-            // "Este mes"), so the Chip Fecha never renders as unset — always
-            // its own `calendar` icon plus the current period's label.
-            label: datePeriodLabel(filter.datePeriod),
-            active: true,
-            leadingIcon: LucideIcons.calendar,
+          FiltersButton(
+            activeCount: filter.activeFilterCount,
             onTap: () async {
-              final applied = await DateFilterSheet.show(
+              final result = await UnifiedFiltersSheet.show(
                 context,
-                initial: filter.datePeriod,
+                initialFilter: filter,
+                budgetOptions: state.budgetOptions,
               );
-              // Null means the sheet was dismissed without "Aplicar" — keep
-              // the current filter.
-              if (applied != null) {
-                await cubit.updateFilter(
-                  filter.copyWith(datePeriod: applied),
-                );
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterCategories,
-            active: filter.hasCategoryFilter,
-            onTap: () async {
-              final selected = await CategoryFilterSheet.show(
-                context,
-                initialSelected: filter.categoryIds,
-              );
-              if (selected != null) {
-                await cubit
-                    .updateFilter(filter.copyWith(categoryIds: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterType,
-            active: filter.hasTypeFilter,
-            onTap: () async {
-              final selected = await TypeFilterSheet.show(
-                context,
-                initialSelected: filter.types,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(types: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterTag,
-            active: filter.hasTagFilter,
-            onTap: () async {
-              final selected = await TagFilterSheet.show(
-                context,
-                initialSelected: filter.tagIds,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(tagIds: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: _budgetChipLabel(l10n, filter, state.budgetOptions),
-            active: filter.hasBudgetPeriodFilter,
-            leadingIcon: _budgetChipIcon(filter, state.budgetOptions),
-            onTap: () async {
-              final result = await BudgetPeriodFilterSheet.show(
-                context,
-                initialBudgetId: filter.budgetPeriod?.budgetId,
-              );
-              // Null means the sheet was dismissed without "Aplicar" — keep
-              // the current filter. A non-null result always replaces it,
-              // including back to `null` when the user cleared it.
+              // Null means the sheet was dismissed without "Aplicar"/
+              // "Limpiar" — keep the current filter.
               if (result != null) {
                 await cubit.updateFilter(
                   filter.copyWith(
-                    budgetPeriod: result.window,
-                    clearBudgetPeriod: result.window == null,
+                    datePeriod: result.datePeriod,
+                    budgetPeriod: result.budgetPeriod,
+                    clearBudgetPeriod: result.budgetPeriod == null,
+                    types: result.types,
+                    categoryIds: result.categoryIds,
+                    tagIds: result.tagIds,
                   ),
                 );
               }
@@ -478,99 +442,6 @@ class TransactionsFilterBar extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  /// The Presupuesto Chip's label: the chosen budget's own name once
-  /// selected, or the generic dimension label when there is no filter — the
-  /// same neutral/active split as the Category/Type/Tag chips, unlike the
-  /// Account Chip's always-active "Todas" or the Date Chip's always-active
-  /// default.
-  static String _budgetChipLabel(
-    AppLocalizations l10n,
-    TransactionFilter filter,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    final budgetId = filter.budgetPeriod?.budgetId;
-    if (budgetId == null) {
-      return l10n.transactionsFilterBudget;
-    }
-    final selected = _selectedBudgetOption(budgetId, budgetOptions);
-    return selected?.name ?? l10n.transactionsFilterBudget;
-  }
-
-  /// The Presupuesto Chip's leading icon: the selected budget's own icon, or
-  /// none while unset (`FilterChipPill` simply omits it).
-  static IconData? _budgetChipIcon(
-    TransactionFilter filter,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    final budgetId = filter.budgetPeriod?.budgetId;
-    if (budgetId == null) {
-      return null;
-    }
-    final selected = _selectedBudgetOption(budgetId, budgetOptions);
-    return CategoryAppearance.iconForOrPlaceholder(selected?.icon);
-  }
-
-  static BudgetPeriodOption? _selectedBudgetOption(
-    String budgetId,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    for (final option in budgetOptions) {
-      if (option.budgetId == budgetId) {
-        return option;
-      }
-    }
-    return null;
-  }
-
-  /// The Account Chip's label across HU-06a's 3 states: the account's own
-  /// name when exactly one is selected, a count for 2+, and "Todas" (not
-  /// "Cuentas") when there is no filter — `s8uIq` treats "no filter" as the
-  /// same active "Todas" state, never as an unset 4th look.
-  static String _accountChipLabel(
-    AppLocalizations l10n,
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (!filter.hasAccountFilter) {
-      return l10n.accountFilterSelectAll;
-    }
-    final selected = _singleSelectedAccount(filter, accounts);
-    if (selected != null) {
-      return selected.name;
-    }
-    return l10n.transactionsFilterAccountsSelected(filter.accountIds.length);
-  }
-
-  /// The Account Chip's leading icon across its 3 states: the selected
-  /// account's own type icon for exactly one, a generic `layers` for 2+, and
-  /// a generic `wallet` for "Todas" (`s8uIq`/`XlXA8`).
-  static IconData _accountChipIcon(
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (!filter.hasAccountFilter) {
-      return LucideIcons.wallet;
-    }
-    final selected = _singleSelectedAccount(filter, accounts);
-    return selected?.type.icon ?? LucideIcons.layers;
-  }
-
-  static Account? _singleSelectedAccount(
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (filter.accountIds.length != 1) {
-      return null;
-    }
-    final id = filter.accountIds.first;
-    for (final entry in accounts) {
-      if (entry.account.id == id) {
-        return entry.account;
-      }
-    }
-    return null;
   }
 }
 
@@ -637,6 +508,7 @@ class TransactionsListView extends StatelessWidget {
               state: state,
               onOpenAccount: onOpenAccount,
             ),
+          TransactionsPeriodTotalRow(state: state),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -669,10 +541,17 @@ class TransactionsListView extends StatelessWidget {
     // The carousel occupies index 0 when shown; link mode drops it, so the
     // group indices shift back by one.
     final carouselSlots = showCarousel ? 1 : 0;
+    // Bugfix (issue #7 item 5): one more slot for the period's aggregate
+    // total, right after the carousel — `null` (mixed types/currencies, or
+    // no exclusive income/expense filter active) means no slot at all, same
+    // rule as each day's own total (`transactionGroupTotalFor`).
+    final periodTotal = transactionPeriodTotalFor(state.filter, state.items);
+    final totalSlots = periodTotal == null ? 0 : 1;
+    final leadingSlots = carouselSlots + totalSlots;
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 28),
-      itemCount: groups.length + carouselSlots,
+      itemCount: groups.length + leadingSlots,
       itemBuilder: (context, index) {
         if (showCarousel && index == 0) {
           return MovementsBalanceCarousel(
@@ -680,7 +559,10 @@ class TransactionsListView extends StatelessWidget {
             onOpenAccount: onOpenAccount,
           );
         }
-        final groupIndex = index - carouselSlots;
+        if (totalSlots == 1 && index == carouselSlots) {
+          return TransactionsPeriodTotalRow(state: state);
+        }
+        final groupIndex = index - leadingSlots;
         final group = groups[groupIndex];
         final groupTotal = transactionGroupTotalFor(state.filter, group.items);
         return Padding(
@@ -711,6 +593,38 @@ class TransactionsListView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Bugfix (issue #7 item 5): the filtered period's aggregate total (e.g. "el
+/// total ganado en todo el período" while "solo ingresos" is active) — reuses
+/// `TransactionGroupHeader`'s own left-label/right-total row, the pattern
+/// already used for a single day's total, instead of a new component.
+/// Renders nothing when [transactionPeriodTotalFor] has nothing to show
+/// (mixed types, transfers, or a mixed-currency period).
+class TransactionsPeriodTotalRow extends StatelessWidget {
+  const TransactionsPeriodTotalRow({required this.state, super.key});
+
+  final TransactionsListState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final total = transactionPeriodTotalFor(state.filter, state.items);
+    if (total == null) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: TransactionGroupHeader(
+        label: l10n.transactionsPeriodTotalLabel,
+        totalLabel: signedAmountLabel(
+          amountMinor: total.amountMinor,
+          currencyCode: total.currency,
+          type: total.type,
+        ),
+      ),
     );
   }
 }

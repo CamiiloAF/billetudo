@@ -599,11 +599,53 @@ void main() {
           .getSingle();
       expect(row.status, ScheduledOccurrenceStatus.pending);
     });
+
+    test(
+        'omitir una ocurrencia ya pospuesta y luego recuperarla vuelve a la '
+        'fecha real, no a la fecha pospuesta vieja', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 7, 1),
+      );
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final snoozeResult = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: occurrence.occurrenceDate,
+        newDate: DateTime(2026, 7, 15),
+      );
+      expect(snoozeResult.isRight(), isTrue);
+      var row = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.id.equals(occurrence.id)))
+          .getSingle();
+      expect(row.status, ScheduledOccurrenceStatus.snoozed);
+      expect(row.snoozedToDate, DateTime(2026, 7, 15));
+
+      final skipResult = await repository.skipOccurrence(occurrence.id);
+      expect(skipResult.isRight(), isTrue);
+
+      final undoResult = await repository.undoSkipOccurrence(occurrence.id);
+      expect(undoResult.isRight(), isTrue);
+      row = await (database.select(database.scheduledPaymentOccurrences)
+            ..where((o) => o.id.equals(occurrence.id)))
+          .getSingle();
+      expect(row.status, ScheduledOccurrenceStatus.pending);
+      // No stale postponed date left over: `effectiveDate` (snoozedToDate ??
+      // occurrenceDate) reads as the real, original due date again.
+      expect(row.snoozedToDate, isNull);
+      expect(row.occurrenceDate, DateTime(2026, 7, 1));
+    });
   });
 
   group('snoozeOccurrence / undoSnoozeOccurrence (HU-07)', () {
-    test('mueve solo la ocurrencia sin tocar la cadencia de la plantilla',
-        () async {
+    test(
+        'posponer resuelve la fecha original: mueve el cursor de la '
+        'plantilla igual que confirmar u omitir lo harían', () async {
       final template = await createTemplate(
         monthlyDraft(nextDate: DateTime(2026, 7, 1)),
       );
@@ -625,8 +667,104 @@ void main() {
       expect(outcome.wasCreated, isTrue);
       expect(outcome.previousSnoozedToDate, isNull);
 
+      // The cursor moves off the original due date right away, so the
+      // budget card no longer projects it as a phantom future occurrence.
       final templateRow = await rowOf(template.id);
+      expect(templateRow.nextDate, DateTime(2026, 8, 1));
+    });
+
+    test(
+        'posponer una plantilla `once` no avanza el cursor (no-op) ni '
+        'lanza excepción', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          frequency: domain.ScheduledPaymentFrequency.once,
+        ),
+      );
+
+      final result = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 7, 1),
+        newDate: DateTime(2026, 7, 10),
+      );
+
+      expect(result.isRight(), isTrue);
+      final templateRow = await rowOf(template.id);
+      // `once` never advances its cursor — see `_advanceCursorPast`'s
+      // documented no-op for this frequency.
       expect(templateRow.nextDate, DateTime(2026, 7, 1));
+    });
+
+    test(
+        'posponer una ocurrencia recurrente ya pospuesta (re-snooze) no '
+        'duplica ni rompe el avance del cursor (idempotente)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 3, 23),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 3, 25),
+      );
+
+      final first = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 30),
+      );
+      expect(first.isRight(), isTrue);
+      final afterFirst = await rowOf(template.id);
+      expect(afterFirst.nextDate, DateTime(2026, 4, 23));
+
+      final second = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 31),
+      );
+      expect(second.isRight(), isTrue);
+      // The guard in `_advanceCursorPast` (occurrenceDate < nextDate) makes
+      // the second call, with the same original occurrenceDate, a no-op:
+      // the cursor does not advance a second time nor jump ahead again.
+      final afterSecond = await rowOf(template.id);
+      expect(afterSecond.nextDate, DateTime(2026, 4, 23));
+    });
+
+    test(
+        'confirmar una ocurrencia ya pospuesta no vuelve a avanzar el '
+        'cursor una segunda vez', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 3, 23),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(
+        now: DateTime(2026, 3, 25),
+      );
+
+      final snoozed = await repository.snoozeOccurrence(
+        scheduledPaymentId: template.id,
+        occurrenceDate: DateTime(2026, 3, 23),
+        newDate: DateTime(2026, 3, 30),
+      );
+      final occurrenceId = snoozed.getRight().toNullable()!.occurrence.id;
+      final afterSnooze = await rowOf(template.id);
+      expect(afterSnooze.nextDate, DateTime(2026, 4, 23));
+
+      final confirmed = await repository.confirmOccurrence(
+        occurrenceId: occurrenceId,
+        date: DateTime(2026, 3, 30),
+        accountId: account.id,
+        amountMinor: 50000,
+      );
+      expect(confirmed.isRight(), isTrue);
+
+      // Same guard: confirming with the same original occurrenceDate
+      // (2026-03-23, already behind the cursor) does not double-advance.
+      final afterConfirm = await rowOf(template.id);
+      expect(afterConfirm.nextDate, DateTime(2026, 4, 23));
     });
 
     test(
@@ -1665,6 +1803,211 @@ void main() {
         afterDelete.any((i) => i.scheduledPayment.id == template.id),
         isFalse,
       );
+    });
+  });
+
+  group(
+      'omitir/deuda-cerrada terminan una plantilla (bugfix issue #20 '
+      'seguimiento)', () {
+    Future<ScheduledPaymentOccurrence> pendingOccurrenceFor(
+      String templateId,
+    ) =>
+        (database.select(database.scheduledPaymentOccurrences)
+              ..where((o) => o.scheduledPaymentId.equals(templateId)))
+            .getSingle();
+
+    Future<Debt> createDebt({
+      DebtDirection direction = DebtDirection.iOwe,
+    }) =>
+        database.into(database.debts).insertReturning(
+              DebtsCompanion.insert(
+                name: 'Préstamo',
+                direction: direction,
+                principalMinor: 200000,
+                currency: 'COP',
+              ),
+            );
+
+    Future<List<String>> activeIds() async {
+      final result = await repository.watchActiveScheduledPayments().first;
+      return result
+          .getRight()
+          .toNullable()!
+          .map((s) => s.scheduledPayment.id)
+          .toList();
+    }
+
+    Future<List<String>> finishedIds() async {
+      final result = await repository.watchFinishedScheduledPayments().first;
+      return result
+          .getRight()
+          .toNullable()!
+          .map((s) => s.scheduledPayment.id)
+          .toList();
+    }
+
+    test(
+        'criterio 1/2/3: un `once` omitido queda terminado y '
+        '"PAGO EJECUTADO" sigue en no ejecutado; recuperar lo vuelve activo '
+        'sin duplicar transacción', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          frequency: domain.ScheduledPaymentFrequency.once,
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final skipResult = await repository.skipOccurrence(occurrence.id);
+      expect(skipResult.isRight(), isTrue);
+      expect(await activeIds(), isNot(contains(template.id)));
+      expect(await finishedIds(), contains(template.id));
+
+      final detail =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+      expect(detail.isActive, isFalse);
+      // The label "PAGO EJECUTADO" stays tied to an actually generated
+      // transaction, never to "resolved" (skip is not an execution).
+      expect(detail.onceAlreadyGenerated, isFalse);
+      expect(await database.select(database.transactions).get(), isEmpty);
+
+      final undoResult = await repository.undoSkipOccurrence(occurrence.id);
+      expect(undoResult.isRight(), isTrue);
+      expect(await activeIds(), contains(template.id));
+      expect(await finishedIds(), isNot(contains(template.id)));
+      // Recovering never generates a transaction on its own.
+      expect(await database.select(database.transactions).get(), isEmpty);
+    });
+
+    test(
+        'criterio 4: recurrente con endDate — omitir la última cuota '
+        'pendiente antes de endDate deja el template inactivo (regresión: '
+        '_advanceCursorPast + _activeExpr ya lo resuelven)', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          endDate: DateTime(2026, 7, 31),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final skipResult = await repository.skipOccurrence(occurrence.id);
+      expect(skipResult.isRight(), isTrue);
+
+      final row = await rowOf(template.id);
+      expect(row.nextDate.isAfter(row.endDate!), isTrue);
+      expect(await activeIds(), isNot(contains(template.id)));
+    });
+
+    test(
+        'criterio 5: recurrente sin endDate — omitir una ocurrencia deja el '
+        'template activo y sigue proyectando la siguiente', () async {
+      final template = await createTemplate(
+        monthlyDraft(
+          nextDate: DateTime(2026, 7, 1),
+          requiresConfirmation: true,
+        ),
+      );
+      await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
+      final occurrence = await pendingOccurrenceFor(template.id);
+
+      final skipResult = await repository.skipOccurrence(occurrence.id);
+      expect(skipResult.isRight(), isTrue);
+
+      expect(await activeIds(), contains(template.id));
+
+      final row = await rowOf(template.id);
+      expect(row.nextDate, DateTime(2026, 8, 1));
+    });
+
+    test(
+        'criterio 6/9: una plantilla vinculada a una deuda abierta está '
+        'activa; al cerrarse la deuda queda terminada sin escribir en '
+        'ScheduledPayments', () async {
+      final debt = await createDebt();
+      final template = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+
+      expect(await activeIds(), contains(template.id));
+      final detailBefore =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+      expect(detailBefore.isActive, isTrue);
+      expect(detailBefore.linkedDebt!.isClosed, isFalse);
+
+      final beforeRow = await rowOf(template.id);
+
+      await (database.update(database.debts)
+            ..where((d) => d.id.equals(debt.id)))
+          .write(
+        DebtsCompanion(closedAt: Value(DateTime(2026, 8, 1))),
+      );
+
+      expect(await activeIds(), isNot(contains(template.id)));
+      expect(await finishedIds(), contains(template.id));
+      final detailAfter =
+          (await repository.watchScheduledPaymentDetail(template.id).first)
+              .getRight()
+              .toNullable()!;
+      expect(detailAfter.isActive, isFalse);
+      expect(detailAfter.linkedDebt!.isClosed, isTrue);
+
+      // The template row itself was never touched by closing the debt.
+      final afterRow = await rowOf(template.id);
+      expect(afterRow.updatedAt, beforeRow.updatedAt);
+      expect(afterRow.nextDate, beforeRow.nextDate);
+    });
+
+    test(
+        'criterio 7: varias plantillas vinculadas a la misma deuda quedan '
+        'todas terminadas al cerrarla', () async {
+      final debt = await createDebt();
+      final first = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1), debtId: debt.id),
+      );
+      final second = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 8, 1), debtId: debt.id),
+      );
+
+      await (database.update(database.debts)
+            ..where((d) => d.id.equals(debt.id)))
+          .write(
+        DebtsCompanion(closedAt: Value(DateTime(2026, 8, 1))),
+      );
+
+      final finished = await finishedIds();
+      expect(finished, containsAll([first.id, second.id]));
+      expect(await activeIds(), isNot(anyOf(contains(first.id), contains(second.id))));
+    });
+
+    test(
+        'criterio 8: cerrar una deuda sin plantillas vinculadas no afecta '
+        'otras plantillas no relacionadas', () async {
+      final debt = await createDebt();
+      final unrelated = await createTemplate(
+        monthlyDraft(nextDate: DateTime(2026, 7, 1)),
+      );
+
+      final beforeActive = await activeIds();
+      final beforeFinished = await finishedIds();
+
+      await (database.update(database.debts)
+            ..where((d) => d.id.equals(debt.id)))
+          .write(
+        DebtsCompanion(closedAt: Value(DateTime(2026, 8, 1))),
+      );
+
+      expect(await activeIds(), beforeActive);
+      expect(await finishedIds(), beforeFinished);
+      expect(await activeIds(), contains(unrelated.id));
     });
   });
 

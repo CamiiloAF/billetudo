@@ -107,6 +107,8 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           final historyTotalCount = await _local.countHistory(id);
           final generatedTransactionCount =
               await _local.countGeneratedTransactions(id);
+          final resolvedOccurrenceCount =
+              await _local.countResolvedOccurrences(id);
 
           return Right(
             ScheduledPaymentDetail(
@@ -142,6 +144,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               history: _toHistoryEntries(history, row.scheduledPayment),
               historyTotalCount: historyTotalCount,
               generatedTransactionCount: generatedTransactionCount,
+              resolvedOccurrenceCount: resolvedOccurrenceCount,
               linkedDebt: _toLinkedDebt(row.debt),
               linkedGoal: _toLinkedGoal(row.goal),
             ),
@@ -160,6 +163,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       id: debt.id,
       name: debt.name,
       iOwe: debt.direction == db.DebtDirection.iOwe,
+      closedAt: debt.closedAt,
     );
   }
 
@@ -635,6 +639,9 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           scheduledPaymentId,
           occurrenceDate,
         );
+        final template = await _local.getScheduledPayment(
+          scheduledPaymentId,
+        );
         if (existing == null) {
           final created = await _local.insertOccurrence(
             ScheduledPaymentOccurrenceMapper.snoozeInsertCompanion(
@@ -644,6 +651,12 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
               now: now,
             ),
           );
+          // Snoozing resolves the original due date just like a confirm or
+          // skip would, so the cursor moves off it immediately instead of
+          // waiting for the postponed occurrence to be confirmed later.
+          if (template != null) {
+            await _advanceCursorPast(template, occurrenceDate, now);
+          }
           return Right(
             SnoozeOutcome(
               occurrence: ScheduledPaymentOccurrenceMapper.toEntity(created),
@@ -668,6 +681,13 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
             now: now,
           ),
         );
+        // Same reasoning as above: snoozing (including a re-snooze) resolves
+        // the original due date, so move the cursor forward. The guard in
+        // `_advanceCursorPast` keeps repeated snoozes of the same occurrence
+        // idempotent.
+        if (template != null) {
+          await _advanceCursorPast(template, occurrenceDate, now);
+        }
         return Right(
           SnoozeOutcome(
             occurrence: ScheduledPaymentOccurrenceMapper.toEntity(updated!),

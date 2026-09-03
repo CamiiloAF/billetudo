@@ -5,12 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'pump_widget.dart';
 
-/// The 4 suggested-question chips share a forced uniform height
-/// (`_chipHeight`), regardless of how many lines their own label would need
-/// on its own — every chip's label is truncated to a single line
-/// (`AiQuestionChip.maxLines: 1`), so the row reads level.
+/// Issue #22's "regla de altura dinámica por fila"
+/// (`design-system/billetudo/pages/inicio.md`): the 4 suggested-question
+/// chips prefer 1 line (44px), but `IntrinsicHeight` + `CrossAxisAlignment
+/// .stretch` make every chip in the row share the tallest chip's height —
+/// never mixed heights — even though `AiQuestionChip.maxLines` is now 2 and
+/// each chip's own label can wrap independently.
 void main() {
-  testWidgets('los 4 chips comparten la misma altura fija', (tester) async {
+  testWidgets(
+      'los 4 chips comparten la misma altura, aunque solo alguno '
+      'necesite 2 líneas', (tester) async {
     await tester.pumpHomeWidget(
       AiCardChips(
         budgetChipIsDirectNav: false,

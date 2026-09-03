@@ -53,8 +53,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('tema oscuro: fondo usa AppColors.muted; icono usa primaryOnSoft',
-      (tester) async {
+  testWidgets(
+      'tema oscuro: fondo usa AppColors.mutedStrong (issue #22, contraste); '
+      'icono usa primaryOnSoft', (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(label: 'Pregunta', onTap: () {}),
       brightness: Brightness.dark,
@@ -66,14 +67,15 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(material.color, AppColors.dark.muted);
+    expect(material.color, AppColors.dark.mutedStrong);
 
     final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
     expect(icon.color, AppColors.dark.primaryOnSoft);
   });
 
-  testWidgets('tema claro: fondo usa AppColors.muted; icono usa primaryOnSoft',
-      (tester) async {
+  testWidgets(
+      'tema claro: fondo usa AppColors.mutedStrong (issue #22, contraste); '
+      'icono usa primaryOnSoft', (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(label: 'Pregunta', onTap: () {}),
     );
@@ -84,18 +86,20 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(material.color, AppColors.light.muted);
+    expect(material.color, AppColors.light.mutedStrong);
 
     final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
     expect(icon.color, AppColors.light.primaryOnSoft);
   });
 
-  testWidgets('etiqueta larga se trunca en una sola línea (maxLines: 1)',
-      (tester) async {
+  testWidgets(
+      'issue #22: etiqueta larga envuelve a 2 líneas (maxLines: 2), no se '
+      'trunca en 1', (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(
         label: '¿Cuánto llevo ahorrado en mis metas?',
         onTap: () {},
+        maxWidth: 220,
       ),
     );
 
@@ -105,7 +109,7 @@ void main() {
         matching: find.byType(Text),
       ),
     );
-    expect(text.maxLines, 1);
+    expect(text.maxLines, 2);
     expect(text.overflow, TextOverflow.ellipsis);
   });
 
@@ -121,5 +125,21 @@ void main() {
       ),
     );
     expect(container.padding, const EdgeInsets.all(14));
+  });
+
+  testWidgets('issue #22: etiqueta usa fontSize 14 / fontWeight 600',
+      (tester) async {
+    await tester.pumpHomeWidget(
+      AiQuestionChip(label: 'Pregunta', onTap: () {}),
+    );
+
+    final text = tester.widget<Text>(
+      find.descendant(
+        of: find.byType(AiQuestionChip),
+        matching: find.byType(Text),
+      ),
+    );
+    expect(text.style?.fontSize, 14);
+    expect(text.style?.fontWeight, FontWeight.w600);
   });
 }

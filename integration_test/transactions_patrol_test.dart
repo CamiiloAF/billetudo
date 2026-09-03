@@ -35,6 +35,7 @@ import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/filters_button.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
@@ -921,29 +922,27 @@ void main() {
       await _expectEventually($, find.text('-\$10'), findsOneWidget);
       expect(find.text('-\$20'), findsOneWidget);
 
-      // HU-06a: the account filter chip. Its label defaults to "Todas"
-      // (`accountFilterSelectAll`) whenever no account filter is active yet
-      // — `TransactionsFilterBar._accountChipLabel` deliberately never reads
-      // "Cuentas" (see that method's own doc comment).
-      await $.tester.tap(find.text('Todas'));
-      await $.tester.pumpAndSettle();
-      expect(find.text('Filtrar por cuenta'), findsOneWidget);
+      // Issue #7: cuenta filtering moved out of a sheet into its own row of
+      // multi-selection chips (`AccountFilterChipRow`) directly on the
+      // Movimientos filter bar — "Todas" is one of those chips, not a
+      // trigger that opens a separate sheet anymore.
+      expect(find.text('Todas'), findsOneWidget);
 
-      // `find.text('Cuenta A')` alone is ambiguous here (the sheet is a
-      // modal overlaying the transaction list, which still has a row whose
-      // title is also 'Cuenta A'), and this sheet's rows are `AccountSelectRow`
-      // (not a `CheckboxListTile` — this is a single-select-styled row
-      // toggled for multi-select) — see `_pickAccount`, used here directly
-      // since this is `AccountFilterSheet`, not the single-select
-      // `AccountPickerSheetBody` every other scenario opens through
-      // `_tapAccountField`.
-      await _pickAccount($, 'Cuenta A');
-      await $.tester.tap(find.text('Aplicar'));
+      // Deselecting "Cuenta B" from the default all-selected state leaves
+      // only "Cuenta A" active — `find.text('Cuenta B')` is ambiguous here
+      // (a list row title reads the same), so this taps the chip through its
+      // own widget type, same reasoning `_pickAccount` documents for the old
+      // sheet's rows.
+      await $.tester.tap(
+        find.byWidgetPredicate(
+          (widget) => widget is FilterChipPill && widget.label == 'Cuenta B',
+        ),
+      );
       await $.tester.pumpAndSettle();
 
       // HU-06: filtered to Cuenta A only — Cuenta B's movement disappears.
+      await _expectEventually($, find.text('-\$20'), findsNothing);
       expect(find.text('-\$10'), findsOneWidget);
-      expect(find.text('-\$20'), findsNothing);
     },
   );
 
@@ -1163,8 +1162,9 @@ void main() {
   );
 
   patrolTest(
-    'HU-06 Presupuesto: elegir un presupuesto en el nuevo chip activa el '
-    'chip con su nombre, independiente del chip Fecha',
+    'Issue #7: elegir un presupuesto en el bottom sheet unificado sube el '
+    'badge de Filtros y bloquea Fecha; reabrir el sheet conserva la '
+    'selección',
     ($) async {
       await startApp($);
       await _goToAccountsList($);
@@ -1172,8 +1172,9 @@ void main() {
       await _createCategory($, 'Comida');
 
       // Account-scoped budget: exercises the real `GetActiveBudgets` ->
-      // `WatchBudgetPeriodOptions` -> `BudgetPeriodFilterSheet` chain end to
-      // end, same helper `Fase B1+B2` above already relies on.
+      // `WatchBudgetPeriodOptions` -> `UnifiedFiltersSheet`'s Presupuesto
+      // section chain end to end, same helper `Fase B1+B2` above already
+      // relies on.
       await _createAccountScopedBudget(
         $,
         name: 'Comida del mes',
@@ -1185,43 +1186,46 @@ void main() {
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
-      // Criterio 3: neutral state before any selection — the chip's own
-      // generic label (`transactionsFilterBudget`), not the budget's name.
-      expect(find.text('Presupuesto'), findsOneWidget);
-      // Criterio 1: the Fecha chip (default "this month", rendered as
-      // `datePeriodLabel` — e.g. "Agosto 2026", never the literal string
-      // "Este mes") coexists, unaffected.
-      final dateChipLabelBefore = _dateChipText($);
-
-      // The Presupuesto chip is the 6th in `TransactionsFilterBar`'s
-      // horizontal `SingleChildScrollView` — off-screen until scrolled into
-      // view, same reasoning as HU-07's "+ Nueva" tag chip: `find.text` still
-      // resolves the (off-screen) widget, but `tap()` at its actual painted
-      // position outside the viewport hits nothing.
-      final budgetChip = find.text('Presupuesto');
-      await $.tester.dragUntilVisible(
-        budgetChip,
-        find.byType(Scrollable).first,
-        const Offset(-200, 0),
+      // Criterion #4: no filter active yet — the "Filtros" button carries no
+      // badge (`FiltersButton.activeCount == 0`).
+      expect(
+        $.tester.widget<FiltersButton>(find.byType(FiltersButton)).activeCount,
+        0,
       );
-      await $.tester.pumpAndSettle();
-      await $.tester.tap(budgetChip);
-      await $.tester.pumpAndSettle();
-      expect(find.text('Filtrar por presupuesto'), findsOneWidget);
 
-      // Criterio 2: the sheet lists the active budget with its name — pick
-      // it and apply.
+      await $.tester.tap(find.text('Filtros'));
+      await $.tester.pumpAndSettle();
+      // Criterion #5: fixed section order starts with Presupuesto, which is
+      // rendered since there is one active budget (criterion #6).
+      expect(find.text('PRESUPUESTO'), findsOneWidget);
+      // Criterion #9: no Presupuesto is selected yet, so Fecha is not locked.
+      expect(find.byIcon(LucideIcons.lock), findsNothing);
+
+      // Criterion #7: picking the budget applies it in the sheet's own
+      // working state.
       await $.tester.tap(find.text('Comida del mes'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Aplicar'));
       await $.tester.pumpAndSettle();
 
-      // Criterio 3: the chip now shows the chosen budget's own name instead
-      // of the generic label — and Fecha stayed exactly as it was
-      // (independent chips, neither replaces the other).
-      await _expectEventually($, find.text('Comida del mes'), findsOneWidget);
-      expect(find.text('Presupuesto'), findsNothing);
-      expect(find.text(dateChipLabelBefore), findsOneWidget);
+      // Criterion #4: exactly one dimension (Presupuesto) is now active.
+      await _expectEventually(
+        $,
+        find.byWidgetPredicate(
+          (widget) => widget is FiltersButton && widget.activeCount == 1,
+        ),
+        findsOneWidget,
+      );
+
+      // Criterion #11: reopening the sheet seeds the already-applied budget
+      // as its working value, and criterion #9's locked treatment now shows.
+      await $.tester.tap(find.text('Filtros'));
+      await $.tester.pumpAndSettle();
+      expect(find.byIcon(LucideIcons.lock), findsOneWidget);
+      expect(
+        find.text('No puedes filtrar por fecha con un presupuesto activo'),
+        findsOneWidget,
+      );
     },
   );
 
@@ -1298,19 +1302,4 @@ void main() {
       );
     },
   );
-}
-
-/// The Fecha chip's current label (`datePeriodLabel`, e.g. "Agosto 2026"):
-/// the calendar-icon `FilterChipPill` immediately to the right of the
-/// account chip, on `TransactionsFilterBar`. Not a hardcoded string — the
-/// label depends on the device's current month, unlike the fixed "Este mes"
-/// placeholder text that only appears in `DateFilterSheet`'s own field, never
-/// on the chip itself (see `datePeriodLabel`'s own doc comment).
-String _dateChipText(PatrolIntegrationTester $) {
-  final chip = $.tester.widget<FilterChipPill>(
-    find.byWidgetPredicate(
-      (widget) => widget is FilterChipPill && widget.leadingIcon == LucideIcons.calendar,
-    ),
-  );
-  return chip.label;
 }

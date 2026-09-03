@@ -42,6 +42,7 @@ class HomePage extends StatefulWidget {
     required this.onOpenBudget,
     required this.onOpenAccounts,
     required this.onOpenAccountMovements,
+    required this.onAddAccount,
     required this.onOpenScheduledPayments,
     required this.onOpenDebts,
     required this.onOpenReports,
@@ -75,6 +76,12 @@ class HomePage extends StatefulWidget {
   /// Criterion 4: tapping a row in the "Tu dinero" balances sheet opens
   /// Movimientos filtered to that account only — never an account detail.
   final ValueChanged<String> onOpenAccountMovements;
+
+  /// The "Tu dinero" empty state's CTA (GH-24): with no active account, the
+  /// sheet closes itself before this fires — same as [onOpenAccountMovements]
+  /// — and points to the same new-account form the account gate (`15-gate-
+  /// cuenta.md`) and Cuentas' own empty state already use.
+  final VoidCallback onAddAccount;
 
   final VoidCallback onOpenScheduledPayments;
   final VoidCallback onOpenDebts;
@@ -224,6 +231,7 @@ class _HomePageState extends State<HomePage> {
       context,
       accounts: state.accounts,
       onOpenAccountMovements: widget.onOpenAccountMovements,
+      onAddAccount: widget.onAddAccount,
     );
   }
 

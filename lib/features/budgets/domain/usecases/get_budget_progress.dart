@@ -155,7 +155,13 @@ class GetBudgetProgress {
       consumed.add(id);
       activity.add(
         BudgetActivityItem(
-          id: id,
+          // Bugfix (issue #7 item 4): a lone destination-side row (only the
+          // transfer's destination account is in this budget's scope, so it
+          // never gets netted above) still carries the synthetic `-dest`
+          // suffix in its id — strip it back to the real `Transaction` id,
+          // or tapping the row to open its detail resolves nothing and
+          // surfaces as an error (`NotFoundFailure`, the id never existed).
+          id: baseId,
           title: detail.title,
           accountName: detail.accountName,
           categoryIcon: detail.categoryIcon,

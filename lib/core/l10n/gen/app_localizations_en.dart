@@ -52,6 +52,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClear => 'Clear';
 
   @override
+  String get commonClearAll => 'Clear all';
+
+  @override
   String get commonConfirm => 'Confirm';
 
   @override
@@ -692,6 +695,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsSearchHint => 'Search by note';
 
   @override
+  String get transactionsPeriodTotalLabel => 'Period total';
+
+  @override
   String get transactionsLoading => 'Loading transactions';
 
   @override
@@ -734,9 +740,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsFilterBudget => 'Budget';
-
-  @override
-  String get transactionsPeriodTotalLabel => 'Period total';
 
   @override
   String get transactionsSortDateDesc => 'Most recent first';
@@ -1129,6 +1132,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get budgetPeriodFilterEmptyMessage =>
       'You don\'t have any active budgets';
+
+  @override
+  String get transactionsUnifiedFiltersTitle => 'Filters';
+
+  @override
+  String get transactionsFiltersButtonLabel => 'Filters';
+
+  @override
+  String get transactionsFilterSectionBudget => 'BUDGET';
+
+  @override
+  String get transactionsFilterBudgetNone => 'None';
+
+  @override
+  String get transactionsFilterSectionDate => 'DATE';
+
+  @override
+  String get transactionsFilterDateLockedByBudget =>
+      'You can\'t filter by date with an active budget';
+
+  @override
+  String get transactionsFilterSectionType => 'TYPE';
+
+  @override
+  String get transactionsFilterSectionCategory => 'CATEGORY';
+
+  @override
+  String get transactionsFilterSectionTag => 'TAG';
+
+  @override
+  String get transactionsFilterTagEmpty => 'You don\'t have any tags yet';
 
   @override
   String get dateFilterWeek => 'Week';

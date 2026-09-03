@@ -24,12 +24,11 @@ class AiCardChips extends StatelessWidget {
   final ValueChanged<String?> onAskQuestion;
   final VoidCallback onCreateBudget;
 
-  /// `AiQuestionChip`'s own vertical padding (14 top + 14 bottom) plus one
-  /// line of its `bodySmall` label (measured ~45px) — see the call site's
-  /// comment for why every chip is forced to this height instead of sizing
-  /// to its own content. Rounded up 1px from the measured value so no
-  /// platform/pixel-ratio variance clips the single line.
-  static const double _chipHeight = 46;
+  /// Caps each chip's width in the scroll row so a long label wraps to a
+  /// 2nd line instead of growing indefinitely wide. This is `tMqvn`'s (AI
+  /// Question Chip) own authored default width in Pencil (`billetudo.pen`,
+  /// verified via `Get('tMqvn')`) — not an invented Flutter constant.
+  static const double _chipMaxWidth = 314;
 
   @override
   Widget build(BuildContext context) {
@@ -81,47 +80,44 @@ class AiCardChips extends StatelessWidget {
         const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Row(
-            // Fixed, not `IntrinsicHeight`: `AiQuestionChip` measures its
-            // own label with a `LayoutBuilder`, and `LayoutBuilder` cannot
-            // answer an intrinsic-height query (Flutter throws at layout
-            // time — confirmed live). `_chipHeight` reserves room for the
-            // label's single line (`AiQuestionChip.maxLines`) plus its
-            // vertical padding, so every chip renders at the same height.
-            children: [
-              SizedBox(
-                height: _chipHeight,
-                child: AiQuestionChip(
+          // `IntrinsicHeight` + `CrossAxisAlignment.stretch`: the chip
+          // prefers 1 line (44px), but if any visible chip needs 2 lines,
+          // every chip in the row shares that taller height instead of
+          // mixed heights (issue #22's "regla de altura dinámica por fila",
+          // `design-system/billetudo/pages/inicio.md`). This only works
+          // because `AiQuestionChip.maxWidth` is set below — a `chip` sized
+          // via its internal `LayoutBuilder` cannot answer the intrinsic
+          // query `IntrinsicHeight` needs (Flutter throws at layout time).
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AiQuestionChip(
                   label: l10n.homeAiChipMonthProgress,
                   onTap: () => onAskQuestion(l10n.homeAiChipMonthProgress),
+                  maxWidth: _chipMaxWidth,
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: _chipHeight,
-                child: AiQuestionChip(
+                const SizedBox(width: 8),
+                AiQuestionChip(
                   label: l10n.homeAiChipGoalsSaved,
                   onTap: () => onAskQuestion(l10n.homeAiChipGoalsSaved),
+                  maxWidth: _chipMaxWidth,
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: _chipHeight,
-                child: AiQuestionChip(
+                const SizedBox(width: 8),
+                AiQuestionChip(
                   label: l10n.homeAiChipBiggestSpend,
                   onTap: () => onAskQuestion(l10n.homeAiChipBiggestSpend),
+                  maxWidth: _chipMaxWidth,
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: _chipHeight,
-                child: AiQuestionChip(
+                const SizedBox(width: 8),
+                AiQuestionChip(
                   label: l10n.homeAiChipBudgetHelp,
                   isDirectNav: budgetChipIsDirectNav,
                   onTap: onCreateBudget,
+                  maxWidth: _chipMaxWidth,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

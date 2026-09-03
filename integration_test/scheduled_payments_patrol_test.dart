@@ -532,6 +532,63 @@ void main() {
   );
 
   patrolTest(
+    'bugfix scheduled-payment-skip-finish: un `once` omitido queda '
+    'Terminada (sin mostrar PAGO EJECUTADO) y recuperarlo lo vuelve Activa',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Ocio');
+
+      _goToScheduledPayments($);
+      await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
+      await _openNewScheduledPaymentForm($);
+      await _enterAmount($, [2, 0, 0]); // $200 COP
+      await _pickAccountField($, 'Cuenta', 'Efectivo');
+      await _pickCategory($, 'Ocio');
+      await $.tester.tap(find.text('Único'));
+      await $.tester.pumpAndSettle();
+      await _enterNote($, 'Boleto concierto');
+      await _submitScheduledPaymentForm($);
+
+      await $.tester.tap(find.text('Boleto concierto'));
+      await $.tester.pumpAndSettle();
+
+      // Same deterministic path as the recurring skip scenario above:
+      // "Confirmar ahora" materializes the template's single occurrence
+      // regardless of its actual `nextDate`.
+      expect(find.text('Activa'), findsOneWidget);
+      await $.tester.tap(find.text('Confirmar ahora'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Omitir'));
+      await $.tester.pumpAndSettle();
+
+      // Criteria 1/2: a skipped `once`'s only occurrence reads as done —
+      // the ficha says "Terminada", not "Activa" — but the hero never
+      // claims the payment was executed (skip ≠ confirm: no transaction was
+      // ever generated for it).
+      expect(find.text('Omitido'), findsOneWidget);
+      expect(find.text('Recuperar'), findsOneWidget);
+      expect(find.text('Terminada'), findsOneWidget);
+      expect(find.text('Activa'), findsNothing);
+      expect(find.text('PAGO EJECUTADO'), findsNothing);
+
+      await _scrollUntilVisible($, find.text('Recuperar'));
+      await $.tester.tap(find.text('Recuperar'));
+      await _expectSnackbar($, 'Pago recuperado');
+      await $.tester.pumpAndSettle();
+
+      // Criterio 3: recovering brings the template back to life — the
+      // occurrence is `pending` again, so "Estado" reads "Pendiente de
+      // confirmar" (same as the recurring skip/recover scenario above),
+      // never the terminal "Terminada" it just left.
+      expect(find.text('Omitido'), findsNothing);
+      expect(find.text('Terminada'), findsNothing);
+      expect(find.text('Pendiente de confirmar'), findsOneWidget);
+    },
+  );
+
+  patrolTest(
     'HU-05: eliminar un pago programado pide confirmación y lo quita del '
     'listado activo',
     ($) async {

@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/category_node.dart';
 import '../utils/category_appearance.dart';
+import 'category_edit_root_button.dart';
 import 'category_subrow.dart';
 
 /// A root row of the accordion (`bA51N`): icon+color, name, subcategory
@@ -71,35 +72,57 @@ class CategoryAccordionRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  // `Mid` (`ETaEm`): name (`S8jFjl`, textGrowth:fixed-width
+                  // + width:fill_container, wraps for real instead of
+                  // truncating — issue #21) stacked above the subcategory
+                  // count (`w1iAeB`).
                   Expanded(
-                    child: Text(
-                      root.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          root.name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            height: 1.3,
+                          ),
+                        ),
+                        if (node.hasSubcategories) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.categorySubcategoryCount(
+                                node.subcategoryCount),
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: colors.textSecondary),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  if (node.hasSubcategories)
-                    Text(
-                      l10n.categorySubcategoryCount(node.subcategoryCount),
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: colors.textSecondary),
-                    ),
-                  if (onEditRoot != null)
-                    IconButton(
-                      onPressed: onEditRoot,
+                  if (onEditRoot != null) ...[
+                    const SizedBox(width: 8),
+                    CategoryEditRootButton(
+                      onPressed: onEditRoot!,
                       tooltip: l10n.commonEdit,
-                      icon:
-                          Icon(LucideIcons.pencil, color: colors.textSecondary),
-                      visualDensity: VisualDensity.compact,
                     ),
-                  AnimatedRotation(
-                    turns: expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(LucideIcons.chevronDown,
-                        color: colors.textSecondary),
+                  ],
+                  const SizedBox(width: 8),
+                  // `Chevron Hit Area` (`z2UPvH`): 44x44 box around the
+                  // 20x20 icon so its tap target meets the minimum, even
+                  // though the whole row already toggles via the outer
+                  // `InkWell`.
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                      child: AnimatedRotation(
+                        turns: expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(LucideIcons.chevronDown,
+                            color: colors.textSecondary),
+                      ),
+                    ),
                   ),
                 ],
               ),

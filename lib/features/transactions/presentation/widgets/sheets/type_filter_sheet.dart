@@ -53,6 +53,10 @@ class _TypeFilterSheetState extends State<TypeFilterSheet> {
       TransactionType.income: l10n.transactionTypeIncome,
       TransactionType.transfer: l10n.transactionTypeTransfer,
     };
+    // A dot, not translatable text — separates "Todas"/"Ninguna" in the
+    // header actions. Kept as a computed value, never a raw literal inside
+    // the widget tree.
+    const headerActionsSeparator = ' · ';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,7 +73,7 @@ class _TypeFilterSheetState extends State<TypeFilterSheet> {
               onTap: () => setState(() => _selected.addAll(_typeOrder)),
             ),
             Text(
-              ' · ',
+              headerActionsSeparator,
               style: Theme.of(context)
                   .textTheme
                   .labelLarge

@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/core/widgets/empty_state.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/home/presentation/widgets/balance_mini_card.dart';
@@ -281,6 +282,58 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'GH-24: sin ninguna cuenta activa, la hoja muestra el Empty State de '
+      'Cuentas (mismo copy) en vez de quedar vacía', (tester) async {
+    await tester.pumpHomeWidget(sheet(const []));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(BalancesSheet)),
+    );
+
+    expect(find.byType(EmptyState), findsOneWidget);
+    expect(find.text(l10n.accountsEmptyMessage), findsOneWidget);
+    expect(find.text(l10n.accountsAdd), findsOneWidget);
+    expect(find.byType(BalanceMiniCard), findsNothing);
+  });
+
+  testWidgets(
+      'GH-24: el CTA del Empty State cierra la hoja y luego dispara '
+      'onAddAccount, igual que el tap de una fila cierra antes de navegar',
+      (tester) async {
+    var addAccountTapped = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('es'),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => BalancesSheet.show(
+                context,
+                accounts: const [],
+                onAddAccount: () => addAccountTapped = true,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(BalancesSheet)),
+    );
+    await tester.tap(find.text(l10n.accountsAdd));
+    await tester.pumpAndSettle();
+
+    expect(addAccountTapped, isTrue);
+    expect(find.byType(BalancesSheet), findsNothing);
   });
 
   testWidgets('tema oscuro: renderiza sin excepción (HU-11)', (tester) async {

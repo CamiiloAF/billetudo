@@ -150,8 +150,17 @@ class TransactionsLocalDatasource {
           TransactionOrderBy.amountAsc =>
             OrderingTerm.asc(_db.transactions.amountMinor),
         },
-        // Stable tiebreaker: also keeps every fanned-out tag row of the same
-        // transaction contiguous, which [_groupByTransaction] relies on.
+        // Stable tiebreaker: `date` is a user-facing calendar value, so two
+        // transactions created moments apart (e.g. a manual entry and a
+        // scheduled-payment confirmation, both landing on "today") can share
+        // the exact same `date` — one of them may even be midnight, since the
+        // date picker sheet and occurrence dates carry no time-of-day. Break
+        // ties by actual insertion order (`createdAt`, always a real
+        // timestamp) instead of `id`, whose UUID ordering is arbitrary and
+        // unrelated to when the row was created. This also keeps every
+        // fanned-out tag row of the same transaction contiguous, which
+        // [_groupByTransaction] relies on.
+        OrderingTerm.desc(_db.transactions.createdAt),
         OrderingTerm.asc(_db.transactions.id),
       ]);
 

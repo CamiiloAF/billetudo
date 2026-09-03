@@ -363,12 +363,19 @@ class ScheduledPaymentFormBody extends StatelessWidget {
         ),
         if (state.showRecurrenceOptions) ...[
           const SizedBox(height: 8),
-          ScheduledPaymentDateField(
-            label: l10n.scheduledPaymentFormEndDateLabel,
-            date: state.endDate,
-            placeholder: l10n.scheduledPaymentFormEndDateNone,
-            onChanged: cubit.endDateChanged,
-            onCleared: () => cubit.endDateChanged(null),
+          KeyedSubtree(
+            key: errorScroll.keyFor(ScheduledPaymentDraft.fieldEndDate),
+            child: ScheduledPaymentDateField(
+              label: l10n.scheduledPaymentFormEndDateLabel,
+              date: state.endDate,
+              placeholder: l10n.scheduledPaymentFormEndDateNone,
+              onChanged: cubit.endDateChanged,
+              onCleared: () => cubit.endDateChanged(null),
+              errorText:
+                  state.failedField == ScheduledPaymentDraft.fieldEndDate
+                      ? l10n.budgetErrorEndDate
+                      : null,
+            ),
           ),
         ],
         const SizedBox(height: 16),

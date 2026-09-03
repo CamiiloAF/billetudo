@@ -52,6 +52,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonClear => 'Limpiar';
 
   @override
+  String get commonClearAll => 'Limpiar todo';
+
+  @override
   String get commonConfirm => 'Confirmar';
 
   @override
@@ -694,6 +697,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsSearchHint => 'Buscar por nota';
 
   @override
+  String get transactionsPeriodTotalLabel => 'Total del período';
+
+  @override
   String get transactionsLoading => 'Cargando movimientos';
 
   @override
@@ -737,9 +743,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionsFilterBudget => 'Presupuesto';
-
-  @override
-  String get transactionsPeriodTotalLabel => 'Total del período';
 
   @override
   String get transactionsSortDateDesc => 'Más recientes primero';
@@ -1130,6 +1133,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetPeriodFilterEmptyMessage => 'No tienes presupuestos activos';
+
+  @override
+  String get transactionsUnifiedFiltersTitle => 'Filtros';
+
+  @override
+  String get transactionsFiltersButtonLabel => 'Filtros';
+
+  @override
+  String get transactionsFilterSectionBudget => 'PRESUPUESTO';
+
+  @override
+  String get transactionsFilterBudgetNone => 'Ninguno';
+
+  @override
+  String get transactionsFilterSectionDate => 'FECHA';
+
+  @override
+  String get transactionsFilterDateLockedByBudget =>
+      'No puedes filtrar por fecha con un presupuesto activo';
+
+  @override
+  String get transactionsFilterSectionType => 'TIPO';
+
+  @override
+  String get transactionsFilterSectionCategory => 'CATEGORÍA';
+
+  @override
+  String get transactionsFilterSectionTag => 'ETIQUETA';
+
+  @override
+  String get transactionsFilterTagEmpty => 'Aún no tienes etiquetas';
 
   @override
   String get dateFilterWeek => 'Semana';

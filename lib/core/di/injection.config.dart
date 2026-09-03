@@ -817,6 +817,8 @@ import 'package:billetudo/features/transactions/presentation/cubit/transaction_f
     as _i724;
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart'
     as _i536;
+import 'package:billetudo/features/transactions/presentation/cubit/unified_filters_cubit.dart'
+    as _i929;
 import 'package:billetudo/features/tutorials/data/datasources/tutorial_views_local_datasource.dart'
     as _i808;
 import 'package:billetudo/features/tutorials/data/repositories/tutorials_repository_impl.dart'
@@ -1290,6 +1292,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
         () => _i121.WatchTags(gh<_i716.TagRepository>()));
+    gh.factory<_i929.UnifiedFiltersCubit>(() => _i929.UnifiedFiltersCubit(
+          gh<_i722.WatchCategories>(),
+          gh<_i121.WatchTags>(),
+        ));
     gh.lazySingleton<_i173.LocalDataWipeDatasource>(
         () => _i173.LocalDataWipeDatasource(
               gh<_i433.PowerSyncDatabase>(),

@@ -65,21 +65,29 @@ abstract final class ScheduledPaymentOccurrenceMapper {
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
-  /// HU-03: discards a pending/snoozed occurrence.
+  /// HU-03: discards a pending/snoozed occurrence. Clears `snoozedToDate`
+  /// too: a row can arrive here already snoozed (skipping a postponed
+  /// occurrence), and a `skipped` row carrying a stale snoozed date is an
+  /// inconsistent state even though nothing reads it directly today.
   static db.ScheduledPaymentOccurrencesCompanion skipCompanion({
     required DateTime now,
   }) =>
       db.ScheduledPaymentOccurrencesCompanion(
         status: const Value(db.ScheduledOccurrenceStatus.skipped),
+        snoozedToDate: const Value(null),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 
-  /// Undo for [skipCompanion]: returns to `pending`.
+  /// Undo for [skipCompanion]: returns to `pending`. Also clears
+  /// `snoozedToDate` so that "Recuperar" on an occurrence that was snoozed
+  /// before being skipped restores its real `occurrenceDate`, not the old
+  /// postponed date.
   static db.ScheduledPaymentOccurrencesCompanion undoSkipCompanion({
     required DateTime now,
   }) =>
       db.ScheduledPaymentOccurrencesCompanion(
         status: const Value(db.ScheduledOccurrenceStatus.pending),
+        snoozedToDate: const Value(null),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 

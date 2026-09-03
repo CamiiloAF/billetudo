@@ -41,6 +41,8 @@ void main() {
     bool pending = false,
     ScheduledPaymentLinkedDebt? linkedDebt,
     ScheduledPaymentLinkedGoal? linkedGoal,
+    int? generatedTransactionCountOverride,
+    int? resolvedOccurrenceCountOverride,
   }) {
     final payment = buildScheduledPayment(
       frequency: frequency,
@@ -54,8 +56,13 @@ void main() {
       categoryName: 'Suscripciones',
       historyTotalCount: historyTotalCount,
       // These tests treat the total as generated transactions (no skipped
-      // events), so `once`'s "already fired" fact keys off the same number.
-      generatedTransactionCount: historyTotalCount,
+      // events), so `once`'s "already fired"/"already resolved" facts key
+      // off the same number — unless a test overrides them to diverge
+      // (a skipped `once`: resolved, but never generated).
+      generatedTransactionCount:
+          generatedTransactionCountOverride ?? historyTotalCount,
+      resolvedOccurrenceCount:
+          resolvedOccurrenceCountOverride ?? historyTotalCount,
       pendingOccurrence:
           pending ? buildPendingOccurrence(scheduledPayment: payment) : null,
       linkedDebt: linkedDebt,
@@ -154,6 +161,31 @@ void main() {
     expect(find.text('Terminada'), findsOneWidget);
     expect(find.text('Activa'), findsNothing);
     expect(find.textContaining('Una sola vez el 26 de julio'), findsOneWidget);
+  });
+
+  testWidgets(
+      'once omitido (resuelto pero no generado): la ficha dice Terminada, '
+      'pero el hero sigue mostrando PRÓXIMO PAGO — nunca PAGO EJECUTADO '
+      '(omitir no es ejecutar)', (tester) async {
+    await pumpDetail(
+      tester,
+      ScheduledPaymentDetailState(
+        status: ScheduledPaymentDetailStatus.ready,
+        detail: buildDetail(
+          frequency: ScheduledPaymentFrequency.once,
+          nextDate: DateTime(2026, 7, 26),
+          historyTotalCount: 1,
+          // Skipped, not confirmed: the occurrence is resolved (so the
+          // template is done) but no transaction was ever generated.
+          generatedTransactionCountOverride: 0,
+          resolvedOccurrenceCountOverride: 1,
+        ),
+      ),
+    );
+
+    expect(find.text('Terminada'), findsOneWidget);
+    expect(find.text('Activa'), findsNothing);
+    expect(find.text('PAGO EJECUTADO'), findsNothing);
   });
 
   testWidgets('la sección de historial se llama "Historial"', (tester) async {

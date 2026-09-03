@@ -58,6 +58,24 @@ class TransactionFilter extends Equatable {
   bool get hasTagFilter => tagIds.isNotEmpty;
   bool get hasBudgetPeriodFilter => budgetPeriod != null;
 
+  /// HU-06b: unlike the other dimensions, [datePeriod] is never "empty" —
+  /// its default is always the current month
+  /// ([DatePeriodFilter.thisMonth]). "Active" here means "not that default",
+  /// which is what flips the Fecha chip/badge on.
+  bool get hasDateFilter => datePeriod != DatePeriodFilter.thisMonth();
+
+  /// Issue #7: sum of dimensions with an active filter, used for the
+  /// unified filters sheet's badge. [searchText] and [sortOrder] are
+  /// deliberately excluded — they are not filters shown in that sheet.
+  int get activeFilterCount => <bool>[
+        hasAccountFilter,
+        hasBudgetPeriodFilter,
+        hasDateFilter,
+        hasTypeFilter,
+        hasCategoryFilter,
+        hasTagFilter,
+      ].where((isActive) => isActive).length;
+
   TransactionFilter copyWith({
     String? searchText,
     Set<String>? accountIds,

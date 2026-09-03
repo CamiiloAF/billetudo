@@ -129,15 +129,17 @@ class ScheduledPayment extends Equatable {
   /// Whether the template still generates future occurrences (feeds HU-04's
   /// "Activos · N" and the active list).
   ///
-  /// [onceAlreadyGenerated] must be supplied by the caller (the repository),
-  /// since a `once` template has no column of its own recording it fired —
-  /// that fact lives in the `ScheduledPaymentOccurrences` ledger as a
-  /// `confirmed` row for this template.
-  bool isActive({required bool onceAlreadyGenerated}) {
+  /// [onceAlreadyResolved] must be supplied by the caller (the repository),
+  /// since a `once` template has no column of its own recording whether its
+  /// single occurrence has been resolved — that fact lives in the
+  /// `ScheduledPaymentOccurrences` ledger as a `confirmed` OR `skipped` row
+  /// for this template. A skipped `once` is done (revivable only via
+  /// "Recuperar"), so it counts as resolved too, not just a confirmed one.
+  bool isActive({required bool onceAlreadyResolved}) {
     if (isDeleted) {
       return false;
     }
-    if (frequency == ScheduledPaymentFrequency.once && onceAlreadyGenerated) {
+    if (frequency == ScheduledPaymentFrequency.once && onceAlreadyResolved) {
       return false;
     }
     final endDate = this.endDate;
