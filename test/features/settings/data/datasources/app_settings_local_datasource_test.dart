@@ -26,29 +26,34 @@ void main() {
 
   tearDown(() async => database.close());
 
-  Future<void> writeRawOrder(String? raw) => database
-      .into(database.appSettings)
-      .insertOnConflictUpdate(
-        db.AppSettingsCompanion.insert(
-          id: const Value(AppSettingsLocalDatasource.singletonId),
-          quickAccessOrder: Value(raw),
-        ),
-      );
+  Future<void> writeRawOrder(String? raw) =>
+      database.into(database.appSettings).insertOnConflictUpdate(
+            db.AppSettingsCompanion.insert(
+              id: const Value(AppSettingsLocalDatasource.singletonId),
+              quickAccessOrder: Value(raw),
+            ),
+          );
 
   test('persists a valid order and reads it back identically', () async {
     const order = [
       QuickAccessItem.debts,
       QuickAccessItem.reports,
       QuickAccessItem.scheduledPayments,
+      QuickAccessItem.accounts,
+      QuickAccessItem.goals,
     ];
 
     await datasource.setQuickAccessOrder(order: order, now: DateTime.now());
 
     final row = await datasource.readSettings();
-    expect(row!.quickAccessOrder, 'debts,reports,scheduledPayments');
+    expect(
+      row!.quickAccessOrder,
+      'debts,reports,scheduledPayments,accounts,goals',
+    );
 
     final result = await repository.getSettings();
-    final settings = result.getOrElse((_) => throw StateError('expected Right'));
+    final settings =
+        result.getOrElse((_) => throw StateError('expected Right'));
     expect(settings.quickAccessOrder, order);
   });
 
@@ -57,6 +62,8 @@ void main() {
       QuickAccessItem.reports,
       QuickAccessItem.debts,
       QuickAccessItem.scheduledPayments,
+      QuickAccessItem.accounts,
+      QuickAccessItem.goals,
     ];
 
     await datasource.setQuickAccessOrder(order: order, now: DateTime.now());

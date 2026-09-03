@@ -1,99 +1,102 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/money_formatter.dart';
 import '../../../budgets/domain/entities/budget_progress.dart';
 
-/// The hero's "con presupuesto" progress bar (HU-03, frame `aOhoY`/`ls7Ed`):
-/// a track + solid fill, plus a caption row with the percent/amount on the
-/// left and the days left on the right.
+/// The hero's progress bar (`Bar Track`, `Jh0yS`, `design-system/billetudo/
+/// pages/inicio.md` § "Hero compacto"): track + one or two contiguous
+/// segments — real spend, and, whenever there is any scheduled amount, a
+/// second segment for projected scheduled-payment spend — same pattern as
+/// Budgets (issue #11): always drawn, colored by risk rather than hidden
+/// outside the risk state. `$on-primary-scheduled` when
+/// [BudgetProgress.isScheduledOverspendRisk] is false, `$on-primary-warn`
+/// when it is true (`billetudo.pen` `wm9pF`).
 ///
-/// Unlike `budgets/presentation`'s `BudgetProgressBar`, this one has **no**
-/// conditional sano/riesgo/excedido color and **no** "programado" segment —
-/// it is purely informative on top of the hero's violet gradient, so the fill
-/// always reads solid white. Do not reuse the detail-screen bar here.
+/// Purely a drawing surface: which color the spent segment takes (`$on-primary`
+/// for every state except real overspend, which tints `$on-primary-alert`) is
+/// resolved by the caller (`HomeHeroCard`) from `HomeHeroState`, never here.
 class HomeHeroBudgetProgress extends StatelessWidget {
   const HomeHeroBudgetProgress({
     required this.progress,
-    required this.currency,
+    required this.spentColor,
     super.key,
   });
 
   final BudgetProgress progress;
-  final String currency;
+
+  /// `$on-primary` in every state but real overspend (`$on-primary-alert`).
+  final Color spentColor;
+
+  /// Track/bar height and corner radius (`Jh0yS`/`YoDHh`).
+  static const double _height = 10;
+  static const double _radius = 5;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.colors;
-    final l10n = AppLocalizations.of(context);
-    const money = MoneyFormatter();
-    final fraction = progress.fraction.clamp(0.0, 1.0);
-    final onPrimary = colors.onPrimary;
+    final spentFraction = progress.fraction.clamp(0.0, 1.0);
+    final scheduledFraction = progress.scheduledFraction;
+    final hasScheduled = scheduledFraction > 0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) => Container(
-            width: constraints.maxWidth,
-            height: 8,
-            decoration: BoxDecoration(
-              color: onPrimary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: fraction,
-                child: Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: onPrimary,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final trackWidth = constraints.maxWidth;
+        final spentWidth = trackWidth * spentFraction;
+        final scheduledWidth = trackWidth * scheduledFraction;
+        // Threshold rule (criterion 8): a single segment's remaining track to
+        // its right below 2× the radius (<10px) collapses that segment's
+        // right corners to square — otherwise the fill's rounded cap and the
+        // track's own rounded cap overlap and the gap reads as antialiasing,
+        // not as "a sliver of budget left".
+        final remainder = trackWidth - spentWidth - scheduledWidth;
+        final singleSegmentFlat = !hasScheduled && remainder < _radius * 2;
+
+        return Container(
+          width: trackWidth,
+          height: _height,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: colors.trackOverlay,
+            borderRadius: BorderRadius.circular(_radius),
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                l10n.homeHeroBudgetProgress(
-                  progress.percent,
-                  money.formatSymbol(
-                    progress.amountMinor,
-                    currencyCode: currency,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                child: Container(
+                  width: spentWidth,
+                  height: _height,
+                  decoration: BoxDecoration(
+                    color: spentColor,
+                    borderRadius: BorderRadius.horizontal(
+                      left: const Radius.circular(_radius),
+                      right: hasScheduled || singleSegmentFlat
+                          ? Radius.zero
+                          : const Radius.circular(_radius),
+                    ),
                   ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: onPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              ),
+              if (hasScheduled)
+                Positioned(
+                  left: spentWidth,
+                  child: Container(
+                    width: scheduledWidth,
+                    height: _height,
+                    decoration: BoxDecoration(
+                      color: progress.isScheduledOverspendRisk
+                          ? colors.onPrimaryWarn
+                          : colors.onPrimaryScheduled,
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(_radius),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              l10n.homeHeroBudgetDaysLeft(progress.daysLeft),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: onPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

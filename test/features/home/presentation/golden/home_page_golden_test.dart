@@ -1,6 +1,8 @@
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
+import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/entities/home_snapshot.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -88,9 +90,15 @@ void main() {
           onOpenScheduledPayments: () {},
           onOpenDebts: () {},
           onOpenReports: () {},
+          onOpenGoals: () {},
           onOpenQuickAccessOrder: () {},
           onOpenLogin: () {},
           onOpenSyncStatus: () {},
+          onOpenSettings: () {},
+          onSignOut: () {},
+          onOpenAi: (_) {},
+          onOpenAiInsightQuestion: ({required question, required insightType}) async {},
+          onOpenAiConversation: (_) async {},
         ),
       ),
       brightness: brightness,
@@ -253,6 +261,141 @@ void main() {
         readyWith([buildActivity(id: 'tx-1', categoryName: 'Mercado')])
             .copyWith(status: HomeStatus.failure),
         'error_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Criterio 5/6/7/8: los 4 estados del hero que "with budget progress"
+    // (sano) no cubre — al límite, límite exacto, riesgo de sobregiro
+    // proyectado y sobregasto real. Cada uno resuelve `HomeHeroState` desde
+    // `BudgetProgress` puro, sin overrides manuales.
+    testWidgets('hero: al límite, 97% sin tinte de color ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        readyWith(
+          [buildActivity(id: 'tx-1', categoryName: 'Mercado')],
+          budgetProgress: buildHomeBudgetProgress(
+            amountMinor: 100000,
+            spentMinor: 97000,
+            daysLeft: 2,
+          ),
+        ),
+        'hero_near_limit_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'hero: en el límite exacto, 100% — solo la barra pasa a '
+        'on-primary-alert ($suffix)', (tester) async {
+      await golden(
+        tester,
+        readyWith(
+          [buildActivity(id: 'tx-1', categoryName: 'Mercado')],
+          budgetProgress: buildHomeBudgetProgress(
+            amountMinor: 100000,
+            spentMinor: 100000,
+            daysLeft: 0,
+          ),
+        ),
+        'hero_at_limit_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'hero: riesgo de sobregiro proyectado — 2 tramos + Risk Note '
+        '($suffix)', (tester) async {
+      await golden(
+        tester,
+        readyWith(
+          [buildActivity(id: 'tx-1', categoryName: 'Mercado')],
+          budgetProgress: BudgetWithProgress(
+            budget: buildHomeBudgetProgress().budget,
+            scope: buildHomeBudgetProgress().scope,
+            window: buildHomeBudgetProgress().window,
+            progress: const BudgetProgress(
+              amountMinor: 600000,
+              spentMinor: 300000,
+              scheduledMinor: 400000,
+              daysLeft: 12,
+            ),
+          ),
+        ),
+        'hero_scheduled_overspend_risk_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'hero: sobregasto real — kicker "Excedido por", monto 32px/800 + '
+        'circle-minus, barra llena ($suffix)', (tester) async {
+      await golden(
+        tester,
+        readyWith(
+          [buildActivity(id: 'tx-1', categoryName: 'Mercado')],
+          budgetProgress: buildHomeBudgetProgress(
+            amountMinor: 600000,
+            spentMinor: 700000,
+            daysLeft: 0,
+          ),
+        ),
+        'hero_overspent_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // Criterio 10: las 3 variantes de la card de IA que "with data, no
+    // session"/"with data, signed in" no cubren — con insight sin cola, con
+    // cola (contador "1 de N"), y el insight forzado "crea un presupuesto"
+    // del estado hero "sin presupuesto".
+    testWidgets('ai card: insight sin cola, con link "Ahora no" ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        readyWith([buildActivity(id: 'tx-1', categoryName: 'Mercado')])
+            .copyWith(
+          aiInsight: const HomeAiInsight(
+            type: HomeAiInsightType.spendingVsAverage,
+            percentDelta: 22,
+          ),
+        ),
+        'ai_card_insight_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets('ai card: insight con cola, contador "1 de N" ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        readyWith([buildActivity(id: 'tx-1', categoryName: 'Mercado')])
+            .copyWith(
+          aiInsight: const HomeAiInsight(
+            type: HomeAiInsightType.budgetProjectionRisk,
+            overageMinor: 45000,
+            currency: 'COP',
+            queuePosition: 1,
+            queueLength: 3,
+          ),
+        ),
+        'ai_card_insight_queue_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    testWidgets(
+        'ai card: sin presupuesto fuerza el insight "crea un presupuesto" '
+        '($suffix)', (tester) async {
+      await golden(
+        tester,
+        readyWith([buildActivity(id: 'tx-1', categoryName: 'Mercado')])
+            .copyWith(
+          hasAnyBudget: false,
+          aiInsight: const HomeAiInsight.createBudget(),
+        ),
+        'ai_card_create_budget_$suffix',
         brightness: brightness,
       );
     });

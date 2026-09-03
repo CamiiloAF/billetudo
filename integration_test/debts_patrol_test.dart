@@ -104,9 +104,21 @@ Future<void> _createCategory(
 /// resolves to the `PageHeader`'s circle button only — the empty-state CTA
 /// carries the same label as plain button text, never a `Tooltip`, so this is
 /// unambiguous whether the list is empty or already has debts.
+///
+/// Retries the tap (bounded) until `DebtAmountHeroField` actually mounts,
+/// instead of trusting a single tap: the same intermittent real-tap-miss
+/// flakiness already documented for `accounts_patrol_test.dart`'s day picker
+/// — without this, a missed tap here surfaces confusingly two calls later as
+/// "Bad state: No element" out of `_enterHeroAmount`'s `enterText`, not a
+/// clear "tooltip not found" — verified against a real emulator run.
 Future<void> _openNewDebtForm(PatrolIntegrationTester $) async {
-  await $.tester.tap(find.byTooltip('Agregar deuda'));
-  await $.tester.pumpAndSettle();
+  final heroField = find.byType(DebtAmountHeroField);
+  for (var attempt = 0;
+      attempt < 3 && heroField.evaluate().isEmpty;
+      attempt++) {
+    await $.tester.tap(find.byTooltip('Agregar deuda'));
+    await $.tester.pumpAndSettle();
+  }
 }
 
 /// Types [value] into the one `DebtAmountHeroField` on screen (the form's boxed
@@ -263,6 +275,53 @@ Future<void> _setCashToggle(
   }
 }
 
+/// Pumps frames until [finder] matches at least one widget, or a frame
+/// budget runs out. `CategorySelectSheet` shows a `CircularProgressIndicator`
+/// while `CategoriesListCubit.start` awaits its real on-device Drift stream
+/// — an infinite animation, so `pumpAndSettle` right after opening the sheet
+/// can return before the stream's first real emission ever arrives and swaps
+/// in the category list, and tapping a category by name right after that
+/// lands on "Found 0 widgets" — verified against a real emulator run. Same
+/// technique as `budget_income_counts_in_budget_patrol_test.dart`'s own
+/// `_pumpUntilFound`.
+Future<void> _pumpUntilFound(
+  PatrolIntegrationTester $,
+  Finder finder, {
+  int maxFrames = 30,
+}) async {
+  for (var i = 0; i < maxFrames && finder.evaluate().isEmpty; i++) {
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Picks [categoryName] on the abono sheet's own category field ("Elige una
+/// categoría", `debtPaymentCategoryNone`).
+///
+/// Fix 7 (`debt_payment_cubit.dart`'s own doc comment: "the category
+/// defaults to the same `DebtCategorySeed` bucket ... and
+/// `DebtPaymentState.canSubmit` requires one") made a category mandatory for
+/// every cash abono (`addToAccount: true`): the auto-default only resolves
+/// against a remote `category_seeds` catalog seeded by onboarding, which
+/// none of these scenarios run, so `categoryId` starts null and the sheet's
+/// check-icon CTA silently no-ops until one is picked here — verified
+/// against a real emulator run (the abono looked "submitted" with no error,
+/// but the balance never moved). Call this after `_setCashToggle(
+/// addToAccount: true)` and before `_submitAbono`; skip it entirely for a
+/// cash-less abono, whose category field does not even render.
+Future<void> _pickAbonoCategory(
+  PatrolIntegrationTester $,
+  String categoryName,
+) async {
+  final field = find.text('Elige una categoría');
+  await _scrollUntilVisible($, field);
+  await $.tester.tap(field);
+  await $.tester.pumpAndSettle();
+  final categoryOption = find.text(categoryName);
+  await _pumpUntilFound($, categoryOption);
+  await $.tester.tap(categoryOption);
+  await $.tester.pumpAndSettle();
+}
+
 /// Submits the abono sheet. Both the sheet's CTA and the detail's bottom bar
 /// read "Registrar abono", so text is ambiguous while the sheet is open — the
 /// sheet's CTA is the only `LucideIcons.check` in the tree at that moment (the
@@ -359,6 +418,7 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Cuotas');
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
@@ -376,6 +436,10 @@ void main() {
       // defaults to "Sí"; assert it is on rather than assuming.
       await _setCashToggle($, addToAccount: true);
       expect(find.byType(DebtSelectedAccountRow), findsOneWidget);
+      // Fix 7: a cash abono needs an explicit category (see
+      // `_pickAbonoCategory`'s own doc comment) — the seed default never
+      // resolves in this offline test project.
+      await _pickAbonoCategory($, 'Cuotas');
       await _submitAbono($);
 
       // Detail updates on its stream: outstanding dropped $600 -> $400, and the
@@ -458,6 +522,10 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      // owedToMe abonos need an income-kind category (fix 7's direction
+      // -derived seed default doesn't resolve offline — see
+      // `_pickAbonoCategory`'s doc comment).
+      await _createCategory($, 'Cobros', kind: CategoryKind.income);
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
@@ -472,6 +540,7 @@ void main() {
       await _openAbonoSheet($);
       await _enterHeroAmount($, '300'); // $300 COP recibido
       await _setCashToggle($, addToAccount: true);
+      await _pickAbonoCategory($, 'Cobros');
       await _submitAbono($);
 
       // Reducing an owedToMe debt is a "Pago recibido", not an "Abono a la
@@ -526,8 +595,14 @@ void main() {
       await _openAbonoSheet($);
       // The "¿Ya lo registraste? Enlaza un movimiento" escape hatch closes the
       // sheet and jumps into Movimientos in link mode (`DebtLinkModePage`).
+      // That page has its own minitutorial the first time it opens
+      // (`TutorialKey.debtLinkMovement`, `debt_link_mode_page.dart`'s own
+      // `TutorialAutoShow` wrapper) — skipping this dismissal swallows the
+      // very next tap/assertion behind the sheet, surfacing as "Enlazar a…"
+      // never being found — verified against a real emulator run.
       await $.tester.tap(find.byType(DebtLinkExistingButton));
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
 
       // Movimientos is now in link mode: the banner names the debt and every
       // row tap attributes that movement to it.
@@ -584,6 +659,7 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Cuotas');
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
@@ -597,6 +673,7 @@ void main() {
       await _openAbonoSheet($);
       await _enterHeroAmount($, '500'); // full payoff
       await _setCashToggle($, addToAccount: true);
+      await _pickAbonoCategory($, 'Cuotas');
       await _submitAbono($);
 
       // Settled: the raw balance hit 0 (`DebtBalance.settled`), so outstanding
@@ -696,6 +773,7 @@ void main() {
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Cuotas');
 
       _goToDebts($);
       await $.tester.pumpAndSettle();
@@ -711,6 +789,7 @@ void main() {
       await _openAbonoSheet($);
       await _enterHeroAmount($, '200');
       await _setCashToggle($, addToAccount: true);
+      await _pickAbonoCategory($, 'Cuotas');
       await _submitAbono($);
       expect(find.text(r'$800'), findsWidgets);
 
@@ -1107,6 +1186,7 @@ void main() {
       await _openAbonoSheet($);
       await $.tester.tap(find.byType(DebtLinkExistingButton));
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
 
       // In link mode the free movement is selectable and shows; the one already
       // attributed to Debt A is hidden entirely (#4), never re-linkable.
@@ -1137,6 +1217,7 @@ void main() {
       await _openAbonoSheet($);
       await $.tester.tap(find.byType(DebtLinkExistingButton));
       await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
 
       // Title names the debt WITHOUT the "· Yo debo" suffix (banner uses
       // `debt.name`, not the debtContext), and the body is the "Elige…" prompt.

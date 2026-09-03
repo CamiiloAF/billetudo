@@ -689,7 +689,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsTitle => 'Transactions';
 
   @override
-  String get transactionsSearchHint => 'Search by note or category';
+  String get transactionsSearchHint => 'Search by note';
 
   @override
   String get transactionsLoading => 'Loading transactions';
@@ -734,6 +734,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsFilterBudget => 'Budget';
+
+  @override
+  String get transactionsPeriodTotalLabel => 'Period total';
 
   @override
   String get transactionsSortDateDesc => 'Most recent first';
@@ -1181,11 +1184,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navMore => 'More';
 
   @override
-  String get homeGreeting => 'Welcome back';
+  String get homeGreeting => 'Hi 👋';
 
   @override
   String homeGreetingNamed(String name) {
-    return 'Welcome back, $name';
+    return 'Hi, $name 👋';
   }
 
   @override
@@ -1312,6 +1315,190 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
+
+  @override
+  String get homeAccountAvatarNoAccount => 'No cloud backup';
+
+  @override
+  String get homeWalletTooltip => 'Your money';
+
+  @override
+  String get homeHeroOverspentKicker => 'Over by';
+
+  @override
+  String get homeHeroRemainingKicker => 'You have left';
+
+  @override
+  String homeHeroMetaDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHeroRiskNote(String amount) {
+    return 'Could exceed by $amount';
+  }
+
+  @override
+  String get homeHeroNoBudgetEverCreatedNote => 'No active budget this month';
+
+  @override
+  String get homeHeroNoBudgetFeaturedNote => 'No budget featured this month';
+
+  @override
+  String get homeAiCardTitle => 'Ask Billetudo';
+
+  @override
+  String get homeAiCardSubtitle => 'Understand your money in seconds';
+
+  @override
+  String get homeAiChipMonthProgress => 'How am I doing this month?';
+
+  @override
+  String get homeAiChipGoalsSaved => 'How much have I saved toward my goals?';
+
+  @override
+  String get homeAiChipBiggestSpend => 'Where did most of my money go?';
+
+  @override
+  String get homeAiChipBudgetHelp => 'Help me budget';
+
+  @override
+  String get homeAiInsightCreateBudgetKicker => 'New to Billetudo';
+
+  @override
+  String get homeAiInsightCreateBudgetTitle => 'Budget so you don\'t overspend';
+
+  @override
+  String get homeAiInsightCreateBudgetMeta =>
+      'You\'ll see what\'s left of your month';
+
+  @override
+  String get homeAiInsightProjectionKicker => 'Budget projection';
+
+  @override
+  String get homeAiInsightProjectionTitle =>
+      'You could exceed your budget this month';
+
+  @override
+  String homeAiInsightProjectionMeta(String amount) {
+    return 'With your scheduled payments you could exceed by $amount';
+  }
+
+  @override
+  String get homeAiInsightAverageKicker => 'Compared to your average';
+
+  @override
+  String homeAiInsightAverageTitleUp(int percent) {
+    return 'You\'re $percent% above your average this month';
+  }
+
+  @override
+  String homeAiInsightAverageTitleDown(int percent) {
+    return 'You\'re $percent% below your average this month';
+  }
+
+  @override
+  String get homeAiInsightAverageMeta => 'Compared to the last 3 months';
+
+  @override
+  String homeAiInsightQueueCounter(int position, int total) {
+    return '$position of $total';
+  }
+
+  @override
+  String get homeAiInsightContinueChip => 'Continue the conversation';
+
+  @override
+  String get homeAiInsightProjectionChip => 'Adjust my budget';
+
+  @override
+  String get homeAiInsightProjectionQuestion =>
+      'How can I avoid going over my projected budget this month?';
+
+  @override
+  String get homeAiInsightAverageUpChip => 'Understand this increase';
+
+  @override
+  String get homeAiInsightAverageUpQuestion =>
+      'Why did I spend more this month than my recent average?';
+
+  @override
+  String get homeAiInsightAverageDownChip => 'See this saving';
+
+  @override
+  String get homeAiInsightAverageDownQuestion =>
+      'What did I do differently this month to spend less than my average?';
+
+  @override
+  String get homeAiInsightDismiss => 'Not now';
+
+  @override
+  String get homeAiBetaSheetTitle => 'Conversation in beta';
+
+  @override
+  String get homeAiBetaSheetMessage =>
+      'You don\'t have access to chat with Billetudo yet. Keep exploring the app while it opens up to more people.';
+
+  @override
+  String get homeBalancesSheetTitle => 'Your money';
+
+  @override
+  String get homeBalancesSheetTotalLabel => 'YOUR MONEY';
+
+  @override
+  String get homeBalancesSheetExcludesNote =>
+      'Does not include credit cards or investments';
+
+  @override
+  String homeBalancesSheetCurrencyCount(String currency, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$currency · $_temp0';
+  }
+
+  @override
+  String get homeAccountSheetTitle => 'Your account';
+
+  @override
+  String get homeAccountSheetSyncedTitle => 'Everything is synced';
+
+  @override
+  String get homeAccountSheetSyncedKicker => 'All good';
+
+  @override
+  String get homeAccountSheetSyncedBody =>
+      'Your data is backed up and up to date in the cloud.';
+
+  @override
+  String get homeAccountSheetOfflineTitle => 'No connection';
+
+  @override
+  String get homeAccountSheetOfflineKicker => 'Something needs your attention';
+
+  @override
+  String get homeAccountSheetOfflineBody =>
+      'We\'ll sync automatically once you\'re back online.';
+
+  @override
+  String get homeAccountSheetNoAccountTitle => 'Back up your data';
+
+  @override
+  String get homeAccountSheetNoAccountBody =>
+      'Sign in so you don\'t lose your data if you switch phones.';
+
+  @override
+  String get homeAccountSheetActivateBackup => 'Activate backup';
 
   @override
   String get homeExitConfirmTitle => 'Leave Billetudo?';
@@ -5499,10 +5686,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your data lives on your phone. Cloud backup is optional.';
 
   @override
-  String get onboardingWelcomeCaption =>
-      'We already set up some categories for you.';
-
-  @override
   String get onboardingWelcomeCta => 'Get started';
 
   @override
@@ -5851,4 +6034,376 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialBudgetFeaturedChoicePoint2Body =>
       'Open a budget and use its ⋮ menu to feature it or remove it. It\'s reversible whenever you want.';
+
+  @override
+  String get aiChatTitle => 'Billetudo';
+
+  @override
+  String get aiChatHistoryTooltip => 'History';
+
+  @override
+  String get aiChatNewConversationTooltip => 'New conversation';
+
+  @override
+  String get aiChatBetaBadge => 'Beta';
+
+  @override
+  String get aiChatDisclaimer =>
+      'AI-generated answers. This is not financial advice.';
+
+  @override
+  String get aiChatComposerHint => 'Message Billetudo…';
+
+  @override
+  String get aiChatEmptyTitle => 'Where should we start?';
+
+  @override
+  String get aiChatEmptySubtitle => 'Pick a question or write what you need.';
+
+  @override
+  String get aiChatSuggestionMonthProgress => 'How am I doing this month?';
+
+  @override
+  String get aiChatSuggestionBuildBudget => 'Help me build a budget';
+
+  @override
+  String get aiChatSuggestionGoalsSaved => 'How much have I saved in my goals?';
+
+  @override
+  String get aiChatSuggestionBiggestSpend => 'Where did most of my money go?';
+
+  @override
+  String get aiChatErrorTitle => 'I couldn\'t reply';
+
+  @override
+  String get aiChatErrorBody => 'We couldn\'t send your message. Try again.';
+
+  @override
+  String get aiChatMessageFailed => 'Couldn\'t be sent. Try again.';
+
+  @override
+  String get aiChatCopyMessage => 'Copy';
+
+  @override
+  String get aiSignedOutTitle => 'Assistant';
+
+  @override
+  String get aiSignedOutHeadline => 'Sign in to use the assistant';
+
+  @override
+  String get aiSignedOutBody =>
+      'The assistant needs your session to connect and reply. Sign in to start chatting.';
+
+  @override
+  String get aiConsentTitle => 'Before you start';
+
+  @override
+  String get aiConsentHeadline => 'Billetudo uses a Google model to answer you';
+
+  @override
+  String get aiConsentBody =>
+      'Your message and a summary of your finances (no notes or bank-identifying data) are sent to Google to generate the reply. Your account is never shared, and nothing is executed without you confirming it.';
+
+  @override
+  String get aiConsentAccept => 'Accept and continue';
+
+  @override
+  String get aiConsentDecline => 'No, thanks';
+
+  @override
+  String get aiConsentViewHistory => 'View my past conversations';
+
+  @override
+  String get aiConversationReadTitle => 'Saved conversation';
+
+  @override
+  String get aiConversationReadBannerMessage =>
+      'You\'re viewing a saved conversation. To write a new message, reactivate the assistant.';
+
+  @override
+  String get aiConversationReadReactivateCta => 'Reactivate assistant';
+
+  @override
+  String get aiConversationReadErrorTitle =>
+      'We couldn\'t load this conversation';
+
+  @override
+  String get aiHistoryTitle => 'History';
+
+  @override
+  String get aiHistoryDeleteAllTooltip => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteAllConfirm => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteOneSheetMessage =>
+      'This conversation will be permanently deleted from your history. This cannot be undone.';
+
+  @override
+  String get aiHistoryDeleteAllSheetMessage =>
+      'All your conversations with Billetudo will be permanently deleted. This cannot be undone.';
+
+  @override
+  String get aiHistoryEmptyMessage =>
+      'You don\'t have any conversations with Billetudo yet';
+
+  @override
+  String get aiHistoryEmptyCta => 'New conversation';
+
+  @override
+  String get aiHistoryErrorTitle => 'We couldn\'t load your history';
+
+  @override
+  String get aiHistoryRowDelete => 'Delete';
+
+  @override
+  String get aiHistoryRowUntitled => 'Untitled conversation';
+
+  @override
+  String get aiHistoryRowYesterday => 'Yesterday';
+
+  @override
+  String get aiProposalKickerPending => 'Suggestion';
+
+  @override
+  String get aiProposalKickerConfirmed => 'Confirmed';
+
+  @override
+  String get aiProposalKickerDismissed => 'Dismissed';
+
+  @override
+  String get aiProposalKickerFailed => 'Couldn\'t be saved';
+
+  @override
+  String get aiProposalFootnotePending => 'Nothing is saved until you confirm.';
+
+  @override
+  String get aiProposalFootnoteConfirmedTransaction =>
+      'Applied to your transactions.';
+
+  @override
+  String get aiProposalFootnoteConfirmedBudget => 'Your budget is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedGoal => 'Your goal is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedCategory =>
+      'Your category is now created.';
+
+  @override
+  String get aiProposalFootnoteDismissed => 'No changes were saved.';
+
+  @override
+  String get aiProposalFootnoteFailed =>
+      'There was a problem saving this. Your data is still safe on your device.';
+
+  @override
+  String get aiProposalActionDiscard => 'Discard';
+
+  @override
+  String get aiProposalActionConfirm => 'Confirm';
+
+  @override
+  String get aiProposalActionRetry => 'Retry';
+
+  @override
+  String get aiProposalConfirmedRowTransaction =>
+      'It\'s already in your transactions';
+
+  @override
+  String get aiProposalConfirmedRowBudget => 'Budget created';
+
+  @override
+  String get aiProposalConfirmedRowGoal => 'Goal created';
+
+  @override
+  String get aiProposalConfirmedRowCategory => 'Category created';
+
+  @override
+  String get aiProposalUnsupported =>
+      'This app version can\'t act on this suggestion yet.';
+
+  @override
+  String get aiProposalAmount => 'Amount';
+
+  @override
+  String get aiProposalPeriod => 'Period';
+
+  @override
+  String get aiProposalCategory => 'Category';
+
+  @override
+  String get aiProposalScopeAllCategories => 'All categories';
+
+  @override
+  String aiProposalScopeSomeCategories(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString categories',
+      one: '1 category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProposalGoalTarget => 'Target amount';
+
+  @override
+  String get aiProposalGoalDate => 'Target date';
+
+  @override
+  String get aiProposalGoalNoDate => 'No deadline';
+
+  @override
+  String get aiProposalCategoryType => 'Type';
+
+  @override
+  String get aiProposalCategoryScope => 'Placement';
+
+  @override
+  String get aiProposalCategoryScopeRoot => 'Main category';
+
+  @override
+  String get aiProposalCategoryScopeSub => 'Subcategory';
+
+  @override
+  String get aiProposalTransactionType => 'Type';
+
+  @override
+  String get aiProposalTransactionDate => 'Date';
+
+  @override
+  String get aiProposalTransactionAccount => 'Account';
+
+  @override
+  String get aiProposalTransactionAccountUnknown => 'Selected account';
+
+  @override
+  String get aiProposalTransactionDebt => 'Debt';
+
+  @override
+  String get aiProposalDebtUnknown => 'Selected debt';
+
+  @override
+  String get aiProposalDebtLinkExplainer =>
+      'No new movement is created and no money moves: the movement already hit your account. This only makes it count towards the debt\'s balance.';
+
+  @override
+  String get aiProposalFootnoteConfirmedDebtLink =>
+      'The movement now counts towards your debt.';
+
+  @override
+  String get aiProposalConfirmedRowDebtLink => 'Attributed to the debt';
+
+  @override
+  String get aiMessageActionReport => 'Report';
+
+  @override
+  String get aiReportSheetTitle => 'Report message';
+
+  @override
+  String get aiReportSheetMessage =>
+      'Tell us what\'s wrong with this response. It helps us improve Billetudo.';
+
+  @override
+  String get aiReportReasonOffensive => 'Offensive';
+
+  @override
+  String get aiReportReasonWrong => 'Incorrect';
+
+  @override
+  String get aiReportReasonHarmful => 'Harmful';
+
+  @override
+  String get aiReportReasonPrivacy => 'Privacy';
+
+  @override
+  String get aiReportReasonOther => 'Other';
+
+  @override
+  String get aiReportCommentLabel => 'Comment (optional)';
+
+  @override
+  String get aiReportCommentHint => 'Tell us more…';
+
+  @override
+  String get aiReportPrivacyNote =>
+      'We\'ll send this message to our team to review it. The rest of your conversation stays only on your device.';
+
+  @override
+  String get aiReportSubmit => 'Send';
+
+  @override
+  String get aiReportSuccessMessage => 'Thanks, we\'ll review this message.';
+
+  @override
+  String get aiReportErrorUnauthenticated =>
+      'You need to sign in to report a message.';
+
+  @override
+  String get aiReportErrorGeneric =>
+      'We couldn\'t send your report. Try again.';
+
+  @override
+  String get settingsAiSection => 'AI assistant';
+
+  @override
+  String get settingsAiNotesAccess => 'Let the assistant read my notes';
+
+  @override
+  String get settingsAiNotesAccessSubtitle =>
+      'Even when it\'s off, the assistant still searches your records: the search runs on your device and only structured data travels, never the text of your notes.';
+
+  @override
+  String get settingsAiNotesAccessSheetTitle =>
+      'Let the assistant read your notes?';
+
+  @override
+  String get settingsAiNotesAccessSheetMessage =>
+      'Your notes are free text: they often hold people\'s names and details of your life. If you turn this on, the note travels to Google Gemini along with your question so the assistant understands what you call things: finding “the power bill” when the note says “electricity invoice”. You can turn it off whenever you want.';
+
+  @override
+  String get settingsAiNotesAccessSheetConfirm => 'Turn on';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsPrivacyPolicySubtitle =>
+      'What data we keep, what is shared and with whom';
+
+  @override
+  String get settingsTermsOfUse => 'Terms of use';
+
+  @override
+  String get settingsTermsOfUseSubtitle => 'The rules for using Billetudo';
+
+  @override
+  String get settingsLegalLinkError =>
+      'We couldn\'t open the link. Please try again.';
+
+  @override
+  String get settingsAiConsentWithdraw => 'Withdraw AI consent';
+
+  @override
+  String get settingsAiConsentWithdrawSubtitle =>
+      'You stop sharing data with the assistant. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetTitle => 'Withdraw your consent?';
+
+  @override
+  String get settingsAiConsentWithdrawSheetMessage =>
+      'The assistant stops being available and nothing else is sent to Google Gemini. \"Let the assistant read my notes\" is turned off too. Your records and your saved conversations stay on your device. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetConfirm => 'Withdraw';
 }

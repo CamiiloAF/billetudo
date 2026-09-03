@@ -15,6 +15,20 @@ import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
+/// Cuentas is only reachable from the "Más" tab (`MorePage`'s own
+/// `MoreRow` for accountsTitle) — `QuickAccessRow`'s own doc comment
+/// says explicitly "Cuentas is not here anymore: the 'Mis cuentas' strip
+/// right below already covers that shortcut", but that strip lives on Home,
+/// not as a bottom-nav/quick-access chip reachable by tapping "Cuentas"
+/// directly. Same pattern already fixed for Categorías in
+/// `categories_patrol_test.dart`.
+Future<void> _openAccounts(PatrolIntegrationTester $) async {
+  await $.tester.tap(find.text('Más'));
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Cuentas'));
+  await $.tester.pumpAndSettle();
+}
+
 /// The "add account" app bar action's tooltip (`accountsAdd` in the arb).
 /// Tapping by icon alone is ambiguous: the empty accounts list renders its own
 /// "Agregar cuenta" CTA with the very same [LucideIcons.plus] glyph, so
@@ -158,8 +172,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
 
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
@@ -195,8 +208,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
 
@@ -248,8 +260,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Efectivo'));
@@ -290,8 +301,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Banco'));
@@ -338,8 +348,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
       await $.tester.tap(find.byTooltip(_addAccountTooltip));
       await $.tester.pumpAndSettle();
       await $.tester.tap(find.text('Efectivo'));
@@ -377,8 +386,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
 
       for (final name in ['Cuenta A', 'Cuenta B']) {
         await $.tester.tap(find.byTooltip(_addAccountTooltip));
@@ -431,8 +439,7 @@ void main() {
     ($) async {
       await startApp($);
 
-      await $.tester.tap(find.text('Cuentas'));
-      await $.tester.pumpAndSettle();
+      await _openAccounts($);
 
       for (final name in ['Primera', 'Segunda']) {
         await $.tester.tap(find.byTooltip(_addAccountTooltip));

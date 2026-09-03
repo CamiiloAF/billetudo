@@ -44,4 +44,24 @@ abstract class AppSettingsRepository {
   /// [QuickAccessItem.values] — validating that is `SetQuickAccessOrder`'s
   /// job (domain business rule), not this method's; this is a plain write.
   FutureResult<Unit> setQuickAccessOrder(List<QuickAccessItem> order);
+
+  /// Records the AI assistant's third-party data-sharing consent (Apple
+  /// 5.1.2(i)) as accepted now, stamping `currentAiConsentVersion` alongside
+  /// the timestamp in the same write. Idempotent: calling it again just moves
+  /// the timestamp forward, which is harmless since the gate checks presence
+  /// plus version, never the exact instant.
+  FutureResult<Unit> markAiConsentAccepted();
+
+  /// Withdraws that same consent (RGPD art. 7.3 — withdrawing has to be as
+  /// easy as granting): `aiConsentAcceptedAt` and `aiConsentVersion` go back
+  /// to `null`, and [AppSettings.aiNotesAccessEnabled] is forced off in the
+  /// same write, because the notes opt-in only exists inside the broad
+  /// consent and would otherwise survive as a permission the person believes
+  /// they cancelled. Idempotent: withdrawing twice is a harmless re-write.
+  FutureResult<Unit> clearAiConsent();
+
+  /// Turns the assistant's access to the records' free-text `note` on or off
+  /// ([AppSettings.aiNotesAccessEnabled]). Off by default; nothing reads a
+  /// note anywhere until this is explicitly `true`.
+  FutureResult<Unit> setAiNotesAccessEnabled({required bool enabled});
 }

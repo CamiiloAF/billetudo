@@ -6,6 +6,9 @@ import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/get_conversation_for_insight.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -19,7 +22,14 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
+import 'package:billetudo/features/home/domain/entities/month_spending.dart';
+import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
+import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_pending_scheduled_payment_count.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_state.dart';
@@ -52,6 +62,23 @@ class MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
+class MockWatchHasAnyBudget extends Mock implements WatchHasAnyBudget {}
+
+class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
+
+class MockWatchPendingScheduledPaymentCount extends Mock
+    implements WatchPendingScheduledPaymentCount {}
+
+class MockCheckAiAccess extends Mock implements CheckAiAccess {}
+
+class MockGetConversationForInsight extends Mock
+    implements GetConversationForInsight {}
+
+class MockDismissHomeInsight extends Mock implements DismissHomeInsight {}
+
+class MockRecordHomeInsightShown extends Mock
+    implements RecordHomeInsightShown {}
+
 void main() {
   late MockWatchAccounts watchAccounts;
   late MockWatchMonthTransactions watchMonthTransactions;
@@ -62,6 +89,13 @@ void main() {
   late MockWatchFeaturedBudgetProgress watchFeaturedBudgetProgress;
   late MockGetBudgetById getBudgetById;
   late MockGetBudgetProgress getBudgetProgress;
+  late MockWatchHasAnyBudget watchHasAnyBudget;
+  late MockWatchHomeAiInsight watchHomeAiInsight;
+  late MockWatchPendingScheduledPaymentCount watchPendingScheduledPaymentCount;
+  late MockCheckAiAccess checkAiAccess;
+  late MockGetConversationForInsight getConversationForInsight;
+  late MockDismissHomeInsight dismissHomeInsight;
+  late MockRecordHomeInsightShown recordHomeInsightShown;
 
   final accounts = [buildActiveAccount()];
   final activity = [buildActivity(amountMinor: 82000)];
@@ -110,7 +144,14 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(DateTime(2026));
+    registerFallbackValue(
+      MonthSpending(
+          month: DateTime(2026, 1),
+          subtotals: const [],
+          displayCurrency: 'COP'),
+    );
     registerFallbackValue(buildDetailData());
+    registerFallbackValue(HomeAiInsightType.spendingVsAverage);
   });
 
   setUp(() {
@@ -123,6 +164,34 @@ void main() {
     watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     getBudgetById = MockGetBudgetById();
     getBudgetProgress = MockGetBudgetProgress();
+    watchHasAnyBudget = MockWatchHasAnyBudget();
+    watchHomeAiInsight = MockWatchHomeAiInsight();
+    watchPendingScheduledPaymentCount = MockWatchPendingScheduledPaymentCount();
+    checkAiAccess = MockCheckAiAccess();
+    getConversationForInsight = MockGetConversationForInsight();
+    dismissHomeInsight = MockDismissHomeInsight();
+    recordHomeInsightShown = MockRecordHomeInsightShown();
+    when(() => getConversationForInsight(any()))
+        .thenAnswer((_) async => const Right(null));
+    when(() => dismissHomeInsight(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => recordHomeInsightShown(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => watchHasAnyBudget())
+        .thenAnswer((_) => Stream<Result<bool>>.value(const Right(true)));
+    when(() => watchPendingScheduledPaymentCount())
+        .thenAnswer((_) => Stream<Result<int>>.value(const Right(0)));
+    when(
+      () => watchHomeAiInsight(
+        month: any(named: 'month'),
+        spending: any(named: 'spending'),
+        hasAnyBudget: any(named: 'hasAnyBudget'),
+        featuredBudget: any(named: 'featuredBudget'),
+      ),
+    ).thenAnswer(
+        (_) => Stream<Result<HomeAiInsight?>>.value(const Right(null)));
+    when(() => checkAiAccess())
+        .thenAnswer((_) async => const Right(AiAccess.denied));
     // Default: signed out; individual tests override to emit a session.
     when(() => watchAuthSession())
         .thenAnswer((_) => const Stream<AuthSession>.empty());
@@ -152,6 +221,13 @@ void main() {
         watchFeaturedBudgetProgress,
         getBudgetById,
         getBudgetProgress,
+        watchHasAnyBudget,
+        watchHomeAiInsight,
+        watchPendingScheduledPaymentCount,
+        checkAiAccess,
+        getConversationForInsight,
+        dismissHomeInsight,
+        recordHomeInsightShown,
       );
 
   void stubReady() {
@@ -623,8 +699,7 @@ void main() {
         BudgetWithProgress(
           budget: data.budget,
           scope: data.scope,
-          window: buildView(index: 0, hasPrevious: false, hasNext: true)
-              .window,
+          window: buildView(index: 0, hasPrevious: false, hasNext: true).window,
           progress:
               buildView(index: 0, hasPrevious: false, hasNext: true).progress,
         ),
@@ -764,6 +839,338 @@ void main() {
         cubit.nextPeriod();
       },
       verify: (_) => verify(() => watchRecentTransactions()).called(1),
+    );
+  });
+
+  group(
+    'resolución del vínculo insight↔conversación (bugfix item 7)',
+    () {
+      const spendingInsight = HomeAiInsight(
+        type: HomeAiInsightType.spendingVsAverage,
+        percentDelta: 15,
+        currency: 'COP',
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'GetConversationForInsight con id: aiInsight.conversationId queda '
+        'poblado',
+        setUp: () {
+          stubReady();
+          when(
+            () => watchHomeAiInsight(
+              month: any(named: 'month'),
+              spending: any(named: 'spending'),
+              hasAnyBudget: any(named: 'hasAnyBudget'),
+              featuredBudget: any(named: 'featuredBudget'),
+            ),
+          ).thenAnswer(
+            (_) => Stream<Result<HomeAiInsight?>>.value(
+              const Right(spendingInsight),
+            ),
+          );
+          when(() => getConversationForInsight('spendingVsAverage'))
+              .thenAnswer((_) async => const Right('conv-42'));
+        },
+        build: build,
+        act: (cubit) async {
+          await cubit.start();
+          await Future<void>.delayed(Duration.zero);
+        },
+        verify: (cubit) {
+          expect(cubit.state.aiInsight?.conversationId, 'conv-42');
+        },
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'GetConversationForInsight sin id: aiInsight.conversationId queda '
+        'null (el chip debe mostrar "iniciar")',
+        setUp: () {
+          stubReady();
+          when(
+            () => watchHomeAiInsight(
+              month: any(named: 'month'),
+              spending: any(named: 'spending'),
+              hasAnyBudget: any(named: 'hasAnyBudget'),
+              featuredBudget: any(named: 'featuredBudget'),
+            ),
+          ).thenAnswer(
+            (_) => Stream<Result<HomeAiInsight?>>.value(
+              const Right(spendingInsight),
+            ),
+          );
+          when(() => getConversationForInsight('spendingVsAverage'))
+              .thenAnswer((_) async => const Right(null));
+        },
+        build: build,
+        act: (cubit) async {
+          await cubit.start();
+          await Future<void>.delayed(Duration.zero);
+        },
+        verify: (cubit) {
+          expect(cubit.state.aiInsight?.conversationId, isNull);
+        },
+      );
+
+      test(
+        'una resolución vieja no pisa un resultado más reciente (ticket '
+        'guard contra carreras)',
+        () async {
+          stubReady();
+          final insightController = StreamController<Result<HomeAiInsight?>>();
+          when(
+            () => watchHomeAiInsight(
+              month: any(named: 'month'),
+              spending: any(named: 'spending'),
+              hasAnyBudget: any(named: 'hasAnyBudget'),
+              featuredBudget: any(named: 'featuredBudget'),
+            ),
+          ).thenAnswer((_) => insightController.stream);
+
+          // Two same-type insights (so both hit `GetConversationForInsight`
+          // with the same key) but distinguishable by `percentDelta` — the
+          // first lookup is slow, the second is fast, and the guard must
+          // keep whichever insight is *currently shown* from being
+          // overwritten by the stale reply that lands after it.
+          const insightA = HomeAiInsight(
+            type: HomeAiInsightType.spendingVsAverage,
+            percentDelta: 10,
+            currency: 'COP',
+          );
+          const insightB = HomeAiInsight(
+            type: HomeAiInsightType.spendingVsAverage,
+            percentDelta: 20,
+            currency: 'COP',
+          );
+
+          final slowLookup = Completer<Result<String?>>();
+          final fastLookup = Completer<Result<String?>>();
+          var callCount = 0;
+          when(() => getConversationForInsight('spendingVsAverage'))
+              .thenAnswer((_) {
+            callCount++;
+            return callCount == 1 ? slowLookup.future : fastLookup.future;
+          });
+
+          final cubit = build();
+          await cubit.start();
+          await Future<void>.delayed(Duration.zero);
+
+          insightController.add(const Right(insightA));
+          await Future<void>.delayed(Duration.zero);
+          insightController.add(const Right(insightB));
+          await Future<void>.delayed(Duration.zero);
+          expect(cubit.state.aiInsight, insightB);
+
+          // The fast (second) lookup resolves first.
+          fastLookup.complete(const Right('conv-fresh'));
+          await Future<void>.delayed(Duration.zero);
+          expect(cubit.state.aiInsight?.conversationId, 'conv-fresh');
+
+          // The stale (first) lookup resolves late — must not overwrite it.
+          slowLookup.complete(const Right('conv-stale'));
+          await Future<void>.delayed(Duration.zero);
+          expect(cubit.state.aiInsight?.conversationId, 'conv-fresh');
+
+          await cubit.close();
+          await insightController.close();
+        },
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'refreshAiInsightConversation vuelve a consultar y actualiza el '
+        'estado',
+        setUp: () {
+          stubReady();
+          when(
+            () => watchHomeAiInsight(
+              month: any(named: 'month'),
+              spending: any(named: 'spending'),
+              hasAnyBudget: any(named: 'hasAnyBudget'),
+              featuredBudget: any(named: 'featuredBudget'),
+            ),
+          ).thenAnswer(
+            (_) => Stream<Result<HomeAiInsight?>>.value(
+              const Right(spendingInsight),
+            ),
+          );
+          when(() => getConversationForInsight('spendingVsAverage'))
+              .thenAnswer((_) async => const Right(null));
+        },
+        build: build,
+        act: (cubit) async {
+          await cubit.start();
+          await Future<void>.delayed(Duration.zero);
+          expect(cubit.state.aiInsight?.conversationId, isNull);
+          // Router calls this right after the assistant screen is popped
+          // back to Home, once a conversation now exists for the insight.
+          when(() => getConversationForInsight('spendingVsAverage'))
+              .thenAnswer((_) async => const Right('conv-99'));
+          cubit.refreshAiInsightConversation();
+          await Future<void>.delayed(Duration.zero);
+        },
+        verify: (cubit) {
+          expect(cubit.state.aiInsight?.conversationId, 'conv-99');
+          verify(() => getConversationForInsight('spendingVsAverage'))
+              .called(2);
+        },
+      );
+    },
+  );
+
+  group('persistencia de insights (bugfix: no debe reaparecer siempre)', () {
+    const spendingInsight = HomeAiInsight(
+      type: HomeAiInsightType.spendingVsAverage,
+      percentDelta: 15,
+      currency: 'COP',
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'dismissAiInsight limpia el estado local y persiste el descarte vía '
+      'DismissHomeInsight',
+      setUp: () {
+        stubReady();
+        when(
+          () => watchHomeAiInsight(
+            month: any(named: 'month'),
+            spending: any(named: 'spending'),
+            hasAnyBudget: any(named: 'hasAnyBudget'),
+            featuredBudget: any(named: 'featuredBudget'),
+          ),
+        ).thenAnswer(
+          (_) => Stream<Result<HomeAiInsight?>>.value(
+            const Right(spendingInsight),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        cubit.dismissAiInsight();
+        await Future<void>.delayed(Duration.zero);
+      },
+      verify: (cubit) {
+        expect(cubit.state.aiInsight, isNull);
+        verify(() => dismissHomeInsight(HomeAiInsightType.spendingVsAverage))
+            .called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'dismissAiInsight con createBudget no persiste nada: es un estado '
+      'forzado sin "Ahora no"',
+      setUp: () {
+        stubReady();
+        when(
+          () => watchHomeAiInsight(
+            month: any(named: 'month'),
+            spending: any(named: 'spending'),
+            hasAnyBudget: any(named: 'hasAnyBudget'),
+            featuredBudget: any(named: 'featuredBudget'),
+          ),
+        ).thenAnswer(
+          (_) => Stream<Result<HomeAiInsight?>>.value(
+            const Right(HomeAiInsight.createBudget()),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+        cubit.dismissAiInsight();
+        await Future<void>.delayed(Duration.zero);
+      },
+      verify: (_) {
+        verifyNever(() => dismissHomeInsight(any()));
+      },
+    );
+
+    test(
+      'RecordHomeInsightShown se llama solo en la transición hacia un tipo '
+      'nuevo, no en cada recompute que mantiene el mismo tipo',
+      () async {
+        stubReady();
+        final insightController = StreamController<Result<HomeAiInsight?>>();
+        when(
+          () => watchHomeAiInsight(
+            month: any(named: 'month'),
+            spending: any(named: 'spending'),
+            hasAnyBudget: any(named: 'hasAnyBudget'),
+            featuredBudget: any(named: 'featuredBudget'),
+          ),
+        ).thenAnswer((_) => insightController.stream);
+
+        final cubit = build();
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+
+        insightController.add(const Right(spendingInsight));
+        await Future<void>.delayed(Duration.zero);
+        // Same type re-emitted (e.g. a benign recompute) must not re-fire.
+        insightController.add(
+          const Right(
+            HomeAiInsight(
+              type: HomeAiInsightType.spendingVsAverage,
+              percentDelta: 20,
+              currency: 'COP',
+            ),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        verify(
+          () => recordHomeInsightShown(HomeAiInsightType.spendingVsAverage),
+        ).called(1);
+
+        // A different type transitions in -> fires again.
+        insightController.add(
+          const Right(
+            HomeAiInsight(
+              type: HomeAiInsightType.budgetProjectionRisk,
+              overageMinor: 1000,
+              currency: 'COP',
+            ),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        verify(
+          () => recordHomeInsightShown(HomeAiInsightType.budgetProjectionRisk),
+        ).called(1);
+        verifyNever(
+            () => recordHomeInsightShown(HomeAiInsightType.createBudget));
+
+        await cubit.close();
+        await insightController.close();
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'RecordHomeInsightShown nunca se llama para createBudget',
+      setUp: () {
+        stubReady();
+        when(
+          () => watchHomeAiInsight(
+            month: any(named: 'month'),
+            spending: any(named: 'spending'),
+            hasAnyBudget: any(named: 'hasAnyBudget'),
+            featuredBudget: any(named: 'featuredBudget'),
+          ),
+        ).thenAnswer(
+          (_) => Stream<Result<HomeAiInsight?>>.value(
+            const Right(HomeAiInsight.createBudget()),
+          ),
+        );
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await Future<void>.delayed(Duration.zero);
+      },
+      verify: (_) {
+        verifyNever(() => recordHomeInsightShown(any()));
+      },
     );
   });
 }

@@ -6,7 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// The hero's month-navigation chip (HU-04, `A9v7s` `HC Month`): shown only
-/// when no budget is featured — with a featured budget, `HeroPeriodStepper`
+/// when no budget is featured — with a featured budget, the hero's `Period Pill`
 /// takes over the same spot to navigate the budget's own period window
 /// instead of a calendar month. Opens `MonthPickerSheet` on tap.
 ///

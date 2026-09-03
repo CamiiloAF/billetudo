@@ -300,6 +300,19 @@ Future<void> _configureCuota(
   // Cuota mode reuses the Pagos programados form with a context subtitle.
   expect(find.text('Configurar cuota'), findsWidgets);
 
+  // The cuota screen gets its own minitutorial the first time it opens for a
+  // given debt (`TutorialKey.debtScheduledInstallment`,
+  // `scheduled_payment_form_page.dart`'s own doc comment: "Configuring a
+  // debt's cuota programada gets its own minitutorial... a plain scheduled
+  // payment never shows it"). Unlike the 4 screens `dismissAutoTutorialIfShown`
+  // was originally written for, this one is reached mid-flow (not right after
+  // a top-level navigation), so every `_configureCuota` call used to skip it —
+  // the sheet then silently swallowed the very next tap ($0, to expand the
+  // keypad), leaving the keypad never expanded and every digit tap after it
+  // failing with "Bad state: No element" — verified against a real emulator
+  // run.
+  await dismissAutoTutorialIfShown($);
+
   await _enterKeypadAmount($, amountDigits);
   await _pickAccountField($, 'Cuenta', accountName);
   await _pickCategory($, categoryName);

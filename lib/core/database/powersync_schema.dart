@@ -6,6 +6,13 @@
 // the other, so **any change to a `_SyncColumns` table in `app_database.dart`
 // must be mirrored here by hand** (see `drift-migration-helper`).
 //
+// Two tables here are NOT synced: `ai_messages` and
+// `ai_insight_conversations`, both declared with `Table.localOnly` at the
+// bottom. They are still declared in this schema because PowerSync — not
+// Drift — owns the physical storage of every table this app reads through,
+// local-only ones included. See their comments for why the AI conversation
+// (and what links to it) never leaves the device.
+//
 // `id` is never declared as a column: PowerSync manages it implicitly for
 // every table (`Table.validate()` rejects a custom `id` column).
 //
@@ -270,6 +277,22 @@ const powerSyncSchema = Schema([
     // `QuickAccessItem.name` values (schemaVersion 27). Null falls back to
     // the fixed default order. See AppSettings.quickAccessOrder.
     Column.text('quick_access_order'),
+    // Consent to send data to a third-party AI model (schemaVersion 30, Apple
+    // 5.1.2(i)). Epoch SECONDS like every Drift DateTimeColumn, so `bigint` in
+    // Postgres — never `timestamptz` (see the type note at the top of this
+    // file). Nullable = not consented yet / withdrawn; never backfilled. See
+    // AppSettings.aiConsentAcceptedAt.
+    Column.integer('ai_consent_accepted_at'),
+    // Which version of the consent text the user accepted (schemaVersion 32).
+    // Nullable; NULL is read as 0 (never backfilled), which is below the
+    // current version and therefore re-asks for consent. See
+    // AppSettings.aiConsentVersion.
+    Column.integer('ai_consent_version'),
+    // Opt-in permission for the assistant to read free-text notes
+    // (schemaVersion 32). Boolean stored as integer 0/1 like every other
+    // Drift BoolColumn here; non-nullable client-side, so the migration
+    // backfills pre-existing rows to 0. See AppSettings.aiNotesAccessEnabled.
+    Column.integer('ai_notes_access_enabled'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has
@@ -292,5 +315,74 @@ const powerSyncSchema = Schema([
     Column.integer('rows_skipped'),
     Column.integer('reverted_at'),
     ..._syncColumns,
+  ]),
+  // AI assistant chat history (schemaVersion 30). **The only local-only table
+  // in this schema**, and the reason it exists as one is privacy, not
+  // convenience: the conversation is the most sensitive text this app holds,
+  // so it must never reach Postgres, the database backups, or the deletion
+  // duties of `delete_account_data` (HU-07). `Table.localOnly` backs it with a
+  // real local table (`ps_data_local__ai_messages`) whose writes are never
+  // recorded in `ps_crud`, so there is structurally nothing to upload — see
+  // `AiMessages` in `app_database.dart`.
+  //
+  // Consequences of local-only, both intended:
+  //  - No `_syncColumns` here (no `user_id`, `deleted_at`, `tombstoned_at`);
+  //    the Drift table carries none of them either.
+  //  - `PowerSyncDatabase.disconnectAndClear()` DOES empty this table, because
+  //    `clearLocal` defaults to `true` ("To preserve data in local-only
+  //    tables, set clearLocal to false"). `LocalDataWipeDatasource.wipeAll`
+  //    relies on exactly that.
+  //
+  // No `Index`: Fase A holds hundreds of rows at most, and every read is
+  // either "the current conversation, ordered by created_at" or a full-table
+  // sweep — a scan at that size is cheaper than the index it would maintain.
+  // Add one here (never with a Drift `CREATE INDEX`, which fails against a
+  // PowerSync view) if the history ever grows by an order of magnitude.
+  Table.localOnly('ai_messages', [
+    Column.text('conversation_id'),
+    Column.text('role'),
+    Column.text('content'),
+    // Epoch MILLIS (not seconds): a Drift IntColumn, not a DateTimeColumn.
+    // Local-only, so there is no Postgres counterpart to keep in step.
+    Column.integer('created_at'),
+    Column.text('status'),
+    Column.text('proposals_json'),
+  ]),
+  // Links a Home AI insight chip (`HomeAiInsightType`) to the conversation it
+  // started (schemaVersion 31), so the chip can reopen that exact thread
+  // instead of whatever conversation is most recently active — see
+  // `AiInsightConversations` in `app_database.dart`. Local-only for the same
+  // reason as `ai_messages` right above: it only points at a conversation id
+  // from that local-only history, so there is nothing cross-device to
+  // resume. `Table.localOnly` backs it with a real local table
+  // (`ps_data_local__ai_insight_conversations`) whose writes are never
+  // recorded in `ps_crud`.
+  //
+  // No `_syncColumns` here either, and no `Index`: one row per link event
+  // (never updated in place — see the Drift table's doc comment), and Fase A
+  // holds at most a handful of insight types, so a full scan ordered by
+  // `created_at` is cheap.
+  Table.localOnly('ai_insight_conversations', [
+    Column.text('insight_type'),
+    Column.text('conversation_id'),
+    Column.integer('created_at'),
+  ]),
+  // One "shown"/"dismissed" lifecycle event for a Home AI insight
+  // (`HomeAiInsightType`), schemaVersion 33 — see `HomeInsightEvents` in
+  // `app_database.dart`. Local-only for the same reason as
+  // `ai_insight_conversations` right above: it is device-side UX
+  // bookkeeping, not financial data, so there is nothing cross-device worth
+  // syncing. `Table.localOnly` backs it with a real local table
+  // (`ps_data_local__home_insight_events`) whose writes are never recorded
+  // in `ps_crud`.
+  //
+  // No `_syncColumns` here either, and no `Index`: one row per event (never
+  // updated in place — see the Drift table's doc comment), and this device
+  // holds at most a handful of insight types times however many times a
+  // month they fire, so a full scan ordered by `occurred_at` is cheap.
+  Table.localOnly('home_insight_events', [
+    Column.text('insight_type'),
+    Column.text('kind'),
+    Column.integer('occurred_at'),
   ]),
 ]);

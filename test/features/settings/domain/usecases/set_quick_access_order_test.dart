@@ -19,9 +19,12 @@ void main() {
     QuickAccessItem.debts,
     QuickAccessItem.reports,
     QuickAccessItem.scheduledPayments,
+    QuickAccessItem.accounts,
+    QuickAccessItem.goals,
   ];
 
-  test('persists a valid permutation by delegating to the repository', () async {
+  test('persists a valid permutation by delegating to the repository',
+      () async {
     when(() => repository.setQuickAccessOrder(validOrder))
         .thenAnswer((_) async => const Right<Failure, Unit>(unit));
 

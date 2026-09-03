@@ -1,7 +1,51 @@
 # Declaraciones de datos para Play Store y App Store — billetudo
 
-**Versión 1.4** · **Última actualización: 17 de agosto de 2026**
-**Versión de la app a la que corresponde: `0.0.5+8`** (`pubspec.yaml:4`)
+**Versión 1.7** · **Última actualización: 1 de septiembre de 2026**
+**Versión de la app a la que corresponden las respuestas vigentes: `0.0.5+8`**
+`[VERIFICAR: el working tree ya está en 0.0.5+9 (pubspec.yaml:4). Confirmar contra qué build se envía y re-verificar §1.1 y §1.3 sobre ese binario]`
+
+**Qué cambió en la versión 1.7:** se re-verificaron contra el código las
+precondiciones bloqueantes de §8.6. Dos ya están resueltas y dos siguen
+abiertas:
+
+- **Resuelto — precondición 8 (interruptor de notas cableado extremo a
+  extremo).** Ya no es solo esquema: existe la entidad de dominio
+  (`AppSettings.aiNotesAccessEnabled`), el snapshot y las herramientas del
+  prompt lo leen (`_shared/ai/prompt.ts`, `NOTES_WITHHELD_SECTION` /
+  `NOTES_VISIBLE_SECTION`), y hay UI en Ajustes (`AiSettingsSection`,
+  `AiNotesAccessField`, `AiNotesAccessSheet`) con confirmación explícita al
+  encender y apagado inmediato al desactivar. §8.7 deja de ser un checklist a
+  futuro y pasa a ser la declaración vigente.
+- **Resuelto — precondición 10 (sección de IA en Ajustes).**
+  `settings_page.dart` ya incluye `AiSettingsSection`, con el interruptor de
+  notas y el enlace para retirar el consentimiento general
+  (`AiConsentWithdrawField` → `clearAiConsent`).
+- **Sigue abierta — precondición 8-bis, en parte.** `aiConsentVersion` sí se
+  compara de verdad (`AppSettings.hasAcceptedAiConsent`) y ya subió a `2` para
+  cubrir el interruptor de notas (`lib/features/ai/domain/entities/ai_consent.dart`).
+  Lo que sigue sin resolver es la precondición **9**: el texto que
+  `AiConsentPage` muestra (`l10n.aiConsentBody` = *"sin notas ni datos de
+  identificación bancaria"*) nunca se actualizó para mencionar que existe un
+  interruptor separado para las notas. No es una afirmación falsa en sí misma
+  (con el interruptor apagado por defecto, sigue siendo cierto que no viajan
+  notas), pero es una oportunidad perdida de que el consentimiento inicial sea
+  más informado. `[VERIFICAR: decisión de producto — si conviene ampliar
+  aiConsentBody para mencionar el interruptor, y si eso amerita subir
+  currentAiConsentVersion otra vez; no es una corrección de este documento,
+  la decide quien mantiene el código]`.
+- **Sigue abierta — precondición 4 (mecanismo de reporte in-app).** Se
+  confirmó de nuevo, línea por línea: `ReportAiMessage` y su repositorio
+  existen y están registrados en el contenedor de DI
+  (`lib/core/di/injection.config.dart`), pero **ningún widget de
+  `lib/features/ai/presentation/` lo invoca**. El único menú contextual de un
+  mensaje del asistente (`AiMessageCopyMenu`) solo ofrece "Copiar" — no hay
+  botón de "Reportar". La política de privacidad §17.1/17.5 y los términos de
+  uso §3 describen el reporte como si ya funcionara porque estos documentos
+  están escritos para el estado en que la función **debe estar antes de
+  publicarse** (ver el encabezado de §8 y la Guideline de *AI-Generated
+  Content* de Play), no para el estado actual del binario. **No se puede
+  activar `ai_assistant_open_to_all` ni enviar esta hoja a revisión mientras
+  falte ese botón** — sigue siendo el bloqueante más importante de §8.6.
 
 Este documento contiene las respuestas campo por campo para el formulario
 **Data Safety** de Google Play y para **App Privacy** de App Store Connect, con
@@ -16,13 +60,46 @@ la justificación de cada una. La evidencia está en
 
 > **Cómo leer este documento (importante).** Las secciones **§0 a §6 son las
 > respuestas VIGENTES**: describen el binario de hoy y son las que se copian a
-> un formulario. La **§7 es un checklist a futuro** para cuando se implemente
-> Fase 2 (captura por voz, OCR, notificaciones bancarias, widget): **nada de lo
-> que dice §7 se declara todavía**, porque nada de eso existe en el código.
-> Confundir las dos cosas y declarar de más es tan sancionable como declarar de
-> menos.
+> un formulario. La **§7 es un checklist a futuro** para Fase 2 (captura por
+> voz, OCR, notificaciones bancarias, widget) y la **§8 es el checklist a futuro
+> del asistente con IA** (Fase 4): **nada de lo que dicen §7 y §8 se declara
+> todavía**, porque nada de eso existe en el código. Confundir las dos cosas y
+> declarar de más es tan sancionable como declarar de menos.
 
-**Qué cambió respecto de la versión 1.3 (8 de agosto):** el número de versión de
+**Qué cambió en la versión 1.6 (28 de agosto):** se corrigió la **§8** —el
+checklist del asistente con IA— en tres puntos, después de auditar el código
+real de `lib/features/ai/`:
+
+1. **§8.1 y §8.3 decían de menos.** Afirmaban que los nombres libres del usuario
+   no salían más allá del chat y que el nombre de la contraparte de una deuda
+   nunca viajaba. Es falso desde `SnapshotDebt`
+   (`lib/features/ai/domain/entities/financial_snapshot.dart`): hoy viajan
+   **cinco campos `name` de texto libre** —cuenta, categoría, presupuesto, meta
+   y deuda— en el resumen de cada turno. Declarar de menos ahí es exactamente el
+   tipo de respuesta que un revisor puede contrastar con el tráfico real.
+2. **Nuevo: interruptor opt-in de notas.** Se documenta cómo declararlo en Play
+   (recopilación *opcional*) y en Apple (sin casilla nueva, pero con obligación
+   de disclosure y consentimiento). Ver §8.7.
+3. **Búsqueda local por nota** (`find_scheduled_payments`, ya implementada):
+   **no** cambia ninguna declaración, y se explica por qué, para que nadie la
+   confunda con el punto 2.
+
+Con ello, la política de privacidad pasa a **v1.6** y sus §17.2, §17.3 y §17.7
+son la referencia de esta sección.
+
+**Qué cambió respecto de la versión 1.4 (17 de agosto):** se escribió la **§8**,
+el juego completo de respuestas para el release que incluya el **asistente
+financiero con IA** (`docs/requirements/fase-4/21-asistente-ia.md`). Eso ejecuta
+el **disparador 6 de §6** —datos enviados a un modelo de IA— con tres
+consecuencias: categoría de datos nueva marcada como **compartida**, **tercero
+nuevo** (Google, API de Gemini) y una sección propia en la política
+(`politica-de-privacidad.md` §17, v1.5). Las respuestas de §1 y §2 **no se
+tocaron**: el asistente no está en el código todavía (`supabase/functions/`
+sigue teniendo solo `delete-account`; no hay ninguna feature de IA en `lib/`).
+Lo único que se matizó en la parte vigente es el viñetazo de §1.3 sobre "sin
+IA", que ahora dice hasta cuándo es cierto.
+
+**Qué cambió en la versión 1.4 respecto de la 1.3 (8 de agosto):** el número de versión de
 la app (`0.0.4+8` → `0.0.5+8`) y nada más en las respuestas. Se re-verificó, una
 por una, cada afirmación de §1.1 y §1.3 contra el árbol actual: las dependencias
 comentadas siguen comentadas, el manifiesto sigue sin `uses-permission` y el
@@ -128,7 +205,7 @@ Para cada tipo: si se **recopila** (sale del dispositivo hacia nosotros), si se
 | Tipo de dato | ¿Recopilado? | ¿Compartido? | ¿Obligatorio? | Finalidad | Justificación |
 |---|---|---|---|---|---|
 | **Name** | **Sí** | No | **Opcional** (solo si inicias sesión) | *App functionality*, *Account management* | Google/Apple entregan el nombre; se guarda en Supabase Auth y se muestra en el saludo de Inicio y en Ajustes. Además, `Debts.counterparty` puede contener el nombre de un tercero, y viaja a la nube |
-| **Email address** | **Sí** | No | **Opcional** | *App functionality*, *Account management* | Lo entrega el proveedor social y lo persiste Supabase Auth. No se muestra en la app |
+| **Email address** | **Sí** | No | **Opcional** | *App functionality*, *Account management* | Lo entrega el proveedor social y lo persiste Supabase Auth. Se muestra en la tarjeta de sesión de Ajustes (`settings_session_card.dart:78-81`) y no se envía a ningún tercero |
 | **User IDs** | **Sí** | No | **Opcional** | *App functionality*, *Account management* | El UUID de Supabase se estampa en la columna `user_id` de las 20 tablas |
 | Address, Phone number, Race/ethnicity, Political/religious beliefs, Sexual orientation, Other info | **No** | — | — | — | No se piden en ningún lugar de la app |
 
@@ -217,7 +294,7 @@ con evidencia:
   manifiesto fusionado.
 - **Sin push:** sin `firebase_messaging` ni `flutter_local_notifications`.
 - **Sin compras:** `purchases_flutter` comentado; sin permiso `BILLING`.
-- **Sin IA / voz / OCR / lectura de notificaciones:** `lib/features/capture/`
+- **Sin voz / OCR / lectura de notificaciones:** `lib/features/capture/`
   contiene solo un `.gitkeep` y `lib/features/improvement/` está vacía;
   `speech_to_text` (`pubspec.yaml:86`) y `google_mlkit_text_recognition`
   (`pubspec.yaml:87`) siguen **comentados**; el `AndroidManifest.xml` no declara
@@ -225,6 +302,16 @@ con evidencia:
   Re-verificado el 2026-08-17 (`AUDITORIA.md` §10.2). **Que los requerimientos de
   Fase 2 existan escritos no cambia esta respuesta:** se declara el binario, no
   el plan. Ver §7.
+- **Sin IA — cierto solo mientras el asistente no esté en el binario.**
+  Verificado el 2026-08-25: `supabase/functions/` contiene únicamente
+  `delete-account`, no hay ninguna feature de IA en `lib/` y ningún endpoint de
+  la app habla con un proveedor de modelos. **Esta es la afirmación con fecha de
+  caducidad más corta de todo el documento**: el asistente está diseñado y
+  especificado (`docs/requirements/fase-4/21-asistente-ia.md`), y el primer
+  binario que lo incluya invalida esta viñeta, la casilla de "compartido con
+  terceros" de los datos financieros y de contenido, y la respuesta de IA
+  generativa de Play. **§8 tiene el juego completo de respuestas nuevas**; no se
+  improvisa al momento del envío.
 
 ### 1.4 Otros campos de Play Console
 
@@ -527,7 +614,10 @@ Cualquiera de estos cambios invalida las respuestas de arriba:
 5. Añadir notificaciones push → nuevo identificador de dispositivo y nuevos
    propósitos.
 6. Enviar datos a un modelo de IA → nueva categoría, nuevo tercero y una
-   sección nueva en la política.
+   sección nueva en la política. **Ejecutado el 2026-08-25 para el asistente de
+   Fase A**: política v1.5 §17, tercero nuevo (Google, API de Gemini) y §8 de
+   este documento. Las respuestas de §8 entran en vigor **en el envío que
+   incluya el binario con el asistente**, no antes.
 7. Añadir un opt-out de Sentry → *Crash logs* y *Diagnostics* pasan de
    **Obligatorio** a **Opcional**.
 8. Subir de plan en Sentry (Team, Business o Enterprise) → la retención deja de
@@ -690,3 +780,391 @@ política y la casilla de audio de ambas tiendas quedan sin escribir.
 - **Export/import:** decidir si los comprobantes entran en la copia completa. Si
   entran, la política tiene que decirlo; si no, el usuario debe saber que la
   copia no los incluye.
+
+
+---
+
+## 8. Fase 4 — Asistente con IA — CHECKLIST FUTURO, NO VIGENTE
+
+> ⛔ **NO COPIES NADA DE ESTA SECCIÓN A UN FORMULARIO DE TIENDA HOY.**
+> Al 25 de agosto de 2026 **ninguna app publicada** envía nada a un modelo de
+> lenguaje: el binario en tienda no tiene la feature. Ojo con el matiz, porque
+> cambió durante el día: **el backend ya está en el repo**
+> (`supabase/functions/ai-chat/` y la migración
+> `20260825120000_ai_assistant_access_and_usage.sql`), mientras que el
+> **cliente todavía no** (al 25 de agosto `lib/features/ai/` solo tiene la capa
+> `domain/`: entidades, repositorios y casos de uso; ni `data/`, ni
+> `presentation/`, ni una sola llamada a `ai_reports`). Es decir: §1 y §2 siguen
+> siendo exactas para el binario, y dejan de serlo **el día que se compile una
+> app con el asistente dentro**. Evidencia en `AUDITORIA.md` §10.3.
+
+**Por qué esta es la sección más peligrosa del documento.** Los cambios de Fase 2
+suman permisos, que son visibles y difíciles de olvidar. El asistente no suma
+**ni un permiso**: no pide micrófono, ni cámara, ni notificaciones. Un binario
+con IA se ve idéntico a uno sin IA desde el manifiesto y desde el `Info.plist`.
+Lo único que cambia es a dónde viajan los datos — y eso solo lo atrapa este
+checklist.
+
+### 8.1 Qué sale del dispositivo cuando la feature está activa
+
+Resumen operativo (el detalle está en el requisito y en la política v1.5 §17):
+
+| Sale | No sale nunca |
+|---|---|
+| El texto que el usuario escribe en el chat | `Accounts.institution` (banco) y `Accounts.last4` |
+| Resumen agregado: saldos por cuenta (**nombre**, tipo, moneda, saldo), gasto/ingreso del mes, top de categorías (**con nombre**), flujo de 6 meses, presupuestos (**con nombre**), metas (**con nombre**), totales de deuda, **cada deuda abierta con su nombre**, pagos de los próximos 30 días, catálogo de categorías | El número completo de cuenta/tarjeta (vive en Keychain/Keystore y no sale para nada) |
+| **Cinco campos `name` de texto libre del usuario**: `Accounts.name`, `Categories.name`, `Budgets.name`, `Goals.name`, `Debts.name`. Evidencia: `financial_snapshot.dart` (`SnapshotAccount.name`, `SnapshotCategoryLine.name`, `SnapshotBudget.name`, `SnapshotGoal.name`, `SnapshotDebt.name`) | Correo y nombre del usuario; archivos, fotos, audio, contactos |
+| Bajo demanda del modelo: hasta **50** movimientos con id, fecha, monto, moneda, tipo, nombre de categoría y nombre de cuenta (máx. 3 rondas por turno) | El historial fuera de la conversación en curso: vive en el teléfono y no se sincroniza |
+| Idioma, zona horaria, versión de la app, id de conversación generado en el dispositivo | El resto de la conversación al reportar un mensaje: no se adjunta ni se ofrece adjuntarla |
+| **La conversación en curso, reenviada completa en cada turno** (tope de 40 mensajes), porque el servidor no guarda estado | |
+| **Solo si el usuario reporta un mensaje:** ese mensaje del asistente, el motivo (lista cerrada), un comentario opcional, el id de conversación, la versión de la app y el `user_id`. Va a **nuestro servidor**, no a Google | |
+| **Condicionado a un interruptor apagado por defecto:** el texto libre de `Transactions.note`, `GoalContributions.note`, `DebtEntries.note` y `ScheduledPayments.note` — ver §8.7 | |
+
+> **Corrección respecto de la v1.5 de este documento.** La versión anterior
+> ponía en la columna "no sale nunca" tanto las notas como `Debts.counterparty`.
+> Lo primero pasó a ser condicional (§8.7); lo segundo era erróneo desde el
+> principio: la tabla `Debts` no tiene columna `counterparty` —el nombre de la
+> contraparte se escribe en `Debts.name` (`app_database.dart`)— y ese campo
+> **viaja hoy** en `SnapshotDebt.name`. Una declaración que diga lo contrario es
+> falsa y contrastable.
+
+Destino: Edge Function propia `ai-chat` (Supabase, **sin estado**, no persiste
+nada) → **Google, API de Gemini, `gemini-2.5-flash`**.
+
+En el servidor quedan **cuatro** tablas: tres de control y una de moderación.
+
+Las tres de control no llevan contenido de conversación: `ai_access`
+(habilitación por usuario), `ai_feature_flags` (interruptor global, sin datos de
+nadie) y `ai_usage_log` (metadatos por turno: fecha, día de uso, id de
+conversación, proveedor, modelo, resultado, código de error, tokens, rondas de
+herramienta, nº de propuestas, latencia y versión de la app). El historial de
+conversación vive en una tabla local `Table.localOnly` que **no sincroniza**.
+
+La cuarta, `ai_reports` (`supabase/migrations/20260825140000_ai_reports.sql`,
+aplicada **en dev, no en prod**), **sí guarda contenido**, y es la única:
+`reported_text` es el mensaje del asistente que el usuario eligió reportar.
+Existe porque la *AI-Generated Content policy* de Play exige reportar *sin salir
+de la app*, lo que descarta abrir el cliente de correo y obliga a que el reporte
+llegue a un servidor nuestro. Propiedades que hay que sostener al declarar:
+
+- **Nada llega automáticamente.** Solo se escribe cuando la persona toca
+  "reportar" sobre un mensaje concreto y confirma.
+- **Solo el fragmento reportado.** Ni la conversación, ni los mensajes previos,
+  ni el snapshot financiero.
+- **`reason` es una lista cerrada** (`offensive`, `wrong`, `harmful`,
+  `privacy`, `other`), a propósito: un campo libre invitaría a pegar datos
+  personales. El campo libre que sí existe (`comment`) es opcional.
+- **RLS de solo `insert` + `select` de las propias filas.** No hay policy de
+  `update` ni de `delete`: la persona no puede editar ni borrar su reporte, y
+  `status` (`pending`/`reviewed`/`dismissed`) lo mueve un humano a mano.
+- **Entra en `delete_account_data`** en la misma migración que la crea, con FK
+  `on delete cascade` a `auth.users`.
+- La UI debe mostrar el aviso **antes de enviar**. Sin ese aviso, la política
+  §17.5 queda falsa.
+
+Tres matices que hay que sostener en cualquier redacción, porque son lo que
+diferencia una declaración exacta de una aspiracional:
+
+1. **No guardar no es no transmitir.** El transcript no se almacena en ningún
+   servidor, pero pasa por el proveedor en cada turno. Es el mismo principio que
+   ya obligó a marcar los *crash logs* como compartidos con Sentry.
+2. **"El servidor no guarda contenido" ya no se puede decir sin el matiz.**
+   `ai_reports` es una excepción real, aunque la dispare el usuario. La frase
+   correcta es: *no se guarda nada de la conversación salvo el mensaje que la
+   propia persona envía al reportarlo.* Cualquier redacción que diga "nunca" a
+   secas —incluidas las notas para App Review— es falsa desde esta migración.
+3. **La exclusión de notas, banco y `last4` la garantiza solo el cliente.** La
+   Edge Function acepta el snapshot como un objeto JSON cualquiera y no valida
+   su forma. Si el test de lista blanca del cliente no existe o se rompe, la
+   respuesta "*User payment info* no compartido" de §8.3 deja de ser
+   defendible — y nadie se enteraría desde el servidor.
+
+### 8.2 Google Play — preguntas generales que cambian
+
+| Pregunta | Respuesta hoy | Con el asistente | Por qué |
+|---|---|---|---|
+| ¿Compartes datos de usuario con terceros? | No (salvo Sentry) | **Sí** | Google, como proveedor del modelo, recibe datos financieros y contenido del usuario. Play cuenta como *shared* cualquier transferencia a un tercero, incluido un encargado |
+| ¿Tu app usa IA generativa? (sección *App content*) | No aplica | **Sí** | La *AI-Generated Content policy* cubre expresamente las apps de chatbot texto-a-texto. `[VERIFICAR: nombre exacto y ubicación del campo en Play Console al momento del envío — la ayuda pública no documenta un formulario específico]` |
+| ¿Existe mecanismo in-app para reportar contenido ofensivo generado por IA? | No aplica | **Sí, obligatorio** — backend listo, cliente pendiente | *"Apps that generate content using AI must contain in-app user reporting or flagging features that allow users to report or flag offensive content to developers without needing to exit the app."* Es HU-09 del requisito. **Sin esto la app es retirable**, no solo rechazable. La tabla `ai_reports` y sus policies ya existen (dev); falta la UI que escriba en ella, así que **el requisito todavía no está cumplido en el binario** |
+| ¿Requiere inicio de sesión? | No | **No** (la app sigue siendo usable sin cuenta; solo el asistente exige sesión) | Importante para 5.1.1(iii) de Apple: el login sigue siendo opcional para todo lo demás |
+| ¿Contiene anuncios / compras? | No | **No en Fase A** | Fase A es beta gratuita. Cuando pase a Premium se dispara además el punto 2 de §6 |
+
+### 8.3 Google Play — Data Safety, tipos de dato que cambian
+
+Ningún tipo **nuevo** aparece en Play: lo que cambia es sobre todo la columna
+"¿Compartido?", que pasa de No a **Sí (Google)** en tres bloques.
+
+| Tipo de dato | Hoy | Con el asistente | Por qué |
+|---|---|---|---|
+| **Financial info → Other financial info** | Recopilado, **no** compartido | Recopilado y **COMPARTIDO (Google)** | Saldos, presupuestos, metas y totales de deuda viajan en el resumen de cada turno |
+| **Financial info → Purchase history** | Recopilado, no compartido | Recopilado y **COMPARTIDO (Google)** | El detalle bajo demanda envía hasta 50 movimientos con monto, fecha, categoría y cuenta |
+| **Financial info → User payment info** | Recopilado, no compartido | Recopilado, **NO compartido** | `institution` y `last4` están excluidos del envío por construcción (HU-08). Es una de las pocas respuestas que **no** cambia, y hay que sostenerla con el test de lista blanca |
+| **App activity → Other user-generated content** | Recopilado, no compartido | Recopilado y **COMPARTIDO (Google)** | Tres contenidos distintos, y conviene declararlos sabiendo que son tres: (a) el texto que el usuario escribe en el chat; (b) **los cinco campos `name` de texto libre** —cuenta, categoría, presupuesto, meta y **deuda**— que van en el resumen de cada turno, sin condición ninguna; (c) **el texto de las notas, solo si el usuario enciende el interruptor de §8.7**. (a) y (b) hacen que esta fila sea *compartida* con independencia del interruptor |
+| **Personal info → Name / Email / User IDs** | Recopilado, no compartido | **Sin cambio** | Google **no** recibe el nombre ni el correo *del titular de la cuenta*. El id de conversación se genera en el dispositivo y no deriva del id de usuario. Ojo con el matiz: `Debts.name` puede contener el nombre de **otra** persona y sí viaja, pero Play clasifica ese contenido como *user-generated content* del titular, no como su *Name*. `[VERIFICAR: confirmar ese mapeo en la ayuda vigente de Play al momento del envío]` |
+| **App activity → Other actions** | Recopilado, no compartido | Recopilado, no compartido | `ai_usage_log` es nuestro servidor, no un tercero. Se suma como fuente, sin cambiar la respuesta |
+| **Messages** | No | **No** | El chat con el asistente no es mensajería entre personas; Play clasifica ese contenido como *user-generated content*. `[VERIFICAR: confirmar el mapeo en la ayuda vigente de Play al momento del envío]` |
+| Audio, Photos and videos, Files and docs, Location, Contacts | No | **No** | El asistente es solo texto. No hay adjuntos, ni permisos nuevos |
+
+Finalidad a declarar para lo compartido: **App functionality**. No es
+*Personalization* ni *Advertising*: el dato se envía para producir la respuesta
+del turno y no alimenta ningún perfil.
+
+**La búsqueda local por nota (`find_scheduled_payments`) NO cambia ninguna fila
+de esta tabla, y es importante no confundirla con el interruptor de §8.7.** El
+modelo manda un término de búsqueda —palabras que el usuario ya escribió en su
+mensaje, es decir, contenido que ya viajaba como parte de la fila (a) de *Other
+user-generated content*—, **el dispositivo** compara ese término contra las
+notas locales y devuelve **solo campos estructurados**: id, monto, moneda,
+fecha, frecuencia, categoría y cuenta. Ni el texto de la nota ni un fragmento
+suyo vuelven al modelo. Evidencia:
+`lib/features/ai/domain/usecases/resolve_ai_tool_call.dart`
+(`_findScheduledPayments`, `_matchesQuery`, `_scheduledPaymentItem`) y
+`_transactionItem`, que no emite `note`. En términos de Play, la nota se procesa
+**on-device** y no se transmite: no hay tipo de dato nuevo ni cambio de columna
+"¿Compartido?".
+
+**El mecanismo de reporte (`ai_reports`) no agrega un tipo de dato nuevo**, y
+conviene dejar escrito por qué, porque es la clase de cosa que se declara mal:
+
+- El mensaje reportado y el comentario del usuario caen en **App activity →
+  Other user-generated content**, que ya está declarado como *recopilado*.
+- **No cambia la columna "¿Compartido?"** de ese tipo: el reporte se queda en
+  nuestro Supabase y **no viaja a Google** ni a ningún tercero. Lo que lo vuelve
+  compartido es el chat (fila de arriba), no el reporte.
+- **Recopilación opcional (*optional*)**, no obligatoria: solo ocurre si la
+  persona toca "reportar". Play tiene esa casilla y aquí la respuesta es sí.
+- **Finalidad: App functionality.** Play no ofrece una finalidad de "moderación"
+  y esto no es analítica, ni personalización, ni comunicaciones. `[VERIFICAR: si
+  al momento del envío Play espera además marcar "Fraud prevention, security,
+  and compliance" para datos de moderación de contenido]`
+- **Personal info → User IDs** sigue *recopilado, no compartido*: `ai_reports`
+  guarda `user_id`, que ya estaba declarado por el resto de la base.
+
+### 8.4 Apple — App Privacy y, sobre todo, la Guideline 5.1.2(i)
+
+**Lo que puede tumbar el envío no es la etiqueta, es el consentimiento.** Desde
+el 13 de noviembre de 2025, la Guideline 5.1.2(i) dice literal: *"You must
+clearly disclose where personal data will be shared with third parties,
+including with third-party AI, and obtain explicit permission before doing
+so."* Los revisores lo aplican de forma estricta y esperan **ver el nombre del
+proveedor** en el texto de consentimiento.
+
+Requisitos concretos, todos verificables en pantalla:
+
+1. Una pantalla de consentimiento **antes del primer envío**, que nombre a
+   **Google** y su API de Gemini, diga qué se envía y dónde se procesa (HU-02).
+2. Acción afirmativa: sin casilla premarcada, sin consentimiento implícito por
+   uso o por scroll.
+3. Posibilidad de **retirarlo** desde Ajustes.
+4. La app debe seguir siendo utilizable si el usuario dice que no.
+
+| Tipo (App Privacy) | Hoy | Con el asistente |
+|---|---|---|
+| **Financial Info → Other Financial Info** | Recopilado, *App Functionality* | **Sin cambio de casilla**, pero pasa a estar cubierto por el consentimiento de 5.1.2(i) |
+| **Financial Info → Payment Info** | Recopilado | Sin cambio: no se envía al modelo |
+| **User Content → Other User Content** | Recopilado | Sin cambio de casilla, pero se suman tres contenidos: el texto del chat; los **cinco nombres de texto libre** del resumen (cuenta, categoría, presupuesto, meta, deuda); y —solo si la persona reporta un mensaje— el texto reportado y su comentario, que quedan en nuestro servidor. **Con el interruptor de §8.7 encendido se suma también el texto de las notas**, que ya está cubierto por esta misma casilla |
+| **Identifiers → User ID** | Recopilado | Sin cambio: no viaja al proveedor del modelo |
+| **Tracking** | No | **No** — nada de esto es seguimiento entre apps ni alimenta publicidad |
+
+**Por qué el interruptor de notas no permite quitar ninguna casilla.** Apple
+solo exime de declarar un dato bajo su *Optional Disclosure*, y exige que se
+cumplan **todos** los criterios a la vez: que no sea parte de la funcionalidad
+principal, que sea infrecuente, y que la persona dé una **elección afirmativa
+cada vez** que se envía. Un interruptor persistente en Ajustes no cumple el
+último criterio: se activa una vez y aplica a todos los turnos siguientes. Por
+tanto las notas se declaran bajo *User Content → Other User Content*, sin
+excepción posible. `[VERIFICAR: releer la página vigente de App Privacy Details
+de Apple en el momento del envío; los criterios de Optional Disclosure han
+cambiado de redacción antes]`
+
+> Ojo con una asimetría fácil de pasar por alto: el formulario de Apple **no
+> tiene una casilla de "compartido con terceros"** equivalente a la de Play, así
+> que las etiquetas casi no cambian. Eso puede dar la falsa sensación de que en
+> iOS no hay nada que hacer. Al contrario: en iOS el trabajo está en el
+> **consentimiento in-app** y en las notas de revisión, no en las etiquetas.
+
+`PrivacyInfo.xcprivacy` no necesita tipos nuevos por esto (los tipos ya están
+declarados), pero hay que **releerlo contra §2.2** en el mismo envío.
+
+### 8.5 Notas para App Review — párrafo a añadir
+
+> billetudo incluye un **asistente financiero opcional** basado en un modelo de
+> lenguaje. Requiere iniciar sesión; el resto de la app sigue funcionando sin
+> cuenta.
+>
+> Antes del primer mensaje, la app muestra una pantalla de consentimiento que
+> indica que el texto escrito y un **resumen agregado** de las finanzas del
+> usuario se envían a **Google (API de Gemini)** para generar la respuesta, y
+> que el procesamiento ocurre fuera del país del usuario. El usuario debe
+> aceptar explícitamente y puede retirar ese permiso desde Ajustes
+> (Guideline 5.1.2(i)).
+>
+> Ese resumen **incluye los nombres que el propio usuario les puso** a sus
+> cuentas, categorías, presupuestos, metas y deudas: es lo que permite que la
+> respuesta se refiera a ellos por su nombre. Como el nombre de una deuda puede
+> ser el de una persona, lo decimos explícitamente en la política (§12 y §17.3).
+>
+> **No se envían** el nombre de la entidad bancaria del usuario, los últimos 4
+> dígitos de sus tarjetas, el número completo de sus cuentas, ni su nombre o
+> correo. No se envían archivos, fotos ni audio.
+>
+> **Las notas de texto libre no se envían por defecto.** Ajustes incluye un
+> interruptor independiente, **apagado de fábrica**, que el usuario puede
+> encender para que el asistente pueda leerlas y responder con más precisión, y
+> apagar en cualquier momento. Con el interruptor apagado, el texto de las notas
+> no sale del dispositivo hacia el proveedor del modelo.
+>
+> Existe además una búsqueda que **no** envía notas en ningún caso: cuando el
+> usuario nombra un pago programado por una palabra que solo está en su nota, el
+> modelo devuelve un término de búsqueda, **el propio dispositivo** lo compara
+> contra sus notas locales y solo regresan campos estructurados (identificador,
+> monto, fecha, frecuencia, categoría y cuenta). El texto de la nota no vuelve al
+> modelo ni entero ni en fragmentos.
+>
+> El historial de la conversación se guarda **solo en el dispositivo** y no se
+> sincroniza. Nuestro servidor no almacena el contenido de las conversaciones,
+> **con una única excepción que inicia el propio usuario**: si reporta un
+> mensaje del asistente, ese mensaje —y solo ese, no la conversación— se guarda
+> en nuestro servidor junto con el motivo y un comentario opcional, para poder
+> revisarlo. La app lo advierte en pantalla antes de enviar el reporte.
+>
+> Ese mecanismo de reporte es accesible **desde la propia conversación, sin
+> salir de la app**, y cubre el requisito de reporte de contenido generado con
+> IA. Los reportes se eliminan cuando el usuario borra su cuenta.
+>
+> El asistente **propone** acciones (crear un presupuesto, una meta, una
+> categoría, registrar un movimiento) pero **nunca las ejecuta**: la app muestra
+> una tarjeta y el usuario debe confirmar con un toque. La pantalla incluye un
+> aviso permanente de "Beta" y de que no se trata de asesoría financiera.
+
+### 8.6 Precondiciones que hay que cumplir antes de enviar
+
+Sin las tres primeras, esta hoja no se puede usar:
+
+1. **Key de tier de pago de la API de Gemini.** Con la capa gratuita, Google
+   puede usar el contenido enviado para desarrollar y mejorar sus productos, con
+   posible revisión humana. En ese caso la política v1.5 §17 (que promete lo
+   contrario) sería **falsa**, y la feature no puede abrirse a terceros ni
+   declararse.
+2. **Política v1.5 publicada antes** de que el binario con el asistente esté
+   disponible, no el mismo día.
+3. **Consentimiento in-app implementado** nombrando a Google (Apple 5.1.2(i)).
+4. ✅ **Resuelto (2 de septiembre de 2026).** El menú de long-press sobre un
+   mensaje del asistente ofrece "Reportar", que abre la hoja de motivo (5
+   razones cerradas + comentario opcional) con el aviso de privacidad fijo
+   antes de poder confirmar. `20260825140000_ai_reports.sql` está aplicada
+   **en dev y en prod** (verificado). Probado de punta a punta en dispositivo
+   real contra la base de dev: el reporte quedó guardado en `ai_reports` con
+   `reason`, `reported_text`, `comment`, `conversation_id`, `client_version` y
+   `status: pending` correctos.
+5. **`delete_account_data` cubre las tablas del asistente.** ✅ Ya resuelto en
+   el código: la migración `20260825120000_ai_assistant_access_and_usage.sql`
+   las agrega a la función en la misma migración que las crea, y
+   `20260825140000_ai_reports.sql` hace lo mismo con `ai_reports`. En **dev**,
+   `select * from delete_account_data_coverage_gaps();` devuelve **cero filas**.
+   Falta el paso operativo en **prod**: aplicar ambas migraciones y repetir la
+   consulta ahí.
+6. **Redacción de Sentry** cubriendo texto del chat, resumen y propuestas: un
+   crash que filtre lo que la política promete no transmitir convierte esa
+   promesa en falsa.
+7. **Test de lista blanca del resumen** en verde: es lo único que sostiene la
+   respuesta "User payment info NO compartido" de §8.3. Con el interruptor de
+   §8.7 esa lista blanca deja de ser una constante y pasa a depender de un
+   ajuste, así que el test tiene que cubrir **los dos estados**: apagado (ni una
+   nota en el payload) y encendido (notas sí, pero `institution` y `last4`
+   siguen fuera). Sin el caso "apagado" en verde, la §17.7 de la política y la
+   fila "opcional" de §8.7 dejan de ser defendibles.
+8. ✅ **Resuelto (1 de septiembre de 2026). Interruptor de notas cableado de
+   extremo a extremo y apagado por defecto** (esquema → dominio →
+   snapshot/herramientas → UI de Ajustes). Verificado en
+   `AppSettings.aiNotesAccessEnabled` (dominio), `prompt.ts` (las dos
+   variantes de sección según el flag), y `AiSettingsSection`/
+   `AiNotesAccessField`/`AiNotesAccessSheet` (UI). §8.7 pasa de checklist a
+   declaración vigente.
+8-bis. ✅ **Resuelto en la parte de comparación.** `aiConsentVersion` sí se
+   compara de verdad (`AppSettings.hasAcceptedAiConsent`, que exige
+   `aiConsentVersion >= currentAiConsentVersion`) y la constante ya subió a
+   `2` (`lib/features/ai/domain/entities/ai_consent.dart`) precisamente para
+   forzar a que quien aceptó la versión 1 vuelva a ver el consentimiento.
+   ⚠️ Lo que sigue abierto es el punto 9, sobre el **contenido** del texto que
+   se muestra, no sobre si la versión se compara.
+9. ⚠️ **Sigue abierto.** El texto de `aiConsentBody` sigue diciendo "sin notas
+   ni datos de identificación bancaria" y nunca se amplió para mencionar que
+   existe un interruptor separado para las notas. No es falso (con el
+   interruptor apagado por defecto, la afirmación se sostiene), pero es una
+   oportunidad de consentimiento más informado que no se tomó.
+   `[VERIFICAR: decisión de quien mantiene el código sobre si vale la pena
+   ampliar el texto y si eso amerita subir currentAiConsentVersion otra vez]`.
+10. ✅ **Resuelto (1 de septiembre de 2026). Sección de IA en Ajustes
+    existente.** `lib/features/settings/presentation/pages/settings_page.dart`
+    ya incluye `const AiSettingsSection()`, con el interruptor de notas y el
+    enlace para retirar el consentimiento general del asistente.
+11. **Clasificación por edad:** un chatbot de IA puede mover el cuestionario de
+    ambas tiendas. `[VERIFICAR: si declarar IA generativa altera la clasificación 16+ de Apple o el cuestionario IARC de Play]`
+12. **EEE:** el veto de §0.1 sigue vigente y ahora suma un tercero más. Además,
+    la capa gratuita de la API de Gemini no es utilizable para usuarios del EEE
+    en ningún caso.
+
+### 8.7 El interruptor opt-in de notas — cómo se declara
+
+> ✅ **Resuelto el 1 de septiembre de 2026: el interruptor está cableado de
+> extremo a extremo.** `AppSettings.aiNotesAccessEnabled` y
+> `AppSettings.aiConsentVersion` ya no son solo columnas de esquema: la
+> entidad de dominio las expone (`lib/features/settings/domain/entities/app_settings.dart`),
+> el snapshot y el prompt del backend cambian de sección según el valor
+> (`supabase/functions/_shared/ai/prompt.ts`, `NOTES_WITHHELD_SECTION` /
+> `NOTES_VISIBLE_SECTION`), y hay UI real en Ajustes: `AiSettingsSection`
+> muestra `AiNotesAccessField` solo mientras el consentimiento general está
+> activo, encenderlo pide confirmación explícita en `AiNotesAccessSheet`
+> (nombrando a Google Gemini), y apagarlo aplica de inmediato sin preguntar.
+> Retirar el consentimiento general (`clearAiConsent`) apaga este interruptor
+> también, en la misma escritura — no queda un permiso huérfano. Esta
+> subsección deja de ser un checklist a futuro y pasa a ser la declaración
+> vigente para el binario que incluya el asistente.
+
+**Qué es.** Un interruptor en Ajustes, **apagado por defecto**, que autoriza al
+asistente a leer el texto libre de `Transactions.note`, `GoalContributions.note`,
+`DebtEntries.note` y `ScheduledPayments.note`. Encendido, ese texto viaja a
+Google como parte del resumen y de los resultados de herramienta.
+
+#### Google Play — Data Safety
+
+| Campo | Respuesta | Por qué |
+|---|---|---|
+| Tipo de dato | **App activity → Other user-generated content** | Ya está declarado como recopilado y compartido por el chat; las notas no abren un tipo nuevo |
+| ¿Recopilado? | **Sí** | Se transmite fuera del dispositivo cuando el interruptor está encendido |
+| ¿Compartido con terceros? | **Sí (Google)** | Play cuenta como *shared* cualquier transferencia a un tercero, incluido un encargado |
+| ¿Es obligatoria esta recopilación? | **No — es opcional** (*"Users can choose whether this data is collected"*) | Es exactamente el caso que esa casilla describe: apagado por defecto, la app funciona igual sin encenderlo, y se puede apagar. Marcarla como obligatoria sería declarar de más |
+| Finalidad | **App functionality** | Sirve para producir la respuesta del turno. No es *Personalization* (no alimenta ningún perfil) ni *Analytics* |
+| ¿Se procesa efímeramente? | **No marcar "processed ephemerally"** para esta fila | La respuesta la genera un tercero y Google (Gemini) registra las solicitudes por un tiempo limitado por abuso y obligaciones legales. "Efímero" solo aplica cuando el dato no se retiene en absoluto |
+
+#### Apple — App Privacy
+
+| Campo | Respuesta |
+|---|---|
+| Tipo | **User Content → Other User Content** (ya declarado) |
+| ¿Casilla nueva? | **No.** El formulario de Apple no tiene equivalente a la casilla "opcional" de Play |
+| ¿Se puede omitir por ser opcional? | **No** — ver el análisis de *Optional Disclosure* en §8.4: falla el criterio de "elección afirmativa cada vez" |
+| Linked to user / Tracking | **Linked to the user** (va con la sesión), **Tracking: No** |
+
+#### Consentimiento (Apple 5.1.2(i) y bases legales de la política)
+
+Estas cuatro propiedades tienen que ser ciertas en pantalla, no solo en el
+documento:
+
+1. El interruptor es **independiente** del consentimiento general del asistente.
+   Aceptar el asistente **no** puede encender las notas. Un consentimiento
+   agrupado ("acepto todo") no es válido bajo el RGPD para dos finalidades
+   distinguibles, ni bajo el criterio de acción afirmativa de Apple.
+2. **Apagado por defecto**, sin casilla premarcada.
+3. **Reversible** desde el mismo lugar, sin fricción añadida.
+4. El texto junto al interruptor tiene que decir **a dónde** van las notas
+   (Google) y **qué son** (texto libre que puede contener datos de terceros).
+
+#### Lo que NO se declara por esto
+
+- La **búsqueda local por nota** no aporta nada a esta hoja: la nota se compara
+  en el dispositivo y no se transmite (§8.3). Si alguien la declara como
+  recopilación de contenido, está declarando de más.
+- El **estado del interruptor** en sí es una preferencia de la app, ya cubierta
+  por *App activity → Other actions* / *Product Interaction*.

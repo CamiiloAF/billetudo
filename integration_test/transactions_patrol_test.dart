@@ -264,6 +264,34 @@ Future<void> _pickAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
 }
 
+/// Types [text] into the form's Nota field
+/// (`NoteAutocompleteField`/`TextField`,
+/// `lib/core/widgets/note_autocomplete_field.dart`).
+///
+/// Scrolls it into view first: `TransactionFormPage`'s scroll zone (Tipo ->
+/// Cuenta -> Categoría -> Fecha -> Nota -> Etiquetas, a plain `ListView`,
+/// not `.builder`) shares the viewport with `TransactionAmountFixedZone`,
+/// the anchored "Zona Fija" keypad at the bottom — which starts, and stays,
+/// **expanded** through account/category selection (it only collapses once
+/// Nota itself takes focus, see that widget's own doc comment), eating a
+/// large slice of screen height the whole time. On a phone-sized viewport
+/// that squeeze is often enough to push Nota outside the `ListView`'s cache
+/// extent, so its `TextField` is not in the element tree at all yet — same
+/// discard-off-screen-children behavior already worked around elsewhere in
+/// this suite (e.g. `_createAccountScopedBudget`) and in
+/// `settings_patrol_test.dart`'s `_openSettings`, not a hit-test miss.
+Future<void> _enterNote(PatrolIntegrationTester $, String text) async {
+  final field = find.byType(TextField);
+  await $.tester.scrollUntilVisible(
+    field,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await $.tester.pumpAndSettle();
+  await $.tester.enterText(field, text);
+  await $.tester.pumpAndSettle();
+}
+
 /// Taps the only `TransactionRow` on screen, to open its detail page.
 ///
 /// Not a match against the row's rendered title: `TransactionRow._title`'s
@@ -431,6 +459,20 @@ Future<void> _createAccountScopedBudget(
   await $.tester.tap(find.byTooltip('Nuevo presupuesto'));
   await $.tester.pumpAndSettle();
 
+  // `BudgetFormPage` gates its body on `BudgetFormCubit`'s own async initial
+  // load (`state.status == BudgetFormStatus.loading` renders
+  // `BudgetFormSkeletonView`, no `TextFormField` at all, instead of
+  // `BudgetFormBody`) — that load is a real on-device Drift query, not
+  // something `pumpAndSettle` above waits for (nothing schedules a frame
+  // while the query's `Future` is in flight), so the skeleton can still be
+  // showing the instant control returns here. Wait for the name field to
+  // actually mount before typing into it — same reasoning as this file's
+  // own `_expectEventually` doc comment.
+  await _expectEventually(
+    $,
+    find.byType(TextFormField),
+    findsWidgets,
+  );
   await $.tester.enterText(find.byType(TextFormField).first, name);
   await $.tester.pumpAndSettle();
   await $.tester.enterText(find.byType(TextFormField).at(1), amount);
@@ -988,8 +1030,7 @@ void main() {
       // No "Sin categoría" affordance exists at all (see `_pickCategory`'s
       // doc comment) — a category is mandatory for expense/income.
       await _pickCategory($, 'Comida test');
-      await $.tester.enterText(find.byType(TextField), 'Almuerzo');
-      await $.tester.pumpAndSettle();
+      await _enterNote($, 'Almuerzo');
       await _saveNewTransaction($, categoryName: 'Comida test');
 
       // The saved transaction has a note ("Almuerzo"), so `TransactionRow`
@@ -1206,8 +1247,7 @@ void main() {
       await _tapAccountField($, 'Cuenta');
       await _pickAccount($, 'Efectivo');
       await _pickCategory($, 'Comida');
-      await $.tester.enterText(find.byType(TextField), 'Almuerzo oficina');
-      await $.tester.pumpAndSettle();
+      await _enterNote($, 'Almuerzo oficina');
       await _saveNewTransaction($, categoryName: 'Comida');
       await _expectEventually($, find.byType(TransactionRow), findsOneWidget);
 
@@ -1219,8 +1259,7 @@ void main() {
       await _tapAccountField($, 'Cuenta');
       await _pickAccount($, 'Efectivo');
       await _pickCategory($, 'Comida');
-      await $.tester.enterText(find.byType(TextField), 'Almu');
-      await $.tester.pumpAndSettle();
+      await _enterNote($, 'Almu');
 
       await _expectEventually(
         $,

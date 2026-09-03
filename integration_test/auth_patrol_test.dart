@@ -2,13 +2,16 @@
 // app: real DI graph, real on-device Drift database, real go_router
 // navigation. No datasource or repository is mocked.
 //
-// Supabase/PowerSync are not wired into this project yet (see CLAUDE.md →
-// "Estado del repo" and `docs/requirements/fase-1/05-auth-sync.md`): every real
-// Google/Apple sign-in call throws `UnimplementedError` from
-// `AuthRepositoryImpl`. That rules out automating an actual sign-in, a real
-// merge, a real cloud delete, or a real "Cerrar sesión" (which only shows in
-// "Más" once a session exists — unreachable without a real sign-in). Those
-// flows already have full coverage without a real backend at the cubit level
+// Supabase/PowerSync are wired into this project (see CLAUDE.md → "Estado
+// del repo": `lib/core/bootstrap.dart`, `lib/core/database/database_connection.dart`,
+// `lib/core/database/powersync_schema.dart`, `lib/core/di/register_module.dart`).
+// Automating a real Google/Apple sign-in end to end still is not viable
+// here — it needs a real OAuth round trip through a system browser/account
+// chooser outside Flutter's widget tree, not something Patrol drives — so a
+// real sign-in, a real merge, a real cloud delete, or a real "Cerrar sesión"
+// (which only shows in "Más" once a session exists — unreachable without a
+// real sign-in) stay out of scope for this suite. Those flows already have
+// full coverage without a real backend at the cubit level
 // (`test/features/auth/presentation/cubit/`) and, for the no-dark-pattern
 // requirement on paso 2 of "Eliminar cuenta", at the widget level
 // (`test/features/auth/presentation/widgets/sheets/local_data_choice_sheet_test.dart`)
@@ -22,14 +25,31 @@
 // which really surfaces the neutral error sheet instead of crashing).
 import 'package:billetudo/features/auth/presentation/pages/login_page.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
+/// "Ajustes" is `MorePage`'s last row before "Cerrar sesión" (8th of 8, each
+/// with an icon, a bold label and a description line — tall enough that a
+/// phone screen shows only the first 5-6 without scrolling). `MorePage`'s
+/// `ListView` is a plain one (`ListView(children: [...])`, not `.builder`),
+/// but — same caveat as `_scrollUntilVisible` documents in
+/// `accounts_patrol_test.dart` — its underlying sliver still discards
+/// elements that scroll far enough outside the cache extent, so tapping
+/// "Ajustes" without scrolling to it first fails with "Found 0 widgets", not
+/// a hit-test miss — verified against the real emulator run this suite
+/// failed on.
 Future<void> _openSettings(PatrolIntegrationTester $) async {
   await $.tester.tap(find.text('Más'));
+  await $.tester.pumpAndSettle();
+  await $.tester.dragUntilVisible(
+    find.text('Ajustes'),
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.text('Ajustes'));
   await $.tester.pumpAndSettle();

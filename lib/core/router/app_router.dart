@@ -16,6 +16,14 @@ import '../../features/accounts/presentation/pages/accounts_page.dart';
 import '../../features/accounts/presentation/pages/archived_accounts_page.dart';
 import '../../features/accounts/presentation/widgets/account_gate_copy.dart';
 import '../../features/accounts/presentation/widgets/account_gated_route.dart';
+import '../../features/ai/presentation/cubit/ai_action_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_chat_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_consent_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_conversation_read_cubit.dart';
+import '../../features/ai/presentation/cubit/ai_history_cubit.dart';
+import '../../features/ai/presentation/pages/ai_assistant_page.dart';
+import '../../features/ai/presentation/pages/ai_conversation_read_page.dart';
+import '../../features/ai/presentation/pages/ai_history_page.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/domain/entities/delete_account_scope.dart';
 import '../../features/auth/domain/entities/sign_out_outcome.dart';
@@ -175,6 +183,15 @@ abstract final class AppRoutes {
   static const String scheduledPayments = '/pagos-programados';
   static const String newScheduledPayment = '/pagos-programados/nuevo';
   static const String reports = '/graficas';
+  static const String ai = '/asistente';
+  static const String aiHistory = '/asistente/historial';
+
+  /// The read-only view of a single past thread (`AiConversationReadPage`),
+  /// reached from `AiConsentPage`'s "Ver mis conversaciones anteriores" —
+  /// unlike [ai], reopening a conversation here never needs consent, since
+  /// it only reads what is already on the device. Takes `conversationId` as
+  /// a query parameter, same shape as [ai]'s own `conversationId` param.
+  static const String aiConversationRead = '/asistente/conversacion';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
@@ -203,6 +220,32 @@ abstract final class AppRoutes {
   /// A stacked "Próximamente" page titled with a destination's name.
   static String comingSoonTitled(String title) =>
       '$comingSoon?title=${Uri.encodeQueryComponent(title)}';
+
+  /// The assistant, opened with [question] pre-seeded (Home's AI card
+  /// chips): `AiAssistantPage` starts a brand-new thread and sends it right
+  /// away instead of resuming the last conversation.
+  ///
+  /// [insightType] (`HomeAiInsightType.name`), when set, is the AI card
+  /// insight chip this brand-new thread was started from (bugfix item 7):
+  /// `AiChatCubit.startNew` links the freshly created conversation id to it
+  /// the moment it exists, so the chip flips to "continuar" on return.
+  static String aiWithQuestion(String question, {String? insightType}) {
+    final params = {
+      'initialQuestion': question,
+      if (insightType != null) 'insightType': insightType,
+    };
+    final query = params.entries
+        .map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}')
+        .join('&');
+    return '$ai?$query';
+  }
+
+  /// The assistant, opened straight into [conversationId] — the thread
+  /// already linked to an AI card insight chip (bugfix item 7). Unlike
+  /// [aiWithQuestion], nothing is sent automatically: this just resumes an
+  /// existing thread, same as picking a row from the history list.
+  static String aiWithConversation(String conversationId) =>
+      '$ai?conversationId=${Uri.encodeQueryComponent(conversationId)}';
 
   /// Detail of one budget: `/presupuestos/<id>`.
   static String budget(String id) => '$budgets/$id';
@@ -476,6 +519,9 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _goalLinkModeRoute(),
       _importExportRoute(),
       _reportsRoute(),
+      _aiRoute(),
+      _aiHistoryRoute(),
+      _aiConversationReadRoute(),
       // The welcome flow (`13-onboarding.md`): a sibling of the shell route,
       // same reasoning as the routes above — it must render without the tab
       // bar, and unlike them it is also the *only* screen reachable while
@@ -549,20 +595,44 @@ StatefulShellBranch _inicioBranch() => StatefulShellBranch(
                 getIt<ReportsShellCubit>().resetToDefault();
                 unawaited(context.push(AppRoutes.reports));
               },
+              onOpenGoals: () => context.go(AppRoutes.goals),
               // The gear closing the quick-access strip: same Ajustes screen
               // the "Más" hub links to, reached without leaving Inicio.
               onOpenQuickAccessOrder: () =>
                   context.push(AppRoutes.quickAccessOrder),
               // Bugfix item 6: offline with no session → back up / sign in.
+              // Reused as "Tu cuenta"'s "Activar respaldo" CTA too.
               onOpenLogin: () => context.push(AppRoutes.login),
               onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
-              // NOTE(gate-cuenta run): `HomePage` on disk no longer declares
-              // `onOpenBudget` — this callsite was left dangling by something
-              // outside this task's scope (a build break present before any
-              // of this run's edits, see the run's closing notes). Dropped
-              // here only to keep the tree compiling; the "home-hero-period-
-              // stepper" item 7 feature itself needs a real look, not a
-              // silent re-add.
+              onOpenSettings: () => context.push(AppRoutes.settings),
+              onSignOut: () => unawaited(_confirmSignOut(context)),
+              onOpenAi: (question) => unawaited(
+                context.push(
+                  question == null
+                      ? AppRoutes.ai
+                      : AppRoutes.aiWithQuestion(question),
+                ),
+              ),
+              // Bugfix item 7: the AI card insight's own chip, distinct from
+              // `onOpenAi` above. `_HomePageState` refreshes `HomeCubit`'s
+              // resolved `HomeAiInsight.conversationId` itself once the
+              // returned future completes (so the chip's copy/destination
+              // reflects whatever just happened) — NOT here: `context` at
+              // this scope is the route's own builder context, an ANCESTOR
+              // of the `MultiBlocProvider` below that actually provides
+              // `HomeCubit`, so `context.read<HomeCubit>()` after an `await`
+              // at this level throws `ProviderNotFoundException` every time
+              // (this is exactly BILLETUDO's "Provider<HomeCubit> not found
+              // for Builder" — caught live, not hypothetical).
+              onOpenAiInsightQuestion: ({
+                required question,
+                required insightType,
+              }) =>
+                  context.push(
+                AppRoutes.aiWithQuestion(question, insightType: insightType),
+              ),
+              onOpenAiConversation: (conversationId) =>
+                  context.push(AppRoutes.aiWithConversation(conversationId)),
             ),
           ),
         ),
@@ -1326,6 +1396,78 @@ GoRoute _reportsRoute() => GoRoute(
       },
     );
 
+// Asistente IA (`design-system/billetudo/pages/asistente-ia.md`): reached from
+// Inicio's `AI Banner`, rendered as a stacked screen (`Page Header`, no `Tab
+// Bar`). `AiConsentCubit`/`AiChatCubit`/`AiActionCubit` are all `@injectable`
+// (never singletons) so a fresh instance is provided per visit, same as
+// `ReportsShellCubit`'s siblings that are *not* lazy singletons.
+GoRoute _aiRoute() => GoRoute(
+      path: AppRoutes.ai,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => getIt<AiConsentCubit>()),
+          BlocProvider(create: (context) => getIt<AiChatCubit>()),
+          BlocProvider(create: (context) => getIt<AiActionCubit>()),
+          // Only actually read while `AiConsentCubit` reports not-granted
+          // (`AiAssistantPage`'s `AiConsentPage` branch) — provided here
+          // regardless so that branch always finds it in context, same
+          // shape as the three cubits above.
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<AiHistoryCubit>(), (c) => c.start()),
+          ),
+        ],
+        child: AiAssistantPage(
+          initialQuestion: state.uri.queryParameters['initialQuestion'],
+          initialInsightType: state.uri.queryParameters['insightType'],
+          initialConversationId: state.uri.queryParameters['conversationId'],
+          onBack: () => context.pop(),
+          onOpenHistory: () => context.push<String>(AppRoutes.aiHistory),
+          onOpenReadOnlyConversation: (conversationId) => context.push(
+            '${AppRoutes.aiConversationRead}?conversationId=$conversationId',
+          ),
+          onSignIn: () => context.push(AppRoutes.login),
+        ),
+      ),
+    );
+
+// The assistant's history list, a sibling stacked route (not nested under
+// `_aiRoute()`) so it can pop back to the chat screen carrying the picked
+// conversation id as its result (`AiHistoryPage`'s own doc).
+GoRoute _aiHistoryRoute() => GoRoute(
+      path: AppRoutes.aiHistory,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<AiHistoryCubit>(), (c) => c.start()),
+        child: const AiHistoryPage(),
+      ),
+    );
+
+// The read-only view of a single thread (`AiConsentPage`'s "Ver mis
+// conversaciones anteriores"), a sibling stacked route so its back button
+// pops straight to whatever pushed it — always `_aiRoute()`'s own
+// `AiConsentPage`, today. `AiActionCubit` is provided again (fresh instance,
+// same as `_aiRoute()`'s) because `AiProposalCard` inside the reused bubbles
+// needs one in context; `AiConsentCubit`/`AiChatCubit` are deliberately not
+// provided here at all — this screen has no code path that could use them.
+GoRoute _aiConversationReadRoute() => GoRoute(
+      path: AppRoutes.aiConversationRead,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => getIt<AiActionCubit>()),
+          BlocProvider(create: (context) => getIt<AiConversationReadCubit>()),
+        ],
+        child: AiConversationReadPage(
+          conversationId: state.uri.queryParameters['conversationId'] ?? '',
+          onBack: () => context.pop(),
+          onReactivate: () => context.pop(),
+        ),
+      ),
+    );
+
 // Deudas (HU-04, Nivel 0): reached from Inicio's quick-access "Deudas" chip and
 // rendered as a stacked screen on the root navigator — a `Page Header` with a
 // back button, no `Tab Bar`. The read screens (list + detail) plus the write
@@ -1486,8 +1628,7 @@ GoRoute _debtLinkModeRoute() => GoRoute(
                 ),
               ),
               BlocProvider.value(
-                value:
-                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
               ),
               BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
             ],
@@ -1519,8 +1660,7 @@ GoRoute _goalLinkModeRoute() => GoRoute(
                 ),
               ),
               BlocProvider.value(
-                value:
-                    _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
+                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
               ),
               BlocProvider.value(
                 value: getIt<GoalLinkCubit>()

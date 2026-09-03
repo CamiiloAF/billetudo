@@ -1,0 +1,31 @@
+-- schemaVersion 30 (asistente financiero con IA, Fase A): consentimiento
+-- explicito para enviar datos a un modelo de IA de terceros.
+--
+-- Requisito de App Review 5.1.2(i): el consentimiento debe ser explicito,
+-- informado y registrado ANTES del primer mensaje. Se guarda en app_settings
+-- —y no en preferencias locales del telefono— porque el consentimiento es de
+-- la persona, no del dispositivo: quien acepto en su telefono no debe volver a
+-- ser preguntado en otro, y quien lo retira lo retira en todos.
+--
+-- Nullable: null = todavia no lo dio, o lo retiro. No se hace backfill, ni
+-- aqui ni en la migracion de Drift — escribir un valor seria fabricar un
+-- consentimiento que nadie dio.
+--
+-- bigint en segundos unix, NUNCA timestamptz: app_settings es una tabla
+-- sincronizada y Drift la lee a traves de una vista de PowerSync donde cada
+-- columna es un CAST(json_extract(...) AS <tipo>). Un timestamptz llega como
+-- texto y CAST('2026-08-25...' AS INTEGER) da 2026 en silencio. Ver la
+-- cabecera de lib/core/database/powersync_schema.dart y la decision #15 de
+-- docs/requirements/fase-1/05-auth-sync.md.
+--
+-- Paridad explicita con lib/core/database/app_database.dart
+-- (AppSettings.aiConsentAcceptedAt) y lib/core/database/powersync_schema.dart:
+-- subir schemaVersion en Drift no migra Postgres, y sin este ALTER TABLE el
+-- conector de PowerSync responde PGRST204 y la cola de subida queda
+-- quarantined.
+--
+-- El historial del chat (ai_messages) NO tiene contraparte aqui a proposito:
+-- es una tabla local-only en el dispositivo y nunca llega a Postgres, asi que
+-- delete_account_data no necesita tocarla.
+alter table public.app_settings
+  add column if not exists ai_consent_accepted_at bigint;

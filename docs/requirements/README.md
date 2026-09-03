@@ -60,4 +60,20 @@ Aplican a los cuatro documentos; cada uno las desarrolla en su propio contexto.
 
 > **Lee el `schemaVersion` vigente al implementar; no copies un número de estos documentos.** Al 2026-08-17 el working tree está en **28** mientras `HEAD` está en **26** — hay trabajo sin commitear que ya consumió 27 y 28. Con ese estado las dos migraciones de Fase 2 serían 28 → 29 y 29 → 30, pero el esquema se mueve rápido. Este mismo repo ya tiene el precedente: `fase-1/09-pagos-programados.md` documentó "hoy 10 → 11" y quedó obsoleto. Dos features reclamando la misma versión producen una base local que se cree migrada sin estarlo, y el fallo es silencioso.
 
-**Bloqueante de publicación.** `docs/legal/declaraciones-tiendas.md` y `docs/legal/AUDITORIA.md` declaran hoy ante las tiendas que la app **no** tiene captura por voz, OCR ni IA, apoyándose en que `lib/features/capture/` está vacío. Fase 2 invalida esa declaración: hay que actualizarla, junto con los primeros `uses-permission` del `AndroidManifest.xml` y las claves `*UsageDescription` del `Info.plist`, antes de publicar.
+**Bloqueante de publicación.** `docs/legal/declaraciones-tiendas.md` y `docs/legal/AUDITORIA.md` declaran hoy ante las tiendas que la app **no** tiene captura por voz ni OCR, apoyándose en que `lib/features/capture/` está vacío. Fase 2 invalida esa declaración: hay que actualizarla, junto con los primeros `uses-permission` del `AndroidManifest.xml` y las claves `*UsageDescription` del `Info.plist`, antes de publicar.
+
+## [Fase 3](fase-3/) — Capa de mejora financiera (todo local)
+
+Su destino en código es `lib/features/improvement/`, hoy vacío.
+
+22. [Centro de notificaciones (insights proactivos)](fase-3/22-centro-notificaciones.md) — **exploratorio**, no es un compromiso de construcción: registra una decisión de producto del 2026-08-26 y su razonamiento, sin historias de usuario cerradas ni diseño. Tiene un solapamiento sin resolver con los recordatorios de vencimientos (HU-08 de `fase-1/09-pagos-programados.md`), que hay que decidir antes de construir cualquiera de los dos.
+
+> El 22 salió antes que el 21 en numeración de fase pero después en el tiempo: la numeración es global y correlativa al orden en que se escriben los documentos, no al orden de las fases.
+
+## [Fase 4](fase-4/) — Backend + IA
+
+21. [Asistente financiero con IA](fase-4/21-asistente-ia.md) — Fase A: chat con contexto financiero, propuestas que el usuario confirma, historial local.
+
+**Frontera de nivel.** El asistente conversacional es **Cubo C / Nivel 2 (Premium)** en `docs/Plan_Monetizacion_y_Tecnico.md` §2: una sesión de chat cuesta mucho más de lo que paga un anuncio recompensado, así que **nunca** se ofrece por Modo anuncios. La Fase A es una **beta cerrada y gratuita** (acceso por lista, requiere sesión) para medir costo y calidad antes de ponerle precio. Ninguna función de Nivel 0 puede depender del asistente ni degradarse si está caído.
+
+**Bloqueante de publicación (más silencioso que el de Fase 2).** El asistente **no añade ni un permiso del sistema**: un binario con IA se ve idéntico a uno sin IA desde el manifiesto y el `Info.plist`. Lo único que cambia es a dónde viajan los datos. Antes de activarlo hay que publicar la política v1.5 (§17), rehacer las declaraciones de tienda (`declaraciones-tiendas.md` §8), implementar el consentimiento explícito que nombra a Google (Apple 5.1.2(i)) y el reporte in-app que exige la política de contenido generado con IA de Google Play. La precondición dura es contratar el **tier de pago** de la API de Gemini: en la capa gratuita Google puede usar el contenido enviado para mejorar sus productos, y la política promete lo contrario.

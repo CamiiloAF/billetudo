@@ -44,6 +44,26 @@ import 'package:patrol/patrol.dart';
 
 import 'support/patrol_app.dart';
 
+/// Pumps frames until [finder] matches at least one widget, or a frame
+/// budget runs out. `CategorySelectSheet` shows a `CircularProgressIndicator`
+/// while `CategoriesListCubit.start` awaits its real on-device Drift stream
+/// (see `category_select_sheet.dart`'s `state.isLoading` branch) — an
+/// infinite animation, so `pumpAndSettle` right after opening the sheet can
+/// return once the spinner itself has settled into its steady rotation,
+/// before the stream's first real emission ever arrives and swaps in the
+/// category list. Tapping a category by name right after that lands on
+/// "Found 0 widgets" — verified against a real emulator run — so this polls
+/// for the row instead of trusting a single `pumpAndSettle`.
+Future<void> _pumpUntilFound(
+  PatrolIntegrationTester $,
+  Finder finder, {
+  int maxFrames = 30,
+}) async {
+  for (var i = 0; i < maxFrames && finder.evaluate().isEmpty; i++) {
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 /// Creates one cash account named [name] from `/cuentas`, same flow as
 /// `debts_patrol_test.dart`'s private `_createCashAccount`.
 Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
@@ -238,6 +258,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await $.tester.tap(categoryField);
       await $.tester.pumpAndSettle();
+      await _pumpUntilFound($, find.text('Cobros'));
       await $.tester.tap(find.text('Cobros'));
       await $.tester.pumpAndSettle();
       await $.tester.tap(

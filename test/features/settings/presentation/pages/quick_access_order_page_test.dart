@@ -20,8 +20,7 @@ void main() {
 
   setUp(() {
     cubit = MockAppSettingsCubit();
-    when(() => cubit.state)
-        .thenReturn(const AppSettingsState());
+    when(() => cubit.state).thenReturn(const AppSettingsState());
     when(() => cubit.setQuickAccessOrder(any()))
         .thenAnswer((_) async => const Right(unit));
   });
@@ -40,7 +39,7 @@ void main() {
   }
 
   testWidgets(
-      'renderiza los 3 accesos rápidos en el orden persistido en '
+      'renderiza los 5 accesos rápidos en el orden persistido en '
       'AppSettingsCubit', (tester) async {
     await pump(
       tester,
@@ -53,7 +52,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(QuickAccessOrderRow), findsNWidgets(3));
+    expect(find.byType(QuickAccessOrderRow), findsNWidgets(5));
 
     final rows = tester
         .widgetList<QuickAccessOrderRow>(find.byType(QuickAccessOrderRow))
@@ -77,8 +76,8 @@ void main() {
 
     // Drives the widget's own reorder callback directly: exercising the
     // real long-press drag gesture belongs to the router/e2e layer, this
-    // covers the persistence contract itself (criterion 5) — move the last
-    // item (Gráficas e informes) to the front.
+    // covers the persistence contract itself (criterion 5) — move Deudas
+    // (index 2 of the default order) to the front.
     final reorderable = tester.widget<ReorderableListView>(
       find.byType(ReorderableListView),
     );
@@ -87,9 +86,11 @@ void main() {
 
     verify(
       () => cubit.setQuickAccessOrder(const [
-        QuickAccessItem.reports,
-        QuickAccessItem.scheduledPayments,
         QuickAccessItem.debts,
+        QuickAccessItem.scheduledPayments,
+        QuickAccessItem.accounts,
+        QuickAccessItem.reports,
+        QuickAccessItem.goals,
       ]),
     ).called(1);
   });

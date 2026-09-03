@@ -13,6 +13,7 @@ import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
+import '../widgets/ai_settings_section.dart';
 import '../widgets/appearance_field.dart';
 import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_section_label.dart';
@@ -139,6 +140,8 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      const AiSettingsSection(),
                       const SizedBox(height: 32),
                       Material(
                         color: colors.expenseSoft,

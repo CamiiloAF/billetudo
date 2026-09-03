@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 /// decorative icon" across the buttons that show a `loader-circle`/
 /// `refresh-cw` glyph while a sync retry is in flight.
 ///
-/// One turn every 2s, matching `SyncIndicator` (`lib/features/home/
-/// presentation/widgets/sync_indicator.dart`): slow enough to read as calm
+/// One turn every 2s, matching the Home header's `AccountAvatar` status
+/// badge (`lib/features/home/presentation/widgets/account_avatar.dart`):
+/// slow enough to read as calm
 /// progress, fast enough to visibly move at icon size. Respects the OS
 /// "reduce motion" setting — the semantics of *why* the glyph is there
 /// (its label, owned by the caller) still communicate progress when the

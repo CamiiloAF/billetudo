@@ -1,6 +1,6 @@
 # Términos de uso de billetudo
 
-**Versión 1.2** · **Última actualización: 8 de agosto de 2026** · **En vigor desde: 8 de agosto de 2026**
+**Versión 1.3** · **Última actualización: 25 de agosto de 2026** · **En vigor desde: 3 de septiembre de 2026**
 
 Estos términos son el acuerdo entre tú y nosotros sobre el uso de billetudo. Los
 escribimos en español claro a propósito: un contrato que no se entiende no
@@ -69,9 +69,9 @@ que forma parte de estos términos.
 **billetudo es una herramienta de registro y organización, no un asesor.**
 
 Nada de lo que muestra la app —saldos, proyecciones, alertas de presupuesto,
-gráficas, sugerencias o cualquier función futura de inteligencia artificial—
-constituye asesoría financiera, contable, tributaria, legal ni de inversión, ni
-una recomendación personalizada.
+gráficas, sugerencias o las respuestas del asistente con inteligencia
+artificial— constituye asesoría financiera, contable, tributaria, legal ni de
+inversión, ni una recomendación personalizada.
 
 Las decisiones sobre tu dinero las tomas tú, bajo tu propia responsabilidad.
 Para decisiones relevantes, consulta a una persona profesional debidamente
@@ -80,6 +80,40 @@ autorizada.
 Los cálculos que hace la app dependen de la información que tú registras: si un
 dato está mal, el resultado estará mal. La app no puede verificar que lo que
 escribes sea correcto.
+
+### El asistente con inteligencia artificial
+
+Aplica todo lo anterior, y además esto, que conviene tener claro antes de usarlo:
+
+- **Está en Beta y puede equivocarse.** Un modelo de lenguaje puede dar una
+  respuesta incorrecta con total seguridad, incluidas cifras. No lo trates como
+  una fuente verificada: contrasta con tus propios datos, que están en la app.
+- **Sus respuestas no son una recomendación profesional**, aunque suenen como
+  una. No te dice qué hacer con tu dinero; te ayuda a mirarlo.
+- **Nada se aplica solo.** Cuando el asistente propone crear un presupuesto, una
+  meta, una categoría o registrar un movimiento, la app te muestra la propuesta
+  con sus valores exactos y **no escribe nada hasta que tú lo confirmes con un
+  toque**. Puedes editarla antes o simplemente ignorarla.
+- **Tú eres responsable de revisar lo que confirmas.** Confirmar una propuesta
+  equivale a haberla registrado a mano: los datos quedan en tu cuenta como
+  cualquier otro y las consecuencias de un dato equivocado son las mismas.
+- **Es opcional y requiere iniciar sesión.** El resto de la app funciona sin
+  cuenta y sin el asistente, y ninguna función gratuita depende de él.
+- **Puedes reportar una respuesta ofensiva o equivocada** desde la propia
+  conversación, sin salir de la app. Lo leemos y lo usamos para corregir el
+  asistente y sus filtros; no lo usamos para nada más. Tres cosas que conviene
+  saber antes de tocar ese botón:
+  - **El mensaje que reportes se guarda en nuestro servidor**, junto con el
+    motivo que elijas y el comentario que escribas. Es lo único de una
+    conversación que llega ahí; el resto del chat vive solo en tu teléfono. La
+    app te lo advierte en pantalla antes de enviarlo.
+  - **Una vez enviado no puedes editarlo ni borrarlo desde la app.** Un reporte
+    modificable después de enviarlo no sirve para revisar nada. Si necesitas
+    corregirlo o retirarlo, escríbenos al correo de la sección 14.
+  - **Se borra cuando borras tu cuenta**, como el resto de tus datos.
+- Qué datos salen de tu teléfono cuando lo usas, a quién llegan y qué se guarda
+  está en la sección 17 de la
+  [Política de privacidad](https://camiiloaf.github.io/billetudo/).
 
 ---
 
@@ -141,6 +175,9 @@ Al usar billetudo te comprometes a **no**:
 - automatizar el uso de la app o de nuestros servicios de forma que degrade el
   servicio para otras personas;
 - suplantar a otra persona ni registrar datos de terceros sin una razón legítima;
+- usar el asistente con inteligencia artificial para generar contenido ilegal,
+  ofensivo o engañoso, ni para intentar extraer información de otras personas
+  usuarias;
 - eludir las limitaciones técnicas de la aplicación o de las funciones de pago,
   si en el futuro existen.
 
@@ -161,6 +198,11 @@ Nuestro compromiso hacia adelante:
   **suscripción** o desbloquearse viendo **anuncios con recompensa de
   participación voluntaria**. Serán funciones **nuevas**, no funciones que hoy ya
   tienes.
+- **El asistente con inteligencia artificial es una de esas funciones nuevas.**
+  Hoy está en Beta, es gratuito y el acceso es limitado; más adelante será parte
+  de la versión de pago. Cuando eso ocurra no se estará cobrando por algo que
+  antes fuera gratis e ilimitado: seguirá siendo una función añadida, y nada de
+  lo esencial se moverá detrás de ella.
 - **Nunca** habrá anuncios que interrumpan el uso de la app: ni banners, ni
   pantallas completas entre acciones.
 
@@ -297,4 +339,4 @@ decide cada tienda, no estos términos.
 
 ---
 
-*billetudo — Términos de uso, versión 1.2, 8 de agosto de 2026.*
+*billetudo — Términos de uso, versión 1.3, 25 de agosto de 2026.*

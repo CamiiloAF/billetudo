@@ -1,7 +1,7 @@
 name: billetudo
 description: Billetudo — app de finanzas personales local-first (Flutter) para el mercado hispanohablante.
 publish_to: 'none'
-version: 0.0.5+8
+version: 0.0.6+10
 
 # NOTA: las versiones son indicativas. Ajusta con:
 #   flutter pub get   /   flutter pub upgrade --major-versions
@@ -156,6 +156,16 @@ dependencies:
   csv: ^6.0.0
   archive: ^4.0.4
   file_picker: ^12.0.0-beta.7
+  package_info_plus: ^10.2.1
+  flutter_timezone: ^5.1.0
+
+  # --- Legal links (Ajustes) ---
+  # Opens the privacy policy and the terms of use in the system browser
+  # (`lib/core/config/legal_urls.dart`). Both stores require those URLs to be
+  # reachable from inside the app, so this is a shipping requirement, not a
+  # convenience. Already present transitively; declared here because the app
+  # code imports it directly.
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
