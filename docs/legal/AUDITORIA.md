@@ -100,27 +100,24 @@ como evidencia del bloqueante real. Detalle en §10.4 (hallazgo 5).
 esquema al 2026-08-28; el hallazgo se conserva como evidencia. Detalle en
 §10.4 (hallazgos 4 y 4-bis).
 
-### B7 — ABIERTO (reconfirmado 2026-09-01): el mecanismo de reporte in-app del asistente no tiene UI
+### B7 — RESUELTO (2026-09-02): el mecanismo de reporte in-app del asistente ya tiene UI
 
-Sigue exactamente como se documentó el 2026-08-25 (punto 32 de §10.4): el
-backend está listo —`ai_reports` con RLS de `insert`+`select`, razones
-cerradas, borrado con la cuenta (`20260825140000_ai_reports.sql`)—, y en este
-PR se agregó además la capa `domain`/`data` completa
-(`ReportAiMessage`, `AiReportRepository`, `AiReportRepositoryImpl`,
-`AiReportRemoteDatasource`, registrados en `lib/core/di/injection.config.dart`).
-Pero **ningún widget de `lib/features/ai/presentation/` lo invoca**: el único
-menú contextual sobre un mensaje del asistente es `AiMessageCopyMenu`, y su
-única opción es "Copiar" — no hay botón de "Reportar" en ninguna pantalla.
+Cerrado. Documentado el 2026-08-25 (punto 32 de §10.4) y reconfirmado abierto
+el 2026-09-01; la capa `presentation/` que faltaba ya existe: el menú
+contextual sobre un mensaje del asistente (`AiMessageCopyMenu`) ahora ofrece
+"Reportar" junto a "Copiar", que abre `AiReportSheet` (5 motivos cerrados,
+comentario opcional, aviso de privacidad fijo fuera del scroll, imposible de
+confirmar sin verlo) orquestada por `AiReportCubit`.
 
-`politica-de-privacidad.md` §17.1/§17.5 y `terminos-de-uso.md` §3 describen el
-reporte como una función que funciona hoy. Eso es correcto **solo** como
-descripción del estado que el binario debe alcanzar antes de publicarse — la
-Guideline de *AI-Generated Content* de Google Play exige ese mecanismo sin
-salir de la app, y `declaraciones-tiendas.md` §8.6 (precondición 4) ya
-bloquea el envío mientras falte. **No actives `ai_feature_flags.ai_assistant_open_to_all`
-ni mezcles el binario a producción con el chat visible hasta que exista ese
-botón** — de lo contrario la política pasa de "correcta para cuando se
-publique" a "falsa para el binario que se publicó".
+**Verificado en dispositivo real, no solo en tests**: un reporte real quedó
+guardado en `ai_reports` (proyecto dev) con `reason`, `reported_text`,
+`comment`, `conversation_id`, `client_version` y `status: pending` correctos.
+
+`declaraciones-tiendas.md` §8.6 (precondición 4) actualizada en el mismo
+sentido. Quedan dos precondiciones abiertas de §8.6 antes de poder activar
+`ai_feature_flags.ai_assistant_open_to_all`: facturación de la API de Gemini
+(confirmado 2026-09-03: la key activa no tiene ningún proyecto de facturación
+habilitado) y las declaraciones de tienda re-declaradas en las consolas.
 
 ### B8 — BAJO (nuevo, 2026-09-01): el texto de consentimiento in-app no menciona el interruptor de notas
 

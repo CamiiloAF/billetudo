@@ -1049,13 +1049,14 @@ Sin las tres primeras, esta hoja no se puede usar:
 2. **Política v1.5 publicada antes** de que el binario con el asistente esté
    disponible, no el mismo día.
 3. **Consentimiento in-app implementado** nombrando a Google (Apple 5.1.2(i)).
-4. **Mecanismo de reporte in-app** (Play, AI-Generated Content policy).
-   **Parcial:** el lado de datos ya existe —`ai_reports` con RLS de
-   `insert`+`select`, razones cerradas y borrado con la cuenta
-   (`20260825140000_ai_reports.sql`)—, pero **falta la UI** que lo dispare y el
-   aviso previo. Play mira el binario, así que hasta que exista la pantalla la
-   precondición sigue abierta. Además, la migración está aplicada **solo en
-   dev**: `[VERIFICAR: aplicar 20260825140000_ai_reports.sql en prod antes de publicar]`.
+4. ✅ **Resuelto (2 de septiembre de 2026).** El menú de long-press sobre un
+   mensaje del asistente ofrece "Reportar", que abre la hoja de motivo (5
+   razones cerradas + comentario opcional) con el aviso de privacidad fijo
+   antes de poder confirmar. `20260825140000_ai_reports.sql` está aplicada
+   **en dev y en prod** (verificado). Probado de punta a punta en dispositivo
+   real contra la base de dev: el reporte quedó guardado en `ai_reports` con
+   `reason`, `reported_text`, `comment`, `conversation_id`, `client_version` y
+   `status: pending` correctos.
 5. **`delete_account_data` cubre las tablas del asistente.** ✅ Ya resuelto en
    el código: la migración `20260825120000_ai_assistant_access_and_usage.sql`
    las agrega a la función en la misma migración que las crea, y
